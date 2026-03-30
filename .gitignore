@@ -38,6 +38,13 @@ website/node_modules/
 # Assura execution state
 .assura/execution-state.json
 
+# IDE / Editor configs
+.claude/
+.codex/
+
+# Cache directories
+.cache/
+.bosun/
+
 # OS
 Thumbs.db
-/.bosun/
