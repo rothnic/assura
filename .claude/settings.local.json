@@ -1,0 +1,68 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(*)",
+      "Bash(git:*)",
+      "Bash(gh:*)",
+      "Bash(go:*)",
+      "Bash(make:*)",
+      "Bash(cd:*)",
+      "Bash(ls:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:bosun.ai)",
+      "go *",
+      "Edit",
+      "MultiEdit",
+      "Read",
+      "Write",
+      "computer:*"
+    ],
+    "deny": []
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /usr/lib/node_modules/bosun/config/agent-hook-bridge.mjs --agent claude --event UserPromptSubmit"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /usr/lib/node_modules/bosun/config/agent-hook-bridge.mjs --agent claude --event PreToolUse"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /usr/lib/node_modules/bosun/config/agent-hook-bridge.mjs --agent claude --event PostToolUse"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /usr/lib/node_modules/bosun/config/agent-hook-bridge.mjs --agent claude --event Stop"
+          }
+        ]
+      }
+    ]
+  }
+}

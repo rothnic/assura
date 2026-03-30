@@ -1,0 +1,141 @@
+# Assura Self-Validation Configuration
+# This file configures Assura to validate itself
+
+version: "1.0"
+maturity: stable
+
+project:
+  name: "assura"
+  description: "Dependency-aware file system validation engine"
+  
+# File naming conventions for Rust files
+naming:
+  conventions:
+    - name: "rust_source"
+      pattern: "^[a-z_][a-z0-9_]*\.rs$"
+      applies_to: "src/**/*.rs"
+      severity: high
+      
+    - name: "rust_tests"
+      pattern: "^[a-z_][a-z0-9_]*\.rs$"
+      applies_to: "tests/**/*.rs"
+      severity: medium
+      
+    - name: "rust_benches"
+      pattern: "^[a-z_][a-z0-9_]*\.rs$"
+      applies_to: "benches/**/*.rs"
+      severity: low
+      
+    - name: "markdown_docs"
+      pattern: "^[A-Z][a-zA-Z0-9_-]*\.md$"
+      applies_to: "docs/**/*.md"
+      severity: medium
+      
+    - name: "markdown_root"
+      pattern: "^[A-Z][a-zA-Z0-9_]*\.md$"
+      applies_to: "*.md"
+      severity: medium
+
+# Markdown validation rules
+markdown:
+  validation:
+    enabled: true
+    rules:
+      - id: "markdown-frontmatter"
+        name: "Frontmatter Required"
+        description: "All markdown files must have frontmatter"
+        applies_to: "**/*.md"
+        severity: medium
+        
+      - id: "markdown-no-dead-links"
+        name: "No Dead Links"
+        description: "All internal links must resolve"
+        applies_to: "**/*.md"
+        severity: high
+        
+      - id: "markdown-header-levels"
+        name: "Proper Header Levels"
+        description: "Headers should not skip levels"
+        applies_to: "**/*.md"
+        severity: low
+
+# Rust-specific validation
+rust:
+  validation:
+    enabled: true
+    rules:
+      - id: "rust-docs"
+        name: "Documentation Required"
+        description: "Public items must have rustdoc"
+        applies_to: "src/**/*.rs"
+        severity: medium
+        
+      - id: "rust-fmt"
+        name: "Code Formatting"
+        description: "Code must be formatted with rustfmt"
+        applies_to: "src/**/*.rs"
+        severity: low
+        check_command: "cargo fmt -- --check"
+        
+      - id: "rust-clippy"
+        name: "Linting"
+        description: "Code must pass clippy"
+        applies_to: "src/**/*.rs"
+        severity: medium
+        check_command: "cargo clippy -- -D warnings"
+
+# Dependency constraints
+dependencies:
+  constraints:
+    - id: "no-circular-deps"
+      name: "No Circular Dependencies"
+      description: "Internal modules must not have circular dependencies"
+      severity: critical
+      
+    - id: "dependency-version-pin"
+      name: "Version Pinning"
+      description: "All dependencies should have explicit versions"
+      applies_to: "Cargo.toml"
+      severity: high
+
+# File organization constraints
+organization:
+  constraints:
+    - id: "src-structure"
+      name: "Source Structure"
+      description: "Source files must follow project structure"
+      applies_to: "src/**"
+      severity: high
+      
+    - id: "tests-location"
+      name: "Test Location"
+      description: "Tests should be in tests/ directory"
+      applies_to: "tests/**/*.rs"
+      severity: medium
+      
+    - id: "benches-location"
+      name: "Benchmark Location"
+      description: "Benchmarks should be in benches/ directory"
+      applies_to: "benches/**/*.rs"
+      severity: low
+
+# Git hooks configuration
+hooks:
+  enabled: true
+  pre_commit:
+    - command: "cargo test"
+      description: "Run tests before commit"
+    - command: "cargo clippy -- -D warnings"
+      description: "Run linter before commit"
+    - command: "cargo fmt -- --check"
+      description: "Check formatting before commit"
+
+# Exclusions
+exclude:
+  paths:
+    - "target/**"
+    - ".git/**"
+    - "node_modules/**"
+    - ".astro/**"
+    - "*.lock"
+    - "dist/**"

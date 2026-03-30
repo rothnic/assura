@@ -1,0 +1,24 @@
+#!/bin/sh
+# Assura pre-push hook
+# Runs full validation before pushing
+
+set -e
+
+echo "Running Assura pre-push validation..."
+
+# Find the project root
+PROJECT_ROOT="$(git rev-parse --show-toplevel)"
+ASSURA_DIR="$PROJECT_ROOT/.assura"
+
+if [ ! -d "$ASSURA_DIR" ]; then
+    echo "Warning: .assura directory not found"
+    exit 0
+fi
+
+# Run full validation
+if command -v assura >/dev/null 2>&1; then
+    exec assura check "$PROJECT_ROOT"
+else
+    echo "Warning: assura command not found"
+    exit 0
+fi

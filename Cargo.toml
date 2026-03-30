@@ -1,0 +1,71 @@
+[package]
+name = "assura"
+version = "0.1.0"
+edition = "2021"
+authors = ["Assura Team <team@assura.dev>"]
+description = "Dependency-aware file system validation engine with support for naming conventions, markdown validation, and circular dependency detection"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/assura/assura"
+homepage = "https://assura.dev"
+documentation = "https://docs.rs/assura"
+keywords = ["validation", "linting", "filesystem", "dependencies", "naming-conventions"]
+categories = ["development-tools", "filesystem", "command-line-utilities"]
+rust-version = "1.70.0"
+readme = "README.md"
+
+[dependencies]
+tokio = { version = "1.0", features = ["full", "rt-multi-thread"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_yaml = "0.9"
+serde_json = "1.0"
+thiserror = "1.0"
+anyhow = "1.0"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+clap = { version = "4.0", features = ["derive"] }
+petgraph = "0.6"
+regex = "1.0"
+glob = "0.3"
+walkdir = "2.0"
+ignore = "0.4"
+notify = "6.0"
+dashmap = "5.0"
+rayon = "1.7"
+bincode = "1.3"
+git2 = "0.18"
+time = "0.3"
+pulldown-cmark = "0.9"
+frontmatter = "0.4"
+serde_regex = "1.1"
+once_cell = "1.19"
+lazy_static = "1.4"
+validator = { version = "0.18", features = ["derive"] }
+jwalk = "0.8.1"
+
+[dev-dependencies]
+tempfile = "3.0"
+criterion = { version = "0.5", features = ["html_reports"] }
+pretty_assertions = "1.0"
+mockall = "0.11"
+
+[[bench]]
+name = "graph_benchmarks"
+harness = false
+
+[[bench]]
+name = "ls_lint_benchmarks"
+harness = false
+
+[[bench]]
+name = "ls_lint_comparison"
+harness = false
+
+[[bench]]
+name = "profiling"
+harness = false
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true

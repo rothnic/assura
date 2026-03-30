@@ -1,0 +1,638 @@
+{
+  "project": "Assura",
+  "version": "3.1",
+  "phases": [
+    {
+      "phase": 1,
+      "name": "Skills Setup",
+      "tasks": [
+        {
+          "id": "1.1",
+          "description": "Create project structure and documentation",
+          "duration": "2h",
+          "agent": "General",
+          "dependencies": [],
+          "status": "completed"
+        },
+        {
+          "id": "1.2",
+          "description": "Set up skill manifest and schemas",
+          "duration": "3h",
+          "agent": "General",
+          "dependencies": ["1.1"],
+          "status": "completed"
+        },
+        {
+          "id": "1.3",
+          "description": "Create base skill classes and interfaces",
+          "duration": "4h",
+          "agent": "General",
+          "dependencies": ["1.2"],
+          "status": "completed"
+        },
+        {
+          "id": "1.4",
+          "description": "Create prd.json task list",
+          "duration": "2h",
+          "agent": "General",
+          "dependencies": ["1.3"],
+          "status": "in_progress"
+        },
+        {
+          "id": "1.5",
+          "description": "Implement skill registry and loader",
+          "duration": "4h",
+          "agent": "General",
+          "dependencies": ["1.4"],
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "phase": "2A",
+      "name": "Intelligence Graph Core",
+      "tasks": [
+        {
+          "id": "2A.1",
+          "description": "Design graph database schema",
+          "duration": "3h",
+          "agent": "Database",
+          "dependencies": ["1.5"],
+          "status": "pending"
+        },
+        {
+          "id": "2A.2",
+          "description": "Implement node and edge models",
+          "duration": "4h",
+          "agent": "Database",
+          "dependencies": ["2A.1"],
+          "status": "pending"
+        },
+        {
+          "id": "2A.3",
+          "description": "Create graph query interface",
+          "duration": "4h",
+          "agent": "Database",
+          "dependencies": ["2A.2"],
+          "status": "pending"
+        },
+        {
+          "id": "2A.4",
+          "description": "Implement graph traversal algorithms",
+          "duration": "5h",
+          "agent": "Algorithm",
+          "dependencies": ["2A.3"],
+          "status": "pending"
+        },
+        {
+          "id": "2A.5",
+          "description": "Add graph persistence layer",
+          "duration": "4h",
+          "agent": "Database",
+          "dependencies": ["2A.4"],
+          "status": "pending"
+        },
+        {
+          "id": "2A.6",
+          "description": "Create graph visualization utilities",
+          "duration": "3h",
+          "agent": "Frontend",
+          "dependencies": ["2A.5"],
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "phase": "2B",
+      "name": "Astro Website Setup",
+      "tasks": [
+        {
+          "id": "2B.1",
+          "description": "Initialize Astro project",
+          "duration": "2h",
+          "agent": "Frontend",
+          "dependencies": [],
+          "status": "pending"
+        },
+        {
+          "id": "2B.2",
+          "description": "Configure Tailwind and theming",
+          "duration": "3h",
+          "agent": "Frontend",
+          "dependencies": ["2B.1"],
+          "status": "pending"
+        },
+        {
+          "id": "2B.3",
+          "description": "Create base layouts and components",
+          "duration": "4h",
+          "agent": "Frontend",
+          "dependencies": ["2B.2"],
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "phase": "2C",
+      "name": "GitHub Repository Setup",
+      "tasks": [
+        {
+          "id": "2C.1",
+          "description": "Create GitHub organization and repositories",
+          "duration": "2h",
+          "agent": "DevOps",
+          "dependencies": [],
+          "status": "pending"
+        },
+        {
+          "id": "2C.2",
+          "description": "Set up CI/CD pipelines",
+          "duration": "4h",
+          "agent": "DevOps",
+          "dependencies": ["2C.1"],
+          "status": "pending"
+        },
+        {
+          "id": "2C.3",
+          "description": "Configure branch protection rules",
+          "duration": "2h",
+          "agent": "DevOps",
+          "dependencies": ["2C.2"],
+          "status": "pending"
+        },
+        {
+          "id": "2C.4",
+          "description": "Set up automated testing workflows",
+          "duration": "3h",
+          "agent": "DevOps",
+          "dependencies": ["2C.3"],
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "phase": 3,
+      "name": "Maturity Detection",
+      "tasks": [
+        {
+          "id": "3.1",
+          "description": "Design maturity assessment framework",
+          "duration": "3h",
+          "agent": "General",
+          "dependencies": ["2A.6"],
+          "status": "pending"
+        },
+        {
+          "id": "3.2",
+          "description": "Implement code analysis detectors",
+          "duration": "5h",
+          "agent": "Analyzer",
+          "dependencies": ["3.1"],
+          "status": "pending"
+        },
+        {
+          "id": "3.3",
+          "description": "Create maturity scoring algorithm",
+          "duration": "4h",
+          "agent": "Algorithm",
+          "dependencies": ["3.2"],
+          "status": "pending"
+        },
+        {
+          "id": "3.4",
+          "description": "Build maturity report generator",
+          "duration": "3h",
+          "agent": "General",
+          "dependencies": ["3.3"],
+          "status": "pending"
+        },
+        {
+          "id": "3.5",
+          "description": "Add historical tracking",
+          "duration": "4h",
+          "agent": "Database",
+          "dependencies": ["3.4"],
+          "status": "pending"
+        },
+        {
+          "id": "3.6",
+          "description": "Implement trend analysis",
+          "duration": "4h",
+          "agent": "Algorithm",
+          "dependencies": ["3.5"],
+          "status": "pending"
+        },
+        {
+          "id": "3.7",
+          "description": "Create maturity dashboard",
+          "duration": "4h",
+          "agent": "Frontend",
+          "dependencies": ["3.6"],
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "phase": 4,
+      "name": "Constraint System",
+      "tasks": [
+        {
+          "id": "4.1",
+          "description": "Design constraint DSL",
+          "duration": "4h",
+          "agent": "General",
+          "dependencies": ["3.7"],
+          "status": "pending"
+        },
+        {
+          "id": "4.2",
+          "description": "Implement constraint parser",
+          "duration": "5h",
+          "agent": "Parser",
+          "dependencies": ["4.1"],
+          "status": "pending"
+        },
+        {
+          "id": "4.3",
+          "description": "Create constraint validator",
+          "duration": "5h",
+          "agent": "Analyzer",
+          "dependencies": ["4.2"],
+          "status": "pending"
+        },
+        {
+          "id": "4.4",
+          "description": "Build constraint enforcement engine",
+          "duration": "6h",
+          "agent": "General",
+          "dependencies": ["4.3"],
+          "status": "pending"
+        },
+        {
+          "id": "4.5",
+          "description": "Add constraint violation reporting",
+          "duration": "3h",
+          "agent": "General",
+          "dependencies": ["4.4"],
+          "status": "pending"
+        },
+        {
+          "id": "4.6",
+          "description": "Implement auto-fix suggestions",
+          "duration": "5h",
+          "agent": "General",
+          "dependencies": ["4.5"],
+          "status": "pending"
+        },
+        {
+          "id": "4.7",
+          "description": "Create constraint documentation",
+          "duration": "2h",
+          "agent": "Technical Writer",
+          "dependencies": ["4.6"],
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "phase": 5,
+      "name": "LS-Lint Parity",
+      "tasks": [
+        {
+          "id": "5.1",
+          "description": "Research LS-Lint features",
+          "duration": "3h",
+          "agent": "Research",
+          "dependencies": ["4.7"],
+          "status": "pending"
+        },
+        {
+          "id": "5.2",
+          "description": "Implement directory structure rules",
+          "duration": "5h",
+          "agent": "Analyzer",
+          "dependencies": ["5.1"],
+          "status": "pending"
+        },
+        {
+          "id": "5.3",
+          "description": "Add file naming conventions",
+          "duration": "4h",
+          "agent": "Analyzer",
+          "dependencies": ["5.2"],
+          "status": "pending"
+        },
+        {
+          "id": "5.4",
+          "description": "Create file extension validators",
+          "duration": "3h",
+          "agent": "Analyzer",
+          "dependencies": ["5.3"],
+          "status": "pending"
+        },
+        {
+          "id": "5.5",
+          "description": "Implement ignore patterns",
+          "duration": "3h",
+          "agent": "General",
+          "dependencies": ["5.4"],
+          "status": "pending"
+        },
+        {
+          "id": "5.6",
+          "description": "Add LS-Lint configuration migration",
+          "duration": "4h",
+          "agent": "General",
+          "dependencies": ["5.5"],
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "phase": 6,
+      "name": "Markdown Schema",
+      "tasks": [
+        {
+          "id": "6.1",
+          "description": "Design markdown schema format",
+          "duration": "3h",
+          "agent": "General",
+          "dependencies": ["5.6"],
+          "status": "pending"
+        },
+        {
+          "id": "6.2",
+          "description": "Implement frontmatter validator",
+          "duration": "4h",
+          "agent": "Parser",
+          "dependencies": ["6.1"],
+          "status": "pending"
+        },
+        {
+          "id": "6.3",
+          "description": "Create markdown structure analyzer",
+          "duration": "4h",
+          "agent": "Analyzer",
+          "dependencies": ["6.2"],
+          "status": "pending"
+        },
+        {
+          "id": "6.4",
+          "description": "Add schema violation detection",
+          "duration": "3h",
+          "agent": "Analyzer",
+          "dependencies": ["6.3"],
+          "status": "pending"
+        },
+        {
+          "id": "6.5",
+          "description": "Build markdown fixer",
+          "duration": "4h",
+          "agent": "General",
+          "dependencies": ["6.4"],
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "phase": 7,
+      "name": "OpenCode Plugin",
+      "tasks": [
+        {
+          "id": "7.1",
+          "description": "Set up OpenCode plugin structure",
+          "duration": "3h",
+          "agent": "General",
+          "dependencies": ["6.5"],
+          "status": "pending"
+        },
+        {
+          "id": "7.2",
+          "description": "Implement plugin manifest",
+          "duration": "2h",
+          "agent": "General",
+          "dependencies": ["7.1"],
+          "status": "pending"
+        },
+        {
+          "id": "7.3",
+          "description": "Create plugin configuration interface",
+          "duration": "4h",
+          "agent": "General",
+          "dependencies": ["7.2"],
+          "status": "pending"
+        },
+        {
+          "id": "7.4",
+          "description": "Implement real-time analysis",
+          "duration": "6h",
+          "agent": "Analyzer",
+          "dependencies": ["7.3"],
+          "status": "pending"
+        },
+        {
+          "id": "7.5",
+          "description": "Add inline diagnostics",
+          "duration": "5h",
+          "agent": "Frontend",
+          "dependencies": ["7.4"],
+          "status": "pending"
+        },
+        {
+          "id": "7.6",
+          "description": "Create quick fix commands",
+          "duration": "4h",
+          "agent": "General",
+          "dependencies": ["7.5"],
+          "status": "pending"
+        },
+        {
+          "id": "7.7",
+          "description": "Implement plugin settings",
+          "duration": "3h",
+          "agent": "General",
+          "dependencies": ["7.6"],
+          "status": "pending"
+        },
+        {
+          "id": "7.8",
+          "description": "Add plugin documentation",
+          "duration": "2h",
+          "agent": "Technical Writer",
+          "dependencies": ["7.7"],
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "phase": "8A",
+      "name": "CLI & Git Hooks",
+      "tasks": [
+        {
+          "id": "8A.1",
+          "description": "Design CLI interface",
+          "duration": "3h",
+          "agent": "General",
+          "dependencies": ["7.8"],
+          "status": "pending"
+        },
+        {
+          "id": "8A.2",
+          "description": "Implement CLI commands",
+          "duration": "6h",
+          "agent": "General",
+          "dependencies": ["8A.1"],
+          "status": "pending"
+        },
+        {
+          "id": "8A.3",
+          "description": "Create configuration file support",
+          "duration": "4h",
+          "agent": "General",
+          "dependencies": ["8A.2"],
+          "status": "pending"
+        },
+        {
+          "id": "8A.4",
+          "description": "Build pre-commit hook",
+          "duration": "4h",
+          "agent": "DevOps",
+          "dependencies": ["8A.3"],
+          "status": "pending"
+        },
+        {
+          "id": "8A.5",
+          "description": "Add pre-push hook",
+          "duration": "3h",
+          "agent": "DevOps",
+          "dependencies": ["8A.4"],
+          "status": "pending"
+        },
+        {
+          "id": "8A.6",
+          "description": "Create hook installation script",
+          "duration": "2h",
+          "agent": "DevOps",
+          "dependencies": ["8A.5"],
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "phase": "8B",
+      "name": "Website Content",
+      "tasks": [
+        {
+          "id": "8B.1",
+          "description": "Create documentation pages",
+          "duration": "5h",
+          "agent": "Technical Writer",
+          "dependencies": ["2B.3", "8A.6"],
+          "status": "pending"
+        },
+        {
+          "id": "8B.2",
+          "description": "Build interactive examples",
+          "duration": "6h",
+          "agent": "Frontend",
+          "dependencies": ["8B.1"],
+          "status": "pending"
+        },
+        {
+          "id": "8B.3",
+          "description": "Add getting started guide",
+          "duration": "4h",
+          "agent": "Technical Writer",
+          "dependencies": ["8B.2"],
+          "status": "pending"
+        },
+        {
+          "id": "8B.4",
+          "description": "Create API reference",
+          "duration": "5h",
+          "agent": "Technical Writer",
+          "dependencies": ["8B.3"],
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "phase": 9,
+      "name": "Dogfooding & Release",
+      "tasks": [
+        {
+          "id": "9.1",
+          "description": "Self-analyze Assura codebase",
+          "duration": "4h",
+          "agent": "General",
+          "dependencies": ["8B.4"],
+          "status": "pending"
+        },
+        {
+          "id": "9.2",
+          "description": "Fix discovered issues",
+          "duration": "6h",
+          "agent": "General",
+          "dependencies": ["9.1"],
+          "status": "pending"
+        },
+        {
+          "id": "9.3",
+          "description": "Performance optimization",
+          "duration": "5h",
+          "agent": "Performance",
+          "dependencies": ["9.2"],
+          "status": "pending"
+        },
+        {
+          "id": "9.4",
+          "description": "Create release notes",
+          "duration": "3h",
+          "agent": "Technical Writer",
+          "dependencies": ["9.3"],
+          "status": "pending"
+        },
+        {
+          "id": "9.5",
+          "description": "Prepare npm package",
+          "duration": "3h",
+          "agent": "DevOps",
+          "dependencies": ["9.4"],
+          "status": "pending"
+        },
+        {
+          "id": "9.6",
+          "description": "Create GitHub release",
+          "duration": "2h",
+          "agent": "DevOps",
+          "dependencies": ["9.5"],
+          "status": "pending"
+        },
+        {
+          "id": "9.7",
+          "description": "Publish documentation site",
+          "duration": "2h",
+          "agent": "DevOps",
+          "dependencies": ["9.6"],
+          "status": "pending"
+        },
+        {
+          "id": "9.8",
+          "description": "Announce release",
+          "duration": "2h",
+          "agent": "Marketing",
+          "dependencies": ["9.7"],
+          "status": "pending"
+        },
+        {
+          "id": "9.9",
+          "description": "Post-release monitoring",
+          "duration": "3h",
+          "agent": "DevOps",
+          "dependencies": ["9.8"],
+          "status": "pending"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+---
+title: Assura
+description: Dependency-aware file system validation engine for Rust
+template: splash
+hero:
+  tagline: Dependency-aware file system validation engine
+  image:
+    file: ../../assets/houston.webp
+  actions:
+    - text: Get Started
+      link: /guides/quickstart/
+      icon: right-arrow
+    - text: View on GitHub
+      link: https://github.com/anomalyco/assura
+      icon: github
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## Features
+
+<CardGrid stagger>
+  <Card title="Dependency Analysis" icon="graph">
+    Detect circular dependencies and compute validation ordering using graph algorithms
+  </Card>
+  <Card title="Rule-Based Validation" icon="document">
+    Configure severity levels (Critical, High, Medium, Low) for comprehensive validation
+  </Card>
+  <Card title="File System Watching" icon="seti:rust">
+    Continuous validation during development with automatic file system monitoring
+  </Card>
+  <Card title="Parallel Execution" icon="rocket">
+    High-performance validation using Rayon and Tokio for large codebases
+  </Card>
+  <Card title="Extensible Architecture" icon="puzzle">
+    Plugin-based design allows custom validators and integrations
+  </Card>
+  <Card title="Multiple Formats" icon="list-format">
+    Support for YAML, JSON, and TOML configuration files
+  </Card>
+</CardGrid>
+
+## Quick Example
+
+```rust
+use assura::{Config, Validator};
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let config = Config::load("assura.yaml")?;
+    let validator = Validator::new(config);
+    
+    let results = validator.validate_all().await?;
+    println!("Found {} issues", results.len());
+    
+    Ok(())
+}
+```

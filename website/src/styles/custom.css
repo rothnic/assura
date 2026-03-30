@@ -1,0 +1,89 @@
+/* Custom CSS for Assura Documentation */
+
+/* Import Catppuccin palette for custom styling */
+@import url('@catppuccin/palette/css/catppuccin.css');
+
+/* Root variables for Assura branding */
+:root {
+  /* Primary accent colors - Teal/Cyan mix */
+  --assura-primary: #7dd3fc;
+  --assura-secondary: #94a3b8;
+  --assura-accent: #2dd4bf;
+  
+  /* Dark mode (Mocha) adjustments */
+  --sl-color-text-accent: #7dd3fc;
+  --sl-color-bg-accent: rgba(125, 211, 252, 0.1);
+}
+
+/* Custom styling for Assura */
+.hero-title {
+  background: linear-gradient(135deg, #7dd3fc 0%, #2dd4bf 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Code block styling */
+.astro-code {
+  border-radius: 0.5rem;
+  border: 1px solid rgba(125, 211, 252, 0.2);
+}
+
+/* Button styling */
+button.action.primary {
+  background: linear-gradient(135deg, #7dd3fc 0%, #2dd4bf 100%);
+  color: #0f172a;
+  font-weight: 600;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+button.action.primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(125, 211, 252, 0.3);
+}
+
+/* Table styling */
+table {
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+th {
+  background: var(--sl-color-gray-6);
+  font-weight: 600;
+}
+
+/* Card/grid styling */
+.sl-markdown-content .card {
+  border: 1px solid rgba(125, 211, 252, 0.2);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  transition: all 0.2s ease;
+}
+
+.sl-markdown-content .card:hover {
+  border-color: var(--assura-primary);
+  box-shadow: 0 2px 8px rgba(125, 211, 252, 0.1);
+}
+
+/* Severity badge colors */
+.severity-critical {
+  background: #f87171;
+  color: #450a0a;
+}
+
+.severity-high {
+  background: #fb923c;
+  color: #451a03;
+}
+
+.severity-medium {
+  background: #facc15;
+  color: #422006;
+}
+
+.severity-low {
+  background: #60a5fa;
+  color: #172554;
+}

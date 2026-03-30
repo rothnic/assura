@@ -1,0 +1,96 @@
+# Assura Self-Validation Configuration (New Format)
+# This file configures Assura to validate itself using the unified config format
+
+rules:
+  rust-source:
+    extensions: [rs]
+    naming: snake_case
+    max_lines: 500
+    message:
+      violation: "File exceeds maximum line count"
+      why: "Large files are harder to maintain and understand"
+      fix: "Split into focused modules"
+
+  rust-test:
+    extensions: [rs]
+    naming: snake_case
+    max_lines: 1000
+
+  markdown-docs:
+    extensions: [md]
+    require_docs: false
+
+policy:
+  .:
+    # Root directory requirements
+    require:
+      files: [README.md, AGENTS.md, LICENSE, Cargo.toml]
+      message: "Missing required repository files"
+    
+    # Allow only specific markdown files in root
+    .md:
+      naming: [README.md, AGENTS.md, CHANGELOG.md, LICENSE, CONTRIBUTING.md, CODE_OF_CONDUCT.md, SECURITY.md]
+    
+    # Require CHANGELOG for releases
+    CHANGELOG.md:
+      message:
+        violation: "CHANGELOG.md is recommended for releases"
+        fix: "Create CHANGELOG.md following Keep a Changelog format"
+  
+  src/:
+    apply:
+      - rule: "@rust-source"
+    
+    cli/:
+      apply:
+        - rule: "@rust-source"
+    
+    config/:
+      apply:
+        - rule: "@rust-source"
+      # Keep config modules focused - max 15 files per directory
+      limit_children:
+        files:
+          max: 15
+        message: "Config directory is getting large. Consider organizing into submodules."
+    
+    constraints/:
+      apply:
+        - rule: "@rust-source"
+      limit_children:
+        files:
+          max: 20
+    
+    intelligence/:
+      apply:
+        - rule: "@rust-source"
+    
+    markdown/:
+      apply:
+        - rule: "@rust-source"
+    
+    maturity/:
+      apply:
+        - rule: "@rust-source"
+  
+  tests/:
+    apply:
+      - rule: "@rust-test"
+  
+  benches/:
+    apply:
+      - rule: "@rust-test"
+  
+  docs/:
+    .md:
+      apply:
+        - rule: "@markdown-docs"
+
+exclude:
+  - "**/target/**"
+  - "**/.git/**"
+  - "**/node_modules/**"
+  - "**/.astro/**"
+  - "*.lock"
+  - "dist/**"
+  - "website/**"

@@ -1,0 +1,18 @@
+#!/bin/sh
+# Assura post-checkout hook
+# Runs after git checkout to check project status
+
+# Find the project root
+PROJECT_ROOT="$(git rev-parse --show-toplevel)"
+ASSURA_DIR="$PROJECT_ROOT/.assura"
+
+if [ ! -d "$ASSURA_DIR" ]; then
+    exit 0
+fi
+
+# Show project status (non-blocking)
+if command -v assura >/dev/null 2>&1; then
+    assura status --format text "$PROJECT_ROOT" || true
+fi
+
+exit 0

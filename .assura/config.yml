@@ -1,0 +1,126 @@
+version: "2.0"
+
+project:
+  name: "assura"
+  description: "Dependency-aware file system validation engine"
+
+# Root directory - only standard project files allowed
+# Special documents (AGENTS.md, CONSTITUTION.md) allowed in SCREAMING_SNAKE_CASE
+# All other root files must be standard project files
+structure:
+  ./:
+    files:
+      # Standard project files are allowed
+      allowed_names:
+        # Core documentation (standard project files)
+        - "README.md"
+        - "CHANGELOG.md"
+        - "CONTRIBUTING.md"
+        - "CODE_OF_CONDUCT.md"
+        - "SECURITY.md"
+        # Special documents (exception to naming convention)
+        - "AGENTS.md"
+        - "CONSTITUTION.md"
+        # License files
+        - "LICENSE"
+        - "LICENSE-MIT"
+        - "LICENSE-APACHE"
+      naming: "PascalCase"
+    
+    # Subdirectories
+    children:
+      .agents/:
+        files:
+          naming: "kebab-case"
+      
+      .assura/:
+        files:
+          naming: "kebab-case"
+        children:
+          hooks/:
+            files:
+              naming: "kebab-case"
+      
+      .github/:
+        files:
+          naming: "kebab-case"
+      
+      benches/:
+        files:
+          naming: "snake_case"
+          max_lines: 1000
+      
+      docs/:
+        files:
+          naming: "kebab-case"
+          max_lines: 2000
+        markdown:
+          require_frontmatter: false
+      
+      opencode-plugin/:
+        files:
+          naming: "kebab-case"
+      
+      src/:
+        files:
+          naming: "snake_case"
+          max_lines: 500
+          require_docs: true
+        children:
+          cli/:
+            files:
+              naming: "snake_case"
+              max_lines: 500
+          
+          config/:
+            files:
+              naming: "snake_case"
+              max_lines: 500
+          
+          constraints/:
+            files:
+              naming: "snake_case"
+              max_lines: 500
+          
+          intelligence/:
+            files:
+              naming: "snake_case"
+              max_lines: 500
+          
+          ls_compat/:
+            files:
+              naming: "snake_case"
+              max_lines: 500
+          
+          markdown/:
+            files:
+              naming: "snake_case"
+              max_lines: 500
+          
+          maturity/:
+            files:
+              naming: "snake_case"
+              max_lines: 500
+          
+          validation/:
+            files:
+              naming: "snake_case"
+              max_lines: 500
+      
+      tests/:
+        files:
+          naming: "snake_case"
+          max_lines: 1000
+      
+      website/:
+        files:
+          naming: "kebab-case"
+
+# Global exclusions
+exclude:
+  - "target/**"
+  - ".git/**"
+  - "node_modules/**"
+  - ".astro/**"
+  - "dist/**"
+  - "*.lock"

@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Ask a question
+    url: https://github.com/assura/assura/discussions
+    about: Ask questions and discuss with other community members
+  - name: Security vulnerability
+    url: https://github.com/assura/assura/security/advisories/new
+    about: Please report security vulnerabilities here
