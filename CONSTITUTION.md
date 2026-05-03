@@ -3,6 +3,16 @@
 ## Version 1.1
 
 **IMPORTANT**: This document establishes core principles only. It does not contain specific notation examples or syntax definitions. Notation is documented in SPEC.md and user-facing documentation.
+---
+
+## 0. Reference Documents
+
+**For configuration syntax, notation, and examples, see:**
+- **docs/CONFIGURATION_SPEC.md** - Complete configuration format specification
+- **docs/LS_LINT_NOTATION_GUIDE.md** - LS-Lint notation compatibility guide
+
+These documents contain the authoritative syntax definitions, file pairing patterns, and organization strategies.
+
 
 This document establishes the core principles and requirements for the Assura project. All changes must be reviewed against these principles before merging.
 

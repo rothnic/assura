@@ -25,6 +25,10 @@ structure:
         - "LICENSE"
         - "LICENSE-MIT"
         - "LICENSE-APACHE"
+      # Required files that must exist in root
+      required:
+        - "README.md"
+        - "AGENTS.md"
       naming: "PascalCase"
     
     # Subdirectories
@@ -53,9 +57,9 @@ structure:
       docs/:
         files:
           naming: "kebab-case"
-          max_lines: 2000
+          max_lines: 500
         markdown:
-          require_frontmatter: false
+          require_frontmatter: true
       
       opencode-plugin/:
         files:
@@ -106,6 +110,38 @@ structure:
             files:
               naming: "snake_case"
               max_lines: 500
+      
+      specs/:
+        files:
+          naming: "kebab-case"
+          max_lines: 300
+        markdown:
+          require_frontmatter: true
+        children:
+          features/:
+            files:
+              naming: "kebab-case"
+              max_lines: 300
+            markdown:
+              require_frontmatter: false
+          adr/:
+            files:
+              naming: "kebab-case"
+              max_lines: 300
+            markdown:
+              require_frontmatter: true
+          requirements/:
+            files:
+              naming: "kebab-case"
+              max_lines: 300
+            markdown:
+              require_frontmatter: true
+          templates/:
+            files:
+              naming: "kebab-case"
+              max_lines: 300
+            markdown:
+              require_frontmatter: false
       
       tests/:
         files:

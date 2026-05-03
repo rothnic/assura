@@ -78,8 +78,9 @@ ls:
 # Assura (reusable)
 rules:
   react:
-    .tsx: PascalCase
-    lines: ..400
+    .tsx:
+      - PascalCase
+      - lines: ..400
 
 policy:
   packages/:
@@ -144,7 +145,8 @@ LS-Lint only validates naming. Assura validates content:
 rules:
   sized:
     ${name}.tsx:
-      - constraints: [PascalCase, lines:..400]
+      - PascalCase
+      - lines: ..400
       - violation: [warn, ci:block]
 
 policy:
