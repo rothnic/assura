@@ -159,9 +159,7 @@ fn parse_case_convention(name: &str) -> ConstraintResult<CaseConvention> {
         "camelCase" | "camelcase" => Ok(CaseConvention::CamelCase),
         "PascalCase" | "pascalcase" => Ok(CaseConvention::PascalCase),
         "kebab-case" | "kebabcase" => Ok(CaseConvention::KebabCase),
-        "SCREAMING_SNAKE_CASE" | "screaming_snake_case" => {
-            Ok(CaseConvention::ScreamingSnakeCase)
-        }
+        "SCREAMING_SNAKE_CASE" | "screaming_snake_case" => Ok(CaseConvention::ScreamingSnakeCase),
         "dot.case" | "dotcase" => Ok(CaseConvention::DotCase),
         "flatcase" => Ok(CaseConvention::FlatCase),
         "FLATCASE" => Ok(CaseConvention::ScreamingFlatCase),
@@ -224,12 +222,12 @@ impl PathRule {
     /// Check if this rule matches a path
     pub fn matches(&self, path: &Path) -> bool {
         let path_str = path.to_string_lossy();
-        
+
         // First try matching the full path
         if self.regex.is_match(&path_str) {
             return true;
         }
-        
+
         // If that fails, try matching against path suffixes
         // This handles absolute paths like /tmp/xyz/src/main.rs
         // by matching src/main.rs against the pattern
@@ -242,17 +240,14 @@ impl PathRule {
                 }
             }
         }
-        
+
         false
     }
 
     /// Validate a filename against this rule
     pub fn validate(&self, filename: &str) -> Option<String> {
         // Strip extension for validation
-        let stem = filename
-            .rsplitn(2, '.')
-            .nth(1)
-            .unwrap_or(filename);
+        let stem = filename.rsplitn(2, '.').nth(1).unwrap_or(filename);
 
         if !self.convention.validate(stem) {
             Some(format!(
@@ -332,7 +327,7 @@ impl PathRuleConfig {
                     .split('/')
                     .filter(|component| !component.contains('*'))
                     .count();
-                
+
                 if specificity > best_specificity {
                     best_specificity = specificity;
                     best_match = Some(matching);
@@ -345,10 +340,7 @@ impl PathRuleConfig {
 
     /// Validate a path against the configuration
     pub fn validate(&self, path: &Path) -> Option<String> {
-        let filename = path
-            .file_name()
-            .and_then(|n| n.to_str())
-            .unwrap_or("");
+        let filename = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
 
         if filename.is_empty() {
             return Some("Path has no filename".to_string());
@@ -361,10 +353,7 @@ impl PathRuleConfig {
 
         // Use default convention if no rule matches
         if let Some(convention) = self.default_convention {
-            let stem = filename
-                .rsplitn(2, '.')
-                .nth(1)
-                .unwrap_or(filename);
+            let stem = filename.rsplitn(2, '.').nth(1).unwrap_or(filename);
 
             if !convention.validate(stem) {
                 return Some(format!(
@@ -391,14 +380,14 @@ fn glob_to_regex(pattern: &str) -> ConstraintResult<Regex> {
     regex_str.push('^');
 
     let mut chars = pattern.chars().peekable();
-    
+
     while let Some(c) = chars.next() {
         match c {
             '*' => {
                 // Check if this is a double asterisk (**)
                 if chars.peek() == Some(&'*') {
                     chars.next(); // consume the second *
-                    
+
                     // Check if ** is followed by /
                     if chars.peek() == Some(&'/') {
                         // **/ matches zero or more directory levels followed by /
@@ -470,12 +459,30 @@ mod tests {
 
     #[test]
     fn test_parse_case_convention() {
-        assert_eq!(parse_case_convention("kebab-case").unwrap(), CaseConvention::KebabCase);
-        assert_eq!(parse_case_convention("snake_case").unwrap(), CaseConvention::SnakeCase);
-        assert_eq!(parse_case_convention("flatcase").unwrap(), CaseConvention::FlatCase);
-        assert_eq!(parse_case_convention("FLATCASE").unwrap(), CaseConvention::ScreamingFlatCase);
-        assert_eq!(parse_case_convention("COBOL-CASE").unwrap(), CaseConvention::CobolCase);
-        assert_eq!(parse_case_convention("Train-Case").unwrap(), CaseConvention::TrainCase);
+        assert_eq!(
+            parse_case_convention("kebab-case").unwrap(),
+            CaseConvention::KebabCase
+        );
+        assert_eq!(
+            parse_case_convention("snake_case").unwrap(),
+            CaseConvention::SnakeCase
+        );
+        assert_eq!(
+            parse_case_convention("flatcase").unwrap(),
+            CaseConvention::FlatCase
+        );
+        assert_eq!(
+            parse_case_convention("FLATCASE").unwrap(),
+            CaseConvention::ScreamingFlatCase
+        );
+        assert_eq!(
+            parse_case_convention("COBOL-CASE").unwrap(),
+            CaseConvention::CobolCase
+        );
+        assert_eq!(
+            parse_case_convention("Train-Case").unwrap(),
+            CaseConvention::TrainCase
+        );
     }
 
     #[test]
@@ -499,9 +506,7 @@ mod tests {
     #[test]
     fn test_path_rule_config() {
         let config = PathRuleConfig::new()
-            .with_rule(
-                PathRule::new("src/**/*.rs", CaseConvention::SnakeCase).unwrap(),
-            )
+            .with_rule(PathRule::new("src/**/*.rs", CaseConvention::SnakeCase).unwrap())
             .with_rule(
                 PathRule::new("tests/**/*.rs", CaseConvention::SnakeCase)
                     .unwrap()

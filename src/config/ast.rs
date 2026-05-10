@@ -1,13 +1,13 @@
 //! Abstract Syntax Tree for Assura Configuration
-//! 
+//!
 //! Follows Constitution principles:
 //! - Structure-first representation
 //! - YAML/JSON compatible
 //! - No custom string parsing
 
-use std::collections::HashMap;
-use serde::{Deserialize, Serialize, Serializer};
 use crate::config::preprocessor::YamlPreprocessor;
+use serde::{Deserialize, Serialize, Serializer};
+use std::collections::HashMap;
 
 /// Top-level configuration structure
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -15,15 +15,15 @@ pub struct Config {
     /// Reusable rule definitions
     #[serde(default)]
     pub rules: HashMap<String, Rule>,
-    
+
     /// Context definitions (when/where)
     #[serde(default)]
     pub contexts: HashMap<String, Context>,
-    
+
     /// Message templates (optional)
     #[serde(default)]
     pub messages: HashMap<String, MessageTemplate>,
-    
+
     /// Policy tree (required)
     #[serde(default)]
     pub policy: PolicyNode,
@@ -45,14 +45,10 @@ pub struct Rule {
 #[serde(untagged)]
 pub enum ConstraintItem {
     /// Constraints array with key: constraints: [PascalCase, lines:..400]
-    Constraints {
-        constraints: Vec<Constraint>,
-    },
+    Constraints { constraints: Vec<Constraint> },
 
     /// Violation array with key: violation: [warn, ci:block]
-    Violation {
-        violation: Vec<ViolationEntry>,
-    },
+    Violation { violation: Vec<ViolationEntry> },
 
     /// Constraint definition (bare constraint without key)
     Constraint(Constraint),
@@ -132,7 +128,9 @@ impl<'de> Deserialize<'de> for Constraint {
                             return Ok(Constraint::Lines { lines: range });
                         }
                         "size" => {
-                            return Ok(Constraint::Size { size: val.to_string() });
+                            return Ok(Constraint::Size {
+                                size: val.to_string(),
+                            });
                         }
                         "exists" => {
                             let range = if val.parse::<u64>().is_ok() {
@@ -187,7 +185,9 @@ impl<'de> Deserialize<'de> for Constraint {
                     return Ok(Constraint::Exists { exists: range });
                 }
 
-                Err(de::Error::custom("Constraint map must have lines, size, or exists key"))
+                Err(de::Error::custom(
+                    "Constraint map must have lines, size, or exists key",
+                ))
             }
 
             // Handle sequence values (array of constraints)
@@ -211,7 +211,7 @@ impl Serialize for Constraint {
         S: Serializer,
     {
         use serde::ser::SerializeMap;
-        
+
         match self {
             Constraint::Naming(naming) => naming.serialize(serializer),
             Constraint::Lines { lines } => {
@@ -259,7 +259,7 @@ pub enum NamingConvention {
 pub enum Range {
     /// Exact number: exists: 1
     Exact(u64),
-    
+
     /// Range string: "1..10", "..400", "100.."
     RangeString(String),
 }
@@ -279,7 +279,7 @@ impl std::fmt::Display for Range {
 pub enum ViolationEntry {
     /// Default level: "warn", "block", "notify"
     Level(String),
-    
+
     /// Context-specific: "ci:block", "feature:warn"
     ContextSpecific { context: String, level: String },
 }
@@ -325,15 +325,15 @@ pub struct Message {
     /// Context-specific messages
     #[serde(flatten)]
     pub contexts: HashMap<String, String>,
-    
+
     /// Fix suggestion
     #[serde(skip_serializing_if = "Option::is_none")]
     pub fix: Option<String>,
-    
+
     /// Documentation link
     #[serde(skip_serializing_if = "Option::is_none")]
     pub docs: Option<String>,
-    
+
     /// Override instructions
     #[serde(skip_serializing_if = "Option::is_none")]
     pub r#override: Option<String>,
@@ -345,15 +345,15 @@ pub struct Context {
     /// Hook type: tool, pre-commit, pre-push, ci, etc.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub hook: Option<String>,
-    
+
     /// Branch pattern: "feature/*", "main"
     #[serde(skip_serializing_if = "Option::is_none")]
     pub branch: Option<String>,
-    
+
     /// Version range: "2.x..", "..1.x"
     #[serde(skip_serializing_if = "Option::is_none")]
     pub version: Option<String>,
-    
+
     /// Environment variables
     #[serde(skip_serializing_if = "Option::is_none")]
     pub env: Option<HashMap<String, String>>,
@@ -386,18 +386,21 @@ pub struct PolicyNode {
 pub enum PolicyEntry {
     /// Subdirectory
     Directory(PolicyNode),
-    
+
     /// File with constraints
     File(Vec<FileItem>),
-    
+
     /// Strict mode directive
     Strict { strict: bool },
-    
+
     /// Violation default at directory level
     ViolationDefault { violation: Vec<ViolationEntry> },
-    
+
     /// Context definition at directory level
-    ContextDef { context: String, violation: Vec<ViolationEntry> },
+    ContextDef {
+        context: String,
+        violation: Vec<ViolationEntry>,
+    },
 }
 
 /// Apply value - can be single rule or array of rules
@@ -414,16 +417,16 @@ pub enum ApplyValue {
 pub enum FileItem {
     /// Apply rules: apply: rule-name or apply: [rule1, rule2]
     Apply { apply: ApplyValue },
-    
+
     /// Constraints: constraints: [PascalCase, lines:..400]
     Constraints { constraints: Vec<Constraint> },
-    
+
     /// Violation levels
     Violation { violation: Vec<ViolationEntry> },
-    
+
     /// Exists requirement: exists: 1
     Exists { exists: Range },
-    
+
     /// Message attachment
     Message(Message),
 }
@@ -435,12 +438,12 @@ impl Config {
         let processed = YamlPreprocessor::process(yaml);
         serde_yaml::from_str(&processed)
     }
-    
+
     /// Serialize to YAML
     pub fn to_yaml(&self) -> Result<String, serde_yaml::Error> {
         serde_yaml::to_string(self)
     }
-    
+
     /// Serialize to JSON (for tooling)
     pub fn to_json(&self) -> Result<String, serde_json::Error> {
         serde_json::to_string_pretty(self)
@@ -465,7 +468,7 @@ policy:
     ${name}.tsx:
       - apply: react
 "#;
-        
+
         let config = Config::from_yaml(yaml).expect("Should parse");
         assert!(config.rules.contains_key("react"));
     }
@@ -493,11 +496,11 @@ policy:
     ${name}.tsx:
       - apply: react
 "#;
-        
+
         let config = Config::from_yaml(yaml).expect("Should parse YAML");
         let json = config.to_json().expect("Should serialize to JSON");
         let config2: Config = serde_json::from_str(&json).expect("Should parse JSON");
-        
+
         assert_eq!(config.rules.len(), config2.rules.len());
     }
 }

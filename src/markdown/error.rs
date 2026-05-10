@@ -8,10 +8,7 @@ use thiserror::Error;
 pub enum MarkdownError {
     /// I/O error during parsing
     #[error("I/O error: {message}")]
-    Io {
-        path: PathBuf,
-        message: String,
-    },
+    Io { path: PathBuf, message: String },
 
     /// Parsing error
     #[error("Parse error: {message}")]
@@ -23,38 +20,23 @@ pub enum MarkdownError {
 
     /// Frontmatter error
     #[error("Frontmatter error: {message}")]
-    Frontmatter {
-        path: PathBuf,
-        message: String,
-    },
+    Frontmatter { path: PathBuf, message: String },
 
     /// YAML parsing error
     #[error("YAML error: {message}")]
-    Yaml {
-        path: PathBuf,
-        message: String,
-    },
+    Yaml { path: PathBuf, message: String },
 
     /// Schema error
     #[error("Schema error: {message}")]
-    Schema {
-        schema: String,
-        message: String,
-    },
+    Schema { schema: String, message: String },
 
     /// Template error
     #[error("Template error: {message}")]
-    Template {
-        template: String,
-        message: String,
-    },
+    Template { template: String, message: String },
 
     /// Validation error
     #[error("Validation error: {message}")]
-    Validation {
-        path: PathBuf,
-        message: String,
-    },
+    Validation { path: PathBuf, message: String },
 
     /// Invalid field type
     #[error("Invalid field type for '{field}': expected {expected}, got {actual}")]
@@ -66,21 +48,15 @@ pub enum MarkdownError {
 
     /// Missing required field
     #[error("Missing required field: {field}")]
-    MissingField {
-        field: String,
-    },
+    MissingField { field: String },
 
     /// Heading structure error
     #[error("Heading error: {message}")]
-    Heading {
-        message: String,
-    },
+    Heading { message: String },
 
     /// Configuration error
     #[error("Configuration error: {message}")]
-    Configuration {
-        message: String,
-    },
+    Configuration { message: String },
 }
 
 impl MarkdownError {
@@ -245,12 +221,8 @@ impl MarkdownValidationError {
 
     /// Convert to a Constraint ValidationFailure
     pub fn into_validation_failure(self) -> crate::constraints::ValidationFailure {
-        crate::constraints::ValidationFailure::new(
-            self.rule,
-            self.path,
-            self.message,
-        )
-        .with_suggestion(self.suggestion.unwrap_or_default())
+        crate::constraints::ValidationFailure::new(self.rule, self.path, self.message)
+            .with_suggestion(self.suggestion.unwrap_or_default())
     }
 }
 

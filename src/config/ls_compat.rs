@@ -4,7 +4,7 @@
 //! NOTE: This is for testing purposes only. Internal backwards compatibility
 //! will not be maintained until the 1.0 release.
 
-use super::config::{DirectoryNode, Config, FileBundle};
+use super::config::{Config, DirectoryNode, FileBundle};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -31,7 +31,11 @@ impl LsLintCompatibility {
     }
 
     /// Add an extension rule
-    pub fn with_extension_rule(mut self, ext: impl Into<String>, convention: impl Into<String>) -> Self {
+    pub fn with_extension_rule(
+        mut self,
+        ext: impl Into<String>,
+        convention: impl Into<String>,
+    ) -> Self {
         self.rules.insert(ext.into(), convention.into());
         self
     }
@@ -160,7 +164,10 @@ mod tests {
             .with_path_rule("src/", ".rs", "snake_case");
 
         assert_eq!(compat.rules.get(".rs"), Some(&"snake_case".to_string()));
-        assert_eq!(compat.paths.get("src/").unwrap().get(".rs"), Some(&"snake_case".to_string()));
+        assert_eq!(
+            compat.paths.get("src/").unwrap().get(".rs"),
+            Some(&"snake_case".to_string())
+        );
     }
 
     #[test]
@@ -175,7 +182,10 @@ mod tests {
         assert!(nodes.contains_key("src/"));
 
         let root_node = nodes.get("").unwrap();
-        assert_eq!(root_node.files.as_ref().unwrap().naming, Some("snake_case".to_string()));
+        assert_eq!(
+            root_node.files.as_ref().unwrap().naming,
+            Some("snake_case".to_string())
+        );
     }
 
     #[test]

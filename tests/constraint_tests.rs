@@ -1,13 +1,14 @@
 //! Comprehensive integration tests for the constraint system
 
 use assura::{
-    CaseConvention, Constraint, ConstraintConfig, ConstraintContext, ConstraintEngine, ConstraintOutput,
-    ExtensionRule, FileSizeConstraint, FileSizeLimit, FileSizeRule, MaturityLevel,
-    NamingConstraint, Severity, SeverityConfig, ValidationFailure, ValidationFailures,
+    CaseConvention, Constraint, ConstraintConfig, ConstraintContext, ConstraintEngine,
+    ConstraintOutput, ExtensionRule, FileSizeConstraint, FileSizeLimit, FileSizeRule,
+    MaturityLevel, NamingConstraint, Severity, SeverityConfig, ValidationFailure,
+    ValidationFailures,
 };
+use std::io::Write;
 use std::path::PathBuf;
 use tempfile::NamedTempFile;
-use std::io::Write;
 
 #[test]
 fn test_constraint_engine_basic() {
@@ -19,16 +20,16 @@ fn test_constraint_engine_basic() {
     engine.register_constraint(Box::new(NamingConstraint::general_config()));
 
     let context = ConstraintContext::new();
-    
+
     // Test with a small, valid file
     let mut temp_file = NamedTempFile::with_suffix(".txt").unwrap();
     temp_file.write_all(b"Hello").unwrap();
-    
+
     let results = engine.validate(temp_file.path(), &context);
-    
+
     // Should have results from both constraints
     assert_eq!(results.len(), 2);
-    
+
     // All should pass for a small file with valid name
     for result in results {
         assert!(result.is_ok());
@@ -38,12 +39,11 @@ fn test_constraint_engine_basic() {
 
 #[test]
 fn test_file_size_constraint_with_large_file() {
-    let constraint = FileSizeConstraint::new()
-        .add_rule(
-            FileSizeRule::new("max_1kb")
-                .max_size(FileSizeLimit::Kilobytes(1))
-                .with_severity(Severity::High),
-        );
+    let constraint = FileSizeConstraint::new().add_rule(
+        FileSizeRule::new("max_1kb")
+            .max_size(FileSizeLimit::Kilobytes(1))
+            .with_severity(Severity::High),
+    );
 
     let context = ConstraintContext::new();
 
@@ -53,7 +53,7 @@ fn test_file_size_constraint_with_large_file() {
     temp_file.write_all(&large_content).unwrap();
 
     let result = constraint.validate(temp_file.path(), &context).unwrap();
-    
+
     assert!(!result.passed);
     assert_eq!(result.failures.len(), 1);
     assert_eq!(result.severity, Severity::High);
@@ -61,85 +61,99 @@ fn test_file_size_constraint_with_large_file() {
 
 #[test]
 fn test_naming_constraint_kebab_case() {
-    let constraint = NamingConstraint::new()
-        .with_case_convention(CaseConvention::KebabCase);
+    let constraint = NamingConstraint::new().with_case_convention(CaseConvention::KebabCase);
 
     let context = ConstraintContext::new();
 
     // Valid kebab-case
-    let result = constraint.validate(PathBuf::from("/test/my-file.txt").as_path(), &context).unwrap();
+    let result = constraint
+        .validate(PathBuf::from("/test/my-file.txt").as_path(), &context)
+        .unwrap();
     assert!(result.passed);
 
     // Invalid (snake_case)
-    let result = constraint.validate(PathBuf::from("/test/my_file.txt").as_path(), &context).unwrap();
+    let result = constraint
+        .validate(PathBuf::from("/test/my_file.txt").as_path(), &context)
+        .unwrap();
     assert!(!result.passed);
 
     // Invalid (camelCase)
-    let result = constraint.validate(PathBuf::from("/test/myFile.txt").as_path(), &context).unwrap();
+    let result = constraint
+        .validate(PathBuf::from("/test/myFile.txt").as_path(), &context)
+        .unwrap();
     assert!(!result.passed);
 }
 
 #[test]
 fn test_naming_constraint_snake_case() {
-    let constraint = NamingConstraint::new()
-        .with_case_convention(CaseConvention::SnakeCase);
+    let constraint = NamingConstraint::new().with_case_convention(CaseConvention::SnakeCase);
 
     let context = ConstraintContext::new();
 
     // Valid snake_case
-    let result = constraint.validate(PathBuf::from("/test/my_file.rs").as_path(), &context).unwrap();
+    let result = constraint
+        .validate(PathBuf::from("/test/my_file.rs").as_path(), &context)
+        .unwrap();
     assert!(result.passed);
 
     // Invalid (kebab-case)
-    let result = constraint.validate(PathBuf::from("/test/my-file.rs").as_path(), &context).unwrap();
+    let result = constraint
+        .validate(PathBuf::from("/test/my-file.rs").as_path(), &context)
+        .unwrap();
     assert!(!result.passed);
 }
 
 #[test]
 fn test_naming_constraint_with_extension_rule() {
-    let constraint = NamingConstraint::new()
-        .with_extension_rule(
-            ExtensionRule::new()
-                .allow_extension("rs")
-                .allow_extension("toml"),
-        );
+    let constraint = NamingConstraint::new().with_extension_rule(
+        ExtensionRule::new()
+            .allow_extension("rs")
+            .allow_extension("toml"),
+    );
 
     let context = ConstraintContext::new();
 
     // Valid extensions
-    let result = constraint.validate(PathBuf::from("/test/main.rs").as_path(), &context).unwrap();
+    let result = constraint
+        .validate(PathBuf::from("/test/main.rs").as_path(), &context)
+        .unwrap();
     assert!(result.passed);
 
-    let result = constraint.validate(PathBuf::from("/test/Cargo.toml").as_path(), &context).unwrap();
+    let result = constraint
+        .validate(PathBuf::from("/test/Cargo.toml").as_path(), &context)
+        .unwrap();
     assert!(result.passed);
 
     // Invalid extension
-    let result = constraint.validate(PathBuf::from("/test/readme.md").as_path(), &context).unwrap();
+    let result = constraint
+        .validate(PathBuf::from("/test/readme.md").as_path(), &context)
+        .unwrap();
     assert!(!result.passed);
 }
 
 #[test]
 fn test_severity_mapping_with_maturity() {
-    let config = SeverityConfig::new()
-        .with_base_severity("file_size", Severity::Medium);
+    let config = SeverityConfig::new().with_base_severity("file_size", Severity::Medium);
 
     // Test raw maturity - should escalate
-    let raw_severity = config.get_effective_severity("file_size", MaturityLevel::Raw, Severity::Medium);
+    let raw_severity =
+        config.get_effective_severity("file_size", MaturityLevel::Raw, Severity::Medium);
     assert_eq!(raw_severity, Severity::High);
 
     // Test mature maturity - should stay the same
-    let mature_severity = config.get_effective_severity("file_size", MaturityLevel::Mature, Severity::Medium);
+    let mature_severity =
+        config.get_effective_severity("file_size", MaturityLevel::Mature, Severity::Medium);
     assert_eq!(mature_severity, Severity::Medium);
 
     // Test established maturity - should escalate
-    let established_severity = config.get_effective_severity("file_size", MaturityLevel::Established, Severity::Medium);
+    let established_severity =
+        config.get_effective_severity("file_size", MaturityLevel::Established, Severity::Medium);
     assert_eq!(established_severity, Severity::High);
 }
 
 #[test]
 fn test_severity_config_should_report() {
-    let config = SeverityConfig::new()
-        .with_min_severity(Severity::Medium);
+    let config = SeverityConfig::new().with_min_severity(Severity::Medium);
 
     assert!(config.should_report(Severity::Medium));
     assert!(config.should_report(Severity::High));
@@ -149,8 +163,7 @@ fn test_severity_config_should_report() {
 
 #[test]
 fn test_severity_config_should_fail() {
-    let config = SeverityConfig::new()
-        .fail_on(Severity::High);
+    let config = SeverityConfig::new().fail_on(Severity::High);
 
     assert!(!config.should_fail(Severity::Medium));
     assert!(config.should_fail(Severity::High));
@@ -167,7 +180,10 @@ fn test_constraint_context_builder() {
         .with_fail_fast()
         .with_metadata("key", "value");
 
-    assert_eq!(context.project_root(), Some(std::path::Path::new("/project")));
+    assert_eq!(
+        context.project_root(),
+        Some(std::path::Path::new("/project"))
+    );
     assert_eq!(context.maturity_level(), MaturityLevel::Mature);
     assert!(context.is_manual);
     assert!(context.fail_fast);
@@ -190,22 +206,22 @@ fn test_constraint_engine_with_triggers() {
 
 #[test]
 fn test_validation_failure_with_suggestion() {
-    let failure = ValidationFailure::new(
-        "test_constraint",
-        "/test/file.txt",
-        "File is too large",
-    ).with_suggestion("Consider splitting into multiple files");
+    let failure = ValidationFailure::new("test_constraint", "/test/file.txt", "File is too large")
+        .with_suggestion("Consider splitting into multiple files");
 
     assert_eq!(failure.constraint, "test_constraint");
     assert_eq!(failure.path, PathBuf::from("/test/file.txt"));
     assert_eq!(failure.message, "File is too large");
-    assert_eq!(failure.suggestion, Some("Consider splitting into multiple files".to_string()));
+    assert_eq!(
+        failure.suggestion,
+        Some("Consider splitting into multiple files".to_string())
+    );
 }
 
 #[test]
 fn test_validation_failures_collection() {
     let mut failures = ValidationFailures::new();
-    
+
     failures.add(ValidationFailure::new("c1", "/a", "error 1"));
     failures.add(ValidationFailure::new("c2", "/b", "error 2"));
     failures.add(ValidationFailure::new("c3", "/c", "error 3"));
@@ -244,7 +260,7 @@ fn test_severity_levels_ordering() {
     assert!(Critical > High);
     assert!(High > Medium);
     assert!(Medium > Low);
-    
+
     assert!(Low < Medium);
     assert!(Medium < High);
     assert!(High < Critical);
@@ -278,15 +294,21 @@ fn test_rust_naming_config() {
     let context = ConstraintContext::new();
 
     // Valid Rust naming
-    let result = constraint.validate(PathBuf::from("/src/my_module.rs").as_path(), &context).unwrap();
+    let result = constraint
+        .validate(PathBuf::from("/src/my_module.rs").as_path(), &context)
+        .unwrap();
     assert!(result.passed);
 
     // Invalid (kebab-case in Rust)
-    let result = constraint.validate(PathBuf::from("/src/my-module.rs").as_path(), &context).unwrap();
+    let result = constraint
+        .validate(PathBuf::from("/src/my-module.rs").as_path(), &context)
+        .unwrap();
     assert!(!result.passed);
 
     // Invalid extension
-    let result = constraint.validate(PathBuf::from("/src/my_module.js").as_path(), &context).unwrap();
+    let result = constraint
+        .validate(PathBuf::from("/src/my_module.js").as_path(), &context)
+        .unwrap();
     assert!(!result.passed);
 }
 
@@ -296,11 +318,15 @@ fn test_javascript_naming_config() {
     let context = ConstraintContext::new();
 
     // Valid JavaScript naming (kebab-case)
-    let result = constraint.validate(PathBuf::from("/src/my-component.js").as_path(), &context).unwrap();
+    let result = constraint
+        .validate(PathBuf::from("/src/my-component.js").as_path(), &context)
+        .unwrap();
     assert!(result.passed);
 
     // Invalid (snake_case in JS convention)
-    let result = constraint.validate(PathBuf::from("/src/my_component.js").as_path(), &context).unwrap();
+    let result = constraint
+        .validate(PathBuf::from("/src/my_component.js").as_path(), &context)
+        .unwrap();
     assert!(!result.passed);
 }
 
@@ -310,23 +336,30 @@ fn test_general_naming_config() {
     let context = ConstraintContext::new();
 
     // Valid filename
-    let result = constraint.validate(PathBuf::from("/test/valid-file.txt").as_path(), &context).unwrap();
+    let result = constraint
+        .validate(PathBuf::from("/test/valid-file.txt").as_path(), &context)
+        .unwrap();
     assert!(result.passed);
 
     // Invalid (has spaces)
-    let result = constraint.validate(PathBuf::from("/test/file with spaces.txt").as_path(), &context).unwrap();
+    let result = constraint
+        .validate(
+            PathBuf::from("/test/file with spaces.txt").as_path(),
+            &context,
+        )
+        .unwrap();
     assert!(!result.passed);
 }
 
 #[test]
 fn test_maturity_based_severity_adjustment() {
-    use assura::Severity::*;
     use assura::MaturityLevel::*;
+    use assura::Severity::*;
 
     // Test the default severity_for_maturity implementation
     // This is defined in the Constraint trait
     let _config = ConstraintConfig::new();
-    
+
     // For raw projects, medium should become high
     let raw_adjusted = Medium; // This would be adjusted by the constraint
     assert_eq!(raw_adjusted, Medium); // Base is medium

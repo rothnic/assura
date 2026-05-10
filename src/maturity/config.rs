@@ -68,7 +68,7 @@ impl MaturityConfig {
     /// Load config from a directory (looks for .assura/maturity.yml)
     pub fn from_directory<P: AsRef<Path>>(path: P) -> anyhow::Result<Option<Self>> {
         let config_path = path.as_ref().join(CONFIG_DIR).join(CONFIG_FILENAME);
-        
+
         if !config_path.exists() {
             return Ok(None);
         }
@@ -79,7 +79,7 @@ impl MaturityConfig {
     /// Load config from a specific file
     pub fn from_file<P: AsRef<Path>>(path: P) -> anyhow::Result<Option<Self>> {
         let path = path.as_ref();
-        
+
         if !path.exists() {
             return Ok(None);
         }
@@ -92,11 +92,9 @@ impl MaturityConfig {
     }
 
     /// Save config to a directory
-    pub fn save_to_directory<P: AsRef<Path>>(&self,
-        path: P,
-    ) -> anyhow::Result<PathBuf> {
+    pub fn save_to_directory<P: AsRef<Path>>(&self, path: P) -> anyhow::Result<PathBuf> {
         let config_dir = path.as_ref().join(CONFIG_DIR);
-        
+
         if !config_dir.exists() {
             std::fs::create_dir_all(&config_dir)?;
         }
@@ -108,9 +106,7 @@ impl MaturityConfig {
     }
 
     /// Save config to a specific file
-    pub fn save_to_file<P: AsRef<Path>>(&self,
-        path: P,
-    ) -> anyhow::Result<()> {
+    pub fn save_to_file<P: AsRef<Path>>(&self, path: P) -> anyhow::Result<()> {
         let content = serde_yaml::to_string(self)?;
 
         std::fs::write(path, content)?;
@@ -147,9 +143,7 @@ impl MaturityConfig {
     }
 
     /// Adjust a report based on this config
-    pub fn adjust_report(&self,
-        mut report: MaturityReport,
-    ) -> MaturityReport {
+    pub fn adjust_report(&self, mut report: MaturityReport) -> MaturityReport {
         // Apply level override
         if let Some(level) = self.level {
             report.level = level;
@@ -167,9 +161,9 @@ impl MaturityConfig {
 
         // Filter out ignored signals
         if !self.ignore_signals.is_empty() {
-            report.signals.retain(|s| {
-                !self.ignore_signals.contains(&s.name)
-            });
+            report
+                .signals
+                .retain(|s| !self.ignore_signals.contains(&s.name));
         }
 
         report
@@ -277,9 +271,7 @@ impl LevelThresholds {
     }
 
     /// Get threshold for a specific level
-    pub fn threshold_for(&self,
-        level: MaturityLevel,
-    ) -> f64 {
+    pub fn threshold_for(&self, level: MaturityLevel) -> f64 {
         match level {
             MaturityLevel::Raw => 0.0,
             MaturityLevel::Developing => self.developing,
@@ -325,22 +317,20 @@ mod tests {
 
     #[test]
     fn test_manual_override_creation() {
-        let config = MaturityConfig::manual_override(
-            MaturityLevel::Mature,
-            "Project is well-established"
-        );
+        let config =
+            MaturityConfig::manual_override(MaturityLevel::Mature, "Project is well-established");
 
         assert!(config.is_manual_override());
         assert_eq!(config.level, Some(MaturityLevel::Mature));
-        assert_eq!(config.override_reason, Some("Project is well-established".to_string()));
+        assert_eq!(
+            config.override_reason,
+            Some("Project is well-established".to_string())
+        );
     }
 
     #[test]
     fn test_config_to_report() {
-        let config = MaturityConfig::manual_override(
-            MaturityLevel::Established,
-            "Test override"
-        );
+        let config = MaturityConfig::manual_override(MaturityLevel::Established, "Test override");
 
         let report = config.to_report();
         assert_eq!(report.level, MaturityLevel::Established);
@@ -355,12 +345,7 @@ mod tests {
             ..Default::default()
         };
 
-        let report = MaturityReport::new(
-            MaturityLevel::Raw,
-            0.1,
-            0.5,
-            Vec::new(),
-        );
+        let report = MaturityReport::new(MaturityLevel::Raw, 0.1, 0.5, Vec::new());
 
         let adjusted = config.adjust_report(report);
         assert_eq!(adjusted.level, MaturityLevel::Mature);
@@ -370,10 +355,7 @@ mod tests {
     #[test]
     fn test_save_and_load() {
         let temp_dir = tempdir().unwrap();
-        let config = MaturityConfig::manual_override(
-            MaturityLevel::Mature,
-            "Test save/load"
-        );
+        let config = MaturityConfig::manual_override(MaturityLevel::Mature, "Test save/load");
 
         // Save
         let path = config.save_to_directory(temp_dir.path()).unwrap();

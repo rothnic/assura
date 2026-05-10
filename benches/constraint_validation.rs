@@ -5,17 +5,15 @@
 //!
 //! To run: cargo bench --bench constraint_validation
 
-use criterion::{
-    black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput,
-};
+use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
 use std::path::Path;
-use tempfile::{TempDir, Builder};
+use tempfile::{Builder, TempDir};
 
-use assura::Constraint;
 use assura::constraints::{
-    CaseConvention, ConstraintContext, NamingConstraint,
-    FileSizeConstraint, FileSizeRule, FileSizeLimit, Severity,
+    CaseConvention, ConstraintContext, FileSizeConstraint, FileSizeLimit, FileSizeRule,
+    NamingConstraint, Severity,
 };
+use assura::Constraint;
 
 /// Creates a temp directory with files for benchmarking
 fn setup_test_files(count: usize) -> TempDir {
@@ -50,8 +48,8 @@ fn bench_naming_validation(c: &mut Criterion) {
             BenchmarkId::new("pascal_case", file_count),
             file_count,
             |b, _| {
-                let constraint = NamingConstraint::new()
-                    .with_case_convention(CaseConvention::PascalCase);
+                let constraint =
+                    NamingConstraint::new().with_case_convention(CaseConvention::PascalCase);
                 let context = ConstraintContext::new();
 
                 b.iter(|| {
@@ -73,8 +71,8 @@ fn bench_naming_validation(c: &mut Criterion) {
             BenchmarkId::new("snake_case", file_count),
             file_count,
             |b, _| {
-                let constraint = NamingConstraint::new()
-                    .with_case_convention(CaseConvention::SnakeCase);
+                let constraint =
+                    NamingConstraint::new().with_case_convention(CaseConvention::SnakeCase);
                 let context = ConstraintContext::new();
 
                 b.iter(|| {
@@ -96,8 +94,8 @@ fn bench_naming_validation(c: &mut Criterion) {
             BenchmarkId::new("camel_case", file_count),
             file_count,
             |b, _| {
-                let constraint = NamingConstraint::new()
-                    .with_case_convention(CaseConvention::CamelCase);
+                let constraint =
+                    NamingConstraint::new().with_case_convention(CaseConvention::CamelCase);
                 let context = ConstraintContext::new();
 
                 b.iter(|| {
@@ -119,8 +117,8 @@ fn bench_naming_validation(c: &mut Criterion) {
             BenchmarkId::new("kebab_case", file_count),
             file_count,
             |b, _| {
-                let constraint = NamingConstraint::new()
-                    .with_case_convention(CaseConvention::KebabCase);
+                let constraint =
+                    NamingConstraint::new().with_case_convention(CaseConvention::KebabCase);
                 let context = ConstraintContext::new();
 
                 b.iter(|| {
@@ -162,12 +160,11 @@ fn bench_file_size_validation(c: &mut Criterion) {
             BenchmarkId::new("max_1kb", file_count),
             file_count,
             |b, _| {
-                let constraint = FileSizeConstraint::new()
-                    .add_rule(
-                        FileSizeRule::new("max_size")
-                            .max_size(FileSizeLimit::Kilobytes(1))
-                            .with_severity(Severity::High)
-                    );
+                let constraint = FileSizeConstraint::new().add_rule(
+                    FileSizeRule::new("max_size")
+                        .max_size(FileSizeLimit::Kilobytes(1))
+                        .with_severity(Severity::High),
+                );
                 let context = ConstraintContext::new();
 
                 b.iter(|| {
@@ -205,23 +202,18 @@ fn bench_all_conventions(c: &mut Criterion) {
     group.throughput(Throughput::Elements(file_count as u64));
 
     for (name, convention) in conventions {
-        group.bench_with_input(
-            BenchmarkId::new(name, file_count),
-            &file_count,
-            |b, _| {
-                let constraint = NamingConstraint::new()
-                    .with_case_convention(convention);
-                let context = ConstraintContext::new();
+        group.bench_with_input(BenchmarkId::new(name, file_count), &file_count, |b, _| {
+            let constraint = NamingConstraint::new().with_case_convention(convention);
+            let context = ConstraintContext::new();
 
-                b.iter(|| {
-                    for i in 0..file_count {
-                        let filename = format!("test_file_{}.rs", i);
-                        let path = base_path.join(&filename);
-                        let _ = black_box(constraint.validate(&path, &context));
-                    }
-                });
-            },
-        );
+            b.iter(|| {
+                for i in 0..file_count {
+                    let filename = format!("test_file_{}.rs", i);
+                    let path = base_path.join(&filename);
+                    let _ = black_box(constraint.validate(&path, &context));
+                }
+            });
+        });
     }
 
     group.finish();
@@ -238,8 +230,8 @@ fn bench_cold_vs_warm(c: &mut Criterion) {
     // Cold start: create new constraint each time
     group.bench_function("cold_start", |b| {
         b.iter(|| {
-            let constraint = NamingConstraint::new()
-                .with_case_convention(CaseConvention::SnakeCase);
+            let constraint =
+                NamingConstraint::new().with_case_convention(CaseConvention::SnakeCase);
             let context = ConstraintContext::new();
 
             for i in 0..file_count {
@@ -251,8 +243,7 @@ fn bench_cold_vs_warm(c: &mut Criterion) {
     });
 
     // Warm validation: reuse constraint
-    let constraint = NamingConstraint::new()
-        .with_case_convention(CaseConvention::SnakeCase);
+    let constraint = NamingConstraint::new().with_case_convention(CaseConvention::SnakeCase);
     let context = ConstraintContext::new();
 
     group.bench_function("warm_validation", |b| {

@@ -5,11 +5,11 @@ use jwalk::WalkDir;
 use rayon::prelude::*;
 use std::path::Path;
 use std::time::{Duration, Instant};
-use tempfile::{TempDir, Builder};
+use tempfile::{Builder, TempDir};
 
 use assura::constraints::{
-    CaseConvention, ConstraintContext, ConstraintEngine, ConstraintConfig,
-    DirectoryConstraint, NamingConstraint, FileSizeConstraint, FileSizeRule, FileSizeLimit,
+    CaseConvention, ConstraintConfig, ConstraintContext, ConstraintEngine, DirectoryConstraint,
+    FileSizeConstraint, FileSizeLimit, FileSizeRule, NamingConstraint,
 };
 
 /// Create test project with many files
@@ -80,8 +80,7 @@ fn profile_constraint_engine(c: &mut Criterion) {
     // 1 constraint
     c.bench_function("profile_1_constraint", |b| {
         let mut engine = ConstraintEngine::new(ConstraintConfig::new());
-        let naming = NamingConstraint::new()
-            .with_case_convention(CaseConvention::KebabCase);
+        let naming = NamingConstraint::new().with_case_convention(CaseConvention::KebabCase);
         engine.register_constraint(Box::new(naming));
         let context = ConstraintContext::new();
         b.iter(|| {
@@ -94,8 +93,7 @@ fn profile_constraint_engine(c: &mut Criterion) {
     // 2 constraints (non-recursive directory to avoid O(n²) behavior)
     c.bench_function("profile_2_constraints", |b| {
         let mut engine = ConstraintEngine::new(ConstraintConfig::new());
-        let naming = NamingConstraint::new()
-            .with_case_convention(CaseConvention::KebabCase);
+        let naming = NamingConstraint::new().with_case_convention(CaseConvention::KebabCase);
         engine.register_constraint(Box::new(naming));
         let directory = DirectoryConstraint::new()
             .with_case_convention(CaseConvention::KebabCase)
@@ -112,8 +110,7 @@ fn profile_constraint_engine(c: &mut Criterion) {
     // 3 constraints (non-recursive directory to avoid O(n²) behavior)
     c.bench_function("profile_3_constraints", |b| {
         let mut engine = ConstraintEngine::new(ConstraintConfig::new());
-        let naming = NamingConstraint::new()
-            .with_case_convention(CaseConvention::KebabCase);
+        let naming = NamingConstraint::new().with_case_convention(CaseConvention::KebabCase);
         engine.register_constraint(Box::new(naming));
         let directory = DirectoryConstraint::new()
             .with_case_convention(CaseConvention::KebabCase)
@@ -141,8 +138,7 @@ fn profile_context_creation(c: &mut Criterion) {
         .collect();
 
     let mut engine = ConstraintEngine::new(ConstraintConfig::new());
-    let naming = NamingConstraint::new()
-        .with_case_convention(CaseConvention::KebabCase);
+    let naming = NamingConstraint::new().with_case_convention(CaseConvention::KebabCase);
     engine.register_constraint(Box::new(naming));
 
     // Shared context

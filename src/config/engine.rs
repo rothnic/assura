@@ -6,7 +6,8 @@
 //! - Rule merging and inheritance
 
 use crate::config::types::{
-    ApplyEntry, Case, Config, Directive, InlineRule, NamingConvention, PolicyEntry, PolicyNode, Rule, Severity,
+    ApplyEntry, Case, Config, Directive, InlineRule, NamingConvention, PolicyEntry, PolicyNode,
+    Rule, Severity,
 };
 use std::collections::HashMap;
 use std::path::Path;
@@ -206,20 +207,12 @@ impl PolicyEngine {
     /// Calculate specificity score for a policy key
     ///
     /// Returns 0 if the key doesn't match the path
-    fn calculate_specificity(&self,
-        key: &str,
-        depth: usize,
-        path: &Path,
-    ) -> usize {
+    fn calculate_specificity(&self, key: &str, depth: usize, path: &Path) -> usize {
         let path_str = path.to_string_lossy();
 
         // Check if key is an extension pattern (e.g., ".rs" or "rs")
         if key.starts_with('.') || !key.contains('/') && !key.contains('*') {
-            let ext = if key.starts_with('.') {
-                &key[1..]
-            } else {
-                key
-            };
+            let ext = if key.starts_with('.') { &key[1..] } else { key };
 
             if let Some(file_ext) = path.extension().and_then(|e| e.to_str()) {
                 if file_ext == ext {
@@ -254,8 +247,7 @@ impl PolicyEngine {
         if key.ends_with('/') {
             let prefix = &key[..key.len() - 1];
             if path_str.starts_with(prefix)
-                && (path_str.len() == prefix.len()
-                    || path_str[prefix.len()..].starts_with('/'))
+                && (path_str.len() == prefix.len() || path_str[prefix.len()..].starts_with('/'))
             {
                 // Exact directory match
                 let mut score = 20 + depth * 10;
@@ -505,10 +497,7 @@ mod tests {
                     .with_max_lines(500),
             )
             .with_policy(
-                PolicyNode::new().with_entry(
-                    "src/",
-                    PolicyEntry::RuleRef("@my-rule".to_string()),
-                ),
+                PolicyNode::new().with_entry("src/", PolicyEntry::RuleRef("@my-rule".to_string())),
             );
 
         let engine = PolicyEngine::new(config);

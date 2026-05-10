@@ -9,9 +9,9 @@ use std::collections::HashMap;
 /// Current execution context
 #[derive(Debug, Clone, Default)]
 pub struct ExecutionContext {
-    pub hook: Option<String>,      // tool, pre-commit, ci, etc.
-    pub branch: Option<String>,    // feature/auth, main, hotfix/123
-    pub version: Option<String>,   // 2.1.0, 1.x
+    pub hook: Option<String>,    // tool, pre-commit, ci, etc.
+    pub branch: Option<String>,  // feature/auth, main, hotfix/123
+    pub version: Option<String>, // 2.1.0, 1.x
     pub env_vars: HashMap<String, String>,
 }
 
@@ -27,7 +27,7 @@ impl ExecutionContext {
             env_vars: std::env::vars().collect(),
         }
     }
-    
+
     /// Create for CI context
     pub fn ci() -> Self {
         Self {
@@ -37,7 +37,7 @@ impl ExecutionContext {
             env_vars: HashMap::new(),
         }
     }
-    
+
     /// Create for tool context (IDE/editor)
     pub fn tool() -> Self {
         Self {
@@ -61,7 +61,7 @@ impl ContextMatcher {
     ) -> ViolationLevel {
         // Default level
         let mut level = ViolationLevel::Warn;
-        
+
         // Check each violation entry for context-specific override
         for entry in violation_entries {
             match entry {
@@ -69,33 +69,28 @@ impl ContextMatcher {
                     // This is the default level
                     level = ViolationLevel::from_str(l);
                 }
-                ViolationEntry::ContextSpecific { context, level: ctx_level } => {
+                ViolationEntry::ContextSpecific {
+                    context,
+                    level: ctx_level,
+                } => {
                     // Check if this context matches current execution
-                    if Self::context_matches(
-                        config,
-                        context,
-                        execution,
-                    ) {
+                    if Self::context_matches(config, context, execution) {
                         level = ViolationLevel::from_str(ctx_level);
                     }
                 }
             }
         }
-        
+
         level
     }
-    
+
     /// Check if a named context matches current execution
-    fn context_matches(
-        config: &Config,
-        context_name: &str,
-        execution: &ExecutionContext,
-    ) -> bool {
+    fn context_matches(config: &Config, context_name: &str, execution: &ExecutionContext) -> bool {
         let context = match config.contexts.get(context_name) {
             Some(c) => c,
             None => return false, // Unknown context name
         };
-        
+
         // Check hook
         if let Some(ref hook) = context.hook {
             if let Some(ref exec_hook) = execution.hook {
@@ -106,7 +101,7 @@ impl ContextMatcher {
                 return false;
             }
         }
-        
+
         // Check branch
         if let Some(ref branch_pattern) = context.branch {
             if let Some(ref exec_branch) = execution.branch {
@@ -117,7 +112,7 @@ impl ContextMatcher {
                 return false;
             }
         }
-        
+
         // Check version
         if let Some(ref version_range) = context.version {
             if let Some(ref exec_version) = execution.version {
@@ -128,7 +123,7 @@ impl ContextMatcher {
                 return false;
             }
         }
-        
+
         // Check env vars
         if let Some(ref env) = context.env {
             for (key, value) in env {
@@ -142,70 +137,70 @@ impl ContextMatcher {
                 }
             }
         }
-        
+
         true
     }
-    
+
     /// Check if hook matches (exact or wildcard)
     fn hook_matches(pattern: &str, actual: &str) -> bool {
         if pattern == "*" || pattern == actual {
             return true;
         }
-        
+
         // Handle pre-commit matching pre-commit-hook, etc.
         actual.starts_with(pattern)
     }
-    
+
     /// Match branch pattern (supports wildcards)
     fn pattern_matches(pattern: &str, actual: &str) -> bool {
         if pattern == "*" {
             return true;
         }
-        
+
         if pattern.contains('*') {
             let parts: Vec<&str> = pattern.split('*').collect();
             if parts.len() == 2 {
                 return actual.starts_with(parts[0]) && actual.ends_with(parts[1]);
             }
         }
-        
+
         pattern == actual
     }
-    
+
     /// Check if version matches range
     fn version_matches(range: &str, version: &str) -> bool {
         // Simple version matching: "2.x.." means 2.x and above
         // "..1.x" means up to 1.x
-        
+
         if range == "*" {
             return true;
         }
-        
+
         if range.ends_with("..") {
             // Minimum version
-            let min = &range[..range.len()-2];
+            let min = &range[..range.len() - 2];
             return Self::version_gte(version, min);
         }
-        
+
         if range.starts_with("..") {
             // Maximum version
             let max = &range[2..];
             return Self::version_lte(version, max);
         }
-        
+
         if range.contains("..") {
             // Range
             let parts: Vec<&str> = range.split("..").collect();
             if parts.len() == 2 {
-                return Self::version_gte(version, parts[0]) &&
-                       Self::version_lte(version, parts[1]);
+                return Self::version_gte(version, parts[0])
+                    && Self::version_lte(version, parts[1]);
             }
         }
-        
+
         // Exact match
         range == version
     }
-    
+
     /// Version comparison: version >= target
     /// Handles wildcards like "1.x" which matches any 1.x version
     fn version_gte(version: &str, target: &str) -> bool {
@@ -217,28 +212,22 @@ impl ContextMatcher {
                 .next()
                 .and_then(|s| s.parse().ok())
                 .unwrap_or(0);
-            
+
             // Extract major version from version
             let version_major: u32 = version
                 .split('.')
                 .next()
                 .and_then(|s| s.parse().ok())
                 .unwrap_or(0);
-            
+
             // For "1.x", we want version >= 1.0.0 but < 2.0.0
             // So check: version_major == target_major
             return version_major == target_major;
         }
-        
+
         // Simplified: compare major.minor.patch
-        let v_parts: Vec<u32> = version
-            .split('.')
-            .filter_map(|s| s.parse().ok())
-            .collect();
-        let t_parts: Vec<u32> = target
-            .split('.')
-            .filter_map(|s| s.parse().ok())
-            .collect();
+        let v_parts: Vec<u32> = version.split('.').filter_map(|s| s.parse().ok()).collect();
+        let t_parts: Vec<u32> = target.split('.').filter_map(|s| s.parse().ok()).collect();
 
         for i in 0..std::cmp::max(v_parts.len(), t_parts.len()) {
             let v = v_parts.get(i).copied().unwrap_or(0);
@@ -254,7 +243,7 @@ impl ContextMatcher {
 
         true // Equal
     }
-    
+
     /// Version comparison: version <= target
     /// Handles wildcards like "1.x" in target
     fn version_lte(version: &str, target: &str) -> bool {
@@ -285,10 +274,10 @@ impl ContextMatcher {
 /// Violation level
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ViolationLevel {
-    Info,    // FYI only
-    Warn,    // Warning, may block depending on gate
-    Block,   // Always blocks
-    Notify,  // Silent notification
+    Info,   // FYI only
+    Warn,   // Warning, may block depending on gate
+    Block,  // Always blocks
+    Notify, // Silent notification
 }
 
 impl ViolationLevel {
@@ -301,13 +290,13 @@ impl ViolationLevel {
             _ => Self::Warn, // Default
         }
     }
-    
+
     /// Should this level block the operation?
     pub fn should_block(&self, gate: &str, allowed_levels: &[ViolationLevel]) -> bool {
         if *self == ViolationLevel::Block {
             return true;
         }
-        
+
         // Check if this level is in the allowed list
         !allowed_levels.contains(self)
     }
@@ -331,7 +320,10 @@ mod tests {
     #[test]
     fn test_branch_pattern_matching() {
         assert!(ContextMatcher::pattern_matches("feature/*", "feature/auth"));
-        assert!(ContextMatcher::pattern_matches("feature/*", "feature/login"));
+        assert!(ContextMatcher::pattern_matches(
+            "feature/*",
+            "feature/login"
+        ));
         assert!(!ContextMatcher::pattern_matches("feature/*", "main"));
         assert!(ContextMatcher::pattern_matches("main", "main"));
     }
@@ -358,7 +350,7 @@ mod tests {
     #[test]
     fn test_context_matching() {
         use crate::config::ast::{Config, PolicyNode};
-        
+
         let mut contexts = std::collections::HashMap::new();
         contexts.insert(
             "ci".to_string(),
@@ -369,7 +361,7 @@ mod tests {
                 env: None,
             },
         );
-        
+
         contexts.insert(
             "feature".to_string(),
             Context {
@@ -379,7 +371,7 @@ mod tests {
                 env: None,
             },
         );
-        
+
         let config = Config {
             rules: std::collections::HashMap::new(),
             contexts,
@@ -388,16 +380,14 @@ mod tests {
                 entries: std::collections::HashMap::new(),
             },
         };
-        
+
         let exec = ExecutionContext {
             hook: Some("ci".to_string()),
             branch: Some("feature/auth".to_string()),
             version: None,
             env_vars: std::collections::HashMap::new(),
         };
-        
-        assert!(ContextMatcher::context_matches(
-            &config, "ci", &exec
-        ));
+
+        assert!(ContextMatcher::context_matches(&config, "ci", &exec));
     }
 }

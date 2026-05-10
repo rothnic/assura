@@ -6,7 +6,7 @@
 use std::collections::HashMap;
 
 use super::error::{MarkdownError, MarkdownResult};
-use pulldown_cmark::{Event, Parser, Tag, CodeBlockKind};
+use pulldown_cmark::{CodeBlockKind, Event, Parser, Tag};
 
 /// Represents a parsed markdown document
 #[derive(Debug, Clone, Default)]
@@ -42,10 +42,7 @@ impl MarkdownDocument {
 
     /// Get all headings of a specific level
     pub fn headings_by_level(&self, level: HeadingLevel) -> Vec<&Heading> {
-        self.headings
-            .iter()
-            .filter(|h| h.level == level)
-            .collect()
+        self.headings.iter().filter(|h| h.level == level).collect()
     }
 
     /// Check if the document has a heading with the given text
@@ -219,58 +216,58 @@ impl HeadingHierarchy {
                 children: Vec::new(),
             };
 
-        // Process Section 2 (H2): H2 <= H3, so pop H3 first
-        // Pop (H3, [SubsectionNode]), attach to Section 1
-        // Now H2 <= H2, pop (H2, [Section1Node_with_Subsection])
-        // Attach Section 1 to Title, push (H1, [TitleNode_with_Section1])
-        // Now H2 > H1, push (H2, [Section2Node])
-        // Stack: [(H1, [TitleNode_with_Section1]), (H2, [Section2Node])]
+            // Process Section 2 (H2): H2 <= H3, so pop H3 first
+            // Pop (H3, [SubsectionNode]), attach to Section 1
+            // Now H2 <= H2, pop (H2, [Section1Node_with_Subsection])
+            // Attach Section 1 to Title, push (H1, [TitleNode_with_Section1])
+            // Now H2 > H1, push (H2, [Section2Node])
+            // Stack: [(H1, [TitleNode_with_Section1]), (H2, [Section2Node])]
 
-        // When processing Section 2 (H2), the algorithm pops until it finds a parent
-        // with level < H2, which is H1. But the issue is that when it pops Section 1
-        // and attaches it to Title, it replaces Title's children instead of extending them.
+            // When processing Section 2 (H2), the algorithm pops until it finds a parent
+            // with level < H2, which is H1. But the issue is that when it pops Section 1
+            // and attaches it to Title, it replaces Title's children instead of extending them.
 
-        // After flush:
-        // Pop (H2, [Section2Node]), attach to Title, replacing Section 1
-        // Result: Title has only Section 2 as child
+            // After flush:
+            // Pop (H2, [Section2Node]), attach to Title, replacing Section 1
+            // Result: Title has only Section 2 as child
 
-        // The fix is to extend children instead of replacing them.
+            // The fix is to extend children instead of replacing them.
 
-        // Pop stack until we find the parent or stack is empty
-        while let Some((level, _)) = stack.last() {
-            if heading.level.as_usize() > level.as_usize() {
-                break;
+            // Pop stack until we find the parent or stack is empty
+            while let Some((level, _)) = stack.last() {
+                if heading.level.as_usize() > level.as_usize() {
+                    break;
+                }
+                let (_, children) = stack.pop().unwrap();
+                if let Some((_, parent_children)) = stack.last_mut() {
+                    if let Some(mut parent) = parent_children.pop() {
+                        parent.children.extend(children); // Extend instead of replace
+                        parent_children.push(parent);
+                    }
+                } else {
+                    // No parent, these are top-level nodes
+                    nodes.extend(children);
+                }
             }
-            let (_, children) = stack.pop().unwrap();
+
+            // Push current node
+            stack.push((heading.level, vec![node]));
+        }
+
+        // Flush remaining stack
+        while let Some((_, children)) = stack.pop() {
             if let Some((_, parent_children)) = stack.last_mut() {
                 if let Some(mut parent) = parent_children.pop() {
                     parent.children.extend(children); // Extend instead of replace
                     parent_children.push(parent);
                 }
             } else {
-                // No parent, these are top-level nodes
                 nodes.extend(children);
             }
         }
 
-        // Push current node
-        stack.push((heading.level, vec![node]));
+        Self { nodes }
     }
-
-    // Flush remaining stack
-    while let Some((_, children)) = stack.pop() {
-        if let Some((_, parent_children)) = stack.last_mut() {
-            if let Some(mut parent) = parent_children.pop() {
-                parent.children.extend(children); // Extend instead of replace
-                parent_children.push(parent);
-            }
-        } else {
-            nodes.extend(children);
-        }
-    }
-
-    Self { nodes }
-}
 
     /// Check if the hierarchy is valid (no skipped levels)
     pub fn is_valid(&self) -> bool {
@@ -308,7 +305,11 @@ impl HeadingHierarchy {
         result
     }
 
-    fn collect_headings_at_level(node: &HeadingNode, level: HeadingLevel, result: &mut Vec<String>) {
+    fn collect_headings_at_level(
+        node: &HeadingNode,
+        level: HeadingLevel,
+        result: &mut Vec<String>,
+    ) {
         if node.heading.level == level {
             result.push(node.heading.text.clone());
         }
@@ -615,7 +616,7 @@ fn main() {}
 
         let yaml = doc.frontmatter_yaml().unwrap();
         assert!(yaml.is_some());
-        
+
         let map = doc.frontmatter_map().unwrap();
         assert!(map.is_some());
         assert!(map.as_ref().unwrap().contains_key("title"));

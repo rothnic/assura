@@ -122,11 +122,7 @@ impl SignalPipeline {
                 match collector.collect(path) {
                     Ok(signals) => all_signals.extend(signals),
                     Err(e) => {
-                        tracing::warn!(
-                            "Collector {} failed: {}",
-                            collector.signal_type(),
-                            e
-                        );
+                        tracing::warn!("Collector {} failed: {}", collector.signal_type(), e);
                     }
                 }
             }

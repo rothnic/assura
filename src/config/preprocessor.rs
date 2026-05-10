@@ -1,10 +1,10 @@
 //! YAML Preprocessor
-//! 
+//!
 //! Converts user-friendly YAML to valid YAML by adding necessary quotes.
 //! Follows Constitution: valid YAML/JSON compatible.
 
-use regex::Regex;
 use lazy_static::lazy_static;
+use regex::Regex;
 
 /// Preprocessor for Assura configuration YAML
 pub struct YamlPreprocessor;
@@ -15,7 +15,7 @@ lazy_static! {
     static ref NEEDS_QUOTING: Regex = Regex::new(
         r"^(\s*)(\.\w+|\*\*|\*|\$\w+|\w*\*\w*)(\s*:)$"
     ).unwrap();
-    
+
     // Pattern to match unquoted values that look like numbers but should be strings
     static ref RANGE_VALUE: Regex = Regex::new(
         r"(:\s*)(\.\.\d+|\d+\.\.|\d+\.\.\d+)(\s*$|\s*#)"
@@ -27,65 +27,68 @@ impl YamlPreprocessor {
     pub fn process(input: &str) -> String {
         // First pass: normalize ranges
         let normalized = Self::normalize_ranges(input);
-        
+
         // Second pass: quote keys
         let mut result = String::new();
-        
+
         for line in normalized.lines() {
             let processed = Self::process_line(line);
             result.push_str(&processed);
             result.push('\n');
         }
-        
+
         result
     }
-    
+
     /// Process a single line
     fn process_line(line: &str) -> String {
         let trimmed = line.trim_start();
         let indent = &line[..line.len() - trimmed.len()];
-        
+
         // Check if this is a key-value pair
         if let Some(colon_pos) = trimmed.find(':') {
             let key = &trimmed[..colon_pos];
             let rest = &trimmed[colon_pos..];
-            
+
             // Check if key needs quoting
             let needs_quote = Self::key_needs_quoting(key);
-            
+
             if needs_quote && !key.starts_with('"') && !key.starts_with('\'') {
                 return format!("{}\"{}\"{}", indent, key, rest);
             }
         }
-        
+
         line.to_string()
     }
-    
+
     /// Check if a key needs quoting
     fn key_needs_quoting(key: &str) -> bool {
         // Extension patterns (.tsx, .rs)
-        if key.starts_with('.') && key.len() > 1 && key[1..].chars().next().map_or(false, |c| c.is_alphabetic()) {
+        if key.starts_with('.')
+            && key.len() > 1
+            && key[1..].chars().next().map_or(false, |c| c.is_alphabetic())
+        {
             return true;
         }
-        
+
         // Glob patterns (*, **)
         if key.contains('*') {
             return true;
         }
-        
+
         // Variable patterns (${name})
         if key.contains("${") && key.contains('}') {
             return true;
         }
-        
+
         // Directives starting with context indicators
         if key == "violation" || key == "constraints" || key == "exists" {
             return false; // These are valid unquoted
         }
-        
+
         false
     }
-    
+
     /// Convert range notation for consistency
     /// Handles: lines: ..400, lines: 100.., lines: 100..400, exists: 1..10
     pub fn normalize_ranges(input: &str) -> String {
@@ -184,12 +187,12 @@ policy:
 "#;
 
         let result = YamlPreprocessor::process(input);
-        
+
         // Check key patterns are quoted
         assert!(result.contains("\".tsx\": PascalCase"));
         assert!(result.contains("\"${name}.tsx\":"));
         assert!(result.contains("\"*.tsx\": PascalCase"));
-        
+
         // Check regular keys are not quoted
         assert!(result.contains("rules:"));
         assert!(result.contains("policy:"));

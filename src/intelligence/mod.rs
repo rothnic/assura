@@ -5,7 +5,7 @@ pub mod persistence;
 pub mod query;
 
 pub use error::{GraphError, GraphResult};
-pub use graph::{IntelligenceGraph, GraphBuilder, GraphStats};
-pub use node::{NodeId, Node, Edge, FileNode, DirectoryNode, Relationship, NodeType, NodeMetadata};
-pub use query::{GraphQuery, QueryResult};
+pub use graph::{GraphBuilder, GraphStats, IntelligenceGraph};
+pub use node::{DirectoryNode, Edge, FileNode, Node, NodeId, NodeMetadata, NodeType, Relationship};
 pub use persistence::{GraphPersistence, PersistenceFormat};
+pub use query::{GraphQuery, QueryResult};

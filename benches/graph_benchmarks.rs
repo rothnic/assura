@@ -23,37 +23,25 @@ fn create_test_directory() -> TempDir {
 
 fn bench_graph_construction(c: &mut Criterion) {
     c.bench_function("graph_construction", |b| {
-        b.iter_with_setup(
-            create_test_directory,
-            |temp_dir| {
-                let graph = GraphBuilder::new(temp_dir.path())
-                    .build()
-                    .unwrap();
-                black_box(graph);
-            },
-        )
+        b.iter_with_setup(create_test_directory, |temp_dir| {
+            let graph = GraphBuilder::new(temp_dir.path()).build().unwrap();
+            black_box(graph);
+        })
     });
 }
 
 fn bench_parallel_graph_construction(c: &mut Criterion) {
     c.bench_function("parallel_graph_construction", |b| {
-        b.iter_with_setup(
-            create_test_directory,
-            |temp_dir| {
-                let graph = GraphBuilder::new(temp_dir.path())
-                    .build_parallel()
-                    .unwrap();
-                black_box(graph);
-            },
-        )
+        b.iter_with_setup(create_test_directory, |temp_dir| {
+            let graph = GraphBuilder::new(temp_dir.path()).build_parallel().unwrap();
+            black_box(graph);
+        })
     });
 }
 
 fn bench_graph_queries(c: &mut Criterion) {
     let temp_dir = create_test_directory();
-    let graph = GraphBuilder::new(temp_dir.path())
-        .build()
-        .unwrap();
+    let graph = GraphBuilder::new(temp_dir.path()).build().unwrap();
 
     c.bench_function("graph_query_by_type", |b| {
         b.iter(|| {
@@ -72,5 +60,10 @@ fn bench_graph_queries(c: &mut Criterion) {
     });
 }
 
-criterion_group!(benches, bench_graph_construction, bench_parallel_graph_construction, bench_graph_queries);
+criterion_group!(
+    benches,
+    bench_graph_construction,
+    bench_parallel_graph_construction,
+    bench_graph_queries
+);
 criterion_main!(benches);

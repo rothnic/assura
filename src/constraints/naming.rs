@@ -65,22 +65,28 @@ impl CaseConvention {
         }
 
         match self {
-            CaseConvention::LowerCase => {
-                name.chars().all(|c| c.is_lowercase() || c.is_numeric() || c == '_')
-            }
-            CaseConvention::UpperCase => {
-                name.chars().all(|c| c.is_uppercase() || c.is_numeric() || c == '_')
-            }
+            CaseConvention::LowerCase => name
+                .chars()
+                .all(|c| c.is_lowercase() || c.is_numeric() || c == '_'),
+            CaseConvention::UpperCase => name
+                .chars()
+                .all(|c| c.is_uppercase() || c.is_numeric() || c == '_'),
             CaseConvention::SnakeCase => {
                 // Must be lowercase with underscores, no consecutive underscores
                 if name.starts_with('_') || name.ends_with('_') || name.contains("__") {
                     return false;
                 }
-                name.chars().all(|c| c.is_lowercase() || c.is_numeric() || c == '_')
+                name.chars()
+                    .all(|c| c.is_lowercase() || c.is_numeric() || c == '_')
             }
             CaseConvention::CamelCase => {
                 // Must start with lowercase, can have uppercase in middle
-                if !name.chars().next().map(|c| c.is_lowercase()).unwrap_or(false) {
+                if !name
+                    .chars()
+                    .next()
+                    .map(|c| c.is_lowercase())
+                    .unwrap_or(false)
+                {
                     return false;
                 }
                 // No underscores, no consecutive uppercase
@@ -102,7 +108,12 @@ impl CaseConvention {
             }
             CaseConvention::PascalCase => {
                 // Must start with uppercase, rest follows camelCase rules
-                if !name.chars().next().map(|c| c.is_uppercase()).unwrap_or(false) {
+                if !name
+                    .chars()
+                    .next()
+                    .map(|c| c.is_uppercase())
+                    .unwrap_or(false)
+                {
                     return false;
                 }
                 // No underscores, no consecutive uppercase
@@ -127,21 +138,24 @@ impl CaseConvention {
                 if name.starts_with('-') || name.ends_with('-') || name.contains("--") {
                     return false;
                 }
-                name.chars().all(|c| c.is_lowercase() || c.is_numeric() || c == '-')
+                name.chars()
+                    .all(|c| c.is_lowercase() || c.is_numeric() || c == '-')
             }
             CaseConvention::ScreamingSnakeCase => {
                 // Must be uppercase with underscores, no consecutive underscores
                 if name.starts_with('_') || name.ends_with('_') || name.contains("__") {
                     return false;
                 }
-                name.chars().all(|c| c.is_uppercase() || c.is_numeric() || c == '_')
+                name.chars()
+                    .all(|c| c.is_uppercase() || c.is_numeric() || c == '_')
             }
             CaseConvention::DotCase => {
                 // Must be lowercase with dots, no consecutive dots
                 if name.starts_with('.') || name.ends_with('.') || name.contains("..") {
                     return false;
                 }
-                name.chars().all(|c| c.is_lowercase() || c.is_numeric() || c == '.')
+                name.chars()
+                    .all(|c| c.is_lowercase() || c.is_numeric() || c == '.')
             }
             CaseConvention::FlatCase => {
                 // Must be all lowercase letters and numbers, no separators
@@ -162,7 +176,8 @@ impl CaseConvention {
                 if name.starts_with('-') || name.ends_with('-') || name.contains("--") {
                     return false;
                 }
-                name.chars().all(|c| c.is_uppercase() || c.is_numeric() || c == '-')
+                name.chars()
+                    .all(|c| c.is_uppercase() || c.is_numeric() || c == '-')
             }
             CaseConvention::TrainCase => {
                 // Must start with uppercase, then alternating lowercase and uppercase with hyphens
@@ -171,7 +186,12 @@ impl CaseConvention {
                     return false;
                 }
                 // Check first character is uppercase
-                if !name.chars().next().map(|c| c.is_uppercase()).unwrap_or(false) {
+                if !name
+                    .chars()
+                    .next()
+                    .map(|c| c.is_uppercase())
+                    .unwrap_or(false)
+                {
                     return false;
                 }
                 // Check pattern: uppercase followed by lowercase, then hyphen, repeat
@@ -185,7 +205,12 @@ impl CaseConvention {
                         continue;
                     }
                     // Each part must start with uppercase
-                    if !part.chars().next().map(|c| c.is_uppercase()).unwrap_or(false) {
+                    if !part
+                        .chars()
+                        .next()
+                        .map(|c| c.is_uppercase())
+                        .unwrap_or(false)
+                    {
                         return false;
                     }
                     // Rest must be lowercase or numeric
@@ -307,7 +332,7 @@ impl ExtensionRule {
         }
 
         let parts: Vec<&str> = filename.rsplitn(2, '.').collect();
-        
+
         if parts.len() < 2 {
             if self.required {
                 return Some("File is missing an extension".to_string());
@@ -325,7 +350,11 @@ impl ExtensionRule {
         // Check allowed extensions
         if !self.extensions.is_empty() {
             let ext_lower = ext.to_lowercase();
-            if !self.extensions.iter().any(|e| e.to_lowercase() == ext_lower) {
+            if !self
+                .extensions
+                .iter()
+                .any(|e| e.to_lowercase() == ext_lower)
+            {
                 return Some(format!(
                     "Extension '{}' is not allowed (allowed: {:?})",
                     ext, self.extensions
@@ -398,7 +427,10 @@ impl NamingPattern {
             return Some(ValidationFailure::new(
                 &self.name,
                 std::path::PathBuf::from(filename),
-                format!("Filename does not match required pattern: {}", self.description),
+                format!(
+                    "Filename does not match required pattern: {}",
+                    self.description
+                ),
             ));
         }
 
@@ -434,34 +466,32 @@ impl NamingRule {
     /// Validate a filename (without path)
     pub fn validate(&self, filename: &str, path: &Path) -> Option<ValidationFailure> {
         match self {
-            NamingRule::Case { convention, severity: _ } => {
+            NamingRule::Case {
+                convention,
+                severity: _,
+            } => {
                 // Strip extension for case validation (e.g., "my-file.txt" -> "my-file")
-                let stem = filename
-                    .rsplitn(2, '.')
-                    .nth(1)
-                    .unwrap_or(filename);
-                
+                let stem = filename.rsplitn(2, '.').nth(1).unwrap_or(filename);
+
                 if !convention.validate(stem) {
                     return Some(ValidationFailure::new(
                         "naming_case",
                         path,
-                        format!("Filename '{}' does not follow {} convention (e.g., {})",
-                            filename, convention.name(), convention.example()),
+                        format!(
+                            "Filename '{}' does not follow {} convention (e.g., {})",
+                            filename,
+                            convention.name(),
+                            convention.example()
+                        ),
                     ));
                 }
                 None
             }
-            NamingRule::Extension(rule) => {
-                rule.validate(filename).map(|msg| {
-                    ValidationFailure::new("naming_extension", path, msg)
-                })
-            }
-            NamingRule::Pattern(pattern) => {
-                pattern.validate(filename)
-            }
-            NamingRule::ForbiddenPattern(pattern) => {
-                pattern.validate(filename)
-            }
+            NamingRule::Extension(rule) => rule
+                .validate(filename)
+                .map(|msg| ValidationFailure::new("naming_extension", path, msg)),
+            NamingRule::Pattern(pattern) => pattern.validate(filename),
+            NamingRule::ForbiddenPattern(pattern) => pattern.validate(filename),
         }
     }
 
@@ -557,7 +587,12 @@ impl NamingConstraint {
             .with_case_convention(CaseConvention::KebabCase)
             .with_extension_rule(
                 ExtensionRule::new()
-                    .allow_extensions(vec!["js".to_string(), "ts".to_string(), "jsx".to_string(), "tsx".to_string()])
+                    .allow_extensions(vec![
+                        "js".to_string(),
+                        "ts".to_string(),
+                        "jsx".to_string(),
+                        "tsx".to_string(),
+                    ])
                     .with_severity(Severity::High),
             )
     }
@@ -640,9 +675,7 @@ impl Constraint for NamingConstraint {
         let mut failures = ValidationFailures::new();
 
         // Get the filename
-        let filename = path.file_name()
-            .and_then(|n| n.to_str())
-            .unwrap_or("");
+        let filename = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
 
         if filename.is_empty() {
             failures.add(ValidationFailure::new(
@@ -778,17 +811,23 @@ mod tests {
             );
 
         let context = ConstraintContext::new();
-        
+
         // Valid kebab-case with valid extension
-        let result = constraint.validate(Path::new("/test/my-file.txt"), &context).unwrap();
+        let result = constraint
+            .validate(Path::new("/test/my-file.txt"), &context)
+            .unwrap();
         assert!(result.passed);
 
         // Invalid case
-        let result = constraint.validate(Path::new("/test/my_file.txt"), &context).unwrap();
+        let result = constraint
+            .validate(Path::new("/test/my_file.txt"), &context)
+            .unwrap();
         assert!(!result.passed);
 
         // Invalid extension
-        let result = constraint.validate(Path::new("/test/my-file.doc"), &context).unwrap();
+        let result = constraint
+            .validate(Path::new("/test/my-file.doc"), &context)
+            .unwrap();
         assert!(!result.passed);
     }
 
@@ -797,10 +836,14 @@ mod tests {
         let constraint = NamingConstraint::rust_config();
         let context = ConstraintContext::new();
 
-        let result = constraint.validate(Path::new("/test/my_module.rs"), &context).unwrap();
+        let result = constraint
+            .validate(Path::new("/test/my_module.rs"), &context)
+            .unwrap();
         assert!(result.passed);
 
-        let result = constraint.validate(Path::new("/test/my-module.rs"), &context).unwrap();
+        let result = constraint
+            .validate(Path::new("/test/my-module.rs"), &context)
+            .unwrap();
         assert!(!result.passed);
     }
 
@@ -860,7 +903,7 @@ mod tests {
         assert!(CaseConvention::PascalCase.validate("A1")); // With number
         assert!(CaseConvention::PascalCase.validate("MyComponent2"));
         assert!(CaseConvention::PascalCase.validate("A1B2C3")); // Mixed alphanumeric
-        // Note: "AB" is NOT valid because consecutive uppercase letters are not allowed
+                                                                // Note: "AB" is NOT valid because consecutive uppercase letters are not allowed
 
         // Invalid cases
         assert!(!CaseConvention::PascalCase.validate("")); // Empty
@@ -1101,39 +1144,47 @@ mod tests {
     #[test]
     fn test_multi_part_extension_naming() {
         // Test that naming conventions work correctly with multi-part extensions
-        let constraint = NamingConstraint::new()
-            .with_case_convention(CaseConvention::PascalCase);
+        let constraint = NamingConstraint::new().with_case_convention(CaseConvention::PascalCase);
         let context = ConstraintContext::new();
 
         // Multi-part extensions should still validate the file stem
-        let result = constraint.validate(Path::new("MyComponent.d.ts"), &context).unwrap();
+        let result = constraint
+            .validate(Path::new("MyComponent.d.ts"), &context)
+            .unwrap();
         assert!(result.passed);
 
-        let result = constraint.validate(Path::new("myComponent.d.ts"), &context).unwrap();
+        let result = constraint
+            .validate(Path::new("myComponent.d.ts"), &context)
+            .unwrap();
         assert!(!result.passed); // Should fail - not PascalCase
 
         // Snake case with simple extension
-        let constraint = NamingConstraint::new()
-            .with_case_convention(CaseConvention::SnakeCase);
-        
-        let result = constraint.validate(Path::new("my_component.ts"), &context).unwrap();
+        let constraint = NamingConstraint::new().with_case_convention(CaseConvention::SnakeCase);
+
+        let result = constraint
+            .validate(Path::new("my_component.ts"), &context)
+            .unwrap();
         assert!(result.passed);
 
-        let result = constraint.validate(Path::new("myComponent.ts"), &context).unwrap();
+        let result = constraint
+            .validate(Path::new("myComponent.ts"), &context)
+            .unwrap();
         assert!(!result.passed);
 
         // Kebab case with simple extension
-        let constraint = NamingConstraint::new()
-            .with_case_convention(CaseConvention::KebabCase);
-        
-        let result = constraint.validate(Path::new("my-component.js"), &context).unwrap();
+        let constraint = NamingConstraint::new().with_case_convention(CaseConvention::KebabCase);
+
+        let result = constraint
+            .validate(Path::new("my-component.js"), &context)
+            .unwrap();
         assert!(result.passed);
 
         // Camel case with simple extension
-        let constraint = NamingConstraint::new()
-            .with_case_convention(CaseConvention::CamelCase);
-        
-        let result = constraint.validate(Path::new("myComponent.tsx"), &context).unwrap();
+        let constraint = NamingConstraint::new().with_case_convention(CaseConvention::CamelCase);
+
+        let result = constraint
+            .validate(Path::new("myComponent.tsx"), &context)
+            .unwrap();
         assert!(result.passed);
 
         // Note: Multi-part extensions (.spec.ts, .d.ts) currently only strip the last extension.
@@ -1169,11 +1220,11 @@ mod tests {
         assert!(CaseConvention::ScreamingSnakeCase.validate("123")); // Numbers allowed
         assert!(CaseConvention::FlatCase.validate("123")); // Numbers allowed
         assert!(CaseConvention::ScreamingFlatCase.validate("123")); // Numbers allowed
-        
+
         // These require letters (start with letter)
         assert!(!CaseConvention::PascalCase.validate("123")); // Needs uppercase start
         assert!(!CaseConvention::CamelCase.validate("123")); // Needs lowercase start
         assert!(!CaseConvention::TrainCase.validate("123")); // Needs specific case pattern
-        // Note: CobolCase("123") and DotCase("123") are actually valid - numbers allowed
+                                                             // Note: CobolCase("123") and DotCase("123") are actually valid - numbers allowed
     }
 }

@@ -120,9 +120,14 @@ impl HeadingValidator {
                     MarkdownValidationError::new(
                         "multiple_h1",
                         path,
-                        format!("Document has {} H1 headings, but only one is allowed", h1s.len()),
+                        format!(
+                            "Document has {} H1 headings, but only one is allowed",
+                            h1s.len()
+                        ),
                     )
-                    .with_suggestion("Consolidate multiple H1 headings into one or use H2 for subsections")
+                    .with_suggestion(
+                        "Consolidate multiple H1 headings into one or use H2 for subsections",
+                    )
                     .into_validation_failure(),
                 );
             }
@@ -150,7 +155,10 @@ impl HeadingValidator {
                             ),
                         )
                         .with_line(heading.line_number)
-                        .with_suggestion(format!("Reduce heading level to H{} or use a different structure", max_depth))
+                        .with_suggestion(format!(
+                            "Reduce heading level to H{} or use a different structure",
+                            max_depth
+                        ))
                         .into_validation_failure(),
                     );
                 }
@@ -166,7 +174,10 @@ impl HeadingValidator {
                         path,
                         format!("Missing required heading matching pattern: {:?}", pattern),
                     )
-                    .with_suggestion(format!("Add a heading that matches the pattern: {:?}", pattern))
+                    .with_suggestion(format!(
+                        "Add a heading that matches the pattern: {:?}",
+                        pattern
+                    ))
                     .into_validation_failure(),
                 );
             }
@@ -249,10 +260,7 @@ impl HeadingValidator {
                         MarkdownValidationError::new(
                             "first_heading_not_h1",
                             path,
-                            format!(
-                                "First heading should be H1, but found H{}",
-                                current_num
-                            ),
+                            format!("First heading should be H1, but found H{}", current_num),
                         )
                         .with_line(heading.line_number)
                         .with_suggestion("Change this to a single # Heading")
@@ -266,10 +274,7 @@ impl HeadingValidator {
                         MarkdownValidationError::new(
                             "first_heading_not_h1",
                             path,
-                            format!(
-                                "First heading should be H1, but found {}",
-                                current_level
-                            ),
+                            format!("First heading should be H1, but found {}", current_level),
                         )
                         .with_line(heading.line_number)
                         .with_suggestion("Change this to a single # Heading")
@@ -350,25 +355,28 @@ impl HeadingPattern {
     /// Check if this pattern matches a heading
     pub fn matches(&self, heading: &Heading) -> bool {
         match self {
-            HeadingPattern::Exact(text) => {
-                heading.text.eq_ignore_ascii_case(text)
-            }
-            HeadingPattern::Regex { pattern, case_sensitive } => {
+            HeadingPattern::Exact(text) => heading.text.eq_ignore_ascii_case(text),
+            HeadingPattern::Regex {
+                pattern,
+                case_sensitive,
+            } => {
                 let regex = if *case_sensitive {
                     Regex::new(pattern)
                 } else {
                     Regex::new(&format!("(?i){}", pattern))
                 };
-                
+
                 match regex {
                     Ok(re) => re.is_match(&heading.text),
                     Err(_) => false,
                 }
             }
-            HeadingPattern::MinLevel(min) => {
-                heading.level.as_usize() >= *min
-            }
-            HeadingPattern::LevelAndPattern { level, pattern, is_regex } => {
+            HeadingPattern::MinLevel(min) => heading.level.as_usize() >= *min,
+            HeadingPattern::LevelAndPattern {
+                level,
+                pattern,
+                is_regex,
+            } => {
                 // Check level if specified
                 if let Some(l) = level {
                     if heading.level.as_usize() != *l {
@@ -378,7 +386,9 @@ impl HeadingPattern {
 
                 // Check pattern
                 if *is_regex {
-                    Regex::new(pattern).map(|re| re.is_match(&heading.text)).unwrap_or(false)
+                    Regex::new(pattern)
+                        .map(|re| re.is_match(&heading.text))
+                        .unwrap_or(false)
                 } else {
                     heading.text.eq_ignore_ascii_case(pattern)
                 }
@@ -486,17 +496,19 @@ impl TextPatternRule {
                 )
             })?;
             if !regex.is_match(&heading.text) {
-                return Ok(Some(MarkdownValidationError::new(
-                    "heading_pattern",
-                    path,
-                    self.message.clone().unwrap_or_else(|| {
-                        format!(
-                            "Heading '{}' does not match required pattern: {}",
-                            heading.text, pattern
-                        )
-                    }),
-                )
-                .with_line(heading.line_number)));
+                return Ok(Some(
+                    MarkdownValidationError::new(
+                        "heading_pattern",
+                        path,
+                        self.message.clone().unwrap_or_else(|| {
+                            format!(
+                                "Heading '{}' does not match required pattern: {}",
+                                heading.text, pattern
+                            )
+                        }),
+                    )
+                    .with_line(heading.line_number),
+                ));
             }
         }
 
@@ -509,50 +521,56 @@ impl TextPatternRule {
                 )
             })?;
             if regex.is_match(&heading.text) {
-                return Ok(Some(MarkdownValidationError::new(
-                    "heading_forbidden_pattern",
-                    path,
-                    self.message.clone().unwrap_or_else(|| {
-                        format!(
-                            "Heading '{}' matches forbidden pattern: {}",
-                            heading.text, pattern
-                        )
-                    }),
-                )
-                .with_line(heading.line_number)));
+                return Ok(Some(
+                    MarkdownValidationError::new(
+                        "heading_forbidden_pattern",
+                        path,
+                        self.message.clone().unwrap_or_else(|| {
+                            format!(
+                                "Heading '{}' matches forbidden pattern: {}",
+                                heading.text, pattern
+                            )
+                        }),
+                    )
+                    .with_line(heading.line_number),
+                ));
             }
         }
 
         // Check length constraints
         if let Some(min) = self.min_length {
             if heading.text.len() < min {
-                return Ok(Some(MarkdownValidationError::new(
-                    "heading_too_short",
-                    path,
-                    self.message.clone().unwrap_or_else(|| {
-                        format!(
-                            "Heading '{}' is too short (minimum {} characters)",
-                            heading.text, min
-                        )
-                    }),
-                )
-                .with_line(heading.line_number)));
+                return Ok(Some(
+                    MarkdownValidationError::new(
+                        "heading_too_short",
+                        path,
+                        self.message.clone().unwrap_or_else(|| {
+                            format!(
+                                "Heading '{}' is too short (minimum {} characters)",
+                                heading.text, min
+                            )
+                        }),
+                    )
+                    .with_line(heading.line_number),
+                ));
             }
         }
 
         if let Some(max) = self.max_length {
             if heading.text.len() > max {
-                return Ok(Some(MarkdownValidationError::new(
-                    "heading_too_long",
-                    path,
-                    self.message.clone().unwrap_or_else(|| {
-                        format!(
-                            "Heading '{}' is too long (maximum {} characters)",
-                            heading.text, max
-                        )
-                    }),
-                )
-                .with_line(heading.line_number)));
+                return Ok(Some(
+                    MarkdownValidationError::new(
+                        "heading_too_long",
+                        path,
+                        self.message.clone().unwrap_or_else(|| {
+                            format!(
+                                "Heading '{}' is too long (maximum {} characters)",
+                                heading.text, max
+                            )
+                        }),
+                    )
+                    .with_line(heading.line_number),
+                ));
             }
         }
 
@@ -667,7 +685,10 @@ fn validate_structure(headings: &[Heading]) -> Vec<HeadingValidationError> {
     let mut errors = Vec::new();
 
     // Check for H1
-    let h1_count = headings.iter().filter(|h| h.level == HeadingLevel::H1).count();
+    let h1_count = headings
+        .iter()
+        .filter(|h| h.level == HeadingLevel::H1)
+        .count();
     if h1_count == 0 {
         errors.push(HeadingValidationError {
             error_type: HeadingErrorType::MissingH1,
@@ -692,20 +713,14 @@ fn validate_structure(headings: &[Heading]) -> Vec<HeadingValidationError> {
                 errors.push(HeadingValidationError {
                     error_type: HeadingErrorType::SkippedLevel,
                     heading: Some(heading.clone()),
-                    message: format!(
-                        "Skipped from H{} to H{}",
-                        last, current_level
-                    ),
+                    message: format!("Skipped from H{} to H{}", last, current_level),
                 });
             }
         } else if current_level != 1 {
             errors.push(HeadingValidationError {
                 error_type: HeadingErrorType::SkippedLevel,
                 heading: Some(heading.clone()),
-                message: format!(
-                    "First heading should be H1, but found H{}",
-                    current_level
-                ),
+                message: format!("First heading should be H1, but found H{}", current_level),
             });
         }
 
@@ -752,10 +767,7 @@ impl crate::constraints::Constraint for HeadingConstraint {
         context: &crate::constraints::ConstraintContext,
     ) -> crate::constraints::ConstraintResult<crate::constraints::ConstraintOutput> {
         let content = std::fs::read_to_string(path).map_err(|e| {
-            crate::constraints::ConstraintError::io(
-                path,
-                format!("Failed to read file: {}", e),
-            )
+            crate::constraints::ConstraintError::io(path, format!("Failed to read file: {}", e))
         })?;
 
         let parser = super::parser::MarkdownParser::new();
@@ -776,19 +788,17 @@ impl crate::constraints::Constraint for HeadingConstraint {
         })?;
 
         let passed = failures.is_empty();
-        let failures_collection =
-            crate::constraints::ValidationFailures::from(failures);
+        let failures_collection = crate::constraints::ValidationFailures::from(failures);
 
-        Ok(crate::constraints::ConstraintOutput::new(&self.name, path, passed)
-            .with_failures(failures_collection))
+        Ok(
+            crate::constraints::ConstraintOutput::new(&self.name, path, passed)
+                .with_failures(failures_collection),
+        )
     }
 
     fn applies_to(&self, path: &std::path::Path) -> bool {
         path.extension()
-            .map(|ext| {
-                ext.eq_ignore_ascii_case("md")
-                    || ext.eq_ignore_ascii_case("markdown")
-            })
+            .map(|ext| ext.eq_ignore_ascii_case("md") || ext.eq_ignore_ascii_case("markdown"))
             .unwrap_or(false)
     }
 }

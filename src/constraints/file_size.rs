@@ -162,16 +162,18 @@ impl FileSizeRule {
         // Check maximum size
         if let Some(max) = self.max_size.as_bytes() {
             if size > max {
-                return Ok(Some(ValidationFailure::new(
-                    &self.name,
-                    path,
-                    format!(
-                        "File is too large: {} (maximum: {})",
-                        format_size(size),
-                        self.max_size.format()
-                    ),
-                )
-                .with_suggestion(format!("Consider splitting the file or using compression"))));
+                return Ok(Some(
+                    ValidationFailure::new(
+                        &self.name,
+                        path,
+                        format!(
+                            "File is too large: {} (maximum: {})",
+                            format_size(size),
+                            self.max_size.format()
+                        ),
+                    )
+                    .with_suggestion(format!("Consider splitting the file or using compression")),
+                ));
             }
         }
 
@@ -440,13 +442,12 @@ mod tests {
 
     #[test]
     fn test_file_size_constraint() {
-        let constraint = FileSizeConstraint::new()
-            .add_rule(
-                FileSizeRule::new("test_rule")
-                    .with_pattern("*.txt")
-                    .max_size(FileSizeLimit::Kilobytes(1))
-                    .with_severity(Severity::High),
-            );
+        let constraint = FileSizeConstraint::new().add_rule(
+            FileSizeRule::new("test_rule")
+                .with_pattern("*.txt")
+                .max_size(FileSizeLimit::Kilobytes(1))
+                .with_severity(Severity::High),
+        );
 
         let mut temp_file = NamedTempFile::with_suffix(".txt").unwrap();
         temp_file.write_all(b"Small content").unwrap();
@@ -460,13 +461,12 @@ mod tests {
 
     #[test]
     fn test_file_size_constraint_too_large() {
-        let constraint = FileSizeConstraint::new()
-            .add_rule(
-                FileSizeRule::new("test_rule")
-                    .with_pattern("*.txt")
-                    .max_size(FileSizeLimit::Bytes(5))
-                    .with_severity(Severity::High),
-            );
+        let constraint = FileSizeConstraint::new().add_rule(
+            FileSizeRule::new("test_rule")
+                .with_pattern("*.txt")
+                .max_size(FileSizeLimit::Bytes(5))
+                .with_severity(Severity::High),
+        );
 
         let mut temp_file = NamedTempFile::with_suffix(".txt").unwrap();
         temp_file.write_all(b"This is more than 5 bytes").unwrap();

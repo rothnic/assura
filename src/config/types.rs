@@ -268,20 +268,20 @@ pub struct RequireConfig {
 }
 
 /// Configuration for limiting the number of direct children in a directory
-/// 
+///
 /// This encourages better organization by preventing overly flat directory structures.
 /// When a directory reaches the maximum allowed children, developers should create
 /// subdirectories to organize files into logical groups.
-/// 
+///
 /// # Examples
-/// 
+///
 /// ```yaml
 /// # Allow max 10 direct children (files + dirs) in utils/
 /// utils/:
 ///   limit_children:
 ///     max: 10
 ///     message: "Too many files in utils/. Organize into subdirectories by category."
-/// 
+///
 /// # Allow between 2-5 files and 0-3 subdirectories in components/
 /// components/:
 ///   limit_children:

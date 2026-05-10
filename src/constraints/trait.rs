@@ -142,10 +142,7 @@ impl ConstraintOutput {
         self
     }
 
-    pub fn success<P: Into<PathBuf>>(
-        constraint_name: impl Into<String>,
-        path: P,
-    ) -> Self {
+    pub fn success<P: Into<PathBuf>>(constraint_name: impl Into<String>, path: P) -> Self {
         Self::new(constraint_name, path, true)
     }
 
@@ -367,11 +364,7 @@ impl Constraint for AlwaysFailConstraint {
         path: &Path,
         _context: &ConstraintContext,
     ) -> ConstraintResult<ConstraintOutput> {
-        let failure = super::error::ValidationFailure::new(
-            &self.name,
-            path,
-            &self.message,
-        );
+        let failure = super::error::ValidationFailure::new(&self.name, path, &self.message);
         Ok(ConstraintOutput::failure(
             &self.name,
             path,

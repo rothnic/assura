@@ -39,7 +39,7 @@ pub enum PersistenceFormat {
 impl GraphPersistence {
     pub fn new<P: AsRef<Path>>(storage_dir: P) -> GraphResult<Self> {
         let storage_dir = storage_dir.as_ref().to_path_buf();
-        
+
         if !storage_dir.exists() {
             fs::create_dir_all(&storage_dir).map_err(GraphError::Io)?;
         }
@@ -57,12 +57,14 @@ impl GraphPersistence {
 
     pub fn save(&self, graph: &IntelligenceGraph, name: &str) -> GraphResult<PathBuf> {
         let data = self.graph_to_data(graph)?;
-        let path = self.storage_dir.join(format!("{}.{}", name, self.format.extension()));
+        let path = self
+            .storage_dir
+            .join(format!("{}.{}", name, self.format.extension()));
 
         match self.format {
             PersistenceFormat::Json => {
-                let json = serde_json::to_string_pretty(&data)
-                    .map_err(GraphError::Serialization)?;
+                let json =
+                    serde_json::to_string_pretty(&data).map_err(GraphError::Serialization)?;
                 fs::write(&path, json).map_err(GraphError::Io)?;
             }
             PersistenceFormat::Yaml => {
@@ -81,12 +83,15 @@ impl GraphPersistence {
     }
 
     pub fn load(&self, name: &str) -> GraphResult<IntelligenceGraph> {
-        let path = self.storage_dir.join(format!("{}.{}", name, self.format.extension()));
-        
+        let path = self
+            .storage_dir
+            .join(format!("{}.{}", name, self.format.extension()));
+
         if !path.exists() {
-            return Err(GraphError::PersistenceError(
-                format!("Graph file not found: {}", path.display())
-            ));
+            return Err(GraphError::PersistenceError(format!(
+                "Graph file not found: {}",
+                path.display()
+            )));
         }
 
         let content = fs::read(&path).map_err(GraphError::Io)?;
@@ -95,14 +100,10 @@ impl GraphPersistence {
             PersistenceFormat::Json => {
                 serde_json::from_slice(&content).map_err(GraphError::Serialization)?
             }
-            PersistenceFormat::Yaml => {
-                serde_yaml::from_slice(&content)
-                    .map_err(|e| GraphError::PersistenceError(e.to_string()))?
-            }
-            PersistenceFormat::Binary => {
-                bincode::deserialize(&content)
-                    .map_err(|e| GraphError::PersistenceError(e.to_string()))?
-            }
+            PersistenceFormat::Yaml => serde_yaml::from_slice(&content)
+                .map_err(|e| GraphError::PersistenceError(e.to_string()))?,
+            PersistenceFormat::Binary => bincode::deserialize(&content)
+                .map_err(|e| GraphError::PersistenceError(e.to_string()))?,
         };
 
         self.data_to_graph(data)
@@ -110,7 +111,7 @@ impl GraphPersistence {
 
     pub fn update(&self, graph: &mut IntelligenceGraph, name: &str) -> GraphResult<PathBuf> {
         let existing = self.load(name);
-        
+
         if let Ok(existing_graph) = existing {
             self.merge_graphs(graph, existing_graph)?;
         }
@@ -120,11 +121,11 @@ impl GraphPersistence {
 
     pub fn list_saved_graphs(&self) -> GraphResult<Vec<String>> {
         let mut graphs = Vec::new();
-        
+
         for entry in fs::read_dir(&self.storage_dir).map_err(GraphError::Io)? {
             let entry = entry.map_err(GraphError::Io)?;
             let path = entry.path();
-            
+
             if let Some(ext) = path.extension() {
                 if ext == self.format.extension() {
                     if let Some(stem) = path.file_stem() {
@@ -138,8 +139,10 @@ impl GraphPersistence {
     }
 
     pub fn delete(&self, name: &str) -> GraphResult<()> {
-        let path = self.storage_dir.join(format!("{}.{}", name, self.format.extension()));
-        
+        let path = self
+            .storage_dir
+            .join(format!("{}.{}", name, self.format.extension()));
+
         if path.exists() {
             fs::remove_file(&path).map_err(GraphError::Io)?;
         }
@@ -173,7 +176,8 @@ impl GraphPersistence {
 
     fn data_to_graph(&self, data: GraphData) -> GraphResult<IntelligenceGraph> {
         let mut graph = IntelligenceGraph::new();
-        let mut id_mapping: std::collections::HashMap<u64, NodeId> = std::collections::HashMap::new();
+        let mut id_mapping: std::collections::HashMap<u64, NodeId> =
+            std::collections::HashMap::new();
 
         for node in data.nodes {
             let old_id = node.id().as_u64();
@@ -185,7 +189,7 @@ impl GraphPersistence {
             let source = *id_mapping.get(&edge.source).ok_or_else(|| {
                 GraphError::PersistenceError(format!("Unknown source node: {}", edge.source))
             })?;
-            
+
             let target = *id_mapping.get(&edge.target).ok_or_else(|| {
                 GraphError::PersistenceError(format!("Unknown target node: {}", edge.target))
             })?;
@@ -208,14 +212,19 @@ impl GraphPersistence {
         Ok(graph)
     }
 
-    fn merge_graphs(&self, target: &mut IntelligenceGraph, source: IntelligenceGraph) -> GraphResult<()> {
-        let path_to_node: std::collections::HashMap<_, _> = target.iter_nodes()
+    fn merge_graphs(
+        &self,
+        target: &mut IntelligenceGraph,
+        source: IntelligenceGraph,
+    ) -> GraphResult<()> {
+        let path_to_node: std::collections::HashMap<_, _> = target
+            .iter_nodes()
             .map(|(id, node)| (node.path().to_path_buf(), id))
             .collect();
 
         for (_source_id, source_node) in source.iter_nodes() {
             let path = source_node.path();
-            
+
             if let Some(&existing_id) = path_to_node.get(path) {
                 let metadata = source_node.metadata().clone();
                 if let Some(node) = target.get_node_mut(existing_id) {
