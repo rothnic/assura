@@ -109,4 +109,7 @@ jobs:
       uses: codecov/codecov-action@v3
       with:
         file: ./cobertura.xml
-        fail_ci_if_error: true
+        # Uploads can be rate-limited without a repository token. Keep coverage
+        # generation active, but do not let third-party upload availability
+        # block PRs until token-backed coverage gating is configured.
+        fail_ci_if_error: false
