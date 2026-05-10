@@ -8,7 +8,7 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | Order | Epic | Status | Active/Open Work |
 | --- | --- | --- | --- |
 | 1 | Trellis Workflow Foundation | Active | `00-bootstrap-guidelines` |
-| 2 | Tooling Baseline Cleanup | Next | rustfmt cleanup, clippy cleanup, CI signal cleanup |
+| 2 | Tooling Baseline Cleanup | Next | `05-10-01-rustfmt-baseline-cleanup`, clippy cleanup, CI signal cleanup |
 | 3 | Assura Self-Check Clean | Next | reduce `assura check .` baseline violations to zero |
 | 4 | Documentation Source Truth | Next | migrate, archive, or delete stale docs and workflow artifacts |
 | 5 | Windows CI Restore | Later | fix `libgit2-sys` MSVC linker failure and restore matrix entry |
