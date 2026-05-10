@@ -87,9 +87,9 @@ For CI workflows to work properly, add these secrets:
    - Get token from: https://crates.io/settings/tokens
    - Add at: Settings → Secrets and variables → Actions
 
-2. **CODECOV_TOKEN** (optional) - For coverage reports
-   - Get from: https://codecov.io
-   - Add to repository secrets
+Coverage reports are generated in GitHub Actions and attached as workflow
+artifacts. No hosted coverage service token is required for the current CI
+workflow.
 
 ## File Structure
 

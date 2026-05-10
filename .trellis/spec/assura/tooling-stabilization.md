@@ -25,7 +25,7 @@ between product work and tooling-baseline work explicit.
 | Repository-wide rustfmt drift | `cargo fmt --all -- --check` fails across existing files outside the current PR scope. | Known tooling-baseline debt. Do not fix opportunistically inside unrelated feature PRs. | Dedicated formatting cleanup PR lands and rustfmt becomes blocking in CI. |
 | Repository-wide clippy warnings | `cargo clippy --all-targets --all-features -- -D warnings` fails with broad existing warnings, including `src/validation/resolver.rs`, `src/ls_compat/parser.rs`, and parity tests. | Known tooling-baseline debt. Keep new/touched code clean, then run a focused clippy cleanup iteration. | Dedicated clippy cleanup PR lands and clippy becomes blocking in CI. |
 | Windows CI test job paused | GitHub Actions `windows-latest` test job failed linking `libgit2_sys` with unresolved MSVC symbols including `GetNamedSecurityInfoW`, registry APIs, and CryptoAPI symbols. | Temporarily removed from the PR test matrix while stabilizing core workflow. This is not a product-behavior signal yet. | Add the required Windows linker/system-library fix or dependency configuration, prove `cargo test --all-features` passes on `windows-latest`, then restore Windows to the CI matrix. |
-| Codecov upload is advisory | Code coverage generation succeeds, but unauthenticated Codecov uploads can fail with HTTP 429 rate limits. | Keep `cargo tarpaulin` coverage generation in CI, but set the Codecov upload step to non-blocking until repository upload credentials and coverage policy are configured. | Add a `CODECOV_TOKEN` repository secret or equivalent supported configuration, decide whether coverage upload should block PRs, then set the upload step back to blocking if desired. |
+| Coverage reporting is local to CI | Code coverage generation succeeds, but hosted Codecov upload added external account, token, and rate-limit failure modes before the core tooling baseline was stable. | Keep `cargo tarpaulin` coverage generation in CI, summarize coverage in the GitHub job summary, and publish the Cobertura XML as a GitHub Actions artifact. Do not require Codecov for the current workflow. | Decide on a coverage threshold and enforce it locally in CI, or adopt a hosted service only when trend dashboards and PR annotations are worth the extra dependency. |
 | Assura self-check baseline fails | `./target/debug/assura check .` reports known structure/documentation violations in legacy docs, archived workflow systems, and oversized existing modules. | Advisory until cleanup iterations reduce the baseline to zero. New PRs should not increase the violation count. | Cleanup/archival work lands, `assura check .` passes, and hooks can become blocking for protected paths. |
 
 ## Next Iteration Plan
@@ -34,8 +34,8 @@ between product work and tooling-baseline work explicit.
    - Pause only checks that are explicitly recorded above.
    - Convert expected baseline failures into tracked cleanup work instead of
      undocumented red checks.
-   - Keep external upload/reporting integrations advisory until the required
-     repository credentials and blocking policy are configured.
+   - Prefer GitHub-native artifacts and summaries over external reporting
+     services until the required credentials and blocking policy are justified.
    - Keep platform tests active for Linux and macOS while Windows is paused.
 
 2. Clean the formatting baseline.

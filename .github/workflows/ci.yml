@@ -105,11 +105,25 @@ jobs:
       run: cargo install cargo-tarpaulin
     - name: Generate coverage
       run: cargo tarpaulin --verbose --all-features --workspace --timeout 120 --out xml
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
+    - name: Summarize coverage
+      run: |
+        python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+        import xml.etree.ElementTree as ET
+
+        root = ET.parse("cobertura.xml").getroot()
+        line_rate = float(root.attrib.get("line-rate", 0.0)) * 100
+        branch_rate = float(root.attrib.get("branch-rate", 0.0)) * 100
+
+        print("## Coverage")
+        print()
+        print(f"- Line coverage: {line_rate:.2f}%")
+        print(f"- Branch coverage: {branch_rate:.2f}%")
+        print("- Full Cobertura XML report is attached as a workflow artifact.")
+        PY
+    - name: Upload coverage artifact
+      uses: actions/upload-artifact@v4
       with:
-        file: ./cobertura.xml
-        # Uploads can be rate-limited without a repository token. Keep coverage
-        # generation active, but do not let third-party upload availability
-        # block PRs until token-backed coverage gating is configured.
-        fail_ci_if_error: false
+        name: coverage-cobertura
+        path: ./cobertura.xml
+        if-no-files-found: error
+        retention-days: 14
