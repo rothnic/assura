@@ -1,3 +1,4 @@
+//! Query helpers for traversing and searching intelligence graphs.
 use std::collections::HashSet;
 use std::path::Path;
 

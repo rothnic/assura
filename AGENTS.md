@@ -84,7 +84,7 @@ Install these via `npx skills add <owner/repo> --skill <skill-name>`:
 - `supercent-io/skills-template:performance-optimization` - Validation engine tuning
 - `supercent-io/skills-template:technical-writing` - Error message formatting
 
-See `docs/SKILLS_RESEARCH.md` for detailed analysis.
+See `docs/archive/skills-research.md` for detailed analysis.
 
 ## Coding Standards and Conventions
 
@@ -222,7 +222,7 @@ cargo watch -x test
 
 ## References
 
-- Skills Research: `docs/SKILLS_RESEARCH.md`
+- Skills Research: `docs/archive/skills-research.md`
 - Cargo Configuration: `Cargo.toml`
 - Skill Examples: `skills/built-in/*/SKILL.md`
 

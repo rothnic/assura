@@ -1,0 +1,9 @@
+{"file": "AGENTS.md", "reason": "Project entrypoint and Trellis/Assura workflow guidance"}
+{"file": ".trellis/workflow.md", "reason": "Task lifecycle and required quality workflow"}
+{"file": ".trellis/spec/assura/index.md", "reason": "Canonical Assura spec routing and constraints"}
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "Roadmap epic and self-check cleanup priority"}
+{"file": ".trellis/spec/assura/tooling-stabilization.md", "reason": "Current gate policy and self-check hook policy"}
+{"file": ".trellis/spec/assura/workflow-status.md", "reason": "Required final workflow status snapshot format"}
+{"file": "docs/analysis/2026-05-09-trellis-governance-adr.md", "reason": "Trellis-first governance and historical OpenSpec/specs-bak treatment"}
+{"file": "docs/analysis/2026-05-09-documentation-cleanup-register.md", "reason": "Document cleanup source-of-truth register"}
+{"file": ".trellis/tasks/05-10-assura-self-check-baseline-cleanup/research/baseline-text.txt", "reason": "Captured human-readable Assura baseline"}

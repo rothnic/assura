@@ -1,3 +1,4 @@
+//! Persistence helpers for saving and loading intelligence graphs.
 use std::fs;
 use std::path::{Path, PathBuf};
 

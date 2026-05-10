@@ -1,3 +1,8 @@
+---
+title: 'Assura vs LS-Lint - Deep Capability Comparison'
+status: active
+---
+
 # Assura vs LS-Lint: Deep Capability Comparison
 
 **Date:** 2026-03-20  

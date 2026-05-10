@@ -1,0 +1,7 @@
+{"file": "AGENTS.md", "reason": "Project quality and status reporting rules"}
+{"file": ".trellis/workflow.md", "reason": "Required implementation, check, spec update, and commit flow"}
+{"file": ".trellis/spec/assura/index.md", "reason": "Canonical Assura spec routing and quality constraints"}
+{"file": ".trellis/spec/assura/tooling-stabilization.md", "reason": "Expected gate policy after self-check cleanup"}
+{"file": ".trellis/spec/assura/workflow-status.md", "reason": "Required final workflow status snapshot format"}
+{"file": ".trellis/tasks/05-10-assura-self-check-baseline-cleanup/prd.md", "reason": "Task requirements and acceptance criteria"}
+{"file": ".trellis/tasks/05-10-assura-self-check-baseline-cleanup/research/baseline-text.txt", "reason": "Before state for self-check cleanup verification"}

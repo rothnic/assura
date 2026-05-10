@@ -1,3 +1,4 @@
+//! Error types for dependency graph intelligence operations.
 use std::io;
 use thiserror::Error;
 

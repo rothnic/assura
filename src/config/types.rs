@@ -10,6 +10,11 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use validator::Validate;
 
+mod child_limits;
+mod message;
+pub use child_limits::{ChildrenCountRange, ChildrenLimitConfig};
+pub use message::Message;
+
 /// A reusable validation rule defined in the `rules` section
 #[derive(Debug, Clone, Serialize, Deserialize, Validate)]
 #[serde(rename_all = "snake_case")]
@@ -101,31 +106,6 @@ pub enum Case {
     /// Regex pattern (custom validation)
     #[serde(rename = "regex:")]
     Regex(String),
-}
-
-/// Custom message configuration for violations
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
-#[serde(rename_all = "snake_case")]
-pub struct Message {
-    /// Violation description
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub violation: Option<String>,
-
-    /// Explanation of why this rule exists
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub why: Option<String>,
-
-    /// How to fix the violation
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub fix: Option<String>,
-
-    /// How to override this rule
-    #[serde(rename = "override", skip_serializing_if = "Option::is_none")]
-    pub override_: Option<String>,
-
-    /// Link to documentation
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub docs: Option<String>,
 }
 
 /// Root configuration struct
@@ -265,75 +245,6 @@ pub struct RequireConfig {
     /// Severity for missing items
     #[serde(skip_serializing_if = "Option::is_none")]
     pub severity: Option<Severity>,
-}
-
-/// Configuration for limiting the number of direct children in a directory
-///
-/// This encourages better organization by preventing overly flat directory structures.
-/// When a directory reaches the maximum allowed children, developers should create
-/// subdirectories to organize files into logical groups.
-///
-/// # Examples
-///
-/// ```yaml
-/// # Allow max 10 direct children (files + dirs) in utils/
-/// utils/:
-///   limit_children:
-///     max: 10
-///     message: "Too many files in utils/. Organize into subdirectories by category."
-///
-/// # Allow between 2-5 files and 0-3 subdirectories in components/
-/// components/:
-///   limit_children:
-///     files:
-///       min: 2
-///       max: 5
-///     dirs:
-///       max: 3
-/// ```
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub struct ChildrenLimitConfig {
-    /// Maximum total children (files + directories) allowed
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub max: Option<usize>,
-
-    /// Minimum total children required
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub min: Option<usize>,
-
-    /// Limits specifically for files
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub files: Option<ChildrenCountRange>,
-
-    /// Limits specifically for directories
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub dirs: Option<ChildrenCountRange>,
-
-    /// Whether to count hidden files/directories (starting with .)
-    #[serde(default = "default_true")]
-    pub include_hidden: bool,
-
-    /// Custom message when limit is exceeded
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub message: Option<String>,
-
-    /// Severity for violations
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub severity: Option<Severity>,
-}
-
-/// Range configuration for counting files or directories
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub struct ChildrenCountRange {
-    /// Minimum count required (inclusive)
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub min: Option<usize>,
-
-    /// Maximum count allowed (inclusive)
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub max: Option<usize>,
 }
 
 /// Severity levels for violations
@@ -501,43 +412,6 @@ impl Default for PolicyNode {
     }
 }
 
-impl Message {
-    /// Create a new empty message
-    pub fn new() -> Self {
-        Self::default()
-    }
-
-    /// Set violation message
-    pub fn with_violation(mut self, msg: impl Into<String>) -> Self {
-        self.violation = Some(msg.into());
-        self
-    }
-
-    /// Set why message
-    pub fn with_why(mut self, msg: impl Into<String>) -> Self {
-        self.why = Some(msg.into());
-        self
-    }
-
-    /// Set fix message
-    pub fn with_fix(mut self, msg: impl Into<String>) -> Self {
-        self.fix = Some(msg.into());
-        self
-    }
-
-    /// Set override message
-    pub fn with_override(mut self, msg: impl Into<String>) -> Self {
-        self.override_ = Some(msg.into());
-        self
-    }
-
-    /// Set docs link
-    pub fn with_docs(mut self, docs: impl Into<String>) -> Self {
-        self.docs = Some(docs.into());
-        self
-    }
-}
-
 impl ApplyEntry {
     /// Create a new apply entry
     pub fn new(rule: impl Into<String>) -> Self {
@@ -596,181 +470,5 @@ impl Default for RequireConfig {
     }
 }
 
-impl ChildrenLimitConfig {
-    /// Create a new children limit config
-    pub fn new() -> Self {
-        Self {
-            max: None,
-            min: None,
-            files: None,
-            dirs: None,
-            include_hidden: true,
-            message: None,
-            severity: None,
-        }
-    }
-
-    /// Set maximum total children
-    pub fn with_max(mut self, max: usize) -> Self {
-        self.max = Some(max);
-        self
-    }
-
-    /// Set minimum total children
-    pub fn with_min(mut self, min: usize) -> Self {
-        self.min = Some(min);
-        self
-    }
-
-    /// Set file count limits
-    pub fn with_files(mut self, files: ChildrenCountRange) -> Self {
-        self.files = Some(files);
-        self
-    }
-
-    /// Set directory count limits
-    pub fn with_dirs(mut self, dirs: ChildrenCountRange) -> Self {
-        self.dirs = Some(dirs);
-        self
-    }
-
-    /// Set whether to include hidden files
-    pub fn with_include_hidden(mut self, include: bool) -> Self {
-        self.include_hidden = include;
-        self
-    }
-
-    /// Set custom message
-    pub fn with_message(mut self, message: impl Into<String>) -> Self {
-        self.message = Some(message.into());
-        self
-    }
-
-    /// Set severity
-    pub fn with_severity(mut self, severity: Severity) -> Self {
-        self.severity = Some(severity);
-        self
-    }
-}
-
-impl Default for ChildrenLimitConfig {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl ChildrenCountRange {
-    /// Create a new count range
-    pub fn new() -> Self {
-        Self {
-            min: None,
-            max: None,
-        }
-    }
-
-    /// Set minimum count
-    pub fn with_min(mut self, min: usize) -> Self {
-        self.min = Some(min);
-        self
-    }
-
-    /// Set maximum count
-    pub fn with_max(mut self, max: usize) -> Self {
-        self.max = Some(max);
-        self
-    }
-}
-
-impl Default for ChildrenCountRange {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-/// Default value for boolean fields
-fn default_true() -> bool {
-    true
-}
-
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_rule_builder() {
-        let rule = Rule::new()
-            .with_extensions(vec!["rs".to_string()])
-            .with_naming(NamingConvention::Single(Case::SnakeCase))
-            .with_max_lines(500);
-
-        assert_eq!(rule.extensions.unwrap(), vec!["rs"]);
-        assert!(rule.max_lines.is_some());
-    }
-
-    #[test]
-    fn test_naming_convention_single() {
-        let yaml = "snake_case";
-        let conv: NamingConvention = serde_yaml::from_str(yaml).unwrap();
-        match conv {
-            NamingConvention::Single(Case::SnakeCase) => {}
-            _ => panic!("Expected single snake_case"),
-        }
-    }
-
-    #[test]
-    fn test_naming_convention_multiple() {
-        let yaml = "[snake_case, camelCase]";
-        let conv: NamingConvention = serde_yaml::from_str(yaml).unwrap();
-        match conv {
-            NamingConvention::Multiple(cases) => {
-                assert_eq!(cases.len(), 2);
-            }
-            _ => panic!("Expected multiple cases"),
-        }
-    }
-
-    #[test]
-    fn test_config_builder() {
-        let config = Config::new()
-            .with_rule("rust", Rule::new().with_max_lines(500))
-            .with_exclude("target/**");
-
-        assert!(config.rules.contains_key("rust"));
-        assert_eq!(config.exclude.len(), 1);
-    }
-
-    #[test]
-    fn test_yaml_serialization() {
-        let config = Config::new().with_rule(
-            "rust-source",
-            Rule::new()
-                .with_extensions(vec!["rs".to_string()])
-                .with_naming(NamingConvention::Single(Case::SnakeCase))
-                .with_max_lines(500),
-        );
-
-        let yaml = serde_yaml::to_string(&config).unwrap();
-        assert!(yaml.contains("rules:"));
-        assert!(yaml.contains("rust-source:"));
-    }
-
-    #[test]
-    fn test_case_deserialization() {
-        let cases = vec![
-            ("snake_case", Case::SnakeCase),
-            ("camelCase", Case::CamelCase),
-            ("PascalCase", Case::PascalCase),
-            ("kebab-case", Case::KebabCase),
-            ("SCREAMING_SNAKE_CASE", Case::ScreamingSnakeCase),
-        ];
-
-        for (yaml, expected) in cases {
-            let parsed: Case = serde_yaml::from_str(yaml).unwrap();
-            assert!(
-                std::mem::discriminant(&parsed) == std::mem::discriminant(&expected),
-                "Failed for {}",
-                yaml
-            );
-        }
-    }
-}
+mod types_tests;

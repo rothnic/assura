@@ -1,3 +1,8 @@
+---
+title: 'Gitignore Integration Specification'
+status: active
+---
+
 # Gitignore Integration Specification
 
 ## Overview

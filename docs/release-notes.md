@@ -1,3 +1,8 @@
+---
+title: 'Assura v0.1.0 Release Notes'
+status: active
+---
+
 # Assura v0.1.0 Release Notes
 
 ## Overview

@@ -1,3 +1,4 @@
+//! Dependency intelligence graph data structure and builders.
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 

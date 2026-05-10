@@ -1,3 +1,4 @@
+//! Git hook installation and status management for Assura.
 use std::path::{Path, PathBuf};
 
 use thiserror::Error;

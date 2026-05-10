@@ -1,3 +1,4 @@
+//! Output formatting for validation and status reports.
 use std::io::Write;
 
 use crate::cli::args::OutputFormat;

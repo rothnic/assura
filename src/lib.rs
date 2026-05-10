@@ -1,3 +1,4 @@
+//! Assura library entrypoint and public module exports.
 pub mod cli;
 pub mod config;
 pub mod constraints;

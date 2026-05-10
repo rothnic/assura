@@ -32,14 +32,15 @@ spec system; this file tracks what should be migrated, archived, or deleted.
 | `.assura/config.yml` | Canonical enforcement config | Keep and evolve | Owns project structure enforcement. |
 | `docs/analysis/` | Canonical assessment archive | Keep | Senior-engineer assessment reports live here. |
 | `docs/analysis/2026-05-09-project-assessment-and-alignment.md` | Historical assessment | Keep in analysis archive | Existing assessment was promoted out of root docs and now documents the pre-remediation state. |
-| `specs-bak/` | Historical | Archive or delete after migration | Replaced by `.trellis/spec/`; useful templates may be harvested first. |
-| `openspec/` | Historical/proposal reference | Archive unless a concrete OpenSpec flow is retained | Not canonical after Trellis adoption. |
-| `.github/skills/openspec-*` | Historical support | Archive/delete with `openspec/` | Keeps agents from seeing OpenSpec as an active competing workflow. |
-| `.github/prompts/opsx-*` | Historical support | Archive/delete with `openspec/` | Same as OpenSpec skills. |
-| `docs/PHASE*_REVIEW.md` | Historical | Move to archive | Useful history, not current state. |
-| `docs/ACTUAL_STATE_AUDIT.md` | Superseded | Move to archive after current assessment is promoted | Current assessment should be canonical. |
-| `docs/IMPLEMENTATION_GAPS.md` | Superseded backlog | Convert actionable items into Trellis tasks, then archive | Avoids a second backlog. |
-| `docs/CONFIGURATION_SPEC.md`, `docs/config-v2.md`, `docs/final-config-design.md` | Conflicting config docs | Consolidate into Trellis spec and archive superseded versions | Multiple config narratives confuse agents and users. |
+| `docs/archive/` | Historical archive | Keep with archive-specific Assura policy | Holds superseded docs that are useful evidence but not current source of truth. |
+| `specs-bak/` | Historical | Deleted | Replaced by `.trellis/spec/`; no longer exposed as a competing source of truth. |
+| `openspec/` | Historical/proposal reference | Deleted | Not canonical after Trellis adoption. |
+| `.github/skills/openspec-*` | Historical support | Deleted | Keeps agents from seeing OpenSpec as an active competing workflow. |
+| `.github/prompts/opsx-*` | Historical support | Deleted | Same as OpenSpec skills. |
+| `docs/archive/phase*-review.md` | Historical | Archived | Useful history, not current state. |
+| `docs/archive/actual-state-audit.md` | Superseded | Archived | Current assessment lives in `docs/analysis/`. |
+| `docs/archive/implementation-gaps.md` | Superseded backlog | Archived | Avoids a second active backlog; actionable follow-up should move to Trellis tasks. |
+| `docs/archive/configuration-spec.md`, `docs/archive/config-v2.md`, `docs/archive/final-config-design.md` | Conflicting config docs | Archived | Multiple config narratives are retained only as historical evidence. |
 | `docs/release-notes.md` | Potentially stale | Audit against code before publishing claims | Release claims must not exceed current CLI behavior. |
 
 ## Enforcement follow-up
