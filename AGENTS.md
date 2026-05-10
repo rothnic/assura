@@ -235,16 +235,24 @@ cargo watch -x test
 
 These instructions are for AI assistants working in this project.
 
-Use the `/trellis:start` command when starting a new session to:
-- Initialize your developer identity
-- Understand current project context
-- Read relevant guidelines
+Trellis is the canonical workflow, task, and spec system for Assura.
 
-Use `@/.trellis/` to learn:
-- Development workflow (`workflow.md`)
-- Project structure guidelines (`spec/`)
-- Developer workspace (`workspace/`)
+When starting work:
+- Read `.trellis/workflow.md` for the active development process.
+- Check `.trellis/tasks/` for active and archived work.
+- Check `.trellis/spec/` for durable project specs and constraints.
+- Check `.trellis/workspace/` for session/developer continuity.
+- Use `.assura/config.yml` and `assura check .` for project structure validation.
 
-Keep this managed block so 'trellis update' can refresh the instructions.
+For Codex, Trellis context injection depends on user-level
+`features.hooks = true` and one-time `/hooks` approval. If hooks are not active,
+read `.agents/skills/trellis-start/SKILL.md` manually before starting Trellis
+workflow work.
+
+OpenSpec and `specs-bak/` are historical unless a newer ADR says otherwise.
+See `docs/analysis/2026-05-09-trellis-governance-adr.md` and
+`docs/analysis/2026-05-09-documentation-cleanup-register.md`.
+
+Keep this managed block so `trellis update` can refresh the instructions.
 
 <!-- TRELLIS:END -->

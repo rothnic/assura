@@ -4,8 +4,8 @@ use clap::Parser;
 use tracing::{error, info};
 
 use assura::cli::{
-    check_command, init_command, status_command, watch_command,
-    Cli, Commands, ExitCode, HookCommands,
+    check_command, init_command, status_command, watch_command, Cli, Commands, ExitCode,
+    HookCommands,
 };
 
 #[tokio::main]
@@ -25,6 +25,7 @@ async fn main() {
     }
 
     info!("Starting Assura CLI");
+    let config_path = cli.config.clone();
 
     let exit_code = match cli.command {
         Commands::Check {
@@ -34,10 +35,8 @@ async fn main() {
             fail_fast,
             no_parallel,
             watch: _,
-        } => {
-            check_command(path, format, output, fail_fast, no_parallel).await
-        }
-        Commands::Status { path, format } => status_command(path, format).await,
+        } => check_command(path, config_path, format, output, fail_fast, no_parallel).await,
+        Commands::Status { path, format } => status_command(path, config_path, format).await,
         Commands::Init {
             path,
             force,
@@ -49,12 +48,8 @@ async fn main() {
             no_git,
         } => watch_command(path, debounce, no_git).await,
         Commands::Hooks { command } => match command {
-            HookCommands::Install { path, force } => {
-                handle_hooks_install(path, force).await
-            }
-            HookCommands::Uninstall { path } => {
-                handle_hooks_uninstall(path).await
-            }
+            HookCommands::Install { path, force } => handle_hooks_install(path, force).await,
+            HookCommands::Uninstall { path } => handle_hooks_uninstall(path).await,
             HookCommands::Status => handle_hooks_status().await,
         },
     };
@@ -62,10 +57,7 @@ async fn main() {
     process::exit(exit_code as i32);
 }
 
-async fn handle_hooks_install(
-    path: Option<std::path::PathBuf>,
-    force: bool,
-) -> ExitCode {
+async fn handle_hooks_install(path: Option<std::path::PathBuf>, force: bool) -> ExitCode {
     use assura::cli::hooks::GitHooksManager;
 
     let project_root = path.unwrap_or_else(|| {
@@ -99,9 +91,7 @@ async fn handle_hooks_install(
     }
 }
 
-async fn handle_hooks_uninstall(
-    path: Option<std::path::PathBuf>,
-) -> ExitCode {
+async fn handle_hooks_uninstall(path: Option<std::path::PathBuf>) -> ExitCode {
     use assura::cli::hooks::GitHooksManager;
 
     let project_root = path.unwrap_or_else(|| {

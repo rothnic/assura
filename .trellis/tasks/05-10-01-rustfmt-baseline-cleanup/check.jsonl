@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/assura/index.md", "reason": "Quality check should verify the cleanup does not introduce new validation debt or confusing workflow paths."}
+{"file": ".trellis/spec/assura/tooling-stabilization.md", "reason": "Quality check should confirm rustfmt policy is updated only after the baseline is actually clean."}
+{"file": ".trellis/spec/assura/workflow-status.md", "reason": "Quality check should preserve status snapshot expectations in final reporting."}

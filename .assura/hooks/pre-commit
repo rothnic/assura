@@ -25,10 +25,22 @@ fi
 
 echo "Running Assura pre-commit validation on branch: $BRANCH..."
 
+run_assura() {
+    if command -v assura >/dev/null 2>&1; then
+        assura "$@"
+    elif [ -x "$PROJECT_ROOT/target/debug/assura" ]; then
+        "$PROJECT_ROOT/target/debug/assura" "$@"
+    elif command -v cargo >/dev/null 2>&1; then
+        (cd "$PROJECT_ROOT" && cargo run --quiet -- "$@")
+    else
+        return 127
+    fi
+}
+
 # Check if assura is available
-if command -v assura >/dev/null 2>&1; then
+if run_assura --help >/dev/null 2>&1; then
     # Run assura check and capture output
-    if assura check "$PROJECT_ROOT" 2>&1; then
+    if run_assura check "$PROJECT_ROOT" 2>&1; then
         echo "✓ Assura validation passed"
         exit 0
     else
@@ -57,7 +69,7 @@ if command -v assura >/dev/null 2>&1; then
         fi
     fi
 else
-    echo "Warning: assura command not found in PATH"
+    echo "Warning: assura command not found and local cargo fallback is unavailable"
     echo "Skipping Assura validation"
     exit 0
 fi

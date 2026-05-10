@@ -104,6 +104,10 @@ pub struct FileBundle {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub severity: Option<String>,
 
+    /// Required files in this directory
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub required: Option<Vec<String>>,
+
     /// Allowed file names (for root directory policy)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub allowed_names: Option<Vec<String>>,
@@ -167,7 +171,9 @@ fn validate_naming_convention(conv: &str) -> Result<(), validator::ValidationErr
     ];
 
     // Check if it's a valid convention name or starts with "regex:"
-    if valid_conventions.iter().any(|&c| conv == c || conv.starts_with(c))
+    if valid_conventions
+        .iter()
+        .any(|&c| conv == c || conv.starts_with(c))
         || conv.starts_with("regex:")
     {
         Ok(())
@@ -304,6 +310,7 @@ impl FileBundle {
             require_docs: None,
             extensions: None,
             severity: None,
+            required: None,
             allowed_names: None,
         }
     }
@@ -341,6 +348,12 @@ impl FileBundle {
     /// Set severity level
     pub fn with_severity(mut self, severity: impl Into<String>) -> Self {
         self.severity = Some(severity.into());
+        self
+    }
+
+    /// Set required file names
+    pub fn with_required(mut self, required: Vec<String>) -> Self {
+        self.required = Some(required);
         self
     }
 
@@ -451,6 +464,8 @@ pub struct ResolvedFileBundle {
     pub extensions: Option<Vec<String>>,
     /// Severity level
     pub severity: Option<String>,
+    /// Required file names
+    pub required: Option<Vec<String>>,
     /// Allowed file names
     pub allowed_names: Option<Vec<String>>,
 }
@@ -472,9 +487,7 @@ mod tests {
         let config = Config::new()
             .with_node(
                 "src/",
-                DirectoryNode::new().with_files(
-                    FileBundle::new().with_naming("snake_case"),
-                ),
+                DirectoryNode::new().with_files(FileBundle::new().with_naming("snake_case")),
             )
             .with_exclude("target/**")
             .with_pattern("**/*.rs", FileBundle::new().with_max_lines(500));
@@ -519,9 +532,7 @@ mod tests {
             .with_files(FileBundle::new().with_naming("kebab-case"))
             .with_child(
                 "components/",
-                DirectoryNode::new().with_files(
-                    FileBundle::new().with_naming("PascalCase"),
-                ),
+                DirectoryNode::new().with_files(FileBundle::new().with_naming("PascalCase")),
             )
             .with_inherit(false);
 
@@ -579,5 +590,15 @@ mod tests {
 
         assert!(bundle.allowed_names.is_some());
         assert_eq!(bundle.allowed_names.unwrap().len(), 2);
+    }
+
+    #[test]
+    fn test_required_files() {
+        let bundle = FileBundle::new().with_required(vec!["README.md".to_string()]);
+
+        assert_eq!(
+            bundle.required.as_ref().unwrap(),
+            &vec!["README.md".to_string()]
+        );
     }
 }

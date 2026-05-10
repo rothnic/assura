@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/assura/index.md", "reason": "Canonical Assura project direction and source-of-truth map."}
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "Identifies Tooling Baseline Cleanup as the next roadmap epic and rustfmt as the first work item."}
+{"file": ".trellis/spec/assura/tooling-stabilization.md", "reason": "Defines rustfmt as known baseline debt and records criteria for making it blocking."}
+{"file": ".trellis/spec/assura/workflow-status.md", "reason": "Defines required status snapshots for handoff and progress reporting."}

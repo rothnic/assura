@@ -3,8 +3,7 @@
 //! This module resolves hierarchical rules into flat (path_pattern, bundle) pairs
 //! by walking the structure tree and applying inheritance.
 
-use super::config::{DirectoryNode, FileBundle, Config, ResolvedFileBundle};
-use std::collections::HashMap;
+use super::config::{Config, DirectoryNode, FileBundle, ResolvedFileBundle};
 use std::path::Path;
 
 /// Resolves hierarchical rules into flat (path_pattern, bundle) pairs
@@ -69,6 +68,7 @@ impl<'a> RuleResolver<'a> {
                     require_docs: rule.bundle.require_docs,
                     extensions: rule.bundle.extensions.clone(),
                     severity: rule.bundle.severity.clone(),
+                    required: rule.bundle.required.clone(),
                     allowed_names: rule.bundle.allowed_names.clone(),
                 });
             }
@@ -124,13 +124,16 @@ impl<'a> RuleResolver<'a> {
     }
 
     /// Merge parent and child bundles (child values override parent)
-    fn merge_bundles(
-        parent: &FileBundle,
-        child: Option<&FileBundle>,
-    ) -> FileBundle {
+    fn merge_bundles(parent: &FileBundle, child: Option<&FileBundle>) -> FileBundle {
         let child = match child {
             Some(c) => c,
-            None => return parent.clone(),
+            None => {
+                return FileBundle {
+                    required: None,
+                    allowed_names: None,
+                    ..parent.clone()
+                }
+            }
         };
 
         FileBundle {
@@ -138,9 +141,13 @@ impl<'a> RuleResolver<'a> {
             max_lines: child.max_lines.or(parent.max_lines),
             max_size: child.max_size.clone().or_else(|| parent.max_size.clone()),
             require_docs: child.require_docs.or(parent.require_docs),
-            extensions: child.extensions.clone().or_else(|| parent.extensions.clone()),
+            extensions: child
+                .extensions
+                .clone()
+                .or_else(|| parent.extensions.clone()),
             severity: child.severity.clone().or_else(|| parent.severity.clone()),
-            allowed_names: child.allowed_names.clone().or_else(|| parent.allowed_names.clone()),
+            required: child.required.clone(),
+            allowed_names: child.allowed_names.clone(),
         }
     }
 
@@ -188,8 +195,7 @@ impl<'a> RuleResolver<'a> {
         }
 
         // Handle directory prefix patterns (e.g., "src/" matches "src/main.rs")
-        if pattern.ends_with('/') {
-            let prefix = &pattern[..pattern.len() - 1];
+        if let Some(prefix) = pattern.strip_suffix('/') {
             return path_str.starts_with(prefix)
                 && (path_str.len() == prefix.len() || path_str[prefix.len()..].starts_with('/'));
         }
@@ -201,9 +207,8 @@ impl<'a> RuleResolver<'a> {
 
 #[cfg(test)]
 mod tests {
-    use super::super::config::{DirectoryNode, Config, FileBundle};
+    use super::super::config::{Config, DirectoryNode, FileBundle};
     use super::*;
-    use std::path::PathBuf;
 
     fn create_test_config() -> Config {
         Config::new()
@@ -228,18 +233,13 @@ mod tests {
                     .with_child(
                         "utils/",
                         DirectoryNode::new()
-                            .with_files(
-                                FileBundle::new()
-                                    .with_naming("kebab-case")
-                            )
+                            .with_files(FileBundle::new().with_naming("kebab-case"))
                             .with_inherit(false), // Don't inherit from src/
                     ),
             )
             .with_node(
                 "tests/",
-                DirectoryNode::new().with_files(
-                    FileBundle::new().with_naming("snake_case"),
-                ),
+                DirectoryNode::new().with_files(FileBundle::new().with_naming("snake_case")),
             )
     }
 
@@ -274,7 +274,10 @@ mod tests {
             .find(|r| r.path_pattern == "src/components/")
             .unwrap();
 
-        assert_eq!(components_rule.bundle.naming, Some("PascalCase".to_string()));
+        assert_eq!(
+            components_rule.bundle.naming,
+            Some("PascalCase".to_string())
+        );
         // max_lines should be inherited from parent (300 from child, not 500 from parent)
         assert_eq!(components_rule.bundle.max_lines, Some(300));
     }
@@ -384,7 +387,12 @@ mod tests {
     #[test]
     fn test_pattern_rules() {
         let config = Config::new()
-            .with_pattern("**/*.rs", FileBundle::new().with_naming("snake_case").with_max_lines(500))
+            .with_pattern(
+                "**/*.rs",
+                FileBundle::new()
+                    .with_naming("snake_case")
+                    .with_max_lines(500),
+            )
             .with_pattern("src/**/*.rs", FileBundle::new().with_max_lines(300));
 
         let resolver = RuleResolver::new(&config);
@@ -395,13 +403,16 @@ mod tests {
 
         // src/**/*.rs is more specific than **/*.rs, so it should have higher specificity
         let global_rule = rules.iter().find(|r| r.path_pattern == "**/*.rs").unwrap();
-        let src_rule = rules.iter().find(|r| r.path_pattern == "src/**/*.rs").unwrap();
+        let src_rule = rules
+            .iter()
+            .find(|r| r.path_pattern == "src/**/*.rs")
+            .unwrap();
 
         assert!(src_rule.specificity > global_rule.specificity);
     }
 
     #[test]
-    fn test_allowed_names_inheritance() {
+    fn test_directory_local_file_exceptions_do_not_inherit() {
         let parent = FileBundle::new()
             .with_naming("snake_case")
             .with_allowed_names(vec!["README.md".to_string(), "LICENSE".to_string()]);
@@ -410,8 +421,9 @@ mod tests {
 
         let merged = RuleResolver::merge_bundles(&parent, Some(&child));
 
-        // allowed_names should be inherited
-        assert!(merged.allowed_names.is_some());
-        assert_eq!(merged.allowed_names.unwrap().len(), 2);
+        assert!(merged.allowed_names.is_none());
+
+        let inherited_without_child_bundle = RuleResolver::merge_bundles(&parent, None);
+        assert!(inherited_without_child_bundle.allowed_names.is_none());
     }
 }
