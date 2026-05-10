@@ -51,17 +51,13 @@ impl RuleResolver {
             let entry_path = current_path.join(key);
 
             match entry {
-                PolicyEntry::Directory(subdir) => {
+                PolicyEntry::Directory(subdir) if file_path.starts_with(&entry_path) => {
                     // Check if this directory is in the file path
-                    if file_path.starts_with(&entry_path) {
-                        Self::traverse_and_resolve(config, subdir, file_path, &entry_path, result);
-                    }
+                    Self::traverse_and_resolve(config, subdir, file_path, &entry_path, result);
                 }
-                PolicyEntry::File(items) => {
+                PolicyEntry::File(items) if Self::pattern_matches(key, file_path) => {
                     // Check if this file pattern matches
-                    if Self::pattern_matches(key, file_path) {
-                        Self::resolve_file_items(config, items, file_path, result);
-                    }
+                    Self::resolve_file_items(config, items, file_path, result);
                 }
                 _ => {} // Other entry types handled at directory level
             }

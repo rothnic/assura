@@ -411,16 +411,14 @@ impl MarkdownParser {
                     code_content.clear();
                     code_start_line = self.position_to_line(&body, range.start);
                 }
-                Event::End(Tag::CodeBlock(_kind)) => {
-                    if in_code_block {
-                        code_blocks.push(CodeBlock {
-                            language: code_language.take(),
-                            content: code_content.clone(),
-                            line_number: code_start_line,
-                        });
-                        in_code_block = false;
-                        code_content.clear();
-                    }
+                Event::End(Tag::CodeBlock(_kind)) if in_code_block => {
+                    code_blocks.push(CodeBlock {
+                        language: code_language.take(),
+                        content: code_content.clone(),
+                        line_number: code_start_line,
+                    });
+                    in_code_block = false;
+                    code_content.clear();
                 }
                 Event::Start(Tag::Link(_type, dest_url, _title)) => {
                     let line_number = self.position_to_line(&body, range.start);

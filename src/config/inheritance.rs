@@ -48,7 +48,7 @@ impl<'a> RuleResolver<'a> {
         }
 
         // Sort by specificity (most specific first)
-        rules.sort_by(|a, b| b.specificity.cmp(&a.specificity));
+        rules.sort_by_key(|rule| std::cmp::Reverse(rule.specificity));
 
         rules
     }

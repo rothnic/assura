@@ -54,12 +54,10 @@ impl PairingValidator {
                 PolicyEntry::Directory(subdir) => {
                     Self::scan_for_patterns(subdir, &entry_path, patterns);
                 }
-                PolicyEntry::File(_) => {
+                PolicyEntry::File(_) if key.contains("${") => {
                     // Check if key contains variable pattern
-                    if key.contains("${") {
-                        let full_pattern = entry_path.to_string_lossy().to_string();
-                        patterns.insert(full_pattern, key.clone());
-                    }
+                    let full_pattern = entry_path.to_string_lossy().to_string();
+                    patterns.insert(full_pattern, key.clone());
                 }
                 _ => {}
             }

@@ -31,7 +31,7 @@ Clean the repository-wide Clippy warning baseline so `cargo clippy --all-targets
 - [x] `cargo test --all-targets --quiet` passes.
 - [x] `.github/workflows/ci.yml` makes Clippy blocking again if the baseline is clean.
 - [x] `.trellis/spec/assura/tooling-stabilization.md` records the Clippy baseline as closed if the baseline is clean.
-- [ ] Work is committed, pushed, and opened as a focused PR.
+- [x] Work is committed, pushed, and opened as a focused PR.
 
 ## Out of Scope
 

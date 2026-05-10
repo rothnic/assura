@@ -82,7 +82,7 @@ impl PolicyEngine {
         }
 
         // Sort by specificity (most specific first)
-        matches.sort_by(|a, b| b.specificity.cmp(&a.specificity));
+        matches.sort_by_key(|policy_match| std::cmp::Reverse(policy_match.specificity));
 
         // Merge rules from most specific to least specific
         // (child rules override parent rules)
