@@ -1,1 +1,2 @@
-{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file": ".trellis/spec/assura/index.md", "reason": "Verify workflow changes preserve Assura source-of-truth and deferred baseline policy"}
+{"file": ".trellis/spec/assura/tooling-stabilization.md", "reason": "Verify CI gate status matches documented stabilization policy"}

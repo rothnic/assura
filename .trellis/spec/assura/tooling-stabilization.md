@@ -13,6 +13,9 @@ between product work and tooling-baseline work explicit.
   platform before pushing implementation changes.
 - Keep repository-wide Rust formatting clean. `cargo fmt --all -- --check` is
   expected to pass in CI after the dedicated rustfmt baseline cleanup.
+- Run Clippy in CI as an advisory signal until the repository-wide warning
+  baseline is clean; do not let the known warning backlog keep unrelated PRs
+  red.
 - Keep Assura hooks advisory until the repo passes its own `.assura/config.yml`
   baseline consistently.
 - Document every paused or non-blocking check here before treating it as
@@ -22,7 +25,7 @@ between product work and tooling-baseline work explicit.
 
 | Issue | Current Evidence | Treatment | Re-enable / Close Criteria |
 | --- | --- | --- | --- |
-| Repository-wide clippy warnings | `cargo clippy --all-targets --all-features -- -D warnings` fails with broad existing warnings, including `src/validation/resolver.rs`, `src/ls_compat/parser.rs`, and parity tests. | Known tooling-baseline debt. Keep new/touched code clean, then run a focused clippy cleanup iteration. | Dedicated clippy cleanup PR lands and clippy becomes blocking in CI. |
+| Repository-wide clippy warnings | `cargo clippy --all-targets --all-features -- -D warnings` fails with broad existing warnings, including `src/validation/resolver.rs`, `src/ls_compat/parser.rs`, and parity tests. | Known tooling-baseline debt. Keep new/touched code clean, run Clippy in CI as advisory, then run a focused clippy cleanup iteration. | Dedicated clippy cleanup PR lands and Clippy becomes blocking in CI. |
 | Windows CI test job paused | GitHub Actions `windows-latest` test job failed linking `libgit2_sys` with unresolved MSVC symbols including `GetNamedSecurityInfoW`, registry APIs, and CryptoAPI symbols. | Temporarily removed from the PR test matrix while stabilizing core workflow. This is not a product-behavior signal yet. | Add the required Windows linker/system-library fix or dependency configuration, prove `cargo test --all-features` passes on `windows-latest`, then restore Windows to the CI matrix. |
 | Coverage reporting is local to CI | Code coverage generation succeeds, but hosted Codecov upload added external account, token, and rate-limit failure modes before the core tooling baseline was stable. | Keep `cargo tarpaulin` coverage generation in CI, summarize coverage in the GitHub job summary, and publish the Cobertura XML as a GitHub Actions artifact. Do not require Codecov for the current workflow. | Decide on a coverage threshold and enforce it locally in CI, or adopt a hosted service only when trend dashboards and PR annotations are worth the extra dependency. |
 | Assura self-check baseline fails | `./target/debug/assura check .` reports known structure/documentation violations in legacy docs, archived workflow systems, and oversized existing modules. | Advisory until cleanup iterations reduce the baseline to zero. New PRs should not increase the violation count. | Cleanup/archival work lands, `assura check .` passes, and hooks can become blocking for protected paths. |

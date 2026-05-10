@@ -16,11 +16,16 @@
   "base_branch": "master",
   "worktree_path": null,
   "commit": null,
-  "pr_url": null,
+  "pr_url": "https://github.com/rothnic/assura/pull/3",
   "subtasks": [],
   "children": [],
   "parent": null,
-  "relatedFiles": [],
+  "relatedFiles": [
+    ".github/workflows/ci.yml",
+    ".github/workflows/docs.yml",
+    ".trellis/spec/assura/tooling-stabilization.md",
+    ".trellis/tasks/05-10-ci-efficiency-baseline/prd.md"
+  ],
   "notes": "",
   "meta": {}
 }
