@@ -23,9 +23,11 @@ non-trivial:
 
 ```text
 Workflow status:
+- Roadmap epic: <3-5 word epic from .trellis/spec/assura/roadmap.md>
 - Task: <active Trellis task or "none">
 - State: <planning | in_progress | review | paused | completed>
 - Branch/PR: <branch and PR if relevant>
+- Git: <branch, worktree, staged/unstaged/untracked summary>
 - Current focus: <one sentence>
 - Known blockers/deferred items: <short list or "none">
 - Options: <2-3 realistic next moves>
@@ -38,6 +40,9 @@ Keep it short. The goal is orientation, not a second report.
 
 - Prefer facts from repo state: `task.py current --source`, `git status`,
   current branch, PR checks, and active Trellis specs.
+- Pull the active roadmap epic from `.trellis/spec/assura/roadmap.md`.
+- Include the git summary even when the tree is clean. State staged,
+  unstaged, and untracked status explicitly.
 - If a check is paused or a failure is accepted temporarily, link it to a
   Trellis spec or task that owns the follow-up.
 - Always separate options from the recommendation. Options show tradeoffs;
@@ -57,3 +62,14 @@ workflow stabilization:
 3. Run dedicated rustfmt and clippy cleanup iterations.
 4. Reduce the `assura check .` baseline to zero.
 5. Re-enable Windows CI after the documented linker issue is fixed.
+
+## Git Summary Format
+
+Use this concise form:
+
+```text
+Git: branch=<name>; worktree=<path>; staged=<none|summary>;
+unstaged=<none|summary>; untracked=<none|summary>
+```
+
+If a PR exists, include it in `Branch/PR` rather than overloading the git line.

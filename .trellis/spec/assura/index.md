@@ -8,6 +8,7 @@ expanding into richer dependency and documentation constraints.
 ## Canonical Sources
 
 - Workflow and task execution: `.trellis/workflow.md` and `.trellis/tasks/`
+- Epic roadmap: `.trellis/spec/assura/roadmap.md`
 - Workflow status snapshots: `.trellis/spec/assura/workflow-status.md`
 - Spec routing: `.trellis/spec/index.md`
 - Project structure enforcement: `.assura/config.yml`
@@ -43,5 +44,7 @@ expanding into richer dependency and documentation constraints.
 - Every non-trivial task response should include or preserve a concise workflow
   status snapshot: current task, phase/state, branch/PR when relevant, known
   blockers, next options, and the recommended next action.
+- Workflow status snapshots should identify the active epic from the Assura
+  roadmap and the open Trellis task that currently owns the work.
 - Any new validation constraint should include a failing fixture, a passing
   fixture, and CLI integration coverage where practical.

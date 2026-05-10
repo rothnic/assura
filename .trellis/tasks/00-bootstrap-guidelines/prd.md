@@ -28,6 +28,8 @@ Make future AI sessions discover Assura's real conventions quickly:
       `.trellis/spec/assura/tooling-stabilization.md`.
 - [x] Add workflow status snapshot expectations so task state, options, and
       recommendations are clear to both agents and the developer.
+- [x] Add high-level epic roadmap and require status snapshots to include the
+      active epic, open task, git summary, options, and recommendation.
 - [ ] Convert remaining durable conventions from `AGENTS.md` and docs into
       `.trellis/spec/assura/` files.
 - [ ] Stabilize CI signals so expected baseline debt is either fixed or
@@ -51,6 +53,7 @@ project stabilizes:
 | Spec | Purpose |
 | --- | --- |
 | `index.md` | Canonical product direction and source-of-truth map. |
+| `roadmap.md` | 3-5 word epic roadmap, active epic, open work, and next recommendation. |
 | `cli.md` | Public CLI command behavior, exit codes, and output formats. |
 | `config.md` | Supported structure-first config semantics and inheritance rules. |
 | `self-enforcement.md` | How `.assura/config.yml` dogfoods the repo. |
@@ -76,6 +79,7 @@ create empty placeholders.
 - For non-trivial task work, include a quick workflow status snapshot so the
   developer and next agent can see the active task, current state, options, and
   recommended next action without reconstructing context from chat history.
+- Include the active roadmap epic and git summary in those snapshots.
 
 ## Completion
 
