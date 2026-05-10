@@ -172,3 +172,43 @@ fn check_fails_missing_markdown_frontmatter() {
         stdout
     );
 }
+
+#[test]
+fn check_supports_regex_naming_conventions() {
+    let project = TempDir::new().unwrap();
+    write_config(
+        &project,
+        r#"
+structure:
+  ./:
+    files:
+      required:
+        - README.md
+    children:
+      specs/:
+        files:
+          naming: "regex:^[0-9]{3}-[a-z0-9-]+$"
+"#,
+    );
+
+    fs::create_dir(project.path().join("specs")).unwrap();
+    fs::write(project.path().join("README.md"), "# Example\n").unwrap();
+    fs::write(project.path().join("specs/001-good-name.md"), "# Good\n").unwrap();
+    fs::write(project.path().join("specs/bad-name.md"), "# Bad\n").unwrap();
+
+    let output = Command::new(assura_bin())
+        .arg("check")
+        .arg(project.path())
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(1));
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(stdout.contains("file_naming"), "stdout was:\n{}", stdout);
+    assert!(stdout.contains("bad-name.md"), "stdout was:\n{}", stdout);
+    assert!(
+        !stdout.contains("001-good-name.md"),
+        "stdout was:\n{}",
+        stdout
+    );
+}

@@ -32,5 +32,9 @@ expanding into richer dependency and documentation constraints.
 - Keep hooks advisory on ordinary branches until the repo passes its own
   structure checks consistently.
 - Do not add a second active spec/task system next to Trellis.
+- Treat PR feedback about new duplication, compatibility shims, unused
+  scaffolding, or confusing parallel paths as in-scope cleanup for the current
+  branch. Assura is pre-production and pre-1.0, so prefer a direct replacement
+  or removal over preserving compatibility layers that would become debt.
 - Any new validation constraint should include a failing fixture, a passing
   fixture, and CLI integration coverage where practical.

@@ -5,12 +5,13 @@ use crate::config::config::{Config, DirectoryNode, FileBundle, MarkdownBundle};
 use crate::config::loader::ConfigLoader;
 use crate::constraints::CaseConvention;
 use glob::Pattern;
+use regex::Regex;
 use serde::Serialize;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 use thiserror::Error;
-use walkdir::{DirEntry, WalkDir};
+use walkdir::WalkDir;
 
 /// Result of running a structure-first check.
 #[derive(Debug, Clone, Serialize)]
@@ -178,21 +179,41 @@ struct StructureChecker {
     config: Config,
     fail_fast: bool,
     configured_dirs: HashSet<PathBuf>,
+    exclude_patterns: Vec<CompiledExclusion>,
+    naming_regexes: HashMap<String, Regex>,
+    rules_cache: HashMap<PathBuf, EffectiveRules>,
+}
+
+#[derive(Debug, Clone)]
+struct CompiledExclusion {
+    prefix: Option<String>,
+    pattern: Option<Pattern>,
 }
 
 impl StructureChecker {
     fn new(project_root: PathBuf, config: Config, fail_fast: bool) -> Self {
         let mut configured_dirs = HashSet::new();
+        let mut naming_regexes = HashMap::new();
         for (path, node) in &config.structure {
             let base = normalize_config_dir(path);
             collect_configured_dirs(base, node, &mut configured_dirs);
+            collect_naming_regexes(node, &mut naming_regexes);
         }
+
+        let exclude_patterns = config
+            .exclude
+            .iter()
+            .map(|pattern| CompiledExclusion::new(pattern))
+            .collect();
 
         Self {
             project_root,
             config,
             fail_fast,
             configured_dirs,
+            exclude_patterns,
+            naming_regexes,
+            rules_cache: HashMap::new(),
         }
     }
 
@@ -218,17 +239,20 @@ impl StructureChecker {
             return Ok(report);
         }
 
-        let mut entries = Vec::new();
+        let project_root = self.project_root.clone();
+        let exclude_patterns = self.exclude_patterns.clone();
         for entry in WalkDir::new(&checked_path)
             .into_iter()
-            .filter_entry(|entry| !self.is_excluded_entry(entry))
+            .filter_entry(move |entry| {
+                let rel = entry
+                    .path()
+                    .strip_prefix(&project_root)
+                    .unwrap_or(entry.path());
+                !is_excluded_rel_with(&exclude_patterns, rel)
+            })
         {
             let entry = entry?;
-            entries.push(entry.path().to_path_buf());
-        }
-        entries.sort();
-
-        for path in entries {
+            let path = entry.path();
             if path == checked_path && path.is_dir() {
                 continue;
             }
@@ -246,6 +270,9 @@ impl StructureChecker {
             }
         }
 
+        report
+            .violations
+            .sort_by(|left, right| left.path.cmp(&right.path).then(left.rule.cmp(&right.rule)));
         report.success = report.violations.is_empty();
         Ok(report)
     }
@@ -339,7 +366,7 @@ impl StructureChecker {
         }
     }
 
-    fn validate_directory(&self, path: &Path, report: &mut StructureCheckReport) {
+    fn validate_directory(&mut self, path: &Path, report: &mut StructureCheckReport) {
         let rel = self.relative_path(path);
         if rel.as_os_str().is_empty() || self.configured_dirs.contains(&rel) {
             return;
@@ -359,7 +386,7 @@ impl StructureChecker {
             .file_name()
             .and_then(|name| name.to_str())
             .unwrap_or("");
-        if !validate_name(name, naming) {
+        if !validate_name(name, naming, &self.naming_regexes) {
             self.push_violation(
                 report,
                 rel,
@@ -373,18 +400,48 @@ impl StructureChecker {
         }
     }
 
-    fn validate_file(&self, path: &Path, report: &mut StructureCheckReport) {
+    fn validate_file(&mut self, path: &Path, report: &mut StructureCheckReport) {
         let rel = self.relative_path(path);
         let parent_rel = rel.parent().unwrap_or_else(|| Path::new(""));
         let rules = self.resolve_rules(parent_rel);
 
+        let needs_markdown =
+            path.extension().and_then(|ext| ext.to_str()) == Some("md") && rules.markdown.is_some();
+        let needs_file_content = rules.files.as_ref().is_some_and(|files| {
+            files.max_lines.is_some()
+                || (files.require_docs == Some(true)
+                    && path.extension().and_then(|ext| ext.to_str()) == Some("rs"))
+        });
+        let content = if needs_file_content || needs_markdown {
+            match fs::read_to_string(path) {
+                Ok(content) => Some(content),
+                Err(error) => {
+                    let severity = rules
+                        .files
+                        .as_ref()
+                        .map(severity_for_bundle)
+                        .unwrap_or_else(|| "medium".to_string());
+                    self.push_violation(
+                        report,
+                        rel.clone(),
+                        "read_file",
+                        format!("Could not read '{}': {}", display_rel(&rel), error),
+                        severity,
+                    );
+                    None
+                }
+            }
+        } else {
+            None
+        };
+
         if let Some(files) = rules.files {
-            self.validate_file_bundle(path, &rel, &files, report);
+            self.validate_file_bundle(path, &rel, &files, content.as_deref(), report);
         }
 
-        if path.extension().and_then(|ext| ext.to_str()) == Some("md") {
-            if let Some(markdown) = rules.markdown {
-                self.validate_markdown(path, &rel, &markdown, report);
+        if needs_markdown {
+            if let (Some(markdown), Some(content)) = (rules.markdown, content.as_deref()) {
+                self.validate_markdown(&rel, &markdown, content, report);
             }
         }
     }
@@ -394,6 +451,7 @@ impl StructureChecker {
         path: &Path,
         rel: &Path,
         files: &FileBundle,
+        content: Option<&str>,
         report: &mut StructureCheckReport,
     ) {
         let filename = path
@@ -425,7 +483,7 @@ impl StructureChecker {
                     .file_stem()
                     .and_then(|stem| stem.to_str())
                     .unwrap_or("");
-                if !validate_file_stem(stem, naming) {
+                if !validate_file_stem(stem, naming, &self.naming_regexes) {
                     self.push_violation(
                         report,
                         rel.to_path_buf(),
@@ -434,37 +492,6 @@ impl StructureChecker {
                             "File '{}' does not match naming convention '{}'",
                             filename, naming
                         ),
-                        severity_for_bundle(files),
-                    );
-                }
-            }
-        }
-
-        if let Some(max_lines) = files.max_lines {
-            match fs::read_to_string(path) {
-                Ok(content) => {
-                    let line_count = content.lines().count();
-                    if line_count > max_lines {
-                        self.push_violation(
-                            report,
-                            rel.to_path_buf(),
-                            "max_lines",
-                            format!(
-                                "File '{}' has {} lines, exceeding limit {}",
-                                display_rel(rel),
-                                line_count,
-                                max_lines
-                            ),
-                            severity_for_bundle(files),
-                        );
-                    }
-                }
-                Err(error) => {
-                    self.push_violation(
-                        report,
-                        rel.to_path_buf(),
-                        "read_file",
-                        format!("Could not read '{}': {}", display_rel(rel), error),
                         severity_for_bundle(files),
                     );
                 }
@@ -492,27 +519,34 @@ impl StructureChecker {
             }
         }
 
+        if let (Some(max_lines), Some(content)) = (files.max_lines, content) {
+            let line_count = content.lines().count();
+            if line_count > max_lines {
+                self.push_violation(
+                    report,
+                    rel.to_path_buf(),
+                    "max_lines",
+                    format!(
+                        "File '{}' has {} lines, exceeding limit {}",
+                        display_rel(rel),
+                        line_count,
+                        max_lines
+                    ),
+                    severity_for_bundle(files),
+                );
+            }
+        }
+
         if files.require_docs == Some(true)
             && path.extension().and_then(|ext| ext.to_str()) == Some("rs")
         {
-            match fs::read_to_string(path) {
-                Ok(content) => {
-                    if !content.contains("//!") && !content.contains("///") {
-                        self.push_violation(
-                            report,
-                            rel.to_path_buf(),
-                            "require_docs",
-                            format!("Rust file '{}' is missing rustdoc", display_rel(rel)),
-                            severity_for_bundle(files),
-                        );
-                    }
-                }
-                Err(error) => {
+            if let Some(content) = content {
+                if !content.contains("//!") && !content.contains("///") {
                     self.push_violation(
                         report,
                         rel.to_path_buf(),
-                        "read_file",
-                        format!("Could not read '{}': {}", display_rel(rel), error),
+                        "require_docs",
+                        format!("Rust file '{}' is missing rustdoc", display_rel(rel)),
                         severity_for_bundle(files),
                     );
                 }
@@ -522,26 +556,12 @@ impl StructureChecker {
 
     fn validate_markdown(
         &self,
-        path: &Path,
         rel: &Path,
         markdown: &MarkdownBundle,
+        content: &str,
         report: &mut StructureCheckReport,
     ) {
-        let content = match fs::read_to_string(path) {
-            Ok(content) => content,
-            Err(error) => {
-                self.push_violation(
-                    report,
-                    rel.to_path_buf(),
-                    "read_file",
-                    format!("Could not read '{}': {}", display_rel(rel), error),
-                    "medium",
-                );
-                return;
-            }
-        };
-
-        let frontmatter = parse_frontmatter(&content);
+        let frontmatter = parse_frontmatter(content);
 
         if markdown.require_frontmatter == Some(true) && frontmatter.is_none() {
             self.push_violation(
@@ -630,10 +650,16 @@ impl StructureChecker {
         }
 
         if let Some(required_sections) = &markdown.required_sections {
+            let mut headings = HashSet::new();
+            for line in content.lines() {
+                if let Some(section) = line.strip_prefix("# ").or_else(|| line.strip_prefix("## "))
+                {
+                    headings.insert(section);
+                }
+            }
+
             for section in required_sections {
-                let h1 = format!("# {}", section);
-                let h2 = format!("## {}", section);
-                if !content.lines().any(|line| line == h1 || line == h2) {
+                if !headings.contains(section.as_str()) {
                     self.push_violation(
                         report,
                         rel.to_path_buf(),
@@ -650,7 +676,11 @@ impl StructureChecker {
         }
     }
 
-    fn resolve_rules(&self, dir_rel: &Path) -> EffectiveRules {
+    fn resolve_rules(&mut self, dir_rel: &Path) -> EffectiveRules {
+        if let Some(cached) = self.rules_cache.get(dir_rel) {
+            return cached.clone();
+        }
+
         let mut result = EffectiveRules::default();
         for (path, node) in &self.config.structure {
             let base = normalize_config_dir(path);
@@ -662,6 +692,8 @@ impl StructureChecker {
                 &mut result,
             );
         }
+        self.rules_cache
+            .insert(dir_rel.to_path_buf(), result.clone());
         result
     }
 
@@ -708,24 +740,8 @@ impl StructureChecker {
             .to_path_buf()
     }
 
-    fn is_excluded_entry(&self, entry: &DirEntry) -> bool {
-        let rel = entry
-            .path()
-            .strip_prefix(&self.project_root)
-            .unwrap_or(entry.path());
-        self.is_excluded_rel(rel)
-    }
-
     fn is_excluded_rel(&self, rel: &Path) -> bool {
-        if rel.as_os_str().is_empty() {
-            return false;
-        }
-
-        let rel = rel_to_string(rel);
-        self.config
-            .exclude
-            .iter()
-            .any(|pattern| pattern_matches(pattern, &rel))
+        is_excluded_rel_with(&self.exclude_patterns, rel)
     }
 
     fn push_violation(
@@ -746,6 +762,28 @@ impl StructureChecker {
     }
 }
 
+impl CompiledExclusion {
+    fn new(pattern: &str) -> Self {
+        Self {
+            prefix: pattern.strip_suffix("/**").map(ToOwned::to_owned),
+            pattern: Pattern::new(pattern).ok(),
+        }
+    }
+
+    fn matches(&self, rel: &str) -> bool {
+        if let Some(prefix) = &self.prefix {
+            if rel == prefix || rel.starts_with(&format!("{}/", prefix)) {
+                return true;
+            }
+        }
+
+        self.pattern
+            .as_ref()
+            .map(|pattern| pattern.matches(rel))
+            .unwrap_or(false)
+    }
+}
+
 fn collect_configured_dirs(
     node_rel: PathBuf,
     node: &DirectoryNode,
@@ -759,6 +797,43 @@ fn collect_configured_dirs(
             collect_configured_dirs(child_rel, child, configured_dirs);
         }
     }
+}
+
+fn collect_naming_regexes(node: &DirectoryNode, regexes: &mut HashMap<String, Regex>) {
+    if let Some(files) = &node.files {
+        if let Some(naming) = &files.naming {
+            collect_naming_regex(naming, regexes);
+        }
+    }
+
+    if let Some(children) = &node.children {
+        for child in children.values() {
+            collect_naming_regexes(child, regexes);
+        }
+    }
+}
+
+fn collect_naming_regex(convention: &str, regexes: &mut HashMap<String, Regex>) {
+    let Some(pattern) = convention.strip_prefix("regex:") else {
+        return;
+    };
+
+    if regexes.contains_key(pattern) {
+        return;
+    }
+
+    if let Ok(regex) = Regex::new(pattern) {
+        regexes.insert(pattern.to_string(), regex);
+    }
+}
+
+fn is_excluded_rel_with(patterns: &[CompiledExclusion], rel: &Path) -> bool {
+    if rel.as_os_str().is_empty() {
+        return false;
+    }
+
+    let rel = rel_to_string(rel);
+    patterns.iter().any(|pattern| pattern.matches(&rel))
 }
 
 fn normalize_config_dir(path: &str) -> PathBuf {
@@ -837,9 +912,10 @@ fn merge_markdown_bundle(
     }
 }
 
-fn validate_name(name: &str, convention: &str) -> bool {
+fn validate_name(name: &str, convention: &str, regexes: &HashMap<String, Regex>) -> bool {
     if let Some(pattern) = convention.strip_prefix("regex:") {
-        return regex::Regex::new(pattern)
+        return regexes
+            .get(pattern)
             .map(|regex| regex.is_match(name))
             .unwrap_or(false);
     }
@@ -850,11 +926,11 @@ fn validate_name(name: &str, convention: &str) -> bool {
     }
 }
 
-fn validate_file_stem(stem: &str, convention: &str) -> bool {
-    validate_name(stem, convention)
+fn validate_file_stem(stem: &str, convention: &str, regexes: &HashMap<String, Regex>) -> bool {
+    validate_name(stem, convention, regexes)
         || stem
             .split_once('.')
-            .map(|(base, _)| validate_name(base, convention))
+            .map(|(base, _)| validate_name(base, convention, regexes))
             .unwrap_or(false)
 }
 
@@ -903,18 +979,6 @@ fn parse_frontmatter(content: &str) -> Option<&str> {
     let start = 4;
     let end = content[start..].find("\n---")?;
     Some(&content[start..start + end])
-}
-
-fn pattern_matches(pattern: &str, rel: &str) -> bool {
-    if let Some(prefix) = pattern.strip_suffix("/**") {
-        if rel == prefix || rel.starts_with(&format!("{}/", prefix)) {
-            return true;
-        }
-    }
-
-    Pattern::new(pattern)
-        .map(|pattern| pattern.matches(rel))
-        .unwrap_or(false)
 }
 
 fn rel_to_string(path: &Path) -> String {
