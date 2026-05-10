@@ -10,6 +10,7 @@ expanding into richer dependency and documentation constraints.
 - Workflow and task execution: `.trellis/workflow.md` and `.trellis/tasks/`
 - Spec routing: `.trellis/spec/index.md`
 - Project structure enforcement: `.assura/config.yml`
+- Tooling and CI stabilization: `.trellis/spec/assura/tooling-stabilization.md`
 - CLI entrypoint: `src/main.rs`
 - Public check implementation: `src/cli/check.rs` and `src/cli/commands.rs`
 - Structure config model: `src/config/config.rs`
@@ -36,5 +37,7 @@ expanding into richer dependency and documentation constraints.
   scaffolding, or confusing parallel paths as in-scope cleanup for the current
   branch. Assura is pre-production and pre-1.0, so prefer a direct replacement
   or removal over preserving compatibility layers that would become debt.
+- Treat known failing checks as explicit stabilization work. Do not leave them
+  as tribal knowledge in PR comments only.
 - Any new validation constraint should include a failing fixture, a passing
   fixture, and CLI integration coverage where practical.

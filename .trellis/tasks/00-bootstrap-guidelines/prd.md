@@ -24,8 +24,18 @@ Make future AI sessions discover Assura's real conventions quickly:
 - [x] Adopt Trellis-first governance ADR.
 - [x] Add documentation cleanup register.
 - [x] Wire Assura baseline `check` behavior to real structure validation.
+- [x] Capture current CI/tooling baseline debt and Windows pause criteria in
+      `.trellis/spec/assura/tooling-stabilization.md`.
 - [ ] Convert remaining durable conventions from `AGENTS.md` and docs into
       `.trellis/spec/assura/` files.
+- [ ] Stabilize CI signals so expected baseline debt is either fixed or
+      explicitly non-blocking.
+- [ ] Run a dedicated rustfmt cleanup PR, then make rustfmt blocking.
+- [ ] Run a dedicated clippy cleanup PR, then make clippy blocking.
+- [ ] Reduce `assura check .` baseline violations to zero before making hooks
+      blocking by default.
+- [ ] Re-enable Windows CI after resolving the `libgit2-sys` MSVC linker
+      failure.
 - [ ] Archive or rewrite stale OpenSpec, phase-review, and config docs after
       their useful content is migrated.
 - [ ] Decide whether the generated backend/frontend spec templates should be
@@ -44,6 +54,7 @@ project stabilizes:
 | `self-enforcement.md` | How `.assura/config.yml` dogfoods the repo. |
 | `docs-governance.md` | Canonical, historical, archive, and delete treatments. |
 | `testing.md` | Required checks for CLI, config, hooks, docs, and fixtures. |
+| `tooling-stabilization.md` | Current CI/tooling debt, paused checks, and cleanup sequence. |
 
 Only add these files when they contain real, current project guidance. Do not
 create empty placeholders.
@@ -57,6 +68,8 @@ create empty placeholders.
 - Keep active work in Trellis tasks. Do not create a second backlog in root docs.
 - When adding new Assura constraints, add passing and failing fixtures where
   practical, then dogfood the rule in `.assura/config.yml`.
+- Do not treat failing checks as acceptable unless they are recorded in the
+  Assura tooling stabilization spec with re-enable or close criteria.
 
 ## Completion
 
