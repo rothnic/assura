@@ -12,8 +12,14 @@
 !.agents/**/
 !.assura/
 !.assura/**/
+!.codex/
+!.codex/**/
 !.github/
 !.github/**/
+!.trellis/
+!.trellis/**/
+!.trellis/.version
+!.trellis/.template-hashes.json
 !.gitignore
 
 # ============================================================================

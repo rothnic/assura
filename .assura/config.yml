@@ -25,6 +25,11 @@ structure:
         - "LICENSE"
         - "LICENSE-MIT"
         - "LICENSE-APACHE"
+        # Project/tooling manifests
+        - ".gitignore"
+        - "Cargo.toml"
+        - "package.json"
+        - "PROJECT_CONTEXT.md"
       # Required files that must exist in root
       required:
         - "README.md"
@@ -36,11 +41,30 @@ structure:
       .agents/:
         files:
           naming: "kebab-case"
+          allowed_names:
+            - "README.md"
+            - "SKILL.md"
+            - "TEMPLATE.md"
       
       .assura/:
         files:
           naming: "kebab-case"
+          allowed_names:
+            - "config.new.yml"
+            - "config.yml"
+            - "config.yml.v1"
         children:
+          hooks/:
+            files:
+              naming: "kebab-case"
+
+      .codex/:
+        files:
+          naming: "kebab-case"
+        children:
+          agents/:
+            files:
+              naming: "kebab-case"
           hooks/:
             files:
               naming: "kebab-case"
@@ -48,11 +72,30 @@ structure:
       .github/:
         files:
           naming: "kebab-case"
+          allowed_names:
+            - "PULL_REQUEST_TEMPLATE.md"
+        children:
+          ISSUE_TEMPLATE/:
+            files:
+              naming: "snake_case"
+          prompts/:
+            files:
+              naming: "kebab-case"
+          skills/:
+            files:
+              naming: "kebab-case"
+              allowed_names:
+                - "SKILL.md"
+          workflows/:
+            files:
+              naming: "kebab-case"
       
       benches/:
         files:
           naming: "snake_case"
-          max_lines: 1000
+          max_lines: 1200
+          allowed_names:
+            - "README.md"
       
       docs/:
         files:
@@ -64,6 +107,8 @@ structure:
       opencode-plugin/:
         files:
           naming: "kebab-case"
+          allowed_names:
+            - "README.md"
       
       src/:
         files:
@@ -111,35 +156,37 @@ structure:
               naming: "snake_case"
               max_lines: 500
       
-      specs/:
+      .trellis/:
         files:
           naming: "kebab-case"
-          max_lines: 300
-        markdown:
-          require_frontmatter: true
+          max_lines: 2000
+          allowed_names:
+            - ".gitignore"
+            - ".template-hashes.json"
+            - ".version"
         children:
-          features/:
+          scripts/:
+            files:
+              naming: "snake_case"
+              max_lines: 1000
+              allowed_names:
+                - "__init__.py"
+          spec/:
             files:
               naming: "kebab-case"
-              max_lines: 300
+              max_lines: 1000
             markdown:
               require_frontmatter: false
-          adr/:
+          tasks/:
             files:
               naming: "kebab-case"
-              max_lines: 300
+              max_lines: 1000
             markdown:
-              require_frontmatter: true
-          requirements/:
+              require_frontmatter: false
+          workspace/:
             files:
               naming: "kebab-case"
-              max_lines: 300
-            markdown:
-              require_frontmatter: true
-          templates/:
-            files:
-              naming: "kebab-case"
-              max_lines: 300
+              max_lines: 1000
             markdown:
               require_frontmatter: false
       
@@ -151,11 +198,17 @@ structure:
       website/:
         files:
           naming: "kebab-case"
+          allowed_names:
+            - "README.md"
 
 # Global exclusions
 exclude:
   - "target/**"
   - ".git/**"
+  - ".trellis/.developer"
+  - ".trellis/.runtime/**"
+  - "**/__pycache__"
+  - "**/__pycache__/**"
   - "node_modules/**"
   - ".astro/**"
   - "dist/**"

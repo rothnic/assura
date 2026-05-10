@@ -10,9 +10,19 @@ if [ ! -d "$ASSURA_DIR" ]; then
     exit 0
 fi
 
+run_assura() {
+    if command -v assura >/dev/null 2>&1; then
+        assura "$@"
+    elif [ -x "$PROJECT_ROOT/target/debug/assura" ]; then
+        "$PROJECT_ROOT/target/debug/assura" "$@"
+    elif command -v cargo >/dev/null 2>&1; then
+        (cd "$PROJECT_ROOT" && cargo run --quiet -- "$@")
+    else
+        return 127
+    fi
+}
+
 # Show project status (non-blocking)
-if command -v assura >/dev/null 2>&1; then
-    assura status --format text "$PROJECT_ROOT" || true
-fi
+run_assura status --format text "$PROJECT_ROOT" || true
 
 exit 0
