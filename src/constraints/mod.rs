@@ -22,15 +22,15 @@ pub use ls_lint::{
     ComplexExtension, DirectoryConstraint, DirectoryRule, DirectoryValidationConfig,
     ExtensionPattern, MultiPartExtensionRule, MultipleRuleSyntax, PathRule, PathRuleConfig,
 };
-pub use naming::{
-    CaseConvention, ExtensionRule, NamingConstraint, NamingPattern, NamingRule,
-};
-pub use severity::{Severity, SeverityConfig, SeverityMapping};
+pub use naming::{CaseConvention, ExtensionRule, NamingConstraint, NamingPattern, NamingRule};
 pub use r#trait::{Constraint, ConstraintContext, ConstraintOutput};
-pub use trigger::{ConstraintTrigger, FileChangeTrigger, ManualTrigger, MaturityTrigger, TriggerRegistry};
+pub use severity::{Severity, SeverityConfig, SeverityMapping};
+pub use trigger::{
+    ConstraintTrigger, FileChangeTrigger, ManualTrigger, MaturityTrigger, TriggerRegistry,
+};
 
+use serde::{Deserialize, Serialize};
 use std::path::Path;
-use serde::{Serialize, Deserialize};
 
 /// Configuration for the constraint system
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -102,7 +102,10 @@ impl ConstraintEngine {
 
         for constraint in &self.constraints {
             // Check if trigger conditions are met
-            if self.trigger_registry.should_trigger(constraint.name(), path, context) {
+            if self
+                .trigger_registry
+                .should_trigger(constraint.name(), path, context)
+            {
                 let result = constraint.validate(path, context);
                 results.push(result);
             }
@@ -163,7 +166,7 @@ mod tests {
         let config = ConstraintConfig::new()
             .enable_file_watching()
             .enable_manual_triggers();
-        
+
         assert!(config.enable_file_watching);
         assert!(config.enable_manual_triggers);
     }

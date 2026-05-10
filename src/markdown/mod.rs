@@ -14,19 +14,11 @@ pub mod schema;
 pub mod template;
 
 pub use error::{MarkdownError, MarkdownResult, MarkdownValidationError};
-pub use frontmatter::{
-    FieldType, FieldValidator, FrontmatterConstraint, FrontmatterSchema,
-};
-pub use headings::{
-    HeadingConstraint, HeadingStructure, HeadingValidator,
-};
+pub use frontmatter::{FieldType, FieldValidator, FrontmatterConstraint, FrontmatterSchema};
+pub use headings::{HeadingConstraint, HeadingStructure, HeadingValidator};
 pub use parser::{Heading, HeadingHierarchy, HeadingLevel, MarkdownDocument, MarkdownParser};
-pub use schema::{
-    MarkdownSchema, MarkdownValidationRule, SchemaDefinition, ValidationConfig,
-};
-pub use template::{
-    SectionDefinition, SectionValidator, TemplateConstraint, TemplateDefinition,
-};
+pub use schema::{MarkdownSchema, MarkdownValidationRule, SchemaDefinition, ValidationConfig};
+pub use template::{SectionDefinition, SectionValidator, TemplateConstraint, TemplateDefinition};
 
 use crate::constraints::{
     Constraint, ConstraintContext, ConstraintOutput, ConstraintResult, ValidationFailure,
@@ -83,8 +75,7 @@ impl MarkdownConstraint {
 
         // Validate frontmatter if schema requires it
         if let Some(ref frontmatter_schema) = schema.frontmatter {
-            let frontmatter_failures =
-                frontmatter_schema.validate(&document, path)?;
+            let frontmatter_failures = frontmatter_schema.validate(&document, path)?;
             for failure in frontmatter_failures {
                 failures.add(failure);
             }
@@ -135,13 +126,12 @@ impl Constraint for MarkdownConstraint {
         path: &Path,
         context: &ConstraintContext,
     ) -> ConstraintResult<ConstraintOutput> {
-        let content = std::fs::read_to_string(path)
-            .map_err(|e| {
-                crate::constraints::ConstraintError::io(
-                    path,
-                    format!("Failed to read markdown file: {}", e),
-                )
-            })?;
+        let content = std::fs::read_to_string(path).map_err(|e| {
+            crate::constraints::ConstraintError::io(
+                path,
+                format!("Failed to read markdown file: {}", e),
+            )
+        })?;
 
         // Determine which schema to use
         let schema_name = context
@@ -151,14 +141,12 @@ impl Constraint for MarkdownConstraint {
             .or_else(|| self.default_schema.clone())
             .unwrap_or_else(|| "default".to_string());
 
-        let schema = self
-            .get_schema(&schema_name)
-            .ok_or_else(|| {
-                crate::constraints::ConstraintError::configuration(
-                    "markdown_schema",
-                    format!("Schema '{}' not found", schema_name),
-                )
-            })?;
+        let schema = self.get_schema(&schema_name).ok_or_else(|| {
+            crate::constraints::ConstraintError::configuration(
+                "markdown_schema",
+                format!("Schema '{}' not found", schema_name),
+            )
+        })?;
 
         self.validate_markdown(path, &content, schema)
     }
@@ -191,8 +179,8 @@ mod tests {
 
     #[test]
     fn test_markdown_constraint_schema_lookup() {
-        let constraint = MarkdownConstraint::new()
-            .register_schema(MarkdownSchema::new("test_schema"));
+        let constraint =
+            MarkdownConstraint::new().register_schema(MarkdownSchema::new("test_schema"));
 
         assert!(constraint.get_schema("test_schema").is_some());
         assert!(constraint.get_schema("nonexistent").is_none());

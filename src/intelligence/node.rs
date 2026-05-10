@@ -82,11 +82,7 @@ impl NodeMetadata {
         }
     }
 
-    pub fn with_custom<K: Into<String>, V: Into<String>>(
-        mut self,
-        key: K,
-        value: V,
-    ) -> Self {
+    pub fn with_custom<K: Into<String>, V: Into<String>>(mut self, key: K, value: V) -> Self {
         self.custom.insert(key.into(), value.into());
         self
     }
@@ -115,9 +111,7 @@ impl FileNode {
             .file_name()
             .map(|n| n.to_string_lossy().to_string())
             .unwrap_or_default();
-        let extension = path
-            .extension()
-            .map(|e| e.to_string_lossy().to_string());
+        let extension = path.extension().map(|e| e.to_string_lossy().to_string());
 
         Self {
             id: NodeId::new(),
@@ -235,11 +229,7 @@ impl Edge {
         self
     }
 
-    pub fn with_metadata<K: Into<String>, V: Into<String>>(
-        mut self,
-        key: K,
-        value: V,
-    ) -> Self {
+    pub fn with_metadata<K: Into<String>, V: Into<String>>(mut self, key: K, value: V) -> Self {
         self.metadata.insert(key.into(), value.into());
         self
     }

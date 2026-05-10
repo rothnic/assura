@@ -41,11 +41,7 @@ impl FrontmatterSchema {
     }
 
     /// Add a field validator
-    pub fn with_field(
-        mut self,
-        name: impl Into<String>,
-        validator: FieldValidator,
-    ) -> Self {
+    pub fn with_field(mut self, name: impl Into<String>, validator: FieldValidator) -> Self {
         self.fields.insert(name.into(), validator);
         self
     }
@@ -78,7 +74,9 @@ impl FrontmatterSchema {
                     path,
                     "Frontmatter is required but not found",
                 )
-                .with_suggestion("Add YAML frontmatter between --- delimiters at the start of the file")
+                .with_suggestion(
+                    "Add YAML frontmatter between --- delimiters at the start of the file",
+                )
                 .into_validation_failure(),
             );
             return Ok(failures);
@@ -265,10 +263,7 @@ impl FieldValidator {
     }
 
     /// Set allowed values
-    pub fn with_allowed_values(
-        mut self,
-        values: Vec<impl Into<serde_yaml::Value>>,
-    ) -> Self {
+    pub fn with_allowed_values(mut self, values: Vec<impl Into<serde_yaml::Value>>) -> Self {
         self.allowed_values = Some(values.into_iter().map(Into::into).collect());
         self
     }
@@ -397,13 +392,13 @@ impl FieldValidator {
         path: &std::path::Path,
     ) -> Result<(), MarkdownValidationError> {
         let n = match value {
-            serde_yaml::Value::Number(n) => n
-                .as_i64()
-                .ok_or_else(|| MarkdownValidationError::new(
+            serde_yaml::Value::Number(n) => n.as_i64().ok_or_else(|| {
+                MarkdownValidationError::new(
                     "field_type",
                     path,
                     format!("Field '{}' must be an integer", field_name),
-                ))?,
+                )
+            })?,
             _ => {
                 return Err(MarkdownValidationError::new(
                     "field_type",
@@ -547,10 +542,7 @@ impl FieldValidator {
                     return Err(MarkdownValidationError::new(
                         "field_max_length",
                         path,
-                        format!(
-                            "Field '{}' must have at most {} items",
-                            field_name, max_len
-                        ),
+                        format!("Field '{}' must have at most {} items", field_name, max_len),
                     ));
                 }
             }
@@ -626,17 +618,14 @@ impl FieldValidator {
         };
 
         // Validate ISO 8601 datetime format
-        let datetime_regex = Regex::new(
-            r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})?$"
-        ).unwrap();
+        let datetime_regex =
+            Regex::new(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})?$")
+                .unwrap();
         if !datetime_regex.is_match(s) {
             return Err(MarkdownValidationError::new(
                 "field_format",
                 path,
-                format!(
-                    "Field '{}' must be in ISO 8601 datetime format",
-                    field_name
-                ),
+                format!("Field '{}' must be in ISO 8601 datetime format", field_name),
             ));
         }
 
@@ -661,9 +650,7 @@ impl FieldValidator {
         };
 
         // Simple email validation regex
-        let email_regex = Regex::new(
-            r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-        ).unwrap();
+        let email_regex = Regex::new(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$").unwrap();
         if !email_regex.is_match(s) {
             return Err(MarkdownValidationError::new(
                 "field_format",
@@ -693,9 +680,7 @@ impl FieldValidator {
         };
 
         // Simple URL validation
-        let url_regex = Regex::new(
-            r"^https?://[^\s/$.?#].[^\s]*$"
-        ).unwrap();
+        let url_regex = Regex::new(r"^https?://[^\s/$.?#].[^\s]*$").unwrap();
         if !url_regex.is_match(s) {
             return Err(MarkdownValidationError::new(
                 "field_format",
@@ -779,10 +764,7 @@ impl crate::constraints::Constraint for FrontmatterConstraint {
         context: &crate::constraints::ConstraintContext,
     ) -> crate::constraints::ConstraintResult<crate::constraints::ConstraintOutput> {
         let content = std::fs::read_to_string(path).map_err(|e| {
-            crate::constraints::ConstraintError::io(
-                path,
-                format!("Failed to read file: {}", e),
-            )
+            crate::constraints::ConstraintError::io(path, format!("Failed to read file: {}", e))
         })?;
 
         let parser = super::parser::MarkdownParser::new();
@@ -803,19 +785,17 @@ impl crate::constraints::Constraint for FrontmatterConstraint {
         })?;
 
         let passed = failures.is_empty();
-        let failures_collection =
-            crate::constraints::ValidationFailures::from(failures);
+        let failures_collection = crate::constraints::ValidationFailures::from(failures);
 
-        Ok(crate::constraints::ConstraintOutput::new(&self.name, path, passed)
-            .with_failures(failures_collection))
+        Ok(
+            crate::constraints::ConstraintOutput::new(&self.name, path, passed)
+                .with_failures(failures_collection),
+        )
     }
 
     fn applies_to(&self, path: &std::path::Path) -> bool {
         path.extension()
-            .map(|ext| {
-                ext.eq_ignore_ascii_case("md")
-                    || ext.eq_ignore_ascii_case("markdown")
-            })
+            .map(|ext| ext.eq_ignore_ascii_case("md") || ext.eq_ignore_ascii_case("markdown"))
             .unwrap_or(false)
     }
 }
@@ -829,10 +809,7 @@ mod tests {
         let schema = FrontmatterSchema::new()
             .required()
             .with_field("title", FieldValidator::new(FieldType::String).required())
-            .with_field(
-                "date",
-                FieldValidator::new(FieldType::Date).required(),
-            )
+            .with_field("date", FieldValidator::new(FieldType::Date).required())
             .allow_additional_fields(true);
 
         assert!(schema.required);
@@ -870,8 +847,7 @@ mod tests {
 
     #[test]
     fn test_validate_string_pattern() {
-        let validator = FieldValidator::new(FieldType::String)
-            .with_pattern(r"^\d{4}-\d{2}-\d{2}$");
+        let validator = FieldValidator::new(FieldType::String).with_pattern(r"^\d{4}-\d{2}-\d{2}$");
         let path = std::path::PathBuf::from("/test.md");
 
         let valid = serde_yaml::Value::String("2024-01-15".to_string());
@@ -924,8 +900,11 @@ mod tests {
 
     #[test]
     fn test_validate_allowed_values() {
-        let validator = FieldValidator::new(FieldType::String)
-            .with_allowed_values(vec!["draft", "published", "archived"]);
+        let validator = FieldValidator::new(FieldType::String).with_allowed_values(vec![
+            "draft",
+            "published",
+            "archived",
+        ]);
         let path = std::path::PathBuf::from("/test.md");
 
         let valid = serde_yaml::Value::String("published".to_string());

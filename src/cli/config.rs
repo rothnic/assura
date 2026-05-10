@@ -168,7 +168,11 @@ impl CliConfig {
     }
 
     pub fn exists(project_root: impl AsRef<Path>) -> bool {
-        project_root.as_ref().join(ASSURA_DIR).join(CONFIG_FILE).exists()
+        project_root
+            .as_ref()
+            .join(ASSURA_DIR)
+            .join(CONFIG_FILE)
+            .exists()
     }
 
     pub fn assura_dir(&self) -> PathBuf {
@@ -255,7 +259,10 @@ impl Default for GitConfig {
             },
         );
 
-        Self { enabled: true, hooks }
+        Self {
+            enabled: true,
+            hooks,
+        }
     }
 }
 

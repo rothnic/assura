@@ -4,10 +4,10 @@
 
 use crate::config::engine::{PolicyEngine, ResolvedRules};
 use crate::config::types::{Case, Config, NamingConvention, Severity};
-use crate::constraints::naming::{CaseConvention, NamingConstraint, NamingRule};
-use crate::constraints::file_size::{FileSizeConstraint, FileSizeLimit, FileSizeRule};
-use crate::constraints::r#trait::{Constraint, ConstraintContext, ConstraintOutput};
 use crate::constraints::error::{ValidationFailure, ValidationFailures};
+use crate::constraints::file_size::{FileSizeConstraint, FileSizeLimit, FileSizeRule};
+use crate::constraints::naming::{CaseConvention, NamingConstraint, NamingRule};
+use crate::constraints::r#trait::{Constraint, ConstraintContext, ConstraintOutput};
 use std::collections::HashMap;
 use std::path::Path;
 
@@ -124,10 +124,12 @@ impl ValidationEngine {
     }
 
     /// Validate naming convention
-    fn validate_naming(&self, path: &Path, convention: &NamingConvention) -> Option<ValidationFailure> {
-        let filename = path.file_stem()
-            .and_then(|s| s.to_str())
-            .unwrap_or("");
+    fn validate_naming(
+        &self,
+        path: &Path,
+        convention: &NamingConvention,
+    ) -> Option<ValidationFailure> {
+        let filename = path.file_stem().and_then(|s| s.to_str()).unwrap_or("");
 
         let valid = match convention {
             NamingConvention::Single(case) => self.validate_case(filename, case),
@@ -139,15 +141,20 @@ impl ValidationEngine {
         if !valid {
             let convention_name = match convention {
                 NamingConvention::Single(case) => format!("{:?}", case),
-                NamingConvention::Multiple(cases) => {
-                    cases.iter().map(|c| format!("{:?}", c)).collect::<Vec<_>>().join(" or ")
-                }
+                NamingConvention::Multiple(cases) => cases
+                    .iter()
+                    .map(|c| format!("{:?}", c))
+                    .collect::<Vec<_>>()
+                    .join(" or "),
             };
 
             Some(ValidationFailure::new(
                 "naming",
                 path,
-                format!("Filename '{}' does not follow {} convention", filename, convention_name),
+                format!(
+                    "Filename '{}' does not follow {} convention",
+                    filename, convention_name
+                ),
             ))
         } else {
             None
@@ -259,16 +266,17 @@ fn case_convention_to_legacy(case: &Case) -> CaseConvention {
 /// Parse size string (e.g., "100KB", "1MB") to bytes
 fn parse_size_string(size: &str) -> Option<u64> {
     let size = size.trim();
-    
+
     // Extract number and unit
-    let (num_str, unit): (&str, &str) = if let Some(pos) = size.find(|c: char| !c.is_ascii_digit() && c != ' ') {
-        let unit_start = pos;
-        let num_part: &str = &size[..unit_start];
-        let unit_part: &str = size[unit_start..].trim();
-        (num_part, unit_part)
-    } else {
-        (size, "B")
-    };
+    let (num_str, unit): (&str, &str) =
+        if let Some(pos) = size.find(|c: char| !c.is_ascii_digit() && c != ' ') {
+            let unit_start = pos;
+            let num_part: &str = &size[..unit_start];
+            let unit_part: &str = size[unit_start..].trim();
+            (num_part, unit_part)
+        } else {
+            (size, "B")
+        };
 
     let num: u64 = num_str.trim().parse().ok()?;
 
@@ -300,25 +308,23 @@ fn format_size(bytes: u64) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::config::types::{InlineRule, PolicyNode, PolicyEntry};
+    use crate::config::types::{InlineRule, PolicyEntry, PolicyNode};
 
     #[test]
     fn test_validate_naming_snake_case() {
-        let config = Config::new().with_policy(
-            PolicyNode::new().with_entry(
-                "src/",
-                PolicyEntry::InlineRule(InlineRule {
-                    extensions: Some(vec!["rs".to_string()]),
-                    naming: Some(NamingConvention::Single(Case::SnakeCase)),
-                    max_lines: None,
-                    max_size: None,
-                    require_docs: None,
-                    require_test: None,
-                    message: None,
-                    severity: None,
-                }),
-            ),
-        );
+        let config = Config::new().with_policy(PolicyNode::new().with_entry(
+            "src/",
+            PolicyEntry::InlineRule(InlineRule {
+                extensions: Some(vec!["rs".to_string()]),
+                naming: Some(NamingConvention::Single(Case::SnakeCase)),
+                max_lines: None,
+                max_size: None,
+                require_docs: None,
+                require_test: None,
+                message: None,
+                severity: None,
+            }),
+        ));
 
         let engine = ValidationEngine::new(config);
 
@@ -332,28 +338,30 @@ mod tests {
     #[test]
     fn test_validate_max_lines() {
         // Use a glob pattern that will match any .rs file
-        let config = Config::new().with_policy(
-            PolicyNode::new().with_entry(
-                "**/*.rs",
-                PolicyEntry::InlineRule(InlineRule {
-                    extensions: Some(vec!["rs".to_string()]),
-                    naming: None,
-                    max_lines: Some(5),
-                    max_size: None,
-                    require_docs: None,
-                    require_test: None,
-                    message: None,
-                    severity: None,
-                }),
-            ),
-        );
+        let config = Config::new().with_policy(PolicyNode::new().with_entry(
+            "**/*.rs",
+            PolicyEntry::InlineRule(InlineRule {
+                extensions: Some(vec!["rs".to_string()]),
+                naming: None,
+                max_lines: Some(5),
+                max_size: None,
+                require_docs: None,
+                require_test: None,
+                message: None,
+                severity: None,
+            }),
+        ));
 
         let engine = ValidationEngine::new(config);
 
         // Create a temp file with 10 lines
         let temp_dir = tempfile::tempdir().unwrap();
         let file_path = temp_dir.path().join("test_file.rs");
-        std::fs::write(&file_path, "line1\nline2\nline3\nline4\nline5\nline6\nline7\nline8\nline9\nline10\n").unwrap();
+        std::fs::write(
+            &file_path,
+            "line1\nline2\nline3\nline4\nline5\nline6\nline7\nline8\nline9\nline10\n",
+        )
+        .unwrap();
 
         let result = engine.validate_file(&file_path);
         assert!(!result.passed);

@@ -1,4 +1,4 @@
-use git2::{Repository, BranchType};
+use git2::{BranchType, Repository};
 use std::path::Path;
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -23,12 +23,12 @@ impl GitSignals {
     }
 
     fn collect_repository_age(&self, repo: &Repository) -> MaturityResult<MaturitySignal> {
-        let mut revwalk = repo.revwalk().map_err(|e| {
-            MaturityError::Git(format!("Failed to create revwalk: {}", e))
-        })?;
+        let mut revwalk = repo
+            .revwalk()
+            .map_err(|e| MaturityError::Git(format!("Failed to create revwalk: {}", e)))?;
 
         revwalk.push_head().ok();
-        
+
         let first_commit_time: Option<i64> = revwalk
             .filter_map(|oid| oid.ok())
             .filter_map(|oid| repo.find_commit(oid).ok())
@@ -66,9 +66,9 @@ impl GitSignals {
     }
 
     fn collect_commit_frequency(&self, repo: &Repository) -> MaturityResult<MaturitySignal> {
-        let mut revwalk = repo.revwalk().map_err(|e| {
-            MaturityError::Git(format!("Failed to create revwalk: {}", e))
-        })?;
+        let mut revwalk = repo
+            .revwalk()
+            .map_err(|e| MaturityError::Git(format!("Failed to create revwalk: {}", e)))?;
 
         revwalk.push_head().ok();
 
@@ -111,7 +111,8 @@ impl GitSignals {
     }
 
     fn collect_branch_count(&self, repo: &Repository) -> MaturityResult<MaturitySignal> {
-        let branches: Vec<_> = repo.branches(Some(BranchType::Local))
+        let branches: Vec<_> = repo
+            .branches(Some(BranchType::Local))
             .map_err(|e| MaturityError::Git(format!("Failed to list branches: {}", e)))?
             .filter_map(|b| b.ok())
             .map(|(branch, _)| branch.name().ok().flatten().map(|s| s.to_string()))
@@ -124,21 +125,20 @@ impl GitSignals {
         let normalized = (branch_count as f64 / 10.0).min(1.0);
         let confidence = if branch_count > 1 { 1.0 } else { 0.7 };
 
-        Ok(
-            MaturitySignal::new(
-                SignalType::Git,
-                "branch_count",
-                normalized,
-                format!("{} branches", branch_count),
-            )
-            .with_confidence(confidence)
-            .with_weight(0.8),
+        Ok(MaturitySignal::new(
+            SignalType::Git,
+            "branch_count",
+            normalized,
+            format!("{} branches", branch_count),
         )
+        .with_confidence(confidence)
+        .with_weight(0.8))
     }
 
     fn collect_protection_status(&self, repo: &Repository) -> MaturityResult<MaturitySignal> {
         // Check for protected branches by looking for main/master with remote tracking
-        let branches: Vec<_> = repo.branches(Some(BranchType::Local))
+        let branches: Vec<_> = repo
+            .branches(Some(BranchType::Local))
             .map_err(|e| MaturityError::Git(format!("Failed to list branches: {}", e)))?
             .filter_map(|b| b.ok())
             .map(|(branch, _)| branch)
@@ -153,15 +153,18 @@ impl GitSignals {
         });
 
         // Check if there's a remote configured (suggests it's hosted somewhere with potential protection)
-        let has_remote = repo.remotes()
-            .map(|r| !r.is_empty())
-            .unwrap_or(false);
+        let has_remote = repo.remotes().map(|r| !r.is_empty()).unwrap_or(false);
 
         // Check for GitHub Actions or similar CI files (indirect protection indicator)
-        let has_ci = repo.workdir()
+        let has_ci = repo
+            .workdir()
             .map(|wd| {
                 let github_dir = wd.join(".github").join("workflows");
-                github_dir.exists() && github_dir.read_dir().map(|d| d.count() > 0).unwrap_or(false)
+                github_dir.exists()
+                    && github_dir
+                        .read_dir()
+                        .map(|d| d.count() > 0)
+                        .unwrap_or(false)
             })
             .unwrap_or(false);
 
@@ -179,26 +182,24 @@ impl GitSignals {
         .collect::<Vec<_>>()
         .join(", ");
 
-        Ok(
-            MaturitySignal::new(
-                SignalType::Git,
-                "branch_protection",
-                normalized,
-                if indicators.is_empty() {
-                    "no protection indicators".to_string()
-                } else {
-                    indicators
-                },
-            )
-            .with_confidence(confidence)
-            .with_weight(1.0),
+        Ok(MaturitySignal::new(
+            SignalType::Git,
+            "branch_protection",
+            normalized,
+            if indicators.is_empty() {
+                "no protection indicators".to_string()
+            } else {
+                indicators
+            },
         )
+        .with_confidence(confidence)
+        .with_weight(1.0))
     }
 
     fn collect_recent_activity(&self, repo: &Repository) -> MaturityResult<MaturitySignal> {
-        let mut revwalk = repo.revwalk().map_err(|e| {
-            MaturityError::Git(format!("Failed to create revwalk: {}", e))
-        })?;
+        let mut revwalk = repo
+            .revwalk()
+            .map_err(|e| MaturityError::Git(format!("Failed to create revwalk: {}", e)))?;
 
         revwalk.push_head().ok();
 
@@ -227,22 +228,20 @@ impl GitSignals {
             _ => "high activity",
         };
 
-        Ok(
-            MaturitySignal::new(
-                SignalType::Git,
-                "recent_activity",
-                normalized,
-                format!("{} commits in 30 days ({})", recent_count, activity_desc),
-            )
-            .with_confidence(1.0)
-            .with_weight(1.3),
+        Ok(MaturitySignal::new(
+            SignalType::Git,
+            "recent_activity",
+            normalized,
+            format!("{} commits in 30 days ({})", recent_count, activity_desc),
         )
+        .with_confidence(1.0)
+        .with_weight(1.3))
     }
 
     fn collect_committer_diversity(&self, repo: &Repository) -> MaturityResult<MaturitySignal> {
-        let mut revwalk = repo.revwalk().map_err(|e| {
-            MaturityError::Git(format!("Failed to create revwalk: {}", e))
-        })?;
+        let mut revwalk = repo
+            .revwalk()
+            .map_err(|e| MaturityError::Git(format!("Failed to create revwalk: {}", e)))?;
 
         revwalk.push_head().ok();
 
@@ -250,9 +249,7 @@ impl GitSignals {
         let committers: HashSet<_> = revwalk
             .filter_map(|oid| oid.ok())
             .filter_map(|oid| repo.find_commit(oid).ok())
-            .filter_map(|commit| {
-                commit.committer().email().map(|e| e.to_string())
-            })
+            .filter_map(|commit| commit.committer().email().map(|e| e.to_string()))
             .collect();
 
         let committer_count = committers.len();
@@ -260,16 +257,14 @@ impl GitSignals {
         // Normalize: 1 committer = 0.0, 5+ committers = 1.0
         let normalized = ((committer_count as f64 - 1.0) / 4.0).clamp(0.0, 1.0);
 
-        Ok(
-            MaturitySignal::new(
-                SignalType::Git,
-                "contributor_diversity",
-                normalized,
-                format!("{} unique committers", committer_count),
-            )
-            .with_confidence(if committer_count > 0 { 1.0 } else { 0.5 })
-            .with_weight(0.9),
+        Ok(MaturitySignal::new(
+            SignalType::Git,
+            "contributor_diversity",
+            normalized,
+            format!("{} unique committers", committer_count),
         )
+        .with_confidence(if committer_count > 0 { 1.0 } else { 0.5 })
+        .with_weight(0.9))
     }
 }
 
@@ -400,7 +395,10 @@ mod tests {
         let signals = collector.collect(temp_dir.path()).unwrap();
 
         // Should detect at least one commit
-        let freq_signal = signals.iter().find(|s| s.name == "commit_frequency").unwrap();
+        let freq_signal = signals
+            .iter()
+            .find(|s| s.name == "commit_frequency")
+            .unwrap();
         assert!(freq_signal.raw_value.contains("commits"));
     }
 
@@ -420,6 +418,8 @@ mod tests {
         let signals = collector.collect(temp_dir.path()).unwrap();
 
         let branch_signal = signals.iter().find(|s| s.name == "branch_count").unwrap();
-        assert!(branch_signal.raw_value.contains("2 branches") || branch_signal.raw_value.contains("1"));
+        assert!(
+            branch_signal.raw_value.contains("2 branches") || branch_signal.raw_value.contains("1")
+        );
     }
 }

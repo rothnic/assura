@@ -6,7 +6,7 @@ pub mod git;
 pub mod signal;
 
 pub use config::MaturityConfig;
-pub use engine::{MaturityDecisionEngine, MaturityLevel, MaturityReport, Recommendation, Priority};
+pub use engine::{MaturityDecisionEngine, MaturityLevel, MaturityReport, Priority, Recommendation};
 pub use environment::EnvironmentSignals;
 pub use filesystem::FilesystemSignals;
 pub use git::GitSignals;

@@ -49,7 +49,8 @@ impl IntelligenceGraph {
             .copied()
             .ok_or_else(|| GraphError::NodeNotFound(format!("{}", edge.target)))?;
 
-        self.graph.add_edge(source_idx, target_idx, edge.relationship);
+        self.graph
+            .add_edge(source_idx, target_idx, edge.relationship);
         Ok(())
     }
 
@@ -100,9 +101,9 @@ impl IntelligenceGraph {
     }
 
     pub fn iter_nodes(&self) -> impl Iterator<Item = (NodeId, &Node)> {
-        self.node_indices.iter().filter_map(move |(id, &idx)| {
-            self.graph.node_weight(idx).map(|node| (*id, node))
-        })
+        self.node_indices
+            .iter()
+            .filter_map(move |(id, &idx)| self.graph.node_weight(idx).map(|node| (*id, node)))
     }
 
     pub fn iter_edges(&self) -> impl Iterator<Item = (&NodeId, &NodeId, &Relationship)> {
@@ -111,18 +112,18 @@ impl IntelligenceGraph {
             let target_idx = edge.target();
             let rel = edge.weight();
 
-            let _source_id = self
-                .graph
-                .node_weight(source_idx)
-                .map(|n| n.id())?;
-            let _target_id = self
-                .graph
-                .node_weight(target_idx)
-                .map(|n| n.id())?;
+            let _source_id = self.graph.node_weight(source_idx).map(|n| n.id())?;
+            let _target_id = self.graph.node_weight(target_idx).map(|n| n.id())?;
 
             Some((
-                self.node_indices.iter().find(|(_, &idx)| idx == source_idx).map(|(id, _)| id)?,
-                self.node_indices.iter().find(|(_, &idx)| idx == target_idx).map(|(id, _)| id)?,
+                self.node_indices
+                    .iter()
+                    .find(|(_, &idx)| idx == source_idx)
+                    .map(|(id, _)| id)?,
+                self.node_indices
+                    .iter()
+                    .find(|(_, &idx)| idx == target_idx)
+                    .map(|(id, _)| id)?,
                 rel,
             ))
         })
@@ -176,7 +177,10 @@ impl IntelligenceGraph {
             }
         }
 
-        for edge in self.graph.edges_directed(idx, petgraph::Direction::Incoming) {
+        for edge in self
+            .graph
+            .edges_directed(idx, petgraph::Direction::Incoming)
+        {
             if let Some(node) = self.graph.node_weight(edge.source()) {
                 if !neighbors.contains(&node.id()) {
                     neighbors.push(node.id());
@@ -191,23 +195,14 @@ impl IntelligenceGraph {
         let from_idx = self.node_indices.get(&from).copied()?;
         let to_idx = self.node_indices.get(&to).copied()?;
 
-        let path = petgraph::algo::dijkstra(
-            &self.graph,
-            from_idx,
-            Some(to_idx),
-            |_| 1u32,
-        );
+        let path = petgraph::algo::dijkstra(&self.graph, from_idx, Some(to_idx), |_| 1u32);
 
         if path.contains_key(&to_idx) {
             let mut result = Vec::new();
             let mut current = to_idx;
 
             while current != from_idx {
-                result.push(
-                    self.graph
-                        .node_weight(current)
-                        .map(|n| n.id())?,
-                );
+                result.push(self.graph.node_weight(current).map(|n| n.id())?);
 
                 let neighbors: Vec<_> = self
                     .graph
@@ -306,8 +301,7 @@ impl GraphBuilder {
         let mut dir_entries: Vec<_> = Vec::new();
         let mut file_entries: Vec<_> = Vec::new();
 
-        let walker = WalkDir::new(&self.root_path)
-            .follow_links(self.follow_symlinks);
+        let walker = WalkDir::new(&self.root_path).follow_links(self.follow_symlinks);
 
         let walker = if let Some(depth) = self.max_depth {
             walker.max_depth(depth)
@@ -318,7 +312,9 @@ impl GraphBuilder {
         for entry in walker {
             let entry = entry.map_err(|e| GraphError::WalkDir(e.to_string()))?;
             let path = entry.path().to_path_buf();
-            let metadata = entry.metadata().map_err(|e| GraphError::WalkDir(e.to_string()))?;
+            let metadata = entry
+                .metadata()
+                .map_err(|e| GraphError::WalkDir(e.to_string()))?;
 
             if metadata.is_dir() {
                 dir_entries.push((path, metadata));
@@ -329,8 +325,8 @@ impl GraphBuilder {
 
         let mut dir_nodes: HashMap<PathBuf, NodeId> = HashMap::new();
         for (path, metadata) in dir_entries {
-            let dir_node = DirectoryNode::new(&path)
-                .with_metadata(super::node::NodeMetadata::with_timestamp(
+            let dir_node =
+                DirectoryNode::new(&path).with_metadata(super::node::NodeMetadata::with_timestamp(
                     metadata
                         .created()
                         .ok()
@@ -352,8 +348,8 @@ impl GraphBuilder {
         let file_nodes: Vec<(PathBuf, NodeId, Node)> = file_entries
             .into_par_iter()
             .map(|(path, metadata)| {
-                let file_node = FileNode::new(&path)
-                    .with_metadata(super::node::NodeMetadata::with_timestamp(
+                let file_node =
+                    FileNode::new(&path).with_metadata(super::node::NodeMetadata::with_timestamp(
                         metadata
                             .created()
                             .ok()

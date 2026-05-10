@@ -7,7 +7,7 @@
 use std::collections::HashMap;
 use std::path::Path;
 
-use crate::config::types::{ChildrenLimitConfig, ChildrenCountRange, Severity};
+use crate::config::types::{ChildrenCountRange, ChildrenLimitConfig, Severity};
 use crate::constraints::error::{ValidationFailure, ValidationFailures};
 use crate::constraints::r#trait::{Constraint, ConstraintContext, ConstraintOutput};
 
@@ -42,7 +42,11 @@ impl ChildrenLimitConstraint {
         self
     }
 
-    pub fn add_limit(mut self, path_pattern: impl Into<String>, config: ChildrenLimitConfig) -> Self {
+    pub fn add_limit(
+        mut self,
+        path_pattern: impl Into<String>,
+        config: ChildrenLimitConfig,
+    ) -> Self {
         self.limits.insert(path_pattern.into(), config);
         self
     }
@@ -161,10 +165,8 @@ impl ChildrenLimitConstraint {
 
             if let Some(min) = file_config.min {
                 if count.files < min {
-                    let message = format!(
-                        "Directory has only {} files (min: {})",
-                        count.files, min
-                    );
+                    let message =
+                        format!("Directory has only {} files (min: {})", count.files, min);
                     failures.push(ValidationFailure::new(&self.name, path, message));
                 }
             }
@@ -174,10 +176,8 @@ impl ChildrenLimitConstraint {
         if let Some(ref dir_config) = config.dirs {
             if let Some(max) = dir_config.max {
                 if count.dirs > max {
-                    let message = format!(
-                        "Directory has {} subdirectories (max: {})",
-                        count.dirs, max
-                    );
+                    let message =
+                        format!("Directory has {} subdirectories (max: {})", count.dirs, max);
                     failures.push(ValidationFailure::new(&self.name, path, message));
                 }
             }
@@ -188,8 +188,7 @@ impl ChildrenLimitConstraint {
                         "Directory has only {} subdirectories (min: {})",
                         count.dirs, min
                     );
-                    failures.push(ValidationFailure::new(
-&self.name, path, message));
+                    failures.push(ValidationFailure::new(&self.name, path, message));
                 }
             }
         }
@@ -223,9 +222,8 @@ impl Constraint for ChildrenLimitConstraint {
 
         // Only validate directories
         if !path.is_dir() {
-            return Ok(ConstraintOutput::new(&self.name, path, true
-            )
-            .with_duration(start.elapsed().as_millis() as u64));
+            return Ok(ConstraintOutput::new(&self.name, path, true)
+                .with_duration(start.elapsed().as_millis() as u64));
         }
 
         // Find matching limit configurations
@@ -247,8 +245,7 @@ impl Constraint for ChildrenLimitConstraint {
             .with_failures(failures))
     }
 
-    fn applies_to(&self, path: &Path,
-    ) -> bool {
+    fn applies_to(&self, path: &Path) -> bool {
         // Applies to all directories
         path.is_dir()
     }
@@ -343,14 +340,10 @@ mod tests {
             std::fs::File::create(dir_path.join(format!("Component{}.tsx", i))).unwrap();
         }
 
-        let config = ChildrenLimitConfig::new()
-            .with_files(ChildrenCountRange::new().with_max(5));
+        let config = ChildrenLimitConfig::new().with_files(ChildrenCountRange::new().with_max(5));
 
-        let failures = ChildrenLimitConstraint::new().validate_directory(
-            &dir_path,
-            &config,
-            Severity::Medium,
-        );
+        let failures =
+            ChildrenLimitConstraint::new().validate_directory(&dir_path, &config, Severity::Medium);
 
         assert_eq!(failures.len(), 1);
         assert!(failures[0].message.contains("8 files"));

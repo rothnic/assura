@@ -21,17 +21,16 @@ impl ConfigLoader {
     /// Parse config from YAML string
     pub fn parse(content: &str) -> ConfigResult<Config> {
         let config: Config = serde_yaml::from_str(content).map_err(ConfigError::Yaml)?;
-        config.validate().map_err(|e| {
-            ConfigError::Invalid(format!("Configuration validation failed: {}", e))
-        })?;
+        config
+            .validate()
+            .map_err(|e| ConfigError::Invalid(format!("Configuration validation failed: {}", e)))?;
         Ok(config)
     }
 
     /// Save config to file
     pub fn save(config: &Config, path: &Path) -> ConfigResult<()> {
-        let content = serde_yaml::to_string(config).map_err(|e| {
-            ConfigError::Invalid(format!("Failed to serialize config: {}", e))
-        })?;
+        let content = serde_yaml::to_string(config)
+            .map_err(|e| ConfigError::Invalid(format!("Failed to serialize config: {}", e)))?;
         std::fs::write(path, content).map_err(ConfigError::Io)?;
         Ok(())
     }
@@ -39,8 +38,8 @@ impl ConfigLoader {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::super::config::{DirectoryNode, FileBundle};
+    use super::*;
 
     #[test]
     fn test_parse_valid_config() {
@@ -81,9 +80,7 @@ structure:
         let config = Config::new()
             .with_node(
                 "src/",
-                DirectoryNode::new().with_files(
-                    FileBundle::new().with_naming("snake_case"),
-                ),
+                DirectoryNode::new().with_files(FileBundle::new().with_naming("snake_case")),
             )
             .with_exclude("target/**");
 
@@ -127,7 +124,7 @@ structure:
         let config = ConfigLoader::parse(yaml).unwrap();
         let root_node = config.structure.get("./").unwrap();
         assert!(root_node.exists.is_some());
-        
+
         let exists = root_node.exists.as_ref().unwrap();
         assert_eq!(exists.files.as_ref().unwrap().len(), 2);
         assert_eq!(exists.directories.as_ref().unwrap().len(), 2);

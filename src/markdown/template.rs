@@ -132,7 +132,10 @@ impl TemplateDefinition {
                             min
                         ),
                     )
-                    .with_suggestion(format!("Add at least {} more section(s)", min - sections.len()))
+                    .with_suggestion(format!(
+                        "Add at least {} more section(s)",
+                        min - sections.len()
+                    ))
                     .into_validation_failure(),
                 );
             }
@@ -150,7 +153,10 @@ impl TemplateDefinition {
                             max
                         ),
                     )
-                    .with_suggestion(format!("Remove at least {} section(s)", sections.len() - max))
+                    .with_suggestion(format!(
+                        "Remove at least {} section(s)",
+                        sections.len() - max
+                    ))
                     .into_validation_failure(),
                 );
             }
@@ -188,11 +194,8 @@ impl TemplateDefinition {
                     .collect();
 
                 for matched_section in matched_sections {
-                    let content_validation = template_section.validate_content(
-                        matched_section,
-                        document,
-                        path,
-                    )?;
+                    let content_validation =
+                        template_section.validate_content(matched_section, document, path)?;
                     failures.extend(content_validation);
                 }
             }
@@ -214,10 +217,7 @@ impl TemplateDefinition {
                         MarkdownValidationError::new(
                             "additional_section",
                             path,
-                            format!(
-                                "Additional section not allowed: '{}'",
-                                section.heading.text
-                            ),
+                            format!("Additional section not allowed: '{}'", section.heading.text),
                         )
                         .with_line(section.heading.line_number)
                         .with_suggestion("Remove this section or add it to the template")
@@ -297,13 +297,12 @@ impl TemplateDefinition {
                             MarkdownValidationError::new(
                                 "section_order",
                                 path,
-                                format!(
-                                    "Section '{}' appears out of order",
-                                    section.heading.text
-                                ),
+                                format!("Section '{}' appears out of order", section.heading.text),
                             )
                             .with_line(section.heading.line_number)
-                            .with_suggestion("Move this section to the correct position in the document")
+                            .with_suggestion(
+                                "Move this section to the correct position in the document",
+                            )
                             .into_validation_failure(),
                         );
                     }
@@ -476,8 +475,8 @@ impl SectionDefinition {
         let name_lower = self.name.to_lowercase();
 
         // Check exact match or alias
-        if title_lower == name_lower ||
-            self.aliases.iter().any(|a| a.to_lowercase() == title_lower) {
+        if title_lower == name_lower || self.aliases.iter().any(|a| a.to_lowercase() == title_lower)
+        {
             return true;
         }
 
@@ -598,9 +597,7 @@ impl SectionDefinition {
         // Check required patterns
         for pattern in &self.required_patterns {
             let regex = Regex::new(pattern).map_err(|e| {
-                MarkdownError::configuration(
-                    format!("Invalid regex pattern '{}': {}", pattern, e),
-                )
+                MarkdownError::configuration(format!("Invalid regex pattern '{}': {}", pattern, e))
             })?;
 
             if !regex.is_match(&section.content) {
@@ -622,9 +619,7 @@ impl SectionDefinition {
         // Check forbidden patterns
         for pattern in &self.forbidden_patterns {
             let regex = Regex::new(pattern).map_err(|e| {
-                MarkdownError::configuration(
-                    format!("Invalid regex pattern '{}': {}", pattern, e),
-                )
+                MarkdownError::configuration(format!("Invalid regex pattern '{}': {}", pattern, e))
             })?;
 
             if regex.is_match(&section.content) {
@@ -646,9 +641,9 @@ impl SectionDefinition {
         // Check required subheadings
         for required_heading in &self.required_headings {
             let found = document.headings.iter().any(|h| {
-                h.text.eq_ignore_ascii_case(required_heading) &&
-                    h.position > section.heading.position &&
-                    (h.position - section.heading.position) < section.content.len()
+                h.text.eq_ignore_ascii_case(required_heading)
+                    && h.position > section.heading.position
+                    && (h.position - section.heading.position) < section.content.len()
             });
 
             if !found {
@@ -729,9 +724,7 @@ impl SectionValidator {
             })?;
 
         let template = self.templates.get(name).ok_or_else(|| {
-            MarkdownError::configuration(
-                format!("Template '{}' not found", name),
-            )
+            MarkdownError::configuration(format!("Template '{}' not found", name))
         })?;
 
         template.validate(document, path)
@@ -781,10 +774,7 @@ impl crate::constraints::Constraint for TemplateConstraint {
         _context: &crate::constraints::ConstraintContext,
     ) -> crate::constraints::ConstraintResult<crate::constraints::ConstraintOutput> {
         let content = std::fs::read_to_string(path).map_err(|e| {
-            crate::constraints::ConstraintError::io(
-                path,
-                format!("Failed to read file: {}", e),
-            )
+            crate::constraints::ConstraintError::io(path, format!("Failed to read file: {}", e))
         })?;
 
         let parser = super::parser::MarkdownParser::new();
@@ -805,19 +795,17 @@ impl crate::constraints::Constraint for TemplateConstraint {
         })?;
 
         let passed = failures.is_empty();
-        let failures_collection =
-            crate::constraints::ValidationFailures::from(failures);
+        let failures_collection = crate::constraints::ValidationFailures::from(failures);
 
-        Ok(crate::constraints::ConstraintOutput::new(&self.name, path, passed)
-            .with_failures(failures_collection))
+        Ok(
+            crate::constraints::ConstraintOutput::new(&self.name, path, passed)
+                .with_failures(failures_collection),
+        )
     }
 
     fn applies_to(&self, path: &std::path::Path) -> bool {
         path.extension()
-            .map(|ext| {
-                ext.eq_ignore_ascii_case("md")
-                    || ext.eq_ignore_ascii_case("markdown")
-            })
+            .map(|ext| ext.eq_ignore_ascii_case("md") || ext.eq_ignore_ascii_case("markdown"))
             .unwrap_or(false)
     }
 }
@@ -869,8 +857,7 @@ mod tests {
 
     #[test]
     fn test_section_matches() {
-        let section_def = SectionDefinition::new("Getting Started")
-            .with_alias("Quick Start");
+        let section_def = SectionDefinition::new("Getting Started").with_alias("Quick Start");
 
         let matching = Section {
             heading: Heading {
@@ -909,8 +896,8 @@ mod tests {
 
     #[test]
     fn test_section_matches_pattern() {
-        let section_def = SectionDefinition::new("API Endpoint")
-            .with_title_pattern(r"^GET|POST|PUT|DELETE");
+        let section_def =
+            SectionDefinition::new("API Endpoint").with_title_pattern(r"^GET|POST|PUT|DELETE");
 
         let matching = Section {
             heading: Heading {
@@ -943,9 +930,12 @@ mod tests {
             .with_section(SectionDefinition::new("Details"));
 
         let doc = MarkdownDocument {
-            content: "# Title\n\n## Overview\n\nOverview content.\n\n## Details\n\nDetails content.".to_string(),
+            content:
+                "# Title\n\n## Overview\n\nOverview content.\n\n## Details\n\nDetails content."
+                    .to_string(),
             frontmatter: None,
-            body: "# Title\n\n## Overview\n\nOverview content.\n\n## Details\n\nDetails content.".to_string(),
+            body: "# Title\n\n## Overview\n\nOverview content.\n\n## Details\n\nDetails content."
+                .to_string(),
             headings: vec![
                 Heading {
                     level: HeadingLevel::H1,

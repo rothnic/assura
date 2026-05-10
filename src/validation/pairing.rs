@@ -24,19 +24,21 @@ pub struct PairingValidator;
 
 impl PairingValidator {
     /// Find all pairing requirements from policy tree
-    pub fn find_requirements(policy_root: &crate::config::ast::PolicyNode) -> Vec<PairingRequirement> {
+    pub fn find_requirements(
+        policy_root: &crate::config::ast::PolicyNode,
+    ) -> Vec<PairingRequirement> {
         let mut requirements = Vec::new();
         let mut found_patterns: HashMap<String, String> = HashMap::new();
-        
+
         // Scan policy tree for variable patterns
         Self::scan_for_patterns(policy_root, Path::new(""), &mut found_patterns);
-        
+
         // Identify pairings - patterns with same variable but different extensions
         Self::identify_pairings(&found_patterns, &mut requirements);
-        
+
         requirements
     }
-    
+
     /// Scan policy tree and collect all file patterns with variables
     fn scan_for_patterns(
         node: &crate::config::ast::PolicyNode,
@@ -44,10 +46,10 @@ impl PairingValidator {
         patterns: &mut HashMap<String, String>,
     ) {
         use crate::config::ast::PolicyEntry;
-        
+
         for (key, entry) in &node.entries {
             let entry_path = current_path.join(key);
-            
+
             match entry {
                 PolicyEntry::Directory(subdir) => {
                     Self::scan_for_patterns(subdir, &entry_path, patterns);
@@ -63,7 +65,7 @@ impl PairingValidator {
             }
         }
     }
-    
+
     /// Identify pairings from collected patterns
     fn identify_pairings(
         patterns: &HashMap<String, String>,
@@ -71,18 +73,21 @@ impl PairingValidator {
     ) {
         // Group patterns by their variable base
         let mut grouped: HashMap<String, Vec<String>> = HashMap::new();
-        
+
         for (full_path, pattern) in patterns {
             // Extract variable base (e.g., "${name}.tsx" -> "${name}")
             if let Some(start) = pattern.find("${") {
                 if let Some(end) = pattern.find('}') {
                     let var_base = &pattern[start..=end];
                     let group_key = full_path.replace(pattern, var_base);
-                    grouped.entry(group_key).or_default().push(full_path.clone());
+                    grouped
+                        .entry(group_key)
+                        .or_default()
+                        .push(full_path.clone());
                 }
             }
         }
-        
+
         // For each group with multiple patterns, create pairing requirements
         for (_group_key, paths) in &grouped {
             if paths.len() >= 2 {
@@ -90,7 +95,7 @@ impl PairingValidator {
                 // Heuristic: shorter extension = source
                 let mut sorted = paths.clone();
                 sorted.sort_by_key(|p| p.len());
-                
+
                 let source = &sorted[0];
                 for target in &sorted[1..] {
                     requirements.push(PairingRequirement {
@@ -103,46 +108,42 @@ impl PairingValidator {
             }
         }
     }
-    
+
     /// Validate that all pairing requirements are satisfied
     pub fn validate_pairings(
         requirements: &[PairingRequirement],
         existing_files: &[PathBuf],
     ) -> Vec<PairingViolation> {
         let mut violations = Vec::new();
-        
+
         for req in requirements {
             // Extract variable from source pattern
             let source_var = Self::extract_variable(&req.source_pattern);
             let target_var = Self::extract_variable(&req.target_pattern);
-            
+
             if source_var != target_var {
                 continue; // Variables don't match, not a valid pairing
             }
-            
+
             // Find all source files that exist
             let source_files: Vec<&PathBuf> = existing_files
                 .iter()
                 .filter(|f| Self::pattern_matches_path(&req.source_pattern, f))
                 .collect();
-            
+
             for source_file in source_files {
                 // Extract the variable value from source
-                if let Some(var_value) = Self::extract_var_value(
-                    &req.source_pattern,
-                    source_file
-                ) {
+                if let Some(var_value) = Self::extract_var_value(&req.source_pattern, source_file) {
                     // Construct expected target path
-                    let expected_target = req.target_pattern.replace(
-                        &format!("${{{}}}", source_var),
-                        &var_value
-                    );
-                    
+                    let expected_target = req
+                        .target_pattern
+                        .replace(&format!("${{{}}}", source_var), &var_value);
+
                     // Check if target exists
-                    let target_exists = existing_files.iter().any(|f| {
-                        f.to_string_lossy().ends_with(&expected_target)
-                    });
-                    
+                    let target_exists = existing_files
+                        .iter()
+                        .any(|f| f.to_string_lossy().ends_with(&expected_target));
+
                     if !target_exists {
                         violations.push(PairingViolation {
                             source_file: source_file.clone(),
@@ -153,80 +154,80 @@ impl PairingValidator {
                 }
             }
         }
-        
+
         violations
     }
-    
+
     /// Extract variable name from pattern (e.g., "${name}.tsx" -> "name")
     fn extract_variable(pattern: &str) -> String {
         if let Some(start) = pattern.find("${") {
             if let Some(end) = pattern.find('}') {
-                return pattern[start+2..end].to_string();
+                return pattern[start + 2..end].to_string();
             }
         }
         String::new()
     }
-    
+
     /// Extract variable value from actual file path
     fn extract_var_value(pattern: &str, file_path: &Path) -> Option<String> {
         let pattern_parts: Vec<&str> = pattern.split("${").collect();
         if pattern_parts.len() != 2 {
             return None;
         }
-        
+
         let prefix = pattern_parts[0];
         let rest = pattern_parts[1];
-        
+
         if let Some(end) = rest.find('}') {
-            let suffix = &rest[end+1..];
+            let suffix = &rest[end + 1..];
             let file_str = file_path.to_string_lossy();
-            
+
             if file_str.starts_with(prefix) && file_str.ends_with(suffix) {
-                let var_value = &file_str[prefix.len()..file_str.len()-suffix.len()];
+                let var_value = &file_str[prefix.len()..file_str.len() - suffix.len()];
                 return Some(var_value.to_string());
             }
         }
-        
+
         None
     }
-    
+
     /// Check if pattern matches actual file path
     fn pattern_matches_path(pattern: &str, file_path: &Path) -> bool {
         let file_str = file_path.to_string_lossy();
-        
+
         // Handle ${var} pattern
         if pattern.contains("${") {
             let var_name = Self::extract_variable(pattern);
             if var_name.is_empty() {
                 return false;
             }
-            
+
             let template = pattern.replace(&format!("${{{}}}", var_name), "*");
             return Self::glob_matches(&template, &file_str);
         }
-        
+
         file_str.ends_with(pattern)
     }
-    
+
     /// Simple glob matching
     fn glob_matches(pattern: &str, text: &str) -> bool {
         if pattern == "*" {
             return true;
         }
-        
+
         if pattern.starts_with("*") && pattern.ends_with("*") {
-            let middle = &pattern[1..pattern.len()-1];
+            let middle = &pattern[1..pattern.len() - 1];
             return text.contains(middle);
         }
-        
+
         if pattern.starts_with("*") {
             return text.ends_with(&pattern[1..]);
         }
-        
+
         if pattern.ends_with("*") {
-            return text.starts_with(&pattern[..pattern.len()-1]);
+            return text.starts_with(&pattern[..pattern.len() - 1]);
         }
-        
+
         text == pattern
     }
 }
@@ -246,10 +247,7 @@ mod tests {
 
     #[test]
     fn test_extract_variable() {
-        assert_eq!(
-            PairingValidator::extract_variable("${name}.tsx"),
-            "name"
-        );
+        assert_eq!(PairingValidator::extract_variable("${name}.tsx"), "name");
         assert_eq!(
             PairingValidator::extract_variable("${component}.test.tsx"),
             "component"
@@ -290,17 +288,14 @@ mod tests {
             min_count: 1,
             max_count: None,
         };
-        
+
         let existing = vec![
             PathBuf::from("src/components/Button.tsx"),
             // Button.test.tsx is missing!
         ];
-        
-        let violations = PairingValidator::validate_pairings(
-            &[req],
-            &existing,
-        );
-        
+
+        let violations = PairingValidator::validate_pairings(&[req], &existing);
+
         assert_eq!(violations.len(), 1);
         assert_eq!(
             violations[0].expected_target,
@@ -316,17 +311,14 @@ mod tests {
             min_count: 1,
             max_count: None,
         };
-        
+
         let existing = vec![
             PathBuf::from("src/components/Button.tsx"),
             PathBuf::from("src/components/Button.test.tsx"),
         ];
-        
-        let violations = PairingValidator::validate_pairings(
-            &[req],
-            &existing,
-        );
-        
+
+        let violations = PairingValidator::validate_pairings(&[req], &existing);
+
         assert_eq!(violations.len(), 0);
     }
 }

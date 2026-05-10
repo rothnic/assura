@@ -72,7 +72,7 @@ impl GitHooksManager {
     pub fn new(project_root: impl AsRef<Path>) -> HookResult<Self> {
         let project_root = project_root.as_ref();
         let git_dir = project_root.join(".git");
-        
+
         if !git_dir.exists() {
             return Err(HookError::GitNotFound);
         }
@@ -90,7 +90,7 @@ impl GitHooksManager {
         std::fs::create_dir_all(&self.assura_hooks_dir)?;
 
         let mut installed = Vec::new();
-        
+
         for hook_type in HookType::all() {
             match self.install(hook_type, force) {
                 Ok(_) => installed.push(hook_type),

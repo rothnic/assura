@@ -172,10 +172,7 @@ impl DirectoryConstraint {
 
     /// Validate a single directory
     fn validate_directory(&self, path: &Path) -> Option<ValidationFailure> {
-        let dir_name = path
-            .file_name()
-            .and_then(|n| n.to_str())
-            .unwrap_or("");
+        let dir_name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
 
         if dir_name.is_empty() {
             return Some(ValidationFailure::new(
@@ -336,8 +333,7 @@ mod tests {
 
     #[test]
     fn test_directory_constraint_kebab_case() {
-        let constraint = DirectoryConstraint::new()
-            .with_case_convention(CaseConvention::KebabCase);
+        let constraint = DirectoryConstraint::new().with_case_convention(CaseConvention::KebabCase);
 
         let context = ConstraintContext::new();
 
@@ -359,8 +355,7 @@ mod tests {
 
     #[test]
     fn test_directory_constraint_excludes_git() {
-        let constraint = DirectoryConstraint::new()
-            .with_case_convention(CaseConvention::KebabCase);
+        let constraint = DirectoryConstraint::new().with_case_convention(CaseConvention::KebabCase);
 
         let context = ConstraintContext::new();
 
@@ -375,8 +370,7 @@ mod tests {
 
     #[test]
     fn test_directory_constraint_distinguishes_types() {
-        let constraint = DirectoryConstraint::new()
-            .with_case_convention(CaseConvention::KebabCase);
+        let constraint = DirectoryConstraint::new().with_case_convention(CaseConvention::KebabCase);
 
         let context = ConstraintContext::new();
 

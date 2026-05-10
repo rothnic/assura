@@ -34,26 +34,21 @@ impl FilesystemSignals {
         // Normalize file count: <10 files = 0.0, 100+ files = 1.0
         let file_normalized = (file_count as f64 / 100.0).min(1.0);
 
-        Ok(
-            MaturitySignal::new(
-                SignalType::Filesystem,
-                "file_count",
-                file_normalized,
-                format!("{} files, {} directories", file_count, dir_count),
-            )
-            .with_confidence(1.0)
-            .with_weight(0.8),
+        Ok(MaturitySignal::new(
+            SignalType::Filesystem,
+            "file_count",
+            file_normalized,
+            format!("{} files, {} directories", file_count, dir_count),
         )
+        .with_confidence(1.0)
+        .with_weight(0.8))
     }
 
     fn measure_directory_depth(&self, path: &Path) -> MaturityResult<MaturitySignal> {
         let mut max_depth = 0;
         let base_depth = path.components().count();
 
-        for entry in WalkDir::new(path)
-            .into_iter()
-            .filter_map(|e| e.ok())
-        {
+        for entry in WalkDir::new(path).into_iter().filter_map(|e| e.ok()) {
             if entry.file_type().is_dir() {
                 let depth = entry.path().components().count() - base_depth;
                 max_depth = max_depth.max(depth);
@@ -70,16 +65,14 @@ impl FilesystemSignals {
             _ => "very deep nesting",
         };
 
-        Ok(
-            MaturitySignal::new(
-                SignalType::Filesystem,
-                "directory_depth",
-                normalized,
-                format!("max depth {} ({})", max_depth, depth_desc),
-            )
-            .with_confidence(1.0)
-            .with_weight(0.6),
+        Ok(MaturitySignal::new(
+            SignalType::Filesystem,
+            "directory_depth",
+            normalized,
+            format!("max depth {} ({})", max_depth, depth_desc),
         )
+        .with_confidence(1.0)
+        .with_weight(0.6))
     }
 
     fn detect_config_files(&self, path: &Path) -> MaturityResult<MaturitySignal> {
@@ -127,66 +120,88 @@ impl FilesystemSignals {
         let config_count = detected_configs.len();
 
         // Score based on count and quality of configs
-        let score = config_count as f64 * 0.2 + 
-            if detected_configs.contains(&".gitignore".to_string()) { 0.2 } else { 0.0 } +
-            if detected_configs.iter().any(|c| c.contains("Dockerfile")) { 0.2 } else { 0.0 } +
-            if detected_configs.iter().any(|c| c.contains("lock") || c.contains("sum")) { 0.2 } else { 0.0 };
+        let score = config_count as f64 * 0.2
+            + if detected_configs.contains(&".gitignore".to_string()) {
+                0.2
+            } else {
+                0.0
+            }
+            + if detected_configs.iter().any(|c| c.contains("Dockerfile")) {
+                0.2
+            } else {
+                0.0
+            }
+            + if detected_configs
+                .iter()
+                .any(|c| c.contains("lock") || c.contains("sum"))
+            {
+                0.2
+            } else {
+                0.0
+            };
 
         let normalized = score.min(1.0);
 
-        Ok(
-            MaturitySignal::new(
-                SignalType::Filesystem,
-                "config_files",
-                normalized,
-                if detected_configs.is_empty() {
-                    "no config files detected".to_string()
-                } else {
-                    format!("{} configs: {}", config_count, detected_configs.join(", "))
-                },
-            )
-            .with_confidence(1.0)
-            .with_weight(1.0),
+        Ok(MaturitySignal::new(
+            SignalType::Filesystem,
+            "config_files",
+            normalized,
+            if detected_configs.is_empty() {
+                "no config files detected".to_string()
+            } else {
+                format!("{} configs: {}", config_count, detected_configs.join(", "))
+            },
         )
+        .with_confidence(1.0)
+        .with_weight(1.0))
     }
 
     fn detect_test_coverage(&self, path: &Path) -> MaturityResult<MaturitySignal> {
         let test_indicators: Vec<(&str, Box<dyn Fn(&Path) -> bool + Send + Sync>)> = vec![
             ("tests/", Box::new(|p| p.join("tests").is_dir())),
             ("test/", Box::new(|p| p.join("test").is_dir())),
-            ("__tests__/", Box::new(|p| {
-                p.read_dir()
-                    .map(|entries| {
-                        entries
-                            .filter_map(|e| e.ok())
-                            .any(|e| e.file_name() == "__tests__")
-                    })
-                    .unwrap_or(false)
-            })),
-            ("*.spec.*", Box::new(|p| {
-                WalkDir::new(p)
-                    .max_depth(5)
-                    .into_iter()
-                    .filter_map(|e| e.ok())
-                    .any(|e| {
-                        e.file_name()
-                            .to_str()
-                            .map(|n| n.contains(".spec."))
-                            .unwrap_or(false)
-                    })
-            })),
-            ("*.test.*", Box::new(|p| {
-                WalkDir::new(p)
-                    .max_depth(5)
-                    .into_iter()
-                    .filter_map(|e| e.ok())
-                    .any(|e| {
-                        e.file_name()
-                            .to_str()
-                            .map(|n| n.contains(".test."))
-                            .unwrap_or(false)
-                    })
-            })),
+            (
+                "__tests__/",
+                Box::new(|p| {
+                    p.read_dir()
+                        .map(|entries| {
+                            entries
+                                .filter_map(|e| e.ok())
+                                .any(|e| e.file_name() == "__tests__")
+                        })
+                        .unwrap_or(false)
+                }),
+            ),
+            (
+                "*.spec.*",
+                Box::new(|p| {
+                    WalkDir::new(p)
+                        .max_depth(5)
+                        .into_iter()
+                        .filter_map(|e| e.ok())
+                        .any(|e| {
+                            e.file_name()
+                                .to_str()
+                                .map(|n| n.contains(".spec."))
+                                .unwrap_or(false)
+                        })
+                }),
+            ),
+            (
+                "*.test.*",
+                Box::new(|p| {
+                    WalkDir::new(p)
+                        .max_depth(5)
+                        .into_iter()
+                        .filter_map(|e| e.ok())
+                        .any(|e| {
+                            e.file_name()
+                                .to_str()
+                                .map(|n| n.contains(".test."))
+                                .unwrap_or(false)
+                        })
+                }),
+            ),
         ];
 
         let mut detected = Vec::new();
@@ -197,7 +212,13 @@ impl FilesystemSignals {
         }
 
         // Check for test configuration files
-        let test_configs = ["jest.config.js", "vitest.config.js", "pytest.ini", ".rspec", "tox.ini"];
+        let test_configs = [
+            "jest.config.js",
+            "vitest.config.js",
+            "pytest.ini",
+            ".rspec",
+            "tox.ini",
+        ];
         for config in &test_configs {
             if path.join(config).exists() {
                 detected.push(*config);
@@ -209,89 +230,95 @@ impl FilesystemSignals {
         // Normalize: 0 indicators = 0.0, 3+ indicators = 1.0
         let normalized = (test_indicators_count as f64 / 3.0).min(1.0);
 
-        Ok(
-            MaturitySignal::new(
-                SignalType::Filesystem,
-                "test_coverage",
-                normalized,
-                if detected.is_empty() {
-                    "no test indicators found".to_string()
-                } else {
-                    format!("found: {}", detected.join(", "))
-                },
-            )
-            .with_confidence(if test_indicators_count > 0 { 1.0 } else { 0.7 })
-            .with_weight(1.2),
+        Ok(MaturitySignal::new(
+            SignalType::Filesystem,
+            "test_coverage",
+            normalized,
+            if detected.is_empty() {
+                "no test indicators found".to_string()
+            } else {
+                format!("found: {}", detected.join(", "))
+            },
         )
+        .with_confidence(if test_indicators_count > 0 { 1.0 } else { 0.7 })
+        .with_weight(1.2))
     }
 
     fn detect_documentation(&self, path: &Path) -> MaturityResult<MaturitySignal> {
         let doc_indicators: Vec<(&str, Box<dyn Fn(&Path) -> bool + Send + Sync>)> = vec![
-            ("README", Box::new(|p| {
-                p.read_dir()
-                    .map(|entries| {
-                        entries
-                            .filter_map(|e| e.ok())
-                            .any(|e| {
+            (
+                "README",
+                Box::new(|p| {
+                    p.read_dir()
+                        .map(|entries| {
+                            entries.filter_map(|e| e.ok()).any(|e| {
+                                e.file_name()
+                                    .to_str()
+                                    .map(|n| n.to_uppercase().starts_with("README"))
+                                    .unwrap_or(false)
+                            })
+                        })
+                        .unwrap_or(false)
+                }),
+            ),
+            (
+                "LICENSE",
+                Box::new(|p| {
+                    p.read_dir()
+                        .map(|entries| {
+                            entries.filter_map(|e| e.ok()).any(|e| {
                                 e.file_name()
                                     .to_str()
                                     .map(|n| {
-                                        n.to_uppercase().starts_with("README")
+                                        n.to_uppercase().starts_with("LICENSE")
+                                            || n.to_uppercase().starts_with("LICENCE")
                                     })
                                     .unwrap_or(false)
                             })
-                    })
-                    .unwrap_or(false)
-            })),
-            ("LICENSE", Box::new(|p| {
-                p.read_dir()
-                    .map(|entries| {
-                        entries
-                            .filter_map(|e| e.ok())
-                            .any(|e| {
-                                e.file_name()
-                                    .to_str()
-                                    .map(|n| {
-                                        n.to_uppercase().starts_with("LICENSE") ||
-                                        n.to_uppercase().starts_with("LICENCE")
-                                    })
-                                    .unwrap_or(false)
-                            })
-                    })
-                    .unwrap_or(false)
-            })),
-            ("CONTRIBUTING", Box::new(|p| {
-                p.read_dir()
-                    .map(|entries| {
-                        entries
-                            .filter_map(|e| e.ok())
-                            .any(|e| {
+                        })
+                        .unwrap_or(false)
+                }),
+            ),
+            (
+                "CONTRIBUTING",
+                Box::new(|p| {
+                    p.read_dir()
+                        .map(|entries| {
+                            entries.filter_map(|e| e.ok()).any(|e| {
                                 e.file_name()
                                     .to_str()
                                     .map(|n| n.to_uppercase().starts_with("CONTRIBUTING"))
                                     .unwrap_or(false)
                             })
-                    })
-                    .unwrap_or(false)
-            })),
+                        })
+                        .unwrap_or(false)
+                }),
+            ),
             ("docs/", Box::new(|p| p.join("docs").is_dir())),
             ("doc/", Box::new(|p| p.join("doc").is_dir())),
-            ("documentation/", Box::new(|p| p.join("documentation").is_dir())),
-            ("CHANGELOG", Box::new(|p| {
-                p.read_dir()
-                    .map(|entries| {
-                        entries
-                            .filter_map(|e| e.ok())
-                            .any(|e| {
+            (
+                "documentation/",
+                Box::new(|p| p.join("documentation").is_dir()),
+            ),
+            (
+                "CHANGELOG",
+                Box::new(|p| {
+                    p.read_dir()
+                        .map(|entries| {
+                            entries.filter_map(|e| e.ok()).any(|e| {
                                 e.file_name()
                                     .to_str()
                                     .map(|n| n.to_uppercase().starts_with("CHANGELOG"))
                                     .unwrap_or(false)
                             })
-                    })
-                    .unwrap_or(false)
-            })),
-            ("API docs", Box::new(|p| p.join("src").join("lib.rs").exists())),
+                        })
+                        .unwrap_or(false)
+                }),
+            ),
+            (
+                "API docs",
+                Box::new(|p| p.join("src").join("lib.rs").exists()),
+            ),
         ];
 
         let mut detected = Vec::new();
@@ -304,26 +331,32 @@ impl FilesystemSignals {
         let doc_count = detected.len();
 
         // Calculate score
-        let score = doc_count as f64 * 0.15 +
-            if detected.contains(&"README") { 0.25 } else { 0.0 } +
-            if detected.contains(&"LICENSE") { 0.15 } else { 0.0 };
+        let score = doc_count as f64 * 0.15
+            + if detected.contains(&"README") {
+                0.25
+            } else {
+                0.0
+            }
+            + if detected.contains(&"LICENSE") {
+                0.15
+            } else {
+                0.0
+            };
 
         let normalized = score.min(1.0);
 
-        Ok(
-            MaturitySignal::new(
-                SignalType::Filesystem,
-                "documentation",
-                normalized,
-                if detected.is_empty() {
-                    "no documentation found".to_string()
-                } else {
-                    format!("found: {}", detected.join(", "))
-                },
-            )
-            .with_confidence(1.0)
-            .with_weight(1.0),
+        Ok(MaturitySignal::new(
+            SignalType::Filesystem,
+            "documentation",
+            normalized,
+            if detected.is_empty() {
+                "no documentation found".to_string()
+            } else {
+                format!("found: {}", detected.join(", "))
+            },
         )
+        .with_confidence(1.0)
+        .with_weight(1.0))
     }
 
     fn detect_code_organization(&self, path: &Path) -> MaturityResult<MaturitySignal> {
@@ -338,12 +371,12 @@ impl FilesystemSignals {
         let has_examples = path.join("examples").is_dir() || path.join("example").is_dir();
 
         // Check for CI config
-        let has_ci = path.join(".github").join("workflows").exists() ||
-            path.join(".gitlab-ci.yml").exists() ||
-            path.join(".circleci").exists();
+        let has_ci = path.join(".github").join("workflows").exists()
+            || path.join(".gitlab-ci.yml").exists()
+            || path.join(".circleci").exists();
 
-        let score = (has_src as i32) + (has_test_dir as i32) + 
-            (has_examples as i32) + (has_ci as i32);
+        let score =
+            (has_src as i32) + (has_test_dir as i32) + (has_examples as i32) + (has_ci as i32);
 
         let normalized = score as f64 / 4.0;
 
@@ -358,20 +391,18 @@ impl FilesystemSignals {
         .collect::<Vec<_>>()
         .join(", ");
 
-        Ok(
-            MaturitySignal::new(
-                SignalType::Filesystem,
-                "code_organization",
-                normalized,
-                if indicators.is_empty() {
-                    "unstructured".to_string()
-                } else {
-                    indicators
-                },
-            )
-            .with_confidence(1.0)
-            .with_weight(0.9),
+        Ok(MaturitySignal::new(
+            SignalType::Filesystem,
+            "code_organization",
+            normalized,
+            if indicators.is_empty() {
+                "unstructured".to_string()
+            } else {
+                indicators
+            },
         )
+        .with_confidence(1.0)
+        .with_weight(0.9))
     }
 }
 

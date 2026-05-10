@@ -46,7 +46,7 @@ impl ValidationReporter {
 
     pub fn format_text(&self) -> String {
         let mut output = String::new();
-        
+
         output.push_str("╔═══════════════════════════════════════════════════════════╗\n");
         output.push_str("║                    Assura Validation Report               ║\n");
         output.push_str("╚═══════════════════════════════════════════════════════════╝\n\n");
@@ -65,7 +65,7 @@ impl ValidationReporter {
 
         if failed_count > 0 {
             output.push_str("═══ Failures ═══\n\n");
-            
+
             for result in self.results.iter().filter(|r| !r.passed) {
                 output.push_str(&format!(
                     "❌ {} ({}ms)\n",
@@ -73,7 +73,7 @@ impl ValidationReporter {
                 ));
                 output.push_str(&format!("   Path: {}\n", result.path.display()));
                 output.push_str(&format!("   Severity: {:?}\n", result.severity));
-                
+
                 for failure in result.failures.failures() {
                     output.push_str(&format!("   • {}\n", failure.message));
                     if let Some(suggestion) = &failure.suggestion {
@@ -135,7 +135,7 @@ impl ValidationReporter {
                 })
             }).collect::<Vec<_>>(),
         });
-        
+
         serde_json::to_string_pretty(&report).unwrap_or_default()
     }
 
@@ -167,7 +167,7 @@ impl ValidationReporter {
                 })
             }).collect::<Vec<_>>(),
         });
-        
+
         serde_yaml::to_string(&report).unwrap_or_default()
     }
 }
@@ -202,7 +202,7 @@ impl StatusReporter {
 
     pub fn format_text(&self) -> String {
         let mut output = String::new();
-        
+
         output.push_str("╔═══════════════════════════════════════════════════════════╗\n");
         output.push_str("║                    Assura Project Status                  ║\n");
         output.push_str("╚═══════════════════════════════════════════════════════════╝\n\n");
@@ -278,7 +278,7 @@ impl StatusReporter {
             }),
             "recommendations": self.maturity_report.recommendations,
         });
-        
+
         serde_json::to_string_pretty(&report).unwrap_or_default()
     }
 
@@ -301,7 +301,7 @@ impl StatusReporter {
             }),
             "recommendations": self.maturity_report.recommendations,
         });
-        
+
         serde_yaml::to_string(&report).unwrap_or_default()
     }
 }
@@ -334,14 +334,12 @@ mod tests {
 
     #[test]
     fn test_validation_reporter_with_failures() {
-        let failures = ValidationFailures::new().with_failure(
-            ValidationFailure::new(
-                "test",
-                PathBuf::from("/test"),
-                "Test failure"
-            )
-        );
-        
+        let failures = ValidationFailures::new().with_failure(ValidationFailure::new(
+            "test",
+            PathBuf::from("/test"),
+            "Test failure",
+        ));
+
         let result = ConstraintOutput {
             constraint_name: "test".to_string(),
             path: PathBuf::from("/test"),
@@ -351,7 +349,7 @@ mod tests {
             failures,
             metadata: None,
         };
-        
+
         let reporter = ValidationReporter::new(vec![result], 100, 1);
         assert!(reporter.has_failures());
         assert_eq!(reporter.failure_count(), 1);
@@ -362,6 +360,9 @@ mod tests {
         assert_eq!(format_duration(std::time::Duration::from_secs(30)), "30s");
         assert_eq!(format_duration(std::time::Duration::from_secs(120)), "2m");
         assert_eq!(format_duration(std::time::Duration::from_secs(7200)), "2h");
-        assert_eq!(format_duration(std::time::Duration::from_secs(172800)), "2d");
+        assert_eq!(
+            format_duration(std::time::Duration::from_secs(172800)),
+            "2d"
+        );
     }
 }

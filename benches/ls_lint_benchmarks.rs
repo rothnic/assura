@@ -11,17 +11,15 @@
 //! Each benchmark measures execution time and provides comparative metrics
 //! to identify performance characteristics and bottlenecks.
 
-use criterion::{
-    black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput,
-};
+use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
 use std::path::Path;
 use tempfile::TempDir;
 
 use assura::constraints::{
-    CaseConvention, ComplexExtension, Constraint, ConstraintContext, ConstraintEngine,
-    ConstraintConfig, DirectoryConstraint, DirectoryValidationConfig, ExtensionPattern,
-    MultiPartExtensionRule, MultipleRuleSyntax, NamingConstraint, PathRule, PathRuleConfig,
-    Severity, ExtensionRule, FileSizeConstraint, FileSizeRule, FileSizeLimit,
+    CaseConvention, ComplexExtension, Constraint, ConstraintConfig, ConstraintContext,
+    ConstraintEngine, DirectoryConstraint, DirectoryValidationConfig, ExtensionPattern,
+    ExtensionRule, FileSizeConstraint, FileSizeLimit, FileSizeRule, MultiPartExtensionRule,
+    MultipleRuleSyntax, NamingConstraint, PathRule, PathRuleConfig, Severity,
 };
 
 // ============================================================================
@@ -29,7 +27,7 @@ use assura::constraints::{
 // ============================================================================
 
 /// Benchmark all 12 case conventions with various input sizes
-/// 
+///
 /// This benchmark compares the performance characteristics of each case convention
 /// validation across different input complexities.
 fn bench_case_conventions(c: &mut Criterion) {
@@ -64,11 +62,9 @@ fn bench_case_conventions(c: &mut Criterion) {
         group.throughput(Throughput::Bytes(test_str.len() as u64));
 
         for (conv_name, convention) in conventions {
-            group.bench_with_input(
-                BenchmarkId::new(conv_name, case_name),
-                test_str,
-                |b, s| b.iter(|| black_box(convention.validate(black_box(s)))),
-            );
+            group.bench_with_input(BenchmarkId::new(conv_name, case_name), test_str, |b, s| {
+                b.iter(|| black_box(convention.validate(black_box(s))))
+            });
         }
     }
 
@@ -76,21 +72,15 @@ fn bench_case_conventions(c: &mut Criterion) {
 }
 
 /// Benchmark batch validation of multiple names against conventions
-/// 
+///
 /// Compares throughput when validating datasets of different sizes.
 fn bench_case_convention_batch(c: &mut Criterion) {
     let mut group = c.benchmark_group("case_convention_batch");
 
     // Create test data sets of various sizes
-    let small_set: Vec<String> = (0..10)
-        .map(|i| format!("test_file_{}", i))
-        .collect();
-    let medium_set: Vec<String> = (0..100)
-        .map(|i| format!("test_file_{}", i))
-        .collect();
-    let large_set: Vec<String> = (0..1000)
-        .map(|i| format!("test_file_{}", i))
-        .collect();
+    let small_set: Vec<String> = (0..10).map(|i| format!("test_file_{}", i)).collect();
+    let medium_set: Vec<String> = (0..100).map(|i| format!("test_file_{}", i)).collect();
+    let large_set: Vec<String> = (0..1000).map(|i| format!("test_file_{}", i)).collect();
 
     for (name, dataset) in [
         ("small_10", &small_set),
@@ -137,38 +127,30 @@ fn bench_case_convention_batch(c: &mut Criterion) {
 }
 
 /// Compare validation of valid vs invalid names
-/// 
+///
 /// Shows whether validation short-circuits on early failures.
 fn bench_valid_vs_invalid(c: &mut Criterion) {
     let mut group = c.benchmark_group("case_convention_valid_vs_invalid");
 
-    let valid_names = [
-        "my-file",
-        "another-test-file",
-        "simple",
-    ];
+    let valid_names = ["my-file", "another-test-file", "simple"];
 
     let invalid_names = [
-        "my_file",       // Wrong separator
-        "MyFile",        // Wrong case
-        "my--file",      // Double separator
-        "-leading",      // Leading separator
+        "my_file",  // Wrong separator
+        "MyFile",   // Wrong case
+        "my--file", // Double separator
+        "-leading", // Leading separator
     ];
 
     for name in valid_names {
-        group.bench_with_input(
-            BenchmarkId::new("kebab_valid", name),
-            name,
-            |b, n| b.iter(|| black_box(CaseConvention::KebabCase.validate(black_box(n)))),
-        );
+        group.bench_with_input(BenchmarkId::new("kebab_valid", name), name, |b, n| {
+            b.iter(|| black_box(CaseConvention::KebabCase.validate(black_box(n))))
+        });
     }
 
     for name in invalid_names {
-        group.bench_with_input(
-            BenchmarkId::new("kebab_invalid", name),
-            name,
-            |b, n| b.iter(|| black_box(CaseConvention::KebabCase.validate(black_box(n)))),
-        );
+        group.bench_with_input(BenchmarkId::new("kebab_invalid", name), name, |b, n| {
+            b.iter(|| black_box(CaseConvention::KebabCase.validate(black_box(n))))
+        });
     }
 
     group.finish();
@@ -183,7 +165,12 @@ fn create_directory_structure(depth: usize, breadth: usize) -> TempDir {
     let temp_dir = TempDir::new().unwrap();
     let base_path = temp_dir.path();
 
-    fn create_level(path: &std::path::Path, current_depth: usize, max_depth: usize, breadth: usize) {
+    fn create_level(
+        path: &std::path::Path,
+        current_depth: usize,
+        max_depth: usize,
+        breadth: usize,
+    ) {
         if current_depth >= max_depth {
             return;
         }
@@ -207,23 +194,22 @@ fn create_directory_structure(depth: usize, breadth: usize) -> TempDir {
 }
 
 /// Benchmark directory validation at various depths
-/// 
+///
 /// Compares validation performance across different tree structures.
 fn bench_directory_validation(c: &mut Criterion) {
     let mut group = c.benchmark_group("directory_validation_depth");
 
     // Test different directory depths and branching factors
     let configs = [
-        ("shallow_2x3", 2, 3),      // 2 levels, 3 dirs per level = 12 dirs
-        ("medium_3x5", 3, 5),       // 3 levels, 5 dirs per level = 155 dirs
-        ("deep_5x3", 5, 3),         // 5 levels, 3 dirs per level = 363 dirs
-        ("wide_2x10", 2, 10),       // 2 levels, 10 dirs per level = 110 dirs
+        ("shallow_2x3", 2, 3), // 2 levels, 3 dirs per level = 12 dirs
+        ("medium_3x5", 3, 5),  // 3 levels, 5 dirs per level = 155 dirs
+        ("deep_5x3", 5, 3),    // 5 levels, 3 dirs per level = 363 dirs
+        ("wide_2x10", 2, 10),  // 2 levels, 10 dirs per level = 110 dirs
     ];
 
     for (name, depth, breadth) in configs {
         let temp_dir = create_directory_structure(depth, breadth);
-        let constraint = DirectoryConstraint::new()
-            .with_case_convention(CaseConvention::KebabCase);
+        let constraint = DirectoryConstraint::new().with_case_convention(CaseConvention::KebabCase);
         let context = ConstraintContext::new();
 
         group.bench_function(BenchmarkId::new("validate", name), |b| {
@@ -238,7 +224,7 @@ fn bench_directory_validation(c: &mut Criterion) {
 }
 
 /// Benchmark directory validation with exclusions
-/// 
+///
 /// Shows the performance impact of exclusion checking.
 fn bench_directory_with_exclusions(c: &mut Criterion) {
     let mut group = c.benchmark_group("directory_validation_exclusions");
@@ -249,11 +235,11 @@ fn bench_directory_with_exclusions(c: &mut Criterion) {
     // Create directories including excluded ones
     for i in 0..30 {
         let dir_name = if i % 5 == 0 {
-            format!(".git{}", i)  // Excluded
+            format!(".git{}", i) // Excluded
         } else if i % 5 == 1 {
-            format!("node_modules{}", i)  // Excluded
+            format!("node_modules{}", i) // Excluded
         } else if i % 5 == 2 {
-            format!("target{}", i)  // Excluded
+            format!("target{}", i) // Excluded
         } else {
             format!("valid-dir{}", i)
         };
@@ -261,8 +247,7 @@ fn bench_directory_with_exclusions(c: &mut Criterion) {
         std::fs::create_dir(&dir_path).unwrap();
     }
 
-    let constraint = DirectoryConstraint::new()
-        .with_case_convention(CaseConvention::KebabCase);
+    let constraint = DirectoryConstraint::new().with_case_convention(CaseConvention::KebabCase);
     let context = ConstraintContext::new();
 
     group.bench_function("with_exclusions", |b| {
@@ -297,8 +282,8 @@ fn bench_recursive_vs_flat(c: &mut Criterion) {
     let temp_dir = create_directory_structure(4, 4);
     let base_path = temp_dir.path();
 
-    let recursive_constraint = DirectoryConstraint::new()
-        .with_case_convention(CaseConvention::KebabCase);
+    let recursive_constraint =
+        DirectoryConstraint::new().with_case_convention(CaseConvention::KebabCase);
 
     let non_recursive_config = DirectoryValidationConfig::new().non_recursive();
     let flat_constraint = DirectoryConstraint::new()
@@ -329,7 +314,7 @@ fn bench_recursive_vs_flat(c: &mut Criterion) {
 // ============================================================================
 
 /// Benchmark extension pattern parsing and matching
-/// 
+///
 /// Compares performance across different extension complexities.
 fn bench_extension_patterns(c: &mut Criterion) {
     let mut group = c.benchmark_group("extension_patterns");
@@ -347,11 +332,9 @@ fn bench_extension_patterns(c: &mut Criterion) {
         group.throughput(Throughput::Bytes(filename.len() as u64));
 
         // Parse extension from filename
-        group.bench_with_input(
-            BenchmarkId::new("parse", name),
-            filename,
-            |b, f| b.iter(|| black_box(ExtensionPattern::from_filename(f))),
-        );
+        group.bench_with_input(BenchmarkId::new("parse", name), filename, |b, f| {
+            b.iter(|| black_box(ExtensionPattern::from_filename(f)))
+        });
 
         // Pattern matching with wildcard
         let pattern = ExtensionPattern::new("*.js");
@@ -369,21 +352,19 @@ fn bench_extension_patterns(c: &mut Criterion) {
 }
 
 /// Benchmark multi-part extension rule validation
-/// 
+///
 /// Compares simple vs complex rule validation performance.
 fn bench_multi_part_extension_rules(c: &mut Criterion) {
     let mut group = c.benchmark_group("multi_part_extension_rules");
 
     let test_files: Vec<String> = (0..100)
-        .map(|i| {
-            match i % 6 {
-                0 => format!("component{}.test.js", i),
-                1 => format!("types{}.d.ts", i),
-                2 => format!("bundle{}.min.css", i),
-                3 => format!("module{}.rs", i),
-                4 => format!("test{}.spec.ts", i),
-                _ => format!("file{}.txt", i),
-            }
+        .map(|i| match i % 6 {
+            0 => format!("component{}.test.js", i),
+            1 => format!("types{}.d.ts", i),
+            2 => format!("bundle{}.min.css", i),
+            3 => format!("module{}.rs", i),
+            4 => format!("test{}.spec.ts", i),
+            _ => format!("file{}.txt", i),
         })
         .collect();
 
@@ -443,13 +424,11 @@ fn bench_complex_extension_detection(c: &mut Criterion) {
     let mut group = c.benchmark_group("complex_extension_detection");
 
     let test_files: Vec<String> = (0..1000)
-        .map(|i| {
-            match i % 4 {
-                0 => format!("test{}.test.js", i),
-                1 => format!("spec{}.spec.ts", i),
-                2 => format!("min{}.min.js", i),
-                _ => format!("normal{}.js", i),
-            }
+        .map(|i| match i % 4 {
+            0 => format!("test{}.test.js", i),
+            1 => format!("spec{}.spec.ts", i),
+            2 => format!("min{}.min.js", i),
+            _ => format!("normal{}.js", i),
         })
         .collect();
 
@@ -487,7 +466,7 @@ fn bench_complex_extension_detection(c: &mut Criterion) {
 // ============================================================================
 
 /// Benchmark OR syntax parsing performance
-/// 
+///
 /// Shows how parsing time scales with number of alternatives.
 fn bench_or_syntax_parsing(c: &mut Criterion) {
     let mut group = c.benchmark_group("or_syntax_parsing");
@@ -503,26 +482,28 @@ fn bench_or_syntax_parsing(c: &mut Criterion) {
 
     for (name, rule_str) in rule_strings {
         group.throughput(Throughput::Bytes(rule_str.len() as u64));
-        group.bench_with_input(
-            BenchmarkId::new("parse", name),
-            rule_str,
-            |b, s| b.iter(|| black_box(MultipleRuleSyntax::parse(s).unwrap())),
-        );
+        group.bench_with_input(BenchmarkId::new("parse", name), rule_str, |b, s| {
+            b.iter(|| black_box(MultipleRuleSyntax::parse(s).unwrap()))
+        });
     }
 
     group.finish();
 }
 
 /// Benchmark OR syntax validation performance
-/// 
+///
 /// Compares validation speed with different numbers of alternatives.
 fn bench_or_syntax_validation(c: &mut Criterion) {
     let mut group = c.benchmark_group("or_syntax_validation");
 
     // Parse rules with varying numbers of alternatives
     let two_alt = MultipleRuleSyntax::parse("kebab-case | snake_case").unwrap();
-    let four_alt = MultipleRuleSyntax::parse("kebab-case | snake_case | camelCase | PascalCase").unwrap();
-    let six_alt = MultipleRuleSyntax::parse("kebab-case | snake_case | camelCase | PascalCase | dot.case | Train-Case").unwrap();
+    let four_alt =
+        MultipleRuleSyntax::parse("kebab-case | snake_case | camelCase | PascalCase").unwrap();
+    let six_alt = MultipleRuleSyntax::parse(
+        "kebab-case | snake_case | camelCase | PascalCase | dot.case | Train-Case",
+    )
+    .unwrap();
 
     // Test names representing different conventions
     let test_names = [
@@ -591,7 +572,7 @@ fn bench_or_syntax_batch(c: &mut Criterion) {
 // ============================================================================
 
 /// Benchmark glob pattern compilation to regex
-/// 
+///
 /// Shows the one-time cost of pattern compilation.
 fn bench_glob_to_regex(c: &mut Criterion) {
     let mut group = c.benchmark_group("glob_pattern_compilation");
@@ -606,11 +587,9 @@ fn bench_glob_to_regex(c: &mut Criterion) {
 
     for (name, pattern) in patterns {
         group.throughput(Throughput::Bytes(pattern.len() as u64));
-        group.bench_with_input(
-            BenchmarkId::new("compile", name),
-            pattern,
-            |b, p| b.iter(|| black_box(PathRule::new(p, CaseConvention::SnakeCase).unwrap())),
-        );
+        group.bench_with_input(BenchmarkId::new("compile", name), pattern, |b, p| {
+            b.iter(|| black_box(PathRule::new(p, CaseConvention::SnakeCase).unwrap()))
+        });
     }
 
     group.finish();
@@ -622,10 +601,22 @@ fn bench_path_rule_matching(c: &mut Criterion) {
 
     // Create various path rules
     let rules = [
-        ("simple_star", PathRule::new("*.rs", CaseConvention::SnakeCase).unwrap()),
-        ("src_glob", PathRule::new("src/**/*.rs", CaseConvention::SnakeCase).unwrap()),
-        ("deep_glob", PathRule::new("src/**/components/**/*.ts", CaseConvention::PascalCase).unwrap()),
-        ("packages", PathRule::new("packages/*/src/**/*.ts", CaseConvention::CamelCase).unwrap()),
+        (
+            "simple_star",
+            PathRule::new("*.rs", CaseConvention::SnakeCase).unwrap(),
+        ),
+        (
+            "src_glob",
+            PathRule::new("src/**/*.rs", CaseConvention::SnakeCase).unwrap(),
+        ),
+        (
+            "deep_glob",
+            PathRule::new("src/**/components/**/*.ts", CaseConvention::PascalCase).unwrap(),
+        ),
+        (
+            "packages",
+            PathRule::new("packages/*/src/**/*.ts", CaseConvention::CamelCase).unwrap(),
+        ),
     ];
 
     // Test paths with varying complexity
@@ -638,15 +629,15 @@ fn bench_path_rule_matching(c: &mut Criterion) {
         Path::new("tests/test.rs"),
     ];
 
-        for (rule_name, rule) in &rules {
-            for path in paths {
-                group.bench_with_input(
-                    BenchmarkId::new(*rule_name, path.to_str().unwrap()),
-                    path,
-                    |b, p| b.iter(|| black_box(rule.matches(p))),
-                );
-            }
+    for (rule_name, rule) in &rules {
+        for path in paths {
+            group.bench_with_input(
+                BenchmarkId::new(*rule_name, path.to_str().unwrap()),
+                path,
+                |b, p| b.iter(|| black_box(rule.matches(p))),
+            );
         }
+    }
 
     group.finish();
 }
@@ -664,27 +655,21 @@ fn bench_path_rule_config(c: &mut Criterion) {
                 .unwrap()
                 .with_severity(Severity::High),
         )
-        .with_rule(
-            PathRule::new("src/hooks/**/*.ts", CaseConvention::CamelCase)
-                .unwrap(),
-        )
-        .with_rule(
-            PathRule::new("src/utils/**/*.ts", CaseConvention::SnakeCase)
-                .unwrap(),
-        )
+        .with_rule(PathRule::new("src/hooks/**/*.ts", CaseConvention::CamelCase).unwrap())
+        .with_rule(PathRule::new("src/utils/**/*.ts", CaseConvention::SnakeCase).unwrap())
         .with_default_convention(CaseConvention::KebabCase);
 
     // Test paths covering different rule matches
     let paths: Vec<&Path> = vec![
         Path::new("src/my_module.rs"),
-        Path::new("src/my-module.rs"),  // Invalid
+        Path::new("src/my-module.rs"), // Invalid
         Path::new("tests/my_test.rs"),
         Path::new("src/components/MyComponent.ts"),
-        Path::new("src/components/my-component.ts"),  // Invalid
+        Path::new("src/components/my-component.ts"), // Invalid
         Path::new("src/hooks/useState.ts"),
         Path::new("src/utils/my_helper.ts"),
         Path::new("docs/my-file.md"),
-        Path::new("docs/my_file.md"),  // Invalid (default convention)
+        Path::new("docs/my_file.md"), // Invalid (default convention)
     ];
 
     group.bench_function("find_rule_9_paths", |b| {
@@ -713,15 +698,9 @@ fn bench_nested_path_rules(c: &mut Criterion) {
     // Create nested rule structure
     let parent_rule = PathRule::new("src/**", CaseConvention::SnakeCase)
         .unwrap()
-        .with_child_rule(
-            PathRule::new("src/components/**", CaseConvention::PascalCase).unwrap()
-        )
-        .with_child_rule(
-            PathRule::new("src/hooks/**", CaseConvention::CamelCase).unwrap()
-        )
-        .with_child_rule(
-            PathRule::new("src/utils/**", CaseConvention::SnakeCase).unwrap()
-        );
+        .with_child_rule(PathRule::new("src/components/**", CaseConvention::PascalCase).unwrap())
+        .with_child_rule(PathRule::new("src/hooks/**", CaseConvention::CamelCase).unwrap())
+        .with_child_rule(PathRule::new("src/utils/**", CaseConvention::SnakeCase).unwrap());
 
     let paths = [
         Path::new("src/utils.rs"),
@@ -823,15 +802,12 @@ fn bench_constraint_engine(c: &mut Criterion) {
     let mut engine = ConstraintEngine::new(config);
 
     // Register naming constraint
-    let naming_constraint = NamingConstraint::new()
-        .with_case_convention(CaseConvention::KebabCase);
+    let naming_constraint = NamingConstraint::new().with_case_convention(CaseConvention::KebabCase);
     engine.register_constraint(Box::new(naming_constraint));
 
     // Register file size constraint
     let size_constraint = FileSizeConstraint::new()
-        .add_rule(
-            FileSizeRule::new("max_size").max_size(FileSizeLimit::Megabytes(1))
-        );
+        .add_rule(FileSizeRule::new("max_size").max_size(FileSizeLimit::Megabytes(1)));
     engine.register_constraint(Box::new(size_constraint));
 
     let context = ConstraintContext::new();
@@ -846,20 +822,19 @@ fn bench_constraint_engine(c: &mut Criterion) {
     // Create engine with more constraints
     let mut complex_engine = ConstraintEngine::new(ConstraintConfig::new());
     complex_engine.register_constraint(Box::new(
-        NamingConstraint::new().with_case_convention(CaseConvention::KebabCase)
+        NamingConstraint::new().with_case_convention(CaseConvention::KebabCase),
     ));
+    complex_engine
+        .register_constraint(Box::new(FileSizeConstraint::new().add_rule(
+            FileSizeRule::new("max_size").max_size(FileSizeLimit::Megabytes(1)),
+        )));
     complex_engine.register_constraint(Box::new(
-        FileSizeConstraint::new().add_rule(
-            FileSizeRule::new("max_size").max_size(FileSizeLimit::Megabytes(1))
-        )
-    ));
-    complex_engine.register_constraint(Box::new(
-        DirectoryConstraint::new().with_case_convention(CaseConvention::KebabCase)
+        DirectoryConstraint::new().with_case_convention(CaseConvention::KebabCase),
     ));
     complex_engine.register_constraint(Box::new(
         NamingConstraint::new()
             .with_file_pattern("*.rs")
-            .with_case_convention(CaseConvention::SnakeCase)
+            .with_case_convention(CaseConvention::SnakeCase),
     ));
 
     group.bench_function("validate_4_constraints", |b| {
@@ -917,15 +892,12 @@ fn bench_full_project_validation(c: &mut Criterion) {
     engine.register_constraint(Box::new(naming));
 
     // Add directory constraint
-    let directory = DirectoryConstraint::new()
-        .with_case_convention(CaseConvention::KebabCase);
+    let directory = DirectoryConstraint::new().with_case_convention(CaseConvention::KebabCase);
     engine.register_constraint(Box::new(directory));
 
     // Add file size constraint
     let size = FileSizeConstraint::new()
-        .add_rule(
-            FileSizeRule::new("max_size").max_size(FileSizeLimit::Kilobytes(10))
-        );
+        .add_rule(FileSizeRule::new("max_size").max_size(FileSizeLimit::Kilobytes(10)));
     engine.register_constraint(Box::new(size));
 
     let context = ConstraintContext::new();
@@ -970,9 +942,7 @@ fn bench_full_project_validation(c: &mut Criterion) {
 fn bench_comparative_validation(c: &mut Criterion) {
     let mut group = c.benchmark_group("comparative");
 
-    let test_names: Vec<String> = (0..100)
-        .map(|i| format!("test-file-{}", i))
-        .collect();
+    let test_names: Vec<String> = (0..100).map(|i| format!("test-file-{}", i)).collect();
 
     // Approach 1: Direct case convention validation
     group.bench_function("direct_validation", |b| {
@@ -1005,8 +975,7 @@ fn bench_comparative_validation(c: &mut Criterion) {
 
     // Approach 4: Naming constraint
     let temp_dir = TempDir::new().unwrap();
-    let constraint = NamingConstraint::new()
-        .with_case_convention(CaseConvention::KebabCase);
+    let constraint = NamingConstraint::new().with_case_convention(CaseConvention::KebabCase);
     let context = ConstraintContext::new();
 
     group.bench_function("naming_constraint_validation", |b| {
@@ -1032,7 +1001,12 @@ fn bench_severity_levels(c: &mut Criterion) {
     let context = ConstraintContext::new();
 
     // Benchmark with different severity configurations
-    for severity in [Severity::Low, Severity::Medium, Severity::High, Severity::Critical] {
+    for severity in [
+        Severity::Low,
+        Severity::Medium,
+        Severity::High,
+        Severity::Critical,
+    ] {
         let constraint = NamingConstraint::new()
             .with_case_convention(CaseConvention::KebabCase)
             .with_default_severity(severity);
@@ -1040,11 +1014,7 @@ fn bench_severity_levels(c: &mut Criterion) {
         group.bench_with_input(
             BenchmarkId::new("severity", format!("{:?}", severity)),
             &test_file,
-            |b, path| {
-                b.iter(|| {
-                    black_box(constraint.validate(path, &context))
-                })
-            },
+            |b, path| b.iter(|| black_box(constraint.validate(path, &context))),
         );
     }
 

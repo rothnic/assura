@@ -315,14 +315,20 @@ impl SchemaDefinition {
     /// Load from YAML
     pub fn from_yaml(yaml: &str) -> MarkdownResult<Self> {
         serde_yaml::from_str(yaml).map_err(|e| {
-            MarkdownError::schema("definition", format!("Failed to parse schema definition: {}", e))
+            MarkdownError::schema(
+                "definition",
+                format!("Failed to parse schema definition: {}", e),
+            )
         })
     }
 
     /// Serialize to YAML
     pub fn to_yaml(&self) -> MarkdownResult<String> {
         serde_yaml::to_string(self).map_err(|e| {
-            MarkdownError::schema("definition", format!("Failed to serialize schema definition: {}", e))
+            MarkdownError::schema(
+                "definition",
+                format!("Failed to serialize schema definition: {}", e),
+            )
         })
     }
 
@@ -404,7 +410,10 @@ rules: []
 
         assert!(config.strict);
         assert!(!config.validate_frontmatter);
-        assert_eq!(config.get_error_message("test", "default"), "custom message");
+        assert_eq!(
+            config.get_error_message("test", "default"),
+            "custom message"
+        );
         assert_eq!(config.get_error_message("missing", "default"), "default");
     }
 

@@ -148,7 +148,11 @@ fn test_maturity_level_assignment_mature() {
     fs::create_dir(temp_dir.path().join("src")).unwrap();
     fs::write(temp_dir.path().join("src/lib.rs"), "pub fn main() {}").unwrap();
     fs::create_dir(temp_dir.path().join("tests")).unwrap();
-    fs::write(temp_dir.path().join("tests/test.rs"), "#[test] fn test() {}").unwrap();
+    fs::write(
+        temp_dir.path().join("tests/test.rs"),
+        "#[test] fn test() {}",
+    )
+    .unwrap();
 
     let github_dir = temp_dir.path().join(".github").join("workflows");
     fs::create_dir_all(&github_dir).unwrap();
@@ -169,7 +173,7 @@ fn test_config_override_manual() {
 
     let config = MaturityConfig::manual_override(
         MaturityLevel::Established,
-        "Manually set to established for testing"
+        "Manually set to established for testing",
     );
 
     let detector = MaturityDetector::new().with_config(config);
@@ -300,8 +304,14 @@ fn test_signal_pipeline() {
 
     assert!(!signals.is_empty());
 
-    let git_signals: Vec<_> = signals.iter().filter(|s| matches!(s.signal_type, SignalType::Git)).collect();
-    let fs_signals: Vec<_> = signals.iter().filter(|s| matches!(s.signal_type, SignalType::Filesystem)).collect();
+    let git_signals: Vec<_> = signals
+        .iter()
+        .filter(|s| matches!(s.signal_type, SignalType::Git))
+        .collect();
+    let fs_signals: Vec<_> = signals
+        .iter()
+        .filter(|s| matches!(s.signal_type, SignalType::Filesystem))
+        .collect();
 
     assert!(!git_signals.is_empty());
     assert!(!fs_signals.is_empty());
@@ -393,8 +403,14 @@ fn test_maturity_report_recommendations() {
     assert!(!report.recommendations.is_empty());
 
     let has_git_rec = report.recommendations.iter().any(|r| r.category == "git");
-    let has_fs_rec = report.recommendations.iter().any(|r| r.category == "filesystem");
-    let has_env_rec = report.recommendations.iter().any(|r| r.category == "environment");
+    let has_fs_rec = report
+        .recommendations
+        .iter()
+        .any(|r| r.category == "filesystem");
+    let has_env_rec = report
+        .recommendations
+        .iter()
+        .any(|r| r.category == "environment");
 
     assert!(has_git_rec || has_fs_rec || has_env_rec);
 }
@@ -407,8 +423,14 @@ fn test_maturity_level_transitions() {
     assert_eq!(MaturityLevel::Established.threshold(), 0.85);
 
     assert_eq!(MaturityLevel::Raw.next(), Some(MaturityLevel::Developing));
-    assert_eq!(MaturityLevel::Developing.next(), Some(MaturityLevel::Mature));
-    assert_eq!(MaturityLevel::Mature.next(), Some(MaturityLevel::Established));
+    assert_eq!(
+        MaturityLevel::Developing.next(),
+        Some(MaturityLevel::Mature)
+    );
+    assert_eq!(
+        MaturityLevel::Mature.next(),
+        Some(MaturityLevel::Established)
+    );
     assert_eq!(MaturityLevel::Established.next(), None);
 }
 

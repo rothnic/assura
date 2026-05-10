@@ -10,10 +10,9 @@ use std::path::PathBuf;
 use tempfile::TempDir;
 
 use assura::{
-    Constraint, ConstraintContext, FieldType, FieldValidator, FrontmatterSchema,
-    HeadingLevel, HeadingValidator, MarkdownConstraint,
-    MarkdownDocument, MarkdownParser, MarkdownSchema, MarkdownValidationRule, SchemaDefinition,
-    SectionDefinition, TemplateDefinition,
+    Constraint, ConstraintContext, FieldType, FieldValidator, FrontmatterSchema, HeadingLevel,
+    HeadingValidator, MarkdownConstraint, MarkdownDocument, MarkdownParser, MarkdownSchema,
+    MarkdownValidationRule, SchemaDefinition, SectionDefinition, TemplateDefinition,
 };
 
 /// Helper function to create a temporary markdown file
@@ -57,7 +56,11 @@ Some content here."#;
         let doc = parser.parse(content).unwrap();
         let failures = schema.validate(&doc, &path).unwrap();
 
-        assert!(failures.is_empty(), "Expected no failures, got: {:?}", failures);
+        assert!(
+            failures.is_empty(),
+            "Expected no failures, got: {:?}",
+            failures
+        );
     }
 
     #[test]
@@ -141,14 +144,12 @@ version: 1.0.0
 
         let path = create_markdown_file(&dir, "test.md", content);
 
-        let schema = FrontmatterSchema::new()
-            .required()
-            .with_field(
-                "version",
-                FieldValidator::new(FieldType::String)
-                    .required()
-                    .with_pattern(r"^\d+\.\d+\.\d+$"),
-            );
+        let schema = FrontmatterSchema::new().required().with_field(
+            "version",
+            FieldValidator::new(FieldType::String)
+                .required()
+                .with_pattern(r"^\d+\.\d+\.\d+$"),
+        );
 
         let parser = MarkdownParser::new();
         let doc = parser.parse(content).unwrap();
@@ -181,14 +182,12 @@ status: invalid-status
 
         let path = create_markdown_file(&dir, "test.md", content);
 
-        let schema = FrontmatterSchema::new()
-            .required()
-            .with_field(
-                "status",
-                FieldValidator::new(FieldType::String)
-                    .required()
-                    .with_allowed_values(vec!["draft", "published", "archived"]),
-            );
+        let schema = FrontmatterSchema::new().required().with_field(
+            "status",
+            FieldValidator::new(FieldType::String)
+                .required()
+                .with_allowed_values(vec!["draft", "published", "archived"]),
+        );
 
         let parser = MarkdownParser::new();
         let doc = parser.parse(content).unwrap();
@@ -404,10 +403,11 @@ First content."#;
 
 Hi."#;
 
-        let template = TemplateDefinition::new("word_count_test")
-            .with_section(
-                SectionDefinition::new("Short Section").required().with_word_count(10, 100),
-            );
+        let template = TemplateDefinition::new("word_count_test").with_section(
+            SectionDefinition::new("Short Section")
+                .required()
+                .with_word_count(10, 100),
+        );
 
         let doc = parse_markdown(content);
         let dir = TempDir::new().unwrap();
@@ -426,12 +426,11 @@ Hi."#;
 
 Some content without code blocks."#;
 
-        let template = TemplateDefinition::new("pattern_test")
-            .with_section(
-                SectionDefinition::new("Examples")
-                    .required()
-                    .with_required_pattern(r"```[a-zA-Z]+"),
-            );
+        let template = TemplateDefinition::new("pattern_test").with_section(
+            SectionDefinition::new("Examples")
+                .required()
+                .with_required_pattern(r"```[a-zA-Z]+"),
+        );
 
         let doc = parse_markdown(content);
         let dir = TempDir::new().unwrap();
@@ -525,11 +524,7 @@ Content without H1 and frontmatter."#;
                     .required()
                     .with_field("title", FieldValidator::new(FieldType::String).required()),
             )
-            .with_headings(
-                HeadingValidator::new()
-                    .require_h1()
-                    .validate_hierarchy(),
-            );
+            .with_headings(HeadingValidator::new().require_h1().validate_hierarchy());
 
         let constraint = MarkdownConstraint::new()
             .with_default_schema("strict")
@@ -541,11 +536,7 @@ Content without H1 and frontmatter."#;
                     .required()
                     .with_field("title", FieldValidator::new(FieldType::String).required()),
             )
-            .with_headings(
-                HeadingValidator::new()
-                    .require_h1()
-                    .validate_hierarchy(),
-            )
+            .with_headings(HeadingValidator::new().require_h1().validate_hierarchy())
             .with_rule(MarkdownValidationRule::WordCount {
                 min: Some(100),
                 max: Some(1000),
@@ -626,14 +617,13 @@ More content."#;
 
         let path = create_markdown_file(&dir, "multi_error.md", content);
 
-        let schema = MarkdownSchema::new("strict")
-            .with_headings(
-                HeadingValidator::new()
-                    .require_h1()
-                    .single_h1()
-                    .validate_hierarchy()
-                    .with_max_depth(2),
-            );
+        let schema = MarkdownSchema::new("strict").with_headings(
+            HeadingValidator::new()
+                .require_h1()
+                .single_h1()
+                .validate_hierarchy()
+                .with_max_depth(2),
+        );
 
         let constraint = MarkdownConstraint::new()
             .with_default_schema("strict")
@@ -708,7 +698,8 @@ Actual content."#;
 
     #[test]
     fn test_unicode_content() {
-        let content = "# 日本語タイトル\n\n## Überschrift auf Deutsch\n\n### Título en Español\n\nContent.";
+        let content =
+            "# 日本語タイトル\n\n## Überschrift auf Deutsch\n\n### Título en Español\n\nContent.";
 
         let parser = MarkdownParser::new();
         let doc = parser.parse(content).unwrap();

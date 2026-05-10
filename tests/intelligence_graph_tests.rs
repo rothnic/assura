@@ -1,11 +1,11 @@
 use std::fs;
 use std::path::Path;
 
+use assura::intelligence::persistence::PersistenceFormat;
 use assura::intelligence::{
     DirectoryNode, Edge, FileNode, GraphBuilder, GraphError, GraphPersistence, GraphQuery,
     IntelligenceGraph, NodeId, NodeMetadata, NodeType, Relationship,
 };
-use assura::intelligence::persistence::PersistenceFormat;
 
 fn create_test_directory() -> tempfile::TempDir {
     let temp_dir = tempfile::tempdir().unwrap();
@@ -76,7 +76,10 @@ fn test_edge_creation() {
     assert_eq!(edge.target, target_id);
     assert_eq!(edge.relationship, Relationship::Contains);
     assert_eq!(edge.weight, 2.5);
-    assert_eq!(edge.metadata.get("import_type"), Some(&"direct".to_string()));
+    assert_eq!(
+        edge.metadata.get("import_type"),
+        Some(&"direct".to_string())
+    );
 }
 
 #[test]
@@ -164,12 +167,16 @@ fn test_graph_find_path() {
     let grandchild_id = grandchild.id;
     graph.add_node(grandchild.into());
 
-    graph.add_edge(Edge::new(root_id, child_id, Relationship::Contains)).unwrap();
-    graph.add_edge(Edge::new(child_id, grandchild_id, Relationship::Contains)).unwrap();
+    graph
+        .add_edge(Edge::new(root_id, child_id, Relationship::Contains))
+        .unwrap();
+    graph
+        .add_edge(Edge::new(child_id, grandchild_id, Relationship::Contains))
+        .unwrap();
 
     let path = graph.find_path(root_id, grandchild_id);
     assert!(path.is_some());
-    
+
     let path_ids = path.unwrap();
     assert_eq!(path_ids.len(), 3);
     assert_eq!(path_ids[0], root_id);
@@ -193,8 +200,12 @@ fn test_graph_neighbors() {
     let child2_id = child2.id;
     graph.add_node(child2.into());
 
-    graph.add_edge(Edge::new(parent_id, child1_id, Relationship::Contains)).unwrap();
-    graph.add_edge(Edge::new(parent_id, child2_id, Relationship::Contains)).unwrap();
+    graph
+        .add_edge(Edge::new(parent_id, child1_id, Relationship::Contains))
+        .unwrap();
+    graph
+        .add_edge(Edge::new(parent_id, child2_id, Relationship::Contains))
+        .unwrap();
 
     let neighbors = graph.get_neighbors(parent_id);
     assert_eq!(neighbors.len(), 2);
@@ -305,8 +316,12 @@ fn test_query_find_all_descendants() {
     let grandchild_id = grandchild.id;
     graph.add_node(grandchild.into());
 
-    graph.add_edge(Edge::new(root_id, child1_id, Relationship::Contains)).unwrap();
-    graph.add_edge(Edge::new(child1_id, grandchild_id, Relationship::Contains)).unwrap();
+    graph
+        .add_edge(Edge::new(root_id, child1_id, Relationship::Contains))
+        .unwrap();
+    graph
+        .add_edge(Edge::new(child1_id, grandchild_id, Relationship::Contains))
+        .unwrap();
 
     let query = GraphQuery::new(&graph);
     let descendants = query.find_all_descendants(root_id);
@@ -392,7 +407,9 @@ fn test_persistence_round_trip_preserves_edges() {
     let child_id = child.id;
     graph.add_node(child.into());
 
-    graph.add_edge(Edge::new(parent_id, child_id, Relationship::Contains)).unwrap();
+    graph
+        .add_edge(Edge::new(parent_id, child_id, Relationship::Contains))
+        .unwrap();
 
     let persistence = GraphPersistence::new(&storage_dir).unwrap();
     persistence.save(&graph, "edge_test").unwrap();
@@ -409,10 +426,10 @@ fn test_error_handling_node_not_found() {
 
     let target_id = NodeId::new();
     let edge = Edge::new(fake_id, target_id, Relationship::Contains);
-    
+
     let result = graph.add_edge(edge);
     assert!(result.is_err());
-    
+
     match result {
         Err(GraphError::NodeNotFound(_)) => {}
         _ => panic!("Expected NodeNotFound error"),
@@ -423,10 +440,10 @@ fn test_error_handling_node_not_found() {
 fn test_error_handling_invalid_path() {
     let graph = IntelligenceGraph::new();
     let query = GraphQuery::new(&graph);
-    
+
     let result = query.resolve_path(Path::new("/nonexistent/path"));
     assert!(result.is_err());
-    
+
     match result {
         Err(GraphError::InvalidPath(_)) => {}
         _ => {}
@@ -496,10 +513,7 @@ fn test_graph_builder_max_depth() {
     fs::create_dir(&level2).unwrap();
     fs::write(level2.join("file2.txt"), "test").unwrap();
 
-    let graph = GraphBuilder::new(base_path)
-        .max_depth(1)
-        .build()
-        .unwrap();
+    let graph = GraphBuilder::new(base_path).max_depth(1).build().unwrap();
 
     assert!(graph.node_count() > 0);
 }
@@ -533,8 +547,12 @@ fn test_edge_relationship_types() {
     let test_id = test.id;
     graph.add_node(test.into());
 
-    graph.add_edge(Edge::new(module_id, util_id, Relationship::Imports)).unwrap();
-    graph.add_edge(Edge::new(test_id, module_id, Relationship::References)).unwrap();
+    graph
+        .add_edge(Edge::new(module_id, util_id, Relationship::Imports))
+        .unwrap();
+    graph
+        .add_edge(Edge::new(test_id, module_id, Relationship::References))
+        .unwrap();
 
     let query = GraphQuery::new(&graph);
     let imports = query.find_related(module_id, Relationship::Imports);

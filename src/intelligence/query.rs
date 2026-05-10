@@ -162,10 +162,7 @@ impl<'a> GraphQuery<'a> {
                 common_ancestors = ancestors;
                 first = false;
             } else {
-                common_ancestors = common_ancestors
-                    .intersection(&ancestors)
-                    .copied()
-                    .collect();
+                common_ancestors = common_ancestors.intersection(&ancestors).copied().collect();
             }
         }
 

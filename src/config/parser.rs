@@ -13,23 +13,23 @@ pub struct ConfigParser;
 pub enum ParseError {
     #[error("YAML parse error: {0}")]
     Yaml(#[from] serde_yaml::Error),
-    
+
     #[error("Invalid configuration: {0}")]
     Invalid(String),
-    
+
     #[error("Missing required field: {0}")]
     MissingField(String),
 }
 
 impl ConfigParser {
     /// Parse configuration from YAML string
-    /// 
+    ///
     /// # Arguments
     /// * `input` - Raw YAML configuration
-    /// 
+    ///
     /// # Returns
     /// * Parsed Config or ParseError
-    /// 
+    ///
     /// # Example
     /// ```ignore
     /// use assura::config::parser::ConfigParser;
@@ -52,57 +52,58 @@ impl ConfigParser {
     pub fn parse(input: &str) -> Result<Config, ParseError> {
         // Step 1: Preprocess to make valid YAML
         let processed = YamlPreprocessor::process(input);
-        
+
         // Step 2: Parse YAML to AST
         let config: Config = serde_yaml::from_str(&processed)?;
-        
+
         // Step 3: Validate
         Self::validate(&config)?;
-        
+
         Ok(config)
     }
-    
+
     /// Parse from file path
     pub fn parse_file(path: &std::path::Path) -> Result<Config, ParseError> {
         let content = std::fs::read_to_string(path)
             .map_err(|e| ParseError::Invalid(format!("Failed to read file: {}", e)))?;
-        
+
         Self::parse(&content)
     }
-    
+
     /// Validate configuration
     fn validate(config: &Config) -> Result<(), ParseError> {
         // Check that policy tree is not empty
         if config.policy.entries.is_empty() {
             return Err(ParseError::MissingField("policy".to_string()));
         }
-        
+
         // Validate rules
         for (name, rule) in &config.rules {
             if rule.patterns.is_empty() {
-                return Err(ParseError::Invalid(
-                    format!("Rule '{}' has no patterns", name)
-                ));
+                return Err(ParseError::Invalid(format!(
+                    "Rule '{}' has no patterns",
+                    name
+                )));
             }
         }
-        
+
         // Validate rule references in policy tree
         Self::validate_rule_refs(config, &config.policy, "")?;
-        
+
         Ok(())
     }
-    
+
     /// Recursively validate rule references in policy tree
     fn validate_rule_refs(
         config: &Config,
         node: &crate::config::ast::PolicyNode,
-        path: &str
+        path: &str,
     ) -> Result<(), ParseError> {
-        use crate::config::ast::{FileItem, ApplyValue, PolicyEntry};
-        
+        use crate::config::ast::{ApplyValue, FileItem, PolicyEntry};
+
         for (key, entry) in &node.entries {
             let current_path = format!("{}/{}", path, key);
-            
+
             match entry {
                 PolicyEntry::File(items) => {
                     for item in items {
@@ -111,15 +112,13 @@ impl ConfigParser {
                                 ApplyValue::Single(name) => vec![name.clone()],
                                 ApplyValue::Multiple(names) => names.clone(),
                             };
-                            
+
                             for rule_name in rule_names {
                                 if !config.rules.contains_key(&rule_name) {
-                                    return Err(ParseError::Invalid(
-                                        format!(
-                                            "Rule '{}' not found (referenced at {})",
-                                            rule_name, current_path
-                                        )
-                                    ));
+                                    return Err(ParseError::Invalid(format!(
+                                        "Rule '{}' not found (referenced at {})",
+                                        rule_name, current_path
+                                    )));
                                 }
                             }
                         }
@@ -131,7 +130,7 @@ impl ConfigParser {
                 _ => {} // Other entry types don't have rule references
             }
         }
-        
+
         Ok(())
     }
 }
@@ -139,35 +138,28 @@ impl ConfigParser {
 /// Extension methods for Config
 pub trait ConfigExt {
     /// Get all rules applied at a policy node
-    fn get_applied_rules(&self,
+    fn get_applied_rules(
+        &self,
         path: &[&str],
-        file_pattern: &str
+        file_pattern: &str,
     ) -> Vec<&crate::config::ast::Rule>;
 
     /// Get violation level for context
-    fn get_violation_level(
-        &self,
-        context_name: &str,
-        file_path: &str
-    ) -> Option<String>;
+    fn get_violation_level(&self, context_name: &str, file_path: &str) -> Option<String>;
 }
 
 impl ConfigExt for Config {
     fn get_applied_rules(
         &self,
         _path: &[&str],
-        _file_pattern: &str
+        _file_pattern: &str,
     ) -> Vec<&crate::config::ast::Rule> {
         // Implementation would traverse policy tree
         // and collect all applied rules
         vec![]
     }
-    
-    fn get_violation_level(
-        &self,
-        context_name: &str,
-        _file_path: &str
-    ) -> Option<String> {
+
+    fn get_violation_level(&self, context_name: &str, _file_path: &str) -> Option<String> {
         self.contexts.get(context_name).map(|_| "block".to_string())
     }
 }
@@ -193,10 +185,14 @@ policy:
     ${name}.test.tsx:
       - exists: 1
 "#;
-        
+
         let result = ConfigParser::parse(yaml);
-        assert!(result.is_ok(), "Should parse valid config: {:?}", result.err());
-        
+        assert!(
+            result.is_ok(),
+            "Should parse valid config: {:?}",
+            result.err()
+        );
+
         let config = result.unwrap();
         assert!(config.rules.contains_key("react"));
         assert!(!config.policy.entries.is_empty());
@@ -244,7 +240,7 @@ rules:
 
 policy:
 "#;
-        
+
         let result = ConfigParser::parse(yaml);
         assert!(result.is_err());
     }
@@ -346,10 +342,10 @@ policy:
     ${name}.tsx:
       - apply: react
 "#;
-        
+
         let config = ConfigParser::parse(yaml).expect("Should parse");
         let json = config.to_json().expect("Should serialize to JSON");
-        
+
         // Should produce valid JSON
         assert!(json.contains("\"rules\""));
         assert!(json.contains("\"policy\""));
@@ -378,7 +374,7 @@ policy:
     ${name}.tsx:
       - apply: react
 "#;
-        
+
         let config = ConfigParser::parse(yaml).expect("Should parse");
         assert!(config.contexts.contains_key("ci"));
         assert!(config.contexts.contains_key("feature"));
@@ -397,11 +393,17 @@ policy:
     ${name}.tsx:
       - apply: nonexistent-rule
 "#;
-        
+
         let result = ConfigParser::parse(yaml);
-        assert!(result.is_err(), "Should fail for non-existent rule reference");
+        assert!(
+            result.is_err(),
+            "Should fail for non-existent rule reference"
+        );
         let err = result.unwrap_err().to_string();
-        assert!(err.contains("nonexistent-rule"), "Error should mention the missing rule");
+        assert!(
+            err.contains("nonexistent-rule"),
+            "Error should mention the missing rule"
+        );
     }
 
     #[test]
@@ -421,7 +423,7 @@ policy:
     ${name}.tsx:
       - apply: [react, tested]
 "#;
-        
+
         let config = ConfigParser::parse(yaml).expect("Should parse array apply");
         // Should successfully parse apply with multiple rules
         assert!(config.rules.contains_key("react"));
@@ -442,11 +444,14 @@ policy:
     ${name}.tsx:
       - apply: sized
 "#;
-        
+
         let config = ConfigParser::parse(yaml).expect("Should parse context-specific violations");
         let rule = config.rules.get("sized").expect("Should have sized rule");
-        let items = rule.patterns.get("${name}.tsx").expect("Should have pattern");
-        
+        let items = rule
+            .patterns
+            .get("${name}.tsx")
+            .expect("Should have pattern");
+
         // Verify we have violation entries
         let has_violation = items.iter().any(|item| {
             if let crate::config::ast::ConstraintItem::Violation { violation } = item {

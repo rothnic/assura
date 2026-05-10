@@ -151,7 +151,11 @@ pub struct Recommendation {
 }
 
 impl Recommendation {
-    pub fn new(category: impl Into<String>, priority: Priority, message: impl Into<String>) -> Self {
+    pub fn new(
+        category: impl Into<String>,
+        priority: Priority,
+        message: impl Into<String>,
+    ) -> Self {
         Self {
             category: category.into(),
             priority,
@@ -222,12 +226,7 @@ impl MaturityDecisionEngine {
         self
     }
 
-    pub fn with_weights(
-        mut self,
-        git: f64,
-        filesystem: f64,
-        environment: f64,
-    ) -> Self {
+    pub fn with_weights(mut self, git: f64, filesystem: f64, environment: f64) -> Self {
         self.git_weight = git.max(0.0);
         self.filesystem_weight = filesystem.max(0.0);
         self.environment_weight = environment.max(0.0);
@@ -235,16 +234,9 @@ impl MaturityDecisionEngine {
     }
 
     /// Evaluate signals and produce a maturity report
-    pub fn evaluate(&self,
-        signals: &[MaturitySignal],
-    ) -> MaturityReport {
+    pub fn evaluate(&self, signals: &[MaturitySignal]) -> MaturityReport {
         if signals.is_empty() {
-            return MaturityReport::new(
-                MaturityLevel::Raw,
-                0.0,
-                0.0,
-                Vec::new(),
-            );
+            return MaturityReport::new(MaturityLevel::Raw, 0.0, 0.0, Vec::new());
         }
 
         // Calculate category scores
@@ -267,10 +259,7 @@ impl MaturityDecisionEngine {
             .with_recommendations(recommendations)
     }
 
-    fn calculate_category_scores(
-        &self,
-        signals: &[MaturitySignal],
-    ) -> CategoryScores {
+    fn calculate_category_scores(&self, signals: &[MaturitySignal]) -> CategoryScores {
         use super::signal::SignalType;
 
         let mut git_sum = 0.0;
@@ -299,9 +288,21 @@ impl MaturityDecisionEngine {
         }
 
         CategoryScores {
-            git: if git_count > 0 { git_sum / git_count as f64 } else { 0.0 },
-            filesystem: if fs_count > 0 { fs_sum / fs_count as f64 } else { 0.0 },
-            environment: if env_count > 0 { env_sum / env_count as f64 } else { 0.0 },
+            git: if git_count > 0 {
+                git_sum / git_count as f64
+            } else {
+                0.0
+            },
+            filesystem: if fs_count > 0 {
+                fs_sum / fs_count as f64
+            } else {
+                0.0
+            },
+            environment: if env_count > 0 {
+                env_sum / env_count as f64
+            } else {
+                0.0
+            },
         }
     }
 
@@ -313,10 +314,10 @@ impl MaturityDecisionEngine {
         // Weighted average of categories
         let total_weight = self.git_weight + self.filesystem_weight + self.environment_weight;
 
-        let weighted_score = (category_scores.git * self.git_weight +
-            category_scores.filesystem * self.filesystem_weight +
-            category_scores.environment * self.environment_weight) /
-            total_weight;
+        let weighted_score = (category_scores.git * self.git_weight
+            + category_scores.filesystem * self.filesystem_weight
+            + category_scores.environment * self.environment_weight)
+            / total_weight;
 
         // Adjust based on signal confidence
         let avg_confidence = if signals.is_empty() {
@@ -328,15 +329,12 @@ impl MaturityDecisionEngine {
         weighted_score * avg_confidence
     }
 
-    fn determine_level(
-        &self,
-        score: f64,
-        category_scores: &CategoryScores,
-    ) -> MaturityLevel {
+    fn determine_level(&self, score: f64, category_scores: &CategoryScores) -> MaturityLevel {
         // Check for balanced scores requirement
         if self.require_balanced_scores {
             let min_score = category_scores.min();
-            let max_score = category_scores.git
+            let max_score = category_scores
+                .git
                 .max(category_scores.filesystem)
                 .max(category_scores.environment);
 
@@ -361,9 +359,7 @@ impl MaturityDecisionEngine {
         }
     }
 
-    fn calculate_confidence(&self,
-        signals: &[MaturitySignal],
-    ) -> f64 {
+    fn calculate_confidence(&self, signals: &[MaturitySignal]) -> f64 {
         if signals.is_empty() {
             return 0.0;
         }
@@ -417,8 +413,13 @@ impl MaturityDecisionEngine {
         let signal_names: std::collections::HashSet<String> =
             signals.iter().map(|s| s.name.clone()).collect();
 
-        if !signal_names.contains("test_coverage") ||
-            signals.iter().find(|s| s.name == "test_coverage").map(|s| s.value).unwrap_or(0.0) < 0.3
+        if !signal_names.contains("test_coverage")
+            || signals
+                .iter()
+                .find(|s| s.name == "test_coverage")
+                .map(|s| s.value)
+                .unwrap_or(0.0)
+                < 0.3
         {
             recommendations.push(Recommendation::new(
                 "testing",
@@ -427,8 +428,13 @@ impl MaturityDecisionEngine {
             ));
         }
 
-        if !signal_names.contains("documentation") ||
-            signals.iter().find(|s| s.name == "documentation").map(|s| s.value).unwrap_or(0.0) < 0.5
+        if !signal_names.contains("documentation")
+            || signals
+                .iter()
+                .find(|s| s.name == "documentation")
+                .map(|s| s.value)
+                .unwrap_or(0.0)
+                < 0.5
         {
             recommendations.push(Recommendation::new(
                 "documentation",
@@ -437,8 +443,13 @@ impl MaturityDecisionEngine {
             ));
         }
 
-        if !signal_names.contains("cicd_config") ||
-            signals.iter().find(|s| s.name == "cicd_config").map(|s| s.value).unwrap_or(0.0) < 0.3
+        if !signal_names.contains("cicd_config")
+            || signals
+                .iter()
+                .find(|s| s.name == "cicd_config")
+                .map(|s| s.value)
+                .unwrap_or(0.0)
+                < 0.3
         {
             recommendations.push(Recommendation::new(
                 "ci/cd",
@@ -487,8 +498,8 @@ impl Default for MaturityDecisionEngine {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::super::signal::{MaturitySignal, SignalType};
+    use super::*;
 
     #[test]
     fn test_maturity_level_thresholds() {
@@ -523,13 +534,21 @@ mod tests {
             MaturitySignal::new(SignalType::Git, "commit_frequency", 0.9, "daily"),
             MaturitySignal::new(SignalType::Filesystem, "config_files", 1.0, "complete"),
             MaturitySignal::new(SignalType::Filesystem, "test_coverage", 0.9, "90%"),
-            MaturitySignal::new(SignalType::Environment, "cicd_config", 1.0, "github actions"),
+            MaturitySignal::new(
+                SignalType::Environment,
+                "cicd_config",
+                1.0,
+                "github actions",
+            ),
             MaturitySignal::new(SignalType::Environment, "package_manager", 1.0, "cargo"),
         ];
 
         let report = engine.evaluate(&signals);
         assert!(report.score > 0.7);
-        assert!(matches!(report.level, MaturityLevel::Mature | MaturityLevel::Established));
+        assert!(matches!(
+            report.level,
+            MaturityLevel::Mature | MaturityLevel::Established
+        ));
     }
 
     #[test]
@@ -538,7 +557,12 @@ mod tests {
 
         // Unbalanced: high environment, low others
         let signals = vec![
-            MaturitySignal::new(SignalType::Environment, "cicd_config", 1.0, "github actions"),
+            MaturitySignal::new(
+                SignalType::Environment,
+                "cicd_config",
+                1.0,
+                "github actions",
+            ),
             MaturitySignal::new(SignalType::Environment, "package_manager", 1.0, "cargo"),
         ];
 

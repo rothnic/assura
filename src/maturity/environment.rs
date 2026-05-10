@@ -42,26 +42,28 @@ impl EnvironmentSignals {
         let ci_count = detected_ci.len();
 
         // Score based on count and quality
-        let score = ci_count as f64 * 0.3 +
-            if has_advanced_ci { 0.3 } else { 0.0 } +
-            if detected_ci.contains(&"GitHub Actions") { 0.2 } else { 0.0 };
+        let score = ci_count as f64 * 0.3
+            + if has_advanced_ci { 0.3 } else { 0.0 }
+            + if detected_ci.contains(&"GitHub Actions") {
+                0.2
+            } else {
+                0.0
+            };
 
         let normalized = score.min(1.0);
 
-        Ok(
-            MaturitySignal::new(
-                SignalType::Environment,
-                "cicd_config",
-                normalized,
-                if detected_ci.is_empty() {
-                    "no CI/CD detected".to_string()
-                } else {
-                    format!("detected: {}", detected_ci.join(", "))
-                },
-            )
-            .with_confidence(1.0)
-            .with_weight(1.3),
+        Ok(MaturitySignal::new(
+            SignalType::Environment,
+            "cicd_config",
+            normalized,
+            if detected_ci.is_empty() {
+                "no CI/CD detected".to_string()
+            } else {
+                format!("detected: {}", detected_ci.join(", "))
+            },
         )
+        .with_confidence(1.0)
+        .with_weight(1.3))
     }
 
     fn detect_package_managers(&self, path: &Path) -> MaturityResult<MaturitySignal> {
@@ -90,33 +92,38 @@ impl EnvironmentSignals {
         }
 
         // Check for lock files (indicates dependency management maturity)
-        let lock_files = ["Cargo.lock", "package-lock.json", "yarn.lock", "poetry.lock", "go.sum"];
+        let lock_files = [
+            "Cargo.lock",
+            "package-lock.json",
+            "yarn.lock",
+            "poetry.lock",
+            "go.sum",
+        ];
         let has_lock_file = lock_files.iter().any(|f| path.join(f).exists());
 
         let score = if !detected_pms.is_empty() {
-            0.5 + if has_lock_file { 0.3 } else { 0.0 } + (detected_pms.len() as f64 * 0.05).min(0.2)
+            0.5 + if has_lock_file { 0.3 } else { 0.0 }
+                + (detected_pms.len() as f64 * 0.05).min(0.2)
         } else {
             0.0
         };
 
-        Ok(
-            MaturitySignal::new(
-                SignalType::Environment,
-                "package_manager",
-                score.min(1.0),
-                if detected_pms.is_empty() {
-                    "no package manager detected".to_string()
-                } else {
-                    let mut desc = format!("detected: {}", detected_pms.join(", "));
-                    if has_lock_file {
-                        desc.push_str(" (+ lock file)");
-                    }
-                    desc
-                },
-            )
-            .with_confidence(1.0)
-            .with_weight(1.1),
+        Ok(MaturitySignal::new(
+            SignalType::Environment,
+            "package_manager",
+            score.min(1.0),
+            if detected_pms.is_empty() {
+                "no package manager detected".to_string()
+            } else {
+                let mut desc = format!("detected: {}", detected_pms.join(", "));
+                if has_lock_file {
+                    desc.push_str(" (+ lock file)");
+                }
+                desc
+            },
         )
+        .with_confidence(1.0)
+        .with_weight(1.1))
     }
 
     fn detect_linters_formatters(&self, path: &Path) -> MaturityResult<MaturitySignal> {
@@ -164,20 +171,18 @@ impl EnvironmentSignals {
 
         let tools_vec: Vec<_> = detected_tools.into_iter().collect();
 
-        Ok(
-            MaturitySignal::new(
-                SignalType::Environment,
-                "linters_formatters",
-                score,
-                if tools_vec.is_empty() {
-                    "no linting/formatting tools".to_string()
-                } else {
-                    format!("detected: {}", tools_vec.join(", "))
-                },
-            )
-            .with_confidence(1.0)
-            .with_weight(1.0),
+        Ok(MaturitySignal::new(
+            SignalType::Environment,
+            "linters_formatters",
+            score,
+            if tools_vec.is_empty() {
+                "no linting/formatting tools".to_string()
+            } else {
+                format!("detected: {}", tools_vec.join(", "))
+            },
         )
+        .with_confidence(1.0)
+        .with_weight(1.0))
     }
 
     fn detect_ide_config(&self, path: &Path) -> MaturityResult<MaturitySignal> {
@@ -208,29 +213,32 @@ impl EnvironmentSignals {
         let has_editorconfig = path.join(".editorconfig").exists();
 
         let score = if detected_ides.is_empty() {
-            if has_editorconfig { 0.5 } else { 0.0 }
+            if has_editorconfig {
+                0.5
+            } else {
+                0.0
+            }
         } else {
-            0.5 + if has_editorconfig { 0.3 } else { 0.0 } + (detected_ides.len() as f64 * 0.1).min(0.2)
+            0.5 + if has_editorconfig { 0.3 } else { 0.0 }
+                + (detected_ides.len() as f64 * 0.1).min(0.2)
         };
 
-        Ok(
-            MaturitySignal::new(
-                SignalType::Environment,
-                "ide_config",
-                score.min(1.0),
-                if detected_ides.is_empty() {
-                    if has_editorconfig {
-                        "EditorConfig only".to_string()
-                    } else {
-                        "no IDE config".to_string()
-                    }
+        Ok(MaturitySignal::new(
+            SignalType::Environment,
+            "ide_config",
+            score.min(1.0),
+            if detected_ides.is_empty() {
+                if has_editorconfig {
+                    "EditorConfig only".to_string()
                 } else {
-                    format!("detected: {}", detected_ides.join(", "))
-                },
-            )
-            .with_confidence(1.0)
-            .with_weight(0.6),
+                    "no IDE config".to_string()
+                }
+            } else {
+                format!("detected: {}", detected_ides.join(", "))
+            },
         )
+        .with_confidence(1.0)
+        .with_weight(0.6))
     }
 
     fn detect_security_tools(&self, path: &Path) -> MaturityResult<MaturitySignal> {
@@ -256,20 +264,18 @@ impl EnvironmentSignals {
         let count = detected.len();
         let score = (count as f64 * 0.3).min(1.0);
 
-        Ok(
-            MaturitySignal::new(
-                SignalType::Environment,
-                "security_tools",
-                score,
-                if detected.is_empty() {
-                    "no security tools detected".to_string()
-                } else {
-                    format!("detected: {}", detected.join(", "))
-                },
-            )
-            .with_confidence(1.0)
-            .with_weight(0.9),
+        Ok(MaturitySignal::new(
+            SignalType::Environment,
+            "security_tools",
+            score,
+            if detected.is_empty() {
+                "no security tools detected".to_string()
+            } else {
+                format!("detected: {}", detected.join(", "))
+            },
         )
+        .with_confidence(1.0)
+        .with_weight(0.9))
     }
 
     fn detect_deployment_config(&self, path: &Path) -> MaturityResult<MaturitySignal> {
@@ -300,16 +306,15 @@ impl EnvironmentSignals {
         }
 
         // Check for .tf files
-        if path.read_dir()
+        if path
+            .read_dir()
             .map(|entries| {
-                entries
-                    .filter_map(|e| e.ok())
-                    .any(|e| {
-                        e.file_name()
-                            .to_str()
-                            .map(|n| n.ends_with(".tf"))
-                            .unwrap_or(false)
-                    })
+                entries.filter_map(|e| e.ok()).any(|e| {
+                    e.file_name()
+                        .to_str()
+                        .map(|n| n.ends_with(".tf"))
+                        .unwrap_or(false)
+                })
             })
             .unwrap_or(false)
         {
@@ -332,20 +337,18 @@ impl EnvironmentSignals {
             0.0
         };
 
-        Ok(
-            MaturitySignal::new(
-                SignalType::Environment,
-                "deployment_config",
-                score.min(1.0),
-                if unique.is_empty() {
-                    "no deployment config".to_string()
-                } else {
-                    format!("detected: {}", unique.join(", "))
-                },
-            )
-            .with_confidence(1.0)
-            .with_weight(0.8),
+        Ok(MaturitySignal::new(
+            SignalType::Environment,
+            "deployment_config",
+            score.min(1.0),
+            if unique.is_empty() {
+                "no deployment config".to_string()
+            } else {
+                format!("detected: {}", unique.join(", "))
+            },
         )
+        .with_confidence(1.0)
+        .with_weight(0.8))
     }
 }
 
@@ -439,7 +442,10 @@ mod tests {
         let collector = EnvironmentSignals::new();
         let signals = collector.collect(temp_dir.path()).unwrap();
 
-        let pm = signals.iter().find(|s| s.name == "package_manager").unwrap();
+        let pm = signals
+            .iter()
+            .find(|s| s.name == "package_manager")
+            .unwrap();
         assert!(pm.value > 0.0);
         assert!(pm.raw_value.contains("Cargo"));
     }
@@ -453,7 +459,10 @@ mod tests {
         let collector = EnvironmentSignals::new();
         let signals = collector.collect(temp_dir.path()).unwrap();
 
-        let linter = signals.iter().find(|s| s.name == "linters_formatters").unwrap();
+        let linter = signals
+            .iter()
+            .find(|s| s.name == "linters_formatters")
+            .unwrap();
         assert!(linter.value > 0.0);
     }
 
@@ -478,7 +487,10 @@ mod tests {
         let collector = EnvironmentSignals::new();
         let signals = collector.collect(temp_dir.path()).unwrap();
 
-        let deploy = signals.iter().find(|s| s.name == "deployment_config").unwrap();
+        let deploy = signals
+            .iter()
+            .find(|s| s.name == "deployment_config")
+            .unwrap();
         assert!(deploy.value > 0.0);
         assert!(deploy.raw_value.contains("Docker"));
     }

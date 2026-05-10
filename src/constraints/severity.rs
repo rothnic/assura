@@ -8,8 +8,8 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::maturity::MaturityLevel;
 use crate::maturity::engine::Priority;
+use crate::maturity::MaturityLevel;
 
 /// Severity levels for constraint violations
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
@@ -53,9 +53,9 @@ impl Severity {
     /// Get the color code for terminal output
     pub fn color_code(self) -> &'static str {
         match self {
-            Severity::Low => "\x1b[34m",    // Blue
-            Severity::Medium => "\x1b[33m", // Yellow
-            Severity::High => "\x1b[35m",   // Magenta
+            Severity::Low => "\x1b[34m",      // Blue
+            Severity::Medium => "\x1b[33m",   // Yellow
+            Severity::High => "\x1b[35m",     // Magenta
             Severity::Critical => "\x1b[31m", // Red
         }
     }
@@ -149,11 +149,7 @@ impl SeverityConfig {
     }
 
     /// Set the base severity for a constraint
-    pub fn with_base_severity(
-        mut self,
-        constraint: impl Into<String>,
-        severity: Severity,
-    ) -> Self {
+    pub fn with_base_severity(mut self, constraint: impl Into<String>, severity: Severity) -> Self {
         self.base_levels.insert(constraint.into(), severity);
         self
     }
@@ -197,8 +193,7 @@ impl SeverityConfig {
             .unwrap_or(default_severity);
 
         // Apply maturity mapping
-        self.maturity_mappings
-            .adjust_severity(base, maturity_level)
+        self.maturity_mappings.adjust_severity(base, maturity_level)
     }
 
     /// Check if a severity should be reported
@@ -260,11 +255,7 @@ impl MaturitySeverityMapping {
     }
 
     /// Set adjustment for a specific maturity level
-    pub fn with_adjustment(
-        mut self,
-        level: MaturityLevel,
-        adjustment: SeverityAdjustment,
-    ) -> Self {
+    pub fn with_adjustment(mut self, level: MaturityLevel, adjustment: SeverityAdjustment) -> Self {
         match level {
             MaturityLevel::Raw => self.raw_adjustment = adjustment,
             MaturityLevel::Developing => self.developing_adjustment = adjustment,
@@ -462,10 +453,16 @@ mod tests {
         let mapping = MaturitySeverityMapping::default();
 
         // Raw should escalate
-        assert_eq!(mapping.adjust_severity(Severity::Low, MaturityLevel::Raw), Severity::Medium);
+        assert_eq!(
+            mapping.adjust_severity(Severity::Low, MaturityLevel::Raw),
+            Severity::Medium
+        );
 
         // Mature should be as-is
-        assert_eq!(mapping.adjust_severity(Severity::High, MaturityLevel::Mature), Severity::High);
+        assert_eq!(
+            mapping.adjust_severity(Severity::High, MaturityLevel::Mature),
+            Severity::High
+        );
     }
 
     #[test]
@@ -496,25 +493,29 @@ mod tests {
 
         mapping.add_override(override_spec);
 
-        let effective = mapping.get_severity("test_constraint", Severity::Critical, MaturityLevel::Mature);
+        let effective =
+            mapping.get_severity("test_constraint", Severity::Critical, MaturityLevel::Mature);
         assert_eq!(effective, Severity::Low);
 
         // Non-overridden constraint
-        let effective = mapping.get_severity("other_constraint", Severity::High, MaturityLevel::Mature);
+        let effective =
+            mapping.get_severity("other_constraint", Severity::High, MaturityLevel::Mature);
         assert_eq!(effective, Severity::High);
     }
 
     #[test]
     fn test_severity_override_expiration() {
-        let override_spec = SeverityOverride::new("test", Severity::Low)
-            .expires_at(0); // Already expired
+        let override_spec = SeverityOverride::new("test", Severity::Low).expires_at(0); // Already expired
 
         assert!(!override_spec.is_valid());
     }
 
     #[test]
     fn test_severity_from_priority() {
-        assert_eq!(Severity::from_priority(Priority::Critical), Severity::Critical);
+        assert_eq!(
+            Severity::from_priority(Priority::Critical),
+            Severity::Critical
+        );
         assert_eq!(Severity::from_priority(Priority::High), Severity::High);
         assert_eq!(Severity::from_priority(Priority::Medium), Severity::Medium);
         assert_eq!(Severity::from_priority(Priority::Low), Severity::Low);

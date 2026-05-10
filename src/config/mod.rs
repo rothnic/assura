@@ -15,7 +15,7 @@ pub mod types;
 pub mod validator;
 
 // Re-export main types
-pub use ast::{Config, Context, Rule, PolicyNode, Constraint, ViolationEntry};
+pub use ast::{Config, Constraint, Context, PolicyNode, Rule, ViolationEntry};
 pub use parser::{ConfigParser, ParseError};
 pub use preprocessor::YamlPreprocessor;
 
@@ -26,12 +26,12 @@ pub fn load_config() -> Result<Config, Box<dyn std::error::Error>> {
     if path.exists() {
         return Ok(ConfigParser::parse_file(path)?);
     }
-    
+
     // Try .assura/config.yaml
     let path = std::path::Path::new(".assura/config.yaml");
     if path.exists() {
         return Ok(ConfigParser::parse_file(path)?);
     }
-    
+
     Err("No configuration file found".into())
 }

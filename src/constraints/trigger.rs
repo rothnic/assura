@@ -19,7 +19,12 @@ pub trait ConstraintTrigger: Send + Sync + std::fmt::Debug {
     fn name(&self) -> &str;
 
     /// Check if this trigger should fire for the given path and context
-    fn should_trigger(&self, constraint_name: &str, path: &Path, context: &ConstraintContext) -> bool;
+    fn should_trigger(
+        &self,
+        constraint_name: &str,
+        path: &Path,
+        context: &ConstraintContext,
+    ) -> bool;
 
     /// Get the trigger type
     fn trigger_type(&self) -> TriggerType;
@@ -170,7 +175,12 @@ impl ConstraintTrigger for FileChangeTrigger {
         &self.name
     }
 
-    fn should_trigger(&self, _constraint_name: &str, path: &Path, _context: &ConstraintContext) -> bool {
+    fn should_trigger(
+        &self,
+        _constraint_name: &str,
+        path: &Path,
+        _context: &ConstraintContext,
+    ) -> bool {
         self.matches(path)
     }
 
@@ -262,7 +272,12 @@ impl ConstraintTrigger for MaturityTrigger {
         &self.name
     }
 
-    fn should_trigger(&self, _constraint_name: &str, _path: &Path, context: &ConstraintContext) -> bool {
+    fn should_trigger(
+        &self,
+        _constraint_name: &str,
+        _path: &Path,
+        context: &ConstraintContext,
+    ) -> bool {
         self.should_fire(context.maturity_level())
     }
 
@@ -308,7 +323,12 @@ impl ConstraintTrigger for ManualTrigger {
         &self.name
     }
 
-    fn should_trigger(&self, constraint_name: &str, _path: &Path, context: &ConstraintContext) -> bool {
+    fn should_trigger(
+        &self,
+        constraint_name: &str,
+        _path: &Path,
+        context: &ConstraintContext,
+    ) -> bool {
         // Only trigger if explicitly marked as manual invocation
         if !context.is_manual {
             return false;
@@ -363,14 +383,21 @@ impl ConstraintTrigger for CompositeTrigger {
         &self.name
     }
 
-    fn should_trigger(&self, constraint_name: &str, path: &Path, context: &ConstraintContext) -> bool {
+    fn should_trigger(
+        &self,
+        constraint_name: &str,
+        path: &Path,
+        context: &ConstraintContext,
+    ) -> bool {
         match self.strategy {
-            CompositeStrategy::All => {
-                self.triggers.iter().all(|t| t.should_trigger(constraint_name, path, context))
-            }
-            CompositeStrategy::Any => {
-                self.triggers.iter().any(|t| t.should_trigger(constraint_name, path, context))
-            }
+            CompositeStrategy::All => self
+                .triggers
+                .iter()
+                .all(|t| t.should_trigger(constraint_name, path, context)),
+            CompositeStrategy::Any => self
+                .triggers
+                .iter()
+                .any(|t| t.should_trigger(constraint_name, path, context)),
         }
     }
 
@@ -398,7 +425,11 @@ impl TriggerRegistry {
     }
 
     /// Associate a constraint with a trigger
-    pub fn associate(&mut self, constraint_name: impl Into<String>, trigger_name: impl Into<String>) {
+    pub fn associate(
+        &mut self,
+        constraint_name: impl Into<String>,
+        trigger_name: impl Into<String>,
+    ) {
         let constraint = constraint_name.into();
         let trigger = trigger_name.into();
 
@@ -486,15 +517,14 @@ mod tests {
 
     #[test]
     fn test_maturity_trigger() {
-        let trigger = MaturityTrigger::new("test")
-            .at_least(MaturityLevel::Developing);
+        let trigger = MaturityTrigger::new("test").at_least(MaturityLevel::Developing);
 
         assert!(trigger.should_fire(MaturityLevel::Developing));
         assert!(trigger.should_fire(MaturityLevel::Mature));
         assert!(!trigger.should_fire(MaturityLevel::Raw));
 
-        let trigger2 = MaturityTrigger::new("test2")
-            .between(MaturityLevel::Developing, MaturityLevel::Mature);
+        let trigger2 =
+            MaturityTrigger::new("test2").between(MaturityLevel::Developing, MaturityLevel::Mature);
 
         assert!(trigger2.should_fire(MaturityLevel::Developing));
         assert!(trigger2.should_fire(MaturityLevel::Mature));
@@ -558,7 +588,12 @@ mod tests {
             "always_pass"
         }
 
-        fn should_trigger(&self, _constraint_name: &str, _path: &Path, _context: &ConstraintContext) -> bool {
+        fn should_trigger(
+            &self,
+            _constraint_name: &str,
+            _path: &Path,
+            _context: &ConstraintContext,
+        ) -> bool {
             true
         }
 
@@ -575,7 +610,12 @@ mod tests {
             "always_fail"
         }
 
-        fn should_trigger(&self, _constraint_name: &str, _path: &Path, _context: &ConstraintContext) -> bool {
+        fn should_trigger(
+            &self,
+            _constraint_name: &str,
+            _path: &Path,
+            _context: &ConstraintContext,
+        ) -> bool {
             false
         }
 

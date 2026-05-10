@@ -8,10 +8,7 @@ use thiserror::Error;
 pub enum ConstraintError {
     /// I/O error during validation
     #[error("I/O error: {message}")]
-    Io {
-        path: PathBuf,
-        message: String,
-    },
+    Io { path: PathBuf, message: String },
 
     /// Constraint validation failed
     #[error("Constraint '{constraint}' failed: {message}")]
@@ -23,42 +20,27 @@ pub enum ConstraintError {
 
     /// Invalid configuration for constraint
     #[error("Invalid configuration for '{constraint}': {message}")]
-    Configuration {
-        constraint: String,
-        message: String,
-    },
+    Configuration { constraint: String, message: String },
 
     /// Pattern matching error
     #[error("Pattern error in '{constraint}': {message}")]
-    Pattern {
-        constraint: String,
-        message: String,
-    },
+    Pattern { constraint: String, message: String },
 
     /// Trigger condition error
     #[error("Trigger error: {message}")]
-    Trigger {
-        message: String,
-    },
+    Trigger { message: String },
 
     /// Severity mapping error
     #[error("Severity mapping error: {message}")]
-    Severity {
-        message: String,
-    },
+    Severity { message: String },
 
     /// Unknown constraint
     #[error("Unknown constraint: {name}")]
-    UnknownConstraint {
-        name: String,
-    },
+    UnknownConstraint { name: String },
 
     /// Constraint execution error
     #[error("Constraint execution failed: {message}")]
-    Execution {
-        constraint: String,
-        message: String,
-    },
+    Execution { constraint: String, message: String },
 }
 
 impl ConstraintError {
@@ -115,9 +97,7 @@ impl ConstraintError {
 
     /// Create an unknown constraint error
     pub fn unknown_constraint(name: impl Into<String>) -> Self {
-        Self::UnknownConstraint {
-            name: name.into(),
-        }
+        Self::UnknownConstraint { name: name.into() }
     }
 
     /// Create an execution error
@@ -238,10 +218,7 @@ impl IntoIterator for ValidationFailures {
 
 impl From<crate::markdown::MarkdownError> for ConstraintError {
     fn from(err: crate::markdown::MarkdownError) -> Self {
-        ConstraintError::execution(
-            "markdown",
-            err.to_string(),
-        )
+        ConstraintError::execution("markdown", err.to_string())
     }
 }
 
@@ -267,7 +244,7 @@ mod tests {
     fn test_validation_failure() {
         let failure = ValidationFailure::new("naming", "/test/File.txt", "wrong case")
             .with_suggestion("rename to file.txt");
-        
+
         assert_eq!(failure.constraint, "naming");
         assert_eq!(failure.path, PathBuf::from("/test/File.txt"));
         assert_eq!(failure.message, "wrong case");
@@ -279,7 +256,7 @@ mod tests {
         let mut failures = ValidationFailures::new();
         failures.add(ValidationFailure::new("test", "/a", "error 1"));
         failures.add(ValidationFailure::new("test", "/b", "error 2"));
-        
+
         assert_eq!(failures.len(), 2);
         assert!(!failures.is_empty());
     }
