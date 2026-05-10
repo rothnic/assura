@@ -12,11 +12,14 @@ use crate::maturity::engine::Priority;
 use crate::maturity::MaturityLevel;
 
 /// Severity levels for constraint violations
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, Default,
+)]
 pub enum Severity {
     /// Low severity - style issues, minor suggestions
     Low = 0,
     /// Medium severity - warnings, potential issues
+    #[default]
     Medium = 1,
     /// High severity - significant issues that should be addressed
     High = 2,
@@ -101,12 +104,6 @@ impl Severity {
             Severity::High => Priority::High,
             Severity::Critical => Priority::Critical,
         }
-    }
-}
-
-impl Default for Severity {
-    fn default() -> Self {
-        Severity::Medium
     }
 }
 

@@ -29,7 +29,6 @@ pub type ConfigResult<T> = Result<T, ConfigError>;
 
 const ASSURA_DIR: &str = ".assura";
 const CONFIG_FILE: &str = "config.yml";
-const MATURITY_FILE: &str = "maturity.yml";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CliConfig {

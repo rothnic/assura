@@ -282,7 +282,7 @@ fn test_constraint_output_builder() {
         .with_metadata(serde_json::json!({"key": "value"}));
 
     assert_eq!(output.constraint_name, "test");
-    assert_eq!(output.passed, true);
+    assert!(output.passed);
     assert_eq!(output.severity, Severity::High);
     assert_eq!(output.duration_ms, 100);
     assert!(output.metadata.is_some());
@@ -353,7 +353,6 @@ fn test_general_naming_config() {
 
 #[test]
 fn test_maturity_based_severity_adjustment() {
-    use assura::MaturityLevel::*;
     use assura::Severity::*;
 
     // Test the default severity_for_maturity implementation

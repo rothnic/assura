@@ -3,7 +3,7 @@
 //! Matches current execution context against defined contexts.
 //! Determines violation levels based on context.
 
-use crate::config::ast::{Config, Context, ViolationEntry};
+use crate::config::ast::{Config, ViolationEntry};
 use std::collections::HashMap;
 
 /// Current execution context
@@ -176,15 +176,13 @@ impl ContextMatcher {
             return true;
         }
 
-        if range.ends_with("..") {
+        if let Some(min) = range.strip_suffix("..") {
             // Minimum version
-            let min = &range[..range.len() - 2];
             return Self::version_gte(version, min);
         }
 
-        if range.starts_with("..") {
+        if let Some(max) = range.strip_prefix("..") {
             // Maximum version
-            let max = &range[2..];
             return Self::version_lte(version, max);
         }
 
@@ -292,7 +290,7 @@ impl ViolationLevel {
     }
 
     /// Should this level block the operation?
-    pub fn should_block(&self, gate: &str, allowed_levels: &[ViolationLevel]) -> bool {
+    pub fn should_block(&self, _gate: &str, allowed_levels: &[ViolationLevel]) -> bool {
         if *self == ViolationLevel::Block {
             return true;
         }
@@ -316,6 +314,7 @@ impl std::fmt::Display for ViolationLevel {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::config::ast::Context;
 
     #[test]
     fn test_branch_pattern_matching() {

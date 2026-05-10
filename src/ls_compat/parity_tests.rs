@@ -96,7 +96,7 @@ ls:
 "#;
 
         // This is a whitelist approach - we'll need to handle this
-        let config = LsLintParser::parse(yaml);
+        let _config = LsLintParser::parse(yaml);
         // Note: Our simple parser may not handle this yet
         // This test documents the requirement
     }
@@ -171,7 +171,7 @@ ls:
     /// Test feature parity completeness
     #[test]
     fn test_feature_parity_checklist() {
-        let features = vec![
+        let features = [
             ("Extension rules (.ext: convention)", true),
             ("Path rules (path/*: convention)", true),
             ("OR syntax (conv1 | conv2)", true),

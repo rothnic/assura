@@ -2,19 +2,15 @@
 //!
 //! Integrates policy resolution with constraint validation.
 
-use crate::config::engine::{PolicyEngine, ResolvedRules};
+use crate::config::engine::PolicyEngine;
 use crate::config::types::{Case, Config, NamingConvention, Severity};
-use crate::constraints::error::{ValidationFailure, ValidationFailures};
-use crate::constraints::file_size::{FileSizeConstraint, FileSizeLimit, FileSizeRule};
-use crate::constraints::naming::{CaseConvention, NamingConstraint, NamingRule};
-use crate::constraints::r#trait::{Constraint, ConstraintContext, ConstraintOutput};
-use std::collections::HashMap;
+use crate::constraints::error::ValidationFailure;
+use crate::constraints::naming::CaseConvention;
 use std::path::Path;
 
 /// Validation engine for the new config format
 #[derive(Debug)]
 pub struct ValidationEngine {
-    config: Config,
     policy_engine: PolicyEngine,
 }
 
@@ -48,10 +44,7 @@ impl ValidationEngine {
     /// Create a new validation engine from a config
     pub fn new(config: Config) -> Self {
         let policy_engine = PolicyEngine::new(config.clone());
-        Self {
-            config,
-            policy_engine,
-        }
+        Self { policy_engine }
     }
 
     /// Validate a single file

@@ -1,8 +1,7 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use std::path::PathBuf;
 use tempfile::TempDir;
 
-use assura::intelligence::{GraphBuilder, IntelligenceGraph};
+use assura::intelligence::GraphBuilder;
 
 fn create_test_directory() -> TempDir {
     let temp_dir = TempDir::new().unwrap();

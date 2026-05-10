@@ -115,8 +115,7 @@ impl GitSignals {
             .branches(Some(BranchType::Local))
             .map_err(|e| MaturityError::Git(format!("Failed to list branches: {}", e)))?
             .filter_map(|b| b.ok())
-            .map(|(branch, _)| branch.name().ok().flatten().map(|s| s.to_string()))
-            .flatten()
+            .filter_map(|(branch, _)| branch.name().ok().flatten().map(|s| s.to_string()))
             .collect();
 
         let branch_count = branches.len();

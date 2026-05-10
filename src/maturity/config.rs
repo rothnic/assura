@@ -188,14 +188,14 @@ impl MaturityConfig {
     pub fn validate(&self) -> anyhow::Result<()> {
         // Validate score is in valid range [0.0, 1.0]
         if let Some(score) = self.score {
-            if score < 0.0 || score > 1.0 {
+            if !(0.0..=1.0).contains(&score) {
                 anyhow::bail!("Score must be between 0.0 and 1.0, got {}", score);
             }
         }
 
         // Validate confidence is in valid range [0.0, 1.0]
         if let Some(confidence) = self.confidence {
-            if confidence < 0.0 || confidence > 1.0 {
+            if !(0.0..=1.0).contains(&confidence) {
                 anyhow::bail!("Confidence must be between 0.0 and 1.0, got {}", confidence);
             }
         }

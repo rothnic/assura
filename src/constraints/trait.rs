@@ -376,7 +376,6 @@ impl Constraint for AlwaysFailConstraint {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::constraints::error::ValidationFailure;
 
     #[test]
     fn test_constraint_context_builder() {

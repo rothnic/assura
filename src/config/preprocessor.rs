@@ -66,7 +66,7 @@ impl YamlPreprocessor {
         // Extension patterns (.tsx, .rs)
         if key.starts_with('.')
             && key.len() > 1
-            && key[1..].chars().next().map_or(false, |c| c.is_alphabetic())
+            && key[1..].chars().next().is_some_and(|c| c.is_alphabetic())
         {
             return true;
         }

@@ -516,7 +516,7 @@ const users = await fetch('/api/v1/users');
 
 Content without H1 and frontmatter."#;
 
-        let path = create_markdown_file(&dir, "bad.md", content);
+        let _path = create_markdown_file(&dir, "bad.md", content);
 
         let schema = MarkdownSchema::new("strict")
             .with_frontmatter(
@@ -526,7 +526,7 @@ Content without H1 and frontmatter."#;
             )
             .with_headings(HeadingValidator::new().require_h1().validate_hierarchy());
 
-        let constraint = MarkdownConstraint::new()
+        let _constraint = MarkdownConstraint::new()
             .with_default_schema("strict")
             .register_schema(schema);
         let schema = MarkdownSchema::new("test")
@@ -615,7 +615,7 @@ Content.
 
 More content."#;
 
-        let path = create_markdown_file(&dir, "multi_error.md", content);
+        let _path = create_markdown_file(&dir, "multi_error.md", content);
 
         let schema = MarkdownSchema::new("strict").with_headings(
             HeadingValidator::new()
@@ -625,7 +625,7 @@ More content."#;
                 .with_max_depth(2),
         );
 
-        let constraint = MarkdownConstraint::new()
+        let _constraint = MarkdownConstraint::new()
             .with_default_schema("strict")
             .register_schema(schema);
     }

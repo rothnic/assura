@@ -45,23 +45,8 @@ jobs:
         components: clippy
     - name: Cache Rust builds
       uses: Swatinem/rust-cache@v2
-    - name: Lint with clippy (advisory)
-      id: clippy
-      continue-on-error: true
+    - name: Lint with clippy
       run: cargo clippy --all-targets --all-features -- -D warnings
-    - name: Summarize clippy baseline
-      if: steps.clippy.outcome == 'failure'
-      run: |
-        cat >> "$GITHUB_STEP_SUMMARY" <<'EOF'
-        ## Clippy
-
-        Clippy is currently advisory while the repository-wide warning baseline
-        is cleaned up in a dedicated follow-up task. The check still runs with
-        `-D warnings` so new output stays visible in CI logs.
-
-        See `.trellis/spec/assura/tooling-stabilization.md` for the deferred
-        baseline policy and close criteria.
-        EOF
 
   test:
     name: Test Suite

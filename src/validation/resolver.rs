@@ -112,13 +112,11 @@ impl RuleResolver {
             return text.contains(middle);
         }
 
-        if pattern.starts_with("*") {
-            let suffix = &pattern[1..];
+        if let Some(suffix) = pattern.strip_prefix("*") {
             return text.ends_with(suffix);
         }
 
-        if pattern.ends_with("*") {
-            let prefix = &pattern[..pattern.len() - 1];
+        if let Some(prefix) = pattern.strip_suffix("*") {
             return text.starts_with(prefix);
         }
 
@@ -165,7 +163,7 @@ impl RuleResolver {
 
     /// Merge constraints from a rule
     fn merge_rule_constraints(rule: &Rule, file_path: &Path, result: &mut ResolvedConstraints) {
-        let file_name = file_path.file_name().and_then(|s| s.to_str()).unwrap_or("");
+        let _file_name = file_path.file_name().and_then(|s| s.to_str()).unwrap_or("");
 
         for (raw_pattern, items) in &rule.patterns {
             // Strip quotes from pattern (preprocessor adds them for special characters)

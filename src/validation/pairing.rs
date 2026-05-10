@@ -89,7 +89,7 @@ impl PairingValidator {
         }
 
         // For each group with multiple patterns, create pairing requirements
-        for (_group_key, paths) in &grouped {
+        for paths in grouped.values() {
             if paths.len() >= 2 {
                 // Find source (usually the main file) and targets
                 // Heuristic: shorter extension = source
@@ -220,12 +220,12 @@ impl PairingValidator {
             return text.contains(middle);
         }
 
-        if pattern.starts_with("*") {
-            return text.ends_with(&pattern[1..]);
+        if let Some(stripped) = pattern.strip_prefix('*') {
+            return text.ends_with(stripped);
         }
 
-        if pattern.ends_with("*") {
-            return text.starts_with(&pattern[..pattern.len() - 1]);
+        if let Some(stripped) = pattern.strip_suffix('*') {
+            return text.starts_with(stripped);
         }
 
         text == pattern

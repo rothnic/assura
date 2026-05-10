@@ -66,7 +66,7 @@ fn create_rust_project(module_count: usize) -> TempDir {
     std::fs::create_dir(&src_dir).unwrap();
 
     // Create lib.rs
-    std::fs::write(src_dir.join("lib.rs"), format!("pub mod modules;\n")).unwrap();
+    std::fs::write(src_dir.join("lib.rs"), "pub mod modules;\n").unwrap();
 
     // Create modules
     let modules_dir = src_dir.join("modules");

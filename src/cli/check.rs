@@ -253,10 +253,10 @@ impl StructureChecker {
 
             if path.is_dir() {
                 report.dirs_checked += 1;
-                self.validate_directory(&path, &mut report);
+                self.validate_directory(path, &mut report);
             } else if path.is_file() {
                 report.files_checked += 1;
-                self.validate_file(&path, &mut report);
+                self.validate_file(path, &mut report);
             }
 
             if self.fail_fast && !report.violations.is_empty() {

@@ -578,6 +578,12 @@ impl TextPatternRule {
     }
 }
 
+impl Default for TextPatternRule {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /// Represents the structure of headings in a document
 #[derive(Debug, Clone)]
 pub struct HeadingStructure {
@@ -764,7 +770,7 @@ impl crate::constraints::Constraint for HeadingConstraint {
     fn validate(
         &self,
         path: &std::path::Path,
-        context: &crate::constraints::ConstraintContext,
+        _context: &crate::constraints::ConstraintContext,
     ) -> crate::constraints::ConstraintResult<crate::constraints::ConstraintOutput> {
         let content = std::fs::read_to_string(path).map_err(|e| {
             crate::constraints::ConstraintError::io(path, format!("Failed to read file: {}", e))

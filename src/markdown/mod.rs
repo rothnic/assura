@@ -21,10 +21,8 @@ pub use schema::{MarkdownSchema, MarkdownValidationRule, SchemaDefinition, Valid
 pub use template::{SectionDefinition, SectionValidator, TemplateConstraint, TemplateDefinition};
 
 use crate::constraints::{
-    Constraint, ConstraintContext, ConstraintOutput, ConstraintResult, ValidationFailure,
-    ValidationFailures,
+    Constraint, ConstraintContext, ConstraintOutput, ConstraintResult, ValidationFailures,
 };
-use crate::maturity::MaturityLevel;
 use std::path::Path;
 
 /// Markdown constraint that validates documents against schemas

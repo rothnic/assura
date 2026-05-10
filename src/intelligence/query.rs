@@ -83,7 +83,7 @@ impl<'a> GraphQuery<'a> {
             .nodes()
             .filter(|node| {
                 if let Node::File(file) = node {
-                    file.extension.as_ref().map(|e| e.as_str()) == Some(extension)
+                    file.extension.as_deref() == Some(extension)
                 } else {
                     false
                 }

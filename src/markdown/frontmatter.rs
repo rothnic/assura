@@ -7,7 +7,7 @@ use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use super::error::{MarkdownError, MarkdownResult, MarkdownValidationError};
+use super::error::{MarkdownResult, MarkdownValidationError};
 use super::parser::MarkdownDocument;
 use crate::constraints::ValidationFailure;
 
@@ -761,7 +761,7 @@ impl crate::constraints::Constraint for FrontmatterConstraint {
     fn validate(
         &self,
         path: &std::path::Path,
-        context: &crate::constraints::ConstraintContext,
+        _context: &crate::constraints::ConstraintContext,
     ) -> crate::constraints::ConstraintResult<crate::constraints::ConstraintOutput> {
         let content = std::fs::read_to_string(path).map_err(|e| {
             crate::constraints::ConstraintError::io(path, format!("Failed to read file: {}", e))

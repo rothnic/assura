@@ -6,7 +6,6 @@
 use assura::Constraint;
 use std::fs::{self, File};
 use std::io::Write;
-use std::path::Path;
 use tempfile::TempDir;
 
 /// Helper to create a temporary directory with files
@@ -256,7 +255,6 @@ fn test_file_size_validation() {
 fn test_directory_traversal() {
     use assura::constraints::ConstraintContext;
     use assura::constraints::{CaseConvention, NamingConstraint};
-    use std::path::Path;
 
     let temp_dir = create_test_project();
     let base_path = temp_dir.path();
@@ -356,4 +354,3 @@ fn test_multi_part_extensions_real_files() {
 
 // Note: walkdir is needed for directory traversal tests
 // Add to Cargo.toml: walkdir = "2"
-use walkdir;

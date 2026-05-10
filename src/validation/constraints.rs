@@ -52,7 +52,7 @@ impl ConstraintValidator {
                 }
             }
             Constraint::Size { size } => Self::validate_size(size, file_path),
-            Constraint::Exists { exists } => {
+            Constraint::Exists { exists: _ } => {
                 // Exists is handled at directory level, not file level
                 ValidationResult::pass("exists")
             }
@@ -168,8 +168,7 @@ impl ConstraintValidator {
             return false;
         }
         // First char uppercase, rest alphanumeric
-        s.chars().next().map_or(false, |c| c.is_uppercase())
-            && s.chars().all(|c| c.is_alphanumeric())
+        s.chars().next().is_some_and(|c| c.is_uppercase()) && s.chars().all(|c| c.is_alphanumeric())
     }
 
     fn is_camel_case(s: &str) -> bool {
@@ -177,7 +176,7 @@ impl ConstraintValidator {
             return false;
         }
         // First char lowercase, contains uppercase
-        s.chars().next().map_or(false, |c| c.is_lowercase())
+        s.chars().next().is_some_and(|c| c.is_lowercase())
             && s.chars().any(|c| c.is_uppercase())
             && s.chars().all(|c| c.is_alphanumeric())
     }
@@ -233,9 +232,7 @@ impl ConstraintValidator {
                 _ => false,
             }
         } else {
-            range_str
-                .parse::<u64>()
-                .map_or(false, |expected| value == expected)
+            range_str.parse::<u64>() == Ok(value)
         }
     }
 

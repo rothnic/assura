@@ -11,13 +11,14 @@ use super::r#trait::{Constraint, ConstraintContext, ConstraintOutput};
 use super::severity::Severity;
 
 /// Case conventions for naming
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub enum CaseConvention {
     /// lowercase (e.g., filename)
     LowerCase,
     /// UPPERCASE (e.g., FILENAME)
     UpperCase,
     /// snake_case (e.g., file_name)
+    #[default]
     SnakeCase,
     /// camelCase (e.g., fileName)
     CamelCase,
@@ -262,12 +263,6 @@ impl CaseConvention {
     }
 }
 
-impl Default for CaseConvention {
-    fn default() -> Self {
-        CaseConvention::SnakeCase
-    }
-}
-
 impl std::fmt::Display for CaseConvention {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.name())
@@ -471,7 +466,7 @@ impl NamingRule {
                 severity: _,
             } => {
                 // Strip extension for case validation (e.g., "my-file.txt" -> "my-file")
-                let stem = filename.rsplitn(2, '.').nth(1).unwrap_or(filename);
+                let stem = filename.rsplit_once('.').map(|x| x.0).unwrap_or(filename);
 
                 if !convention.validate(stem) {
                     return Some(ValidationFailure::new(

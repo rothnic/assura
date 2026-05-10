@@ -4,8 +4,8 @@
 //! Ensures feature parity with LS-Lint.
 
 use crate::config::ast::{
-    ApplyValue, Config, Constraint, ConstraintItem, Context, FileItem, Message, NamingConvention,
-    PolicyEntry, PolicyNode, Rule, ViolationEntry,
+    ApplyValue, Config, Constraint, ConstraintItem, FileItem, NamingConvention, PolicyEntry,
+    PolicyNode, Rule, ViolationEntry,
 };
 use std::collections::HashMap;
 
@@ -48,8 +48,8 @@ impl LsLintParser {
                     in_ignore_section = true;
                 }
                 // Parse ignore pattern from list item
-                if trimmed.starts_with("- ") {
-                    let pattern = trimmed[2..].trim();
+                if let Some(stripped) = trimmed.strip_prefix("- ") {
+                    let pattern = stripped.trim();
                     // Remove surrounding quotes if present
                     let pattern = pattern.trim_matches('"').trim_matches('\'');
                     config.ignore.push(pattern.to_string());
@@ -169,7 +169,7 @@ impl LsLintParser {
         for (path, file_patterns) in &ls_config.paths {
             let mut subdir_entries = HashMap::new();
 
-            for (_pattern, conventions) in file_patterns {
+            for conventions in file_patterns.values() {
                 // Build constraints for this path
                 let constraint_items = Self::build_constraints(conventions);
 
@@ -200,7 +200,7 @@ impl LsLintParser {
         // Convert exists directives
         for (pattern, exists_val) in &ls_config.exists {
             // Parse exists value (e.g., "0", "1", "1..10")
-            let exists_constraint = if exists_val == "0" {
+            let _exists_constraint = if exists_val == "0" {
                 // exists:0 means no files allowed
                 // Use strict mode or specific handling
                 ConstraintItem::Constraint(Constraint::Exists {
@@ -338,7 +338,6 @@ pub struct MigrationReport {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::config::parser::ConfigParser;
 
     #[test]
     fn test_parse_simple_ls_lint() {
@@ -596,7 +595,8 @@ ls:
                 directive
             );
 
-            let config = LsLintParser::parse(&yaml).expect(&format!("Should parse {}", directive));
+            let config =
+                LsLintParser::parse(&yaml).unwrap_or_else(|_| panic!("Should parse {}", directive));
 
             assert_eq!(
                 config.exists.get(".test"),

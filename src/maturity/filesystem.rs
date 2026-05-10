@@ -7,6 +7,8 @@ use super::{
     MaturityResult,
 };
 
+type PathIndicator = (&'static str, Box<dyn Fn(&Path) -> bool + Send + Sync>);
+
 /// Collector for file system-based maturity signals
 pub struct FilesystemSignals;
 
@@ -157,7 +159,7 @@ impl FilesystemSignals {
     }
 
     fn detect_test_coverage(&self, path: &Path) -> MaturityResult<MaturitySignal> {
-        let test_indicators: Vec<(&str, Box<dyn Fn(&Path) -> bool + Send + Sync>)> = vec![
+        let test_indicators: Vec<PathIndicator> = vec![
             ("tests/", Box::new(|p| p.join("tests").is_dir())),
             ("test/", Box::new(|p| p.join("test").is_dir())),
             (
@@ -245,7 +247,7 @@ impl FilesystemSignals {
     }
 
     fn detect_documentation(&self, path: &Path) -> MaturityResult<MaturitySignal> {
-        let doc_indicators: Vec<(&str, Box<dyn Fn(&Path) -> bool + Send + Sync>)> = vec![
+        let doc_indicators: Vec<PathIndicator> = vec![
             (
                 "README",
                 Box::new(|p| {

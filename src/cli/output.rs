@@ -1,7 +1,7 @@
 use std::io::Write;
 
 use crate::cli::args::OutputFormat;
-use crate::constraints::{ConstraintOutput, ValidationFailures};
+use crate::constraints::ConstraintOutput;
 use crate::maturity::{MaturityLevel, MaturityReport};
 
 pub trait OutputFormatter {
@@ -322,7 +322,7 @@ fn format_duration(duration: std::time::Duration) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::constraints::{Severity, ValidationFailure};
+    use crate::constraints::{Severity, ValidationFailure, ValidationFailures};
     use std::path::PathBuf;
 
     #[test]

@@ -108,9 +108,9 @@ impl ValidationEngine {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::config::ast::{Config, NamingConvention, PolicyNode, Rule};
+
     use crate::config::parser::ConfigParser;
-    use std::collections::HashMap;
+
     use std::path::Path;
 
     #[test]
