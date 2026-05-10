@@ -1,0 +1,31 @@
+{
+  "id": "ci-efficiency-baseline",
+  "name": "ci-efficiency-baseline",
+  "title": "CI efficiency baseline",
+  "description": "",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "ci",
+  "package": null,
+  "priority": "P2",
+  "creator": "nroth",
+  "assignee": "nroth",
+  "createdAt": "2026-05-10",
+  "completedAt": null,
+  "branch": "codex/ci-efficiency-baseline",
+  "base_branch": "master",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": "https://github.com/rothnic/assura/pull/3",
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    ".github/workflows/ci.yml",
+    ".github/workflows/docs.yml",
+    ".trellis/spec/assura/tooling-stabilization.md",
+    ".trellis/tasks/05-10-ci-efficiency-baseline/prd.md"
+  ],
+  "notes": "",
+  "meta": {}
+}

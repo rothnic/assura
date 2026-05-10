@@ -1,0 +1,2 @@
+{"file": ".trellis/spec/assura/index.md", "reason": "Use active Assura source-of-truth and tooling policy references before workflow edits"}
+{"file": ".trellis/spec/assura/tooling-stabilization.md", "reason": "Align CI cache and advisory Clippy behavior with current gate policy"}
