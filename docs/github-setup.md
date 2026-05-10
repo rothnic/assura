@@ -1,7 +1,13 @@
-# GitHub Infrastructure Setup Summary
+---
+title: GitHub Setup
+status: current
+owner: maintainers
+---
+
+# GitHub Infrastructure Setup
 
 ## Overview
-This document summarizes the GitHub infrastructure that has been set up for the Assura project.
+This document summarizes the GitHub infrastructure for the Assura project.
 
 ## Completed Tasks
 
@@ -39,7 +45,7 @@ export GH_TOKEN=your_github_token
 
 Create the repository:
 ```bash
-cd /workspace/repos/research/assura
+cd /Users/nroth/workspace/assura
 gh repo create assura/assura \
   --public \
   --description "Dependency-aware file system validation engine" \
@@ -48,18 +54,18 @@ gh repo create assura/assura \
   --push
 ```
 
-### Step 2: Configure Branch Protection (2C.2)
+### Step 2: Configure Branch Protection
 
 After pushing, set up branch protection via GitHub CLI:
 
 ```bash
-# Protect main branch with required PR reviews
-gh api repos/assura/assura/branches/main/protection \
+# Protect master branch with required PR reviews
+gh api repos/assura/assura/branches/master/protection \
   --method PUT \
   --input - <<< '{
     "required_status_checks": {
       "strict": true,
-      "contexts": ["Check", "Rustfmt", "Clippy", "Test Suite"]
+      "contexts": ["Check", "Test Suite"]
     },
     "enforce_admins": false,
     "required_pull_request_reviews": {
@@ -73,11 +79,14 @@ gh api repos/assura/assura/branches/main/protection \
 
 Or configure via GitHub web interface:
 1. Go to Settings → Branches
-2. Add rule for `main` branch
+2. Add rule for `master` branch
 3. Enable:
    - Require pull request reviews before merging (1 approval)
-   - Require status checks to pass (Check, Rustfmt, Clippy, Test Suite)
+   - Require status checks to pass for currently reliable gates
    - Include administrators
+
+Rustfmt and Clippy are intentionally tracked as tooling-baseline cleanup work
+before they become required branch-protection gates.
 
 ### Step 3: Set Up Repository Secrets
 
@@ -119,8 +128,14 @@ Triggers on push/PR to main/master:
 - **Check**: Verifies code compiles
 - **Rustfmt**: Enforces code formatting
 - **Clippy**: Runs linter with warnings as errors
-- **Test Suite**: Runs tests on Ubuntu, Windows, macOS
-- **Coverage**: Generates code coverage reports
+- **Test Suite**: Runs tests on Ubuntu and macOS
+- **Coverage**: Generates code coverage reports and uploads the Cobertura XML
+  report as a GitHub Actions artifact
+
+Rustfmt and Clippy currently expose known repository-wide baseline debt. They
+remain visible in CI, but should become blocking only after focused cleanup
+iterations land. Windows tests are paused until the documented `libgit2-sys`
+MSVC linker issue is resolved.
 
 ### Release Workflow (release.yml)
 Triggers on version tags (v*):
@@ -132,9 +147,9 @@ Triggers on version tags (v*):
 - Publishes to crates.io
 
 ### Documentation Workflow (docs.yml)
-Triggers on push to main:
+Builds documentation on pushes and pull requests to `main` or `master`:
 - Builds rustdoc
-- Deploys to GitHub Pages
+- Deploys to GitHub Pages from `main`
 
 ### Security Workflow (security.yml)
 Triggers on Cargo.toml/lock changes + daily schedule:
@@ -165,12 +180,18 @@ The release workflow will automatically:
 - Build binaries for all platforms
 - Publish to crates.io
 
+Windows release assets depend on the same Windows Rust toolchain path that is
+currently paused in CI. Treat Windows release output as unverified until the
+Windows CI restore item is complete.
+
 ## Notes
 
-- All workflow files use `ubuntu-latest` for consistency
+- Most infrastructure jobs use `ubuntu-latest`; CI and release jobs also use
+  macOS and Windows where those platforms are part of the workflow.
 - Caching is enabled for cargo dependencies to speed up builds
 - Security workflow runs daily to catch new vulnerabilities
-- Branch protection requires status checks to pass before merging
+- Branch protection should require only reliable checks until the tooling
+  baseline is clean
 
 ## Troubleshooting
 
