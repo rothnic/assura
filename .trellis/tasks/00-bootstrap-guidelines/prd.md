@@ -26,6 +26,8 @@ Make future AI sessions discover Assura's real conventions quickly:
 - [x] Wire Assura baseline `check` behavior to real structure validation.
 - [x] Capture current CI/tooling baseline debt and Windows pause criteria in
       `.trellis/spec/assura/tooling-stabilization.md`.
+- [x] Add workflow status snapshot expectations so task state, options, and
+      recommendations are clear to both agents and the developer.
 - [ ] Convert remaining durable conventions from `AGENTS.md` and docs into
       `.trellis/spec/assura/` files.
 - [ ] Stabilize CI signals so expected baseline debt is either fixed or
@@ -55,6 +57,7 @@ project stabilizes:
 | `docs-governance.md` | Canonical, historical, archive, and delete treatments. |
 | `testing.md` | Required checks for CLI, config, hooks, docs, and fixtures. |
 | `tooling-stabilization.md` | Current CI/tooling debt, paused checks, and cleanup sequence. |
+| `workflow-status.md` | Required status snapshot format for task progress, options, and recommendations. |
 
 Only add these files when they contain real, current project guidance. Do not
 create empty placeholders.
@@ -70,6 +73,9 @@ create empty placeholders.
   practical, then dogfood the rule in `.assura/config.yml`.
 - Do not treat failing checks as acceptable unless they are recorded in the
   Assura tooling stabilization spec with re-enable or close criteria.
+- For non-trivial task work, include a quick workflow status snapshot so the
+  developer and next agent can see the active task, current state, options, and
+  recommended next action without reconstructing context from chat history.
 
 ## Completion
 

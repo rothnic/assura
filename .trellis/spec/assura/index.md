@@ -8,6 +8,7 @@ expanding into richer dependency and documentation constraints.
 ## Canonical Sources
 
 - Workflow and task execution: `.trellis/workflow.md` and `.trellis/tasks/`
+- Workflow status snapshots: `.trellis/spec/assura/workflow-status.md`
 - Spec routing: `.trellis/spec/index.md`
 - Project structure enforcement: `.assura/config.yml`
 - Tooling and CI stabilization: `.trellis/spec/assura/tooling-stabilization.md`
@@ -39,5 +40,8 @@ expanding into richer dependency and documentation constraints.
   or removal over preserving compatibility layers that would become debt.
 - Treat known failing checks as explicit stabilization work. Do not leave them
   as tribal knowledge in PR comments only.
+- Every non-trivial task response should include or preserve a concise workflow
+  status snapshot: current task, phase/state, branch/PR when relevant, known
+  blockers, next options, and the recommended next action.
 - Any new validation constraint should include a failing fixture, a passing
   fixture, and CLI integration coverage where practical.
