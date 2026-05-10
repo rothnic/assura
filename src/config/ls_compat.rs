@@ -49,7 +49,7 @@ impl LsLintCompatibility {
     ) -> Self {
         self.paths
             .entry(path.into())
-            .or_insert_with(HashMap::new)
+            .or_default()
             .insert(ext.into(), convention.into());
         self
     }
@@ -83,28 +83,6 @@ impl LsLintCompatibility {
         }
 
         nodes
-    }
-
-    /// Convert a V1-style extension to a file pattern
-    fn extension_to_pattern(ext: &str) -> String {
-        if ext.starts_with('.') {
-            format!("*{}", ext)
-        } else {
-            format!("*. {}", ext)
-        }
-    }
-
-    /// Parse LS-Lint convention name to assura convention
-    fn parse_convention(ls_convention: &str) -> String {
-        match ls_convention {
-            "kebab-case" => "kebab-case".to_string(),
-            "snake_case" => "snake_case".to_string(),
-            "PascalCase" => "PascalCase".to_string(),
-            "camelCase" => "camelCase".to_string(),
-            "SCREAMING_SNAKE_CASE" => "SCREAMING_SNAKE_CASE".to_string(),
-            "dot.case" => "dot.case".to_string(),
-            _ => ls_convention.to_string(),
-        }
     }
 }
 

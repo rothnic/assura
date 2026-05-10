@@ -3,12 +3,12 @@
 //! Tests to ensure Assura provides full parity with LS-Lint functionality.
 
 use assura::{
-    CaseConvention, Constraint, ConstraintContext, DirectoryConstraint, DirectoryRule,
-    DirectoryValidationConfig, ExtensionPattern, MultiPartExtensionRule, MultipleRuleSyntax,
-    NamingConstraint, PathRule, PathRuleConfig, Severity,
+    CaseConvention, Constraint, ConstraintContext, DirectoryConstraint, DirectoryValidationConfig,
+    ExtensionPattern, MultiPartExtensionRule, MultipleRuleSyntax, PathRule, PathRuleConfig,
+    Severity,
 };
 use std::path::PathBuf;
-use tempfile::{NamedTempFile, TempDir};
+use tempfile::TempDir;
 
 // ============================================================================
 // 5.1 Case Convention Tests
@@ -141,7 +141,7 @@ fn test_ls_lint_directory_recursive_validation() {
     // Run recursive validation
     let result = constraint.validate(&parent, &context).unwrap();
     assert!(!result.passed); // Should fail because child_dir is invalid
-    assert!(result.failures.len() >= 1);
+    assert!(!result.failures.is_empty());
 }
 
 // ============================================================================

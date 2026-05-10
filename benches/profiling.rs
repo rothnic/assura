@@ -3,8 +3,6 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use jwalk::WalkDir;
 use rayon::prelude::*;
-use std::path::Path;
-use std::time::{Duration, Instant};
 use tempfile::{Builder, TempDir};
 
 use assura::constraints::{
@@ -169,7 +167,7 @@ fn profile_file_size_check(c: &mut Criterion) {
 
     c.bench_function("profile_file_metadata", |b| {
         b.iter(|| {
-            black_box(std::fs::metadata(&file_path));
+            let _ = black_box(std::fs::metadata(&file_path));
         })
     });
 }

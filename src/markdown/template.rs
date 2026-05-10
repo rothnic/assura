@@ -163,7 +163,7 @@ impl TemplateDefinition {
         }
 
         // Check required sections
-        let section_titles: Vec<String> = sections
+        let _section_titles: Vec<String> = sections
             .iter()
             .map(|s| s.heading.text.to_lowercase())
             .collect();
@@ -203,7 +203,7 @@ impl TemplateDefinition {
 
         // Check for additional sections if not allowed
         if !self.allow_additional_sections {
-            let template_names: Vec<String> = self
+            let _template_names: Vec<String> = self
                 .sections
                 .iter()
                 .map(|s| s.name.to_lowercase())

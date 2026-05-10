@@ -411,16 +411,14 @@ impl MarkdownParser {
                     code_content.clear();
                     code_start_line = self.position_to_line(&body, range.start);
                 }
-                Event::End(Tag::CodeBlock(_kind)) => {
-                    if in_code_block {
-                        code_blocks.push(CodeBlock {
-                            language: code_language.take(),
-                            content: code_content.clone(),
-                            line_number: code_start_line,
-                        });
-                        in_code_block = false;
-                        code_content.clear();
-                    }
+                Event::End(Tag::CodeBlock(_kind)) if in_code_block => {
+                    code_blocks.push(CodeBlock {
+                        language: code_language.take(),
+                        content: code_content.clone(),
+                        line_number: code_start_line,
+                    });
+                    in_code_block = false;
+                    code_content.clear();
                 }
                 Event::Start(Tag::Link(_type, dest_url, _title)) => {
                     let line_number = self.position_to_line(&body, range.start);
@@ -453,19 +451,19 @@ impl MarkdownParser {
     /// Extract frontmatter from markdown content
     fn extract_frontmatter(&self, content: &str) -> (Option<String>, String) {
         // Check for YAML frontmatter (--- delimiters)
-        if content.starts_with("---") {
-            if let Some(end_idx) = content[3..].find("---") {
-                let frontmatter = content[3..end_idx + 3].trim().to_string();
-                let body = content[end_idx + 6..].trim_start().to_string();
+        if let Some(stripped) = content.strip_prefix("---") {
+            if let Some(end_idx) = stripped.find("---") {
+                let frontmatter = stripped[..end_idx].trim().to_string();
+                let body = stripped[end_idx + 3..].trim_start().to_string();
                 return (Some(frontmatter), body);
             }
         }
 
         // Check for TOML frontmatter (+++ delimiters)
-        if content.starts_with("+++") {
-            if let Some(end_idx) = content[3..].find("+++") {
-                let frontmatter = content[3..end_idx + 3].trim().to_string();
-                let body = content[end_idx + 6..].trim_start().to_string();
+        if let Some(stripped) = content.strip_prefix("+++") {
+            if let Some(end_idx) = stripped.find("+++") {
+                let frontmatter = stripped[..end_idx].trim().to_string();
+                let body = stripped[end_idx + 3..].trim_start().to_string();
                 return (Some(frontmatter), body);
             }
         }
@@ -476,7 +474,7 @@ impl MarkdownParser {
             let mut in_string = false;
             let mut escape_next = false;
 
-            for (idx, ch) in content.chars().enumerate() {
+            for (idx, ch) in content.char_indices() {
                 if escape_next {
                     escape_next = false;
                     continue;
@@ -489,8 +487,9 @@ impl MarkdownParser {
                     '}' if !in_string => {
                         brace_count -= 1;
                         if brace_count == 0 {
-                            let frontmatter = content[..=idx].trim().to_string();
-                            let body = content[idx + 1..].trim_start().to_string();
+                            let body_start = idx + ch.len_utf8();
+                            let frontmatter = content[..body_start].trim().to_string();
+                            let body = content[body_start..].trim_start().to_string();
                             return (Some(frontmatter), body);
                         }
                     }

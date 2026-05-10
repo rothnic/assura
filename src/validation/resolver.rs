@@ -51,17 +51,13 @@ impl RuleResolver {
             let entry_path = current_path.join(key);
 
             match entry {
-                PolicyEntry::Directory(subdir) => {
+                PolicyEntry::Directory(subdir) if file_path.starts_with(&entry_path) => {
                     // Check if this directory is in the file path
-                    if file_path.starts_with(&entry_path) {
-                        Self::traverse_and_resolve(config, subdir, file_path, &entry_path, result);
-                    }
+                    Self::traverse_and_resolve(config, subdir, file_path, &entry_path, result);
                 }
-                PolicyEntry::File(items) => {
+                PolicyEntry::File(items) if Self::pattern_matches(key, file_path) => {
                     // Check if this file pattern matches
-                    if Self::pattern_matches(key, file_path) {
-                        Self::resolve_file_items(config, items, file_path, result);
-                    }
+                    Self::resolve_file_items(config, items, file_path, result);
                 }
                 _ => {} // Other entry types handled at directory level
             }
@@ -112,13 +108,11 @@ impl RuleResolver {
             return text.contains(middle);
         }
 
-        if pattern.starts_with("*") {
-            let suffix = &pattern[1..];
+        if let Some(suffix) = pattern.strip_prefix("*") {
             return text.ends_with(suffix);
         }
 
-        if pattern.ends_with("*") {
-            let prefix = &pattern[..pattern.len() - 1];
+        if let Some(prefix) = pattern.strip_suffix("*") {
             return text.starts_with(prefix);
         }
 
@@ -165,7 +159,7 @@ impl RuleResolver {
 
     /// Merge constraints from a rule
     fn merge_rule_constraints(rule: &Rule, file_path: &Path, result: &mut ResolvedConstraints) {
-        let file_name = file_path.file_name().and_then(|s| s.to_str()).unwrap_or("");
+        let _file_name = file_path.file_name().and_then(|s| s.to_str()).unwrap_or("");
 
         for (raw_pattern, items) in &rule.patterns {
             // Strip quotes from pattern (preprocessor adds them for special characters)

@@ -4,6 +4,7 @@
 //! Follows Constitution principles: structure-first, valid YAML/JSON.
 
 pub mod ast;
+#[allow(clippy::module_inception)]
 pub mod config;
 pub mod engine;
 pub mod inheritance;

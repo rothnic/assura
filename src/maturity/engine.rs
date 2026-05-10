@@ -3,9 +3,12 @@ use serde::{Deserialize, Serialize};
 use super::signal::MaturitySignal;
 
 /// Maturity levels for projects
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, PartialOrd, Ord)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, PartialOrd, Ord, Default,
+)]
 pub enum MaturityLevel {
     /// Project is in early stages, minimal structure
+    #[default]
     Raw = 0,
     /// Project has basic structure but may lack polish
     Developing = 1,
@@ -63,12 +66,6 @@ impl std::fmt::Display for MaturityLevel {
             MaturityLevel::Mature => write!(f, "mature"),
             MaturityLevel::Established => write!(f, "established"),
         }
-    }
-}
-
-impl Default for MaturityLevel {
-    fn default() -> Self {
-        MaturityLevel::Raw
     }
 }
 

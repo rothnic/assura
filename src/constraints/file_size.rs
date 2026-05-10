@@ -10,9 +10,10 @@ use super::r#trait::{Constraint, ConstraintContext, ConstraintOutput};
 use super::severity::Severity;
 
 /// File size limit configuration
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum FileSizeLimit {
     /// No limit
+    #[default]
     Unlimited,
     /// Exact byte count
     Bytes(u64),
@@ -46,12 +47,6 @@ impl FileSizeLimit {
             FileSizeLimit::Megabytes(mb) => format!("{} MB", mb),
             FileSizeLimit::Gigabytes(gb) => format!("{} GB", gb),
         }
-    }
-}
-
-impl Default for FileSizeLimit {
-    fn default() -> Self {
-        FileSizeLimit::Unlimited
     }
 }
 
@@ -172,7 +167,9 @@ impl FileSizeRule {
                             self.max_size.format()
                         ),
                     )
-                    .with_suggestion(format!("Consider splitting the file or using compression")),
+                    .with_suggestion(
+                        "Consider splitting the file or using compression".to_string(),
+                    ),
                 ));
             }
         }

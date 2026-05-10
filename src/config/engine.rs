@@ -6,8 +6,7 @@
 //! - Rule merging and inheritance
 
 use crate::config::types::{
-    ApplyEntry, Case, Config, Directive, InlineRule, NamingConvention, PolicyEntry, PolicyNode,
-    Rule, Severity,
+    Config, Directive, InlineRule, NamingConvention, PolicyEntry, PolicyNode, Rule, Severity,
 };
 use std::collections::HashMap;
 use std::path::Path;
@@ -83,7 +82,7 @@ impl PolicyEngine {
         }
 
         // Sort by specificity (most specific first)
-        matches.sort_by(|a, b| b.specificity.cmp(&a.specificity));
+        matches.sort_by_key(|policy_match| std::cmp::Reverse(policy_match.specificity));
 
         // Merge rules from most specific to least specific
         // (child rules override parent rules)
@@ -104,7 +103,7 @@ impl PolicyEngine {
         rules: &HashMap<String, Rule>,
         depth: usize,
     ) {
-        let path_str = path.to_string_lossy();
+        let _path_str = path.to_string_lossy();
 
         for (key, entry) in &node.entries {
             let specificity = self.calculate_specificity(key, depth, path);
@@ -133,8 +132,8 @@ impl PolicyEngine {
         match entry {
             PolicyEntry::RuleRef(rule_name) => {
                 // Strip @ prefix if present
-                let name = if rule_name.starts_with('@') {
-                    &rule_name[1..]
+                let name = if let Some(stripped) = rule_name.strip_prefix('@') {
+                    stripped
                 } else {
                     rule_name
                 };
@@ -212,7 +211,11 @@ impl PolicyEngine {
 
         // Check if key is an extension pattern (e.g., ".rs" or "rs")
         if key.starts_with('.') || !key.contains('/') && !key.contains('*') {
-            let ext = if key.starts_with('.') { &key[1..] } else { key };
+            let ext = if let Some(stripped) = key.strip_prefix('.') {
+                stripped
+            } else {
+                key
+            };
 
             if let Some(file_ext) = path.extension().and_then(|e| e.to_str()) {
                 if file_ext == ext {
@@ -244,8 +247,7 @@ impl PolicyEngine {
         }
 
         // Handle directory patterns (ending with /)
-        if key.ends_with('/') {
-            let prefix = &key[..key.len() - 1];
+        if let Some(prefix) = key.strip_suffix('/') {
             if path_str.starts_with(prefix)
                 && (path_str.len() == prefix.len() || path_str[prefix.len()..].starts_with('/'))
             {
@@ -359,6 +361,7 @@ impl RuleProperties {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::config::types::Case;
 
     fn create_test_config() -> Config {
         Config::new()

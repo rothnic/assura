@@ -7,9 +7,8 @@
 //! - Trigger registration and management
 
 use std::collections::HashMap;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
-use super::error::{ConstraintError, ConstraintResult};
 use super::r#trait::ConstraintContext;
 use crate::maturity::MaturityLevel;
 
@@ -119,10 +118,8 @@ impl FileChangeTrigger {
         let path_str = path.to_string_lossy();
 
         // Check if it's a directory
-        if !self.include_dirs {
-            if path.is_dir() {
-                return false;
-            }
+        if !self.include_dirs && path.is_dir() {
+            return false;
         }
 
         // Check patterns
@@ -454,10 +451,10 @@ impl TriggerRegistry {
 
         // Check if any of the associated triggers fire
         for trigger in &self.triggers {
-            if trigger_names.contains(&trigger.name().to_string()) {
-                if trigger.should_trigger(constraint_name, path, context) {
-                    return true;
-                }
+            if trigger_names.contains(&trigger.name().to_string())
+                && trigger.should_trigger(constraint_name, path, context)
+            {
+                return true;
             }
         }
 

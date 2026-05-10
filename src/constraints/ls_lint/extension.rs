@@ -3,10 +3,8 @@
 //! Provides support for multi-part extensions like .d.ts, .test.js, .min.css
 //! and extension-specific naming rules.
 
-use regex::Regex;
 use std::collections::HashMap;
 
-use crate::constraints::error::ConstraintResult;
 use crate::constraints::naming::CaseConvention;
 use crate::constraints::severity::Severity;
 
@@ -28,9 +26,8 @@ impl ExtensionPattern {
 
     /// Parse an extension from a filename
     pub fn from_filename(filename: &str) -> Option<Self> {
-        if filename.starts_with('.') {
+        if let Some(without_leading_dot) = filename.strip_prefix('.') {
             // Hidden file - handle specially
-            let without_leading_dot = &filename[1..];
             let parts: Vec<&str> = without_leading_dot.split('.').collect();
             if parts.len() >= 2 {
                 return Some(Self {

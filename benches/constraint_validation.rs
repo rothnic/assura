@@ -6,7 +6,6 @@
 //! To run: cargo bench --bench constraint_validation
 
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
-use std::path::Path;
 use tempfile::{Builder, TempDir};
 
 use assura::constraints::{

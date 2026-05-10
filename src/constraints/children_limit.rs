@@ -7,7 +7,7 @@
 use std::collections::HashMap;
 use std::path::Path;
 
-use crate::config::types::{ChildrenCountRange, ChildrenLimitConfig, Severity};
+use crate::config::types::{ChildrenLimitConfig, Severity};
 use crate::constraints::error::{ValidationFailure, ValidationFailures};
 use crate::constraints::r#trait::{Constraint, ConstraintContext, ConstraintOutput};
 
@@ -69,8 +69,7 @@ impl ChildrenLimitConstraint {
         }
 
         // Handle directory patterns (ending with /)
-        if pattern.ends_with('/') {
-            let prefix = &pattern[..pattern.len() - 1];
+        if let Some(prefix) = pattern.strip_suffix('/') {
             return path_str.starts_with(prefix)
                 && (path_str.len() == prefix.len() || path_str[prefix.len()..].starts_with('/'));
         }
@@ -113,7 +112,7 @@ impl ChildrenLimitConstraint {
         &self,
         path: &Path,
         config: &ChildrenLimitConfig,
-        severity: Severity,
+        _severity: Severity,
     ) -> Vec<ValidationFailure> {
         let mut failures = Vec::new();
 
@@ -258,7 +257,7 @@ impl Constraint for ChildrenLimitConstraint {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::io::Write;
+    use crate::config::types::ChildrenCountRange;
 
     #[test]
     fn test_matches_pattern() {

@@ -202,10 +202,8 @@ impl EnvironmentSignals {
 
         for (name, config) in &ide_configs {
             let full_path = path.join(config);
-            if full_path.exists() {
-                if !detected_ides.contains(name) {
-                    detected_ides.push(*name);
-                }
+            if full_path.exists() && !detected_ides.contains(name) {
+                detected_ides.push(*name);
             }
         }
 

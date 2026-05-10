@@ -4,7 +4,6 @@
 //! naming rules with glob pattern matching.
 
 use regex::Regex;
-use std::collections::HashMap;
 use std::path::Path;
 
 use crate::constraints::error::ConstraintResult;
@@ -247,7 +246,7 @@ impl PathRule {
     /// Validate a filename against this rule
     pub fn validate(&self, filename: &str) -> Option<String> {
         // Strip extension for validation
-        let stem = filename.rsplitn(2, '.').nth(1).unwrap_or(filename);
+        let stem = filename.rsplit_once('.').map(|x| x.0).unwrap_or(filename);
 
         if !self.convention.validate(stem) {
             Some(format!(
@@ -353,7 +352,7 @@ impl PathRuleConfig {
 
         // Use default convention if no rule matches
         if let Some(convention) = self.default_convention {
-            let stem = filename.rsplitn(2, '.').nth(1).unwrap_or(filename);
+            let stem = filename.rsplit_once('.').map(|x| x.0).unwrap_or(filename);
 
             if !convention.validate(stem) {
                 return Some(format!(

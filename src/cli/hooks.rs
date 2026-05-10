@@ -1,9 +1,6 @@
-use std::io::Write;
 use std::path::{Path, PathBuf};
 
 use thiserror::Error;
-
-use crate::cli::config::CliConfig;
 
 #[derive(Error, Debug)]
 pub enum HookError {
@@ -259,7 +256,6 @@ impl HookStatus {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tempfile::tempdir;
 
     #[test]
     fn test_hook_type_from_str() {

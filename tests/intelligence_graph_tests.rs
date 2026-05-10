@@ -237,7 +237,7 @@ fn test_graph_builder() {
         .expect("Failed to build graph");
 
     assert!(graph.node_count() > 0);
-    assert!(graph.edge_count() >= 0);
+    let _edge_count = graph.edge_count();
 
     let query = GraphQuery::new(&graph);
     let files = query.find_by_type(NodeType::File);
@@ -444,10 +444,7 @@ fn test_error_handling_invalid_path() {
     let result = query.resolve_path(Path::new("/nonexistent/path"));
     assert!(result.is_err());
 
-    match result {
-        Err(GraphError::InvalidPath(_)) => {}
-        _ => {}
-    }
+    if let Err(GraphError::InvalidPath(_)) = result {}
 }
 
 #[test]
@@ -526,7 +523,7 @@ fn test_query_result_operations() {
 
     let result = query.find_by_extension("rs");
     assert!(!result.is_empty());
-    assert!(result.len() > 0);
+    assert!(!result.is_empty());
     assert!(result.first().is_some());
     assert_eq!(result.total_count, result.len());
 }

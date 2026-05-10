@@ -215,7 +215,7 @@ fn bench_directory_validation(c: &mut Criterion) {
         group.bench_function(BenchmarkId::new("validate", name), |b| {
             b.iter(|| {
                 let result = constraint.validate(black_box(temp_dir.path()), &context);
-                black_box(result);
+                let _ = black_box(result);
             })
         });
     }
@@ -253,7 +253,7 @@ fn bench_directory_with_exclusions(c: &mut Criterion) {
     group.bench_function("with_exclusions", |b| {
         b.iter(|| {
             let result = constraint.validate(black_box(base_path), &context);
-            black_box(result);
+            let _ = black_box(result);
         })
     });
 
@@ -268,7 +268,7 @@ fn bench_directory_with_exclusions(c: &mut Criterion) {
     group.bench_function("with_more_exclusions", |b| {
         b.iter(|| {
             let result = constraint_custom.validate(black_box(base_path), &context);
-            black_box(result);
+            let _ = black_box(result);
         })
     });
 
@@ -295,14 +295,14 @@ fn bench_recursive_vs_flat(c: &mut Criterion) {
     group.bench_function("recursive", |b| {
         b.iter(|| {
             let result = recursive_constraint.validate(black_box(base_path), &context);
-            black_box(result);
+            let _ = black_box(result);
         })
     });
 
     group.bench_function("non_recursive", |b| {
         b.iter(|| {
             let result = flat_constraint.validate(black_box(base_path), &context);
-            black_box(result);
+            let _ = black_box(result);
         })
     });
 
@@ -757,7 +757,7 @@ fn bench_naming_constraint(c: &mut Criterion) {
     group.bench_function("single_file", |b| {
         b.iter(|| {
             let result = constraint.validate(black_box(&test_file), &context);
-            black_box(result);
+            let _ = black_box(result);
         })
     });
 
@@ -767,7 +767,7 @@ fn bench_naming_constraint(c: &mut Criterion) {
             for i in 0..50 {
                 let file = base_path.join(format!("valid-file-{}.txt", i));
                 let result = constraint.validate(&file, &context);
-                black_box(result);
+                let _ = black_box(result);
             }
         })
     });
@@ -777,8 +777,8 @@ fn bench_naming_constraint(c: &mut Criterion) {
             for i in 0..25 {
                 let valid_file = base_path.join(format!("valid-file-{}.txt", i));
                 let invalid_file = base_path.join(format!("invalid_file_{}.txt", i));
-                black_box(constraint.validate(&valid_file, &context));
-                black_box(constraint.validate(&invalid_file, &context));
+                let _ = black_box(constraint.validate(&valid_file, &context));
+                let _ = black_box(constraint.validate(&invalid_file, &context));
             }
         })
     });
@@ -982,7 +982,7 @@ fn bench_comparative_validation(c: &mut Criterion) {
         b.iter(|| {
             for i in 0..100 {
                 let path = temp_dir.path().join(format!("test-file-{}", i));
-                black_box(constraint.validate(&path, &context));
+                let _ = black_box(constraint.validate(&path, &context));
             }
         })
     });
