@@ -267,3 +267,53 @@ fn test_heading_structure_analyze() {
     assert_eq!(structure.hierarchy.len(), 1);
     assert_eq!(structure.hierarchy[0].children.len(), 1);
 }
+
+#[test]
+fn test_heading_structure_preserves_sibling_sections() {
+    let doc = MarkdownDocument {
+        content: "# Title\n## Section 1\n### Subsection\n## Section 2".to_string(),
+        frontmatter: None,
+        body: "# Title\n## Section 1\n### Subsection\n## Section 2".to_string(),
+        headings: vec![
+            Heading {
+                level: HeadingLevel::H1,
+                text: "Title".to_string(),
+                position: 0,
+                line_number: 1,
+            },
+            Heading {
+                level: HeadingLevel::H2,
+                text: "Section 1".to_string(),
+                position: 8,
+                line_number: 2,
+            },
+            Heading {
+                level: HeadingLevel::H3,
+                text: "Subsection".to_string(),
+                position: 21,
+                line_number: 3,
+            },
+            Heading {
+                level: HeadingLevel::H2,
+                text: "Section 2".to_string(),
+                position: 36,
+                line_number: 4,
+            },
+        ],
+        links: vec![],
+        code_blocks: vec![],
+        text_content: "Title Section 1 Subsection Section 2".to_string(),
+        line_count: 4,
+        word_count: 6,
+    };
+
+    let structure = HeadingStructure::analyze(&doc);
+
+    assert_eq!(structure.hierarchy.len(), 1);
+    let title = &structure.hierarchy[0];
+    assert_eq!(title.children.len(), 2);
+    assert_eq!(title.children[0].heading.text, "Section 1");
+    assert_eq!(title.children[0].children.len(), 1);
+    assert_eq!(title.children[0].children[0].heading.text, "Subsection");
+    assert_eq!(title.children[1].heading.text, "Section 2");
+}

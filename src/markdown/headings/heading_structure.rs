@@ -78,7 +78,7 @@ fn build_hierarchy(headings: &[Heading]) -> Vec<HeadingHierarchyNode> {
             let (_, children) = stack.pop().unwrap();
             if let Some((_, parent_children)) = stack.last_mut() {
                 if let Some(mut parent) = parent_children.pop() {
-                    parent.children = children;
+                    parent.children.extend(children);
                     parent_children.push(parent);
                 }
             } else {
@@ -93,7 +93,7 @@ fn build_hierarchy(headings: &[Heading]) -> Vec<HeadingHierarchyNode> {
     while let Some((_, children)) = stack.pop() {
         if let Some((_, parent_children)) = stack.last_mut() {
             if let Some(mut parent) = parent_children.pop() {
-                parent.children = children;
+                parent.children.extend(children);
                 parent_children.push(parent);
             }
         } else {
