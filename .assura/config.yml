@@ -78,14 +78,6 @@ structure:
           ISSUE_TEMPLATE/:
             files:
               naming: "snake_case"
-          prompts/:
-            files:
-              naming: "kebab-case"
-          skills/:
-            files:
-              naming: "kebab-case"
-              allowed_names:
-                - "SKILL.md"
           workflows/:
             files:
               naming: "kebab-case"
@@ -103,11 +95,19 @@ structure:
           max_lines: 500
         markdown:
           require_frontmatter: true
-      
+        children:
+          archive/:
+            files:
+              naming: "kebab-case"
+              max_lines: 2000
+            markdown:
+              require_frontmatter: true
+
       opencode-plugin/:
         files:
           naming: "kebab-case"
           allowed_names:
+            - ".gitignore"
             - "README.md"
       
       src/:

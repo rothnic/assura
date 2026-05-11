@@ -1,0 +1,108 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.35s
+     Running `target/debug/assura check .`
+Assura structure check
+======================
+Project root: /Users/nroth/workspace/assura
+Config: /Users/nroth/workspace/assura/.assura/config.yml
+Checked path: /Users/nroth/workspace/assura
+Files checked: 323
+Directories checked: 92
+Violations: 94
+
+Violations
+----------
+docs/ACTUAL_STATE_AUDIT.md [medium:file_naming] File 'ACTUAL_STATE_AUDIT.md' does not match naming convention 'kebab-case'
+docs/ACTUAL_STATE_AUDIT.md [medium:markdown_frontmatter] Markdown file 'docs/ACTUAL_STATE_AUDIT.md' is missing YAML frontmatter
+docs/CONFIGURATION_SPEC.md [medium:file_naming] File 'CONFIGURATION_SPEC.md' does not match naming convention 'kebab-case'
+docs/CONFIGURATION_SPEC.md [medium:markdown_frontmatter] Markdown file 'docs/CONFIGURATION_SPEC.md' is missing YAML frontmatter
+docs/DECISIONS_PENDING.md [medium:file_naming] File 'DECISIONS_PENDING.md' does not match naming convention 'kebab-case'
+docs/DECISIONS_PENDING.md [medium:markdown_frontmatter] Markdown file 'docs/DECISIONS_PENDING.md' is missing YAML frontmatter
+docs/DOCUMENTATION_SUMMARY.md [medium:file_naming] File 'DOCUMENTATION_SUMMARY.md' does not match naming convention 'kebab-case'
+docs/DOCUMENTATION_SUMMARY.md [medium:markdown_frontmatter] Markdown file 'docs/DOCUMENTATION_SUMMARY.md' is missing YAML frontmatter
+docs/FIND_SKILLS_SETUP.md [medium:file_naming] File 'FIND_SKILLS_SETUP.md' does not match naming convention 'kebab-case'
+docs/FIND_SKILLS_SETUP.md [medium:markdown_frontmatter] Markdown file 'docs/FIND_SKILLS_SETUP.md' is missing YAML frontmatter
+docs/IMPLEMENTATION_GAPS.md [medium:file_naming] File 'IMPLEMENTATION_GAPS.md' does not match naming convention 'kebab-case'
+docs/IMPLEMENTATION_GAPS.md [medium:markdown_frontmatter] Markdown file 'docs/IMPLEMENTATION_GAPS.md' is missing YAML frontmatter
+docs/LS_LINT_NOTATION_GUIDE.md [medium:file_naming] File 'LS_LINT_NOTATION_GUIDE.md' does not match naming convention 'kebab-case'
+docs/LS_LINT_NOTATION_GUIDE.md [medium:markdown_frontmatter] Markdown file 'docs/LS_LINT_NOTATION_GUIDE.md' is missing YAML frontmatter
+docs/LS_LINT_NOTATION_GUIDE.md [medium:max_lines] File 'docs/LS_LINT_NOTATION_GUIDE.md' has 502 lines, exceeding limit 500
+docs/PERFORMANCE_BENCHMARK_REPORT.md [medium:file_naming] File 'PERFORMANCE_BENCHMARK_REPORT.md' does not match naming convention 'kebab-case'
+docs/PERFORMANCE_BENCHMARK_REPORT.md [medium:markdown_frontmatter] Markdown file 'docs/PERFORMANCE_BENCHMARK_REPORT.md' is missing YAML frontmatter
+docs/PHASE1_REVIEW.md [medium:file_naming] File 'PHASE1_REVIEW.md' does not match naming convention 'kebab-case'
+docs/PHASE1_REVIEW.md [medium:markdown_frontmatter] Markdown file 'docs/PHASE1_REVIEW.md' is missing YAML frontmatter
+docs/PHASE2_REVIEW.md [medium:file_naming] File 'PHASE2_REVIEW.md' does not match naming convention 'kebab-case'
+docs/PHASE2_REVIEW.md [medium:markdown_frontmatter] Markdown file 'docs/PHASE2_REVIEW.md' is missing YAML frontmatter
+docs/PHASE3_REVIEW.md [medium:file_naming] File 'PHASE3_REVIEW.md' does not match naming convention 'kebab-case'
+docs/PHASE3_REVIEW.md [medium:markdown_frontmatter] Markdown file 'docs/PHASE3_REVIEW.md' is missing YAML frontmatter
+docs/PHASE3_TEST_REVIEW.md [medium:file_naming] File 'PHASE3_TEST_REVIEW.md' does not match naming convention 'kebab-case'
+docs/PHASE3_TEST_REVIEW.md [medium:markdown_frontmatter] Markdown file 'docs/PHASE3_TEST_REVIEW.md' is missing YAML frontmatter
+docs/SKILLS_RESEARCH.md [medium:file_naming] File 'SKILLS_RESEARCH.md' does not match naming convention 'kebab-case'
+docs/SKILLS_RESEARCH.md [medium:markdown_frontmatter] Markdown file 'docs/SKILLS_RESEARCH.md' is missing YAML frontmatter
+docs/analysis/CONFIG_ANALYSIS_FINDINGS.md [medium:file_naming] File 'CONFIG_ANALYSIS_FINDINGS.md' does not match naming convention 'kebab-case'
+docs/analysis/CONFIG_ANALYSIS_FINDINGS.md [medium:markdown_frontmatter] Markdown file 'docs/analysis/CONFIG_ANALYSIS_FINDINGS.md' is missing YAML frontmatter
+docs/analysis/CONFIG_ANALYSIS_FINDINGS.md [medium:max_lines] File 'docs/analysis/CONFIG_ANALYSIS_FINDINGS.md' has 1090 lines, exceeding limit 500
+docs/apply-directive-scalability.md [medium:markdown_frontmatter] Markdown file 'docs/apply-directive-scalability.md' is missing YAML frontmatter
+docs/apply-directive-scalability.md [medium:max_lines] File 'docs/apply-directive-scalability.md' has 628 lines, exceeding limit 500
+docs/comprehensive-monorepo-comparison.md [medium:markdown_frontmatter] Markdown file 'docs/comprehensive-monorepo-comparison.md' is missing YAML frontmatter
+docs/comprehensive-monorepo-comparison.md [medium:max_lines] File 'docs/comprehensive-monorepo-comparison.md' has 710 lines, exceeding limit 500
+docs/config-analysis-findings.md [medium:markdown_frontmatter] Markdown file 'docs/config-analysis-findings.md' is missing YAML frontmatter
+docs/config-comparison-examples.md [medium:markdown_frontmatter] Markdown file 'docs/config-comparison-examples.md' is missing YAML frontmatter
+docs/config-comparison-examples.md [medium:max_lines] File 'docs/config-comparison-examples.md' has 543 lines, exceeding limit 500
+docs/config-v2.md [medium:markdown_frontmatter] Markdown file 'docs/config-v2.md' is missing YAML frontmatter
+docs/config-v2.md [medium:max_lines] File 'docs/config-v2.md' has 1094 lines, exceeding limit 500
+docs/final-config-design.md [medium:markdown_frontmatter] Markdown file 'docs/final-config-design.md' is missing YAML frontmatter
+docs/final-config-design.md [medium:max_lines] File 'docs/final-config-design.md' has 640 lines, exceeding limit 500
+docs/ls-lint-capability-comparison.md [medium:markdown_frontmatter] Markdown file 'docs/ls-lint-capability-comparison.md' is missing YAML frontmatter
+docs/migration-guide.md [medium:markdown_frontmatter] Markdown file 'docs/migration-guide.md' is missing YAML frontmatter
+docs/migration-guide.md [medium:max_lines] File 'docs/migration-guide.md' has 877 lines, exceeding limit 500
+docs/monorepo-syntax-comparison.md [medium:markdown_frontmatter] Markdown file 'docs/monorepo-syntax-comparison.md' is missing YAML frontmatter
+docs/monorepo-syntax-comparison.md [medium:max_lines] File 'docs/monorepo-syntax-comparison.md' has 577 lines, exceeding limit 500
+docs/performance/PERFORMANCE_BASELINE.md [medium:file_naming] File 'PERFORMANCE_BASELINE.md' does not match naming convention 'kebab-case'
+docs/performance/PERFORMANCE_BASELINE.md [medium:markdown_frontmatter] Markdown file 'docs/performance/PERFORMANCE_BASELINE.md' is missing YAML frontmatter
+docs/project-memories.md [medium:markdown_frontmatter] Markdown file 'docs/project-memories.md' is missing YAML frontmatter
+docs/proposals/gitignore-integration.md [medium:markdown_frontmatter] Markdown file 'docs/proposals/gitignore-integration.md' is missing YAML frontmatter
+docs/release-notes.md [medium:markdown_frontmatter] Markdown file 'docs/release-notes.md' is missing YAML frontmatter
+docs/unified-tree-design.md [medium:markdown_frontmatter] Markdown file 'docs/unified-tree-design.md' is missing YAML frontmatter
+opencode-plugin/.gitignore [medium:file_naming] File '.gitignore' does not match naming convention 'kebab-case'
+opencode-plugin/IMPLEMENTATION_SUMMARY.md [medium:file_naming] File 'IMPLEMENTATION_SUMMARY.md' does not match naming convention 'kebab-case'
+openspec [medium:directory_naming] Directory 'openspec' does not match naming convention 'PascalCase'
+openspec/config.yaml [medium:file_naming] File 'config.yaml' does not match naming convention 'PascalCase'
+specs-bak [medium:directory_naming] Directory 'specs-bak' does not match naming convention 'PascalCase'
+specs-bak/adr [medium:directory_naming] Directory 'adr' does not match naming convention 'PascalCase'
+specs-bak/features [medium:directory_naming] Directory 'features' does not match naming convention 'PascalCase'
+specs-bak/features/doc-validation.feature [medium:file_naming] File 'doc-validation.feature' does not match naming convention 'PascalCase'
+specs-bak/requirements [medium:directory_naming] Directory 'requirements' does not match naming convention 'PascalCase'
+specs-bak/templates [medium:directory_naming] Directory 'templates' does not match naming convention 'PascalCase'
+specs-bak/templates/adr-template.md [medium:file_naming] File 'adr-template.md' does not match naming convention 'PascalCase'
+specs-bak/templates/doc-template.md [medium:file_naming] File 'doc-template.md' does not match naming convention 'PascalCase'
+specs-bak/templates/feature-template.md [medium:file_naming] File 'feature-template.md' does not match naming convention 'PascalCase'
+src/cli/args.rs [medium:require_docs] Rust file 'src/cli/args.rs' is missing rustdoc
+src/cli/config.rs [medium:require_docs] Rust file 'src/cli/config.rs' is missing rustdoc
+src/cli/hooks.rs [medium:require_docs] Rust file 'src/cli/hooks.rs' is missing rustdoc
+src/cli/mod.rs [medium:require_docs] Rust file 'src/cli/mod.rs' is missing rustdoc
+src/cli/output.rs [medium:require_docs] Rust file 'src/cli/output.rs' is missing rustdoc
+src/config/ast.rs [medium:max_lines] File 'src/config/ast.rs' has 506 lines, exceeding limit 500
+src/config/config.rs [medium:max_lines] File 'src/config/config.rs' has 604 lines, exceeding limit 500
+src/config/engine.rs [medium:max_lines] File 'src/config/engine.rs' has 554 lines, exceeding limit 500
+src/config/types.rs [medium:max_lines] File 'src/config/types.rs' has 776 lines, exceeding limit 500
+src/constraints/ls_lint/rules.rs [medium:max_lines] File 'src/constraints/ls_lint/rules.rs' has 559 lines, exceeding limit 500
+src/constraints/naming.rs [medium:max_lines] File 'src/constraints/naming.rs' has 1225 lines, exceeding limit 500
+src/constraints/severity.rs [medium:max_lines] File 'src/constraints/severity.rs' has 520 lines, exceeding limit 500
+src/constraints/trigger.rs [medium:max_lines] File 'src/constraints/trigger.rs' has 623 lines, exceeding limit 500
+src/intelligence/error.rs [medium:require_docs] Rust file 'src/intelligence/error.rs' is missing rustdoc
+src/intelligence/graph.rs [medium:require_docs] Rust file 'src/intelligence/graph.rs' is missing rustdoc
+src/intelligence/mod.rs [medium:require_docs] Rust file 'src/intelligence/mod.rs' is missing rustdoc
+src/intelligence/node.rs [medium:require_docs] Rust file 'src/intelligence/node.rs' is missing rustdoc
+src/intelligence/persistence.rs [medium:require_docs] Rust file 'src/intelligence/persistence.rs' is missing rustdoc
+src/intelligence/query.rs [medium:require_docs] Rust file 'src/intelligence/query.rs' is missing rustdoc
+src/lib.rs [medium:require_docs] Rust file 'src/lib.rs' is missing rustdoc
+src/ls_compat/parser.rs [medium:max_lines] File 'src/ls_compat/parser.rs' has 745 lines, exceeding limit 500
+src/main.rs [medium:require_docs] Rust file 'src/main.rs' is missing rustdoc
+src/markdown/frontmatter.rs [medium:max_lines] File 'src/markdown/frontmatter.rs' has 964 lines, exceeding limit 500
+src/markdown/headings.rs [medium:max_lines] File 'src/markdown/headings.rs' has 1082 lines, exceeding limit 500
+src/markdown/parser.rs [medium:max_lines] File 'src/markdown/parser.rs' has 623 lines, exceeding limit 500
+src/markdown/template.rs [medium:max_lines] File 'src/markdown/template.rs' has 1166 lines, exceeding limit 500
+src/maturity/engine.rs [medium:max_lines] File 'src/maturity/engine.rs' has 599 lines, exceeding limit 500
+src/maturity/filesystem.rs [medium:max_lines] File 'src/maturity/filesystem.rs' has 529 lines, exceeding limit 500
+src/validation/constraints.rs [medium:max_lines] File 'src/validation/constraints.rs' has 652 lines, exceeding limit 500
+

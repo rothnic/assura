@@ -8,8 +8,8 @@
 ## 0. Reference Documents
 
 **For configuration syntax, notation, and examples, see:**
-- **docs/CONFIGURATION_SPEC.md** - Complete configuration format specification
-- **docs/LS_LINT_NOTATION_GUIDE.md** - LS-Lint notation compatibility guide
+- **docs/archive/configuration-spec.md** - Complete configuration format specification
+- **docs/archive/ls-lint-notation-guide.md** - LS-Lint notation compatibility guide
 
 These documents contain the authoritative syntax definitions, file pairing patterns, and organization strategies.
 

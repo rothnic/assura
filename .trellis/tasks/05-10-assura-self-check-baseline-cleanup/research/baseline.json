@@ -1,0 +1,574 @@
+{
+  "success": false,
+  "project_root": "/Users/nroth/workspace/assura",
+  "config_path": "/Users/nroth/workspace/assura/.assura/config.yml",
+  "checked_path": "/Users/nroth/workspace/assura",
+  "files_checked": 321,
+  "dirs_checked": 92,
+  "violations": [
+    {
+      "path": "docs/archive/actual-state-audit.md",
+      "rule": "file_naming",
+      "message": "File 'ACTUAL_STATE_AUDIT.md' does not match naming convention 'kebab-case'",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/archive/actual-state-audit.md",
+      "rule": "markdown_frontmatter",
+      "message": "Markdown file 'docs/archive/actual-state-audit.md' is missing YAML frontmatter",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/archive/configuration-spec.md",
+      "rule": "file_naming",
+      "message": "File 'configuration-spec.md' does not match naming convention 'kebab-case'",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/archive/configuration-spec.md",
+      "rule": "markdown_frontmatter",
+      "message": "Markdown file 'docs/archive/configuration-spec.md' is missing YAML frontmatter",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/archive/decisions-pending.md",
+      "rule": "file_naming",
+      "message": "File 'DECISIONS_PENDING.md' does not match naming convention 'kebab-case'",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/archive/decisions-pending.md",
+      "rule": "markdown_frontmatter",
+      "message": "Markdown file 'docs/archive/decisions-pending.md' is missing YAML frontmatter",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/archive/documentation-summary.md",
+      "rule": "file_naming",
+      "message": "File 'DOCUMENTATION_SUMMARY.md' does not match naming convention 'kebab-case'",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/archive/documentation-summary.md",
+      "rule": "markdown_frontmatter",
+      "message": "Markdown file 'docs/archive/documentation-summary.md' is missing YAML frontmatter",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/archive/find-skills-setup.md",
+      "rule": "file_naming",
+      "message": "File 'FIND_SKILLS_SETUP.md' does not match naming convention 'kebab-case'",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/archive/find-skills-setup.md",
+      "rule": "markdown_frontmatter",
+      "message": "Markdown file 'docs/archive/find-skills-setup.md' is missing YAML frontmatter",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/archive/implementation-gaps.md",
+      "rule": "file_naming",
+      "message": "File 'IMPLEMENTATION_GAPS.md' does not match naming convention 'kebab-case'",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/archive/implementation-gaps.md",
+      "rule": "markdown_frontmatter",
+      "message": "Markdown file 'docs/archive/implementation-gaps.md' is missing YAML frontmatter",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/archive/ls-lint-notation-guide.md",
+      "rule": "file_naming",
+      "message": "File 'ls-lint-notation-guide.md' does not match naming convention 'kebab-case'",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/archive/ls-lint-notation-guide.md",
+      "rule": "markdown_frontmatter",
+      "message": "Markdown file 'docs/archive/ls-lint-notation-guide.md' is missing YAML frontmatter",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/archive/ls-lint-notation-guide.md",
+      "rule": "max_lines",
+      "message": "File 'docs/archive/ls-lint-notation-guide.md' has 502 lines, exceeding limit 500",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/archive/performance-benchmark-report.md",
+      "rule": "file_naming",
+      "message": "File 'PERFORMANCE_BENCHMARK_REPORT.md' does not match naming convention 'kebab-case'",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/archive/performance-benchmark-report.md",
+      "rule": "markdown_frontmatter",
+      "message": "Markdown file 'docs/archive/performance-benchmark-report.md' is missing YAML frontmatter",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/archive/phase1-review.md",
+      "rule": "file_naming",
+      "message": "File 'PHASE1_REVIEW.md' does not match naming convention 'kebab-case'",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/archive/phase1-review.md",
+      "rule": "markdown_frontmatter",
+      "message": "Markdown file 'docs/archive/phase1-review.md' is missing YAML frontmatter",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/archive/phase2-review.md",
+      "rule": "file_naming",
+      "message": "File 'PHASE2_REVIEW.md' does not match naming convention 'kebab-case'",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/archive/phase2-review.md",
+      "rule": "markdown_frontmatter",
+      "message": "Markdown file 'docs/archive/phase2-review.md' is missing YAML frontmatter",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/archive/phase3-review.md",
+      "rule": "file_naming",
+      "message": "File 'PHASE3_REVIEW.md' does not match naming convention 'kebab-case'",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/archive/phase3-review.md",
+      "rule": "markdown_frontmatter",
+      "message": "Markdown file 'docs/archive/phase3-review.md' is missing YAML frontmatter",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/archive/phase3-test-review.md",
+      "rule": "file_naming",
+      "message": "File 'PHASE3_TEST_REVIEW.md' does not match naming convention 'kebab-case'",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/archive/phase3-test-review.md",
+      "rule": "markdown_frontmatter",
+      "message": "Markdown file 'docs/archive/phase3-test-review.md' is missing YAML frontmatter",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/archive/skills-research.md",
+      "rule": "file_naming",
+      "message": "File 'SKILLS_RESEARCH.md' does not match naming convention 'kebab-case'",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/archive/skills-research.md",
+      "rule": "markdown_frontmatter",
+      "message": "Markdown file 'docs/archive/skills-research.md' is missing YAML frontmatter",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/archive/config-analysis-findings-detailed.md",
+      "rule": "file_naming",
+      "message": "File 'CONFIG_ANALYSIS_FINDINGS.md' does not match naming convention 'kebab-case'",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/archive/config-analysis-findings-detailed.md",
+      "rule": "markdown_frontmatter",
+      "message": "Markdown file 'docs/archive/config-analysis-findings-detailed.md' is missing YAML frontmatter",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/archive/config-analysis-findings-detailed.md",
+      "rule": "max_lines",
+      "message": "File 'docs/archive/config-analysis-findings-detailed.md' has 1090 lines, exceeding limit 500",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/apply-directive-scalability.md",
+      "rule": "markdown_frontmatter",
+      "message": "Markdown file 'docs/apply-directive-scalability.md' is missing YAML frontmatter",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/apply-directive-scalability.md",
+      "rule": "max_lines",
+      "message": "File 'docs/apply-directive-scalability.md' has 628 lines, exceeding limit 500",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/comprehensive-monorepo-comparison.md",
+      "rule": "markdown_frontmatter",
+      "message": "Markdown file 'docs/comprehensive-monorepo-comparison.md' is missing YAML frontmatter",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/comprehensive-monorepo-comparison.md",
+      "rule": "max_lines",
+      "message": "File 'docs/comprehensive-monorepo-comparison.md' has 710 lines, exceeding limit 500",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/config-analysis-findings.md",
+      "rule": "markdown_frontmatter",
+      "message": "Markdown file 'docs/config-analysis-findings.md' is missing YAML frontmatter",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/config-comparison-examples.md",
+      "rule": "markdown_frontmatter",
+      "message": "Markdown file 'docs/config-comparison-examples.md' is missing YAML frontmatter",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/config-comparison-examples.md",
+      "rule": "max_lines",
+      "message": "File 'docs/config-comparison-examples.md' has 543 lines, exceeding limit 500",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/config-v2.md",
+      "rule": "markdown_frontmatter",
+      "message": "Markdown file 'docs/config-v2.md' is missing YAML frontmatter",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/config-v2.md",
+      "rule": "max_lines",
+      "message": "File 'docs/config-v2.md' has 1094 lines, exceeding limit 500",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/final-config-design.md",
+      "rule": "markdown_frontmatter",
+      "message": "Markdown file 'docs/final-config-design.md' is missing YAML frontmatter",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/final-config-design.md",
+      "rule": "max_lines",
+      "message": "File 'docs/final-config-design.md' has 640 lines, exceeding limit 500",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/ls-lint-capability-comparison.md",
+      "rule": "markdown_frontmatter",
+      "message": "Markdown file 'docs/ls-lint-capability-comparison.md' is missing YAML frontmatter",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/migration-guide.md",
+      "rule": "markdown_frontmatter",
+      "message": "Markdown file 'docs/migration-guide.md' is missing YAML frontmatter",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/migration-guide.md",
+      "rule": "max_lines",
+      "message": "File 'docs/migration-guide.md' has 877 lines, exceeding limit 500",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/monorepo-syntax-comparison.md",
+      "rule": "markdown_frontmatter",
+      "message": "Markdown file 'docs/monorepo-syntax-comparison.md' is missing YAML frontmatter",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/monorepo-syntax-comparison.md",
+      "rule": "max_lines",
+      "message": "File 'docs/monorepo-syntax-comparison.md' has 577 lines, exceeding limit 500",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/archive/performance-baseline.md",
+      "rule": "file_naming",
+      "message": "File 'performance-baseline.md' does not match naming convention 'kebab-case'",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/archive/performance-baseline.md",
+      "rule": "markdown_frontmatter",
+      "message": "Markdown file 'docs/archive/performance-baseline.md' is missing YAML frontmatter",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/project-memories.md",
+      "rule": "markdown_frontmatter",
+      "message": "Markdown file 'docs/project-memories.md' is missing YAML frontmatter",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/proposals/gitignore-integration.md",
+      "rule": "markdown_frontmatter",
+      "message": "Markdown file 'docs/proposals/gitignore-integration.md' is missing YAML frontmatter",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/release-notes.md",
+      "rule": "markdown_frontmatter",
+      "message": "Markdown file 'docs/release-notes.md' is missing YAML frontmatter",
+      "severity": "medium"
+    },
+    {
+      "path": "docs/unified-tree-design.md",
+      "rule": "markdown_frontmatter",
+      "message": "Markdown file 'docs/unified-tree-design.md' is missing YAML frontmatter",
+      "severity": "medium"
+    },
+    {
+      "path": "opencode-plugin/.gitignore",
+      "rule": "file_naming",
+      "message": "File '.gitignore' does not match naming convention 'kebab-case'",
+      "severity": "medium"
+    },
+    {
+      "path": "opencode-plugin/IMPLEMENTATION_SUMMARY.md",
+      "rule": "file_naming",
+      "message": "File 'IMPLEMENTATION_SUMMARY.md' does not match naming convention 'kebab-case'",
+      "severity": "medium"
+    },
+    {
+      "path": "openspec",
+      "rule": "directory_naming",
+      "message": "Directory 'openspec' does not match naming convention 'PascalCase'",
+      "severity": "medium"
+    },
+    {
+      "path": "openspec/config.yaml",
+      "rule": "file_naming",
+      "message": "File 'config.yaml' does not match naming convention 'PascalCase'",
+      "severity": "medium"
+    },
+    {
+      "path": "specs-bak",
+      "rule": "directory_naming",
+      "message": "Directory 'specs-bak' does not match naming convention 'PascalCase'",
+      "severity": "medium"
+    },
+    {
+      "path": "specs-bak/adr",
+      "rule": "directory_naming",
+      "message": "Directory 'adr' does not match naming convention 'PascalCase'",
+      "severity": "medium"
+    },
+    {
+      "path": "specs-bak/features",
+      "rule": "directory_naming",
+      "message": "Directory 'features' does not match naming convention 'PascalCase'",
+      "severity": "medium"
+    },
+    {
+      "path": "specs-bak/features/doc-validation.feature",
+      "rule": "file_naming",
+      "message": "File 'doc-validation.feature' does not match naming convention 'PascalCase'",
+      "severity": "medium"
+    },
+    {
+      "path": "specs-bak/requirements",
+      "rule": "directory_naming",
+      "message": "Directory 'requirements' does not match naming convention 'PascalCase'",
+      "severity": "medium"
+    },
+    {
+      "path": "specs-bak/templates",
+      "rule": "directory_naming",
+      "message": "Directory 'templates' does not match naming convention 'PascalCase'",
+      "severity": "medium"
+    },
+    {
+      "path": "specs-bak/templates/adr-template.md",
+      "rule": "file_naming",
+      "message": "File 'adr-template.md' does not match naming convention 'PascalCase'",
+      "severity": "medium"
+    },
+    {
+      "path": "specs-bak/templates/doc-template.md",
+      "rule": "file_naming",
+      "message": "File 'doc-template.md' does not match naming convention 'PascalCase'",
+      "severity": "medium"
+    },
+    {
+      "path": "specs-bak/templates/feature-template.md",
+      "rule": "file_naming",
+      "message": "File 'feature-template.md' does not match naming convention 'PascalCase'",
+      "severity": "medium"
+    },
+    {
+      "path": "src/cli/args.rs",
+      "rule": "require_docs",
+      "message": "Rust file 'src/cli/args.rs' is missing rustdoc",
+      "severity": "medium"
+    },
+    {
+      "path": "src/cli/config.rs",
+      "rule": "require_docs",
+      "message": "Rust file 'src/cli/config.rs' is missing rustdoc",
+      "severity": "medium"
+    },
+    {
+      "path": "src/cli/hooks.rs",
+      "rule": "require_docs",
+      "message": "Rust file 'src/cli/hooks.rs' is missing rustdoc",
+      "severity": "medium"
+    },
+    {
+      "path": "src/cli/mod.rs",
+      "rule": "require_docs",
+      "message": "Rust file 'src/cli/mod.rs' is missing rustdoc",
+      "severity": "medium"
+    },
+    {
+      "path": "src/cli/output.rs",
+      "rule": "require_docs",
+      "message": "Rust file 'src/cli/output.rs' is missing rustdoc",
+      "severity": "medium"
+    },
+    {
+      "path": "src/config/ast.rs",
+      "rule": "max_lines",
+      "message": "File 'src/config/ast.rs' has 506 lines, exceeding limit 500",
+      "severity": "medium"
+    },
+    {
+      "path": "src/config/config.rs",
+      "rule": "max_lines",
+      "message": "File 'src/config/config.rs' has 604 lines, exceeding limit 500",
+      "severity": "medium"
+    },
+    {
+      "path": "src/config/engine.rs",
+      "rule": "max_lines",
+      "message": "File 'src/config/engine.rs' has 554 lines, exceeding limit 500",
+      "severity": "medium"
+    },
+    {
+      "path": "src/config/types.rs",
+      "rule": "max_lines",
+      "message": "File 'src/config/types.rs' has 776 lines, exceeding limit 500",
+      "severity": "medium"
+    },
+    {
+      "path": "src/constraints/ls_lint/rules.rs",
+      "rule": "max_lines",
+      "message": "File 'src/constraints/ls_lint/rules.rs' has 559 lines, exceeding limit 500",
+      "severity": "medium"
+    },
+    {
+      "path": "src/constraints/naming.rs",
+      "rule": "max_lines",
+      "message": "File 'src/constraints/naming.rs' has 1225 lines, exceeding limit 500",
+      "severity": "medium"
+    },
+    {
+      "path": "src/constraints/severity.rs",
+      "rule": "max_lines",
+      "message": "File 'src/constraints/severity.rs' has 520 lines, exceeding limit 500",
+      "severity": "medium"
+    },
+    {
+      "path": "src/constraints/trigger.rs",
+      "rule": "max_lines",
+      "message": "File 'src/constraints/trigger.rs' has 623 lines, exceeding limit 500",
+      "severity": "medium"
+    },
+    {
+      "path": "src/intelligence/error.rs",
+      "rule": "require_docs",
+      "message": "Rust file 'src/intelligence/error.rs' is missing rustdoc",
+      "severity": "medium"
+    },
+    {
+      "path": "src/intelligence/graph.rs",
+      "rule": "require_docs",
+      "message": "Rust file 'src/intelligence/graph.rs' is missing rustdoc",
+      "severity": "medium"
+    },
+    {
+      "path": "src/intelligence/mod.rs",
+      "rule": "require_docs",
+      "message": "Rust file 'src/intelligence/mod.rs' is missing rustdoc",
+      "severity": "medium"
+    },
+    {
+      "path": "src/intelligence/node.rs",
+      "rule": "require_docs",
+      "message": "Rust file 'src/intelligence/node.rs' is missing rustdoc",
+      "severity": "medium"
+    },
+    {
+      "path": "src/intelligence/persistence.rs",
+      "rule": "require_docs",
+      "message": "Rust file 'src/intelligence/persistence.rs' is missing rustdoc",
+      "severity": "medium"
+    },
+    {
+      "path": "src/intelligence/query.rs",
+      "rule": "require_docs",
+      "message": "Rust file 'src/intelligence/query.rs' is missing rustdoc",
+      "severity": "medium"
+    },
+    {
+      "path": "src/lib.rs",
+      "rule": "require_docs",
+      "message": "Rust file 'src/lib.rs' is missing rustdoc",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ls_compat/parser.rs",
+      "rule": "max_lines",
+      "message": "File 'src/ls_compat/parser.rs' has 745 lines, exceeding limit 500",
+      "severity": "medium"
+    },
+    {
+      "path": "src/main.rs",
+      "rule": "require_docs",
+      "message": "Rust file 'src/main.rs' is missing rustdoc",
+      "severity": "medium"
+    },
+    {
+      "path": "src/markdown/frontmatter.rs",
+      "rule": "max_lines",
+      "message": "File 'src/markdown/frontmatter.rs' has 964 lines, exceeding limit 500",
+      "severity": "medium"
+    },
+    {
+      "path": "src/markdown/headings.rs",
+      "rule": "max_lines",
+      "message": "File 'src/markdown/headings.rs' has 1082 lines, exceeding limit 500",
+      "severity": "medium"
+    },
+    {
+      "path": "src/markdown/parser.rs",
+      "rule": "max_lines",
+      "message": "File 'src/markdown/parser.rs' has 623 lines, exceeding limit 500",
+      "severity": "medium"
+    },
+    {
+      "path": "src/markdown/template.rs",
+      "rule": "max_lines",
+      "message": "File 'src/markdown/template.rs' has 1166 lines, exceeding limit 500",
+      "severity": "medium"
+    },
+    {
+      "path": "src/maturity/engine.rs",
+      "rule": "max_lines",
+      "message": "File 'src/maturity/engine.rs' has 599 lines, exceeding limit 500",
+      "severity": "medium"
+    },
+    {
+      "path": "src/maturity/filesystem.rs",
+      "rule": "max_lines",
+      "message": "File 'src/maturity/filesystem.rs' has 529 lines, exceeding limit 500",
+      "severity": "medium"
+    },
+    {
+      "path": "src/validation/constraints.rs",
+      "rule": "max_lines",
+      "message": "File 'src/validation/constraints.rs' has 652 lines, exceeding limit 500",
+      "severity": "medium"
+    }
+  ]
+}

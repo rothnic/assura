@@ -73,14 +73,6 @@
     ".agents/skills/trellis-meta/references/platform-files/platform-map.md": "ded6751c06f31d0a701d33c9dd69c482a583539ad3ed464aaad9e705f793b212",
     ".agents/skills/trellis-meta/references/platform-files/skills-and-commands.md": "85435eb8bb6921283575bca51268fc534c22fd3ca33782e841ee5c76140ae48f",
     ".agents/skills/trellis-start/SKILL.md": "a88faaac9fe1b9fa7441473a72ff88ead0022504eeb38492ecef85db75a559e7",
-    ".agents/skills/trellis-update-spec/SKILL.md": "003ce08a3404aeb50998029392c4d4e57b626edf526d3ebd585032bb92dcbb96",
-    ".github/prompts/opsx-apply.prompt.md": "350c3c47330d14825eaf685594a1ac73fe1f4a15c2774ed06fc90fc6352cd08f",
-    ".github/prompts/opsx-archive.prompt.md": "506f234494a161cdde2c1fefb319f53ec63e34755811ead4b39c5677c0c7b455",
-    ".github/prompts/opsx-explore.prompt.md": "f336d5ff10f58ec5f0f081f1a7f3c8da61e9a7d4b8f9e324ff9b2edcf6c66706",
-    ".github/prompts/opsx-propose.prompt.md": "a124c194a3348ee4e8aa41edb03aeb63444946a6aa3d60365fea6b124e733168",
-    ".github/skills/openspec-apply-change/SKILL.md": "c30999a1477d6a8377d7aaa02a82ad322206ffa0cca1ddf7d95618c4577ba10f",
-    ".github/skills/openspec-archive-change/SKILL.md": "dd8783f590c0488b2026bee9aae2adbc3cda1d7152ab04e9b9cf2ff3924fce50",
-    ".github/skills/openspec-explore/SKILL.md": "4f534b22c2e04839f965186a9dd49129dcef318752260f5d67468d0a8d649826",
-    ".github/skills/openspec-propose/SKILL.md": "a41d8fda28db18ff9afd548fdc4076c89e492460ac3b8ee0fa4cb33b7034a3e0"
+    ".agents/skills/trellis-update-spec/SKILL.md": "003ce08a3404aeb50998029392c4d4e57b626edf526d3ebd585032bb92dcbb96"
   }
 }

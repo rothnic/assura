@@ -80,10 +80,10 @@ Recommended product narrative for now:
 | CLI `watch` | README/release notes/website claim watch mode. | Stub prints "not yet implemented" and exits success. | `src/cli/commands.rs:40-48`; CLI run. | High: advertised development workflow absent. |
 | CLI `migrate` | Phase docs and config docs claim `assura migrate`. | Helper exists, but command is not registered in `Commands`. | `src/cli/commands.rs:80-118`; `src/cli/args.rs:22-83`; CLI run. | Medium: migration adoption path inaccessible through binary. |
 | CLI `info` | Phase docs claim `assura info`. | Helper exists, but command is not registered in `Commands`. | `src/cli/commands.rs:120-149`; `src/cli/args.rs:22-83`; CLI run. | Medium: debug/documentation command inaccessible. |
-| Directory validation path | Product describes project-wide validation. | There is no CLI traversal path in `check`; TODO remains. | `src/cli/commands.rs:72-75`; `docs/ACTUAL_STATE_AUDIT.md`. | Critical: core value proposition missing from CLI. |
-| `exists` constraint | Specs and LS-Lint docs describe required/forbidden file counts. | AST validator always passes `exists`. | `src/validation/constraints.rs:59-62`; `docs/IMPLEMENTATION_GAPS.md:72-85`. | High: required files can be missing without failure. |
+| Directory validation path | Product describes project-wide validation. | There is no CLI traversal path in `check`; TODO remains. | `src/cli/commands.rs:72-75`; `docs/archive/actual-state-audit.md`. | Critical: core value proposition missing from CLI. |
+| `exists` constraint | Specs and LS-Lint docs describe required/forbidden file counts. | AST validator always passes `exists`. | `src/validation/constraints.rs:59-62`; `docs/archive/implementation-gaps.md:72-85`. | High: required files can be missing without failure. |
 | Pairing/cross-directory tests | Specs describe pairing by shared variables. | Pairing is standalone, not integrated; some tests ignored. | `src/validation/pairing.rs`; cargo test ignored pairing tests. | High: documented test/doc pairing enforcement not reliable. |
-| Config formats | Docs describe V1, V2, AST/rules-policy, and structure-first variants. | Two incompatible parser families exist; active self-config is structure format; AST parser serves other internals/tests. | `.assura/config.yml`; `.assura/config.new.yml`; `docs/ACTUAL_STATE_AUDIT.md:26-41`. | High: users and implementers cannot tell which format is canonical. |
+| Config formats | Docs describe V1, V2, AST/rules-policy, and structure-first variants. | Two incompatible parser families exist; active self-config is structure format; AST parser serves other internals/tests. | `.assura/config.yml`; `.assura/config.new.yml`; `docs/archive/actual-state-audit.md:26-41`. | High: users and implementers cannot tell which format is canonical. |
 | Formatting standard | AGENTS and CI require `cargo fmt --check`. | Formatting check fails. | `.github/workflows/ci.yml:33-43`; command result. | Medium: CI would fail or local quality bar is aspirational. |
 | Clippy standard | AGENTS and CI require no warnings. | Clippy with `-D warnings` fails heavily. | `.github/workflows/ci.yml:45-65`; command result. | Medium: CI would fail; warning debt hides real issues. |
 | Tests | Docs say broad tests pass. | Rust tests do pass, with warnings and ignored pairing tests. | `cargo test --all-targets`. | Low: useful coverage exists, but it does not cover CLI user truth. |
@@ -106,7 +106,7 @@ The project has too many competing configuration stories:
 - README uses `version: "2.0"` with `structure:`.
 - `.assura/config.yml` uses the structure-first self-validation format.
 - `.assura/config.new.yml` uses `rules:` and `policy:`.
-- `docs/CONFIGURATION_SPEC.md` describes an AST/rules-policy syntax with direct file keys, `apply`, `exists`, `group`, `message`, and cross-directory pairing.
+- `docs/archive/configuration-spec.md` describes an AST/rules-policy syntax with direct file keys, `apply`, `exists`, `group`, `message`, and cross-directory pairing.
 - Website docs include V1-style `rules:` arrays and V2-style `structure:`.
 
 Users need one default config format, one parser path, and one migration story. Until then, configuration documentation should be explicitly labeled experimental.
@@ -168,15 +168,15 @@ Both contain useful pieces. The immediate decision should not be "support both";
 | Document or area | Classification | Issue | Recommended action |
 | --- | --- | --- | --- |
 | `docs/analysis/2026-05-09-project-assessment-and-alignment.md` | Historical pre-remediation report | Snapshot based on fresh verification before the self-enforcement implementation. | Keep in the analysis archive; refresh with a new dated report rather than editing it into a mixed timeline. |
-| `docs/ACTUAL_STATE_AUDIT.md` | Useful but older supporting audit | Mostly consistent with current findings, but says `migrate`/`info` work as CLI commands even though not exposed now. | Keep as evidence; label superseded by this report if editing docs later. |
-| `docs/IMPLEMENTATION_GAPS.md` | Useful supporting gap list | Still largely accurate for feature gaps. | Keep; eventually merge high-signal items into issue tracker/backlog. |
+| `docs/archive/actual-state-audit.md` | Useful but older supporting audit | Mostly consistent with current findings, but says `migrate`/`info` work as CLI commands even though not exposed now. | Keep as evidence; label superseded by this report if editing docs later. |
+| `docs/archive/implementation-gaps.md` | Useful supporting gap list | Still largely accurate for feature gaps. | Keep; eventually merge high-signal items into issue tracker/backlog. |
 | `README.md` | Contradictory public docs | Quickstart advertises stubbed `init/check/watch`; performance claims not currently verified against LS-Lint. | Rewrite before public release; use honest pre-1.0 wording. |
 | `docs/release-notes.md` | Contradictory/stale | Claims v0.1.0 release capabilities that are not in the binary. | Archive or rewrite as planned release notes, not actual release notes. |
 | `CHANGELOG.md` | Contradictory/stale | Claims 0.1.0/0.2.0 features and releases beyond current Cargo version `0.1.0`; some CLI claims are false. | Rewrite as unreleased changelog or mark historical draft. |
 | Website guides/reference | Contradictory/speculative | Uses unsupported commands and multiple incompatible config examples. | Freeze or add pre-release warning; rewrite after CLI/config decision. |
-| `docs/DOCUMENTATION_SUMMARY.md` | Stale process summary | Says V2 docs and website were completed, but content conflicts with implementation. | Archive under historical planning notes. |
+| `docs/archive/documentation-summary.md` | Stale process summary | Says V2 docs and website were completed, but content conflicts with implementation. | Archive under historical planning notes. |
 | `docs/PHASE*_REVIEW.md` | Mixed historical notes | Phase-complete and no-tech-debt claims conflict with current state. | Move to `docs/archive/` or mark historical, not current state. |
-| `docs/CONFIGURATION_SPEC.md` | Speculative target spec | Contains desired features not implemented, including cross-directory pairing/group behavior. | Keep as proposal/spec, not user guide. |
+| `docs/archive/configuration-spec.md` | Speculative target spec | Contains desired features not implemented, including cross-directory pairing/group behavior. | Keep as proposal/spec, not user guide. |
 | `docs/config-v2.md` and `docs/migration-guide.md` | Partially stale user docs | Describe commands and migration paths not exposed by CLI. | Downgrade to design drafts until CLI supports them. |
 | `.assura/config.yml` | Current self-config candidate | Structure-first config exists, but `assura check` cannot enforce it. | Keep as intended self-validation config; do not claim active self-validation until CLI works. |
 | `.assura/config.new.yml` | Experimental competing config | Rules/policy format competes with structure-first config. | Keep only if AST path is selected; otherwise archive or convert. |

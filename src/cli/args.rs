@@ -1,3 +1,4 @@
+//! Command-line argument definitions for the Assura CLI.
 use clap::{Parser, Subcommand, ValueEnum};
 use std::path::PathBuf;
 

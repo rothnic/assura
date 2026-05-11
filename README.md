@@ -70,7 +70,7 @@ Assura is designed for performance:
 - Efficient dependency graph analysis with petgraph
 - Optimized constraint validation
 
-See [Performance Benchmarks](docs/PERFORMANCE_BENCHMARK_REPORT.md) for detailed comparisons.
+See [Performance Benchmarks](docs/archive/performance-benchmark-report.md) for detailed comparisons.
 
 ## License
 

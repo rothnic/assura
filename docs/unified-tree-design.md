@@ -1,3 +1,8 @@
+---
+title: 'Assura Unified Tree Configuration Design'
+status: active
+---
+
 # Assura Unified Tree Configuration Design
 
 **Core Principle:** Single hierarchical tree that mirrors directory structure, with directives hanging off nodes.

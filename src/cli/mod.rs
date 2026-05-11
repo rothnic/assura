@@ -1,3 +1,4 @@
+//! Command-line interface modules and public CLI re-exports.
 pub mod args;
 pub mod check;
 pub mod commands;

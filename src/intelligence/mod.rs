@@ -1,3 +1,4 @@
+//! Dependency graph intelligence modules and public re-exports.
 pub mod error;
 pub mod graph;
 pub mod node;

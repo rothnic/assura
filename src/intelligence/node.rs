@@ -1,3 +1,4 @@
+//! Node and edge types used by the dependency intelligence graph.
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fmt;

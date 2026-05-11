@@ -1,3 +1,8 @@
+---
+title: 'Assura Project Memories'
+status: active
+---
+
 # Assura Project Memories
 
 This file contains important project context and conventions that should be preserved across sessions.

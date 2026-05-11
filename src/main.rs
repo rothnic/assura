@@ -1,3 +1,4 @@
+//! Assura command-line binary entrypoint.
 use std::process;
 
 use clap::Parser;
