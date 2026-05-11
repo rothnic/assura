@@ -1,0 +1,11 @@
+{"file": ".trellis/spec/assura/index.md", "reason": "Assura source-of-truth, current direction, and validation constraints"}
+{"file": ".trellis/spec/assura/tooling-stabilization.md", "reason": "Gate policy and self-check enforcement expectations"}
+{"file": ".trellis/spec/assura/workflow-status.md", "reason": "Required workflow status snapshot format"}
+{"file": ".trellis/spec/guides/index.md", "reason": "Shared thinking guide routing"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Config/model changes require search-first reuse checks"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Config, CLI, compatibility, docs, and repo policy changes span layers"}
+{"file": "src/config/config/bundles.rs", "reason": "Added direct-content config bundles for files and directories"}
+{"file": "src/cli/check/direct_contents.rs", "reason": "Added closed-world direct file and directory policy enforcement"}
+{"file": "src/config/ls_compat.rs", "reason": "Added LS-Lint .dir, wildcard extension, OR token, and exists conversion coverage"}
+{"file": ".assura/config.yml", "reason": "Modeled Assura repository direct contents and integration package roots"}
+{"file": "integrations/agents/", "reason": "Consolidated installable agent integrations and added Codex skeleton"}
