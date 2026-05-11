@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/assura/structure-enforcement.md", "reason": "Verify structure-first behavior and docs remain aligned"}
+{"file": ".trellis/spec/assura/tooling-stabilization.md", "reason": "Verify quality gates and scope discipline"}
+{"file": ".trellis/tasks/05-11-structure-check-benchmark-attribution/research/ls-lint-exists-source-truth.md", "reason": "Verify LS-Lint exists wording follows source truth"}

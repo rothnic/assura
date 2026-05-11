@@ -12,18 +12,18 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 3 | Assura Self-Check Clean | Review | keep `cargo run -- check .` clean through normal review/merge flow |
 | 4 | Documentation Source Truth | Next | migrate, archive, or delete stale docs and workflow artifacts |
 | 5 | Windows CI Restore | Later | fix `libgit2-sys` MSVC linker failure and restore matrix entry |
-| 6 | Beyond Ls-Lint Rules | Active | `05-11-ls-lint-parity-performance-regression-audit` |
+| 6 | Beyond Ls-Lint Rules | Active | `05-11-structure-check-benchmark-attribution` |
 
 ## Active Epic
 
 **Beyond Ls-Lint Rules** is active.
 
 Current owning task:
-`.trellis/tasks/05-11-ls-lint-parity-performance-regression-audit`.
+`.trellis/tasks/05-11-structure-check-benchmark-attribution`.
 
-Current objective: audit LS-Lint 2.3 parity, regression coverage, and
-structure-first performance gaps after the self-check and closed-world
-structure cleanup landed.
+Current objective: attribute structure-first `assura check` performance with
+the existing Criterion benchmark infrastructure and keep LS-Lint `exists`
+parity docs aligned with source truth.
 
 ## Recommended Next Epic
 

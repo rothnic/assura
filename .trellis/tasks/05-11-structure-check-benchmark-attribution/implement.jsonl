@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/assura/structure-enforcement.md", "reason": "Structure-first and LS-Lint exists compatibility contracts"}
+{"file": ".trellis/spec/assura/tooling-stabilization.md", "reason": "Quality gate and benchmark scope policy"}
+{"file": ".trellis/spec/assura/workflow-status.md", "reason": "Required status reporting format"}
+{"file": ".trellis/tasks/05-11-structure-check-benchmark-attribution/research/ls-lint-exists-source-truth.md", "reason": "Source-truth findings for exact filename exists wording"}

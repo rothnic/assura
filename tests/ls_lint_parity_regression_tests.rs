@@ -160,6 +160,28 @@ ls:
 }
 
 #[test]
+fn converted_missing_exact_file_exists_reports_count_not_required_directory() {
+    let project = TempDir::new().unwrap();
+    let config = convert_ls_lint_to_config(
+        r#"
+ignore:
+  - .assura/**
+ls:
+  README.md: exists:1
+"#,
+    )
+    .unwrap();
+    write_generated_config(&project, &config);
+
+    let report = run_json_check(&project);
+    let rules = violation_rules(&report);
+
+    assert_eq!(report["success"], false, "report was:\n{report:#}");
+    assert!(rules.contains(&"exists_count".to_string()));
+    assert!(!rules.contains(&"required_directory".to_string()));
+}
+
+#[test]
 fn direct_child_count_constraints_do_not_recurse() {
     let project = TempDir::new().unwrap();
     write_config(
