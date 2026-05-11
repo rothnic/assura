@@ -50,7 +50,7 @@ Commands run from `/Users/nroth/workspace/assura` on 2026-05-09.
 | `./target/debug/assura watch` | Stub | Prints `Watch command not yet implemented` and exits success. |
 | `./target/debug/assura migrate --help` | Fail | Clap reports `unrecognized subcommand 'migrate'`. |
 | `./target/debug/assura info --help` | Fail | Clap reports `unrecognized subcommand 'info'`. |
-| `bun install --frozen-lockfile && bun test && bun run build` in `opencode-plugin/` | Not verified | `bun` is not installed in this environment. |
+| `bun install --frozen-lockfile && bun test && bun run build` in `integrations/agents/opencode/` | Not verified | `bun` is not installed in this environment. |
 | `pnpm install --frozen-lockfile && pnpm build` in `website/` | Not verified | `pnpm` is not installed in this environment. |
 
 ## Product Objective
@@ -90,7 +90,7 @@ Recommended product narrative for now:
 | Rust docs | CI expects rustdoc with warnings denied. | Rustdoc passes. | `cargo doc` command result. | Low. |
 | Website docs | Website guides use `assura validate`, completions, migration commands, and watch. | Current CLI has no `validate`, `completions`, `migrate`, or `info`; `watch` is stubbed. | `website/src/content/docs/guides/getting-started.md:58-78,147-173`; `website/src/content/docs/guides/quickstart.md:32-44`; CLI help. | Critical: public docs teach unsupported commands. |
 | Release notes | v0.1.0 notes claim production-like CLI, watch, dependency analysis, self-validation. | Primary CLI commands are stubbed; self-validation cannot work through `check`. | `docs/release-notes.md:43-60,133-138`; CLI run. | High: release credibility gap. |
-| OpenCode plugin | Plugin docs claim complete implementation and tests. | Source/package exists, but local verification blocked because `bun` is missing. | `opencode-plugin/package.json`; `bun` command result. | Medium: should be treated as unverified until CI/tooling confirms. |
+| OpenCode plugin | Plugin docs claim complete implementation and tests. | Source/package exists, but local verification blocked because `bun` is missing. | `integrations/agents/opencode/package.json`; `bun` command result. | Medium: should be treated as unverified until CI/tooling confirms. |
 | Website build | Website package exists. | Local build not verified because `pnpm` is missing. | `website/package.json`; `pnpm` command result. | Medium: docs site may not build in current environment. |
 
 ## User Journey Assessment
@@ -180,7 +180,7 @@ Both contain useful pieces. The immediate decision should not be "support both";
 | `docs/config-v2.md` and `docs/migration-guide.md` | Partially stale user docs | Describe commands and migration paths not exposed by CLI. | Downgrade to design drafts until CLI supports them. |
 | `.assura/config.yml` | Current self-config candidate | Structure-first config exists, but `assura check` cannot enforce it. | Keep as intended self-validation config; do not claim active self-validation until CLI works. |
 | `.assura/config.new.yml` | Experimental competing config | Rules/policy format competes with structure-first config. | Keep only if AST path is selected; otherwise archive or convert. |
-| `opencode-plugin/IMPLEMENTATION_SUMMARY.md` | Unverified completion note | Claims 84 tests passing, but local environment lacks `bun`. | Mark unverified or add CI proof. |
+| `integrations/agents/opencode/implementation-summary.md` | Unverified completion note | Claims 84 tests passing, but local environment lacks `bun`. | Mark unverified or add CI proof. |
 | `openspec/`, `.github/skills/`, `.github/prompts/`, `specs-bak/` | Historical/planning infrastructure | Not referenced by main docs; can confuse current process. | Document as internal planning/archive, or remove if not active. |
 
 ## Recommended Direction

@@ -35,6 +35,21 @@ structure:
         - "README.md"
         - "AGENTS.md"
       naming: "PascalCase"
+      allow_extra: false
+    directories:
+      allowed_names:
+        - ".agents"
+        - ".assura"
+        - ".codex"
+        - ".github"
+        - ".trellis"
+        - "benches"
+        - "docs"
+        - "integrations"
+        - "src"
+        - "tests"
+        - "website"
+      allow_extra: false
     
     # Subdirectories
     children:
@@ -45,6 +60,24 @@ structure:
             - "README.md"
             - "SKILL.md"
             - "TEMPLATE.md"
+            - "prd.json"
+          allow_extra: false
+        directories:
+          allowed_names:
+            - "skills"
+          allow_extra: false
+        children:
+          skills/:
+            files:
+              naming: "kebab-case"
+              naming_patterns:
+                "SKILL.md": "regex:^SKILL$"
+              allowed_names:
+                - "README.md"
+                - "TEMPLATE.md"
+              allow_extra: false
+            directories:
+              naming: "kebab-case"
       
       .assura/:
         files:
@@ -53,6 +86,11 @@ structure:
             - "config.new.yml"
             - "config.yml"
             - "config.yml.v1"
+          allow_extra: false
+        directories:
+          allowed_names:
+            - "hooks"
+          allow_extra: false
         children:
           hooks/:
             files:
@@ -61,11 +99,24 @@ structure:
       .codex/:
         files:
           naming: "kebab-case"
+          allowed_names:
+            - "config.toml"
+            - "hooks.json"
+          allow_extra: false
+        directories:
+          allowed_names:
+            - "agents"
+            - "hooks"
+            - "skills"
+          allow_extra: false
         children:
           agents/:
             files:
               naming: "kebab-case"
           hooks/:
+            files:
+              naming: "kebab-case"
+          skills/:
             files:
               naming: "kebab-case"
       
@@ -74,6 +125,12 @@ structure:
           naming: "kebab-case"
           allowed_names:
             - "PULL_REQUEST_TEMPLATE.md"
+          allow_extra: false
+        directories:
+          allowed_names:
+            - "ISSUE_TEMPLATE"
+            - "workflows"
+          allow_extra: false
         children:
           ISSUE_TEMPLATE/:
             files:
@@ -88,6 +145,8 @@ structure:
           max_lines: 1200
           allowed_names:
             - "README.md"
+        directories:
+          allow_extra: false
       
       docs/:
         files:
@@ -95,26 +154,117 @@ structure:
           max_lines: 500
         markdown:
           require_frontmatter: true
+        directories:
+          allowed_names:
+            - "analysis"
+            - "archive"
+            - "performance"
+            - "proposals"
+          allow_extra: false
         children:
+          analysis/:
+            files:
+              naming: "kebab-case"
+              max_lines: 1000
+            markdown:
+              require_frontmatter: true
           archive/:
             files:
               naming: "kebab-case"
               max_lines: 2000
             markdown:
               require_frontmatter: true
+          performance/:
+            files:
+              naming: "kebab-case"
+              max_lines: 1000
+            markdown:
+              require_frontmatter: true
+          proposals/:
+            files:
+              naming: "kebab-case"
+              max_lines: 1000
+            markdown:
+              require_frontmatter: true
 
-      opencode-plugin/:
+      integrations/:
         files:
           naming: "kebab-case"
+          allow_extra: false
+        directories:
           allowed_names:
-            - ".gitignore"
-            - "README.md"
+            - "agents"
+          allow_extra: false
+        children:
+          agents/:
+            files:
+              naming: "kebab-case"
+              allowed_names:
+                - "README.md"
+              allow_extra: false
+            directories:
+              allowed_names:
+                - "codex"
+                - "opencode"
+              allow_extra: false
+            children:
+              codex/:
+                files:
+                  naming: "kebab-case"
+                  allowed_names:
+                    - "README.md"
+                    - "package.json"
+                    - "tsconfig.json"
+                  allow_extra: false
+                directories:
+                  allowed_names:
+                    - "src"
+                  allow_extra: false
+                children:
+                  src/:
+                    files:
+                      naming: "kebab-case"
+              opencode/:
+                files:
+                  naming: "kebab-case"
+                  allowed_names:
+                    - ".gitignore"
+                    - "README.md"
+                    - "package.json"
+                    - "tsconfig.json"
+                    - "example.ts"
+                    - "implementation-summary.md"
+                    - "index.ts"
+                  allow_extra: false
+                directories:
+                  allowed_names:
+                    - "src"
+                    - "tests"
+                  allow_extra: false
+                children:
+                  src/:
+                    files:
+                      naming: "kebab-case"
+                  tests/:
+                    files:
+                      naming: "kebab-case"
       
       src/:
         files:
           naming: "snake_case"
           max_lines: 500
           require_docs: true
+        directories:
+          allowed_names:
+            - "cli"
+            - "config"
+            - "constraints"
+            - "intelligence"
+            - "ls_compat"
+            - "markdown"
+            - "maturity"
+            - "validation"
+          allow_extra: false
         children:
           cli/:
             files:
@@ -164,10 +314,22 @@ structure:
             - ".gitignore"
             - ".template-hashes.json"
             - ".version"
+            - "config.yaml"
+            - "workflow.md"
+          allow_extra: false
+        directories:
+          allowed_names:
+            - "scripts"
+            - "spec"
+            - "tasks"
+            - "workspace"
+          allow_extra: false
         children:
           scripts/:
             files:
               naming: "snake_case"
+              naming_patterns:
+                "__init__.py": "regex:^__init__$"
               max_lines: 1000
               allowed_names:
                 - "__init__.py"
@@ -194,12 +356,24 @@ structure:
         files:
           naming: "snake_case"
           max_lines: 1000
+        directories:
+          allow_extra: false
       
       website/:
         files:
           naming: "kebab-case"
           allowed_names:
             - "README.md"
+            - "astro.config.mjs"
+            - "package.json"
+            - "pnpm-lock.yaml"
+            - "tsconfig.json"
+          allow_extra: false
+        directories:
+          allowed_names:
+            - "public"
+            - "src"
+          allow_extra: false
 
 # Global exclusions
 exclude:
@@ -210,6 +384,8 @@ exclude:
   - "**/__pycache__"
   - "**/__pycache__/**"
   - "node_modules/**"
+  - "**/node_modules/**"
   - ".astro/**"
   - "dist/**"
+  - "**/dist/**"
   - "*.lock"

@@ -1,0 +1,12 @@
+{"file": ".trellis/spec/assura/index.md", "reason": "Confirm implementation matches Assura source-of-truth and constraints"}
+{"file": ".trellis/spec/assura/tooling-stabilization.md", "reason": "Confirm gate policy and self-check expectations remain accurate"}
+{"file": ".trellis/spec/assura/workflow-status.md", "reason": "Confirm final status snapshot is complete"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Review repeated config and validation patterns"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Review data flow across config, CLI, compatibility parser, docs, and repo policy"}
+{"file": "cargo fmt --all -- --check", "reason": "Passed"}
+{"file": "cargo clippy --all-targets --all-features -- -D warnings", "reason": "Passed"}
+{"file": "cargo test --all-targets --quiet", "reason": "Passed"}
+{"file": "cargo run --quiet -- check --format json .", "reason": "Passed with zero violations"}
+{"file": "cargo run -- check .", "reason": "Passed with zero violations"}
+{"file": "npm --prefix integrations/agents/codex run lint && npm --prefix integrations/agents/codex run build", "reason": "Passed after npm install; generated outputs removed"}
+{"file": "npm --prefix integrations/agents/opencode run lint && npm --prefix integrations/agents/opencode run build", "reason": "Passed after npm install; generated outputs removed"}

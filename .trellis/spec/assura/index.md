@@ -12,6 +12,8 @@ expanding into richer dependency and documentation constraints.
 - Workflow status snapshots: `.trellis/spec/assura/workflow-status.md`
 - Spec routing: `.trellis/spec/index.md`
 - Project structure enforcement: `.assura/config.yml`
+- Closed-world structure config contract:
+  `.trellis/spec/assura/structure-enforcement.md`
 - Tooling and CI stabilization: `.trellis/spec/assura/tooling-stabilization.md`
 - CLI entrypoint: `src/main.rs`
 - Public check implementation: `src/cli/check.rs` and `src/cli/commands.rs`
@@ -26,7 +28,8 @@ expanding into richer dependency and documentation constraints.
    structure drift.
 3. Keep Trellis as the canonical task/spec/workflow layer, with OpenSpec and
    `specs-bak/` treated as historical unless a later ADR changes that.
-4. Add richer constraints only after the ls-lint-like baseline is stable.
+4. Keep the ls-lint-like baseline compatible while adding explicit
+   closed-world structure contracts for this repo.
 
 ## Constraints
 

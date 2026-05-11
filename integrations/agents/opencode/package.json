@@ -32,7 +32,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/assura/assura.git",
-    "directory": "opencode-plugin"
+    "directory": "integrations/agents/opencode"
   },
   "homepage": "https://assura.dev",
   "bugs": {

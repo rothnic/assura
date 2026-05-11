@@ -4,7 +4,7 @@
 //! NOTE: This is for testing purposes only. Internal backwards compatibility
 //! will not be maintained until the 1.0 release.
 
-use super::config::{Config, DirectoryNode, FileBundle};
+use super::config::{split_naming_conventions, Config, DirectoryBundle, DirectoryNode, FileBundle};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -61,10 +61,16 @@ impl LsLintCompatibility {
         // Convert extension-based rules
         if !self.rules.is_empty() {
             let mut bundle = FileBundle::new();
-            // Use the first rule as the default naming convention
-            // In practice, LS-Lint only has one rule per extension
-            if let Some((_, convention)) = self.rules.iter().next() {
-                bundle.naming = Some(convention.clone());
+            let mut naming_patterns = HashMap::new();
+            let mut exists = HashMap::new();
+            for (pattern, rule) in &self.rules {
+                apply_file_rule(pattern, rule, &mut naming_patterns, &mut exists);
+            }
+            if !naming_patterns.is_empty() {
+                bundle.naming_patterns = Some(naming_patterns);
+            }
+            if !exists.is_empty() {
+                bundle.exists = Some(exists);
             }
 
             nodes.insert("".to_string(), DirectoryNode::new().with_files(bundle));
@@ -74,9 +80,16 @@ impl LsLintCompatibility {
         for (path, rules) in &self.paths {
             let mut bundle = FileBundle::new();
 
-            // Find the most common convention or use the first one
-            if let Some((_, convention)) = rules.iter().next() {
-                bundle.naming = Some(convention.clone());
+            let mut naming_patterns = HashMap::new();
+            let mut exists = HashMap::new();
+            for (pattern, rule) in rules {
+                apply_file_rule(pattern, rule, &mut naming_patterns, &mut exists);
+            }
+            if !naming_patterns.is_empty() {
+                bundle.naming_patterns = Some(naming_patterns);
+            }
+            if !exists.is_empty() {
+                bundle.exists = Some(exists);
             }
 
             nodes.insert(path.clone(), DirectoryNode::new().with_files(bundle));
@@ -94,40 +107,187 @@ impl Default for LsLintCompatibility {
 
 /// Convert an LS-Lint YAML config to unified structure config
 pub fn convert_ls_lint_to_config(ls_lint_content: &str) -> Result<Config, String> {
-    // Parse the LS-Lint YAML content
     let ls_config: serde_yaml::Value = serde_yaml::from_str(ls_lint_content)
         .map_err(|e| format!("Failed to parse LS-Lint config: {}", e))?;
 
     let mut config = Config::new();
+    config.exclude = parse_ignore(&ls_config);
 
-    // Extract the "ls" section
-    if let Some(ls_section) = ls_config.get("ls") {
-        if let Some(rules) = ls_section.as_mapping() {
-            let mut compat = LsLintCompatibility::new();
+    let Some(ls_section) = ls_config.get("ls").and_then(|value| value.as_mapping()) else {
+        return Ok(config);
+    };
 
-            for (key, value) in rules {
-                let key_str = key.as_str().unwrap_or("");
-                let value_str = value.as_str().unwrap_or("");
+    let root = parse_ls_directory(ls_section)?;
+    config.structure.insert("./".to_string(), root);
+    Ok(config)
+}
 
-                if key_str.starts_with('.') {
-                    // Extension rule
-                    compat = compat.with_extension_rule(key_str, value_str);
-                } else if key_str.ends_with('/') {
-                    // Path rule - this is a simplified conversion
-                    // Real LS-Lint configs can have more complex path patterns
-                    compat = compat.with_path_rule(key_str, ".*", value_str);
-                }
+fn parse_ignore(config: &serde_yaml::Value) -> Vec<String> {
+    config
+        .get("ignore")
+        .and_then(|value| value.as_sequence())
+        .map(|items| {
+            items
+                .iter()
+                .filter_map(|item| item.as_str().map(ToOwned::to_owned))
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+fn parse_ls_directory(mapping: &serde_yaml::Mapping) -> Result<DirectoryNode, String> {
+    let mut node = DirectoryNode::new();
+    let mut file_bundle = FileBundle::new();
+    let mut directory_bundle = DirectoryBundle::new();
+    let mut naming_patterns = HashMap::new();
+    let mut file_exists = HashMap::new();
+    let mut directory_exists = HashMap::new();
+    let mut children = HashMap::new();
+
+    for (key, value) in mapping {
+        let Some(key) = key.as_str() else {
+            continue;
+        };
+
+        if key == ".dir" {
+            let rule = value.as_str().unwrap_or("");
+            apply_directory_rule(rule, &mut directory_bundle, &mut directory_exists);
+            continue;
+        }
+
+        if key.starts_with('.') {
+            let rule = value.as_str().unwrap_or("");
+            apply_file_rule(key, rule, &mut naming_patterns, &mut file_exists);
+            continue;
+        }
+
+        if let Some(child_mapping) = value.as_mapping() {
+            children.insert(normalize_child_key(key), parse_ls_directory(child_mapping)?);
+        } else if let Some(rule) = value.as_str() {
+            let mut child = DirectoryNode::new();
+            let mut child_files = FileBundle::new();
+            let mut child_naming_patterns = HashMap::new();
+            let mut child_exists = HashMap::new();
+            apply_file_rule(".*", rule, &mut child_naming_patterns, &mut child_exists);
+            if !child_naming_patterns.is_empty() {
+                child_files.naming_patterns = Some(child_naming_patterns);
             }
-
-            config.ls = Some(compat);
-
-            // Convert to structure nodes
-            let nodes = config.ls.as_ref().unwrap().to_structure_nodes();
-            config.structure.extend(nodes);
+            if !child_exists.is_empty() {
+                child_files.exists = Some(child_exists);
+            }
+            child.files = Some(child_files);
+            children.insert(normalize_child_key(key), child);
         }
     }
 
-    Ok(config)
+    if !naming_patterns.is_empty() {
+        file_bundle.naming_patterns = Some(naming_patterns);
+    }
+    if !file_exists.is_empty() {
+        file_bundle.exists = Some(file_exists);
+    }
+    if file_bundle.naming_patterns.is_some() || file_bundle.exists.is_some() {
+        node.files = Some(file_bundle);
+    }
+
+    if !directory_exists.is_empty() {
+        directory_bundle.exists = Some(directory_exists);
+    }
+    if directory_bundle.naming.is_some()
+        || directory_bundle.exists.is_some()
+        || directory_bundle.allow_extra.is_some()
+    {
+        node.directories = Some(directory_bundle);
+    }
+
+    if !children.is_empty() {
+        node.children = Some(children);
+    }
+
+    Ok(node)
+}
+
+fn normalize_child_key(key: &str) -> String {
+    key.trim_end_matches('/').to_string()
+}
+
+fn apply_file_rule(
+    pattern: &str,
+    rule: &str,
+    naming_patterns: &mut HashMap<String, String>,
+    exists: &mut HashMap<String, String>,
+) {
+    let mut naming = Vec::new();
+    for token in split_rule_tokens(rule) {
+        if let Some(count) = parse_exists_token(token) {
+            exists.insert(ls_file_pattern_to_glob(pattern), count);
+        } else {
+            naming.push(token.to_string());
+        }
+    }
+
+    if !naming.is_empty() {
+        naming_patterns.insert(ls_file_pattern_to_glob(pattern), naming.join(" | "));
+    }
+}
+
+fn apply_directory_rule(
+    rule: &str,
+    directories: &mut DirectoryBundle,
+    exists: &mut HashMap<String, String>,
+) {
+    let mut naming = Vec::new();
+    for token in split_rule_tokens(rule) {
+        if let Some(count) = parse_exists_token(token) {
+            if count == "0" {
+                directories.allow_extra = Some(false);
+            }
+            exists.insert("*".to_string(), count);
+        } else if token == "exists" {
+            exists.insert("*".to_string(), "exists".to_string());
+        } else {
+            naming.push(token.to_string());
+        }
+    }
+
+    if !naming.is_empty() {
+        directories.naming = Some(naming.join(" | "));
+    }
+}
+
+fn split_rule_tokens(rule: &str) -> Vec<&str> {
+    if rule.contains("exists") && rule.contains(" | ") {
+        return rule
+            .split(" | ")
+            .map(str::trim)
+            .filter(|token| !token.is_empty())
+            .collect();
+    }
+
+    split_naming_conventions(rule)
+}
+
+fn parse_exists_token(token: &str) -> Option<String> {
+    if token == "exists" {
+        Some("exists".to_string())
+    } else {
+        token
+            .strip_prefix("exists:")
+            .map(str::trim)
+            .map(ToOwned::to_owned)
+    }
+}
+
+fn ls_file_pattern_to_glob(pattern: &str) -> String {
+    if pattern == ".*" {
+        return "*.*".to_string();
+    }
+
+    if pattern.starts_with('.') {
+        return format!("*{}", pattern);
+    }
+
+    pattern.to_string()
 }
 
 #[cfg(test)]
@@ -160,10 +320,14 @@ mod tests {
         assert!(nodes.contains_key("src/"));
 
         let root_node = nodes.get("").unwrap();
-        assert_eq!(
-            root_node.files.as_ref().unwrap().naming,
-            Some("snake_case".to_string())
-        );
+        let naming_patterns = root_node
+            .files
+            .as_ref()
+            .unwrap()
+            .naming_patterns
+            .as_ref()
+            .unwrap();
+        assert_eq!(naming_patterns.get("*.rs"), Some(&"snake_case".to_string()));
     }
 
     #[test]
@@ -177,7 +341,56 @@ ls:
 "#;
 
         let config = convert_ls_lint_to_config(ls_lint_yaml).unwrap();
-        assert!(config.ls.is_some());
         assert!(!config.structure.is_empty());
+        let root = config.structure.get("./").unwrap();
+        let src = root.children.as_ref().unwrap().get("src").unwrap();
+        let patterns = src
+            .files
+            .as_ref()
+            .unwrap()
+            .naming_patterns
+            .as_ref()
+            .unwrap();
+        assert_eq!(patterns.get("*.rs"), Some(&"snake_case".to_string()));
+    }
+
+    #[test]
+    fn test_convert_ls_lint_dir_and_exists_rules() {
+        let ls_lint_yaml = r#"
+ls:
+  components:
+    .dir: kebab-case
+    .*: exists:0
+    .ts: kebab-case | exists:1
+    "*":
+      .dir: exists:0
+"#;
+
+        let config = convert_ls_lint_to_config(ls_lint_yaml).unwrap();
+        let root = config.structure.get("./").unwrap();
+        let components = root.children.as_ref().unwrap().get("components").unwrap();
+        let dirs = components.directories.as_ref().unwrap();
+        assert_eq!(dirs.naming.as_deref(), Some("kebab-case"));
+        let files = components.files.as_ref().unwrap();
+        assert_eq!(
+            files.exists.as_ref().unwrap().get("*.*"),
+            Some(&"0".to_string())
+        );
+        assert_eq!(
+            files.exists.as_ref().unwrap().get("*.ts"),
+            Some(&"1".to_string())
+        );
+        let wildcard = components.children.as_ref().unwrap().get("*").unwrap();
+        assert_eq!(
+            wildcard
+                .directories
+                .as_ref()
+                .unwrap()
+                .exists
+                .as_ref()
+                .unwrap()
+                .get("*"),
+            Some(&"0".to_string())
+        );
     }
 }

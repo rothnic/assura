@@ -10,9 +10,18 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use validator::Validate;
 
+mod bundles;
+mod validation;
+
 pub use crate::config::inheritance::{ResolvedRule, RuleResolver};
 pub use crate::config::loader::ConfigLoader;
 pub use crate::config::ls_compat::LsLintCompatibility;
+pub use bundles::{
+    DirectoryBundle, ExistsValidation, FileBundle, MarkdownBundle, ResolvedFileBundle,
+};
+pub(crate) use validation::split_naming_conventions;
+#[cfg(test)]
+pub(super) use validation::{validate_naming_convention, validate_size_string};
 
 /// Root configuration struct
 #[derive(Debug, Clone, Serialize, Deserialize, Validate)]
@@ -36,10 +45,6 @@ pub struct Config {
     pub exclude: Vec<String>,
 }
 
-/// Regex for size string validation
-pub static SIZE_REGEX: once_cell::sync::Lazy<regex::Regex> =
-    once_cell::sync::Lazy::new(|| regex::Regex::new(r"^\d+\s*(B|KB|MB|GB|TB)$").unwrap());
-
 /// A node in the structure hierarchy
 #[derive(Debug, Clone, Serialize, Deserialize, Validate)]
 #[serde(rename_all = "snake_case")]
@@ -48,6 +53,11 @@ pub struct DirectoryNode {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[validate(nested)]
     pub files: Option<FileBundle>,
+
+    /// Direct child directory validation rules for this node
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[validate(nested)]
+    pub directories: Option<DirectoryBundle>,
 
     /// Markdown validation rules for this node
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -71,140 +81,6 @@ pub struct DirectoryNode {
 
 fn default_true() -> bool {
     true
-}
-
-/// Bundle of all file validations for a directory node
-#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
-#[serde(rename_all = "snake_case")]
-pub struct FileBundle {
-    /// Naming convention (e.g., "snake_case", "kebab-case", "PascalCase")
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[validate(custom(function = "validate_naming_convention"))]
-    pub naming: Option<String>,
-
-    /// Maximum lines per file
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[validate(range(min = 1, max = 100000))]
-    pub max_lines: Option<usize>,
-
-    /// Maximum file size (e.g., "100KB", "1MB", "10MB")
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[validate(custom(function = "validate_size_string"))]
-    pub max_size: Option<String>,
-
-    /// Whether documentation is required
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub require_docs: Option<bool>,
-
-    /// Allowed file extensions (e.g., ["rs", "md"])
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub extensions: Option<Vec<String>>,
-
-    /// Severity level for violations in this node
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub severity: Option<String>,
-
-    /// Required files in this directory
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub required: Option<Vec<String>>,
-
-    /// Allowed file names (for root directory policy)
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub allowed_names: Option<Vec<String>>,
-}
-
-/// Bundle of markdown validations for a directory node
-#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
-#[serde(rename_all = "snake_case")]
-pub struct MarkdownBundle {
-    /// Whether frontmatter is required
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub require_frontmatter: Option<bool>,
-
-    /// Required frontmatter fields
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub required_fields: Option<Vec<String>>,
-
-    /// Maximum heading level depth
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[validate(range(min = 1, max = 6))]
-    pub max_heading_depth: Option<u8>,
-
-    /// Whether to check for dead links
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub check_links: Option<bool>,
-
-    /// Required sections in markdown files
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub required_sections: Option<Vec<String>>,
-}
-
-/// Required files/directories existence validation
-#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
-#[serde(rename_all = "snake_case")]
-pub struct ExistsValidation {
-    /// Required files that must exist
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub files: Option<Vec<String>>,
-
-    /// Required directories that must exist
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub directories: Option<Vec<String>>,
-}
-
-/// Validates that a naming convention string is valid
-fn validate_naming_convention(conv: &str) -> Result<(), validator::ValidationError> {
-    let valid_conventions = [
-        "snake_case",
-        "camelCase",
-        "PascalCase",
-        "kebab-case",
-        "SCREAMING_SNAKE_CASE",
-        "dot.case",
-        "flatcase",
-        "FLATCASE",
-        "COBOL-CASE",
-        "Train-Case",
-        "lowercase",
-        "UPPERCASE",
-        "regex:", // Prefix for regex patterns
-    ];
-
-    // Check if it's a valid convention name or starts with "regex:"
-    if valid_conventions
-        .iter()
-        .any(|&c| conv == c || conv.starts_with(c))
-        || conv.starts_with("regex:")
-    {
-        Ok(())
-    } else {
-        let mut err = validator::ValidationError::new("invalid_naming_convention");
-        err.message = Some(
-            format!(
-                "'{}' is not a valid naming convention. Valid options: {:?}",
-                conv, valid_conventions
-            )
-            .into(),
-        );
-        Err(err)
-    }
-}
-
-/// Validates that a size string is valid (e.g., "100KB", "1MB", "10MB")
-fn validate_size_string(size: &str) -> Result<(), validator::ValidationError> {
-    if SIZE_REGEX.is_match(size) {
-        Ok(())
-    } else {
-        let mut err = validator::ValidationError::new("invalid_size_string");
-        err.message = Some(
-            format!(
-                "'{}' is not a valid size string. Expected format: '<number><unit>' where unit is B, KB, MB, GB, or TB",
-                size
-            )
-            .into(),
-        );
-        Err(err)
-    }
 }
 
 impl Config {
@@ -254,6 +130,7 @@ impl DirectoryNode {
     pub fn new() -> Self {
         Self {
             files: None,
+            directories: None,
             markdown: None,
             exists: None,
             children: None,
@@ -264,6 +141,12 @@ impl DirectoryNode {
     /// Set file validation bundle
     pub fn with_files(mut self, files: FileBundle) -> Self {
         self.files = Some(files);
+        self
+    }
+
+    /// Set direct child directory validation bundle
+    pub fn with_directories(mut self, directories: DirectoryBundle) -> Self {
+        self.directories = Some(directories);
         self
     }
 
@@ -298,176 +181,6 @@ impl Default for DirectoryNode {
     fn default() -> Self {
         Self::new()
     }
-}
-
-impl FileBundle {
-    /// Create a new empty bundle
-    pub fn new() -> Self {
-        Self {
-            naming: None,
-            max_lines: None,
-            max_size: None,
-            require_docs: None,
-            extensions: None,
-            severity: None,
-            required: None,
-            allowed_names: None,
-        }
-    }
-
-    /// Set naming convention
-    pub fn with_naming(mut self, naming: impl Into<String>) -> Self {
-        self.naming = Some(naming.into());
-        self
-    }
-
-    /// Set maximum lines
-    pub fn with_max_lines(mut self, max_lines: usize) -> Self {
-        self.max_lines = Some(max_lines);
-        self
-    }
-
-    /// Set maximum size
-    pub fn with_max_size(mut self, max_size: impl Into<String>) -> Self {
-        self.max_size = Some(max_size.into());
-        self
-    }
-
-    /// Set documentation requirement
-    pub fn with_require_docs(mut self, require_docs: bool) -> Self {
-        self.require_docs = Some(require_docs);
-        self
-    }
-
-    /// Set allowed extensions
-    pub fn with_extensions(mut self, extensions: Vec<String>) -> Self {
-        self.extensions = Some(extensions);
-        self
-    }
-
-    /// Set severity level
-    pub fn with_severity(mut self, severity: impl Into<String>) -> Self {
-        self.severity = Some(severity.into());
-        self
-    }
-
-    /// Set required file names
-    pub fn with_required(mut self, required: Vec<String>) -> Self {
-        self.required = Some(required);
-        self
-    }
-
-    /// Set allowed file names
-    pub fn with_allowed_names(mut self, allowed_names: Vec<String>) -> Self {
-        self.allowed_names = Some(allowed_names);
-        self
-    }
-}
-
-impl Default for FileBundle {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl MarkdownBundle {
-    /// Create a new empty bundle
-    pub fn new() -> Self {
-        Self {
-            require_frontmatter: None,
-            required_fields: None,
-            max_heading_depth: None,
-            check_links: None,
-            required_sections: None,
-        }
-    }
-
-    /// Set frontmatter requirement
-    pub fn with_require_frontmatter(mut self, require: bool) -> Self {
-        self.require_frontmatter = Some(require);
-        self
-    }
-
-    /// Set required frontmatter fields
-    pub fn with_required_fields(mut self, fields: Vec<String>) -> Self {
-        self.required_fields = Some(fields);
-        self
-    }
-
-    /// Set maximum heading depth
-    pub fn with_max_heading_depth(mut self, depth: u8) -> Self {
-        self.max_heading_depth = Some(depth);
-        self
-    }
-
-    /// Set link checking
-    pub fn with_check_links(mut self, check: bool) -> Self {
-        self.check_links = Some(check);
-        self
-    }
-
-    /// Set required sections
-    pub fn with_required_sections(mut self, sections: Vec<String>) -> Self {
-        self.required_sections = Some(sections);
-        self
-    }
-}
-
-impl Default for MarkdownBundle {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl ExistsValidation {
-    /// Create a new empty exists validation
-    pub fn new() -> Self {
-        Self {
-            files: None,
-            directories: None,
-        }
-    }
-
-    /// Set required files
-    pub fn with_files(mut self, files: Vec<String>) -> Self {
-        self.files = Some(files);
-        self
-    }
-
-    /// Set required directories
-    pub fn with_directories(mut self, directories: Vec<String>) -> Self {
-        self.directories = Some(directories);
-        self
-    }
-}
-
-impl Default for ExistsValidation {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-/// Resolved file bundle after inheritance is applied
-#[derive(Debug, Clone)]
-pub struct ResolvedFileBundle {
-    /// The path pattern this bundle applies to
-    pub path_pattern: String,
-    /// The naming convention
-    pub naming: Option<String>,
-    /// Maximum lines
-    pub max_lines: Option<usize>,
-    /// Maximum size
-    pub max_size: Option<String>,
-    /// Documentation required
-    pub require_docs: Option<bool>,
-    /// Allowed extensions
-    pub extensions: Option<Vec<String>>,
-    /// Severity level
-    pub severity: Option<String>,
-    /// Required file names
-    pub required: Option<Vec<String>>,
-    /// Allowed file names
-    pub allowed_names: Option<Vec<String>>,
 }
 
 #[cfg(test)]

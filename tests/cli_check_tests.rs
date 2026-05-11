@@ -1,6 +1,7 @@
 use std::fs;
 use std::process::Command;
 
+use assura::config::ls_compat::convert_ls_lint_to_config;
 use tempfile::TempDir;
 
 fn assura_bin() -> &'static str {
@@ -11,6 +12,16 @@ fn write_config(project: &TempDir, config: &str) {
     let assura_dir = project.path().join(".assura");
     fs::create_dir_all(&assura_dir).unwrap();
     fs::write(assura_dir.join("config.yml"), config).unwrap();
+}
+
+fn write_generated_config(project: &TempDir, config: &assura::config::config::Config) {
+    let assura_dir = project.path().join(".assura");
+    fs::create_dir_all(&assura_dir).unwrap();
+    fs::write(
+        assura_dir.join("config.yml"),
+        serde_yaml::to_string(config).unwrap(),
+    )
+    .unwrap();
 }
 
 fn baseline_config() -> &'static str {
@@ -211,4 +222,406 @@ structure:
         "stdout was:\n{}",
         stdout
     );
+}
+
+#[test]
+fn check_rejects_unexpected_direct_files_when_closed() {
+    let project = TempDir::new().unwrap();
+    write_config(
+        &project,
+        r#"
+structure:
+  ./:
+    files:
+      allowed_names:
+        - README.md
+      allow_extra: false
+    children:
+      .assura/:
+        inherit: false
+        files:
+          naming: kebab-case
+"#,
+    );
+
+    fs::write(project.path().join("README.md"), "# Example\n").unwrap();
+    fs::write(project.path().join("notes.md"), "# Surprise\n").unwrap();
+
+    let output = Command::new(assura_bin())
+        .arg("check")
+        .arg(project.path())
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(1));
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(
+        stdout.contains("unexpected_file"),
+        "stdout was:\n{}",
+        stdout
+    );
+    assert!(stdout.contains("notes.md"), "stdout was:\n{}", stdout);
+}
+
+#[test]
+fn check_allows_direct_files_by_pattern_and_rejects_forbidden_patterns() {
+    let project = TempDir::new().unwrap();
+    write_config(
+        &project,
+        r#"
+structure:
+  ./:
+    files:
+      allowed_names:
+        - README.md
+      allowed_patterns:
+        - "*.md"
+      forbidden_patterns:
+        - "draft-*"
+      allow_extra: false
+    children:
+      .assura/:
+        inherit: false
+        files:
+          naming: kebab-case
+"#,
+    );
+
+    fs::write(project.path().join("README.md"), "# Example\n").unwrap();
+    fs::write(project.path().join("notes.md"), "# Allowed\n").unwrap();
+    fs::write(project.path().join("draft-plan.md"), "# Forbidden\n").unwrap();
+
+    let output = Command::new(assura_bin())
+        .arg("check")
+        .arg(project.path())
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(1));
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(stdout.contains("forbidden_file"), "stdout was:\n{}", stdout);
+    assert!(stdout.contains("draft-plan.md"), "stdout was:\n{}", stdout);
+    assert!(!stdout.contains("notes.md"), "stdout was:\n{}", stdout);
+}
+
+#[test]
+fn check_rejects_unexpected_direct_directories_when_closed() {
+    let project = TempDir::new().unwrap();
+    write_config(
+        &project,
+        r#"
+structure:
+  ./:
+    files:
+      allowed_names:
+        - README.md
+    directories:
+      allowed_names:
+        - src
+      allow_extra: false
+    children:
+      .assura/:
+        files:
+          naming: kebab-case
+      src/:
+        files:
+          naming: snake_case
+"#,
+    );
+
+    fs::write(project.path().join("README.md"), "# Example\n").unwrap();
+    fs::create_dir(project.path().join("src")).unwrap();
+    fs::create_dir(project.path().join("scratch")).unwrap();
+
+    let output = Command::new(assura_bin())
+        .arg("check")
+        .arg(project.path())
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(1));
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(
+        stdout.contains("unexpected_directory"),
+        "stdout was:\n{}",
+        stdout
+    );
+    assert!(stdout.contains("scratch"), "stdout was:\n{}", stdout);
+}
+
+#[test]
+fn check_does_not_duplicate_naming_for_unexpected_directories() {
+    let project = TempDir::new().unwrap();
+    write_config(
+        &project,
+        r#"
+structure:
+  ./:
+    directories:
+      naming: kebab-case
+      allowed_names:
+        - src
+      allow_extra: false
+    children:
+      .assura/:
+        files:
+          naming: kebab-case
+      src/:
+        files:
+          naming: snake_case
+"#,
+    );
+
+    fs::create_dir(project.path().join("src")).unwrap();
+    fs::create_dir(project.path().join("bad_dir")).unwrap();
+
+    let output = Command::new(assura_bin())
+        .arg("check")
+        .arg(project.path())
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(1));
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(
+        stdout.contains("unexpected_directory"),
+        "stdout was:\n{}",
+        stdout
+    );
+    assert!(
+        !stdout.contains("directory_naming"),
+        "stdout was:\n{}",
+        stdout
+    );
+}
+
+#[test]
+fn check_validates_file_and_directory_exists_counts() {
+    let project = TempDir::new().unwrap();
+    write_config(
+        &project,
+        r#"
+structure:
+  ./:
+    files:
+      allowed_names:
+        - README.md
+      exists:
+        "*.rs": "1"
+    directories:
+      exists:
+        "tmp-*": "0"
+    children:
+      .assura/:
+        files:
+          naming: kebab-case
+"#,
+    );
+
+    fs::write(project.path().join("README.md"), "# Example\n").unwrap();
+    fs::write(project.path().join("main.rs"), "fn main() {}\n").unwrap();
+    fs::create_dir(project.path().join("tmp-work")).unwrap();
+
+    let output = Command::new(assura_bin())
+        .arg("check")
+        .arg(project.path())
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(1));
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(stdout.contains("exists_count"), "stdout was:\n{}", stdout);
+    assert!(stdout.contains("tmp-*"), "stdout was:\n{}", stdout);
+}
+
+#[test]
+fn check_supports_wildcard_extension_rules() {
+    let project = TempDir::new().unwrap();
+    write_config(
+        &project,
+        r#"
+structure:
+  ./:
+    files:
+      extensions:
+        - ".*"
+      allow_extra: false
+    children:
+      .assura/:
+        files:
+          naming: kebab-case
+"#,
+    );
+
+    fs::write(project.path().join("README.md"), "# Example\n").unwrap();
+    fs::write(project.path().join("LICENSE"), "MIT\n").unwrap();
+
+    let output = Command::new(assura_bin())
+        .arg("check")
+        .arg(project.path())
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(0));
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(
+        stdout.contains("All configured structure checks passed"),
+        "stdout was:\n{}",
+        stdout
+    );
+}
+
+#[test]
+fn check_supports_multi_part_extension_rules_without_leading_dot() {
+    let project = TempDir::new().unwrap();
+    write_config(
+        &project,
+        r#"
+structure:
+  ./:
+    files:
+      extensions:
+        - "tar.gz"
+      allow_extra: false
+    children:
+      .assura/:
+        inherit: false
+        files:
+          naming: kebab-case
+"#,
+    );
+
+    fs::write(project.path().join("archive.tar.gz"), "example\n").unwrap();
+
+    let output = Command::new(assura_bin())
+        .arg("check")
+        .arg(project.path())
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(0));
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(
+        stdout.contains("All configured structure checks passed"),
+        "stdout was:\n{}",
+        stdout
+    );
+}
+
+#[test]
+fn check_supports_regex_naming_with_pipe_and_or_rule() {
+    let project = TempDir::new().unwrap();
+    write_config(
+        &project,
+        r#"
+structure:
+  ./:
+    files:
+      naming: "regex:^(foo|bar)$ | kebab-case"
+    children:
+      .assura/:
+        files:
+          naming: kebab-case
+"#,
+    );
+
+    fs::write(project.path().join("foo.rs"), "fn main() {}\n").unwrap();
+    fs::write(project.path().join("good-name.rs"), "fn main() {}\n").unwrap();
+
+    let output = Command::new(assura_bin())
+        .arg("check")
+        .arg(project.path())
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(0));
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(
+        stdout.contains("All configured structure checks passed"),
+        "stdout was:\n{}",
+        stdout
+    );
+}
+
+#[test]
+fn check_markdown_headings_support_indentation_and_ignore_fences() {
+    let project = TempDir::new().unwrap();
+    write_config(
+        &project,
+        r#"
+structure:
+  ./:
+    files:
+      allowed_names:
+        - doc.md
+    markdown:
+      max_heading_depth: 2
+      required_sections:
+        - Indented
+        - Deep
+    children:
+      .assura/:
+        files:
+          naming: kebab-case
+"#,
+    );
+
+    fs::write(
+        project.path().join("doc.md"),
+        "# Title\n\n```md\n### Ignored\n```\n\n  ##   Indented  \n\n### Deep\n",
+    )
+    .unwrap();
+
+    let output = Command::new(assura_bin())
+        .arg("check")
+        .arg(project.path())
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(1));
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(
+        stdout.contains("markdown_heading_depth"),
+        "stdout was:\n{}",
+        stdout
+    );
+    assert!(
+        !stdout.contains("markdown_required_section"),
+        "stdout was:\n{}",
+        stdout
+    );
+}
+
+#[test]
+fn check_validates_converted_ls_lint_dir_rules() {
+    let project = TempDir::new().unwrap();
+    let config = convert_ls_lint_to_config(
+        r#"
+ls:
+  src:
+    .dir: kebab-case
+    .rs: snake_case
+"#,
+    )
+    .unwrap();
+    write_generated_config(&project, &config);
+
+    fs::create_dir(project.path().join("src")).unwrap();
+    fs::create_dir(project.path().join("src/bad_dir")).unwrap();
+    fs::write(project.path().join("src/bad_dir/main.rs"), "fn main() {}\n").unwrap();
+
+    let output = Command::new(assura_bin())
+        .arg("check")
+        .arg(project.path())
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(1));
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(
+        stdout.contains("directory_naming"),
+        "stdout was:\n{}",
+        stdout
+    );
+    assert!(stdout.contains("bad_dir"), "stdout was:\n{}", stdout);
 }
