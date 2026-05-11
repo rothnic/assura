@@ -12,25 +12,28 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 3 | Assura Self-Check Clean | Review | keep `cargo run -- check .` clean through normal review/merge flow |
 | 4 | Documentation Source Truth | Next | migrate, archive, or delete stale docs and workflow artifacts |
 | 5 | Windows CI Restore | Later | fix `libgit2-sys` MSVC linker failure and restore matrix entry |
-| 6 | Beyond Ls-Lint Rules | Active | `05-10-ls-lint-structure-parity-and-agent-integrations` |
+| 6 | Beyond Ls-Lint Rules | Active | `05-11-ls-lint-parity-performance-regression-audit` |
 
 ## Active Epic
 
 **Beyond Ls-Lint Rules** is active.
 
 Current owning task:
-`.trellis/tasks/05-10-ls-lint-structure-parity-and-agent-integrations`.
+`.trellis/tasks/05-11-ls-lint-parity-performance-regression-audit`.
 
-Current objective: make Assura enforce expected direct project contents and keep
-installable agent integrations under `integrations/agents/`.
+Current objective: audit LS-Lint 2.3 parity, regression coverage, and
+structure-first performance gaps after the self-check and closed-world
+structure cleanup landed.
 
 ## Recommended Next Epic
 
-After the current structure-enforcement PR is reviewed, continue
+After the current LS-Lint parity audit is reviewed, continue
 **Beyond Ls-Lint Rules** only where it improves dogfooding signal.
 
-The first recommended follow-up is the Codex integration runtime hook design,
-building on the skeleton created under `integrations/agents/codex/`.
+The first recommended follow-up is whichever audit finding has the clearest
+dogfooding value: either LS-Lint directory-pattern parity for compatibility or
+the Codex integration runtime hook design building on the skeleton under
+`integrations/agents/codex/`.
 
 ## Roadmap Rules
 

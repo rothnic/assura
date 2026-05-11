@@ -101,3 +101,81 @@ structure:
 ```
 
 This states the expected direct contents and rejects undeclared drift.
+
+## Scenario: LS-Lint Direct Exists Conversion
+
+### 1. Scope / Trigger
+
+- Trigger: `src/config/ls_compat.rs` converts LS-Lint-style `exists` rules
+  into Assura structure-first direct count checks.
+- Applies when `convert_ls_lint_to_config` parses string rules with only
+  `exists`, `exists:0`, `exists:1`, or `exists:N-M` tokens.
+
+### 2. Signatures
+
+- Converter entrypoint:
+  `convert_ls_lint_to_config(ls_lint_content: &str) -> Result<Config, String>`
+- Target fields:
+  - `DirectoryNode.files.exists: Option<HashMap<String, String>>`
+  - `DirectoryNode.directories.exists: Option<HashMap<String, String>>`
+
+### 3. Contracts
+
+- Extension exists rules such as `.md: exists:1-2` become direct file count
+  checks for the glob pattern `*.md`.
+- Direct child file exists rules such as `README.md: exists:1` become direct
+  file count checks for the exact pattern `README.md`. Treat this as an Assura
+  compatibility extension unless live LS-Lint behavior confirms exact filename
+  count semantics for the target version.
+- Direct child directory exists rules with trailing slash, such as
+  `docs/: exists:1`, become direct directory count checks for `docs`.
+- Pure direct child exists rules must not create child `DirectoryNode` entries
+  because that turns lint/count intent into a required configured directory.
+- `exists` checks count only direct children of the configured directory.
+
+### 4. Validation & Error Matrix
+
+| Condition | Expected behavior |
+| --- | --- |
+| Matching direct file count outside range | `exists_count` |
+| Matching direct directory count outside range | `exists_count` |
+| Exact file exists rule is satisfied | No `required_directory` violation |
+| Nested descendant matches direct exists pattern | Not counted |
+
+### 5. Good/Base/Bad Cases
+
+- Good: `README.md: exists:1` with a root `README.md` passes.
+- Base: `.md: exists:1-2` with one or two direct Markdown files passes.
+- Bad: `README.md: exists:1` creating a child node for `README.md` reports a
+  missing directory even when the file exists.
+
+### 6. Tests Required
+
+- Converter regression proves exact file `exists` maps to a file count.
+- CLI fixture proves `exists` direct counts do not recurse into descendants.
+- CLI fixture proves `exists:0` and `exists:N-M` produce `exists_count` when
+  direct counts are outside the expected range.
+
+### 7. Wrong vs Correct
+
+#### Wrong
+
+```yaml
+ls:
+  README.md: exists:1
+```
+
+Parsed as a child structure node named `README.md`, causing a
+`required_directory` violation.
+
+#### Correct
+
+```yaml
+structure:
+  ./:
+    files:
+      exists:
+        "README.md": "1"
+```
+
+This checks the direct file count for `README.md` in the current directory.

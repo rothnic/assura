@@ -164,6 +164,10 @@ fn parse_ls_directory(mapping: &serde_yaml::Mapping) -> Result<DirectoryNode, St
         if let Some(child_mapping) = value.as_mapping() {
             children.insert(normalize_child_key(key), parse_ls_directory(child_mapping)?);
         } else if let Some(rule) = value.as_str() {
+            if apply_direct_child_exists_rule(key, rule, &mut file_exists, &mut directory_exists) {
+                continue;
+            }
+
             let mut child = DirectoryNode::new();
             let mut child_files = FileBundle::new();
             let mut child_naming_patterns = HashMap::new();
@@ -205,6 +209,34 @@ fn parse_ls_directory(mapping: &serde_yaml::Mapping) -> Result<DirectoryNode, St
     }
 
     Ok(node)
+}
+
+fn apply_direct_child_exists_rule(
+    key: &str,
+    rule: &str,
+    file_exists: &mut HashMap<String, String>,
+    directory_exists: &mut HashMap<String, String>,
+) -> bool {
+    let tokens = split_rule_tokens(rule);
+    if tokens.is_empty() {
+        return false;
+    }
+
+    let mut exists = Vec::new();
+    for token in tokens {
+        let Some(count) = parse_exists_token(token) else {
+            return false;
+        };
+        exists.push(count);
+    }
+
+    let count = exists.join(" | ");
+    if key.ends_with('/') {
+        directory_exists.insert(normalize_child_key(key), count);
+    } else {
+        file_exists.insert(key.to_string(), count);
+    }
+    true
 }
 
 fn normalize_child_key(key: &str) -> String {
