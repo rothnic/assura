@@ -1,8 +1,9 @@
 //! Direct child file and directory policy validation.
 
+use super::patterns::matches_single_compiled_pattern;
 use super::rules::{
-    count_satisfies, display_rel, file_matches_any_extension, matches_single_pattern,
-    severity_for_bundle, severity_for_directory_bundle,
+    count_satisfies, display_rel, file_matches_any_extension, severity_for_bundle,
+    severity_for_directory_bundle,
 };
 use super::{StructureCheckReport, StructureChecker};
 use crate::config::config::{DirectoryBundle, FileBundle};
@@ -89,7 +90,7 @@ impl StructureChecker {
         for (pattern, expected) in exists {
             let count = filenames
                 .iter()
-                .filter(|name| matches_single_pattern(pattern, name))
+                .filter(|name| matches_single_compiled_pattern(pattern, name, &self.glob_patterns))
                 .count();
             if !count_satisfies(count, expected) {
                 self.push_violation(
@@ -132,7 +133,7 @@ impl StructureChecker {
         for (pattern, expected) in exists {
             let count = names
                 .iter()
-                .filter(|name| matches_single_pattern(pattern, name))
+                .filter(|name| matches_single_compiled_pattern(pattern, name, &self.glob_patterns))
                 .count();
             if !count_satisfies(count, expected) {
                 self.push_violation(

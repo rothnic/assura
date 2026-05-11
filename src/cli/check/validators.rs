@@ -1,9 +1,9 @@
 //! File, directory, and markdown validators for structure-first checks.
 
+use super::patterns::{matches_any_compiled_pattern, matches_single_compiled_pattern};
 use super::rules::{
-    display_rel, file_matches_any_extension, matches_any_pattern, matches_single_pattern,
-    parse_size, severity_for_bundle, severity_for_directory_bundle, validate_file_stem,
-    validate_name,
+    display_rel, file_matches_any_extension, parse_size, severity_for_bundle,
+    severity_for_directory_bundle, validate_file_stem, validate_name,
 };
 use super::{direct_contents::DirectFilePolicy, StructureCheckReport, StructureChecker};
 use crate::config::config::FileBundle;
@@ -33,10 +33,18 @@ impl StructureChecker {
                 .as_ref()
                 .map(|allowed| allowed.iter().any(|allowed| allowed == name))
                 .unwrap_or(false);
-            let allowed_by_pattern =
-                matches_any_pattern(directories.allowed_patterns.as_deref(), name, &rel);
-            let forbidden_by_pattern =
-                matches_any_pattern(directories.forbidden_patterns.as_deref(), name, &rel);
+            let allowed_by_pattern = matches_any_compiled_pattern(
+                directories.allowed_patterns.as_deref(),
+                name,
+                &rel,
+                &self.glob_patterns,
+            );
+            let forbidden_by_pattern = matches_any_compiled_pattern(
+                directories.forbidden_patterns.as_deref(),
+                name,
+                &rel,
+                &self.glob_patterns,
+            );
 
             if forbidden_by_pattern {
                 self.push_violation(
@@ -171,10 +179,18 @@ impl StructureChecker {
             .as_ref()
             .map(|allowed| allowed.iter().any(|name| name == filename))
             .unwrap_or(false);
-        let allowed_by_pattern =
-            matches_any_pattern(files.allowed_patterns.as_deref(), filename, rel);
-        let forbidden_by_pattern =
-            matches_any_pattern(files.forbidden_patterns.as_deref(), filename, rel);
+        let allowed_by_pattern = matches_any_compiled_pattern(
+            files.allowed_patterns.as_deref(),
+            filename,
+            rel,
+            &self.glob_patterns,
+        );
+        let forbidden_by_pattern = matches_any_compiled_pattern(
+            files.forbidden_patterns.as_deref(),
+            filename,
+            rel,
+            &self.glob_patterns,
+        );
 
         self.validate_direct_file_policy(
             rel,
@@ -238,7 +254,7 @@ impl StructureChecker {
 
         if let Some(naming_patterns) = &files.naming_patterns {
             for (pattern, naming) in naming_patterns {
-                if matches_single_pattern(pattern, filename) {
+                if matches_single_compiled_pattern(pattern, filename, &self.glob_patterns) {
                     let stem = path
                         .file_stem()
                         .and_then(|stem| stem.to_str())

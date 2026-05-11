@@ -2,12 +2,14 @@
 
 mod direct_contents;
 mod markdown;
+mod patterns;
 mod rules;
 mod validators;
 
 use crate::cli::config::{ConfigDiscovery, ConfigError};
 use crate::config::config::{Config, DirectoryNode};
 use crate::config::loader::ConfigLoader;
+use glob::Pattern;
 use regex::Regex;
 use rules::{
     collect_configured_dirs, collect_naming_regexes, dir_contains, display_rel,
@@ -183,6 +185,7 @@ struct StructureChecker {
     pub(super) configured_dirs: HashSet<PathBuf>,
     pub(super) exclude_patterns: Vec<CompiledExclusion>,
     pub(super) naming_regexes: HashMap<String, Regex>,
+    pub(super) glob_patterns: HashMap<String, Pattern>,
     pub(super) rules_cache: HashMap<PathBuf, EffectiveRules>,
 }
 
@@ -190,10 +193,12 @@ impl StructureChecker {
     fn new(project_root: PathBuf, config: Config, fail_fast: bool) -> Self {
         let mut configured_dirs = HashSet::new();
         let mut naming_regexes = HashMap::new();
+        let mut glob_patterns = HashMap::new();
         for (path, node) in &config.structure {
             let base = normalize_config_dir(path);
             collect_configured_dirs(base, node, &mut configured_dirs);
             collect_naming_regexes(node, &mut naming_regexes);
+            patterns::collect_glob_patterns(node, &mut glob_patterns);
         }
 
         let exclude_patterns = config
@@ -209,6 +214,7 @@ impl StructureChecker {
             configured_dirs,
             exclude_patterns,
             naming_regexes,
+            glob_patterns,
             rules_cache: HashMap::new(),
         }
     }

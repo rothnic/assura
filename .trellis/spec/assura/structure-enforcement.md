@@ -122,11 +122,14 @@ This states the expected direct contents and rejects undeclared drift.
 ### 3. Contracts
 
 - Extension exists rules such as `.md: exists:1-2` become direct file count
-  checks for the glob pattern `*.md`.
+  checks for the glob pattern `*.md`; this is LS-Lint parity.
+- Directory exists rules such as `.dir: exists:1` become direct child
+  directory count checks for the glob pattern `*`; this is LS-Lint parity.
 - Direct child file exists rules such as `README.md: exists:1` become direct
-  file count checks for the exact pattern `README.md`. Treat this as an Assura
-  compatibility extension unless live LS-Lint behavior confirms exact filename
-  count semantics for the target version.
+  file count checks for the exact pattern `README.md`. Treat this as an
+  Assura compatibility extension, not native LS-Lint 2.3 parity; live
+  `@ls-lint/ls-lint@2.3.0` reports `found 0` for `README.md: exists:1` even
+  when `README.md` is present.
 - Direct child directory exists rules with trailing slash, such as
   `docs/: exists:1`, become direct directory count checks for `docs`.
 - Pure direct child exists rules must not create child `DirectoryNode` entries
@@ -144,14 +147,16 @@ This states the expected direct contents and rejects undeclared drift.
 
 ### 5. Good/Base/Bad Cases
 
-- Good: `README.md: exists:1` with a root `README.md` passes.
-- Base: `.md: exists:1-2` with one or two direct Markdown files passes.
+- Good: `.md: exists:1-2` with one or two direct Markdown files passes.
+- Extension: `README.md: exists:1` with a root `README.md` passes in Assura
+  as an exact-file compatibility extension.
 - Bad: `README.md: exists:1` creating a child node for `README.md` reports a
   missing directory even when the file exists.
 
 ### 6. Tests Required
 
-- Converter regression proves exact file `exists` maps to a file count.
+- Converter regression proves exact file `exists` maps to a file count and a
+  missing exact file reports `exists_count`, not `required_directory`.
 - CLI fixture proves `exists` direct counts do not recurse into descendants.
 - CLI fixture proves `exists:0` and `exists:N-M` produce `exists_count` when
   direct counts are outside the expected range.

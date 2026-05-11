@@ -328,19 +328,6 @@ pub(super) fn rel_to_string(path: &Path) -> String {
     path.to_string_lossy().replace('\\', "/")
 }
 
-pub(super) fn matches_any_pattern(patterns: Option<&[String]>, name: &str, rel: &Path) -> bool {
-    let Some(patterns) = patterns else {
-        return false;
-    };
-
-    let rel = rel_to_string(rel);
-    patterns.iter().any(|pattern| {
-        Pattern::new(pattern)
-            .map(|compiled| compiled.matches(name) || compiled.matches(&rel))
-            .unwrap_or(false)
-    })
-}
-
 pub(super) fn file_matches_extension_rule(filename: &str, extension: &str) -> bool {
     let extension = extension.trim();
     if extension.is_empty() {
@@ -373,12 +360,6 @@ pub(super) fn file_matches_any_extension(filename: &str, extensions: Option<&[St
                 .iter()
                 .any(|extension| file_matches_extension_rule(filename, extension))
         })
-        .unwrap_or(false)
-}
-
-pub(super) fn matches_single_pattern(pattern: &str, name: &str) -> bool {
-    Pattern::new(pattern)
-        .map(|compiled| compiled.matches(name))
         .unwrap_or(false)
 }
 

@@ -41,6 +41,9 @@ cargo bench --bench ls_lint_comparison incremental
 
 # Complex rules performance
 cargo bench --bench ls_lint_comparison complex_rules
+
+# Structure-first assura check attribution
+cargo bench --bench profiling structure_check
 ```
 
 ## Benchmark Scenarios
@@ -82,3 +85,15 @@ Key metrics to watch:
 - **Files/second**: Higher is better
 - **Speedup factor**: Assura time / LS-Lint time (should be < 0.5)
 - **Consistency**: Performance across different project types
+
+## Structure-First Profiling
+
+`benches/profiling.rs` also includes `structure_check/...` groups for the
+current `assura check` implementation. These benchmarks reuse Criterion and
+cover full `run_structure_check` scenarios plus isolated attribution slices for
+config load, traversal, exclusion pruning, directory count reads, and glob
+pattern matching.
+
+The structure-first production path currently uses `walkdir::WalkDir`.
+Existing `jwalk` benchmarks remain as traversal and older `ConstraintEngine`
+comparison context.
