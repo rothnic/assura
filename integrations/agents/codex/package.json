@@ -1,0 +1,36 @@
+{
+  "name": "@assura/codex-integration",
+  "version": "0.1.0",
+  "description": "Codex integration skeleton for Assura validation feedback",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "lint": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "assura",
+    "codex",
+    "validation",
+    "agent-integration"
+  ],
+  "author": "Assura Team <team@assura.dev>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/assura/assura.git",
+    "directory": "integrations/agents/codex"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.0"
+  }
+}

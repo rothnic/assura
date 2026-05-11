@@ -7,7 +7,7 @@ Successfully implemented the OpenCode plugin for the Assura project with full Ty
 ## Project Structure
 
 ```
-opencode-plugin/
+integrations/agents/opencode/
 ├── package.json              # Project configuration
 ├── tsconfig.json             # TypeScript configuration
 ├── README.md                 # Documentation

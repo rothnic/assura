@@ -63,6 +63,7 @@ impl<'a> RuleResolver<'a> {
                 return Some(ResolvedFileBundle {
                     path_pattern: rule.path_pattern,
                     naming: rule.bundle.naming.clone(),
+                    naming_patterns: rule.bundle.naming_patterns.clone(),
                     max_lines: rule.bundle.max_lines,
                     max_size: rule.bundle.max_size.clone(),
                     require_docs: rule.bundle.require_docs,
@@ -70,6 +71,10 @@ impl<'a> RuleResolver<'a> {
                     severity: rule.bundle.severity.clone(),
                     required: rule.bundle.required.clone(),
                     allowed_names: rule.bundle.allowed_names.clone(),
+                    allowed_patterns: rule.bundle.allowed_patterns.clone(),
+                    forbidden_patterns: rule.bundle.forbidden_patterns.clone(),
+                    allow_extra: rule.bundle.allow_extra,
+                    exists: rule.bundle.exists.clone(),
                 });
             }
         }
@@ -129,8 +134,13 @@ impl<'a> RuleResolver<'a> {
             Some(c) => c,
             None => {
                 return FileBundle {
+                    naming_patterns: None,
                     required: None,
                     allowed_names: None,
+                    allowed_patterns: None,
+                    forbidden_patterns: None,
+                    allow_extra: None,
+                    exists: None,
                     ..parent.clone()
                 }
             }
@@ -138,6 +148,7 @@ impl<'a> RuleResolver<'a> {
 
         FileBundle {
             naming: child.naming.clone().or_else(|| parent.naming.clone()),
+            naming_patterns: child.naming_patterns.clone(),
             max_lines: child.max_lines.or(parent.max_lines),
             max_size: child.max_size.clone().or_else(|| parent.max_size.clone()),
             require_docs: child.require_docs.or(parent.require_docs),
@@ -148,6 +159,10 @@ impl<'a> RuleResolver<'a> {
             severity: child.severity.clone().or_else(|| parent.severity.clone()),
             required: child.required.clone(),
             allowed_names: child.allowed_names.clone(),
+            allowed_patterns: child.allowed_patterns.clone(),
+            forbidden_patterns: child.forbidden_patterns.clone(),
+            allow_extra: child.allow_extra,
+            exists: child.exists.clone(),
         }
     }
 

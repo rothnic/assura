@@ -1,5 +1,7 @@
 //! Structure-first project validation used by the public `assura check` command.
 
+mod direct_contents;
+mod markdown;
 mod rules;
 mod validators;
 
@@ -9,9 +11,9 @@ use crate::config::loader::ConfigLoader;
 use regex::Regex;
 use rules::{
     collect_configured_dirs, collect_naming_regexes, dir_contains, display_rel,
-    is_excluded_rel_with, join_config_child, merge_file_bundle, merge_markdown_bundle,
-    normalize_config_dir, severity_for_bundle, severity_for_node, CompiledExclusion,
-    EffectiveRules,
+    is_excluded_rel_with, join_config_child, merge_directory_bundle, merge_file_bundle,
+    merge_markdown_bundle, normalize_config_dir, severity_for_bundle, severity_for_node,
+    strip_direct_content_policy, CompiledExclusion, EffectiveRules,
 };
 use serde::Serialize;
 use std::collections::{HashMap, HashSet};
@@ -248,6 +250,7 @@ impl StructureChecker {
             let entry = entry?;
             let path = entry.path();
             if path == checked_path && path.is_dir() {
+                self.validate_directory_contents(path, &mut report);
                 continue;
             }
 
@@ -314,6 +317,26 @@ impl StructureChecker {
                             "required_file",
                             format!("Required file '{}' is missing", display_rel(&file_rel)),
                             severity_for_bundle(files),
+                        );
+                    }
+                }
+            }
+        }
+
+        if let Some(directories) = &node.directories {
+            if let Some(required) = &directories.required {
+                for directory in required {
+                    let dir_rel = node_rel.join(directory);
+                    if !self.project_root.join(&dir_rel).is_dir() {
+                        self.push_violation(
+                            report,
+                            dir_rel.clone(),
+                            "required_directory",
+                            format!("Required directory '{}' is missing", display_rel(&dir_rel)),
+                            directories
+                                .severity
+                                .clone()
+                                .unwrap_or_else(|| "medium".to_string()),
                         );
                     }
                 }
@@ -396,6 +419,10 @@ impl StructureChecker {
         let effective = if node.inherit {
             EffectiveRules {
                 files: merge_file_bundle(inherited.files.as_ref(), node.files.as_ref()),
+                directories: merge_directory_bundle(
+                    inherited.directories.as_ref(),
+                    node.directories.as_ref(),
+                ),
                 markdown: merge_markdown_bundle(
                     inherited.markdown.as_ref(),
                     node.markdown.as_ref(),
@@ -404,11 +431,16 @@ impl StructureChecker {
         } else {
             EffectiveRules {
                 files: node.files.clone(),
+                directories: node.directories.clone(),
                 markdown: node.markdown.clone(),
             }
         };
 
-        *result = effective.clone();
+        *result = if target_dir == node_rel {
+            effective.clone()
+        } else {
+            strip_direct_content_policy(effective.clone())
+        };
 
         if let Some(children) = &node.children {
             for (child_name, child) in children {

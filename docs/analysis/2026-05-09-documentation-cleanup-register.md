@@ -28,6 +28,7 @@ spec system; this file tracks what should be migrated, archived, or deleted.
 | `.trellis/` | Canonical | Keep and enforce | Trellis is the active workflow, task, spec, and workspace system. |
 | `.codex/` | Canonical | Keep and enforce | Generated Codex integration for Trellis workflow state. |
 | `.agents/skills/trellis-*` | Canonical generated support | Keep and update through Trellis | Shared agent skills created by Trellis init. |
+| `integrations/agents/` | Canonical | Keep and enforce | Installable downstream agent integration package source lives here. |
 | `AGENTS.md` | Canonical entrypoint | Keep current | Agents should find Trellis and Assura validation from here. |
 | `.assura/config.yml` | Canonical enforcement config | Keep and evolve | Owns project structure enforcement. |
 | `docs/analysis/` | Canonical assessment archive | Keep | Senior-engineer assessment reports live here. |

@@ -30,12 +30,30 @@ fn test_validate_naming_convention_valid() {
     assert!(validate_naming_convention("PascalCase").is_ok());
     assert!(validate_naming_convention("kebab-case").is_ok());
     assert!(validate_naming_convention("regex:^[a-z]+$").is_ok());
+    assert!(validate_naming_convention("regex:^(foo|bar)$").is_ok());
+    assert!(validate_naming_convention("regex:^(foo|bar)$ | kebab-case").is_ok());
 }
 
 #[test]
 fn test_validate_naming_convention_invalid() {
     assert!(validate_naming_convention("invalid_case").is_err());
     assert!(validate_naming_convention("UnknownCase").is_err());
+}
+
+#[test]
+fn test_split_naming_conventions_preserves_regex_pipes() {
+    assert_eq!(
+        split_naming_conventions("regex:^(foo|bar)$"),
+        vec!["regex:^(foo|bar)$"]
+    );
+    assert_eq!(
+        split_naming_conventions("regex:^(foo|bar)$ | kebab-case"),
+        vec!["regex:^(foo|bar)$", "kebab-case"]
+    );
+    assert_eq!(
+        split_naming_conventions("snake_case|regex:^(foo|bar)$"),
+        vec!["snake_case", "regex:^(foo|bar)$"]
+    );
 }
 
 #[test]

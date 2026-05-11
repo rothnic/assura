@@ -1,6 +1,8 @@
 //! Shared rule helpers for structure-first CLI validation.
 
-use crate::config::config::{DirectoryNode, FileBundle, MarkdownBundle};
+use crate::config::config::{
+    split_naming_conventions, DirectoryBundle, DirectoryNode, FileBundle, MarkdownBundle,
+};
 use crate::constraints::CaseConvention;
 use glob::Pattern;
 use regex::Regex;
@@ -10,6 +12,7 @@ use std::path::{Path, PathBuf};
 #[derive(Debug, Clone, Default)]
 pub(super) struct EffectiveRules {
     pub(super) files: Option<FileBundle>,
+    pub(super) directories: Option<DirectoryBundle>,
     pub(super) markdown: Option<MarkdownBundle>,
 }
 
@@ -71,6 +74,17 @@ pub(super) fn collect_naming_regexes(node: &DirectoryNode, regexes: &mut HashMap
         if let Some(naming) = &files.naming {
             collect_naming_regex(naming, regexes);
         }
+        if let Some(naming_patterns) = &files.naming_patterns {
+            for naming in naming_patterns.values() {
+                collect_naming_regex(naming, regexes);
+            }
+        }
+    }
+
+    if let Some(directories) = &node.directories {
+        if let Some(naming) = &directories.naming {
+            collect_naming_regex(naming, regexes);
+        }
     }
 
     if let Some(children) = &node.children {
@@ -81,6 +95,14 @@ pub(super) fn collect_naming_regexes(node: &DirectoryNode, regexes: &mut HashMap
 }
 
 fn collect_naming_regex(convention: &str, regexes: &mut HashMap<String, Regex>) {
+    let alternatives = split_naming_conventions(convention);
+    if alternatives.len() > 1 {
+        for part in alternatives {
+            collect_naming_regex(part, regexes);
+        }
+        return;
+    }
+
     let Some(pattern) = convention.strip_prefix("regex:") else {
         return;
     };
@@ -134,13 +156,19 @@ pub(super) fn merge_file_bundle(
     match (parent, child) {
         (None, None) => None,
         (Some(parent), None) => Some(FileBundle {
+            naming_patterns: None,
             required: None,
             allowed_names: None,
+            allowed_patterns: None,
+            forbidden_patterns: None,
+            allow_extra: None,
+            exists: None,
             ..parent.clone()
         }),
         (None, Some(child)) => Some(child.clone()),
         (Some(parent), Some(child)) => Some(FileBundle {
             naming: child.naming.clone().or_else(|| parent.naming.clone()),
+            naming_patterns: child.naming_patterns.clone(),
             max_lines: child.max_lines.or(parent.max_lines),
             max_size: child.max_size.clone().or_else(|| parent.max_size.clone()),
             require_docs: child.require_docs.or(parent.require_docs),
@@ -151,6 +179,39 @@ pub(super) fn merge_file_bundle(
             severity: child.severity.clone().or_else(|| parent.severity.clone()),
             required: child.required.clone(),
             allowed_names: child.allowed_names.clone(),
+            allowed_patterns: child.allowed_patterns.clone(),
+            forbidden_patterns: child.forbidden_patterns.clone(),
+            allow_extra: child.allow_extra,
+            exists: child.exists.clone(),
+        }),
+    }
+}
+
+pub(super) fn merge_directory_bundle(
+    parent: Option<&DirectoryBundle>,
+    child: Option<&DirectoryBundle>,
+) -> Option<DirectoryBundle> {
+    match (parent, child) {
+        (None, None) => None,
+        (Some(parent), None) => Some(DirectoryBundle {
+            required: None,
+            allowed_names: None,
+            allowed_patterns: None,
+            forbidden_patterns: None,
+            allow_extra: None,
+            exists: None,
+            ..parent.clone()
+        }),
+        (None, Some(child)) => Some(child.clone()),
+        (Some(parent), Some(child)) => Some(DirectoryBundle {
+            naming: child.naming.clone().or_else(|| parent.naming.clone()),
+            required: child.required.clone(),
+            allowed_names: child.allowed_names.clone(),
+            allowed_patterns: child.allowed_patterns.clone(),
+            forbidden_patterns: child.forbidden_patterns.clone(),
+            allow_extra: child.allow_extra,
+            severity: child.severity.clone().or_else(|| parent.severity.clone()),
+            exists: child.exists.clone(),
         }),
     }
 }
@@ -184,6 +245,13 @@ pub(super) fn validate_name(
     convention: &str,
     regexes: &HashMap<String, Regex>,
 ) -> bool {
+    let alternatives = split_naming_conventions(convention);
+    if alternatives.len() > 1 {
+        return alternatives
+            .into_iter()
+            .any(|part| validate_name(name, part, regexes));
+    }
+
     if let Some(pattern) = convention.strip_prefix("regex:") {
         return regexes
             .get(pattern)
@@ -260,6 +328,88 @@ pub(super) fn rel_to_string(path: &Path) -> String {
     path.to_string_lossy().replace('\\', "/")
 }
 
+pub(super) fn matches_any_pattern(patterns: Option<&[String]>, name: &str, rel: &Path) -> bool {
+    let Some(patterns) = patterns else {
+        return false;
+    };
+
+    let rel = rel_to_string(rel);
+    patterns.iter().any(|pattern| {
+        Pattern::new(pattern)
+            .map(|compiled| compiled.matches(name) || compiled.matches(&rel))
+            .unwrap_or(false)
+    })
+}
+
+pub(super) fn file_matches_extension_rule(filename: &str, extension: &str) -> bool {
+    let extension = extension.trim();
+    if extension.is_empty() {
+        return false;
+    }
+
+    if let Some(pattern) = extension.strip_prefix('.') {
+        if extension == ".*" {
+            return true;
+        }
+
+        if pattern.contains('*') {
+            let glob = format!("*{}", extension);
+            return Pattern::new(&glob)
+                .map(|compiled| compiled.matches(filename))
+                .unwrap_or(false);
+        }
+
+        return filename.ends_with(extension);
+    }
+
+    let suffix = format!(".{}", extension);
+    filename.ends_with(&suffix)
+}
+
+pub(super) fn file_matches_any_extension(filename: &str, extensions: Option<&[String]>) -> bool {
+    extensions
+        .map(|extensions| {
+            extensions
+                .iter()
+                .any(|extension| file_matches_extension_rule(filename, extension))
+        })
+        .unwrap_or(false)
+}
+
+pub(super) fn matches_single_pattern(pattern: &str, name: &str) -> bool {
+    Pattern::new(pattern)
+        .map(|compiled| compiled.matches(name))
+        .unwrap_or(false)
+}
+
+pub(super) fn count_satisfies(count: usize, expected: &str) -> bool {
+    let expected = expected.trim();
+    if expected == "exists" {
+        return count > 0;
+    }
+
+    if let Some((min, max)) = expected.split_once('-') {
+        let min = min.trim().parse::<usize>().ok();
+        let max = max.trim().parse::<usize>().ok();
+        return min
+            .zip(max)
+            .is_some_and(|(min, max)| count >= min && count <= max);
+    }
+
+    if let Some((min, max)) = expected.split_once("..") {
+        let min = min.trim().parse::<usize>().ok();
+        let max = max.trim().parse::<usize>().ok();
+        return min
+            .zip(max)
+            .is_some_and(|(min, max)| count >= min && count <= max);
+    }
+
+    expected
+        .parse::<usize>()
+        .map(|required| count == required)
+        .unwrap_or(false)
+}
+
 pub(super) fn display_rel(path: &Path) -> String {
     if path.as_os_str().is_empty() {
         ".".to_string()
@@ -280,4 +430,33 @@ pub(super) fn severity_for_bundle(files: &FileBundle) -> String {
         .severity
         .clone()
         .unwrap_or_else(|| "medium".to_string())
+}
+
+pub(super) fn severity_for_directory_bundle(directories: &DirectoryBundle) -> String {
+    directories
+        .severity
+        .clone()
+        .unwrap_or_else(|| "medium".to_string())
+}
+
+pub(super) fn strip_direct_content_policy(mut rules: EffectiveRules) -> EffectiveRules {
+    if let Some(files) = rules.files.as_mut() {
+        files.required = None;
+        files.allowed_names = None;
+        files.allowed_patterns = None;
+        files.forbidden_patterns = None;
+        files.allow_extra = None;
+        files.exists = None;
+    }
+
+    if let Some(directories) = rules.directories.as_mut() {
+        directories.required = None;
+        directories.allowed_names = None;
+        directories.allowed_patterns = None;
+        directories.forbidden_patterns = None;
+        directories.allow_extra = None;
+        directories.exists = None;
+    }
+
+    rules
 }
