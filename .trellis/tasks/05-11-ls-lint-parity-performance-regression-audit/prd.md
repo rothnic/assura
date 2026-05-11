@@ -58,7 +58,7 @@ Establish a trustworthy, narrow audit of Assura's LS-Lint-compatible structure b
 - [x] A `docs/analysis/` report captures findings and recommended follow-up tasks.
 - [x] Trellis specs are updated if durable contracts or policy changed.
 - [x] Final checks pass or any blocker is documented with evidence.
-- [ ] The branch is pushed and a focused PR targets `master`.
+- [x] The branch is pushed and a focused PR targets `master`.
 
 ## Out Of Scope
 
