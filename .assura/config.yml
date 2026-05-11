@@ -158,7 +158,6 @@ structure:
           allowed_names:
             - "analysis"
             - "archive"
-            - "performance"
             - "proposals"
           allow_extra: false
         children:
@@ -172,12 +171,6 @@ structure:
             files:
               naming: "kebab-case"
               max_lines: 2000
-            markdown:
-              require_frontmatter: true
-          performance/:
-            files:
-              naming: "kebab-case"
-              max_lines: 1000
             markdown:
               require_frontmatter: true
           proposals/:
