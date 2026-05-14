@@ -84,12 +84,13 @@ Use another tool alongside Assura when you need:
 The `assura watch` command in this release is a truthful one-shot wrapper over
 `assura check`; it is not a long-running file watcher yet.
 
-## Roadmap Direction
+## Agent Nudge Direction
 
-The project is moving toward agent-facing feedback that can explain structural
-failures, suggest targeted corrections, and measure whether runtime nudges
-improve outcomes over instructions alone. That work is intentionally separate
-from the v0.1 release so the first onboarding surface remains honest.
+The Codex integration package provides the first advisory nudge MVP. It can
+consume `assura check --format json` output, explain structural failures, and
+track comparison metrics for instructions-only, `AGENTS.md`/skills, and Assura
+runtime-nudge workflows. Automatic hook installation and complete agent
+orchestration remain future work.
 
 ## Start Here
 

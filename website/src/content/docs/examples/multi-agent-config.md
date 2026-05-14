@@ -1,42 +1,63 @@
 ---
-title: Agent Nudge Roadmap
-description: Future direction for agent-aware Assura feedback
+title: Agent Nudge MVP
+description: Current Codex nudge MVP and future agent-aware Assura feedback
 ---
 
-Assura's current release does not include completed runtime agent nudges,
-agent profiles, or maturity-specific CLI flags. The supported command remains:
+Assura has a small Codex/agent nudge MVP under `integrations/agents/codex`.
+It consumes `assura check --format json` output and turns structure violations
+into advisory messages for a developer or agent.
+
+The supported validation command remains:
 
 ```bash
-assura check
+assura check --format json .
 ```
 
-## Future Direction
+## Current Nudge MVP
 
-The next goal is a Codex/agent nudge MVP that compares:
+The MVP supports:
 
-- instructions-only workflows
-- `AGENTS.md` plus repo-local skills
-- Assura runtime nudges surfaced during agent work
+- parsing Assura `StructureCheckReport` JSON
+- creating actionable nudge messages with path, rule, severity, guidance, and
+  repo-local references
+- preserving Assura's nonzero exit behavior when validation fails
+- comparing measured runs across:
+  - instructions-only workflows
+  - `AGENTS.md`/skills workflows
+  - Assura runtime nudges
+
+Example:
+
+```bash
+assura check --format json . > assura-report.json
+assura-codex-nudge --report assura-report.json --format text
+```
 
 ## Metrics
 
-The nudge MVP should measure:
+The MVP measurement model tracks:
 
-- modularity improvements
+- modularity improvement observations
 - instruction adherence
 - structural violations
 - correction loops
 - nudge precision
+- useful nudges
+- noisy nudges
+- missed violations
 
 ## Feedback Shape
 
-Future Assura failures should tell the developer or agent:
+Assura nudges tell the developer or agent:
 
 - what structure rule failed
-- why the rule exists
-- whether the hook is warning or blocking
+- what path failed
+- what corrective action is likely
+- whether the nudge is advisory
 - which skill, script, or document should be loaded before fixing it
-- who can approve a policy change
 
-Until that work is implemented, use `.assura/config.yml`, `AGENTS.md`, and
-repo-local `.agents/skills/` as the durable project guidance surface.
+## Still Future-Only
+
+The MVP does not install Codex hooks automatically, provide hosted telemetry,
+or implement complete autonomous agent orchestration. Keep repo-local
+`.agents/skills/` as the durable project guidance surface.
