@@ -1,216 +1,103 @@
 ---
 title: Advanced Patterns
-description: Advanced usage patterns and techniques
+description: Supported advanced configuration patterns for Assura v0.1
 ---
 
-Explore advanced features and integration patterns for Assura.
+import { Aside } from '@astrojs/starlight/components';
 
-## Custom Validators
+These examples use the current `.assura/config.yml` structure-first
+configuration. They avoid undocumented Rust APIs and plugin surfaces.
 
-Create custom validation logic:
+## Closed Project Shape
 
-```rust
-use assura::{ValidationRule, ValidationResult, Severity};
-use std::path::Path;
-
-pub struct MyCustomRule;
-
-impl ValidationRule for MyCustomRule {
-    fn name(&self) -> &str {
-        "my-custom-rule"
-    }
-    
-    fn validate(&self, path: &Path, content: &str) -> Vec<ValidationResult> {
-        let mut results = Vec::new();
-        
-        // Custom validation logic
-        if content.contains("TODO") {
-            results.push(ValidationResult {
-                rule: self.name().to_string(),
-                severity: Severity::Low,
-                file: path.to_path_buf(),
-                line: Some(42),
-                column: None,
-                message: "TODO found in code".to_string(),
-                suggestion: Some("Consider creating an issue instead".to_string()),
-            });
-        }
-        
-        results
-    }
-}
-```
-
-## Programmatic API
-
-Build custom validation workflows:
-
-```rust
-use assura::{Config, Validator, Severity};
-use std::process;
-
-#[tokio::main]
-async fn main() {
-    let config = Config::load("assura.yaml")
-        .expect("Failed to load config");
-    
-    let validator = Validator::new(config);
-    let results = validator.validate_all().await
-        .expect("Validation failed");
-    
-    // Custom result processing
-    let critical_count = results.iter()
-        .filter(|r| matches!(r.severity, Severity::Critical))
-        .count();
-    
-    if critical_count > 0 {
-        eprintln!("{} critical issues found!", critical_count);
-        process::exit(1);
-    }
-    
-    // Filter and display
-    let warnings: Vec<_> = results.iter()
-        .filter(|r| matches!(r.severity, Severity::Medium | Severity::Low))
-        .collect();
-    
-    if !warnings.is_empty() {
-        println!("Warnings ({}):", warnings.len());
-        for warning in warnings {
-            println!("  - {}: {}", warning.file.display(), warning.message);
-        }
-    }
-}
-```
-
-## Multi-Project Workspace
-
-Configure Assura for a workspace with multiple crates:
+Use `allowed_names` with `allow_extra: false` when a directory should contain
+only known direct children.
 
 ```yaml
-# assura.yaml
-name: My Workspace
-
-includes:
-  - "crates/*/src/**/*.rs"
-  - "crates/*/Cargo.toml"
-
-excludes:
-  - "**/target/**/*"
-  - "crates/*/examples/**/*"
-
-rules:
-  - name: dependency-check
-    severity: critical
-    check_circular: true
-    workspace_mode: true  # Check cross-crate dependencies
+structure:
+  ./:
+    files:
+      allowed_names:
+        - README.md
+        - Cargo.toml
+      allow_extra: false
+    directories:
+      allowed_names:
+        - src
+        - tests
+        - docs
+      allow_extra: false
+exclude:
+  - "target/**"
 ```
 
-## Custom Reports
+## Directory-Specific Naming
 
-Generate custom reports from validation results:
-
-```rust
-use assura::{Validator, ValidationResult};
-use std::collections::HashMap;
-
-fn generate_markdown_report(results: &[ValidationResult]) -> String {
-    let mut by_severity: HashMap<String, Vec<&ValidationResult>> = HashMap::new();
-    
-    for result in results {
-        by_severity
-            .entry(format!("{:?}", result.severity))
-            .or_default()
-            .push(result);
-    }
-    
-    let mut report = String::from("# Validation Report\n\n");
-    
-    for (severity, items) in by_severity {
-        report.push_str(&format!("## {} ({} issues)\n\n", severity, items.len()));
-        for item in items {
-            report.push_str(&format!(
-                "- **{}**: {}\n",
-                item.file.display(),
-                item.message
-            ));
-        }
-        report.push('\n');
-    }
-    
-    report
-}
-```
-
-## Performance Tuning
-
-Optimize validation performance for large codebases:
+Use nested `children` to apply different rules to explicit subdirectories.
 
 ```yaml
-settings:
-  parallel: true
-  max_workers: 16
-  cache_enabled: true
-  cache_dir: ".assura-cache"
-
-# Exclude large generated files
-excludes:
-  - "**/generated/**/*"
-  - "**/vendor/**/*"
-  - "**/*.pb.go"  # Protocol buffer generated files
-  - "**/*.gen.ts" # Generated TypeScript
+structure:
+  ./:
+    files:
+      naming: kebab-case
+    children:
+      src:
+        files:
+          extensions:
+            rs: snake_case
+      docs:
+        files:
+          extensions:
+            md: kebab-case
 ```
 
-## Watch Mode with Custom Events
+Assura currently supports explicit child scopes. LS-Lint glob directory scopes
+such as `packages/*`, `**`, and `{src,tests}` are rejected during migration with
+a clear unsupported-scope error.
 
-React to specific file changes:
+## Direct-Child Existence Counts
 
-```rust
-use assura::{Config, Validator};
-use notify::{Event, EventKind};
+Existence counts apply to direct children of the configured directory.
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let config = Config::load("assura.yaml")?;
-    let validator = Validator::new(config);
-    
-    // Watch with custom event handling
-    validator.watch_with_callback(|event: Event| {
-        match event.kind {
-            EventKind::Modify(_) => {
-                println!("File modified: {:?}", event.paths);
-            }
-            EventKind::Create(_) => {
-                println!("File created: {:?}", event.paths);
-            }
-            _ => {}
-        }
-    }).await?;
-    
-    Ok(())
-}
+```yaml
+structure:
+  ./:
+    files:
+      exists:
+        "README.md": "1"
+        "*.tmp": "0"
+    directories:
+      exists:
+        "package-*": "1-5"
 ```
 
-## Integration with Testing Frameworks
+Supported count forms include `1`, `0`, and inclusive ranges like `1-5`.
 
-Use Assura in your test suite:
+## Generated Output Exclusions
 
-```rust
-#[cfg(test)]
-mod validation_tests {
-    use assura::{Config, Validator};
-    
-    #[tokio::test]
-    async fn test_no_critical_issues() {
-        let config = Config::load("assura.yaml").unwrap();
-        let validator = Validator::new(config);
-        
-        let results = validator.validate_all().await.unwrap();
-        
-        let critical_count = results.iter()
-            .filter(|r| matches!(r.severity, Severity::Critical))
-            .count();
-        
-        assert_eq!(critical_count, 0, "Critical validation issues found");
-    }
-}
+Keep generated or dependency-heavy paths outside validation:
+
+```yaml
+exclude:
+  - "target/**"
+  - "node_modules/**"
+  - "dist/**"
+  - "coverage/**"
+  - "**/*.generated.*"
 ```
+
+## JSON Reports
+
+Use JSON for custom CI summaries:
+
+```bash
+assura check --format json . > assura-report.json
+```
+
+The report contains `success`, `project_root`, `config_path`, `checked_path`,
+`files_checked`, `dirs_checked`, and `violations`.
+
+<Aside type="note" title="Future work">
+  Long-running watch mode, plugin APIs, and agent nudges are planned separately
+  from the v0.1 onboarding release.
+</Aside>

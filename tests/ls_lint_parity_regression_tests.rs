@@ -249,6 +249,74 @@ structure:
 }
 
 #[test]
+fn converted_scopes_do_not_require_directories_without_exists_rules() {
+    let project = TempDir::new().unwrap();
+    let config = convert_ls_lint_to_config(
+        r#"
+ignore:
+  - .assura/**
+ls:
+  src:
+    .rs: snake_case
+"#,
+    )
+    .unwrap();
+    write_generated_config(&project, &config);
+
+    fs::write(project.path().join("README.md"), "# Fixture\n").unwrap();
+
+    let report = run_json_check(&project);
+
+    assert_eq!(report["success"], true, "report was:\n{report:#}");
+    assert_eq!(report["violations"].as_array().unwrap().len(), 0);
+}
+
+#[test]
+fn explicit_directory_exists_rule_still_requires_matching_directory() {
+    let project = TempDir::new().unwrap();
+    let config = convert_ls_lint_to_config(
+        r#"
+ignore:
+  - .assura/**
+ls:
+  docs/: exists:1
+"#,
+    )
+    .unwrap();
+    write_generated_config(&project, &config);
+
+    let report = run_json_check(&project);
+    let rules = violation_rules(&report);
+
+    assert_eq!(report["success"], false, "report was:\n{report:#}");
+    assert!(rules.contains(&"exists_count".to_string()));
+    assert!(!rules.contains(&"required_directory".to_string()));
+}
+
+#[test]
+fn unsupported_lslint_directory_pattern_scopes_return_clear_errors() {
+    for scope in ["packages/*", "**", "{src,tests}"] {
+        let ls_lint_yaml = format!(
+            r#"
+ls:
+  "{scope}":
+    .ts: kebab-case
+"#
+        );
+
+        let error = convert_ls_lint_to_config(&ls_lint_yaml).unwrap_err();
+        assert!(
+            error.contains("Unsupported LS-Lint directory scope"),
+            "unexpected error for {scope}: {error}"
+        );
+        assert!(
+            error.contains(scope),
+            "error should name the unsupported scope {scope}: {error}"
+        );
+    }
+}
+
+#[test]
 #[ignore = "manual performance audit fixture; run with --ignored --nocapture"]
 fn ls_lint_parity_audit_performance_shapes() {
     let scenarios = [

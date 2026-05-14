@@ -1,0 +1,5 @@
+{"file":"docs/goals/assura-v0-1-polished.md","reason":"Final release checklist and progress log were audited against actual commands and end-user smoke flows."}
+{"file":"benches/README.md","reason":"Current-product benchmark evidence was rerun with LS-Lint 2.3 present and local medians were refreshed."}
+{"file":"website/src/content/docs/guides/getting-started.md","reason":"Primary onboarding guide must remain executable from install/init/check/fail/fix/CI."}
+{"file":"website/src/content/docs/guides/ls-lint-migration.md","reason":"Migration guide must document supported LS-Lint conversion and unsupported directory-scope errors truthfully."}
+{"file":"website/src/content/docs/reference/api.md","reason":"Public integration reference must describe only current supported CLI/report surfaces."}

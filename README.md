@@ -1,24 +1,22 @@
 # Assura
 
-A dependency-aware file system validation engine written in Rust.
+A structure-first repository validation CLI written in Rust.
 
 ## Overview
 
-Assura provides comprehensive file system validation with:
+Assura v0.1 provides:
 
-- **Dependency graph analysis** - Detect circular dependencies and determine optimal validation ordering
-- **Rule-based validation** - Configurable severity levels (Critical, High, Medium, Low)
-- **File system watching** - Continuous validation during development
-- **Parallel execution** - High-performance validation for large projects
-- **Extensible plugin architecture** - Custom validators for project-specific needs
+- **Structure validation** - Check file names, directory names, required entries, forbidden entries, and direct-child counts
+- **LS-Lint migration** - Convert supported `.ls-lint.yml` files into `.assura/config.yml`
+- **Watch command** - A truthful one-shot wrapper over `assura check`
+- **CI reports** - Text, JSON, and YAML output for automation
 
 ## Features
 
-- **Structure-first configuration** - Define your project hierarchy and apply validation rules
-- **LS-Lint compatibility** - Migrate existing configurations seamlessly
-- **12 naming conventions** - Support for snake_case, kebab-case, camelCase, PascalCase, and more
-- **Markdown validation** - Frontmatter checks, link validation, heading structure
-- **Rust-aware** - Built-in support for Rust project conventions
+- **Structure-first configuration** - Define the allowed project shape in one config file
+- **LS-Lint compatibility tests** - Keep migration behavior covered against LS-Lint 2.3 fixtures
+- **Naming conventions** - Support common case styles and `regex:<pattern>` naming
+- **Markdown checks** - Validate supported markdown rules when configured
 
 ## Quick Start
 
@@ -32,8 +30,11 @@ assura init
 # Validate your project
 assura check
 
-# Watch for changes
+# Run the current watch wrapper
 assura watch
+
+# Migrate a supported LS-Lint config
+assura migrate .ls-lint.yml --output .assura/config.yml
 ```
 
 ## Configuration
@@ -41,36 +42,40 @@ assura watch
 Create `.assura/config.yml`:
 
 ```yaml
-version: "2.0"
-
 structure:
-  src/:
-    files:
-      naming: snake_case
-      max_lines: 500
-    
-  docs/:
+  ./:
     files:
       naming: kebab-case
-    markdown:
-      require_frontmatter: true
+    directories:
+      naming: kebab-case
+exclude:
+  - "target/**"
 ```
 
 ## Documentation
 
-- [Configuration Guide](docs/config-v2.md) - Complete configuration reference
+- [Website Getting Started](website/src/content/docs/guides/getting-started.md) - Current onboarding flow
+- [Configuration Guide](website/src/content/docs/docs/configuration.md) - Supported structure-first configuration
 - [Contributing](CONTRIBUTING.md) - How to contribute to the project
 - [Constitution](CONSTITUTION.md) - Project principles and governance
 
 ## Performance
 
-Assura is designed for performance:
-- 6.8x faster than LS-Lint on average
-- Parallel directory traversal with jwalk
-- Efficient dependency graph analysis with petgraph
-- Optimized constraint validation
+Assura performance claims are tracked through current-product benchmarks. Run:
 
-See [Performance Benchmarks](docs/archive/performance-benchmark-report.md) for detailed comparisons.
+```bash
+cargo bench --bench ls_lint_comparison -- --noplot
+cargo bench --bench profiling structure_check -- --noplot
+```
+
+See [Benchmark Instructions](benches/README.md) for the supported release
+evidence path.
+
+## Roadmap
+
+Agent nudges, quality measurement, long-running watch mode, dependency graph
+validation, and plugin APIs are future work. They are not current v0.1
+onboarding features.
 
 ## License
 

@@ -1,171 +1,77 @@
 ---
 title: API Reference
-description: Complete API documentation for the Assura library
+description: Supported command and report surfaces for Assura v0.1
 ---
 
 import { Aside } from '@astrojs/starlight/components';
 
-The Assura library provides a programmatic API for building custom validation tools and integrations.
+Assura v0.1 supports the CLI as the public integration surface. Treat Rust
+library internals as unstable until a later release documents a stable API.
 
 <Aside type="caution">
-  This API is still in development and may change in future versions.
+  Do not build integrations against undocumented Rust structs or plugin traits.
+  Use `assura check --format json` or `assura check --format yaml` for v0.1
+  automation.
 </Aside>
 
-## Core Types
+## Commands
 
-### Config
-
-Configuration structure loaded from YAML/JSON/TOML files.
-
-```rust
-pub struct Config {
-    pub name: Option<String>,
-    pub version: Option<String>,
-    pub settings: Settings,
-    pub rules: Vec<Rule>,
-    pub includes: Vec<String>,
-    pub excludes: Vec<String>,
-}
+```bash
+assura check [path] [--format text|json|yaml]
+assura status [path] [--format text|json|yaml]
+assura init [path] [--force] [--no-git-hooks]
+assura migrate [.ls-lint.yml] --output .assura/config.yml
+assura info [path]
+assura watch [path]
 ```
 
-### Validator
+`assura check` is the primary validation command. `assura watch` currently runs
+one check and exits with the same status as `check`.
 
-Main validation engine that orchestrates rule execution.
+## Exit Codes
 
-```rust
-impl Validator {
-    /// Create a new validator with the given configuration
-    pub fn new(config: Config) -> Self;
-    
-    /// Validate all configured rules
-    pub async fn validate_all(&self) -> Result<Vec<ValidationResult>, Error>;
-    
-    /// Validate specific paths
-    pub async fn validate_paths(&self, paths: &[PathBuf]) -> Result<Vec<ValidationResult>, Error>;
-    
-    /// Watch for file changes and re-validate
-    pub async fn watch(&self) -> Result<(), Error>;
-}
-```
+| Code | Meaning |
+| --- | --- |
+| `0` | Validation succeeded |
+| `1` | Validation completed and found violations |
+| `2` | Configuration error |
+| `3` | Runtime error |
+| `4` | No config found |
 
-### ValidationResult
+## JSON Check Report
 
-Result of a validation operation.
-
-```rust
-pub struct ValidationResult {
-    pub rule: String,
-    pub severity: Severity,
-    pub file: PathBuf,
-    pub line: Option<usize>,
-    pub column: Option<usize>,
-    pub message: String,
-    pub suggestion: Option<String>,
-}
-
-pub enum Severity {
-    Critical,
-    High,
-    Medium,
-    Low,
-}
-```
-
-## Usage Examples
-
-### Basic Validation
-
-```rust
-use assura::{Config, Validator};
-
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Load configuration
-    let config = Config::load("assura.yaml")?;
-    
-    // Create validator
-    let validator = Validator::new(config);
-    
-    // Run validation
-    let results = validator.validate_all().await?;
-    
-    // Process results
-    for result in results {
-        println!("[{}] {}: {}", 
-            result.severity, 
-            result.file.display(), 
-            result.message
-        );
+```json
+{
+  "success": false,
+  "project_root": "/work/example",
+  "config_path": "/work/example/.assura/config.yml",
+  "checked_path": "/work/example",
+  "files_checked": 3,
+  "dirs_checked": 1,
+  "violations": [
+    {
+      "path": "/work/example/BadName.ts",
+      "rule": "file_naming",
+      "message": "File name 'BadName' does not match kebab-case",
+      "severity": "medium"
     }
-    
-    Ok(())
+  ]
 }
 ```
 
-### Watch Mode
+The same fields are emitted for YAML reports.
 
-```rust
-use assura::{Config, Validator};
+## Status Report
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let config = Config::load("assura.yaml")?;
-    let validator = Validator::new(config);
-    
-    println!("Starting file watcher...");
-    validator.watch().await?;
-    
-    Ok(())
-}
+`assura status --format json` reports the project root, config path, configured
+directory count, configured rule count, markdown rule count, and exclusions.
+Use it to confirm that Assura found the expected config before running checks
+in CI.
+
+## Stable Integration Pattern
+
+```bash
+assura check --format json . > assura-report.json
 ```
 
-### Custom Reporter
-
-```rust
-use assura::{Validator, ValidationResult, Severity};
-
-struct JsonReporter;
-
-impl JsonReporter {
-    fn report(&self, results: &[ValidationResult]) {
-        let json = serde_json::to_string_pretty(results).unwrap();
-        println!("{}", json);
-    }
-}
-```
-
-## Error Types
-
-### ConfigError
-
-Errors that occur during configuration loading and parsing.
-
-```rust
-pub enum ConfigError {
-    Io(std::io::Error),
-    Parse(String),
-    Validation(String),
-}
-```
-
-### ValidationError
-
-Errors that occur during the validation process.
-
-```rust
-pub enum ValidationError {
-    RuleExecution(String),
-    FileAccess(PathBuf, std::io::Error),
-    GraphConstruction(String),
-}
-```
-
-## Feature Flags
-
-| Feature | Description | Default |
-|---------|-------------|---------|
-| `default` | Standard validation features | Yes |
-| `watch` | File system watching | Yes |
-| `parallel` | Parallel validation using Rayon | Yes |
-| `json` | JSON configuration support | Yes |
-| `toml` | TOML configuration support | Yes |
+Then parse `.success` and `.violations` in your CI or local script.

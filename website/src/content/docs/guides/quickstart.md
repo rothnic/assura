@@ -1,52 +1,61 @@
 ---
 title: Quick Start
-description: Get up and running with Assura in minutes
+description: Run Assura on a project in minutes
 ---
 
 import { Steps } from '@astrojs/starlight/components';
 
-Get started with Assura in just a few simple steps.
+Use this path for a first local check.
 
 <Steps>
 
-1. **Install Assura**
+1. **Install or build Assura**
 
    ```bash
    cargo install assura
    ```
 
-2. **Create a Configuration File**
-
-   Create an `assura.yaml` file in your project root:
-
-   ```yaml
-   name: My Project
-   version: "1.0"
-   
-   rules:
-     - name: file-naming
-       severity: high
-       pattern: "^[a-z][a-z0-9_]*\\.(rs|toml)$"
-   ```
-
-3. **Run Validation**
+   For source builds:
 
    ```bash
-   assura validate
+   git clone https://github.com/rothnic/assura
+   cd assura
+   cargo build --release
    ```
 
-4. **Enable Watch Mode (Optional)**
-
-   For continuous validation during development:
+2. **Initialize configuration**
 
    ```bash
-   assura watch
+   assura init
+   ```
+
+   This creates `.assura/config.yml` if one does not already exist.
+
+3. **Run the supported validation command**
+
+   ```bash
+   assura check
+   ```
+
+4. **Inspect JSON output when needed**
+
+   ```bash
+   assura check --format json .
+   ```
+
+5. **Use the same command in CI**
+
+   ```bash
+   cargo install assura
+   assura check --format text
    ```
 
 </Steps>
 
 ## Next Steps
 
-- Learn about [configuration options](/docs/configuration/)
-- Explore [available rules](/docs/rules/)
-- Check out [usage examples](/examples/basic/)
+- Read the full [Getting Started guide](/guides/getting-started/).
+- See [Configuration](/docs/configuration/) for the supported structure-first
+  config shape.
+- See [LS-Lint Migration](/guides/ls-lint-migration/) when adopting Assura from
+  an existing `.ls-lint.yml`.

@@ -116,9 +116,6 @@ structure:
           hooks/:
             files:
               naming: "kebab-case"
-          skills/:
-            files:
-              naming: "kebab-case"
       
       .github/:
         files:
@@ -158,6 +155,7 @@ structure:
           allowed_names:
             - "analysis"
             - "archive"
+            - "goals"
             - "proposals"
           allow_extra: false
         children:
@@ -168,6 +166,12 @@ structure:
             markdown:
               require_frontmatter: true
           archive/:
+            files:
+              naming: "kebab-case"
+              max_lines: 2000
+            markdown:
+              require_frontmatter: true
+          goals/:
             files:
               naming: "kebab-case"
               max_lines: 2000
@@ -377,8 +381,17 @@ exclude:
   - "**/__pycache__"
   - "**/__pycache__/**"
   - "node_modules/**"
+  - "node_modules"
   - "**/node_modules/**"
+  - "**/node_modules"
   - ".astro/**"
+  - ".astro"
+  - "**/.astro"
+  - "**/.astro/**"
   - "dist/**"
+  - "dist"
   - "**/dist/**"
+  - "**/dist"
+  - "package-lock.json"
+  - "**/package-lock.json"
   - "*.lock"

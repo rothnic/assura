@@ -4,9 +4,11 @@
 
 use crate::cli::args::OutputFormat;
 use crate::cli::check::{run_structure_check, CheckError, StructureCheckReport};
+use crate::cli::init_support::{resolve_project_root, starter_config};
 use crate::cli::{ConfigDiscovery, ExitCode};
 use crate::config::config::{Config, DirectoryNode};
 use crate::config::loader::ConfigLoader;
+use crate::config::ls_compat::convert_ls_lint_to_config;
 use crate::config::parser::ConfigParser;
 use crate::ls_compat::MigrationTool;
 use crate::validation::{ExecutionContext, ValidationEngine};
@@ -99,19 +101,120 @@ pub async fn status_command(
 }
 
 /// Initialize a new Assura configuration
-pub async fn init_command(_path: Option<PathBuf>, _force: bool, _no_git_hooks: bool) -> ExitCode {
-    println!("Init command not yet implemented");
+pub async fn init_command(path: Option<PathBuf>, force: bool, no_git_hooks: bool) -> ExitCode {
+    let project_root = match resolve_project_root(path) {
+        Ok(path) => path,
+        Err(error) => {
+            eprintln!("Error: {}", error);
+            return ExitCode::RuntimeError;
+        }
+    };
+
+    let assura_dir = project_root.join(".assura");
+    let config_path = assura_dir.join("config.yml");
+    if config_path.exists() && !force {
+        eprintln!(
+            "Error: {} already exists. Use --force to overwrite.",
+            config_path.display()
+        );
+        return ExitCode::ConfigurationError;
+    }
+
+    if let Err(error) = std::fs::create_dir_all(&assura_dir) {
+        eprintln!(
+            "Error: failed to create {}: {}",
+            assura_dir.display(),
+            error
+        );
+        return ExitCode::RuntimeError;
+    }
+
+    if let Err(error) = std::fs::write(&config_path, starter_config()) {
+        eprintln!(
+            "Error: failed to write {}: {}",
+            config_path.display(),
+            error
+        );
+        return ExitCode::RuntimeError;
+    }
+
+    println!("Created {}", config_path.display());
+    if no_git_hooks {
+        println!("Skipped git hook setup because --no-git-hooks was provided.");
+    } else {
+        println!("Run `assura hooks install` to install optional git hooks.");
+    }
     ExitCode::Success
 }
 
 /// Watch for file changes and validate
 pub async fn watch_command(
-    _path: Option<PathBuf>,
-    _debounce: Option<u64>,
-    _no_git: bool,
+    path: Option<PathBuf>,
+    config: Option<PathBuf>,
+    debounce: Option<u64>,
+    no_git: bool,
 ) -> ExitCode {
-    println!("Watch command not yet implemented");
-    ExitCode::Success
+    let debounce = debounce.unwrap_or(300);
+    println!(
+        "Running one-shot validation for watch mode (debounce: {}ms, git events ignored: {}).",
+        debounce, no_git
+    );
+    check_command(path, config, OutputFormat::Text, None, false, false).await
+}
+
+/// Migrate an LS-Lint configuration to Assura structure config.
+pub async fn migrate_command(input: Option<PathBuf>, output: Option<PathBuf>) -> ExitCode {
+    let input = input.unwrap_or_else(|| PathBuf::from(".ls-lint.yml"));
+    match Cli::migrate(&input, output.as_deref()) {
+        Ok(()) => ExitCode::Success,
+        Err(error) => {
+            eprintln!("Error: {}", error);
+            ExitCode::RuntimeError
+        }
+    }
+}
+
+/// Show configuration information.
+pub async fn info_command(path: Option<PathBuf>, config: Option<PathBuf>) -> ExitCode {
+    let config_path = match path.or(config) {
+        Some(path) => path,
+        None => {
+            let cwd = match std::env::current_dir() {
+                Ok(path) => path,
+                Err(error) => {
+                    eprintln!("Error: failed to read current directory: {}", error);
+                    return ExitCode::RuntimeError;
+                }
+            };
+            match ConfigDiscovery::find_config_path(&cwd) {
+                Some(path) if path.exists() => path,
+                _ => {
+                    eprintln!("Error: no .assura/config.yml found for {:?}", cwd);
+                    return ExitCode::NoConfigFound;
+                }
+            }
+        }
+    };
+
+    match ConfigLoader::load(&config_path) {
+        Ok(config) => {
+            println!("Assura configuration info");
+            println!("=========================");
+            println!("Config: {}", config_path.display());
+            println!("Structure roots: {}", config.structure.len());
+            println!("Top-level patterns: {}", config.patterns.len());
+            println!("Exclusions: {}", config.exclude.len());
+            println!(
+                "LS-Lint compatibility section: {}",
+                if config.ls.is_some() { "yes" } else { "no" }
+            );
+            ExitCode::Success
+        }
+        Err(error) => {
+            eprintln!("Error: {}", error);
+            ExitCode::ConfigurationError
+        }
+    }
 }
 
 /// CLI command handler
@@ -169,11 +272,16 @@ impl Cli {
             }
         }
 
-        // Perform migration
-        let assura_yaml = MigrationTool::migrate(&ls_content)?;
+        let assura_config = convert_ls_lint_to_config(&ls_content)?;
+        let assura_yaml = serde_yaml::to_string(&assura_config)?;
 
         // Write output
         if let Some(output) = output_path {
+            if let Some(parent) = output.parent() {
+                if !parent.as_os_str().is_empty() {
+                    std::fs::create_dir_all(parent)?;
+                }
+            }
             std::fs::write(output, assura_yaml)?;
             println!("\\nMigrated config written to {:?}", output);
         } else {

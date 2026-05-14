@@ -9,7 +9,7 @@ export default defineConfig({
 		starlight({
 			title: 'Assura',
 			description: 'Dependency-aware file system validation engine',
-			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/anomalyco/assura' }],
+			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/rothnic/assura' }],
 			plugins: [
 				catppuccin({
 					flavor: 'mocha',
@@ -32,6 +32,7 @@ export default defineConfig({
 						{ label: 'Getting Started Guide', slug: 'guides/getting-started' },
 						{ label: 'Quick Start', slug: 'guides/quickstart' },
 						{ label: 'Installation', slug: 'guides/installation' },
+						{ label: 'LS-Lint Migration', slug: 'guides/ls-lint-migration' },
 					],
 				},
 				{

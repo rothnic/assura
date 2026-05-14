@@ -112,6 +112,7 @@ pub fn convert_ls_lint_to_config(ls_lint_content: &str) -> Result<Config, String
 
     let mut config = Config::new();
     config.exclude = parse_ignore(&ls_config);
+    ensure_assura_config_excluded(&mut config.exclude);
 
     let Some(ls_section) = ls_config.get("ls").and_then(|value| value.as_mapping()) else {
         return Ok(config);
@@ -133,6 +134,12 @@ fn parse_ignore(config: &serde_yaml::Value) -> Vec<String> {
                 .collect()
         })
         .unwrap_or_default()
+}
+
+fn ensure_assura_config_excluded(exclude: &mut Vec<String>) {
+    if !exclude.iter().any(|pattern| pattern == ".assura/**") {
+        exclude.push(".assura/**".to_string());
+    }
 }
 
 fn parse_ls_directory(mapping: &serde_yaml::Mapping) -> Result<DirectoryNode, String> {
@@ -162,11 +169,17 @@ fn parse_ls_directory(mapping: &serde_yaml::Mapping) -> Result<DirectoryNode, St
         }
 
         if let Some(child_mapping) = value.as_mapping() {
-            children.insert(normalize_child_key(key), parse_ls_directory(child_mapping)?);
+            reject_unsupported_directory_scope(key)?;
+            children.insert(
+                normalize_child_key(key),
+                parse_ls_directory(child_mapping)?.with_required(false),
+            );
         } else if let Some(rule) = value.as_str() {
             if apply_direct_child_exists_rule(key, rule, &mut file_exists, &mut directory_exists) {
                 continue;
             }
+
+            reject_unsupported_directory_scope(key)?;
 
             let mut child = DirectoryNode::new();
             let mut child_files = FileBundle::new();
@@ -180,7 +193,7 @@ fn parse_ls_directory(mapping: &serde_yaml::Mapping) -> Result<DirectoryNode, St
                 child_files.exists = Some(child_exists);
             }
             child.files = Some(child_files);
-            children.insert(normalize_child_key(key), child);
+            children.insert(normalize_child_key(key), child.with_required(false));
         }
     }
 
@@ -209,6 +222,16 @@ fn parse_ls_directory(mapping: &serde_yaml::Mapping) -> Result<DirectoryNode, St
     }
 
     Ok(node)
+}
+
+fn reject_unsupported_directory_scope(key: &str) -> Result<(), String> {
+    if key.contains('*') || key.contains('{') || key.contains('}') {
+        return Err(format!(
+            "Unsupported LS-Lint directory scope '{key}'. Assura migrate currently supports explicit directory scopes only; glob and brace scopes such as packages/*, **, and {{src,tests}} are not converted yet."
+        ));
+    }
+
+    Ok(())
 }
 
 fn apply_direct_child_exists_rule(
@@ -394,8 +417,6 @@ ls:
     .dir: kebab-case
     .*: exists:0
     .ts: kebab-case | exists:1
-    "*":
-      .dir: exists:0
 "#;
 
         let config = convert_ls_lint_to_config(ls_lint_yaml).unwrap();
@@ -412,17 +433,24 @@ ls:
             files.exists.as_ref().unwrap().get("*.ts"),
             Some(&"1".to_string())
         );
-        let wildcard = components.children.as_ref().unwrap().get("*").unwrap();
-        assert_eq!(
-            wildcard
-                .directories
-                .as_ref()
-                .unwrap()
-                .exists
-                .as_ref()
-                .unwrap()
-                .get("*"),
-            Some(&"0".to_string())
-        );
+    }
+
+    #[test]
+    fn test_rejects_unsupported_directory_glob_scopes() {
+        for scope in ["packages/*", "**", "{src,tests}"] {
+            let ls_lint_yaml = format!(
+                r#"
+ls:
+  "{scope}":
+    .ts: kebab-case
+"#
+            );
+
+            let error = convert_ls_lint_to_config(&ls_lint_yaml).unwrap_err();
+            assert!(
+                error.contains("Unsupported LS-Lint directory scope"),
+                "unexpected error for {scope}: {error}"
+            );
+        }
     }
 }
