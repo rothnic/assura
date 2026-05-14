@@ -77,10 +77,22 @@ pub struct DirectoryNode {
     /// Whether to inherit rules from parent (default: true)
     #[serde(default = "default_true")]
     pub inherit: bool,
+
+    /// Whether this configured directory must exist (default: true).
+    ///
+    /// LS-Lint compatibility scopes can set this to false so a scoped rule
+    /// applies when the directory exists without turning the scope into an
+    /// existence requirement.
+    #[serde(default = "default_true", skip_serializing_if = "is_true")]
+    pub required: bool,
 }
 
 fn default_true() -> bool {
     true
+}
+
+fn is_true(value: &bool) -> bool {
+    *value
 }
 
 impl Config {
@@ -135,6 +147,7 @@ impl DirectoryNode {
             exists: None,
             children: None,
             inherit: true,
+            required: true,
         }
     }
 
@@ -173,6 +186,12 @@ impl DirectoryNode {
     /// Set inheritance behavior
     pub fn with_inherit(mut self, inherit: bool) -> Self {
         self.inherit = inherit;
+        self
+    }
+
+    /// Set whether the configured directory itself must exist.
+    pub fn with_required(mut self, required: bool) -> Self {
+        self.required = required;
         self
     }
 }

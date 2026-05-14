@@ -1,0 +1,5 @@
+{"file":"docs/goals/assura-v0-1-polished.md","reason":"Defines the long-running v0.1 polished release goal, acceptance criteria, validation matrix, progress log, and next-goal plan."}
+{"file":".agents/skills/assura-goal-execution/SKILL.md","reason":"Reusable progressive-disclosure loop for long Assura goals with iteration/context review and repo-local skill updates."}
+{"file":".agents/skills/assura-local-build/SKILL.md","reason":"Reusable WSL/local build and network troubleshooting guidance for Cargo, npm, pnpm, benchmarks, and Assura self-checks."}
+{"file":".trellis/spec/assura/structure-enforcement.md","reason":"Spec context for Assura structure-first validation, project shape enforcement, and LS-Lint compatibility behavior."}
+{"file":".trellis/spec/assura/tooling-stabilization.md","reason":"Spec context for release validation, CLI truth, benchmarks, and website onboarding stabilization."}

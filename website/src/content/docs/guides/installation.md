@@ -1,58 +1,36 @@
 ---
 title: Installation
-description: How to install Assura using Cargo or from source
+description: How to install or build Assura
 ---
 
-Assura is distributed as a Rust crate and can be installed using Cargo.
+Assura is a Rust CLI. The current supported onboarding path uses Cargo.
 
 ## Requirements
 
-- **Rust**: Version 1.70.0 or later
-- **Operating System**: Linux, macOS, or Windows
+- Rust 1.70.0 or later.
+- Linux, macOS, or Windows.
 
 ## Install from Crates.io
-
-The easiest way to install Assura:
 
 ```bash
 cargo install assura
 ```
 
-## Install from Source
-
-For the latest development version:
+## Build from Source
 
 ```bash
-git clone https://github.com/anomalyco/assura
+git clone https://github.com/rothnic/assura
 cd assura
 cargo build --release
 ```
 
-The binary will be available at `target/release/assura`.
+The binary is available at `target/release/assura`.
 
-## Verify Installation
-
-Check that Assura is installed correctly:
+## Verify
 
 ```bash
 assura --version
+assura --help
 ```
 
-## Shell Completions
-
-Enable tab completion for your shell:
-
-### Bash
-```bash
-assura completions bash > /usr/share/bash-completion/completions/assura
-```
-
-### Zsh
-```bash
-assura completions zsh > /usr/share/zsh/site-functions/_assura
-```
-
-### Fish
-```bash
-assura completions fish > ~/.config/fish/completions/assura.fish
-```
+The supported output formats for `assura check` are `text`, `json`, and `yaml`.

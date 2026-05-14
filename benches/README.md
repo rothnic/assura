@@ -1,99 +1,73 @@
-# LS-Lint Comparison Benchmarks
+# Assura Benchmarks
 
-This directory contains performance benchmarks comparing Assura with LS-Lint.
+This directory contains Criterion benchmarks for the current Assura codebase.
 
-## Prerequisites
+## Current-Product LS-Lint Comparison
 
-To run the full comparison benchmarks (including LS-Lint), you need to install LS-Lint:
+`benches/ls_lint_comparison.rs` compares the public structure-first
+`assura check` path, implemented by `run_structure_check`, with
+`@ls-lint/ls-lint@2.3.0` on identical generated fixtures.
 
-```bash
-./scripts/install_ls_lint.sh
-```
-
-Or manually:
-```bash
-npm install -g @ls-lint/ls-lint
-```
-
-## Running Benchmarks
-
-### All Comparison Benchmarks
-```bash
-cargo bench --bench ls_lint_comparison
-```
-
-### Specific Benchmark Groups
-```bash
-# Cold start comparison
-cargo bench --bench ls_lint_comparison cold_start
-
-# Full validation (warm)
-cargo bench --bench ls_lint_comparison full_validation
-
-# Throughput comparison
-cargo bench --bench ls_lint_comparison throughput
-
-# Project type comparison (Rust/JS)
-cargo bench --bench ls_lint_comparison project_types
-
-# Incremental validation
-cargo bench --bench ls_lint_comparison incremental
-
-# Complex rules performance
-cargo bench --bench ls_lint_comparison complex_rules
-
-# Structure-first assura check attribution
-cargo bench --bench profiling structure_check
-```
-
-## Benchmark Scenarios
-
-### Test Fixtures
-The benchmarks create test fixtures of various sizes:
-
-- **Small**: 50 files across 10 directories
-- **Medium**: 500 files across 50 directories  
-- **Large**: 5000 files across 200 directories
-
-### Metrics Captured
-
-1. **Cold Start Time**: First run initialization overhead
-2. **Warm Validation Time**: Subsequent run performance
-3. **Memory Usage Peak**: (if instrumentation available)
-4. **Files/Second Throughput**: Raw validation speed
-5. **Incremental Validation**: Single file change performance
-
-## Expected Performance
-
-Assura is designed to be **2x+ faster** than LS-Lint across all scenarios:
-
-- Written in Rust for native performance
-- Efficient glob pattern matching
-- Minimal allocations in hot paths
-- Parallel validation support
-
-## Interpreting Results
-
-Benchmark results are saved in `target/criterion/` with HTML reports:
+Run it with:
 
 ```bash
-# View HTML report
-open target/criterion/ls_lint_comparison/report/index.html
+cargo bench --bench ls_lint_comparison -- --noplot
 ```
 
-Key metrics to watch:
-- **Files/second**: Higher is better
-- **Speedup factor**: Assura time / LS-Lint time (should be < 0.5)
-- **Consistency**: Performance across different project types
+The benchmark uses `npm exec --yes --package @ls-lint/ls-lint@2.3.0 -- ls-lint`
+so the first run may need network access to fetch the LS-Lint package. If
+LS-Lint is unavailable, the benchmark still runs Assura scenarios and skips the
+external LS-Lint samples.
+
+Scenarios covered:
+
+- `small`: representative extension and directory naming rules.
+- `medium`: common source/test sized tree.
+- `large`: larger file and directory count.
+- `rule_heavy`: many extension patterns.
+- `ignored_generated_heavy`: generated files pruned through ignore/exclude
+  configuration.
+
+Record local release evidence with the date, branch or commit, operating
+system, exact command, LS-Lint version, and Criterion median estimates. Do not
+claim a speedup unless this current-product benchmark supports it.
+
+### Local Baseline: 2026-05-14
+
+- Branch: `codex/assura-v0-1-polished`
+- Environment: WSL on a locked-down machine
+- LS-Lint: `ls-lint v2.3.0`
+- Command:
+  `env OPENSSL_INCLUDE_DIR=/usr/include OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu cargo bench --bench ls_lint_comparison -- --noplot`
+
+Criterion median estimates:
+
+| Scenario | Assura median | LS-Lint 2.3 median | Result |
+| --- | ---: | ---: | --- |
+| `small` | 241.19 us | 511.59 ms | Assura faster |
+| `medium` | 3.8721 ms | 496.50 ms | Assura faster |
+| `large` | 18.620 ms | 516.61 ms | Assura faster |
+| `rule_heavy` | 21.793 ms | 527.76 ms | Assura faster |
+| `ignored_generated_heavy` | 54.267 us | 488.42 ms | Assura faster |
+
+The first sandboxed `npm exec` attempt failed with DNS `EAI_AGAIN` for
+`registry.npmjs.org`. Re-running with approved network access confirmed
+`ls-lint v2.3.0` and produced the full comparison above.
 
 ## Structure-First Profiling
 
-`benches/profiling.rs` also includes `structure_check/...` groups for the
-current `assura check` implementation. These benchmarks reuse Criterion and
-cover full `run_structure_check` scenarios plus isolated attribution slices for
-config load, traversal, exclusion pruning, directory count reads, and glob
-pattern matching.
+`benches/profiling.rs` includes `structure_check/...` groups for the current
+`assura check` implementation plus attribution slices for config load,
+traversal, exclusion pruning, directory count reads, and glob pattern matching.
 
-The structure-first production path currently uses `walkdir::WalkDir`.
-Existing `jwalk` benchmarks remain as traversal and older `ConstraintEngine`
-comparison context.
+Run the main structure-check profile with:
+
+```bash
+cargo bench --bench profiling structure_check -- --noplot
+```
+
+## Legacy Context
+
+Other benchmark files remain useful for internal engine and graph comparison,
+but release performance claims should be based on the current-product
+`ls_lint_comparison` and `profiling structure_check` commands above.

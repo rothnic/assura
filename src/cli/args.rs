@@ -76,6 +76,21 @@ pub enum Commands {
         no_git: bool,
     },
 
+    #[command(about = "Migrate an LS-Lint configuration to Assura")]
+    Migrate {
+        #[arg(help = "LS-Lint configuration path (defaults to .ls-lint.yml)")]
+        input: Option<PathBuf>,
+
+        #[arg(short, long, help = "Output path for generated Assura config")]
+        output: Option<PathBuf>,
+    },
+
+    #[command(about = "Show Assura configuration information")]
+    Info {
+        #[arg(help = "Assura configuration path (defaults to discovered config)")]
+        path: Option<PathBuf>,
+    },
+
     #[command(about = "Install or manage git hooks")]
     Hooks {
         #[command(subcommand)]

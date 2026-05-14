@@ -1,9 +1,9 @@
 ---
 title: Assura
-description: Dependency-aware file system validation engine for Rust
+description: Structure validation for developer onboarding
 template: splash
 hero:
-  tagline: Dependency-aware file system validation engine
+  tagline: Structure validation for developer onboarding
   image:
     file: ../../assets/houston.webp
   actions:
@@ -11,49 +11,34 @@ hero:
       link: /guides/quickstart/
       icon: right-arrow
     - text: View on GitHub
-      link: https://github.com/anomalyco/assura
+      link: https://github.com/rothnic/assura
       icon: github
       variant: minimal
 ---
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
 
-## Features
+## Current Release Surface
 
 <CardGrid stagger>
-  <Card title="Dependency Analysis" icon="graph">
-    Detect circular dependencies and compute validation ordering using graph algorithms
+  <Card title="assura check" icon="document">
+    The primary supported validation command for local development and CI.
   </Card>
-  <Card title="Rule-Based Validation" icon="document">
-    Configure severity levels (Critical, High, Medium, Low) for comprehensive validation
+  <Card title="assura init" icon="setting">
+    Creates a starter `.assura/config.yml` without overwriting existing config by default.
   </Card>
-  <Card title="File System Watching" icon="seti:rust">
-    Continuous validation during development with automatic file system monitoring
+  <Card title="assura migrate" icon="seti:yaml">
+    Converts supported LS-Lint configuration into Assura structure config.
   </Card>
-  <Card title="Parallel Execution" icon="rocket">
-    High-performance validation using Rayon and Tokio for large codebases
-  </Card>
-  <Card title="Extensible Architecture" icon="puzzle">
-    Plugin-based design allows custom validators and integrations
-  </Card>
-  <Card title="Multiple Formats" icon="list-format">
-    Support for YAML, JSON, and TOML configuration files
+  <Card title="JSON Reports" icon="list-format">
+    Machine-readable reports expose success, paths, counts, and violations.
   </Card>
 </CardGrid>
 
 ## Quick Example
 
-```rust
-use assura::{Config, Validator};
-
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let config = Config::load("assura.yaml")?;
-    let validator = Validator::new(config);
-    
-    let results = validator.validate_all().await?;
-    println!("Found {} issues", results.len());
-    
-    Ok(())
-}
+```bash
+cargo install assura
+assura init
+assura check --format json .
 ```

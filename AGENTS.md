@@ -2,21 +2,25 @@
 
 ## Project Overview
 
-**Assura** is a dependency-aware file system validation engine written in Rust. It provides:
+**Assura** is currently a structure-first repository validation CLI written in
+Rust. The supported v0.1 onboarding surface provides:
 
-- **Dependency graph analysis** for detecting circular dependencies and validation ordering
-- **Rule-based validation** with configurable severity levels (Critical, High, Medium, Low)
-- **File system watching** for continuous validation during development
-- **Parallel execution** for large-scale validation performance
-- **Extensible plugin architecture** for custom validators
+- `assura check` for project structure validation
+- `assura init` for starter `.assura/config.yml` creation
+- `assura migrate` for supported LS-Lint configuration migration
+- `assura status --format json` for project/config/rule summaries
+- text, JSON, and YAML reports for local and CI automation
+
+Dependency graph validation, long-running watch mode, agent nudges, quality
+measurement, and plugin APIs are roadmap items until implemented and tested.
 
 ### Key Dependencies
-- `tokio` - Async runtime for file watching and parallel operations
-- `petgraph` - Graph algorithms for dependency analysis
+- `tokio` - Async runtime used by CLI and validation flows
+- `petgraph` - Graph algorithms retained for planned dependency analysis work
 - `serde`/`serde_yaml` - Configuration file parsing
 - `clap` - CLI interface
 - `regex`/`glob` - Pattern matching for file discovery
-- `notify` - File system event watching
+- `notify` - File system event support for future long-running watch work
 
 ## Agent Coordination Guidelines
 
@@ -54,6 +58,17 @@
 - **Dependency additions**: Must be justified in code comments
 
 ## Available Skills
+
+### Project Skills
+
+Located in `.agents/skills/`:
+
+| Skill | Description | Use When |
+|-------|-------------|----------|
+| `assura-goal-execution` | Long-running goal execution loop with iteration/context review and progressive-disclosure skill maintenance | Executing a goal from `docs/goals/` |
+| `assura-local-build` | Local Cargo/OpenSSL/network troubleshooting for WSL or locked-down environments | Cargo validation fails for platform or dependency-access reasons |
+
+**Usage**: Read `.agents/skills/<skill-name>/SKILL.md` for instructions.
 
 ### Built-in Skills
 

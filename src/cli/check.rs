@@ -299,6 +299,9 @@ impl StructureChecker {
 
         let node_abs = self.project_root.join(node_rel);
         if !node_abs.is_dir() {
+            if !node.required {
+                return;
+            }
             self.push_violation(
                 report,
                 node_rel.to_path_buf(),

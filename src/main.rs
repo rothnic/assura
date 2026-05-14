@@ -5,8 +5,8 @@ use clap::Parser;
 use tracing::{error, info};
 
 use assura::cli::{
-    check_command, init_command, status_command, watch_command, Cli, Commands, ExitCode,
-    HookCommands,
+    check_command, info_command, init_command, migrate_command, status_command, watch_command, Cli,
+    Commands, ExitCode, HookCommands,
 };
 
 #[tokio::main]
@@ -47,7 +47,9 @@ async fn main() {
             path,
             debounce,
             no_git,
-        } => watch_command(path, debounce, no_git).await,
+        } => watch_command(path, config_path, debounce, no_git).await,
+        Commands::Migrate { input, output } => migrate_command(input, output).await,
+        Commands::Info { path } => info_command(path, config_path).await,
         Commands::Hooks { command } => match command {
             HookCommands::Install { path, force } => handle_hooks_install(path, force).await,
             HookCommands::Uninstall { path } => handle_hooks_uninstall(path).await,
