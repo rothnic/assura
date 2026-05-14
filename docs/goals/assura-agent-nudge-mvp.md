@@ -123,6 +123,7 @@ cd website && pnpm build
 | 2026-05-14 | Required validation passed. A first self-check immediately after `pnpm build` saw transient ignored `website/.agents` and `website/.codex` directories; after the build cleaned up, rerunning `assura check` passed with zero violations. A Clippy run without OpenSSL variables failed for local `pkg-config`/OpenSSL discovery, then passed with the documented WSL OpenSSL variables. | `cargo fmt --all -- --check`; `cargo test --all-targets --quiet`; `cargo clippy --all-targets --all-features -- -D warnings`; `cargo run --quiet -- check --format json .`; `pnpm build`; `npm run lint && npm test && npm run build` |
 | 2026-05-14 | Updated Assura roadmap so `Agent Nudge MVP` is an active epic with this Trellis task as owner and hook installation as the next follow-up. | `.trellis/spec/assura/roadmap.md` |
 | 2026-05-14 | Branch pushed and draft PR opened. | `codex/assura-agent-nudge-mvp`; `https://github.com/rothnic/assura/pull/10` |
+| 2026-05-14 | Addressed PR review gaps: added an injectable Assura process runner, direct-run tests for success/failure/non-JSON exit behavior, CLI preservation of Assura non-JSON exit codes, README wording aligned to behavior, and package dry-run cleanup so compiled test files are excluded. | `integrations/agents/codex/src/index.ts`; `integrations/agents/codex/src/cli.ts`; `integrations/agents/codex/src/nudge-test.ts`; `npm test`; `npm pack --dry-run` |
 
 ## Completion Audit Checklist
 
@@ -132,7 +133,7 @@ cd website && pnpm build
 | Codex runtime nudge path implemented | `integrations/agents/codex/src/index.ts` exposes `parseStructureCheckReport`, `createNudgeFromReport`, `runAssuraCheck`, and render helpers; `integrations/agents/codex/src/cli.ts` exposes `assura-codex-nudge` |
 | Nudge content is actionable | `createNudgeFromReport` includes summary, violation count, affected rules, per-path guidance, references, and advisory wording |
 | Measurement model compares three workflow modes | `WorkflowMode`, `EvaluationRun`, and `compareEvaluationRuns` cover `instructions_only`, `agents_skills`, and `assura_runtime_nudges` |
-| Tests cover parser, nudge, metrics, and CLI file mode | `integrations/agents/codex/src/nudge-test.ts`; `npm test` |
+| Tests cover parser, nudge, metrics, CLI file mode, and direct Assura-run mode | `integrations/agents/codex/src/nudge-test.ts`; `npm test` |
 | Docs updated truthfully | `integrations/agents/codex/README.md`; `website/src/content/docs/examples/multi-agent-config.md`; getting started, introduction, and why pages |
 | Roadmap updated | `.trellis/spec/assura/roadmap.md` |
 | Validation commands pass | `cargo fmt --all -- --check`; `cargo test --all-targets --quiet`; `cargo clippy --all-targets --all-features -- -D warnings`; `cargo run --quiet -- check --format json .`; `pnpm build`; `npm run lint && npm test && npm run build` |

@@ -57,6 +57,7 @@ export interface AssuraCheckRunOptions extends NudgeOptions {
   cwd?: string;
   path?: string;
   assuraBin?: string;
+  runner?: AssuraProcessRunner;
 }
 
 export interface AssuraCheckRunResult {
@@ -65,6 +66,33 @@ export interface AssuraCheckRunResult {
   stderr: string;
   report: StructureCheckReport;
   nudge: NudgeResult;
+}
+
+export interface AssuraProcessResult {
+  status: number | null;
+  stdout?: string;
+  stderr?: string;
+  error?: Error;
+}
+
+export type AssuraProcessRunner = (
+  command: string,
+  args: string[],
+  options: { cwd?: string; encoding: "utf8" }
+) => AssuraProcessResult;
+
+export class AssuraCheckExecutionError extends Error {
+  readonly exitCode: number;
+  readonly stdout: string;
+  readonly stderr: string;
+
+  constructor(message: string, exitCode: number, stdout: string, stderr: string) {
+    super(message);
+    this.name = "AssuraCheckExecutionError";
+    this.exitCode = exitCode;
+    this.stdout = stdout;
+    this.stderr = stderr;
+  }
 }
 
 export interface EvaluationRun {
@@ -170,7 +198,8 @@ export function runAssuraCheck(
 ): AssuraCheckRunResult {
   const assuraBin = options.assuraBin ?? "assura";
   const checkedPath = options.path ?? ".";
-  const result = spawnSync(assuraBin, ["check", "--format", "json", checkedPath], {
+  const runner: AssuraProcessRunner = options.runner ?? spawnSync;
+  const result = runner(assuraBin, ["check", "--format", "json", checkedPath], {
     cwd: options.cwd,
     encoding: "utf8",
   });
@@ -181,9 +210,23 @@ export function runAssuraCheck(
     throw new Error(`Failed to run ${assuraBin}: ${result.error.message}`);
   }
 
-  const report = parseStructureCheckReport(stdout);
+  const exitCode = result.status ?? 1;
+  let report: StructureCheckReport;
+  try {
+    report = parseStructureCheckReport(stdout);
+  } catch (error) {
+    throw new AssuraCheckExecutionError(
+      `Assura exited with code ${exitCode} but did not emit a StructureCheckReport JSON report: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+      exitCode,
+      stdout,
+      stderr
+    );
+  }
+
   return {
-    exitCode: result.status ?? 1,
+    exitCode,
     stdout,
     stderr,
     report,

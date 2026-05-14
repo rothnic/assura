@@ -4,9 +4,12 @@ import { join } from "node:path";
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  AssuraCheckExecutionError,
   compareEvaluationRuns,
   createNudgeFromReport,
   parseStructureCheckReport,
+  runAssuraCheck,
+  type AssuraProcessRunner,
   type StructureCheckReport,
 } from "./index.js";
 import { runCli } from "./cli.js";
@@ -125,3 +128,71 @@ test("CLI reads a report file and outputs JSON nudge data", () => {
   assert.equal(nudge.status, "fail");
   assert.equal(nudge.violationCount, 1);
 });
+
+test("runAssuraCheck preserves success exit code from JSON report", () => {
+  const runner = runnerReturning(0, passingReport);
+
+  const run = runAssuraCheck({ path: "src", runner });
+
+  assert.equal(run.exitCode, 0);
+  assert.equal(run.nudge.status, "pass");
+  assert.equal(run.report.checked_path, passingReport.checked_path);
+});
+
+test("runAssuraCheck preserves validation failure exit code from JSON report", () => {
+  const runner = runnerReturning(1, failingReport);
+
+  const run = runAssuraCheck({ assuraBin: "assura-dev", path: ".", runner });
+
+  assert.equal(run.exitCode, 1);
+  assert.equal(run.nudge.status, "fail");
+  assert.equal(run.nudge.affectedRules[0], "file_naming");
+});
+
+test("runAssuraCheck preserves non-JSON Assura failure exit code", () => {
+  const runner: AssuraProcessRunner = () => ({
+    status: 4,
+    stdout: "",
+    stderr: "Error: no .assura/config.yml found",
+  });
+
+  assert.throws(
+    () => runAssuraCheck({ runner }),
+    (error: unknown) =>
+      error instanceof AssuraCheckExecutionError &&
+      error.exitCode === 4 &&
+      error.stderr.includes("no .assura/config.yml")
+  );
+});
+
+test("direct CLI mode preserves non-JSON Assura failure exit code", () => {
+  const errors: string[] = [];
+  const result = runCli(["--path", "."], {
+    readFile: () => "",
+    write: () => undefined,
+    writeError: (message) => errors.push(message),
+    runAssuraCheck: () => {
+      throw new AssuraCheckExecutionError("config missing", 4, "", "no config");
+    },
+  });
+
+  assert.equal(result, 4);
+  assert.deepEqual(errors, ["config missing"]);
+});
+
+function runnerReturning(
+  status: number,
+  report: StructureCheckReport
+): AssuraProcessRunner {
+  return (command, args) => {
+    assert.equal(args[0], "check");
+    assert.equal(args[1], "--format");
+    assert.equal(args[2], "json");
+    assert.ok(command.length > 0);
+    return {
+      status,
+      stdout: JSON.stringify(report),
+      stderr: "",
+    };
+  };
+}

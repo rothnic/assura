@@ -3,11 +3,12 @@
 import { readFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 import {
+  AssuraCheckExecutionError,
   createNudgeFromReport,
   parseStructureCheckReport,
   renderNudgeJson,
   renderNudgeText,
-  runAssuraCheck,
+  runAssuraCheck as executeAssuraCheck,
 } from "./index.js";
 
 interface CliArgs {
@@ -22,6 +23,7 @@ export interface CliIo {
   readFile(path: string): string;
   write(message: string): void;
   writeError(message: string): void;
+  runAssuraCheck?: typeof executeAssuraCheck;
 }
 
 export function runCli(
@@ -45,28 +47,29 @@ export function runCli(
     return 0;
   }
 
-  if (args.reportPath) {
-    const report = parseStructureCheckReport(io.readFile(args.reportPath));
-    const nudge = createNudgeFromReport(report);
-    printNudge(nudge, args.format, io);
-    return report.success ? 0 : 1;
-  }
+  try {
+    if (args.reportPath) {
+      const report = parseStructureCheckReport(io.readFile(args.reportPath));
+      const nudge = createNudgeFromReport(report);
+      printNudge(nudge, args.format, io);
+      return report.success ? 0 : 1;
+    }
 
-  const run = runAssuraCheck({
-    assuraBin: args.assuraBin,
-    path: args.checkedPath,
-  });
-  printNudge(run.nudge, args.format, io);
-  return run.exitCode;
+    const runAssuraCheck = io.runAssuraCheck ?? executeAssuraCheck;
+    const run = runAssuraCheck({
+      assuraBin: args.assuraBin,
+      path: args.checkedPath,
+    });
+    printNudge(run.nudge, args.format, io);
+    return run.exitCode;
+  } catch (error) {
+    io.writeError(error instanceof Error ? error.message : String(error));
+    return error instanceof AssuraCheckExecutionError ? error.exitCode : 2;
+  }
 }
 
 if (pathToFileURL(process.argv[1] ?? "").href === import.meta.url) {
-  try {
-    process.exit(runCli(process.argv.slice(2)));
-  } catch (error) {
-    console.error(error instanceof Error ? error.message : String(error));
-    process.exit(2);
-  }
+  process.exit(runCli(process.argv.slice(2)));
 }
 
 function parseArgs(argv: string[]): CliArgs {

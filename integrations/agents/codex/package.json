@@ -9,7 +9,10 @@
     "assura-codex-nudge": "dist/cli.js"
   },
   "files": [
-    "dist/",
+    "dist/cli.d.ts",
+    "dist/cli.js",
+    "dist/index.d.ts",
+    "dist/index.js",
     "README.md"
   ],
   "scripts": {

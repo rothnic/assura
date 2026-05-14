@@ -10,7 +10,8 @@ Supported in this MVP:
 
 - parse `StructureCheckReport` JSON from `assura check --format json`
 - create actionable nudge messages for structure violations
-- run `assura check --format json` and preserve Assura's exit code
+- run `assura check --format json` and preserve Assura's exit code, including
+  non-JSON configuration/runtime failures
 - compare evaluation runs for instructions-only, `AGENTS.md`/skills, and
   Assura runtime-nudge workflows
 - run a small CLI entrypoint:
