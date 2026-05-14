@@ -1,6 +1,0 @@
-{"file":".trellis/spec/assura/index.md","reason":"Current Assura product direction and canonical source routing."}
-{"file":".trellis/spec/assura/roadmap.md","reason":"Active roadmap places Codex integration runtime hook design as the next dogfooding step."}
-{"file":".trellis/spec/assura/tooling-stabilization.md","reason":"Validation gates and pre-1.0 truthfulness constraints."}
-{"file":".trellis/spec/assura/structure-enforcement.md","reason":"Structure check report and rule behavior context for nudge guidance."}
-{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Search-first and shared utility guidance for new integration helpers."}
-{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Data-flow contract guidance for JSON report to nudge message transformations."}
