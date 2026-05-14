@@ -161,6 +161,7 @@ test("runAssuraCheck preserves non-JSON Assura failure exit code", () => {
     (error: unknown) =>
       error instanceof AssuraCheckExecutionError &&
       error.exitCode === 4 &&
+      error.message.includes("no .assura/config.yml") &&
       error.stderr.includes("no .assura/config.yml")
   );
 });
@@ -172,12 +173,17 @@ test("direct CLI mode preserves non-JSON Assura failure exit code", () => {
     write: () => undefined,
     writeError: (message) => errors.push(message),
     runAssuraCheck: () => {
-      throw new AssuraCheckExecutionError("config missing", 4, "", "no config");
+      throw new AssuraCheckExecutionError(
+        "config missing. Stderr: no config",
+        4,
+        "",
+        "no config"
+      );
     },
   });
 
   assert.equal(result, 4);
-  assert.deepEqual(errors, ["config missing"]);
+  assert.deepEqual(errors, ["config missing. Stderr: no config"]);
 });
 
 function runnerReturning(

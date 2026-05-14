@@ -215,10 +215,10 @@ export function runAssuraCheck(
   try {
     report = parseStructureCheckReport(stdout);
   } catch (error) {
+    const parseMessage = error instanceof Error ? error.message : String(error);
+    const stderrContext = stderr.trim() ? ` Stderr: ${stderr.trim()}` : "";
     throw new AssuraCheckExecutionError(
-      `Assura exited with code ${exitCode} but did not emit a StructureCheckReport JSON report: ${
-        error instanceof Error ? error.message : String(error)
-      }`,
+      `Assura exited with code ${exitCode} but did not emit a StructureCheckReport JSON report: ${parseMessage}.${stderrContext}`,
       exitCode,
       stdout,
       stderr
