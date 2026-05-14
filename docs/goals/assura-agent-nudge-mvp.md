@@ -122,6 +122,7 @@ cd website && pnpm build
 | 2026-05-14 | Context checkpoint before broader validation: goal tool reported `tokensUsed=75339`, no token budget exposed. No new reusable project skill needed; the existing `assura-local-build` skill covers the npm network issue. | `get_goal`; `.agents/skills/assura-local-build/SKILL.md` |
 | 2026-05-14 | Required validation passed. A first self-check immediately after `pnpm build` saw transient ignored `website/.agents` and `website/.codex` directories; after the build cleaned up, rerunning `assura check` passed with zero violations. A Clippy run without OpenSSL variables failed for local `pkg-config`/OpenSSL discovery, then passed with the documented WSL OpenSSL variables. | `cargo fmt --all -- --check`; `cargo test --all-targets --quiet`; `cargo clippy --all-targets --all-features -- -D warnings`; `cargo run --quiet -- check --format json .`; `pnpm build`; `npm run lint && npm test && npm run build` |
 | 2026-05-14 | Updated Assura roadmap so `Agent Nudge MVP` is an active epic with this Trellis task as owner and hook installation as the next follow-up. | `.trellis/spec/assura/roadmap.md` |
+| 2026-05-14 | Branch pushed and draft PR opened. | `codex/assura-agent-nudge-mvp`; `https://github.com/rothnic/assura/pull/10` |
 
 ## Completion Audit Checklist
 
@@ -135,4 +136,4 @@ cd website && pnpm build
 | Docs updated truthfully | `integrations/agents/codex/README.md`; `website/src/content/docs/examples/multi-agent-config.md`; getting started, introduction, and why pages |
 | Roadmap updated | `.trellis/spec/assura/roadmap.md` |
 | Validation commands pass | `cargo fmt --all -- --check`; `cargo test --all-targets --quiet`; `cargo clippy --all-targets --all-features -- -D warnings`; `cargo run --quiet -- check --format json .`; `pnpm build`; `npm run lint && npm test && npm run build` |
-| Branch pushed and PR opened | Pending final git push and PR creation |
+| Branch pushed and PR opened | Draft PR `https://github.com/rothnic/assura/pull/10` from `codex/assura-agent-nudge-mvp` to `master` |
