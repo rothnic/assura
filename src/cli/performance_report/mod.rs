@@ -7,17 +7,21 @@ use serde::Serialize;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
-use std::time::{Instant, SystemTime, UNIX_EPOCH};
+use std::time::Instant;
 
 mod environment;
 mod fixtures;
 mod io;
+mod metadata;
 mod stats;
+mod traversal;
 
 use environment::{collect_environment, PerformanceEnvironment};
 use fixtures::{materialize_fixture, scenarios, FixtureScenario};
 use io::{append_history, render_jsonl, write_text, write_website_data};
+use metadata::{git_value, utc_timestamp};
 use stats::{distribution, median};
+use traversal::{measure_jwalk_traversal, measure_walkdir_traversal};
 
 const SCHEMA_VERSION: &str = "assura.performance.v1";
 const ASSURA_VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -215,6 +219,28 @@ fn generate_report(
             &ls_lint_status,
             &ls_lint_package,
         ));
+        results.push(measure_walkdir_traversal(
+            scenario,
+            &fixture,
+            iterations,
+            &timestamp,
+            &commit_sha,
+            &branch,
+            &environment,
+            &baseline_id,
+            &ls_lint_status,
+        ));
+        results.push(measure_jwalk_traversal(
+            scenario,
+            &fixture,
+            iterations,
+            &timestamp,
+            &commit_sha,
+            &branch,
+            &environment,
+            &baseline_id,
+            &ls_lint_status,
+        ));
         let _ = fs::remove_dir_all(&fixture);
     }
 
@@ -354,7 +380,7 @@ fn measure_ls_lint(
 }
 
 #[allow(clippy::too_many_arguments)]
-fn row(
+pub(in crate::cli::performance_report) fn row(
     scenario: FixtureScenario,
     timestamp: &str,
     commit_sha: &str,
@@ -452,32 +478,4 @@ fn npm_ls_lint_command(ls_lint_package: &str) -> Command {
             "ls-lint",
         ]);
     command
-}
-
-fn git_value<const N: usize>(args: [&str; N]) -> Option<String> {
-    let output = Command::new("git").args(args).output().ok()?;
-    if !output.status.success() {
-        return None;
-    }
-    let value = String::from_utf8_lossy(&output.stdout).trim().to_string();
-    (!value.is_empty()).then_some(value)
-}
-
-fn utc_timestamp() -> String {
-    match Command::new("date")
-        .args(["-u", "+%Y-%m-%dT%H:%M:%SZ"])
-        .output()
-    {
-        Ok(output) if output.status.success() => {
-            String::from_utf8_lossy(&output.stdout).trim().to_string()
-        }
-        _ => format!("unix:{}", unix_seconds()),
-    }
-}
-
-fn unix_seconds() -> u64 {
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .map(|duration| duration.as_secs())
-        .unwrap_or_default()
 }

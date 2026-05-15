@@ -42,7 +42,14 @@
     "fixture_source_revision": { "type": "string" },
     "fixture_cohort": { "type": "string" },
     "rule_cohort": { "type": "string" },
-    "tool_name": { "enum": ["assura", "ls-lint"] },
+    "tool_name": {
+      "enum": [
+        "assura",
+        "ls-lint",
+        "walkdir-before-jwalk",
+        "jwalk-after-migration"
+      ]
+    },
     "median_runtime_ms": { "type": ["number", "null"], "minimum": 0 },
     "distribution": {
       "type": "object",

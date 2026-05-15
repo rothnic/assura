@@ -347,9 +347,15 @@ ls:
 
     if variant == FixtureVariant::Invalid {
         fs::create_dir(project.path().join("src/BadDir")).unwrap();
-        write(project.path().join("src/app.tsx"), "export {};\n");
-        write(project.path().join("src/App.test.tsx"), "export {};\n");
-        write(project.path().join("src/Theme.module.css"), ".root {}\n");
+        write(project.path().join("src/bad-widget.tsx"), "export {};\n");
+        write(
+            project.path().join("src/BadWidget.test.tsx"),
+            "export {};\n",
+        );
+        write(
+            project.path().join("src/ThemeStyles.module.css"),
+            ".root {}\n",
+        );
     }
 }
 

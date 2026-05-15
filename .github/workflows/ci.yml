@@ -163,6 +163,15 @@ jobs:
                 value = row["median_runtime_ms"]
                 return "n/a" if value is None else f"{value:.3f} ms"
             print(f"| `{fixture}` | {median(assura)} | {median(lslint)} | `{assura['status']}` / `{lslint['status']}` |")
+        print()
+        print("## jwalk Migration Traversal Evidence")
+        print()
+        print("| Fixture | Before: walkdir traversal | After: jwalk traversal | Status |")
+        print("| --- | ---: | ---: | --- |")
+        for fixture in fixtures:
+            before = next(row for row in rows if row["fixture_id"] == fixture and row["tool_name"] == "walkdir-before-jwalk")
+            after = next(row for row in rows if row["fixture_id"] == fixture and row["tool_name"] == "jwalk-after-migration")
+            print(f"| `{fixture}` | {median(before)} | {median(after)} | `{before['status']}` / `{after['status']}` |")
         PY
     - name: Upload performance artifact
       uses: actions/upload-artifact@v4

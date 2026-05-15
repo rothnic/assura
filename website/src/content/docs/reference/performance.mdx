@@ -17,6 +17,9 @@ rule-heavy, and ignored/generated-heavy project shapes. Rows include schema
 version, timestamp, commit, branch, OS, architecture, Rust version, Node/npm
 versions, tool version, fixture metadata, rule cohort, tool name, median
 runtime, sample distribution, pass/fail status, and baseline identifier.
+The same report also includes traversal-only rows named
+`walkdir-before-jwalk` and `jwalk-after-migration` so PRs can show the
+production `jwalk` migration evidence beside the LS-Lint parity comparison.
 
 ## Baseline Table
 
@@ -29,8 +32,10 @@ runtime, sample distribution, pass/fail status, and baseline identifier.
 | `ignored_generated_heavy` | exclude-pruning | See current data | See current data | `stable-baseline-v1` |
 
 Pull requests attach a `ls-lint-performance-report` artifact and write a
-summary table to the GitHub Actions job summary. CI does not update tracked
-history automatically.
+summary table to the GitHub Actions job summary. The summary includes both
+Assura versus LS-Lint fixture timings and before/after traversal timings for
+the `walkdir` to `jwalk` migration. CI does not update tracked history
+automatically.
 
 ## Updating The Baseline
 
