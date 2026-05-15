@@ -1,0 +1,4 @@
+{"file":".trellis/spec/assura/index.md","reason":"Verify work follows current Assura product direction."}
+{"file":".trellis/spec/assura/tooling-stabilization.md","reason":"Verify required validation gates and no new unsupported claims."}
+{"file":".trellis/spec/assura/structure-enforcement.md","reason":"Verify nudge guidance aligns with structure rule semantics."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Verify JSON report, nudge, CLI, docs, and tests align at boundaries."}

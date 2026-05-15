@@ -13,27 +13,27 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 4 | Documentation Source Truth | Next | migrate, archive, or delete stale docs and workflow artifacts |
 | 5 | Windows CI Restore | Later | fix `libgit2-sys` MSVC linker failure and restore matrix entry |
 | 6 | Beyond Ls-Lint Rules | Active | `05-11-structure-check-benchmark-attribution` |
+| 7 | Agent Nudge MVP | Active | `05-14-assura-agent-nudge-mvp` |
 
 ## Active Epic
 
-**Beyond Ls-Lint Rules** is active.
+**Agent Nudge MVP** is active.
 
 Current owning task:
-`.trellis/tasks/05-11-structure-check-benchmark-attribution`.
+`.trellis/tasks/05-14-assura-agent-nudge-mvp`.
 
-Current objective: attribute structure-first `assura check` performance with
-the existing Criterion benchmark infrastructure and keep LS-Lint `exists`
-parity docs aligned with source truth.
+Current objective: prove the smallest Codex integration path that turns
+`assura check --format json` reports into advisory nudge messages and measured
+workflow comparisons.
 
 ## Recommended Next Epic
 
-After the current LS-Lint parity audit is reviewed, continue
-**Beyond Ls-Lint Rules** only where it improves dogfooding signal.
+After the current nudge MVP is reviewed, continue **Agent Nudge MVP** only
+where it improves dogfooding signal.
 
-The first recommended follow-up is whichever audit finding has the clearest
-dogfooding value: either LS-Lint directory-pattern parity for compatibility or
-the Codex integration runtime hook design building on the skeleton under
-`integrations/agents/codex/`.
+The first recommended follow-up is a real Codex hook installation design that
+uses the MVP nudge library without making hook behavior mandatory for ordinary
+developer workflows.
 
 ## Roadmap Rules
 

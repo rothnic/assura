@@ -123,14 +123,18 @@ assura check
 
 See [LS-Lint Migration](/guides/ls-lint-migration/) for a complete example.
 
-## Future Agent Nudges
+## Agent Nudge MVP
 
-The Codex integration is not complete in this release. The next goal is to
-surface Assura failures to agents with targeted guidance, compare
-instructions-only workflows with runtime nudges, and measure whether nudges
-reduce repeated correction loops.
+The Codex integration package now provides the first advisory nudge MVP. It can
+turn Assura JSON output into targeted guidance for a developer or agent:
+
+```bash
+assura check --format json . > assura-report.json
+assura-codex-nudge --report assura-report.json --format text
+```
 
 <Aside type="note" title="Current release scope">
-  This pre-1.0 release focuses on a truthful CLI, LS-Lint compatibility
-  evidence, performance evidence, and accurate developer onboarding.
+  This MVP does not install Codex hooks automatically and does not replace
+  repo-local `.agents/skills/` guidance. Treat it as advisory unless your
+  workflow enforces the command exit code.
 </Aside>
