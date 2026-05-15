@@ -449,9 +449,9 @@ impl StructureChecker {
             }
         } else {
             EffectiveRules {
-                files: node.files.clone(),
-                directories: node.directories.clone(),
-                markdown: node.markdown.clone(),
+                files: node.files.clone().map(std::sync::Arc::new),
+                directories: node.directories.clone().map(std::sync::Arc::new),
+                markdown: node.markdown.clone().map(std::sync::Arc::new),
             }
         };
 

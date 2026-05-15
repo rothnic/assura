@@ -1,6 +1,8 @@
 //! File, directory, and markdown validators for structure-first checks.
 
-use super::patterns::{matches_any_compiled_pattern, matches_single_compiled_pattern};
+use super::patterns::{
+    best_lslint_suffix_match, matches_any_compiled_pattern, matches_single_compiled_pattern,
+};
 use super::rules::{
     display_rel, file_matches_any_extension, parse_size, severity_for_bundle,
     severity_for_directory_bundle, validate_file_stem, validate_name,
@@ -135,7 +137,7 @@ impl StructureChecker {
                     let severity = rules
                         .files
                         .as_ref()
-                        .map(severity_for_bundle)
+                        .map(|files| severity_for_bundle(files))
                         .unwrap_or_else(|| "medium".to_string());
                     self.push_violation(
                         report,
@@ -253,14 +255,17 @@ impl StructureChecker {
         }
 
         if let Some(naming_patterns) = &files.naming_patterns {
-            let best_match = naming_patterns
-                .iter()
-                .filter(|(pattern, _)| {
-                    matches_single_compiled_pattern(pattern, filename, &self.glob_patterns)
-                })
-                .max_by(|(left, _), (right, _)| {
-                    left.len().cmp(&right.len()).then_with(|| right.cmp(left))
-                });
+            let best_match = best_lslint_suffix_match(naming_patterns, filename).or_else(|| {
+                naming_patterns
+                    .iter()
+                    .filter(|(pattern, _)| {
+                        matches_single_compiled_pattern(pattern, filename, &self.glob_patterns)
+                    })
+                    .map(|(pattern, naming)| (pattern.as_str(), naming.as_str()))
+                    .max_by(|(left, _), (right, _)| {
+                        left.len().cmp(&right.len()).then_with(|| right.cmp(left))
+                    })
+            });
 
             if let Some((_pattern, naming)) = best_match {
                 let stem = path

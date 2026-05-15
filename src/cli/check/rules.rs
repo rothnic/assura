@@ -8,12 +8,13 @@ use glob::Pattern;
 use regex::Regex;
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 
 #[derive(Debug, Clone, Default)]
 pub(super) struct EffectiveRules {
-    pub(super) files: Option<FileBundle>,
-    pub(super) directories: Option<DirectoryBundle>,
-    pub(super) markdown: Option<MarkdownBundle>,
+    pub(super) files: Option<Arc<FileBundle>>,
+    pub(super) directories: Option<Arc<DirectoryBundle>>,
+    pub(super) markdown: Option<Arc<MarkdownBundle>>,
 }
 
 #[derive(Debug, Clone)]
@@ -150,12 +151,12 @@ pub(super) fn dir_contains(node_rel: &Path, target_dir: &Path) -> bool {
 }
 
 pub(super) fn merge_file_bundle(
-    parent: Option<&FileBundle>,
+    parent: Option<&Arc<FileBundle>>,
     child: Option<&FileBundle>,
-) -> Option<FileBundle> {
+) -> Option<Arc<FileBundle>> {
     match (parent, child) {
         (None, None) => None,
-        (Some(parent), None) => Some(FileBundle {
+        (Some(parent), None) => Some(Arc::new(FileBundle {
             naming_patterns: None,
             required: None,
             allowed_names: None,
@@ -163,10 +164,10 @@ pub(super) fn merge_file_bundle(
             forbidden_patterns: None,
             allow_extra: None,
             exists: None,
-            ..parent.clone()
-        }),
-        (None, Some(child)) => Some(child.clone()),
-        (Some(parent), Some(child)) => Some(FileBundle {
+            ..parent.as_ref().clone()
+        })),
+        (None, Some(child)) => Some(Arc::new(child.clone())),
+        (Some(parent), Some(child)) => Some(Arc::new(FileBundle {
             naming: child.naming.clone().or_else(|| parent.naming.clone()),
             naming_patterns: child.naming_patterns.clone(),
             max_lines: child.max_lines.or(parent.max_lines),
@@ -183,27 +184,27 @@ pub(super) fn merge_file_bundle(
             forbidden_patterns: child.forbidden_patterns.clone(),
             allow_extra: child.allow_extra,
             exists: child.exists.clone(),
-        }),
+        })),
     }
 }
 
 pub(super) fn merge_directory_bundle(
-    parent: Option<&DirectoryBundle>,
+    parent: Option<&Arc<DirectoryBundle>>,
     child: Option<&DirectoryBundle>,
-) -> Option<DirectoryBundle> {
+) -> Option<Arc<DirectoryBundle>> {
     match (parent, child) {
         (None, None) => None,
-        (Some(parent), None) => Some(DirectoryBundle {
+        (Some(parent), None) => Some(Arc::new(DirectoryBundle {
             required: None,
             allowed_names: None,
             allowed_patterns: None,
             forbidden_patterns: None,
             allow_extra: None,
             exists: None,
-            ..parent.clone()
-        }),
-        (None, Some(child)) => Some(child.clone()),
-        (Some(parent), Some(child)) => Some(DirectoryBundle {
+            ..parent.as_ref().clone()
+        })),
+        (None, Some(child)) => Some(Arc::new(child.clone())),
+        (Some(parent), Some(child)) => Some(Arc::new(DirectoryBundle {
             naming: child.naming.clone().or_else(|| parent.naming.clone()),
             required: child.required.clone(),
             allowed_names: child.allowed_names.clone(),
@@ -212,19 +213,19 @@ pub(super) fn merge_directory_bundle(
             allow_extra: child.allow_extra,
             severity: child.severity.clone().or_else(|| parent.severity.clone()),
             exists: child.exists.clone(),
-        }),
+        })),
     }
 }
 
 pub(super) fn merge_markdown_bundle(
-    parent: Option<&MarkdownBundle>,
+    parent: Option<&Arc<MarkdownBundle>>,
     child: Option<&MarkdownBundle>,
-) -> Option<MarkdownBundle> {
+) -> Option<Arc<MarkdownBundle>> {
     match (parent, child) {
         (None, None) => None,
         (Some(parent), None) => Some(parent.clone()),
-        (None, Some(child)) => Some(child.clone()),
-        (Some(parent), Some(child)) => Some(MarkdownBundle {
+        (None, Some(child)) => Some(Arc::new(child.clone())),
+        (Some(parent), Some(child)) => Some(Arc::new(MarkdownBundle {
             require_frontmatter: child.require_frontmatter.or(parent.require_frontmatter),
             required_fields: child
                 .required_fields
@@ -236,7 +237,7 @@ pub(super) fn merge_markdown_bundle(
                 .required_sections
                 .clone()
                 .or_else(|| parent.required_sections.clone()),
-        }),
+        })),
     }
 }
 
@@ -422,6 +423,7 @@ pub(super) fn severity_for_directory_bundle(directories: &DirectoryBundle) -> St
 
 pub(super) fn strip_direct_content_policy(mut rules: EffectiveRules) -> EffectiveRules {
     if let Some(files) = rules.files.as_mut() {
+        let files = Arc::make_mut(files);
         files.required = None;
         files.allowed_names = None;
         files.allowed_patterns = None;
@@ -431,6 +433,7 @@ pub(super) fn strip_direct_content_policy(mut rules: EffectiveRules) -> Effectiv
     }
 
     if let Some(directories) = rules.directories.as_mut() {
+        let directories = Arc::make_mut(directories);
         directories.required = None;
         directories.allowed_names = None;
         directories.allowed_patterns = None;

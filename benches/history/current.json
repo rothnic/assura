@@ -1,7 +1,7 @@
 {
   "schema_version": "assura.performance.v1",
-  "timestamp": "2026-05-15T16:36:14Z",
-  "commit_sha": "0a86012f1e68780479e2a6d388c3e049959532a6",
+  "timestamp": "2026-05-15T17:41:23Z",
+  "commit_sha": "f3328e28f15943f00d6bdf07656dffd692bd1093",
   "branch": "codex/ls-lint-realistic-parity-core-performance",
   "environment": {
     "os": "linux",
@@ -11,7 +11,7 @@
     "npm_version": "11.12.1"
   },
   "comparison_baseline_id": "stable-baseline-v1",
-  "iterations": 1,
+  "iterations": 3,
   "ls_lint_package": "@ls-lint/ls-lint@2.3.0",
   "ls_lint_status": {
     "available": true,
@@ -21,8 +21,8 @@
   "results": [
     {
       "schema_version": "assura.performance.v1",
-      "timestamp": "2026-05-15T16:36:14Z",
-      "commit_sha": "0a86012f1e68780479e2a6d388c3e049959532a6",
+      "timestamp": "2026-05-15T17:41:23Z",
+      "commit_sha": "f3328e28f15943f00d6bdf07656dffd692bd1093",
       "branch": "codex/ls-lint-realistic-parity-core-performance",
       "os": "linux",
       "arch": "x86_64",
@@ -36,14 +36,16 @@
       "fixture_cohort": "stable-baseline",
       "rule_cohort": "extension-dir-naming",
       "tool_name": "assura",
-      "median_runtime_ms": 1.325507,
+      "median_runtime_ms": 1.179747,
       "distribution": {
-        "samples": 1,
+        "samples": 3,
         "samples_ms": [
-          1.325507
+          1.734237,
+          1.179747,
+          0.7136560000000001
         ],
-        "min_ms": 1.325507,
-        "max_ms": 1.325507
+        "min_ms": 0.7136560000000001,
+        "max_ms": 1.734237
       },
       "success": true,
       "status": "pass",
@@ -52,8 +54,8 @@
     },
     {
       "schema_version": "assura.performance.v1",
-      "timestamp": "2026-05-15T16:36:14Z",
-      "commit_sha": "0a86012f1e68780479e2a6d388c3e049959532a6",
+      "timestamp": "2026-05-15T17:41:23Z",
+      "commit_sha": "f3328e28f15943f00d6bdf07656dffd692bd1093",
       "branch": "codex/ls-lint-realistic-parity-core-performance",
       "os": "linux",
       "arch": "x86_64",
@@ -67,14 +69,16 @@
       "fixture_cohort": "stable-baseline",
       "rule_cohort": "extension-dir-naming",
       "tool_name": "ls-lint",
-      "median_runtime_ms": 671.042891,
+      "median_runtime_ms": 563.0968809999999,
       "distribution": {
-        "samples": 1,
+        "samples": 3,
         "samples_ms": [
-          671.042891
+          590.3153100000001,
+          496.615416,
+          563.0968809999999
         ],
-        "min_ms": 671.042891,
-        "max_ms": 671.042891
+        "min_ms": 496.615416,
+        "max_ms": 590.3153100000001
       },
       "success": true,
       "status": "pass",
@@ -83,8 +87,8 @@
     },
     {
       "schema_version": "assura.performance.v1",
-      "timestamp": "2026-05-15T16:36:14Z",
-      "commit_sha": "0a86012f1e68780479e2a6d388c3e049959532a6",
+      "timestamp": "2026-05-15T17:41:23Z",
+      "commit_sha": "f3328e28f15943f00d6bdf07656dffd692bd1093",
       "branch": "codex/ls-lint-realistic-parity-core-performance",
       "os": "linux",
       "arch": "x86_64",
@@ -98,14 +102,16 @@
       "fixture_cohort": "stable-baseline",
       "rule_cohort": "extension-dir-naming",
       "tool_name": "walkdir-before-jwalk",
-      "median_runtime_ms": 0.484477,
+      "median_runtime_ms": 0.086345,
       "distribution": {
-        "samples": 1,
+        "samples": 3,
         "samples_ms": [
-          0.484477
+          0.301043,
+          0.086345,
+          0.079662
         ],
-        "min_ms": 0.484477,
-        "max_ms": 0.484477
+        "min_ms": 0.079662,
+        "max_ms": 0.301043
       },
       "success": true,
       "status": "pass",
@@ -114,8 +120,8 @@
     },
     {
       "schema_version": "assura.performance.v1",
-      "timestamp": "2026-05-15T16:36:14Z",
-      "commit_sha": "0a86012f1e68780479e2a6d388c3e049959532a6",
+      "timestamp": "2026-05-15T17:41:23Z",
+      "commit_sha": "f3328e28f15943f00d6bdf07656dffd692bd1093",
       "branch": "codex/ls-lint-realistic-parity-core-performance",
       "os": "linux",
       "arch": "x86_64",
@@ -129,14 +135,16 @@
       "fixture_cohort": "stable-baseline",
       "rule_cohort": "extension-dir-naming",
       "tool_name": "jwalk-after-migration",
-      "median_runtime_ms": 0.33735,
+      "median_runtime_ms": 0.114877,
       "distribution": {
-        "samples": 1,
+        "samples": 3,
         "samples_ms": [
-          0.33735
+          0.170325,
+          0.114877,
+          0.106853
         ],
-        "min_ms": 0.33735,
-        "max_ms": 0.33735
+        "min_ms": 0.106853,
+        "max_ms": 0.170325
       },
       "success": true,
       "status": "pass",
@@ -145,8 +153,8 @@
     },
     {
       "schema_version": "assura.performance.v1",
-      "timestamp": "2026-05-15T16:36:14Z",
-      "commit_sha": "0a86012f1e68780479e2a6d388c3e049959532a6",
+      "timestamp": "2026-05-15T17:41:23Z",
+      "commit_sha": "f3328e28f15943f00d6bdf07656dffd692bd1093",
       "branch": "codex/ls-lint-realistic-parity-core-performance",
       "os": "linux",
       "arch": "x86_64",
@@ -160,14 +168,16 @@
       "fixture_cohort": "stable-baseline",
       "rule_cohort": "extension-dir-naming",
       "tool_name": "assura",
-      "median_runtime_ms": 16.658773,
+      "median_runtime_ms": 7.682869999999999,
       "distribution": {
-        "samples": 1,
+        "samples": 3,
         "samples_ms": [
-          16.658773
+          8.231584999999999,
+          7.682869999999999,
+          7.658894999999999
         ],
-        "min_ms": 16.658773,
-        "max_ms": 16.658773
+        "min_ms": 7.658894999999999,
+        "max_ms": 8.231584999999999
       },
       "success": true,
       "status": "pass",
@@ -176,8 +186,8 @@
     },
     {
       "schema_version": "assura.performance.v1",
-      "timestamp": "2026-05-15T16:36:14Z",
-      "commit_sha": "0a86012f1e68780479e2a6d388c3e049959532a6",
+      "timestamp": "2026-05-15T17:41:23Z",
+      "commit_sha": "f3328e28f15943f00d6bdf07656dffd692bd1093",
       "branch": "codex/ls-lint-realistic-parity-core-performance",
       "os": "linux",
       "arch": "x86_64",
@@ -191,14 +201,16 @@
       "fixture_cohort": "stable-baseline",
       "rule_cohort": "extension-dir-naming",
       "tool_name": "ls-lint",
-      "median_runtime_ms": 695.2552589999999,
+      "median_runtime_ms": 481.22039,
       "distribution": {
-        "samples": 1,
+        "samples": 3,
         "samples_ms": [
-          695.2552589999999
+          476.584948,
+          481.22039,
+          491.38353
         ],
-        "min_ms": 695.2552589999999,
-        "max_ms": 695.2552589999999
+        "min_ms": 476.584948,
+        "max_ms": 491.38353
       },
       "success": true,
       "status": "pass",
@@ -207,8 +219,8 @@
     },
     {
       "schema_version": "assura.performance.v1",
-      "timestamp": "2026-05-15T16:36:14Z",
-      "commit_sha": "0a86012f1e68780479e2a6d388c3e049959532a6",
+      "timestamp": "2026-05-15T17:41:23Z",
+      "commit_sha": "f3328e28f15943f00d6bdf07656dffd692bd1093",
       "branch": "codex/ls-lint-realistic-parity-core-performance",
       "os": "linux",
       "arch": "x86_64",
@@ -222,14 +234,16 @@
       "fixture_cohort": "stable-baseline",
       "rule_cohort": "extension-dir-naming",
       "tool_name": "walkdir-before-jwalk",
-      "median_runtime_ms": 1.319837,
+      "median_runtime_ms": 1.041946,
       "distribution": {
-        "samples": 1,
+        "samples": 3,
         "samples_ms": [
-          1.319837
+          1.064865,
+          0.953759,
+          1.041946
         ],
-        "min_ms": 1.319837,
-        "max_ms": 1.319837
+        "min_ms": 0.953759,
+        "max_ms": 1.064865
       },
       "success": true,
       "status": "pass",
@@ -238,8 +252,8 @@
     },
     {
       "schema_version": "assura.performance.v1",
-      "timestamp": "2026-05-15T16:36:14Z",
-      "commit_sha": "0a86012f1e68780479e2a6d388c3e049959532a6",
+      "timestamp": "2026-05-15T17:41:23Z",
+      "commit_sha": "f3328e28f15943f00d6bdf07656dffd692bd1093",
       "branch": "codex/ls-lint-realistic-parity-core-performance",
       "os": "linux",
       "arch": "x86_64",
@@ -253,14 +267,16 @@
       "fixture_cohort": "stable-baseline",
       "rule_cohort": "extension-dir-naming",
       "tool_name": "jwalk-after-migration",
-      "median_runtime_ms": 1.6597039999999998,
+      "median_runtime_ms": 1.316917,
       "distribution": {
-        "samples": 1,
+        "samples": 3,
         "samples_ms": [
-          1.6597039999999998
+          1.668191,
+          1.316917,
+          1.185647
         ],
-        "min_ms": 1.6597039999999998,
-        "max_ms": 1.6597039999999998
+        "min_ms": 1.185647,
+        "max_ms": 1.668191
       },
       "success": true,
       "status": "pass",
@@ -269,8 +285,8 @@
     },
     {
       "schema_version": "assura.performance.v1",
-      "timestamp": "2026-05-15T16:36:14Z",
-      "commit_sha": "0a86012f1e68780479e2a6d388c3e049959532a6",
+      "timestamp": "2026-05-15T17:41:23Z",
+      "commit_sha": "f3328e28f15943f00d6bdf07656dffd692bd1093",
       "branch": "codex/ls-lint-realistic-parity-core-performance",
       "os": "linux",
       "arch": "x86_64",
@@ -284,14 +300,16 @@
       "fixture_cohort": "stable-baseline",
       "rule_cohort": "extension-dir-naming",
       "tool_name": "assura",
-      "median_runtime_ms": 89.235473,
+      "median_runtime_ms": 39.886655,
       "distribution": {
-        "samples": 1,
+        "samples": 3,
         "samples_ms": [
-          89.235473
+          42.432589,
+          39.886655,
+          36.811943
         ],
-        "min_ms": 89.235473,
-        "max_ms": 89.235473
+        "min_ms": 36.811943,
+        "max_ms": 42.432589
       },
       "success": true,
       "status": "pass",
@@ -300,8 +318,8 @@
     },
     {
       "schema_version": "assura.performance.v1",
-      "timestamp": "2026-05-15T16:36:14Z",
-      "commit_sha": "0a86012f1e68780479e2a6d388c3e049959532a6",
+      "timestamp": "2026-05-15T17:41:23Z",
+      "commit_sha": "f3328e28f15943f00d6bdf07656dffd692bd1093",
       "branch": "codex/ls-lint-realistic-parity-core-performance",
       "os": "linux",
       "arch": "x86_64",
@@ -315,14 +333,16 @@
       "fixture_cohort": "stable-baseline",
       "rule_cohort": "extension-dir-naming",
       "tool_name": "ls-lint",
-      "median_runtime_ms": 737.674151,
+      "median_runtime_ms": 492.521547,
       "distribution": {
-        "samples": 1,
+        "samples": 3,
         "samples_ms": [
-          737.674151
+          533.430532,
+          476.800449,
+          492.521547
         ],
-        "min_ms": 737.674151,
-        "max_ms": 737.674151
+        "min_ms": 476.800449,
+        "max_ms": 533.430532
       },
       "success": true,
       "status": "pass",
@@ -331,8 +351,8 @@
     },
     {
       "schema_version": "assura.performance.v1",
-      "timestamp": "2026-05-15T16:36:14Z",
-      "commit_sha": "0a86012f1e68780479e2a6d388c3e049959532a6",
+      "timestamp": "2026-05-15T17:41:23Z",
+      "commit_sha": "f3328e28f15943f00d6bdf07656dffd692bd1093",
       "branch": "codex/ls-lint-realistic-parity-core-performance",
       "os": "linux",
       "arch": "x86_64",
@@ -346,14 +366,16 @@
       "fixture_cohort": "stable-baseline",
       "rule_cohort": "extension-dir-naming",
       "tool_name": "walkdir-before-jwalk",
-      "median_runtime_ms": 3.426561,
+      "median_runtime_ms": 2.9319200000000003,
       "distribution": {
-        "samples": 1,
+        "samples": 3,
         "samples_ms": [
-          3.426561
+          2.9319200000000003,
+          2.7194789999999998,
+          2.9656029999999998
         ],
-        "min_ms": 3.426561,
-        "max_ms": 3.426561
+        "min_ms": 2.7194789999999998,
+        "max_ms": 2.9656029999999998
       },
       "success": true,
       "status": "pass",
@@ -362,8 +384,8 @@
     },
     {
       "schema_version": "assura.performance.v1",
-      "timestamp": "2026-05-15T16:36:14Z",
-      "commit_sha": "0a86012f1e68780479e2a6d388c3e049959532a6",
+      "timestamp": "2026-05-15T17:41:23Z",
+      "commit_sha": "f3328e28f15943f00d6bdf07656dffd692bd1093",
       "branch": "codex/ls-lint-realistic-parity-core-performance",
       "os": "linux",
       "arch": "x86_64",
@@ -377,14 +399,16 @@
       "fixture_cohort": "stable-baseline",
       "rule_cohort": "extension-dir-naming",
       "tool_name": "jwalk-after-migration",
-      "median_runtime_ms": 5.043635999999999,
+      "median_runtime_ms": 5.370703,
       "distribution": {
-        "samples": 1,
+        "samples": 3,
         "samples_ms": [
-          5.043635999999999
+          5.635502,
+          5.370703,
+          4.523824
         ],
-        "min_ms": 5.043635999999999,
-        "max_ms": 5.043635999999999
+        "min_ms": 4.523824,
+        "max_ms": 5.635502
       },
       "success": true,
       "status": "pass",
@@ -393,8 +417,8 @@
     },
     {
       "schema_version": "assura.performance.v1",
-      "timestamp": "2026-05-15T16:36:14Z",
-      "commit_sha": "0a86012f1e68780479e2a6d388c3e049959532a6",
+      "timestamp": "2026-05-15T17:41:23Z",
+      "commit_sha": "f3328e28f15943f00d6bdf07656dffd692bd1093",
       "branch": "codex/ls-lint-realistic-parity-core-performance",
       "os": "linux",
       "arch": "x86_64",
@@ -408,14 +432,16 @@
       "fixture_cohort": "stable-baseline",
       "rule_cohort": "multi-extension-patterns",
       "tool_name": "assura",
-      "median_runtime_ms": 265.438737,
+      "median_runtime_ms": 77.98452999999999,
       "distribution": {
-        "samples": 1,
+        "samples": 3,
         "samples_ms": [
-          265.438737
+          77.98452999999999,
+          82.473327,
+          76.07502600000001
         ],
-        "min_ms": 265.438737,
-        "max_ms": 265.438737
+        "min_ms": 76.07502600000001,
+        "max_ms": 82.473327
       },
       "success": true,
       "status": "pass",
@@ -424,8 +450,8 @@
     },
     {
       "schema_version": "assura.performance.v1",
-      "timestamp": "2026-05-15T16:36:14Z",
-      "commit_sha": "0a86012f1e68780479e2a6d388c3e049959532a6",
+      "timestamp": "2026-05-15T17:41:23Z",
+      "commit_sha": "f3328e28f15943f00d6bdf07656dffd692bd1093",
       "branch": "codex/ls-lint-realistic-parity-core-performance",
       "os": "linux",
       "arch": "x86_64",
@@ -439,14 +465,16 @@
       "fixture_cohort": "stable-baseline",
       "rule_cohort": "multi-extension-patterns",
       "tool_name": "ls-lint",
-      "median_runtime_ms": 744.662599,
+      "median_runtime_ms": 502.24283199999996,
       "distribution": {
-        "samples": 1,
+        "samples": 3,
         "samples_ms": [
-          744.662599
+          502.24283199999996,
+          524.290861,
+          459.72762
         ],
-        "min_ms": 744.662599,
-        "max_ms": 744.662599
+        "min_ms": 459.72762,
+        "max_ms": 524.290861
       },
       "success": true,
       "status": "pass",
@@ -455,8 +483,8 @@
     },
     {
       "schema_version": "assura.performance.v1",
-      "timestamp": "2026-05-15T16:36:14Z",
-      "commit_sha": "0a86012f1e68780479e2a6d388c3e049959532a6",
+      "timestamp": "2026-05-15T17:41:23Z",
+      "commit_sha": "f3328e28f15943f00d6bdf07656dffd692bd1093",
       "branch": "codex/ls-lint-realistic-parity-core-performance",
       "os": "linux",
       "arch": "x86_64",
@@ -470,14 +498,16 @@
       "fixture_cohort": "stable-baseline",
       "rule_cohort": "multi-extension-patterns",
       "tool_name": "walkdir-before-jwalk",
-      "median_runtime_ms": 1.6881249999999999,
+      "median_runtime_ms": 1.814678,
       "distribution": {
-        "samples": 1,
+        "samples": 3,
         "samples_ms": [
-          1.6881249999999999
+          2.258366,
+          1.808189,
+          1.814678
         ],
-        "min_ms": 1.6881249999999999,
-        "max_ms": 1.6881249999999999
+        "min_ms": 1.808189,
+        "max_ms": 2.258366
       },
       "success": true,
       "status": "pass",
@@ -486,8 +516,8 @@
     },
     {
       "schema_version": "assura.performance.v1",
-      "timestamp": "2026-05-15T16:36:14Z",
-      "commit_sha": "0a86012f1e68780479e2a6d388c3e049959532a6",
+      "timestamp": "2026-05-15T17:41:23Z",
+      "commit_sha": "f3328e28f15943f00d6bdf07656dffd692bd1093",
       "branch": "codex/ls-lint-realistic-parity-core-performance",
       "os": "linux",
       "arch": "x86_64",
@@ -501,14 +531,16 @@
       "fixture_cohort": "stable-baseline",
       "rule_cohort": "multi-extension-patterns",
       "tool_name": "jwalk-after-migration",
-      "median_runtime_ms": 3.731777,
+      "median_runtime_ms": 2.683481,
       "distribution": {
-        "samples": 1,
+        "samples": 3,
         "samples_ms": [
-          3.731777
+          2.683481,
+          2.385338,
+          5.281306000000001
         ],
-        "min_ms": 3.731777,
-        "max_ms": 3.731777
+        "min_ms": 2.385338,
+        "max_ms": 5.281306000000001
       },
       "success": true,
       "status": "pass",
@@ -517,8 +549,8 @@
     },
     {
       "schema_version": "assura.performance.v1",
-      "timestamp": "2026-05-15T16:36:14Z",
-      "commit_sha": "0a86012f1e68780479e2a6d388c3e049959532a6",
+      "timestamp": "2026-05-15T17:41:23Z",
+      "commit_sha": "f3328e28f15943f00d6bdf07656dffd692bd1093",
       "branch": "codex/ls-lint-realistic-parity-core-performance",
       "os": "linux",
       "arch": "x86_64",
@@ -532,14 +564,16 @@
       "fixture_cohort": "stable-baseline",
       "rule_cohort": "exclude-pruning",
       "tool_name": "assura",
-      "median_runtime_ms": 0.48380100000000004,
+      "median_runtime_ms": 0.202543,
       "distribution": {
-        "samples": 1,
+        "samples": 3,
         "samples_ms": [
-          0.48380100000000004
+          0.470788,
+          0.202543,
+          0.17934799999999998
         ],
-        "min_ms": 0.48380100000000004,
-        "max_ms": 0.48380100000000004
+        "min_ms": 0.17934799999999998,
+        "max_ms": 0.470788
       },
       "success": true,
       "status": "pass",
@@ -548,8 +582,8 @@
     },
     {
       "schema_version": "assura.performance.v1",
-      "timestamp": "2026-05-15T16:36:14Z",
-      "commit_sha": "0a86012f1e68780479e2a6d388c3e049959532a6",
+      "timestamp": "2026-05-15T17:41:23Z",
+      "commit_sha": "f3328e28f15943f00d6bdf07656dffd692bd1093",
       "branch": "codex/ls-lint-realistic-parity-core-performance",
       "os": "linux",
       "arch": "x86_64",
@@ -563,14 +597,16 @@
       "fixture_cohort": "stable-baseline",
       "rule_cohort": "exclude-pruning",
       "tool_name": "ls-lint",
-      "median_runtime_ms": 709.9886290000001,
+      "median_runtime_ms": 502.328341,
       "distribution": {
-        "samples": 1,
+        "samples": 3,
         "samples_ms": [
-          709.9886290000001
+          481.602581,
+          502.328341,
+          527.729346
         ],
-        "min_ms": 709.9886290000001,
-        "max_ms": 709.9886290000001
+        "min_ms": 481.602581,
+        "max_ms": 527.729346
       },
       "success": true,
       "status": "pass",
@@ -579,8 +615,8 @@
     },
     {
       "schema_version": "assura.performance.v1",
-      "timestamp": "2026-05-15T16:36:14Z",
-      "commit_sha": "0a86012f1e68780479e2a6d388c3e049959532a6",
+      "timestamp": "2026-05-15T17:41:23Z",
+      "commit_sha": "f3328e28f15943f00d6bdf07656dffd692bd1093",
       "branch": "codex/ls-lint-realistic-parity-core-performance",
       "os": "linux",
       "arch": "x86_64",
@@ -594,14 +630,16 @@
       "fixture_cohort": "stable-baseline",
       "rule_cohort": "exclude-pruning",
       "tool_name": "walkdir-before-jwalk",
-      "median_runtime_ms": 1.725832,
+      "median_runtime_ms": 0.9488810000000001,
       "distribution": {
-        "samples": 1,
+        "samples": 3,
         "samples_ms": [
-          1.725832
+          0.9488810000000001,
+          1.0440989999999999,
+          0.827802
         ],
-        "min_ms": 1.725832,
-        "max_ms": 1.725832
+        "min_ms": 0.827802,
+        "max_ms": 1.0440989999999999
       },
       "success": true,
       "status": "pass",
@@ -610,8 +648,8 @@
     },
     {
       "schema_version": "assura.performance.v1",
-      "timestamp": "2026-05-15T16:36:14Z",
-      "commit_sha": "0a86012f1e68780479e2a6d388c3e049959532a6",
+      "timestamp": "2026-05-15T17:41:23Z",
+      "commit_sha": "f3328e28f15943f00d6bdf07656dffd692bd1093",
       "branch": "codex/ls-lint-realistic-parity-core-performance",
       "os": "linux",
       "arch": "x86_64",
@@ -625,14 +663,16 @@
       "fixture_cohort": "stable-baseline",
       "rule_cohort": "exclude-pruning",
       "tool_name": "jwalk-after-migration",
-      "median_runtime_ms": 1.864252,
+      "median_runtime_ms": 1.225205,
       "distribution": {
-        "samples": 1,
+        "samples": 3,
         "samples_ms": [
-          1.864252
+          1.225205,
+          1.250906,
+          1.199198
         ],
-        "min_ms": 1.864252,
-        "max_ms": 1.864252
+        "min_ms": 1.199198,
+        "max_ms": 1.250906
       },
       "success": true,
       "status": "pass",
