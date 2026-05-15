@@ -9,7 +9,10 @@ pub mod output;
 pub mod performance_report;
 
 pub use args::{Cli, Commands, ExitCode, HookCommands, OutputFormat, PerformanceReportFormat};
-pub use check::{run_structure_check, CheckError, StructureCheckReport, StructureViolation};
+pub use check::{
+    run_structure_check, run_structure_check_with_timings, CheckError, StructureCheckReport,
+    StructureCheckTimings, StructureViolation,
+};
 pub use commands::{
     check_command, info_command, init_command, migrate_command, status_command, watch_command,
 };

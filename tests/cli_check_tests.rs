@@ -1,7 +1,7 @@
 use std::fs;
 use std::process::Command;
 
-use assura::cli::run_structure_check;
+use assura::cli::{run_structure_check, run_structure_check_with_timings};
 use assura::config::ls_compat::convert_ls_lint_to_config;
 use tempfile::TempDir;
 
@@ -85,6 +85,34 @@ fn check_passes_valid_structure() {
     let report: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
     assert_eq!(report["success"], true);
     assert_eq!(report["violations"].as_array().unwrap().len(), 0);
+}
+
+#[test]
+fn profiled_check_reports_stage_timings_without_changing_result() {
+    let project = TempDir::new().unwrap();
+    write_config(&project, baseline_config());
+
+    fs::create_dir(project.path().join("src")).unwrap();
+    fs::create_dir(project.path().join("docs")).unwrap();
+    fs::write(project.path().join("README.md"), "# Example\n").unwrap();
+    fs::write(project.path().join("src/main_file.rs"), "fn main() {}\n").unwrap();
+    fs::write(
+        project.path().join("docs/project-note.md"),
+        "---\ntitle: Project Note\n---\n# Project Note\n",
+    )
+    .unwrap();
+
+    let (report, timings) =
+        run_structure_check_with_timings(Some(project.path().to_path_buf()), None, false).unwrap();
+
+    assert!(report.success, "profiled check should preserve success");
+    assert_eq!(report.violations.len(), 0);
+    assert!(timings.total_ms >= timings.config_discovery_ms);
+    assert!(timings.total_ms >= timings.config_load_ms);
+    assert!(timings.total_ms >= timings.checker_init_ms);
+    assert!(timings.total_ms >= timings.configured_structure_ms);
+    assert!(timings.total_ms >= timings.walk_and_validate_ms);
+    assert!(timings.total_ms >= timings.report_sort_ms);
 }
 
 #[test]

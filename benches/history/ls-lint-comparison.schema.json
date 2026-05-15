@@ -45,6 +45,12 @@
     "tool_name": {
       "enum": [
         "assura",
+        "assura:config-discovery",
+        "assura:config-load",
+        "assura:checker-init",
+        "assura:configured-structure",
+        "assura:walk-and-validate",
+        "assura:report-sort",
         "ls-lint",
         "walkdir-before-jwalk",
         "jwalk-after-migration"

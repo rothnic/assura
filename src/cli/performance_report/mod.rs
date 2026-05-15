@@ -1,7 +1,7 @@
 //! Performance comparison report generation for CI artifacts and docs data.
 
 use crate::cli::args::PerformanceReportFormat;
-use crate::cli::check::run_structure_check;
+use crate::cli::check::run_structure_check_with_timings;
 use crate::cli::ExitCode;
 use serde::Serialize;
 use std::fs;
@@ -13,6 +13,7 @@ mod environment;
 mod fixtures;
 mod io;
 mod metadata;
+mod phases;
 mod stats;
 mod traversal;
 
@@ -20,6 +21,7 @@ use environment::{collect_environment, PerformanceEnvironment};
 use fixtures::{materialize_fixture, scenarios, FixtureScenario};
 use io::{append_history, render_jsonl, write_text, write_website_data};
 use metadata::{git_value, utc_timestamp};
+use phases::AssuraPhaseSamples;
 use stats::{distribution, median};
 use traversal::{measure_jwalk_traversal, measure_walkdir_traversal};
 
@@ -137,7 +139,7 @@ pub async fn performance_report_command(
     match generate_report(iterations.max(1), baseline_id, ls_lint_package) {
         Ok(report) => {
             let rendered = match format {
-                PerformanceReportFormat::Json => match serde_json::to_string_pretty(&report) {
+                PerformanceReportFormat::Json => match serde_json::to_string(&report) {
                     Ok(rendered) => rendered,
                     Err(error) => {
                         eprintln!("Error: failed to serialize performance report: {error}");
@@ -196,7 +198,7 @@ fn generate_report(
 
     for scenario in scenarios() {
         let fixture = materialize_fixture(scenario)?;
-        results.push(measure_assura(
+        results.extend(measure_assura(
             scenario,
             &fixture,
             iterations,
@@ -269,17 +271,20 @@ fn measure_assura(
     environment: &PerformanceEnvironment,
     baseline_id: &str,
     ls_lint_status: &ToolAvailability,
-) -> PerformanceResultRow {
+) -> Vec<PerformanceResultRow> {
     let mut samples = Vec::with_capacity(iterations);
+    let mut phase_samples = AssuraPhaseSamples::with_capacity(iterations);
     let mut failure = None;
     for _ in 0..iterations {
-        let started = Instant::now();
-        match run_structure_check(Some(fixture.to_path_buf()), None, false) {
-            Ok(report) if report.success => samples.push(started.elapsed().as_secs_f64() * 1000.0),
+        match run_structure_check_with_timings(Some(fixture.to_path_buf()), None, false) {
+            Ok((report, timings)) if report.success => {
+                samples.push(timings.total_ms);
+                phase_samples.push(timings);
+            }
             Ok(report) => {
                 failure = Some(format!(
                     "Assura reported {} violations",
-                    report.violations.len()
+                    report.0.violations.len()
                 ));
                 break;
             }
@@ -290,7 +295,7 @@ fn measure_assura(
         }
     }
 
-    row(
+    let mut rows = vec![row(
         scenario,
         timestamp,
         commit_sha,
@@ -299,9 +304,20 @@ fn measure_assura(
         ls_lint_status.version.as_deref().unwrap_or("unavailable"),
         "assura",
         samples,
-        failure,
+        failure.clone(),
         baseline_id,
-    )
+    )];
+    rows.extend(phase_samples.into_rows(
+        scenario,
+        timestamp,
+        commit_sha,
+        branch,
+        environment,
+        ls_lint_status,
+        failure.as_deref(),
+        baseline_id,
+    ));
+    rows
 }
 
 #[allow(clippy::too_many_arguments)]

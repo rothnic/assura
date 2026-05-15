@@ -172,6 +172,25 @@ jobs:
             before = next(row for row in rows if row["fixture_id"] == fixture and row["tool_name"] == "walkdir-before-jwalk")
             after = next(row for row in rows if row["fixture_id"] == fixture and row["tool_name"] == "jwalk-after-migration")
             print(f"| `{fixture}` | {median(before)} | {median(after)} | `{before['status']}` / `{after['status']}` |")
+        print()
+        print("## Assura Phase Breakdown")
+        print()
+        print("| Fixture | Config discovery | Config load | Init | Configured rules | Walk + validate | Sort |")
+        print("| --- | ---: | ---: | ---: | ---: | ---: | ---: |")
+        phases = [
+            "assura:config-discovery",
+            "assura:config-load",
+            "assura:checker-init",
+            "assura:configured-structure",
+            "assura:walk-and-validate",
+            "assura:report-sort",
+        ]
+        for fixture in fixtures:
+            values = [
+                median(next(row for row in rows if row["fixture_id"] == fixture and row["tool_name"] == phase))
+                for phase in phases
+            ]
+            print(f"| `{fixture}` | " + " | ".join(values) + " |")
         PY
     - name: Upload performance artifact
       uses: actions/upload-artifact@v4

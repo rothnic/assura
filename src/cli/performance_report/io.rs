@@ -32,7 +32,7 @@ pub(super) fn write_website_data(path: &Path, report: &PerformanceReport) -> std
     fs::create_dir_all(path)?;
     fs::write(
         path.join("current.json"),
-        serde_json::to_string_pretty(report).unwrap_or_default(),
+        serde_json::to_string(report).unwrap_or_default(),
     )?;
     fs::write(
         path.join("ls-lint-comparison-history.jsonl"),

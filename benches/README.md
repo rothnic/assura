@@ -19,7 +19,7 @@ so the first run may need network access to fetch the LS-Lint package. If
 LS-Lint is unavailable, the benchmark still runs Assura scenarios and skips the
 external LS-Lint samples.
 
-Scenarios covered:
+Generated stress scenarios covered:
 
 - `small`: representative extension and directory naming rules.
 - `medium`: common source/test sized tree.
@@ -31,6 +31,14 @@ Scenarios covered:
 The same benchmark also includes a `realistic_lslint_fixtures` group sourced
 from `tests/realistic_lslint_fixtures.rs`. Those fixtures are the reusable
 realistic corpus shared by compatibility tests and benchmark runs.
+
+The `assura performance-report` command covers both the generated stress
+scenarios above and realistic project-shape scenarios for `simple_library`,
+`web_app`, `monorepo_packages`, `rule_heavy_repo`, and
+`ignored_generated_heavy_repo`. In addition to top-level Assura, LS-Lint, and
+traversal rows, it emits per-fixture Assura phase rows for config discovery,
+config load, checker initialization, configured-structure validation,
+walk-and-validate, and deterministic report sorting.
 
 Record local release evidence with the date, branch or commit, operating
 system, exact command, LS-Lint version, and Criterion median estimates. Do not

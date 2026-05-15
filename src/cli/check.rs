@@ -3,13 +3,14 @@
 mod direct_contents;
 mod markdown;
 mod patterns;
+mod profiling;
 mod rules;
 mod validators;
 
 use crate::cli::config::{ConfigDiscovery, ConfigError};
 use crate::config::config::{Config, DirectoryNode};
-use crate::config::loader::ConfigLoader;
 use glob::Pattern;
+pub use profiling::{run_structure_check_with_timings, StructureCheckTimings};
 use regex::Regex;
 use rules::{
     collect_configured_dirs, collect_naming_regexes, dir_contains, display_rel,
@@ -20,6 +21,7 @@ use rules::{
 use serde::Serialize;
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
+use std::time::Instant;
 use thiserror::Error;
 
 /// Result of running a structure-first check.
@@ -114,31 +116,10 @@ pub fn run_structure_check(
     config_path: Option<PathBuf>,
     fail_fast: bool,
 ) -> Result<StructureCheckReport, CheckError> {
-    let requested_path = match path {
-        Some(path) => path,
-        None => std::env::current_dir()?,
-    };
-
-    if !requested_path.exists() {
-        return Err(CheckError::MissingPath(requested_path));
-    }
-
-    let checked_path = requested_path.canonicalize()?;
-    let (project_root, config_path) = discover_project(&checked_path, config_path)?;
-
-    if !checked_path.starts_with(&project_root) {
-        return Err(CheckError::OutsideProject {
-            checked_path,
-            project_root,
-        });
-    }
-
-    let config = ConfigLoader::load(&config_path)?;
-    let mut checker = StructureChecker::new(project_root.clone(), config, fail_fast);
-    checker.check(checked_path, config_path)
+    run_structure_check_with_timings(path, config_path, fail_fast).map(|(report, _timings)| report)
 }
 
-fn discover_project(
+pub(super) fn discover_project(
     checked_path: &Path,
     config_path: Option<PathBuf>,
 ) -> Result<(PathBuf, PathBuf), CheckError> {
@@ -177,19 +158,23 @@ fn discover_project(
     Ok((project_root, config_path.canonicalize()?))
 }
 
-struct StructureChecker {
-    pub(super) project_root: PathBuf,
-    pub(super) config: Config,
-    pub(super) fail_fast: bool,
-    pub(super) configured_dirs: HashSet<PathBuf>,
-    pub(super) exclude_patterns: Vec<CompiledExclusion>,
-    pub(super) naming_regexes: HashMap<String, Regex>,
-    pub(super) glob_patterns: HashMap<String, Pattern>,
-    pub(super) rules_cache: HashMap<PathBuf, EffectiveRules>,
+pub(in crate::cli::check) struct StructureChecker {
+    project_root: PathBuf,
+    config: Config,
+    fail_fast: bool,
+    configured_dirs: HashSet<PathBuf>,
+    exclude_patterns: Vec<CompiledExclusion>,
+    naming_regexes: HashMap<String, Regex>,
+    glob_patterns: HashMap<String, Pattern>,
+    rules_cache: HashMap<PathBuf, EffectiveRules>,
 }
 
 impl StructureChecker {
-    fn new(project_root: PathBuf, config: Config, fail_fast: bool) -> Self {
+    pub(in crate::cli::check) fn new(
+        project_root: PathBuf,
+        config: Config,
+        fail_fast: bool,
+    ) -> Self {
         let mut configured_dirs = HashSet::new();
         let mut naming_regexes = HashMap::new();
         let mut glob_patterns = HashMap::new();
@@ -218,10 +203,11 @@ impl StructureChecker {
         }
     }
 
-    fn check(
+    pub(in crate::cli::check) fn check(
         &mut self,
         checked_path: PathBuf,
         config_path: PathBuf,
+        timings: &mut StructureCheckTimings,
     ) -> Result<StructureCheckReport, CheckError> {
         let mut report = StructureCheckReport {
             success: true,
@@ -233,7 +219,9 @@ impl StructureChecker {
             violations: Vec::new(),
         };
 
+        let configured_started = Instant::now();
         self.validate_configured_structure(&mut report);
+        timings.configured_structure_ms = configured_started.elapsed().as_secs_f64() * 1000.0;
 
         if self.fail_fast && !report.violations.is_empty() {
             report.success = false;
@@ -249,6 +237,7 @@ impl StructureChecker {
             walker = walker.sort(true);
         }
 
+        let walk_started = Instant::now();
         for entry in walker.process_read_dir(move |_depth, _path, _state, children| {
             children.retain_mut(|entry| {
                 let Ok(entry) = entry else {
@@ -282,10 +271,13 @@ impl StructureChecker {
                 break;
             }
         }
+        timings.walk_and_validate_ms = walk_started.elapsed().as_secs_f64() * 1000.0;
 
+        let sort_started = Instant::now();
         report
             .violations
             .sort_by(|left, right| left.path.cmp(&right.path).then(left.rule.cmp(&right.rule)));
+        timings.report_sort_ms = sort_started.elapsed().as_secs_f64() * 1000.0;
         report.success = report.violations.is_empty();
         Ok(report)
     }

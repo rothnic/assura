@@ -89,11 +89,16 @@ recorded live LS-Lint rows:
 
 | Fixture | Assura median | LS-Lint median |
 | --- | ---: | ---: |
-| `simple_small` | 1.179747 ms | 563.096881 ms |
-| `simple_medium` | 7.682870 ms | 481.220390 ms |
-| `monorepo_large` | 39.886655 ms | 492.521547 ms |
-| `rule_heavy` | 77.984530 ms | 502.242832 ms |
-| `ignored_generated_heavy` | 0.202543 ms | 502.328341 ms |
+| `simple_small` | 2.326805 ms | 572.690310 ms |
+| `simple_medium` | 8.830058 ms | 578.498985 ms |
+| `monorepo_large` | 42.665112 ms | 595.606118 ms |
+| `rule_heavy` | 82.924370 ms | 602.101664 ms |
+| `ignored_generated_heavy` | 0.219952 ms | 536.428133 ms |
+| `simple_library` | 0.501945 ms | 581.840911 ms |
+| `web_app` | 0.427998 ms | 579.002226 ms |
+| `monorepo_packages` | 1.522752 ms | 577.772837 ms |
+| `rule_heavy_repo` | 13.350487 ms | 573.496593 ms |
+| `ignored_generated_heavy_repo` | 0.183466 ms | 792.483023 ms |
 
 The same data is tracked in `benches/history/current.json` and
 `website/public/data/performance/current.json`.

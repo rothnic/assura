@@ -13,13 +13,19 @@ pull requests, and this website all point at the same data contract.
 - [Tracked schema](https://github.com/rothnic/assura/blob/master/benches/history/ls-lint-comparison.schema.json)
 
 The comparison covers stable fixture cohorts for small, medium, large,
-rule-heavy, and ignored/generated-heavy project shapes. Rows include schema
-version, timestamp, commit, branch, OS, architecture, Rust version, Node/npm
-versions, tool version, fixture metadata, rule cohort, tool name, median
-runtime, sample distribution, pass/fail status, and baseline identifier.
-The same report also includes traversal-only rows named
-`walkdir-before-jwalk` and `jwalk-after-migration` so PRs can show the
+rule-heavy, ignored/generated-heavy, library, web app, and monorepo project
+shapes. Rows include schema version, timestamp, commit, branch, OS,
+architecture, Rust version, Node/npm versions, tool version, fixture metadata,
+rule cohort, tool name, median runtime, sample distribution, pass/fail status,
+and baseline identifier. The same report also includes traversal-only rows
+named `walkdir-before-jwalk` and `jwalk-after-migration` so PRs can show the
 production `jwalk` migration evidence beside the LS-Lint parity comparison.
+
+Assura rows also include per-fixture phase timings:
+`assura:config-discovery`, `assura:config-load`, `assura:checker-init`,
+`assura:configured-structure`, `assura:walk-and-validate`, and
+`assura:report-sort`. These rows are intended to make hotspot claims
+reviewable without scraping local Criterion output.
 
 ## Baseline Table
 
@@ -30,11 +36,17 @@ production `jwalk` migration evidence beside the LS-Lint parity comparison.
 | `monorepo_large` | extension-dir-naming | See current data | See current data | `stable-baseline-v1` |
 | `rule_heavy` | multi-extension-patterns | See current data | See current data | `stable-baseline-v1` |
 | `ignored_generated_heavy` | exclude-pruning | See current data | See current data | `stable-baseline-v1` |
+| `simple_library` | realistic-library | See current data | See current data | `stable-baseline-v1` |
+| `web_app` | realistic-frontend | See current data | See current data | `stable-baseline-v1` |
+| `monorepo_packages` | realistic-monorepo | See current data | See current data | `stable-baseline-v1` |
+| `rule_heavy_repo` | realistic-multi-extension-patterns | See current data | See current data | `stable-baseline-v1` |
+| `ignored_generated_heavy_repo` | realistic-exclude-pruning | See current data | See current data | `stable-baseline-v1` |
 
 Pull requests attach a `ls-lint-performance-report` artifact and write a
 summary table to the GitHub Actions job summary. The summary includes both
 Assura versus LS-Lint fixture timings and before/after traversal timings for
-the `walkdir` to `jwalk` migration. CI does not update tracked history
+the `walkdir` to `jwalk` migration. The summary also includes a phase
+breakdown table for each fixture. CI does not update tracked history
 automatically.
 
 ## Updating The Baseline
