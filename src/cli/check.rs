@@ -21,7 +21,6 @@ use serde::Serialize;
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use thiserror::Error;
-use walkdir::WalkDir;
 
 /// Result of running a structure-first check.
 #[derive(Debug, Clone, Serialize)]
@@ -103,7 +102,7 @@ pub enum CheckError {
     Io(#[from] std::io::Error),
     /// Directory walking failed.
     #[error(transparent)]
-    WalkDir(#[from] walkdir::Error),
+    WalkDir(#[from] jwalk::Error),
     /// Configuration loading failed.
     #[error(transparent)]
     Config(#[from] ConfigError),
@@ -243,29 +242,40 @@ impl StructureChecker {
 
         let project_root = self.project_root.clone();
         let exclude_patterns = self.exclude_patterns.clone();
-        for entry in WalkDir::new(&checked_path)
-            .into_iter()
-            .filter_entry(move |entry| {
-                let rel = entry
-                    .path()
-                    .strip_prefix(&project_root)
-                    .unwrap_or(entry.path());
-                !is_excluded_rel_with(&exclude_patterns, rel)
-            })
-        {
+        let mut walker = jwalk::WalkDir::new(&checked_path)
+            .skip_hidden(false)
+            .parallelism(jwalk::Parallelism::Serial);
+        if self.fail_fast {
+            walker = walker.sort(true);
+        }
+
+        for entry in walker.process_read_dir(move |_depth, _path, _state, children| {
+            children.retain_mut(|entry| {
+                let Ok(entry) = entry else {
+                    return true;
+                };
+                let path = entry.path();
+                let rel = path.strip_prefix(&project_root).unwrap_or(&path);
+                if is_excluded_rel_with(&exclude_patterns, rel) {
+                    entry.read_children_path = None;
+                    return false;
+                }
+                true
+            });
+        }) {
             let entry = entry?;
             let path = entry.path();
             if path == checked_path && path.is_dir() {
-                self.validate_directory_contents(path, &mut report);
+                self.validate_directory_contents(&path, &mut report);
                 continue;
             }
 
             if path.is_dir() {
                 report.dirs_checked += 1;
-                self.validate_directory(path, &mut report);
+                self.validate_directory(&path, &mut report);
             } else if path.is_file() {
                 report.files_checked += 1;
-                self.validate_file(path, &mut report);
+                self.validate_file(&path, &mut report);
             }
 
             if self.fail_fast && !report.violations.is_empty() {

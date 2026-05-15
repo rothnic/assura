@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://assura.dev/schemas/assura-performance-v1.json",
+  "title": "Assura performance comparison row",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "timestamp",
+    "commit_sha",
+    "branch",
+    "os",
+    "arch",
+    "rust_version",
+    "node_version",
+    "npm_version",
+    "assura_version",
+    "ls_lint_version",
+    "fixture_id",
+    "fixture_source_revision",
+    "fixture_cohort",
+    "rule_cohort",
+    "tool_name",
+    "median_runtime_ms",
+    "distribution",
+    "success",
+    "status",
+    "comparison_baseline_id"
+  ],
+  "properties": {
+    "schema_version": { "const": "assura.performance.v1" },
+    "timestamp": { "type": "string" },
+    "commit_sha": { "type": "string" },
+    "branch": { "type": "string" },
+    "os": { "type": "string" },
+    "arch": { "type": "string" },
+    "rust_version": { "type": "string" },
+    "node_version": { "type": "string" },
+    "npm_version": { "type": "string" },
+    "assura_version": { "type": "string" },
+    "ls_lint_version": { "type": "string" },
+    "fixture_id": { "type": "string" },
+    "fixture_source_revision": { "type": "string" },
+    "fixture_cohort": { "type": "string" },
+    "rule_cohort": { "type": "string" },
+    "tool_name": { "enum": ["assura", "ls-lint"] },
+    "median_runtime_ms": { "type": ["number", "null"], "minimum": 0 },
+    "distribution": {
+      "type": "object",
+      "required": ["samples", "samples_ms", "min_ms", "max_ms"],
+      "properties": {
+        "samples": { "type": "integer", "minimum": 0 },
+        "samples_ms": {
+          "type": "array",
+          "items": { "type": "number", "minimum": 0 }
+        },
+        "min_ms": { "type": ["number", "null"], "minimum": 0 },
+        "max_ms": { "type": ["number", "null"], "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "success": { "type": "boolean" },
+    "status": { "enum": ["pass", "fail", "skipped"] },
+    "details": { "type": ["string", "null"] },
+    "comparison_baseline_id": { "type": "string" }
+  },
+  "additionalProperties": false
+}

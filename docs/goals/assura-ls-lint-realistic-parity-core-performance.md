@@ -12,6 +12,9 @@ related:
   - .trellis/spec/assura/structure-enforcement.md
   - .trellis/spec/assura/tooling-stabilization.md
   - docs/analysis/2026-05-11-ls-lint-parity-performance-regression-audit.md
+  - docs/analysis/2026-05-15-ls-lint-good-enough-comparison-contract.md
+  - docs/analysis/2026-05-15-incremental-cache-aware-checking-strategy.md
+  - docs/analysis/2026-05-15-notation-source-truth.md
   - docs/unified-tree-design.md
   - docs/ls-lint-capability-comparison.md
   - docs/archive/final-config-design.md
@@ -435,24 +438,30 @@ The consolidated doc must:
 - Keep website/onboarding docs truthful if any command, output, or performance
   claim changes.
 
-## Known Gaps to Address or Document
+## Known Gaps Addressed or Documented
 
-- Production `assura check` still uses `walkdir`; this goal should switch to
-  `jwalk`.
-- Realistic LS-Lint parity fixtures are not yet organized as reusable example
-  repositories.
-- No pinned external-real-repo fixture manifest currently defines the stable
-  LS-Lint comparison corpus.
-- No CI/CD performance comparison artifact currently shows PR reviewers whether
-  the current branch regressed on stable fixtures.
-- No chart-ready performance history is currently published for the website.
-- No incremental or cache-aware check strategy is currently defined for
-  avoiding unnecessary rechecks of unchanged files.
-- Current directory pattern scopes such as `packages/*`, `**`, and
-  `{src,tests}` are not full LS-Lint parity.
-- Pattern matching may still scale with files times patterns.
-- Direct `exists` checks can read the same directory more than once.
-- Notation design is split across active and historical docs.
+- Production `assura check` now uses `jwalk` with deterministic final report
+  sorting and sorted traversal only for fail-fast determinism.
+- Reusable realistic LS-Lint fixture families now cover simple library, web
+  app, monorepo packages, rule-heavy, and ignored/generated-heavy shapes across
+  tests and benchmarks.
+- A pinned fixture manifest now defines generated and external-git source
+  entries, stable-baseline versus feature cohorts, and a tested cacheable
+  external materialization path.
+- CI now emits a PR-visible performance summary and uploads a machine-readable
+  performance artifact.
+- Chart-ready performance history is tracked under `benches/history/` and
+  copied into website public data for the performance reference page.
+- Incremental/cache-aware checking is documented in
+  `docs/analysis/2026-05-15-incremental-cache-aware-checking-strategy.md`.
+- Directory pattern scopes such as `packages/*`, `**`, and `{src,tests}` remain
+  unsupported LS-Lint parity and continue to return tested clear errors.
+- Pattern matching and direct `exists` costs were profiled; naming-pattern
+  specificity now avoids per-file allocation/sort overhead, and further
+  extension/suffix indexing remains a documented future optimization.
+- Current notation source truth is consolidated in
+  `docs/analysis/2026-05-15-notation-source-truth.md`, with historical docs
+  labeled as design input.
 
 ## Non-Goals
 
@@ -499,36 +508,45 @@ OPENSSL_INCLUDE_DIR=/usr/include OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu <carg
 | Date | Update | Evidence |
 | --- | --- | --- |
 | 2026-05-15 | Goal created after merging the agent nudge MVP and reprioritizing toward LS-Lint realistic parity, `jwalk`, core performance, and notation source-truth cleanup. | `docs/goals/assura-ls-lint-realistic-parity-core-performance.md` |
+| 2026-05-15 | Execution started from up-to-date `master`; created branch and Trellis execution task before product edits. | `git pull --ff-only`; branch `codex/ls-lint-realistic-parity-core-performance`; `.trellis/tasks/05-15-ls-lint-realistic-parity-core-performance-execution/` |
+| 2026-05-15 | First implementation slice started: good-enough LS-Lint comparison contract, reusable realistic fixture harness, compatibility tests, and production `jwalk` traversal migration. | Active Trellis task `.trellis/tasks/05-15-ls-lint-realistic-parity-core-performance-execution/`; branch `codex/ls-lint-realistic-parity-core-performance` |
+| 2026-05-15 | First implementation slice completed locally: added comparison contract and pinned fixture manifest, reusable generated realistic fixture families, expanded compatibility and traversal regression tests, switched production `assura check` traversal to `jwalk`, and fixed deterministic subextension rule precedence. | `cargo fmt --all -- --check`; `OPENSSL_INCLUDE_DIR=/usr/include OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu cargo clippy --all-targets --all-features -- -D warnings`; `OPENSSL_INCLUDE_DIR=/usr/include OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu cargo test --all-targets --quiet`; `OPENSSL_INCLUDE_DIR=/usr/include OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu cargo test --test ls_lint_parity_regression_tests --quiet`; `OPENSSL_INCLUDE_DIR=/usr/include OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu cargo test --test cli_check_tests --quiet`; `OPENSSL_INCLUDE_DIR=/usr/include OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu cargo run --quiet -- check --format json .` |
+| 2026-05-15 | Performance reporting slice completed locally: added `assura performance-report`, JSON/JSONL result schema and tracked history, CI artifact and step-summary wiring, documented explicit baseline refresh process, and website performance reference page linked from the docs sidebar. Local sandbox could not fetch LS-Lint from npm, so generated data includes Assura pass rows and LS-Lint skipped rows with the exact `EAI_AGAIN registry.npmjs.org` blocker. | `cargo fmt --all -- --check`; `OPENSSL_INCLUDE_DIR=/usr/include OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu cargo clippy --all-targets --all-features -- -D warnings`; `OPENSSL_INCLUDE_DIR=/usr/include OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu cargo test performance_report --quiet`; `OPENSSL_INCLUDE_DIR=/usr/include OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu cargo run --quiet -- performance-report --output target/performance/ls-lint-comparison.json --iterations 1`; `OPENSSL_INCLUDE_DIR=/usr/include OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu cargo run --quiet -- check --format json .`; `cd website && pnpm build` |
+| 2026-05-15 | Incremental/cache research and notation source-truth slice completed: documented safe cache phases, invalidation and CI behavior, consolidated current notation status, updated stale capability wording, and labeled historical notation docs. | `docs/analysis/2026-05-15-incremental-cache-aware-checking-strategy.md`; `docs/analysis/2026-05-15-notation-source-truth.md`; `docs/ls-lint-capability-comparison.md`; `docs/unified-tree-design.md`; `docs/archive/final-config-design.md`; `docs/archive/ls-lint-notation-guide.md` |
+| 2026-05-15 | Strengthened pinned external fixture materialization from scaffold to tested harness behavior. | `tests/ls_lint_realistic_fixture_manifest.yml`; `tests/realistic_lslint_fixtures.rs`; `external_git_fixture_materializer_uses_pinned_revision_and_cache` |
+| 2026-05-15 | Final local benchmark cycle completed after tuning `jwalk` traversal and naming-pattern precedence: `structure_check` profiling groups passed, stable current-product comparison scenarios were no-change or improved, and realistic fixture benchmark rows established their first tracked local baseline. LS-Lint package fetch remained blocked locally by npm DNS and is represented as skipped rows with exact blocker text in JSON artifacts. | `OPENSSL_INCLUDE_DIR=/usr/include OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu cargo bench --bench profiling structure_check -- --noplot`; `OPENSSL_INCLUDE_DIR=/usr/include OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu cargo bench --bench ls_lint_comparison -- --noplot`; `benches/history/current.json`; `benches/history/ls-lint-comparison-history.jsonl`; `website/public/data/performance/current.json` |
+| 2026-05-15 | Final validation pass completed locally. | `cargo fmt --all -- --check`; `OPENSSL_INCLUDE_DIR=/usr/include OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu cargo clippy --all-targets --all-features -- -D warnings`; `OPENSSL_INCLUDE_DIR=/usr/include OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu cargo test --all-targets --quiet`; `OPENSSL_INCLUDE_DIR=/usr/include OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu cargo test --test ls_lint_parity_regression_tests --quiet`; `OPENSSL_INCLUDE_DIR=/usr/include OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu cargo test --test cli_check_tests --quiet`; `OPENSSL_INCLUDE_DIR=/usr/include OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu cargo run --quiet -- check --format json .`; `cd website && pnpm build` |
+| 2026-05-15 | Final review fixed performance evidence metadata drift: machine-readable rows now include OS, architecture, Rust, Node, and npm versions, and the CI performance summary exposes those values. | `src/cli/performance_report/mod.rs`; `benches/history/ls-lint-comparison.schema.json`; `benches/history/current.json`; `website/public/data/performance/current.json`; `.github/workflows/ci.yml` |
 
 ## Final Release Checklist
 
-- [ ] Realistic LS-Lint fixtures exist and are reused across tests and
+- [x] Realistic LS-Lint fixtures exist and are reused across tests and
       benchmarks.
-- [ ] Pinned external-real-repo fixture manifest exists and distinguishes
+- [x] Pinned external-real-repo fixture manifest exists and distinguishes
       stable baseline fixtures from new feature cohorts.
-- [ ] Compatibility matrix has valid and invalid coverage for every supported
+- [x] Compatibility matrix has valid and invalid coverage for every supported
       LS-Lint behavior.
-- [ ] Unsupported LS-Lint scopes are either implemented or clearly tested as
+- [x] Unsupported LS-Lint scopes are either implemented or clearly tested as
       unsupported with useful errors.
-- [ ] Production `assura check` uses `jwalk`.
-- [ ] `assura check` output remains deterministic and semantically unchanged
+- [x] Production `assura check` uses `jwalk`.
+- [x] `assura check` output remains deterministic and semantically unchanged
       except for intended fixes.
-- [ ] Core hotspots are profiled before and after optimization.
-- [ ] Incremental/cache-aware checking strategy is researched and documented.
-- [ ] Cache placement avoids git noise and Assura self-check noise.
-- [ ] Config changes, Assura version changes, and rule/schema changes are
+- [x] Core hotspots are profiled before and after optimization.
+- [x] Incremental/cache-aware checking strategy is researched and documented.
+- [x] Cache placement avoids git noise and Assura self-check noise.
+- [x] Config changes, Assura version changes, and rule/schema changes are
       accounted for in cache invalidation.
-- [ ] Obvious performance wins are implemented or documented with a concrete
+- [x] Obvious performance wins are implemented or documented with a concrete
       next step.
-- [ ] Benchmark evidence is saved with environment and command details.
-- [ ] Machine-readable performance history exists and can be compared over
+- [x] Benchmark evidence is saved with environment and command details.
+- [x] Machine-readable performance history exists and can be compared over
       time.
-- [ ] PR review exposes a performance summary or artifact link.
-- [ ] Website exposes or links a chart/table for Assura versus LS-Lint
+- [x] PR review exposes a performance summary or artifact link.
+- [x] Website exposes or links a chart/table for Assura versus LS-Lint
       performance history.
-- [ ] Notation design source truth is current and distinguishes implemented,
+- [x] Notation design source truth is current and distinguishes implemented,
       extension, unsupported, and planned behavior.
-- [ ] Required validation commands pass or blockers are documented exactly.
+- [x] Required validation commands pass or blockers are documented exactly.
 
 ## Stop Condition
 

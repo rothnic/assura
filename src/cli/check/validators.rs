@@ -253,26 +253,33 @@ impl StructureChecker {
         }
 
         if let Some(naming_patterns) = &files.naming_patterns {
-            for (pattern, naming) in naming_patterns {
-                if matches_single_compiled_pattern(pattern, filename, &self.glob_patterns) {
-                    let stem = path
-                        .file_stem()
-                        .and_then(|stem| stem.to_str())
-                        .unwrap_or("");
-                    if !validate_file_stem(stem, naming, &self.naming_regexes) {
-                        self.push_violation(
-                            report,
-                            rel.to_path_buf(),
-                            "file_naming",
-                            format!(
-                                "File '{}' does not match naming convention '{}'",
-                                filename, naming
-                            ),
-                            severity_for_bundle(files),
-                        );
-                    }
-                    return;
+            let best_match = naming_patterns
+                .iter()
+                .filter(|(pattern, _)| {
+                    matches_single_compiled_pattern(pattern, filename, &self.glob_patterns)
+                })
+                .max_by(|(left, _), (right, _)| {
+                    left.len().cmp(&right.len()).then_with(|| right.cmp(left))
+                });
+
+            if let Some((_pattern, naming)) = best_match {
+                let stem = path
+                    .file_stem()
+                    .and_then(|stem| stem.to_str())
+                    .unwrap_or("");
+                if !validate_file_stem(stem, naming, &self.naming_regexes) {
+                    self.push_violation(
+                        report,
+                        rel.to_path_buf(),
+                        "file_naming",
+                        format!(
+                            "File '{}' does not match naming convention '{}'",
+                            filename, naming
+                        ),
+                        severity_for_bundle(files),
+                    );
                 }
+                return;
             }
         }
 

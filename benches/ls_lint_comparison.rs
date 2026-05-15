@@ -12,6 +12,9 @@ use std::process::Command;
 use std::time::Duration;
 use tempfile::{Builder, TempDir};
 
+#[path = "../tests/realistic_lslint_fixtures.rs"]
+mod realistic_lslint_fixtures;
+
 #[derive(Clone, Copy)]
 enum ScenarioKind {
     Sized { dirs: usize, files_per_dir: usize },
@@ -318,5 +321,41 @@ fn bench_current_product_comparison(c: &mut Criterion) {
     group.finish();
 }
 
-criterion_group!(comparison, bench_current_product_comparison);
+fn bench_realistic_fixture_families(c: &mut Criterion) {
+    let fixtures: Vec<_> = realistic_lslint_fixtures::realistic_fixture_families()
+        .iter()
+        .map(|family| {
+            (
+                *family,
+                realistic_lslint_fixtures::materialize_fixture(
+                    *family,
+                    realistic_lslint_fixtures::FixtureVariant::Valid,
+                ),
+            )
+        })
+        .collect();
+
+    let mut group = c.benchmark_group("realistic_lslint_fixtures");
+    group.sample_size(10);
+    group.warm_up_time(Duration::from_millis(500));
+
+    for (family, fixture) in &fixtures {
+        group.throughput(Throughput::Elements(
+            count_entries(fixture.project.path()) as u64
+        ));
+        group.bench_with_input(
+            BenchmarkId::new("assura_check", family.id),
+            fixture.project.path(),
+            |b, path| b.iter(|| run_assura(path)),
+        );
+    }
+
+    group.finish();
+}
+
+criterion_group!(
+    comparison,
+    bench_current_product_comparison,
+    bench_realistic_fixture_families
+);
 criterion_main!(comparison);

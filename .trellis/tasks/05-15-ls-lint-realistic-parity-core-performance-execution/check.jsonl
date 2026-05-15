@@ -1,0 +1,5 @@
+{"file":".trellis/spec/assura/index.md","reason":"Review against canonical source routing, scope, and workflow status expectations."}
+{"file":".trellis/spec/assura/structure-enforcement.md","reason":"Verify validation behavior still satisfies direct-content and LS-Lint exists contracts."}
+{"file":".trellis/spec/assura/tooling-stabilization.md","reason":"Confirm quality gates and any blockers are handled according to current policy."}
+{"file":"docs/goals/assura-ls-lint-realistic-parity-core-performance.md","reason":"Audit every acceptance criterion, demonstration requirement, validation command, and final checklist item."}
+{"file":"docs/analysis/2026-05-11-ls-lint-parity-performance-regression-audit.md","reason":"Compare new evidence to prior parity/performance baseline and known gaps."}

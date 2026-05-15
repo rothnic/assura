@@ -28,9 +28,39 @@ Scenarios covered:
 - `ignored_generated_heavy`: generated files pruned through ignore/exclude
   configuration.
 
+The same benchmark also includes a `realistic_lslint_fixtures` group sourced
+from `tests/realistic_lslint_fixtures.rs`. Those fixtures are the reusable
+realistic corpus shared by compatibility tests and benchmark runs.
+
 Record local release evidence with the date, branch or commit, operating
 system, exact command, LS-Lint version, and Criterion median estimates. Do not
 claim a speedup unless this current-product benchmark supports it.
+
+For CI artifacts, website charting, and tracked history, use the lightweight
+report command instead of scraping Criterion output:
+
+```bash
+cargo run --quiet -- performance-report \
+  --output target/performance/ls-lint-comparison.json \
+  --iterations 5
+```
+
+The report schema is tracked at
+`benches/history/ls-lint-comparison.schema.json`. PR CI uploads the current
+report as an artifact and writes a concise GitHub Step Summary. To intentionally
+refresh the tracked baseline history, run:
+
+```bash
+cargo run --quiet -- performance-report \
+  --output benches/history/current.json \
+  --history benches/history/ls-lint-comparison-history.jsonl \
+  --website-dir website/public/data/performance \
+  --iterations 5
+```
+
+Review the resulting `benches/history/` and `website/public/data/performance/`
+diffs in the PR. Do not update tracked history as an automatic side effect of
+normal benchmark or CI runs.
 
 ### Local Baseline: 2026-05-14
 

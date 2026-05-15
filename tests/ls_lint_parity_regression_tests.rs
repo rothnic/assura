@@ -7,6 +7,9 @@ use assura::cli::run_structure_check;
 use assura::config::ls_compat::convert_ls_lint_to_config;
 use tempfile::TempDir;
 
+#[path = "realistic_lslint_fixtures.rs"]
+mod realistic_lslint_fixtures;
+
 fn assura_bin() -> &'static str {
     env!("CARGO_BIN_EXE_assura")
 }
@@ -52,6 +55,166 @@ fn violation_rules(report: &serde_json::Value) -> Vec<String> {
         .iter()
         .map(|violation| violation["rule"].as_str().unwrap().to_string())
         .collect()
+}
+
+#[test]
+fn realistic_fixture_manifest_is_pinned_and_complete() {
+    let manifest = realistic_lslint_fixtures::parse_manifest();
+    assert_eq!(manifest.schema_version, 1);
+
+    for family in realistic_lslint_fixtures::realistic_fixture_families() {
+        let entry = manifest
+            .fixtures
+            .iter()
+            .find(|entry| entry.id == family.id)
+            .unwrap_or_else(|| panic!("manifest missing fixture {}", family.id));
+
+        assert!(!entry.name.is_empty());
+        assert!(!entry.purpose.is_empty());
+        assert!(!entry.source.repository.is_empty());
+        assert!(!entry.source.revision.is_empty());
+        assert!(matches!(
+            entry.source.kind.as_str(),
+            "generated" | "external_git"
+        ));
+        assert!(
+            entry.cohort == "stable_baseline" || entry.cohort.starts_with("feature_"),
+            "unexpected cohort for {}: {}",
+            entry.id,
+            entry.cohort
+        );
+        assert!(!entry.ls_lint_rules.is_empty());
+        assert!(!entry.assura_rules.is_empty());
+    }
+
+    let extension = manifest
+        .fixtures
+        .iter()
+        .find(|entry| entry.id == "assura_exact_filename_exists_extension")
+        .expect("exact filename exists extension fixture should be declared");
+    assert!(!extension.native_lslint_parity);
+    assert_eq!(extension.assura_extensions, ["exact_filename_exists"]);
+
+    assert!(
+        manifest
+            .fixtures
+            .iter()
+            .any(|entry| entry.source.kind == "external_git"),
+        "manifest must include at least one pinned external_git source"
+    );
+}
+
+#[test]
+fn external_git_fixture_materializer_uses_pinned_revision_and_cache() {
+    let upstream = TempDir::new().unwrap();
+    std::process::Command::new("git")
+        .arg("init")
+        .arg("--quiet")
+        .arg(upstream.path())
+        .status()
+        .expect("git init should run");
+    fs::write(upstream.path().join("README.md"), "# Fixture\n").unwrap();
+    std::process::Command::new("git")
+        .arg("-C")
+        .arg(upstream.path())
+        .arg("add")
+        .arg("README.md")
+        .status()
+        .expect("git add should run");
+    std::process::Command::new("git")
+        .arg("-C")
+        .arg(upstream.path())
+        .args(["-c", "user.email=test@example.com", "-c", "user.name=Test"])
+        .args(["commit", "--quiet", "-m", "initial"])
+        .status()
+        .expect("git commit should run");
+    let commit = std::process::Command::new("git")
+        .arg("-C")
+        .arg(upstream.path())
+        .args(["rev-parse", "HEAD"])
+        .output()
+        .expect("git rev-parse should run");
+    assert!(commit.status.success());
+    let revision = String::from_utf8_lossy(&commit.stdout).trim().to_string();
+
+    fs::write(upstream.path().join("README.md"), "# Changed\n").unwrap();
+
+    let entry = realistic_lslint_fixtures::FixtureManifestEntry {
+        id: "local_external".to_string(),
+        name: "Local external".to_string(),
+        source: realistic_lslint_fixtures::FixtureSource {
+            kind: "external_git".to_string(),
+            repository: upstream.path().to_string_lossy().to_string(),
+            revision,
+        },
+        purpose: "prove pinned external materialization".to_string(),
+        ls_lint_rules: vec!["external_fixture_source".to_string()],
+        assura_rules: vec!["fixture_materialization".to_string()],
+        cohort: "stable_baseline".to_string(),
+        native_lslint_parity: true,
+        assura_extensions: vec![],
+    };
+    let cache = TempDir::new().unwrap();
+    let destination = TempDir::new().unwrap();
+    realistic_lslint_fixtures::materialize_external_git_fixture(
+        &entry,
+        cache.path(),
+        destination.path(),
+    )
+    .unwrap();
+
+    assert_eq!(
+        fs::read_to_string(destination.path().join("README.md")).unwrap(),
+        "# Fixture\n"
+    );
+    assert!(!destination.path().join(".git").exists());
+    assert!(
+        fs::read_dir(cache.path()).unwrap().next().is_some(),
+        "materializer should populate cache"
+    );
+}
+
+#[test]
+fn realistic_fixture_families_cover_valid_and_invalid_shapes() {
+    for family in realistic_lslint_fixtures::realistic_fixture_families() {
+        let fixture = realistic_lslint_fixtures::materialize_fixture(
+            *family,
+            realistic_lslint_fixtures::FixtureVariant::Valid,
+        );
+        let valid_report =
+            run_structure_check(Some(fixture.project.path().to_path_buf()), None, false).unwrap();
+        assert!(
+            valid_report.success,
+            "valid fixture {} should pass: {:#?}",
+            family.id, valid_report.violations
+        );
+        assert_eq!(valid_report.violations.len(), 0);
+
+        let fixture = realistic_lslint_fixtures::materialize_fixture(
+            *family,
+            realistic_lslint_fixtures::FixtureVariant::Invalid,
+        );
+        let invalid_report =
+            run_structure_check(Some(fixture.project.path().to_path_buf()), None, false).unwrap();
+        assert!(
+            !invalid_report.success,
+            "invalid fixture {} should fail",
+            family.id
+        );
+        let rules: std::collections::HashSet<_> = invalid_report
+            .violations
+            .iter()
+            .map(|violation| violation.rule.as_str())
+            .collect();
+        for expected in fixture.expected_rules {
+            assert!(
+                rules.contains(expected),
+                "fixture {} missing expected rule {expected}; saw {:#?}",
+                family.id,
+                invalid_report.violations
+            );
+        }
+    }
 }
 
 #[test]

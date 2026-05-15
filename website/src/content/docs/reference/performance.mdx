@@ -1,0 +1,50 @@
+---
+title: Performance
+description: Assura versus LS-Lint comparison history and CI reporting contract.
+---
+
+Assura tracks performance evidence as machine-readable JSON so release notes,
+pull requests, and this website all point at the same data contract.
+
+## Current Data
+
+- [Current comparison report](/data/performance/current.json)
+- [Chart-ready JSONL history](/data/performance/ls-lint-comparison-history.jsonl)
+- [Tracked schema](https://github.com/rothnic/assura/blob/master/benches/history/ls-lint-comparison.schema.json)
+
+The comparison covers stable fixture cohorts for small, medium, large,
+rule-heavy, and ignored/generated-heavy project shapes. Rows include schema
+version, timestamp, commit, branch, OS, architecture, Rust version, Node/npm
+versions, tool version, fixture metadata, rule cohort, tool name, median
+runtime, sample distribution, pass/fail status, and baseline identifier.
+
+## Baseline Table
+
+| Fixture | Rule cohort | Assura | LS-Lint 2.3 | Baseline |
+| --- | --- | ---: | ---: | --- |
+| `simple_small` | extension-dir-naming | See current data | See current data | `stable-baseline-v1` |
+| `simple_medium` | extension-dir-naming | See current data | See current data | `stable-baseline-v1` |
+| `monorepo_large` | extension-dir-naming | See current data | See current data | `stable-baseline-v1` |
+| `rule_heavy` | multi-extension-patterns | See current data | See current data | `stable-baseline-v1` |
+| `ignored_generated_heavy` | exclude-pruning | See current data | See current data | `stable-baseline-v1` |
+
+Pull requests attach a `ls-lint-performance-report` artifact and write a
+summary table to the GitHub Actions job summary. CI does not update tracked
+history automatically.
+
+## Updating The Baseline
+
+Baseline updates are explicit source changes:
+
+```bash
+cargo run --quiet -- performance-report \
+  --output benches/history/current.json \
+  --history benches/history/ls-lint-comparison-history.jsonl \
+  --website-dir website/public/data/performance \
+  --iterations 5
+```
+
+Review the generated diff in `benches/history/` and
+`website/public/data/performance/` before merging. If LS-Lint cannot be fetched
+or executed, the report keeps Assura rows and marks LS-Lint rows as `skipped`
+with the exact blocker in `details`.

@@ -5,6 +5,12 @@ status: historical
 
 # Assura Configuration Format: Final Design Specification
 
+> Historical design input, not current product source truth.
+>
+> This document describes an unimplemented `policy` / reusable `rules` /
+> `apply` proposal. The current supported notation is the `structure:` config
+> summarized in `docs/analysis/2026-05-15-notation-source-truth.md`.
+
 **Version:** 1.0 (Unified)  
 **Status:** Ready for Implementation  
 **Date:** 2026-03-20  

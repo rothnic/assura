@@ -91,6 +91,41 @@ pub enum Commands {
         path: Option<PathBuf>,
     },
 
+    #[command(about = "Emit Assura versus LS-Lint performance comparison data")]
+    PerformanceReport {
+        #[arg(
+            short,
+            long,
+            help = "Output path for the current run report (defaults to stdout)"
+        )]
+        output: Option<PathBuf>,
+
+        #[arg(long, help = "Append JSONL result rows to this history file")]
+        history: Option<PathBuf>,
+
+        #[arg(
+            long,
+            help = "Copy current JSON and JSONL history into this website public data directory"
+        )]
+        website_dir: Option<PathBuf>,
+
+        #[arg(
+            long,
+            default_value_t = 3,
+            help = "Measured iterations per tool and fixture"
+        )]
+        iterations: usize,
+
+        #[arg(long, default_value = "stable-baseline-v1")]
+        baseline_id: String,
+
+        #[arg(long, default_value = "json", value_enum)]
+        format: PerformanceReportFormat,
+
+        #[arg(long, default_value = "@ls-lint/ls-lint@2.3.0")]
+        ls_lint_package: String,
+    },
+
     #[command(about = "Install or manage git hooks")]
     Hooks {
         #[command(subcommand)]
@@ -124,6 +159,12 @@ pub enum OutputFormat {
     Text,
     Json,
     Yaml,
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]
+pub enum PerformanceReportFormat {
+    Json,
+    Jsonl,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]

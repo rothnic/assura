@@ -143,7 +143,16 @@ structure:
           allowed_names:
             - "README.md"
         directories:
+          allowed_names:
+            - "history"
           allow_extra: false
+        children:
+          history/:
+            files:
+              naming: "kebab-case"
+              max_lines: 1000
+              allowed_names:
+                - "README.md"
       
       docs/:
         files:

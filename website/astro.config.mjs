@@ -47,6 +47,7 @@ export default defineConfig({
 					items: [
 						{ label: 'Configuration Reference', slug: 'reference/configuration' },
 						{ label: 'API Reference', slug: 'reference/api' },
+						{ label: 'Performance', slug: 'reference/performance' },
 					],
 				},
 				{

@@ -105,3 +105,69 @@ jobs:
         path: ./cobertura.xml
         if-no-files-found: error
         retention-days: 14
+
+  performance:
+    name: Performance Report
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22
+    - name: Cache Rust builds
+      uses: Swatinem/rust-cache@v2
+    - name: Generate comparison report
+      run: |
+        mkdir -p target/performance
+        cargo run --quiet -- performance-report \
+          --output target/performance/ls-lint-comparison.json \
+          --iterations 3
+    - name: Summarize performance
+      run: |
+        python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+        import json
+        from pathlib import Path
+
+        report_path = Path("target/performance/ls-lint-comparison.json")
+        report = json.loads(report_path.read_text())
+        print("## Assura vs LS-Lint Performance")
+        print()
+        print(f"- Baseline: `{report['comparison_baseline_id']}`")
+        print(f"- Commit: `{report['commit_sha']}`")
+        print(f"- Branch: `{report['branch']}`")
+        environment = report["environment"]
+        print(f"- Environment: `{environment['os']}/{environment['arch']}`")
+        print(f"- Rust: `{environment['rust_version']}`")
+        print(f"- Node/npm: `{environment['node_version']}` / `{environment['npm_version']}`")
+        status = report["ls_lint_status"]
+        if status["available"]:
+            print(f"- LS-Lint: `{status['version']}`")
+        else:
+            print(f"- LS-Lint: skipped, `{status['blocker']}`")
+        print("- Full machine-readable report is attached as `ls-lint-performance-report`.")
+        print()
+        print("| Fixture | Assura median | LS-Lint median | Status |")
+        print("| --- | ---: | ---: | --- |")
+        rows = report["results"]
+        fixtures = []
+        for row in rows:
+            if row["fixture_id"] not in fixtures:
+                fixtures.append(row["fixture_id"])
+        for fixture in fixtures:
+            assura = next(row for row in rows if row["fixture_id"] == fixture and row["tool_name"] == "assura")
+            lslint = next(row for row in rows if row["fixture_id"] == fixture and row["tool_name"] == "ls-lint")
+            def median(row):
+                value = row["median_runtime_ms"]
+                return "n/a" if value is None else f"{value:.3f} ms"
+            print(f"| `{fixture}` | {median(assura)} | {median(lslint)} | `{assura['status']}` / `{lslint['status']}` |")
+        PY
+    - name: Upload performance artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ls-lint-performance-report
+        path: target/performance/ls-lint-comparison.json
+        if-no-files-found: error
+        retention-days: 30

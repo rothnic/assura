@@ -1,6 +1,7 @@
 use std::fs;
 use std::process::Command;
 
+use assura::cli::run_structure_check;
 use assura::config::ls_compat::convert_ls_lint_to_config;
 use tempfile::TempDir;
 
@@ -151,6 +152,122 @@ fn check_ignores_excluded_paths() {
         output.status.success(),
         "excluded target file should not fail:\n{}",
         String::from_utf8_lossy(&output.stdout)
+    );
+}
+
+#[test]
+fn check_prunes_excluded_directories_before_validation() {
+    let project = TempDir::new().unwrap();
+    write_config(
+        &project,
+        r#"
+structure:
+  ./:
+    files:
+      naming: kebab-case
+    directories:
+      naming: kebab-case
+    children:
+      .assura/:
+        inherit: false
+        files:
+          naming: kebab-case
+exclude:
+  - generated/**
+"#,
+    );
+
+    fs::create_dir(project.path().join("generated")).unwrap();
+    fs::create_dir(project.path().join("generated/BadDir")).unwrap();
+    fs::write(project.path().join("generated/BadName.rs"), "").unwrap();
+    fs::create_dir(project.path().join("src")).unwrap();
+    fs::write(project.path().join("src/good-file.rs"), "").unwrap();
+
+    let report = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+
+    assert!(report.success, "report was: {report:#?}");
+    assert_eq!(report.violations.len(), 0);
+    assert_eq!(
+        report.dirs_checked, 2,
+        ".assura and src should be checked while generated descendants are pruned"
+    );
+}
+
+#[test]
+fn check_reports_deterministically_sorted_violations() {
+    let project = TempDir::new().unwrap();
+    write_config(
+        &project,
+        r#"
+structure:
+  ./:
+    files:
+      naming: kebab-case
+    directories:
+      naming: kebab-case
+    children:
+      .assura/:
+        inherit: false
+        files:
+          naming: kebab-case
+"#,
+    );
+
+    fs::create_dir(project.path().join("z-dir")).unwrap();
+    fs::create_dir(project.path().join("a-dir")).unwrap();
+    fs::write(project.path().join("z-dir/BadName.rs"), "").unwrap();
+    fs::write(project.path().join("a-dir/BadName.rs"), "").unwrap();
+    fs::write(project.path().join("BadRoot.rs"), "").unwrap();
+
+    let report = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+    let pairs: Vec<_> = report
+        .violations
+        .iter()
+        .map(|violation| {
+            (
+                violation.path.to_string_lossy().to_string(),
+                violation.rule.clone(),
+            )
+        })
+        .collect();
+    let mut sorted = pairs.clone();
+    sorted.sort();
+
+    assert_eq!(pairs, sorted);
+}
+
+#[test]
+fn check_fail_fast_stops_after_first_sorted_traversal_violation() {
+    let project = TempDir::new().unwrap();
+    write_config(
+        &project,
+        r#"
+structure:
+  ./:
+    files:
+      naming: kebab-case
+    directories:
+      naming: kebab-case
+    children:
+      .assura/:
+        inherit: false
+        files:
+          naming: kebab-case
+"#,
+    );
+
+    fs::create_dir(project.path().join("a-dir")).unwrap();
+    fs::create_dir(project.path().join("z-dir")).unwrap();
+    fs::write(project.path().join("a-dir/BadName.rs"), "").unwrap();
+    fs::write(project.path().join("z-dir/BadName.rs"), "").unwrap();
+
+    let report = run_structure_check(Some(project.path().to_path_buf()), None, true).unwrap();
+
+    assert!(!report.success);
+    assert_eq!(report.violations.len(), 1);
+    assert_eq!(
+        report.violations[0].path,
+        std::path::PathBuf::from("a-dir/BadName.rs")
     );
 }
 
