@@ -123,6 +123,26 @@ PR may choose an adaptive or alternate implementation, but only after the PR
 shows the measured evidence and preserves the goal: best system-level
 performance with correct Assura behavior.
 
+## Critical Interpretation Addendum
+
+The PR must not use traversal-only rows as a proxy for full production checker
+performance. Reviewers need a written interpretation that separates:
+
+- raw traversal timings (`walkdir`, `jwalk-serial`, `jwalk-parallel`),
+- top-level production `assura` timings,
+- Assura phase rows,
+- LS-Lint warm binary execution timings.
+
+The interpretation must explain fixture intent, especially the difference
+between synthetic bottleneck fixtures such as `rule_heavy` and repo-shaped
+fixtures such as `rule_heavy_repo`.
+
+If raw traversal rows favor one strategy but top-level Assura rows do not prove
+that strategy should be the default, the PR must say so directly. Before the
+production default changes again, the performance report should compare
+full-check strategy rows for walkdir, serial `jwalk`, and parallel `jwalk`
+under equivalent validation work.
+
 ## Progress Log
 
 | Date | Iteration | Notes | Evidence |
@@ -132,3 +152,4 @@ performance with correct Assura behavior.
 | 2026-05-16 | Iteration 2 implementation and evidence | Added a separated traversal module with deterministic serial fail-fast/default validation plus an opt-in parallel `jwalk` collection path, expanded report rows to `walkdir`, `jwalk-serial`, and `jwalk-parallel`, prepared LS-Lint once before measured loops, switched history append to streaming append, copied full website history when a history source is provided, preserved external fixture symlinks, and regenerated checked-in performance data. Local same-machine baseline comparison showed final rule-heavy improvement (`rule_heavy` 194.615 ms -> 167.611 ms; `rule_heavy_repo` 29.797 ms -> 22.148 ms) and traversal-heavy improvement (`ignored_generated_heavy` 0.752 ms -> 0.482 ms); raw parallel `jwalk` rows also improved traversal-heavy evidence while full validation remains serial by default. | `benches/history/current.json`; `benches/history/ls-lint-comparison-history.jsonl`; `website/public/data/performance/current.json`; `website/public/data/performance/ls-lint-comparison-history.jsonl`; `target/performance/pr11-amendment-default-v2.json`; temporary baseline worktree report `target/performance/pr11-baseline-local.json` |
 | 2026-05-16 | Iteration 3 context health and skill capture | Context level: active goal reports unbounded remaining tokens; relevant prior messages are persisted in the amendment progress log, Trellis task PRD/context files, checked-in performance artifacts, and validation command outputs. Captured reusable performance-report workflow in a project skill and kept `AGENTS.md` as a one-line router. | `.agents/skills/assura-performance-reporting/SKILL.md`; `AGENTS.md`; `cargo run --quiet -- check --format json .` |
 | 2026-05-16 | Final review and validation | Required review agent found no blocking code issues and flagged one residual test gap for the opt-in parallel traversal path; added `check_parallel_jwalk_traversal_env_path_preserves_sorted_json_output` to cover it. Final local gates passed after the fix. | `cargo fmt --all -- --check`; `git diff --check`; `cargo clippy --all-targets --all-features -- -D warnings`; `cargo test --all-targets --quiet`; `cargo run --quiet -- check --format json .`; `cargo run --quiet -- performance-report --output benches/history/current.json --history benches/history/ls-lint-comparison-history.jsonl --website-dir website/public/data/performance --iterations 5`; `cd website && pnpm build` |
+| 2026-05-16 | Critical interpretation follow-up | Clarified that traversal-only rows cannot justify the production default by themselves, explained `rule_heavy` versus `rule_heavy_repo`, documented what warm LS-Lint rows measure, and added an explicit follow-up requirement for full-check strategy comparisons before changing the default again. | `docs/analysis/2026-05-16-performance-results-interpretation.md`; `website/src/content/docs/reference/performance.mdx`; PR #11 body |

@@ -49,6 +49,30 @@ serial `jwalk`, and parallel `jwalk`. The summary also includes a phase
 breakdown table for each fixture. CI does not update tracked history
 automatically.
 
+## Interpreting The Rows
+
+Traversal rows are intentionally narrower than top-level Assura rows.
+`walkdir`, `jwalk-serial`, and `jwalk-parallel` measure raw entry enumeration.
+They do not include config loading, effective rule resolution, naming-pattern
+validation, file-content reads, markdown checks, or report sorting.
+
+Use top-level `assura` rows for product comparisons. Use traversal rows only to
+understand whether traversal itself is a hotspot.
+
+`rule_heavy` and `rule_heavy_repo` are different fixtures:
+
+- `rule_heavy` is a synthetic stress fixture with many files and many
+  extension-specific rules.
+- `rule_heavy_repo` is a smaller repo-shaped fixture that exercises similar
+  multi-extension rules under a more realistic directory shape.
+
+LS-Lint rows use a prepared `@ls-lint/ls-lint@2.3.0` binary. They avoid
+repeated npm package resolution, but they still include process startup,
+LS-Lint config loading, traversal, and validation for each sample.
+
+The full interpretation for PR #11 is tracked in
+[`docs/analysis/2026-05-16-performance-results-interpretation.md`](https://github.com/rothnic/assura/blob/master/docs/analysis/2026-05-16-performance-results-interpretation.md).
+
 ## Updating The Baseline
 
 Baseline updates are explicit source changes:
