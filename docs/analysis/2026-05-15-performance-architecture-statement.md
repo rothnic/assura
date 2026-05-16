@@ -34,7 +34,7 @@ not a new notation rule.
 `assura performance-report` now emits three levels of performance evidence:
 
 1. End-to-end tool comparison rows: `assura` and `ls-lint`.
-2. Traversal-only rows: `walkdir-before-jwalk` and `jwalk-after-migration`.
+2. Traversal-only rows: `walkdir`, `jwalk-serial`, and `jwalk-parallel`.
 3. Assura phase rows:
    - `assura:config-discovery`
    - `assura:config-load`

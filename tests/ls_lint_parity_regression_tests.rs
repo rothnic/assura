@@ -114,11 +114,13 @@ fn external_git_fixture_materializer_uses_pinned_revision_and_cache() {
         .status()
         .expect("git init should run");
     fs::write(upstream.path().join("README.md"), "# Fixture\n").unwrap();
+    #[cfg(unix)]
+    std::os::unix::fs::symlink("README.md", upstream.path().join("README-link.md")).unwrap();
     std::process::Command::new("git")
         .arg("-C")
         .arg(upstream.path())
         .arg("add")
-        .arg("README.md")
+        .arg(".")
         .status()
         .expect("git add should run");
     std::process::Command::new("git")
@@ -167,6 +169,19 @@ fn external_git_fixture_materializer_uses_pinned_revision_and_cache() {
         fs::read_to_string(destination.path().join("README.md")).unwrap(),
         "# Fixture\n"
     );
+    #[cfg(unix)]
+    {
+        let link_metadata =
+            fs::symlink_metadata(destination.path().join("README-link.md")).unwrap();
+        assert!(
+            link_metadata.file_type().is_symlink(),
+            "external fixture materialization should preserve symlinks"
+        );
+        assert_eq!(
+            fs::read_link(destination.path().join("README-link.md")).unwrap(),
+            std::path::PathBuf::from("README.md")
+        );
+    }
     assert!(!destination.path().join(".git").exists());
     assert!(
         fs::read_dir(cache.path()).unwrap().next().is_some(),

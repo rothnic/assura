@@ -18,8 +18,8 @@ shapes. Rows include schema version, timestamp, commit, branch, OS,
 architecture, Rust version, Node/npm versions, tool version, fixture metadata,
 rule cohort, tool name, median runtime, sample distribution, pass/fail status,
 and baseline identifier. The same report also includes traversal-only rows
-named `walkdir-before-jwalk` and `jwalk-after-migration` so PRs can show the
-production `jwalk` migration evidence beside the LS-Lint parity comparison.
+named `walkdir`, `jwalk-serial`, and `jwalk-parallel` so PRs can compare the
+production traversal strategy beside the LS-Lint parity comparison.
 
 Assura rows also include per-fixture phase timings:
 `assura:config-discovery`, `assura:config-load`, `assura:checker-init`,
@@ -44,8 +44,8 @@ reviewable without scraping local Criterion output.
 
 Pull requests attach a `ls-lint-performance-report` artifact and write a
 summary table to the GitHub Actions job summary. The summary includes both
-Assura versus LS-Lint fixture timings and before/after traversal timings for
-the `walkdir` to `jwalk` migration. The summary also includes a phase
+Assura versus LS-Lint fixture timings and traversal timings for `walkdir`,
+serial `jwalk`, and parallel `jwalk`. The summary also includes a phase
 breakdown table for each fixture. CI does not update tracked history
 automatically.
 

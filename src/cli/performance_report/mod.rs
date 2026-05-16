@@ -12,6 +12,7 @@ use std::time::Instant;
 mod environment;
 mod fixtures;
 mod io;
+mod ls_lint;
 mod metadata;
 mod phases;
 mod stats;
@@ -20,10 +21,13 @@ mod traversal;
 use environment::{collect_environment, PerformanceEnvironment};
 use fixtures::{materialize_fixture, scenarios, FixtureScenario};
 use io::{append_history, render_jsonl, write_text, write_website_data};
+use ls_lint::{prepare_ls_lint, PreparedLsLint};
 use metadata::{git_value, utc_timestamp};
 use phases::AssuraPhaseSamples;
 use stats::{distribution, median};
-use traversal::{measure_jwalk_traversal, measure_walkdir_traversal};
+use traversal::{
+    measure_parallel_jwalk_traversal, measure_serial_jwalk_traversal, measure_walkdir_traversal,
+};
 
 const SCHEMA_VERSION: &str = "assura.performance.v1";
 const ASSURA_VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -54,7 +58,7 @@ pub struct PerformanceReport {
 }
 
 /// Tool availability metadata included when a comparator cannot run.
-#[derive(Debug, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 pub struct ToolAvailability {
     /// Whether the tool was available for this run.
     pub available: bool,
@@ -158,15 +162,15 @@ pub async fn performance_report_command(
                 println!("{rendered}");
             }
 
-            if let Some(history) = history {
-                if let Err(error) = append_history(&history, &report.results) {
+            if let Some(history) = history.as_ref() {
+                if let Err(error) = append_history(history, &report.results) {
                     eprintln!("Error: failed to append {}: {error}", history.display());
                     return ExitCode::RuntimeError;
                 }
             }
 
             if let Some(website_dir) = website_dir {
-                if let Err(error) = write_website_data(&website_dir, &report) {
+                if let Err(error) = write_website_data(&website_dir, &report, history.as_deref()) {
                     eprintln!(
                         "Error: failed to write website data under {}: {error}",
                         website_dir.display()
@@ -193,7 +197,8 @@ fn generate_report(
     let commit_sha = git_value(["rev-parse", "HEAD"]).unwrap_or_else(|| "unknown".to_string());
     let branch = git_value(["branch", "--show-current"]).unwrap_or_else(|| "unknown".to_string());
     let environment = collect_environment();
-    let ls_lint_status = ls_lint_status(&ls_lint_package);
+    let ls_lint = prepare_ls_lint(&ls_lint_package);
+    let ls_lint_status = ls_lint.status.clone();
     let mut results = Vec::new();
 
     for scenario in scenarios() {
@@ -218,8 +223,7 @@ fn generate_report(
             &branch,
             &environment,
             &baseline_id,
-            &ls_lint_status,
-            &ls_lint_package,
+            &ls_lint,
         ));
         results.push(measure_walkdir_traversal(
             scenario,
@@ -232,7 +236,18 @@ fn generate_report(
             &baseline_id,
             &ls_lint_status,
         ));
-        results.push(measure_jwalk_traversal(
+        results.push(measure_serial_jwalk_traversal(
+            scenario,
+            &fixture,
+            iterations,
+            &timestamp,
+            &commit_sha,
+            &branch,
+            &environment,
+            &baseline_id,
+            &ls_lint_status,
+        ));
+        results.push(measure_parallel_jwalk_traversal(
             scenario,
             &fixture,
             iterations,
@@ -330,9 +345,9 @@ fn measure_ls_lint(
     branch: &str,
     environment: &PerformanceEnvironment,
     baseline_id: &str,
-    ls_lint_status: &ToolAvailability,
-    ls_lint_package: &str,
+    ls_lint: &PreparedLsLint,
 ) -> PerformanceResultRow {
+    let ls_lint_status = &ls_lint.status;
     if !ls_lint_status.available {
         return row(
             scenario,
@@ -353,14 +368,26 @@ fn measure_ls_lint(
             baseline_id,
         );
     }
+    let Some(binary_path) = ls_lint.binary_path.as_ref() else {
+        return row(
+            scenario,
+            timestamp,
+            commit_sha,
+            branch,
+            environment,
+            ls_lint_status.version.as_deref().unwrap_or("unavailable"),
+            "ls-lint",
+            Vec::new(),
+            Some("skipped because LS-Lint binary path was not prepared".to_string()),
+            baseline_id,
+        );
+    };
 
     let mut samples = Vec::with_capacity(iterations);
     let mut failure = None;
     for _ in 0..iterations {
         let started = Instant::now();
-        let output = npm_ls_lint_command(ls_lint_package)
-            .current_dir(fixture)
-            .output();
+        let output = Command::new(binary_path).current_dir(fixture).output();
         match output {
             Ok(output) if output.status.success() => {
                 samples.push(started.elapsed().as_secs_f64() * 1000.0);
@@ -387,7 +414,7 @@ fn measure_ls_lint(
         commit_sha,
         branch,
         environment,
-        ls_lint_status.version.as_deref().unwrap_or(ls_lint_package),
+        ls_lint_status.version.as_deref().unwrap_or("unavailable"),
         "ls-lint",
         samples,
         failure,
@@ -443,55 +470,4 @@ pub(in crate::cli::performance_report) fn row(
         details: failure,
         comparison_baseline_id: baseline_id.to_string(),
     }
-}
-
-fn ls_lint_status(ls_lint_package: &str) -> ToolAvailability {
-    match npm_ls_lint_command(ls_lint_package)
-        .arg("--version")
-        .output()
-    {
-        Ok(output) if output.status.success() => {
-            let stdout = String::from_utf8_lossy(&output.stdout).trim().to_string();
-            ToolAvailability {
-                available: true,
-                version: Some(if stdout.is_empty() {
-                    ls_lint_package.to_string()
-                } else {
-                    stdout
-                }),
-                blocker: None,
-            }
-        }
-        Ok(output) => ToolAvailability {
-            available: false,
-            version: None,
-            blocker: Some(format!(
-                "npm exec exited {:?}; stdout: {}; stderr: {}",
-                output.status.code(),
-                String::from_utf8_lossy(&output.stdout).trim(),
-                String::from_utf8_lossy(&output.stderr).trim()
-            )),
-        },
-        Err(error) => ToolAvailability {
-            available: false,
-            version: None,
-            blocker: Some(format!("failed to run npm exec: {error}")),
-        },
-    }
-}
-
-fn npm_ls_lint_command(ls_lint_package: &str) -> Command {
-    let mut command = Command::new("npm");
-    command
-        .env("NPM_CONFIG_FETCH_RETRIES", "0")
-        .env("NPM_CONFIG_FETCH_TIMEOUT", "15000")
-        .args([
-            "exec",
-            "--yes",
-            "--package",
-            ls_lint_package,
-            "--",
-            "ls-lint",
-        ]);
-    command
 }

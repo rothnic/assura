@@ -237,7 +237,12 @@ fn copy_without_git(source: &Path, destination: &Path) -> Result<(), String> {
         }
         let source_path = entry.path();
         let destination_path = destination.join(entry.file_name());
-        if source_path.is_dir() {
+        let file_type = fs::symlink_metadata(&source_path)
+            .map_err(|error| format!("metadata {}: {error}", source_path.display()))?
+            .file_type();
+        if file_type.is_symlink() {
+            copy_symlink(&source_path, &destination_path)?;
+        } else if file_type.is_dir() {
             fs::create_dir_all(&destination_path).map_err(|error| {
                 format!("create destination {}: {error}", destination_path.display())
             })?;
@@ -252,6 +257,51 @@ fn copy_without_git(source: &Path, destination: &Path) -> Result<(), String> {
             })?;
         }
     }
+    Ok(())
+}
+
+fn copy_symlink(source: &Path, destination: &Path) -> Result<(), String> {
+    let target = fs::read_link(source)
+        .map_err(|error| format!("read link {}: {error}", source.display()))?;
+
+    #[cfg(unix)]
+    {
+        std::os::unix::fs::symlink(&target, destination).map_err(|error| {
+            format!(
+                "symlink {} -> {}: {error}",
+                destination.display(),
+                target.display()
+            )
+        })?;
+    }
+
+    #[cfg(windows)]
+    {
+        let target_path = source
+            .parent()
+            .map(|parent| parent.join(&target))
+            .unwrap_or_else(|| target.clone());
+        let metadata = fs::metadata(&target_path).map_err(|error| {
+            format!(
+                "metadata symlink target {} for {}: {error}",
+                target_path.display(),
+                source.display()
+            )
+        })?;
+        if metadata.is_dir() {
+            std::os::windows::fs::symlink_dir(&target, destination)
+        } else {
+            std::os::windows::fs::symlink_file(&target, destination)
+        }
+        .map_err(|error| {
+            format!(
+                "symlink {} -> {}: {error}",
+                destination.display(),
+                target.display()
+            )
+        })?;
+    }
+
     Ok(())
 }
 

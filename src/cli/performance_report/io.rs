@@ -1,7 +1,8 @@
 //! Report file rendering and persistence helpers.
 
 use super::{PerformanceReport, PerformanceResultRow};
-use std::fs;
+use std::fs::{self, OpenOptions};
+use std::io::Write;
 use std::path::Path;
 
 pub(super) fn render_jsonl(rows: &[PerformanceResultRow]) -> String {
@@ -19,25 +20,27 @@ pub(super) fn append_history(path: &Path, rows: &[PerformanceResultRow]) -> std:
     if let Some(parent) = path.parent() {
         fs::create_dir_all(parent)?;
     }
-    let mut existing = if path.exists() {
-        fs::read_to_string(path)?
-    } else {
-        String::new()
-    };
-    existing.push_str(&render_jsonl(rows));
-    fs::write(path, existing)
+    let mut file = OpenOptions::new().create(true).append(true).open(path)?;
+    file.write_all(render_jsonl(rows).as_bytes())
 }
 
-pub(super) fn write_website_data(path: &Path, report: &PerformanceReport) -> std::io::Result<()> {
+pub(super) fn write_website_data(
+    path: &Path,
+    report: &PerformanceReport,
+    history_source: Option<&Path>,
+) -> std::io::Result<()> {
     fs::create_dir_all(path)?;
     fs::write(
         path.join("current.json"),
         serde_json::to_string(report).unwrap_or_default(),
     )?;
-    fs::write(
-        path.join("ls-lint-comparison-history.jsonl"),
-        render_jsonl(&report.results),
-    )
+    let history_target = path.join("ls-lint-comparison-history.jsonl");
+    if let Some(history_source) = history_source {
+        fs::copy(history_source, history_target)?;
+    } else {
+        append_history(&history_target, &report.results)?;
+    }
+    Ok(())
 }
 
 pub(super) fn write_text(path: &Path, contents: &str) -> std::io::Result<()> {

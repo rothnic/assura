@@ -265,6 +265,111 @@ structure:
 }
 
 #[test]
+fn check_normal_traversal_output_is_deterministic_across_runs() {
+    let project = TempDir::new().unwrap();
+    write_config(
+        &project,
+        r#"
+structure:
+  ./:
+    files:
+      naming: kebab-case
+    directories:
+      naming: kebab-case
+    children:
+      .assura/:
+        inherit: false
+        files:
+          naming: kebab-case
+"#,
+    );
+
+    for dir_index in (0..24).rev() {
+        let dir = project.path().join(format!("dir-{dir_index:02}"));
+        fs::create_dir(&dir).unwrap();
+        fs::write(dir.join(format!("BadName{dir_index:02}.rs")), "").unwrap();
+    }
+
+    let mut expected = None;
+    for _ in 0..5 {
+        let report = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+        let paths: Vec<_> = report
+            .violations
+            .iter()
+            .map(|violation| violation.path.clone())
+            .collect();
+
+        assert_eq!(paths.len(), 24);
+        let mut sorted = paths.clone();
+        sorted.sort();
+        assert_eq!(paths, sorted);
+
+        if let Some(expected) = &expected {
+            assert_eq!(&paths, expected);
+        } else {
+            expected = Some(paths);
+        }
+    }
+}
+
+#[test]
+fn check_parallel_jwalk_traversal_env_path_preserves_sorted_json_output() {
+    let project = TempDir::new().unwrap();
+    write_config(
+        &project,
+        r#"
+structure:
+  ./:
+    files:
+      naming: kebab-case
+    directories:
+      naming: kebab-case
+    children:
+      .assura/:
+        inherit: false
+        files:
+          naming: kebab-case
+"#,
+    );
+
+    for dir_index in (0..32).rev() {
+        let dir = project.path().join(format!("dir-{dir_index:02}"));
+        fs::create_dir(&dir).unwrap();
+        fs::write(dir.join(format!("BadName{dir_index:02}.rs")), "").unwrap();
+    }
+
+    let output = Command::new(assura_bin())
+        .env("ASSURA_CHECK_TRAVERSAL", "parallel-jwalk")
+        .arg("check")
+        .arg(project.path())
+        .arg("--format")
+        .arg("json")
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(1));
+    let report: serde_json::Value =
+        serde_json::from_slice(&output.stdout).unwrap_or_else(|error| {
+            panic!(
+                "failed to parse check output as json: {error}\nstdout:\n{}\nstderr:\n{}",
+                String::from_utf8_lossy(&output.stdout),
+                String::from_utf8_lossy(&output.stderr)
+            )
+        });
+    let paths: Vec<_> = report["violations"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|violation| violation["path"].as_str().unwrap().to_string())
+        .collect();
+
+    assert_eq!(paths.len(), 32);
+    let mut sorted = paths.clone();
+    sorted.sort();
+    assert_eq!(paths, sorted);
+}
+
+#[test]
 fn check_fail_fast_stops_after_first_sorted_traversal_violation() {
     let project = TempDir::new().unwrap();
     write_config(

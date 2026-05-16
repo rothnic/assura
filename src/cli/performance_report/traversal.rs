@@ -2,6 +2,7 @@
 
 use super::{row, FixtureScenario, PerformanceEnvironment, PerformanceResultRow, ToolAvailability};
 use std::path::Path;
+use std::thread;
 use std::time::Instant;
 
 #[allow(clippy::too_many_arguments)]
@@ -26,13 +27,13 @@ pub(super) fn measure_walkdir_traversal(
         environment,
         baseline_id,
         ls_lint_status,
-        "walkdir-before-jwalk",
+        "walkdir",
         count_walkdir_entries,
     )
 }
 
 #[allow(clippy::too_many_arguments)]
-pub(super) fn measure_jwalk_traversal(
+pub(super) fn measure_serial_jwalk_traversal(
     scenario: FixtureScenario,
     fixture: &Path,
     iterations: usize,
@@ -53,13 +54,40 @@ pub(super) fn measure_jwalk_traversal(
         environment,
         baseline_id,
         ls_lint_status,
-        "jwalk-after-migration",
-        count_jwalk_entries,
+        "jwalk-serial",
+        |path| count_jwalk_entries(path, jwalk::Parallelism::Serial),
     )
 }
 
 #[allow(clippy::too_many_arguments)]
-fn measure_traversal(
+pub(super) fn measure_parallel_jwalk_traversal(
+    scenario: FixtureScenario,
+    fixture: &Path,
+    iterations: usize,
+    timestamp: &str,
+    commit_sha: &str,
+    branch: &str,
+    environment: &PerformanceEnvironment,
+    baseline_id: &str,
+    ls_lint_status: &ToolAvailability,
+) -> PerformanceResultRow {
+    measure_traversal(
+        scenario,
+        fixture,
+        iterations,
+        timestamp,
+        commit_sha,
+        branch,
+        environment,
+        baseline_id,
+        ls_lint_status,
+        "jwalk-parallel",
+        |path| count_jwalk_entries(path, parallel_jwalk_strategy()),
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn measure_traversal<F>(
     scenario: FixtureScenario,
     fixture: &Path,
     iterations: usize,
@@ -70,8 +98,11 @@ fn measure_traversal(
     baseline_id: &str,
     ls_lint_status: &ToolAvailability,
     tool_name: &str,
-    count_entries: fn(&Path) -> Result<usize, String>,
-) -> PerformanceResultRow {
+    count_entries: F,
+) -> PerformanceResultRow
+where
+    F: Fn(&Path) -> Result<usize, String>,
+{
     let mut samples = Vec::with_capacity(iterations);
     let mut failure = None;
     for _ in 0..iterations {
@@ -108,14 +139,25 @@ fn count_walkdir_entries(path: &Path) -> Result<usize, String> {
     Ok(count)
 }
 
-fn count_jwalk_entries(path: &Path) -> Result<usize, String> {
+fn count_jwalk_entries(path: &Path, parallelism: jwalk::Parallelism) -> Result<usize, String> {
     let mut count = 0;
     for entry in jwalk::WalkDir::new(path)
         .skip_hidden(false)
-        .parallelism(jwalk::Parallelism::Serial)
+        .parallelism(parallelism)
     {
         entry.map_err(|error| error.to_string())?;
         count += 1;
     }
     Ok(count)
+}
+
+fn parallel_jwalk_strategy() -> jwalk::Parallelism {
+    let threads = thread::available_parallelism()
+        .map(usize::from)
+        .unwrap_or(1);
+    if threads > 1 {
+        jwalk::Parallelism::RayonNewPool(threads)
+    } else {
+        jwalk::Parallelism::Serial
+    }
 }

@@ -52,6 +52,9 @@
         "assura:walk-and-validate",
         "assura:report-sort",
         "ls-lint",
+        "walkdir",
+        "jwalk-serial",
+        "jwalk-parallel",
         "walkdir-before-jwalk",
         "jwalk-after-migration"
       ]
