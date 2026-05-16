@@ -3,67 +3,163 @@ title: Performance
 description: Assura versus LS-Lint comparison history and CI reporting contract.
 ---
 
-Assura tracks performance evidence as machine-readable JSON so release notes,
-pull requests, and this website all point at the same data contract.
+<div className="perf-hero">
+  <p className="perf-kicker">Current benchmark snapshot</p>
+  <h2>Assura is 17.3x faster than warm LS-Lint across realistic fixtures.</h2>
+  <p>The current report compares five repo-shaped fixtures that both tools can validate. Assura totals 30.0 ms across that bundle; LS-Lint totals 517.9 ms. The slowest realistic win is still 3.8x faster.</p>
+</div>
 
-## Current Data
+<div className="perf-metric-grid" aria-label="Performance summary">
+  <div className="perf-metric">
+    <span className="perf-label">Realistic bundle</span>
+    <strong>17.3x</strong>
+    <span>faster than LS-Lint</span>
+  </div>
+  <div className="perf-metric">
+    <span className="perf-label">Slowest realistic win</span>
+    <strong>3.8x</strong>
+    <span>on rule-heavy repo shape</span>
+  </div>
+  <div className="perf-metric">
+    <span className="perf-label">Best realistic win</span>
+    <strong>200.3x</strong>
+    <span>on ignored generated output</span>
+  </div>
+  <div className="perf-metric perf-metric-muted">
+    <span className="perf-label">Synthetic caveat</span>
+    <strong>0.7x</strong>
+    <span>on stress-only `rule_heavy`</span>
+  </div>
+</div>
 
-- [Current comparison report](/data/performance/current.json)
-- [Chart-ready JSONL history](/data/performance/ls-lint-comparison-history.jsonl)
-- [Tracked schema](https://github.com/rothnic/assura/blob/master/benches/history/ls-lint-comparison.schema.json)
+## Realistic Fixture Comparison
 
-The comparison covers stable fixture cohorts for small, medium, large,
-rule-heavy, ignored/generated-heavy, library, web app, and monorepo project
-shapes. Rows include schema version, timestamp, commit, branch, OS,
-architecture, Rust version, Node/npm versions, tool version, fixture metadata,
-rule cohort, tool name, median runtime, sample distribution, pass/fail status,
-and baseline identifier. The same report also includes traversal-only rows
-named `walkdir`, `jwalk-serial`, and `jwalk-parallel` so PRs can compare the
-production traversal strategy beside the LS-Lint parity comparison.
+These rows are the basis for the faster-than-LS-Lint claim. Each row uses the
+same generated project shape for Assura and LS-Lint.
 
-Assura rows also include per-fixture phase timings:
-`assura:config-discovery`, `assura:config-load`, `assura:checker-init`,
-`assura:configured-structure`, `assura:walk-and-validate`, and
-`assura:report-sort`. These rows are intended to make hotspot claims
-reviewable without scraping local Criterion output.
+<div className="perf-compare" aria-label="Assura versus LS-Lint realistic fixture timings">
+  <div className="perf-row">
+    <div className="perf-row-heading">
+      <span><strong>simple_library</strong><small>realistic library</small></span>
+      <b>123.5x faster</b>
+    </div>
+    <div className="perf-bars">
+      <span className="perf-bar-label">Assura 0.843 ms</span>
+      <span className="perf-bar-track"><span className="perf-bar perf-bar-assura" style={{ width: '1%' }} /></span>
+      <span className="perf-bar-label">LS-Lint 104.185 ms</span>
+      <span className="perf-bar-track"><span className="perf-bar perf-bar-lslint" style={{ width: '96%' }} /></span>
+    </div>
+  </div>
+  <div className="perf-row">
+    <div className="perf-row-heading">
+      <span><strong>web_app</strong><small>realistic frontend</small></span>
+      <b>126.2x faster</b>
+    </div>
+    <div className="perf-bars">
+      <span className="perf-bar-label">Assura 0.801 ms</span>
+      <span className="perf-bar-track"><span className="perf-bar perf-bar-assura" style={{ width: '1%' }} /></span>
+      <span className="perf-bar-label">LS-Lint 101.060 ms</span>
+      <span className="perf-bar-track"><span className="perf-bar perf-bar-lslint" style={{ width: '93%' }} /></span>
+    </div>
+  </div>
+  <div className="perf-row">
+    <div className="perf-row-heading">
+      <span><strong>monorepo_packages</strong><small>realistic monorepo</small></span>
+      <b>62.9x faster</b>
+    </div>
+    <div className="perf-bars">
+      <span className="perf-bar-label">Assura 1.669 ms</span>
+      <span className="perf-bar-track"><span className="perf-bar perf-bar-assura" style={{ width: '2%' }} /></span>
+      <span className="perf-bar-label">LS-Lint 104.973 ms</span>
+      <span className="perf-bar-track"><span className="perf-bar perf-bar-lslint" style={{ width: '97%' }} /></span>
+    </div>
+  </div>
+  <div className="perf-row">
+    <div className="perf-row-heading">
+      <span><strong>rule_heavy_repo</strong><small>realistic multi-extension rules</small></span>
+      <b>3.8x faster</b>
+    </div>
+    <div className="perf-bars">
+      <span className="perf-bar-label">Assura 26.145 ms</span>
+      <span className="perf-bar-track"><span className="perf-bar perf-bar-assura" style={{ width: '24%' }} /></span>
+      <span className="perf-bar-label">LS-Lint 99.177 ms</span>
+      <span className="perf-bar-track"><span className="perf-bar perf-bar-lslint" style={{ width: '91%' }} /></span>
+    </div>
+  </div>
+  <div className="perf-row">
+    <div className="perf-row-heading">
+      <span><strong>ignored_generated_heavy_repo</strong><small>realistic ignored output</small></span>
+      <b>200.3x faster</b>
+    </div>
+    <div className="perf-bars">
+      <span className="perf-bar-label">Assura 0.542 ms</span>
+      <span className="perf-bar-track"><span className="perf-bar perf-bar-assura" style={{ width: '1%' }} /></span>
+      <span className="perf-bar-label">LS-Lint 108.457 ms</span>
+      <span className="perf-bar-track"><span className="perf-bar perf-bar-lslint" style={{ width: '100%' }} /></span>
+    </div>
+  </div>
+</div>
 
-## Baseline Table
+## History
 
-The current realistic equivalent fixtures show Assura multiple times faster
-than warm LS-Lint 2.3 on the same generated project shapes:
+The history below rolls up the same five realistic fixtures. Cross-machine
+results are labeled because absolute milliseconds are not directly comparable
+between Linux CI-style runs and the later macOS local runs; the speedup ratio
+still shows the Assura-versus-LS-Lint relationship inside each snapshot.
 
-- `simple_library` (`realistic-library`): Assura 0.843 ms; LS-Lint 104.185
-  ms; **123.5x faster**.
-- `web_app` (`realistic-frontend`): Assura 0.801 ms; LS-Lint 101.060 ms;
-  **126.2x faster**.
-- `monorepo_packages` (`realistic-monorepo`): Assura 1.669 ms; LS-Lint
-  104.973 ms; **62.9x faster**.
-- `rule_heavy_repo` (`realistic-multi-extension-patterns`): Assura 26.145 ms;
-  LS-Lint 99.177 ms; **3.8x faster**.
-- `ignored_generated_heavy_repo` (`realistic-exclude-pruning`): Assura 0.542
-  ms; LS-Lint 108.457 ms; **200.3x faster**.
+<div className="perf-history" aria-label="Realistic fixture speedup history">
+  <div className="perf-history-row">
+    <span><strong>2026-05-15</strong><small>7de3826, linux</small></span>
+    <span className="perf-history-track"><span style={{ width: '98%' }} /></span>
+    <b>194.2x</b>
+    <small>16.0 ms vs 3104.6 ms</small>
+  </div>
+  <div className="perf-history-row">
+    <span><strong>2026-05-15</strong><small>7de3826, linux rerun</small></span>
+    <span className="perf-history-track"><span style={{ width: '100%' }} /></span>
+    <b>198.7x</b>
+    <small>17.0 ms vs 3370.8 ms</small>
+  </div>
+  <div className="perf-history-row">
+    <span><strong>2026-05-16</strong><small>6c86b03, macOS baseline</small></span>
+    <span className="perf-history-track"><span style={{ width: '8%' }} /></span>
+    <b>15.1x</b>
+    <small>33.6 ms vs 508.7 ms</small>
+  </div>
+  <div className="perf-history-row">
+    <span><strong>2026-05-16</strong><small>6c86b03, macOS rerun</small></span>
+    <span className="perf-history-track"><span style={{ width: '9%' }} /></span>
+    <b>18.8x</b>
+    <small>26.0 ms vs 488.3 ms</small>
+  </div>
+  <div className="perf-history-row perf-history-current">
+    <span><strong>2026-05-16</strong><small>d34c319, current data</small></span>
+    <span className="perf-history-track"><span style={{ width: '9%' }} /></span>
+    <b>17.3x</b>
+    <small>30.0 ms vs 517.9 ms</small>
+  </div>
+</div>
 
-Synthetic and scale-stress fixtures are tracked separately. They are useful for
-finding bottlenecks, but they are not the basis for the realistic-equivalent
-"multiple times faster" claim:
+## Synthetic Stress Fixtures
 
-- `simple_small` (`extension-dir-naming`): Assura 1.762 ms; LS-Lint 106.812
-  ms. Synthetic small baseline.
-- `simple_medium` (`extension-dir-naming`): Assura 23.810 ms; LS-Lint 112.705
-  ms. Synthetic medium baseline.
-- `monorepo_large` (`extension-dir-naming`): Assura 110.748 ms; LS-Lint
-  133.766 ms. Synthetic large baseline.
-- `rule_heavy` (`multi-extension-patterns`): Assura 173.930 ms; LS-Lint
-  117.829 ms. Synthetic stress case where LS-Lint is faster.
-- `ignored_generated_heavy` (`exclude-pruning`): Assura 0.509 ms; LS-Lint
-  102.912 ms. Synthetic generated-output pruning case.
+These rows stay visible because they explain what the faster-than-LS-Lint claim
+does not cover. They are useful for bottleneck hunting, not for the realistic
+project comparison above.
 
-Pull requests attach a `ls-lint-performance-report` artifact and write a
-summary table to the GitHub Actions job summary. The summary includes both
-Assura versus LS-Lint fixture timings and traversal timings for `walkdir`,
-serial `jwalk`, and parallel `jwalk`. The summary also includes a phase
-breakdown table for each fixture. CI does not update tracked history
-automatically.
+<div className="perf-note-grid">
+  <div>
+    <strong>rule_heavy</strong>
+    <span>Assura 173.930 ms; LS-Lint 117.829 ms. Synthetic stress case where LS-Lint is faster.</span>
+  </div>
+  <div>
+    <strong>monorepo_large</strong>
+    <span>Assura 110.748 ms; LS-Lint 133.766 ms. Synthetic large baseline.</span>
+  </div>
+  <div>
+    <strong>ignored_generated_heavy</strong>
+    <span>Assura 0.509 ms; LS-Lint 102.912 ms. Synthetic pruning case.</span>
+  </div>
+</div>
 
 ## Interpreting The Rows
 
@@ -88,6 +184,26 @@ LS-Lint config loading, traversal, and validation for each sample.
 
 The full interpretation for PR #11 is tracked in
 [`docs/analysis/2026-05-16-performance-results-interpretation.md`](https://github.com/rothnic/assura/blob/master/docs/analysis/2026-05-16-performance-results-interpretation.md).
+
+## Data Contract
+
+- [Current comparison report](/data/performance/current.json)
+- [Chart-ready JSONL history](/data/performance/ls-lint-comparison-history.jsonl)
+- [Tracked schema](https://github.com/rothnic/assura/blob/master/benches/history/ls-lint-comparison.schema.json)
+
+Rows include schema version, timestamp, commit, branch, OS, architecture, Rust
+version, Node/npm versions, tool version, fixture metadata, rule cohort, tool
+name, median runtime, sample distribution, pass/fail status, and baseline
+identifier. The same report also includes traversal-only rows named `walkdir`,
+`jwalk-serial`, and `jwalk-parallel` so PRs can compare traversal behavior
+beside the top-level LS-Lint parity comparison.
+
+Assura rows also include per-fixture phase timings:
+`assura:config-discovery`, `assura:config-load`, `assura:checker-init`,
+`assura:configured-structure`, `assura:walk-and-validate`, and
+`assura:report-sort`. Pull requests attach a `ls-lint-performance-report`
+artifact and write these summaries to the GitHub Actions job summary. CI does
+not update tracked history automatically.
 
 ## Updating The Baseline
 
