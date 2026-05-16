@@ -6,23 +6,19 @@ sidebar:
   order: 1
 ---
 
-import { Steps, FileTree } from '@astrojs/starlight/components';
-
 This example uses the current supported CLI surface.
 
 ## Project Shape
 
-<FileTree>
-- my-rust-project/
-  - .assura/
-    - config.yml
-  - src/
-    - main.rs
-  - Cargo.toml
-  - README.md
-</FileTree>
-
-<Steps>
+```text
+my-rust-project/
+  .assura/
+    config.yml
+  src/
+    main.rs
+  Cargo.toml
+  README.md
+```
 
 1. **Create a Rust project**
 
@@ -79,8 +75,6 @@ This example uses the current supported CLI surface.
    ```bash
    assura check --format text
    ```
-
-</Steps>
 
 ## CI Snippet
 

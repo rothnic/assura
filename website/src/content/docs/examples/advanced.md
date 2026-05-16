@@ -3,8 +3,6 @@ title: Advanced Patterns
 description: Supported advanced configuration patterns for Assura v0.1
 ---
 
-import { Aside } from '@astrojs/starlight/components';
-
 These examples use the current `.assura/config.yml` structure-first
 configuration. They avoid undocumented Rust APIs and plugin surfaces.
 
@@ -97,7 +95,7 @@ assura check --format json . > assura-report.json
 The report contains `success`, `project_root`, `config_path`, `checked_path`,
 `files_checked`, `dirs_checked`, and `violations`.
 
-<Aside type="note" title="Future work">
-  Long-running watch mode, plugin APIs, and agent nudges are planned separately
-  from the v0.1 onboarding release.
-</Aside>
+> **Future work**
+>
+> Long-running watch mode, plugin APIs, and agent nudges are planned separately
+> from the v0.1 onboarding release.

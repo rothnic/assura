@@ -6,15 +6,13 @@ sidebar:
   order: 3
 ---
 
-import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
-
 Run `assura check` in CI to reject repository shape drift before merge.
 
-<Aside type="note">
-  Until a published binary or action is available for your environment, install
-  Assura with Cargo in the job. In this repository, use `cargo install --path .`
-  from the checked-out source.
-</Aside>
+> **Note**
+>
+> Until a published binary or action is available for your environment, install
+> Assura with Cargo in the job. In this repository, use `cargo install --path .`
+> from the checked-out source.
 
 ## GitHub Actions
 
@@ -110,14 +108,6 @@ jq '.violations | length' assura-report.json
 exit "${status:-0}"
 ```
 
-<Tabs>
-  <TabItem label="Text">
-    Use `--format text` for human-readable CI logs.
-  </TabItem>
-  <TabItem label="JSON">
-    Use `--format json` for artifacts and scripted summaries.
-  </TabItem>
-  <TabItem label="YAML">
-    Use `--format yaml` when your automation prefers YAML.
-  </TabItem>
-</Tabs>
+- `--format text`: human-readable CI logs.
+- `--format json`: artifacts and scripted summaries.
+- `--format yaml`: automation that prefers YAML.

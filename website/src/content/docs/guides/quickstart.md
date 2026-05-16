@@ -3,11 +3,7 @@ title: Quick Start
 description: Run Assura on a project in minutes
 ---
 
-import { Steps } from '@astrojs/starlight/components';
-
 Use this path for a first local check.
-
-<Steps>
 
 1. **Install or build Assura**
 
@@ -49,8 +45,6 @@ Use this path for a first local check.
    cargo install assura
    assura check --format text
    ```
-
-</Steps>
 
 ## Next Steps
 

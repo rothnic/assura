@@ -6,14 +6,10 @@ sidebar:
   order: 1
 ---
 
-import { Steps, Aside } from '@astrojs/starlight/components';
-
 Assura validates repository structure from `.assura/config.yml`. The primary
 supported command is `assura check`.
 
 ## First Run
-
-<Steps>
 
 1. **Install or build Assura**
 
@@ -63,8 +59,6 @@ supported command is `assura check`.
    ```bash
    assura check --format text
    ```
-
-</Steps>
 
 ## JSON Output
 
@@ -133,8 +127,8 @@ assura check --format json . > assura-report.json
 assura-codex-nudge --report assura-report.json --format text
 ```
 
-<Aside type="note" title="Current release scope">
-  This MVP does not install Codex hooks automatically and does not replace
-  repo-local `.agents/skills/` guidance. Treat it as advisory unless your
-  workflow enforces the command exit code.
-</Aside>
+> **Current release scope**
+>
+> This MVP does not install Codex hooks automatically and does not replace
+> repo-local `.agents/skills/` guidance. Treat it as advisory unless your
+> workflow enforces the command exit code.

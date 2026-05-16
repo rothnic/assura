@@ -29,18 +29,34 @@ reviewable without scraping local Criterion output.
 
 ## Baseline Table
 
-| Fixture | Rule cohort | Assura | LS-Lint 2.3 | Baseline |
-| --- | --- | ---: | ---: | --- |
-| `simple_small` | extension-dir-naming | See current data | See current data | `stable-baseline-v1` |
-| `simple_medium` | extension-dir-naming | See current data | See current data | `stable-baseline-v1` |
-| `monorepo_large` | extension-dir-naming | See current data | See current data | `stable-baseline-v1` |
-| `rule_heavy` | multi-extension-patterns | See current data | See current data | `stable-baseline-v1` |
-| `ignored_generated_heavy` | exclude-pruning | See current data | See current data | `stable-baseline-v1` |
-| `simple_library` | realistic-library | See current data | See current data | `stable-baseline-v1` |
-| `web_app` | realistic-frontend | See current data | See current data | `stable-baseline-v1` |
-| `monorepo_packages` | realistic-monorepo | See current data | See current data | `stable-baseline-v1` |
-| `rule_heavy_repo` | realistic-multi-extension-patterns | See current data | See current data | `stable-baseline-v1` |
-| `ignored_generated_heavy_repo` | realistic-exclude-pruning | See current data | See current data | `stable-baseline-v1` |
+The current realistic equivalent fixtures show Assura multiple times faster
+than warm LS-Lint 2.3 on the same generated project shapes:
+
+- `simple_library` (`realistic-library`): Assura 0.843 ms; LS-Lint 104.185
+  ms; **123.5x faster**.
+- `web_app` (`realistic-frontend`): Assura 0.801 ms; LS-Lint 101.060 ms;
+  **126.2x faster**.
+- `monorepo_packages` (`realistic-monorepo`): Assura 1.669 ms; LS-Lint
+  104.973 ms; **62.9x faster**.
+- `rule_heavy_repo` (`realistic-multi-extension-patterns`): Assura 26.145 ms;
+  LS-Lint 99.177 ms; **3.8x faster**.
+- `ignored_generated_heavy_repo` (`realistic-exclude-pruning`): Assura 0.542
+  ms; LS-Lint 108.457 ms; **200.3x faster**.
+
+Synthetic and scale-stress fixtures are tracked separately. They are useful for
+finding bottlenecks, but they are not the basis for the realistic-equivalent
+"multiple times faster" claim:
+
+- `simple_small` (`extension-dir-naming`): Assura 1.762 ms; LS-Lint 106.812
+  ms. Synthetic small baseline.
+- `simple_medium` (`extension-dir-naming`): Assura 23.810 ms; LS-Lint 112.705
+  ms. Synthetic medium baseline.
+- `monorepo_large` (`extension-dir-naming`): Assura 110.748 ms; LS-Lint
+  133.766 ms. Synthetic large baseline.
+- `rule_heavy` (`multi-extension-patterns`): Assura 173.930 ms; LS-Lint
+  117.829 ms. Synthetic stress case where LS-Lint is faster.
+- `ignored_generated_heavy` (`exclude-pruning`): Assura 0.509 ms; LS-Lint
+  102.912 ms. Synthetic generated-output pruning case.
 
 Pull requests attach a `ls-lint-performance-report` artifact and write a
 summary table to the GitHub Actions job summary. The summary includes both

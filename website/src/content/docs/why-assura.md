@@ -6,8 +6,6 @@ sidebar:
   order: 2
 ---
 
-import { Aside, Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
-
 Assura v0.1 is a structure-first repository validator. It is useful when you
 want a repository shape to be explicit, checked locally, and enforced in CI.
 
@@ -18,11 +16,11 @@ The current supported workflow is intentionally small:
 - migrate simple LS-Lint projects with `assura migrate`
 - consume `text`, `json`, or `yaml` reports in local scripts and CI
 
-<Aside type="note" title="Pre-1.0 scope">
-  This release focuses on truthful onboarding and LS-Lint-compatible structure
-  checks. Agent nudges, custom plugin APIs, role profiles, and quality scoring
-  are roadmap items, not supported v0.1 features.
-</Aside>
+> **Pre-1.0 scope**
+>
+> This release focuses on truthful onboarding and LS-Lint-compatible structure
+> checks. Agent nudges, custom plugin APIs, role profiles, and quality scoring
+> are roadmap items, not supported v0.1 features.
 
 ## The Problem
 
@@ -39,24 +37,16 @@ Assura turns those expectations into a checked project shape.
 
 ## Current Strengths
 
-<CardGrid>
-  <Card title="Structure Rules" icon="folder-tree">
-    Validate file names, directory names, required files, forbidden files, and
-    direct-child count rules from one config file.
-  </Card>
-  <Card title="LS-Lint Migration" icon="refresh-cw">
-    Convert supported `.ls-lint.yml` rules into `.assura/config.yml` and get
-    clear errors for unsupported directory-scope patterns.
-  </Card>
-  <Card title="Automation Output" icon="braces">
-    Use text output for people and JSON/YAML reports for scripts, CI jobs, and
-    release evidence.
-  </Card>
-  <Card title="Benchmark Evidence" icon="gauge">
-    The benchmark suite compares the current `assura check` path against
-    `@ls-lint/ls-lint@2.3.0` on the same generated fixtures.
-  </Card>
-</CardGrid>
+- **Structure Rules**: Validate file names, directory names, required files,
+  forbidden files, and direct-child count rules from one config file.
+- **LS-Lint Migration**: Convert supported `.ls-lint.yml` rules into
+  `.assura/config.yml` and get clear errors for unsupported directory-scope
+  patterns.
+- **Automation Output**: Use text output for people and JSON/YAML reports for
+  scripts, CI jobs, and release evidence.
+- **Benchmark Evidence**: The benchmark suite compares the current
+  `assura check` path against `@ls-lint/ls-lint@2.3.0` on the same generated
+  fixtures.
 
 ## When Assura Fits
 
@@ -94,20 +84,9 @@ orchestration remain future work.
 
 ## Start Here
 
-<LinkCard
-  title="Getting Started"
-  description="Install from source, initialize config, run checks, fix a failure, and wire CI."
-  href="/guides/getting-started/"
-/>
-
-<LinkCard
-  title="LS-Lint Migration"
-  description="Convert a supported .ls-lint.yml file and validate the migrated project."
-  href="/guides/ls-lint-migration/"
-/>
-
-<LinkCard
-  title="Configuration Reference"
-  description="Supported fields for the current structure-first config."
-  href="/reference/configuration/"
-/>
+- [Getting Started](/guides/getting-started/): Install from source,
+  initialize config, run checks, fix a failure, and wire CI.
+- [LS-Lint Migration](/guides/ls-lint-migration/): Convert a supported
+  `.ls-lint.yml` file and validate the migrated project.
+- [Configuration Reference](/reference/configuration/): Supported fields for
+  the current structure-first config.
