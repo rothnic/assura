@@ -30,9 +30,9 @@ binary, each pointed at equivalent configuration files for the same materialized
 fixture tree.
 
 The goal is not to prove a flattering number. The goal is to decide, from
-evidence, which Assura execution strategy should be the default and whether the
-website can honestly claim that Assura is multiple times faster than LS-Lint on
-realistic equivalent test cases.
+evidence, which Assura execution architecture should be the default and whether
+the website can honestly claim that Assura is multiple times faster than LS-Lint
+on realistic equivalent test cases.
 
 ## Problem Statement
 
@@ -58,7 +58,9 @@ This goal covers:
 
 - CLI-to-CLI benchmarking for Assura and LS-Lint.
 - Fixture equivalence and fixture metadata reporting.
-- Full-check Assura strategy comparisons.
+- Full-check Assura execution architecture comparisons.
+- Research into how comparable filesystem validation, linting, search, and
+  ignore-aware traversal tools maximize throughput.
 - Website evidence updates after the data contract is corrected.
 - Visual review of the rendered website before the PR is considered complete.
 
@@ -131,19 +133,56 @@ Equivalent means:
 - expected valid and invalid outcomes are asserted where the fixture is used for
   correctness, not only performance.
 
-## Assura Strategy Decision
+## Assura Execution Architecture Decision
 
-The PR must choose the Assura execution strategy from full-check data, not from
-traversal-only data.
+The PR must choose the Assura execution architecture from full-check data, not
+from traversal-only data. "Execution architecture" means the complete design of
+how Assura walks paths, prunes ignored work, plans applicable rules, applies
+rules, accumulates violations, preserves deterministic output, and avoids
+repeating work across files, directories, and rule groups.
 
-Candidate strategies to measure:
+Candidate dimensions to investigate and measure:
+
+- path walker choice: current deterministic serial path, walkdir-compatible
+  baseline, serial `jwalk`, parallel `jwalk`, or another justified walker,
+- traversal shape: one pass versus multiple passes, directory-first pruning,
+  streaming validation versus collect-then-validate,
+- parallelism boundary: parallel directory collection, parallel file
+  validation, parallel rule evaluation, or deliberately serial phases where
+  synchronization cost would dominate,
+- rule planning: precompute which rules can apply by directory, extension,
+  exact filename, glob, or direct child count before entering the hot path,
+- rule specialization: fast paths for suffix/extension rules, exact filenames,
+  `.dir` rules, direct-child `exists` counts, and ignored directory pruning,
+- caching and indexing: compiled regex/glob reuse, path component caches,
+  per-directory child summaries, extension buckets, and any other reusable
+  indexes that reduce repeated path/rule matching,
+- adaptive execution: choose a strategy based on rule shape, fixture size,
+  ignored-directory density, and whether fail-fast is enabled,
+- output architecture: preserve deterministic sorted output without making
+  every hot-path operation contend on shared mutable state.
+
+Candidate full-check strategies to benchmark:
 
 - current deterministic serial production path,
 - walkdir-compatible baseline path where still available,
 - serial `jwalk` path,
-- parallel `jwalk` collection with deterministic final sorting,
+- parallel `jwalk` collection plus deterministic validation/sorting,
+- parallel collection plus parallel rule application,
+- rule-planned or indexed execution path,
 - adaptive strategy if the implementation can choose based on fixture or config
   shape without compromising determinism.
+
+Required research before choosing the final architecture:
+
+- inspect how comparable tools handle high-throughput traversal, ignore
+  pruning, rule planning, caching, and deterministic output,
+- identify which ideas are relevant to Assura's structure-first rules and which
+  are not,
+- record the findings in `docs/analysis/` with citations or local source
+  references before implementing non-obvious architecture changes,
+- use the research to challenge current assumptions about what must remain
+  serial, what can be precomputed, and what can be made adaptive.
 
 The selected default must satisfy:
 
@@ -156,9 +195,9 @@ The selected default must satisfy:
 - best or clearly defensible total CLI runtime across the realistic-equivalent
   fixture set.
 
-If the fastest strategy differs by fixture class, the PR must either implement
-an adaptive strategy or document why a single default is the right product
-tradeoff.
+If the fastest architecture differs by fixture class, the PR must either
+implement an adaptive strategy or document why a single default is the right
+product tradeoff.
 
 ## Website Evidence Requirement
 
@@ -220,9 +259,10 @@ performance page:
       counts, directory counts, rule counts, native parity status, and config
       references in machine-readable output.
 - [ ] Full-check strategy rows exist for the candidate Assura execution
-      strategies needed to choose the default logically.
-- [ ] The selected Assura default strategy is justified by full-check CLI
-      runtime, correctness behavior, and deterministic output requirements.
+      architectures needed to choose the default logically.
+- [ ] The selected Assura default architecture is justified by full-check CLI
+      runtime, correctness behavior, deterministic output requirements, and any
+      research findings from comparable tools.
 - [ ] Synthetic stress and traversal-only rows are labeled as diagnostics and
       do not drive the headline website claim.
 - [ ] The website performance page renders a concise comparison table with
@@ -258,8 +298,8 @@ The PR must include a short decision record answering:
 2. Which fixtures count toward the headline claim?
 3. Which fixtures are diagnostic-only and why?
 4. Are Assura and LS-Lint measured through equivalent CLI subprocess paths?
-5. Which Assura execution strategy is the default after this work?
-6. Why is that strategy logically supported by full-check data?
+5. Which Assura execution architecture is the default after this work?
+6. Why is that architecture logically supported by research and full-check data?
 7. What is the weakest realistic-equivalent fixture result?
 8. What claim does the weakest result permit the website to make?
 
