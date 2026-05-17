@@ -41,35 +41,42 @@ surface.
 ## Performance Page Review
 
 The first pass still made the benefit difficult to parse because the page was
-mostly prose. The follow-up redesign makes the LS-Lint comparison visible above
-the fold:
+mostly prose. A second pass made the headline more visible but used separated
+comparison bars and a history progression graphic that was still too hard to
+defend. The final follow-up makes the page evidence-table-first:
 
-- headline metric: Assura is 17.3x faster across the realistic fixture bundle;
-- summary cards: aggregate speedup, slowest realistic win, best realistic win,
-  and the synthetic caveat;
-- fixture bars: Assura and LS-Lint runtimes per realistic fixture;
-- history section: realistic-bundle speedup over tracked snapshots;
-- synthetic section: stress fixtures that should not support the product claim.
+- headline metric: Assura completes the comparable realistic bundle with 94.2%
+  lower total runtime than warm LS-Lint;
+- summary cards: bundle reduction, bundle speedup, weakest realistic win, and
+  the synthetic caveat;
+- evidence table: each fixture includes what it models, fixture scale, rule
+  surface, generator/manifest links, Assura timing, LS-Lint timing, runtime
+  reduction, and speedup;
+- fairness contract: explains same materialized tree, converted config source,
+  warm LS-Lint CLI timing, and Assura top-level timing scope;
+- synthetic section: stress fixtures that should not support the product claim;
+- history section: explicitly reframed as an audit log, not a cross-machine
+  progression chart.
 
 The realistic equivalent rows show Assura multiple times faster than warm
 LS-Lint 2.3 on the same generated project shapes:
 
-| Fixture | Assura ms | LS-Lint ms | Speedup |
-| --- | ---: | ---: | ---: |
-| `simple_library` | 0.843 | 104.185 | 123.5x |
-| `web_app` | 0.801 | 101.060 | 126.2x |
-| `monorepo_packages` | 1.669 | 104.973 | 62.9x |
-| `rule_heavy_repo` | 26.145 | 99.177 | 3.8x |
-| `ignored_generated_heavy_repo` | 0.542 | 108.457 | 200.3x |
+| Fixture | Assura ms | LS-Lint ms | Runtime reduction | Speedup |
+| --- | ---: | ---: | ---: | ---: |
+| `simple_library` | 0.843 | 104.185 | 99.2% | 123.5x |
+| `web_app` | 0.801 | 101.060 | 99.2% | 126.2x |
+| `monorepo_packages` | 1.669 | 104.973 | 98.4% | 62.9x |
+| `rule_heavy_repo` | 26.145 | 99.177 | 73.6% | 3.8x |
+| `ignored_generated_heavy_repo` | 0.542 | 108.457 | 99.5% | 200.3x |
 
 The page also separates synthetic stress fixtures from realistic equivalent
 fixtures so `rule_heavy` does not get used as evidence for the faster-than
 LS-Lint product claim. `rule_heavy` remains documented as a synthetic stress
 case where LS-Lint is faster.
 
-The history section rolls up the same five realistic fixtures. It labels the
-Linux and macOS snapshots separately because absolute milliseconds should not be
-compared across machines without that caveat.
+The history section no longer visualizes cross-machine speedup progression.
+It states that JSONL history is an audit log until report shape, environment,
+and LS-Lint setup are normalized enough for a true trend chart.
 
 ## Verification
 
@@ -90,12 +97,19 @@ agent-browser --session assura-perf-page-redesign screenshot target/website-visu
 agent-browser --session assura-perf-page-redesign set viewport 390 844
 agent-browser --session assura-perf-page-redesign open http://127.0.0.1:4321/reference/performance/
 agent-browser --session assura-perf-page-redesign screenshot target/website-visual-review/performance-redesign-mobile.png --full
+agent-browser --session assura-perf-evidence-table set viewport 1440 1000
+agent-browser --session assura-perf-evidence-table open http://127.0.0.1:4321/reference/performance/
+agent-browser --session assura-perf-evidence-table screenshot target/website-visual-review/performance-evidence-table-desktop.png --full
+agent-browser --session assura-perf-evidence-table set viewport 390 844
+agent-browser --session assura-perf-evidence-table open http://127.0.0.1:4321/reference/performance/
+agent-browser --session assura-perf-evidence-table screenshot target/website-visual-review/performance-evidence-table-mobile.png --full
 ```
 
 Post-fix checks:
 
-- the performance page renders the headline speedup, summary cards, realistic
-  fixture comparison bars, history trend, and synthetic caveat section;
+- the performance page renders the headline reduction, summary cards,
+  apples-to-apples evidence table, fairness contract, synthetic caveat section,
+  and audit-log history section;
 - no visible `@astrojs/starlight/components` import text appears in built HTML;
 - representative docs pages no longer expose component imports or JSX tags as
   visible prose;

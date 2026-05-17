@@ -4,164 +4,218 @@ description: Assura versus LS-Lint comparison history and CI reporting contract.
 ---
 
 <div className="perf-hero">
-  <p className="perf-kicker">Current benchmark snapshot</p>
-  <h2>Assura is 17.3x faster than warm LS-Lint across realistic fixtures.</h2>
-  <p>The current report compares five repo-shaped fixtures that both tools can validate. Assura totals 30.0 ms across that bundle; LS-Lint totals 517.9 ms. The slowest realistic win is still 3.8x faster.</p>
+  <p className="perf-kicker">Current realistic fixture bundle</p>
+  <h2>Assura completes the comparable realistic bundle with 94.2% lower total runtime than warm LS-Lint.</h2>
+  <p>Current tracked data: Assura totals 30.0 ms across five native LS-Lint-parity fixtures; LS-Lint totals 517.9 ms on the same materialized fixture trees. That is a 17.3x total-runtime speedup. The weakest realistic row is still 73.6% lower runtime, or 3.8x faster.</p>
 </div>
 
 <div className="perf-metric-grid" aria-label="Performance summary">
   <div className="perf-metric">
-    <span className="perf-label">Realistic bundle</span>
+    <span className="perf-label">Bundle reduction</span>
+    <strong>94.2%</strong>
+    <span>lower total runtime</span>
+  </div>
+  <div className="perf-metric">
+    <span className="perf-label">Bundle speedup</span>
     <strong>17.3x</strong>
-    <span>faster than LS-Lint</span>
+    <span>30.0 ms vs 517.9 ms</span>
   </div>
   <div className="perf-metric">
-    <span className="perf-label">Slowest realistic win</span>
-    <strong>3.8x</strong>
-    <span>on rule-heavy repo shape</span>
-  </div>
-  <div className="perf-metric">
-    <span className="perf-label">Best realistic win</span>
-    <strong>200.3x</strong>
-    <span>on ignored generated output</span>
+    <span className="perf-label">Weakest win</span>
+    <strong>73.6%</strong>
+    <span>lower runtime on `rule_heavy_repo`</span>
   </div>
   <div className="perf-metric perf-metric-muted">
-    <span className="perf-label">Synthetic caveat</span>
+    <span className="perf-label">Known caveat</span>
     <strong>0.7x</strong>
-    <span>on stress-only `rule_heavy`</span>
+    <span>synthetic `rule_heavy` stress case</span>
   </div>
 </div>
 
-## Realistic Fixture Comparison
+## What Was Compared
 
-These rows are the basis for the faster-than-LS-Lint claim. Each row uses the
-same generated project shape for Assura and LS-Lint.
+The realistic comparison uses five generated fixtures whose manifest entries are
+marked native LS-Lint parity. Each fixture is generated once, writes a
+`.ls-lint.yml`, converts that same LS-Lint-compatible config into
+`.assura/config.yml`, then runs both tools against the same fixture directory.
 
-<div className="perf-compare" aria-label="Assura versus LS-Lint realistic fixture timings">
-  <div className="perf-row">
-    <div className="perf-row-heading">
-      <span><strong>simple_library</strong><small>realistic library</small></span>
-      <b>123.5x faster</b>
-    </div>
-    <div className="perf-bars">
-      <span className="perf-bar-label">Assura 0.843 ms</span>
-      <span className="perf-bar-track"><span className="perf-bar perf-bar-assura" style={{ width: '1%' }} /></span>
-      <span className="perf-bar-label">LS-Lint 104.185 ms</span>
-      <span className="perf-bar-track"><span className="perf-bar perf-bar-lslint" style={{ width: '96%' }} /></span>
-    </div>
-  </div>
-  <div className="perf-row">
-    <div className="perf-row-heading">
-      <span><strong>web_app</strong><small>realistic frontend</small></span>
-      <b>126.2x faster</b>
-    </div>
-    <div className="perf-bars">
-      <span className="perf-bar-label">Assura 0.801 ms</span>
-      <span className="perf-bar-track"><span className="perf-bar perf-bar-assura" style={{ width: '1%' }} /></span>
-      <span className="perf-bar-label">LS-Lint 101.060 ms</span>
-      <span className="perf-bar-track"><span className="perf-bar perf-bar-lslint" style={{ width: '93%' }} /></span>
-    </div>
-  </div>
-  <div className="perf-row">
-    <div className="perf-row-heading">
-      <span><strong>monorepo_packages</strong><small>realistic monorepo</small></span>
-      <b>62.9x faster</b>
-    </div>
-    <div className="perf-bars">
-      <span className="perf-bar-label">Assura 1.669 ms</span>
-      <span className="perf-bar-track"><span className="perf-bar perf-bar-assura" style={{ width: '2%' }} /></span>
-      <span className="perf-bar-label">LS-Lint 104.973 ms</span>
-      <span className="perf-bar-track"><span className="perf-bar perf-bar-lslint" style={{ width: '97%' }} /></span>
-    </div>
-  </div>
-  <div className="perf-row">
-    <div className="perf-row-heading">
-      <span><strong>rule_heavy_repo</strong><small>realistic multi-extension rules</small></span>
-      <b>3.8x faster</b>
-    </div>
-    <div className="perf-bars">
-      <span className="perf-bar-label">Assura 26.145 ms</span>
-      <span className="perf-bar-track"><span className="perf-bar perf-bar-assura" style={{ width: '24%' }} /></span>
-      <span className="perf-bar-label">LS-Lint 99.177 ms</span>
-      <span className="perf-bar-track"><span className="perf-bar perf-bar-lslint" style={{ width: '91%' }} /></span>
-    </div>
-  </div>
-  <div className="perf-row">
-    <div className="perf-row-heading">
-      <span><strong>ignored_generated_heavy_repo</strong><small>realistic ignored output</small></span>
-      <b>200.3x faster</b>
-    </div>
-    <div className="perf-bars">
-      <span className="perf-bar-label">Assura 0.542 ms</span>
-      <span className="perf-bar-track"><span className="perf-bar perf-bar-assura" style={{ width: '1%' }} /></span>
-      <span className="perf-bar-label">LS-Lint 108.457 ms</span>
-      <span className="perf-bar-track"><span className="perf-bar perf-bar-lslint" style={{ width: '100%' }} /></span>
-    </div>
-  </div>
+The table shows source-tree shape, rule surface, and timing in one place so the
+comparison can be reviewed as an apples-to-apples claim instead of a raw speed
+claim.
+
+<div className="perf-table-wrap" aria-label="Realistic LS-Lint parity comparison table">
+  <table className="perf-table">
+    <thead>
+      <tr>
+        <th>Fixture</th>
+        <th>Test case and scale</th>
+        <th>Config evidence</th>
+        <th>Assura</th>
+        <th>LS-Lint</th>
+        <th>Result</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td data-label="Fixture"><code>simple_library</code></td>
+        <td data-label="Test case and scale">Small library; 5 project files plus config files; 4 directories; Rust, Markdown, test-subextension, directory naming, exists, and ignore rules.</td>
+        <td data-label="Config evidence"><a href="https://github.com/rothnic/assura/blob/codex/ls-lint-realistic-parity-core-performance/src/cli/performance_report/fixtures.rs#L298-L323">generator</a>; <a href="https://github.com/rothnic/assura/blob/codex/ls-lint-realistic-parity-core-performance/tests/ls_lint_realistic_fixture_manifest.yml#L3-L24">manifest</a></td>
+        <td data-label="Assura">0.843 ms</td>
+        <td data-label="LS-Lint">104.185 ms</td>
+        <td data-label="Result"><strong>99.2% lower</strong>; 123.5x</td>
+      </tr>
+      <tr>
+        <td data-label="Fixture"><code>web_app</code></td>
+        <td data-label="Test case and scale">Frontend app; 5 project files plus config files; 4 directories; TSX, test-subextension, CSS module, PNG, directory naming, and ignore rules.</td>
+        <td data-label="Config evidence"><a href="https://github.com/rothnic/assura/blob/codex/ls-lint-realistic-parity-core-performance/src/cli/performance_report/fixtures.rs#L327-L355">generator</a>; <a href="https://github.com/rothnic/assura/blob/codex/ls-lint-realistic-parity-core-performance/tests/ls_lint_realistic_fixture_manifest.yml#L25-L45">manifest</a></td>
+        <td data-label="Assura">0.801 ms</td>
+        <td data-label="LS-Lint">101.060 ms</td>
+        <td data-label="Result"><strong>99.2% lower</strong>; 126.2x</td>
+      </tr>
+      <tr>
+        <td data-label="Fixture"><code>monorepo_packages</code></td>
+        <td data-label="Test case and scale">Two-package monorepo; 8 project files plus config files; nested package scopes, exists, TS/TSX naming, test-subextension, directory naming, and ignore rules.</td>
+        <td data-label="Config evidence"><a href="https://github.com/rothnic/assura/blob/codex/ls-lint-realistic-parity-core-performance/src/cli/performance_report/fixtures.rs#L358-L405">generator</a>; <a href="https://github.com/rothnic/assura/blob/codex/ls-lint-realistic-parity-core-performance/tests/ls_lint_realistic_fixture_manifest.yml#L46-L67">manifest</a></td>
+        <td data-label="Assura">1.669 ms</td>
+        <td data-label="LS-Lint">104.973 ms</td>
+        <td data-label="Result"><strong>98.4% lower</strong>; 62.9x</td>
+      </tr>
+      <tr>
+        <td data-label="Fixture"><code>rule_heavy_repo</code></td>
+        <td data-label="Test case and scale">Repo-shaped multi-extension workload; 192 project files plus config files; 8 feature directories; 36 specific extension rules plus directory and wildcard extension rules.</td>
+        <td data-label="Config evidence"><a href="https://github.com/rothnic/assura/blob/codex/ls-lint-realistic-parity-core-performance/src/cli/performance_report/fixtures.rs#L408-L439">generator</a>; <a href="https://github.com/rothnic/assura/blob/codex/ls-lint-realistic-parity-core-performance/tests/ls_lint_realistic_fixture_manifest.yml#L68-L85">manifest</a></td>
+        <td data-label="Assura">26.145 ms</td>
+        <td data-label="LS-Lint">99.177 ms</td>
+        <td data-label="Result"><strong>73.6% lower</strong>; 3.8x</td>
+      </tr>
+      <tr>
+        <td data-label="Fixture"><code>ignored_generated_heavy_repo</code></td>
+        <td data-label="Test case and scale">Small valid source plus large ignored invalid output; 1 checked source file plus 768 ignored generated files and config files; 50 generated/coverage directories.</td>
+        <td data-label="Config evidence"><a href="https://github.com/rothnic/assura/blob/codex/ls-lint-realistic-parity-core-performance/src/cli/performance_report/fixtures.rs#L442-L467">generator</a>; <a href="https://github.com/rothnic/assura/blob/codex/ls-lint-realistic-parity-core-performance/tests/ls_lint_realistic_fixture_manifest.yml#L86-L103">manifest</a></td>
+        <td data-label="Assura">0.542 ms</td>
+        <td data-label="LS-Lint">108.457 ms</td>
+        <td data-label="Result"><strong>99.5% lower</strong>; 200.3x</td>
+      </tr>
+    </tbody>
+  </table>
 </div>
 
-## History
+## Fairness Contract
 
-The history below rolls up the same five realistic fixtures. Cross-machine
-results are labeled because absolute milliseconds are not directly comparable
-between Linux CI-style runs and the later macOS local runs; the speedup ratio
-still shows the Assura-versus-LS-Lint relationship inside each snapshot.
+The current comparison is fair for native LS-Lint parity rows under these
+constraints:
 
-<div className="perf-history" aria-label="Realistic fixture speedup history">
-  <div className="perf-history-row">
-    <span><strong>2026-05-15</strong><small>7de3826, linux</small></span>
-    <span className="perf-history-track"><span style={{ width: '98%' }} /></span>
-    <b>194.2x</b>
-    <small>16.0 ms vs 3104.6 ms</small>
-  </div>
-  <div className="perf-history-row">
-    <span><strong>2026-05-15</strong><small>7de3826, linux rerun</small></span>
-    <span className="perf-history-track"><span style={{ width: '100%' }} /></span>
-    <b>198.7x</b>
-    <small>17.0 ms vs 3370.8 ms</small>
-  </div>
-  <div className="perf-history-row">
-    <span><strong>2026-05-16</strong><small>6c86b03, macOS baseline</small></span>
-    <span className="perf-history-track"><span style={{ width: '8%' }} /></span>
-    <b>15.1x</b>
-    <small>33.6 ms vs 508.7 ms</small>
-  </div>
-  <div className="perf-history-row">
-    <span><strong>2026-05-16</strong><small>6c86b03, macOS rerun</small></span>
-    <span className="perf-history-track"><span style={{ width: '9%' }} /></span>
-    <b>18.8x</b>
-    <small>26.0 ms vs 488.3 ms</small>
-  </div>
-  <div className="perf-history-row perf-history-current">
-    <span><strong>2026-05-16</strong><small>d34c319, current data</small></span>
-    <span className="perf-history-track"><span style={{ width: '9%' }} /></span>
-    <b>17.3x</b>
-    <small>30.0 ms vs 517.9 ms</small>
-  </div>
+- The fixture manifest records fixture purpose, LS-Lint rule surface, equivalent
+  Assura rule surface, parity status, and source revision.
+- `write_lslint_compatible_configs` converts the LS-Lint-compatible config into
+  Assura config, then writes both configs into the same generated fixture tree.
+- LS-Lint uses a prepared `@ls-lint/ls-lint@2.3.0` binary. The measured loop
+  still includes process startup, LS-Lint config loading, traversal, and
+  validation, so these are warm CLI execution timings rather than in-process
+  library timings.
+- Assura top-level rows include config discovery/load, checker initialization,
+  configured structure validation, walking and validation, and report sorting.
+
+This page does not claim that Assura is faster for every possible LS-Lint
+configuration. It claims that Assura is faster on the current native-parity
+realistic bundle, and it shows the fixture shape needed to judge whether that
+bundle is representative.
+
+## Synthetic Stress Rows
+
+Synthetic rows are not part of the realistic-bundle headline. They remain
+visible because they identify bottlenecks and caveats.
+
+<div className="perf-table-wrap" aria-label="Synthetic stress comparison table">
+  <table className="perf-table perf-table-compact">
+    <thead>
+      <tr>
+        <th>Fixture</th>
+        <th>Purpose</th>
+        <th>Scale / rules</th>
+        <th>Assura</th>
+        <th>LS-Lint</th>
+        <th>Result</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td data-label="Fixture"><code>rule_heavy</code></td>
+        <td data-label="Purpose">Worst-case multi-extension matching at synthetic scale.</td>
+        <td data-label="Scale / rules">2,000 project files; 40 directories; 30 extension-specific naming patterns.</td>
+        <td data-label="Assura">173.930 ms</td>
+        <td data-label="LS-Lint">117.829 ms</td>
+        <td data-label="Result"><strong>LS-Lint faster</strong></td>
+      </tr>
+      <tr>
+        <td data-label="Fixture"><code>monorepo_large</code></td>
+        <td data-label="Purpose">Large synthetic extension and directory naming baseline.</td>
+        <td data-label="Scale / rules">5,000 project files; 50 directories; extension and directory naming rules.</td>
+        <td data-label="Assura">110.748 ms</td>
+        <td data-label="LS-Lint">133.766 ms</td>
+        <td data-label="Result">Assura 17.2% lower runtime</td>
+      </tr>
+      <tr>
+        <td data-label="Fixture"><code>ignored_generated_heavy</code></td>
+        <td data-label="Purpose">Pruning behavior for ignored generated output.</td>
+        <td data-label="Scale / rules">1 checked source file; 1,000 ignored generated files; extension, directory naming, and ignore rules.</td>
+        <td data-label="Assura">0.509 ms</td>
+        <td data-label="LS-Lint">102.912 ms</td>
+        <td data-label="Result">Assura 99.5% lower runtime</td>
+      </tr>
+    </tbody>
+  </table>
 </div>
 
-## Synthetic Stress Fixtures
+## History Is An Audit Log
 
-These rows stay visible because they explain what the faster-than-LS-Lint claim
-does not cover. They are useful for bottleneck hunting, not for the realistic
-project comparison above.
+The JSONL history is useful for traceability, but it is not a clean progression
+chart yet. Older rows mix Linux and macOS runs, different LS-Lint setup states,
+and different report shapes. The page therefore uses the current same-report
+snapshot for the Assura-vs-LS-Lint claim and treats historical rows as an audit
+trail.
 
-<div className="perf-note-grid">
-  <div>
-    <strong>rule_heavy</strong>
-    <span>Assura 173.930 ms; LS-Lint 117.829 ms. Synthetic stress case where LS-Lint is faster.</span>
-  </div>
-  <div>
-    <strong>monorepo_large</strong>
-    <span>Assura 110.748 ms; LS-Lint 133.766 ms. Synthetic large baseline.</span>
-  </div>
-  <div>
-    <strong>ignored_generated_heavy</strong>
-    <span>Assura 0.509 ms; LS-Lint 102.912 ms. Synthetic pruning case.</span>
-  </div>
+For PR-level change detection, compare same-machine rows captured for the PR
+baseline and final report:
+
+<div className="perf-table-wrap" aria-label="PR-level same-machine change table">
+  <table className="perf-table perf-table-compact">
+    <thead>
+      <tr>
+        <th>Fixture</th>
+        <th>Baseline Assura</th>
+        <th>Final Assura</th>
+        <th>Change</th>
+        <th>Interpretation</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td data-label="Fixture"><code>rule_heavy</code></td>
+        <td data-label="Baseline Assura">194.615 ms</td>
+        <td data-label="Final Assura">173.930 ms</td>
+        <td data-label="Change">10.6% lower</td>
+        <td data-label="Interpretation">Tracked synthetic bottleneck improved, but LS-Lint remains faster on this stress row.</td>
+      </tr>
+      <tr>
+        <td data-label="Fixture"><code>rule_heavy_repo</code></td>
+        <td data-label="Baseline Assura">29.797 ms</td>
+        <td data-label="Final Assura">26.145 ms</td>
+        <td data-label="Change">12.3% lower</td>
+        <td data-label="Interpretation">Realistic multi-extension bottleneck improved.</td>
+      </tr>
+      <tr>
+        <td data-label="Fixture"><code>ignored_generated_heavy</code></td>
+        <td data-label="Baseline Assura">0.752 ms</td>
+        <td data-label="Final Assura">0.509 ms</td>
+        <td data-label="Change">32.3% lower</td>
+        <td data-label="Interpretation">Pruning-heavy synthetic row improved.</td>
+      </tr>
+    </tbody>
+  </table>
 </div>
 
-## Interpreting The Rows
+## Interpreting Traversal Rows
 
 Traversal rows are intentionally narrower than top-level Assura rows.
 `walkdir`, `jwalk-serial`, and `jwalk-parallel` measure raw entry enumeration.
@@ -169,41 +223,24 @@ They do not include config loading, effective rule resolution, naming-pattern
 validation, file-content reads, markdown checks, or report sorting.
 
 Use top-level `assura` rows for product comparisons. Use traversal rows only to
-understand whether traversal itself is a hotspot.
-
-`rule_heavy` and `rule_heavy_repo` are different fixtures:
-
-- `rule_heavy` is a synthetic stress fixture with many files and many
-  extension-specific rules.
-- `rule_heavy_repo` is a smaller repo-shaped fixture that exercises similar
-  multi-extension rules under a more realistic directory shape.
-
-LS-Lint rows use a prepared `@ls-lint/ls-lint@2.3.0` binary. They avoid
-repeated npm package resolution, but they still include process startup,
-LS-Lint config loading, traversal, and validation for each sample.
-
-The full interpretation for PR #11 is tracked in
-[`docs/analysis/2026-05-16-performance-results-interpretation.md`](https://github.com/rothnic/assura/blob/master/docs/analysis/2026-05-16-performance-results-interpretation.md).
+understand whether traversal itself is a hotspot. Before changing the production
+traversal default again, the report should add full-check strategy rows that
+compare walkdir, serial `jwalk`, and parallel `jwalk` under the same validation
+logic.
 
 ## Data Contract
 
 - [Current comparison report](/data/performance/current.json)
 - [Chart-ready JSONL history](/data/performance/ls-lint-comparison-history.jsonl)
 - [Tracked schema](https://github.com/rothnic/assura/blob/master/benches/history/ls-lint-comparison.schema.json)
+- [Fixture manifest](https://github.com/rothnic/assura/blob/codex/ls-lint-realistic-parity-core-performance/tests/ls_lint_realistic_fixture_manifest.yml)
+- [Performance fixture generator](https://github.com/rothnic/assura/blob/codex/ls-lint-realistic-parity-core-performance/src/cli/performance_report/fixtures.rs)
+- [Full interpretation note](https://github.com/rothnic/assura/blob/master/docs/analysis/2026-05-16-performance-results-interpretation.md)
 
 Rows include schema version, timestamp, commit, branch, OS, architecture, Rust
-version, Node/npm versions, tool version, fixture metadata, rule cohort, tool
-name, median runtime, sample distribution, pass/fail status, and baseline
-identifier. The same report also includes traversal-only rows named `walkdir`,
-`jwalk-serial`, and `jwalk-parallel` so PRs can compare traversal behavior
-beside the top-level LS-Lint parity comparison.
-
-Assura rows also include per-fixture phase timings:
-`assura:config-discovery`, `assura:config-load`, `assura:checker-init`,
-`assura:configured-structure`, `assura:walk-and-validate`, and
-`assura:report-sort`. Pull requests attach a `ls-lint-performance-report`
-artifact and write these summaries to the GitHub Actions job summary. CI does
-not update tracked history automatically.
+version, Node/npm versions, LS-Lint version, fixture id, fixture source
+revision, fixture cohort, rule cohort, tool name, median runtime, sample
+distribution, pass/fail status, and comparison baseline id.
 
 ## Updating The Baseline
 

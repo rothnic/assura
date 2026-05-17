@@ -101,16 +101,16 @@ th {
 
 .perf-hero h2 {
   margin: 0.25rem 0 0.75rem;
-  font-size: clamp(1.75rem, 5vw, 3rem);
-  line-height: 1.02;
+  font-size: clamp(1.65rem, 4.6vw, 2.55rem);
+  line-height: 1.08;
   letter-spacing: 0;
 }
 
 .perf-hero p:last-child {
-  max-width: 64ch;
+  max-width: 72ch;
   margin-bottom: 0;
   color: var(--sl-color-gray-2);
-  font-size: 1.05rem;
+  font-size: 1.02rem;
 }
 
 .perf-kicker,
@@ -142,14 +142,14 @@ th {
   display: block;
   margin: 0.35rem 0 0.2rem;
   color: var(--sl-color-white);
-  font-size: clamp(1.65rem, 6vw, 2.35rem);
+  font-size: clamp(1.55rem, 5vw, 2.2rem);
   line-height: 1;
 }
 
 .perf-metric span:last-child {
   display: block;
   color: var(--sl-color-gray-2);
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   line-height: 1.35;
 }
 
@@ -157,106 +157,50 @@ th {
   color: #fbbf24;
 }
 
-.perf-compare,
-.perf-history,
-.perf-note-grid {
-  display: grid;
-  gap: 0.75rem;
+.perf-table-wrap {
+  width: 100%;
   margin: 1rem 0 2rem;
-}
-
-.perf-row,
-.perf-history-row,
-.perf-note-grid > div {
-  min-width: 0;
-  padding: 1rem;
-  border: 1px solid rgba(148, 163, 184, 0.22);
+  overflow-x: auto;
+  border: 1px solid rgba(148, 163, 184, 0.24);
   border-radius: 0.5rem;
   background: var(--sl-color-bg-nav);
 }
 
-.perf-row-heading,
-.perf-history-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 0.75rem;
-  align-items: start;
-}
-
-.perf-row-heading strong,
-.perf-history-row strong,
-.perf-note-grid strong {
-  color: var(--sl-color-white);
-}
-
-.perf-row-heading small,
-.perf-history-row small,
-.perf-note-grid span {
-  display: block;
-  color: var(--sl-color-gray-2);
+.perf-table {
+  width: 100%;
+  margin: 0;
+  border-collapse: collapse;
+  font-size: 0.86rem;
   line-height: 1.35;
+  min-width: 46rem;
 }
 
-.perf-row-heading b,
-.perf-history-row b {
-  align-self: start;
-  padding: 0.25rem 0.5rem;
-  border-radius: 999px;
-  background: rgba(45, 212, 191, 0.14);
-  color: var(--assura-accent);
-  font-size: 0.85rem;
-  white-space: nowrap;
+.perf-table-compact {
+  font-size: 0.86rem;
 }
 
-.perf-bars {
-  display: grid;
-  grid-template-columns: minmax(7.5rem, auto) minmax(0, 1fr);
-  gap: 0.4rem 0.7rem;
-  margin-top: 0.9rem;
-  align-items: center;
+.perf-table th,
+.perf-table td {
+  padding: 0.7rem 0.8rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+  text-align: left;
+  vertical-align: top;
 }
 
-.perf-bar-label {
+.perf-table td {
   color: var(--sl-color-gray-2);
-  font-size: 0.82rem;
+}
+
+.perf-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.perf-table strong {
+  color: var(--assura-accent);
+}
+
+.perf-table a {
   white-space: nowrap;
-}
-
-.perf-bar-track,
-.perf-history-track {
-  position: relative;
-  display: block;
-  min-width: 0;
-  height: 0.72rem;
-  overflow: hidden;
-  border-radius: 999px;
-  background: rgba(148, 163, 184, 0.18);
-}
-
-.perf-bar,
-.perf-history-track span {
-  display: block;
-  min-width: 0.2rem;
-  height: 100%;
-  border-radius: inherit;
-}
-
-.perf-bar-assura,
-.perf-history-track span {
-  background: #2dd4bf;
-}
-
-.perf-bar-lslint {
-  background: #f59e0b;
-}
-
-.perf-history-row {
-  grid-template-columns: minmax(10rem, 1.2fr) minmax(0, 1.5fr) auto auto;
-  align-items: center;
-}
-
-.perf-history-current {
-  border-color: rgba(45, 212, 191, 0.5);
 }
 
 @media (max-width: 50rem) {
@@ -264,13 +208,40 @@ th {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .perf-history-row {
-    grid-template-columns: minmax(0, 1fr) auto;
+  .perf-table {
+    min-width: 0;
   }
 
-  .perf-history-track,
-  .perf-history-row > small {
-    grid-column: 1 / -1;
+  .perf-table,
+  .perf-table thead,
+  .perf-table tbody,
+  .perf-table tr,
+  .perf-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .perf-table thead {
+    display: none;
+  }
+
+  .perf-table tr {
+    padding: 0.85rem 0;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+  }
+
+  .perf-table td {
+    display: grid;
+    grid-template-columns: minmax(8rem, 0.7fr) minmax(0, 1.6fr);
+    gap: 0.85rem;
+    padding: 0.32rem 0.85rem;
+    border-bottom: 0;
+  }
+
+  .perf-table td::before {
+    content: attr(data-label);
+    color: var(--sl-color-white);
+    font-weight: 700;
   }
 }
 
@@ -279,12 +250,9 @@ th {
     grid-template-columns: 1fr;
   }
 
-  .perf-row-heading,
-  .perf-bars {
-    grid-template-columns: 1fr;
-  }
-
-  .perf-row-heading b {
-    justify-self: start;
+  .perf-table td {
+    grid-template-columns: minmax(6.5rem, 0.8fr) minmax(0, 1.6fr);
+    gap: 0.6rem;
+    padding: 0.3rem 0.7rem;
   }
 }
