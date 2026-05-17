@@ -102,6 +102,41 @@ fn realistic_fixture_manifest_is_pinned_and_complete() {
             .any(|entry| entry.source.kind == "external_git"),
         "manifest must include at least one pinned external_git source"
     );
+
+    let monorepo_policy = manifest
+        .fixtures
+        .iter()
+        .find(|entry| entry.id == "monorepo_policy")
+        .expect("monorepo policy fixture should be declared");
+    assert_eq!(monorepo_policy.source.kind, "generated");
+    assert_eq!(monorepo_policy.source.revision, "generated-fixtures-v2");
+    assert!(monorepo_policy.ls_lint_rules.contains(&"regex".to_string()));
+    assert!(monorepo_policy
+        .assura_rules
+        .contains(&"directories.allowed_names".to_string()));
+
+    for (id, repository, revision) in [
+        (
+            "pinned_nextjs",
+            "https://github.com/vercel/next.js",
+            "ea8bc0ec2bbae18dd6861db15d66b92c36feeeb8",
+        ),
+        (
+            "pinned_mdbook",
+            "https://github.com/rust-lang/mdBook",
+            "b7a27d2759e80d804a33a4bc9c31b2b6863a5cb2",
+        ),
+    ] {
+        let entry = manifest
+            .fixtures
+            .iter()
+            .find(|entry| entry.id == id)
+            .unwrap_or_else(|| panic!("manifest missing {id}"));
+        assert_eq!(entry.source.kind, "external_git");
+        assert_eq!(entry.source.repository, repository);
+        assert_eq!(entry.source.revision, revision);
+        assert!(entry.native_lslint_parity);
+    }
 }
 
 #[test]

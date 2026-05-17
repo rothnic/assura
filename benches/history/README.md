@@ -3,7 +3,9 @@
 This directory stores chart-ready Assura versus LS-Lint comparison data.
 
 - `ls-lint-comparison.schema.json` defines one JSONL result row.
-- `ls-lint-comparison-history.jsonl` is the tracked baseline history.
+- `ls-lint-comparison-history.jsonl` is the tracked rolling baseline history.
+  The report writer keeps the most recent 1,000 rows so checked-in history
+  stays inside the repository structure policy.
 - `current.json` is the latest checked-in full report used by the website.
 
 Generate a current report without changing tracked history:

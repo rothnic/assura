@@ -108,7 +108,11 @@
     "assura_config_path": { "type": "string" },
     "ls_lint_config_path": { "type": "string" },
     "config_generation_method": {
-      "enum": ["hand-authored-equivalent-pair", "ls-lint-conversion"]
+      "enum": [
+        "hand-authored-equivalent-pair",
+        "hand-authored-external-policy",
+        "ls-lint-conversion"
+      ]
     },
     "shared_config_id": { "type": "string" },
     "expected_assura_exit_status": { "type": "integer" },

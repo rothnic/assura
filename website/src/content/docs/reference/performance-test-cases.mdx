@@ -9,10 +9,11 @@ rulesets in the results table.
 
 Assura reports separate three kinds of evidence:
 
-- current measured cases: generated fixtures in `generated-fixtures-v1`
+- current measured cases: generated fixtures in `generated-fixtures-v1` and
+  `generated-fixtures-v2`
 - diagnostic stress cases: synthetic cases used for regression detection
-- target real-project cases: pinned repositories or policies that should be
-  added before making broader public benchmark claims
+- opt-in pinned real-project cases: external Git repositories that can be
+  measured explicitly without vendoring third-party source
 
 ## Current Measured Cases
 
@@ -76,6 +77,23 @@ This case should be replaced or supplemented by a more meaningful policy-style
 case. The current extension list is mechanically useful, but it does not explain
 real project structure well.
 
+<a id="monorepo-policy"></a>
+
+### Monorepo policy
+
+Fixture: `monorepo_policy`. Generated TypeScript/Next-style workspace with
+app, package, documentation, scripts, infrastructure, config, tests, and CI
+scopes.
+
+| Field | Value |
+| --- | --- |
+| Comparable project | strict frontend/package monorepo |
+| Scale focus | policy-shaped rule matching and ignored generated output |
+| Current rule surface | root directory/file whitelisting, app/package overrides, config-file exceptions, JavaScript/JSX source bans, docs/scripts/infra policies, generated-output pruning |
+
+This is the generated fixture intended to replace the old extension-heavy
+`rule_heavy_repo` as the more meaningful policy case.
+
 <a id="ignored-generated-heavy-repo"></a>
 
 ### Generated-heavy repo
@@ -89,15 +107,30 @@ coverage folders inside the tree.
 | Scale focus | ignored-path pruning |
 | Current rule surface | TypeScript naming and generated/coverage pruning |
 
-## Target Real-Project Cases
+## Opt-In Pinned Repository Cases
 
-These are the next cases the generator should add. Until they are implemented
-and measured, they should not appear as benchmark results on the summary page.
+Pinned external fixtures are implemented behind an explicit flag because they
+clone large third-party repositories. They are deterministic but too expensive
+for every local refresh.
+
+Run them with:
+
+```bash
+cargo run --release --quiet -- performance-report \
+  --include-external-fixtures \
+  --output target/performance/external-fixtures.json \
+  --history target/performance/external-fixtures.jsonl \
+  --website-dir target/performance/website-data \
+  --iterations 3
+```
+
+Set `ASSURA_PERF_EXTERNAL_FIXTURE_CACHE=/path/to/cache` to share the Git cache
+across runs. Without it, Assura uses `target/performance/external-fixture-cache`.
 
 ### Workspace Monorepo Policy
 
-Use a detailed LS-Lint policy that constrains the shape of a real
-TypeScript/Next-style monorepo:
+The default report includes a generated detailed LS-Lint policy that constrains
+the shape of a TypeScript/Next-style monorepo:
 
 - root directory whitelist
 - special root docs such as `README`, `AGENTS`, `CONTRIBUTING`, and `LICENSE`
@@ -155,9 +188,7 @@ ignore:
   - .turbo
 ```
 
-This case is more meaningful than the current rule-heavy generated case because
-it uses directory-specific overrides, regex exceptions, disallowed extensions,
-and realistic ignored paths.
+This case is measured by default as `monorepo_policy`.
 
 ### Pinned Next.js Checkout
 
@@ -170,9 +201,9 @@ Candidate:
 | Resolved commit | `ea8bc0ec2bbae18dd6861db15d66b92c36feeeb8` |
 | Purpose | large frontend/monorepo tree users recognize |
 
-This case should record the dependency/cache policy, ignored generated paths,
-checked file count, ignored file count, directory count, exact LS-Lint config,
-and equivalent Assura config.
+Fixture: `pinned_nextjs`. This case records the dependency/cache policy,
+ignored generated paths, checked file count, ignored file count, directory
+count, exact LS-Lint config, and equivalent Assura config in opt-in report rows.
 
 ### Pinned mdBook Checkout
 
@@ -184,6 +215,9 @@ Candidate:
 | Pinned ref | `v0.4.48` |
 | Resolved commit | `b7a27d2759e80d804a33a4bc9c31b2b6863a5cb2` |
 | Purpose | Rust docs/library structure with a different ecosystem shape |
+
+Fixture: `pinned_mdbook`. This case uses the same opt-in materialization path
+as `pinned_nextjs`.
 
 ## LS-Lint Features To Cover
 

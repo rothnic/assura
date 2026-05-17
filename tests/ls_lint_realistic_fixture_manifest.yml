@@ -83,6 +83,30 @@ fixtures:
     cohort: stable_baseline
     native_lslint_parity: true
     assura_extensions: []
+  - id: monorepo_policy
+    name: Monorepo policy
+    source:
+      kind: generated
+      repository: https://github.com/assura/assura
+      revision: generated-fixtures-v2
+    purpose: Strict TypeScript/Next-style monorepo policy with root whitelisting, app/package scopes, source bans, docs/scripts/infra rules, and generated-output pruning.
+    ls_lint_rules:
+      - explicit_nested_directory_scope
+      - regex
+      - or_syntax
+      - extension
+      - subextension
+      - .dir
+      - ignore
+    assura_rules:
+      - files.allowed_names
+      - directories.allowed_names
+      - files.naming_patterns
+      - directories.naming
+      - exclude
+    cohort: stable_baseline
+    native_lslint_parity: true
+    assura_extensions: []
   - id: ignored_generated_heavy_repo
     name: Ignored generated-heavy repo
     source:
@@ -116,17 +140,44 @@ fixtures:
     native_lslint_parity: false
     assura_extensions:
       - exact_filename_exists
-  - id: external_simple_library
-    name: External simple library
+  - id: pinned_nextjs
+    name: Pinned Next.js checkout
+    source:
+      kind: external_git
+      repository: https://github.com/vercel/next.js
+      revision: ea8bc0ec2bbae18dd6861db15d66b92c36feeeb8
+    purpose: Pinned frontend monorepo repository for deterministic opt-in performance-report measurement without vendoring third-party source.
+    ls_lint_rules:
+      - external_fixture_source
+      - regex
+      - .dir
+      - wildcard_extension
+      - ignore
+    assura_rules:
+      - fixture_materialization
+      - files.naming_patterns
+      - directories.naming
+      - exclude
+    cohort: stable_baseline
+    native_lslint_parity: true
+    assura_extensions: []
+  - id: pinned_mdbook
+    name: Pinned mdBook checkout
     source:
       kind: external_git
       repository: https://github.com/rust-lang/mdBook
-      revision: v0.4.48
-    purpose: Pinned external repository source used to prove cacheable materialization without vendoring third-party source.
+      revision: b7a27d2759e80d804a33a4bc9c31b2b6863a5cb2
+    purpose: Pinned Rust documentation/library repository for deterministic opt-in performance-report measurement without vendoring third-party source.
     ls_lint_rules:
       - external_fixture_source
+      - regex
+      - .dir
+      - extension
     assura_rules:
       - fixture_materialization
+      - files.naming_patterns
+      - directories.naming
+      - exclude
     cohort: stable_baseline
     native_lslint_parity: true
     assura_extensions: []

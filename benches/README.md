@@ -68,7 +68,9 @@ cargo run --quiet -- performance-report \
 
 Review the resulting `benches/history/` and `website/public/data/performance/`
 diffs in the PR. Do not update tracked history as an automatic side effect of
-normal benchmark or CI runs.
+normal benchmark or CI runs. The tracked JSONL history is capped to the most
+recent 1,000 rows to keep generated evidence inside the repository structure
+policy.
 
 ### Local Baseline: 2026-05-14
 

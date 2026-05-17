@@ -167,7 +167,7 @@ pub(in crate::cli::performance_report) fn row(
         assura_version: ASSURA_VERSION.to_string(),
         ls_lint_version: ls_lint_version.to_string(),
         fixture_id: fixture.scenario.id.to_string(),
-        fixture_source_revision: fixture.scenario.source_revision.to_string(),
+        fixture_source_revision: metadata.source_revision.clone(),
         fixture_cohort: metadata.cohort.to_string(),
         legacy_fixture_cohort: "stable-baseline".to_string(),
         rule_cohort: fixture.scenario.rule_cohort.to_string(),
@@ -239,7 +239,7 @@ mod tests {
 
     #[test]
     fn cli_row_carries_fixture_metadata_and_headline_label() {
-        let scenario = scenarios()
+        let scenario = scenarios(false)
             .into_iter()
             .find(|scenario| scenario.id == "simple_library")
             .unwrap();
@@ -284,6 +284,8 @@ mod tests {
         for field in [
             "row_family",
             "evidence_role",
+            "fixture_source_revision",
+            "source_type",
             "checked_file_count",
             "ignored_file_count",
             "directory_count",
@@ -305,7 +307,7 @@ mod tests {
 
     #[test]
     fn synthetic_and_diagnostic_families_are_not_headline_rows() {
-        let scenario = scenarios()
+        let scenario = scenarios(false)
             .into_iter()
             .find(|scenario| scenario.id == "rule_heavy")
             .unwrap();

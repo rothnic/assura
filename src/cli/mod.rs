@@ -19,4 +19,7 @@ pub use commands::{
 pub use config::{CliConfig, ConfigDiscovery};
 pub use hooks::{GitHooksManager, HookType};
 pub use output::{OutputFormatter, ValidationReporter};
-pub use performance_report::{performance_report_command, PerformanceReport, PerformanceResultRow};
+pub use performance_report::{
+    performance_report_command, PerformanceReport, PerformanceReportCommandOptions,
+    PerformanceResultRow,
+};

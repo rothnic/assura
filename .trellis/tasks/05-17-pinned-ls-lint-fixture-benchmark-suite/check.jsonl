@@ -1,0 +1,7 @@
+{"file":".trellis/spec/assura/index.md","reason":"Check implementation against Assura workflow, structure, and no-new-debt constraints."}
+{"file":".trellis/spec/assura/structure-enforcement.md","reason":"Verify LS-Lint compatibility and generated structure policies remain contract-aligned."}
+{"file":".trellis/spec/assura/tooling-stabilization.md","reason":"Classify any failed gates as new blockers versus documented baseline debt."}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Review new fixture/report code for duplicated constants or drift-prone mappings."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Verify metadata survives fixture to report to website/public-data boundaries."}
+{"file":"docs/analysis/2026-05-17-cli-to-cli-performance-decision-record.md","reason":"Check headline candidate and diagnostic row classification."}
+{"file":"docs/analysis/2026-05-17-filesystem-validation-throughput-research.md","reason":"Confirm traversal/strategy rows remain diagnostics and no architecture claims drift."}

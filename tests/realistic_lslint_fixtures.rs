@@ -72,6 +72,11 @@ const FAMILIES: &[FixtureFamily] = &[
         invalid_expected_rules: &["directory_naming", "exists_count", "file_naming"],
     },
     FixtureFamily {
+        id: "monorepo_policy",
+        valid_expected_rules: &[],
+        invalid_expected_rules: &["file_naming", "unexpected_directory", "unexpected_file"],
+    },
+    FixtureFamily {
         id: "rule_heavy_repo",
         valid_expected_rules: &[],
         invalid_expected_rules: &["file_naming"],
@@ -101,6 +106,7 @@ pub fn materialize_fixture(family: FixtureFamily, variant: FixtureVariant) -> Ma
         "simple_library" => simple_library(&project, variant),
         "web_app" => web_app(&project, variant),
         "monorepo_packages" => monorepo_packages(&project, variant),
+        "monorepo_policy" => monorepo_policy(&project, variant),
         "rule_heavy_repo" => rule_heavy_repo(&project, variant),
         "ignored_generated_heavy_repo" => ignored_generated_heavy_repo(&project, variant),
         unknown => panic!("unknown fixture family: {unknown}"),
@@ -307,13 +313,17 @@ fn copy_symlink(source: &Path, destination: &Path) -> Result<(), String> {
 
 fn write_configs(project: &TempDir, ls_lint_config: &str) {
     let config = convert_ls_lint_to_config(ls_lint_config).unwrap();
+    write_assura_and_lslint_configs(
+        project,
+        &serde_yaml::to_string(&config).unwrap(),
+        ls_lint_config,
+    );
+}
+
+fn write_assura_and_lslint_configs(project: &TempDir, assura_config: &str, ls_lint_config: &str) {
     let assura_dir = project.path().join(".assura");
     fs::create_dir_all(&assura_dir).unwrap();
-    fs::write(
-        assura_dir.join("config.yml"),
-        serde_yaml::to_string(&config).unwrap(),
-    )
-    .unwrap();
+    fs::write(assura_dir.join("config.yml"), assura_config).unwrap();
     fs::write(project.path().join(".ls-lint.yml"), ls_lint_config).unwrap();
 }
 
@@ -469,6 +479,129 @@ ls:
             "# Overflow\n",
         );
         write(project.path().join("packages/ui/src/button.tsx"), "");
+    }
+}
+
+fn monorepo_policy(project: &TempDir, variant: FixtureVariant) {
+    write_assura_and_lslint_configs(
+        project,
+        r#"
+structure:
+  ./:
+    files:
+      allowed_names:
+        - README.md
+        - AGENTS.md
+        - package.json
+      allow_extra: false
+    directories:
+      allowed_names:
+        - apps
+        - packages
+        - docs
+        - generated
+        - node_modules
+      allow_extra: false
+    children:
+      apps:
+        children:
+          web:
+            files:
+              naming_patterns:
+                "*.js": regex:(next\.config|postcss\.config|tailwind\.config)
+                "*.json": kebab-case
+            directories:
+              naming: kebab-case
+            children:
+              src:
+                files:
+                  naming_patterns:
+                    "*.ts": kebab-case
+                    "*.tsx": PascalCase
+                    "*.js": regex:^$
+      packages:
+        children:
+          core:
+            children:
+              src:
+                files:
+                  naming_patterns:
+                    "*.ts": kebab-case
+                    "*.js": regex:^$
+      docs:
+        files:
+          naming_patterns:
+            "*.md": regex:(README|AGENTS) | kebab-case
+exclude:
+  - ".assura/**"
+  - ".ls-lint.yml"
+  - "generated/**"
+  - "node_modules/**"
+"#,
+        r#"
+ignore:
+  - .assura/**
+  - .ls-lint.yml
+  - generated/**
+  - node_modules/**
+ls:
+  .dir: regex:(apps|packages|docs|generated|node_modules)
+  .md: regex:(README|AGENTS) | kebab-case
+  .json: kebab-case
+  apps:
+    web:
+      .js: regex:(next\.config|postcss\.config|tailwind\.config)
+      .json: kebab-case
+      src:
+        .ts: kebab-case
+        .tsx: PascalCase
+        .js: regex:^$
+  packages:
+    core:
+      src:
+        .ts: kebab-case
+        .js: regex:^$
+  docs:
+    .md: regex:(README|AGENTS) | kebab-case
+"#,
+    );
+
+    for dir in [
+        "apps/web/src/components",
+        "packages/core/src",
+        "docs",
+        "generated/api",
+        "node_modules/pkg",
+    ] {
+        fs::create_dir_all(project.path().join(dir)).unwrap();
+    }
+    for file in [
+        "README.md",
+        "AGENTS.md",
+        "package.json",
+        "apps/web/package.json",
+        "apps/web/next.config.js",
+        "apps/web/src/index.ts",
+        "apps/web/src/components/DashboardShell.tsx",
+        "packages/core/src/index.ts",
+        "docs/README.md",
+        "docs/architecture-notes.md",
+        "generated/api/BadName.js",
+        "node_modules/pkg/BadName.js",
+    ] {
+        write(project.path().join(file), "");
+    }
+
+    if variant == FixtureVariant::Invalid {
+        fs::create_dir(project.path().join("scratch")).unwrap();
+        write(project.path().join("notes.md"), "");
+        write(
+            project
+                .path()
+                .join("apps/web/src/components/bad-component.tsx"),
+            "",
+        );
+        write(project.path().join("apps/web/src/legacy.js"), "");
     }
 }
 

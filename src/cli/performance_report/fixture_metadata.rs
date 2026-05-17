@@ -1,6 +1,8 @@
 //! Machine-readable fixture metadata for performance report rows.
 
 use super::fixtures::{FixtureKind, FixtureMetadata, FixtureScenario};
+use glob::Pattern;
+use std::fs;
 use std::path::Path;
 
 pub(super) fn fixture_metadata(
@@ -8,8 +10,10 @@ pub(super) fn fixture_metadata(
     root: &Path,
 ) -> Result<FixtureMetadata, String> {
     let counts = count_fixture_entries(root, ignored_paths(scenario.kind))?;
+    let source_revision = source_revision(scenario, root);
     Ok(FixtureMetadata {
-        source_type: "generated",
+        source_type: source_type(scenario.kind),
+        source_revision: source_revision.clone(),
         cohort: fixture_cohort(scenario.kind),
         checked_file_count: counts.checked_file_count,
         ignored_file_count: counts.ignored_file_count,
@@ -20,7 +24,7 @@ pub(super) fn fixture_metadata(
         assura_config_path: ".assura/config.yml",
         ls_lint_config_path: ".ls-lint.yml",
         config_generation_method: config_generation_method(scenario.kind),
-        shared_config_id: format!("{}:{}", scenario.source_revision, scenario.id),
+        shared_config_id: format!("{}:{}", source_revision, scenario.id),
         expected_assura_exit_status: 0,
         expected_ls_lint_exit_status: 0,
     })
@@ -63,7 +67,14 @@ fn is_ignored(relative: &Path, ignored_paths: &[&str]) -> bool {
     let relative = relative.to_string_lossy().replace('\\', "/");
     ignored_paths.iter().any(|ignored| {
         let ignored = ignored.trim_end_matches("/**").trim_end_matches('/');
-        relative == ignored || relative.starts_with(&format!("{ignored}/"))
+        relative == ignored
+            || relative.starts_with(&format!("{ignored}/"))
+            || Pattern::new(ignored)
+                .map(|pattern| pattern.matches(&relative))
+                .unwrap_or(false)
+            || Pattern::new(&format!("{ignored}/**"))
+                .map(|pattern| pattern.matches(&relative))
+                .unwrap_or(false)
     })
 }
 
@@ -74,8 +85,55 @@ fn ignored_paths(kind: FixtureKind) -> &'static [&'static str] {
         FixtureKind::SimpleLibrary => &[".assura", "target"],
         FixtureKind::WebApp => &[".assura", "dist"],
         FixtureKind::MonorepoPackages => &[".assura", "packages/core/dist", "packages/ui/dist"],
+        FixtureKind::MonorepoPolicy => &[
+            ".assura",
+            ".ls-lint.yml",
+            "node_modules",
+            "apps/web-dashboard/node_modules",
+            "apps/web-dashboard/.next",
+            "apps/admin-console/dist",
+            "packages/core/dist",
+            "packages/ui-kit/.turbo",
+            ".turbo",
+            "coverage",
+        ],
         FixtureKind::RuleHeavyRepo => &[".assura", ".ls-lint.yml"],
         FixtureKind::IgnoredGeneratedHeavyRepo => &[".assura", "generated", "coverage"],
+        FixtureKind::PinnedNextJs => &[
+            ".assura",
+            ".git",
+            "node_modules",
+            "packages/*/node_modules",
+            "examples/*/node_modules",
+            "test/**/node_modules",
+            ".next",
+            "packages/*/.next",
+            "examples/*/.next",
+            "dist",
+            "packages/*/dist",
+            "coverage",
+            ".turbo",
+            ".vercel",
+        ],
+        FixtureKind::PinnedMdBook => &[".assura", ".git", "target"],
+    }
+}
+
+fn source_type(kind: FixtureKind) -> &'static str {
+    match kind {
+        FixtureKind::PinnedNextJs | FixtureKind::PinnedMdBook => "external-pinned-repo",
+        _ => "generated",
+    }
+}
+
+fn source_revision(scenario: FixtureScenario, root: &Path) -> String {
+    match scenario.kind {
+        FixtureKind::PinnedNextJs | FixtureKind::PinnedMdBook => {
+            fs::read_to_string(root.join(".assura/source-revision.txt"))
+                .map(|value| value.trim().to_string())
+                .unwrap_or_else(|_| scenario.source_revision.to_string())
+        }
+        _ => scenario.source_revision.to_string(),
     }
 }
 
@@ -87,8 +145,11 @@ fn fixture_cohort(kind: FixtureKind) -> &'static str {
         FixtureKind::SimpleLibrary
         | FixtureKind::WebApp
         | FixtureKind::MonorepoPackages
+        | FixtureKind::MonorepoPolicy
         | FixtureKind::RuleHeavyRepo
-        | FixtureKind::IgnoredGeneratedHeavyRepo => "realistic-equivalent",
+        | FixtureKind::IgnoredGeneratedHeavyRepo
+        | FixtureKind::PinnedNextJs
+        | FixtureKind::PinnedMdBook => "realistic-equivalent",
     }
 }
 
@@ -101,7 +162,10 @@ fn rule_count(kind: FixtureKind) -> usize {
         FixtureKind::SimpleLibrary => 6,
         FixtureKind::WebApp => 7,
         FixtureKind::MonorepoPackages => 10,
+        FixtureKind::MonorepoPolicy => 38,
         FixtureKind::RuleHeavyRepo => 38,
+        FixtureKind::PinnedNextJs => 2,
+        FixtureKind::PinnedMdBook => 5,
     }
 }
 
@@ -123,11 +187,20 @@ fn rule_surface_summary(kind: FixtureKind) -> &'static str {
         FixtureKind::MonorepoPackages => {
             "package-scoped TypeScript, TSX, test naming, markdown exists counts, and dist pruning"
         }
+        FixtureKind::MonorepoPolicy => {
+            "strict monorepo policy with root whitelisting, app/package scopes, source bans, docs/scripts/infra rules, and generated-output pruning"
+        }
         FixtureKind::RuleHeavyRepo => {
             "repo-shaped multi-extension naming with wildcard file naming parity"
         }
         FixtureKind::IgnoredGeneratedHeavyRepo => {
             "repo-shaped TypeScript naming with generated and coverage pruning"
+        }
+        FixtureKind::PinnedNextJs => {
+            "pinned Next.js checkout with broad native filename and directory naming policy"
+        }
+        FixtureKind::PinnedMdBook => {
+            "pinned mdBook checkout with Rust, docs, TOML, and directory naming policy"
         }
     }
 }
@@ -142,5 +215,7 @@ fn config_generation_method(kind: FixtureKind) -> &'static str {
         | FixtureKind::MonorepoPackages
         | FixtureKind::RuleHeavyRepo
         | FixtureKind::IgnoredGeneratedHeavyRepo => "ls-lint-conversion",
+        FixtureKind::MonorepoPolicy => "hand-authored-equivalent-pair",
+        FixtureKind::PinnedNextJs | FixtureKind::PinnedMdBook => "hand-authored-external-policy",
     }
 }

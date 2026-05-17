@@ -1,19 +1,24 @@
 //! Generated stable fixtures for performance report measurement.
 
+use super::external_fixtures::materialize_external_fixture;
 use super::fixture_io::{write_configs, write_file, write_lslint_compatible_configs};
 use super::fixture_metadata::fixture_metadata;
+use super::monorepo_policy::{
+    create_ignored_generated_heavy_project, create_monorepo_policy_project,
+    create_realistic_rule_heavy_project,
+};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 #[derive(Clone, Copy)]
 pub(super) struct FixtureScenario {
-    pub(super) id: &'static str,
-    pub(super) source_revision: &'static str,
-    pub(super) rule_cohort: &'static str,
-    pub(super) dirs: usize,
-    pub(super) files_per_dir: usize,
-    pub(super) kind: FixtureKind,
+    pub(in crate::cli::performance_report) id: &'static str,
+    pub(in crate::cli::performance_report) source_revision: &'static str,
+    pub(in crate::cli::performance_report) rule_cohort: &'static str,
+    pub(in crate::cli::performance_report) dirs: usize,
+    pub(in crate::cli::performance_report) files_per_dir: usize,
+    pub(in crate::cli::performance_report) kind: FixtureKind,
 }
 
 pub(in crate::cli::performance_report) struct MaterializedFixture {
@@ -24,6 +29,7 @@ pub(in crate::cli::performance_report) struct MaterializedFixture {
 
 pub(in crate::cli::performance_report) struct FixtureMetadata {
     pub(in crate::cli::performance_report) source_type: &'static str,
+    pub(in crate::cli::performance_report) source_revision: String,
     pub(in crate::cli::performance_report) cohort: &'static str,
     pub(in crate::cli::performance_report) checked_file_count: usize,
     pub(in crate::cli::performance_report) ignored_file_count: usize,
@@ -47,12 +53,17 @@ pub(in crate::cli::performance_report) enum FixtureKind {
     SimpleLibrary,
     WebApp,
     MonorepoPackages,
+    MonorepoPolicy,
     RuleHeavyRepo,
     IgnoredGeneratedHeavyRepo,
+    PinnedNextJs,
+    PinnedMdBook,
 }
 
-pub(super) fn scenarios() -> Vec<FixtureScenario> {
-    vec![
+pub(in crate::cli::performance_report) fn scenarios(
+    include_external: bool,
+) -> Vec<FixtureScenario> {
+    let mut scenarios = vec![
         FixtureScenario {
             id: "simple_small",
             source_revision: "generated-fixtures-v1",
@@ -118,6 +129,14 @@ pub(super) fn scenarios() -> Vec<FixtureScenario> {
             kind: FixtureKind::MonorepoPackages,
         },
         FixtureScenario {
+            id: "monorepo_policy",
+            source_revision: "generated-fixtures-v2",
+            rule_cohort: "realistic-monorepo-policy",
+            dirs: 0,
+            files_per_dir: 0,
+            kind: FixtureKind::MonorepoPolicy,
+        },
+        FixtureScenario {
             id: "rule_heavy_repo",
             source_revision: "generated-fixtures-v1",
             rule_cohort: "realistic-multi-extension-patterns",
@@ -133,10 +152,33 @@ pub(super) fn scenarios() -> Vec<FixtureScenario> {
             files_per_dir: 0,
             kind: FixtureKind::IgnoredGeneratedHeavyRepo,
         },
-    ]
+    ];
+
+    if include_external {
+        scenarios.extend([
+            FixtureScenario {
+                id: "pinned_nextjs",
+                source_revision: "ea8bc0ec2bbae18dd6861db15d66b92c36feeeb8",
+                rule_cohort: "pinned-frontend-monorepo",
+                dirs: 0,
+                files_per_dir: 0,
+                kind: FixtureKind::PinnedNextJs,
+            },
+            FixtureScenario {
+                id: "pinned_mdbook",
+                source_revision: "b7a27d2759e80d804a33a4bc9c31b2b6863a5cb2",
+                rule_cohort: "pinned-rust-docs",
+                dirs: 0,
+                files_per_dir: 0,
+                kind: FixtureKind::PinnedMdBook,
+            },
+        ]);
+    }
+
+    scenarios
 }
 
-pub(super) fn materialize_fixture(
+pub(in crate::cli::performance_report) fn materialize_fixture(
     scenario: FixtureScenario,
 ) -> Result<MaterializedFixture, String> {
     let mut root = std::env::temp_dir();
@@ -159,8 +201,12 @@ pub(super) fn materialize_fixture(
         FixtureKind::SimpleLibrary => create_simple_library_project(&root)?,
         FixtureKind::WebApp => create_web_app_project(&root)?,
         FixtureKind::MonorepoPackages => create_monorepo_packages_project(&root)?,
+        FixtureKind::MonorepoPolicy => create_monorepo_policy_project(&root)?,
         FixtureKind::RuleHeavyRepo => create_realistic_rule_heavy_project(&root)?,
         FixtureKind::IgnoredGeneratedHeavyRepo => create_ignored_generated_heavy_project(&root)?,
+        FixtureKind::PinnedNextJs | FixtureKind::PinnedMdBook => {
+            materialize_external_fixture(scenario.kind, &root)?
+        }
     }
 
     Ok(MaterializedFixture {
@@ -421,67 +467,6 @@ ls:
     write_file(root.join("packages/ui/src/Button.tsx"), "")?;
     write_file(root.join("packages/ui/tests/button.test.tsx"), "")?;
     write_file(root.join("packages/ui/dist/bad-name.tsx"), "")?;
-    Ok(())
-}
-
-fn create_realistic_rule_heavy_project(root: &Path) -> Result<(), String> {
-    let mut rules = String::new();
-    for index in 0..36 {
-        rules.push_str(&format!("  .kind-{index:02}.ts: kebab-case\n"));
-    }
-    write_lslint_compatible_configs(
-        root,
-        &format!(
-            r#"
-ignore:
-  - .assura/**
-  - .ls-lint.yml
-ls:
-  .dir: kebab-case
-  .*: kebab-case | snake_case
-{rules}"#
-        ),
-    )?;
-    for dir_index in 0..8 {
-        let dir = root.join(format!("feature-{dir_index:02}"));
-        fs::create_dir(&dir).map_err(|error| format!("create feature dir: {error}"))?;
-        for file_index in 0..24 {
-            let kind = file_index % 36;
-            write_file(
-                dir.join(format!(
-                    "feature-{dir_index:02}-{file_index:02}.kind-{kind:02}.ts"
-                )),
-                "",
-            )?;
-        }
-    }
-    Ok(())
-}
-
-fn create_ignored_generated_heavy_project(root: &Path) -> Result<(), String> {
-    write_lslint_compatible_configs(
-        root,
-        r#"
-ignore:
-  - .assura/**
-  - generated/**
-  - coverage/**
-ls:
-  .dir: kebab-case
-  .ts: kebab-case
-"#,
-    )?;
-    fs::create_dir(root.join("src")).map_err(|error| format!("create src: {error}"))?;
-    write_file(root.join("src/index-file.ts"), "")?;
-    for generated_root in ["generated", "coverage"] {
-        for dir_index in 0..24 {
-            let dir = root.join(format!("{generated_root}/out-{dir_index:02}"));
-            fs::create_dir_all(&dir).map_err(|error| format!("create generated dir: {error}"))?;
-            for file_index in 0..16 {
-                write_file(dir.join(format!("BAD_{file_index:02}.ts")), "")?;
-            }
-        }
-    }
     Ok(())
 }
 

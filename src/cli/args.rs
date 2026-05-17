@@ -124,6 +124,12 @@ pub enum Commands {
 
         #[arg(long, default_value = "@ls-lint/ls-lint@2.3.0")]
         ls_lint_package: String,
+
+        #[arg(
+            long,
+            help = "Include pinned external Git fixtures; may clone large repositories"
+        )]
+        include_external_fixtures: bool,
     },
 
     #[command(about = "Install or manage git hooks")]

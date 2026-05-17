@@ -13,9 +13,8 @@ Use the table above for the product comparison: one Assura CLI run versus one
 warm LS-Lint CLI run on the same generated fixture tree and equivalent ruleset.
 
 The current headline is intentionally narrow. It covers generated, stable,
-native LS-Lint-parity fixtures. It does not yet claim performance on pinned
-real-world repositories such as Next.js, mdBook, or other recognizable
-open-source projects.
+native LS-Lint-parity fixtures. Pinned Next.js and mdBook fixtures are available
+behind an explicit opt-in flag because they clone third-party repositories.
 
 ## More Detail
 
@@ -27,7 +26,8 @@ open-source projects.
 - [Current comparison report](/data/performance/current.json) is the exact
   machine-readable report rendered on this page.
 - [Chart-ready JSONL history](/data/performance/ls-lint-comparison-history.jsonl)
-  is an audit trail, not a clean release-over-release chart yet.
+  is a rolling audit trail capped to the most recent 1,000 rows, not a clean
+  release-over-release chart yet.
 
 ## Updating The Baseline
 
@@ -43,3 +43,15 @@ cargo run --quiet -- performance-report \
 
 Review the generated diff in `benches/history/` and
 `website/public/data/performance/` before merging.
+
+Pinned external repository evidence is intentionally separate from the default
+refresh:
+
+```bash
+cargo run --release --quiet -- performance-report \
+  --include-external-fixtures \
+  --output target/performance/external-fixtures.json \
+  --history target/performance/external-fixtures.jsonl \
+  --website-dir target/performance/website-data \
+  --iterations 3
+```

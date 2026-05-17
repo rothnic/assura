@@ -11,12 +11,16 @@ use std::time::Instant;
 
 mod assura_cli;
 mod environment;
+mod external_fixtures;
 mod fixture_io;
 mod fixture_metadata;
+#[cfg(test)]
+mod fixture_tests;
 mod fixtures;
 mod io;
 mod ls_lint;
 mod metadata;
+mod monorepo_policy;
 mod phases;
 mod rows;
 mod stats;
@@ -75,19 +79,36 @@ pub struct ToolAvailability {
     pub blocker: Option<String>,
 }
 
+/// Options passed from the CLI into performance report generation.
+pub struct PerformanceReportCommandOptions {
+    /// Output path for the current run report, or stdout when omitted.
+    pub output: Option<PathBuf>,
+    /// JSONL history path to append result rows to.
+    pub history: Option<PathBuf>,
+    /// Website public data directory to refresh.
+    pub website_dir: Option<PathBuf>,
+    /// Number of measured iterations per tool and fixture.
+    pub iterations: usize,
+    /// Baseline identifier used for longitudinal comparison.
+    pub baseline_id: String,
+    /// Output format for the current report.
+    pub format: PerformanceReportFormat,
+    /// LS-Lint package spec used for comparison.
+    pub ls_lint_package: String,
+    /// Whether to include opt-in pinned external Git fixtures.
+    pub include_external_fixtures: bool,
+}
+
 /// Generate and write a performance report.
-pub async fn performance_report_command(
-    output: Option<PathBuf>,
-    history: Option<PathBuf>,
-    website_dir: Option<PathBuf>,
-    iterations: usize,
-    baseline_id: String,
-    format: PerformanceReportFormat,
-    ls_lint_package: String,
-) -> ExitCode {
-    match generate_report(iterations.max(1), baseline_id, ls_lint_package) {
+pub async fn performance_report_command(options: PerformanceReportCommandOptions) -> ExitCode {
+    match generate_report(
+        options.iterations.max(1),
+        options.baseline_id,
+        options.ls_lint_package,
+        options.include_external_fixtures,
+    ) {
         Ok(report) => {
-            let rendered = match format {
+            let rendered = match options.format {
                 PerformanceReportFormat::Json => match serde_json::to_string(&report) {
                     Ok(rendered) => rendered,
                     Err(error) => {
@@ -98,7 +119,7 @@ pub async fn performance_report_command(
                 PerformanceReportFormat::Jsonl => render_jsonl(&report.results),
             };
 
-            if let Some(output) = output {
+            if let Some(output) = options.output {
                 if let Err(error) = write_text(&output, &rendered) {
                     eprintln!("Error: failed to write {}: {error}", output.display());
                     return ExitCode::RuntimeError;
@@ -107,15 +128,17 @@ pub async fn performance_report_command(
                 println!("{rendered}");
             }
 
-            if let Some(history) = history.as_ref() {
+            if let Some(history) = options.history.as_ref() {
                 if let Err(error) = append_history(history, &report.results) {
                     eprintln!("Error: failed to append {}: {error}", history.display());
                     return ExitCode::RuntimeError;
                 }
             }
 
-            if let Some(website_dir) = website_dir {
-                if let Err(error) = write_website_data(&website_dir, &report, history.as_deref()) {
+            if let Some(website_dir) = options.website_dir {
+                if let Err(error) =
+                    write_website_data(&website_dir, &report, options.history.as_deref())
+                {
                     eprintln!(
                         "Error: failed to write website data under {}: {error}",
                         website_dir.display()
@@ -137,6 +160,7 @@ fn generate_report(
     iterations: usize,
     baseline_id: String,
     ls_lint_package: String,
+    include_external_fixtures: bool,
 ) -> Result<PerformanceReport, String> {
     let timestamp = utc_timestamp();
     let commit_sha = git_value(["rev-parse", "HEAD"]).unwrap_or_else(|| "unknown".to_string());
@@ -147,7 +171,7 @@ fn generate_report(
     let ls_lint_status = ls_lint.status.clone();
     let mut results = Vec::new();
 
-    for scenario in scenarios() {
+    for scenario in scenarios(include_external_fixtures) {
         let fixture = materialize_fixture(scenario)?;
         results.push(measure_assura_cli(
             &fixture,

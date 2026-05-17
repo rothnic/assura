@@ -7,6 +7,7 @@ use tracing::{error, info};
 use assura::cli::{
     check_command, info_command, init_command, migrate_command, performance_report_command,
     status_command, watch_command, Cli, Commands, ExitCode, HookCommands,
+    PerformanceReportCommandOptions,
 };
 
 #[tokio::main]
@@ -58,8 +59,9 @@ async fn main() {
             baseline_id,
             format,
             ls_lint_package,
+            include_external_fixtures,
         } => {
-            performance_report_command(
+            performance_report_command(PerformanceReportCommandOptions {
                 output,
                 history,
                 website_dir,
@@ -67,7 +69,8 @@ async fn main() {
                 baseline_id,
                 format,
                 ls_lint_package,
-            )
+                include_external_fixtures,
+            })
             .await
         }
         Commands::Hooks { command } => match command {

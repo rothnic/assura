@@ -69,6 +69,11 @@ const fixtureCopy: Record<string, FixtureCopy> = {
     projectShape: 'Two packages with package-local source, tests, docs, and dist output.',
     focus: 'Nested package scopes without becoming a synthetic stress test.',
   },
+  monorepo_policy: {
+    label: 'Monorepo policy',
+    projectShape: 'Strict TypeScript/Next-style workspace with app, package, docs, scripts, infra, and CI scopes.',
+    focus: 'Policy-shaped rules: root whitelisting, config exceptions, source bans, and generated-output pruning.',
+  },
   rule_heavy_repo: {
     label: 'Rule-heavy repo',
     projectShape: 'Repo-shaped tree with many extension-specific file rules.',
@@ -109,6 +114,14 @@ function buildPair(fixtureId: string): Pair | null {
 }
 
 const realisticPairs = realisticFixtureIds.map(buildPair).filter((pair): pair is Pair => Boolean(pair));
+const datasetRevisions = Array.from(
+  new Set(
+    realisticPairs
+      .map((pair) => pair.assura.fixture_source_revision)
+      .filter((revision): revision is string => Boolean(revision)),
+  ),
+);
+const datasetLabel = datasetRevisions.length > 0 ? datasetRevisions.join(' + ') : 'generated fixtures';
 
 const syntheticRows = rows.filter(
   (row) => row.row_family === 'assura-cli' && row.fixture_cohort === 'synthetic-stress',
@@ -201,7 +214,7 @@ function testCaseHref(fixtureId: string): string {
       <dl class="perf-run-context" aria-label="Report context">
         <div>
           <dt>Dataset</dt>
-          <dd><a href="/reference/performance-test-cases/">generated-fixtures-v1</a></dd>
+          <dd><a href="/reference/performance-test-cases/">{datasetLabel}</a></dd>
         </div>
         <div>
           <dt>Weakest case</dt>
@@ -266,11 +279,11 @@ function testCaseHref(fixtureId: string): string {
   </div>
 
   <div class="perf-note">
-    <strong>What this does not prove yet:</strong> these are stable generated
-    fixtures, not pinned checkouts of Next.js, mdBook, or another recognizable
-    open-source project. See <a href="/reference/performance-test-cases/">Performance
-    Test Cases</a> for the pinned repository cases that should be added before
-    this page makes a broader public benchmark claim.
+    <strong>What this does not prove yet:</strong> pinned Next.js and mdBook
+    checkouts are implemented as opt-in performance fixtures, but the default
+    published baseline still uses generated fixtures to keep ordinary refreshes
+    deterministic. See <a href="/reference/performance-test-cases/">Performance
+    Test Cases</a> for the exact opt-in command.
   </div>
 
   <h2 id="diagnostic-coverage">Diagnostic Coverage</h2>
