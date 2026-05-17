@@ -8,6 +8,7 @@ owners:
   - assura-maintainers
 related:
   - docs/goals/assura-ls-lint-realistic-parity-core-performance.md
+  - docs/goals/assura-cli-to-cli-ls-lint-performance-verification.md
   - docs/analysis/2026-05-15-performance-architecture-statement.md
   - docs/analysis/2026-05-15-performance-hotspot-optimization-progress.md
   - benches/history/current.json
