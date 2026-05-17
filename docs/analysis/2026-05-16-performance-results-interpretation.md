@@ -6,6 +6,16 @@ status: current
 
 # Performance Results Interpretation
 
+## 2026-05-17 Update
+
+This note is superseded for public Assura-versus-LS-Lint claims by the
+CLI-to-CLI report contract in
+`docs/analysis/2026-05-17-cli-to-cli-performance-decision-record.md`.
+
+Rows named `assura` in this document are now treated as `assura-in-process`
+diagnostics. Public website claims must use `assura-cli` and `ls-lint-cli`
+rows from the machine-readable report.
+
 This note explains what the PR #11 performance rows prove, what they do not
 prove, and which decision should follow from them.
 

@@ -9,6 +9,7 @@ use std::thread;
 enum TraversalStrategy {
     Serial,
     SerialSorted,
+    Walkdir,
     ParallelJwalk,
 }
 
@@ -18,19 +19,17 @@ impl TraversalStrategy {
             return Self::SerialSorted;
         }
 
-        if std::env::var("ASSURA_CHECK_TRAVERSAL")
-            .map(|value| value == "parallel-jwalk")
-            .unwrap_or(false)
-        {
-            Self::ParallelJwalk
-        } else {
-            Self::Serial
+        match std::env::var("ASSURA_CHECK_TRAVERSAL").as_deref() {
+            Ok("jwalk-serial") => Self::Serial,
+            Ok("walkdir") => Self::Walkdir,
+            Ok("parallel-jwalk") => Self::ParallelJwalk,
+            _ => Self::Walkdir,
         }
     }
 
     fn parallelism(self) -> jwalk::Parallelism {
         match self {
-            Self::Serial | Self::SerialSorted => jwalk::Parallelism::Serial,
+            Self::Serial | Self::SerialSorted | Self::Walkdir => jwalk::Parallelism::Serial,
             Self::ParallelJwalk => {
                 let threads = thread::available_parallelism()
                     .map(usize::from)
@@ -56,6 +55,7 @@ impl StructureChecker {
             TraversalStrategy::Serial | TraversalStrategy::SerialSorted => {
                 self.walk_and_validate_serial(checked_path, report, strategy)
             }
+            TraversalStrategy::Walkdir => self.walk_and_validate_walkdir(checked_path, report),
             TraversalStrategy::ParallelJwalk => {
                 self.walk_and_validate_parallel(checked_path, report)
             }
@@ -76,6 +76,33 @@ impl StructureChecker {
             if self.fail_fast && !report.violations.is_empty() {
                 break;
             }
+        }
+        Ok(())
+    }
+
+    fn walk_and_validate_walkdir(
+        &mut self,
+        checked_path: &Path,
+        report: &mut StructureCheckReport,
+    ) -> Result<(), CheckError> {
+        let checked_path_buf = checked_path.to_path_buf();
+        let project_root = self.project_root.clone();
+        let exclude_patterns = self.exclude_patterns.clone();
+        let walker = walkdir::WalkDir::new(checked_path)
+            .sort_by_file_name()
+            .into_iter()
+            .filter_entry(move |entry| {
+                let path = entry.path();
+                if path == checked_path_buf {
+                    return true;
+                }
+                let rel = path.strip_prefix(&project_root).unwrap_or(path);
+                !is_excluded_rel_with(&exclude_patterns, rel)
+            });
+
+        for entry in walker {
+            let entry = entry?;
+            self.validate_walk_path(entry.path(), checked_path, report);
         }
         Ok(())
     }

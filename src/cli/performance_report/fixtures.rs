@@ -1,6 +1,7 @@
 //! Generated stable fixtures for performance report measurement.
 
-use crate::config::ls_compat::convert_ls_lint_to_config;
+use super::fixture_io::{write_configs, write_file, write_lslint_compatible_configs};
+use super::fixture_metadata::fixture_metadata;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -9,15 +10,37 @@ use std::time::{SystemTime, UNIX_EPOCH};
 pub(super) struct FixtureScenario {
     pub(super) id: &'static str,
     pub(super) source_revision: &'static str,
-    pub(super) cohort: &'static str,
     pub(super) rule_cohort: &'static str,
     pub(super) dirs: usize,
     pub(super) files_per_dir: usize,
     pub(super) kind: FixtureKind,
 }
 
+pub(in crate::cli::performance_report) struct MaterializedFixture {
+    pub(super) root: PathBuf,
+    pub(super) scenario: FixtureScenario,
+    pub(super) metadata: FixtureMetadata,
+}
+
+pub(in crate::cli::performance_report) struct FixtureMetadata {
+    pub(in crate::cli::performance_report) source_type: &'static str,
+    pub(in crate::cli::performance_report) cohort: &'static str,
+    pub(in crate::cli::performance_report) checked_file_count: usize,
+    pub(in crate::cli::performance_report) ignored_file_count: usize,
+    pub(in crate::cli::performance_report) directory_count: usize,
+    pub(in crate::cli::performance_report) rule_count: usize,
+    pub(in crate::cli::performance_report) rule_surface_summary: &'static str,
+    pub(in crate::cli::performance_report) native_ls_lint_parity: bool,
+    pub(in crate::cli::performance_report) assura_config_path: &'static str,
+    pub(in crate::cli::performance_report) ls_lint_config_path: &'static str,
+    pub(in crate::cli::performance_report) config_generation_method: &'static str,
+    pub(in crate::cli::performance_report) shared_config_id: String,
+    pub(in crate::cli::performance_report) expected_assura_exit_status: i32,
+    pub(in crate::cli::performance_report) expected_ls_lint_exit_status: i32,
+}
+
 #[derive(Clone, Copy)]
-pub(super) enum FixtureKind {
+pub(in crate::cli::performance_report) enum FixtureKind {
     Sized,
     RuleHeavy,
     IgnoredGenerated,
@@ -33,7 +56,6 @@ pub(super) fn scenarios() -> Vec<FixtureScenario> {
         FixtureScenario {
             id: "simple_small",
             source_revision: "generated-fixtures-v1",
-            cohort: "stable-baseline",
             rule_cohort: "extension-dir-naming",
             dirs: 5,
             files_per_dir: 10,
@@ -42,7 +64,6 @@ pub(super) fn scenarios() -> Vec<FixtureScenario> {
         FixtureScenario {
             id: "simple_medium",
             source_revision: "generated-fixtures-v1",
-            cohort: "stable-baseline",
             rule_cohort: "extension-dir-naming",
             dirs: 20,
             files_per_dir: 50,
@@ -51,7 +72,6 @@ pub(super) fn scenarios() -> Vec<FixtureScenario> {
         FixtureScenario {
             id: "monorepo_large",
             source_revision: "generated-fixtures-v1",
-            cohort: "stable-baseline",
             rule_cohort: "extension-dir-naming",
             dirs: 50,
             files_per_dir: 100,
@@ -60,7 +80,6 @@ pub(super) fn scenarios() -> Vec<FixtureScenario> {
         FixtureScenario {
             id: "rule_heavy",
             source_revision: "generated-fixtures-v1",
-            cohort: "stable-baseline",
             rule_cohort: "multi-extension-patterns",
             dirs: 40,
             files_per_dir: 50,
@@ -69,7 +88,6 @@ pub(super) fn scenarios() -> Vec<FixtureScenario> {
         FixtureScenario {
             id: "ignored_generated_heavy",
             source_revision: "generated-fixtures-v1",
-            cohort: "stable-baseline",
             rule_cohort: "exclude-pruning",
             dirs: 50,
             files_per_dir: 20,
@@ -78,7 +96,6 @@ pub(super) fn scenarios() -> Vec<FixtureScenario> {
         FixtureScenario {
             id: "simple_library",
             source_revision: "generated-fixtures-v1",
-            cohort: "stable-baseline",
             rule_cohort: "realistic-library",
             dirs: 0,
             files_per_dir: 0,
@@ -87,7 +104,6 @@ pub(super) fn scenarios() -> Vec<FixtureScenario> {
         FixtureScenario {
             id: "web_app",
             source_revision: "generated-fixtures-v1",
-            cohort: "stable-baseline",
             rule_cohort: "realistic-frontend",
             dirs: 0,
             files_per_dir: 0,
@@ -96,7 +112,6 @@ pub(super) fn scenarios() -> Vec<FixtureScenario> {
         FixtureScenario {
             id: "monorepo_packages",
             source_revision: "generated-fixtures-v1",
-            cohort: "stable-baseline",
             rule_cohort: "realistic-monorepo",
             dirs: 0,
             files_per_dir: 0,
@@ -105,7 +120,6 @@ pub(super) fn scenarios() -> Vec<FixtureScenario> {
         FixtureScenario {
             id: "rule_heavy_repo",
             source_revision: "generated-fixtures-v1",
-            cohort: "stable-baseline",
             rule_cohort: "realistic-multi-extension-patterns",
             dirs: 0,
             files_per_dir: 0,
@@ -114,7 +128,6 @@ pub(super) fn scenarios() -> Vec<FixtureScenario> {
         FixtureScenario {
             id: "ignored_generated_heavy_repo",
             source_revision: "generated-fixtures-v1",
-            cohort: "stable-baseline",
             rule_cohort: "realistic-exclude-pruning",
             dirs: 0,
             files_per_dir: 0,
@@ -123,7 +136,9 @@ pub(super) fn scenarios() -> Vec<FixtureScenario> {
     ]
 }
 
-pub(super) fn materialize_fixture(scenario: FixtureScenario) -> Result<PathBuf, String> {
+pub(super) fn materialize_fixture(
+    scenario: FixtureScenario,
+) -> Result<MaterializedFixture, String> {
     let mut root = std::env::temp_dir();
     root.push(format!(
         "assura_perf_{}_{}_{}",
@@ -148,7 +163,11 @@ pub(super) fn materialize_fixture(scenario: FixtureScenario) -> Result<PathBuf, 
         FixtureKind::IgnoredGeneratedHeavyRepo => create_ignored_generated_heavy_project(&root)?,
     }
 
-    Ok(root)
+    Ok(MaterializedFixture {
+        scenario,
+        metadata: fixture_metadata(scenario, &root)?,
+        root,
+    })
 }
 
 fn create_sized_project(root: &Path, dirs: usize, files_per_dir: usize) -> Result<(), String> {
@@ -464,30 +483,6 @@ ls:
         }
     }
     Ok(())
-}
-
-fn write_lslint_compatible_configs(root: &Path, ls_lint_config: &str) -> Result<(), String> {
-    let config = convert_ls_lint_to_config(ls_lint_config)
-        .map_err(|error| format!("convert LS-Lint config: {error}"))?;
-    let assura_config =
-        serde_yaml::to_string(&config).map_err(|error| format!("serialize config: {error}"))?;
-    write_configs(root, &assura_config, ls_lint_config)
-}
-
-fn write_configs(root: &Path, assura_config: &str, ls_lint_config: &str) -> Result<(), String> {
-    let assura_dir = root.join(".assura");
-    fs::create_dir_all(&assura_dir)
-        .map_err(|error| format!("create {}: {error}", assura_dir.display()))?;
-    fs::write(assura_dir.join("config.yml"), assura_config)
-        .map_err(|error| format!("write Assura config: {error}"))?;
-    fs::write(root.join(".ls-lint.yml"), ls_lint_config)
-        .map_err(|error| format!("write LS-Lint config: {error}"))?;
-    Ok(())
-}
-
-fn write_file(path: impl AsRef<Path>, content: &str) -> Result<(), String> {
-    let path = path.as_ref();
-    fs::write(path, content).map_err(|error| format!("write {}: {error}", path.display()))
 }
 
 fn monotonic_nanos() -> u128 {

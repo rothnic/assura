@@ -2,7 +2,7 @@
 id: goal-assura-cli-to-cli-ls-lint-performance-verification
 type: goal
 title: Assura CLI-to-CLI LS-Lint performance verification
-status: planned
+status: complete
 created: 2026-05-17
 owners:
   - assura-maintainers
@@ -249,28 +249,28 @@ performance page:
 
 ## Acceptance Criteria
 
-- [ ] `assura performance-report` or a companion command emits
+- [x] `assura performance-report` or a companion command emits
       CLI-to-CLI Assura and LS-Lint rows.
-- [ ] The public Assura-versus-LS-Lint claim uses `assura-cli` and
+- [x] The public Assura-versus-LS-Lint claim uses `assura-cli` and
       `ls-lint-cli` rows, not in-process Assura rows.
-- [ ] The measured loops prepare binaries/configs once and exclude build,
+- [x] The measured loops prepare binaries/configs once and exclude build,
       install, package resolution, and fixture generation.
-- [ ] Realistic-equivalent fixture rows include file counts, ignored file
+- [x] Realistic-equivalent fixture rows include file counts, ignored file
       counts, directory counts, rule counts, native parity status, and config
       references in machine-readable output.
-- [ ] Full-check strategy rows exist for the candidate Assura execution
+- [x] Full-check strategy rows exist for the candidate Assura execution
       architectures needed to choose the default logically.
-- [ ] The selected Assura default architecture is justified by full-check CLI
+- [x] The selected Assura default architecture is justified by full-check CLI
       runtime, correctness behavior, deterministic output requirements, and any
       research findings from comparable tools.
-- [ ] Synthetic stress and traversal-only rows are labeled as diagnostics and
+- [x] Synthetic stress and traversal-only rows are labeled as diagnostics and
       do not drive the headline website claim.
-- [ ] The website performance page renders a concise comparison table with
+- [x] The website performance page renders a concise comparison table with
       percent difference, speedup, fixture scale, rule surface, and config
       references.
-- [ ] A desktop and mobile visual review is recorded after the final website
+- [x] A desktop and mobile visual review is recorded after the final website
       changes.
-- [ ] The PR body links to the machine-readable report data, website page or
+- [x] The PR body links to the machine-readable report data, website page or
       preview, visual review evidence, and the strategy decision rationale.
 
 ## Required Verification Commands
@@ -308,3 +308,13 @@ The PR must include a short decision record answering:
 Do not stop at better wording. Stop only when the measured data, selected
 Assura execution strategy, website presentation, and visual review all support
 the same defensible story.
+
+## Progress Log
+
+| Date | Phase | Notes | Evidence |
+|------|-------|-------|----------|
+| 2026-05-17 | Planning | Created a narrow Trellis task for the first implementation slice: report row-family separation, Assura CLI subprocess measurement, and fixture metadata plumbing. Current checked-in report data still uses ambiguous `assura` and `ls-lint` `tool_name` rows with no first-class row family or fixture metadata object. | `.trellis/tasks/05-17-cli-to-cli-ls-lint-performance-verification/prd.md`; `benches/history/current.json`; `src/cli/performance_report/mod.rs` |
+| 2026-05-17 | CLI-to-CLI report slice | Added `assura-cli`, `ls-lint-cli`, `assura-in-process`, `assura:phase:*`, `traversal:*`, and initial `strategy:*` row families; added fixture metadata to report rows; refreshed release report data; moved the website comparison to render from `current.json`; recorded desktop/mobile visual review. Broader walkdir-compatible and parallel rule-application strategy rows remain open. | `src/cli/performance_report/`; `benches/history/current.json`; `website/src/components/performance-evidence.astro`; `docs/analysis/2026-05-17-cli-to-cli-performance-decision-record.md`; `docs/analysis/2026-05-17-performance-cli-to-cli-visual-review.md` |
+| 2026-05-17 | Walkdir full-check strategy slice | Added `ASSURA_CHECK_TRAVERSAL=walkdir` and `strategy:walkdir-cli` full-check rows, plus focused CLI tests for sorted JSON output, exclusion pruning, default equivalence, and fail-fast determinism. The 15-iteration release report shows walkdir and serial `jwalk` effectively tied across the realistic bundle; walkdir is now the default non-fail-fast path, while deterministic serial `jwalk` remains the fail-fast path and an opt-in diagnostic strategy. | `src/cli/check/traversal.rs`; `tests/cli_check_tests.rs`; `benches/history/current.json`; `docs/analysis/2026-05-17-cli-to-cli-performance-decision-record.md`; `docs/analysis/2026-05-17-filesystem-validation-throughput-research.md` |
+| 2026-05-17 | Research and architecture deferral | Recorded primary-source research for walkdir pruning/sorting, jwalk parallel traversal, ripgrep ignore-aware search, and ESLint cache semantics. The decision record explicitly defers parallel rule-application and indexed/rule-planned execution as later planner/result-architecture work; the current default decision is scoped to measured full-check CLI traversal strategies. | `docs/analysis/2026-05-17-filesystem-validation-throughput-research.md`; `docs/analysis/2026-05-17-cli-to-cli-performance-decision-record.md` |
+| 2026-05-17 | Final verification and PR evidence | Ran the required local gates, refreshed the release CLI-to-CLI report with 15 iterations, rebuilt the website, captured desktop/mobile screenshots, and updated PR #11 with report, website, visual review, research, and strategy-decision links. The mobile visual pass found a horizontal clipping issue in the generated evidence section; the final screenshots verify the stacked mobile table. | `benches/history/current.json`; `website/public/data/performance/current.json`; `docs/analysis/2026-05-17-performance-cli-to-cli-visual-review.md`; `https://github.com/rothnic/assura/pull/11` |

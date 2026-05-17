@@ -103,9 +103,12 @@ pub enum CheckError {
     /// Filesystem I/O failed.
     #[error(transparent)]
     Io(#[from] std::io::Error),
-    /// Directory walking failed.
+    /// Jwalk directory walking failed.
     #[error(transparent)]
     WalkDir(#[from] jwalk::Error),
+    /// Walkdir directory walking failed.
+    #[error(transparent)]
+    Walkdir(#[from] walkdir::Error),
     /// Configuration loading failed.
     #[error(transparent)]
     Config(#[from] ConfigError),

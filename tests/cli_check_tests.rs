@@ -370,6 +370,92 @@ structure:
 }
 
 #[test]
+fn check_walkdir_traversal_env_path_preserves_sorted_json_output_and_exclusions() {
+    let project = TempDir::new().unwrap();
+    write_config(
+        &project,
+        r#"
+structure:
+  ./:
+    files:
+      naming: kebab-case
+    directories:
+      naming: kebab-case
+    children:
+      .assura/:
+        inherit: false
+        files:
+          naming: kebab-case
+exclude:
+  - generated/**
+"#,
+    );
+
+    for dir_index in (0..32).rev() {
+        let dir = project.path().join(format!("dir-{dir_index:02}"));
+        fs::create_dir(&dir).unwrap();
+        fs::write(dir.join(format!("BadName{dir_index:02}.rs")), "").unwrap();
+    }
+    fs::create_dir(project.path().join("generated")).unwrap();
+    fs::write(project.path().join("generated/BadGenerated.rs"), "").unwrap();
+
+    let output = Command::new(assura_bin())
+        .env("ASSURA_CHECK_TRAVERSAL", "walkdir")
+        .arg("check")
+        .arg(project.path())
+        .arg("--format")
+        .arg("json")
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(1));
+    let default_output = Command::new(assura_bin())
+        .arg("check")
+        .arg(project.path())
+        .arg("--format")
+        .arg("json")
+        .output()
+        .unwrap();
+
+    assert_eq!(default_output.status.code(), Some(1));
+    let report: serde_json::Value =
+        serde_json::from_slice(&output.stdout).unwrap_or_else(|error| {
+            panic!(
+                "failed to parse check output as json: {error}\nstdout:\n{}\nstderr:\n{}",
+                String::from_utf8_lossy(&output.stdout),
+                String::from_utf8_lossy(&output.stderr)
+            )
+        });
+    let paths: Vec<_> = report["violations"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|violation| violation["path"].as_str().unwrap().to_string())
+        .collect();
+    let default_report: serde_json::Value = serde_json::from_slice(&default_output.stdout)
+        .unwrap_or_else(|error| {
+            panic!(
+                "failed to parse default check output as json: {error}\nstdout:\n{}\nstderr:\n{}",
+                String::from_utf8_lossy(&default_output.stdout),
+                String::from_utf8_lossy(&default_output.stderr)
+            )
+        });
+    let default_paths: Vec<_> = default_report["violations"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|violation| violation["path"].as_str().unwrap().to_string())
+        .collect();
+
+    assert_eq!(paths.len(), 32);
+    assert_eq!(paths, default_paths);
+    assert!(!paths.iter().any(|path| path.starts_with("generated/")));
+    let mut sorted = paths.clone();
+    sorted.sort();
+    assert_eq!(paths, sorted);
+}
+
+#[test]
 fn check_fail_fast_stops_after_first_sorted_traversal_violation() {
     let project = TempDir::new().unwrap();
     write_config(
@@ -402,6 +488,29 @@ structure:
         report.violations[0].path,
         std::path::PathBuf::from("a-dir/BadName.rs")
     );
+
+    let output = Command::new(assura_bin())
+        .env("ASSURA_CHECK_TRAVERSAL", "walkdir")
+        .arg("check")
+        .arg(project.path())
+        .arg("--format")
+        .arg("json")
+        .arg("--fail-fast")
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(1));
+    let report: serde_json::Value =
+        serde_json::from_slice(&output.stdout).unwrap_or_else(|error| {
+            panic!(
+                "failed to parse fail-fast check output as json: {error}\nstdout:\n{}\nstderr:\n{}",
+                String::from_utf8_lossy(&output.stdout),
+                String::from_utf8_lossy(&output.stderr)
+            )
+        });
+    let violations = report["violations"].as_array().unwrap();
+    assert_eq!(violations.len(), 1);
+    assert_eq!(violations[0]["path"], "a-dir/BadName.rs");
 }
 
 #[test]

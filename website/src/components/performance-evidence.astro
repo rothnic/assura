@@ -1,0 +1,230 @@
+---
+import currentReport from '../../public/data/performance/current.json';
+
+type ResultRow = {
+  fixture_id: string;
+  fixture_cohort?: string;
+  row_family?: string;
+  tool_name?: string;
+  evidence_role?: string;
+  diagnostic?: boolean;
+  median_runtime_ms?: number | null;
+  checked_file_count?: number;
+  ignored_file_count?: number;
+  directory_count?: number;
+  rule_count?: number;
+  rule_surface_summary?: string;
+  assura_config_path?: string;
+  ls_lint_config_path?: string;
+  shared_config_id?: string;
+  status?: string;
+};
+
+type Pair = {
+  fixtureId: string;
+  assura: ResultRow;
+  lslint: ResultRow;
+  speedup: number;
+  lowerPercent: number;
+};
+
+const rows = ((currentReport as { results?: ResultRow[] }).results ?? []).filter(
+  (row) => row.status === 'pass',
+);
+
+const rowFamily = (row: ResultRow) => row.row_family ?? row.tool_name ?? '';
+
+const realisticFixtureIds = [
+  ...new Set(
+    rows
+      .filter((row) => row.evidence_role === 'headline-candidate' && !row.diagnostic)
+      .map((row) => row.fixture_id),
+  ),
+];
+
+const syntheticFixtureIds = [
+  ...new Set(
+    rows
+      .filter((row) => row.fixture_cohort === 'synthetic-stress')
+      .map((row) => row.fixture_id),
+  ),
+];
+
+function buildPairs(fixtureIds: string[]): Pair[] {
+  return fixtureIds
+    .map((fixtureId) => {
+      const assura = rows.find(
+        (row) => row.fixture_id === fixtureId && rowFamily(row) === 'assura-cli',
+      );
+      const lslint = rows.find(
+        (row) => row.fixture_id === fixtureId && rowFamily(row) === 'ls-lint-cli',
+      );
+      if (!assura?.median_runtime_ms || !lslint?.median_runtime_ms) {
+        return null;
+      }
+      const speedup = lslint.median_runtime_ms / assura.median_runtime_ms;
+      const lowerPercent = (1 - assura.median_runtime_ms / lslint.median_runtime_ms) * 100;
+      return { fixtureId, assura, lslint, speedup, lowerPercent };
+    })
+    .filter((pair): pair is Pair => Boolean(pair));
+}
+
+const realisticPairs = buildPairs(realisticFixtureIds);
+const syntheticPairs = buildPairs(syntheticFixtureIds);
+
+const totalAssura = realisticPairs.reduce(
+  (total, pair) => total + (pair.assura.median_runtime_ms ?? 0),
+  0,
+);
+const totalLsLint = realisticPairs.reduce(
+  (total, pair) => total + (pair.lslint.median_runtime_ms ?? 0),
+  0,
+);
+const totalSpeedup = totalAssura > 0 ? totalLsLint / totalAssura : 0;
+const totalLowerPercent = totalLsLint > 0 ? (1 - totalAssura / totalLsLint) * 100 : 0;
+const weakestPair = realisticPairs.reduce<Pair | null>(
+  (weakest, pair) => (!weakest || pair.speedup < weakest.speedup ? pair : weakest),
+  null,
+);
+
+function formatMs(value?: number | null): string {
+  return typeof value === 'number' ? `${value.toFixed(value >= 10 ? 1 : 2)} ms` : 'n/a';
+}
+
+function formatPercent(value: number): string {
+  return `${value.toFixed(1)}%`;
+}
+
+function formatSpeedup(value: number): string {
+  return `${value.toFixed(value >= 10 ? 1 : 2)}x`;
+}
+
+function scale(row: ResultRow): string {
+  return `${row.checked_file_count ?? 0} checked files, ${row.ignored_file_count ?? 0} ignored files, ${row.directory_count ?? 0} directories`;
+}
+
+function configRef(row: ResultRow): string {
+  return `${row.assura_config_path ?? '.assura/config.yml'} + ${row.ls_lint_config_path ?? '.ls-lint.yml'}`;
+}
+---
+
+<div class="perf-evidence">
+<div class="perf-hero">
+  <p class="perf-kicker">Current realistic fixture bundle</p>
+  <h2>
+    Assura CLI completes the comparable realistic bundle with {formatPercent(totalLowerPercent)}
+    lower total runtime than warm LS-Lint CLI.
+  </h2>
+  <p>
+    Current tracked data: Assura CLI totals {formatMs(totalAssura)} across {realisticPairs.length}
+    native LS-Lint-parity fixtures; LS-Lint CLI totals {formatMs(totalLsLint)} on the same
+    materialized fixture trees. That is a {formatSpeedup(totalSpeedup)} total-runtime speedup.
+    {weakestPair && (
+      <> The weakest realistic row is <code>{weakestPair.fixtureId}</code> at {formatPercent(weakestPair.lowerPercent)} lower runtime, or {formatSpeedup(weakestPair.speedup)} faster.</>
+    )}
+  </p>
+</div>
+
+<div class="perf-metric-grid" aria-label="Performance summary">
+  <div class="perf-metric">
+    <span class="perf-label">Bundle reduction</span>
+    <strong>{formatPercent(totalLowerPercent)}</strong>
+    <span>lower total CLI runtime</span>
+  </div>
+  <div class="perf-metric">
+    <span class="perf-label">Bundle speedup</span>
+    <strong>{formatSpeedup(totalSpeedup)}</strong>
+    <span>{formatMs(totalAssura)} vs {formatMs(totalLsLint)}</span>
+  </div>
+  <div class="perf-metric">
+    <span class="perf-label">Weakest win</span>
+    <strong>{weakestPair ? formatPercent(weakestPair.lowerPercent) : 'n/a'}</strong>
+    <span>{weakestPair ? <><code>{weakestPair.fixtureId}</code> CLI row</> : 'no row'}</span>
+  </div>
+  <div class="perf-metric perf-metric-muted">
+    <span class="perf-label">Evidence source</span>
+    <strong>{realisticPairs.length}</strong>
+    <span>headline candidate row pairs</span>
+  </div>
+</div>
+
+<h2 id="what-was-compared">What Was Compared</h2>
+
+<p>
+  The realistic comparison uses generated fixtures marked <code>realistic-equivalent</code>
+  and native LS-Lint parity in the machine-readable report. Each row below is
+  rendered from <code>/data/performance/current.json</code>, including scale,
+  rule surface, config references, and row status.
+</p>
+
+<div class="perf-table-wrap" aria-label="Realistic LS-Lint parity comparison table">
+  <table class="perf-table">
+    <thead>
+      <tr>
+        <th>Fixture</th>
+        <th>Scale</th>
+        <th>Rules</th>
+        <th>Assura CLI</th>
+        <th>LS-Lint CLI</th>
+        <th>Result</th>
+      </tr>
+    </thead>
+    <tbody>
+      {realisticPairs.map((pair) => (
+        <tr>
+          <td data-label="Fixture">
+            <code>{pair.fixtureId}</code>
+            <span class="perf-cell-note">{configRef(pair.assura)}</span>
+            <span class="perf-cell-note">status {pair.assura.status} / {pair.lslint.status}</span>
+          </td>
+          <td data-label="Scale">{scale(pair.assura)}</td>
+          <td data-label="Rules">{pair.assura.rule_count} rules; {pair.assura.rule_surface_summary}</td>
+          <td data-label="Assura CLI">{formatMs(pair.assura.median_runtime_ms)}</td>
+          <td data-label="LS-Lint CLI">{formatMs(pair.lslint.median_runtime_ms)}</td>
+          <td data-label="Result"><strong>{formatPercent(pair.lowerPercent)} lower</strong>; {formatSpeedup(pair.speedup)}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+</div>
+
+<h2 id="synthetic-stress-rows">Synthetic Stress Rows</h2>
+
+<p>
+  Synthetic rows are not part of the realistic-bundle headline. They remain
+  visible because they identify bottlenecks and caveats.
+</p>
+
+<div class="perf-table-wrap" aria-label="Synthetic stress comparison table">
+  <table class="perf-table perf-table-compact">
+    <thead>
+      <tr>
+        <th>Fixture</th>
+        <th>Scale</th>
+        <th>Rules</th>
+        <th>Assura CLI</th>
+        <th>LS-Lint CLI</th>
+        <th>Diagnostic result</th>
+      </tr>
+    </thead>
+    <tbody>
+      {syntheticPairs.map((pair) => (
+        <tr>
+          <td data-label="Fixture"><code>{pair.fixtureId}</code></td>
+          <td data-label="Scale">{scale(pair.assura)}</td>
+          <td data-label="Rules">{pair.assura.rule_count} rules; {pair.assura.rule_surface_summary}</td>
+          <td data-label="Assura CLI">{formatMs(pair.assura.median_runtime_ms)}</td>
+          <td data-label="LS-Lint CLI">{formatMs(pair.lslint.median_runtime_ms)}</td>
+          <td data-label="Diagnostic result">
+            {pair.lowerPercent >= 0 ? (
+              <><strong>{formatPercent(pair.lowerPercent)} lower</strong>; {formatSpeedup(pair.speedup)}</>
+            ) : (
+              <><strong>{formatPercent(Math.abs(pair.lowerPercent))} higher</strong>; LS-Lint faster</>
+            )}
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>

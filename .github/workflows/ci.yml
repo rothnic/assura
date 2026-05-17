@@ -152,16 +152,20 @@ jobs:
         print("| Fixture | Assura median | LS-Lint median | Status |")
         print("| --- | ---: | ---: | --- |")
         rows = report["results"]
+        def row_name(row):
+            return row.get("row_family") or row["tool_name"]
+        def find_row(fixture, *names):
+            return next(row for row in rows if row["fixture_id"] == fixture and row_name(row) in names)
+        def median(row):
+            value = row["median_runtime_ms"]
+            return "n/a" if value is None else f"{value:.3f} ms"
         fixtures = []
         for row in rows:
             if row["fixture_id"] not in fixtures:
                 fixtures.append(row["fixture_id"])
         for fixture in fixtures:
-            assura = next(row for row in rows if row["fixture_id"] == fixture and row["tool_name"] == "assura")
-            lslint = next(row for row in rows if row["fixture_id"] == fixture and row["tool_name"] == "ls-lint")
-            def median(row):
-                value = row["median_runtime_ms"]
-                return "n/a" if value is None else f"{value:.3f} ms"
+            assura = find_row(fixture, "assura-cli")
+            lslint = find_row(fixture, "ls-lint-cli")
             print(f"| `{fixture}` | {median(assura)} | {median(lslint)} | `{assura['status']}` / `{lslint['status']}` |")
         print()
         print("## jwalk Migration Traversal Evidence")
@@ -169,9 +173,9 @@ jobs:
         print("| Fixture | walkdir | jwalk serial | jwalk parallel | Status |")
         print("| --- | ---: | ---: | ---: | --- |")
         for fixture in fixtures:
-            walkdir = next(row for row in rows if row["fixture_id"] == fixture and row["tool_name"] == "walkdir")
-            serial = next(row for row in rows if row["fixture_id"] == fixture and row["tool_name"] == "jwalk-serial")
-            parallel = next(row for row in rows if row["fixture_id"] == fixture and row["tool_name"] == "jwalk-parallel")
+            walkdir = find_row(fixture, "traversal:walkdir", "walkdir")
+            serial = find_row(fixture, "traversal:jwalk-serial", "jwalk-serial")
+            parallel = find_row(fixture, "traversal:jwalk-parallel", "jwalk-parallel")
             print(f"| `{fixture}` | {median(walkdir)} | {median(serial)} | {median(parallel)} | `{walkdir['status']}` / `{serial['status']}` / `{parallel['status']}` |")
         print()
         print("## Assura Phase Breakdown")
@@ -179,16 +183,16 @@ jobs:
         print("| Fixture | Config discovery | Config load | Init | Configured rules | Walk + validate | Sort |")
         print("| --- | ---: | ---: | ---: | ---: | ---: | ---: |")
         phases = [
-            "assura:config-discovery",
-            "assura:config-load",
-            "assura:checker-init",
-            "assura:configured-structure",
-            "assura:walk-and-validate",
-            "assura:report-sort",
+            "assura:phase:config-discovery",
+            "assura:phase:config-load",
+            "assura:phase:checker-init",
+            "assura:phase:configured-structure",
+            "assura:phase:walk-and-validate",
+            "assura:phase:report-sort",
         ]
         for fixture in fixtures:
             values = [
-                median(next(row for row in rows if row["fixture_id"] == fixture and row["tool_name"] == phase))
+                median(find_row(fixture, phase))
                 for phase in phases
             ]
             print(f"| `{fixture}` | " + " | ".join(values) + " |")

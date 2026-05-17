@@ -1,6 +1,9 @@
 //! Assura phase row collection for performance reports.
 
-use super::{row, FixtureScenario, PerformanceEnvironment, PerformanceResultRow, ToolAvailability};
+use super::{
+    row, MaterializedFixture, PerformanceEnvironment, PerformanceResultRow, RowMeasurement,
+    ToolAvailability,
+};
 use crate::cli::check::StructureCheckTimings;
 
 pub(super) struct AssuraPhaseSamples {
@@ -37,7 +40,7 @@ impl AssuraPhaseSamples {
     #[allow(clippy::too_many_arguments)]
     pub(super) fn into_rows(
         self,
-        scenario: FixtureScenario,
+        fixture: &MaterializedFixture,
         timestamp: &str,
         commit_sha: &str,
         branch: &str,
@@ -48,23 +51,26 @@ impl AssuraPhaseSamples {
     ) -> Vec<PerformanceResultRow> {
         let phase_failure = failure.map(str::to_string);
         [
-            ("assura:config-discovery", self.config_discovery),
-            ("assura:config-load", self.config_load),
-            ("assura:checker-init", self.checker_init),
-            ("assura:configured-structure", self.configured_structure),
-            ("assura:walk-and-validate", self.walk_and_validate),
-            ("assura:report-sort", self.report_sort),
+            ("assura:phase:config-discovery", self.config_discovery),
+            ("assura:phase:config-load", self.config_load),
+            ("assura:phase:checker-init", self.checker_init),
+            (
+                "assura:phase:configured-structure",
+                self.configured_structure,
+            ),
+            ("assura:phase:walk-and-validate", self.walk_and_validate),
+            ("assura:phase:report-sort", self.report_sort),
         ]
         .into_iter()
         .map(|(tool_name, samples)| {
             row(
-                scenario,
+                fixture,
                 timestamp,
                 commit_sha,
                 branch,
                 environment,
                 ls_lint_status.version.as_deref().unwrap_or("unavailable"),
-                tool_name,
+                RowMeasurement::new(tool_name, tool_name),
                 samples,
                 phase_failure.clone(),
                 baseline_id,

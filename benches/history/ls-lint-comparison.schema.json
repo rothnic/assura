@@ -26,6 +26,36 @@
     "status",
     "comparison_baseline_id"
   ],
+  "allOf": [
+    {
+      "if": {
+        "required": ["row_family"]
+      },
+      "then": {
+        "required": [
+          "legacy_fixture_cohort",
+          "row_family",
+          "evidence_role",
+          "diagnostic",
+          "source_type",
+          "checked_file_count",
+          "ignored_file_count",
+          "directory_count",
+          "rule_count",
+          "rule_surface_summary",
+          "native_ls_lint_parity",
+          "assura_config_path",
+          "ls_lint_config_path",
+          "config_generation_method",
+          "shared_config_id",
+          "expected_assura_exit_status",
+          "expected_ls_lint_exit_status",
+          "assura_binary_profile",
+          "assura_binary_path"
+        ]
+      }
+    }
+  ],
   "properties": {
     "schema_version": { "const": "assura.performance.v1" },
     "timestamp": { "type": "string" },
@@ -42,21 +72,81 @@
     "fixture_source_revision": { "type": "string" },
     "fixture_cohort": { "type": "string" },
     "rule_cohort": { "type": "string" },
+    "legacy_fixture_cohort": { "type": "string" },
+    "row_family": {
+      "anyOf": [
+        {
+          "enum": [
+            "assura-cli",
+            "ls-lint-cli",
+            "assura-in-process",
+            "assura:phase:config-discovery",
+            "assura:phase:config-load",
+            "assura:phase:checker-init",
+            "assura:phase:configured-structure",
+            "assura:phase:walk-and-validate",
+            "assura:phase:report-sort",
+            "traversal:walkdir",
+            "traversal:jwalk-serial",
+            "traversal:jwalk-parallel"
+          ]
+        },
+        { "type": "string", "pattern": "^strategy:.+" }
+      ]
+    },
+    "evidence_role": { "enum": ["headline-candidate", "diagnostic"] },
+    "diagnostic": { "type": "boolean" },
+    "source_type": {
+      "enum": ["generated", "external-pinned-repo", "materialized-local-fixture"]
+    },
+    "checked_file_count": { "type": "integer", "minimum": 0 },
+    "ignored_file_count": { "type": "integer", "minimum": 0 },
+    "directory_count": { "type": "integer", "minimum": 0 },
+    "rule_count": { "type": "integer", "minimum": 0 },
+    "rule_surface_summary": { "type": "string" },
+    "native_ls_lint_parity": { "type": "boolean" },
+    "assura_config_path": { "type": "string" },
+    "ls_lint_config_path": { "type": "string" },
+    "config_generation_method": {
+      "enum": ["hand-authored-equivalent-pair", "ls-lint-conversion"]
+    },
+    "shared_config_id": { "type": "string" },
+    "expected_assura_exit_status": { "type": "integer" },
+    "expected_ls_lint_exit_status": { "type": "integer" },
+    "assura_binary_profile": { "type": ["string", "null"] },
+    "assura_binary_path": { "type": ["string", "null"] },
     "tool_name": {
-      "enum": [
-        "assura",
-        "assura:config-discovery",
-        "assura:config-load",
-        "assura:checker-init",
-        "assura:configured-structure",
-        "assura:walk-and-validate",
-        "assura:report-sort",
-        "ls-lint",
-        "walkdir",
-        "jwalk-serial",
-        "jwalk-parallel",
-        "walkdir-before-jwalk",
-        "jwalk-after-migration"
+      "anyOf": [
+        {
+          "enum": [
+            "assura",
+            "assura-cli",
+            "assura-in-process",
+            "assura:config-discovery",
+            "assura:config-load",
+            "assura:checker-init",
+            "assura:configured-structure",
+            "assura:walk-and-validate",
+            "assura:report-sort",
+            "assura:phase:config-discovery",
+            "assura:phase:config-load",
+            "assura:phase:checker-init",
+            "assura:phase:configured-structure",
+            "assura:phase:walk-and-validate",
+            "assura:phase:report-sort",
+            "ls-lint",
+            "ls-lint-cli",
+            "walkdir",
+            "jwalk-serial",
+            "jwalk-parallel",
+            "traversal:walkdir",
+            "traversal:jwalk-serial",
+            "traversal:jwalk-parallel",
+            "walkdir-before-jwalk",
+            "jwalk-after-migration"
+          ]
+        },
+        { "type": "string", "pattern": "^strategy:.+" }
       ]
     },
     "median_runtime_ms": { "type": ["number", "null"], "minimum": 0 },

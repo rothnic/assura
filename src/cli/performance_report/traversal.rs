@@ -1,14 +1,16 @@
 //! Filesystem traversal-only measurements for migration evidence.
 
-use super::{row, FixtureScenario, PerformanceEnvironment, PerformanceResultRow, ToolAvailability};
+use super::{
+    row, MaterializedFixture, PerformanceEnvironment, PerformanceResultRow, RowMeasurement,
+    ToolAvailability,
+};
 use std::path::Path;
 use std::thread;
 use std::time::Instant;
 
 #[allow(clippy::too_many_arguments)]
 pub(super) fn measure_walkdir_traversal(
-    scenario: FixtureScenario,
-    fixture: &Path,
+    fixture: &MaterializedFixture,
     iterations: usize,
     timestamp: &str,
     commit_sha: &str,
@@ -18,7 +20,6 @@ pub(super) fn measure_walkdir_traversal(
     ls_lint_status: &ToolAvailability,
 ) -> PerformanceResultRow {
     measure_traversal(
-        scenario,
         fixture,
         iterations,
         timestamp,
@@ -27,15 +28,14 @@ pub(super) fn measure_walkdir_traversal(
         environment,
         baseline_id,
         ls_lint_status,
-        "walkdir",
+        "traversal:walkdir",
         count_walkdir_entries,
     )
 }
 
 #[allow(clippy::too_many_arguments)]
 pub(super) fn measure_serial_jwalk_traversal(
-    scenario: FixtureScenario,
-    fixture: &Path,
+    fixture: &MaterializedFixture,
     iterations: usize,
     timestamp: &str,
     commit_sha: &str,
@@ -45,7 +45,6 @@ pub(super) fn measure_serial_jwalk_traversal(
     ls_lint_status: &ToolAvailability,
 ) -> PerformanceResultRow {
     measure_traversal(
-        scenario,
         fixture,
         iterations,
         timestamp,
@@ -54,15 +53,14 @@ pub(super) fn measure_serial_jwalk_traversal(
         environment,
         baseline_id,
         ls_lint_status,
-        "jwalk-serial",
+        "traversal:jwalk-serial",
         |path| count_jwalk_entries(path, jwalk::Parallelism::Serial),
     )
 }
 
 #[allow(clippy::too_many_arguments)]
 pub(super) fn measure_parallel_jwalk_traversal(
-    scenario: FixtureScenario,
-    fixture: &Path,
+    fixture: &MaterializedFixture,
     iterations: usize,
     timestamp: &str,
     commit_sha: &str,
@@ -72,7 +70,6 @@ pub(super) fn measure_parallel_jwalk_traversal(
     ls_lint_status: &ToolAvailability,
 ) -> PerformanceResultRow {
     measure_traversal(
-        scenario,
         fixture,
         iterations,
         timestamp,
@@ -81,15 +78,14 @@ pub(super) fn measure_parallel_jwalk_traversal(
         environment,
         baseline_id,
         ls_lint_status,
-        "jwalk-parallel",
+        "traversal:jwalk-parallel",
         |path| count_jwalk_entries(path, parallel_jwalk_strategy()),
     )
 }
 
 #[allow(clippy::too_many_arguments)]
 fn measure_traversal<F>(
-    scenario: FixtureScenario,
-    fixture: &Path,
+    fixture: &MaterializedFixture,
     iterations: usize,
     timestamp: &str,
     commit_sha: &str,
@@ -107,7 +103,7 @@ where
     let mut failure = None;
     for _ in 0..iterations {
         let started = Instant::now();
-        match count_entries(fixture) {
+        match count_entries(&fixture.root) {
             Ok(_) => samples.push(started.elapsed().as_secs_f64() * 1000.0),
             Err(error) => {
                 failure = Some(error);
@@ -117,13 +113,13 @@ where
     }
 
     row(
-        scenario,
+        fixture,
         timestamp,
         commit_sha,
         branch,
         environment,
         ls_lint_status.version.as_deref().unwrap_or("unavailable"),
-        tool_name,
+        RowMeasurement::new(tool_name, tool_name),
         samples,
         failure,
         baseline_id,

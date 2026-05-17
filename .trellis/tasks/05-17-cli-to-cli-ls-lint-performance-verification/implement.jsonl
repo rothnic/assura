@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/assura/index.md", "reason": "Assura product direction, canonical sources, and workflow status expectations"}
+{"file": ".trellis/spec/assura/structure-enforcement.md", "reason": "Structure-first validation contract used by performance fixtures"}
+{"file": "docs/goals/assura-cli-to-cli-ls-lint-performance-verification.md", "reason": "Primary goal and acceptance criteria for CLI-to-CLI performance verification"}
+{"file": "docs/analysis/2026-05-16-performance-results-interpretation.md", "reason": "Current interpretation constraints and prior benchmark evidence"}
