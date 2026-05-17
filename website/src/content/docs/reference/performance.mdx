@@ -1,112 +1,33 @@
 ---
 title: Performance
-description: Assura versus LS-Lint comparison history and CI reporting contract.
+description: Current Assura CLI versus LS-Lint CLI comparison.
 ---
 
 import PerformanceEvidence from '../../../components/performance-evidence.astro';
 
 <PerformanceEvidence />
 
-## Fairness Contract
+## How To Read This Page
 
-The current comparison is fair for native LS-Lint parity rows under these
-constraints:
+Use the table above for the product comparison: one Assura CLI run versus one
+warm LS-Lint CLI run on the same generated fixture tree and equivalent ruleset.
 
-- The fixture manifest records fixture purpose, LS-Lint rule surface, equivalent
-  Assura rule surface, parity status, and source revision.
-- `write_lslint_compatible_configs` converts the LS-Lint-compatible config into
-  Assura config, then writes both configs into the same generated fixture tree.
-- LS-Lint uses a prepared `@ls-lint/ls-lint@2.3.0` binary. The measured
-  `ls-lint-cli` loop still includes process startup, LS-Lint config loading,
-  traversal, validation, output construction, and process exit.
-- Assura `assura-cli` rows use the built Assura binary as a subprocess. The
-  measured loop includes CLI process startup, config discovery/load, checker
-  initialization, configured structure validation, walking and validation,
-  output construction, and process exit.
-- The measured loops exclude dependency installation, package resolution, Rust
-  compilation, fixture generation, and binary discovery.
+The current headline is intentionally narrow. It covers generated, stable,
+native LS-Lint-parity fixtures. It does not yet claim performance on pinned
+real-world repositories such as Next.js, mdBook, or other recognizable
+open-source projects.
 
-This page does not claim that Assura is faster for every possible LS-Lint
-configuration. It claims that Assura is faster on the current native-parity
-realistic bundle, and it shows the fixture shape needed to judge whether that
-bundle is representative.
+## More Detail
 
-## History Is An Audit Log
-
-The JSONL history is useful for traceability, but it is not a clean progression
-chart yet. Older rows mix Linux and macOS runs, different LS-Lint setup states,
-and different report shapes. The page therefore uses the current same-report
-snapshot for the Assura-vs-LS-Lint claim and treats historical rows as an audit
-trail.
-
-For PR-level change detection, compare same-machine rows captured for the PR
-baseline and final report:
-
-<div className="perf-table-wrap" aria-label="PR-level same-machine change table">
-  <table className="perf-table perf-table-compact">
-    <thead>
-      <tr>
-        <th>Fixture</th>
-        <th>Baseline Assura</th>
-        <th>Final Assura</th>
-        <th>Change</th>
-        <th>Interpretation</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td data-label="Fixture"><code>rule_heavy</code></td>
-        <td data-label="Baseline Assura">194.615 ms</td>
-        <td data-label="Final Assura">173.930 ms</td>
-        <td data-label="Change">10.6% lower</td>
-        <td data-label="Interpretation">Tracked synthetic bottleneck improved, but LS-Lint remains faster on this stress row.</td>
-      </tr>
-      <tr>
-        <td data-label="Fixture"><code>rule_heavy_repo</code></td>
-        <td data-label="Baseline Assura">29.797 ms</td>
-        <td data-label="Final Assura">26.145 ms</td>
-        <td data-label="Change">12.3% lower</td>
-        <td data-label="Interpretation">Realistic multi-extension bottleneck improved.</td>
-      </tr>
-      <tr>
-        <td data-label="Fixture"><code>ignored_generated_heavy</code></td>
-        <td data-label="Baseline Assura">0.752 ms</td>
-        <td data-label="Final Assura">0.509 ms</td>
-        <td data-label="Change">32.3% lower</td>
-        <td data-label="Interpretation">Pruning-heavy synthetic row improved.</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
-
-## Interpreting Traversal Rows
-
-Traversal rows are intentionally narrower than top-level Assura rows.
-`walkdir`, `jwalk-serial`, and `jwalk-parallel` measure raw entry enumeration.
-They do not include config loading, effective rule resolution, naming-pattern
-validation, file-content reads, markdown checks, or report sorting.
-
-Use `assura-cli` and `ls-lint-cli` rows for product comparisons. Use traversal
-rows only to understand whether traversal itself is a hotspot. Before changing
-the production traversal default again, the report should add full-check
-`strategy:*` rows that compare walkdir, serial `jwalk`, and parallel `jwalk`
-under the same validation logic.
-
-## Data Contract
-
-- [Current comparison report](/data/performance/current.json)
+- [Performance test cases](/reference/performance-test-cases/) defines the current
+  generated cases and the real-project cases that should be added next.
+- [Performance implementation notes](/reference/performance-implementation/) explains
+  traversal rows, why `walkdir` is the default non-fail-fast traversal path, and
+  why implementation-detail rows are not headline product evidence.
+- [Current comparison report](/data/performance/current.json) is the exact
+  machine-readable report rendered on this page.
 - [Chart-ready JSONL history](/data/performance/ls-lint-comparison-history.jsonl)
-- [Tracked schema](https://github.com/rothnic/assura/blob/master/benches/history/ls-lint-comparison.schema.json)
-- [Fixture manifest](https://github.com/rothnic/assura/blob/codex/ls-lint-realistic-parity-core-performance/tests/ls_lint_realistic_fixture_manifest.yml)
-- [Performance fixture generator](https://github.com/rothnic/assura/blob/codex/ls-lint-realistic-parity-core-performance/src/cli/performance_report/fixtures.rs)
-- [Full interpretation note](https://github.com/rothnic/assura/blob/master/docs/analysis/2026-05-16-performance-results-interpretation.md)
-
-Rows include schema version, timestamp, commit, branch, OS, architecture, Rust
-version, Node/npm versions, LS-Lint version, fixture id, fixture source
-revision, fixture cohort, rule cohort, row family, evidence role, diagnostic
-status, fixture scale, rule surface, config references, expected exit statuses,
-tool name, median runtime, sample distribution, pass/fail status, and comparison
-baseline id.
+  is an audit trail, not a clean release-over-release chart yet.
 
 ## Updating The Baseline
 
@@ -121,6 +42,4 @@ cargo run --quiet -- performance-report \
 ```
 
 Review the generated diff in `benches/history/` and
-`website/public/data/performance/` before merging. If LS-Lint cannot be fetched
-or executed, the report keeps Assura rows and marks LS-Lint rows as `skipped`
-with the exact blocker in `details`.
+`website/public/data/performance/` before merging.

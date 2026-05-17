@@ -1,0 +1,43 @@
+---
+title: Performance Implementation
+description: Technical notes behind Assura performance measurements.
+---
+
+# Performance Implementation
+
+The public performance summary should use `assura-cli` and `ls-lint-cli` rows.
+Those rows include process startup, config discovery/load, validation, report
+construction, and process exit.
+
+Traversal and phase rows answer narrower engineering questions. They belong on
+this page because they explain why a strategy was chosen, not whether users
+should expect Assura to be faster than LS-Lint.
+
+## Row Families
+
+| Row Family | Meaning | Use For |
+| --- | --- | --- |
+| `assura-cli` | Full Assura CLI subprocess check | Product comparison against LS-Lint |
+| `ls-lint-cli` | Warm LS-Lint CLI subprocess check | Product comparison baseline |
+| `assura-in-process` | Assura validation inside the current process | Runtime attribution without process startup |
+| `assura:phase:*` | Timed Assura implementation phases | Locating hot spots |
+| `traversal:*` | Raw filesystem enumeration only | Traversal strategy attribution |
+| `strategy:*` | Full-check traversal strategy variants | Comparing implementation choices under validation load |
+
+## Traversal Decision
+
+The non-fail-fast default traversal path is `walkdir`. It gives deterministic
+sorted traversal, supports exclusion pruning through `filter_entry`, and did not
+show a meaningful full-check regression against serial `jwalk` on the current
+realistic fixture bundle.
+
+Serial `jwalk` remains the deterministic fail-fast path and an opt-in diagnostic
+strategy. Parallel `jwalk` can be useful for raw traversal experiments, but raw
+entry enumeration is not the same as full validation throughput.
+
+## Reporting Rule
+
+Do not place traversal-only wins in the headline performance claim. If a future
+strategy should influence the public claim, add a `strategy:*` full-check row for
+that implementation and compare it against the same fixture, config, binary
+profile, and iteration count.

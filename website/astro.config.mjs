@@ -48,6 +48,8 @@ export default defineConfig({
 						{ label: 'Configuration Reference', slug: 'reference/configuration' },
 						{ label: 'API Reference', slug: 'reference/api' },
 						{ label: 'Performance', slug: 'reference/performance' },
+						{ label: 'Performance Test Cases', slug: 'reference/performance-test-cases' },
+						{ label: 'Performance Implementation', slug: 'reference/performance-implementation' },
 					],
 				},
 				{

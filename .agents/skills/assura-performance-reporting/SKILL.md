@@ -29,17 +29,21 @@ jq -r '.results[] | [.fixture_id,.tool_name,.median_runtime_ms,.status] | @tsv' 
 
 Expected row families:
 
-- `assura`
-- `ls-lint`
-- `walkdir`
-- `jwalk-serial`
-- `jwalk-parallel`
-- `assura:config-discovery`
-- `assura:config-load`
-- `assura:checker-init`
-- `assura:configured-structure`
-- `assura:walk-and-validate`
-- `assura:report-sort`
+- `assura-cli`
+- `ls-lint-cli`
+- `assura-in-process`
+- `assura:phase:config-discovery`
+- `assura:phase:config-load`
+- `assura:phase:checker-init`
+- `assura:phase:configured-structure`
+- `assura:phase:walk-and-validate`
+- `assura:phase:report-sort`
+- `traversal:walkdir`
+- `traversal:jwalk-serial`
+- `traversal:jwalk-parallel`
+- `strategy:walkdir-cli`
+- `strategy:jwalk-serial-cli`
+- `strategy:jwalk-parallel-cli`
 
 ## Before/After Evidence
 
@@ -88,3 +92,6 @@ If `pnpm build` fails because dependencies are missing, run `pnpm install` in
 - Keep production traversal choices separate from traversal-only evidence rows:
   raw parallel `jwalk` can win traversal while full validation may still prefer
   deterministic serial validation.
+- Keep user-facing docs focused on `assura-cli` versus `ls-lint-cli` rows.
+  Put traversal, phase, and strategy tradeoffs on technical implementation pages
+  unless they directly change the public product comparison.

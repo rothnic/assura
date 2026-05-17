@@ -14,63 +14,107 @@ type ResultRow = {
   directory_count?: number;
   rule_count?: number;
   rule_surface_summary?: string;
-  assura_config_path?: string;
-  ls_lint_config_path?: string;
-  shared_config_id?: string;
   status?: string;
+  native_ls_lint_parity?: boolean;
+  source_type?: string;
+  fixture_source_revision?: string;
+  shared_config_id?: string;
+  ls_lint_config_path?: string;
+  assura_config_path?: string;
+  config_generation_method?: string;
+  assura_version?: string;
+  ls_lint_version?: string;
+};
+
+type CurrentReport = {
+  timestamp?: string;
+  commit_sha?: string;
+  branch?: string;
+  assura_version?: string;
+  ls_lint_version?: string;
+  results?: ResultRow[];
+};
+
+type FixtureCopy = {
+  label: string;
+  projectShape: string;
+  focus: string;
 };
 
 type Pair = {
   fixtureId: string;
+  copy: FixtureCopy;
   assura: ResultRow;
   lslint: ResultRow;
   speedup: number;
   lowerPercent: number;
 };
 
-const rows = ((currentReport as { results?: ResultRow[] }).results ?? []).filter(
-  (row) => row.status === 'pass',
-);
+const report = currentReport as CurrentReport;
+const rows = (report.results ?? []).filter((row) => row.status === 'pass');
 
-const rowFamily = (row: ResultRow) => row.row_family ?? row.tool_name ?? '';
+const fixtureCopy: Record<string, FixtureCopy> = {
+  simple_library: {
+    label: 'Small library',
+    projectShape: 'Rust/package library with docs, tests, and build output.',
+    focus: 'Low-end case where startup and config loading are visible.',
+  },
+  web_app: {
+    label: 'Web app',
+    projectShape: 'Frontend app with components, tests, CSS modules, assets, and dist output.',
+    focus: 'Common app layout with generated output pruning.',
+  },
+  monorepo_packages: {
+    label: 'Package monorepo',
+    projectShape: 'Two packages with package-local source, tests, docs, and dist output.',
+    focus: 'Nested package scopes without becoming a synthetic stress test.',
+  },
+  rule_heavy_repo: {
+    label: 'Rule-heavy repo',
+    projectShape: 'Repo-shaped tree with many extension-specific file rules.',
+    focus: 'Broad LS-Lint-compatible naming surface.',
+  },
+  ignored_generated_heavy_repo: {
+    label: 'Generated-heavy repo',
+    projectShape: 'Project with large generated and coverage folders inside the tree.',
+    focus: 'Ignored-path pruning before validation work is spent.',
+  },
+};
 
-const realisticFixtureIds = [
-  ...new Set(
-    rows
-      .filter((row) => row.evidence_role === 'headline-candidate' && !row.diagnostic)
-      .map((row) => row.fixture_id),
-  ),
-];
+const realisticFixtureIds = Object.keys(fixtureCopy);
 
-const syntheticFixtureIds = [
-  ...new Set(
-    rows
-      .filter((row) => row.fixture_cohort === 'synthetic-stress')
-      .map((row) => row.fixture_id),
-  ),
-];
-
-function buildPairs(fixtureIds: string[]): Pair[] {
-  return fixtureIds
-    .map((fixtureId) => {
-      const assura = rows.find(
-        (row) => row.fixture_id === fixtureId && rowFamily(row) === 'assura-cli',
-      );
-      const lslint = rows.find(
-        (row) => row.fixture_id === fixtureId && rowFamily(row) === 'ls-lint-cli',
-      );
-      if (!assura?.median_runtime_ms || !lslint?.median_runtime_ms) {
-        return null;
-      }
-      const speedup = lslint.median_runtime_ms / assura.median_runtime_ms;
-      const lowerPercent = (1 - assura.median_runtime_ms / lslint.median_runtime_ms) * 100;
-      return { fixtureId, assura, lslint, speedup, lowerPercent };
-    })
-    .filter((pair): pair is Pair => Boolean(pair));
+function rowFamily(row: ResultRow): string {
+  return row.row_family ?? row.tool_name ?? '';
 }
 
-const realisticPairs = buildPairs(realisticFixtureIds);
-const syntheticPairs = buildPairs(syntheticFixtureIds);
+function buildPair(fixtureId: string): Pair | null {
+  const assura = rows.find(
+    (row) => row.fixture_id === fixtureId && rowFamily(row) === 'assura-cli',
+  );
+  const lslint = rows.find(
+    (row) => row.fixture_id === fixtureId && rowFamily(row) === 'ls-lint-cli',
+  );
+  if (!assura?.median_runtime_ms || !lslint?.median_runtime_ms) {
+    return null;
+  }
+
+  return {
+    fixtureId,
+    copy: fixtureCopy[fixtureId],
+    assura,
+    lslint,
+    speedup: lslint.median_runtime_ms / assura.median_runtime_ms,
+    lowerPercent: (1 - assura.median_runtime_ms / lslint.median_runtime_ms) * 100,
+  };
+}
+
+const realisticPairs = realisticFixtureIds.map(buildPair).filter((pair): pair is Pair => Boolean(pair));
+
+const syntheticRows = rows.filter(
+  (row) => row.row_family === 'assura-cli' && row.fixture_cohort === 'synthetic-stress',
+);
+const firstAssuraRow = rows.find((row) => row.row_family === 'assura-cli');
+const firstLsLintRow = rows.find((row) => row.row_family === 'ls-lint-cli');
 
 const totalAssura = realisticPairs.reduce(
   (total, pair) => total + (pair.assura.median_runtime_ms ?? 0),
@@ -99,132 +143,149 @@ function formatSpeedup(value: number): string {
   return `${value.toFixed(value >= 10 ? 1 : 2)}x`;
 }
 
-function scale(row: ResultRow): string {
-  return `${row.checked_file_count ?? 0} checked files, ${row.ignored_file_count ?? 0} ignored files, ${row.directory_count ?? 0} directories`;
+function shortSha(value?: string): string {
+  return value ? value.slice(0, 7) : 'unknown';
 }
 
-function configRef(row: ResultRow): string {
-  return `${row.assura_config_path ?? '.assura/config.yml'} + ${row.ls_lint_config_path ?? '.ls-lint.yml'}`;
+function formatTimestamp(value?: string): string {
+  if (!value) return 'unknown';
+  return value.replace('T', ' ').replace('Z', ' UTC');
+}
+
+function lslintVersion(value?: string): string {
+  return value?.split('\n')[0] ?? 'unknown';
+}
+
+function scale(row: ResultRow): string {
+  return `${row.checked_file_count ?? 0} checked, ${row.ignored_file_count ?? 0} ignored, ${row.directory_count ?? 0} dirs`;
+}
+
+function ruleCount(row: ResultRow): string {
+  return `${row.rule_count ?? 0} LS-Lint rules`;
+}
+
+function testCaseHref(fixtureId: string): string {
+  return `/reference/performance-test-cases/#${fixtureId.replaceAll('_', '-')}`;
 }
 ---
 
-<div class="perf-evidence">
-<div class="perf-hero">
-  <p class="perf-kicker">Current realistic fixture bundle</p>
-  <h2>
-    Assura CLI completes the comparable realistic bundle with {formatPercent(totalLowerPercent)}
-    lower total runtime than warm LS-Lint CLI.
-  </h2>
-  <p>
-    Current tracked data: Assura CLI totals {formatMs(totalAssura)} across {realisticPairs.length}
-    native LS-Lint-parity fixtures; LS-Lint CLI totals {formatMs(totalLsLint)} on the same
-    materialized fixture trees. That is a {formatSpeedup(totalSpeedup)} total-runtime speedup.
-    {weakestPair && (
-      <> The weakest realistic row is <code>{weakestPair.fixtureId}</code> at {formatPercent(weakestPair.lowerPercent)} lower runtime, or {formatSpeedup(weakestPair.speedup)} faster.</>
-    )}
+<section class="perf-evidence" aria-labelledby="performance-summary">
+  <div class="perf-summary">
+    <p class="perf-kicker">Current comparison</p>
+    <h2 id="performance-summary">Assura CLI vs warm LS-Lint CLI</h2>
+    <p class="perf-summary-line">
+      Same machine. Same generated trees. Equivalent rules. Case definitions
+      live on the test-case page.
+    </p>
+
+    <div class="perf-summary-grid">
+      <dl class="perf-facts" aria-label="Performance summary facts">
+        <div>
+          <dt>Speedup</dt>
+          <dd>{formatSpeedup(totalSpeedup)}</dd>
+        </div>
+        <div>
+          <dt>Runtime reduction</dt>
+          <dd>{formatPercent(totalLowerPercent)} lower</dd>
+        </div>
+        <div>
+          <dt>Assura total</dt>
+          <dd>{formatMs(totalAssura)}</dd>
+        </div>
+        <div>
+          <dt>LS-Lint total</dt>
+          <dd>{formatMs(totalLsLint)}</dd>
+        </div>
+      </dl>
+
+      <dl class="perf-run-context" aria-label="Report context">
+        <div>
+          <dt>Dataset</dt>
+          <dd><a href="/reference/performance-test-cases/">generated-fixtures-v1</a></dd>
+        </div>
+        <div>
+          <dt>Weakest case</dt>
+          <dd>{weakestPair ? `${formatSpeedup(weakestPair.speedup)} on ${weakestPair.copy.label}` : 'n/a'}</dd>
+        </div>
+        <div>
+          <dt>Evidence source</dt>
+          <dd><a href="https://github.com/rothnic/assura/pull/11">PR #11</a> at <code>{shortSha(report.commit_sha)}</code></dd>
+        </div>
+        <div>
+          <dt>Captured</dt>
+          <dd>{formatTimestamp(report.timestamp)}</dd>
+        </div>
+        <div>
+          <dt>Versions</dt>
+          <dd>Assura {firstAssuraRow?.assura_version ?? report.assura_version ?? 'unknown'}; {lslintVersion(firstLsLintRow?.ls_lint_version ?? report.ls_lint_version)}</dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+
+  <h2 id="test-case-results">Test Case Results</h2>
+  <p class="perf-section-intro">
+    One row per measured case. Open a case to inspect what it represents and
+    where the dataset still needs stronger real-project coverage.
   </p>
-</div>
 
-<div class="perf-metric-grid" aria-label="Performance summary">
-  <div class="perf-metric">
-    <span class="perf-label">Bundle reduction</span>
-    <strong>{formatPercent(totalLowerPercent)}</strong>
-    <span>lower total CLI runtime</span>
-  </div>
-  <div class="perf-metric">
-    <span class="perf-label">Bundle speedup</span>
-    <strong>{formatSpeedup(totalSpeedup)}</strong>
-    <span>{formatMs(totalAssura)} vs {formatMs(totalLsLint)}</span>
-  </div>
-  <div class="perf-metric">
-    <span class="perf-label">Weakest win</span>
-    <strong>{weakestPair ? formatPercent(weakestPair.lowerPercent) : 'n/a'}</strong>
-    <span>{weakestPair ? <><code>{weakestPair.fixtureId}</code> CLI row</> : 'no row'}</span>
-  </div>
-  <div class="perf-metric perf-metric-muted">
-    <span class="perf-label">Evidence source</span>
-    <strong>{realisticPairs.length}</strong>
-    <span>headline candidate row pairs</span>
-  </div>
-</div>
-
-<h2 id="what-was-compared">What Was Compared</h2>
-
-<p>
-  The realistic comparison uses generated fixtures marked <code>realistic-equivalent</code>
-  and native LS-Lint parity in the machine-readable report. Each row below is
-  rendered from <code>/data/performance/current.json</code>, including scale,
-  rule surface, config references, and row status.
-</p>
-
-<div class="perf-table-wrap" aria-label="Realistic LS-Lint parity comparison table">
-  <table class="perf-table">
-    <thead>
-      <tr>
-        <th>Fixture</th>
-        <th>Scale</th>
-        <th>Rules</th>
-        <th>Assura CLI</th>
-        <th>LS-Lint CLI</th>
-        <th>Result</th>
-      </tr>
-    </thead>
-    <tbody>
-      {realisticPairs.map((pair) => (
+  <div class="perf-table-wrap" aria-label="Assura and LS-Lint comparison by test case">
+    <table class="perf-table">
+      <thead>
         <tr>
-          <td data-label="Fixture">
-            <code>{pair.fixtureId}</code>
-            <span class="perf-cell-note">{configRef(pair.assura)}</span>
-            <span class="perf-cell-note">status {pair.assura.status} / {pair.lslint.status}</span>
-          </td>
-          <td data-label="Scale">{scale(pair.assura)}</td>
-          <td data-label="Rules">{pair.assura.rule_count} rules; {pair.assura.rule_surface_summary}</td>
-          <td data-label="Assura CLI">{formatMs(pair.assura.median_runtime_ms)}</td>
-          <td data-label="LS-Lint CLI">{formatMs(pair.lslint.median_runtime_ms)}</td>
-          <td data-label="Result"><strong>{formatPercent(pair.lowerPercent)} lower</strong>; {formatSpeedup(pair.speedup)}</td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
-</div>
-</div>
+	          <th>Test case</th>
+	          <th>Project shape</th>
+	          <th>Runtime</th>
+	          <th>Result</th>
+	        </tr>
+      </thead>
+      <tbody>
+        {realisticPairs.map((pair) => (
+          <tr>
+	            <td data-label="Test case">
+	              <strong><a href={testCaseHref(pair.fixtureId)}>{pair.copy.label}</a></strong>
+	              <span class="perf-cell-note"><code>{pair.fixtureId}</code></span>
+	            </td>
+	            <td data-label="Project shape">
+	              {pair.copy.projectShape}
+	              <span class="perf-cell-note">{scale(pair.assura)}; {ruleCount(pair.assura)}</span>
+	              <span class="perf-cell-note">{pair.copy.focus}</span>
+	            </td>
+            <td data-label="Runtime">
+              <strong>Assura:</strong> {formatMs(pair.assura.median_runtime_ms)}
+              <span class="perf-cell-note">LS-Lint: {formatMs(pair.lslint.median_runtime_ms)}</span>
+            </td>
+            <td data-label="Result">
+              <strong>{formatSpeedup(pair.speedup)}</strong>
+              <span class="perf-cell-note">{formatPercent(pair.lowerPercent)} lower runtime</span>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
 
-<h2 id="synthetic-stress-rows">Synthetic Stress Rows</h2>
+  <div class="perf-note">
+    <strong>What this does not prove yet:</strong> these are stable generated
+    fixtures, not pinned checkouts of Next.js, mdBook, or another recognizable
+    open-source project. See <a href="/reference/performance-test-cases/">Performance
+    Test Cases</a> for the pinned repository cases that should be added before
+    this page makes a broader public benchmark claim.
+  </div>
 
-<p>
-  Synthetic rows are not part of the realistic-bundle headline. They remain
-  visible because they identify bottlenecks and caveats.
-</p>
+  <h2 id="diagnostic-coverage">Diagnostic Coverage</h2>
+  <p>
+    The report also keeps synthetic stress cases for regression detection. They
+    are intentionally excluded from the headline comparison.
+  </p>
 
-<div class="perf-table-wrap" aria-label="Synthetic stress comparison table">
-  <table class="perf-table perf-table-compact">
-    <thead>
-      <tr>
-        <th>Fixture</th>
-        <th>Scale</th>
-        <th>Rules</th>
-        <th>Assura CLI</th>
-        <th>LS-Lint CLI</th>
-        <th>Diagnostic result</th>
-      </tr>
-    </thead>
-    <tbody>
-      {syntheticPairs.map((pair) => (
-        <tr>
-          <td data-label="Fixture"><code>{pair.fixtureId}</code></td>
-          <td data-label="Scale">{scale(pair.assura)}</td>
-          <td data-label="Rules">{pair.assura.rule_count} rules; {pair.assura.rule_surface_summary}</td>
-          <td data-label="Assura CLI">{formatMs(pair.assura.median_runtime_ms)}</td>
-          <td data-label="LS-Lint CLI">{formatMs(pair.lslint.median_runtime_ms)}</td>
-          <td data-label="Diagnostic result">
-            {pair.lowerPercent >= 0 ? (
-              <><strong>{formatPercent(pair.lowerPercent)} lower</strong>; {formatSpeedup(pair.speedup)}</>
-            ) : (
-              <><strong>{formatPercent(Math.abs(pair.lowerPercent))} higher</strong>; LS-Lint faster</>
-            )}
-          </td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
-</div>
+  <div class="perf-diagnostic-list" aria-label="Synthetic stress fixtures">
+    {syntheticRows.map((row) => (
+      <div>
+        <strong><code>{row.fixture_id}</code></strong>
+        <span>{scale(row)}</span>
+        <span>{row.rule_count} rules; {row.rule_surface_summary}</span>
+      </div>
+    ))}
+  </div>
+</section>
