@@ -140,8 +140,8 @@ function rowFamily(row: ResultRow): string {
 
 function buildPair(fixtureId: string): Pair | null {
   const assura = rows.find(
-    (row) => row.fixture_id === fixtureId && rowFamily(row) === 'assura-check-cli',
-  ) ?? rows.find((row) => row.fixture_id === fixtureId && rowFamily(row) === 'assura-cli');
+    (row) => row.fixture_id === fixtureId && rowFamily(row) === 'assura-cli',
+  ) ?? rows.find((row) => row.fixture_id === fixtureId && rowFamily(row) === 'assura-check-cli');
   const lslint = rows.find(
     (row) => row.fixture_id === fixtureId && rowFamily(row) === 'ls-lint-cli',
   );
@@ -172,8 +172,8 @@ const syntheticRows = rows.filter(
   (row) => row.row_family === 'assura-cli' && row.fixture_cohort === 'synthetic-stress',
 );
 const firstAssuraRow =
-  rows.find((row) => row.row_family === 'assura-check-cli') ??
-  rows.find((row) => row.row_family === 'assura-cli');
+  rows.find((row) => row.row_family === 'assura-cli') ??
+  rows.find((row) => row.row_family === 'assura-check-cli');
 const firstLsLintRow = rows.find((row) => row.row_family === 'ls-lint-cli');
 const releaseProfile = firstAssuraRow?.assura_binary_profile ?? 'unknown profile';
 const platformLabel = [report.environment?.os, report.environment?.arch].filter(Boolean).join(' / ') || 'unknown platform';

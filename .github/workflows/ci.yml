@@ -152,10 +152,15 @@ jobs:
         node-version: 22
     - name: Cache Rust builds
       uses: Swatinem/rust-cache@v2
+    - name: Build release performance bundle
+      run: |
+        cargo build --release --bin assura --no-default-features --features json-output,yaml-config
+        cargo rustc --release --bin assura --no-default-features --features json-output,yaml-config -- -C target-feature=+crt-static -C link-arg=-lgcc_eh
+        cargo build --release --bin assura-full
     - name: Generate comparison report
       run: |
         mkdir -p target/performance
-        cargo run --quiet -- performance-report \
+        target/release/assura performance-report \
           --output target/performance/ls-lint-comparison.json \
           --iterations 3
     - name: Summarize performance

@@ -162,7 +162,7 @@ structure:
           history/:
             files:
               naming: "kebab-case"
-              max_lines: 1000
+              max_lines: 2000
               allowed_names:
                 - "README.md"
 

@@ -31,7 +31,7 @@ fn current_report_claim_summary_matches_headline_rows() {
     );
     assert_eq!(
         summary["assura_row_family"],
-        serde_json::Value::String("assura-check-cli".to_string())
+        serde_json::Value::String("assura-cli".to_string())
     );
     assert_eq!(
         summary["ls_lint_row_family"],
@@ -49,7 +49,7 @@ fn current_report_claim_summary_matches_headline_rows() {
         );
     }
 
-    assert_summary_matches_rows(summary, rows, "assura-check-cli", "ls-lint-cli");
+    assert_summary_matches_rows(summary, rows, "assura-cli", "ls-lint-cli");
 }
 
 #[test]

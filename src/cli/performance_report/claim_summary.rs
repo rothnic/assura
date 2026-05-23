@@ -5,7 +5,7 @@ use serde::Serialize;
 use std::collections::BTreeSet;
 
 const HEADLINE_COHORT: &str = "realistic-equivalent";
-const ASSURA_HEADLINE_ROW: &str = "assura-check-cli";
+const ASSURA_HEADLINE_ROW: &str = "assura-cli";
 const ASSURA_WARM_ROW: &str = "assura-check-dirty-project-session-cli";
 const LS_LINT_HEADLINE_ROW: &str = "ls-lint-cli";
 const MIN_COMPLETION_ITERATIONS: usize = 3;
@@ -260,7 +260,7 @@ mod tests {
                 "branch",
                 &test_environment(),
                 "ls-lint v2.3.0",
-                RowMeasurement::new("assura-check-cli", "assura-check-cli"),
+                RowMeasurement::new("assura-cli", "assura-cli"),
                 vec![3.0],
                 None,
                 "baseline",
@@ -336,7 +336,7 @@ mod tests {
                 "branch",
                 &test_environment(),
                 "ls-lint v2.3.0",
-                RowMeasurement::new("assura-check-cli", "assura-check-cli"),
+                RowMeasurement::new("assura-cli", "assura-cli"),
                 vec![8.0],
                 None,
                 "baseline",
@@ -362,7 +362,7 @@ mod tests {
         let headline = summarize_headline_claim(&rows, 5);
         let warm = summarize_warm_claim(&rows, 5);
 
-        assert_eq!(headline.assura_row_family, "assura-check-cli");
+        assert_eq!(headline.assura_row_family, "assura-cli");
         assert_eq!(headline.two_x_pass_count, 0);
         assert_eq!(headline.two_x_claim_verdict, "not-complete");
         assert_eq!(
@@ -426,7 +426,7 @@ mod tests {
                 "branch",
                 &test_environment(),
                 "ls-lint v2.3.0",
-                RowMeasurement::new("assura-check-cli", "assura-check-cli"),
+                RowMeasurement::new("assura-cli", "assura-cli"),
                 vec![4.0],
                 None,
                 "baseline",

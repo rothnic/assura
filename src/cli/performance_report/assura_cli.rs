@@ -18,15 +18,33 @@ pub(super) struct PreparedAssuraCli {
 
 pub(super) fn prepare_assura_cli() -> PreparedAssuraCli {
     match std::env::current_exe() {
-        Ok(binary_path) if binary_path.is_file() => PreparedAssuraCli {
-            binary_profile: Some(assura_binary_profile(&binary_path)),
-            status: ToolAvailability {
-                available: true,
-                version: Some(ASSURA_VERSION.to_string()),
-                blocker: None,
-            },
-            binary_path: Some(binary_path),
-        },
+        Ok(binary_path) if binary_path.is_file() => {
+            let primary_path = primary_assura_binary_path(&binary_path);
+            if !primary_path.is_file() {
+                return PreparedAssuraCli {
+                    status: ToolAvailability {
+                        available: false,
+                        version: None,
+                        blocker: Some(format!(
+                            "primary assura binary was not found at {}",
+                            primary_path.display()
+                        )),
+                    },
+                    binary_path: None,
+                    binary_profile: None,
+                };
+            }
+
+            PreparedAssuraCli {
+                binary_profile: Some(assura_binary_profile(&primary_path)),
+                status: ToolAvailability {
+                    available: true,
+                    version: Some(ASSURA_VERSION.to_string()),
+                    blocker: None,
+                },
+                binary_path: Some(primary_path),
+            }
+        }
         Ok(binary_path) => PreparedAssuraCli {
             status: ToolAvailability {
                 available: false,
@@ -48,6 +66,26 @@ pub(super) fn prepare_assura_cli() -> PreparedAssuraCli {
             binary_path: None,
             binary_profile: None,
         },
+    }
+}
+
+fn primary_assura_binary_path(current_exe: &Path) -> PathBuf {
+    let full_companion = if cfg!(windows) {
+        "assura-full.exe"
+    } else {
+        "assura-full"
+    };
+
+    if current_exe.file_name().and_then(|name| name.to_str()) == Some(full_companion) {
+        let mut primary = current_exe.to_path_buf();
+        primary.set_file_name(if cfg!(windows) {
+            "assura.exe"
+        } else {
+            "assura"
+        });
+        primary
+    } else {
+        current_exe.to_path_buf()
     }
 }
 
@@ -128,7 +166,7 @@ fn prepare_sibling_binary(binary_name: &str) -> PreparedAssuraCli {
                             available: false,
                             version: None,
                             blocker: Some(
-                                "assura-check binary appears older than source files; run `cargo build --release -p assura --bin assura` and then `cargo build --release -p assura-check-cli` before generating performance evidence"
+                                "sibling Assura binary appears older than source files; rebuild release binaries before generating performance evidence"
                                     .to_string(),
                             ),
                         },
@@ -153,7 +191,7 @@ fn prepare_sibling_binary(binary_name: &str) -> PreparedAssuraCli {
                     available: false,
                     version: None,
                     blocker: Some(format!(
-                        "assura-check binary was not found next to current executable at {}",
+                        "sibling Assura binary was not found next to current executable at {}",
                         binary_path.display()
                     )),
                 },
@@ -213,41 +251,8 @@ fn depinfo_candidates(sibling_binary: &Path) -> Vec<PathBuf> {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::{depinfo_candidates, latest_sibling_build_modified};
-    use std::fs;
-    use std::time::Duration;
-
-    #[test]
-    fn depinfo_candidates_include_cargo_output_shapes() {
-        let path = std::path::Path::new("target/release/assura-check.exe");
-        let candidates = depinfo_candidates(path);
-
-        assert!(candidates
-            .iter()
-            .any(|candidate| candidate.ends_with("assura-check.d")));
-        assert!(candidates
-            .iter()
-            .any(|candidate| candidate.ends_with("assura-check.exe.d")));
-    }
-
-    #[test]
-    fn depinfo_mtime_counts_as_latest_build_check() {
-        let temp = tempfile::tempdir().unwrap();
-        let binary = temp.path().join("assura-check");
-        let depinfo = temp.path().join("assura-check.d");
-
-        fs::write(&binary, b"binary").unwrap();
-        std::thread::sleep(Duration::from_millis(10));
-        fs::write(&depinfo, b"depinfo").unwrap();
-
-        let binary_modified = fs::metadata(&binary).unwrap().modified().unwrap();
-        let latest = latest_sibling_build_modified(&binary).unwrap();
-
-        assert!(latest >= fs::metadata(&depinfo).unwrap().modified().unwrap());
-        assert!(latest >= binary_modified);
-    }
-}
+#[path = "assura_cli_tests.rs"]
+mod tests;
 
 #[allow(clippy::too_many_arguments)]
 pub(super) fn measure_assura_cli(
