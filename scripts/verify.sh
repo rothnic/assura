@@ -3,7 +3,7 @@ set -euo pipefail
 
 usage() {
   cat <<'USAGE'
-Usage: scripts/verify.sh <fast|check|test|docs|release-size|release-smoke|pr|full>
+Usage: scripts/verify.sh <fast|check|test|docs|release-size|release-smoke|release-live|pr|full>
 
 Modes:
   fast           Format, whitespace, focused compile checks, normal tests, and Assura self-check.
@@ -12,6 +12,7 @@ Modes:
   docs           Website static build.
   release-size   Build the local installable release archive and enforce its size budget.
   release-smoke  Build and smoke the local installable release archive.
+  release-live   Verify public no-auth install URLs for an already-published release.
   pr             Fast gate plus clippy and docs build.
   full           PR gate plus cargo test --all-targets for benchmark-adjacent changes.
 USAGE
@@ -133,6 +134,33 @@ run_release_smoke() {
   grep -q "Usage: assura" "$tmp/assura-help.txt"
 }
 
+public_url_ok() {
+  local url status
+  url="$1"
+  status="$(curl -I -L -s -o /dev/null -w '%{http_code}' "$url")"
+  printf '%s %s\n' "$status" "$url"
+  test "$status" = "200"
+}
+
+run_release_live() {
+  local repo version release_base
+  repo="${ASSURA_REPO:-rothnic/assura}"
+  version="${ASSURA_VERSION:-latest}"
+
+  if [ "$version" = "latest" ]; then
+    release_base="https://github.com/$repo/releases/latest/download"
+  else
+    release_base="https://github.com/$repo/releases/download/$version"
+  fi
+
+  public_url_ok "https://raw.githubusercontent.com/$repo/master/website/public/install.sh"
+  public_url_ok "https://raw.githubusercontent.com/$repo/master/website/public/install.ps1"
+  public_url_ok "$release_base/assura-linux-amd64.tar.gz"
+  public_url_ok "$release_base/assura-macos-amd64.tar.gz"
+  public_url_ok "$release_base/assura-macos-arm64.tar.gz"
+  public_url_ok "$release_base/assura-windows-amd64.zip"
+}
+
 case "$mode" in
   fast)
     cargo fmt --all -- --check
@@ -155,6 +183,9 @@ case "$mode" in
     ;;
   release-size)
     run_release_size
+    ;;
+  release-live)
+    run_release_live
     ;;
   pr)
     "$0" fast

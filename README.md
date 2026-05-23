@@ -86,6 +86,7 @@ node --run verify:fast          # normal local edit gate
 node --run verify:pr            # pre-push / PR gate
 node --run verify:release-size  # installable archive size gate
 node --run verify:release-smoke # no-Rust local archive smoke
+node --run verify:release-live  # public post-release install URL gate
 node --run verify:full          # includes cargo test --all-targets
 ```
 
