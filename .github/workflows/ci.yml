@@ -92,13 +92,13 @@ jobs:
         bytes="$(wc -c < target/assura-linux-amd64-preview.tar.gz | tr -d '[:space:]')"
         echo "assura-linux-amd64-preview.tar.gz: ${bytes} bytes"
         test "$bytes" -le "$ASSURA_MAX_RELEASE_ARCHIVE_BYTES"
-    - name: Smoke installed bundle
+    - name: Smoke Unix installer
       run: |
         tmp="$(mktemp -d)"
-        tar -xzf target/assura-linux-amd64-preview.tar.gz -C "$tmp"
-        "$tmp/assura" check --quiet .
-        "$tmp/assura" --version
-        "$tmp/assura" --help >/tmp/assura-help.txt
+        ASSURA_ASSET_URL="$PWD/target/assura-linux-amd64-preview.tar.gz" BIN_DIR="$tmp/bin" ./website/public/install.sh
+        "$tmp/bin/assura" check --quiet .
+        "$tmp/bin/assura" --version
+        "$tmp/bin/assura" --help >/tmp/assura-help.txt
         grep -q "Usage: assura" /tmp/assura-help.txt
     - name: Upload preview bundle
       uses: actions/upload-artifact@v4

@@ -105,5 +105,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Integration guides for CI/CD
 - Best practices guide
 
-[0.2.0]: https://github.com/assura/assura/releases/tag/v0.2.0
-[0.1.0]: https://github.com/assura/assura/releases/tag/v0.1.0
+[0.2.0]: https://github.com/rothnic/assura/releases/tag/v0.2.0
+[0.1.0]: https://github.com/rothnic/assura/releases/tag/v0.1.0

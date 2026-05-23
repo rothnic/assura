@@ -488,5 +488,5 @@ impl Constraint for LineLengthConstraint {
 ## Resources
 
 - Constraint trait documentation: https://docs.rs/assura/latest/assura/constraints/trait.Constraint.html
-- Example constraints: https://github.com/assura/assura/tree/main/src/constraints
-- Test examples: https://github.com/assura/assura/tree/main/tests
+- Example constraints: https://github.com/rothnic/assura/tree/master/src/constraints
+- Test examples: https://github.com/rothnic/assura/tree/master/tests

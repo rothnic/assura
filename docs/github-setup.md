@@ -16,7 +16,7 @@ The following files have been created and committed:
 
 **CI/CD Workflows:**
 - `.github/workflows/ci.yml` - Rust CI pipeline (build, test, lint, fmt, coverage)
-- `.github/workflows/release.yml` - Multi-platform release automation + crates.io publishing
+- `.github/workflows/release.yml` - Multi-platform GitHub release archive automation
 - `.github/workflows/docs.yml` - Documentation deployment to GitHub Pages
 - `.github/workflows/security.yml` - Security audit with cargo audit
 
@@ -46,7 +46,7 @@ export GH_TOKEN=your_github_token
 Create the repository:
 ```bash
 cd /Users/nroth/workspace/assura
-gh repo create assura/assura \
+gh repo create rothnic/assura \
   --public \
   --description "Dependency-aware file system validation engine" \
   --source=. \
@@ -60,7 +60,7 @@ After pushing, set up branch protection via GitHub CLI:
 
 ```bash
 # Protect master branch with required PR reviews
-gh api repos/assura/assura/branches/master/protection \
+gh api repos/rothnic/assura/branches/master/protection \
   --method PUT \
   --input - <<< '{
     "required_status_checks": {
@@ -90,11 +90,8 @@ before they become required branch-protection gates.
 
 ### Step 3: Set Up Repository Secrets
 
-For CI workflows to work properly, add these secrets:
-
-1. **CARGO_REGISTRY_TOKEN** - For publishing to crates.io
-   - Get token from: https://crates.io/settings/tokens
-   - Add at: Settings → Secrets and variables → Actions
+The current no-Rust release path publishes GitHub release archives and does not
+require repository secrets.
 
 Coverage reports are generated in GitHub Actions and attached as workflow
 artifacts. No hosted coverage service token is required for the current CI
@@ -132,10 +129,9 @@ Triggers on push/PR to main/master:
 - **Coverage**: Generates code coverage reports and uploads the Cobertura XML
   report as a GitHub Actions artifact
 
-Rustfmt and Clippy currently expose known repository-wide baseline debt. They
-remain visible in CI, but should become blocking only after focused cleanup
-iterations land. Windows tests are paused until the documented `libgit2-sys`
-MSVC linker issue is resolved.
+Rustfmt and Clippy are blocking CI gates. Windows full test-suite coverage is
+still tracked separately from the release installer smoke because the pre-1.0
+tooling baseline has platform-specific dependency work remaining.
 
 ### Release Workflow (release.yml)
 Triggers on version tags (v*):
@@ -144,7 +140,8 @@ Triggers on version tags (v*):
   - Linux (x86_64, musl)
   - Windows (x86_64)
   - macOS (x86_64, ARM64)
-- Publishes to crates.io
+- Enforces the compressed archive size budget before publishing assets
+- Publishes the archives to the GitHub release
 
 ### Documentation Workflow (docs.yml)
 Builds documentation on pushes and pull requests to `main` or `master`:
@@ -176,13 +173,10 @@ git push origin v0.1.0
 ```
 
 The release workflow will automatically:
-- Create GitHub release
-- Build binaries for all platforms
-- Publish to crates.io
-
-Windows release assets depend on the same Windows Rust toolchain path that is
-currently paused in CI. Treat Windows release output as unverified until the
-Windows CI restore item is complete.
+- Create or update the GitHub release for the tag
+- Build binaries for Linux, macOS, and Windows
+- Enforce the compressed archive size budget
+- Upload the prebuilt archives used by the install scripts
 
 ## Notes
 
@@ -201,11 +195,13 @@ Windows CI restore item is complete.
 - Ensure tests pass: `cargo test`
 
 **If release fails:**
-- Verify CARGO_REGISTRY_TOKEN is set correctly
-- Ensure version in Cargo.toml matches the tag
+- Ensure version in `Cargo.toml` matches the tag.
+- Check the archive-size gate output before raising the 8 MiB budget.
+- Reproduce the platform package locally with `node --run verify:release-smoke`
+  on Unix or the Windows installer smoke in CI.
 
 ## References
 
 - GitHub Actions documentation: https://docs.github.com/en/actions
 - Rust CI best practices: https://doc.rust-lang.org/cargo/guide/continuous-integration.html
-- crates.io publishing: https://doc.rust-lang.org/cargo/reference/publishing.html
+- GitHub releases: https://docs.github.com/en/repositories/releasing-projects-on-github

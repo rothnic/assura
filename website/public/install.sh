@@ -51,7 +51,18 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 echo "Downloading $url"
-curl -fsSL "$url" -o "$tmp_dir/$asset"
+case "$url" in
+  file://*)
+    cp "${url#file://}" "$tmp_dir/$asset"
+    ;;
+  *)
+    if [ -f "$url" ]; then
+      cp "$url" "$tmp_dir/$asset"
+    else
+      curl -fsSL "$url" -o "$tmp_dir/$asset"
+    fi
+    ;;
+esac
 tar -xzf "$tmp_dir/$asset" -C "$tmp_dir"
 
 mkdir -p "$bin_dir"

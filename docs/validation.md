@@ -33,9 +33,10 @@ node --run verify:release-smoke
 ```
 
 Run the website build for docs or frontend changes. Run the release smoke for
-installer, release workflow, or primary launcher changes. Run the release-size
-gate when changing build profiles, release packaging, install scripts, or the
-primary/full CLI split.
+installer, release workflow, or primary launcher changes; on Unix it builds the
+local archive and installs it through `website/public/install.sh` with a local
+asset override. Run the release-size gate when changing build profiles, release
+packaging, install scripts, or the primary/full CLI split.
 
 `target/` is Cargo's build cache and can be many gigabytes after local test,
 benchmark, and release runs. The public artifact is the archive produced under

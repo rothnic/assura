@@ -115,7 +115,7 @@ run_release_size() {
 }
 
 run_release_smoke() {
-  local archive
+  local archive install_dir
   run_release_bundle
   archive="$RELEASE_ARCHIVE"
 
@@ -125,10 +125,11 @@ run_release_smoke() {
   }
   trap cleanup EXIT INT TERM
 
-  tar -xzf "$archive" -C "$tmp"
-  "$tmp/assura" check --quiet .
-  "$tmp/assura" --version
-  "$tmp/assura" --help >"$tmp/assura-help.txt"
+  install_dir="$tmp/bin"
+  ASSURA_ASSET_URL="$PWD/$archive" BIN_DIR="$install_dir" ./website/public/install.sh
+  "$install_dir/assura" check --quiet .
+  "$install_dir/assura" --version
+  "$install_dir/assura" --help >"$tmp/assura-help.txt"
   grep -q "Usage: assura" "$tmp/assura-help.txt"
 }
 

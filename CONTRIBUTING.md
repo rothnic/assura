@@ -47,7 +47,7 @@ Enhancement suggestions are tracked as GitHub issues. When creating an enhanceme
 
 ```bash
 # Clone the repository
-git clone https://github.com/assura/assura.git
+git clone https://github.com/rothnic/assura.git
 cd assura
 
 # Build the project
@@ -165,11 +165,12 @@ assura/
 2. Update `CHANGELOG.md`
 3. Create a git tag: `git tag -a v0.1.0 -m "Release version 0.1.0"`
 4. Push the tag: `git push origin v0.1.0`
-5. GitHub Actions will automatically create a release and publish to crates.io
+5. GitHub Actions will automatically create or update the GitHub release and
+   upload the prebuilt archives used by the install scripts
 
 ## Getting Help
 
-- Check the [documentation](https://github.com/assura/assura/tree/main/docs)
+- Check the [documentation](https://github.com/rothnic/assura/tree/master/docs)
 - Open an issue for questions or problems
 - Join our discussions
 

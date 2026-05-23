@@ -57,9 +57,9 @@ Release archives include the public `assura` command and an internal
 and `performance-report`. Keep both files in the same directory and run
 `assura`.
 
-## Install From Crates.io
+## Install With Cargo
 
-Use Cargo when you already have a Rust development environment:
+Use Cargo only when you already have a Rust development environment:
 
 ```bash
 cargo install assura
