@@ -103,6 +103,33 @@ jobs:
         if-no-files-found: error
         retention-days: 14
 
+  windows-installer:
+    name: Windows Installer Smoke
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+    - name: Cache Rust builds
+      uses: Swatinem/rust-cache@v2
+    - name: Build installable Windows bundle
+      shell: pwsh
+      run: |
+        cargo build --release --bin assura --no-default-features --features json-output,yaml-config
+        cargo build --release --bin assura-full
+        New-Item -ItemType Directory -Force -Path target/release-bundle | Out-Null
+        Copy-Item target/release/assura.exe target/release-bundle/assura.exe
+        Copy-Item target/release/assura-full.exe target/release-bundle/assura-full.exe
+        Compress-Archive -Path target/release-bundle/* -DestinationPath target/assura-windows-amd64.zip -Force
+    - name: Smoke PowerShell installer
+      shell: pwsh
+      run: |
+        $bin = Join-Path $env:RUNNER_TEMP "assura-bin"
+        ./website/public/install.ps1 -AssetUrl (Resolve-Path target/assura-windows-amd64.zip) -BinDir $bin
+        & (Join-Path $bin "assura.exe") check --quiet .
+        & (Join-Path $bin "assura.exe") --version
+        & (Join-Path $bin "assura.exe") --help | Select-String "Usage: assura"
+
   coverage:
     name: Code Coverage
     runs-on: ubuntu-latest

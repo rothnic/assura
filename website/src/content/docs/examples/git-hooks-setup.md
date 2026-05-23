@@ -24,7 +24,7 @@ the same structure rules used in CI.
 
    if ! command -v assura >/dev/null 2>&1; then
      echo "assura is not installed"
-     echo "Install from source with: cargo install --path ."
+     echo "Install with: curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sh"
      exit 1
    fi
 

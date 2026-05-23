@@ -12,11 +12,12 @@ import PerformanceEvidence from '../../../components/performance-evidence.astro'
 Use the table above for the scoped product comparison behind the public
 `assura check` path: one Linux static-CRT release check run versus one native
 LS-Lint binary run on the same generated fixture tree and equivalent ruleset.
-The benchmark row is still named `assura-check-cli` so the report can attribute
-the focused checker separately from the full multi-command CLI. The LS-Lint
-binary is resolved from the pinned `@ls-lint/ls-lint` package before timing so
-the measured loop does not include npm package resolution or the package's Node
-wrapper.
+The benchmark row is named `assura-cli` because the measured command is the
+primary installable `assura` launcher, which routes supported one-shot
+`assura check` invocations through the lightweight checker before dispatching
+less common commands to `assura-full`. The LS-Lint binary is resolved from the
+pinned `@ls-lint/ls-lint` package before timing so the measured loop does not
+include npm package resolution or the package's Node wrapper.
 
 The current headline is intentionally narrow. It covers generated, stable,
 native LS-Lint-parity fixtures on the Linux static-CRT release artifact. Local
@@ -38,7 +39,7 @@ replacement for the cold one-process `assura check` headline path.
 - [Current comparison report](/data/performance/current.json) is the exact
   machine-readable report rendered on this page.
 - [Chart-ready JSONL history](/data/performance/ls-lint-comparison-history.jsonl)
-  is a rolling audit trail capped to the most recent 1,000 rows, not a clean
+  is a rolling audit trail capped to the most recent 2,000 rows, not a clean
   release-over-release chart yet.
 
 ## Updating The Baseline

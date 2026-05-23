@@ -5,22 +5,16 @@ description: Run Assura on a project in minutes
 
 Use this path for a first local check.
 
-1. **Install or build Assura**
+1. **Install Assura**
 
    ```bash
    curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sh
    ```
 
    The installer supports Linux x64, macOS Apple Silicon, and macOS Intel.
-   Windows users can download the zip from
-   [GitHub Releases](https://github.com/rothnic/assura/releases/latest). For
-   source builds:
-
-   ```bash
-   git clone https://github.com/rothnic/assura
-   cd assura
-   cargo build --release
-   ```
+   Windows users can run the PowerShell installer from the
+   [Installation guide](/guides/installation/) or download the zip from
+   [GitHub Releases](https://github.com/rothnic/assura/releases/latest).
 
 2. **Initialize configuration**
 

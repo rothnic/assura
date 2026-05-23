@@ -7,10 +7,11 @@ description: Technical notes behind Assura performance measurements.
 
 The public performance summary should prefer the primary `assura check`
 product path and the `ls-lint-cli` row from the same release profile. The
-current checked-in headline claim is scoped to the Linux static-CRT focused
-check artifact behind that path; local macOS dynamic rows are diagnostic
-lower-bound evidence. The older `assura-cli` row remains diagnostic for
-measuring full multi-command CLI startup overhead.
+current checked-in headline claim is scoped to the Linux static-CRT primary
+`assura` launcher, which routes supported one-shot checks through the
+lightweight checker before falling back to the `assura-full` companion for
+less common commands. Local macOS dynamic rows are diagnostic lower-bound
+evidence.
 The LS-Lint row executes the native platform binary resolved from the pinned
 `@ls-lint/ls-lint` package. It does not time `npm exec`, package resolution, or
 the package's Node wrapper. The top-level rows include process startup, config
@@ -24,8 +25,8 @@ should expect one tool to be faster than the other.
 
 | Row Family | Meaning | Use For |
 | --- | --- | --- |
-| `assura-check-cli` | Focused checker used by the primary `assura check` path | Product comparison against LS-Lint |
-| `assura-cli` | Full Assura multi-command subprocess check | Historical startup/runtime attribution |
+| `assura-cli` | Primary installable Assura launcher running the fast `assura check` path | Product comparison against LS-Lint |
+| `assura-check-cli` | Internal focused checker binary | Historical and implementation attribution |
 | `ls-lint-cli` | Native LS-Lint CLI subprocess check | Product comparison baseline |
 | `assura-in-process` | Assura validation inside the current process | Runtime attribution without process startup |
 | `assura:phase:*` | Timed Assura implementation phases | Locating hot spots |

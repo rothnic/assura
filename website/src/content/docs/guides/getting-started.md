@@ -11,22 +11,16 @@ supported command is `assura check`.
 
 ## First Run
 
-1. **Install or build Assura**
+1. **Install Assura**
 
    ```bash
    curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sh
    ```
 
    The installer supports Linux x64, macOS Apple Silicon, and macOS Intel.
-   Windows users can download the zip from
+   Windows users can run the PowerShell installer from the
+   [Installation guide](/guides/installation/) or download the zip from
    [GitHub Releases](https://github.com/rothnic/assura/releases/latest).
-   Source builds are for Rust development environments:
-
-   ```bash
-   git clone https://github.com/rothnic/assura
-   cd assura
-   cargo build --release
-   ```
 
 2. **Create a project config**
 

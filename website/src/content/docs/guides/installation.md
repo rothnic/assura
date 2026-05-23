@@ -25,6 +25,17 @@ and installs `assura` plus its internal `assura-full` companion into
 curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sudo env BIN_DIR=/usr/local/bin sh
 ```
 
+Windows PowerShell:
+
+```powershell
+irm https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.ps1 | iex
+```
+
+The PowerShell installer downloads `assura-windows-amd64.zip` and installs
+`assura.exe` plus `assura-full.exe` into
+`%LOCALAPPDATA%\Programs\Assura\bin` by default. Override the destination with
+`$env:BIN_DIR` before running the script.
+
 ## Manual Release Archive
 
 Download the latest archive for your platform from
@@ -38,7 +49,7 @@ curl -L https://github.com/rothnic/assura/releases/latest/download/assura-linux-
 sudo install -m 755 assura assura-full /usr/local/bin/
 ```
 
-Windows users can download `assura-windows-amd64.exe.zip`, extract
+Windows users can download `assura-windows-amd64.zip`, extract
 `assura.exe` and `assura-full.exe`, and place both files on `PATH`.
 
 Release archives include the public `assura` command and an internal
