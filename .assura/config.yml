@@ -27,6 +27,7 @@ structure:
         - "LICENSE-APACHE"
         # Project/tooling manifests
         - ".gitignore"
+        - "Cargo.lock"
         - "Cargo.toml"
         - "package.json"
         - "PROJECT_CONTEXT.md"
@@ -274,6 +275,7 @@ structure:
                   allowed_names:
                     - ".gitignore"
                     - "README.md"
+                    - "bun.lock"
                     - "package.json"
                     - "tsconfig.json"
                     - "example.ts"
@@ -441,4 +443,3 @@ exclude:
   - "**/dist"
   - "package-lock.json"
   - "**/package-lock.json"
-  - "*.lock"
