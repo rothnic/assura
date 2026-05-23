@@ -72,7 +72,7 @@ jobs:
       shell: bash
       run: |
         if [ "${{ matrix.target }}" = "x86_64-unknown-linux-gnu" ]; then
-          export RUSTFLAGS="-C target-feature=+crt-static -C link-arg=-lgcc_eh"
+          export CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUSTFLAGS="-C target-feature=+crt-static -C link-arg=-lgcc_eh"
         fi
         cargo build --release --target ${{ matrix.target }} --bin assura --no-default-features --features json-output,yaml-config
         cargo build --release --target ${{ matrix.target }} --bin assura-full
