@@ -84,12 +84,15 @@ target set:
 ```bash
 node --run verify:fast          # normal local edit gate
 node --run verify:pr            # pre-push / PR gate
-node --run verify:release-smoke # no-Rust Linux archive smoke
+node --run verify:release-size  # installable archive size gate
+node --run verify:release-smoke # no-Rust local archive smoke
 node --run verify:full          # includes cargo test --all-targets
 ```
 
-`verify:fast` runs Rust tests without benchmark harness targets. Save
-`verify:full` for benchmark-adjacent changes or final release confidence.
+`verify:fast` runs Rust tests without benchmark harness or standalone binary
+harness targets. Save `verify:full` for benchmark-adjacent changes or final
+release confidence. Cargo's `target/` cache can be large; the release-size gate
+checks the compressed public archive instead.
 See [Validation Command Tiers](docs/validation.md) for when to use each mode.
 
 ## Roadmap

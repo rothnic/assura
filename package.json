@@ -4,6 +4,7 @@
     "verify:check": "./scripts/verify.sh check",
     "verify:test": "./scripts/verify.sh test",
     "verify:docs": "./scripts/verify.sh docs",
+    "verify:release-size": "./scripts/verify.sh release-size",
     "verify:release-smoke": "./scripts/verify.sh release-smoke",
     "verify:pr": "./scripts/verify.sh pr",
     "verify:full": "./scripts/verify.sh full"

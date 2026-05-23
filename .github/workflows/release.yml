@@ -7,6 +7,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  ASSURA_MAX_RELEASE_ARCHIVE_BYTES: 8388608
 
 permissions:
   contents: write
@@ -56,9 +57,10 @@ jobs:
       - name: Build release binaries
         shell: bash
         run: |
-          cargo build --release --target ${{ matrix.target }} --bin assura --no-default-features --features json-output,yaml-config
           if [ "${{ matrix.target }}" = "x86_64-unknown-linux-gnu" ]; then
             cargo rustc --release --target ${{ matrix.target }} --bin assura --no-default-features --features json-output,yaml-config -- -C target-feature=+crt-static -C link-arg=-lgcc_eh
+          else
+            cargo build --release --target ${{ matrix.target }} --bin assura --no-default-features --features json-output,yaml-config
           fi
           cargo build --release --target ${{ matrix.target }} --bin assura-full
 
@@ -77,6 +79,23 @@ jobs:
           Copy-Item target/${{ matrix.target }}/release/assura.exe target/release-assets/${{ matrix.asset_name }}/assura.exe
           Copy-Item target/${{ matrix.target }}/release/assura-full.exe target/release-assets/${{ matrix.asset_name }}/assura-full.exe
           Compress-Archive -Path target/release-assets/${{ matrix.asset_name }}/* -DestinationPath target/${{ matrix.archive_name }}
+
+      - name: Enforce release archive size (Unix)
+        if: matrix.os != 'windows-latest'
+        run: |
+          bytes="$(wc -c < target/${{ matrix.archive_name }} | tr -d '[:space:]')"
+          echo "${{ matrix.archive_name }}: ${bytes} bytes"
+          test "$bytes" -le "$ASSURA_MAX_RELEASE_ARCHIVE_BYTES"
+
+      - name: Enforce release archive size (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          $bytes = (Get-Item target/${{ matrix.archive_name }}).Length
+          Write-Host "${{ matrix.archive_name }}: $bytes bytes"
+          if ($bytes -gt [int64]$env:ASSURA_MAX_RELEASE_ARCHIVE_BYTES) {
+            throw "Release archive exceeds size budget"
+          }
 
       - name: Upload release archive artifact
         uses: actions/upload-artifact@v4

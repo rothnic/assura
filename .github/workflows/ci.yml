@@ -8,6 +8,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  ASSURA_MAX_RELEASE_ARCHIVE_BYTES: 8388608
 
 jobs:
   check:
@@ -81,12 +82,16 @@ jobs:
       uses: Swatinem/rust-cache@v2
     - name: Build installable bundle
       run: |
-        cargo build --release --bin assura --no-default-features --features json-output,yaml-config
         cargo rustc --release --bin assura --no-default-features --features json-output,yaml-config -- -C target-feature=+crt-static -C link-arg=-lgcc_eh
         cargo build --release --bin assura-full
         mkdir -p target/release-bundle
         cp target/release/assura target/release/assura-full target/release-bundle/
         tar -C target/release-bundle -czf target/assura-linux-amd64-preview.tar.gz assura assura-full
+    - name: Enforce release archive size
+      run: |
+        bytes="$(wc -c < target/assura-linux-amd64-preview.tar.gz | tr -d '[:space:]')"
+        echo "assura-linux-amd64-preview.tar.gz: ${bytes} bytes"
+        test "$bytes" -le "$ASSURA_MAX_RELEASE_ARCHIVE_BYTES"
     - name: Smoke installed bundle
       run: |
         tmp="$(mktemp -d)"
@@ -121,6 +126,14 @@ jobs:
         Copy-Item target/release/assura.exe target/release-bundle/assura.exe
         Copy-Item target/release/assura-full.exe target/release-bundle/assura-full.exe
         Compress-Archive -Path target/release-bundle/* -DestinationPath target/assura-windows-amd64.zip -Force
+    - name: Enforce release archive size
+      shell: pwsh
+      run: |
+        $bytes = (Get-Item target/assura-windows-amd64.zip).Length
+        Write-Host "assura-windows-amd64.zip: $bytes bytes"
+        if ($bytes -gt [int64]$env:ASSURA_MAX_RELEASE_ARCHIVE_BYTES) {
+          throw "Release archive exceeds size budget"
+        }
     - name: Smoke PowerShell installer
       shell: pwsh
       run: |
