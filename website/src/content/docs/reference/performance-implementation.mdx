@@ -5,12 +5,12 @@ description: Technical notes behind Assura performance measurements.
 
 # Performance Implementation
 
-The public performance summary should prefer `assura-check-cli` and
-`ls-lint-cli` rows from the same release profile. The current checked-in
-headline claim is scoped to the Linux static-CRT `assura-check-cli` artifact;
-local macOS dynamic rows are diagnostic lower-bound evidence. The older
-`assura-cli` row remains diagnostic for measuring the full multi-command
-binary.
+The public performance summary should prefer the primary `assura check`
+product path and the `ls-lint-cli` row from the same release profile. The
+current checked-in headline claim is scoped to the Linux static-CRT focused
+check artifact behind that path; local macOS dynamic rows are diagnostic
+lower-bound evidence. The older `assura-cli` row remains diagnostic for
+measuring full multi-command CLI startup overhead.
 The LS-Lint row executes the native platform binary resolved from the pinned
 `@ls-lint/ls-lint` package. It does not time `npm exec`, package resolution, or
 the package's Node wrapper. The top-level rows include process startup, config
@@ -24,8 +24,8 @@ should expect one tool to be faster than the other.
 
 | Row Family | Meaning | Use For |
 | --- | --- | --- |
-| `assura-check-cli` | Lightweight Assura check-only subprocess | Product comparison against LS-Lint |
-| `assura-cli` | Full Assura multi-command subprocess check | Startup/runtime attribution |
+| `assura-check-cli` | Focused checker used by the primary `assura check` path | Product comparison against LS-Lint |
+| `assura-cli` | Full Assura multi-command subprocess check | Historical startup/runtime attribution |
 | `ls-lint-cli` | Native LS-Lint CLI subprocess check | Product comparison baseline |
 | `assura-in-process` | Assura validation inside the current process | Runtime attribution without process startup |
 | `assura:phase:*` | Timed Assura implementation phases | Locating hot spots |
@@ -70,12 +70,13 @@ subprocess-floor limit.
 
 The report envelope also includes `claim_summary`, a machine-readable verdict
 for the public headline row set. `two_x_claim_verdict=complete` is only valid
-when every measured `realistic-equivalent` `assura-check-cli` row has a matching
+when every measured `realistic-equivalent` focused-check row has a matching
 native LS-Lint row, meets its two-times-faster target, and the report was
 generated with at least `minimum_completion_iterations` measured iterations.
-Lower-sample smoke reports use `not-complete-low-sample` instead of `complete`.
-Diagnostic rows such as hot daemon checks, status-file checks, in-process
-validation, and traversal experiments are excluded from that verdict.
+Lower-sample smoke reports use `not-complete-low-sample` instead of
+`complete`. Diagnostic rows such as hot daemon checks, status-file checks,
+in-process validation, and traversal experiments are excluded from that
+verdict.
 
 The envelope also includes `warm_claim_summary` for the persistent
 `assura-check-dirty-project-session-cli` row. That is a separate

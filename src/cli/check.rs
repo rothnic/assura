@@ -13,6 +13,8 @@ mod compiled_config;
 mod compiled_fingerprint;
 mod compiled_plan_artifact;
 mod direct_contents;
+#[cfg(all(feature = "yaml-config", feature = "json-output"))]
+pub mod fast_cli;
 mod ls_fast;
 mod ls_fast_counts;
 mod ls_fast_naming;

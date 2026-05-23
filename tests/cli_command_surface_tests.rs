@@ -8,6 +8,31 @@ fn assura_bin() -> &'static str {
 }
 
 #[test]
+fn check_help_uses_lightweight_primary_path() {
+    let output = Command::new(assura_bin())
+        .arg("check")
+        .arg("--help")
+        .output()
+        .unwrap();
+
+    assert!(
+        output.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(
+        stdout.contains("Fast structure validation entrypoint."),
+        "stdout was:\n{stdout}"
+    );
+    assert!(
+        stdout.contains("--format <FORMAT>"),
+        "stdout was:\n{stdout}"
+    );
+}
+
+#[test]
 fn init_creates_supported_structure_config() {
     let project = TempDir::new().unwrap();
 

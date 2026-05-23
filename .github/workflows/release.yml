@@ -65,21 +65,27 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y musl-tools
     
-    - name: Build release binary
-      run: cargo build --release --target ${{ matrix.target }}
+    - name: Build release binaries
+      shell: bash
+      run: |
+        if [ "${{ matrix.target }}" = "x86_64-unknown-linux-gnu" ]; then
+          export RUSTFLAGS="-C target-feature=+crt-static -C link-arg=-lgcc_eh"
+        fi
+        cargo build --release --target ${{ matrix.target }} --bin assura --no-default-features --features json-output,yaml-config
+        cargo build --release --target ${{ matrix.target }} --bin assura-full
     
     - name: Package binary (Unix)
       if: matrix.os != 'windows-latest'
       run: |
         cd target/${{ matrix.target }}/release
-        tar czvf ../../../${{ matrix.asset_name }}.tar.gz assura
+        tar czvf ../../../${{ matrix.asset_name }}.tar.gz assura assura-full
         cd ../../..
     
     - name: Package binary (Windows)
       if: matrix.os == 'windows-latest'
       run: |
         cd target/${{ matrix.target }}/release
-        7z a ../../../${{ matrix.asset_name }}.zip assura.exe
+        7z a ../../../${{ matrix.asset_name }}.zip assura.exe assura-full.exe
         cd ../../..
     
     - name: Upload Release Asset (Unix)

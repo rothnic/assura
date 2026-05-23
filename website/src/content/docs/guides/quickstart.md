@@ -8,10 +8,13 @@ Use this path for a first local check.
 1. **Install or build Assura**
 
    ```bash
-   cargo install assura
+   curl -L https://github.com/rothnic/assura/releases/latest/download/assura-linux-amd64.tar.gz | tar xz
+   sudo install -m 755 assura assura-full /usr/local/bin/
    ```
 
-   For source builds:
+   Choose the matching macOS or Windows archive from
+   [GitHub Releases](https://github.com/rothnic/assura/releases/latest) when
+   you are not on Linux x64. For source builds:
 
    ```bash
    git clone https://github.com/rothnic/assura
@@ -42,7 +45,8 @@ Use this path for a first local check.
 5. **Use the same command in CI**
 
    ```bash
-   cargo install assura
+   curl -L https://github.com/rothnic/assura/releases/latest/download/assura-linux-amd64.tar.gz | tar xz
+   sudo install -m 755 assura assura-full /usr/local/bin/
    assura check --format text
    ```
 

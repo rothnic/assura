@@ -6,6 +6,8 @@ pub mod check;
 pub mod commands;
 pub mod config;
 #[cfg(feature = "full-cli")]
+pub mod full_entry;
+#[cfg(feature = "full-cli")]
 pub mod hooks;
 #[cfg(feature = "full-cli")]
 pub mod init_support;

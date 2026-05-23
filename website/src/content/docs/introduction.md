@@ -20,7 +20,8 @@ repository matches the shape described in `.assura/config.yml`.
 ## Quick Start
 
 ```bash
-cargo install assura
+curl -L https://github.com/rothnic/assura/releases/latest/download/assura-linux-amd64.tar.gz | tar xz
+sudo install -m 755 assura assura-full /usr/local/bin/
 assura init
 assura check
 ```

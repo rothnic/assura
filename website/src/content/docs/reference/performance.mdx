@@ -9,11 +9,14 @@ import PerformanceEvidence from '../../../components/performance-evidence.astro'
 
 ## How To Read This Page
 
-Use the table above for the scoped product comparison: one Linux static-CRT
-release `assura-check` run versus one native LS-Lint binary run on the same
-generated fixture tree and equivalent ruleset. The LS-Lint binary is resolved
-from the pinned `@ls-lint/ls-lint` package before timing so the measured loop
-does not include npm package resolution or the package's Node wrapper.
+Use the table above for the scoped product comparison behind the public
+`assura check` path: one Linux static-CRT release check run versus one native
+LS-Lint binary run on the same generated fixture tree and equivalent ruleset.
+The benchmark row is still named `assura-check-cli` so the report can attribute
+the focused checker separately from the full multi-command CLI. The LS-Lint
+binary is resolved from the pinned `@ls-lint/ls-lint` package before timing so
+the measured loop does not include npm package resolution or the package's Node
+wrapper.
 
 The current headline is intentionally narrow. It covers generated, stable,
 native LS-Lint-parity fixtures on the Linux static-CRT release artifact. Local
@@ -23,7 +26,7 @@ because they clone third-party repositories.
 
 The warm gate is a separate editor-session measurement. It uses a persistent
 `assura-check-session` CLI process connected to `assura-checkd`, so it is not a
-replacement for the cold one-process `assura-check` headline row.
+replacement for the cold one-process `assura check` headline path.
 
 ## More Detail
 

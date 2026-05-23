@@ -10,9 +10,8 @@ Run `assura check` in CI to reject repository shape drift before merge.
 
 > **Note**
 >
-> Until a published binary or action is available for your environment, install
-> Assura with Cargo in the job. In this repository, use `cargo install --path .`
-> from the checked-out source.
+> Release archives include `assura` and its `assura-full` companion. Keep both
+> files on `PATH`; use Cargo only for source builds or local development.
 
 ## GitHub Actions
 
@@ -29,9 +28,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-      - run: cargo install --path .
+      - run: curl -L https://github.com/rothnic/assura/releases/latest/download/assura-linux-amd64.tar.gz | tar xz
+      - run: sudo install -m 755 assura assura-full /usr/local/bin/
       - run: assura check --format text .
 ```
 
@@ -50,9 +48,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-      - run: cargo install --path .
+      - run: curl -L https://github.com/rothnic/assura/releases/latest/download/assura-linux-amd64.tar.gz | tar xz
+      - run: sudo install -m 755 assura assura-full /usr/local/bin/
       - name: Run Assura
         run: assura check --format json . > assura-report.json
       - uses: actions/upload-artifact@v4
@@ -91,9 +88,11 @@ stages:
 
 assura:
   stage: validate
-  image: rust:latest
+  image: ubuntu:latest
   before_script:
-    - cargo install --path .
+    - apt-get update && apt-get install -y curl
+    - curl -L https://github.com/rothnic/assura/releases/latest/download/assura-linux-amd64.tar.gz | tar xz
+    - install -m 755 assura assura-full /usr/local/bin/
   script:
     - assura check --format text .
 ```

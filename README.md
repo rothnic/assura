@@ -22,7 +22,8 @@ Assura v0.1 provides:
 
 ```bash
 # Install Assura
-cargo install assura
+curl -L https://github.com/rothnic/assura/releases/latest/download/assura-linux-amd64.tar.gz | tar xz
+sudo install -m 755 assura assura-full /usr/local/bin/
 
 # Initialize configuration
 assura init
@@ -36,6 +37,11 @@ assura watch
 # Migrate a supported LS-Lint config
 assura migrate .ls-lint.yml --output .assura/config.yml
 ```
+
+Prebuilt release archives are available for Linux, macOS, and Windows. Cargo
+install remains available for Rust development environments. Release archives
+include `assura` plus an internal `assura-full` companion; put both files in
+the same directory and use `assura` for normal commands.
 
 ## Configuration
 

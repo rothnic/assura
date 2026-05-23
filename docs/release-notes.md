@@ -118,7 +118,17 @@ markdown:
 
 ## Installation
 
+### From Release Archive
+
+```bash
+curl -L https://github.com/rothnic/assura/releases/latest/download/assura-linux-amd64.tar.gz | tar xz
+sudo install -m 755 assura assura-full /usr/local/bin/
+```
+
 ### From crates.io
+
+Use Cargo when you already have a Rust development environment:
+
 ```bash
 cargo install assura
 ```
