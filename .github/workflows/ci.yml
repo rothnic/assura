@@ -81,8 +81,8 @@ jobs:
       uses: Swatinem/rust-cache@v2
     - name: Build installable bundle
       run: |
-        export CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUSTFLAGS="-C target-feature=+crt-static -C link-arg=-lgcc_eh"
         cargo build --release --bin assura --no-default-features --features json-output,yaml-config
+        cargo rustc --release --bin assura --no-default-features --features json-output,yaml-config -- -C target-feature=+crt-static -C link-arg=-lgcc_eh
         cargo build --release --bin assura-full
         mkdir -p target/release-bundle
         cp target/release/assura target/release/assura-full target/release-bundle/
