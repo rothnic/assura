@@ -7,6 +7,10 @@ fn assura_bin() -> &'static str {
     env!("CARGO_BIN_EXE_assura")
 }
 
+fn assura_full_bin() -> &'static str {
+    env!("CARGO_BIN_EXE_assura-full")
+}
+
 #[test]
 fn check_help_uses_lightweight_primary_path() {
     let output = Command::new(assura_bin())
@@ -28,6 +32,28 @@ fn check_help_uses_lightweight_primary_path() {
     );
     assert!(
         stdout.contains("--format <FORMAT>"),
+        "stdout was:\n{stdout}"
+    );
+}
+
+#[test]
+fn companion_help_can_render_primary_command_name() {
+    let output = Command::new(assura_full_bin())
+        .env("ASSURA_CLI_BIN_NAME", "assura")
+        .arg("--help")
+        .output()
+        .unwrap();
+
+    assert!(
+        output.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(stdout.contains("Usage: assura "), "stdout was:\n{stdout}");
+    assert!(
+        !stdout.contains("Usage: assura-full"),
         "stdout was:\n{stdout}"
     );
 }

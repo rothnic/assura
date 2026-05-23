@@ -43,6 +43,7 @@ fn run_companion(args: &[OsString]) -> Option<i32> {
         use std::os::unix::process::CommandExt;
         command.arg0("assura");
     }
+    command.env("ASSURA_CLI_BIN_NAME", "assura");
     let status = command.args(args.iter().skip(1)).status().ok()?;
     Some(status.code().unwrap_or(1))
 }

@@ -1,6 +1,7 @@
 //! Full multi-command CLI entrypoint used by `assura-full`.
 
 use clap::Parser;
+use std::ffi::OsString;
 use tracing::{error, info};
 
 use super::{
@@ -11,19 +12,36 @@ use super::{
 
 /// Run the complete Clap/Tokio-powered CLI for non-check commands and fallbacks.
 pub fn run_full_cli_from_env() -> i32 {
+    run_full_cli_from_args(full_cli_args_from_env())
+}
+
+fn full_cli_args_from_env() -> Vec<OsString> {
+    let mut args: Vec<OsString> = std::env::args_os().collect();
+    if let Ok(bin_name) = std::env::var("ASSURA_CLI_BIN_NAME") {
+        if let Some(first) = args.first_mut() {
+            *first = OsString::from(bin_name);
+        }
+    }
+    args
+}
+
+fn run_full_cli_from_args<I, T>(args: I) -> i32
+where
+    I: IntoIterator<Item = T>,
+    T: Into<OsString> + Clone,
+{
     let runtime = tokio::runtime::Builder::new_multi_thread()
         .enable_all()
         .build()
         .expect("failed to initialize Tokio runtime");
-    let exit_code = runtime.block_on(run_full_cli());
+    let cli = Cli::parse_from(args);
+    let exit_code = runtime.block_on(run_full_cli(cli));
     exit_code as i32
 }
 
-async fn run_full_cli() -> ExitCode {
+async fn run_full_cli(cli: Cli) -> ExitCode {
     // Initialize tracing
     tracing_subscriber::fmt::init();
-
-    let cli = Cli::parse();
 
     // Set log level based on verbosity
     if cli.verbose {

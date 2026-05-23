@@ -70,3 +70,8 @@ extra developer binaries.
 - The highest-confidence quick win is removing `--bins` from the normal test
   tier because integration tests still request the required binaries through
   Cargo's `CARGO_BIN_EXE_*` mechanism.
+- CI revealed a Windows-only product polish issue: the primary `assura.exe`
+  wrapper could not set `argv[0]` for the `assura-full.exe` companion, so
+  `assura.exe --help` rendered `Usage: assura-full.exe`. The fix uses an
+  explicit `ASSURA_CLI_BIN_NAME=assura` companion environment contract and a
+  regression test.
