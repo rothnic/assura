@@ -102,6 +102,9 @@ fn ignored_paths(kind: FixtureKind) -> &'static [&'static str] {
         FixtureKind::PinnedNextJs => &[
             ".assura",
             ".git",
+            ".gitattributes",
+            ".gitignore",
+            "**/.gitignore",
             "node_modules",
             "packages/*/node_modules",
             "examples/*/node_modules",
@@ -115,7 +118,14 @@ fn ignored_paths(kind: FixtureKind) -> &'static [&'static str] {
             ".turbo",
             ".vercel",
         ],
-        FixtureKind::PinnedMdBook => &[".assura", ".git", "target"],
+        FixtureKind::PinnedMdBook => &[
+            ".assura",
+            ".git",
+            ".gitattributes",
+            ".gitignore",
+            "**/.gitignore",
+            "target",
+        ],
     }
 }
 

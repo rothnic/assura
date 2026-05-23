@@ -1,11 +1,12 @@
 //! File, directory, and markdown validators for structure-first checks.
 
+use super::case::{validate_file_stem, validate_name};
 use super::patterns::{
     best_lslint_suffix_match, matches_any_compiled_pattern, matches_single_compiled_pattern,
 };
 use super::rules::{
     display_rel, file_matches_any_extension, parse_size, severity_for_bundle,
-    severity_for_directory_bundle, validate_file_stem, validate_name,
+    severity_for_directory_bundle,
 };
 use super::{direct_contents::DirectFilePolicy, StructureCheckReport, StructureChecker};
 use crate::config::config::FileBundle;
@@ -29,7 +30,7 @@ impl StructureChecker {
             .unwrap_or("");
 
         if let Some(directories) = rules.directories.as_ref() {
-            let configured_child = self.configured_dirs.contains(&rel);
+            let configured_child = self.is_configured_dir(&rel);
             let allowed_by_name = directories
                 .allowed_names
                 .as_ref()
@@ -93,7 +94,7 @@ impl StructureChecker {
             }
         }
 
-        if self.configured_dirs.contains(&rel) {
+        if self.is_configured_dir(&rel) {
             return;
         }
 
@@ -123,8 +124,11 @@ impl StructureChecker {
         let parent_rel = rel.parent().unwrap_or_else(|| Path::new(""));
         let rules = self.resolve_rules(parent_rel);
 
+        #[cfg(feature = "yaml-config")]
         let needs_markdown =
             path.extension().and_then(|ext| ext.to_str()) == Some("md") && rules.markdown.is_some();
+        #[cfg(not(feature = "yaml-config"))]
+        let needs_markdown = false;
         let needs_file_content = rules.files.as_ref().is_some_and(|files| {
             files.max_lines.is_some()
                 || (files.require_docs == Some(true)
@@ -157,6 +161,7 @@ impl StructureChecker {
             self.validate_file_bundle(path, &rel, &files, content.as_deref(), report);
         }
 
+        #[cfg(feature = "yaml-config")]
         if needs_markdown {
             if let (Some(markdown), Some(content)) = (rules.markdown, content.as_deref()) {
                 self.validate_markdown(&rel, &markdown, content, report);

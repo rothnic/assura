@@ -9,7 +9,10 @@ use super::monorepo_policy::{
 };
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
+
+static FIXTURE_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
 #[derive(Clone, Copy)]
 pub(super) struct FixtureScenario {
@@ -183,10 +186,11 @@ pub(in crate::cli::performance_report) fn materialize_fixture(
 ) -> Result<MaterializedFixture, String> {
     let mut root = std::env::temp_dir();
     root.push(format!(
-        "assura_perf_{}_{}_{}",
+        "assura_perf_{}_{}_{}_{}",
         scenario.id,
         std::process::id(),
-        monotonic_nanos()
+        monotonic_nanos(),
+        FIXTURE_SEQUENCE.fetch_add(1, Ordering::Relaxed)
     ));
     fs::create_dir_all(&root).map_err(|error| format!("create {}: {error}", root.display()))?;
 

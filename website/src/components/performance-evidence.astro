@@ -5,10 +5,15 @@ type ResultRow = {
   fixture_id: string;
   fixture_cohort?: string;
   row_family?: string;
+  validation_execution_mode?: string;
   tool_name?: string;
   evidence_role?: string;
   diagnostic?: boolean;
   median_runtime_ms?: number | null;
+  two_x_target_runtime_ms?: number | null;
+  two_x_claim_status?: string | null;
+  process_floor_runtime_ms?: number | null;
+  rust_cli_floor_runtime_ms?: number | null;
   checked_file_count?: number;
   ignored_file_count?: number;
   directory_count?: number;
@@ -24,6 +29,8 @@ type ResultRow = {
   config_generation_method?: string;
   assura_version?: string;
   ls_lint_version?: string;
+  ls_lint_execution_mode?: string | null;
+  assura_binary_profile?: string | null;
 };
 
 type CurrentReport = {
@@ -32,6 +39,42 @@ type CurrentReport = {
   branch?: string;
   assura_version?: string;
   ls_lint_version?: string;
+  environment?: {
+    os?: string;
+    arch?: string;
+  };
+  claim_summary?: {
+    fixture_count?: number;
+    measured_fixture_count?: number;
+    assura_faster_count?: number;
+    two_x_pass_count?: number;
+    two_x_fail_count?: number;
+    blocked_by_process_floor_count?: number;
+    blocked_by_rust_cli_floor_count?: number;
+    plain_miss_count?: number;
+    aggregate_speedup_ratio?: number | null;
+    all_two_x_targets_met?: boolean;
+    minimum_completion_iterations?: number;
+    measured_iterations?: number;
+    sufficient_completion_iterations?: boolean;
+    two_x_claim_verdict?: string;
+  };
+  warm_claim_summary?: {
+    fixture_count?: number;
+    measured_fixture_count?: number;
+    assura_faster_count?: number;
+    two_x_pass_count?: number;
+    two_x_fail_count?: number;
+    blocked_by_process_floor_count?: number;
+    blocked_by_rust_cli_floor_count?: number;
+    plain_miss_count?: number;
+    aggregate_speedup_ratio?: number | null;
+    all_two_x_targets_met?: boolean;
+    minimum_completion_iterations?: number;
+    measured_iterations?: number;
+    sufficient_completion_iterations?: boolean;
+    two_x_claim_verdict?: string;
+  };
   results?: ResultRow[];
 };
 
@@ -46,12 +89,15 @@ type Pair = {
   copy: FixtureCopy;
   assura: ResultRow;
   lslint: ResultRow;
-  speedup: number;
+  ratio: number;
   lowerPercent: number;
+  winner: string;
 };
 
 const report = currentReport as CurrentReport;
 const rows = (report.results ?? []).filter((row) => row.status === 'pass');
+const claimSummary = report.claim_summary;
+const warmClaimSummary = report.warm_claim_summary;
 
 const fixtureCopy: Record<string, FixtureCopy> = {
   simple_library: {
@@ -94,8 +140,8 @@ function rowFamily(row: ResultRow): string {
 
 function buildPair(fixtureId: string): Pair | null {
   const assura = rows.find(
-    (row) => row.fixture_id === fixtureId && rowFamily(row) === 'assura-cli',
-  );
+    (row) => row.fixture_id === fixtureId && rowFamily(row) === 'assura-check-cli',
+  ) ?? rows.find((row) => row.fixture_id === fixtureId && rowFamily(row) === 'assura-cli');
   const lslint = rows.find(
     (row) => row.fixture_id === fixtureId && rowFamily(row) === 'ls-lint-cli',
   );
@@ -108,8 +154,7 @@ function buildPair(fixtureId: string): Pair | null {
     copy: fixtureCopy[fixtureId],
     assura,
     lslint,
-    speedup: lslint.median_runtime_ms / assura.median_runtime_ms,
-    lowerPercent: (1 - assura.median_runtime_ms / lslint.median_runtime_ms) * 100,
+    ...compareRuntimes(assura.median_runtime_ms, lslint.median_runtime_ms),
   };
 }
 
@@ -126,8 +171,12 @@ const datasetLabel = datasetRevisions.length > 0 ? datasetRevisions.join(' + ') 
 const syntheticRows = rows.filter(
   (row) => row.row_family === 'assura-cli' && row.fixture_cohort === 'synthetic-stress',
 );
-const firstAssuraRow = rows.find((row) => row.row_family === 'assura-cli');
+const firstAssuraRow =
+  rows.find((row) => row.row_family === 'assura-check-cli') ??
+  rows.find((row) => row.row_family === 'assura-cli');
 const firstLsLintRow = rows.find((row) => row.row_family === 'ls-lint-cli');
+const releaseProfile = firstAssuraRow?.assura_binary_profile ?? 'unknown profile';
+const platformLabel = [report.environment?.os, report.environment?.arch].filter(Boolean).join(' / ') || 'unknown platform';
 
 const totalAssura = realisticPairs.reduce(
   (total, pair) => total + (pair.assura.median_runtime_ms ?? 0),
@@ -137,12 +186,25 @@ const totalLsLint = realisticPairs.reduce(
   (total, pair) => total + (pair.lslint.median_runtime_ms ?? 0),
   0,
 );
-const totalSpeedup = totalAssura > 0 ? totalLsLint / totalAssura : 0;
-const totalLowerPercent = totalLsLint > 0 ? (1 - totalAssura / totalLsLint) * 100 : 0;
-const weakestPair = realisticPairs.reduce<Pair | null>(
-  (weakest, pair) => (!weakest || pair.speedup < weakest.speedup ? pair : weakest),
+const totalComparison = compareRuntimes(totalAssura, totalLsLint);
+const closestPair = realisticPairs.reduce<Pair | null>(
+  (closest, pair) => (!closest || pair.ratio < closest.ratio ? pair : closest),
   null,
 );
+
+function compareRuntimes(assuraMs: number, lsLintMs: number): Pick<Pair, 'ratio' | 'lowerPercent' | 'winner'> {
+  if (assuraMs === lsLintMs) {
+    return { ratio: 1, lowerPercent: 0, winner: 'Tie' };
+  }
+  const assuraWins = assuraMs < lsLintMs;
+  const faster = assuraWins ? assuraMs : lsLintMs;
+  const slower = assuraWins ? lsLintMs : assuraMs;
+  return {
+    ratio: slower / faster,
+    lowerPercent: (1 - faster / slower) * 100,
+    winner: assuraWins ? 'Assura' : 'Native LS-Lint',
+  };
+}
 
 function formatMs(value?: number | null): string {
   return typeof value === 'number' ? `${value.toFixed(value >= 10 ? 1 : 2)} ms` : 'n/a';
@@ -154,6 +216,36 @@ function formatPercent(value: number): string {
 
 function formatSpeedup(value: number): string {
   return `${value.toFixed(value >= 10 ? 1 : 2)}x`;
+}
+
+function formatTwoXStatus(row: ResultRow): string | null {
+  switch (row.two_x_claim_status) {
+    case 'meets-target':
+      return `2x target met (${formatMs(row.two_x_target_runtime_ms)})`;
+    case 'blocked-by-process-floor':
+      return `2x target blocked by process floor (${formatMs(row.process_floor_runtime_ms)})`;
+    case 'blocked-by-rust-cli-floor':
+      return `2x target blocked by Rust CLI floor (${formatMs(row.rust_cli_floor_runtime_ms)})`;
+    case 'misses-target':
+      return `2x target missed (${formatMs(row.two_x_target_runtime_ms)})`;
+    default:
+      return null;
+  }
+}
+
+function formatVerdict(value?: string): string {
+  switch (value) {
+    case 'complete':
+      return 'Complete';
+    case 'not-complete-low-sample':
+      return 'Not complete (low sample)';
+    default:
+      return 'Not complete';
+  }
+}
+
+function formatCount(numerator?: number, denominator?: number): string {
+  return `${numerator ?? 0} / ${denominator ?? 0}`;
 }
 
 function shortSha(value?: string): string {
@@ -185,29 +277,33 @@ function testCaseHref(fixtureId: string): string {
 <section class="perf-evidence" aria-labelledby="performance-summary">
   <div class="perf-summary">
     <p class="perf-kicker">Current comparison</p>
-    <h2 id="performance-summary">Assura CLI vs warm LS-Lint CLI</h2>
+    <h2 id="performance-summary">Assura check CLI vs native LS-Lint CLI</h2>
     <p class="perf-summary-line">
-      Same machine. Same generated trees. Equivalent rules. Case definitions
-      live on the test-case page.
+      Linux static-CRT release artifact. Same generated trees. Equivalent
+      rules. Case definitions live on the test-case page.
     </p>
 
     <div class="perf-summary-grid">
       <dl class="perf-facts" aria-label="Performance summary facts">
         <div>
-          <dt>Speedup</dt>
-          <dd>{formatSpeedup(totalSpeedup)}</dd>
+          <dt>Faster tool</dt>
+          <dd>{totalComparison.winner}</dd>
         </div>
         <div>
-          <dt>Runtime reduction</dt>
-          <dd>{formatPercent(totalLowerPercent)} lower</dd>
+          <dt>Runtime ratio</dt>
+          <dd>{formatSpeedup(claimSummary?.aggregate_speedup_ratio ?? totalComparison.ratio)}</dd>
         </div>
         <div>
-          <dt>Assura total</dt>
-          <dd>{formatMs(totalAssura)}</dd>
+          <dt>2x gate</dt>
+          <dd>{formatVerdict(claimSummary?.two_x_claim_verdict)}</dd>
         </div>
         <div>
-          <dt>LS-Lint total</dt>
-          <dd>{formatMs(totalLsLint)}</dd>
+          <dt>2x cases</dt>
+          <dd>{formatCount(claimSummary?.two_x_pass_count, claimSummary?.measured_fixture_count)}</dd>
+        </div>
+        <div>
+          <dt>Assura faster</dt>
+          <dd>{formatCount(claimSummary?.assura_faster_count ?? realisticPairs.length, claimSummary?.measured_fixture_count ?? realisticPairs.length)}</dd>
         </div>
       </dl>
 
@@ -217,8 +313,20 @@ function testCaseHref(fixtureId: string): string {
           <dd><a href="/reference/performance-test-cases/">{datasetLabel}</a></dd>
         </div>
         <div>
-          <dt>Weakest case</dt>
-          <dd>{weakestPair ? `${formatSpeedup(weakestPair.speedup)} on ${weakestPair.copy.label}` : 'n/a'}</dd>
+          <dt>Build profile</dt>
+          <dd>{releaseProfile}; {platformLabel}</dd>
+        </div>
+        <div>
+          <dt>Closest case</dt>
+          <dd>{closestPair ? `${formatSpeedup(closestPair.ratio)} on ${closestPair.copy.label}` : 'n/a'}</dd>
+        </div>
+        <div>
+          <dt>Floor-limited misses</dt>
+          <dd>{formatCount((claimSummary?.blocked_by_process_floor_count ?? 0) + (claimSummary?.blocked_by_rust_cli_floor_count ?? 0), claimSummary?.two_x_fail_count)}</dd>
+        </div>
+        <div>
+          <dt>Warm 2x gate</dt>
+          <dd>{formatVerdict(warmClaimSummary?.two_x_claim_verdict)}; {formatCount(warmClaimSummary?.two_x_pass_count, warmClaimSummary?.measured_fixture_count)} cases</dd>
         </div>
         <div>
           <dt>Evidence source</dt>
@@ -230,7 +338,7 @@ function testCaseHref(fixtureId: string): string {
         </div>
         <div>
           <dt>Versions</dt>
-          <dd>Assura {firstAssuraRow?.assura_version ?? report.assura_version ?? 'unknown'}; {lslintVersion(firstLsLintRow?.ls_lint_version ?? report.ls_lint_version)}</dd>
+          <dd>Assura {firstAssuraRow?.assura_version ?? report.assura_version ?? 'unknown'}; {lslintVersion(firstLsLintRow?.ls_lint_version ?? report.ls_lint_version)} native binary</dd>
         </div>
       </dl>
     </div>
@@ -246,31 +354,34 @@ function testCaseHref(fixtureId: string): string {
     <table class="perf-table">
       <thead>
         <tr>
-	          <th>Test case</th>
-	          <th>Project shape</th>
-	          <th>Runtime</th>
-	          <th>Result</th>
-	        </tr>
+          <th>Test case</th>
+          <th>Project shape</th>
+          <th>Runtime</th>
+          <th>Result</th>
+        </tr>
       </thead>
       <tbody>
         {realisticPairs.map((pair) => (
           <tr>
-	            <td data-label="Test case">
-	              <strong><a href={testCaseHref(pair.fixtureId)}>{pair.copy.label}</a></strong>
-	              <span class="perf-cell-note"><code>{pair.fixtureId}</code></span>
-	            </td>
-	            <td data-label="Project shape">
-	              {pair.copy.projectShape}
-	              <span class="perf-cell-note">{scale(pair.assura)}; {ruleCount(pair.assura)}</span>
-	              <span class="perf-cell-note">{pair.copy.focus}</span>
-	            </td>
+            <td data-label="Test case">
+              <strong><a href={testCaseHref(pair.fixtureId)}>{pair.copy.label}</a></strong>
+              <span class="perf-cell-note"><code>{pair.fixtureId}</code></span>
+            </td>
+            <td data-label="Project shape">
+              {pair.copy.projectShape}
+              <span class="perf-cell-note">{scale(pair.assura)}; {ruleCount(pair.assura)}</span>
+              <span class="perf-cell-note">{pair.copy.focus}</span>
+            </td>
             <td data-label="Runtime">
-              <strong>Assura:</strong> {formatMs(pair.assura.median_runtime_ms)}
-              <span class="perf-cell-note">LS-Lint: {formatMs(pair.lslint.median_runtime_ms)}</span>
+              <strong>Assura check:</strong> {formatMs(pair.assura.median_runtime_ms)}
+              <span class="perf-cell-note">Native LS-Lint: {formatMs(pair.lslint.median_runtime_ms)}</span>
             </td>
             <td data-label="Result">
-              <strong>{formatSpeedup(pair.speedup)}</strong>
+              <strong>{pair.winner}: {formatSpeedup(pair.ratio)}</strong>
               <span class="perf-cell-note">{formatPercent(pair.lowerPercent)} lower runtime</span>
+              {formatTwoXStatus(pair.assura) && (
+                <span class="perf-cell-note">{formatTwoXStatus(pair.assura)}</span>
+              )}
             </td>
           </tr>
         ))}

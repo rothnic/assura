@@ -5,8 +5,8 @@ This directory contains Criterion benchmarks for the current Assura codebase.
 ## Current-Product LS-Lint Comparison
 
 `benches/ls_lint_comparison.rs` compares the public structure-first
-`assura check` path, implemented by `run_structure_check`, with
-`@ls-lint/ls-lint@2.3.0` on identical generated fixtures.
+`assura check` path, implemented by `run_structure_check`, with the native
+platform binary from `@ls-lint/ls-lint@2.3.0` on identical generated fixtures.
 
 Run it with:
 
@@ -14,10 +14,10 @@ Run it with:
 cargo bench --bench ls_lint_comparison -- --noplot
 ```
 
-The benchmark uses `npm exec --yes --package @ls-lint/ls-lint@2.3.0 -- ls-lint`
-so the first run may need network access to fetch the LS-Lint package. If
-LS-Lint is unavailable, the benchmark still runs Assura scenarios and skips the
-external LS-Lint samples.
+The benchmark installs the pinned npm package once, resolves the packaged
+native binary under `node_modules/@ls-lint/ls-lint/bin/`, and times that binary
+directly. If LS-Lint is unavailable, the benchmark still runs Assura scenarios
+and skips the external LS-Lint samples.
 
 Generated stress scenarios covered:
 
@@ -74,6 +74,10 @@ policy.
 
 ### Local Baseline: 2026-05-14
 
+This historical baseline used the npm wrapper path and is retained only as
+legacy context. Current product claims should use regenerated native-binary
+rows from `assura performance-report`.
+
 - Branch: `codex/assura-v0-1-polished`
 - Environment: WSL on a locked-down machine
 - LS-Lint: `ls-lint v2.3.0`
@@ -84,11 +88,11 @@ Criterion median estimates:
 
 | Scenario | Assura median | LS-Lint 2.3 median | Result |
 | --- | ---: | ---: | --- |
-| `small` | 241.19 us | 511.59 ms | Assura faster |
-| `medium` | 3.8721 ms | 496.50 ms | Assura faster |
-| `large` | 18.620 ms | 516.61 ms | Assura faster |
-| `rule_heavy` | 21.793 ms | 527.76 ms | Assura faster |
-| `ignored_generated_heavy` | 54.267 us | 488.42 ms | Assura faster |
+| `small` | 241.19 us | 511.59 ms | Legacy wrapper-path Assura win |
+| `medium` | 3.8721 ms | 496.50 ms | Legacy wrapper-path Assura win |
+| `large` | 18.620 ms | 516.61 ms | Legacy wrapper-path Assura win |
+| `rule_heavy` | 21.793 ms | 527.76 ms | Legacy wrapper-path Assura win |
+| `ignored_generated_heavy` | 54.267 us | 488.42 ms | Legacy wrapper-path Assura win |
 
 The first sandboxed `npm exec` attempt failed with DNS `EAI_AGAIN` for
 `registry.npmjs.org`. Re-running with approved network access confirmed

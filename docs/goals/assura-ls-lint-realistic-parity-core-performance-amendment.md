@@ -22,9 +22,11 @@ related:
 
 This amendment tightens the PR #11 goal. The work is not complete when the PR
 only records performance evidence or uses serial `jwalk`. The goal is to finish
-the performance improvements that this PR set out to investigate and prove that
-Assura is faster while preserving the project functionality defined by the test
-suite and compatibility fixtures.
+the performance improvements that this PR set out to investigate and publish an
+honest Assura-versus-LS-Lint comparison while preserving the project
+functionality defined by the test suite and compatibility fixtures. If native
+LS-Lint wins the fair CLI-to-CLI comparison, the website and PR interpretation
+must say so directly instead of preserving an older Assura-faster claim.
 
 The technology choice is subordinate to system performance and correctness. The
 preferred target is a production checker that can use parallel `jwalk` safely,
@@ -57,9 +59,9 @@ PR #11 must remain draft and must not be merged until all of these are true:
    not acceptable.
 6. LS-Lint comparison timing must measure LS-Lint execution, not repeated npm
    package resolution. The benchmark/report path must install or resolve
-   `@ls-lint/ls-lint@2.3.0` once and execute the cached binary in the measured
-   loop, or label the metric as cold npm invocation and keep it separate from
-   warm tool comparison.
+   `@ls-lint/ls-lint@2.3.0` once and execute the packaged native binary in the
+   measured loop, or label the metric as npm-wrapper invocation and keep it
+   separate from warm tool comparison.
 7. `assura performance-report` must expose enough rows to justify the decision:
    top-level Assura and LS-Lint rows, walkdir baseline rows, serial `jwalk`
    rows, parallel `jwalk` rows, and phase rows for config discovery, config
@@ -111,7 +113,7 @@ The performance report must compare at least:
 - walkdir traversal baseline
 - serial `jwalk`
 - parallel `jwalk`
-- warm LS-Lint execution through a cached binary
+- native LS-Lint execution through the packaged native binary
 
 ## Stop Condition
 
@@ -153,7 +155,8 @@ under equivalent validation work.
 | 2026-05-16 | Iteration 2 implementation and evidence | Added a separated traversal module with deterministic serial fail-fast/default validation plus an opt-in parallel `jwalk` collection path, expanded report rows to `walkdir`, `jwalk-serial`, and `jwalk-parallel`, prepared LS-Lint once before measured loops, switched history append to streaming append, copied full website history when a history source is provided, preserved external fixture symlinks, and regenerated checked-in performance data. Local same-machine baseline comparison showed final rule-heavy improvement (`rule_heavy` 194.615 ms -> 167.611 ms; `rule_heavy_repo` 29.797 ms -> 22.148 ms) and traversal-heavy improvement (`ignored_generated_heavy` 0.752 ms -> 0.482 ms); raw parallel `jwalk` rows also improved traversal-heavy evidence while full validation remains serial by default. | `benches/history/current.json`; `benches/history/ls-lint-comparison-history.jsonl`; `website/public/data/performance/current.json`; `website/public/data/performance/ls-lint-comparison-history.jsonl`; `target/performance/pr11-amendment-default-v2.json`; temporary baseline worktree report `target/performance/pr11-baseline-local.json` |
 | 2026-05-16 | Iteration 3 context health and skill capture | Context level: active goal reports unbounded remaining tokens; relevant prior messages are persisted in the amendment progress log, Trellis task PRD/context files, checked-in performance artifacts, and validation command outputs. Captured reusable performance-report workflow in a project skill and kept `AGENTS.md` as a one-line router. | `.agents/skills/assura-performance-reporting/SKILL.md`; `AGENTS.md`; `cargo run --quiet -- check --format json .` |
 | 2026-05-16 | Final review and validation | Required review agent found no blocking code issues and flagged one residual test gap for the opt-in parallel traversal path; added `check_parallel_jwalk_traversal_env_path_preserves_sorted_json_output` to cover it. Final local gates passed after the fix. | `cargo fmt --all -- --check`; `git diff --check`; `cargo clippy --all-targets --all-features -- -D warnings`; `cargo test --all-targets --quiet`; `cargo run --quiet -- check --format json .`; `cargo run --quiet -- performance-report --output benches/history/current.json --history benches/history/ls-lint-comparison-history.jsonl --website-dir website/public/data/performance --iterations 5`; `cd website && pnpm build` |
-| 2026-05-16 | Critical interpretation follow-up | Clarified that traversal-only rows cannot justify the production default by themselves, explained `rule_heavy` versus `rule_heavy_repo`, documented what warm LS-Lint rows measure, and added an explicit follow-up requirement for full-check strategy comparisons before changing the default again. | `docs/analysis/2026-05-16-performance-results-interpretation.md`; `website/src/content/docs/reference/performance.mdx`; PR #11 body |
-| 2026-05-16 | Website visual review follow-up | Added a visible website table for realistic equivalent fixtures showing Assura 3.8x-200.3x faster than warm LS-Lint, separated synthetic stress fixtures from the product claim, fixed Starlight component imports/JSX rendering as prose by converting affected pages to plain Markdown, and recorded visual review evidence. | `website/src/content/docs/reference/performance.mdx`; `docs/analysis/2026-05-16-website-visual-review.md`; `cd website && pnpm build`; `agent-browser` desktop/mobile screenshots |
+| 2026-05-16 | Critical interpretation follow-up | Clarified that traversal-only rows cannot justify the production default by themselves, explained `rule_heavy` versus `rule_heavy_repo`, documented what the then-current LS-Lint rows measured, and added an explicit follow-up requirement for full-check strategy comparisons before changing the default again. These rows were later superseded by native-binary LS-Lint timing. | `docs/analysis/2026-05-16-performance-results-interpretation.md`; `website/src/content/docs/reference/performance.mdx`; PR #11 body |
+| 2026-05-16 | Website visual review follow-up | Added a visible website table for realistic equivalent fixtures showing a 3.8x-200.3x historical Assura win against the older wrapper-path LS-Lint measurement, separated synthetic stress fixtures from the product claim, fixed Starlight component imports/JSX rendering as prose by converting affected pages to plain Markdown, and recorded visual review evidence. This interpretation was later superseded by native-binary LS-Lint timing. | `website/src/content/docs/reference/performance.mdx`; `docs/analysis/2026-05-16-website-visual-review.md`; `cd website && pnpm build`; `agent-browser` desktop/mobile screenshots |
 | 2026-05-16 | Performance page redesign follow-up | Reworked the website performance page from prose-first documentation into a benchmark report with headline speedup cards, realistic fixture comparison bars, a same-fixture history rollup, and a separate synthetic stress fixture caveat. Re-ran the Starlight build and captured new desktop/mobile visual-review screenshots. | `website/src/content/docs/reference/performance.mdx`; `website/src/styles/custom.css`; `docs/analysis/2026-05-16-website-visual-review.md`; `cd website && pnpm build`; `target/website-visual-review/performance-redesign-desktop.png`; `target/website-visual-review/performance-redesign-mobile.png` |
 | 2026-05-16 | Skeptical performance-page follow-up | Requested an independent skeptical review of the Assura-vs-LS-Lint comparison framing, then revised the performance page to expose fixture scale, rule surface, generator/manifest references, runtime reduction, speedup, fairness contract, synthetic caveats, and audit-log history. Removed the misleading cross-machine progression graphic and used labeled evidence rows for desktop/mobile readability. | `website/src/content/docs/reference/performance.mdx`; `website/src/styles/custom.css`; `docs/analysis/2026-05-16-website-visual-review.md`; `cd website && pnpm build`; `target/website-visual-review/performance-evidence-table-desktop.png`; `target/website-visual-review/performance-evidence-table-mobile.png` |
+| 2026-05-18 | Native LS-Lint correction | Corrected the comparison contract to execute the packaged native LS-Lint binary instead of the npm package wrapper, added row metadata for the measured LS-Lint executable, regenerated checked-in evidence, and updated website/current docs to show Native LS-Lint as the current generated-fixture winner. | `src/cli/performance_report/ls_lint.rs`; `benches/ls_lint_comparison.rs`; `benches/history/current.json`; `website/public/data/performance/current.json`; `website/src/components/performance-evidence.astro`; `docs/analysis/2026-05-17-cli-to-cli-performance-decision-record.md` |

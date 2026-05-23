@@ -4,7 +4,9 @@
 //! NOTE: This is for testing purposes only. Internal backwards compatibility
 //! will not be maintained until the 1.0 release.
 
-use super::config::{split_naming_conventions, Config, DirectoryBundle, DirectoryNode, FileBundle};
+use super::config::{split_naming_conventions, DirectoryNode, FileBundle};
+#[cfg(feature = "yaml-config")]
+use super::config::{Config, DirectoryBundle};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -106,6 +108,7 @@ impl Default for LsLintCompatibility {
 }
 
 /// Convert an LS-Lint YAML config to unified structure config
+#[cfg(feature = "yaml-config")]
 pub fn convert_ls_lint_to_config(ls_lint_content: &str) -> Result<Config, String> {
     let ls_config: serde_yaml::Value = serde_yaml::from_str(ls_lint_content)
         .map_err(|e| format!("Failed to parse LS-Lint config: {}", e))?;
@@ -123,6 +126,7 @@ pub fn convert_ls_lint_to_config(ls_lint_content: &str) -> Result<Config, String
     Ok(config)
 }
 
+#[cfg(feature = "yaml-config")]
 fn parse_ignore(config: &serde_yaml::Value) -> Vec<String> {
     config
         .get("ignore")
@@ -136,12 +140,14 @@ fn parse_ignore(config: &serde_yaml::Value) -> Vec<String> {
         .unwrap_or_default()
 }
 
+#[cfg(feature = "yaml-config")]
 fn ensure_assura_config_excluded(exclude: &mut Vec<String>) {
     if !exclude.iter().any(|pattern| pattern == ".assura/**") {
         exclude.push(".assura/**".to_string());
     }
 }
 
+#[cfg(feature = "yaml-config")]
 fn parse_ls_directory(mapping: &serde_yaml::Mapping) -> Result<DirectoryNode, String> {
     let mut node = DirectoryNode::new();
     let mut file_bundle = FileBundle::new();
@@ -224,6 +230,7 @@ fn parse_ls_directory(mapping: &serde_yaml::Mapping) -> Result<DirectoryNode, St
     Ok(node)
 }
 
+#[cfg(feature = "yaml-config")]
 fn reject_unsupported_directory_scope(key: &str) -> Result<(), String> {
     if key.contains('*') || key.contains('{') || key.contains('}') {
         return Err(format!(
@@ -234,6 +241,7 @@ fn reject_unsupported_directory_scope(key: &str) -> Result<(), String> {
     Ok(())
 }
 
+#[cfg(feature = "yaml-config")]
 fn apply_direct_child_exists_rule(
     key: &str,
     rule: &str,
@@ -262,6 +270,7 @@ fn apply_direct_child_exists_rule(
     true
 }
 
+#[cfg(feature = "yaml-config")]
 fn normalize_child_key(key: &str) -> String {
     key.trim_end_matches('/').to_string()
 }
@@ -286,6 +295,7 @@ fn apply_file_rule(
     }
 }
 
+#[cfg(feature = "yaml-config")]
 fn apply_directory_rule(
     rule: &str,
     directories: &mut DirectoryBundle,

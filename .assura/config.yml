@@ -40,10 +40,12 @@ structure:
       allowed_names:
         - ".agents"
         - ".assura"
+        - ".cargo"
         - ".codex"
         - ".github"
         - ".trellis"
         - "benches"
+        - "crates"
         - "docs"
         - "integrations"
         - "src"
@@ -95,6 +97,15 @@ structure:
           hooks/:
             files:
               naming: "kebab-case"
+
+      .cargo/:
+        files:
+          naming: "kebab-case"
+          allowed_names:
+            - "config.toml"
+          allow_extra: false
+        directories:
+          allow_extra: false
 
       .codex/:
         files:
@@ -153,6 +164,33 @@ structure:
               max_lines: 1000
               allowed_names:
                 - "README.md"
+
+      crates/:
+        files:
+          allow_extra: false
+        directories:
+          naming: "kebab-case"
+        children:
+          assura-check-cli/:
+            files:
+              naming: "kebab-case"
+              allowed_names:
+                - "Cargo.toml"
+              allow_extra: false
+            directories:
+              allowed_names:
+                - "src"
+                - "tests"
+              allow_extra: false
+            children:
+              src/:
+                files:
+                  naming: "snake_case"
+                  max_lines: 500
+              tests/:
+                files:
+                  naming: "snake_case"
+                  max_lines: 500
       
       docs/:
         files:

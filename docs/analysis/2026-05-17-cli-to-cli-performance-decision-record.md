@@ -1,16 +1,17 @@
 ---
 title: CLI-to-CLI Performance Decision Record
 date: 2026-05-17
-status: current
+status: superseded
 ---
 
 # CLI-to-CLI Performance Decision Record
 
 ## Status
 
-This is the current decision record for the CLI-to-CLI verification slice. It
-replaces the old public comparison interpretation that used the in-process
-Assura top-level row as the comparison row.
+This decision record has been superseded by the 2026-05-18 native LS-Lint
+correction. It remains as historical context for the CLI-to-CLI verification
+slice, but its old winner and speedup numbers came from the npm package wrapper
+path and must not be used for current product claims.
 
 This slice chooses the default traversal/execution path from measured
 full-check CLI strategy rows. Parallel rule-application and rule-planned or
@@ -36,9 +37,10 @@ on those unimplemented strategies.
 
 4. Equivalent subprocess paths:
    yes for the current report. `assura-cli` runs the built Assura binary as a
-   subprocess, and `ls-lint-cli` runs the prepared cached LS-Lint binary as a
-   subprocess. Dependency install, package resolution, Rust compilation,
-   fixture generation, and binary discovery happen outside the measured loops.
+   subprocess, and `ls-lint-cli` must run the prepared native binary from the
+   pinned `@ls-lint/ls-lint@2.3.0` package as a subprocess. Dependency install,
+   package resolution, Rust compilation, fixture generation, and binary
+   discovery happen outside the measured loops.
 
 5. Current Assura default execution architecture:
    walkdir is the default production full-check path. The fail-fast path remains
@@ -65,13 +67,15 @@ on those unimplemented strategies.
    Research notes are recorded in
    `docs/analysis/2026-05-17-filesystem-validation-throughput-research.md`.
 
-7. Weakest realistic-equivalent result:
-   in `benches/history/current.json`, `rule_heavy_repo` is the weakest current
-   realistic-equivalent CLI row: Assura CLI median 19.492293 ms versus LS-Lint
-   CLI median 112.401829 ms, or 82.7% lower runtime and 5.77x faster.
+7. Corrected current realistic-equivalent result:
+   in the 2026-05-18 `benches/history/current.json`, native LS-Lint wins every
+   generated realistic-equivalent CLI row. Bundle total is Assura CLI
+   105.666354 ms versus native LS-Lint CLI 62.239124 ms. The closest row is
+   `ignored_generated_heavy_repo`: Assura CLI 16.712235 ms versus native
+   LS-Lint CLI 15.761383 ms, or native LS-Lint 1.06x faster.
 
 8. Supported website claim:
-   the current release CLI-to-CLI data supports saying that Assura CLI is
-   multiple times faster than LS-Lint CLI on the current realistic-equivalent
-   native-parity fixture bundle. The website uses the weaker per-row result as
-   the bound rather than the stronger bundle total alone.
+   the current generated-fixture CLI-to-CLI data supports saying that native
+   LS-Lint is faster than Assura on the measured realistic-equivalent fixture
+   bundle. It does not support the older claim that Assura is multiple times
+   faster than LS-Lint.

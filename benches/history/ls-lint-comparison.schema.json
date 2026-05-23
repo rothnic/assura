@@ -35,6 +35,7 @@
         "required": [
           "legacy_fixture_cohort",
           "row_family",
+          "validation_execution_mode",
           "evidence_role",
           "diagnostic",
           "source_type",
@@ -78,8 +79,19 @@
         {
           "enum": [
             "assura-cli",
+            "assura-check-cli",
+            "assura-check-cached-cli",
+            "assura-check-compiled-cli",
+            "assura-check-hot-cli",
+            "assura-check-changed-path-cli",
+            "assura-check-dirty-project-cli",
+            "assura-check-dirty-project-session-cli",
+            "assura-check-dirty-project-socket",
+            "assura-check-status-cli",
+            "assura-rust-cli-floor",
             "ls-lint-cli",
             "assura-in-process",
+            "process-floor",
             "assura:phase:config-discovery",
             "assura:phase:config-load",
             "assura:phase:checker-init",
@@ -95,6 +107,26 @@
       ]
     },
     "evidence_role": { "enum": ["headline-candidate", "diagnostic"] },
+    "validation_execution_mode": {
+      "enum": [
+        "cold-cli",
+        "warm-cache-cli",
+        "precompiled-config-cli",
+        "hot-daemon-cli",
+        "hot-daemon-changed-path-cli",
+        "hot-daemon-dirty-project-cli",
+        "hot-daemon-dirty-project-session-cli",
+        "hot-daemon-dirty-project-socket",
+        "status-file-cli",
+        "rust-cli-floor",
+        "in-process",
+        "process-floor",
+        "phase-timing",
+        "traversal-only",
+        "diagnostic-strategy-cli",
+        "diagnostic"
+      ]
+    },
     "diagnostic": { "type": "boolean" },
     "source_type": {
       "enum": ["generated", "external-pinned-repo", "materialized-local-fixture"]
@@ -119,13 +151,28 @@
     "expected_ls_lint_exit_status": { "type": "integer" },
     "assura_binary_profile": { "type": ["string", "null"] },
     "assura_binary_path": { "type": ["string", "null"] },
+    "ls_lint_binary_path": { "type": ["string", "null"] },
+    "ls_lint_execution_mode": {
+      "enum": ["native-binary-from-pinned-npm-package", null]
+    },
     "tool_name": {
       "anyOf": [
         {
           "enum": [
             "assura",
             "assura-cli",
+            "assura-check-cli",
+            "assura-check-cached-cli",
+            "assura-check-compiled-cli",
+            "assura-check-hot-cli",
+            "assura-check-changed-path-cli",
+            "assura-check-dirty-project-cli",
+            "assura-check-dirty-project-session-cli",
+            "assura-check-dirty-project-socket",
+            "assura-check-status-cli",
+            "assura-rust-cli-floor",
             "assura-in-process",
+            "process-floor",
             "assura:config-discovery",
             "assura:config-load",
             "assura:checker-init",
@@ -140,6 +187,7 @@
             "assura:phase:report-sort",
             "ls-lint",
             "ls-lint-cli",
+            "ls-lint-native-cli",
             "walkdir",
             "jwalk-serial",
             "jwalk-parallel",
@@ -154,6 +202,42 @@
       ]
     },
     "median_runtime_ms": { "type": ["number", "null"], "minimum": 0 },
+    "two_x_target_runtime_ms": { "type": ["number", "null"], "minimum": 0 },
+    "process_floor_runtime_ms": { "type": ["number", "null"], "minimum": 0 },
+    "process_floor_to_two_x_target_ratio": {
+      "type": ["number", "null"],
+      "minimum": 0
+    },
+    "process_floor_blocks_two_x": { "type": ["boolean", "null"] },
+    "rust_cli_floor_runtime_ms": {
+      "type": ["number", "null"],
+      "minimum": 0
+    },
+    "rust_cli_floor_to_two_x_target_ratio": {
+      "type": ["number", "null"],
+      "minimum": 0
+    },
+    "rust_cli_floor_blocks_two_x": { "type": ["boolean", "null"] },
+    "runtime_above_process_floor_ms": {
+      "type": ["number", "null"]
+    },
+    "assura_cli_overhead_ms": {
+      "type": ["number", "null"]
+    },
+    "runtime_to_two_x_target_ratio": {
+      "type": ["number", "null"],
+      "minimum": 0
+    },
+    "meets_two_x_target": { "type": ["boolean", "null"] },
+    "two_x_claim_status": {
+      "enum": [
+        "meets-target",
+        "blocked-by-process-floor",
+        "blocked-by-rust-cli-floor",
+        "misses-target",
+        null
+      ]
+    },
     "distribution": {
       "type": "object",
       "required": ["samples", "samples_ms", "min_ms", "max_ms"],

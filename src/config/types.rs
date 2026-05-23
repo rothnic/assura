@@ -8,6 +8,7 @@
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+#[cfg(feature = "full-cli")]
 use validator::Validate;
 
 mod child_limits;
@@ -16,7 +17,8 @@ pub use child_limits::{ChildrenCountRange, ChildrenLimitConfig};
 pub use message::Message;
 
 /// A reusable validation rule defined in the `rules` section
-#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "full-cli", derive(Validate))]
 #[serde(rename_all = "snake_case")]
 pub struct Rule {
     /// File extensions this rule applies to (e.g., ["rs", "ts"])
@@ -29,12 +31,15 @@ pub struct Rule {
 
     /// Maximum lines per file
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[validate(range(min = 1, max = 100000))]
+    #[cfg_attr(feature = "full-cli", validate(range(min = 1, max = 100000)))]
     pub max_lines: Option<usize>,
 
     /// Maximum file size (e.g., "100KB", "1MB")
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[validate(custom(function = "validate_size_string"))]
+    #[cfg_attr(
+        feature = "full-cli",
+        validate(custom(function = "validate_size_string"))
+    )]
     pub max_size: Option<String>,
 
     /// Whether documentation is required
@@ -109,17 +114,18 @@ pub enum Case {
 }
 
 /// Root configuration struct
-#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "full-cli", derive(Validate))]
 #[serde(rename_all = "snake_case")]
 pub struct Config {
     /// Reusable rule definitions
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
-    #[validate(nested)]
+    #[cfg_attr(feature = "full-cli", validate(nested))]
     pub rules: HashMap<String, Rule>,
 
     /// Policy tree - hierarchical policy application
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[validate(nested)]
+    #[cfg_attr(feature = "full-cli", validate(nested))]
     pub policy: Option<PolicyNode>,
 
     /// Legacy structure format (for backwards compatibility)
@@ -132,7 +138,8 @@ pub struct Config {
 }
 
 /// A node in the policy tree
-#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "full-cli", derive(Validate))]
 #[serde(rename_all = "snake_case")]
 pub struct PolicyNode {
     /// Entries in this policy node (path/extension → policy entry)
@@ -157,7 +164,8 @@ pub enum PolicyEntry {
 }
 
 /// Inline rule definition for use directly in policy tree
-#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "full-cli", derive(Validate))]
 #[serde(rename_all = "snake_case")]
 pub struct InlineRule {
     /// File extensions this rule applies to
@@ -170,12 +178,15 @@ pub struct InlineRule {
 
     /// Maximum lines per file
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[validate(range(min = 1, max = 100000))]
+    #[cfg_attr(feature = "full-cli", validate(range(min = 1, max = 100000)))]
     pub max_lines: Option<usize>,
 
     /// Maximum file size (e.g., "100KB", "1MB")
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[validate(custom(function = "validate_size_string"))]
+    #[cfg_attr(
+        feature = "full-cli",
+        validate(custom(function = "validate_size_string"))
+    )]
     pub max_size: Option<String>,
 
     /// Whether documentation is required
@@ -264,6 +275,7 @@ pub enum Severity {
 }
 
 /// Validates that a size string is valid (e.g., "100KB", "1MB", "10MB")
+#[cfg(feature = "full-cli")]
 fn validate_size_string(size: &str) -> Result<(), validator::ValidationError> {
     use regex::Regex;
     lazy_static::lazy_static! {

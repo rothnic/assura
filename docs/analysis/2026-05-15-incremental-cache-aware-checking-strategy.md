@@ -15,9 +15,52 @@ related:
 
 # Incremental and Cache-Aware Checking Strategy
 
-This is the current design note for incremental `assura check` behavior. No
-cache is implemented yet. Until the phases below land with tests and benchmark
-evidence, the product truth remains a full structure-first check.
+This is the current design note for incremental `assura check` behavior. The
+branch now has partial foundations: source-fingerprinted compiled config
+artifacts, a prepared hot-session checker, an opt-in unchanged-tree cache for
+LS-Lint-compatible checks, and changed-path validation for editor/daemon
+sessions. These are not yet a complete incremental-validation product. Until
+the remaining phases land with tests and benchmark evidence, the product truth
+for cold correctness remains a full structure-first check.
+
+## Current Implementation Status
+
+- `CompiledStructureConfigArtifact` stores a schema version, Assura version
+  hash, source config content hash, canonical project root, canonical source
+  config path, and the compiled validation plan. `assura-check-compiled`
+  rejects incompatible, stale, moved, or wrong-project artifacts before
+  execution.
+- `PreparedStructureCheck` keeps a validated compiled config in memory for
+  long-lived sessions and reloads only when the config bytes change.
+- `PreparedStructureCheck::check_changed_path` validates one changed path plus
+  configured-structure and direct parent aggregate rules without walking the
+  whole project. This is a scoped editor/daemon answer, not proof that the
+  entire project is clean.
+- `assura-checkd` keeps watcher-derived dirty path detail for conservative
+  file-level events. If the previous full project result was clean, a project
+  check after safe file changes can revalidate only those changed paths and
+  their direct parent aggregate rules. Config changes, directory events,
+  ambiguous watcher events, too many accumulated paths, or previously failing
+  project state still fall back to a full project check.
+- `assura-check-client --dirty-project-path <PATH>` lets editor integrations
+  provide a known changed path explicitly instead of depending on platform
+  watcher delivery. The daemon returns project status by reusing the same
+  dirty-path incremental path when the previous full result was clean, with the
+  same conservative fallback rules.
+- The performance report includes `assura-check-dirty-project-cli` for the
+  one-shot client, `assura-check-dirty-project-socket` for daemon/socket
+  attribution, and `assura-check-dirty-project-session-cli` for the persistent
+  CLI session. These are intentionally separate from the cold headline row.
+- `run_structure_check_cached` is an opt-in result cache for repeated
+  LS-Lint-compatible directory checks. It validates schema, Assura version,
+  config hash, root, config path, checked path, directory modified-time
+  fingerprints, and direct child name/type fingerprints before reuse. Cache
+  snapshots preserve the config's exclude patterns and prune ignored paths when
+  checking freshness, so generated-output changes do not force validation work.
+- File-local result reuse outside the daemon, a persistent file-state index,
+  robust directory content fingerprints, git-assisted dirty-path discovery, and
+  benchmark rows for warm no-change/small-change/delete/config-change scenarios
+  remain future work.
 
 ## Goals
 

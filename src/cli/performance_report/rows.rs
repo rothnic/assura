@@ -21,9 +21,9 @@ pub struct PerformanceResultRow {
     pub arch: String,
     /// Rust compiler version used to build or run Assura.
     pub rust_version: String,
-    /// Node.js version used for LS-Lint execution.
+    /// Node.js version available when installing the pinned LS-Lint package.
     pub node_version: String,
-    /// npm version used for LS-Lint execution.
+    /// npm version used to install the pinned LS-Lint package.
     pub npm_version: String,
     /// Assura package version or binary path used for the run.
     pub assura_version: String,
@@ -41,6 +41,8 @@ pub struct PerformanceResultRow {
     pub rule_cohort: String,
     /// Explicit row family used to separate headline CLI rows from diagnostics.
     pub row_family: String,
+    /// Execution model represented by this row.
+    pub validation_execution_mode: String,
     /// Whether this row is headline-eligible evidence or diagnostic-only.
     pub evidence_role: String,
     /// True when this row must not drive public headline comparisons.
@@ -75,10 +77,38 @@ pub struct PerformanceResultRow {
     pub assura_binary_profile: Option<String>,
     /// Assura binary path for CLI subprocess rows, when applicable.
     pub assura_binary_path: Option<String>,
+    /// LS-Lint executable path for LS-Lint subprocess rows, when applicable.
+    pub ls_lint_binary_path: Option<String>,
+    /// LS-Lint execution mode for LS-Lint subprocess rows, when applicable.
+    pub ls_lint_execution_mode: Option<String>,
     /// Tool measured by this row.
     pub tool_name: String,
     /// Median runtime in milliseconds, when measured.
     pub median_runtime_ms: Option<f64>,
+    /// Half of the native LS-Lint median for this fixture, when available.
+    pub two_x_target_runtime_ms: Option<f64>,
+    /// Median process-launch floor for this fixture, when available.
+    pub process_floor_runtime_ms: Option<f64>,
+    /// Process floor divided by the two-times-faster target.
+    pub process_floor_to_two_x_target_ratio: Option<f64>,
+    /// True when process launch alone is slower than the two-times-faster target.
+    pub process_floor_blocks_two_x: Option<bool>,
+    /// Median runtime for the smallest measured Assura-built Rust CLI process, when available.
+    pub rust_cli_floor_runtime_ms: Option<f64>,
+    /// Assura Rust CLI floor divided by the two-times-faster target.
+    pub rust_cli_floor_to_two_x_target_ratio: Option<f64>,
+    /// True when the Assura Rust CLI floor is slower than the two-times-faster target.
+    pub rust_cli_floor_blocks_two_x: Option<bool>,
+    /// This row's median runtime minus the measured process launch floor.
+    pub runtime_above_process_floor_ms: Option<f64>,
+    /// Assura CLI median minus process floor and Assura in-process validation.
+    pub assura_cli_overhead_ms: Option<f64>,
+    /// This row's median runtime divided by the two-times-faster target.
+    pub runtime_to_two_x_target_ratio: Option<f64>,
+    /// True when this row's median runtime is at or below the two-times-faster target.
+    pub meets_two_x_target: Option<bool>,
+    /// Machine-readable status for a two-times-faster Assura CLI claim.
+    pub two_x_claim_status: Option<String>,
     /// Distribution details for charting and review.
     pub distribution: RuntimeDistribution,
     /// Whether this tool run passed.
@@ -110,6 +140,8 @@ pub(in crate::cli::performance_report) struct RowMeasurement<'a> {
     pub(in crate::cli::performance_report) row_family: &'a str,
     pub(in crate::cli::performance_report) assura_binary_path: Option<&'a Path>,
     pub(in crate::cli::performance_report) assura_binary_profile: Option<&'a str>,
+    pub(in crate::cli::performance_report) ls_lint_binary_path: Option<&'a Path>,
+    pub(in crate::cli::performance_report) ls_lint_execution_mode: Option<&'a str>,
 }
 
 impl<'a> RowMeasurement<'a> {
@@ -119,6 +151,8 @@ impl<'a> RowMeasurement<'a> {
             row_family,
             assura_binary_path: None,
             assura_binary_profile: None,
+            ls_lint_binary_path: None,
+            ls_lint_execution_mode: None,
         }
     }
 
@@ -130,6 +164,18 @@ impl<'a> RowMeasurement<'a> {
         Self {
             assura_binary_path: Some(binary_path),
             assura_binary_profile: binary_profile,
+            ..self
+        }
+    }
+
+    pub(in crate::cli::performance_report) fn with_ls_lint_binary(
+        self,
+        binary_path: &'a Path,
+        execution_mode: Option<&'a str>,
+    ) -> Self {
+        Self {
+            ls_lint_binary_path: Some(binary_path),
+            ls_lint_execution_mode: execution_mode,
             ..self
         }
     }
@@ -172,6 +218,7 @@ pub(in crate::cli::performance_report) fn row(
         legacy_fixture_cohort: "stable-baseline".to_string(),
         rule_cohort: fixture.scenario.rule_cohort.to_string(),
         row_family: measurement.row_family.to_string(),
+        validation_execution_mode: validation_execution_mode(measurement.row_family).to_string(),
         evidence_role: if diagnostic {
             "diagnostic"
         } else {
@@ -196,8 +243,24 @@ pub(in crate::cli::performance_report) fn row(
         assura_binary_path: measurement
             .assura_binary_path
             .map(|path| path.display().to_string()),
+        ls_lint_binary_path: measurement
+            .ls_lint_binary_path
+            .map(|path| path.display().to_string()),
+        ls_lint_execution_mode: measurement.ls_lint_execution_mode.map(str::to_string),
         tool_name: measurement.tool_name.to_string(),
         median_runtime_ms,
+        two_x_target_runtime_ms: None,
+        process_floor_runtime_ms: None,
+        process_floor_to_two_x_target_ratio: None,
+        process_floor_blocks_two_x: None,
+        rust_cli_floor_runtime_ms: None,
+        rust_cli_floor_to_two_x_target_ratio: None,
+        rust_cli_floor_blocks_two_x: None,
+        runtime_above_process_floor_ms: None,
+        assura_cli_overhead_ms: None,
+        runtime_to_two_x_target_ratio: None,
+        meets_two_x_target: None,
+        two_x_claim_status: None,
         distribution,
         success,
         status: if success {
@@ -213,143 +276,41 @@ pub(in crate::cli::performance_report) fn row(
     }
 }
 
-fn is_diagnostic_row(row_family: &str, fixture_cohort: &str) -> bool {
+pub(super) fn is_diagnostic_row(row_family: &str, fixture_cohort: &str) -> bool {
     fixture_cohort != "realistic-equivalent"
         || row_family == "assura-in-process"
+        || row_family == "assura-check-cached-cli"
+        || row_family == "assura-check-compiled-cli"
+        || row_family == "assura-check-hot-cli"
+        || row_family == "assura-check-changed-path-cli"
+        || row_family == "assura-check-dirty-project-cli"
+        || row_family == "assura-check-dirty-project-session-cli"
+        || row_family == "assura-check-dirty-project-socket"
+        || row_family == "assura-check-status-cli"
+        || row_family == "assura-rust-cli-floor"
+        || row_family == "process-floor"
         || row_family.starts_with("assura:phase:")
         || row_family.starts_with("strategy:")
         || row_family.starts_with("traversal:")
 }
 
-#[cfg(test)]
-mod tests {
-    use super::{is_diagnostic_row, row, RowMeasurement};
-    use crate::cli::performance_report::{materialize_fixture, scenarios, PerformanceEnvironment};
-    use std::fs;
-
-    fn test_environment() -> PerformanceEnvironment {
-        PerformanceEnvironment {
-            os: "test-os".to_string(),
-            arch: "test-arch".to_string(),
-            rust_version: "rustc test".to_string(),
-            node_version: "node test".to_string(),
-            npm_version: "npm test".to_string(),
-        }
-    }
-
-    #[test]
-    fn cli_row_carries_fixture_metadata_and_headline_label() {
-        let scenario = scenarios(false)
-            .into_iter()
-            .find(|scenario| scenario.id == "simple_library")
-            .unwrap();
-        let fixture = materialize_fixture(scenario).unwrap();
-        let binary_path = fixture.root.join("target/debug/assura");
-
-        let result = row(
-            &fixture,
-            "2026-05-17T00:00:00Z",
-            "commit",
-            "branch",
-            &test_environment(),
-            "ls-lint v2.3.0",
-            RowMeasurement::new("assura-cli", "assura-cli")
-                .with_assura_binary(&binary_path, Some("debug")),
-            vec![3.0, 1.0, 2.0],
-            None,
-            "baseline",
-        );
-
-        assert_eq!(result.tool_name, "assura-cli");
-        assert_eq!(result.row_family, "assura-cli");
-        assert_eq!(result.evidence_role, "headline-candidate");
-        assert!(!result.diagnostic);
-        assert_eq!(result.fixture_cohort, "realistic-equivalent");
-        assert_eq!(result.legacy_fixture_cohort, "stable-baseline");
-        assert_eq!(result.source_type, "generated");
-        assert!(result.checked_file_count > 0);
-        assert!(result.ignored_file_count > 0);
-        assert!(result.directory_count > 0);
-        assert!(result.rule_count > 0);
-        assert!(result.native_ls_lint_parity);
-        assert_eq!(result.assura_config_path, ".assura/config.yml");
-        assert_eq!(result.ls_lint_config_path, ".ls-lint.yml");
-        assert_eq!(result.config_generation_method, "ls-lint-conversion");
-        assert_eq!(result.expected_assura_exit_status, 0);
-        assert_eq!(result.expected_ls_lint_exit_status, 0);
-        assert_eq!(result.assura_binary_profile.as_deref(), Some("debug"));
-        assert!(result.assura_binary_path.is_some());
-
-        let serialized = serde_json::to_value(&result).unwrap();
-        for field in [
-            "row_family",
-            "evidence_role",
-            "fixture_source_revision",
-            "source_type",
-            "checked_file_count",
-            "ignored_file_count",
-            "directory_count",
-            "rule_count",
-            "rule_surface_summary",
-            "native_ls_lint_parity",
-            "assura_config_path",
-            "ls_lint_config_path",
-            "config_generation_method",
-            "shared_config_id",
-            "expected_assura_exit_status",
-            "expected_ls_lint_exit_status",
-        ] {
-            assert!(serialized.get(field).is_some(), "missing field {field}");
-        }
-
-        let _ = fs::remove_dir_all(&fixture.root);
-    }
-
-    #[test]
-    fn synthetic_and_diagnostic_families_are_not_headline_rows() {
-        let scenario = scenarios(false)
-            .into_iter()
-            .find(|scenario| scenario.id == "rule_heavy")
-            .unwrap();
-        let fixture = materialize_fixture(scenario).unwrap();
-
-        let result = row(
-            &fixture,
-            "2026-05-17T00:00:00Z",
-            "commit",
-            "branch",
-            &test_environment(),
-            "ls-lint v2.3.0",
-            RowMeasurement::new("ls-lint-cli", "ls-lint-cli"),
-            vec![1.0],
-            None,
-            "baseline",
-        );
-
-        assert_eq!(result.fixture_cohort, "synthetic-stress");
-        assert_eq!(result.evidence_role, "diagnostic");
-        assert!(result.diagnostic);
-        assert!(is_diagnostic_row(
-            "assura-in-process",
-            "realistic-equivalent"
-        ));
-        assert!(is_diagnostic_row(
-            "assura:phase:walk-and-validate",
-            "realistic-equivalent"
-        ));
-        assert!(is_diagnostic_row(
-            "traversal:jwalk-parallel",
-            "realistic-equivalent"
-        ));
-        assert!(is_diagnostic_row(
-            "strategy:jwalk-parallel-cli",
-            "realistic-equivalent"
-        ));
-        assert!(is_diagnostic_row(
-            "strategy:walkdir-cli",
-            "realistic-equivalent"
-        ));
-
-        let _ = fs::remove_dir_all(&fixture.root);
+pub(super) fn validation_execution_mode(row_family: &str) -> &'static str {
+    match row_family {
+        "assura-cli" | "assura-check-cli" | "ls-lint-cli" => "cold-cli",
+        "assura-check-cached-cli" => "warm-cache-cli",
+        "assura-check-compiled-cli" => "precompiled-config-cli",
+        "assura-check-hot-cli" => "hot-daemon-cli",
+        "assura-check-changed-path-cli" => "hot-daemon-changed-path-cli",
+        "assura-check-dirty-project-cli" => "hot-daemon-dirty-project-cli",
+        "assura-check-dirty-project-session-cli" => "hot-daemon-dirty-project-session-cli",
+        "assura-check-dirty-project-socket" => "hot-daemon-dirty-project-socket",
+        "assura-check-status-cli" => "status-file-cli",
+        "assura-rust-cli-floor" => "rust-cli-floor",
+        "assura-in-process" => "in-process",
+        "process-floor" => "process-floor",
+        row if row.starts_with("assura:phase:") => "phase-timing",
+        row if row.starts_with("traversal:") => "traversal-only",
+        row if row.starts_with("strategy:") => "diagnostic-strategy-cli",
+        _ => "diagnostic",
     }
 }

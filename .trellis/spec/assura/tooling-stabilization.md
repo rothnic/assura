@@ -20,6 +20,77 @@ between product work and tooling-baseline work explicit.
 - Document every paused or non-blocking check here before treating it as
   acceptable.
 
+## Performance Evidence Contract
+
+Performance claims that compare Assura with LS-Lint must state the executable
+contract being measured and must make that contract visible in machine-readable
+evidence.
+
+### Scope / Trigger
+
+- Trigger: any change to `assura performance-report`, `benches/`, checked-in
+  performance history, or website performance copy.
+
+### Signatures
+
+- `assura performance-report --output <path> [--history <path>]`
+- Criterion benchmark: `cargo bench --bench ls_lint_comparison -- --noplot`
+
+### Contracts
+
+- LS-Lint package: keep the exact package spec in report metadata.
+- LS-Lint executable: resolve and execute the packaged native binary under
+  `node_modules/@ls-lint/ls-lint/bin/`.
+- Check-only executable: build `assura-check-cli` separately with
+  `assura = { default-features = false }` so benchmark rows exclude full CLI,
+  markdown, intelligence, graph, watch, config-validation derive, and git
+  dependency surfaces.
+- Release profile: keep check-only release evidence on the workspace release
+  profile with LTO, one codegen unit, stripping, and `panic = "abort"` unless a
+  report explicitly documents a different profile.
+- Measurement loop: do not time `npm exec`, package resolution, or the package
+  Node wrapper in headline LS-Lint rows.
+- Evidence rows: include the LS-Lint tool name, execution mode, and binary path
+  when the row measures LS-Lint.
+
+### Validation & Error Matrix
+
+| Condition | Required behavior |
+| --- | --- |
+| Package install fails | Emit skipped LS-Lint rows with the exact blocker. |
+| Native binary is missing for the current platform | Emit skipped LS-Lint rows; do not fall back to the Node wrapper silently. |
+| Website copy mentions a winner | Derive the winner from current generated data, not from prior run assumptions. |
+
+### Good / Base / Bad Cases
+
+- Good: `tool_name=ls-lint-native-cli`,
+  `ls_lint_execution_mode=native-binary-from-pinned-npm-package`.
+- Base: Assura and LS-Lint rows run on the same fixture tree and equivalent
+  native LS-Lint rules.
+- Bad: Timing `node_modules/.bin/ls-lint` or `npm exec` while labeling the row
+  as LS-Lint binary performance.
+
+### Tests Required
+
+- Unit coverage for native binary path selection and row metadata.
+- Website build after checked-in report data changes.
+- A regenerated report proving the checked-in JSON uses the native execution
+  mode.
+
+### Wrong vs Correct
+
+Wrong:
+
+```text
+npm exec --package @ls-lint/ls-lint@2.3.0 -- ls-lint
+```
+
+Correct:
+
+```text
+node_modules/@ls-lint/ls-lint/bin/ls-lint-<platform>
+```
+
 ## Deferred Baseline Issues
 
 | Issue | Current Evidence | Treatment | Re-enable / Close Criteria |

@@ -30,9 +30,9 @@ binary, each pointed at equivalent configuration files for the same materialized
 fixture tree.
 
 The goal is not to prove a flattering number. The goal is to decide, from
-evidence, which Assura execution architecture should be the default and whether
-the website can honestly claim that Assura is multiple times faster than LS-Lint
-on realistic equivalent test cases.
+evidence, which Assura execution architecture should be the default and what
+winner, if any, the website can honestly claim for realistic equivalent test
+cases.
 
 ## Problem Statement
 
@@ -222,10 +222,10 @@ The page must separate:
 - in-process phase diagnostics,
 - historical trend or audit log.
 
-The headline may say "multiple times faster than LS-Lint" only if the
-CLI-to-CLI realistic-equivalent fixture set supports that statement. If one
-realistic-equivalent fixture is not multiple times faster, the headline must use
-the weakest-case-supported claim instead.
+The headline may claim a specific winner only if the CLI-to-CLI
+realistic-equivalent fixture set supports that statement. If one
+realistic-equivalent fixture does not support a broad winner claim, the
+headline must use the weakest-case-supported claim instead.
 
 The website must include a short fairness note that says exactly what the
 measured CLI rows include and exclude. It must not rely on large prose blocks to

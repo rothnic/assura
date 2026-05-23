@@ -35,7 +35,7 @@ understand:
 - a rich monorepo policy with directory whitelists, source-tree restrictions,
   config-file exceptions, ignored generated outputs, and extension bans,
 - pinned open-source repositories that are stable across time,
-- measured Assura CLI versus warm LS-Lint CLI rows for every headline case,
+- measured Assura CLI versus native LS-Lint binary rows for every headline case,
 - a single test-case definition page that result rows link to instead of
   embedding long rulesets in the performance summary.
 
@@ -262,3 +262,4 @@ Keep scope narrow: add meaningful LS-Lint benchmark fixtures and evidence, not t
 | 2026-05-17 | Implemented the rich generated `monorepo_policy` fixture, opt-in pinned Next.js/mdBook fixture support, report metadata/schema updates, rolling JSONL history cap, and refreshed checked-in performance/website data. | `src/cli/performance_report/`; `tests/ls_lint_realistic_fixture_manifest.yml`; `benches/history/current.json`; `website/public/data/performance/current.json`; `website/src/content/docs/reference/performance-test-cases.mdx` |
 | 2026-05-17 | Final local gates passed after review fixes. External pinned repository measurement remains opt-in and documented because it clones large third-party repositories. | `cargo fmt --all -- --check`; `git diff --check`; `cargo clippy --all-targets --all-features -- -D warnings`; `cargo test --all-targets --quiet`; `cargo run --quiet -- check --format json .`; `cargo run --release --quiet -- performance-report --output benches/history/current.json --history benches/history/ls-lint-comparison-history.jsonl --website-dir website/public/data/performance --iterations 15`; `pnpm --dir website build` |
 | 2026-05-17 | Goal created from PR #11 performance-doc review and follow-up recommendations. | `docs/goals/assura-pinned-ls-lint-fixture-benchmark-suite.md`; `website/src/content/docs/reference/performance-test-cases.mdx` |
+| 2026-05-18 | Revalidated the native LS-Lint correction, lightweight `assura-check` evidence path, generated `monorepo_policy` row metadata, and website build. Context review: the current public claim remains narrower than a universal 2x statement; checked-in data shows `assura-check` wins the current realistic generated set overall, while only the generated-heavy case exceeds 2x. | `cargo fmt --all -- --check`; `git diff --check`; `cargo test --all-targets --quiet`; `cargo clippy --all-targets --quiet -- -D warnings`; `target/release/assura performance-report --output target/performance/pinned-fixtures-smoke.json --history target/performance/pinned-fixtures-smoke.jsonl --website-dir target/performance/pinned-fixtures-website --iterations 1`; `cargo run --quiet -- check --format json .`; `pnpm build` |

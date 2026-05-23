@@ -45,6 +45,10 @@ pub(super) fn matches_any_compiled_pattern(
 
     let rel = rel_to_string(rel);
     patterns.iter().any(|pattern| {
+        if let Some(suffix) = simple_suffix_pattern(pattern) {
+            return name.ends_with(suffix) || rel.ends_with(suffix);
+        }
+
         compiled_patterns
             .get(pattern)
             .map(|compiled| compiled.matches(name) || compiled.matches(&rel))
@@ -108,6 +112,9 @@ fn collect_patterns<'a>(
 ) {
     for pattern in patterns {
         if compiled.contains_key(pattern) {
+            continue;
+        }
+        if simple_suffix_pattern(pattern).is_some() {
             continue;
         }
         if let Ok(glob) = Pattern::new(pattern) {

@@ -7,6 +7,8 @@ This directory stores chart-ready Assura versus LS-Lint comparison data.
   The report writer keeps the most recent 1,000 rows so checked-in history
   stays inside the repository structure policy.
 - `current.json` is the latest checked-in full report used by the website.
+  Its `claim_summary` object is the machine-readable verdict for the headline
+  `assura-check-cli` versus native `ls-lint-cli` row set.
 
 Generate a current report without changing tracked history:
 
@@ -31,6 +33,12 @@ env OPENSSL_INCLUDE_DIR=/usr/include OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu \
 Baseline updates must be reviewed as normal source changes. CI creates an
 artifact for each PR but does not append to this tracked history.
 
-If `npm exec --package @ls-lint/ls-lint@2.3.0` is unavailable, the report still
-emits Assura rows and LS-Lint `skipped` rows with the exact blocker in
-`details`.
+The current report contract is covered by
+`tests/performance_report_contract_tests.rs`. That test recomputes
+`claim_summary` from the checked-in result rows so the public 2x verdict cannot
+silently drift from the underlying measurements.
+
+The report installs the pinned `@ls-lint/ls-lint@2.3.0` package once, resolves
+the packaged native binary, and times that binary directly. If the package or
+native binary is unavailable, the report still emits Assura rows and LS-Lint
+`skipped` rows with the exact blocker in `details`.

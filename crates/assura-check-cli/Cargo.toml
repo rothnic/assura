@@ -1,0 +1,61 @@
+[package]
+name = "assura-check-cli"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[features]
+default = []
+full-cli = ["assura/full-cli"]
+
+[[bin]]
+name = "assura-check"
+path = "src/main.rs"
+
+[[bin]]
+name = "assura-checkd"
+path = "src/server.rs"
+
+[[bin]]
+name = "assura-check-client"
+path = "src/client.rs"
+
+[[bin]]
+name = "assura-check-session"
+path = "src/session.rs"
+
+[[bin]]
+name = "assura-check-unix-client"
+path = "src/unix_client.rs"
+test = false
+
+[[bin]]
+name = "assura-check-status"
+path = "src/status.rs"
+test = false
+
+[[bin]]
+name = "assura-check-noop"
+path = "src/noop.rs"
+test = false
+
+[[bin]]
+name = "assura-check-compiled"
+path = "src/compiled.rs"
+
+[[bin]]
+name = "assura-check-compile-config"
+path = "src/compile_config.rs"
+
+[dependencies]
+assura = { path = "../..", default-features = false, features = ["json-output", "yaml-config"] }
+lexopt = "0.3.2"
+notify = "6.0"
+pico-args = "0.5"
+postcard = { version = "1.1", features = ["alloc"], default-features = false }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_yaml = "0.9"
+
+[dev-dependencies]
+tempfile = "3.0"

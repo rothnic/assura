@@ -7,8 +7,9 @@ use super::rules::{
 };
 use super::{StructureCheckReport, StructureChecker};
 use crate::config::config::{DirectoryBundle, FileBundle};
+use std::ffi::OsStr;
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 pub(super) struct DirectFilePolicy<'a> {
     pub(super) filename: &'a str,
@@ -17,21 +18,53 @@ pub(super) struct DirectFilePolicy<'a> {
     pub(super) forbidden_by_pattern: bool,
 }
 
+struct DirectChildNames {
+    files: Vec<String>,
+    directories: Vec<String>,
+}
+
 impl StructureChecker {
     pub(super) fn validate_directory_contents(
         &mut self,
         path: &Path,
         report: &mut StructureCheckReport,
     ) {
+        if !self.has_direct_count_constraints {
+            return;
+        }
+
         let rel = self.relative_path(path);
         let rules = self.resolve_rules(&rel);
+        let needs_file_counts = rules
+            .files
+            .as_ref()
+            .and_then(|files| files.exists.as_ref())
+            .is_some();
+        let needs_directory_counts = rules
+            .directories
+            .as_ref()
+            .and_then(|directories| directories.exists.as_ref())
+            .is_some();
+
+        if !needs_file_counts && !needs_directory_counts {
+            return;
+        }
+
+        let Some(children) = self.collect_direct_child_names(path, &rel) else {
+            return;
+        };
 
         if let Some(files) = rules.files.as_ref() {
-            self.validate_file_count_constraints(path, &rel, files, report);
+            self.validate_file_count_constraints(&rel, files, &children.files, report);
         }
 
         if let Some(directories) = rules.directories.as_ref() {
-            self.validate_directory_count_constraints(path, &rel, directories, report);
+            self.validate_directory_count_constraints(
+                &rel,
+                directories,
+                &children.directories,
+                report,
+            );
         }
     }
 
@@ -69,23 +102,14 @@ impl StructureChecker {
 
     fn validate_file_count_constraints(
         &self,
-        directory: &Path,
         rel: &Path,
         files: &FileBundle,
+        filenames: &[String],
         report: &mut StructureCheckReport,
     ) {
         let Some(exists) = files.exists.as_ref() else {
             return;
         };
-
-        let Ok(entries) = fs::read_dir(directory) else {
-            return;
-        };
-        let filenames: Vec<String> = entries
-            .filter_map(Result::ok)
-            .filter(|entry| entry.file_type().map(|ft| ft.is_file()).unwrap_or(false))
-            .filter_map(|entry| entry.file_name().to_str().map(ToOwned::to_owned))
-            .collect();
 
         for (pattern, expected) in exists {
             let count = filenames
@@ -112,23 +136,14 @@ impl StructureChecker {
 
     fn validate_directory_count_constraints(
         &self,
-        directory: &Path,
         rel: &Path,
         directories: &DirectoryBundle,
+        names: &[String],
         report: &mut StructureCheckReport,
     ) {
         let Some(exists) = directories.exists.as_ref() else {
             return;
         };
-
-        let Ok(entries) = fs::read_dir(directory) else {
-            return;
-        };
-        let names: Vec<String> = entries
-            .filter_map(Result::ok)
-            .filter(|entry| entry.file_type().map(|ft| ft.is_dir()).unwrap_or(false))
-            .filter_map(|entry| entry.file_name().to_str().map(ToOwned::to_owned))
-            .collect();
 
         for (pattern, expected) in exists {
             let count = names
@@ -151,5 +166,41 @@ impl StructureChecker {
                 );
             }
         }
+    }
+
+    fn collect_direct_child_names(&self, directory: &Path, rel: &Path) -> Option<DirectChildNames> {
+        let entries = fs::read_dir(directory).ok()?;
+        let mut children = DirectChildNames {
+            files: Vec::new(),
+            directories: Vec::new(),
+        };
+
+        for entry in entries.filter_map(Result::ok) {
+            let name = entry.file_name();
+            if self.is_excluded_rel(&join_child_rel(rel, &name)) {
+                continue;
+            }
+            let Some(name) = name.to_str().map(ToOwned::to_owned) else {
+                continue;
+            };
+            let Ok(file_type) = entry.file_type() else {
+                continue;
+            };
+            if file_type.is_file() {
+                children.files.push(name);
+            } else if file_type.is_dir() {
+                children.directories.push(name);
+            }
+        }
+
+        Some(children)
+    }
+}
+
+fn join_child_rel(parent: &Path, name: &OsStr) -> PathBuf {
+    if parent.as_os_str().is_empty() {
+        PathBuf::from(name)
+    } else {
+        parent.join(name)
     }
 }

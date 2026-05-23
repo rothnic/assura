@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/assura/index.md", "reason": "Assura project constraints and source-of-truth routing"}
+{"file": ".trellis/spec/backend/index.md", "reason": "Rust/backend quality guideline index"}
+{"file": ".trellis/spec/frontend/index.md", "reason": "Website/frontend guideline index"}
+{"file": ".trellis/tasks/05-21-bring-pr11-performance-home/prd.md", "reason": "Task requirements and acceptance criteria"}

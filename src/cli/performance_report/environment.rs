@@ -12,9 +12,9 @@ pub struct PerformanceEnvironment {
     pub arch: String,
     /// Rust compiler version used to build or run Assura.
     pub rust_version: String,
-    /// Node.js version used for LS-Lint execution.
+    /// Node.js version available when installing the pinned LS-Lint package.
     pub node_version: String,
-    /// npm version used for LS-Lint execution.
+    /// npm version used to install the pinned LS-Lint package.
     pub npm_version: String,
 }
 

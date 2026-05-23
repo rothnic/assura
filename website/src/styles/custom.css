@@ -91,15 +91,15 @@ th {
 /* Performance report visuals */
 .perf-evidence {
   box-sizing: border-box;
-  width: min(100%, calc(100vw - 2rem));
-  max-width: min(100%, calc(100vw - 2rem));
+  width: auto;
+  max-width: 100%;
   min-width: 0;
   overflow-wrap: anywhere;
 }
 
 .perf-summary {
   box-sizing: border-box;
-  width: 100%;
+  width: auto;
   max-width: 100%;
   margin: 1rem 0 1.5rem;
   padding: 1rem;
@@ -195,7 +195,7 @@ th {
 
 .perf-table-wrap {
   box-sizing: border-box;
-  width: 100%;
+  width: auto;
   max-width: 100%;
   margin: 1rem 0 1.5rem;
   overflow-x: auto;
@@ -353,8 +353,8 @@ th {
 
 @media (max-width: 58rem) {
   .perf-evidence {
-    width: min(22rem, calc(100vw - 3rem));
-    max-width: min(22rem, calc(100vw - 3rem));
+    inline-size: calc(100vw - 2rem);
+    max-inline-size: calc(100vw - 2rem);
     overflow-x: hidden;
   }
 
@@ -362,14 +362,14 @@ th {
   .perf-table-wrap,
   .perf-note,
   .perf-diagnostic-list {
-    width: 100%;
+    width: auto;
     max-width: 100%;
     min-width: 0;
   }
 
   .perf-summary p,
   .perf-section-intro {
-    max-width: 100%;
+    max-width: 32ch;
   }
 
   .perf-summary-grid,

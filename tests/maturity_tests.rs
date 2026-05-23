@@ -232,6 +232,7 @@ fn test_config_adjust_report() {
 }
 
 #[test]
+#[cfg(feature = "git-signals")]
 fn test_signal_collection_git() {
     let temp_dir = create_test_repo();
     add_commit(temp_dir.path(), "First commit");
@@ -292,6 +293,7 @@ fn test_signal_collection_environment() {
 }
 
 #[test]
+#[cfg(feature = "git-signals")]
 fn test_signal_pipeline() {
     let temp_dir = create_test_repo();
     add_commit(temp_dir.path(), "Initial commit");

@@ -72,9 +72,15 @@ competitive on a more realistic rule-heavy repo shape.
 
 ## LS-Lint Timing Interpretation
 
+Correction, 2026-05-18: the historical rows in this section measured the npm
+package wrapper path, not the packaged native LS-Lint binary. Keep this section
+as wrapper-path history only. Current product claims must use regenerated rows
+with `tool_name=ls-lint-native-cli` and
+`ls_lint_execution_mode=native-binary-from-pinned-npm-package`.
+
 The final report no longer measures repeated npm package resolution in the
 timed loop. It installs/resolves `@ls-lint/ls-lint@2.3.0` once, then executes
-the cached LS-Lint binary for each measured sample.
+the prepared LS-Lint executable for each measured sample.
 
 The LS-Lint rows still include process startup, LS-Lint config load, traversal,
 and validation for each iteration. They are warm tool execution timings, not
@@ -84,10 +90,10 @@ The final local rows are plausible for this measurement design:
 
 | Fixture | Assura ms | LS-Lint ms | Speedup | Interpretation |
 | --- | ---: | ---: | ---: | --- |
-| `simple_library` | 0.843 | 104.185 | 123.5x | Assura is much faster on a realistic small library shape. |
-| `web_app` | 0.801 | 101.060 | 126.2x | Assura is much faster on a realistic frontend shape. |
-| `monorepo_packages` | 1.669 | 104.973 | 62.9x | Assura is much faster on a realistic package-monorepo shape. |
-| `rule_heavy_repo` | 26.145 | 99.177 | 3.8x | Assura is faster on the smaller realistic multi-extension repo shape. |
+| `simple_library` | 0.843 | 104.185 | 123.5x | Historical wrapper-path row; superseded for current claims. |
+| `web_app` | 0.801 | 101.060 | 126.2x | Historical wrapper-path row; superseded for current claims. |
+| `monorepo_packages` | 1.669 | 104.973 | 62.9x | Historical wrapper-path row; superseded for current claims. |
+| `rule_heavy_repo` | 26.145 | 99.177 | 3.8x | Historical wrapper-path row; superseded for current claims. |
 | `ignored_generated_heavy_repo` | 0.542 | 108.457 | 200.3x | Assura pruning is very effective on generated/ignored-heavy repo-shaped input. |
 | `rule_heavy` | 173.930 | 117.829 | 0.7x | LS-Lint is faster on the synthetic multi-extension stress case; Assura still has rule-heavy scale work to do. |
 | `ignored_generated_heavy` | 0.509 | 102.912 | 202.2x | Assura pruning is very effective on generated/ignored-heavy synthetic input. |

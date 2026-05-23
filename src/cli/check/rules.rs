@@ -3,10 +3,9 @@
 use crate::config::config::{
     split_naming_conventions, DirectoryBundle, DirectoryNode, FileBundle, MarkdownBundle,
 };
-use crate::constraints::CaseConvention;
 use glob::Pattern;
-use regex::Regex;
-use std::collections::{HashMap, HashSet};
+use regex_lite::Regex;
+use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
@@ -19,48 +18,49 @@ pub(super) struct EffectiveRules {
 
 #[derive(Debug, Clone)]
 pub(super) struct CompiledExclusion {
-    prefix: Option<String>,
-    prefix_with_slash: Option<String>,
+    prefix: Option<PathBuf>,
     pattern: Option<Pattern>,
 }
 
 impl CompiledExclusion {
     pub(super) fn new(pattern: &str) -> Self {
-        let prefix = pattern.strip_suffix("/**").map(ToOwned::to_owned);
-        let prefix_with_slash = prefix.as_ref().map(|prefix| format!("{}/", prefix));
+        let prefix = pattern.strip_suffix("/**").map(PathBuf::from);
+        let compiled_pattern = if prefix.is_some() {
+            None
+        } else {
+            Pattern::new(pattern).ok()
+        };
         Self {
             prefix,
-            prefix_with_slash,
-            pattern: Pattern::new(pattern).ok(),
+            pattern: compiled_pattern,
         }
     }
 
-    fn matches(&self, rel: &str) -> bool {
+    fn matches_prefix(&self, rel: &Path) -> bool {
         if let Some(prefix) = &self.prefix {
-            if rel == prefix {
-                return true;
-            }
+            return rel == prefix || rel.starts_with(prefix);
         }
+        false
+    }
 
-        if let Some(prefix_with_slash) = &self.prefix_with_slash {
-            if rel.starts_with(prefix_with_slash) {
-                return true;
-            }
-        }
-
+    fn matches_pattern(&self, rel: &str) -> bool {
         self.pattern
             .as_ref()
             .map(|pattern| pattern.matches(rel))
             .unwrap_or(false)
+    }
+
+    fn has_pattern(&self) -> bool {
+        self.pattern.is_some()
     }
 }
 
 pub(super) fn collect_configured_dirs(
     node_rel: PathBuf,
     node: &DirectoryNode,
-    configured_dirs: &mut HashSet<PathBuf>,
+    configured_dirs: &mut Vec<PathBuf>,
 ) {
-    configured_dirs.insert(node_rel.clone());
+    configured_dirs.push(node_rel.clone());
 
     if let Some(children) = &node.children {
         for (child_name, child) in children {
@@ -122,8 +122,16 @@ pub(super) fn is_excluded_rel_with(patterns: &[CompiledExclusion], rel: &Path) -
         return false;
     }
 
+    if patterns.iter().any(|pattern| pattern.matches_prefix(rel)) {
+        return true;
+    }
+
+    if !patterns.iter().any(CompiledExclusion::has_pattern) {
+        return false;
+    }
+
     let rel = rel_to_string(rel);
-    patterns.iter().any(|pattern| pattern.matches(&rel))
+    patterns.iter().any(|pattern| pattern.matches_pattern(&rel))
 }
 
 pub(super) fn normalize_config_dir(path: &str) -> PathBuf {
@@ -241,61 +249,6 @@ pub(super) fn merge_markdown_bundle(
     }
 }
 
-pub(super) fn validate_name(
-    name: &str,
-    convention: &str,
-    regexes: &HashMap<String, Regex>,
-) -> bool {
-    let alternatives = split_naming_conventions(convention);
-    if alternatives.len() > 1 {
-        return alternatives
-            .into_iter()
-            .any(|part| validate_name(name, part, regexes));
-    }
-
-    if let Some(pattern) = convention.strip_prefix("regex:") {
-        return regexes
-            .get(pattern)
-            .map(|regex| regex.is_match(name))
-            .unwrap_or(false);
-    }
-
-    match convention_to_case(convention) {
-        Some(case) => case.validate(name),
-        None => false,
-    }
-}
-
-pub(super) fn validate_file_stem(
-    stem: &str,
-    convention: &str,
-    regexes: &HashMap<String, Regex>,
-) -> bool {
-    validate_name(stem, convention, regexes)
-        || stem
-            .split_once('.')
-            .map(|(base, _)| validate_name(base, convention, regexes))
-            .unwrap_or(false)
-}
-
-fn convention_to_case(convention: &str) -> Option<CaseConvention> {
-    match convention {
-        "snake_case" => Some(CaseConvention::SnakeCase),
-        "camelCase" => Some(CaseConvention::CamelCase),
-        "PascalCase" => Some(CaseConvention::PascalCase),
-        "kebab-case" => Some(CaseConvention::KebabCase),
-        "SCREAMING_SNAKE_CASE" => Some(CaseConvention::ScreamingSnakeCase),
-        "dot.case" => Some(CaseConvention::DotCase),
-        "flatcase" => Some(CaseConvention::FlatCase),
-        "FLATCASE" => Some(CaseConvention::ScreamingFlatCase),
-        "COBOL-CASE" => Some(CaseConvention::CobolCase),
-        "Train-Case" => Some(CaseConvention::TrainCase),
-        "lowercase" => Some(CaseConvention::LowerCase),
-        "UPPERCASE" => Some(CaseConvention::UpperCase),
-        _ => None,
-    }
-}
-
 pub(super) fn parse_size(size: &str) -> Option<u64> {
     let size = size.trim();
     let split = size
@@ -314,6 +267,7 @@ pub(super) fn parse_size(size: &str) -> Option<u64> {
     }
 }
 
+#[cfg(feature = "yaml-config")]
 pub(super) fn parse_frontmatter(content: &str) -> Option<&str> {
     let mut lines = content.lines();
     if lines.next()? != "---" {
@@ -443,4 +397,31 @@ pub(super) fn strip_direct_content_policy(mut rules: EffectiveRules) -> Effectiv
     }
 
     rules
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{is_excluded_rel_with, CompiledExclusion};
+    use std::path::Path;
+
+    #[test]
+    fn prefix_exclusions_match_without_glob_pattern() {
+        let patterns = vec![CompiledExclusion::new("dist/**")];
+
+        assert!(is_excluded_rel_with(&patterns, Path::new("dist")));
+        assert!(is_excluded_rel_with(&patterns, Path::new("dist/app.js")));
+        assert!(!is_excluded_rel_with(
+            &patterns,
+            Path::new("src/dist/app.js")
+        ));
+        assert!(!is_excluded_rel_with(&patterns, Path::new("dist-file.js")));
+    }
+
+    #[test]
+    fn non_prefix_exclusions_still_use_glob_matching() {
+        let patterns = vec![CompiledExclusion::new("**/*.tmp")];
+
+        assert!(is_excluded_rel_with(&patterns, Path::new("src/cache.tmp")));
+        assert!(!is_excluded_rel_with(&patterns, Path::new("src/cache.ts")));
+    }
 }

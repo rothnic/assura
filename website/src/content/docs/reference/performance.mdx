@@ -1,6 +1,6 @@
 ---
 title: Performance
-description: Current Assura CLI versus LS-Lint CLI comparison.
+description: Current Assura check CLI versus native LS-Lint CLI comparison.
 ---
 
 import PerformanceEvidence from '../../../components/performance-evidence.astro';
@@ -9,12 +9,21 @@ import PerformanceEvidence from '../../../components/performance-evidence.astro'
 
 ## How To Read This Page
 
-Use the table above for the product comparison: one Assura CLI run versus one
-warm LS-Lint CLI run on the same generated fixture tree and equivalent ruleset.
+Use the table above for the scoped product comparison: one Linux static-CRT
+release `assura-check` run versus one native LS-Lint binary run on the same
+generated fixture tree and equivalent ruleset. The LS-Lint binary is resolved
+from the pinned `@ls-lint/ls-lint` package before timing so the measured loop
+does not include npm package resolution or the package's Node wrapper.
 
 The current headline is intentionally narrow. It covers generated, stable,
-native LS-Lint-parity fixtures. Pinned Next.js and mdBook fixtures are available
-behind an explicit opt-in flag because they clone third-party repositories.
+native LS-Lint-parity fixtures on the Linux static-CRT release artifact. Local
+macOS dynamic builds are useful diagnostics but are not the release claim.
+Pinned Next.js and mdBook fixtures are available behind an explicit opt-in flag
+because they clone third-party repositories.
+
+The warm gate is a separate editor-session measurement. It uses a persistent
+`assura-check-session` CLI process connected to `assura-checkd`, so it is not a
+replacement for the cold one-process `assura-check` headline row.
 
 ## More Detail
 

@@ -2,31 +2,24 @@
 
 use super::rules::is_excluded_rel_with;
 use super::{CheckError, StructureCheckReport, StructureChecker};
+use std::fs::FileType;
 use std::path::Path;
+#[cfg(feature = "full-cli")]
 use std::thread;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum TraversalStrategy {
+    #[cfg(feature = "full-cli")]
     Serial,
+    #[cfg(feature = "full-cli")]
     SerialSorted,
     Walkdir,
+    #[cfg(feature = "full-cli")]
     ParallelJwalk,
 }
 
 impl TraversalStrategy {
-    fn for_check(fail_fast: bool) -> Self {
-        if fail_fast {
-            return Self::SerialSorted;
-        }
-
-        match std::env::var("ASSURA_CHECK_TRAVERSAL").as_deref() {
-            Ok("jwalk-serial") => Self::Serial,
-            Ok("walkdir") => Self::Walkdir,
-            Ok("parallel-jwalk") => Self::ParallelJwalk,
-            _ => Self::Walkdir,
-        }
-    }
-
+    #[cfg(feature = "full-cli")]
     fn parallelism(self) -> jwalk::Parallelism {
         match self {
             Self::Serial | Self::SerialSorted | Self::Walkdir => jwalk::Parallelism::Serial,
@@ -44,24 +37,88 @@ impl TraversalStrategy {
     }
 }
 
+#[cfg(feature = "full-cli")]
+fn traversal_strategy_for_check(fail_fast: bool) -> TraversalStrategy {
+    if fail_fast {
+        return TraversalStrategy::SerialSorted;
+    }
+
+    match std::env::var("ASSURA_CHECK_TRAVERSAL").as_deref() {
+        Ok("jwalk-serial") => TraversalStrategy::Serial,
+        Ok("walkdir") => TraversalStrategy::Walkdir,
+        Ok("parallel-jwalk") => TraversalStrategy::ParallelJwalk,
+        _ => TraversalStrategy::Walkdir,
+    }
+}
+
+#[cfg(not(feature = "full-cli"))]
+fn traversal_strategy_for_check(_fail_fast: bool) -> TraversalStrategy {
+    TraversalStrategy::Walkdir
+}
+
 impl StructureChecker {
+    #[cfg(feature = "yaml-config")]
+    pub(in crate::cli::check) fn validate_one_changed_path(
+        &mut self,
+        path: &Path,
+        report: &mut StructureCheckReport,
+    ) {
+        if path.exists() {
+            self.validate_one_existing_path(path, report);
+        }
+
+        if let Some(parent) = path
+            .parent()
+            .filter(|parent| parent.starts_with(&self.project_root))
+        {
+            self.validate_directory_contents(parent, report);
+        }
+    }
+
+    #[cfg(feature = "yaml-config")]
+    pub(in crate::cli::check) fn validate_one_existing_path(
+        &mut self,
+        path: &Path,
+        report: &mut StructureCheckReport,
+    ) {
+        let Ok(metadata) = path.metadata() else {
+            return;
+        };
+        let file_type = metadata.file_type();
+        if file_type.is_symlink() {
+            self.validate_walk_entry(path, path, file_type, report);
+            return;
+        }
+
+        if file_type.is_dir() {
+            report.dirs_checked += 1;
+            self.validate_directory(path, report);
+        } else if file_type.is_file() {
+            report.files_checked += 1;
+            self.validate_file(path, report);
+        }
+    }
+
     pub(super) fn walk_and_validate(
         &mut self,
         checked_path: &Path,
         report: &mut StructureCheckReport,
     ) -> Result<(), CheckError> {
-        let strategy = TraversalStrategy::for_check(self.fail_fast);
+        let strategy = traversal_strategy_for_check(self.fail_fast);
         match strategy {
+            #[cfg(feature = "full-cli")]
             TraversalStrategy::Serial | TraversalStrategy::SerialSorted => {
                 self.walk_and_validate_serial(checked_path, report, strategy)
             }
             TraversalStrategy::Walkdir => self.walk_and_validate_walkdir(checked_path, report),
+            #[cfg(feature = "full-cli")]
             TraversalStrategy::ParallelJwalk => {
                 self.walk_and_validate_parallel(checked_path, report)
             }
         }
     }
 
+    #[cfg(feature = "full-cli")]
     fn walk_and_validate_serial(
         &mut self,
         checked_path: &Path,
@@ -89,7 +146,6 @@ impl StructureChecker {
         let project_root = self.project_root.clone();
         let exclude_patterns = self.exclude_patterns.clone();
         let walker = walkdir::WalkDir::new(checked_path)
-            .sort_by_file_name()
             .into_iter()
             .filter_entry(move |entry| {
                 let path = entry.path();
@@ -102,11 +158,12 @@ impl StructureChecker {
 
         for entry in walker {
             let entry = entry?;
-            self.validate_walk_path(entry.path(), checked_path, report);
+            self.validate_walk_entry(entry.path(), checked_path, entry.file_type(), report);
         }
         Ok(())
     }
 
+    #[cfg(feature = "full-cli")]
     fn walk_and_validate_parallel(
         &mut self,
         checked_path: &Path,
@@ -125,6 +182,7 @@ impl StructureChecker {
         Ok(())
     }
 
+    #[cfg(feature = "full-cli")]
     fn walker(
         &self,
         checked_path: &Path,
@@ -154,21 +212,42 @@ impl StructureChecker {
         })
     }
 
+    #[cfg(feature = "full-cli")]
     fn validate_walk_path(
         &mut self,
         path: &Path,
         checked_path: &Path,
         report: &mut StructureCheckReport,
     ) {
-        if path == checked_path && path.is_dir() {
+        let Ok(metadata) = path.metadata() else {
+            return;
+        };
+        self.validate_walk_entry(path, checked_path, metadata.file_type(), report);
+    }
+
+    fn validate_walk_entry(
+        &mut self,
+        path: &Path,
+        checked_path: &Path,
+        file_type: FileType,
+        report: &mut StructureCheckReport,
+    ) {
+        if file_type.is_symlink() {
+            if let Ok(metadata) = path.metadata() {
+                self.validate_walk_entry(path, checked_path, metadata.file_type(), report);
+            }
+            return;
+        }
+
+        if path == checked_path && file_type.is_dir() {
             self.validate_directory_contents(path, report);
             return;
         }
 
-        if path.is_dir() {
+        if file_type.is_dir() {
             report.dirs_checked += 1;
             self.validate_directory(path, report);
-        } else if path.is_file() {
+        } else if file_type.is_file() {
             report.files_checked += 1;
             self.validate_file(path, report);
         }

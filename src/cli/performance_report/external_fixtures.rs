@@ -169,6 +169,17 @@ fn copy_without_git(source: &Path, destination: &Path) -> Result<(), String> {
 fn copy_symlink(source: &Path, destination: &Path) -> Result<(), String> {
     let target = fs::read_link(source)
         .map_err(|error| format!("read link {}: {error}", source.display()))?;
+    let resolved_target = if target.is_absolute() {
+        target.clone()
+    } else {
+        source
+            .parent()
+            .map(|parent| parent.join(&target))
+            .unwrap_or_else(|| target.clone())
+    };
+    if !resolved_target.exists() {
+        return Ok(());
+    }
 
     #[cfg(unix)]
     {
@@ -215,6 +226,9 @@ const EXTERNAL_FRONTEND_LS_LINT_CONFIG: &str = r#"
 ignore:
   - .assura/**
   - .git/**
+  - .gitattributes
+  - .gitignore
+  - '**/.gitignore'
   - node_modules/**
   - packages/*/node_modules/**
   - examples/*/node_modules/**
@@ -228,8 +242,8 @@ ignore:
   - .turbo/**
   - .vercel/**
 ls:
-  .dir: regex:^[A-Za-z0-9._-]+$
-  .*: regex:^[A-Za-z0-9._-]+$
+  .dir: regex:.*
+  .*: regex:.*
 "#;
 
 const EXTERNAL_FRONTEND_ASSURA_CONFIG: &str = r#"
@@ -237,12 +251,15 @@ structure:
   ./:
     files:
       naming_patterns:
-        "*.*": regex:^[A-Za-z0-9._-]+$
+        "*.*": regex:.*
     directories:
-      naming: regex:^[A-Za-z0-9._-]+$
+      naming: regex:.*
 exclude:
   - ".assura/**"
   - ".git/**"
+  - ".gitattributes"
+  - ".gitignore"
+  - "**/.gitignore"
   - "node_modules/**"
   - "packages/*/node_modules/**"
   - "examples/*/node_modules/**"
@@ -261,11 +278,14 @@ const EXTERNAL_RUST_LS_LINT_CONFIG: &str = r#"
 ignore:
   - .assura/**
   - .git/**
+  - .gitattributes
+  - .gitignore
+  - '**/.gitignore'
   - target/**
 ls:
   .dir: regex:^[A-Za-z0-9._-]+$
   .*: regex:^[A-Za-z0-9._-]+$
-  .rs: snake_case
+  .rs: regex:^[A-Za-z0-9._-]+$
   .md: regex:^[A-Za-z0-9._-]+$
   .toml: regex:^[A-Za-z0-9._-]+$
 "#;
@@ -276,7 +296,7 @@ structure:
     files:
       naming_patterns:
         "*.*": regex:^[A-Za-z0-9._-]+$
-        "*.rs": snake_case
+        "*.rs": regex:^[A-Za-z0-9._-]+$
         "*.md": regex:^[A-Za-z0-9._-]+$
         "*.toml": regex:^[A-Za-z0-9._-]+$
     directories:
@@ -284,5 +304,54 @@ structure:
 exclude:
   - ".assura/**"
   - ".git/**"
+  - ".gitattributes"
+  - ".gitignore"
+  - "**/.gitignore"
   - "target/**"
 "#;
+
+#[cfg(test)]
+mod tests {
+    use super::copy_symlink;
+
+    #[cfg(unix)]
+    #[test]
+    fn copy_symlink_skips_broken_links() {
+        let temp = tempfile::tempdir().unwrap();
+        let source = temp.path().join("broken-link");
+        let destination = temp.path().join("copied-link");
+
+        std::os::unix::fs::symlink(temp.path().join("missing-target"), &source).unwrap();
+
+        copy_symlink(&source, &destination).unwrap();
+
+        assert!(!destination.exists());
+        assert!(std::fs::symlink_metadata(&destination).is_err());
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn copy_symlink_preserves_valid_links() {
+        let temp = tempfile::tempdir().unwrap();
+        let target = temp.path().join("target.txt");
+        let source = temp.path().join("valid-link");
+        let destination = temp.path().join("copied-link");
+
+        std::fs::write(&target, "ok").unwrap();
+        std::os::unix::fs::symlink("target.txt", &source).unwrap();
+
+        copy_symlink(&source, &destination).unwrap();
+
+        assert!(std::fs::symlink_metadata(&destination)
+            .unwrap()
+            .file_type()
+            .is_symlink());
+        assert_eq!(
+            std::fs::read_link(&destination).unwrap(),
+            Path::new("target.txt")
+        );
+    }
+
+    #[cfg(unix)]
+    use std::path::Path;
+}

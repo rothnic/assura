@@ -35,16 +35,15 @@ pub fn run_structure_check_with_timings(
     let mut timings = StructureCheckTimings::default();
 
     let discovery_started = Instant::now();
-    let requested_path = match path {
-        Some(path) => path,
+    let checked_path = match path {
+        Some(path) => {
+            if !path.exists() {
+                return Err(CheckError::MissingPath(path));
+            }
+            path.canonicalize()?
+        }
         None => std::env::current_dir()?,
     };
-
-    if !requested_path.exists() {
-        return Err(CheckError::MissingPath(requested_path));
-    }
-
-    let checked_path = requested_path.canonicalize()?;
     let (project_root, config_path) = discover_project(&checked_path, config_path)?;
     timings.config_discovery_ms = discovery_started.elapsed().as_secs_f64() * 1000.0;
 

@@ -1,13 +1,16 @@
 ---
 title: Website Visual Review
 date: 2026-05-16
-status: current
+status: superseded
 ---
 
 # Website Visual Review
 
-This note records the PR #11 website review after the performance evidence and
-interpretation updates were considered complete.
+This note records the PR #11 website review after the 2026-05-16 performance
+evidence and interpretation updates were considered complete. It has been
+superseded by the 2026-05-18 native LS-Lint correction because the older review
+used LS-Lint rows that timed the npm package wrapper path, not the packaged
+native LS-Lint binary.
 
 ## Scope
 
@@ -45,21 +48,22 @@ mostly prose. A second pass made the headline more visible but used separated
 comparison bars and a history progression graphic that was still too hard to
 defend. The final follow-up makes the page evidence-table-first:
 
-- headline metric: Assura completes the comparable realistic bundle with 94.2%
-  lower total runtime than warm LS-Lint;
+- headline metric: Assura completed the comparable realistic bundle with 94.2%
+  lower total runtime than the older wrapper-path LS-Lint measurement;
 - summary cards: bundle reduction, bundle speedup, weakest realistic win, and
   the synthetic caveat;
 - evidence table: each fixture includes what it models, fixture scale, rule
   surface, generator/manifest links, Assura timing, LS-Lint timing, runtime
   reduction, and speedup;
 - fairness contract: explains same materialized tree, converted config source,
-  warm LS-Lint CLI timing, and Assura top-level timing scope;
+  wrapper-path LS-Lint CLI timing, and Assura top-level timing scope;
 - synthetic section: stress fixtures that should not support the product claim;
 - history section: explicitly reframed as an audit log, not a cross-machine
   progression chart.
 
-The realistic equivalent rows show Assura multiple times faster than warm
-LS-Lint 2.3 on the same generated project shapes:
+The historical realistic equivalent rows below showed an Assura win against the
+older wrapper-path LS-Lint measurement. They are retained as review history only
+and must not be used for current native LS-Lint claims:
 
 | Fixture | Assura ms | LS-Lint ms | Runtime reduction | Speedup |
 | --- | ---: | ---: | ---: | ---: |
