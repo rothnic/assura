@@ -70,6 +70,39 @@ jobs:
     - name: Run tests
       run: cargo test --all-features
 
+  release-bundle:
+    name: Release Bundle Smoke
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+    - name: Cache Rust builds
+      uses: Swatinem/rust-cache@v2
+    - name: Build installable bundle
+      run: |
+        export RUSTFLAGS="-C target-feature=+crt-static -C link-arg=-lgcc_eh"
+        cargo build --release --bin assura --no-default-features --features json-output,yaml-config
+        cargo build --release --bin assura-full
+        mkdir -p target/release-bundle
+        cp target/release/assura target/release/assura-full target/release-bundle/
+        tar -C target/release-bundle -czf target/assura-linux-amd64-preview.tar.gz assura assura-full
+    - name: Smoke installed bundle
+      run: |
+        tmp="$(mktemp -d)"
+        tar -xzf target/assura-linux-amd64-preview.tar.gz -C "$tmp"
+        "$tmp/assura" check --quiet .
+        "$tmp/assura" --version
+        "$tmp/assura" --help >/tmp/assura-help.txt
+        grep -q "Usage: assura" /tmp/assura-help.txt
+    - name: Upload preview bundle
+      uses: actions/upload-artifact@v4
+      with:
+        name: assura-linux-amd64-preview
+        path: target/assura-linux-amd64-preview.tar.gz
+        if-no-files-found: error
+        retention-days: 14
+
   coverage:
     name: Code Coverage
     runs-on: ubuntu-latest

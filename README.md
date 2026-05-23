@@ -22,8 +22,7 @@ Assura v0.1 provides:
 
 ```bash
 # Install Assura
-curl -L https://github.com/rothnic/assura/releases/latest/download/assura-linux-amd64.tar.gz | tar xz
-sudo install -m 755 assura assura-full /usr/local/bin/
+curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sh
 
 # Initialize configuration
 assura init

@@ -8,13 +8,13 @@ Use this path for a first local check.
 1. **Install or build Assura**
 
    ```bash
-   curl -L https://github.com/rothnic/assura/releases/latest/download/assura-linux-amd64.tar.gz | tar xz
-   sudo install -m 755 assura assura-full /usr/local/bin/
+   curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sh
    ```
 
-   Choose the matching macOS or Windows archive from
-   [GitHub Releases](https://github.com/rothnic/assura/releases/latest) when
-   you are not on Linux x64. For source builds:
+   The installer supports Linux x64, macOS Apple Silicon, and macOS Intel.
+   Windows users can download the zip from
+   [GitHub Releases](https://github.com/rothnic/assura/releases/latest). For
+   source builds:
 
    ```bash
    git clone https://github.com/rothnic/assura
@@ -45,8 +45,7 @@ Use this path for a first local check.
 5. **Use the same command in CI**
 
    ```bash
-   curl -L https://github.com/rothnic/assura/releases/latest/download/assura-linux-amd64.tar.gz | tar xz
-   sudo install -m 755 assura assura-full /usr/local/bin/
+   curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sudo env BIN_DIR=/usr/local/bin sh
    assura check --format text
    ```
 

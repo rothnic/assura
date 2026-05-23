@@ -28,8 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: curl -L https://github.com/rothnic/assura/releases/latest/download/assura-linux-amd64.tar.gz | tar xz
-      - run: sudo install -m 755 assura assura-full /usr/local/bin/
+      - run: curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sudo env BIN_DIR=/usr/local/bin sh
       - run: assura check --format text .
 ```
 
@@ -48,8 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: curl -L https://github.com/rothnic/assura/releases/latest/download/assura-linux-amd64.tar.gz | tar xz
-      - run: sudo install -m 755 assura assura-full /usr/local/bin/
+      - run: curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sudo env BIN_DIR=/usr/local/bin sh
       - name: Run Assura
         run: assura check --format json . > assura-report.json
       - uses: actions/upload-artifact@v4
@@ -91,8 +89,7 @@ assura:
   image: ubuntu:latest
   before_script:
     - apt-get update && apt-get install -y curl
-    - curl -L https://github.com/rothnic/assura/releases/latest/download/assura-linux-amd64.tar.gz | tar xz
-    - install -m 755 assura assura-full /usr/local/bin/
+    - curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | BIN_DIR=/usr/local/bin sh
   script:
     - assura check --format text .
 ```

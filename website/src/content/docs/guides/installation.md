@@ -9,29 +9,32 @@ Assura ships as a prebuilt CLI. Normal usage does not require Rust.
 
 - Linux, macOS, or Windows.
 
-## Install A Release Binary
+## Install With Script
+
+Linux and macOS:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sh
+```
+
+The installer detects your platform, downloads the matching release archive,
+and installs `assura` plus its internal `assura-full` companion into
+`$HOME/.local/bin` by default. Override the destination with `BIN_DIR`:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sudo env BIN_DIR=/usr/local/bin sh
+```
+
+## Manual Release Archive
 
 Download the latest archive for your platform from
-[GitHub Releases](https://github.com/rothnic/assura/releases/latest).
+[GitHub Releases](https://github.com/rothnic/assura/releases/latest). Extract
+the archive and keep `assura` plus `assura-full` in the same directory.
 
 Linux x64:
 
 ```bash
 curl -L https://github.com/rothnic/assura/releases/latest/download/assura-linux-amd64.tar.gz | tar xz
-sudo install -m 755 assura assura-full /usr/local/bin/
-```
-
-macOS Apple Silicon:
-
-```bash
-curl -L https://github.com/rothnic/assura/releases/latest/download/assura-macos-arm64.tar.gz | tar xz
-sudo install -m 755 assura assura-full /usr/local/bin/
-```
-
-macOS Intel:
-
-```bash
-curl -L https://github.com/rothnic/assura/releases/latest/download/assura-macos-amd64.tar.gz | tar xz
 sudo install -m 755 assura assura-full /usr/local/bin/
 ```
 

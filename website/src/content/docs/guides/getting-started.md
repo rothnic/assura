@@ -14,13 +14,13 @@ supported command is `assura check`.
 1. **Install or build Assura**
 
    ```bash
-   curl -L https://github.com/rothnic/assura/releases/latest/download/assura-linux-amd64.tar.gz | tar xz
-   sudo install -m 755 assura assura-full /usr/local/bin/
+   curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sh
    ```
 
-   Use the matching archive from
-   [GitHub Releases](https://github.com/rothnic/assura/releases/latest) for
-   macOS or Windows. Source builds are for Rust development environments:
+   The installer supports Linux x64, macOS Apple Silicon, and macOS Intel.
+   Windows users can download the zip from
+   [GitHub Releases](https://github.com/rothnic/assura/releases/latest).
+   Source builds are for Rust development environments:
 
    ```bash
    git clone https://github.com/rothnic/assura
@@ -104,8 +104,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: curl -L https://github.com/rothnic/assura/releases/latest/download/assura-linux-amd64.tar.gz | tar xz
-      - run: sudo install -m 755 assura assura-full /usr/local/bin/
+      - run: curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sudo env BIN_DIR=/usr/local/bin sh
       - run: assura check --format text
 ```
 
