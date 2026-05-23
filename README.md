@@ -76,6 +76,22 @@ cargo bench --bench profiling structure_check -- --noplot
 See [Benchmark Instructions](benches/README.md) for the supported release
 evidence path.
 
+## Development Verification
+
+Use the repo verification tiers instead of defaulting to the slowest Cargo
+target set:
+
+```bash
+node --run verify:fast          # normal local edit gate
+node --run verify:pr            # pre-push / PR gate
+node --run verify:release-smoke # no-Rust Linux archive smoke
+node --run verify:full          # includes cargo test --all-targets
+```
+
+`verify:fast` runs Rust tests without benchmark harness targets. Save
+`verify:full` for benchmark-adjacent changes or final release confidence.
+See [Validation Command Tiers](docs/validation.md) for when to use each mode.
+
 ## Roadmap
 
 Agent nudges, quality measurement, long-running watch mode, dependency graph

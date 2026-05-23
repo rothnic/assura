@@ -24,7 +24,7 @@ Fixes #(issue)
 
 ## Testing
 <!-- Describe the tests you ran and how to reproduce them -->
-- [ ] Unit tests pass (`cargo test`)
+- [ ] Fast verification passes (`node --run verify:fast`)
 - [ ] Integration tests pass
 - [ ] Manual testing performed
 
@@ -36,7 +36,7 @@ Fixes #(issue)
 - [ ] I have made corresponding changes to the documentation
 - [ ] My changes generate no new warnings (clippy)
 - [ ] I have added tests that prove my fix is effective or that my feature works
-- [ ] New and existing unit tests pass locally with my changes
+- [ ] New and existing relevant tests pass locally with my changes
 
 ## Screenshots (if applicable)
 <!-- Add screenshots to help explain your changes -->

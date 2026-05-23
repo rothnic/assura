@@ -49,6 +49,7 @@ structure:
         - "crates"
         - "docs"
         - "integrations"
+        - "scripts"
         - "src"
         - "tests"
         - "website"
@@ -192,6 +193,15 @@ structure:
                 files:
                   naming: "snake_case"
                   max_lines: 500
+
+      scripts/:
+        files:
+          naming: "kebab-case"
+          allowed_names:
+            - "verify.sh"
+          allow_extra: false
+        directories:
+          allow_extra: false
       
       docs/:
         files:
