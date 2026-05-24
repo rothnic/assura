@@ -216,6 +216,7 @@ impl IntoIterator for ValidationFailures {
     }
 }
 
+#[cfg(feature = "full-cli")]
 impl From<crate::markdown::MarkdownError> for ConstraintError {
     fn from(err: crate::markdown::MarkdownError) -> Self {
         ConstraintError::execution("markdown", err.to_string())

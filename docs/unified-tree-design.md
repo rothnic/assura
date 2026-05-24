@@ -1,9 +1,17 @@
 ---
 title: 'Assura Unified Tree Configuration Design'
-status: active
+status: historical
 ---
 
 # Assura Unified Tree Configuration Design
+
+> Historical design input, not current product source truth.
+>
+> The current supported config surface is the `structure:` notation documented
+> in `docs/analysis/2026-05-15-notation-source-truth.md`. This document
+> predates the current structure-first implementation and uses proposed
+> `rules:`, `require:`, `allow:`, and group notation that is not fully
+> implemented.
 
 **Core Principle:** Single hierarchical tree that mirrors directory structure, with directives hanging off nodes.
 

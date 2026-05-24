@@ -1,0 +1,415 @@
+---
+import currentReport from '../../public/data/performance/current.json';
+
+type ResultRow = {
+  fixture_id: string;
+  fixture_cohort?: string;
+  row_family?: string;
+  validation_execution_mode?: string;
+  tool_name?: string;
+  evidence_role?: string;
+  diagnostic?: boolean;
+  median_runtime_ms?: number | null;
+  two_x_target_runtime_ms?: number | null;
+  two_x_claim_status?: string | null;
+  process_floor_runtime_ms?: number | null;
+  rust_cli_floor_runtime_ms?: number | null;
+  checked_file_count?: number;
+  ignored_file_count?: number;
+  directory_count?: number;
+  rule_count?: number;
+  rule_surface_summary?: string;
+  status?: string;
+  native_ls_lint_parity?: boolean;
+  source_type?: string;
+  fixture_source_revision?: string;
+  shared_config_id?: string;
+  ls_lint_config_path?: string;
+  assura_config_path?: string;
+  config_generation_method?: string;
+  assura_version?: string;
+  ls_lint_version?: string;
+  ls_lint_execution_mode?: string | null;
+  assura_binary_profile?: string | null;
+};
+
+type CurrentReport = {
+  timestamp?: string;
+  commit_sha?: string;
+  branch?: string;
+  assura_version?: string;
+  ls_lint_version?: string;
+  environment?: {
+    os?: string;
+    arch?: string;
+  };
+  claim_summary?: {
+    fixture_count?: number;
+    measured_fixture_count?: number;
+    assura_faster_count?: number;
+    two_x_pass_count?: number;
+    two_x_fail_count?: number;
+    blocked_by_process_floor_count?: number;
+    blocked_by_rust_cli_floor_count?: number;
+    plain_miss_count?: number;
+    aggregate_speedup_ratio?: number | null;
+    all_two_x_targets_met?: boolean;
+    minimum_completion_iterations?: number;
+    measured_iterations?: number;
+    sufficient_completion_iterations?: boolean;
+    two_x_claim_verdict?: string;
+  };
+  warm_claim_summary?: {
+    fixture_count?: number;
+    measured_fixture_count?: number;
+    assura_faster_count?: number;
+    two_x_pass_count?: number;
+    two_x_fail_count?: number;
+    blocked_by_process_floor_count?: number;
+    blocked_by_rust_cli_floor_count?: number;
+    plain_miss_count?: number;
+    aggregate_speedup_ratio?: number | null;
+    all_two_x_targets_met?: boolean;
+    minimum_completion_iterations?: number;
+    measured_iterations?: number;
+    sufficient_completion_iterations?: boolean;
+    two_x_claim_verdict?: string;
+  };
+  results?: ResultRow[];
+};
+
+type FixtureCopy = {
+  label: string;
+  projectShape: string;
+  focus: string;
+};
+
+type Pair = {
+  fixtureId: string;
+  copy: FixtureCopy;
+  assura: ResultRow;
+  lslint: ResultRow;
+  ratio: number;
+  lowerPercent: number;
+  winner: string;
+};
+
+const report = currentReport as CurrentReport;
+const rows = (report.results ?? []).filter((row) => row.status === 'pass');
+const claimSummary = report.claim_summary;
+const warmClaimSummary = report.warm_claim_summary;
+
+const fixtureCopy: Record<string, FixtureCopy> = {
+  simple_library: {
+    label: 'Small library',
+    projectShape: 'Rust/package library with docs, tests, and build output.',
+    focus: 'Low-end case where startup and config loading are visible.',
+  },
+  web_app: {
+    label: 'Web app',
+    projectShape: 'Frontend app with components, tests, CSS modules, assets, and dist output.',
+    focus: 'Common app layout with generated output pruning.',
+  },
+  monorepo_packages: {
+    label: 'Package monorepo',
+    projectShape: 'Two packages with package-local source, tests, docs, and dist output.',
+    focus: 'Nested package scopes without becoming a synthetic stress test.',
+  },
+  monorepo_policy: {
+    label: 'Monorepo policy',
+    projectShape: 'Strict TypeScript/Next-style workspace with app, package, docs, scripts, infra, and CI scopes.',
+    focus: 'Policy-shaped rules: root whitelisting, config exceptions, source bans, and generated-output pruning.',
+  },
+  rule_heavy_repo: {
+    label: 'Rule-heavy repo',
+    projectShape: 'Repo-shaped tree with many extension-specific file rules.',
+    focus: 'Broad LS-Lint-compatible naming surface.',
+  },
+  ignored_generated_heavy_repo: {
+    label: 'Generated-heavy repo',
+    projectShape: 'Project with large generated and coverage folders inside the tree.',
+    focus: 'Ignored-path pruning before validation work is spent.',
+  },
+};
+
+const realisticFixtureIds = Object.keys(fixtureCopy);
+
+function rowFamily(row: ResultRow): string {
+  return row.row_family ?? row.tool_name ?? '';
+}
+
+function buildPair(fixtureId: string): Pair | null {
+  const assura = rows.find(
+    (row) => row.fixture_id === fixtureId && rowFamily(row) === 'assura-cli',
+  ) ?? rows.find((row) => row.fixture_id === fixtureId && rowFamily(row) === 'assura-check-cli');
+  const lslint = rows.find(
+    (row) => row.fixture_id === fixtureId && rowFamily(row) === 'ls-lint-cli',
+  );
+  if (!assura?.median_runtime_ms || !lslint?.median_runtime_ms) {
+    return null;
+  }
+
+  return {
+    fixtureId,
+    copy: fixtureCopy[fixtureId],
+    assura,
+    lslint,
+    ...compareRuntimes(assura.median_runtime_ms, lslint.median_runtime_ms),
+  };
+}
+
+const realisticPairs = realisticFixtureIds.map(buildPair).filter((pair): pair is Pair => Boolean(pair));
+const datasetRevisions = Array.from(
+  new Set(
+    realisticPairs
+      .map((pair) => pair.assura.fixture_source_revision)
+      .filter((revision): revision is string => Boolean(revision)),
+  ),
+);
+const datasetLabel = datasetRevisions.length > 0 ? datasetRevisions.join(' + ') : 'generated fixtures';
+
+const syntheticRows = rows.filter(
+  (row) => row.row_family === 'assura-cli' && row.fixture_cohort === 'synthetic-stress',
+);
+const firstAssuraRow =
+  rows.find((row) => row.row_family === 'assura-cli') ??
+  rows.find((row) => row.row_family === 'assura-check-cli');
+const firstLsLintRow = rows.find((row) => row.row_family === 'ls-lint-cli');
+const releaseProfile = firstAssuraRow?.assura_binary_profile ?? 'unknown profile';
+const platformLabel = [report.environment?.os, report.environment?.arch].filter(Boolean).join(' / ') || 'unknown platform';
+
+const totalAssura = realisticPairs.reduce(
+  (total, pair) => total + (pair.assura.median_runtime_ms ?? 0),
+  0,
+);
+const totalLsLint = realisticPairs.reduce(
+  (total, pair) => total + (pair.lslint.median_runtime_ms ?? 0),
+  0,
+);
+const totalComparison = compareRuntimes(totalAssura, totalLsLint);
+const closestPair = realisticPairs.reduce<Pair | null>(
+  (closest, pair) => (!closest || pair.ratio < closest.ratio ? pair : closest),
+  null,
+);
+
+function compareRuntimes(assuraMs: number, lsLintMs: number): Pick<Pair, 'ratio' | 'lowerPercent' | 'winner'> {
+  if (assuraMs === lsLintMs) {
+    return { ratio: 1, lowerPercent: 0, winner: 'Tie' };
+  }
+  const assuraWins = assuraMs < lsLintMs;
+  const faster = assuraWins ? assuraMs : lsLintMs;
+  const slower = assuraWins ? lsLintMs : assuraMs;
+  return {
+    ratio: slower / faster,
+    lowerPercent: (1 - faster / slower) * 100,
+    winner: assuraWins ? 'Assura' : 'Native LS-Lint',
+  };
+}
+
+function formatMs(value?: number | null): string {
+  return typeof value === 'number' ? `${value.toFixed(value >= 10 ? 1 : 2)} ms` : 'n/a';
+}
+
+function formatPercent(value: number): string {
+  return `${value.toFixed(1)}%`;
+}
+
+function formatSpeedup(value: number): string {
+  return `${value.toFixed(value >= 10 ? 1 : 2)}x`;
+}
+
+function formatTwoXStatus(row: ResultRow): string | null {
+  switch (row.two_x_claim_status) {
+    case 'meets-target':
+      return `2x target met (${formatMs(row.two_x_target_runtime_ms)})`;
+    case 'blocked-by-process-floor':
+      return `2x target blocked by process floor (${formatMs(row.process_floor_runtime_ms)})`;
+    case 'blocked-by-rust-cli-floor':
+      return `2x target blocked by Rust CLI floor (${formatMs(row.rust_cli_floor_runtime_ms)})`;
+    case 'misses-target':
+      return `2x target missed (${formatMs(row.two_x_target_runtime_ms)})`;
+    default:
+      return null;
+  }
+}
+
+function formatVerdict(value?: string): string {
+  switch (value) {
+    case 'complete':
+      return 'Complete';
+    case 'not-complete-low-sample':
+      return 'Not complete (low sample)';
+    default:
+      return 'Not complete';
+  }
+}
+
+function formatCount(numerator?: number, denominator?: number): string {
+  return `${numerator ?? 0} / ${denominator ?? 0}`;
+}
+
+function shortSha(value?: string): string {
+  return value ? value.slice(0, 7) : 'unknown';
+}
+
+function formatTimestamp(value?: string): string {
+  if (!value) return 'unknown';
+  return value.replace('T', ' ').replace('Z', ' UTC');
+}
+
+function lslintVersion(value?: string): string {
+  return value?.split('\n')[0] ?? 'unknown';
+}
+
+function scale(row: ResultRow): string {
+  return `${row.checked_file_count ?? 0} checked, ${row.ignored_file_count ?? 0} ignored, ${row.directory_count ?? 0} dirs`;
+}
+
+function ruleCount(row: ResultRow): string {
+  return `${row.rule_count ?? 0} LS-Lint rules`;
+}
+
+function testCaseHref(fixtureId: string): string {
+  return `/reference/performance-test-cases/#${fixtureId.replaceAll('_', '-')}`;
+}
+---
+
+<section class="perf-evidence" aria-labelledby="performance-summary">
+  <div class="perf-summary">
+    <p class="perf-kicker">Current comparison</p>
+    <h2 id="performance-summary">Assura check CLI vs native LS-Lint CLI</h2>
+    <p class="perf-summary-line">
+      Linux static-CRT release artifact. Same generated trees. Equivalent
+      rules. Case definitions live on the test-case page.
+    </p>
+
+    <div class="perf-summary-grid">
+      <dl class="perf-facts" aria-label="Performance summary facts">
+        <div>
+          <dt>Faster tool</dt>
+          <dd>{totalComparison.winner}</dd>
+        </div>
+        <div>
+          <dt>Runtime ratio</dt>
+          <dd>{formatSpeedup(claimSummary?.aggregate_speedup_ratio ?? totalComparison.ratio)}</dd>
+        </div>
+        <div>
+          <dt>2x gate</dt>
+          <dd>{formatVerdict(claimSummary?.two_x_claim_verdict)}</dd>
+        </div>
+        <div>
+          <dt>2x cases</dt>
+          <dd>{formatCount(claimSummary?.two_x_pass_count, claimSummary?.measured_fixture_count)}</dd>
+        </div>
+        <div>
+          <dt>Assura faster</dt>
+          <dd>{formatCount(claimSummary?.assura_faster_count ?? realisticPairs.length, claimSummary?.measured_fixture_count ?? realisticPairs.length)}</dd>
+        </div>
+      </dl>
+
+      <dl class="perf-run-context" aria-label="Report context">
+        <div>
+          <dt>Dataset</dt>
+          <dd><a href="/reference/performance-test-cases/">{datasetLabel}</a></dd>
+        </div>
+        <div>
+          <dt>Build profile</dt>
+          <dd>{releaseProfile}; {platformLabel}</dd>
+        </div>
+        <div>
+          <dt>Closest case</dt>
+          <dd>{closestPair ? `${formatSpeedup(closestPair.ratio)} on ${closestPair.copy.label}` : 'n/a'}</dd>
+        </div>
+        <div>
+          <dt>Floor-limited misses</dt>
+          <dd>{formatCount((claimSummary?.blocked_by_process_floor_count ?? 0) + (claimSummary?.blocked_by_rust_cli_floor_count ?? 0), claimSummary?.two_x_fail_count)}</dd>
+        </div>
+        <div>
+          <dt>Warm 2x gate</dt>
+          <dd>{formatVerdict(warmClaimSummary?.two_x_claim_verdict)}; {formatCount(warmClaimSummary?.two_x_pass_count, warmClaimSummary?.measured_fixture_count)} cases</dd>
+        </div>
+        <div>
+          <dt>Evidence source</dt>
+          <dd><a href="https://github.com/rothnic/assura/pull/11">PR #11</a> at <code>{shortSha(report.commit_sha)}</code></dd>
+        </div>
+        <div>
+          <dt>Captured</dt>
+          <dd>{formatTimestamp(report.timestamp)}</dd>
+        </div>
+        <div>
+          <dt>Versions</dt>
+          <dd>Assura {firstAssuraRow?.assura_version ?? report.assura_version ?? 'unknown'}; {lslintVersion(firstLsLintRow?.ls_lint_version ?? report.ls_lint_version)} native binary</dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+
+  <h2 id="test-case-results">Test Case Results</h2>
+  <p class="perf-section-intro">
+    One row per measured case. Open a case to inspect what it represents and
+    where the dataset still needs stronger real-project coverage.
+  </p>
+
+  <div class="perf-table-wrap" aria-label="Assura and LS-Lint comparison by test case">
+    <table class="perf-table">
+      <thead>
+        <tr>
+          <th>Test case</th>
+          <th>Project shape</th>
+          <th>Runtime</th>
+          <th>Result</th>
+        </tr>
+      </thead>
+      <tbody>
+        {realisticPairs.map((pair) => (
+          <tr>
+            <td data-label="Test case">
+              <strong><a href={testCaseHref(pair.fixtureId)}>{pair.copy.label}</a></strong>
+              <span class="perf-cell-note"><code>{pair.fixtureId}</code></span>
+            </td>
+            <td data-label="Project shape">
+              {pair.copy.projectShape}
+              <span class="perf-cell-note">{scale(pair.assura)}; {ruleCount(pair.assura)}</span>
+              <span class="perf-cell-note">{pair.copy.focus}</span>
+            </td>
+            <td data-label="Runtime">
+              <strong>Assura check:</strong> {formatMs(pair.assura.median_runtime_ms)}
+              <span class="perf-cell-note">Native LS-Lint: {formatMs(pair.lslint.median_runtime_ms)}</span>
+            </td>
+            <td data-label="Result">
+              <strong>{pair.winner}: {formatSpeedup(pair.ratio)}</strong>
+              <span class="perf-cell-note">{formatPercent(pair.lowerPercent)} lower runtime</span>
+              {formatTwoXStatus(pair.assura) && (
+                <span class="perf-cell-note">{formatTwoXStatus(pair.assura)}</span>
+              )}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="perf-note">
+    <strong>What this does not prove yet:</strong> pinned Next.js and mdBook
+    checkouts are implemented as opt-in performance fixtures, but the default
+    published baseline still uses generated fixtures to keep ordinary refreshes
+    deterministic. See <a href="/reference/performance-test-cases/">Performance
+    Test Cases</a> for the exact opt-in command.
+  </div>
+
+  <h2 id="diagnostic-coverage">Diagnostic Coverage</h2>
+  <p>
+    The report also keeps synthetic stress cases for regression detection. They
+    are intentionally excluded from the headline comparison.
+  </p>
+
+  <div class="perf-diagnostic-list" aria-label="Synthetic stress fixtures">
+    {syntheticRows.map((row) => (
+      <div>
+        <strong><code>{row.fixture_id}</code></strong>
+        <span>{scale(row)}</span>
+        <span>{row.rule_count} rules; {row.rule_surface_summary}</span>
+      </div>
+    ))}
+  </div>
+</section>

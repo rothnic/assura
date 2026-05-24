@@ -1,0 +1,238 @@
+---
+title: Performance Test Cases
+description: Stable fixtures used by Assura performance reports.
+---
+
+This page is the source of truth for benchmark case definitions. The
+[performance summary](/reference/performance/) should link here instead of embedding
+rulesets in the results table.
+
+Assura reports separate three kinds of evidence:
+
+- current measured cases: generated fixtures in `generated-fixtures-v1` and
+  `generated-fixtures-v2`
+- diagnostic stress cases: synthetic cases used for regression detection
+- opt-in pinned real-project cases: external Git repositories that can be
+  measured explicitly without vendoring third-party source
+
+## Current Measured Cases
+
+The current comparison uses generated fixtures that are stable and native
+LS-Lint parity. They are useful for a controlled CLI-to-CLI comparison, but they
+are not yet representative enough to stand alone as public benchmark proof.
+
+<a id="simple-library"></a>
+
+### Simple library
+
+Fixture: `simple_library`. Small library with source files, docs, tests, and
+ignored build output.
+
+| Field | Value |
+| --- | --- |
+| Comparable project | Rust or package library |
+| Scale focus | Startup and config loading overhead |
+| Current rule surface | directory naming, source naming, markdown count checks, test naming, ignored target output |
+
+<a id="web-app"></a>
+
+### Web app
+
+Fixture: `web_app`. Frontend app with components, tests, CSS modules, assets,
+and ignored dist output.
+
+| Field | Value |
+| --- | --- |
+| Comparable project | small web app |
+| Scale focus | component/test/asset naming plus generated-output pruning |
+| Current rule surface | TSX/component naming, test naming, CSS module naming, asset naming, dist pruning |
+
+<a id="monorepo-packages"></a>
+
+### Package monorepo
+
+Fixture: `monorepo_packages`. Two-package workspace with package-local source,
+tests, docs, and ignored dist output.
+
+| Field | Value |
+| --- | --- |
+| Comparable project | small package monorepo |
+| Scale focus | nested package scopes |
+| Current rule surface | package-scoped TypeScript/TSX rules, test naming, markdown count checks, dist pruning |
+
+<a id="rule-heavy-repo"></a>
+
+### Rule-heavy repo
+
+Fixture: `rule_heavy_repo`. Repo-shaped generated tree with many
+extension-specific rules.
+
+| Field | Value |
+| --- | --- |
+| Comparable project | broad multi-extension repository |
+| Scale focus | rule matching cost |
+| Current rule surface | many extension and subextension rules over a modest tree |
+
+This case should be replaced or supplemented by a more meaningful policy-style
+case. The current extension list is mechanically useful, but it does not explain
+real project structure well.
+
+<a id="monorepo-policy"></a>
+
+### Monorepo policy
+
+Fixture: `monorepo_policy`. Generated TypeScript/Next-style workspace with
+app, package, documentation, scripts, infrastructure, config, tests, and CI
+scopes.
+
+| Field | Value |
+| --- | --- |
+| Comparable project | strict frontend/package monorepo |
+| Scale focus | policy-shaped rule matching and ignored generated output |
+| Current rule surface | root directory/file whitelisting, app/package overrides, config-file exceptions, JavaScript/JSX source bans, docs/scripts/infra policies, generated-output pruning |
+
+This is the generated fixture intended to replace the old extension-heavy
+`rule_heavy_repo` as the more meaningful policy case.
+
+<a id="ignored-generated-heavy-repo"></a>
+
+### Generated-heavy repo
+
+Fixture: `ignored_generated_heavy_repo`. Project with large generated and
+coverage folders inside the tree.
+
+| Field | Value |
+| --- | --- |
+| Comparable project | project with generated artifacts inside the repo |
+| Scale focus | ignored-path pruning |
+| Current rule surface | TypeScript naming and generated/coverage pruning |
+
+## Opt-In Pinned Repository Cases
+
+Pinned external fixtures are implemented behind an explicit flag because they
+clone large third-party repositories. They are deterministic but too expensive
+for every local refresh.
+
+Run them with:
+
+```bash
+cargo run --release --quiet -- performance-report \
+  --include-external-fixtures \
+  --output target/performance/external-fixtures.json \
+  --history target/performance/external-fixtures.jsonl \
+  --website-dir target/performance/website-data \
+  --iterations 3
+```
+
+Set `ASSURA_PERF_EXTERNAL_FIXTURE_CACHE=/path/to/cache` to share the Git cache
+across runs. Without it, Assura uses `target/performance/external-fixture-cache`.
+
+### Workspace Monorepo Policy
+
+The default report includes a generated detailed LS-Lint policy that constrains
+the shape of a TypeScript/Next-style monorepo:
+
+- root directory whitelist
+- special root docs such as `README`, `AGENTS`, `CONTRIBUTING`, and `LICENSE`
+- app and package directory overrides
+- JavaScript disallowed in source subtrees except explicit config files
+- docs directory restricted to docs-like file types
+- infrastructure, specs, tests, and workflow-specific subtrees
+- generated output, package-manager state, caches, and `node_modules` ignored
+
+Representative excerpt:
+
+```yaml
+ls:
+  .dir: regex:(apps|packages|config|scripts|docs|specs|tests|infra|src|\.github)
+  .md: regex:(README|AGENTS|CONTRIBUTING|CHANGELOG|LICENSE) | kebab-case
+
+  apps:
+    .dir: kebab-case
+    "*":
+      .dir: kebab-case
+      .tsx: kebab-case
+      .mjs: regex:(eslint\.config|postcss\.config|tailwind\.config)
+      .js: regex:(next\.config|postcss\.config|tailwind\.config)
+      "*":
+        .tsx: kebab-case
+        .js: regex:^$
+        .jsx: regex:^$
+
+  packages:
+    .dir: kebab-case
+    "*":
+      .ts: kebab-case
+      .tsx: kebab-case
+      .js: regex:^$
+      "*":
+        .ts: kebab-case
+        .tsx: kebab-case
+        .js: regex:^$
+
+  docs:
+    .md: regex:(README|AGENTS) | kebab-case
+    .js: regex:^$
+    .ts: regex:^$
+
+ignore:
+  - node_modules
+  - apps/*/node_modules
+  - packages/*/node_modules
+  - dist
+  - apps/*/dist
+  - packages/*/dist
+  - coverage
+  - .next
+  - apps/*/.next
+  - .turbo
+```
+
+This case is measured by default as `monorepo_policy`.
+
+### Pinned Next.js Checkout
+
+Candidate:
+
+| Field | Value |
+| --- | --- |
+| Repository | `vercel/next.js` |
+| Pinned ref | `v15.0.0` |
+| Resolved commit | `ea8bc0ec2bbae18dd6861db15d66b92c36feeeb8` |
+| Purpose | large frontend/monorepo tree users recognize |
+
+Fixture: `pinned_nextjs`. This case records the dependency/cache policy,
+ignored generated paths, checked file count, ignored file count, directory
+count, exact LS-Lint config, and equivalent Assura config in opt-in report rows.
+
+### Pinned mdBook Checkout
+
+Candidate:
+
+| Field | Value |
+| --- | --- |
+| Repository | `rust-lang/mdBook` |
+| Pinned ref | `v0.4.48` |
+| Resolved commit | `b7a27d2759e80d804a33a4bc9c31b2b6863a5cb2` |
+| Purpose | Rust docs/library structure with a different ecosystem shape |
+
+Fixture: `pinned_mdbook`. This case uses the same opt-in materialization path
+as `pinned_nextjs`.
+
+## LS-Lint Features To Cover
+
+The upstream LS-Lint docs include several features that should be represented by
+future test cases:
+
+- wildcard extensions and subextensions
+- multiple rules with the `|` operator
+- directory-specific overrides
+- glob and alternative directory patterns
+- regex negation and alternation
+- directory substitutions such as `${0}` and `${1}`
+- `exists` counts and ranges for files or directories
+
+Useful references:
+
+- [LS-Lint basics: directory patterns, wildcard extensions, and overrides](https://ls-lint.org/2.3/configuration/the-basics.html)
+- [LS-Lint rules: regex, directory substitutions, and exists](https://ls-lint.org/2.3/configuration/the-rules.html)

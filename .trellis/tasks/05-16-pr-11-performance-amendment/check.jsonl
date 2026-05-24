@@ -1,0 +1,5 @@
+{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file": ".trellis/spec/assura/index.md", "reason": "Assura canonical constraints for final review"}
+{"file": ".trellis/spec/assura/structure-enforcement.md", "reason": "Review deterministic structure validation behavior and output contract"}
+{"file": "docs/analysis/2026-05-15-performance-architecture-statement.md", "reason": "Review performance evidence against prior architecture statement"}
+{"file": ".trellis/spec/assura/tooling-stabilization.md", "reason": "Review required validation and local tooling expectations"}

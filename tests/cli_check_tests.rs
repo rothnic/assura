@@ -1,6 +1,7 @@
 use std::fs;
 use std::process::Command;
 
+use assura::cli::{run_structure_check, run_structure_check_with_timings};
 use assura::config::ls_compat::convert_ls_lint_to_config;
 use tempfile::TempDir;
 
@@ -87,6 +88,34 @@ fn check_passes_valid_structure() {
 }
 
 #[test]
+fn profiled_check_reports_stage_timings_without_changing_result() {
+    let project = TempDir::new().unwrap();
+    write_config(&project, baseline_config());
+
+    fs::create_dir(project.path().join("src")).unwrap();
+    fs::create_dir(project.path().join("docs")).unwrap();
+    fs::write(project.path().join("README.md"), "# Example\n").unwrap();
+    fs::write(project.path().join("src/main_file.rs"), "fn main() {}\n").unwrap();
+    fs::write(
+        project.path().join("docs/project-note.md"),
+        "---\ntitle: Project Note\n---\n# Project Note\n",
+    )
+    .unwrap();
+
+    let (report, timings) =
+        run_structure_check_with_timings(Some(project.path().to_path_buf()), None, false).unwrap();
+
+    assert!(report.success, "profiled check should preserve success");
+    assert_eq!(report.violations.len(), 0);
+    assert!(timings.total_ms >= timings.config_discovery_ms);
+    assert!(timings.total_ms >= timings.config_load_ms);
+    assert!(timings.total_ms >= timings.checker_init_ms);
+    assert!(timings.total_ms >= timings.configured_structure_ms);
+    assert!(timings.total_ms >= timings.walk_and_validate_ms);
+    assert!(timings.total_ms >= timings.report_sort_ms);
+}
+
+#[test]
 fn check_fails_bad_file_naming() {
     let project = TempDir::new().unwrap();
     write_config(&project, baseline_config());
@@ -152,6 +181,336 @@ fn check_ignores_excluded_paths() {
         "excluded target file should not fail:\n{}",
         String::from_utf8_lossy(&output.stdout)
     );
+}
+
+#[test]
+fn check_prunes_excluded_directories_before_validation() {
+    let project = TempDir::new().unwrap();
+    write_config(
+        &project,
+        r#"
+structure:
+  ./:
+    files:
+      naming: kebab-case
+    directories:
+      naming: kebab-case
+    children:
+      .assura/:
+        inherit: false
+        files:
+          naming: kebab-case
+exclude:
+  - generated/**
+"#,
+    );
+
+    fs::create_dir(project.path().join("generated")).unwrap();
+    fs::create_dir(project.path().join("generated/BadDir")).unwrap();
+    fs::write(project.path().join("generated/BadName.rs"), "").unwrap();
+    fs::create_dir(project.path().join("src")).unwrap();
+    fs::write(project.path().join("src/good-file.rs"), "").unwrap();
+
+    let report = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+
+    assert!(report.success, "report was: {report:#?}");
+    assert_eq!(report.violations.len(), 0);
+    assert_eq!(
+        report.dirs_checked, 2,
+        ".assura and src should be checked while generated descendants are pruned"
+    );
+}
+
+#[test]
+fn check_reports_deterministically_sorted_violations() {
+    let project = TempDir::new().unwrap();
+    write_config(
+        &project,
+        r#"
+structure:
+  ./:
+    files:
+      naming: kebab-case
+    directories:
+      naming: kebab-case
+    children:
+      .assura/:
+        inherit: false
+        files:
+          naming: kebab-case
+"#,
+    );
+
+    fs::create_dir(project.path().join("z-dir")).unwrap();
+    fs::create_dir(project.path().join("a-dir")).unwrap();
+    fs::write(project.path().join("z-dir/BadName.rs"), "").unwrap();
+    fs::write(project.path().join("a-dir/BadName.rs"), "").unwrap();
+    fs::write(project.path().join("BadRoot.rs"), "").unwrap();
+
+    let report = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+    let pairs: Vec<_> = report
+        .violations
+        .iter()
+        .map(|violation| {
+            (
+                violation.path.to_string_lossy().to_string(),
+                violation.rule.clone(),
+            )
+        })
+        .collect();
+    let mut sorted = pairs.clone();
+    sorted.sort();
+
+    assert_eq!(pairs, sorted);
+}
+
+#[test]
+fn check_normal_traversal_output_is_deterministic_across_runs() {
+    let project = TempDir::new().unwrap();
+    write_config(
+        &project,
+        r#"
+structure:
+  ./:
+    files:
+      naming: kebab-case
+    directories:
+      naming: kebab-case
+    children:
+      .assura/:
+        inherit: false
+        files:
+          naming: kebab-case
+"#,
+    );
+
+    for dir_index in (0..24).rev() {
+        let dir = project.path().join(format!("dir-{dir_index:02}"));
+        fs::create_dir(&dir).unwrap();
+        fs::write(dir.join(format!("BadName{dir_index:02}.rs")), "").unwrap();
+    }
+
+    let mut expected = None;
+    for _ in 0..5 {
+        let report = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+        let paths: Vec<_> = report
+            .violations
+            .iter()
+            .map(|violation| violation.path.clone())
+            .collect();
+
+        assert_eq!(paths.len(), 24);
+        let mut sorted = paths.clone();
+        sorted.sort();
+        assert_eq!(paths, sorted);
+
+        if let Some(expected) = &expected {
+            assert_eq!(&paths, expected);
+        } else {
+            expected = Some(paths);
+        }
+    }
+}
+
+#[test]
+fn check_parallel_jwalk_traversal_env_path_preserves_sorted_json_output() {
+    let project = TempDir::new().unwrap();
+    write_config(
+        &project,
+        r#"
+structure:
+  ./:
+    files:
+      naming: kebab-case
+    directories:
+      naming: kebab-case
+    children:
+      .assura/:
+        inherit: false
+        files:
+          naming: kebab-case
+"#,
+    );
+
+    for dir_index in (0..32).rev() {
+        let dir = project.path().join(format!("dir-{dir_index:02}"));
+        fs::create_dir(&dir).unwrap();
+        fs::write(dir.join(format!("BadName{dir_index:02}.rs")), "").unwrap();
+    }
+
+    let output = Command::new(assura_bin())
+        .env("ASSURA_CHECK_TRAVERSAL", "parallel-jwalk")
+        .arg("check")
+        .arg(project.path())
+        .arg("--format")
+        .arg("json")
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(1));
+    let report: serde_json::Value =
+        serde_json::from_slice(&output.stdout).unwrap_or_else(|error| {
+            panic!(
+                "failed to parse check output as json: {error}\nstdout:\n{}\nstderr:\n{}",
+                String::from_utf8_lossy(&output.stdout),
+                String::from_utf8_lossy(&output.stderr)
+            )
+        });
+    let paths: Vec<_> = report["violations"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|violation| violation["path"].as_str().unwrap().to_string())
+        .collect();
+
+    assert_eq!(paths.len(), 32);
+    let mut sorted = paths.clone();
+    sorted.sort();
+    assert_eq!(paths, sorted);
+}
+
+#[test]
+fn check_walkdir_traversal_env_path_preserves_sorted_json_output_and_exclusions() {
+    let project = TempDir::new().unwrap();
+    write_config(
+        &project,
+        r#"
+structure:
+  ./:
+    files:
+      naming: kebab-case
+    directories:
+      naming: kebab-case
+    children:
+      .assura/:
+        inherit: false
+        files:
+          naming: kebab-case
+exclude:
+  - generated/**
+"#,
+    );
+
+    for dir_index in (0..32).rev() {
+        let dir = project.path().join(format!("dir-{dir_index:02}"));
+        fs::create_dir(&dir).unwrap();
+        fs::write(dir.join(format!("BadName{dir_index:02}.rs")), "").unwrap();
+    }
+    fs::create_dir(project.path().join("generated")).unwrap();
+    fs::write(project.path().join("generated/BadGenerated.rs"), "").unwrap();
+
+    let output = Command::new(assura_bin())
+        .env("ASSURA_CHECK_TRAVERSAL", "walkdir")
+        .arg("check")
+        .arg(project.path())
+        .arg("--format")
+        .arg("json")
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(1));
+    let default_output = Command::new(assura_bin())
+        .arg("check")
+        .arg(project.path())
+        .arg("--format")
+        .arg("json")
+        .output()
+        .unwrap();
+
+    assert_eq!(default_output.status.code(), Some(1));
+    let report: serde_json::Value =
+        serde_json::from_slice(&output.stdout).unwrap_or_else(|error| {
+            panic!(
+                "failed to parse check output as json: {error}\nstdout:\n{}\nstderr:\n{}",
+                String::from_utf8_lossy(&output.stdout),
+                String::from_utf8_lossy(&output.stderr)
+            )
+        });
+    let paths: Vec<_> = report["violations"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|violation| violation["path"].as_str().unwrap().to_string())
+        .collect();
+    let default_report: serde_json::Value = serde_json::from_slice(&default_output.stdout)
+        .unwrap_or_else(|error| {
+            panic!(
+                "failed to parse default check output as json: {error}\nstdout:\n{}\nstderr:\n{}",
+                String::from_utf8_lossy(&default_output.stdout),
+                String::from_utf8_lossy(&default_output.stderr)
+            )
+        });
+    let default_paths: Vec<_> = default_report["violations"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|violation| violation["path"].as_str().unwrap().to_string())
+        .collect();
+
+    assert_eq!(paths.len(), 32);
+    assert_eq!(paths, default_paths);
+    assert!(!paths.iter().any(|path| path.starts_with("generated/")));
+    let mut sorted = paths.clone();
+    sorted.sort();
+    assert_eq!(paths, sorted);
+}
+
+#[test]
+fn check_fail_fast_stops_after_first_sorted_traversal_violation() {
+    let project = TempDir::new().unwrap();
+    write_config(
+        &project,
+        r#"
+structure:
+  ./:
+    files:
+      naming: kebab-case
+    directories:
+      naming: kebab-case
+    children:
+      .assura/:
+        inherit: false
+        files:
+          naming: kebab-case
+"#,
+    );
+
+    fs::create_dir(project.path().join("a-dir")).unwrap();
+    fs::create_dir(project.path().join("z-dir")).unwrap();
+    fs::write(project.path().join("a-dir/BadName.rs"), "").unwrap();
+    fs::write(project.path().join("z-dir/BadName.rs"), "").unwrap();
+
+    let report = run_structure_check(Some(project.path().to_path_buf()), None, true).unwrap();
+
+    assert!(!report.success);
+    assert_eq!(report.violations.len(), 1);
+    assert_eq!(
+        report.violations[0].path,
+        std::path::PathBuf::from("a-dir/BadName.rs")
+    );
+
+    let output = Command::new(assura_bin())
+        .env("ASSURA_CHECK_TRAVERSAL", "walkdir")
+        .arg("check")
+        .arg(project.path())
+        .arg("--format")
+        .arg("json")
+        .arg("--fail-fast")
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(1));
+    let report: serde_json::Value =
+        serde_json::from_slice(&output.stdout).unwrap_or_else(|error| {
+            panic!(
+                "failed to parse fail-fast check output as json: {error}\nstdout:\n{}\nstderr:\n{}",
+                String::from_utf8_lossy(&output.stdout),
+                String::from_utf8_lossy(&output.stderr)
+            )
+        });
+    let violations = report["violations"].as_array().unwrap();
+    assert_eq!(violations.len(), 1);
+    assert_eq!(violations[0]["path"], "a-dir/BadName.rs");
 }
 
 #[test]

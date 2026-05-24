@@ -2,10 +2,11 @@
 name = "assura"
 version = "0.1.0"
 edition = "2021"
+default-run = "assura"
 authors = ["Assura Team <team@assura.dev>"]
 description = "Dependency-aware file system validation engine with support for naming conventions, markdown validation, and circular dependency detection"
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/assura/assura"
+repository = "https://github.com/rothnic/assura"
 homepage = "https://assura.dev"
 documentation = "https://docs.rs/assura"
 keywords = ["validation", "linting", "filesystem", "dependencies", "naming-conventions"]
@@ -13,34 +14,83 @@ categories = ["development-tools", "filesystem", "command-line-utilities"]
 rust-version = "1.70.0"
 readme = "README.md"
 
+[workspace]
+members = [".", "crates/assura-check-cli"]
+default-members = [".", "crates/assura-check-cli"]
+
+[[bin]]
+name = "assura"
+path = "src/main.rs"
+required-features = ["json-output", "yaml-config"]
+
+[[bin]]
+name = "assura-full"
+path = "src/assura_full.rs"
+required-features = ["full-cli"]
+
+[features]
+default = ["full-cli"]
+full-cli = [
+    "dep:anyhow",
+    "dep:bincode",
+    "dep:clap",
+    "dep:dashmap",
+    "dep:frontmatter",
+    "dep:ignore",
+    "dep:lazy_static",
+    "dep:notify",
+    "dep:once_cell",
+    "dep:petgraph",
+    "dep:pulldown-cmark",
+    "dep:rayon",
+    "dep:regex",
+    "dep:serde_regex",
+    "dep:time",
+    "dep:tokio",
+    "dep:tracing",
+    "dep:tracing-subscriber",
+    "dep:validator",
+    "dep:jwalk",
+    "json-output",
+    "yaml-config",
+]
+git-signals = ["dep:git2"]
+json-output = ["dep:serde_json"]
+yaml-config = ["dep:serde_yaml"]
+
 [dependencies]
-tokio = { version = "1.0", features = ["full", "rt-multi-thread"] }
+tokio = { version = "1.0", features = ["full", "rt-multi-thread"], optional = true }
 serde = { version = "1.0", features = ["derive"] }
-serde_yaml = "0.9"
-serde_json = "1.0"
+serde_yaml = { version = "0.9", optional = true }
+serde_json = { version = "1.0", optional = true }
 thiserror = "1.0"
-anyhow = "1.0"
-tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-clap = { version = "4.0", features = ["derive"] }
-petgraph = "0.6"
-regex = "1.0"
+anyhow = { version = "1.0", optional = true }
+tracing = { version = "0.1", optional = true }
+tracing-subscriber = { version = "0.3", features = ["env-filter"], optional = true }
+clap = { version = "4.0", features = ["derive"], optional = true }
+petgraph = { version = "0.6", optional = true }
+# Full regex is kept for markdown, legacy config preprocessing, and richer
+# full-CLI validators; the check-only path uses regex-lite for lower startup
+# and binary-size pressure.
+regex = { version = "1.0", optional = true }
+regex-lite = "0.1.9"
 glob = "0.3"
 walkdir = "2.0"
-ignore = "0.4"
-notify = "6.0"
-dashmap = "5.0"
-rayon = "1.7"
-bincode = "1.3"
-git2 = "0.18"
-time = "0.3"
-pulldown-cmark = "0.9"
-frontmatter = "0.4"
-serde_regex = "1.1"
-once_cell = "1.19"
-lazy_static = "1.4"
-validator = { version = "0.18", features = ["derive"] }
-jwalk = "0.8.1"
+pico-args = "0.5"
+ignore = { version = "0.4", optional = true }
+notify = { version = "6.0", optional = true }
+dashmap = { version = "5.0", optional = true }
+rayon = { version = "1.7", optional = true }
+bincode = { version = "1.3", optional = true }
+git2 = { version = "0.18", optional = true }
+time = { version = "0.3", optional = true }
+pulldown-cmark = { version = "0.9", optional = true }
+frontmatter = { version = "0.4", optional = true }
+serde_regex = { version = "1.1", optional = true }
+once_cell = { version = "1.19", optional = true }
+lazy_static = { version = "1.4", optional = true }
+validator = { version = "0.19", features = ["derive"], optional = true }
+jwalk = { version = "0.8.1", optional = true }
 
 [dev-dependencies]
 tempfile = "3.0"
@@ -69,3 +119,4 @@ opt-level = 3
 lto = true
 codegen-units = 1
 strip = true
+panic = "abort"

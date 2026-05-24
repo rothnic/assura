@@ -22,7 +22,7 @@ Assura v0.1 provides:
 
 ```bash
 # Install Assura
-cargo install assura
+curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sh
 
 # Initialize configuration
 assura init
@@ -36,6 +36,11 @@ assura watch
 # Migrate a supported LS-Lint config
 assura migrate .ls-lint.yml --output .assura/config.yml
 ```
+
+Prebuilt release archives are available for Linux, macOS, and Windows. Cargo
+install remains available for Rust development environments. Release archives
+include `assura` plus an internal `assura-full` companion; put both files in
+the same directory and use `assura` for normal commands.
 
 ## Configuration
 
@@ -70,6 +75,26 @@ cargo bench --bench profiling structure_check -- --noplot
 
 See [Benchmark Instructions](benches/README.md) for the supported release
 evidence path.
+
+## Development Verification
+
+Use the repo verification tiers instead of defaulting to the slowest Cargo
+target set:
+
+```bash
+node --run verify:fast          # normal local edit gate
+node --run verify:pr            # pre-push / PR gate
+node --run verify:release-size  # installable archive size gate
+node --run verify:release-smoke # no-Rust local archive smoke
+node --run verify:release-live  # public post-release install URL gate
+node --run verify:full          # includes cargo test --all-targets
+```
+
+`verify:fast` runs Rust tests without benchmark harness or standalone binary
+harness targets. Save `verify:full` for benchmark-adjacent changes or final
+release confidence. Cargo's `target/` cache can be large; the release-size gate
+checks the compressed public archive instead.
+See [Validation Command Tiers](docs/validation.md) for when to use each mode.
 
 ## Roadmap
 

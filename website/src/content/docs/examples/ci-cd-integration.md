@@ -6,15 +6,12 @@ sidebar:
   order: 3
 ---
 
-import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
-
 Run `assura check` in CI to reject repository shape drift before merge.
 
-<Aside type="note">
-  Until a published binary or action is available for your environment, install
-  Assura with Cargo in the job. In this repository, use `cargo install --path .`
-  from the checked-out source.
-</Aside>
+> **Note**
+>
+> Release archives include `assura` and its `assura-full` companion. Keep both
+> files on `PATH`; use Cargo only for source builds or local development.
 
 ## GitHub Actions
 
@@ -31,9 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-      - run: cargo install --path .
+      - run: curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sudo env BIN_DIR=/usr/local/bin sh
       - run: assura check --format text .
 ```
 
@@ -52,9 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-      - run: cargo install --path .
+      - run: curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sudo env BIN_DIR=/usr/local/bin sh
       - name: Run Assura
         run: assura check --format json . > assura-report.json
       - uses: actions/upload-artifact@v4
@@ -93,9 +86,10 @@ stages:
 
 assura:
   stage: validate
-  image: rust:latest
+  image: ubuntu:latest
   before_script:
-    - cargo install --path .
+    - apt-get update && apt-get install -y curl
+    - curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | BIN_DIR=/usr/local/bin sh
   script:
     - assura check --format text .
 ```
@@ -110,14 +104,6 @@ jq '.violations | length' assura-report.json
 exit "${status:-0}"
 ```
 
-<Tabs>
-  <TabItem label="Text">
-    Use `--format text` for human-readable CI logs.
-  </TabItem>
-  <TabItem label="JSON">
-    Use `--format json` for artifacts and scripted summaries.
-  </TabItem>
-  <TabItem label="YAML">
-    Use `--format yaml` when your automation prefers YAML.
-  </TabItem>
-</Tabs>
+- `--format text`: human-readable CI logs.
+- `--format json`: artifacts and scripted summaries.
+- `--format yaml`: automation that prefers YAML.

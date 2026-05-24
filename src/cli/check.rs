@@ -1,132 +1,104 @@
 //! Structure-first project validation used by the public `assura check` command.
 
+mod artifact_check;
+#[cfg(feature = "yaml-config")]
+mod batch;
+#[cfg(all(feature = "yaml-config", feature = "json-output"))]
+mod cache;
+mod case;
+mod compiled_artifact;
+#[cfg(test)]
+mod compiled_artifact_tests;
+mod compiled_config;
+mod compiled_fingerprint;
+mod compiled_plan_artifact;
 mod direct_contents;
+#[cfg(all(feature = "yaml-config", feature = "json-output"))]
+pub mod fast_cli;
+mod ls_fast;
+mod ls_fast_counts;
+mod ls_fast_naming;
+mod ls_fast_plan;
+#[cfg(test)]
+mod ls_fast_plan_tests;
+#[cfg(feature = "yaml-config")]
 mod markdown;
 mod patterns;
+#[cfg(feature = "yaml-config")]
+mod prepared;
+#[cfg(feature = "yaml-config")]
+mod profiling;
+mod report;
+mod rule_plan;
 mod rules;
+mod traversal;
 mod validators;
 
-use crate::cli::config::{ConfigDiscovery, ConfigError};
+#[cfg(feature = "yaml-config")]
+use crate::cli::config::ConfigDiscovery;
 use crate::config::config::{Config, DirectoryNode};
+#[cfg(feature = "yaml-config")]
 use crate::config::loader::ConfigLoader;
-use glob::Pattern;
-use regex::Regex;
-use rules::{
-    collect_configured_dirs, collect_naming_regexes, dir_contains, display_rel,
-    is_excluded_rel_with, join_config_child, merge_directory_bundle, merge_file_bundle,
-    merge_markdown_bundle, normalize_config_dir, severity_for_bundle, severity_for_node,
-    strip_direct_content_policy, CompiledExclusion, EffectiveRules,
+pub use artifact_check::{
+    run_structure_check_with_artifact, run_structure_check_with_fast_artifact,
+    run_structure_check_with_prechecked_fast_artifact,
 };
-use serde::Serialize;
-use std::collections::{HashMap, HashSet};
+#[cfg(feature = "yaml-config")]
+pub use batch::run_structure_checks;
+#[cfg(all(feature = "yaml-config", feature = "json-output"))]
+pub use cache::run_structure_check_cached;
+pub use compiled_artifact::CompiledStructureConfigArtifact;
+use compiled_config::CompiledStructureConfig;
+use glob::Pattern;
+use ls_fast_plan::FastScope;
+#[cfg(feature = "yaml-config")]
+pub use prepared::PreparedStructureCheck;
+#[cfg(feature = "yaml-config")]
+pub use profiling::{run_structure_check_with_timings, StructureCheckTimings};
+pub use report::{CheckError, StructureCheckReport, StructureViolation};
+#[cfg(not(feature = "yaml-config"))]
+#[derive(Debug, Default)]
+pub struct StructureCheckTimings {
+    /// Time spent finding the configuration file.
+    pub config_discovery_ms: f64,
+    /// Time spent loading and parsing configuration.
+    pub config_load_ms: f64,
+    /// Time spent constructing the checker.
+    pub checker_init_ms: f64,
+    /// Time spent validating configured required paths.
+    pub configured_structure_ms: f64,
+    /// Time spent walking and validating files/directories.
+    pub walk_and_validate_ms: f64,
+    /// Time spent sorting report violations.
+    pub report_sort_ms: f64,
+}
+use regex_lite::Regex;
+use rule_plan::{rules_for_dir, RuleScope};
+use rules::{
+    display_rel, is_excluded_rel_with, join_config_child, normalize_config_dir,
+    severity_for_bundle, severity_for_node, CompiledExclusion, EffectiveRules,
+};
+use std::collections::HashMap;
 use std::path::{Path, PathBuf};
-use thiserror::Error;
-use walkdir::WalkDir;
-
-/// Result of running a structure-first check.
-#[derive(Debug, Clone, Serialize)]
-pub struct StructureCheckReport {
-    /// Whether the checked path passed all configured validations.
-    pub success: bool,
-    /// Project root used to resolve relative config paths.
-    pub project_root: PathBuf,
-    /// Configuration file used for validation.
-    pub config_path: PathBuf,
-    /// Path that was checked.
-    pub checked_path: PathBuf,
-    /// Number of files checked.
-    pub files_checked: usize,
-    /// Number of directories checked.
-    pub dirs_checked: usize,
-    /// Validation violations.
-    pub violations: Vec<StructureViolation>,
-}
-
-impl StructureCheckReport {
-    /// Number of validation violations.
-    pub fn violation_count(&self) -> usize {
-        self.violations.len()
-    }
-}
-
-/// A single structure validation violation.
-#[derive(Debug, Clone, Serialize)]
-pub struct StructureViolation {
-    /// Path associated with the violation.
-    pub path: PathBuf,
-    /// Rule that produced the violation.
-    pub rule: String,
-    /// Human-readable violation message.
-    pub message: String,
-    /// Violation severity.
-    pub severity: String,
-}
-
-impl StructureViolation {
-    fn new(
-        path: PathBuf,
-        rule: impl Into<String>,
-        message: impl Into<String>,
-        severity: impl Into<String>,
-    ) -> Self {
-        Self {
-            path,
-            rule: rule.into(),
-            message: message.into(),
-            severity: severity.into(),
-        }
-    }
-}
-
-/// Errors produced while preparing or running a structure check.
-#[derive(Debug, Error)]
-pub enum CheckError {
-    /// The target path does not exist.
-    #[error("checked path does not exist: {0:?}")]
-    MissingPath(PathBuf),
-    /// No Assura configuration was found.
-    #[error("no .assura/config.yml found for {0:?}")]
-    NoConfig(PathBuf),
-    /// The configured project root could not be determined.
-    #[error("could not determine project root for config {0:?}")]
-    InvalidConfigLocation(PathBuf),
-    /// The checked path is outside the discovered project root.
-    #[error("checked path {checked_path:?} is outside project root {project_root:?}")]
-    OutsideProject {
-        /// Path requested by the user.
-        checked_path: PathBuf,
-        /// Discovered project root.
-        project_root: PathBuf,
-    },
-    /// Filesystem I/O failed.
-    #[error(transparent)]
-    Io(#[from] std::io::Error),
-    /// Directory walking failed.
-    #[error(transparent)]
-    WalkDir(#[from] walkdir::Error),
-    /// Configuration loading failed.
-    #[error(transparent)]
-    Config(#[from] ConfigError),
-}
+use std::time::Instant;
 
 /// Run structure-first validation for a path.
+#[cfg(feature = "yaml-config")]
 pub fn run_structure_check(
     path: Option<PathBuf>,
     config_path: Option<PathBuf>,
     fail_fast: bool,
 ) -> Result<StructureCheckReport, CheckError> {
-    let requested_path = match path {
-        Some(path) => path,
+    let checked_path = match path {
+        Some(path) => {
+            if !path.exists() {
+                return Err(CheckError::MissingPath(path));
+            }
+            path.canonicalize()?
+        }
         None => std::env::current_dir()?,
     };
-
-    if !requested_path.exists() {
-        return Err(CheckError::MissingPath(requested_path));
-    }
-
-    let checked_path = requested_path.canonicalize()?;
     let (project_root, config_path) = discover_project(&checked_path, config_path)?;
-
     if !checked_path.starts_with(&project_root) {
         return Err(CheckError::OutsideProject {
             checked_path,
@@ -135,11 +107,42 @@ pub fn run_structure_check(
     }
 
     let config = ConfigLoader::load(&config_path)?;
-    let mut checker = StructureChecker::new(project_root.clone(), config, fail_fast);
-    checker.check(checked_path, config_path)
+    let mut checker = StructureChecker::new(project_root, config, fail_fast);
+    let mut timings = StructureCheckTimings::default();
+    checker.check(checked_path, config_path, &mut timings)
 }
 
-fn discover_project(
+/// Run one structure check against an already parsed configuration.
+///
+/// This powers one-shot compiled-config CLI execution where configuration
+/// discovery and YAML parsing already happened outside the measured check
+/// process.
+pub fn run_structure_check_with_config(
+    project_root: PathBuf,
+    config_path: PathBuf,
+    checked_path: PathBuf,
+    config: Config,
+    fail_fast: bool,
+) -> Result<StructureCheckReport, CheckError> {
+    if !checked_path.exists() {
+        return Err(CheckError::MissingPath(checked_path));
+    }
+
+    let checked_path = checked_path.canonicalize()?;
+    if !checked_path.starts_with(&project_root) {
+        return Err(CheckError::OutsideProject {
+            checked_path,
+            project_root,
+        });
+    }
+
+    let mut checker = StructureChecker::new(project_root, config, fail_fast);
+    let mut timings = StructureCheckTimings::default();
+    checker.check(checked_path, config_path, &mut timings)
+}
+
+#[cfg(feature = "yaml-config")]
+pub(super) fn discover_project(
     checked_path: &Path,
     config_path: Option<PathBuf>,
 ) -> Result<(PathBuf, PathBuf), CheckError> {
@@ -162,6 +165,13 @@ fn discover_project(
         return Ok((project_root.canonicalize()?, config_path));
     }
 
+    if checked_path.is_dir() {
+        let direct_config_path = checked_path.join(".assura/config.yml");
+        if direct_config_path.exists() {
+            return Ok((checked_path.to_path_buf(), direct_config_path));
+        }
+    }
+
     let config_path = ConfigDiscovery::find_config_path(checked_path)
         .ok_or_else(|| CheckError::NoConfig(checked_path.to_path_buf()))?;
 
@@ -178,51 +188,79 @@ fn discover_project(
     Ok((project_root, config_path.canonicalize()?))
 }
 
-struct StructureChecker {
-    pub(super) project_root: PathBuf,
-    pub(super) config: Config,
-    pub(super) fail_fast: bool,
-    pub(super) configured_dirs: HashSet<PathBuf>,
-    pub(super) exclude_patterns: Vec<CompiledExclusion>,
-    pub(super) naming_regexes: HashMap<String, Regex>,
-    pub(super) glob_patterns: HashMap<String, Pattern>,
-    pub(super) rules_cache: HashMap<PathBuf, EffectiveRules>,
+pub(in crate::cli::check) struct StructureChecker {
+    project_root: PathBuf,
+    config: Config,
+    fail_fast: bool,
+    configured_dirs: Vec<PathBuf>,
+    required_dirs: Vec<PathBuf>,
+    exclude_patterns: Vec<CompiledExclusion>,
+    naming_regexes: HashMap<String, Regex>,
+    glob_patterns: HashMap<String, Pattern>,
+    rule_scopes: Vec<RuleScope>,
+    lslint_fast_scopes: Option<Vec<FastScope>>,
+    has_direct_count_constraints: bool,
+    rules_cache: HashMap<PathBuf, EffectiveRules>,
 }
 
 impl StructureChecker {
-    fn new(project_root: PathBuf, config: Config, fail_fast: bool) -> Self {
-        let mut configured_dirs = HashSet::new();
-        let mut naming_regexes = HashMap::new();
-        let mut glob_patterns = HashMap::new();
-        for (path, node) in &config.structure {
-            let base = normalize_config_dir(path);
-            collect_configured_dirs(base, node, &mut configured_dirs);
-            collect_naming_regexes(node, &mut naming_regexes);
-            patterns::collect_glob_patterns(node, &mut glob_patterns);
-        }
+    pub(in crate::cli::check) fn new(
+        project_root: PathBuf,
+        config: Config,
+        fail_fast: bool,
+    ) -> Self {
+        let compiled = CompiledStructureConfig::new_for_check(config, fail_fast);
+        Self::from_compiled_owned(project_root, compiled, fail_fast)
+    }
 
-        let exclude_patterns = config
-            .exclude
-            .iter()
-            .map(|pattern| CompiledExclusion::new(pattern))
-            .collect();
-
+    #[cfg(feature = "yaml-config")]
+    pub(in crate::cli::check) fn from_compiled(
+        project_root: PathBuf,
+        compiled: &CompiledStructureConfig,
+        fail_fast: bool,
+    ) -> Self {
         Self {
             project_root,
-            config,
+            config: compiled.config.clone(),
             fail_fast,
-            configured_dirs,
-            exclude_patterns,
-            naming_regexes,
-            glob_patterns,
+            configured_dirs: compiled.configured_dirs.clone(),
+            required_dirs: compiled.required_dirs.clone(),
+            exclude_patterns: compiled.exclude_patterns.clone(),
+            naming_regexes: compiled.naming_regexes.clone(),
+            glob_patterns: compiled.glob_patterns.clone(),
+            rule_scopes: compiled.rule_scopes.clone(),
+            lslint_fast_scopes: compiled.lslint_fast_scopes.clone(),
+            has_direct_count_constraints: compiled.has_direct_count_constraints,
             rules_cache: HashMap::new(),
         }
     }
 
-    fn check(
+    pub(super) fn from_compiled_owned(
+        project_root: PathBuf,
+        compiled: CompiledStructureConfig,
+        fail_fast: bool,
+    ) -> Self {
+        Self {
+            project_root,
+            config: compiled.config,
+            fail_fast,
+            configured_dirs: compiled.configured_dirs,
+            required_dirs: compiled.required_dirs,
+            exclude_patterns: compiled.exclude_patterns,
+            naming_regexes: compiled.naming_regexes,
+            glob_patterns: compiled.glob_patterns,
+            rule_scopes: compiled.rule_scopes,
+            lslint_fast_scopes: compiled.lslint_fast_scopes,
+            has_direct_count_constraints: compiled.has_direct_count_constraints,
+            rules_cache: HashMap::new(),
+        }
+    }
+
+    pub(in crate::cli::check) fn check(
         &mut self,
         checked_path: PathBuf,
         config_path: PathBuf,
+        timings: &mut StructureCheckTimings,
     ) -> Result<StructureCheckReport, CheckError> {
         let mut report = StructureCheckReport {
             success: true,
@@ -234,53 +272,37 @@ impl StructureChecker {
             violations: Vec::new(),
         };
 
+        if self.try_check_lslint_fast(&checked_path, &mut report, timings)? {
+            report.success = report.violations.is_empty();
+            return Ok(report);
+        }
+
+        let configured_started = Instant::now();
         self.validate_configured_structure(&mut report);
+        timings.configured_structure_ms = configured_started.elapsed().as_secs_f64() * 1000.0;
 
         if self.fail_fast && !report.violations.is_empty() {
             report.success = false;
             return Ok(report);
         }
 
-        let project_root = self.project_root.clone();
-        let exclude_patterns = self.exclude_patterns.clone();
-        for entry in WalkDir::new(&checked_path)
-            .into_iter()
-            .filter_entry(move |entry| {
-                let rel = entry
-                    .path()
-                    .strip_prefix(&project_root)
-                    .unwrap_or(entry.path());
-                !is_excluded_rel_with(&exclude_patterns, rel)
-            })
-        {
-            let entry = entry?;
-            let path = entry.path();
-            if path == checked_path && path.is_dir() {
-                self.validate_directory_contents(path, &mut report);
-                continue;
-            }
+        let walk_started = Instant::now();
+        self.walk_and_validate(&checked_path, &mut report)?;
+        timings.walk_and_validate_ms = walk_started.elapsed().as_secs_f64() * 1000.0;
 
-            if path.is_dir() {
-                report.dirs_checked += 1;
-                self.validate_directory(path, &mut report);
-            } else if path.is_file() {
-                report.files_checked += 1;
-                self.validate_file(path, &mut report);
-            }
-
-            if self.fail_fast && !report.violations.is_empty() {
-                break;
-            }
-        }
-
+        let sort_started = Instant::now();
         report
             .violations
             .sort_by(|left, right| left.path.cmp(&right.path).then(left.rule.cmp(&right.rule)));
+        timings.report_sort_ms = sort_started.elapsed().as_secs_f64() * 1000.0;
         report.success = report.violations.is_empty();
         Ok(report)
     }
 
-    fn validate_configured_structure(&self, report: &mut StructureCheckReport) {
+    pub(in crate::cli::check) fn validate_configured_structure(
+        &self,
+        report: &mut StructureCheckReport,
+    ) {
         for (path, node) in &self.config.structure {
             let base = normalize_config_dir(path);
             self.validate_node_requirements(&base, node, report);
@@ -397,66 +419,10 @@ impl StructureChecker {
             return cached.clone();
         }
 
-        let mut result = EffectiveRules::default();
-        for (path, node) in &self.config.structure {
-            let base = normalize_config_dir(path);
-            self.resolve_node(
-                &base,
-                node,
-                dir_rel,
-                &EffectiveRules::default(),
-                &mut result,
-            );
-        }
+        let result = rules_for_dir(dir_rel, &self.rule_scopes);
         self.rules_cache
             .insert(dir_rel.to_path_buf(), result.clone());
         result
-    }
-
-    fn resolve_node(
-        &self,
-        node_rel: &Path,
-        node: &DirectoryNode,
-        target_dir: &Path,
-        inherited: &EffectiveRules,
-        result: &mut EffectiveRules,
-    ) {
-        if !dir_contains(node_rel, target_dir) {
-            return;
-        }
-
-        let effective = if node.inherit {
-            EffectiveRules {
-                files: merge_file_bundle(inherited.files.as_ref(), node.files.as_ref()),
-                directories: merge_directory_bundle(
-                    inherited.directories.as_ref(),
-                    node.directories.as_ref(),
-                ),
-                markdown: merge_markdown_bundle(
-                    inherited.markdown.as_ref(),
-                    node.markdown.as_ref(),
-                ),
-            }
-        } else {
-            EffectiveRules {
-                files: node.files.clone(),
-                directories: node.directories.clone(),
-                markdown: node.markdown.clone(),
-            }
-        };
-
-        *result = if target_dir == node_rel {
-            effective.clone()
-        } else {
-            strip_direct_content_policy(effective.clone())
-        };
-
-        if let Some(children) = &node.children {
-            for (child_name, child) in children {
-                let child_rel = join_config_child(node_rel, child_name);
-                self.resolve_node(&child_rel, child, target_dir, &effective, result);
-            }
-        }
     }
 
     pub(super) fn relative_path(&self, path: &Path) -> PathBuf {
@@ -467,6 +433,12 @@ impl StructureChecker {
 
     fn is_excluded_rel(&self, rel: &Path) -> bool {
         is_excluded_rel_with(&self.exclude_patterns, rel)
+    }
+
+    pub(super) fn is_configured_dir(&self, rel: &Path) -> bool {
+        self.configured_dirs
+            .binary_search_by(|configured| configured.as_path().cmp(rel))
+            .is_ok()
     }
 
     pub(super) fn push_violation(

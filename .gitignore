@@ -12,8 +12,11 @@
 !.agents/**/
 !.assura/
 !.assura/**/
+!.cargo/
+!.cargo/config.toml
 !.codex/
 !.codex/**/
+.codex/config.toml
 !.github/
 !.github/**/
 !.trellis/
@@ -26,7 +29,6 @@
 # RUST
 # ============================================================================
 target/
-Cargo.lock
 **/*.rs.bk
 *.pdb
 

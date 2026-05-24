@@ -1,0 +1,182 @@
+---
+id: analysis-2026-05-15-notation-source-truth
+type: analysis
+title: Assura notation source truth
+status: active
+created: 2026-05-15
+owners:
+  - assura-maintainers
+related:
+  - docs/goals/assura-ls-lint-realistic-parity-core-performance.md
+  - .trellis/spec/assura/structure-enforcement.md
+  - docs/ls-lint-capability-comparison.md
+  - docs/unified-tree-design.md
+  - docs/archive/final-config-design.md
+  - docs/archive/ls-lint-notation-guide.md
+---
+
+# Assura Notation Source Truth
+
+This document is the current notation source of truth for the next LS-Lint
+parity and performance work. It separates implemented structure-first behavior
+from LS-Lint parity, Assura extensions, unsupported behavior, and planned
+notation. Historical `policy`/`rules`/`apply` proposals remain useful design
+input, but they are not the current product config surface.
+
+## Current Supported Structure-First Notation
+
+Assura's supported public config surface is `.assura/config.yml` with a
+top-level `structure:` tree and `exclude:` patterns.
+
+Current structure nodes support:
+
+- `files.naming` and `files.extensions`;
+- `files.naming_patterns` for glob-like filename patterns;
+- `files.allowed_names`, `files.allowed_patterns`,
+  `files.forbidden_patterns`, and `files.allow_extra`;
+- `files.exists` for direct child file count patterns;
+- `directories.naming`;
+- `directories.required`;
+- `directories.allowed_names`, `directories.allowed_patterns`,
+  `directories.forbidden_patterns`, and `directories.allow_extra`;
+- `directories.exists` for direct child directory count patterns;
+- `children` for explicit nested structure nodes.
+
+Direct-content rules are hierarchical but not recursively strict by default:
+`allow_extra`, allowed names/patterns, forbidden patterns, and direct count
+checks apply to the configured directory's direct children. Inherited naming and
+file rules may still apply to descendants.
+
+## LS-Lint-Compatible Subset
+
+The LS-Lint compatibility layer currently supports these LS-Lint 2.3 concepts:
+
+- extension naming rules such as `.ts: camelCase`;
+- wildcard extension rules such as `.*` and `.*.js`;
+- subextension rules such as `.d.ts`, `.test.ts`, `.spec.ts`, and
+  `.module.css`;
+- `.dir` directory naming;
+- explicit nested directory scopes such as `src:` and `packages/core:`;
+- OR syntax such as `kebab-case | snake_case`;
+- `ignore` mapped to Assura `exclude`;
+- extension `exists`, `exists:0`, `exists:1`, and `exists:N-M` direct child
+  file counts;
+- `.dir` `exists` direct child directory counts;
+- direct-child-only count semantics.
+
+Native LS-Lint parity claims must be limited to behavior supported by LS-Lint
+2.3 and covered by equivalent fixtures.
+
+## Assura Compatibility Extensions
+
+Assura intentionally supports some behavior beyond native LS-Lint 2.3:
+
+- exact direct filename `exists`, such as `README.md: exists:1`, maps to a
+  direct file count for `README.md`;
+- trailing-slash direct directory `exists`, such as `docs/: exists:1`, maps to
+  a direct directory count for `docs`;
+- closed-world direct-content checks can reject unexpected direct files and
+  directories through `allow_extra: false`;
+- exact allowed names and forbidden patterns can express root/project hygiene
+  that LS-Lint does not model directly.
+
+Exact filename `exists` must remain labeled as an Assura compatibility
+extension. Live LS-Lint 2.3 does not treat `README.md: exists:1` as an exact
+filename count.
+
+## Unsupported Behavior
+
+These LS-Lint-like scopes are not currently safe to convert:
+
+- glob directory scopes such as `packages/*`;
+- recursive scopes such as `**`;
+- brace scopes such as `{src,tests}`;
+- regex substitutions and advanced path captures such as `${0}`.
+
+The converter should reject unsupported scopes with clear errors until Assura
+can represent them without turning lint scopes into required literal
+directories.
+
+## Naming Decisions
+
+Historical docs use several names for similar concepts. Current status:
+
+| Name | Current status |
+| --- | --- |
+| `structure` | Current supported product tree. Keep this for v0.1 docs and examples. |
+| `exclude` | Current supported ignore/pruning surface. |
+| `files.exists` / `directories.exists` | Current direct count checks. Keep for LS-Lint parity and range counts. |
+| `directories.required` | Current exact required direct directory list. |
+| `policy` | Historical proposed replacement for `structure`; not implemented. |
+| top-level `rules` | Historical reusable-rule proposal; not implemented as the current config surface. |
+| `apply` | Historical reusable-rule attachment proposal; not implemented. |
+| `require` | Planned shorthand for required files/directories, but not current product notation. |
+| `allow` / `strict` | Historical shorthand concepts; current product uses explicit `allowed_*` and `allow_extra`. |
+
+Future docs should use `structure` for current behavior and reserve
+`policy`, top-level `rules`, `apply`, and `require` for explicitly planned
+notation sections.
+
+## Next Planned Notation Extensions
+
+Planned notation should refine the older LS-Lint proposal direction around the
+current structure-first model rather than switching abruptly to a parallel
+config language.
+
+Preferred next steps:
+
+1. Add an ergonomic direct-content shorthand that compiles to current
+   `allowed_*`, `required`, `exists`, and `allow_extra` fields.
+2. Add pattern scopes as validation scopes, not child nodes. A scope like
+   `packages/*` should apply rules to matched directories that exist; it should
+   not imply every possible package directory is required.
+3. Add reusable rule groups only after repeated structure-first examples prove
+   the duplication is material.
+4. Add array-based OR naming as a readability improvement while preserving the
+   existing string OR syntax.
+5. Add future pairing/package/dependency notation only with explicit
+   dependency footprints for incremental invalidation.
+
+## Pattern Scope Model
+
+Future pattern scopes should compile into a scope matcher plus rule payload:
+
+- exact path scopes match one known directory path;
+- single-segment wildcard scopes match existing direct children;
+- recursive scopes match existing descendants;
+- brace scopes expand into a small set of scope matchers;
+- existence requirements remain explicit through `required`, `exists`, or a
+  future `require` shorthand.
+
+This distinction prevents lint scopes from becoming required directories. For
+example, `packages/*` should validate package directories that exist. It should
+not report `required_directory` for `packages/*` as a literal child, and it
+should not require a package named by a pattern unless a separate requirement
+declares it.
+
+## Performance Model
+
+Notation should be designed so the checker can scale without expanding broad
+patterns into huge concrete trees.
+
+- Compile glob, regex, and naming patterns once per config load.
+- Index file rules by extension or suffix when a rule key is extension-like.
+- Use fallback glob scans only for broad patterns that cannot be indexed.
+- Preserve direct-content checks as directory-local operations.
+- Build or reuse a direct-child directory index instead of repeating
+  `read_dir` for each count check.
+- Keep exclusions available before expensive traversal and validation work.
+- Treat future pattern scopes as matchers over existing traversal data, not as
+  generated required nodes.
+
+## Historical Inputs
+
+- `docs/unified-tree-design.md` is historical design input for a possible
+  future tree syntax. It is not the current product source of truth.
+- `docs/archive/final-config-design.md` is historical and describes the
+  unimplemented `policy`/`rules`/`apply` proposal.
+- `docs/archive/ls-lint-notation-guide.md` is historical and contains useful
+  examples, but it overstates implemented content, pairing, context, and
+  messaging behavior.
+- `docs/ls-lint-capability-comparison.md` remains an active capability
+  comparison, but this document owns current notation classification.

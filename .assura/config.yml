@@ -27,6 +27,7 @@ structure:
         - "LICENSE-APACHE"
         # Project/tooling manifests
         - ".gitignore"
+        - "Cargo.lock"
         - "Cargo.toml"
         - "package.json"
         - "PROJECT_CONTEXT.md"
@@ -40,12 +41,15 @@ structure:
       allowed_names:
         - ".agents"
         - ".assura"
+        - ".cargo"
         - ".codex"
         - ".github"
         - ".trellis"
         - "benches"
+        - "crates"
         - "docs"
         - "integrations"
+        - "scripts"
         - "src"
         - "tests"
         - "website"
@@ -96,6 +100,15 @@ structure:
             files:
               naming: "kebab-case"
 
+      .cargo/:
+        files:
+          naming: "kebab-case"
+          allowed_names:
+            - "config.toml"
+          allow_extra: false
+        directories:
+          allow_extra: false
+
       .codex/:
         files:
           naming: "kebab-case"
@@ -142,6 +155,51 @@ structure:
           max_lines: 1200
           allowed_names:
             - "README.md"
+        directories:
+          allowed_names:
+            - "history"
+          allow_extra: false
+        children:
+          history/:
+            files:
+              naming: "kebab-case"
+              max_lines: 2000
+              allowed_names:
+                - "README.md"
+
+      crates/:
+        files:
+          allow_extra: false
+        directories:
+          naming: "kebab-case"
+        children:
+          assura-check-cli/:
+            files:
+              naming: "kebab-case"
+              allowed_names:
+                - "Cargo.toml"
+              allow_extra: false
+            directories:
+              allowed_names:
+                - "src"
+                - "tests"
+              allow_extra: false
+            children:
+              src/:
+                files:
+                  naming: "snake_case"
+                  max_lines: 500
+              tests/:
+                files:
+                  naming: "snake_case"
+                  max_lines: 500
+
+      scripts/:
+        files:
+          naming: "kebab-case"
+          allowed_names:
+            - "verify.sh"
+          allow_extra: false
         directories:
           allow_extra: false
       
@@ -227,6 +285,7 @@ structure:
                   allowed_names:
                     - ".gitignore"
                     - "README.md"
+                    - "bun.lock"
                     - "package.json"
                     - "tsconfig.json"
                     - "example.ts"
@@ -394,4 +453,3 @@ exclude:
   - "**/dist"
   - "package-lock.json"
   - "**/package-lock.json"
-  - "*.lock"

@@ -3,25 +3,18 @@ title: Quick Start
 description: Run Assura on a project in minutes
 ---
 
-import { Steps } from '@astrojs/starlight/components';
-
 Use this path for a first local check.
 
-<Steps>
-
-1. **Install or build Assura**
+1. **Install Assura**
 
    ```bash
-   cargo install assura
+   curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sh
    ```
 
-   For source builds:
-
-   ```bash
-   git clone https://github.com/rothnic/assura
-   cd assura
-   cargo build --release
-   ```
+   The installer supports Linux x64, macOS Apple Silicon, and macOS Intel.
+   Windows users can run the PowerShell installer from the
+   [Installation guide](/guides/installation/) or download the zip from
+   [GitHub Releases](https://github.com/rothnic/assura/releases/latest).
 
 2. **Initialize configuration**
 
@@ -46,11 +39,9 @@ Use this path for a first local check.
 5. **Use the same command in CI**
 
    ```bash
-   cargo install assura
+   curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sudo env BIN_DIR=/usr/local/bin sh
    assura check --format text
    ```
-
-</Steps>
 
 ## Next Steps
 

@@ -87,3 +87,364 @@ th {
   background: #60a5fa;
   color: #172554;
 }
+
+/* Performance report visuals */
+.perf-evidence {
+  box-sizing: border-box;
+  width: auto;
+  max-width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.perf-summary {
+  box-sizing: border-box;
+  width: auto;
+  max-width: 100%;
+  margin: 1rem 0 1.5rem;
+  padding: 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.26);
+  border-radius: 0.5rem;
+  background: var(--sl-color-bg-nav);
+}
+
+.perf-summary h2 {
+  margin: 0.1rem 0 0.5rem;
+  font-size: 1.55rem;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.perf-summary p {
+  max-width: 76ch;
+  margin: 0;
+  color: var(--sl-color-gray-2);
+  font-size: 0.98rem;
+  overflow-wrap: anywhere;
+}
+
+.perf-summary-line strong {
+  color: var(--sl-color-white);
+}
+
+.perf-kicker {
+  margin: 0;
+  color: var(--assura-accent);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.perf-summary-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(16rem, 0.72fr);
+  gap: 1rem;
+  align-items: start;
+  margin-top: 1rem;
+}
+
+.perf-facts,
+.perf-run-context {
+  display: grid;
+  gap: 0.6rem 0.85rem;
+  margin: 0;
+}
+
+.perf-facts {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.perf-run-context {
+  grid-template-columns: 1fr;
+  padding-left: 1rem;
+  border-left: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.perf-facts div,
+.perf-run-context div {
+  min-width: 0;
+}
+
+.perf-facts dt,
+.perf-run-context dt {
+  color: var(--sl-color-gray-3);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.perf-facts dd,
+.perf-run-context dd {
+  margin: 0.1rem 0 0;
+  color: var(--sl-color-white);
+}
+
+.perf-facts dd {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.perf-run-context dd {
+  font-size: 0.88rem;
+  overflow-wrap: anywhere;
+}
+
+.perf-section-intro {
+  max-width: min(76ch, calc(100vw - 2rem));
+}
+
+.perf-table-wrap {
+  box-sizing: border-box;
+  width: auto;
+  max-width: 100%;
+  margin: 1rem 0 1.5rem;
+  overflow-x: auto;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 0.5rem;
+  background: var(--sl-color-bg-nav);
+}
+
+.perf-table {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+  line-height: 1.35;
+}
+
+.perf-table th,
+.perf-table td {
+  box-sizing: border-box;
+  padding: 0.7rem 0.75rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+  text-align: left;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+
+.perf-table th {
+  color: var(--sl-color-white);
+  font-size: 0.75rem;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.perf-table th:nth-child(1) {
+  width: 34%;
+}
+
+.perf-table th:nth-child(2) {
+  width: 28%;
+}
+
+.perf-table th:nth-child(3),
+.perf-table th:nth-child(4) {
+  width: 19%;
+}
+
+.perf-table td {
+  color: var(--sl-color-gray-2);
+}
+
+.perf-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.perf-table strong {
+  color: var(--sl-color-white);
+}
+
+.perf-cell-note {
+  display: block;
+  margin-top: 0.3rem;
+  color: var(--sl-color-gray-3);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.perf-ruleset {
+  margin-top: 0.55rem;
+}
+
+.perf-ruleset summary {
+  color: var(--assura-primary);
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.perf-ruleset ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin: 0.45rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.perf-ruleset li {
+  margin: 0;
+}
+
+.perf-ruleset p {
+  margin: 0.45rem 0 0;
+  color: var(--sl-color-gray-3);
+  font-size: 0.78rem;
+}
+
+.perf-ruleset pre {
+  margin: 0.55rem 0 0;
+  max-height: 18rem;
+  overflow: auto;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 0.375rem;
+  background: var(--sl-color-bg);
+}
+
+.perf-ruleset pre code {
+  display: block;
+  padding: 0.7rem;
+  color: var(--sl-color-gray-2);
+  font-size: 0.72rem;
+  line-height: 1.45;
+  white-space: pre;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+.perf-note {
+  margin: 1.25rem 0 1.75rem;
+  padding: 0.85rem 1rem;
+  border-left: 3px solid var(--assura-primary);
+  background: rgba(125, 211, 252, 0.08);
+  color: var(--sl-color-gray-2);
+}
+
+.perf-note strong {
+  color: var(--sl-color-white);
+}
+
+.perf-diagnostic-list {
+  display: grid;
+  gap: 0.55rem;
+  margin: 1rem 0 1.5rem;
+}
+
+.perf-diagnostic-list div {
+  display: grid;
+  grid-template-columns: minmax(9rem, 0.8fr) minmax(12rem, 1fr) minmax(14rem, 1.4fr);
+  gap: 0.75rem;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+  color: var(--sl-color-gray-2);
+  font-size: 0.84rem;
+}
+
+.perf-diagnostic-list div:last-child {
+  border-bottom: 0;
+}
+
+.perf-evidence code {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+@media (max-width: 58rem) {
+  .perf-evidence {
+    inline-size: calc(100vw - 2rem);
+    max-inline-size: calc(100vw - 2rem);
+    overflow-x: hidden;
+  }
+
+  .perf-summary,
+  .perf-table-wrap,
+  .perf-note,
+  .perf-diagnostic-list {
+    width: auto;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .perf-summary p,
+  .perf-section-intro {
+    max-width: 32ch;
+  }
+
+  .perf-summary-grid,
+  .perf-facts,
+  .perf-run-context {
+    grid-template-columns: 1fr;
+  }
+
+  .perf-run-context {
+    padding-top: 0.9rem;
+    padding-left: 0;
+    border-top: 1px solid rgba(148, 163, 184, 0.18);
+    border-left: 0;
+  }
+
+  .perf-table {
+    min-width: 0;
+  }
+
+  .perf-table,
+  .perf-table thead,
+  .perf-table tbody,
+  .perf-table tr,
+  .perf-table td {
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
+  }
+
+  .perf-table thead {
+    display: none;
+  }
+
+  .perf-table tr {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+  }
+
+  .perf-table td {
+    display: grid;
+    grid-template-columns: minmax(6.5rem, 0.65fr) minmax(0, 1.5fr);
+    gap: 0.75rem;
+    padding: 0.35rem 0.75rem;
+    border-bottom: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .perf-table td::before {
+    content: attr(data-label);
+    color: var(--sl-color-white);
+    font-weight: 700;
+  }
+
+  .perf-diagnostic-list div {
+    grid-template-columns: 1fr;
+    gap: 0.2rem;
+  }
+}
+
+@media (max-width: 34rem) {
+  .perf-summary {
+    padding: 0.85rem;
+  }
+
+  .perf-summary h2 {
+    font-size: 1.25rem;
+  }
+
+  .perf-table td {
+    display: block;
+    padding: 0.35rem 0.75rem;
+  }
+
+  .perf-table td::before {
+    display: block;
+    margin-bottom: 0.2rem;
+  }
+}

@@ -1,16 +1,19 @@
 //! Current-product head-to-head comparison with LS-Lint 2.3.
 //!
 //! This benchmark compares Assura's public structure-first `assura check`
-//! implementation with `@ls-lint/ls-lint@2.3.0` on identical temporary
-//! fixtures.
+//! implementation with the native binary from `@ls-lint/ls-lint@2.3.0` on
+//! identical temporary fixtures.
 
 use assura::cli::run_structure_check;
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::time::Duration;
 use tempfile::{Builder, TempDir};
+
+#[path = "../tests/realistic_lslint_fixtures.rs"]
+mod realistic_lslint_fixtures;
 
 #[derive(Clone, Copy)]
 enum ScenarioKind {
@@ -249,35 +252,71 @@ fn run_assura(path: &Path) {
     black_box(report);
 }
 
-fn ls_lint_available() -> bool {
-    Command::new("npm")
-        .args([
-            "exec",
-            "--yes",
-            "--package",
-            "@ls-lint/ls-lint@2.3.0",
-            "--",
-            "ls-lint",
-            "--version",
-        ])
-        .output()
-        .map(|output| output.status.success())
-        .unwrap_or(false)
+struct BenchLsLint {
+    _install_dir: TempDir,
+    binary_path: PathBuf,
 }
 
-fn run_ls_lint(path: &Path) {
-    let output = Command::new("npm")
-        .current_dir(path)
+fn prepare_ls_lint() -> Option<BenchLsLint> {
+    let install_dir = Builder::new()
+        .prefix("assura-lslint-bench-")
+        .tempdir()
+        .ok()?;
+    let install_status = Command::new("npm")
         .args([
-            "exec",
-            "--yes",
-            "--package",
+            "install",
+            "--no-audit",
+            "--no-fund",
+            "--prefix",
+            install_dir.path().to_str()?,
             "@ls-lint/ls-lint@2.3.0",
-            "--",
-            "ls-lint",
         ])
+        .env("NPM_CONFIG_CACHE", install_dir.path().join(".npm-cache"))
+        .status()
+        .ok()?;
+    if !install_status.success() {
+        return None;
+    }
+
+    let binary_path = install_dir
+        .path()
+        .join("node_modules")
+        .join("@ls-lint")
+        .join("ls-lint")
+        .join("bin")
+        .join(native_ls_lint_binary_name()?);
+    if !binary_path.exists() {
+        return None;
+    }
+    let version_status = Command::new(&binary_path).arg("--version").status().ok()?;
+    if !version_status.success() {
+        return None;
+    }
+
+    Some(BenchLsLint {
+        _install_dir: install_dir,
+        binary_path,
+    })
+}
+
+fn native_ls_lint_binary_name() -> Option<&'static str> {
+    match (std::env::consts::OS, std::env::consts::ARCH) {
+        ("macos", "x86_64") => Some("ls-lint-darwin-amd64"),
+        ("macos", "aarch64") => Some("ls-lint-darwin-arm64"),
+        ("linux", "x86_64") => Some("ls-lint-linux-amd64"),
+        ("linux", "aarch64") => Some("ls-lint-linux-arm64"),
+        ("linux", "s390x") => Some("ls-lint-linux-s390x"),
+        ("linux", "powerpc64") => Some("ls-lint-linux-ppc64le"),
+        ("windows", "x86_64") => Some("ls-lint-windows-amd64.exe"),
+        _ => None,
+    }
+}
+
+fn run_ls_lint(binary_path: &Path, path: &Path) {
+    let output = Command::new(binary_path)
+        .current_dir(path)
         .output()
-        .expect("failed to run LS-Lint through npm");
+        .expect("failed to run native LS-Lint binary");
     assert!(
         output.status.success(),
         "fixture should pass LS-Lint\nstdout:\n{}\nstderr:\n{}",
@@ -292,7 +331,7 @@ fn bench_current_product_comparison(c: &mut Criterion) {
         .into_iter()
         .map(|scenario| (scenario, materialize_scenario(scenario)))
         .collect();
-    let has_ls_lint = ls_lint_available();
+    let ls_lint = prepare_ls_lint();
 
     let mut group = c.benchmark_group("current_product_lslint_2_3");
     group.sample_size(10);
@@ -306,11 +345,11 @@ fn bench_current_product_comparison(c: &mut Criterion) {
             |b, path| b.iter(|| run_assura(path)),
         );
 
-        if has_ls_lint {
+        if let Some(ls_lint) = &ls_lint {
             group.bench_with_input(
-                BenchmarkId::new("ls_lint_2_3", scenario.name),
+                BenchmarkId::new("ls_lint_2_3_native", scenario.name),
                 fixture.path(),
-                |b, path| b.iter(|| run_ls_lint(path)),
+                |b, path| b.iter(|| run_ls_lint(&ls_lint.binary_path, path)),
             );
         }
     }
@@ -318,5 +357,41 @@ fn bench_current_product_comparison(c: &mut Criterion) {
     group.finish();
 }
 
-criterion_group!(comparison, bench_current_product_comparison);
+fn bench_realistic_fixture_families(c: &mut Criterion) {
+    let fixtures: Vec<_> = realistic_lslint_fixtures::realistic_fixture_families()
+        .iter()
+        .map(|family| {
+            (
+                *family,
+                realistic_lslint_fixtures::materialize_fixture(
+                    *family,
+                    realistic_lslint_fixtures::FixtureVariant::Valid,
+                ),
+            )
+        })
+        .collect();
+
+    let mut group = c.benchmark_group("realistic_lslint_fixtures");
+    group.sample_size(10);
+    group.warm_up_time(Duration::from_millis(500));
+
+    for (family, fixture) in &fixtures {
+        group.throughput(Throughput::Elements(
+            count_entries(fixture.project.path()) as u64
+        ));
+        group.bench_with_input(
+            BenchmarkId::new("assura_check", family.id),
+            fixture.project.path(),
+            |b, path| b.iter(|| run_assura(path)),
+        );
+    }
+
+    group.finish();
+}
+
+criterion_group!(
+    comparison,
+    bench_current_product_comparison,
+    bench_realistic_fixture_families
+);
 criterion_main!(comparison);

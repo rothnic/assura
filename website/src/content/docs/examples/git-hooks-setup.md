@@ -6,19 +6,15 @@ sidebar:
   order: 4
 ---
 
-import { Aside, Steps } from '@astrojs/starlight/components';
-
 Assura can run from Git hooks when you want local commits or pushes to respect
 the same structure rules used in CI.
 
-<Aside type="note">
-  `assura check` validates the configured project path. It does not currently
-  offer staged-file-only validation.
-</Aside>
+> **Note**
+>
+> `assura check` validates the configured project path. It does not currently
+> offer staged-file-only validation.
 
 ## Pre-Commit Hook
-
-<Steps>
 
 1. **Create `.git/hooks/pre-commit`**
 
@@ -28,7 +24,7 @@ the same structure rules used in CI.
 
    if ! command -v assura >/dev/null 2>&1; then
      echo "assura is not installed"
-     echo "Install from source with: cargo install --path ."
+     echo "Install with: curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sh"
      exit 1
    fi
 
@@ -46,8 +42,6 @@ the same structure rules used in CI.
    ```bash
    git commit --allow-empty -m "test: verify assura hook"
    ```
-
-</Steps>
 
 If the check fails, fix the reported files and commit again.
 

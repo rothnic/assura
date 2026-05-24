@@ -6,16 +6,14 @@ sidebar:
   order: 2
 ---
 
-import { Aside } from '@astrojs/starlight/components';
-
 The supported v0.1 API is the command-line interface and its report formats.
 Rust library APIs, TypeScript plugin APIs, agent profiles, and custom runtime
 constraints are not stable public surfaces in this release.
 
-<Aside type="note" title="Current scope">
-  Build automation against `assura check`, `assura status`, and the JSON/YAML
-  report fields documented here.
-</Aside>
+> **Current scope**
+>
+> Build automation against `assura check`, `assura status`, and the JSON/YAML
+> report fields documented here.
 
 ## Command Surface
 

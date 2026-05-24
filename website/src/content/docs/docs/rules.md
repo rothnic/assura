@@ -3,18 +3,16 @@ title: Rules
 description: Available validation rules in Assura
 ---
 
-import { Aside, Badge } from '@astrojs/starlight/components';
-
 Assura provides a comprehensive set of validation rules that can be configured to enforce project standards.
 
 ## Severity Levels
 
 Each rule has a severity level that determines how violations are treated:
 
-- <Badge text="Critical" variant="danger" /> - Validation fails, must be fixed
-- <Badge text="High" variant="caution" /> - Serious issues, strongly recommended to fix
-- <Badge text="Medium" variant="note" /> - Potential problems, should be reviewed
-- <Badge text="Low" variant="success" /> - Minor suggestions
+- **Critical**: Validation fails, must be fixed
+- **High**: Serious issues, strongly recommended to fix
+- **Medium**: Potential problems, should be reviewed
+- **Low**: Minor suggestions
 
 ## Built-in Rules
 
@@ -101,9 +99,11 @@ rules:
 
 ## Custom Rules
 
-<Aside type="tip" title="Extending Assura">
-  You can create custom rules by implementing the `ValidationRule` trait. This will be documented in detail in Phase 8B.
-</Aside>
+> **Extending Assura**
+>
+> Custom rule APIs are not part of the supported v0.1 public surface. They will
+> be documented when the plugin/runtime extension work is implemented and
+> tested.
 
 ## Rule Configuration Examples
 

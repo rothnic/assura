@@ -4,7 +4,9 @@
 
 use super::config::Config;
 use crate::cli::config::{ConfigError, ConfigResult};
+use crate::config::config::validate_config_semantics;
 use std::path::Path;
+#[cfg(feature = "full-cli")]
 use validator::Validate;
 
 /// Loader for structure configs
@@ -18,9 +20,29 @@ impl ConfigLoader {
         Self::parse(&content)
     }
 
+    /// Load and semantically validate a config from a file path.
+    pub fn load_validated(path: &Path) -> ConfigResult<Config> {
+        let content = std::fs::read_to_string(path).map_err(ConfigError::Io)?;
+        Self::parse_validated(&content)
+    }
+
     /// Parse config from YAML string
     pub fn parse(content: &str) -> ConfigResult<Config> {
-        let config: Config = serde_yaml::from_str(content).map_err(ConfigError::Yaml)?;
+        let config: Config =
+            serde_yaml::from_str(content).map_err(|error| ConfigError::Yaml(error.to_string()))?;
+        #[cfg(feature = "full-cli")]
+        config
+            .validate()
+            .map_err(|e| ConfigError::Invalid(format!("Configuration validation failed: {}", e)))?;
+        Ok(config)
+    }
+
+    /// Parse and semantically validate config from a YAML string.
+    pub fn parse_validated(content: &str) -> ConfigResult<Config> {
+        let config: Config =
+            serde_yaml::from_str(content).map_err(|error| ConfigError::Yaml(error.to_string()))?;
+        validate_config_semantics(&config).map_err(ConfigError::Invalid)?;
+        #[cfg(feature = "full-cli")]
         config
             .validate()
             .map_err(|e| ConfigError::Invalid(format!("Configuration validation failed: {}", e)))?;

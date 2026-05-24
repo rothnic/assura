@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/assura/index.md", "reason": "Assura product direction and required workflow status reporting"}
+{"file": ".trellis/spec/assura/tooling-stabilization.md", "reason": "Local verification expectations and command handling"}
+{"file": "docs/goals/assura-cli-to-cli-ls-lint-performance-verification.md", "reason": "Completion audit and required verification commands"}
+{"file": "docs/analysis/2026-05-16-website-visual-review.md", "reason": "Existing visual review evidence to preserve until website changes require refresh"}

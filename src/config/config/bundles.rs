@@ -2,17 +2,23 @@
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+#[cfg(feature = "full-cli")]
 use validator::Validate;
 
+#[cfg(feature = "full-cli")]
 use super::validation::{validate_naming_convention, validate_size_string};
 
 /// Bundle of all file validations for a directory node
-#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "full-cli", derive(Validate))]
 #[serde(rename_all = "snake_case")]
 pub struct FileBundle {
     /// Naming convention (e.g., "snake_case", "kebab-case", "PascalCase")
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[validate(custom(function = "validate_naming_convention"))]
+    #[cfg_attr(
+        feature = "full-cli",
+        validate(custom(function = "validate_naming_convention"))
+    )]
     pub naming: Option<String>,
 
     /// Naming conventions keyed by direct file glob pattern
@@ -21,12 +27,15 @@ pub struct FileBundle {
 
     /// Maximum lines per file
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[validate(range(min = 1, max = 100000))]
+    #[cfg_attr(feature = "full-cli", validate(range(min = 1, max = 100000)))]
     pub max_lines: Option<usize>,
 
     /// Maximum file size (e.g., "100KB", "1MB", "10MB")
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[validate(custom(function = "validate_size_string"))]
+    #[cfg_attr(
+        feature = "full-cli",
+        validate(custom(function = "validate_size_string"))
+    )]
     pub max_size: Option<String>,
 
     /// Whether documentation is required
@@ -67,12 +76,16 @@ pub struct FileBundle {
 }
 
 /// Bundle of direct child directory validations for a directory node
-#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "full-cli", derive(Validate))]
 #[serde(rename_all = "snake_case")]
 pub struct DirectoryBundle {
     /// Naming convention for direct child directories
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[validate(custom(function = "validate_naming_convention"))]
+    #[cfg_attr(
+        feature = "full-cli",
+        validate(custom(function = "validate_naming_convention"))
+    )]
     pub naming: Option<String>,
 
     /// Required direct child directories
@@ -105,7 +118,8 @@ pub struct DirectoryBundle {
 }
 
 /// Bundle of markdown validations for a directory node
-#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "full-cli", derive(Validate))]
 #[serde(rename_all = "snake_case")]
 pub struct MarkdownBundle {
     /// Whether frontmatter is required
@@ -118,7 +132,7 @@ pub struct MarkdownBundle {
 
     /// Maximum heading level depth
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[validate(range(min = 1, max = 6))]
+    #[cfg_attr(feature = "full-cli", validate(range(min = 1, max = 6)))]
     pub max_heading_depth: Option<u8>,
 
     /// Whether to check for dead links
@@ -131,7 +145,8 @@ pub struct MarkdownBundle {
 }
 
 /// Required files/directories existence validation
-#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "full-cli", derive(Validate))]
 #[serde(rename_all = "snake_case")]
 pub struct ExistsValidation {
     /// Required files that must exist

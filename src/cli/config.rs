@@ -1,12 +1,16 @@
 //! CLI configuration loading and discovery helpers.
-use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
+#[cfg(feature = "full-cli")]
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
+#[cfg(feature = "full-cli")]
 use crate::constraints::ConstraintConfig;
+#[cfg(feature = "full-cli")]
 use crate::maturity::MaturityConfig;
+#[cfg(feature = "full-cli")]
+use std::collections::HashMap;
 
 #[derive(Error, Debug)]
 pub enum ConfigError {
@@ -14,7 +18,7 @@ pub enum ConfigError {
     Io(#[from] std::io::Error),
 
     #[error("YAML parsing error: {0}")]
-    Yaml(#[from] serde_yaml::Error),
+    Yaml(String),
 
     #[error("Configuration not found at: {0}")]
     NotFound(PathBuf),
@@ -32,6 +36,7 @@ const ASSURA_DIR: &str = ".assura";
 const CONFIG_FILE: &str = "config.yml";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg(feature = "full-cli")]
 pub struct CliConfig {
     #[serde(default = "default_version")]
     pub version: String,
@@ -59,6 +64,7 @@ pub struct CliConfig {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg(feature = "full-cli")]
 pub struct CheckConfig {
     #[serde(default = "default_true")]
     pub parallel: bool,
@@ -77,6 +83,7 @@ pub struct CheckConfig {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg(feature = "full-cli")]
 pub struct WatchConfig {
     #[serde(default = "default_debounce_ms")]
     pub debounce_ms: u64,
@@ -89,6 +96,7 @@ pub struct WatchConfig {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg(feature = "full-cli")]
 pub struct OutputConfig {
     #[serde(default = "default_format")]
     pub format: String,
@@ -101,6 +109,7 @@ pub struct OutputConfig {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg(feature = "full-cli")]
 pub struct GitConfig {
     #[serde(default = "default_true")]
     pub enabled: bool,
@@ -110,12 +119,14 @@ pub struct GitConfig {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg(feature = "full-cli")]
 pub struct HookConfig {
     pub enabled: bool,
     #[serde(default)]
     pub args: Vec<String>,
 }
 
+#[cfg(feature = "full-cli")]
 impl CliConfig {
     pub fn new(project_root: impl Into<PathBuf>) -> Self {
         let project_root = project_root.into();
@@ -146,7 +157,8 @@ impl CliConfig {
         std::fs::create_dir_all(&config_dir)?;
 
         let config_path = config_dir.join(CONFIG_FILE);
-        let content = serde_yaml::to_string(self)?;
+        let content =
+            serde_yaml::to_string(self).map_err(|error| ConfigError::Yaml(error.to_string()))?;
         std::fs::write(&config_path, content)?;
 
         Ok(config_path)
@@ -161,7 +173,8 @@ impl CliConfig {
         }
 
         let content = std::fs::read_to_string(&config_path)?;
-        let mut config: CliConfig = serde_yaml::from_str(&content)?;
+        let mut config: CliConfig =
+            serde_yaml::from_str(&content).map_err(|error| ConfigError::Yaml(error.to_string()))?;
         config.project_root = project_root.to_path_buf();
 
         Ok(config)
@@ -188,12 +201,14 @@ impl CliConfig {
     }
 }
 
+#[cfg(feature = "full-cli")]
 impl Default for CliConfig {
     fn default() -> Self {
         Self::new(std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")))
     }
 }
 
+#[cfg(feature = "full-cli")]
 impl Default for CheckConfig {
     fn default() -> Self {
         Self {
@@ -210,6 +225,7 @@ impl Default for CheckConfig {
     }
 }
 
+#[cfg(feature = "full-cli")]
 impl Default for WatchConfig {
     fn default() -> Self {
         Self {
@@ -224,6 +240,7 @@ impl Default for WatchConfig {
     }
 }
 
+#[cfg(feature = "full-cli")]
 impl Default for OutputConfig {
     fn default() -> Self {
         Self {
@@ -234,6 +251,7 @@ impl Default for OutputConfig {
     }
 }
 
+#[cfg(feature = "full-cli")]
 impl Default for GitConfig {
     fn default() -> Self {
         let mut hooks = HashMap::new();
@@ -266,18 +284,22 @@ impl Default for GitConfig {
     }
 }
 
+#[cfg(feature = "full-cli")]
 fn default_version() -> String {
     env!("CARGO_PKG_VERSION").to_string()
 }
 
+#[cfg(feature = "full-cli")]
 fn default_true() -> bool {
     true
 }
 
+#[cfg(feature = "full-cli")]
 fn default_debounce_ms() -> u64 {
     300
 }
 
+#[cfg(feature = "full-cli")]
 fn default_format() -> String {
     "text".to_string()
 }
@@ -335,7 +357,7 @@ impl ConfigDiscovery {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "full-cli"))]
 mod tests {
     use super::*;
     use tempfile::tempdir;

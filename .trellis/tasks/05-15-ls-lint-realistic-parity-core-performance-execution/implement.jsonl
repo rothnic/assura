@@ -1,0 +1,7 @@
+{"file":".trellis/spec/assura/index.md","reason":"Assura source-of-truth routing, active constraints, and workflow status expectations."}
+{"file":".trellis/spec/assura/structure-enforcement.md","reason":"Closed-world direct contents and LS-Lint direct exists conversion contracts."}
+{"file":".trellis/spec/assura/tooling-stabilization.md","reason":"Current validation gate policy, known deferred baseline issues, and local quality expectations."}
+{"file":"docs/goals/assura-ls-lint-realistic-parity-core-performance.md","reason":"Authoritative goal acceptance criteria, validation commands, progress log, and stop condition."}
+{"file":"docs/analysis/2026-05-11-ls-lint-parity-performance-regression-audit.md","reason":"Prior LS-Lint parity facts, known gaps, and performance hotspot attribution."}
+{"file":"docs/unified-tree-design.md","reason":"Historical/current notation design input for consolidation."}
+{"file":"docs/ls-lint-capability-comparison.md","reason":"Capability comparison input to update or supersede with current product truth."}

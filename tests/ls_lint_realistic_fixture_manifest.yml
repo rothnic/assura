@@ -1,0 +1,183 @@
+schema_version: 1
+fixtures:
+  - id: simple_library
+    name: Simple library
+    source:
+      kind: generated
+      repository: https://github.com/assura/assura
+      revision: generated-fixture-v1
+    purpose: Small source, docs, tests, and generated-output project shape.
+    ls_lint_rules:
+      - extension
+      - subextension
+      - .dir
+      - or_syntax
+      - ignore
+      - exists
+    assura_rules:
+      - files.naming_patterns
+      - directories.naming
+      - files.exists
+      - exclude
+    cohort: stable_baseline
+    native_lslint_parity: true
+    assura_extensions: []
+  - id: web_app
+    name: Web app
+    source:
+      kind: generated
+      repository: https://github.com/assura/assura
+      revision: generated-fixture-v1
+    purpose: Frontend-style components, tests, assets, and build output.
+    ls_lint_rules:
+      - extension
+      - subextension
+      - .dir
+      - ignore
+      - exists
+    assura_rules:
+      - files.naming_patterns
+      - directories.naming
+      - files.exists
+      - exclude
+    cohort: stable_baseline
+    native_lslint_parity: true
+    assura_extensions: []
+  - id: monorepo_packages
+    name: Monorepo packages
+    source:
+      kind: generated
+      repository: https://github.com/assura/assura
+      revision: generated-fixture-v1
+    purpose: Multiple explicit packages with package-local source, tests, docs, and generated output.
+    ls_lint_rules:
+      - explicit_nested_directory_scope
+      - extension
+      - .dir
+      - ignore
+      - exists
+    assura_rules:
+      - children
+      - files.naming_patterns
+      - directories.naming
+      - files.exists
+      - exclude
+    cohort: stable_baseline
+    native_lslint_parity: true
+    assura_extensions: []
+  - id: rule_heavy_repo
+    name: Rule-heavy repo
+    source:
+      kind: generated
+      repository: https://github.com/assura/assura
+      revision: generated-fixture-v1
+    purpose: Many extension and subextension rules over a realistic tree.
+    ls_lint_rules:
+      - extension
+      - wildcard_extension
+      - subextension
+      - .dir
+    assura_rules:
+      - files.naming_patterns
+      - directories.naming
+    cohort: stable_baseline
+    native_lslint_parity: true
+    assura_extensions: []
+  - id: monorepo_policy
+    name: Monorepo policy
+    source:
+      kind: generated
+      repository: https://github.com/assura/assura
+      revision: generated-fixtures-v2
+    purpose: Strict TypeScript/Next-style monorepo policy with root whitelisting, app/package scopes, source bans, docs/scripts/infra rules, and generated-output pruning.
+    ls_lint_rules:
+      - explicit_nested_directory_scope
+      - regex
+      - or_syntax
+      - extension
+      - subextension
+      - .dir
+      - ignore
+    assura_rules:
+      - files.allowed_names
+      - directories.allowed_names
+      - files.naming_patterns
+      - directories.naming
+      - exclude
+    cohort: stable_baseline
+    native_lslint_parity: true
+    assura_extensions: []
+  - id: ignored_generated_heavy_repo
+    name: Ignored generated-heavy repo
+    source:
+      kind: generated
+      repository: https://github.com/assura/assura
+      revision: generated-fixture-v1
+    purpose: Large invalid generated areas that must be pruned before validation.
+    ls_lint_rules:
+      - extension
+      - .dir
+      - ignore
+    assura_rules:
+      - files.naming_patterns
+      - directories.naming
+      - exclude
+    cohort: stable_baseline
+    native_lslint_parity: true
+    assura_extensions: []
+  - id: assura_exact_filename_exists_extension
+    name: Exact filename exists extension
+    source:
+      kind: generated
+      repository: https://github.com/assura/assura
+      revision: generated-fixture-v1
+    purpose: Labels exact direct filename exists as an Assura compatibility extension, not native LS-Lint parity.
+    ls_lint_rules:
+      - exists
+    assura_rules:
+      - files.exists
+    cohort: feature_exact_filename_exists
+    native_lslint_parity: false
+    assura_extensions:
+      - exact_filename_exists
+  - id: pinned_nextjs
+    name: Pinned Next.js checkout
+    source:
+      kind: external_git
+      repository: https://github.com/vercel/next.js
+      revision: ea8bc0ec2bbae18dd6861db15d66b92c36feeeb8
+    purpose: Pinned frontend monorepo repository for deterministic opt-in performance-report measurement without vendoring third-party source.
+    ls_lint_rules:
+      - external_fixture_source
+      - regex
+      - .dir
+      - wildcard_extension
+      - ignore
+    assura_rules:
+      - fixture_materialization
+      - files.naming_patterns
+      - directories.naming
+      - exclude
+    cohort: stable_baseline
+    native_lslint_parity: true
+    assura_extensions: []
+  - id: pinned_mdbook
+    name: Pinned mdBook checkout
+    source:
+      kind: external_git
+      repository: https://github.com/rust-lang/mdBook
+      revision: b7a27d2759e80d804a33a4bc9c31b2b6863a5cb2
+    purpose: Pinned Rust documentation/library repository for deterministic opt-in performance-report measurement without vendoring third-party source.
+    ls_lint_rules:
+      - external_fixture_source
+      - regex
+      - .dir
+      - extension
+    assura_rules:
+      - fixture_materialization
+      - files.naming_patterns
+      - directories.naming
+      - exclude
+    cohort: stable_baseline
+    native_lslint_parity: true
+    assura_extensions: []

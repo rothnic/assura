@@ -8,6 +8,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  ASSURA_MAX_RELEASE_ARCHIVE_BYTES: 8388608
 
 jobs:
   check:
@@ -70,6 +71,78 @@ jobs:
     - name: Run tests
       run: cargo test --all-features
 
+  release-bundle:
+    name: Release Bundle Smoke
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+    - name: Cache Rust builds
+      uses: Swatinem/rust-cache@v2
+    - name: Build installable bundle
+      run: |
+        cargo rustc --release --bin assura --no-default-features --features json-output,yaml-config -- -C target-feature=+crt-static -C link-arg=-lgcc_eh
+        cargo build --release --bin assura-full
+        mkdir -p target/release-bundle
+        cp target/release/assura target/release/assura-full target/release-bundle/
+        tar -C target/release-bundle -czf target/assura-linux-amd64-preview.tar.gz assura assura-full
+    - name: Enforce release archive size
+      run: |
+        bytes="$(wc -c < target/assura-linux-amd64-preview.tar.gz | tr -d '[:space:]')"
+        echo "assura-linux-amd64-preview.tar.gz: ${bytes} bytes"
+        test "$bytes" -le "$ASSURA_MAX_RELEASE_ARCHIVE_BYTES"
+    - name: Smoke Unix installer
+      run: |
+        tmp="$(mktemp -d)"
+        ASSURA_ASSET_URL="$PWD/target/assura-linux-amd64-preview.tar.gz" BIN_DIR="$tmp/bin" ./website/public/install.sh
+        "$tmp/bin/assura" check --quiet .
+        "$tmp/bin/assura" --version
+        "$tmp/bin/assura" --help >/tmp/assura-help.txt
+        grep -q "Usage: assura" /tmp/assura-help.txt
+    - name: Upload preview bundle
+      uses: actions/upload-artifact@v4
+      with:
+        name: assura-linux-amd64-preview
+        path: target/assura-linux-amd64-preview.tar.gz
+        if-no-files-found: error
+        retention-days: 14
+
+  windows-installer:
+    name: Windows Installer Smoke
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+    - name: Cache Rust builds
+      uses: Swatinem/rust-cache@v2
+    - name: Build installable Windows bundle
+      shell: pwsh
+      run: |
+        cargo build --release --bin assura --no-default-features --features json-output,yaml-config
+        cargo build --release --bin assura-full
+        New-Item -ItemType Directory -Force -Path target/release-bundle | Out-Null
+        Copy-Item target/release/assura.exe target/release-bundle/assura.exe
+        Copy-Item target/release/assura-full.exe target/release-bundle/assura-full.exe
+        Compress-Archive -Path target/release-bundle/* -DestinationPath target/assura-windows-amd64.zip -Force
+    - name: Enforce release archive size
+      shell: pwsh
+      run: |
+        $bytes = (Get-Item target/assura-windows-amd64.zip).Length
+        Write-Host "assura-windows-amd64.zip: $bytes bytes"
+        if ($bytes -gt [int64]$env:ASSURA_MAX_RELEASE_ARCHIVE_BYTES) {
+          throw "Release archive exceeds size budget"
+        }
+    - name: Smoke PowerShell installer
+      shell: pwsh
+      run: |
+        $bin = Join-Path $env:RUNNER_TEMP "assura-bin"
+        ./website/public/install.ps1 -AssetUrl (Resolve-Path target/assura-windows-amd64.zip) -BinDir $bin
+        & (Join-Path $bin "assura.exe") check --quiet .
+        & (Join-Path $bin "assura.exe") --version
+        & (Join-Path $bin "assura.exe") --help | Select-String "Usage: assura"
+
   coverage:
     name: Code Coverage
     runs-on: ubuntu-latest
@@ -105,3 +178,107 @@ jobs:
         path: ./cobertura.xml
         if-no-files-found: error
         retention-days: 14
+
+  performance:
+    name: Performance Report
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22
+    - name: Cache Rust builds
+      uses: Swatinem/rust-cache@v2
+    - name: Build release performance bundle
+      run: |
+        cargo build --release --bin assura --no-default-features --features json-output,yaml-config
+        cargo rustc --release --bin assura --no-default-features --features json-output,yaml-config -- -C target-feature=+crt-static -C link-arg=-lgcc_eh
+        cargo build --release --bin assura-full
+    - name: Generate comparison report
+      run: |
+        mkdir -p target/performance
+        target/release/assura performance-report \
+          --output target/performance/ls-lint-comparison.json \
+          --iterations 3
+    - name: Summarize performance
+      run: |
+        python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+        import json
+        from pathlib import Path
+
+        report_path = Path("target/performance/ls-lint-comparison.json")
+        report = json.loads(report_path.read_text())
+        print("## Assura vs LS-Lint Performance")
+        print()
+        print(f"- Baseline: `{report['comparison_baseline_id']}`")
+        print(f"- Commit: `{report['commit_sha']}`")
+        print(f"- Branch: `{report['branch']}`")
+        environment = report["environment"]
+        print(f"- Environment: `{environment['os']}/{environment['arch']}`")
+        print(f"- Rust: `{environment['rust_version']}`")
+        print(f"- Node/npm: `{environment['node_version']}` / `{environment['npm_version']}`")
+        status = report["ls_lint_status"]
+        if status["available"]:
+            print(f"- LS-Lint: `{status['version']}`")
+        else:
+            print(f"- LS-Lint: skipped, `{status['blocker']}`")
+        print("- Full machine-readable report is attached as `ls-lint-performance-report`.")
+        print()
+        print("| Fixture | Assura median | LS-Lint median | Status |")
+        print("| --- | ---: | ---: | --- |")
+        rows = report["results"]
+        def row_name(row):
+            return row.get("row_family") or row["tool_name"]
+        def find_row(fixture, *names):
+            return next(row for row in rows if row["fixture_id"] == fixture and row_name(row) in names)
+        def median(row):
+            value = row["median_runtime_ms"]
+            return "n/a" if value is None else f"{value:.3f} ms"
+        fixtures = []
+        for row in rows:
+            if row["fixture_id"] not in fixtures:
+                fixtures.append(row["fixture_id"])
+        for fixture in fixtures:
+            assura = find_row(fixture, "assura-cli")
+            lslint = find_row(fixture, "ls-lint-cli")
+            print(f"| `{fixture}` | {median(assura)} | {median(lslint)} | `{assura['status']}` / `{lslint['status']}` |")
+        print()
+        print("## jwalk Migration Traversal Evidence")
+        print()
+        print("| Fixture | walkdir | jwalk serial | jwalk parallel | Status |")
+        print("| --- | ---: | ---: | ---: | --- |")
+        for fixture in fixtures:
+            walkdir = find_row(fixture, "traversal:walkdir", "walkdir")
+            serial = find_row(fixture, "traversal:jwalk-serial", "jwalk-serial")
+            parallel = find_row(fixture, "traversal:jwalk-parallel", "jwalk-parallel")
+            print(f"| `{fixture}` | {median(walkdir)} | {median(serial)} | {median(parallel)} | `{walkdir['status']}` / `{serial['status']}` / `{parallel['status']}` |")
+        print()
+        print("## Assura Phase Breakdown")
+        print()
+        print("| Fixture | Config discovery | Config load | Init | Configured rules | Walk + validate | Sort |")
+        print("| --- | ---: | ---: | ---: | ---: | ---: | ---: |")
+        phases = [
+            "assura:phase:config-discovery",
+            "assura:phase:config-load",
+            "assura:phase:checker-init",
+            "assura:phase:configured-structure",
+            "assura:phase:walk-and-validate",
+            "assura:phase:report-sort",
+        ]
+        for fixture in fixtures:
+            values = [
+                median(find_row(fixture, phase))
+                for phase in phases
+            ]
+            print(f"| `{fixture}` | " + " | ".join(values) + " |")
+        PY
+    - name: Upload performance artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ls-lint-performance-report
+        path: target/performance/ls-lint-comparison.json
+        if-no-files-found: error
+        retention-days: 30

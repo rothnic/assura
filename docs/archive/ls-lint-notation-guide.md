@@ -5,6 +5,13 @@ status: historical
 
 # Assura vs LS-Lint: Notation Guide
 
+> Historical design input, not current product source truth.
+>
+> This guide predates the current `structure:` implementation and overstates
+> planned content, pairing, context, messaging, and policy notation. Use
+> `docs/analysis/2026-05-15-notation-source-truth.md` for current
+> implemented, extension, unsupported, and planned notation.
+
 This document maps LS-Lint notation to Assura notation, highlighting extensions, deviations, and key use cases.
 
 ---

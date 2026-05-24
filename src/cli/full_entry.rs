@@ -1,0 +1,206 @@
+//! Full multi-command CLI entrypoint used by `assura-full`.
+
+use clap::Parser;
+use std::ffi::OsString;
+use tracing::{error, info};
+
+use super::{
+    check_command, info_command, init_command, migrate_command, performance_report_command,
+    status_command, watch_command, Cli, Commands, ExitCode, HookCommands,
+    PerformanceReportCommandOptions,
+};
+
+/// Run the complete Clap/Tokio-powered CLI for non-check commands and fallbacks.
+pub fn run_full_cli_from_env() -> i32 {
+    run_full_cli_from_args(full_cli_args_from_env())
+}
+
+fn full_cli_args_from_env() -> Vec<OsString> {
+    let mut args: Vec<OsString> = std::env::args_os().collect();
+    if let Ok(bin_name) = std::env::var("ASSURA_CLI_BIN_NAME") {
+        if let Some(first) = args.first_mut() {
+            *first = OsString::from(bin_name);
+        }
+    }
+    args
+}
+
+fn run_full_cli_from_args<I, T>(args: I) -> i32
+where
+    I: IntoIterator<Item = T>,
+    T: Into<OsString> + Clone,
+{
+    let runtime = tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()
+        .expect("failed to initialize Tokio runtime");
+    let cli = Cli::parse_from(args);
+    let exit_code = runtime.block_on(run_full_cli(cli));
+    exit_code as i32
+}
+
+async fn run_full_cli(cli: Cli) -> ExitCode {
+    // Initialize tracing
+    tracing_subscriber::fmt::init();
+
+    // Set log level based on verbosity
+    if cli.verbose {
+        std::env::set_var("RUST_LOG", "debug");
+    } else if cli.quiet {
+        std::env::set_var("RUST_LOG", "error");
+    } else {
+        std::env::set_var("RUST_LOG", "info");
+    }
+
+    info!("Starting Assura CLI");
+    let config_path = cli.config.clone();
+
+    let exit_code = match cli.command {
+        Commands::Check {
+            path,
+            format,
+            output,
+            fail_fast,
+            no_parallel,
+            watch: _,
+        } => check_command(path, config_path, format, output, fail_fast, no_parallel).await,
+        Commands::Status { path, format } => status_command(path, config_path, format).await,
+        Commands::Init {
+            path,
+            force,
+            no_git_hooks,
+        } => init_command(path, force, no_git_hooks).await,
+        Commands::Watch {
+            path,
+            debounce,
+            no_git,
+        } => watch_command(path, config_path, debounce, no_git).await,
+        Commands::Migrate { input, output } => migrate_command(input, output).await,
+        Commands::Info { path } => info_command(path, config_path).await,
+        Commands::PerformanceReport {
+            output,
+            history,
+            website_dir,
+            iterations,
+            baseline_id,
+            format,
+            ls_lint_package,
+            include_external_fixtures,
+        } => {
+            performance_report_command(PerformanceReportCommandOptions {
+                output,
+                history,
+                website_dir,
+                iterations,
+                baseline_id,
+                format,
+                ls_lint_package,
+                include_external_fixtures,
+            })
+            .await
+        }
+        Commands::Hooks { command } => match command {
+            HookCommands::Install { path, force } => handle_hooks_install(path, force).await,
+            HookCommands::Uninstall { path } => handle_hooks_uninstall(path).await,
+            HookCommands::Status => handle_hooks_status().await,
+        },
+    };
+
+    exit_code
+}
+
+async fn handle_hooks_install(path: Option<std::path::PathBuf>, force: bool) -> ExitCode {
+    use super::hooks::GitHooksManager;
+
+    let project_root = path.unwrap_or_else(|| {
+        std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."))
+    });
+
+    match GitHooksManager::new(&project_root) {
+        Ok(manager) => match manager.install_all(force) {
+            Ok(installed) => {
+                if installed.is_empty() {
+                    println!("No hooks installed (already exist). Use --force to overwrite.");
+                } else {
+                    println!("Installed hooks:");
+                    for hook in installed {
+                        println!("  ✓ {}", hook.as_str());
+                    }
+                }
+                ExitCode::Success
+            }
+            Err(e) => {
+                error!("Failed to install hooks: {}", e);
+                eprintln!("Error: {}", e);
+                ExitCode::RuntimeError
+            }
+        },
+        Err(e) => {
+            error!("Git repository not found: {}", e);
+            eprintln!("Error: {}", e);
+            ExitCode::ConfigurationError
+        }
+    }
+}
+
+async fn handle_hooks_uninstall(path: Option<std::path::PathBuf>) -> ExitCode {
+    use super::hooks::GitHooksManager;
+
+    let project_root = path.unwrap_or_else(|| {
+        std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."))
+    });
+
+    match GitHooksManager::new(&project_root) {
+        Ok(manager) => match manager.uninstall_all() {
+            Ok(uninstalled) => {
+                if uninstalled.is_empty() {
+                    println!("No hooks to uninstall.");
+                } else {
+                    println!("Uninstalled hooks:");
+                    for hook in uninstalled {
+                        println!("  ✓ {}", hook.as_str());
+                    }
+                }
+                ExitCode::Success
+            }
+            Err(e) => {
+                error!("Failed to uninstall hooks: {}", e);
+                eprintln!("Error: {}", e);
+                ExitCode::RuntimeError
+            }
+        },
+        Err(e) => {
+            error!("Git repository not found: {}", e);
+            eprintln!("Error: {}", e);
+            ExitCode::ConfigurationError
+        }
+    }
+}
+
+async fn handle_hooks_status() -> ExitCode {
+    use super::config::ConfigDiscovery;
+    use super::hooks::GitHooksManager;
+
+    let project_root = match ConfigDiscovery::find_project_root(".") {
+        Some(root) => root,
+        None => {
+            eprintln!("Error: Could not find project root");
+            return ExitCode::NoConfigFound;
+        }
+    };
+
+    match GitHooksManager::new(&project_root) {
+        Ok(manager) => {
+            println!("Git hooks status:");
+            for status in manager.all_status() {
+                println!("{}", status.display());
+            }
+            ExitCode::Success
+        }
+        Err(e) => {
+            error!("Git repository not found: {}", e);
+            eprintln!("Error: {}", e);
+            ExitCode::ConfigurationError
+        }
+    }
+}

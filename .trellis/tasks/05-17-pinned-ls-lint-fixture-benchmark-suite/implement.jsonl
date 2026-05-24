@@ -1,0 +1,7 @@
+{"file":".trellis/spec/assura/index.md","reason":"Assura product constraints, canonical workflow sources, and validation debt policy for implementation work."}
+{"file":".trellis/spec/assura/structure-enforcement.md","reason":"LS-Lint compatibility and structure-first closed-world contracts relevant to generated policy fixtures."}
+{"file":".trellis/spec/assura/tooling-stabilization.md","reason":"Local gate policy and acceptable handling of known validation/tooling blockers."}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Fixture/report metadata changes touch repeated constants and generator patterns."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Performance metadata flows from fixture generation to JSON data and website rendering."}
+{"file":"docs/analysis/2026-05-17-cli-to-cli-performance-decision-record.md","reason":"Current public performance row-family and headline/diagnostic classification contract."}
+{"file":"docs/analysis/2026-05-17-filesystem-validation-throughput-research.md","reason":"Current traversal strategy boundaries and deferred architecture decisions."}

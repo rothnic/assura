@@ -1,9 +1,12 @@
 //! File, directory, and markdown validators for structure-first checks.
 
-use super::patterns::{matches_any_compiled_pattern, matches_single_compiled_pattern};
+use super::case::{validate_file_stem, validate_name};
+use super::patterns::{
+    best_lslint_suffix_match, matches_any_compiled_pattern, matches_single_compiled_pattern,
+};
 use super::rules::{
     display_rel, file_matches_any_extension, parse_size, severity_for_bundle,
-    severity_for_directory_bundle, validate_file_stem, validate_name,
+    severity_for_directory_bundle,
 };
 use super::{direct_contents::DirectFilePolicy, StructureCheckReport, StructureChecker};
 use crate::config::config::FileBundle;
@@ -27,7 +30,7 @@ impl StructureChecker {
             .unwrap_or("");
 
         if let Some(directories) = rules.directories.as_ref() {
-            let configured_child = self.configured_dirs.contains(&rel);
+            let configured_child = self.is_configured_dir(&rel);
             let allowed_by_name = directories
                 .allowed_names
                 .as_ref()
@@ -91,7 +94,7 @@ impl StructureChecker {
             }
         }
 
-        if self.configured_dirs.contains(&rel) {
+        if self.is_configured_dir(&rel) {
             return;
         }
 
@@ -121,8 +124,11 @@ impl StructureChecker {
         let parent_rel = rel.parent().unwrap_or_else(|| Path::new(""));
         let rules = self.resolve_rules(parent_rel);
 
+        #[cfg(feature = "yaml-config")]
         let needs_markdown =
             path.extension().and_then(|ext| ext.to_str()) == Some("md") && rules.markdown.is_some();
+        #[cfg(not(feature = "yaml-config"))]
+        let needs_markdown = false;
         let needs_file_content = rules.files.as_ref().is_some_and(|files| {
             files.max_lines.is_some()
                 || (files.require_docs == Some(true)
@@ -135,7 +141,7 @@ impl StructureChecker {
                     let severity = rules
                         .files
                         .as_ref()
-                        .map(severity_for_bundle)
+                        .map(|files| severity_for_bundle(files))
                         .unwrap_or_else(|| "medium".to_string());
                     self.push_violation(
                         report,
@@ -155,6 +161,7 @@ impl StructureChecker {
             self.validate_file_bundle(path, &rel, &files, content.as_deref(), report);
         }
 
+        #[cfg(feature = "yaml-config")]
         if needs_markdown {
             if let (Some(markdown), Some(content)) = (rules.markdown, content.as_deref()) {
                 self.validate_markdown(&rel, &markdown, content, report);
@@ -253,26 +260,36 @@ impl StructureChecker {
         }
 
         if let Some(naming_patterns) = &files.naming_patterns {
-            for (pattern, naming) in naming_patterns {
-                if matches_single_compiled_pattern(pattern, filename, &self.glob_patterns) {
-                    let stem = path
-                        .file_stem()
-                        .and_then(|stem| stem.to_str())
-                        .unwrap_or("");
-                    if !validate_file_stem(stem, naming, &self.naming_regexes) {
-                        self.push_violation(
-                            report,
-                            rel.to_path_buf(),
-                            "file_naming",
-                            format!(
-                                "File '{}' does not match naming convention '{}'",
-                                filename, naming
-                            ),
-                            severity_for_bundle(files),
-                        );
-                    }
-                    return;
+            let best_match = best_lslint_suffix_match(naming_patterns, filename).or_else(|| {
+                naming_patterns
+                    .iter()
+                    .filter(|(pattern, _)| {
+                        matches_single_compiled_pattern(pattern, filename, &self.glob_patterns)
+                    })
+                    .map(|(pattern, naming)| (pattern.as_str(), naming.as_str()))
+                    .max_by(|(left, _), (right, _)| {
+                        left.len().cmp(&right.len()).then_with(|| right.cmp(left))
+                    })
+            });
+
+            if let Some((_pattern, naming)) = best_match {
+                let stem = path
+                    .file_stem()
+                    .and_then(|stem| stem.to_str())
+                    .unwrap_or("");
+                if !validate_file_stem(stem, naming, &self.naming_regexes) {
+                    self.push_violation(
+                        report,
+                        rel.to_path_buf(),
+                        "file_naming",
+                        format!(
+                            "File '{}' does not match naming convention '{}'",
+                            filename, naming
+                        ),
+                        severity_for_bundle(files),
+                    );
                 }
+                return;
             }
         }
 

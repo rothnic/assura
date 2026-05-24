@@ -6,23 +6,19 @@ sidebar:
   order: 1
 ---
 
-import { Steps, FileTree } from '@astrojs/starlight/components';
-
 This example uses the current supported CLI surface.
 
 ## Project Shape
 
-<FileTree>
-- my-rust-project/
-  - .assura/
-    - config.yml
-  - src/
-    - main.rs
-  - Cargo.toml
-  - README.md
-</FileTree>
-
-<Steps>
+```text
+my-rust-project/
+  .assura/
+    config.yml
+  src/
+    main.rs
+  Cargo.toml
+  README.md
+```
 
 1. **Create a Rust project**
 
@@ -34,7 +30,7 @@ This example uses the current supported CLI surface.
 2. **Install Assura**
 
    ```bash
-   cargo install assura
+   curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sh
    ```
 
 3. **Initialize Assura**
@@ -80,8 +76,6 @@ This example uses the current supported CLI surface.
    assura check --format text
    ```
 
-</Steps>
-
 ## CI Snippet
 
 ```yaml
@@ -92,7 +86,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - run: cargo install assura
+      - run: curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sudo env BIN_DIR=/usr/local/bin sh
       - run: assura check --format text
 ```

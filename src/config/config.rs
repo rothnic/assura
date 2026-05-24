@@ -8,32 +8,37 @@
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+#[cfg(feature = "full-cli")]
 use validator::Validate;
 
 mod bundles;
 mod validation;
 
 pub use crate::config::inheritance::{ResolvedRule, RuleResolver};
+#[cfg(feature = "yaml-config")]
 pub use crate::config::loader::ConfigLoader;
 pub use crate::config::ls_compat::LsLintCompatibility;
 pub use bundles::{
     DirectoryBundle, ExistsValidation, FileBundle, MarkdownBundle, ResolvedFileBundle,
 };
 pub(crate) use validation::split_naming_conventions;
+#[cfg(feature = "yaml-config")]
+pub(crate) use validation::validate_config_semantics;
 #[cfg(test)]
 pub(super) use validation::{validate_naming_convention, validate_size_string};
 
 /// Root configuration struct
-#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "full-cli", derive(Validate))]
 #[serde(rename_all = "snake_case")]
 pub struct Config {
     /// Top-level file patterns for applying rules globally
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
-    #[validate(nested)]
+    #[cfg_attr(feature = "full-cli", validate(nested))]
     pub patterns: HashMap<String, FileBundle>,
 
     /// The structure hierarchy - each key is a directory path
-    #[validate(nested)]
+    #[cfg_attr(feature = "full-cli", validate(nested))]
     pub structure: HashMap<String, DirectoryNode>,
 
     /// Optional LS-Lint compatibility layer (for testing only)
@@ -46,32 +51,33 @@ pub struct Config {
 }
 
 /// A node in the structure hierarchy
-#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "full-cli", derive(Validate))]
 #[serde(rename_all = "snake_case")]
 pub struct DirectoryNode {
     /// File validation rules for this node
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[validate(nested)]
+    #[cfg_attr(feature = "full-cli", validate(nested))]
     pub files: Option<FileBundle>,
 
     /// Direct child directory validation rules for this node
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[validate(nested)]
+    #[cfg_attr(feature = "full-cli", validate(nested))]
     pub directories: Option<DirectoryBundle>,
 
     /// Markdown validation rules for this node
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[validate(nested)]
+    #[cfg_attr(feature = "full-cli", validate(nested))]
     pub markdown: Option<MarkdownBundle>,
 
     /// Required files/directories validation
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[validate(nested)]
+    #[cfg_attr(feature = "full-cli", validate(nested))]
     pub exists: Option<ExistsValidation>,
 
     /// Child directories with their own rules
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[validate(nested)]
+    #[cfg_attr(feature = "full-cli", validate(nested))]
     pub children: Option<HashMap<String, DirectoryNode>>,
 
     /// Whether to inherit rules from parent (default: true)

@@ -6,28 +6,21 @@ sidebar:
   order: 1
 ---
 
-import { Steps, Aside } from '@astrojs/starlight/components';
-
 Assura validates repository structure from `.assura/config.yml`. The primary
 supported command is `assura check`.
 
 ## First Run
 
-<Steps>
-
-1. **Install or build Assura**
+1. **Install Assura**
 
    ```bash
-   cargo install assura
+   curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sh
    ```
 
-   Source build:
-
-   ```bash
-   git clone https://github.com/rothnic/assura
-   cd assura
-   cargo build --release
-   ```
+   The installer supports Linux x64, macOS Apple Silicon, and macOS Intel.
+   Windows users can run the PowerShell installer from the
+   [Installation guide](/guides/installation/) or download the zip from
+   [GitHub Releases](https://github.com/rothnic/assura/releases/latest).
 
 2. **Create a project config**
 
@@ -63,8 +56,6 @@ supported command is `assura check`.
    ```bash
    assura check --format text
    ```
-
-</Steps>
 
 ## JSON Output
 
@@ -107,8 +98,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - run: cargo install assura
+      - run: curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sudo env BIN_DIR=/usr/local/bin sh
       - run: assura check --format text
 ```
 
@@ -133,8 +123,8 @@ assura check --format json . > assura-report.json
 assura-codex-nudge --report assura-report.json --format text
 ```
 
-<Aside type="note" title="Current release scope">
-  This MVP does not install Codex hooks automatically and does not replace
-  repo-local `.agents/skills/` guidance. Treat it as advisory unless your
-  workflow enforces the command exit code.
-</Aside>
+> **Current release scope**
+>
+> This MVP does not install Codex hooks automatically and does not replace
+> repo-local `.agents/skills/` guidance. Treat it as advisory unless your
+> workflow enforces the command exit code.

@@ -1,0 +1,86 @@
+---
+title: Performance Implementation
+description: Technical notes behind Assura performance measurements.
+---
+
+# Performance Implementation
+
+The public performance summary should prefer the primary `assura check`
+product path and the `ls-lint-cli` row from the same release profile. The
+current checked-in headline claim is scoped to the Linux static-CRT primary
+`assura` launcher, which routes supported one-shot checks through the
+lightweight checker before falling back to the `assura-full` companion for
+less common commands. Local macOS dynamic rows are diagnostic lower-bound
+evidence.
+The LS-Lint row executes the native platform binary resolved from the pinned
+`@ls-lint/ls-lint` package. It does not time `npm exec`, package resolution, or
+the package's Node wrapper. The top-level rows include process startup, config
+discovery/load, validation, report construction, and process exit.
+
+Traversal and phase rows answer narrower engineering questions. They belong on
+this page because they explain why a strategy was chosen, not whether users
+should expect one tool to be faster than the other.
+
+## Row Families
+
+| Row Family | Meaning | Use For |
+| --- | --- | --- |
+| `assura-cli` | Primary installable Assura launcher running the fast `assura check` path | Product comparison against LS-Lint |
+| `assura-check-cli` | Internal focused checker binary | Historical and implementation attribution |
+| `ls-lint-cli` | Native LS-Lint CLI subprocess check | Product comparison baseline |
+| `assura-in-process` | Assura validation inside the current process | Runtime attribution without process startup |
+| `assura:phase:*` | Timed Assura implementation phases | Locating hot spots |
+| `traversal:*` | Raw filesystem enumeration only | Traversal strategy attribution |
+| `strategy:*` | Full-check traversal strategy variants | Comparing implementation choices under validation load |
+
+## Traversal Decision
+
+The non-fail-fast default traversal path is `walkdir`. It gives deterministic
+sorted traversal, supports exclusion pruning through `filter_entry`, and did not
+show a meaningful full-check regression against serial `jwalk` on the current
+realistic fixture bundle.
+
+Serial `jwalk` remains the deterministic fail-fast path and an opt-in diagnostic
+strategy. Parallel `jwalk` can be useful for raw traversal experiments, but raw
+entry enumeration is not the same as full validation throughput.
+
+## Reporting Rule
+
+Do not place traversal-only wins in the headline performance claim. If a future
+strategy should influence the public claim, add a `strategy:*` full-check row for
+that implementation and compare it against the same fixture, config, binary
+profile, and iteration count.
+
+## Two-Times-Faster Gate
+
+Rows include `two_x_target_runtime_ms`, which is half of the native LS-Lint
+median for the same fixture. Assura CLI rows also include
+`two_x_claim_status`:
+
+- `meets-target` means the measured row is at or below the 2x target.
+- `misses-target` means the row is slower than the target and the measured
+  process floors do not by themselves exceed the target.
+- `blocked-by-process-floor` means launching `/usr/bin/true` already exceeds
+  the target on that fixture.
+- `blocked-by-rust-cli-floor` means the smallest Assura Rust CLI status-check
+  process already exceeds the target.
+
+`meets_two_x_target` remains the numeric pass/fail result. The claim-status
+field explains whether a miss is an implementation gap or a measured
+subprocess-floor limit.
+
+The report envelope also includes `claim_summary`, a machine-readable verdict
+for the public headline row set. `two_x_claim_verdict=complete` is only valid
+when every measured `realistic-equivalent` focused-check row has a matching
+native LS-Lint row, meets its two-times-faster target, and the report was
+generated with at least `minimum_completion_iterations` measured iterations.
+Lower-sample smoke reports use `not-complete-low-sample` instead of
+`complete`. Diagnostic rows such as hot daemon checks, status-file checks,
+in-process validation, and traversal experiments are excluded from that
+verdict.
+
+The envelope also includes `warm_claim_summary` for the persistent
+`assura-check-dirty-project-session-cli` row. That is a separate
+editor-session contract: a long-lived CLI process talks to the hot daemon over
+stdin/stdout so repeated agent/editor checks do not pay process startup on
+every validation.

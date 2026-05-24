@@ -1,0 +1,11 @@
+[alias]
+build-assura-check-linux-static = [
+  "build",
+  "--config",
+  'target.x86_64-unknown-linux-gnu.rustflags=["-C","target-feature=+crt-static","-C","link-arg=-lgcc_eh"]',
+  "--release",
+  "-p",
+  "assura-check-cli",
+  "--target",
+  "x86_64-unknown-linux-gnu",
+]

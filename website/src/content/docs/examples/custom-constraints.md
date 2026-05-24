@@ -6,17 +6,15 @@ sidebar:
   order: 2
 ---
 
-import { Aside } from '@astrojs/starlight/components';
-
 Assura v0.1 does not expose a stable custom constraint plugin API. Use the
 supported structure configuration first, and run language-specific or custom
 tools beside Assura in CI when you need checks outside the current rule set.
 
-<Aside type="caution" title="Not a v0.1 plugin surface">
-  Rust constraint traits, TypeScript plugins, and runtime extension hooks are
-  roadmap items. Do not rely on examples from older docs or internal modules as
-  public APIs.
-</Aside>
+> **Not a v0.1 plugin surface**
+>
+> Rust constraint traits, TypeScript plugins, and runtime extension hooks are
+> roadmap items. Do not rely on examples from older docs or internal modules as
+> public APIs.
 
 ## Supported Customization Today
 

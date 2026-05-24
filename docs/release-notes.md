@@ -118,14 +118,23 @@ markdown:
 
 ## Installation
 
-### From crates.io
+### From Install Script
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sh
+```
+
+### With Cargo
+
+Use Cargo only when you already have a Rust development environment:
+
 ```bash
 cargo install assura
 ```
 
 ### From source
 ```bash
-git clone https://github.com/assura/assura
+git clone https://github.com/rothnic/assura
 cd assura
 cargo build --release
 ```
@@ -144,9 +153,9 @@ Assura validates itself! The project includes:
 
 ## Community
 
-- GitHub: https://github.com/assura/assura
+- GitHub: https://github.com/rothnic/assura
 - Documentation: https://assura.dev
-- Issues: https://github.com/assura/assura/issues
+- Issues: https://github.com/rothnic/assura/issues
 
 ## Acknowledgments
 
@@ -162,4 +171,4 @@ Thank you to all contributors and the open-source community for making this rele
 
 ---
 
-**Full Changelog**: https://github.com/assura/assura/compare/v0.0.0...v0.1.0
+**Full Changelog**: https://github.com/rothnic/assura/compare/v0.0.0...v0.1.0

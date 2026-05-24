@@ -3,16 +3,14 @@ title: API Reference
 description: Supported command and report surfaces for Assura v0.1
 ---
 
-import { Aside } from '@astrojs/starlight/components';
-
 Assura v0.1 supports the CLI as the public integration surface. Treat Rust
 library internals as unstable until a later release documents a stable API.
 
-<Aside type="caution">
-  Do not build integrations against undocumented Rust structs or plugin traits.
-  Use `assura check --format json` or `assura check --format yaml` for v0.1
-  automation.
-</Aside>
+> **Caution**
+>
+> Do not build integrations against undocumented Rust structs or plugin traits.
+> Use `assura check --format json` or `assura check --format yaml` for v0.1
+> automation.
 
 ## Commands
 

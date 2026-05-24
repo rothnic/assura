@@ -13,7 +13,7 @@ described in `.assura/config.yml`.
 ## Current Supported Flow
 
 ```bash
-cargo install assura
+curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sh
 assura init
 assura check
 ```
@@ -48,8 +48,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - run: cargo install assura
+      - run: curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sudo env BIN_DIR=/usr/local/bin sh
       - run: assura check --format text
 ```
 

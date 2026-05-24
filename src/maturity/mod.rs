@@ -2,6 +2,7 @@ pub mod config;
 pub mod engine;
 pub mod environment;
 pub mod filesystem;
+#[cfg(feature = "git-signals")]
 pub mod git;
 pub mod signal;
 
@@ -9,6 +10,7 @@ pub use config::MaturityConfig;
 pub use engine::{MaturityDecisionEngine, MaturityLevel, MaturityReport, Priority, Recommendation};
 pub use environment::EnvironmentSignals;
 pub use filesystem::FilesystemSignals;
+#[cfg(feature = "git-signals")]
 pub use git::GitSignals;
 pub use signal::{MaturitySignal, SignalCollector, SignalPipeline, SignalType};
 
@@ -44,8 +46,15 @@ pub struct MaturityDetector {
 
 impl MaturityDetector {
     pub fn new() -> Self {
+        #[cfg(feature = "git-signals")]
         let collectors: Vec<Box<dyn SignalCollector>> = vec![
             Box::new(GitSignals::new()),
+            Box::new(FilesystemSignals::new()),
+            Box::new(EnvironmentSignals::new()),
+        ];
+
+        #[cfg(not(feature = "git-signals"))]
+        let collectors: Vec<Box<dyn SignalCollector>> = vec![
             Box::new(FilesystemSignals::new()),
             Box::new(EnvironmentSignals::new()),
         ];
