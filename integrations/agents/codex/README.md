@@ -12,6 +12,7 @@ Supported in this MVP:
 - create actionable nudge messages for structure violations
 - run `assura check --format json` and preserve Assura's exit code, including
   non-JSON configuration/runtime failures
+- observe same-turn feedback by violation class after a nudge is applied
 - compare evaluation runs for instructions-only, `AGENTS.md`/skills, and
   Assura runtime-nudge workflows
 - run a small CLI entrypoint:
@@ -40,6 +41,19 @@ const report = parseStructureCheckReport(jsonFromAssura);
 const nudge = createNudgeFromReport(report);
 
 console.log(nudge.summary);
+```
+
+Same-turn feedback observation:
+
+```ts
+import { observeSameTurnFeedback } from "@assura/codex-integration";
+
+const observations = observeSameTurnFeedback(nudge, reportAfterFix, 2, 0, {
+  responseSource: "codex-main-session",
+  turnBoundary: "same_turn",
+  repeatNudgeCount: 0,
+});
+console.log(observations);
 ```
 
 ## CLI Usage
@@ -73,7 +87,9 @@ Use `compareEvaluationRuns` to compare:
 
 Tracked metrics include structural violations introduced, correction loops,
 instruction adherence, nudge count, useful nudges, noisy nudges, missed
-violations, nudge precision, and deltas from the instructions-only baseline.
+violations, nudge precision, same-turn fixed/remaining observations by
+violation class, response source, turn boundary, repeat nudge count, and deltas
+from the instructions-only baseline.
 
 ## Development
 

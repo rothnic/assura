@@ -115,7 +115,8 @@ async fn run_full_cli(cli: Cli) -> ExitCode {
         Commands::Hooks { command } => match command {
             HookCommands::Install { path, force } => handle_hooks_install(path, force).await,
             HookCommands::Uninstall { path } => handle_hooks_uninstall(path).await,
-            HookCommands::Status => handle_hooks_status().await,
+            HookCommands::Status { path } => handle_hooks_status(path).await,
+            HookCommands::Verify { path } => handle_hooks_verify(path).await,
         },
     };
 
@@ -190,16 +191,19 @@ async fn handle_hooks_uninstall(path: Option<std::path::PathBuf>) -> ExitCode {
     }
 }
 
-async fn handle_hooks_status() -> ExitCode {
+async fn handle_hooks_status(path: Option<std::path::PathBuf>) -> ExitCode {
     use super::config::ConfigDiscovery;
     use super::hooks::GitHooksManager;
 
-    let project_root = match ConfigDiscovery::find_project_root(".") {
-        Some(root) => root,
-        None => {
-            eprintln!("Error: Could not find project root");
-            return ExitCode::NoConfigFound;
-        }
+    let project_root = match path {
+        Some(path) => path,
+        None => match ConfigDiscovery::find_project_root(".") {
+            Some(root) => root,
+            None => {
+                eprintln!("Error: Could not find project root");
+                return ExitCode::NoConfigFound;
+            }
+        },
     };
 
     match GitHooksManager::new(&project_root) {
@@ -209,6 +213,46 @@ async fn handle_hooks_status() -> ExitCode {
                 println!("{}", status.display());
             }
             ExitCode::Success
+        }
+        Err(e) => {
+            error!("Git repository not found: {}", e);
+            eprintln!("Error: {}", e);
+            ExitCode::ConfigurationError
+        }
+    }
+}
+
+async fn handle_hooks_verify(path: Option<std::path::PathBuf>) -> ExitCode {
+    use super::config::ConfigDiscovery;
+    use super::hooks::GitHooksManager;
+
+    let project_root = match path {
+        Some(path) => path,
+        None => match ConfigDiscovery::find_project_root(".") {
+            Some(root) => root,
+            None => {
+                eprintln!("Error: Could not find project root");
+                return ExitCode::NoConfigFound;
+            }
+        },
+    };
+
+    match GitHooksManager::new(&project_root) {
+        Ok(manager) => {
+            let statuses = manager.all_status();
+            println!("Git hooks verification:");
+            for status in &statuses {
+                println!("{}", status.display());
+            }
+
+            let failure_count = statuses.iter().filter(|status| !status.is_ready()).count();
+            if failure_count == 0 {
+                println!("All Assura hooks are installed, managed, and runnable.");
+                ExitCode::Success
+            } else {
+                eprintln!("Error: {failure_count} hook(s) are not ready.");
+                ExitCode::ValidationFailed
+            }
         }
         Err(e) => {
             error!("Git repository not found: {}", e);

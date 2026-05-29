@@ -53,6 +53,27 @@ export interface NudgeResult {
   metrics: NudgeMetrics;
 }
 
+export type FeedbackUsefulness = "useful" | "noisy" | "mixed";
+export type FeedbackTurnBoundary = "same_turn" | "new_turn" | "unknown";
+
+export interface SameTurnFeedbackOptions {
+  responseSource?: string;
+  turnBoundary?: FeedbackTurnBoundary;
+  repeatNudgeCount?: number;
+  usefulnessByViolationClass?: Record<string, FeedbackUsefulness>;
+}
+
+export interface SameTurnFeedbackObservation {
+  violationClass: string;
+  nudgeCount: number;
+  fixedBeforeNewTurn: boolean;
+  usefulness: FeedbackUsefulness;
+  remainingViolations: number;
+  responseSource: string;
+  turnBoundary: FeedbackTurnBoundary;
+  repeatNudgeCount: number;
+}
+
 export interface AssuraCheckRunOptions extends NudgeOptions {
   cwd?: string;
   path?: string;
@@ -244,6 +265,38 @@ export function compareEvaluationRuns(
   };
 }
 
+export function observeSameTurnFeedback(
+  nudge: NudgeResult,
+  afterReport: StructureCheckReport,
+  usefulNudges: number,
+  noisyNudges: number,
+  options: SameTurnFeedbackOptions = {}
+): SameTurnFeedbackObservation[] {
+  const defaultUsefulness = classifyUsefulness(usefulNudges, noisyNudges);
+  const turnBoundary = options.turnBoundary ?? "unknown";
+  return nudge.affectedRules.map((violationClass) => {
+    const remainingViolations = afterReport.violations.filter(
+      (violation) => violation.rule === violationClass
+    ).length;
+    const nudgeCount = nudge.messages.filter(
+      (message) => message.rule === violationClass
+    ).length;
+
+    return {
+      violationClass,
+      nudgeCount,
+      fixedBeforeNewTurn:
+        remainingViolations === 0 && turnBoundary === "same_turn",
+      usefulness:
+        options.usefulnessByViolationClass?.[violationClass] ?? defaultUsefulness,
+      remainingViolations,
+      responseSource: options.responseSource ?? "unspecified",
+      turnBoundary,
+      repeatNudgeCount: options.repeatNudgeCount ?? 0,
+    };
+  });
+}
+
 export function renderNudgeText(nudge: NudgeResult): string {
   const lines = [nudge.summary];
   if (nudge.messages.length === 0) {
@@ -284,6 +337,19 @@ function summarizeEvaluationRun(
         baseline.structuralViolationsIntroduced
       : null,
   };
+}
+
+function classifyUsefulness(
+  usefulNudges: number,
+  noisyNudges: number
+): FeedbackUsefulness {
+  if (usefulNudges > 0 && noisyNudges > 0) {
+    return "mixed";
+  }
+  if (noisyNudges > 0) {
+    return "noisy";
+  }
+  return "useful";
 }
 
 function guidanceForViolation(violation: StructureViolation): string[] {

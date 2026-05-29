@@ -330,6 +330,13 @@ Reviewers should block completion if any of these are true:
 6. Update website or docs adoption content around the full user journey.
 7. Run the validation commands and record a review artifact.
 
+## Progress Log
+
+| Date | Phase | Evidence |
+| --- | --- | --- |
+| 2026-05-29 | Execution started | Created Trellis task `.trellis/tasks/05-29-real-project-agentic-feedback-proof`, branched `codex/real-project-agentic-feedback-proof`, and seeded PRD from this goal. |
+| 2026-05-29 | Implementation slice | Added checked valid/invalid real-project fixtures, `assura hooks verify`, runnable hook status, Codex same-turn observation, user-facing docs, JSON/nudge evidence, and review record. |
+
 ## Handoff Prompt
 
 Use this prompt to start implementation:

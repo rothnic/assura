@@ -6,48 +6,41 @@ sidebar:
   order: 4
 ---
 
-Assura can run from Git hooks when you want local commits or pushes to respect
-the same structure rules used in CI.
+Assura can install Git hooks when you want local commits or pushes to run the
+same structure checks used in CI. The installed hooks are advisory on ordinary
+feature branches by default.
 
 > **Note**
 >
 > `assura check` validates the configured project path. It does not currently
 > offer staged-file-only validation.
 
-## Pre-Commit Hook
+## Install And Verify
 
-1. **Create `.git/hooks/pre-commit`**
+From a Git repository with `.assura/config.yml`:
 
-   ```bash
-   #!/usr/bin/env bash
-   set -euo pipefail
+```bash
+assura hooks install
+assura hooks status
+assura hooks verify
+```
 
-   if ! command -v assura >/dev/null 2>&1; then
-     echo "assura is not installed"
-     echo "Install with: curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sh"
-     exit 1
-   fi
+`status` shows whether each hook is managed by Assura and runnable. `verify`
+exits nonzero if a hook is missing, unmanaged, or not executable, which makes it
+suitable for an agent or setup script to run before continuing work.
 
-   assura check --format text .
-   ```
+Re-running `assura hooks install` is idempotent. It does not overwrite an
+existing custom hook unless you pass `--force`.
 
-2. **Make it executable**
-
-   ```bash
-   chmod +x .git/hooks/pre-commit
-   ```
-
-3. **Test it**
-
-   ```bash
-   git commit --allow-empty -m "test: verify assura hook"
-   ```
+The generated pre-commit hook blocks on `main` and `master`; on other branches
+it prints warnings so local work is not trapped mid-iteration. The generated
+pre-push hook is advisory unless `ASSURA_BLOCKING_PUSH=1` is set.
 
 If the check fails, fix the reported files and commit again.
 
-## Pre-Push Hook
+## Manual Hook Alternative
 
-Create `.git/hooks/pre-push`:
+If you prefer to manage hooks yourself, create `.git/hooks/pre-push`:
 
 ```bash
 #!/usr/bin/env bash
@@ -56,7 +49,7 @@ set -euo pipefail
 assura check --format text .
 ```
 
-Then run:
+Then make it executable:
 
 ```bash
 chmod +x .git/hooks/pre-push

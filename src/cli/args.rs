@@ -152,7 +152,7 @@ pub enum Commands {
 pub enum HookCommands {
     #[command(about = "Install git hooks")]
     Install {
-        #[arg(help = "Git hooks directory (defaults to .git/hooks)")]
+        #[arg(help = "Project root directory (defaults to current directory)")]
         path: Option<PathBuf>,
 
         #[arg(long)]
@@ -161,12 +161,21 @@ pub enum HookCommands {
 
     #[command(about = "Remove git hooks")]
     Uninstall {
-        #[arg(help = "Git hooks directory (defaults to .git/hooks)")]
+        #[arg(help = "Project root directory (defaults to current directory)")]
         path: Option<PathBuf>,
     },
 
     #[command(about = "Show installed hooks status")]
-    Status,
+    Status {
+        #[arg(help = "Project root directory (defaults to discovered project root)")]
+        path: Option<PathBuf>,
+    },
+
+    #[command(about = "Verify installed hooks are managed and runnable")]
+    Verify {
+        #[arg(help = "Project root directory (defaults to discovered project root)")]
+        path: Option<PathBuf>,
+    },
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]

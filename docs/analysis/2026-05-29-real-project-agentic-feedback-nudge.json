@@ -1,0 +1,72 @@
+{
+  "status": "fail",
+  "advisory": true,
+  "summary": "Assura found 3 structural violation(s) across 3 rule(s). This nudge is advisory unless your workflow enforces the Assura exit code.",
+  "violationCount": 3,
+  "affectedRules": [
+    "exists_count",
+    "file_naming",
+    "unexpected_file"
+  ],
+  "messages": [
+    {
+      "path": "apps/web/src/BadName.tsx",
+      "rule": "file_naming",
+      "severity": "medium",
+      "problem": "File 'BadName.tsx' does not match naming convention 'kebab-case'",
+      "guidance": [
+        "Rename the file to match the configured file naming convention for its directory.",
+        "Check `.assura/config.yml` for the effective file naming rule before editing nearby files."
+      ],
+      "references": [
+        "AGENTS.md",
+        ".agents/skills/",
+        ".assura/config.yml"
+      ]
+    },
+    {
+      "path": "packages/ui",
+      "rule": "exists_count",
+      "severity": "medium",
+      "problem": "Directory 'packages/ui' has 0 files matching 'AGENTS.md', expected 1",
+      "guidance": [
+        "Create, remove, or rename direct children so the configured existence count is satisfied.",
+        "Remember that existence count rules apply to direct children only."
+      ],
+      "references": [
+        "AGENTS.md",
+        ".agents/skills/",
+        ".assura/config.yml"
+      ]
+    },
+    {
+      "path": "scratch.md",
+      "rule": "unexpected_file",
+      "severity": "medium",
+      "problem": "File 'scratch.md' is not allowed here",
+      "guidance": [
+        "Move, remove, or explicitly allow this path in `.assura/config.yml` if it belongs in the project shape.",
+        "Prefer following the existing project shape over adding one-off exceptions."
+      ],
+      "references": [
+        "AGENTS.md",
+        ".agents/skills/",
+        ".assura/config.yml"
+      ]
+    }
+  ],
+  "metrics": {
+    "structuralViolations": 3,
+    "affectedRules": [
+      "exists_count",
+      "file_naming",
+      "unexpected_file"
+    ],
+    "affectedPaths": [
+      "apps/web/src/BadName.tsx",
+      "packages/ui",
+      "scratch.md"
+    ],
+    "nudgeCount": 3
+  }
+}

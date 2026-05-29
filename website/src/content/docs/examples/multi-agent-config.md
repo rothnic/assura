@@ -45,6 +45,8 @@ The MVP measurement model tracks:
 - useful nudges
 - noisy nudges
 - missed violations
+- same-turn observations by violation class, including nudge count, whether the
+  class was fixed before a new turn, usefulness, and remaining violations
 
 ## Feedback Shape
 
@@ -58,6 +60,8 @@ Assura nudges tell the developer or agent:
 
 ## Still Future-Only
 
-The MVP does not install Codex hooks automatically, provide hosted telemetry,
-or implement complete autonomous agent orchestration. Keep repo-local
-`.agents/skills/` as the durable project guidance surface.
+Assura can install local Git hooks with `assura hooks install`, `assura hooks
+status`, and `assura hooks verify`. The Codex nudge MVP does not install Codex
+hooks automatically, provide hosted telemetry, or implement complete autonomous
+agent orchestration. Keep repo-local `.agents/skills/` as the durable project
+guidance surface.

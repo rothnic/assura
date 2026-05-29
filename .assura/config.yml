@@ -413,6 +413,8 @@ structure:
           naming: "snake_case"
           max_lines: 1000
         directories:
+          allowed_names:
+            - "fixtures"
           allow_extra: false
       
       website/:
@@ -453,3 +455,4 @@ exclude:
   - "**/dist"
   - "package-lock.json"
   - "**/package-lock.json"
+  - "tests/fixtures/**"

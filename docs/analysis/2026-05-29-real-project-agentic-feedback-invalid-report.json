@@ -1,0 +1,28 @@
+{
+  "success": false,
+  "project_root": "tests/fixtures/real-project-agentic-feedback/invalid",
+  "config_path": "tests/fixtures/real-project-agentic-feedback/invalid/.assura/config.yml",
+  "checked_path": "tests/fixtures/real-project-agentic-feedback/invalid",
+  "files_checked": 21,
+  "dirs_checked": 12,
+  "violations": [
+    {
+      "path": "apps/web/src/BadName.tsx",
+      "rule": "file_naming",
+      "message": "File 'BadName.tsx' does not match naming convention 'kebab-case'",
+      "severity": "medium"
+    },
+    {
+      "path": "packages/ui",
+      "rule": "exists_count",
+      "message": "Directory 'packages/ui' has 0 files matching 'AGENTS.md', expected 1",
+      "severity": "medium"
+    },
+    {
+      "path": "scratch.md",
+      "rule": "unexpected_file",
+      "message": "File 'scratch.md' is not allowed here",
+      "severity": "medium"
+    }
+  ]
+}

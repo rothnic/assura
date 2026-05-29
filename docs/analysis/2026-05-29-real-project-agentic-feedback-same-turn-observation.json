@@ -1,0 +1,32 @@
+[
+  {
+    "violationClass": "exists_count",
+    "nudgeCount": 1,
+    "fixedBeforeNewTurn": true,
+    "usefulness": "useful",
+    "remainingViolations": 0,
+    "responseSource": "codex-main-session",
+    "turnBoundary": "same_turn",
+    "repeatNudgeCount": 0
+  },
+  {
+    "violationClass": "file_naming",
+    "nudgeCount": 1,
+    "fixedBeforeNewTurn": true,
+    "usefulness": "useful",
+    "remainingViolations": 0,
+    "responseSource": "codex-main-session",
+    "turnBoundary": "same_turn",
+    "repeatNudgeCount": 0
+  },
+  {
+    "violationClass": "unexpected_file",
+    "nudgeCount": 1,
+    "fixedBeforeNewTurn": true,
+    "usefulness": "useful",
+    "remainingViolations": 0,
+    "responseSource": "codex-main-session",
+    "turnBoundary": "same_turn",
+    "repeatNudgeCount": 0
+  }
+]

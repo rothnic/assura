@@ -123,8 +123,19 @@ assura check --format json . > assura-report.json
 assura-codex-nudge --report assura-report.json --format text
 ```
 
+For local Git feedback, run:
+
+```bash
+assura hooks install
+assura hooks status
+assura hooks verify
+```
+
 > **Current release scope**
 >
-> This MVP does not install Codex hooks automatically and does not replace
-> repo-local `.agents/skills/` guidance. Treat it as advisory unless your
+> This MVP does not install Codex hooks automatically, run a daemon, or replace
+> repo-local `.agents/skills/` guidance. Treat nudges as advisory unless your
 > workflow enforces the command exit code.
+
+See [Real Project Feedback](/examples/real-project-feedback/) for a complete
+policy, hook, check, nudge, and rerun walkthrough.

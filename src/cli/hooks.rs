@@ -69,13 +69,7 @@ pub struct GitHooksManager {
 impl GitHooksManager {
     pub fn new(project_root: impl AsRef<Path>) -> HookResult<Self> {
         let project_root = project_root.as_ref();
-        let git_dir = project_root.join(".git");
-
-        if !git_dir.exists() {
-            return Err(HookError::GitNotFound);
-        }
-
-        let git_hooks_dir = git_dir.join("hooks");
+        let git_hooks_dir = resolve_git_hooks_dir(project_root)?;
         let assura_hooks_dir = project_root.join(".assura").join("hooks");
 
         Ok(Self {
@@ -193,7 +187,7 @@ fi
         let git_hook_path = self.git_hooks_dir.join(hook_name);
         let assura_hook_path = self.assura_hooks_dir.join(hook_name);
 
-        let is_installed = git_hook_path.exists() && assura_hook_path.exists();
+        let is_installed = git_hook_path.exists() || assura_hook_path.exists();
         let is_managed = if git_hook_path.exists() {
             std::fs::read_to_string(&git_hook_path)
                 .map(|content| content.contains("Git hook managed by Assura"))
@@ -206,6 +200,8 @@ fi
             hook_type,
             is_installed,
             is_managed,
+            git_runnable: is_runnable(&git_hook_path),
+            assura_runnable: is_runnable(&assura_hook_path),
             git_path: git_hook_path,
             assura_path: assura_hook_path,
         }
@@ -229,20 +225,70 @@ fi
     }
 }
 
+fn resolve_git_hooks_dir(project_root: &Path) -> HookResult<PathBuf> {
+    let git_path = project_root.join(".git");
+    if git_path.is_dir() {
+        return Ok(git_path.join("hooks"));
+    }
+    if git_path.is_file() {
+        let git_dir = resolve_gitdir_file(&git_path)?;
+        return Ok(resolve_common_git_dir(&git_dir).join("hooks"));
+    }
+    Err(HookError::GitNotFound)
+}
+
+fn resolve_gitdir_file(git_path: &Path) -> HookResult<PathBuf> {
+    let content = std::fs::read_to_string(git_path)?;
+    let Some(raw_git_dir) = content.trim().strip_prefix("gitdir:") else {
+        return Err(HookError::GitNotFound);
+    };
+    let git_dir = PathBuf::from(raw_git_dir.trim());
+    if git_dir.is_absolute() {
+        Ok(git_dir)
+    } else {
+        Ok(git_path
+            .parent()
+            .unwrap_or_else(|| Path::new("."))
+            .join(git_dir))
+    }
+}
+
+fn resolve_common_git_dir(git_dir: &Path) -> PathBuf {
+    let common_dir_file = git_dir.join("commondir");
+    let Ok(content) = std::fs::read_to_string(&common_dir_file) else {
+        return git_dir.to_path_buf();
+    };
+    let common_dir = PathBuf::from(content.trim());
+    let resolved = if common_dir.is_absolute() {
+        common_dir
+    } else {
+        git_dir.join(common_dir)
+    };
+    std::fs::canonicalize(&resolved).unwrap_or(resolved)
+}
+
 #[derive(Debug)]
 pub struct HookStatus {
     pub hook_type: HookType,
     pub is_installed: bool,
     pub is_managed: bool,
+    pub git_runnable: bool,
+    pub assura_runnable: bool,
     pub git_path: PathBuf,
     pub assura_path: PathBuf,
 }
 
 impl HookStatus {
+    pub fn is_ready(&self) -> bool {
+        self.is_installed && self.is_managed && self.git_runnable && self.assura_runnable
+    }
+
     pub fn display(&self) -> String {
-        let status = if self.is_installed {
+        let status = if self.is_ready() {
+            "✓ installed (managed by assura, runnable)"
+        } else if self.is_installed {
             if self.is_managed {
-                "✓ installed (managed by assura)"
+                "⚠ installed (managed by assura, not runnable)"
             } else {
                 "⚠ installed (not managed by assura)"
             }
@@ -252,6 +298,20 @@ impl HookStatus {
 
         format!("{:<20} {}", self.hook_type.as_str(), status)
     }
+}
+
+#[cfg(unix)]
+fn is_runnable(path: &Path) -> bool {
+    use std::os::unix::fs::PermissionsExt;
+
+    path.metadata()
+        .map(|metadata| metadata.is_file() && metadata.permissions().mode() & 0o111 != 0)
+        .unwrap_or(false)
+}
+
+#[cfg(not(unix))]
+fn is_runnable(path: &Path) -> bool {
+    path.is_file()
 }
 
 #[cfg(test)]
@@ -273,10 +333,45 @@ mod tests {
             hook_type: HookType::PreCommit,
             is_installed: true,
             is_managed: true,
+            git_runnable: true,
+            assura_runnable: true,
             git_path: PathBuf::from(".git/hooks/pre-commit"),
             assura_path: PathBuf::from(".assura/hooks/pre-commit"),
         };
 
         assert!(status.display().contains("installed"));
+    }
+
+    #[test]
+    fn git_hooks_dir_resolves_regular_git_directory() {
+        let project = tempfile::TempDir::new().unwrap();
+        std::fs::create_dir_all(project.path().join(".git/hooks")).unwrap();
+
+        let hooks_dir = resolve_git_hooks_dir(project.path()).unwrap();
+
+        assert_eq!(hooks_dir, project.path().join(".git/hooks"));
+    }
+
+    #[test]
+    fn git_hooks_dir_resolves_worktree_git_file_to_common_hooks() {
+        let project = tempfile::TempDir::new().unwrap();
+        let git_dir = project.path().join("main.git/worktrees/agent");
+        std::fs::create_dir_all(&git_dir).unwrap();
+        std::fs::create_dir_all(project.path().join("main.git/hooks")).unwrap();
+        std::fs::write(git_dir.join("commondir"), "../..\n").unwrap();
+        std::fs::write(
+            project.path().join(".git"),
+            format!("gitdir: {}\n", git_dir.display()),
+        )
+        .unwrap();
+
+        let hooks_dir = resolve_git_hooks_dir(project.path()).unwrap();
+
+        assert_eq!(
+            hooks_dir,
+            std::fs::canonicalize(project.path().join("main.git"))
+                .unwrap()
+                .join("hooks")
+        );
     }
 }

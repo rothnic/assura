@@ -7,6 +7,7 @@ import {
   AssuraCheckExecutionError,
   compareEvaluationRuns,
   createNudgeFromReport,
+  observeSameTurnFeedback,
   parseStructureCheckReport,
   runAssuraCheck,
   type AssuraProcessRunner,
@@ -103,6 +104,61 @@ test("measurement comparison computes precision and loop deltas", () => {
   assert.equal(runtime?.nudgePrecision, 2 / 3);
   assert.equal(runtime?.correctionLoopDeltaVsInstructions, -3);
   assert.equal(runtime?.violationDeltaVsInstructions, -3);
+});
+
+test("same-turn feedback observation records fixed and remaining violations", () => {
+  const nudge = createNudgeFromReport({
+    ...failingReport,
+    violations: [
+      failingReport.violations[0],
+      {
+        path: "/repo/packages/ui",
+        rule: "exists_count",
+        message: "Directory has 0 files matching AGENTS.md, expected 1",
+        severity: "medium",
+      },
+    ],
+  });
+  const afterReport: StructureCheckReport = {
+    ...failingReport,
+    violations: [
+      {
+        path: "/repo/packages/ui",
+        rule: "exists_count",
+        message: "Directory has 0 files matching AGENTS.md, expected 1",
+        severity: "medium",
+      },
+    ],
+  };
+
+  const observations = observeSameTurnFeedback(nudge, afterReport, 1, 1, {
+    responseSource: "codex-test",
+    turnBoundary: "same_turn",
+    repeatNudgeCount: 0,
+  });
+
+  assert.deepEqual(observations, [
+    {
+      violationClass: "exists_count",
+      nudgeCount: 1,
+      fixedBeforeNewTurn: false,
+      usefulness: "mixed",
+      remainingViolations: 1,
+      responseSource: "codex-test",
+      turnBoundary: "same_turn",
+      repeatNudgeCount: 0,
+    },
+    {
+      violationClass: "file_naming",
+      nudgeCount: 1,
+      fixedBeforeNewTurn: true,
+      usefulness: "mixed",
+      remainingViolations: 0,
+      responseSource: "codex-test",
+      turnBoundary: "same_turn",
+      repeatNudgeCount: 0,
+    },
+  ]);
 });
 
 test("CLI reads a report file and outputs JSON nudge data", () => {
