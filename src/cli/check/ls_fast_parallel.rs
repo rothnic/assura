@@ -120,7 +120,9 @@ fn parallel_jwalk_strategy() -> jwalk::Parallelism {
         .map(usize::from)
         .unwrap_or(1);
     if threads > 1 {
-        jwalk::Parallelism::RayonNewPool(threads)
+        jwalk::Parallelism::RayonDefaultPool {
+            busy_timeout: std::time::Duration::from_secs(1),
+        }
     } else {
         jwalk::Parallelism::Serial
     }

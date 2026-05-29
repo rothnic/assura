@@ -129,9 +129,7 @@ pub fn convert_ls_lint_documents_to_config(contents: &[&str]) -> Result<Config, 
         config.exclude.extend(parse_ignore(&ls_config));
 
         if let Some(mapping) = ls_config.get("ls").and_then(|value| value.as_mapping()) {
-            for (key, value) in mapping {
-                ls_section.insert(key.clone(), value.clone());
-            }
+            deep_merge_lslint_mapping(&mut ls_section, mapping);
         }
     }
 
@@ -146,6 +144,22 @@ pub fn convert_ls_lint_documents_to_config(contents: &[&str]) -> Result<Config, 
     let root = parse_ls_directory(&ls_section)?;
     config.structure.insert("./".to_string(), root);
     Ok(config)
+}
+
+#[cfg(feature = "yaml-config")]
+fn deep_merge_lslint_mapping(target: &mut serde_yaml::Mapping, source: &serde_yaml::Mapping) {
+    for (key, source_value) in source {
+        if let Some(target_value) = target.get_mut(key) {
+            if let (Some(target_mapping), Some(source_mapping)) =
+                (target_value.as_mapping_mut(), source_value.as_mapping())
+            {
+                deep_merge_lslint_mapping(target_mapping, source_mapping);
+                continue;
+            }
+        }
+
+        target.insert(key.clone(), source_value.clone());
+    }
 }
 
 #[cfg(feature = "yaml-config")]

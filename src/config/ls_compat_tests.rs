@@ -72,6 +72,10 @@ ignore:
 ls:
   .js: camelCase
   .ts: snake_case
+  src:
+    .js: camelCase
+    components:
+      .tsx: PascalCase
 "#;
     let second = r#"
 ignore:
@@ -79,6 +83,10 @@ ignore:
 ls:
   .ts: kebab-case
   .rs: snake_case
+  src:
+    .ts: kebab-case
+    components:
+      .test.tsx: kebab-case
 "#;
 
     let config = convert_ls_lint_documents_to_config(&[first, second]).unwrap();
@@ -95,6 +103,34 @@ ls:
     assert_eq!(patterns.get("*.js"), Some(&"camelCase".to_string()));
     assert_eq!(patterns.get("*.ts"), Some(&"kebab-case".to_string()));
     assert_eq!(patterns.get("*.rs"), Some(&"snake_case".to_string()));
+
+    let src = root.children.as_ref().unwrap().get("src").unwrap();
+    let src_patterns = src
+        .files
+        .as_ref()
+        .unwrap()
+        .naming_patterns
+        .as_ref()
+        .unwrap();
+    assert_eq!(src_patterns.get("*.js"), Some(&"camelCase".to_string()));
+    assert_eq!(src_patterns.get("*.ts"), Some(&"kebab-case".to_string()));
+
+    let components = src.children.as_ref().unwrap().get("components").unwrap();
+    let component_patterns = components
+        .files
+        .as_ref()
+        .unwrap()
+        .naming_patterns
+        .as_ref()
+        .unwrap();
+    assert_eq!(
+        component_patterns.get("*.tsx"),
+        Some(&"PascalCase".to_string())
+    );
+    assert_eq!(
+        component_patterns.get("*.test.tsx"),
+        Some(&"kebab-case".to_string())
+    );
 }
 
 #[test]

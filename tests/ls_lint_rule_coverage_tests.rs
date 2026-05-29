@@ -226,6 +226,12 @@ ls:
     assert_eq!(report["success"], false, "report was:\n{report:#}");
     assert_eq!(violations.len(), 1, "report was:\n{report:#}");
     assert_eq!(violations[0]["path"], "123.num.js");
+    assert!(
+        violations
+            .iter()
+            .all(|violation| violation["path"] != "BadName.test.js"),
+        "native LS-Lint .js rules do not apply to .test.js files:\n{report:#}"
+    );
 }
 
 #[test]

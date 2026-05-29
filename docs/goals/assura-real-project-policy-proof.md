@@ -238,6 +238,10 @@ This goal is done only when all of the following are true.
 - Any aggregate performance language is backed by the checked real-repo data or
   by this scenario's measured artifact. Do not use synthetic-only evidence as a
   headline user claim.
+- Wildcard configured-scope checks must not add a fresh full-tree traversal per
+  scope. Derive matched wildcard scopes from the main traversal, a cached scope
+  index, or equivalent measured design so same-turn agent feedback does not
+  multiply filesystem walks as policies grow.
 - The review record explains what is fast enough for this workflow and what
   remains a future optimization target.
 
