@@ -72,8 +72,8 @@ For native LS-Lint parity fixtures:
 - ignored files and directories must not produce Assura violations;
 - validation scopes must not imply required directories unless an explicit
   existence or required-directory rule requires them;
-- unsupported directory pattern scopes such as `packages/*`, `**`, and
-  `{src,tests}` must return clear errors until implemented fully.
+- directory pattern scopes such as `packages/*`, `**`, and `{src,tests}` must
+  be tested as LS-Lint-compatible validation scopes, not unsupported syntax.
 
 Assura-only extensions must be labeled separately and excluded from native
 LS-Lint parity claims. Exact filename `exists` remains an Assura compatibility

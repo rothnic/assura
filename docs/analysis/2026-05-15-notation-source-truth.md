@@ -23,6 +23,12 @@ from LS-Lint parity, Assura extensions, unsupported behavior, and planned
 notation. Historical `policy`/`rules`/`apply` proposals remain useful design
 input, but they are not the current product config surface.
 
+**2026-05-26 update:** the LS-Lint rule coverage audit added support for
+regex negation, regex directory substitutions, wildcard/brace directory scopes,
+exact LS-Lint extension-combination matching, advisory `--warn`, and LS-Lint
+multi-config merge conversion. See
+`docs/analysis/2026-05-26-ls-lint-rule-coverage-audit.md`.
+
 ## Current Supported Structure-First Notation
 
 Assura's supported public config surface is `.assura/config.yml` with a
@@ -55,13 +61,19 @@ The LS-Lint compatibility layer currently supports these LS-Lint 2.3 concepts:
 - wildcard extension rules such as `.*` and `.*.js`;
 - subextension rules such as `.d.ts`, `.test.ts`, `.spec.ts`, and
   `.module.css`;
-- `.dir` directory naming;
+- `.dir` directory naming for the indexed directory itself and descendant
+  directories governed by the same LS-Lint scope;
 - explicit nested directory scopes such as `src:` and `packages/core:`;
+- glob directory scopes such as `packages/*` and recursive scopes such as
+  `src/**/c`;
+- brace directory scopes such as `src/{a,b}/*`;
 - OR syntax such as `kebab-case | snake_case`;
+- regex naming, including LS-Lint anchoring, negation, and directory
+  substitutions such as `${0}` and `${1}`;
 - `ignore` mapped to Assura `exclude`;
 - extension `exists`, `exists:0`, `exists:1`, and `exists:N-M` direct child
   file counts;
-- `.dir` `exists` direct child directory counts;
+- `.dir` `exists` self-directory presence checks;
 - direct-child-only count semantics.
 
 Native LS-Lint parity claims must be limited to behavior supported by LS-Lint
@@ -86,16 +98,10 @@ filename count.
 
 ## Unsupported Behavior
 
-These LS-Lint-like scopes are not currently safe to convert:
-
-- glob directory scopes such as `packages/*`;
-- recursive scopes such as `**`;
-- brace scopes such as `{src,tests}`;
-- regex substitutions and advanced path captures such as `${0}`.
-
-The converter should reject unsupported scopes with clear errors until Assura
-can represent them without turning lint scopes into required literal
-directories.
+No known LS-Lint 2.3 rule behavior is currently classified as unsupported by
+the LS-Lint compatibility claim. Exact filename `exists` remains an Assura
+extension, and future Assura-native `rules:`/`directive` grouping is separate
+from LS-Lint compatibility.
 
 ## Naming Decisions
 
@@ -127,11 +133,14 @@ Preferred next steps:
 
 1. Add an ergonomic direct-content shorthand that compiles to current
    `allowed_*`, `required`, `exists`, and `allow_extra` fields.
-2. Add pattern scopes as validation scopes, not child nodes. A scope like
-   `packages/*` should apply rules to matched directories that exist; it should
-   not imply every possible package directory is required.
-3. Add reusable rule groups only after repeated structure-first examples prove
-   the duplication is material.
+2. Promote pattern scopes into first-class documented Assura-native notation.
+   The LS-Lint converter already treats them as validation scopes, not required
+   literal directories.
+3. Add a future Assura-native `rules:` directive for reusable named rule
+   groups only after repeated structure-first examples prove the duplication is
+   material. This should be the replacement for the historical `groups:`
+   concept: define a named bundle once, then reference it from the relevant
+   structure scopes without duplicating rule text.
 4. Add array-based OR naming as a readability improvement while preserving the
    existing string OR syntax.
 5. Add future pairing/package/dependency notation only with explicit
@@ -139,7 +148,8 @@ Preferred next steps:
 
 ## Pattern Scope Model
 
-Future pattern scopes should compile into a scope matcher plus rule payload:
+LS-Lint migration pattern scopes compile into a scope matcher plus rule
+payload. Future Assura-native notation should expose the same model directly:
 
 - exact path scopes match one known directory path;
 - single-segment wildcard scopes match existing direct children;
@@ -149,10 +159,10 @@ Future pattern scopes should compile into a scope matcher plus rule payload:
   future `require` shorthand.
 
 This distinction prevents lint scopes from becoming required directories. For
-example, `packages/*` should validate package directories that exist. It should
-not report `required_directory` for `packages/*` as a literal child, and it
-should not require a package named by a pattern unless a separate requirement
-declares it.
+example, `packages/*` validates package directories that exist. It does not
+report `required_directory` for `packages/*` as a literal child, and it does
+not require a package named by a pattern unless a separate requirement declares
+it.
 
 ## Performance Model
 
@@ -166,7 +176,7 @@ patterns into huge concrete trees.
 - Build or reuse a direct-child directory index instead of repeating
   `read_dir` for each count check.
 - Keep exclusions available before expensive traversal and validation work.
-- Treat future pattern scopes as matchers over existing traversal data, not as
+- Treat pattern scopes as matchers over existing traversal data, not as
   generated required nodes.
 
 ## Historical Inputs

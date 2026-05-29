@@ -111,5 +111,10 @@ fn run_with_compiled_config(
 ) -> Result<StructureCheckReport, CheckError> {
     let mut checker = StructureChecker::from_compiled_owned(project_root, compiled, fail_fast);
     let mut timings = StructureCheckTimings::default();
-    checker.check(checked_path, config_path, &mut timings)
+    checker.check(
+        checked_path,
+        config_path,
+        super::CheckTargetMode::Recursive,
+        &mut timings,
+    )
 }

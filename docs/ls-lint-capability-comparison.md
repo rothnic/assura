@@ -6,25 +6,24 @@ status: active
 # Assura vs LS-Lint: Deep Capability Comparison
 
 **Date:** 2026-03-20  
-**Current product note:** Updated May 15, 2026 for implemented direct
-`exists` count support, closed-world direct-content checks, and notation
-source-truth consolidation in
-`docs/analysis/2026-05-15-notation-source-truth.md`.
+**Current product note:** Updated May 26, 2026 for the LS-Lint rule coverage
+audit in `docs/analysis/2026-05-26-ls-lint-rule-coverage-audit.md`.
 **Goal:** Ensure Assura can efficiently implement all LS-Lint capabilities
 
 ---
 
 ## Executive Summary
 
-**Status:** Assura has broad parity with LS-Lint 2.3's current core naming and
-direct `exists` behavior for explicit scopes, plus Assura-only direct-content
-extensions. The remaining important gap is safe pattern-scope notation.
+**Status:** Assura has LS-Lint 2.3 rule compatibility for naming, regex,
+`exists`, `.dir`, ignore, wildcard/subextension, glob/brace directory scopes,
+multi-config migration merge, JSON output, and advisory `--warn`, plus
+Assura-only direct-content extensions.
 
 **Critical Gaps:**
 1. ❌ No top-level glob patterns (must nest everything under `structure`)
-2. ⚠️ Glob and brace directory scopes such as `packages/*`, `**`, and
-   `{src,tests}` are rejected during LS-Lint migration until represented
-   without implying required directories.
+2. ✅ Glob and brace directory scopes such as `packages/*`, `**`, and
+   `{src,tests}` are represented as validation scopes, not required literal
+   directories.
 3. ⚠️ OR syntax works but is string-based, not elegant
 4. ✅ Direct `exists`, `exists:0`, `exists:1`, and `exists:N-M` counts are
    implemented for direct child files and directories.
@@ -198,13 +197,11 @@ ls:
     src: exists:1
 ```
 
-**Assura Current:** ⚠️ **PARTIAL**
+**Assura Current:** ✅ **SUPPORTED**
 
-**Can Assura Do It?** Yes for explicit scopes and direct child counts. The
-current LS-Lint converter rejects `packages/*` because wildcard directory
-scopes are not represented safely yet.
-**Gap:** Pattern directory scopes must not be treated as literal required
-directories.
+**Can Assura Do It?** Yes. LS-Lint pattern directory scopes are converted into
+matcher-backed validation scopes, and direct child `exists` checks run in each
+matched directory without requiring a literal `packages/*` directory.
 
 **Proposed Efficient Syntax:**
 ```yaml
@@ -213,8 +210,7 @@ structure:
     require: [AGENTS.md, README.md, src/]
 ```
 
-**Verdict:** ⚠️ Direct `exists` is implemented; wildcard scopes remain a
-planned notation gap.
+**Verdict:** ✅ Direct `exists` and wildcard scopes are implemented.
 
 ---
 
@@ -230,7 +226,8 @@ ls:
 **Assura Current:** ✅ **SUPPORTED FOR DIRECT CHILDREN**
 
 **Assessment:** Direct file and directory counts are implemented through
-`files.exists` and `directories.exists`. Counts are direct-child only.
+`files.exists` and `directories.exists`. Counts are direct-child only and work
+inside explicit, wildcard, recursive, and brace directory scopes.
 
 **Verdict:** ✅ Implemented for explicit scopes and direct child counts.
 
@@ -253,11 +250,14 @@ structure:
   packages/*:           # ✅ Works
     files:
       naming: kebab-case
-  # "**/*.test.ts" - NOT supported
+  src/**/c:              # ✅ Works as an LS-Lint validation scope
+    files:
+      naming: PascalCase
 ```
 
-**Can Assura Do It?** ⚠️ Partial  
-**Gap:** No double-glob `**` support in structure keys
+**Can Assura Do It?** ✅ Yes for LS-Lint directory scopes.
+**Gap:** Top-level file glob shorthand remains an Assura-native ergonomics
+improvement, not an LS-Lint migration blocker.
 
 **Proposed Solution:**
 ```yaml
@@ -348,19 +348,18 @@ pattern and direct-content shorthand cases.
 | OR syntax | ✅ | ✅ | Yes | ✅ Yes |
 | Multi-part extensions | ✅ | ✅ | Yes | ✅ Yes |
 | Directory rules | ✅ | ✅ | Yes | ✅ Yes |
-| Required files/directories | ✅ | ✅ | Yes for direct explicit scopes | ⚠️ Verbose |
+| Required files/directories | ✅ | ✅ | Yes for direct scopes, including wildcard/brace scopes | ⚠️ Verbose |
 | Root whitelist / closed world | ❌ | ✅ | Yes as Assura extension | ⚠️ Verbose |
-| Glob patterns `**` | ✅ | ⚠️ | Partial | ⚠️ No |
+| Glob patterns `**` | ✅ | ✅ | Yes for LS-Lint directory scopes | ⚠️ Native shorthand pending |
 | Exclude patterns | ✅ | ✅ | Yes | ✅ Yes |
 | Count-based exists | ✅ | ✅ | Yes for direct children | ✅ Yes |
 | File relocation | ❌ | ❌ | **No** | N/A |
 
 **Summary:**
-- ✅ Core LS-Lint 2.3 naming, ignore, `.dir`, OR, and direct `exists`
-  behavior is implemented for explicit scopes.
-- ⚠️ Pattern scopes such as `packages/*`, `**`, and `{src,tests}` remain
-  unsupported until represented as validation scopes instead of required child
-  nodes.
+- ✅ Core LS-Lint 2.3 naming, regex, ignore, `.dir`, OR, wildcard extension,
+  pattern-scope, and direct `exists` behavior is implemented.
+- ✅ Pattern scopes such as `packages/*`, `**`, and `{src,tests}` are validation
+  scopes instead of required child nodes.
 - ✅ Assura implements closed-world direct-content checks beyond native
   LS-Lint.
 
@@ -425,8 +424,8 @@ directory requirements.
 ### Phase 1: Critical Gaps (Must Have)
 
 1. ✅ **Pattern scopes** - validation scopes that do not imply required dirs
-2. ✅ **Direct-content shorthand** - ergonomic sugar for existing explicit fields
-3. ✅ **Top-level patterns** - compiled/indexed matchers
+2. ⏳ **Direct-content shorthand** - ergonomic sugar for existing explicit fields
+3. ⏳ **Top-level patterns** - compiled/indexed matchers
 
 ### Phase 2: Efficiency Improvements
 
@@ -444,16 +443,18 @@ directory requirements.
 
 **Can Assura efficiently implement LS-Lint capabilities?**
 
-**Answer:** Almost. Current Assura already covers the direct count and
-closed-world pieces that earlier docs listed as missing. The remaining work is
-mostly notation safety and ergonomics:
+**Answer:** Yes for LS-Lint 2.3 compatibility. Current Assura covers the direct
+count, regex, wildcard/subextension, glob/brace scope, and closed-world pieces
+that earlier docs listed as missing. The remaining work is native Assura
+notation ergonomics:
 
-1. pattern scopes that do not imply required directories,
+1. first-class documented pattern-scope notation,
 2. shorthand for existing direct-content fields,
-3. indexed pattern matching for scalable broad rules.
+3. reusable `rules:`/directive groups for policy reuse,
+4. indexed pattern matching for scalable broad rules.
 
-See `docs/analysis/2026-05-15-notation-source-truth.md` for the current
-implemented/planned/unsupported classification.
+See `docs/analysis/2026-05-26-ls-lint-rule-coverage-audit.md` for the current
+compatibility evidence.
 
 ---
 

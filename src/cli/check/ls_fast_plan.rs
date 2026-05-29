@@ -3,19 +3,23 @@
 use super::ls_fast_naming::{
     collect_fast_naming_regex_patterns, compile_fast_naming, FastFileNaming, FastNaming,
 };
-use super::patterns::simple_suffix_pattern;
+use super::patterns::{is_lslint_extension_pattern, simple_suffix_pattern};
 use super::rules::{
     dir_contains, join_config_child, merge_directory_bundle, merge_file_bundle,
     merge_markdown_bundle, normalize_config_dir, strip_direct_content_policy, EffectiveRules,
 };
+use super::scope_patterns::{path_has_scope_magic, CompiledScopePattern};
 use crate::config::config::{Config, DirectoryBundle, DirectoryNode, FileBundle};
 use std::cmp::Reverse;
+use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 #[derive(Clone)]
 pub(super) struct FastScope {
     path: PathBuf,
+    has_scope_magic: bool,
+    scope_pattern: Option<CompiledScopePattern>,
     pub(super) exact: FastRules,
     pub(super) descendant: FastRules,
 }
@@ -25,6 +29,7 @@ pub(super) struct FastRules {
     pub(super) effective: EffectiveRules,
     pub(super) file_naming: Option<FastFileNaming>,
     pub(super) directory_naming: Option<FastNaming>,
+    pub(super) self_directory_naming: Option<FastNaming>,
     pub(super) has_direct_file_policy: bool,
     pub(super) has_direct_directory_policy: bool,
 }
@@ -52,20 +57,44 @@ pub(super) fn fast_rules_for_dir<'a>(
     dir_rel: &Path,
     scopes: &'a [FastScope],
 ) -> Option<&'a FastRules> {
-    let scope = scopes
+    let (scope, exact) = scopes
         .iter()
-        .find(|scope| dir_contains(&scope.path, dir_rel))?;
-    if dir_rel == scope.path {
+        .find_map(|scope| scope_match(scope, dir_rel).map(|exact| (scope, exact)))?;
+    if exact {
         Some(&scope.exact)
     } else {
         Some(&scope.descendant)
     }
 }
 
+pub(super) fn fast_rules_for_dir_indexed<'a>(
+    dir_rel: &Path,
+    scopes: &'a [FastScope],
+    index: &HashMap<PathBuf, usize>,
+) -> Option<&'a FastRules> {
+    let mut cursor = Some(dir_rel);
+    while let Some(candidate) = cursor {
+        if let Some(scope_index) = index.get(candidate) {
+            let scope = scopes.get(*scope_index)?;
+            return if dir_rel == scope.path {
+                Some(&scope.exact)
+            } else {
+                Some(&scope.descendant)
+            };
+        }
+        cursor = candidate.parent();
+    }
+    None
+}
+
 impl FastScope {
     pub(super) fn new(path: PathBuf, exact: FastRules, descendant: FastRules) -> Self {
+        let has_scope_magic = path_has_scope_magic(&path);
+        let scope_pattern = has_scope_magic.then(|| CompiledScopePattern::new(&path));
         Self {
             path,
+            has_scope_magic,
+            scope_pattern,
             exact,
             descendant,
         }
@@ -78,6 +107,10 @@ impl FastScope {
     fn depth(&self) -> usize {
         self.path.components().count()
     }
+
+    pub(super) fn has_scope_magic(&self) -> bool {
+        self.has_scope_magic
+    }
 }
 
 impl FastRules {
@@ -85,6 +118,7 @@ impl FastRules {
         effective: EffectiveRules,
         file_naming: Option<FastFileNaming>,
         directory_naming: Option<FastNaming>,
+        self_directory_naming: Option<FastNaming>,
     ) -> Self {
         let has_direct_file_policy = has_direct_file_policy(&effective);
         let has_direct_directory_policy = has_direct_directory_policy(&effective);
@@ -92,6 +126,7 @@ impl FastRules {
             effective,
             file_naming,
             directory_naming,
+            self_directory_naming,
             has_direct_file_policy,
             has_direct_directory_policy,
         }
@@ -103,11 +138,13 @@ impl FastRules {
         &EffectiveRules,
         Option<&FastFileNaming>,
         Option<&FastNaming>,
+        Option<&FastNaming>,
     ) {
         (
             &self.effective,
             self.file_naming.as_ref(),
             self.directory_naming.as_ref(),
+            self.self_directory_naming.as_ref(),
         )
     }
 
@@ -126,8 +163,10 @@ impl FastRules {
                         .iter()
                         .filter_map(|(pattern, naming)| {
                             let naming = compile_fast_naming(naming);
-                            if let Some(suffix) = simple_suffix_pattern(pattern) {
-                                suffix_patterns.push((suffix.to_string(), naming));
+                            if simple_suffix_pattern(pattern).is_some()
+                                && is_lslint_extension_pattern(pattern)
+                            {
+                                suffix_patterns.push((pattern.clone(), naming));
                                 return None;
                             }
                             Some((pattern.clone(), naming))
@@ -145,6 +184,11 @@ impl FastRules {
             .as_ref()
             .and_then(|directories| directories.naming.as_ref())
             .map(|naming| compile_fast_naming(naming));
+        let self_directory_naming = effective
+            .self_directory
+            .as_ref()
+            .and_then(|directory| directory.naming.as_ref())
+            .map(|naming| compile_fast_naming(naming));
 
         Self {
             has_direct_file_policy: has_direct_file_policy(&effective),
@@ -152,6 +196,7 @@ impl FastRules {
             effective,
             file_naming,
             directory_naming,
+            self_directory_naming,
         }
     }
 }
@@ -169,12 +214,17 @@ fn compile_scope_node(
                 inherited.directories.as_ref(),
                 node.directories.as_ref(),
             ),
+            self_directory: merge_directory_bundle(
+                inherited.self_directory.as_ref(),
+                node.self_directory.as_ref(),
+            ),
             markdown: merge_markdown_bundle(inherited.markdown.as_ref(), node.markdown.as_ref()),
         }
     } else {
         EffectiveRules {
             files: node.files.clone().map(Arc::new),
             directories: node.directories.clone().map(Arc::new),
+            self_directory: node.self_directory.clone().map(Arc::new),
             markdown: node.markdown.clone().map(Arc::new),
         }
     };
@@ -193,6 +243,20 @@ fn compile_scope_node(
     }
 
     Some(())
+}
+
+fn scope_match(scope: &FastScope, dir_rel: &Path) -> Option<bool> {
+    if scope.has_scope_magic {
+        let Some(pattern) = &scope.scope_pattern else {
+            return None;
+        };
+        if pattern.matches_path(dir_rel) {
+            return Some(true);
+        }
+        return pattern.has_matching_ancestor(dir_rel).then_some(false);
+    }
+
+    dir_contains(&scope.path, dir_rel).then_some(dir_rel == scope.path)
 }
 
 fn has_direct_file_policy(effective: &EffectiveRules) -> bool {
@@ -241,11 +305,18 @@ fn collect_fast_rules_regex_patterns(rules: &FastRules, patterns: &mut Vec<Strin
     if let Some(naming) = &rules.directory_naming {
         collect_fast_naming_regex_patterns(naming, patterns);
     }
+    if let Some(naming) = &rules.self_directory_naming {
+        collect_fast_naming_regex_patterns(naming, patterns);
+    }
 }
 
 fn is_fast_node(node: &DirectoryNode) -> bool {
     node.markdown.is_none()
         && node.exists.is_none()
+        && node
+            .self_directory
+            .as_ref()
+            .map_or(true, is_fast_self_directory_bundle)
         && node.files.as_ref().map_or(true, is_fast_file_bundle)
         && node
             .directories
@@ -267,4 +338,13 @@ fn is_fast_file_bundle(files: &FileBundle) -> bool {
 
 fn is_fast_directory_bundle(directories: &DirectoryBundle) -> bool {
     directories.required.is_none()
+}
+
+fn is_fast_self_directory_bundle(directory: &DirectoryBundle) -> bool {
+    directory.required.is_none()
+        && directory.allowed_names.is_none()
+        && directory.allowed_patterns.is_none()
+        && directory.forbidden_patterns.is_none()
+        && directory.allow_extra.is_none()
+        && directory.exists.is_none()
 }

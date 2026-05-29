@@ -13,6 +13,8 @@ pub mod inheritance;
 #[cfg(feature = "yaml-config")]
 pub mod loader;
 pub mod ls_compat;
+#[cfg(test)]
+mod ls_compat_tests;
 #[cfg(feature = "full-cli")]
 pub mod parser;
 #[cfg(feature = "full-cli")]

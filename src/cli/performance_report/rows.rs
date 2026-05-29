@@ -33,7 +33,7 @@ pub struct PerformanceResultRow {
     pub fixture_id: String,
     /// Pinned fixture source revision.
     pub fixture_source_revision: String,
-    /// Fixture cohort such as realistic-equivalent or synthetic-stress.
+    /// Fixture cohort such as real-repo-headline, realistic-equivalent, or synthetic-stress.
     pub fixture_cohort: String,
     /// Historical fixture cohort retained for compatibility with older data.
     pub legacy_fixture_cohort: String,
@@ -277,8 +277,10 @@ pub(in crate::cli::performance_report) fn row(
 }
 
 pub(super) fn is_diagnostic_row(row_family: &str, fixture_cohort: &str) -> bool {
-    fixture_cohort != "realistic-equivalent"
-        || row_family == "assura-in-process"
+    !matches!(
+        fixture_cohort,
+        "real-repo-headline" | "realistic-equivalent"
+    ) || row_family == "assura-in-process"
         || row_family == "assura-check-cached-cli"
         || row_family == "assura-check-compiled-cli"
         || row_family == "assura-check-hot-cli"

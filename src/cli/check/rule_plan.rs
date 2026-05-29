@@ -4,6 +4,9 @@ use super::rules::{
     dir_contains, join_config_child, merge_directory_bundle, merge_file_bundle,
     merge_markdown_bundle, normalize_config_dir, strip_direct_content_policy, EffectiveRules,
 };
+use super::scope_patterns::{
+    path_has_matching_scope_ancestor, path_has_scope_magic, path_matches_scope_pattern,
+};
 use crate::config::config::{Config, DirectoryNode};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -42,15 +45,27 @@ pub(super) fn rules_for_dir(dir_rel: &Path, scopes: &[RuleScope]) -> EffectiveRu
     scopes
         .iter()
         .rev()
-        .find(|scope| dir_contains(&scope.path, dir_rel))
+        .filter_map(|scope| scope_match(scope, dir_rel).map(|exact| (scope, exact)))
         .map(|scope| {
-            if dir_rel == scope.path {
-                scope.exact.clone()
+            if scope.1 {
+                scope.0.exact.clone()
             } else {
-                scope.descendant.clone()
+                scope.0.descendant.clone()
             }
         })
+        .next()
         .unwrap_or_default()
+}
+
+fn scope_match(scope: &RuleScope, dir_rel: &Path) -> Option<bool> {
+    if path_has_scope_magic(&scope.path) {
+        if path_matches_scope_pattern(&scope.path, dir_rel) {
+            return Some(true);
+        }
+        return path_has_matching_scope_ancestor(&scope.path, dir_rel).then_some(false);
+    }
+
+    dir_contains(&scope.path, dir_rel).then_some(dir_rel == scope.path)
 }
 
 fn compile_scope_node(
@@ -66,12 +81,17 @@ fn compile_scope_node(
                 inherited.directories.as_ref(),
                 node.directories.as_ref(),
             ),
+            self_directory: merge_directory_bundle(
+                inherited.self_directory.as_ref(),
+                node.self_directory.as_ref(),
+            ),
             markdown: merge_markdown_bundle(inherited.markdown.as_ref(), node.markdown.as_ref()),
         }
     } else {
         EffectiveRules {
             files: node.files.clone().map(Arc::new),
             directories: node.directories.clone().map(Arc::new),
+            self_directory: node.self_directory.clone().map(Arc::new),
             markdown: node.markdown.clone().map(Arc::new),
         }
     };

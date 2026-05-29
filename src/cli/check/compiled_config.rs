@@ -14,7 +14,6 @@ use std::path::PathBuf;
 pub(in crate::cli::check) struct CompiledStructureConfig {
     pub(super) config: Config,
     pub(super) configured_dirs: Vec<PathBuf>,
-    pub(super) required_dirs: Vec<PathBuf>,
     pub(super) exclude_patterns: Vec<CompiledExclusion>,
     pub(super) naming_regexes: HashMap<String, Regex>,
     pub(super) glob_patterns: HashMap<String, Pattern>,
@@ -25,7 +24,6 @@ pub(in crate::cli::check) struct CompiledStructureConfig {
 
 pub(super) struct PrecompiledStructurePlan {
     pub(super) configured_dirs: Vec<PathBuf>,
-    pub(super) required_dirs: Vec<PathBuf>,
     pub(super) exclusion_patterns: Vec<String>,
     pub(super) naming_regex_patterns: Vec<String>,
     pub(super) glob_pattern_sources: Vec<String>,
@@ -46,14 +44,12 @@ impl CompiledStructureConfig {
 
     fn new_with_options(config: Config, fail_fast: bool, keep_full_rule_plan: bool) -> Self {
         let mut configured_dirs = Vec::new();
-        let mut required_dirs = Vec::new();
         let mut naming_regexes = HashMap::new();
         let mut glob_patterns = HashMap::new();
         let mut has_direct_count_constraints = false;
         for (path, node) in &config.structure {
             let base = super::normalize_config_dir(path);
             collect_configured_dirs(base.clone(), node, &mut configured_dirs);
-            collect_required_dirs(base, node, &mut required_dirs);
             collect_naming_regexes(node, &mut naming_regexes);
             patterns::collect_glob_patterns(node, &mut glob_patterns);
             has_direct_count_constraints |= node_has_direct_count_constraints(node);
@@ -87,7 +83,6 @@ impl CompiledStructureConfig {
         Self {
             config,
             configured_dirs,
-            required_dirs,
             exclude_patterns,
             naming_regexes,
             glob_patterns,
@@ -126,30 +121,12 @@ impl CompiledStructureConfig {
         Self {
             config,
             configured_dirs: plan.configured_dirs,
-            required_dirs: plan.required_dirs,
             exclude_patterns,
             naming_regexes,
             glob_patterns,
             rule_scopes: plan.rule_scopes,
             lslint_fast_scopes,
             has_direct_count_constraints: plan.has_direct_count_constraints,
-        }
-    }
-}
-
-fn collect_required_dirs(
-    node_rel: PathBuf,
-    node: &crate::config::config::DirectoryNode,
-    required_dirs: &mut Vec<PathBuf>,
-) {
-    if node.required && !node_rel.as_os_str().is_empty() {
-        required_dirs.push(node_rel.clone());
-    }
-
-    if let Some(children) = &node.children {
-        for (child_name, child) in children {
-            let child_rel = super::join_config_child(&node_rel, child_name);
-            collect_required_dirs(child_rel, child, required_dirs);
         }
     }
 }

@@ -4,7 +4,8 @@ use super::PerformanceResultRow;
 use serde::Serialize;
 use std::collections::BTreeSet;
 
-const HEADLINE_COHORT: &str = "realistic-equivalent";
+const REAL_REPO_HEADLINE_COHORT: &str = "real-repo-headline";
+const GENERATED_HEADLINE_COHORT: &str = "realistic-equivalent";
 const ASSURA_HEADLINE_ROW: &str = "assura-cli";
 const ASSURA_WARM_ROW: &str = "assura-check-dirty-project-session-cli";
 const LS_LINT_HEADLINE_ROW: &str = "ls-lint-cli";
@@ -62,7 +63,7 @@ pub(super) fn summarize_headline_claim(
     summarize_claim(
         rows,
         measured_iterations,
-        HEADLINE_COHORT,
+        selected_headline_cohort(rows),
         ASSURA_HEADLINE_ROW,
         LS_LINT_HEADLINE_ROW,
     )
@@ -75,10 +76,21 @@ pub(super) fn summarize_warm_claim(
     summarize_claim(
         rows,
         measured_iterations,
-        HEADLINE_COHORT,
+        selected_headline_cohort(rows),
         ASSURA_WARM_ROW,
         LS_LINT_HEADLINE_ROW,
     )
+}
+
+fn selected_headline_cohort(rows: &[PerformanceResultRow]) -> &'static str {
+    if rows
+        .iter()
+        .any(|row| row.fixture_cohort == REAL_REPO_HEADLINE_COHORT)
+    {
+        REAL_REPO_HEADLINE_COHORT
+    } else {
+        GENERATED_HEADLINE_COHORT
+    }
 }
 
 fn summarize_claim(

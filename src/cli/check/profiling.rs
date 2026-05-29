@@ -62,7 +62,12 @@ pub fn run_structure_check_with_timings(
     let mut checker = StructureChecker::new(project_root.clone(), config, fail_fast);
     timings.checker_init_ms = checker_init_started.elapsed().as_secs_f64() * 1000.0;
 
-    let report = checker.check(checked_path, config_path, &mut timings)?;
+    let report = checker.check(
+        checked_path,
+        config_path,
+        super::CheckTargetMode::Recursive,
+        &mut timings,
+    )?;
     timings.total_ms = total_started.elapsed().as_secs_f64() * 1000.0;
     Ok((report, timings))
 }

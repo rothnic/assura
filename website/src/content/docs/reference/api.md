@@ -22,11 +22,20 @@ constraints are not stable public surfaces in this release.
 | `assura check [path]` | Validate a project or subpath |
 | `assura status [path]` | Print discovered config and rule summary |
 | `assura init [path]` | Create a starter `.assura/config.yml` |
-| `assura migrate [.ls-lint.yml]` | Convert supported LS-Lint config |
+| `assura migrate [.ls-lint.yml ...]` | Convert LS-Lint 2.3 rule config |
 | `assura info [path]` | Print text configuration details |
 | `assura watch [path]` | Run one check as a current watch wrapper |
 
 Supported check and status formats are `text`, `json`, and `yaml`.
+
+## Check Options
+
+| Option | Purpose |
+| --- | --- |
+| `--warn` | Print violations but exit successfully, useful for advisory agent feedback and gradual adoption |
+| `--fail-fast` | Stop after the first violation |
+| `--no-parallel` | Run validation without parallel traversal |
+| `--ls-lint-target-semantics` | Match LS-Lint path-argument behavior by checking only the explicit target path |
 
 ## Check JSON Shape
 

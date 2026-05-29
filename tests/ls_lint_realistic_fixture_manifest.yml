@@ -145,7 +145,7 @@ fixtures:
     source:
       kind: external_git
       repository: https://github.com/vercel/next.js
-      revision: ea8bc0ec2bbae18dd6861db15d66b92c36feeeb8
+      revision: 51bfe3c1863b191f4b039bc230e8ed5c57b0baf3
     purpose: Pinned frontend monorepo repository for deterministic opt-in performance-report measurement without vendoring third-party source.
     ls_lint_rules:
       - external_fixture_source
@@ -173,6 +173,174 @@ fixtures:
       - regex
       - .dir
       - extension
+    assura_rules:
+      - fixture_materialization
+      - files.naming_patterns
+      - directories.naming
+      - exclude
+    cohort: stable_baseline
+    native_lslint_parity: true
+    assura_extensions: []
+  - id: pinned_vite
+    name: Pinned Vite checkout
+    source:
+      kind: external_git
+      repository: https://github.com/vitejs/vite
+      revision: cf50e548d4ae7f6ed9ade507d70acbd39b4e0b93
+    purpose: Pinned frontend tooling monorepo for real-repo performance evidence.
+    ls_lint_rules:
+      - external_fixture_source
+      - regex
+      - .dir
+      - wildcard_extension
+      - ignore
+    assura_rules:
+      - fixture_materialization
+      - files.naming_patterns
+      - directories.naming
+      - exclude
+    cohort: stable_baseline
+    native_lslint_parity: true
+    assura_extensions: []
+  - id: pinned_tailwindcss
+    name: Pinned Tailwind CSS checkout
+    source:
+      kind: external_git
+      repository: https://github.com/tailwindlabs/tailwindcss
+      revision: 7361468f77500105b0559e879e121f34306e8da2
+    purpose: Pinned CSS tooling package for source, test, and generated-output policy evidence.
+    ls_lint_rules:
+      - external_fixture_source
+      - regex
+      - .dir
+      - extension
+      - ignore
+    assura_rules:
+      - fixture_materialization
+      - files.naming_patterns
+      - directories.naming
+      - exclude
+    cohort: stable_baseline
+    native_lslint_parity: true
+    assura_extensions: []
+  - id: pinned_prettier
+    name: Pinned Prettier checkout
+    source:
+      kind: external_git
+      repository: https://github.com/prettier/prettier
+      revision: c4ab460357478d2b847c60a1efb40098b1181931
+    purpose: Pinned JavaScript tooling repository for source, tests, website, and generated-output policy evidence.
+    ls_lint_rules:
+      - external_fixture_source
+      - regex
+      - .dir
+      - extension
+      - ignore
+    assura_rules:
+      - fixture_materialization
+      - files.naming_patterns
+      - directories.naming
+      - exclude
+    cohort: stable_baseline
+    native_lslint_parity: true
+    assura_extensions: []
+  - id: pinned_pnpm
+    name: Pinned pnpm checkout
+    source:
+      kind: external_git
+      repository: https://github.com/pnpm/pnpm
+      revision: dd6b0b62d80340655ac1cf4c4365fcfffe1e3f2c
+    purpose: Pinned package-manager monorepo for package-scope and typings policy evidence.
+    ls_lint_rules:
+      - external_fixture_source
+      - regex
+      - .dir
+      - wildcard_extension
+      - ignore
+    assura_rules:
+      - fixture_materialization
+      - files.naming_patterns
+      - directories.naming
+      - exclude
+    cohort: stable_baseline
+    native_lslint_parity: true
+    assura_extensions: []
+  - id: pinned_rustlings
+    name: Pinned Rustlings checkout
+    source:
+      kind: external_git
+      repository: https://github.com/rust-lang/rustlings
+      revision: 28d2bb04326d7036514245d73f10fb72b9ed108c
+    purpose: Pinned Rust educational repository for exercises, solutions, docs, and target pruning evidence.
+    ls_lint_rules:
+      - external_fixture_source
+      - regex
+      - .dir
+      - extension
+      - ignore
+    assura_rules:
+      - fixture_materialization
+      - files.naming_patterns
+      - directories.naming
+      - exclude
+    cohort: stable_baseline
+    native_lslint_parity: true
+    assura_extensions: []
+  - id: pinned_clap
+    name: Pinned clap checkout
+    source:
+      kind: external_git
+      repository: https://github.com/clap-rs/clap
+      revision: a751c5fe65cd33cb09e85ff3039b4fd0182cdb6e
+    purpose: Pinned Rust workspace for crate, examples, and target-output policy evidence.
+    ls_lint_rules:
+      - external_fixture_source
+      - regex
+      - .dir
+      - extension
+      - ignore
+    assura_rules:
+      - fixture_materialization
+      - files.naming_patterns
+      - directories.naming
+      - exclude
+    cohort: stable_baseline
+    native_lslint_parity: true
+    assura_extensions: []
+  - id: pinned_ripgrep
+    name: Pinned ripgrep checkout
+    source:
+      kind: external_git
+      repository: https://github.com/BurntSushi/ripgrep
+      revision: 4649aa9700619f94cf9c66876e9549d83420e16c
+    purpose: Pinned Rust CLI repository for crates, tests, docs, scripts, and target pruning evidence.
+    ls_lint_rules:
+      - external_fixture_source
+      - regex
+      - .dir
+      - wildcard_extension
+      - ignore
+    assura_rules:
+      - fixture_materialization
+      - files.naming_patterns
+      - directories.naming
+      - exclude
+    cohort: stable_baseline
+    native_lslint_parity: true
+    assura_extensions: []
+  - id: pinned_tokio
+    name: Pinned Tokio checkout
+    source:
+      kind: external_git
+      repository: https://github.com/tokio-rs/tokio
+      revision: 14c17fc09656a30230177b600bacceb9db33e942
+    purpose: Pinned Rust async workspace for crate scopes, examples, benches, and target pruning evidence.
+    ls_lint_rules:
+      - external_fixture_source
+      - regex
+      - .dir
+      - extension
+      - ignore
     assura_rules:
       - fixture_materialization
       - files.naming_patterns

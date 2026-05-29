@@ -49,9 +49,8 @@ structure:
             md: kebab-case
 ```
 
-Assura currently supports explicit child scopes. LS-Lint glob directory scopes
-such as `packages/*`, `**`, and `{src,tests}` are rejected during migration with
-a clear unsupported-scope error.
+Assura supports explicit child scopes and LS-Lint-compatible glob or brace
+directory scopes such as `packages/*`, `**`, and `{src,tests}`.
 
 ## Direct-Child Existence Counts
 

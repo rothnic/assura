@@ -1,5 +1,9 @@
 //! Generated stable fixtures for performance report measurement.
 
+use super::counterexample_fixtures::{
+    create_many_configured_scopes_regression_project, create_multipart_extension_regression_project,
+};
+use super::external_fixture_scenarios::external_fixture_scenarios;
 use super::external_fixtures::materialize_external_fixture;
 use super::fixture_io::{write_configs, write_file, write_lslint_compatible_configs};
 use super::fixture_metadata::fixture_metadata;
@@ -7,6 +11,7 @@ use super::monorepo_policy::{
     create_ignored_generated_heavy_project, create_monorepo_policy_project,
     create_realistic_rule_heavy_project,
 };
+use super::realistic_fixtures::create_monorepo_packages_project;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -59,8 +64,36 @@ pub(in crate::cli::performance_report) enum FixtureKind {
     MonorepoPolicy,
     RuleHeavyRepo,
     IgnoredGeneratedHeavyRepo,
+    MultipartExtensionRegression,
+    ManyConfiguredScopesRegression,
     PinnedNextJs,
     PinnedMdBook,
+    PinnedVite,
+    PinnedTailwindCss,
+    PinnedPrettier,
+    PinnedPnpm,
+    PinnedRustlings,
+    PinnedClap,
+    PinnedRipgrep,
+    PinnedTokio,
+}
+
+impl FixtureKind {
+    pub(in crate::cli::performance_report) fn is_external_pinned(self) -> bool {
+        matches!(
+            self,
+            Self::PinnedNextJs
+                | Self::PinnedMdBook
+                | Self::PinnedVite
+                | Self::PinnedTailwindCss
+                | Self::PinnedPrettier
+                | Self::PinnedPnpm
+                | Self::PinnedRustlings
+                | Self::PinnedClap
+                | Self::PinnedRipgrep
+                | Self::PinnedTokio
+        )
+    }
 }
 
 pub(in crate::cli::performance_report) fn scenarios(
@@ -155,27 +188,26 @@ pub(in crate::cli::performance_report) fn scenarios(
             files_per_dir: 0,
             kind: FixtureKind::IgnoredGeneratedHeavyRepo,
         },
+        FixtureScenario {
+            id: "multipart_extension_regression",
+            source_revision: "generated-fixtures-v3",
+            rule_cohort: "counterexample-multipart-extension",
+            dirs: 0,
+            files_per_dir: 0,
+            kind: FixtureKind::MultipartExtensionRegression,
+        },
+        FixtureScenario {
+            id: "many_configured_scopes_regression",
+            source_revision: "generated-fixtures-v3",
+            rule_cohort: "counterexample-many-configured-scopes",
+            dirs: 0,
+            files_per_dir: 0,
+            kind: FixtureKind::ManyConfiguredScopesRegression,
+        },
     ];
 
     if include_external {
-        scenarios.extend([
-            FixtureScenario {
-                id: "pinned_nextjs",
-                source_revision: "ea8bc0ec2bbae18dd6861db15d66b92c36feeeb8",
-                rule_cohort: "pinned-frontend-monorepo",
-                dirs: 0,
-                files_per_dir: 0,
-                kind: FixtureKind::PinnedNextJs,
-            },
-            FixtureScenario {
-                id: "pinned_mdbook",
-                source_revision: "b7a27d2759e80d804a33a4bc9c31b2b6863a5cb2",
-                rule_cohort: "pinned-rust-docs",
-                dirs: 0,
-                files_per_dir: 0,
-                kind: FixtureKind::PinnedMdBook,
-            },
-        ]);
+        scenarios.extend(external_fixture_scenarios());
     }
 
     scenarios
@@ -208,9 +240,22 @@ pub(in crate::cli::performance_report) fn materialize_fixture(
         FixtureKind::MonorepoPolicy => create_monorepo_policy_project(&root)?,
         FixtureKind::RuleHeavyRepo => create_realistic_rule_heavy_project(&root)?,
         FixtureKind::IgnoredGeneratedHeavyRepo => create_ignored_generated_heavy_project(&root)?,
-        FixtureKind::PinnedNextJs | FixtureKind::PinnedMdBook => {
-            materialize_external_fixture(scenario.kind, &root)?
+        FixtureKind::MultipartExtensionRegression => {
+            create_multipart_extension_regression_project(&root)?
         }
+        FixtureKind::ManyConfiguredScopesRegression => {
+            create_many_configured_scopes_regression_project(&root)?
+        }
+        FixtureKind::PinnedNextJs
+        | FixtureKind::PinnedMdBook
+        | FixtureKind::PinnedVite
+        | FixtureKind::PinnedTailwindCss
+        | FixtureKind::PinnedPrettier
+        | FixtureKind::PinnedPnpm
+        | FixtureKind::PinnedRustlings
+        | FixtureKind::PinnedClap
+        | FixtureKind::PinnedRipgrep
+        | FixtureKind::PinnedTokio => materialize_external_fixture(scenario.kind, &root)?,
     }
 
     Ok(MaterializedFixture {
@@ -421,56 +466,6 @@ ls:
     write_file(root.join("src/theme.module.css"), ".root {}\n")?;
     write_file(root.join("public/logo-icon.png"), "")?;
     write_file(root.join("dist/BadName.tsx"), "")?;
-    Ok(())
-}
-
-fn create_monorepo_packages_project(root: &Path) -> Result<(), String> {
-    write_lslint_compatible_configs(
-        root,
-        r#"
-ignore:
-  - .assura/**
-  - packages/core/dist/**
-  - packages/ui/dist/**
-ls:
-  .dir: kebab-case
-  packages:
-    core:
-      .dir: kebab-case
-      .ts: camelCase
-      .md: exists:1-2
-      src:
-        .ts: camelCase
-      tests:
-        .test.ts: kebab-case
-    ui:
-      .dir: kebab-case
-      .tsx: PascalCase
-      .md: exists:1-2
-      src:
-        .tsx: PascalCase
-      tests:
-        .test.tsx: kebab-case
-"#,
-    )?;
-    for package in ["core", "ui"] {
-        fs::create_dir_all(root.join(format!("packages/{package}/src")))
-            .map_err(|error| format!("create package src: {error}"))?;
-        fs::create_dir(root.join(format!("packages/{package}/tests")))
-            .map_err(|error| format!("create package tests: {error}"))?;
-        fs::create_dir(root.join(format!("packages/{package}/dist")))
-            .map_err(|error| format!("create package dist: {error}"))?;
-        write_file(
-            root.join(format!("packages/{package}/README.md")),
-            "# Package\n",
-        )?;
-    }
-    write_file(root.join("packages/core/src/indexFile.ts"), "")?;
-    write_file(root.join("packages/core/tests/index-file.test.ts"), "")?;
-    write_file(root.join("packages/core/dist/BadName.ts"), "")?;
-    write_file(root.join("packages/ui/src/Button.tsx"), "")?;
-    write_file(root.join("packages/ui/tests/button.test.tsx"), "")?;
-    write_file(root.join("packages/ui/dist/bad-name.tsx"), "")?;
     Ok(())
 }
 

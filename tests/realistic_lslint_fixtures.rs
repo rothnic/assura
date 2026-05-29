@@ -386,6 +386,7 @@ ls:
   .module.css: kebab-case
   .png: kebab-case
   src:
+    .dir: kebab-case
     .tsx: PascalCase
     .test.tsx: kebab-case
   public:

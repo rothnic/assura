@@ -2,11 +2,11 @@
 
 use super::ls_fast_counts::fast_rules_have_direct_counts;
 use super::ls_fast_naming::{validate_fast_file_stem, validate_fast_name};
-use super::ls_fast_plan::{fast_rules_for_dir, FastRules, FastScope};
-use super::patterns::matches_any_compiled_pattern;
+use super::ls_fast_plan::{fast_rules_for_dir, fast_rules_for_dir_indexed, FastRules, FastScope};
+use super::patterns::{lslint_file_stem, matches_any_compiled_pattern};
 use super::rules::{
-    display_rel, file_matches_any_extension, is_excluded_rel_with, severity_for_bundle,
-    severity_for_directory_bundle,
+    display_rel, file_matches_any_extension, is_excluded_rel_with, rel_to_string,
+    severity_for_bundle, severity_for_directory_bundle,
 };
 use super::{CheckError, StructureCheckReport, StructureCheckTimings, StructureChecker};
 use std::ffi::OsStr;
@@ -29,7 +29,7 @@ impl StructureChecker {
         };
 
         let configured_started = Instant::now();
-        self.validate_fast_configured_structure(report);
+        self.validate_configured_structure(report);
         timings.configured_structure_ms = configured_started.elapsed().as_secs_f64() * 1000.0;
 
         if self.fail_fast && !report.violations.is_empty() {
@@ -48,21 +48,6 @@ impl StructureChecker {
         Ok(true)
     }
 
-    fn validate_fast_configured_structure(&self, report: &mut StructureCheckReport) {
-        for node_rel in &self.required_dirs {
-            if self.project_root.join(node_rel).is_dir() {
-                continue;
-            }
-            self.push_violation(
-                report,
-                node_rel.to_path_buf(),
-                "required_directory",
-                format!("Required directory '{}' is missing", display_rel(node_rel)),
-                "medium",
-            );
-        }
-    }
-
     fn walk_lslint_fast(
         &self,
         checked_path: &Path,
@@ -78,11 +63,29 @@ impl StructureChecker {
             .strip_prefix(&self.project_root)
             .unwrap_or(checked_path);
         if metadata.is_dir() {
+            if !rel.as_os_str().is_empty() {
+                let parent_rel = rel.parent().unwrap_or_else(|| Path::new(""));
+                let parent_rules = self.fast_rules_for_dir(parent_rel, scopes);
+                let self_rules = self.fast_rules_for_dir(rel, scopes);
+                let name = checked_path
+                    .file_name()
+                    .and_then(|name| name.to_str())
+                    .unwrap_or("");
+                report.dirs_checked += 1;
+                self.validate_fast_directory(rel, name, parent_rules, self_rules, report);
+                if self.fail_fast && !report.violations.is_empty() {
+                    return Ok(());
+                }
+            }
+            #[cfg(feature = "full-cli")]
+            if self.should_parallelize_lslint_fast_walk(scopes) {
+                return self.walk_lslint_fast_dir_parallel(checked_path, report, scopes);
+            }
             self.walk_lslint_fast_dir(checked_path, rel, report, scopes)?;
         } else if metadata.is_file() {
             report.files_checked += 1;
             let parent_rel = rel.parent().unwrap_or_else(|| Path::new(""));
-            let Some(rules) = fast_rules_for_dir(parent_rel, scopes) else {
+            let Some(rules) = self.fast_rules_for_dir(parent_rel, scopes) else {
                 return Ok(());
             };
             let filename = checked_path
@@ -102,7 +105,7 @@ impl StructureChecker {
         report: &mut StructureCheckReport,
         scopes: &[FastScope],
     ) -> Result<(), CheckError> {
-        let dir_rules = fast_rules_for_dir(dir_rel, scopes);
+        let dir_rules = self.fast_rules_for_dir(dir_rel, scopes);
         let collect_counts =
             self.has_direct_count_constraints && fast_rules_have_direct_counts(dir_rules);
         if !collect_counts {
@@ -121,10 +124,12 @@ impl StructureChecker {
             } else if entry.file_type.is_dir() {
                 let path = dir.join(&entry.name);
                 report.dirs_checked += 1;
+                let child_rules = self.fast_rules_for_dir(&entry.rel, scopes);
                 self.validate_fast_directory(
                     &entry.rel,
                     entry.name.to_str().unwrap_or(""),
                     dir_rules,
+                    child_rules,
                     report,
                 );
                 if self.fail_fast && !report.violations.is_empty() {
@@ -174,7 +179,14 @@ impl StructureChecker {
             } else if file_type.is_dir() {
                 let path = dir.join(&name);
                 report.dirs_checked += 1;
-                self.validate_fast_directory(&rel, name.to_str().unwrap_or(""), dir_rules, report);
+                let child_rules = self.fast_rules_for_dir(&rel, scopes);
+                self.validate_fast_directory(
+                    &rel,
+                    name.to_str().unwrap_or(""),
+                    dir_rules,
+                    child_rules,
+                    report,
+                );
                 if self.fail_fast && !report.violations.is_empty() {
                     break;
                 }
@@ -194,14 +206,41 @@ impl StructureChecker {
         Ok(())
     }
 
-    fn validate_fast_directory(
+    pub(super) fn validate_fast_directory(
         &self,
         rel: &Path,
         name: &str,
         parent_rules: Option<&FastRules>,
+        self_rules: Option<&FastRules>,
         report: &mut StructureCheckReport,
     ) {
-        if rel.as_os_str().is_empty() || self.is_configured_dir(rel) {
+        if rel.as_os_str().is_empty() {
+            return;
+        }
+
+        if let Some((directory, naming)) = self_rules.and_then(|rules| {
+            rules
+                .effective
+                .self_directory
+                .as_ref()
+                .zip(rules.self_directory_naming.as_ref())
+        }) {
+            if !validate_fast_name(name, &rel_to_string(rel), naming, &self.naming_regexes) {
+                self.push_violation(
+                    report,
+                    rel.to_path_buf(),
+                    "directory_naming",
+                    format!(
+                        "Directory '{}' does not match naming convention '{}'",
+                        name,
+                        naming.label()
+                    ),
+                    severity_for_directory_bundle(directory),
+                );
+            }
+        }
+
+        if self.is_configured_dir(rel) {
             return;
         }
 
@@ -260,7 +299,7 @@ impl StructureChecker {
         let Some(naming) = rules.directory_naming.as_ref() else {
             return;
         };
-        if !validate_fast_name(name, naming, &self.naming_regexes) {
+        if !validate_fast_name(name, &rel_to_string(rel), naming, &self.naming_regexes) {
             self.push_violation(
                 report,
                 rel.to_path_buf(),
@@ -275,7 +314,7 @@ impl StructureChecker {
         }
     }
 
-    fn validate_fast_file(
+    pub(super) fn validate_fast_file(
         &self,
         rules: &FastRules,
         rel: &Path,
@@ -335,15 +374,27 @@ impl StructureChecker {
             }
         }
 
-        let Some(naming) = rules
+        let Some(naming_match) = rules
             .file_naming
             .as_ref()
             .and_then(|file_naming| file_naming.naming_for(filename, &self.glob_patterns))
         else {
             return;
         };
+        let naming = naming_match.naming;
+        let stem = if naming_match.lslint_extension_pattern {
+            lslint_file_stem(filename)
+        } else {
+            stem
+        };
 
-        if !validate_fast_file_stem(stem, naming, &self.naming_regexes) {
+        let parent_rel = rel.parent().unwrap_or_else(|| Path::new(""));
+        if !validate_fast_file_stem(
+            stem,
+            &rel_to_string(parent_rel),
+            naming,
+            &self.naming_regexes,
+        ) {
             self.push_violation(
                 report,
                 rel.to_path_buf(),
@@ -357,6 +408,17 @@ impl StructureChecker {
             );
         }
     }
+
+    pub(super) fn fast_rules_for_dir<'a>(
+        &'a self,
+        dir_rel: &Path,
+        scopes: &'a [FastScope],
+    ) -> Option<&'a FastRules> {
+        if let Some(index) = &self.lslint_fast_scope_index {
+            return fast_rules_for_dir_indexed(dir_rel, scopes, index);
+        }
+        fast_rules_for_dir(dir_rel, scopes)
+    }
 }
 
 pub(super) fn join_rel(parent: &Path, name: &OsStr) -> std::path::PathBuf {
@@ -367,7 +429,7 @@ pub(super) fn join_rel(parent: &Path, name: &OsStr) -> std::path::PathBuf {
     }
 }
 
-fn file_stem(filename: &str) -> &str {
+pub(super) fn file_stem(filename: &str) -> &str {
     if filename == "." || filename == ".." {
         return "";
     }

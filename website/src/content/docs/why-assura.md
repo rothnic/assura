@@ -13,14 +13,15 @@ The current supported workflow is intentionally small:
 
 - create `.assura/config.yml` with `assura init`
 - validate with `assura check`
-- migrate simple LS-Lint projects with `assura migrate`
+- migrate LS-Lint 2.3 projects with `assura migrate`
 - consume `text`, `json`, or `yaml` reports in local scripts and CI
 
 > **Pre-1.0 scope**
 >
 > This release focuses on truthful onboarding and LS-Lint-compatible structure
-> checks. Agent nudges, custom plugin APIs, role profiles, and quality scoring
-> are roadmap items, not supported v0.1 features.
+> checks. The Codex agent nudge MVP is advisory; automatic hook installation,
+> custom plugin APIs, role profiles, and quality scoring are roadmap items, not
+> supported v0.1 features.
 
 ## The Problem
 
@@ -39,14 +40,14 @@ Assura turns those expectations into a checked project shape.
 
 - **Structure Rules**: Validate file names, directory names, required files,
   forbidden files, and direct-child count rules from one config file.
-- **LS-Lint Migration**: Convert supported `.ls-lint.yml` rules into
-  `.assura/config.yml` and get clear errors for unsupported directory-scope
-  patterns.
+- **LS-Lint Migration**: Convert LS-Lint 2.3 naming, regex, exists, ignore,
+  wildcard extension, and directory-scope rules into `.assura/config.yml`.
 - **Automation Output**: Use text output for people and JSON/YAML reports for
   scripts, CI jobs, and release evidence.
 - **Benchmark Evidence**: The benchmark suite compares the current
-  `assura check` path against `@ls-lint/ls-lint@2.3.0` on the same generated
-  fixtures.
+  `assura check` path against `@ls-lint/ls-lint@2.3.0` on ten pinned real
+  repositories when the external fixture cohort is included. Generated
+  fixtures remain supporting regression coverage.
 
 ## When Assura Fits
 
@@ -54,7 +55,7 @@ Use Assura now when you need:
 
 - repository naming and structure rules to be executable
 - CI to reject files that do not match the allowed project shape
-- migration from simple LS-Lint configuration into a more explicit Assura config
+- migration from LS-Lint configuration into a more explicit Assura config
 - JSON output that can be inspected by scripts or uploaded as a CI artifact
 
 Assura is especially useful for projects that want to define the allowed
@@ -86,7 +87,7 @@ orchestration remain future work.
 
 - [Getting Started](/guides/getting-started/): Install from source,
   initialize config, run checks, fix a failure, and wire CI.
-- [LS-Lint Migration](/guides/ls-lint-migration/): Convert a supported
+- [LS-Lint Migration](/guides/ls-lint-migration/): Convert an LS-Lint 2.3
   `.ls-lint.yml` file and validate the migrated project.
 - [Configuration Reference](/reference/configuration/): Supported fields for
   the current structure-first config.

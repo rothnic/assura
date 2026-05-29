@@ -1,7 +1,7 @@
 //! Fast naming matchers for LS-Lint-compatible checks.
 
-use super::case::{convention_to_case_validator, validate_single_name};
-use super::patterns::matches_single_compiled_pattern;
+use super::case::{convention_to_case_validator, validate_single_name_with_path};
+use super::patterns::{best_lslint_suffix_pair, matches_single_compiled_pattern};
 use crate::config::config::split_naming_conventions;
 use glob::Pattern;
 use regex_lite::Regex;
@@ -19,6 +19,11 @@ pub(super) struct FastPatternNaming {
     pattern: String,
     matcher: FastPatternMatcher,
     naming: FastNaming,
+}
+
+pub(super) struct FastFileNamingMatch<'a> {
+    pub(super) naming: &'a FastNaming,
+    pub(super) lslint_extension_pattern: bool,
 }
 
 #[derive(Clone)]
@@ -56,18 +61,20 @@ pub(super) enum FastNaming {
 
 pub(super) fn validate_fast_file_stem(
     stem: &str,
+    path: &str,
     naming: &FastNaming,
     regexes: &HashMap<String, Regex>,
 ) -> bool {
-    validate_fast_name(stem, naming, regexes)
+    validate_fast_name(stem, path, naming, regexes)
         || stem
             .split_once('.')
-            .map(|(base, _)| validate_fast_name(base, naming, regexes))
+            .map(|(base, _)| validate_fast_name(base, path, naming, regexes))
             .unwrap_or(false)
 }
 
 pub(super) fn validate_fast_name(
     name: &str,
+    path: &str,
     naming: &FastNaming,
     regexes: &HashMap<String, Regex>,
 ) -> bool {
@@ -78,14 +85,15 @@ pub(super) fn validate_fast_name(
         FastNaming::ContainsAny { literals, .. } => {
             literals.iter().any(|literal| name.contains(literal))
         }
-        FastNaming::Regex { pattern, .. } => regexes
-            .get(pattern)
-            .map(|regex| regex.is_match(name))
-            .unwrap_or(false),
+        FastNaming::Regex { pattern, .. } => {
+            validate_single_name_with_path(name, path, &format!("regex:{pattern}"), regexes)
+        }
         FastNaming::Alternatives { alternatives, .. } => alternatives
             .iter()
-            .any(|alternative| validate_fast_name(name, alternative, regexes)),
-        FastNaming::Dynamic(convention) => validate_single_name(name, convention, regexes),
+            .any(|alternative| validate_fast_name(name, path, alternative, regexes)),
+        FastNaming::Dynamic(convention) => {
+            validate_single_name_with_path(name, path, convention, regexes)
+        }
     }
 }
 
@@ -137,22 +145,40 @@ impl FastFileNaming {
         &'a self,
         filename: &str,
         glob_patterns: &HashMap<String, Pattern>,
-    ) -> Option<&'a FastNaming> {
-        self.best_suffix_naming(filename)
-            .or_else(|| {
-                self.glob_patterns
-                    .iter()
-                    .find(|pattern| pattern.matches(filename, glob_patterns))
-                    .map(|pattern| &pattern.naming)
-            })
-            .or(self.default.as_ref())
-    }
-
-    fn best_suffix_naming<'a>(&'a self, filename: &str) -> Option<&'a FastNaming> {
-        self.suffix_patterns
+    ) -> Option<FastFileNamingMatch<'a>> {
+        let suffix_match = best_lslint_suffix_pair(&self.suffix_patterns, filename);
+        let glob_match = self
+            .glob_patterns
             .iter()
-            .find(|(suffix, _)| filename.ends_with(suffix))
-            .map(|(_, naming)| naming)
+            .find(|pattern| pattern.matches(filename, glob_patterns));
+
+        match (suffix_match, glob_match) {
+            (Some((suffix, suffix_naming)), Some(glob)) => {
+                if glob.pattern.len() > suffix.len() {
+                    Some(FastFileNamingMatch {
+                        naming: &glob.naming,
+                        lslint_extension_pattern: false,
+                    })
+                } else {
+                    Some(FastFileNamingMatch {
+                        naming: suffix_naming,
+                        lslint_extension_pattern: true,
+                    })
+                }
+            }
+            (Some((_, suffix_naming)), None) => Some(FastFileNamingMatch {
+                naming: suffix_naming,
+                lslint_extension_pattern: true,
+            }),
+            (None, Some(glob)) => Some(FastFileNamingMatch {
+                naming: &glob.naming,
+                lslint_extension_pattern: false,
+            }),
+            (None, None) => self.default.as_ref().map(|naming| FastFileNamingMatch {
+                naming,
+                lslint_extension_pattern: false,
+            }),
+        }
     }
 }
 
@@ -209,6 +235,9 @@ pub(super) fn compile_fast_naming(convention: &str) -> FastNaming {
     }
 
     if let Some(pattern) = convention.strip_prefix("regex:") {
+        if pattern.starts_with('!') || pattern.contains("${") {
+            return FastNaming::Dynamic(convention.to_string());
+        }
         if pattern == "^$" {
             return FastNaming::EmptyRegex {
                 label: convention.to_string(),
@@ -245,7 +274,12 @@ pub(super) fn compile_fast_naming(convention: &str) -> FastNaming {
 
 pub(super) fn collect_fast_naming_regex_patterns(naming: &FastNaming, patterns: &mut Vec<String>) {
     match naming {
-        FastNaming::Regex { pattern, .. } => patterns.push(pattern.clone()),
+        FastNaming::Regex { pattern, .. } => {
+            let pattern = pattern.strip_prefix('!').unwrap_or(pattern);
+            if !pattern.contains("${") {
+                patterns.push(pattern.to_string());
+            }
+        }
         FastNaming::Alternatives { alternatives, .. } => {
             for alternative in alternatives {
                 collect_fast_naming_regex_patterns(alternative, patterns);
@@ -270,6 +304,9 @@ fn simple_regex_literals(pattern: &str) -> Option<SimpleRegexLiterals> {
         .and_then(|body| body.strip_suffix('$'))
         .map(|body| (true, body))
         .unwrap_or((false, pattern));
+    if exact && body.contains('|') && strip_wrapping_group(body) == body {
+        return None;
+    }
     let body = strip_wrapping_group(body);
     let mut values = Vec::new();
     for part in body.split('|') {

@@ -27,7 +27,7 @@ fn current_report_claim_summary_matches_headline_rows() {
 
     assert_eq!(
         summary["fixture_cohort"],
-        serde_json::Value::String("realistic-equivalent".to_string())
+        serde_json::Value::String("real-repo-headline".to_string())
     );
     assert_eq!(
         summary["assura_row_family"],
@@ -79,11 +79,12 @@ fn history_rows_include_execution_mode_metadata() {
 
 fn find_headline_row<'a>(
     rows: &'a [serde_json::Value],
+    fixture_cohort: &str,
     fixture_id: &str,
     row_family: &str,
 ) -> Option<&'a serde_json::Value> {
     rows.iter().find(|row| {
-        row["fixture_cohort"] == "realistic-equivalent"
+        row["fixture_cohort"] == fixture_cohort
             && row["fixture_id"] == fixture_id
             && row["row_family"] == row_family
             && row["status"] == "pass"
@@ -96,9 +97,12 @@ fn assert_summary_matches_rows(
     assura_row_family: &str,
     ls_lint_row_family: &str,
 ) {
+    let fixture_cohort = summary["fixture_cohort"]
+        .as_str()
+        .expect("claim summary includes fixture_cohort");
     assert_eq!(
         summary["fixture_cohort"],
-        serde_json::Value::String("realistic-equivalent".to_string())
+        serde_json::Value::String(fixture_cohort.to_string())
     );
     assert_eq!(
         summary["assura_row_family"],
@@ -111,7 +115,7 @@ fn assert_summary_matches_rows(
 
     let fixture_ids = rows
         .iter()
-        .filter(|row| row["fixture_cohort"] == "realistic-equivalent")
+        .filter(|row| row["fixture_cohort"] == fixture_cohort)
         .filter_map(|row| row["fixture_id"].as_str())
         .collect::<BTreeSet<_>>();
 
@@ -126,8 +130,8 @@ fn assert_summary_matches_rows(
     let mut total_ls_lint_runtime_ms = 0.0;
 
     for fixture_id in &fixture_ids {
-        let assura = find_headline_row(rows, fixture_id, assura_row_family);
-        let ls_lint = find_headline_row(rows, fixture_id, ls_lint_row_family);
+        let assura = find_headline_row(rows, fixture_cohort, fixture_id, assura_row_family);
+        let ls_lint = find_headline_row(rows, fixture_cohort, fixture_id, ls_lint_row_family);
         let Some((assura, ls_lint)) = assura.zip(ls_lint) else {
             continue;
         };

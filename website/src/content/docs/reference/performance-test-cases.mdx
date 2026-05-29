@@ -7,19 +7,205 @@ This page is the source of truth for benchmark case definitions. The
 [performance summary](/reference/performance/) should link here instead of embedding
 rulesets in the results table.
 
-Assura reports separate three kinds of evidence:
+Assura reports three kinds of evidence:
 
-- current measured cases: generated fixtures in `generated-fixtures-v1` and
+- headline cases: pinned real repositories in the `real-repo-headline` cohort
+- support cases: generated fixtures in `generated-fixtures-v1` and
   `generated-fixtures-v2`
 - diagnostic stress cases: synthetic cases used for regression detection
-- opt-in pinned real-project cases: external Git repositories that can be
-  measured explicitly without vendoring third-party source
 
-## Current Measured Cases
+## Headline Pinned Repository Cases
 
-The current comparison uses generated fixtures that are stable and native
-LS-Lint parity. They are useful for a controlled CLI-to-CLI comparison, but they
-are not yet representative enough to stand alone as public benchmark proof.
+The headline comparison uses pinned external repositories. They are cloned on
+demand so Assura can measure real project trees without vendoring third-party
+source.
+
+Run them with:
+
+```bash
+cargo build --release -p assura --bins
+cargo build --release -p assura-check-cli
+target/release/assura performance-report \
+  --include-external-fixtures \
+  --output benches/history/current.json \
+  --history benches/history/ls-lint-comparison-history.jsonl \
+  --website-dir website/public/data/performance \
+  --iterations 5
+```
+
+Set `ASSURA_PERF_EXTERNAL_FIXTURE_CACHE=/path/to/cache` to share the Git cache
+across runs. Without it, Assura uses `target/performance/external-fixture-cache`.
+
+The exact LS-Lint configs live in
+`src/cli/performance_report/external_fixture_catalog.rs`. The report writes each
+LS-Lint config into the pinned checkout, then generates the matching Assura
+config through the LS-Lint migration layer so the comparison exercises the same
+policy surface.
+
+<a id="pinned-nextjs"></a>
+
+### Next.js Monorepo
+
+Fixture: `pinned_nextjs`.
+
+| Field | Value |
+| --- | --- |
+| Repository | `vercel/next.js` |
+| Resolved commit | `51bfe3c1863b191f4b039bc230e8ed5c57b0baf3` |
+| Comparable project | large frontend framework monorepo |
+| Metrics | 9,216 checked files; 11,877 ignored paths; 9,812 directories; 22 LS-Lint rules |
+| What is unique | very large framework tree with packages, examples, route-like filenames, intentionally arbitrary test fixtures, Turbopack fixtures, and nested package caches |
+| Rule surface | package/example scopes, route-friendly regex naming, source-family rules, foreign-language bans, generated-output ignores |
+| Policy protection | keeps package and example names inside framework-safe patterns, applies JS/JSX/TS/TSX naming inside scoped workspaces, bans accidental Rust/Go/Python/Ruby files in those scopes, and prunes known generated or intentionally arbitrary fixture output such as `node_modules`, `.next`, `dist`, `coverage`, `.turbo`, `.vercel`, `test`, and `turbopack` |
+
+<a id="pinned-mdbook"></a>
+
+### mdBook Docs Project
+
+Fixture: `pinned_mdbook`.
+
+| Field | Value |
+| --- | --- |
+| Repository | `rust-lang/mdBook` |
+| Resolved commit | `b7a27d2759e80d804a33a4bc9c31b2b6863a5cb2` |
+| Comparable project | Rust documentation tool |
+| Metrics | 229 checked files; 5 ignored paths; 57 directories; 14 LS-Lint rules |
+| What is unique | compact Rust project where the product shape is source plus book/docs content instead of a large package workspace |
+| Rule surface | required Rust source, required book Markdown, TOML/Markdown naming, JS/TS bans, target pruning |
+| Policy protection | requires direct Rust source in `src` and Markdown content in `book`, keeps Rust/Markdown/TOML names inside the accepted policy, bans accidental JS/TS files in source/docs scopes, and prunes `target` output so generated build files do not become part of the source contract |
+
+<a id="pinned-vite"></a>
+
+### Vite Tooling Monorepo
+
+Fixture: `pinned_vite`.
+
+| Field | Value |
+| --- | --- |
+| Repository | `vitejs/vite` |
+| Resolved commit | `cf50e548d4ae7f6ed9ade507d70acbd39b4e0b93` |
+| Comparable project | frontend tooling monorepo |
+| Metrics | 2,040 checked files; 6 ignored paths; 642 directories; 22 LS-Lint rules |
+| What is unique | frontend tooling repo with package workspaces, playground apps, Vue examples, docs, and VitePress build/cache output |
+| Rule surface | package and playground scopes, JS/JSX/TS/TSX/Vue/Svelte naming, foreign-language bans, docs/build-output pruning |
+| Policy protection | validates package and playground directory scopes, applies the file families Vite templates actually use, bans accidental Rust/Go/Python files in package/playground scopes, and ignores `node_modules`, package `dist`, and VitePress cache/dist output |
+
+<a id="pinned-tailwindcss"></a>
+
+### Tailwind CSS Package
+
+Fixture: `pinned_tailwindcss`.
+
+| Field | Value |
+| --- | --- |
+| Repository | `tailwindlabs/tailwindcss` |
+| Resolved commit | `7361468f77500105b0559e879e121f34306e8da2` |
+| Comparable project | CSS tooling package |
+| Metrics | 961 checked files; 2 ignored paths; 99 directories; 12 LS-Lint rules |
+| What is unique | CSS tooling package with source, tests, HTML fixtures, and generated distribution/coverage paths |
+| Rule surface | source/test naming, HTML fixtures, foreign-language bans, generated-output pruning |
+| Policy protection | constrains top-level directories and dotfiles, applies JS/TS naming in `src`, applies JS/HTML naming in `tests`, bans accidental Rust/Go/Python files in those scopes, and keeps `node_modules`, `dist`, and `coverage` out of the checked tree |
+
+<a id="pinned-prettier"></a>
+
+### Prettier Formatter Repo
+
+Fixture: `pinned_prettier`.
+
+| Field | Value |
+| --- | --- |
+| Repository | `prettier/prettier` |
+| Resolved commit | `c4ab460357478d2b847c60a1efb40098b1181931` |
+| Comparable project | JavaScript formatting tool |
+| Metrics | 8,638 checked files; 23 ignored paths; 2,879 directories; 19 LS-Lint rules |
+| What is unique | large formatter repo with product source, thousands of tests and fixtures, website content, and intentionally unusual fixture names |
+| Rule surface | source, tests, website, TypeScript/JSX fixtures, fixture ignores, generated-output pruning |
+| Policy protection | validates source, tests, JSON, TypeScript/JSX fixtures, website JavaScript, and website Markdown, bans accidental Rust/Go/Python files in product scopes, and ignores known arbitrary-name fixture directories plus generated caches so the policy protects product structure rather than test corpus quirks |
+
+<a id="pinned-pnpm"></a>
+
+### pnpm Monorepo
+
+Fixture: `pinned_pnpm`.
+
+| Field | Value |
+| --- | --- |
+| Repository | `pnpm/pnpm` |
+| Resolved commit | `dd6b0b62d80340655ac1cf4c4365fcfffe1e3f2c` |
+| Comparable project | package-manager monorepo |
+| Metrics | 2,314 checked files; 2 ignored paths; 827 directories; 14 LS-Lint rules |
+| What is unique | package-manager monorepo with many package scopes, generated outputs, and dedicated TypeScript declaration areas |
+| Rule surface | package scopes, TypeScript declarations, frontend-source bans, dotfile allowances, generated-output pruning |
+| Policy protection | constrains package workspace directory names, applies JS/TS and `.d.ts` naming inside packages, handles declarations in `__typings__`, bans accidental JSX/TSX/Rust/Go/Python files in package scopes, and ignores package-local `node_modules`, `dist`, and coverage output |
+
+<a id="pinned-rustlings"></a>
+
+### Rustlings Exercises
+
+Fixture: `pinned_rustlings`.
+
+| Field | Value |
+| --- | --- |
+| Repository | `rust-lang/rustlings` |
+| Resolved commit | `28d2bb04326d7036514245d73f10fb72b9ed108c` |
+| Comparable project | Rust education repository |
+| Metrics | 272 checked files; 2 ignored paths; 70 directories; 11 LS-Lint rules |
+| What is unique | education repo where the important structure is exercise groups and solution files rather than normal library crates |
+| Rule surface | exercise/solution group naming, required Rust files, JS/TS bans, target pruning |
+| Policy protection | keeps exercise and solution groups in the numbered topic pattern, requires Rust files inside each group, bans accidental JS/TS files there, and ignores `target` output |
+
+<a id="pinned-clap"></a>
+
+### clap Rust Workspace
+
+Fixture: `pinned_clap`.
+
+| Field | Value |
+| --- | --- |
+| Repository | `clap-rs/clap` |
+| Resolved commit | `a751c5fe65cd33cb09e85ff3039b4fd0182cdb6e` |
+| Comparable project | Rust CLI workspace |
+| Metrics | 582 checked files; 2 ignored paths; 89 directories; 13 LS-Lint rules |
+| What is unique | Rust CLI workspace organized around crate-specific directories plus examples and tests |
+| Rule surface | explicit crate source scopes, examples/tests Rust policy, JS/TS bans, target pruning |
+| Policy protection | requires Rust files under the major crate `src` directories, applies Rust naming to examples and tests, bans accidental JS/TS/TSX files at the workspace root, and excludes `target` output from source-policy checks |
+
+<a id="pinned-ripgrep"></a>
+
+### ripgrep CLI Repo
+
+Fixture: `pinned_ripgrep`.
+
+| Field | Value |
+| --- | --- |
+| Repository | `BurntSushi/ripgrep` |
+| Resolved commit | `4649aa9700619f94cf9c66876e9549d83420e16c` |
+| Comparable project | Rust CLI repository |
+| Metrics | 213 checked files; 2 ignored paths; 56 directories; 13 LS-Lint rules |
+| What is unique | Rust CLI repo with a `crates` workspace layout, tests, docs, scripts, and nested build output possibilities |
+| Rule surface | crate source scopes, examples/tests Rust policy, JS/TS bans, target pruning |
+| Policy protection | constrains crate directory names, requires Rust files under crate `src` directories, applies Rust naming to examples/tests, bans accidental JS/TS files in crate scopes and JS/TS/TSX at the root, and ignores both root `target` and crate-local `target` output |
+
+<a id="pinned-tokio"></a>
+
+### Tokio Async Workspace
+
+Fixture: `pinned_tokio`.
+
+| Field | Value |
+| --- | --- |
+| Repository | `tokio-rs/tokio` |
+| Resolved commit | `14c17fc09656a30230177b600bacceb9db33e942` |
+| Comparable project | Rust async workspace |
+| Metrics | 775 checked files; 2 ignored paths; 110 directories; 12 LS-Lint rules |
+| What is unique | multi-crate async Rust workspace with core crates, utility crates, examples, benches, and crate-local build outputs |
+| Rule surface | explicit crate source scopes, examples/tests Rust policy, JS/TS bans, target pruning |
+| Policy protection | requires Rust files under core crate `src` directories, applies Rust naming to examples/tests, bans accidental JS/TS/TSX files at the workspace root, and ignores root and crate-local `target` output |
+
+## Generated Support Cases
+
+Generated fixtures are still useful for deterministic local regression checks,
+but they are not the public aggregate when real-repo rows are present.
 
 <a id="simple-library"></a>
 
@@ -107,29 +293,9 @@ coverage folders inside the tree.
 | Scale focus | ignored-path pruning |
 | Current rule surface | TypeScript naming and generated/coverage pruning |
 
-## Opt-In Pinned Repository Cases
+### Generated Monorepo Policy Excerpt
 
-Pinned external fixtures are implemented behind an explicit flag because they
-clone large third-party repositories. They are deterministic but too expensive
-for every local refresh.
-
-Run them with:
-
-```bash
-cargo run --release --quiet -- performance-report \
-  --include-external-fixtures \
-  --output target/performance/external-fixtures.json \
-  --history target/performance/external-fixtures.jsonl \
-  --website-dir target/performance/website-data \
-  --iterations 3
-```
-
-Set `ASSURA_PERF_EXTERNAL_FIXTURE_CACHE=/path/to/cache` to share the Git cache
-across runs. Without it, Assura uses `target/performance/external-fixture-cache`.
-
-### Workspace Monorepo Policy
-
-The default report includes a generated detailed LS-Lint policy that constrains
+The generated support suite includes a detailed LS-Lint policy that constrains
 the shape of a TypeScript/Next-style monorepo:
 
 - root directory whitelist
@@ -188,41 +354,12 @@ ignore:
   - .turbo
 ```
 
-This case is measured by default as `monorepo_policy`.
+This case is tracked as `monorepo_policy`.
 
-### Pinned Next.js Checkout
+## LS-Lint Features Covered By Parity Fixtures
 
-Candidate:
-
-| Field | Value |
-| --- | --- |
-| Repository | `vercel/next.js` |
-| Pinned ref | `v15.0.0` |
-| Resolved commit | `ea8bc0ec2bbae18dd6861db15d66b92c36feeeb8` |
-| Purpose | large frontend/monorepo tree users recognize |
-
-Fixture: `pinned_nextjs`. This case records the dependency/cache policy,
-ignored generated paths, checked file count, ignored file count, directory
-count, exact LS-Lint config, and equivalent Assura config in opt-in report rows.
-
-### Pinned mdBook Checkout
-
-Candidate:
-
-| Field | Value |
-| --- | --- |
-| Repository | `rust-lang/mdBook` |
-| Pinned ref | `v0.4.48` |
-| Resolved commit | `b7a27d2759e80d804a33a4bc9c31b2b6863a5cb2` |
-| Purpose | Rust docs/library structure with a different ecosystem shape |
-
-Fixture: `pinned_mdbook`. This case uses the same opt-in materialization path
-as `pinned_nextjs`.
-
-## LS-Lint Features To Cover
-
-The upstream LS-Lint docs include several features that should be represented by
-future test cases:
+The upstream LS-Lint docs include several features that are represented by
+parity tests and should remain part of benchmark fixture coverage:
 
 - wildcard extensions and subextensions
 - multiple rules with the `|` operator

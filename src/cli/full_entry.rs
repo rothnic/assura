@@ -6,7 +6,7 @@ use tracing::{error, info};
 
 use super::{
     check_command, info_command, init_command, migrate_command, performance_report_command,
-    status_command, watch_command, Cli, Commands, ExitCode, HookCommands,
+    status_command, watch_command, CheckCommandOptions, Cli, Commands, ExitCode, HookCommands,
     PerformanceReportCommandOptions,
 };
 
@@ -61,9 +61,22 @@ async fn run_full_cli(cli: Cli) -> ExitCode {
             format,
             output,
             fail_fast,
-            no_parallel,
+            warn,
+            no_parallel: _,
+            ls_lint_target_semantics,
             watch: _,
-        } => check_command(path, config_path, format, output, fail_fast, no_parallel).await,
+        } => {
+            check_command(CheckCommandOptions {
+                path,
+                config: config_path,
+                format,
+                output,
+                fail_fast,
+                warn,
+                ls_lint_target_semantics,
+            })
+            .await
+        }
         Commands::Status { path, format } => status_command(path, config_path, format).await,
         Commands::Init {
             path,

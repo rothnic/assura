@@ -1,6 +1,8 @@
 //! Regression tests for performance-report fixture enumeration and metadata.
 
-use super::fixtures::{materialize_fixture, scenarios, FixtureKind};
+use super::external_fixture_catalog::external_fixture_specs;
+use super::fixtures::{materialize_fixture, scenarios};
+use std::collections::HashSet;
 use std::fs;
 
 #[test]
@@ -11,7 +13,7 @@ fn default_scenarios_include_rich_monorepo_policy_without_external_repos() {
         .any(|scenario| scenario.id == "monorepo_policy"));
     assert!(!scenarios.iter().any(|scenario| matches!(
         scenario.kind,
-        FixtureKind::PinnedNextJs | FixtureKind::PinnedMdBook
+        kind if kind.is_external_pinned()
     )));
 
     let fixture = materialize_fixture(
@@ -45,23 +47,43 @@ fn default_scenarios_include_rich_monorepo_policy_without_external_repos() {
 #[test]
 fn external_scenarios_are_opt_in_and_pinned() {
     let scenarios = scenarios(true);
-    let next = scenarios
+    let external = scenarios
         .iter()
-        .find(|scenario| scenario.id == "pinned_nextjs")
-        .expect("Next.js fixture should be opt-in");
-    let mdbook = scenarios
+        .filter(|scenario| scenario.kind.is_external_pinned())
+        .collect::<Vec<_>>();
+    let specs = external_fixture_specs();
+    let spec_ids = specs
         .iter()
-        .find(|scenario| scenario.id == "pinned_mdbook")
-        .expect("mdBook fixture should be opt-in");
+        .map(|spec| spec.fixture_id)
+        .collect::<HashSet<_>>();
+    let spec_revisions = specs
+        .iter()
+        .map(|spec| (spec.fixture_id, spec.revision))
+        .collect::<std::collections::HashMap<_, _>>();
+    let config_bodies = specs
+        .iter()
+        .map(|spec| spec.ls_lint_config)
+        .collect::<HashSet<_>>();
 
+    assert_eq!(external.len(), 10);
+    assert_eq!(specs.len(), 10);
     assert_eq!(
-        next.source_revision,
-        "ea8bc0ec2bbae18dd6861db15d66b92c36feeeb8"
+        config_bodies.len(),
+        10,
+        "each real repo needs a unique policy"
     );
-    assert_eq!(
-        mdbook.source_revision,
-        "b7a27d2759e80d804a33a4bc9c31b2b6863a5cb2"
-    );
-    assert!(matches!(next.kind, FixtureKind::PinnedNextJs));
-    assert!(matches!(mdbook.kind, FixtureKind::PinnedMdBook));
+
+    for scenario in external {
+        assert!(
+            spec_ids.contains(scenario.id),
+            "missing external spec for {}",
+            scenario.id
+        );
+        assert_eq!(
+            Some(&scenario.source_revision),
+            spec_revisions.get(scenario.id),
+            "scenario revision must match external spec for {}",
+            scenario.id
+        );
+    }
 }

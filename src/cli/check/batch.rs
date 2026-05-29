@@ -1,7 +1,8 @@
 //! Batch structure-check support for the lightweight check CLI.
 
 use super::{
-    discover_project, CheckError, StructureCheckReport, StructureCheckTimings, StructureChecker,
+    discover_project, CheckError, CheckTargetMode, StructureCheckReport, StructureCheckTimings,
+    StructureChecker,
 };
 use crate::config::loader::ConfigLoader;
 use std::path::PathBuf;
@@ -20,7 +21,12 @@ pub fn run_structure_checks(
         let config = ConfigLoader::load(&discovered_config_path)?;
         let mut checker = StructureChecker::new(project_root.clone(), config, fail_fast);
         let mut timings = StructureCheckTimings::default();
-        reports.push(checker.check(checked_path, discovered_config_path.clone(), &mut timings)?);
+        reports.push(checker.check(
+            checked_path,
+            discovered_config_path.clone(),
+            CheckTargetMode::Recursive,
+            &mut timings,
+        )?);
 
         let mut index = 0;
         while index < prepared.len() {
@@ -30,6 +36,7 @@ pub fn run_structure_checks(
                 reports.push(checker.check(
                     checked_path,
                     discovered_config_path.clone(),
+                    CheckTargetMode::Recursive,
                     &mut timings,
                 )?);
             } else {

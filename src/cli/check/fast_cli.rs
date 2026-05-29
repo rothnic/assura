@@ -1,6 +1,9 @@
 //! Lightweight `assura check` entrypoint optimized for validation latency.
 
-use super::{run_structure_check, run_structure_check_cached, run_structure_checks};
+use super::{
+    run_structure_check_cached, run_structure_check_with_target_mode, run_structure_checks,
+    CheckTargetMode,
+};
 use super::{CheckError, StructureCheckReport};
 use serde::Serialize;
 use std::ffi::{OsStr, OsString};
@@ -16,6 +19,8 @@ struct Options {
     output: Option<PathBuf>,
     cache_dir: Option<PathBuf>,
     fail_fast: bool,
+    warn: bool,
+    ls_lint_target_semantics: bool,
     quiet: bool,
 }
 
@@ -136,7 +141,9 @@ where
         .opt_value_from_os_str("--cache-dir", path_from_os_str)
         .map_err(|error| error.to_string())?;
     let fail_fast = args.contains("--fail-fast");
+    let warn = args.contains("--warn");
     let _no_parallel = args.contains("--no-parallel");
+    let ls_lint_target_semantics = args.contains("--ls-lint-target-semantics");
     let quiet = args.contains(["-q", "--quiet"]);
     let remaining = args.finish();
     let mut paths = Vec::with_capacity(remaining.len());
@@ -152,6 +159,8 @@ where
         output,
         cache_dir,
         fail_fast,
+        warn,
+        ls_lint_target_semantics,
         quiet,
     }))
 }
@@ -182,7 +191,17 @@ fn reject_unknown_option(value: &OsString) -> Result<(), String> {
 fn run(options: Options) -> Result<bool, CheckError> {
     if options.cache_dir.is_none() && options.paths.len() <= 1 {
         let path = options.paths.first().cloned();
-        let report = run_structure_check(path, options.config, options.fail_fast)?;
+        let target_mode = if options.ls_lint_target_semantics {
+            CheckTargetMode::LsLint
+        } else {
+            CheckTargetMode::Recursive
+        };
+        let report = run_structure_check_with_target_mode(
+            path,
+            options.config,
+            options.fail_fast,
+            target_mode,
+        )?;
         let success = report.success;
         if !options.quiet || !success || options.output.is_some() {
             let rendered = format_report(&report, options.format);
@@ -192,7 +211,7 @@ fn run(options: Options) -> Result<bool, CheckError> {
                 println!("{rendered}");
             }
         }
-        return Ok(success);
+        return Ok(success || options.warn);
     }
 
     let paths = if options.paths.is_empty() {
@@ -200,6 +219,13 @@ fn run(options: Options) -> Result<bool, CheckError> {
     } else {
         options.paths.into_iter().map(Some).collect()
     };
+    if options.ls_lint_target_semantics {
+        return Err(CheckError::Config(
+            crate::cli::config::ConfigError::Invalid(
+                "--ls-lint-target-semantics only supports a single explicit path".to_string(),
+            ),
+        ));
+    }
     let reports = if let Some(cache_dir) = options.cache_dir {
         let mut reports = Vec::with_capacity(paths.len());
         for path in paths {
@@ -225,7 +251,7 @@ fn run(options: Options) -> Result<bool, CheckError> {
             println!("{rendered}");
         }
     }
-    Ok(success)
+    Ok(success || options.warn)
 }
 
 fn format_reports(reports: &[StructureCheckReport], format: OutputFormat) -> String {
@@ -345,6 +371,9 @@ Options:
   -o, --output <PATH>    Write report to a file
       --cache-dir <PATH> Reuse hot check results from this cache directory
       --fail-fast        Stop after the first violation
+      --warn             Report violations but exit successfully
+      --ls-lint-target-semantics
+                          Validate only the explicit target path, matching LS-Lint path arguments
   -q, --quiet            Suppress success output
   -h, --help             Show this help
   -V, --version          Show version

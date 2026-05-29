@@ -1,6 +1,8 @@
 //! Opt-in pinned external Git fixtures for performance reports.
 
-use super::fixture_io::{write_configs, write_file};
+use super::external_fixture_catalog::external_fixture_spec;
+use super::external_fixture_catalog::ExternalFixtureSpec;
+use super::fixture_io::{write_file, write_lslint_compatible_configs};
 use super::fixtures::FixtureKind;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -9,7 +11,15 @@ use std::process::Command;
 pub(super) fn materialize_external_fixture(kind: FixtureKind, root: &Path) -> Result<(), String> {
     let spec = external_fixture_spec(kind).ok_or("fixture kind is not external")?;
     let cache_root = external_fixture_cache_root()?;
-    fs::create_dir_all(&cache_root)
+    materialize_external_fixture_spec(spec, root, &cache_root)
+}
+
+fn materialize_external_fixture_spec(
+    spec: ExternalFixtureSpec,
+    root: &Path,
+    cache_root: &Path,
+) -> Result<(), String> {
+    fs::create_dir_all(cache_root)
         .map_err(|error| format!("create cache {}: {error}", cache_root.display()))?;
     let cache_dir = cache_root.join(cache_key(spec.repository, spec.revision));
 
@@ -25,7 +35,12 @@ pub(super) fn materialize_external_fixture(kind: FixtureKind, root: &Path) -> Re
             ],
             None,
         )?;
-    } else {
+    } else if git_output(
+        ["rev-parse", &format!("{}^{{commit}}", spec.revision)],
+        Some(&cache_dir),
+    )
+    .is_err()
+    {
         run_git(["fetch", "--tags", "--quiet", "origin"], Some(&cache_dir))?;
     }
 
@@ -35,36 +50,11 @@ pub(super) fn materialize_external_fixture(kind: FixtureKind, root: &Path) -> Re
     )?;
     run_git(["checkout", "--quiet", &resolved], Some(&cache_dir))?;
     copy_without_git(&cache_dir, root)?;
-    write_configs(root, spec.assura_config, spec.ls_lint_config)?;
+    write_lslint_compatible_configs(root, spec.ls_lint_config)?;
     write_file(
         root.join(".assura/source-revision.txt"),
         &format!("{resolved}\n"),
     )
-}
-
-struct ExternalFixtureSpec {
-    repository: &'static str,
-    revision: &'static str,
-    assura_config: &'static str,
-    ls_lint_config: &'static str,
-}
-
-fn external_fixture_spec(kind: FixtureKind) -> Option<ExternalFixtureSpec> {
-    match kind {
-        FixtureKind::PinnedNextJs => Some(ExternalFixtureSpec {
-            repository: "https://github.com/vercel/next.js",
-            revision: "v15.0.0",
-            assura_config: EXTERNAL_FRONTEND_ASSURA_CONFIG,
-            ls_lint_config: EXTERNAL_FRONTEND_LS_LINT_CONFIG,
-        }),
-        FixtureKind::PinnedMdBook => Some(ExternalFixtureSpec {
-            repository: "https://github.com/rust-lang/mdBook",
-            revision: "v0.4.48",
-            assura_config: EXTERNAL_RUST_ASSURA_CONFIG,
-            ls_lint_config: EXTERNAL_RUST_LS_LINT_CONFIG,
-        }),
-        _ => None,
-    }
 }
 
 fn external_fixture_cache_root() -> Result<PathBuf, String> {
@@ -222,97 +212,125 @@ fn copy_symlink(source: &Path, destination: &Path) -> Result<(), String> {
     Ok(())
 }
 
-const EXTERNAL_FRONTEND_LS_LINT_CONFIG: &str = r#"
-ignore:
-  - .assura/**
-  - .git/**
-  - .gitattributes
-  - .gitignore
-  - '**/.gitignore'
-  - node_modules/**
-  - packages/*/node_modules/**
-  - examples/*/node_modules/**
-  - test/**/node_modules/**
-  - .next/**
-  - packages/*/.next/**
-  - examples/*/.next/**
-  - dist/**
-  - packages/*/dist/**
-  - coverage/**
-  - .turbo/**
-  - .vercel/**
-ls:
-  .dir: regex:.*
-  .*: regex:.*
-"#;
-
-const EXTERNAL_FRONTEND_ASSURA_CONFIG: &str = r#"
-structure:
-  ./:
-    files:
-      naming_patterns:
-        "*.*": regex:.*
-    directories:
-      naming: regex:.*
-exclude:
-  - ".assura/**"
-  - ".git/**"
-  - ".gitattributes"
-  - ".gitignore"
-  - "**/.gitignore"
-  - "node_modules/**"
-  - "packages/*/node_modules/**"
-  - "examples/*/node_modules/**"
-  - "test/**/node_modules/**"
-  - ".next/**"
-  - "packages/*/.next/**"
-  - "examples/*/.next/**"
-  - "dist/**"
-  - "packages/*/dist/**"
-  - "coverage/**"
-  - ".turbo/**"
-  - ".vercel/**"
-"#;
-
-const EXTERNAL_RUST_LS_LINT_CONFIG: &str = r#"
-ignore:
-  - .assura/**
-  - .git/**
-  - .gitattributes
-  - .gitignore
-  - '**/.gitignore'
-  - target/**
-ls:
-  .dir: regex:^[A-Za-z0-9._-]+$
-  .*: regex:^[A-Za-z0-9._-]+$
-  .rs: regex:^[A-Za-z0-9._-]+$
-  .md: regex:^[A-Za-z0-9._-]+$
-  .toml: regex:^[A-Za-z0-9._-]+$
-"#;
-
-const EXTERNAL_RUST_ASSURA_CONFIG: &str = r#"
-structure:
-  ./:
-    files:
-      naming_patterns:
-        "*.*": regex:^[A-Za-z0-9._-]+$
-        "*.rs": regex:^[A-Za-z0-9._-]+$
-        "*.md": regex:^[A-Za-z0-9._-]+$
-        "*.toml": regex:^[A-Za-z0-9._-]+$
-    directories:
-      naming: regex:^[A-Za-z0-9._-]+$
-exclude:
-  - ".assura/**"
-  - ".git/**"
-  - ".gitattributes"
-  - ".gitignore"
-  - "**/.gitignore"
-  - "target/**"
-"#;
-
 #[cfg(test)]
 mod tests {
-    use super::copy_symlink;
+    use super::{copy_symlink, materialize_external_fixture_spec};
+    use crate::cli::performance_report::external_fixture_catalog::ExternalFixtureSpec;
+    use std::fs;
+    use std::process::Command;
+    use tempfile::TempDir;
+
+    #[test]
+    fn materialize_external_fixture_uses_pinned_revision_and_reuses_cache() {
+        let upstream = TempDir::new().unwrap();
+        run_git(["init", "--quiet", upstream.path().to_str().unwrap()], None);
+        fs::write(upstream.path().join("README.md"), "# Fixture\n").unwrap();
+        #[cfg(unix)]
+        std::os::unix::fs::symlink("README.md", upstream.path().join("README-link.md")).unwrap();
+        run_git(["-C", upstream.path().to_str().unwrap(), "add", "."], None);
+        run_git(
+            [
+                "-C",
+                upstream.path().to_str().unwrap(),
+                "-c",
+                "user.email=test@example.com",
+                "-c",
+                "user.name=Test",
+                "commit",
+                "--quiet",
+                "-m",
+                "initial",
+            ],
+            None,
+        );
+        let revision = git_output(["-C", upstream.path().to_str().unwrap(), "rev-parse", "HEAD"]);
+        fs::write(upstream.path().join("README.md"), "# Changed\n").unwrap();
+
+        let repository: &'static str = Box::leak(
+            upstream
+                .path()
+                .to_string_lossy()
+                .into_owned()
+                .into_boxed_str(),
+        );
+        let revision: &'static str = Box::leak(revision.into_boxed_str());
+        let spec = ExternalFixtureSpec {
+            fixture_id: "local_external",
+            repository,
+            revision,
+            ls_lint_config: r#"
+ignore:
+  - .assura/**
+  - .git/**
+ls:
+  .md: regex:^README$
+"#,
+        };
+        let cache = TempDir::new().unwrap();
+        let first_destination = TempDir::new().unwrap();
+
+        materialize_external_fixture_spec(spec, first_destination.path(), cache.path()).unwrap();
+
+        assert_eq!(
+            fs::read_to_string(first_destination.path().join("README.md")).unwrap(),
+            "# Fixture\n"
+        );
+        assert!(first_destination.path().join(".ls-lint.yml").exists());
+        assert!(first_destination.path().join(".assura/config.yml").exists());
+        assert_eq!(
+            fs::read_to_string(first_destination.path().join(".assura/source-revision.txt"))
+                .unwrap()
+                .trim(),
+            spec.revision
+        );
+        assert!(!first_destination.path().join(".git").exists());
+        #[cfg(unix)]
+        {
+            let link_metadata =
+                fs::symlink_metadata(first_destination.path().join("README-link.md")).unwrap();
+            assert!(link_metadata.file_type().is_symlink());
+            assert_eq!(
+                fs::read_link(first_destination.path().join("README-link.md")).unwrap(),
+                std::path::PathBuf::from("README.md")
+            );
+        }
+
+        fs::remove_dir_all(upstream.path()).unwrap();
+        let second_destination = TempDir::new().unwrap();
+        materialize_external_fixture_spec(spec, second_destination.path(), cache.path()).unwrap();
+
+        assert_eq!(
+            fs::read_to_string(second_destination.path().join("README.md")).unwrap(),
+            "# Fixture\n"
+        );
+        assert!(fs::read_dir(cache.path()).unwrap().next().is_some());
+    }
+
+    fn run_git<const N: usize>(args: [&str; N], current_dir: Option<&std::path::Path>) {
+        let mut command = Command::new("git");
+        command.args(args);
+        if let Some(current_dir) = current_dir {
+            command.current_dir(current_dir);
+        }
+        let output = command.output().unwrap();
+        assert!(
+            output.status.success(),
+            "git failed: stdout={} stderr={}",
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr)
+        );
+    }
+
+    fn git_output<const N: usize>(args: [&str; N]) -> String {
+        let output = Command::new("git").args(args).output().unwrap();
+        assert!(
+            output.status.success(),
+            "git failed: stdout={} stderr={}",
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr)
+        );
+        String::from_utf8_lossy(&output.stdout).trim().to_string()
+    }
 
     #[cfg(unix)]
     #[test]
