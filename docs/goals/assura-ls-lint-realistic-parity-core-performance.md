@@ -118,8 +118,8 @@ Read these files before implementation work starts:
   as an Assura compatibility extension.
 - Existing parity coverage is still mostly generated in test code rather than
   organized as realistic reusable repository fixtures.
-- The current compatibility layer documents unsupported directory pattern
-  scopes such as `packages/*`, `**`, and `{src,tests}` with clear errors.
+- The compatibility layer now supports directory pattern scopes such as
+  `packages/*`, `**`, and `{src,tests}` with regression coverage.
 - Existing performance evidence compares current-product `assura check` to
   `@ls-lint/ls-lint@2.3.0` in `benches/ls_lint_comparison.rs`.
 - The May 11 audit found that traversal is visible, but rule-heavy glob
@@ -229,10 +229,8 @@ has realistic coverage:
   existence or required-directory rule requires it.
 - Exact filename `exists` remains documented and tested as an Assura
   compatibility extension, not native LS-Lint parity.
-- Unsupported directory pattern scopes such as `packages/*`, `**`, and
-  `{src,tests}` either become supported with tests or continue to return clear
-  tested errors. Do not silently treat unsupported scopes as literal required
-  directories.
+- Directory pattern scopes such as `packages/*`, `**`, and `{src,tests}` are
+  supported with tests. Do not regress them into literal required directories.
 
 ### 3. Production `jwalk` Migration
 
@@ -456,8 +454,8 @@ The consolidated doc must:
   copied into website public data for the performance reference page.
 - Incremental/cache-aware checking is documented in
   `docs/analysis/2026-05-15-incremental-cache-aware-checking-strategy.md`.
-- Directory pattern scopes such as `packages/*`, `**`, and `{src,tests}` remain
-  unsupported LS-Lint parity and continue to return tested clear errors.
+- Directory pattern scopes such as `packages/*`, `**`, and `{src,tests}` are
+  implemented with parity regression coverage.
 - Pattern matching and direct `exists` costs were profiled; naming-pattern
   specificity now avoids per-file allocation/sort overhead, and further
   extension/suffix indexing remains a documented future optimization.
@@ -472,8 +470,8 @@ The consolidated doc must:
 - Do not add a new active workflow/spec system outside Trellis.
 - Do not preserve pre-1.0 config compatibility if it blocks a cleaner current
   notation, but document migration impact clearly.
-- Do not make unsupported LS-Lint behaviors appear to work through lossy or
-  misleading conversion.
+- Do not make newly discovered LS-Lint incompatibilities appear to work through
+  lossy or misleading conversion; fix them or record the blocking evidence.
 
 ## Validation Commands
 

@@ -118,6 +118,8 @@ fn synthetic_and_diagnostic_families_are_not_headline_rows() {
     assert_eq!(result.fixture_cohort, "synthetic-stress");
     assert_eq!(result.evidence_role, "diagnostic");
     assert!(result.diagnostic);
+    assert!(!is_diagnostic_row("assura-cli", "real-repo-headline"));
+    assert!(!is_diagnostic_row("ls-lint-cli", "real-repo-headline"));
     assert!(is_diagnostic_row(
         "assura-in-process",
         "realistic-equivalent"

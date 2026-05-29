@@ -3,6 +3,8 @@
 pub mod args;
 pub mod check;
 #[cfg(feature = "full-cli")]
+mod command_options;
+#[cfg(feature = "full-cli")]
 pub mod commands;
 pub mod config;
 #[cfg(feature = "full-cli")]
@@ -31,6 +33,8 @@ pub use check::{
     CheckError, CompiledStructureConfigArtifact, StructureCheckReport, StructureCheckTimings,
     StructureViolation,
 };
+#[cfg(feature = "full-cli")]
+pub use command_options::CheckCommandOptions;
 #[cfg(feature = "full-cli")]
 pub use commands::{
     check_command, info_command, init_command, migrate_command, status_command, watch_command,

@@ -95,12 +95,14 @@ fn realistic_fixture_manifest_is_pinned_and_complete() {
     assert!(!extension.native_lslint_parity);
     assert_eq!(extension.assura_extensions, ["exact_filename_exists"]);
 
-    assert!(
+    assert_eq!(
         manifest
             .fixtures
             .iter()
-            .any(|entry| entry.source.kind == "external_git"),
-        "manifest must include at least one pinned external_git source"
+            .filter(|entry| entry.source.kind == "external_git")
+            .count(),
+        10,
+        "manifest must include the 10 pinned real-repo sources"
     );
 
     let monorepo_policy = manifest
@@ -119,12 +121,52 @@ fn realistic_fixture_manifest_is_pinned_and_complete() {
         (
             "pinned_nextjs",
             "https://github.com/vercel/next.js",
-            "ea8bc0ec2bbae18dd6861db15d66b92c36feeeb8",
+            "51bfe3c1863b191f4b039bc230e8ed5c57b0baf3",
         ),
         (
             "pinned_mdbook",
             "https://github.com/rust-lang/mdBook",
             "b7a27d2759e80d804a33a4bc9c31b2b6863a5cb2",
+        ),
+        (
+            "pinned_vite",
+            "https://github.com/vitejs/vite",
+            "cf50e548d4ae7f6ed9ade507d70acbd39b4e0b93",
+        ),
+        (
+            "pinned_tailwindcss",
+            "https://github.com/tailwindlabs/tailwindcss",
+            "7361468f77500105b0559e879e121f34306e8da2",
+        ),
+        (
+            "pinned_prettier",
+            "https://github.com/prettier/prettier",
+            "c4ab460357478d2b847c60a1efb40098b1181931",
+        ),
+        (
+            "pinned_pnpm",
+            "https://github.com/pnpm/pnpm",
+            "dd6b0b62d80340655ac1cf4c4365fcfffe1e3f2c",
+        ),
+        (
+            "pinned_rustlings",
+            "https://github.com/rust-lang/rustlings",
+            "28d2bb04326d7036514245d73f10fb72b9ed108c",
+        ),
+        (
+            "pinned_clap",
+            "https://github.com/clap-rs/clap",
+            "a751c5fe65cd33cb09e85ff3039b4fd0182cdb6e",
+        ),
+        (
+            "pinned_ripgrep",
+            "https://github.com/BurntSushi/ripgrep",
+            "4649aa9700619f94cf9c66876e9549d83420e16c",
+        ),
+        (
+            "pinned_tokio",
+            "https://github.com/tokio-rs/tokio",
+            "14c17fc09656a30230177b600bacceb9db33e942",
         ),
     ] {
         let entry = manifest
@@ -504,29 +546,6 @@ ls:
     assert_eq!(report["success"], false, "report was:\n{report:#}");
     assert!(rules.contains(&"exists_count".to_string()));
     assert!(!rules.contains(&"required_directory".to_string()));
-}
-
-#[test]
-fn unsupported_lslint_directory_pattern_scopes_return_clear_errors() {
-    for scope in ["packages/*", "**", "{src,tests}"] {
-        let ls_lint_yaml = format!(
-            r#"
-ls:
-  "{scope}":
-    .ts: kebab-case
-"#
-        );
-
-        let error = convert_ls_lint_to_config(&ls_lint_yaml).unwrap_err();
-        assert!(
-            error.contains("Unsupported LS-Lint directory scope"),
-            "unexpected error for {scope}: {error}"
-        );
-        assert!(
-            error.contains(scope),
-            "error should name the unsupported scope {scope}: {error}"
-        );
-    }
 }
 
 #[test]

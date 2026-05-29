@@ -25,6 +25,9 @@ fn validate_directory_node(node: &DirectoryNode, context: &str) -> Result<(), St
     if let Some(directories) = &node.directories {
         validate_directory_bundle(directories, &format!("{context}.directories"))?;
     }
+    if let Some(directory) = &node.self_directory {
+        validate_directory_bundle(directory, &format!("{context}.self_directory"))?;
+    }
     if let Some(markdown) = &node.markdown {
         validate_markdown_bundle(markdown, &format!("{context}.markdown"))?;
     }
@@ -115,10 +118,15 @@ fn validate_naming_convention_text(conv: &str) -> Result<(), String> {
 
     let valid_conventions = [
         "snake_case",
+        "snakecase",
         "camelCase",
+        "camelcase",
         "PascalCase",
+        "pascalcase",
         "kebab-case",
+        "kebabcase",
         "SCREAMING_SNAKE_CASE",
+        "screamingsnakecase",
         "dot.case",
         "flatcase",
         "FLATCASE",

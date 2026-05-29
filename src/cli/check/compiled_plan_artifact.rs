@@ -20,7 +20,6 @@ use std::sync::Arc;
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub(super) struct PortableCompiledPlan {
     configured_dirs: Vec<String>,
-    required_dirs: Vec<String>,
     exclusion_patterns: Vec<String>,
     naming_regex_patterns: Vec<String>,
     glob_pattern_sources: Vec<String>,
@@ -40,6 +39,7 @@ struct PortableRuleScope {
 struct PortableEffectiveRules {
     files: Option<PortableFileBundle>,
     directories: Option<PortableDirectoryBundle>,
+    self_directory: Option<PortableDirectoryBundle>,
     markdown: Option<PortableMarkdownBundle>,
 }
 
@@ -55,6 +55,7 @@ struct PortableFastRules {
     effective: PortableEffectiveRules,
     file_naming: Option<PortableFastFileNaming>,
     directory_naming: Option<String>,
+    self_directory_naming: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -67,14 +68,12 @@ struct PortableFastFileNaming {
 impl PortableCompiledPlan {
     pub(super) fn from_config(config: &Config) -> Self {
         let mut configured_dirs = Vec::new();
-        let mut required_dirs = Vec::new();
         let mut naming_regexes = HashMap::new();
         let mut glob_patterns = HashMap::new();
         let mut has_direct_count_constraints = false;
         for (path, node) in &config.structure {
             let base = super::normalize_config_dir(path);
             collect_configured_dirs(base.clone(), node, &mut configured_dirs);
-            collect_required_dirs(base, node, &mut required_dirs);
             collect_naming_regexes(node, &mut naming_regexes);
             patterns::collect_glob_patterns(node, &mut glob_patterns);
             has_direct_count_constraints |= node_has_direct_count_constraints(node);
@@ -87,11 +86,6 @@ impl PortableCompiledPlan {
             .map(path_to_portable)
             .collect::<Vec<_>>();
         configured_dirs.sort();
-        let mut required_dirs = required_dirs
-            .into_iter()
-            .map(path_to_portable)
-            .collect::<Vec<_>>();
-        required_dirs.sort();
         let mut glob_pattern_sources = glob_patterns.into_keys().collect::<Vec<_>>();
         glob_pattern_sources.sort();
 
@@ -112,7 +106,6 @@ impl PortableCompiledPlan {
 
         Self {
             configured_dirs,
-            required_dirs,
             exclusion_patterns: config.exclude.clone(),
             naming_regex_patterns,
             glob_pattern_sources,
@@ -142,7 +135,6 @@ impl PortableCompiledPlan {
                 .into_iter()
                 .map(PathBuf::from)
                 .collect(),
-            required_dirs: self.required_dirs.into_iter().map(PathBuf::from).collect(),
             exclusion_patterns: self.exclusion_patterns,
             naming_regex_patterns: self.naming_regex_patterns,
             glob_pattern_sources: self.glob_pattern_sources,
@@ -161,23 +153,6 @@ impl PortableCompiledPlan {
             has_direct_count_constraints: self.has_direct_count_constraints,
         };
         CompiledStructureConfig::from_precompiled_plan(config, plan, fail_fast)
-    }
-}
-
-fn collect_required_dirs(
-    node_rel: PathBuf,
-    node: &DirectoryNode,
-    required_dirs: &mut Vec<PathBuf>,
-) {
-    if node.required && !node_rel.as_os_str().is_empty() {
-        required_dirs.push(node_rel.clone());
-    }
-
-    if let Some(children) = &node.children {
-        for (child_name, child) in children {
-            let child_rel = super::join_config_child(&node_rel, child_name);
-            collect_required_dirs(child_rel, child, required_dirs);
-        }
     }
 }
 
@@ -213,6 +188,10 @@ impl From<&EffectiveRules> for PortableEffectiveRules {
                 .directories
                 .as_ref()
                 .map(|directories| directories.as_ref().clone().into()),
+            self_directory: rules
+                .self_directory
+                .as_ref()
+                .map(|directory| directory.as_ref().clone().into()),
             markdown: rules
                 .markdown
                 .as_ref()
@@ -226,6 +205,10 @@ impl From<PortableEffectiveRules> for EffectiveRules {
         Self {
             files: rules.files.map(FileBundle::from).map(Arc::new),
             directories: rules.directories.map(DirectoryBundle::from).map(Arc::new),
+            self_directory: rules
+                .self_directory
+                .map(DirectoryBundle::from)
+                .map(Arc::new),
             markdown: rules.markdown.map(MarkdownBundle::from).map(Arc::new),
         }
     }
@@ -254,11 +237,12 @@ impl From<PortableFastScope> for FastScope {
 
 impl From<&FastRules> for PortableFastRules {
     fn from(rules: &FastRules) -> Self {
-        let (effective, file_naming, directory_naming) = rules.parts();
+        let (effective, file_naming, directory_naming, self_directory_naming) = rules.parts();
         Self {
             effective: effective.into(),
             file_naming: file_naming.map(Into::into),
             directory_naming: directory_naming.map(|naming| naming.label().to_string()),
+            self_directory_naming: self_directory_naming.map(|naming| naming.label().to_string()),
         }
     }
 }
@@ -269,6 +253,10 @@ impl From<PortableFastRules> for FastRules {
             rules.effective.into(),
             rules.file_naming.map(Into::into),
             rules.directory_naming.as_deref().map(compile_fast_naming),
+            rules
+                .self_directory_naming
+                .as_deref()
+                .map(compile_fast_naming),
         )
     }
 }

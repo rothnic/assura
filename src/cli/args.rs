@@ -36,8 +36,17 @@ pub enum Commands {
         #[arg(long)]
         fail_fast: bool,
 
+        #[arg(long, help = "Report violations but exit successfully")]
+        warn: bool,
+
         #[arg(long)]
         no_parallel: bool,
+
+        #[arg(
+            long,
+            help = "Match LS-Lint path-argument behavior by validating only the explicit target path"
+        )]
+        ls_lint_target_semantics: bool,
 
         #[arg(long)]
         watch: bool,
@@ -78,8 +87,8 @@ pub enum Commands {
 
     #[command(about = "Migrate an LS-Lint configuration to Assura")]
     Migrate {
-        #[arg(help = "LS-Lint configuration path (defaults to .ls-lint.yml)")]
-        input: Option<PathBuf>,
+        #[arg(help = "LS-Lint configuration path(s); defaults to .ls-lint.yml")]
+        input: Vec<PathBuf>,
 
         #[arg(short, long, help = "Output path for generated Assura config")]
         output: Option<PathBuf>,

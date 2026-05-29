@@ -1,11 +1,12 @@
 //! File, directory, and markdown validators for structure-first checks.
 
-use super::case::{validate_file_stem, validate_name};
+use super::case::{validate_file_stem_with_path, validate_name_with_path};
 use super::patterns::{
-    best_lslint_suffix_match, matches_any_compiled_pattern, matches_single_compiled_pattern,
+    best_lslint_suffix_match, is_lslint_extension_pattern, lslint_file_stem,
+    matches_any_compiled_pattern, matches_single_compiled_pattern,
 };
 use super::rules::{
-    display_rel, file_matches_any_extension, parse_size, severity_for_bundle,
+    count_satisfies, display_rel, file_matches_any_extension, parse_size, severity_for_bundle,
     severity_for_directory_bundle,
 };
 use super::{direct_contents::DirectFilePolicy, StructureCheckReport, StructureChecker};
@@ -23,12 +24,53 @@ impl StructureChecker {
         }
 
         let parent_rel = rel.parent().unwrap_or_else(|| Path::new(""));
-        let rules = self.resolve_rules(parent_rel);
         let name = path
             .file_name()
             .and_then(|name| name.to_str())
             .unwrap_or("");
+        let self_rules = self.resolve_rules(&rel);
+        if let Some(directory) = self_rules.self_directory.as_ref() {
+            if let Some(exists) = directory.exists.as_ref() {
+                for expected in exists.values() {
+                    if count_satisfies(1, expected) {
+                        continue;
+                    }
+                    self.push_violation(
+                        report,
+                        rel.clone(),
+                        "exists_count",
+                        format!(
+                            "Directory '{}' exists 1 times, expected {}",
+                            display_rel(&rel),
+                            expected
+                        ),
+                        severity_for_directory_bundle(directory),
+                    );
+                }
+            }
 
+            if let Some(naming) = directory.naming.as_deref() {
+                if !validate_name_with_path(
+                    name,
+                    &super::rules::rel_to_string(&rel),
+                    naming,
+                    &self.naming_regexes,
+                ) {
+                    self.push_violation(
+                        report,
+                        rel.clone(),
+                        "directory_naming",
+                        format!(
+                            "Directory '{}' does not match naming convention '{}'",
+                            name, naming
+                        ),
+                        severity_for_directory_bundle(directory),
+                    );
+                }
+            }
+        }
+
+        let rules = self.resolve_rules(parent_rel);
         if let Some(directories) = rules.directories.as_ref() {
             let configured_child = self.is_configured_dir(&rel);
             let allowed_by_name = directories
@@ -77,7 +119,12 @@ impl StructureChecker {
 
             if !configured_child && !allowed_by_name && !allowed_by_pattern {
                 if let Some(naming) = directories.naming.as_deref() {
-                    if !validate_name(name, naming, &self.naming_regexes) {
+                    if !validate_name_with_path(
+                        name,
+                        &super::rules::rel_to_string(&rel),
+                        naming,
+                        &self.naming_regexes,
+                    ) {
                         self.push_violation(
                             report,
                             rel,
@@ -105,7 +152,12 @@ impl StructureChecker {
             return;
         };
 
-        if !validate_name(name, naming, &self.naming_regexes) {
+        if !validate_name_with_path(
+            name,
+            &super::rules::rel_to_string(&rel),
+            naming,
+            &self.naming_regexes,
+        ) {
             self.push_violation(
                 report,
                 rel,
@@ -258,6 +310,7 @@ impl StructureChecker {
         if allowed_by_name {
             return;
         }
+        let parent_rel = rel.parent().unwrap_or_else(|| Path::new(""));
 
         if let Some(naming_patterns) = &files.naming_patterns {
             let best_match = best_lslint_suffix_match(naming_patterns, filename).or_else(|| {
@@ -272,12 +325,20 @@ impl StructureChecker {
                     })
             });
 
-            if let Some((_pattern, naming)) = best_match {
-                let stem = path
-                    .file_stem()
-                    .and_then(|stem| stem.to_str())
-                    .unwrap_or("");
-                if !validate_file_stem(stem, naming, &self.naming_regexes) {
+            if let Some((pattern, naming)) = best_match {
+                let stem = if is_lslint_extension_pattern(pattern) {
+                    lslint_file_stem(filename)
+                } else {
+                    path.file_stem()
+                        .and_then(|stem| stem.to_str())
+                        .unwrap_or("")
+                };
+                if !validate_file_stem_with_path(
+                    stem,
+                    &super::rules::rel_to_string(parent_rel),
+                    naming,
+                    &self.naming_regexes,
+                ) {
                     self.push_violation(
                         report,
                         rel.to_path_buf(),
@@ -298,7 +359,12 @@ impl StructureChecker {
                 .file_stem()
                 .and_then(|stem| stem.to_str())
                 .unwrap_or("");
-            if !validate_file_stem(stem, naming, &self.naming_regexes) {
+            if !validate_file_stem_with_path(
+                stem,
+                &super::rules::rel_to_string(parent_rel),
+                naming,
+                &self.naming_regexes,
+            ) {
                 self.push_violation(
                     report,
                     rel.to_path_buf(),

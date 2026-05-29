@@ -42,10 +42,10 @@ assura check --format json .
 
 ## Compatibility Notes
 
-The migration path targets LS-Lint 2.3 naming, `.dir`, ignore, OR syntax, and
-`exists` behavior where Assura has parity coverage. Exact filename `exists`
-rules are documented as an Assura compatibility extension.
+The migration path targets LS-Lint 2.3 naming, regex, `.dir`, ignore, OR
+syntax, wildcard/subextension rules, glob and brace directory scopes, and
+`exists` behavior. Exact filename `exists` rules are documented as an Assura
+compatibility extension.
 
-Advanced directory-scope syntax is intentionally not converted yet. Scopes such
-as `packages/*`, `**`, and `{src,tests}` fail with a clear migration error
-instead of being silently treated as literal directories.
+Multiple LS-Lint config files can be passed to `assura migrate` in the same
+order you would pass repeated LS-Lint `--config` flags.

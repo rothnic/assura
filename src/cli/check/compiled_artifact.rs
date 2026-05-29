@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-const COMPILED_CONFIG_SCHEMA_VERSION: u32 = 7;
+const COMPILED_CONFIG_SCHEMA_VERSION: u32 = 8;
 const ASSURA_VERSION_HASH: u64 = stable_hash(env!("CARGO_PKG_VERSION").as_bytes());
 
 /// Portable artifact containing a parsed Assura structure config.
@@ -230,6 +230,7 @@ struct PortableConfig {
 pub(super) struct PortableDirectoryNode {
     files: Option<PortableFileBundle>,
     directories: Option<PortableDirectoryBundle>,
+    self_directory: Option<PortableDirectoryBundle>,
     markdown: Option<PortableMarkdownBundle>,
     exists: Option<PortableExistsValidation>,
     children: Option<HashMap<String, PortableDirectoryNode>>,
@@ -324,6 +325,7 @@ impl From<DirectoryNode> for PortableDirectoryNode {
         Self {
             files: node.files.map(Into::into),
             directories: node.directories.map(Into::into),
+            self_directory: node.self_directory.map(Into::into),
             markdown: node.markdown.map(Into::into),
             exists: node.exists.map(Into::into),
             children: node.children.map(|children| {
@@ -343,6 +345,7 @@ impl From<PortableDirectoryNode> for DirectoryNode {
         Self {
             files: node.files.map(Into::into),
             directories: node.directories.map(Into::into),
+            self_directory: node.self_directory.map(Into::into),
             markdown: node.markdown.map(Into::into),
             exists: node.exists.map(Into::into),
             children: node.children.map(|children| {

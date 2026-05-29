@@ -3,30 +3,34 @@
 //! Provides command-line interface for validation and migration.
 
 use crate::cli::args::OutputFormat;
-use crate::cli::check::{run_structure_check, CheckError, StructureCheckReport};
+use crate::cli::check::{
+    run_structure_check_with_target_mode, CheckError, CheckTargetMode, StructureCheckReport,
+};
 use crate::cli::init_support::{resolve_project_root, starter_config};
-use crate::cli::{ConfigDiscovery, ExitCode};
+use crate::cli::{CheckCommandOptions, ConfigDiscovery, ExitCode};
 use crate::config::config::{Config, DirectoryNode};
 use crate::config::loader::ConfigLoader;
-use crate::config::ls_compat::convert_ls_lint_to_config;
+use crate::config::ls_compat::convert_ls_lint_documents_to_config;
 use crate::config::parser::ConfigParser;
 use crate::ls_compat::MigrationTool;
-use crate::validation::{ExecutionContext, ValidationEngine};
 use std::path::{Path, PathBuf};
 
 /// Run validation check
-pub async fn check_command(
-    path: Option<PathBuf>,
-    config: Option<PathBuf>,
-    format: OutputFormat,
-    output: Option<PathBuf>,
-    fail_fast: bool,
-    _no_parallel: bool,
-) -> ExitCode {
-    match run_structure_check(path, config, fail_fast) {
+pub async fn check_command(options: CheckCommandOptions) -> ExitCode {
+    let target_mode = if options.ls_lint_target_semantics {
+        CheckTargetMode::LsLint
+    } else {
+        CheckTargetMode::Recursive
+    };
+    match run_structure_check_with_target_mode(
+        options.path,
+        options.config,
+        options.fail_fast,
+        target_mode,
+    ) {
         Ok(report) => {
-            let rendered = format_structure_report(&report, format);
-            if let Some(output) = output {
+            let rendered = format_structure_report(&report, options.format);
+            if let Some(output) = options.output {
                 if let Err(error) = std::fs::write(&output, rendered) {
                     eprintln!("Error: failed to write report to {:?}: {}", output, error);
                     return ExitCode::RuntimeError;
@@ -35,7 +39,7 @@ pub async fn check_command(
                 println!("{}", rendered);
             }
 
-            if report.success {
+            if report.success || options.warn {
                 ExitCode::Success
             } else {
                 ExitCode::ValidationFailed
@@ -159,12 +163,25 @@ pub async fn watch_command(
         "Running one-shot validation for watch mode (debounce: {}ms, git events ignored: {}).",
         debounce, no_git
     );
-    check_command(path, config, OutputFormat::Text, None, false, false).await
+    check_command(CheckCommandOptions {
+        path,
+        config,
+        format: OutputFormat::Text,
+        output: None,
+        fail_fast: false,
+        warn: false,
+        ls_lint_target_semantics: false,
+    })
+    .await
 }
 
 /// Migrate an LS-Lint configuration to Assura structure config.
-pub async fn migrate_command(input: Option<PathBuf>, output: Option<PathBuf>) -> ExitCode {
-    let input = input.unwrap_or_else(|| PathBuf::from(".ls-lint.yml"));
+pub async fn migrate_command(input: Vec<PathBuf>, output: Option<PathBuf>) -> ExitCode {
+    let input = if input.is_empty() {
+        vec![PathBuf::from(".ls-lint.yml")]
+    } else {
+        input
+    };
     match Cli::migrate(&input, output.as_deref()) {
         Ok(()) => ExitCode::Success,
         Err(error) => {
@@ -221,43 +238,21 @@ pub async fn info_command(path: Option<PathBuf>, config: Option<PathBuf>) -> Exi
 pub struct Cli;
 
 impl Cli {
-    /// Run validation check
-    pub fn check(config_path: &Path, verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
-        println!("Loading configuration from {:?}...", config_path);
-
-        let config = ConfigParser::parse_file(config_path)?;
-
-        if verbose {
-            println!("Loaded {} rules", config.rules.len());
-            println!("Loaded {} contexts", config.contexts.len());
-        }
-
-        // Detect execution context
-        let exec_context = ExecutionContext::from_env();
-
-        if verbose {
-            println!("Execution context: {:?}", exec_context);
-        }
-
-        let _engine = ValidationEngine::new(config, exec_context);
-
-        // TODO: Walk directory tree and validate files
-        println!("Validation complete (files not yet scanned)");
-
-        Ok(())
-    }
-
     /// Migrate from LS-Lint to Assura
     pub fn migrate(
-        ls_lint_path: &Path,
+        ls_lint_paths: &[PathBuf],
         output_path: Option<&Path>,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        println!("Reading LS-Lint config from {:?}...", ls_lint_path);
+        println!("Reading LS-Lint config from {:?}...", ls_lint_paths);
 
-        let ls_content = std::fs::read_to_string(ls_lint_path)?;
+        let ls_contents = ls_lint_paths
+            .iter()
+            .map(std::fs::read_to_string)
+            .collect::<Result<Vec<_>, _>>()?;
+        let ls_content_refs = ls_contents.iter().map(String::as_str).collect::<Vec<_>>();
 
         // Generate migration report
-        let report = MigrationTool::generate_report(&ls_content)?;
+        let report = MigrationTool::generate_report(&ls_contents.join("\n"))?;
 
         println!("\\nMigration Report:");
         println!("  Extension rules: {}", report.extension_rules);
@@ -272,7 +267,7 @@ impl Cli {
             }
         }
 
-        let assura_config = convert_ls_lint_to_config(&ls_content)?;
+        let assura_config = convert_ls_lint_documents_to_config(&ls_content_refs)?;
         let assura_yaml = serde_yaml::to_string(&assura_config)?;
 
         // Write output
@@ -488,7 +483,7 @@ ls:
         )
         .unwrap();
 
-        let result = Cli::migrate(temp_file.path(), None);
+        let result = Cli::migrate(&[temp_file.path().to_path_buf()], None);
         assert!(result.is_ok());
     }
 }

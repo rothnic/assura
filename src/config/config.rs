@@ -65,6 +65,15 @@ pub struct DirectoryNode {
     #[cfg_attr(feature = "full-cli", validate(nested))]
     pub directories: Option<DirectoryBundle>,
 
+    /// Validation rules for the directory represented by this node.
+    ///
+    /// This is primarily used by the LS-Lint compatibility layer for `.dir`
+    /// rules, which apply to the indexed directory itself rather than to its
+    /// children.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[cfg_attr(feature = "full-cli", validate(nested))]
+    pub self_directory: Option<DirectoryBundle>,
+
     /// Markdown validation rules for this node
     #[serde(skip_serializing_if = "Option::is_none")]
     #[cfg_attr(feature = "full-cli", validate(nested))]
@@ -149,6 +158,7 @@ impl DirectoryNode {
         Self {
             files: None,
             directories: None,
+            self_directory: None,
             markdown: None,
             exists: None,
             children: None,
@@ -166,6 +176,12 @@ impl DirectoryNode {
     /// Set direct child directory validation bundle
     pub fn with_directories(mut self, directories: DirectoryBundle) -> Self {
         self.directories = Some(directories);
+        self
+    }
+
+    /// Set validation bundle for this directory itself.
+    pub fn with_self_directory(mut self, directory: DirectoryBundle) -> Self {
+        self.self_directory = Some(directory);
         self
     }
 

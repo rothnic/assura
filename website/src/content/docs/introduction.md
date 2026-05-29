@@ -11,8 +11,8 @@ repository matches the shape described in `.assura/config.yml`.
 
 - **Structure-First Config**: Describe allowed files, directories, naming
   rules, and existence checks in one config.
-- **LS-Lint Migration**: Convert supported LS-Lint 2.3 naming and exists rules
-  into Assura config.
+- **LS-Lint Migration**: Convert LS-Lint 2.3 naming, regex, exists, ignore,
+  wildcard extension, and directory-scope rules into Assura config.
 - **CI-Friendly Reports**: Use text locally and JSON or YAML for automation.
 - **Agent Nudge MVP**: Turn Assura JSON reports into advisory Codex/agent
   guidance.

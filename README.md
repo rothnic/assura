@@ -7,7 +7,7 @@ A structure-first repository validation CLI written in Rust.
 Assura v0.1 provides:
 
 - **Structure validation** - Check file names, directory names, required entries, forbidden entries, and direct-child counts
-- **LS-Lint migration** - Convert supported `.ls-lint.yml` files into `.assura/config.yml`
+- **LS-Lint migration** - Convert LS-Lint 2.3 `.ls-lint.yml` rule configs into `.assura/config.yml`
 - **Watch command** - A truthful one-shot wrapper over `assura check`
 - **CI reports** - Text, JSON, and YAML output for automation
 
@@ -33,7 +33,7 @@ assura check
 # Run the current watch wrapper
 assura watch
 
-# Migrate a supported LS-Lint config
+# Migrate an LS-Lint config
 assura migrate .ls-lint.yml --output .assura/config.yml
 ```
 
@@ -98,9 +98,10 @@ See [Validation Command Tiers](docs/validation.md) for when to use each mode.
 
 ## Roadmap
 
-Agent nudges, quality measurement, long-running watch mode, dependency graph
-validation, and plugin APIs are future work. They are not current v0.1
-onboarding features.
+The Codex agent nudge MVP is advisory and available through the integration
+package. Hook install/status/verify, quality measurement, long-running watch
+mode, dependency graph validation, and plugin APIs are future work. They are
+not current v0.1 onboarding features.
 
 ## License
 

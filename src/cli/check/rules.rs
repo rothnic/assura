@@ -1,5 +1,6 @@
 //! Shared rule helpers for structure-first CLI validation.
 
+use super::scope_patterns::{path_has_scope_magic, CompiledScopePattern};
 use crate::config::config::{
     split_naming_conventions, DirectoryBundle, DirectoryNode, FileBundle, MarkdownBundle,
 };
@@ -13,18 +14,22 @@ use std::sync::Arc;
 pub(super) struct EffectiveRules {
     pub(super) files: Option<Arc<FileBundle>>,
     pub(super) directories: Option<Arc<DirectoryBundle>>,
+    pub(super) self_directory: Option<Arc<DirectoryBundle>>,
     pub(super) markdown: Option<Arc<MarkdownBundle>>,
 }
 
 #[derive(Debug, Clone)]
 pub(super) struct CompiledExclusion {
     prefix: Option<PathBuf>,
+    scope_pattern: Option<CompiledScopePattern>,
     pattern: Option<Pattern>,
 }
 
 impl CompiledExclusion {
     pub(super) fn new(pattern: &str) -> Self {
         let prefix = pattern.strip_suffix("/**").map(PathBuf::from);
+        let scope_pattern = (prefix.is_none() && path_has_scope_magic(Path::new(pattern)))
+            .then(|| CompiledScopePattern::from_str(pattern));
         let compiled_pattern = if prefix.is_some() {
             None
         } else {
@@ -32,6 +37,7 @@ impl CompiledExclusion {
         };
         Self {
             prefix,
+            scope_pattern,
             pattern: compiled_pattern,
         }
     }
@@ -44,6 +50,14 @@ impl CompiledExclusion {
     }
 
     fn matches_pattern(&self, rel: &str) -> bool {
+        if self
+            .scope_pattern
+            .as_ref()
+            .is_some_and(|pattern| pattern.matches_str(rel))
+        {
+            return true;
+        }
+
         self.pattern
             .as_ref()
             .map(|pattern| pattern.matches(rel))
@@ -51,7 +65,7 @@ impl CompiledExclusion {
     }
 
     fn has_pattern(&self) -> bool {
-        self.pattern.is_some()
+        self.pattern.is_some() || self.scope_pattern.is_some()
     }
 }
 
@@ -87,6 +101,11 @@ pub(super) fn collect_naming_regexes(node: &DirectoryNode, regexes: &mut HashMap
             collect_naming_regex(naming, regexes);
         }
     }
+    if let Some(directory) = &node.self_directory {
+        if let Some(naming) = &directory.naming {
+            collect_naming_regex(naming, regexes);
+        }
+    }
 
     if let Some(children) = &node.children {
         for child in children.values() {
@@ -107,6 +126,10 @@ fn collect_naming_regex(convention: &str, regexes: &mut HashMap<String, Regex>) 
     let Some(pattern) = convention.strip_prefix("regex:") else {
         return;
     };
+    let pattern = pattern.strip_prefix('!').unwrap_or(pattern);
+    if pattern.contains("${") {
+        return;
+    }
 
     if regexes.contains_key(pattern) {
         return;
@@ -394,6 +417,16 @@ pub(super) fn strip_direct_content_policy(mut rules: EffectiveRules) -> Effectiv
         directories.forbidden_patterns = None;
         directories.allow_extra = None;
         directories.exists = None;
+    }
+
+    if let Some(directory) = rules.self_directory.as_mut() {
+        let directory = Arc::make_mut(directory);
+        directory.required = None;
+        directory.allowed_names = None;
+        directory.allowed_patterns = None;
+        directory.forbidden_patterns = None;
+        directory.allow_extra = None;
+        directory.exists = None;
     }
 
     rules

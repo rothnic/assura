@@ -99,6 +99,24 @@ fn ignored_paths(kind: FixtureKind) -> &'static [&'static str] {
         ],
         FixtureKind::RuleHeavyRepo => &[".assura", ".ls-lint.yml"],
         FixtureKind::IgnoredGeneratedHeavyRepo => &[".assura", "generated", "coverage"],
+        FixtureKind::MultipartExtensionRegression | FixtureKind::ManyConfiguredScopesRegression => {
+            &[".assura"]
+        }
+        FixtureKind::PinnedNextJs
+        | FixtureKind::PinnedMdBook
+        | FixtureKind::PinnedVite
+        | FixtureKind::PinnedTailwindCss
+        | FixtureKind::PinnedPrettier
+        | FixtureKind::PinnedPnpm
+        | FixtureKind::PinnedRustlings
+        | FixtureKind::PinnedClap
+        | FixtureKind::PinnedRipgrep
+        | FixtureKind::PinnedTokio => external_ignored_paths(kind),
+    }
+}
+
+fn external_ignored_paths(kind: FixtureKind) -> &'static [&'static str] {
+    match kind {
         FixtureKind::PinnedNextJs => &[
             ".assura",
             ".git",
@@ -117,6 +135,8 @@ fn ignored_paths(kind: FixtureKind) -> &'static [&'static str] {
             "coverage",
             ".turbo",
             ".vercel",
+            "test",
+            "turbopack",
         ],
         FixtureKind::PinnedMdBook => &[
             ".assura",
@@ -126,24 +146,58 @@ fn ignored_paths(kind: FixtureKind) -> &'static [&'static str] {
             "**/.gitignore",
             "target",
         ],
+        FixtureKind::PinnedVite => &[
+            ".assura",
+            ".git",
+            "node_modules",
+            "packages/*/node_modules",
+            "playground/**/node_modules",
+            "packages/*/dist",
+            "docs/.vitepress/cache",
+            "docs/.vitepress/dist",
+        ],
+        FixtureKind::PinnedTailwindCss => &[".assura", ".git", "node_modules", "dist", "coverage"],
+        FixtureKind::PinnedPrettier => &[
+            ".assura",
+            ".git",
+            "node_modules",
+            "dist",
+            "coverage",
+            "tests/integration/cli/ignore-emoji",
+            "tests/integration/cli/patterns-glob",
+        ],
+        FixtureKind::PinnedPnpm => &[
+            ".assura",
+            ".git",
+            "node_modules",
+            "packages/*/node_modules",
+            "dist",
+            "packages/*/dist",
+            "coverage",
+        ],
+        FixtureKind::PinnedRustlings
+        | FixtureKind::PinnedClap
+        | FixtureKind::PinnedRipgrep
+        | FixtureKind::PinnedTokio => &[".assura", ".git", "target", "crates/*/target"],
+        _ => &[".assura", ".git"],
     }
 }
 
 fn source_type(kind: FixtureKind) -> &'static str {
-    match kind {
-        FixtureKind::PinnedNextJs | FixtureKind::PinnedMdBook => "external-pinned-repo",
-        _ => "generated",
+    if kind.is_external_pinned() {
+        "external-pinned-repo"
+    } else {
+        "generated"
     }
 }
 
 fn source_revision(scenario: FixtureScenario, root: &Path) -> String {
-    match scenario.kind {
-        FixtureKind::PinnedNextJs | FixtureKind::PinnedMdBook => {
-            fs::read_to_string(root.join(".assura/source-revision.txt"))
-                .map(|value| value.trim().to_string())
-                .unwrap_or_else(|_| scenario.source_revision.to_string())
-        }
-        _ => scenario.source_revision.to_string(),
+    if scenario.kind.is_external_pinned() {
+        fs::read_to_string(root.join(".assura/source-revision.txt"))
+            .map(|value| value.trim().to_string())
+            .unwrap_or_else(|_| scenario.source_revision.to_string())
+    } else {
+        scenario.source_revision.to_string()
     }
 }
 
@@ -158,8 +212,18 @@ fn fixture_cohort(kind: FixtureKind) -> &'static str {
         | FixtureKind::MonorepoPolicy
         | FixtureKind::RuleHeavyRepo
         | FixtureKind::IgnoredGeneratedHeavyRepo
-        | FixtureKind::PinnedNextJs
-        | FixtureKind::PinnedMdBook => "realistic-equivalent",
+        | FixtureKind::MultipartExtensionRegression
+        | FixtureKind::ManyConfiguredScopesRegression => "realistic-equivalent",
+        FixtureKind::PinnedNextJs
+        | FixtureKind::PinnedMdBook
+        | FixtureKind::PinnedVite
+        | FixtureKind::PinnedTailwindCss
+        | FixtureKind::PinnedPrettier
+        | FixtureKind::PinnedPnpm
+        | FixtureKind::PinnedRustlings
+        | FixtureKind::PinnedClap
+        | FixtureKind::PinnedRipgrep
+        | FixtureKind::PinnedTokio => "real-repo-headline",
     }
 }
 
@@ -174,8 +238,18 @@ fn rule_count(kind: FixtureKind) -> usize {
         FixtureKind::MonorepoPackages => 10,
         FixtureKind::MonorepoPolicy => 38,
         FixtureKind::RuleHeavyRepo => 38,
-        FixtureKind::PinnedNextJs => 2,
-        FixtureKind::PinnedMdBook => 5,
+        FixtureKind::MultipartExtensionRegression => 1,
+        FixtureKind::ManyConfiguredScopesRegression => 801,
+        FixtureKind::PinnedNextJs => 22,
+        FixtureKind::PinnedMdBook => 14,
+        FixtureKind::PinnedVite => 22,
+        FixtureKind::PinnedTailwindCss => 12,
+        FixtureKind::PinnedPrettier => 19,
+        FixtureKind::PinnedPnpm => 14,
+        FixtureKind::PinnedRustlings => 11,
+        FixtureKind::PinnedClap => 13,
+        FixtureKind::PinnedRipgrep => 13,
+        FixtureKind::PinnedTokio => 12,
     }
 }
 
@@ -206,11 +280,41 @@ fn rule_surface_summary(kind: FixtureKind) -> &'static str {
         FixtureKind::IgnoredGeneratedHeavyRepo => {
             "repo-shaped TypeScript naming with generated and coverage pruning"
         }
+        FixtureKind::MultipartExtensionRegression => {
+            "long multipart extension naming regression fixture"
+        }
+        FixtureKind::ManyConfiguredScopesRegression => {
+            "large LS-Lint config with many explicit package scopes and root directory naming"
+        }
         FixtureKind::PinnedNextJs => {
-            "pinned Next.js checkout with broad native filename and directory naming policy"
+            "pinned Next.js checkout with package/example route naming, source-family rules, foreign-language bans, and generated-output pruning"
         }
         FixtureKind::PinnedMdBook => {
-            "pinned mdBook checkout with Rust, docs, TOML, and directory naming policy"
+            "pinned mdBook checkout with required Rust/book content, TOML/Markdown naming, and JS/TS source bans"
+        }
+        FixtureKind::PinnedVite => {
+            "pinned Vite checkout with package/playground source families, template languages, foreign-language bans, and docs/build-output pruning"
+        }
+        FixtureKind::PinnedTailwindCss => {
+            "pinned Tailwind CSS checkout with source/test language policy, HTML fixtures, foreign-language bans, and generated-output pruning"
+        }
+        FixtureKind::PinnedPrettier => {
+            "pinned Prettier checkout with source/test/website language policy, fixture ignores, and generated-output pruning"
+        }
+        FixtureKind::PinnedPnpm => {
+            "pinned pnpm checkout with package scopes, TypeScript declaration policy, frontend-source bans, and generated-output pruning"
+        }
+        FixtureKind::PinnedRustlings => {
+            "pinned Rustlings checkout with exercise/solution group naming, required Rust files, JS/TS bans, and target pruning"
+        }
+        FixtureKind::PinnedClap => {
+            "pinned clap checkout with explicit crate source scopes, examples/tests Rust policy, JS/TS bans, and target-output pruning"
+        }
+        FixtureKind::PinnedRipgrep => {
+            "pinned ripgrep checkout with crate source scopes, examples/tests Rust policy, JS/TS bans, and target pruning"
+        }
+        FixtureKind::PinnedTokio => {
+            "pinned Tokio checkout with explicit crate source scopes, examples/tests Rust policy, JS/TS bans, and target pruning"
         }
     }
 }
@@ -224,8 +328,19 @@ fn config_generation_method(kind: FixtureKind) -> &'static str {
         | FixtureKind::WebApp
         | FixtureKind::MonorepoPackages
         | FixtureKind::RuleHeavyRepo
-        | FixtureKind::IgnoredGeneratedHeavyRepo => "ls-lint-conversion",
+        | FixtureKind::IgnoredGeneratedHeavyRepo
+        | FixtureKind::MultipartExtensionRegression
+        | FixtureKind::ManyConfiguredScopesRegression => "ls-lint-conversion",
         FixtureKind::MonorepoPolicy => "hand-authored-equivalent-pair",
-        FixtureKind::PinnedNextJs | FixtureKind::PinnedMdBook => "hand-authored-external-policy",
+        FixtureKind::PinnedNextJs
+        | FixtureKind::PinnedMdBook
+        | FixtureKind::PinnedVite
+        | FixtureKind::PinnedTailwindCss
+        | FixtureKind::PinnedPrettier
+        | FixtureKind::PinnedPnpm
+        | FixtureKind::PinnedRustlings
+        | FixtureKind::PinnedClap
+        | FixtureKind::PinnedRipgrep
+        | FixtureKind::PinnedTokio => "external-ls-lint-conversion",
     }
 }

@@ -1,7 +1,9 @@
 //! Tests for the LS-Lint-compatible fast plan compiler.
 
 use super::ls_fast_naming::{compile_fast_naming, validate_fast_name};
-use super::ls_fast_plan::{collect_fast_regex_patterns, compile_lslint_fast_scopes, FastRules};
+use super::ls_fast_plan::{
+    collect_fast_regex_patterns, compile_lslint_fast_scopes, fast_rules_for_dir, FastRules,
+};
 use super::rules::EffectiveRules;
 use crate::config::config::{Config, DirectoryBundle, DirectoryNode, FileBundle};
 use std::collections::HashMap;
@@ -27,7 +29,7 @@ fn fast_file_naming_prefers_longest_suffix_match() {
         .and_then(|file_naming| file_naming.naming_for("feature-01.kind-01.ts", &HashMap::new()))
         .unwrap();
 
-    assert_eq!(naming.label(), "kebab-case");
+    assert_eq!(naming.naming.label(), "kebab-case");
 }
 
 #[test]
@@ -59,31 +61,76 @@ fn fast_plan_allows_direct_file_and_directory_policies() {
 }
 
 #[test]
+fn fast_plan_supports_wildcard_directory_scopes() {
+    let mut packages_children = HashMap::new();
+    packages_children.insert(
+        "*".to_string(),
+        DirectoryNode {
+            files: Some(FileBundle {
+                naming_patterns: Some(HashMap::from([(
+                    "*.ts".to_string(),
+                    "kebab-case".to_string(),
+                )])),
+                ..FileBundle::default()
+            }),
+            ..DirectoryNode::default()
+        },
+    );
+
+    let mut config = Config::new();
+    config.structure.insert(
+        "./".to_string(),
+        DirectoryNode {
+            children: Some(HashMap::from([(
+                "packages".to_string(),
+                DirectoryNode {
+                    children: Some(packages_children),
+                    ..DirectoryNode::default()
+                },
+            )])),
+            ..DirectoryNode::default()
+        },
+    );
+
+    let scopes = compile_lslint_fast_scopes(&config).unwrap();
+    let package_rules = fast_rules_for_dir(std::path::Path::new("packages/core"), &scopes)
+        .expect("wildcard package scope should match");
+    assert!(package_rules.file_naming.is_some());
+
+    let descendant_rules = fast_rules_for_dir(std::path::Path::new("packages/core/src"), &scopes)
+        .expect("wildcard package descendant should inherit");
+    assert!(descendant_rules.file_naming.is_some());
+}
+
+#[test]
 fn fast_naming_simplifies_common_regex_literals() {
     let empty = compile_fast_naming("regex:^$");
-    assert!(validate_fast_name("", &empty, &HashMap::new()));
-    assert!(!validate_fast_name("index", &empty, &HashMap::new()));
+    assert!(validate_fast_name("", "", &empty, &HashMap::new()));
+    assert!(!validate_fast_name("index", "", &empty, &HashMap::new()));
 
     let contains = compile_fast_naming("regex:(next\\.config|postcss\\.config)");
     assert!(validate_fast_name(
         "next.config",
+        "",
         &contains,
         &HashMap::new()
     ));
     assert!(validate_fast_name(
         "postcss.config",
+        "",
         &contains,
         &HashMap::new()
     ));
     assert!(!validate_fast_name(
         "tailwind.config",
+        "",
         &contains,
         &HashMap::new()
     ));
 
     let exact = compile_fast_naming("regex:^(README|AGENTS)$");
-    assert!(validate_fast_name("README", &exact, &HashMap::new()));
-    assert!(!validate_fast_name("MYREADME", &exact, &HashMap::new()));
+    assert!(validate_fast_name("README", "", &exact, &HashMap::new()));
+    assert!(!validate_fast_name("MYREADME", "", &exact, &HashMap::new()));
 }
 
 #[test]

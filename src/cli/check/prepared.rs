@@ -1,7 +1,7 @@
 //! Prepared structure-check plans for hot validation sessions.
 
 use super::{
-    compiled_fingerprint::SourceConfigFingerprint, discover_project, CheckError,
+    compiled_fingerprint::SourceConfigFingerprint, discover_project, CheckError, CheckTargetMode,
     CompiledStructureConfig, StructureCheckReport, StructureCheckTimings, StructureChecker,
 };
 use crate::config::config::Config;
@@ -72,7 +72,12 @@ impl PreparedStructureCheck {
             self.fail_fast,
         );
         let mut timings = StructureCheckTimings::default();
-        checker.check(checked_path, self.config_path.clone(), &mut timings)
+        checker.check(
+            checked_path,
+            self.config_path.clone(),
+            CheckTargetMode::Recursive,
+            &mut timings,
+        )
     }
 
     /// Validate one changed path and its direct aggregate scopes without

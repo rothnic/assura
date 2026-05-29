@@ -13,7 +13,7 @@ LS-Lint comparison changes.
 Run a target artifact first before touching tracked history:
 
 ```bash
-cargo build --release -p assura --bin assura
+cargo build --release -p assura --bins
 cargo build --release -p assura-check-cli
 target/release/assura performance-report \
   --output target/performance/<name>.json \
@@ -82,7 +82,7 @@ improvement.
 After the target artifact is valid, update tracked report data:
 
 ```bash
-cargo build --release -p assura --bin assura
+cargo build --release -p assura --bins
 cargo build --release -p assura-check-cli
 target/release/assura performance-report \
   --output benches/history/current.json \
@@ -130,6 +130,11 @@ If `pnpm build` fails because dependencies are missing, run `pnpm install` in
   producing check-only evidence. A single workspace `cargo build --release --bins`
   can unify default features and accidentally link `git2`/OpenSSL into
   `assura-check`.
+- When changing `src/cli/performance_report/**`, build the full Assura release
+  binary set before running `target/release/assura performance-report`.
+  `performance-report` dispatches through the full companion binary, so
+  rebuilding only the lightweight launcher can leave stale report/catalog code
+  in the measured artifact.
 - Do not infer check-binary payload from package-level `cargo tree -p
   assura-check-cli` alone. The package contains compiler, daemon, status, and
   client binaries, so the package tree includes YAML/JSON/notify dependencies

@@ -251,9 +251,9 @@ thresholds.
 
 ## Known Gaps
 
-- LS-Lint directory pattern scopes are not full parity yet. `packages/*`, `**`,
-  and `{src,tests}` now fail migration with a clear unsupported-scope error
-  covered by regression tests instead of being silently overclaimed.
+- LS-Lint directory pattern scopes were closed by the 2026-05-26 rule coverage
+  audit. `packages/*`, `**`, and `{src,tests}` now migrate as validation
+  scopes instead of unsupported literal directories.
 - Codex integration is a skeleton and must not be described as complete.
 
 ## Product Direction
@@ -280,7 +280,7 @@ contracts, content checks, or agent-facing guidance.
 - Add context-aware feedback that tells a developer or agent why a rule exists,
   whether the current hook is warning or blocking, who can approve policy
   changes, and what references to load before trying a fix.
-- Prefer reusable `groups:`-style notation for repeated rule sets over YAML
+- Prefer reusable directive-style notation for repeated rule sets over YAML
   anchors or duplicated rule strings.
 - Treat content checks as high-level organization checks, not language-format
   linting: examples include max lines, markdown frontmatter, required heading
@@ -310,7 +310,8 @@ Historical upstream LS-Lint PR discussion that informs this direction:
 ## Non-Goals
 
 - Do not implement advanced agent nudges in this release goal.
-- Do not claim full LS-Lint parity for unsupported features.
+- Do not claim future Assura-native agent/plugin behavior as complete before it
+  is implemented and tested.
 - Do not keep unsupported CLI commands in current onboarding.
 - Do not preserve pre-1.0 compatibility layers solely for internal backwards
   compatibility.

@@ -12,12 +12,15 @@ mod compiled_artifact_tests;
 mod compiled_config;
 mod compiled_fingerprint;
 mod compiled_plan_artifact;
+mod configured_structure;
 mod direct_contents;
 #[cfg(all(feature = "yaml-config", feature = "json-output"))]
 pub mod fast_cli;
 mod ls_fast;
 mod ls_fast_counts;
 mod ls_fast_naming;
+#[cfg(feature = "full-cli")]
+mod ls_fast_parallel;
 mod ls_fast_plan;
 #[cfg(test)]
 mod ls_fast_plan_tests;
@@ -31,12 +34,13 @@ mod profiling;
 mod report;
 mod rule_plan;
 mod rules;
+mod scope_patterns;
 mod traversal;
 mod validators;
 
 #[cfg(feature = "yaml-config")]
 use crate::cli::config::ConfigDiscovery;
-use crate::config::config::{Config, DirectoryNode};
+use crate::config::config::Config;
 #[cfg(feature = "yaml-config")]
 use crate::config::loader::ConfigLoader;
 pub use artifact_check::{
@@ -74,13 +78,21 @@ pub struct StructureCheckTimings {
 }
 use regex_lite::Regex;
 use rule_plan::{rules_for_dir, RuleScope};
-use rules::{
-    display_rel, is_excluded_rel_with, join_config_child, normalize_config_dir,
-    severity_for_bundle, severity_for_node, CompiledExclusion, EffectiveRules,
-};
+use rules::{is_excluded_rel_with, normalize_config_dir, CompiledExclusion, EffectiveRules};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::time::Instant;
+
+/// How a non-root checked path should be interpreted.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CheckTargetMode {
+    /// Validate directories recursively. This is Assura's native changed-path
+    /// behavior for real-time feedback.
+    Recursive,
+    /// Validate only the explicitly provided target, matching LS-Lint's path
+    /// argument behavior for compatibility checks.
+    LsLint,
+}
 
 /// Run structure-first validation for a path.
 #[cfg(feature = "yaml-config")]
@@ -88,6 +100,17 @@ pub fn run_structure_check(
     path: Option<PathBuf>,
     config_path: Option<PathBuf>,
     fail_fast: bool,
+) -> Result<StructureCheckReport, CheckError> {
+    run_structure_check_with_target_mode(path, config_path, fail_fast, CheckTargetMode::Recursive)
+}
+
+/// Run structure-first validation for a path with explicit target semantics.
+#[cfg(feature = "yaml-config")]
+pub fn run_structure_check_with_target_mode(
+    path: Option<PathBuf>,
+    config_path: Option<PathBuf>,
+    fail_fast: bool,
+    target_mode: CheckTargetMode,
 ) -> Result<StructureCheckReport, CheckError> {
     let checked_path = match path {
         Some(path) => {
@@ -107,9 +130,14 @@ pub fn run_structure_check(
     }
 
     let config = ConfigLoader::load(&config_path)?;
-    let mut checker = StructureChecker::new(project_root, config, fail_fast);
+    let compiled = if target_mode == CheckTargetMode::LsLint {
+        CompiledStructureConfig::new(config, fail_fast)
+    } else {
+        CompiledStructureConfig::new_for_check(config, fail_fast)
+    };
+    let mut checker = StructureChecker::from_compiled_owned(project_root, compiled, fail_fast);
     let mut timings = StructureCheckTimings::default();
-    checker.check(checked_path, config_path, &mut timings)
+    checker.check(checked_path, config_path, target_mode, &mut timings)
 }
 
 /// Run one structure check against an already parsed configuration.
@@ -138,7 +166,12 @@ pub fn run_structure_check_with_config(
 
     let mut checker = StructureChecker::new(project_root, config, fail_fast);
     let mut timings = StructureCheckTimings::default();
-    checker.check(checked_path, config_path, &mut timings)
+    checker.check(
+        checked_path,
+        config_path,
+        CheckTargetMode::Recursive,
+        &mut timings,
+    )
 }
 
 #[cfg(feature = "yaml-config")]
@@ -193,12 +226,12 @@ pub(in crate::cli::check) struct StructureChecker {
     config: Config,
     fail_fast: bool,
     configured_dirs: Vec<PathBuf>,
-    required_dirs: Vec<PathBuf>,
     exclude_patterns: Vec<CompiledExclusion>,
     naming_regexes: HashMap<String, Regex>,
     glob_patterns: HashMap<String, Pattern>,
     rule_scopes: Vec<RuleScope>,
     lslint_fast_scopes: Option<Vec<FastScope>>,
+    lslint_fast_scope_index: Option<HashMap<PathBuf, usize>>,
     has_direct_count_constraints: bool,
     rules_cache: HashMap<PathBuf, EffectiveRules>,
 }
@@ -224,11 +257,13 @@ impl StructureChecker {
             config: compiled.config.clone(),
             fail_fast,
             configured_dirs: compiled.configured_dirs.clone(),
-            required_dirs: compiled.required_dirs.clone(),
             exclude_patterns: compiled.exclude_patterns.clone(),
             naming_regexes: compiled.naming_regexes.clone(),
             glob_patterns: compiled.glob_patterns.clone(),
             rule_scopes: compiled.rule_scopes.clone(),
+            lslint_fast_scope_index: index_lslint_fast_scopes(
+                compiled.lslint_fast_scopes.as_deref(),
+            ),
             lslint_fast_scopes: compiled.lslint_fast_scopes.clone(),
             has_direct_count_constraints: compiled.has_direct_count_constraints,
             rules_cache: HashMap::new(),
@@ -240,16 +275,18 @@ impl StructureChecker {
         compiled: CompiledStructureConfig,
         fail_fast: bool,
     ) -> Self {
+        let lslint_fast_scope_index =
+            index_lslint_fast_scopes(compiled.lslint_fast_scopes.as_deref());
         Self {
             project_root,
             config: compiled.config,
             fail_fast,
             configured_dirs: compiled.configured_dirs,
-            required_dirs: compiled.required_dirs,
             exclude_patterns: compiled.exclude_patterns,
             naming_regexes: compiled.naming_regexes,
             glob_patterns: compiled.glob_patterns,
             rule_scopes: compiled.rule_scopes,
+            lslint_fast_scope_index,
             lslint_fast_scopes: compiled.lslint_fast_scopes,
             has_direct_count_constraints: compiled.has_direct_count_constraints,
             rules_cache: HashMap::new(),
@@ -260,6 +297,7 @@ impl StructureChecker {
         &mut self,
         checked_path: PathBuf,
         config_path: PathBuf,
+        target_mode: CheckTargetMode,
         timings: &mut StructureCheckTimings,
     ) -> Result<StructureCheckReport, CheckError> {
         let mut report = StructureCheckReport {
@@ -271,6 +309,22 @@ impl StructureChecker {
             dirs_checked: 0,
             violations: Vec::new(),
         };
+
+        if target_mode == CheckTargetMode::LsLint && checked_path != self.project_root {
+            let walk_started = Instant::now();
+            let has_direct_count_constraints = self.has_direct_count_constraints;
+            self.has_direct_count_constraints = false;
+            self.validate_one_existing_path(&checked_path, &mut report);
+            self.has_direct_count_constraints = has_direct_count_constraints;
+            timings.walk_and_validate_ms = walk_started.elapsed().as_secs_f64() * 1000.0;
+            let sort_started = Instant::now();
+            report
+                .violations
+                .sort_by(|left, right| left.path.cmp(&right.path).then(left.rule.cmp(&right.rule)));
+            timings.report_sort_ms = sort_started.elapsed().as_secs_f64() * 1000.0;
+            report.success = report.violations.is_empty();
+            return Ok(report);
+        }
 
         if self.try_check_lslint_fast(&checked_path, &mut report, timings)? {
             report.success = report.violations.is_empty();
@@ -297,121 +351,6 @@ impl StructureChecker {
         timings.report_sort_ms = sort_started.elapsed().as_secs_f64() * 1000.0;
         report.success = report.violations.is_empty();
         Ok(report)
-    }
-
-    pub(in crate::cli::check) fn validate_configured_structure(
-        &self,
-        report: &mut StructureCheckReport,
-    ) {
-        for (path, node) in &self.config.structure {
-            let base = normalize_config_dir(path);
-            self.validate_node_requirements(&base, node, report);
-        }
-    }
-
-    fn validate_node_requirements(
-        &self,
-        node_rel: &Path,
-        node: &DirectoryNode,
-        report: &mut StructureCheckReport,
-    ) {
-        if self.is_excluded_rel(node_rel) {
-            return;
-        }
-
-        let node_abs = self.project_root.join(node_rel);
-        if !node_abs.is_dir() {
-            if !node.required {
-                return;
-            }
-            self.push_violation(
-                report,
-                node_rel.to_path_buf(),
-                "required_directory",
-                format!(
-                    "Configured directory '{}' is missing",
-                    display_rel(node_rel)
-                ),
-                severity_for_node(node),
-            );
-            return;
-        }
-
-        if let Some(files) = &node.files {
-            if let Some(required) = &files.required {
-                for file in required {
-                    let file_rel = node_rel.join(file);
-                    if !self.project_root.join(&file_rel).is_file() {
-                        self.push_violation(
-                            report,
-                            file_rel.clone(),
-                            "required_file",
-                            format!("Required file '{}' is missing", display_rel(&file_rel)),
-                            severity_for_bundle(files),
-                        );
-                    }
-                }
-            }
-        }
-
-        if let Some(directories) = &node.directories {
-            if let Some(required) = &directories.required {
-                for directory in required {
-                    let dir_rel = node_rel.join(directory);
-                    if !self.project_root.join(&dir_rel).is_dir() {
-                        self.push_violation(
-                            report,
-                            dir_rel.clone(),
-                            "required_directory",
-                            format!("Required directory '{}' is missing", display_rel(&dir_rel)),
-                            directories
-                                .severity
-                                .clone()
-                                .unwrap_or_else(|| "medium".to_string()),
-                        );
-                    }
-                }
-            }
-        }
-
-        if let Some(exists) = &node.exists {
-            if let Some(files) = &exists.files {
-                for file in files {
-                    let file_rel = node_rel.join(file);
-                    if !self.project_root.join(&file_rel).is_file() {
-                        self.push_violation(
-                            report,
-                            file_rel.clone(),
-                            "required_file",
-                            format!("Required file '{}' is missing", display_rel(&file_rel)),
-                            severity_for_node(node),
-                        );
-                    }
-                }
-            }
-
-            if let Some(directories) = &exists.directories {
-                for directory in directories {
-                    let dir_rel = node_rel.join(directory);
-                    if !self.project_root.join(&dir_rel).is_dir() {
-                        self.push_violation(
-                            report,
-                            dir_rel.clone(),
-                            "required_directory",
-                            format!("Required directory '{}' is missing", display_rel(&dir_rel)),
-                            severity_for_node(node),
-                        );
-                    }
-                }
-            }
-        }
-
-        if let Some(children) = &node.children {
-            for (child_name, child) in children {
-                let child_rel = join_config_child(node_rel, child_name);
-                self.validate_node_requirements(&child_rel, child, report);
-            }
-        }
     }
 
     pub(super) fn resolve_rules(&mut self, dir_rel: &Path) -> EffectiveRules {
@@ -457,4 +396,17 @@ impl StructureChecker {
             .violations
             .push(StructureViolation::new(path, rule, message, severity));
     }
+}
+
+fn index_lslint_fast_scopes(scopes: Option<&[FastScope]>) -> Option<HashMap<PathBuf, usize>> {
+    let scopes = scopes?;
+    if scopes.iter().any(FastScope::has_scope_magic) {
+        return None;
+    }
+
+    let mut index = HashMap::with_capacity(scopes.len());
+    for (scope_index, scope) in scopes.iter().enumerate() {
+        index.insert(scope.parts().0.to_path_buf(), scope_index);
+    }
+    Some(index)
 }

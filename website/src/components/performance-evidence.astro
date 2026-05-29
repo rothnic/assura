@@ -44,6 +44,9 @@ type CurrentReport = {
     arch?: string;
   };
   claim_summary?: {
+    fixture_cohort?: string;
+    assura_row_family?: string;
+    ls_lint_row_family?: string;
     fixture_count?: number;
     measured_fixture_count?: number;
     assura_faster_count?: number;
@@ -60,6 +63,9 @@ type CurrentReport = {
     two_x_claim_verdict?: string;
   };
   warm_claim_summary?: {
+    fixture_cohort?: string;
+    assura_row_family?: string;
+    ls_lint_row_family?: string;
     fixture_count?: number;
     measured_fixture_count?: number;
     assura_faster_count?: number;
@@ -99,7 +105,7 @@ const rows = (report.results ?? []).filter((row) => row.status === 'pass');
 const claimSummary = report.claim_summary;
 const warmClaimSummary = report.warm_claim_summary;
 
-const fixtureCopy: Record<string, FixtureCopy> = {
+const generatedFixtureCopy: Record<string, FixtureCopy> = {
   simple_library: {
     label: 'Small library',
     projectShape: 'Rust/package library with docs, tests, and build output.',
@@ -132,13 +138,71 @@ const fixtureCopy: Record<string, FixtureCopy> = {
   },
 };
 
-const realisticFixtureIds = Object.keys(fixtureCopy);
+const realRepoFixtureCopy: Record<string, FixtureCopy> = {
+  pinned_nextjs: {
+    label: 'Next.js monorepo',
+    projectShape: 'Large frontend framework monorepo with packages, examples, tests, and generated output.',
+    focus: 'Framework-scale tree, route naming conventions, package scopes, and generated-output pruning.',
+  },
+  pinned_mdbook: {
+    label: 'mdBook docs project',
+    projectShape: 'Rust documentation tool with source, book content, docs, and target output.',
+    focus: 'Docs-heavy Rust project with source, Markdown, TOML, and target pruning.',
+  },
+  pinned_vite: {
+    label: 'Vite tooling monorepo',
+    projectShape: 'Frontend tooling monorepo with packages, playgrounds, docs, and build output.',
+    focus: 'Package and playground scopes with docs/build-output pruning.',
+  },
+  pinned_tailwindcss: {
+    label: 'Tailwind CSS package',
+    projectShape: 'CSS tooling package with source, tests, fixtures, and generated output.',
+    focus: 'Source/test naming policy with generated-output pruning.',
+  },
+  pinned_prettier: {
+    label: 'Prettier formatter repo',
+    projectShape: 'JavaScript formatter repository with source, tests, website, and fixtures.',
+    focus: 'Source, tests, website, and fixture/generated-output policy.',
+  },
+  pinned_pnpm: {
+    label: 'pnpm monorepo',
+    projectShape: 'Package-manager monorepo with package scopes, fixtures, typings, and build output.',
+    focus: 'Package-scope rules, typings, dotfile allowances, and generated-output pruning.',
+  },
+  pinned_rustlings: {
+    label: 'Rustlings exercises',
+    projectShape: 'Rust education repository with exercises, solutions, docs, and target output.',
+    focus: 'Exercise and solution structure with target pruning.',
+  },
+  pinned_clap: {
+    label: 'clap Rust workspace',
+    projectShape: 'Rust CLI workspace with crates, examples, tests, and target output.',
+    focus: 'Crate and example scopes for a Rust workspace.',
+  },
+  pinned_ripgrep: {
+    label: 'ripgrep CLI repo',
+    projectShape: 'Rust CLI repository with crates, tests, docs, scripts, and target output.',
+    focus: 'CLI project structure with crate scopes and target pruning.',
+  },
+  pinned_tokio: {
+    label: 'Tokio async workspace',
+    projectShape: 'Rust async workspace with crate scopes, examples, benches, and target output.',
+    focus: 'Multi-crate Rust workspace policy with examples and benchmarks.',
+  },
+};
+
+const isRealRepoHeadline =
+  claimSummary?.fixture_cohort === 'real-repo-headline' ||
+  rows.some((row) => row.fixture_cohort === 'real-repo-headline');
+const headlineFixtureCopy = isRealRepoHeadline ? realRepoFixtureCopy : generatedFixtureCopy;
+const headlineFixtureIds = Object.keys(headlineFixtureCopy);
 
 function rowFamily(row: ResultRow): string {
   return row.row_family ?? row.tool_name ?? '';
 }
 
 function buildPair(fixtureId: string): Pair | null {
+  const copy = headlineFixtureCopy[fixtureId];
   const assura = rows.find(
     (row) => row.fixture_id === fixtureId && rowFamily(row) === 'assura-cli',
   ) ?? rows.find((row) => row.fixture_id === fixtureId && rowFamily(row) === 'assura-check-cli');
@@ -151,22 +215,24 @@ function buildPair(fixtureId: string): Pair | null {
 
   return {
     fixtureId,
-    copy: fixtureCopy[fixtureId],
+    copy,
     assura,
     lslint,
     ...compareRuntimes(assura.median_runtime_ms, lslint.median_runtime_ms),
   };
 }
 
-const realisticPairs = realisticFixtureIds.map(buildPair).filter((pair): pair is Pair => Boolean(pair));
+const headlinePairs = headlineFixtureIds.map(buildPair).filter((pair): pair is Pair => Boolean(pair));
 const datasetRevisions = Array.from(
   new Set(
-    realisticPairs
+    headlinePairs
       .map((pair) => pair.assura.fixture_source_revision)
       .filter((revision): revision is string => Boolean(revision)),
   ),
 );
-const datasetLabel = datasetRevisions.length > 0 ? datasetRevisions.join(' + ') : 'generated fixtures';
+const datasetLabel = isRealRepoHeadline
+  ? `${claimSummary?.fixture_count ?? headlinePairs.length} pinned real repositories`
+  : datasetRevisions.length > 0 ? datasetRevisions.join(' + ') : 'generated fixtures';
 
 const syntheticRows = rows.filter(
   (row) => row.row_family === 'assura-cli' && row.fixture_cohort === 'synthetic-stress',
@@ -178,16 +244,16 @@ const firstLsLintRow = rows.find((row) => row.row_family === 'ls-lint-cli');
 const releaseProfile = firstAssuraRow?.assura_binary_profile ?? 'unknown profile';
 const platformLabel = [report.environment?.os, report.environment?.arch].filter(Boolean).join(' / ') || 'unknown platform';
 
-const totalAssura = realisticPairs.reduce(
+const totalAssura = headlinePairs.reduce(
   (total, pair) => total + (pair.assura.median_runtime_ms ?? 0),
   0,
 );
-const totalLsLint = realisticPairs.reduce(
+const totalLsLint = headlinePairs.reduce(
   (total, pair) => total + (pair.lslint.median_runtime_ms ?? 0),
   0,
 );
 const totalComparison = compareRuntimes(totalAssura, totalLsLint);
-const closestPair = realisticPairs.reduce<Pair | null>(
+const closestPair = headlinePairs.reduce<Pair | null>(
   (closest, pair) => (!closest || pair.ratio < closest.ratio ? pair : closest),
   null,
 );
@@ -277,10 +343,11 @@ function testCaseHref(fixtureId: string): string {
 <section class="perf-evidence" aria-labelledby="performance-summary">
   <div class="perf-summary">
     <p class="perf-kicker">Current comparison</p>
-    <h2 id="performance-summary">Assura check CLI vs native LS-Lint CLI</h2>
+    <h2 id="performance-summary">Assura CLI vs native LS-Lint CLI</h2>
     <p class="perf-summary-line">
-      Linux static-CRT release artifact. Same generated trees. Equivalent
-      rules. Case definitions live on the test-case page.
+      {isRealRepoHeadline
+        ? 'Pinned real repositories at immutable revisions. Native LS-Lint-compatible policies. Case definitions live on the test-case page.'
+        : 'Generated stable trees. Equivalent rules. Case definitions live on the test-case page.'}
     </p>
 
     <div class="perf-summary-grid">
@@ -303,7 +370,7 @@ function testCaseHref(fixtureId: string): string {
         </div>
         <div>
           <dt>Assura faster</dt>
-          <dd>{formatCount(claimSummary?.assura_faster_count ?? realisticPairs.length, claimSummary?.measured_fixture_count ?? realisticPairs.length)}</dd>
+          <dd>{formatCount(claimSummary?.assura_faster_count ?? headlinePairs.length, claimSummary?.measured_fixture_count ?? headlinePairs.length)}</dd>
         </div>
       </dl>
 
@@ -330,7 +397,7 @@ function testCaseHref(fixtureId: string): string {
         </div>
         <div>
           <dt>Evidence source</dt>
-          <dd><a href="https://github.com/rothnic/assura/pull/11">PR #11</a> at <code>{shortSha(report.commit_sha)}</code></dd>
+          <dd>Checked report at <code>{shortSha(report.commit_sha)}</code></dd>
         </div>
         <div>
           <dt>Captured</dt>
@@ -344,10 +411,10 @@ function testCaseHref(fixtureId: string): string {
     </div>
   </div>
 
-  <h2 id="test-case-results">Test Case Results</h2>
+  <h2 id="test-case-results">Headline Case Results</h2>
   <p class="perf-section-intro">
-    One row per measured case. Open a case to inspect what it represents and
-    where the dataset still needs stronger real-project coverage.
+    One row per measured headline case. Open a case to inspect the repository
+    shape and the policy surface behind the comparison.
   </p>
 
   <div class="perf-table-wrap" aria-label="Assura and LS-Lint comparison by test case">
@@ -361,7 +428,7 @@ function testCaseHref(fixtureId: string): string {
         </tr>
       </thead>
       <tbody>
-        {realisticPairs.map((pair) => (
+        {headlinePairs.map((pair) => (
           <tr>
             <td data-label="Test case">
               <strong><a href={testCaseHref(pair.fixtureId)}>{pair.copy.label}</a></strong>
@@ -373,7 +440,7 @@ function testCaseHref(fixtureId: string): string {
               <span class="perf-cell-note">{pair.copy.focus}</span>
             </td>
             <td data-label="Runtime">
-              <strong>Assura check:</strong> {formatMs(pair.assura.median_runtime_ms)}
+              <strong>Assura CLI:</strong> {formatMs(pair.assura.median_runtime_ms)}
               <span class="perf-cell-note">Native LS-Lint: {formatMs(pair.lslint.median_runtime_ms)}</span>
             </td>
             <td data-label="Result">
@@ -390,11 +457,19 @@ function testCaseHref(fixtureId: string): string {
   </div>
 
   <div class="perf-note">
-    <strong>What this does not prove yet:</strong> pinned Next.js and mdBook
-    checkouts are implemented as opt-in performance fixtures, but the default
-    published baseline still uses generated fixtures to keep ordinary refreshes
-    deterministic. See <a href="/reference/performance-test-cases/">Performance
-    Test Cases</a> for the exact opt-in command.
+    {isRealRepoHeadline ? (
+      <>
+        <strong>Scope:</strong> this headline uses pinned real repositories.
+        Generated and adversarial fixtures remain in the report as supporting
+        regression coverage, not as the public aggregate proof.
+      </>
+    ) : (
+      <>
+        <strong>What this does not prove yet:</strong> this checked report uses
+        generated fixtures. Run the external-fixture command on the test-case
+        page to produce the real-repo headline evidence.
+      </>
+    )}
   </div>
 
   <h2 id="diagnostic-coverage">Diagnostic Coverage</h2>

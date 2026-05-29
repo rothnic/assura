@@ -103,6 +103,7 @@ pub fn run_structure_check_cached(
     let report = checker.check(
         checked_path.clone(),
         discovered_config_path.clone(),
+        super::CheckTargetMode::Recursive,
         &mut timings,
     )?;
 

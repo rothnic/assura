@@ -4,8 +4,9 @@ use crate::config::config::split_naming_conventions;
 use regex_lite::Regex;
 use std::collections::HashMap;
 
-pub(super) fn validate_name(
+pub(super) fn validate_name_with_path(
     name: &str,
+    path: &str,
     convention: &str,
     regexes: &HashMap<String, Regex>,
 ) -> bool {
@@ -17,32 +18,30 @@ pub(super) fn validate_name(
     if !convention.contains('|')
         || (convention.starts_with("regex:") && !convention.contains(" | "))
     {
-        return validate_single_name(name, convention, regexes);
+        return validate_single_name_with_path(name, path, convention, regexes);
     }
 
     let alternatives = split_naming_conventions(convention);
     if alternatives.len() > 1 {
         return alternatives
             .into_iter()
-            .any(|part| validate_name(name, part, regexes));
+            .any(|part| validate_name_with_path(name, path, part, regexes));
     }
 
     alternatives
         .first()
-        .map(|part| validate_single_name(name, part, regexes))
+        .map(|part| validate_single_name_with_path(name, path, part, regexes))
         .unwrap_or(false)
 }
 
-pub(super) fn validate_single_name(
+pub(super) fn validate_single_name_with_path(
     name: &str,
+    path: &str,
     convention: &str,
     regexes: &HashMap<String, Regex>,
 ) -> bool {
     if let Some(pattern) = convention.strip_prefix("regex:") {
-        return regexes
-            .get(pattern)
-            .map(|regex| regex.is_match(name))
-            .unwrap_or(false);
+        return validate_regex_name(name, path, pattern, regexes);
     }
 
     match convention_to_case_validator(convention) {
@@ -51,25 +50,68 @@ pub(super) fn validate_single_name(
     }
 }
 
-pub(super) fn validate_file_stem(
+pub(super) fn validate_file_stem_with_path(
     stem: &str,
+    path: &str,
     convention: &str,
     regexes: &HashMap<String, Regex>,
 ) -> bool {
-    validate_name(stem, convention, regexes)
+    validate_name_with_path(stem, path, convention, regexes)
         || stem
             .split_once('.')
-            .map(|(base, _)| validate_name(base, convention, regexes))
+            .map(|(base, _)| validate_name_with_path(base, path, convention, regexes))
             .unwrap_or(false)
+}
+
+fn validate_regex_name(
+    name: &str,
+    path: &str,
+    pattern: &str,
+    regexes: &HashMap<String, Regex>,
+) -> bool {
+    let (negated, pattern) = pattern
+        .strip_prefix('!')
+        .map(|pattern| (true, pattern))
+        .unwrap_or((false, pattern));
+    let substituted = substitute_lslint_regex_path(pattern, path);
+    let pattern = substituted.as_deref().unwrap_or(pattern);
+    let matched = regexes
+        .get(pattern)
+        .map(|regex| regex.is_match(name))
+        .or_else(|| Regex::new(pattern).ok().map(|regex| regex.is_match(name)))
+        .unwrap_or(false);
+
+    matched != negated
+}
+
+fn substitute_lslint_regex_path(pattern: &str, path: &str) -> Option<String> {
+    if path.is_empty() || !pattern.contains("${") {
+        return None;
+    }
+
+    let segments = path
+        .split('/')
+        .filter(|segment| !segment.is_empty())
+        .collect::<Vec<_>>();
+    if segments.is_empty() {
+        return None;
+    }
+
+    let mut substituted = pattern.to_string();
+    for (index, segment) in segments.iter().enumerate() {
+        let ancestor_index = segments.len() - 1 - index;
+        substituted = substituted.replace(&format!("${{{ancestor_index}}}"), segment);
+    }
+    Some(substituted)
 }
 
 pub(super) fn convention_to_case_validator(convention: &str) -> Option<fn(&str) -> bool> {
     match convention {
-        "snake_case" => Some(validate_snake_case),
-        "camelCase" => Some(validate_camel_case),
-        "PascalCase" => Some(validate_pascal_case),
-        "kebab-case" => Some(validate_kebab_case),
-        "SCREAMING_SNAKE_CASE" => Some(validate_screaming_snake_case),
+        "snake_case" | "snakecase" => Some(validate_snake_case),
+        "camelCase" | "camelcase" => Some(validate_camel_case),
+        "PascalCase" | "pascalcase" => Some(validate_pascal_case),
+        "kebab-case" | "kebabcase" => Some(validate_kebab_case),
+        "SCREAMING_SNAKE_CASE" | "screamingsnakecase" => Some(validate_screaming_snake_case),
         "dot.case" => Some(validate_dot_case),
         "flatcase" => Some(validate_flatcase),
         "FLATCASE" => Some(validate_screaming_flatcase),
@@ -83,16 +125,13 @@ pub(super) fn convention_to_case_validator(convention: &str) -> Option<fn(&str) 
 
 fn validate_lowercase(name: &str) -> bool {
     if name.is_ascii() {
-        return !name.is_empty()
-            && name
-                .bytes()
-                .all(|byte| byte.is_ascii_lowercase() || byte.is_ascii_digit() || byte == b'_');
+        return name
+            .bytes()
+            .all(|byte| !byte.is_ascii_alphabetic() || byte.is_ascii_lowercase());
     }
 
-    !name.is_empty()
-        && name
-            .chars()
-            .all(|ch| ch.is_lowercase() || ch.is_numeric() || ch == '_')
+    name.chars()
+        .all(|ch| !ch.is_alphabetic() || ch.is_lowercase())
 }
 
 fn validate_uppercase(name: &str) -> bool {
@@ -150,36 +189,51 @@ fn validate_pascal_case(name: &str) -> bool {
 }
 
 fn validate_mixed_case_body_ascii(name: &str) -> bool {
-    let mut prev_upper = false;
-    for byte in name.bytes() {
+    let bytes = name.as_bytes();
+    for (index, byte) in bytes.iter().copied().enumerate() {
         if byte == b'_' || byte == b'-' {
             return false;
         }
         if byte.is_ascii_uppercase() {
-            if prev_upper {
+            if index == 0 {
+                continue;
+            }
+            if bytes[index - 1].is_ascii_digit() {
+                continue;
+            }
+            if index >= 2
+                && bytes[index - 1].is_ascii_uppercase()
+                && bytes[index - 2].is_ascii_lowercase()
+            {
+                continue;
+            }
+            if !bytes[index - 1].is_ascii_lowercase() {
                 return false;
             }
-            prev_upper = true;
-        } else {
-            prev_upper = false;
         }
     }
     true
 }
 
 fn validate_mixed_case_body(name: &str) -> bool {
-    let mut prev_upper = false;
-    for ch in name.chars() {
+    let chars = name.chars().collect::<Vec<_>>();
+    for (index, ch) in chars.iter().copied().enumerate() {
         if ch == '_' || ch == '-' {
             return false;
         }
         if ch.is_uppercase() {
-            if prev_upper {
+            if index == 0 {
+                continue;
+            }
+            if chars[index - 1].is_numeric() {
+                continue;
+            }
+            if index >= 2 && chars[index - 1].is_uppercase() && chars[index - 2].is_lowercase() {
+                continue;
+            }
+            if !chars[index - 1].is_lowercase() {
                 return false;
             }
-            prev_upper = true;
-        } else {
-            prev_upper = false;
         }
     }
     true

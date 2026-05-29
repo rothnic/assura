@@ -5,6 +5,8 @@ use super::{
     row, MaterializedFixture, PerformanceEnvironment, PerformanceResultRow, RowMeasurement,
     ToolAvailability,
 };
+#[cfg(unix)]
+use std::hash::{DefaultHasher, Hash, Hasher};
 use std::io::BufRead;
 use std::path::Path;
 use std::process::{Child, Command, Stdio};
@@ -298,10 +300,12 @@ pub(super) fn start_hot_server(
 fn hot_listen_address(fixture: &MaterializedFixture) -> String {
     #[cfg(unix)]
     {
+        let mut hasher = DefaultHasher::new();
+        fixture.scenario.id.hash(&mut hasher);
         let socket_path = std::env::temp_dir().join(format!(
-            "assura-checkd-{}-{}.sock",
+            "asr-{}-{:016x}.sock",
             std::process::id(),
-            fixture.scenario.id
+            hasher.finish()
         ));
         format!("unix:{}", socket_path.display())
     }
@@ -373,4 +377,49 @@ fn run_timed_status_client(
         "expected exit {expected_status}, got {:?}",
         status.code()
     ))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::hot_listen_address;
+    use crate::cli::performance_report::fixtures::{
+        FixtureKind, FixtureMetadata, FixtureScenario, MaterializedFixture,
+    };
+    use std::path::PathBuf;
+
+    #[test]
+    fn hot_listen_address_stays_short_for_long_fixture_ids() {
+        let fixture = MaterializedFixture {
+            root: PathBuf::from("/tmp/project"),
+            scenario: FixtureScenario {
+                id: "many_configured_scopes_regression_with_a_long_name",
+                source_revision: "test",
+                rule_cohort: "test",
+                dirs: 0,
+                files_per_dir: 0,
+                kind: FixtureKind::ManyConfiguredScopesRegression,
+            },
+            metadata: FixtureMetadata {
+                source_type: "generated",
+                source_revision: "test".to_string(),
+                cohort: "realistic-equivalent",
+                checked_file_count: 0,
+                ignored_file_count: 0,
+                directory_count: 0,
+                rule_count: 0,
+                rule_surface_summary: "test",
+                native_ls_lint_parity: true,
+                assura_config_path: ".assura/config.yml",
+                ls_lint_config_path: ".ls-lint.yml",
+                config_generation_method: "test",
+                shared_config_id: "test:test".to_string(),
+                expected_assura_exit_status: 0,
+                expected_ls_lint_exit_status: 0,
+            },
+        };
+
+        let address = hot_listen_address(&fixture);
+        #[cfg(unix)]
+        assert!(address.len() < 104, "{address}");
+    }
 }

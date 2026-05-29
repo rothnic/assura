@@ -57,7 +57,6 @@ fn traversal_strategy_for_check(_fail_fast: bool) -> TraversalStrategy {
 }
 
 impl StructureChecker {
-    #[cfg(feature = "yaml-config")]
     pub(in crate::cli::check) fn validate_one_changed_path(
         &mut self,
         path: &Path,
@@ -75,7 +74,6 @@ impl StructureChecker {
         }
     }
 
-    #[cfg(feature = "yaml-config")]
     pub(in crate::cli::check) fn validate_one_existing_path(
         &mut self,
         path: &Path,
