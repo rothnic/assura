@@ -40,19 +40,20 @@ If the check fails, fix the reported files and commit again.
 
 ## Hooks Versus Agent Wrappers
 
-Git hooks and agent nudges are separate delivery paths:
+Git hooks and agent feedback are separate delivery paths:
 
 - Git hooks are executed by Git before commit, before push, or after checkout.
   They can block only when their script exits nonzero in a blocking mode.
-- Agent nudges are produced by the Codex nudge package or
-  `assura-codex-nudge` after an Assura JSON report exists. A wrapper decides
-  whether to show the nudge as a status line, text guidance, or JSON.
+- Guided feedback is produced directly by `assura check --format advice` or
+  `assura check --format status`. Wrappers can also use the lower-level package
+  when they already have an Assura JSON report.
 
 Current Assura installs local Git hooks. It does not yet install a Codex tool
-hook that automatically injects nudge text into tool-call responses.
+hook, file watcher, or hot daemon session that automatically injects feedback
+after every file edit.
 
 See [Agent Feedback Delivery](/reference/agent-feedback/) for the distinction
-between manual CLI proof, Git hooks, nudge wrappers, and future native agent
+between manual CLI proof, Git hooks, feedback wrappers, and future native agent
 hooks.
 
 ## Manual Hook Alternative

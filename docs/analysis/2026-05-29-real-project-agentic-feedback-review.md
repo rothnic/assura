@@ -28,8 +28,8 @@ LS-Lint parity.
   `docs/analysis/2026-05-29-real-project-agentic-feedback-invalid-report.json`
 - Fixed report:
   `docs/analysis/2026-05-29-real-project-agentic-feedback-fixed-report.json`
-- Advisory nudge:
-  `docs/analysis/2026-05-29-real-project-agentic-feedback-nudge.json`
+- Advisory feedback:
+  `docs/analysis/2026-05-29-real-project-agentic-feedback-agent-feedback.json`
 - Same-turn observation:
   `docs/analysis/2026-05-29-real-project-agentic-feedback-same-turn-observation.json`
 - Raw release timing:
@@ -46,7 +46,7 @@ The current supported workflow is:
 3. Run `assura hooks install`, `assura hooks status`, and
    `assura hooks verify`.
 4. Run `assura check --format json`.
-5. Feed the report to `assura-codex-nudge`.
+5. Run `assura check --format advice` or `--format status` to get guided output.
 6. Fix project drift and rerun `assura check`.
 
 The proof does not claim daemon behavior, hosted telemetry, dependency graph
@@ -91,13 +91,13 @@ cargo run --quiet -- check tests/fixtures/real-project-agentic-feedback/valid \
   --output target/real-project-agentic-feedback-agent-run/fixed.json
 ```
 
-Normalized the checked reports to repo-relative paths and generated the nudge:
+Normalized the checked reports to repo-relative paths and generated the feedback:
 
 ```bash
 node --input-type=module <<'EOF'
 import { readFileSync, writeFileSync } from 'node:fs';
 import {
-  createNudgeFromReport,
+  createAgentFeedbackFromReport,
   observeSameTurnFeedback,
 } from './integrations/agents/codex/dist/index.js';
 
@@ -119,7 +119,7 @@ const fixedRaw = JSON.parse(
 );
 const invalid = normalize(before, invalidPath);
 const fixed = normalize(fixedRaw, validPath);
-const nudge = createNudgeFromReport(invalid);
+const feedback = createAgentFeedbackFromReport(invalid);
 writeFileSync(
   'docs/analysis/2026-05-29-real-project-agentic-feedback-invalid-report.json',
   JSON.stringify(invalid, null, 2) + '\n'
@@ -129,13 +129,13 @@ writeFileSync(
   JSON.stringify(fixed, null, 2) + '\n'
 );
 writeFileSync(
-  'docs/analysis/2026-05-29-real-project-agentic-feedback-nudge.json',
-  JSON.stringify(nudge, null, 2) + '\n'
+  'docs/analysis/2026-05-29-real-project-agentic-feedback-agent-feedback.json',
+  JSON.stringify(feedback, null, 2) + '\n'
 );
 EOF
 ```
 
-Generated advisory nudge, expected exit `1`:
+Generated advisory feedback, expected exit `1`:
 
 ```bash
 node integrations/agents/codex/dist/cli.js \
@@ -156,7 +156,7 @@ cargo run --quiet -- check target/real-project-agentic-feedback-agent-run/work \
 node integrations/agents/codex/dist/cli.js \
   --report target/real-project-agentic-feedback-agent-run/before.json \
   --format json \
-  > target/real-project-agentic-feedback-agent-run/nudge.json
+  > target/real-project-agentic-feedback-agent-run/feedback.json
 rm target/real-project-agentic-feedback-agent-run/work/scratch.md
 mv target/real-project-agentic-feedback-agent-run/work/apps/web/src/BadName.tsx \
   target/real-project-agentic-feedback-agent-run/work/apps/web/src/bad-name.tsx
@@ -167,18 +167,18 @@ cargo run --quiet -- check target/real-project-agentic-feedback-agent-run/work \
   --output target/real-project-agentic-feedback-agent-run/after.json
 ```
 
-Generated the same-turn observation from the normalized nudge and the observed
+Generated the same-turn observation from the normalized feedback and the observed
 after-report:
 
 ```bash
 node --input-type=module <<'EOF'
 import { readFileSync, writeFileSync } from 'node:fs';
 import {
-  createNudgeFromReport,
+  createAgentFeedbackFromReport,
   observeSameTurnFeedback,
 } from './integrations/agents/codex/dist/index.js';
 
-const nudge = createNudgeFromReport(
+const feedback = createAgentFeedbackFromReport(
   JSON.parse(
     readFileSync(
       'docs/analysis/2026-05-29-real-project-agentic-feedback-invalid-report.json',
@@ -192,10 +192,10 @@ const after = JSON.parse(
 writeFileSync(
   'docs/analysis/2026-05-29-real-project-agentic-feedback-same-turn-observation.json',
   JSON.stringify(
-    observeSameTurnFeedback(nudge, after, nudge.messages.length, 0, {
+    observeSameTurnFeedback(feedback, after, feedback.messages.length, 0, {
       responseSource: 'codex-main-session',
       turnBoundary: 'same_turn',
-      repeatNudgeCount: 0,
+      repeatFeedbackCount: 0,
     }),
     null,
     2
@@ -205,7 +205,7 @@ EOF
 ```
 
 The observed response source is `codex-main-session`, the turn boundary is
-`same_turn`, and no repeat nudge was needed. Raw target files are intentionally
+`same_turn`, and no repeat feedback was needed. Raw target files are intentionally
 not checked in because `target/` is build output; the normalized observation is
 checked in under `docs/analysis/`.
 
@@ -217,15 +217,15 @@ The invalid fixture reports the intentional policy drift:
 - `packages/ui` -> `exists_count` for missing package-local `AGENTS.md`
 - `scratch.md` -> `unexpected_file`
 
-The nudge output includes local references to `AGENTS.md`,
+The feedback output includes local references to `AGENTS.md`,
 `.agents/skills/`, and `.assura/config.yml`.
 
 ## Same-Turn Feedback Observation
 
-`observeSameTurnFeedback` recorded one useful nudge per violation class from
+`observeSameTurnFeedback` recorded one useful feedback per violation class from
 the observed repair run above. The after-report had zero remaining violations,
 the response source was `codex-main-session`, the turn boundary was
-`same_turn`, and no repeat nudge was needed:
+`same_turn`, and no repeat feedback was needed:
 
 - `exists_count`
 - `file_naming`
@@ -274,3 +274,42 @@ cargo test hooks --quiet
 cargo test --test real_project_agentic_feedback_tests --quiet
 cd integrations/agents/codex && npm run lint && npm test && npm run build
 ```
+
+## User-Facing CLI Review Follow-Up
+
+An independent Codex review of the updated user-facing CLI and website copy was
+requested on 2026-05-29. It flagged stale API docs, ambiguous roadmap wording,
+repo-local fixture assumptions, a pseudo `advice/status` command, and long
+rendered command blocks.
+
+Follow-up changes made after that review:
+
+- Treat guided output as general `assura check` formats, not an agent mode:
+  `--format advice` and `--format status`.
+- Keep display controls general: `--min-severity`, `--max-issues`, and
+  `--warn`.
+- Document that Git hooks run on Git events only; native agent/editor hooks and
+  hot-session management remain future integration work.
+- Update API and roadmap docs so local Git hook install/status/verify and
+  guided output are current, while native agent hooks remain future work.
+- Add a clone prerequisite for the fixture-based website walkthrough.
+- Replace the pseudo `--format advice/status` wording and long flow code block
+  with tables.
+
+Focused verification after this review:
+
+```bash
+cargo fmt --all -- --check
+cargo test --all-targets --quiet
+cargo run --quiet -- check --format json .
+cd integrations/agents/codex && npm test && npm run build
+cd website && npx pnpm@10.25.0 build
+git diff --check
+```
+
+Rendered page smoke check:
+
+- URL: `http://127.0.0.1:4321/examples/real-project-feedback/`
+- Result: HTTP page loaded, no page-level horizontal overflow, no old
+  `--agent`, `advice/status`, or `assura-codex-nudge` wording on the main
+  example page, and the clone prerequisite is visible.

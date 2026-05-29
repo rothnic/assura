@@ -26,7 +26,8 @@ constraints are not stable public surfaces in this release.
 | `assura info [path]` | Print text configuration details |
 | `assura watch [path]` | Run one check as a current watch wrapper |
 
-Supported check and status formats are `text`, `json`, and `yaml`.
+Supported check formats are `text`, `json`, `yaml`, `advice`, and `status`.
+Supported status formats are `text`, `json`, and `yaml`.
 
 ## Check Options
 
@@ -36,6 +37,8 @@ Supported check and status formats are `text`, `json`, and `yaml`.
 | `--fail-fast` | Stop after the first violation |
 | `--no-parallel` | Run validation without parallel traversal |
 | `--ls-lint-target-semantics` | Match LS-Lint path-argument behavior by checking only the explicit target path |
+| `--min-severity low|medium|high|critical` | Hide lower-severity items from `advice` and `status` output without changing what is checked |
+| `--max-issues <count>` | Cap displayed `advice` and `status` items without changing what is checked |
 
 ## Check JSON Shape
 
@@ -84,8 +87,15 @@ assura check --format json . > assura-report.json
 Fail the job when the command exits nonzero. Parse `violations` only when you
 need a custom summary or uploaded artifact.
 
+For guided local output, use:
+
+```bash
+assura check --format advice .
+assura check --format status .
+```
+
 ## Future APIs
 
-The roadmap includes richer agent nudges, quality measurement, and extension
-points. Those capabilities should be documented as future work until the repo
-contains a tested public API for them.
+The roadmap includes native agent hooks, hot editor sessions, quality
+measurement, and extension points. Those capabilities should be documented as
+future work until the repo contains a tested public API for them.

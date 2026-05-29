@@ -30,6 +30,16 @@ pub enum Commands {
         #[arg(short, long, value_enum, default_value = "text")]
         format: OutputFormat,
 
+        #[arg(
+            long,
+            value_parser = ["low", "medium", "high", "critical"],
+            help = "Only show advice and status items for this severity or higher"
+        )]
+        min_severity: Option<String>,
+
+        #[arg(long, help = "Maximum advice and status items to show")]
+        max_issues: Option<usize>,
+
         #[arg(short, long)]
         output: Option<PathBuf>,
 
@@ -183,6 +193,8 @@ pub enum OutputFormat {
     Text,
     Json,
     Yaml,
+    Advice,
+    Status,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]

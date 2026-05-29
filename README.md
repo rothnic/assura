@@ -98,10 +98,10 @@ See [Validation Command Tiers](docs/validation.md) for when to use each mode.
 
 ## Roadmap
 
-The Codex agent nudge MVP is advisory and available through the integration
-package. Hook install/status/verify, quality measurement, long-running watch
-mode, dependency graph validation, and plugin APIs are future work. They are
-not current v0.1 onboarding features.
+The agent feedback MVP is advisory. Local Git hook install/status/verify and
+guided `assura check --format advice` / `--format status` output are available;
+native agent hooks, hot editor sessions, quality measurement, long-running
+watch mode, dependency graph validation, and plugin APIs are future work.
 
 ## License
 

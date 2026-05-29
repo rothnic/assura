@@ -4,11 +4,11 @@ import { readFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 import {
   AssuraCheckExecutionError,
-  createNudgeFromReport,
+  createAgentFeedbackFromReport,
   parseStructureCheckReport,
-  renderNudgeJson,
-  renderNudgeStatusLine,
-  renderNudgeText,
+  renderAgentFeedbackJson,
+  renderAgentFeedbackStatusLine,
+  renderAgentFeedbackText,
   runAssuraCheck as executeAssuraCheck,
 } from "./index.js";
 
@@ -54,12 +54,12 @@ export function runCli(
   try {
     if (args.reportPath) {
       const report = parseStructureCheckReport(io.readFile(args.reportPath));
-      const nudge = createNudgeFromReport(report, {
+      const feedback = createAgentFeedbackFromReport(report, {
         advisory: args.advisory,
         maxMessages: args.maxMessages,
         minimumSeverity: args.minimumSeverity,
       });
-      printNudge(nudge, args.format, io);
+      printFeedback(feedback, args.format, io);
       return report.success ? 0 : 1;
     }
 
@@ -71,7 +71,7 @@ export function runCli(
       minimumSeverity: args.minimumSeverity,
       path: args.checkedPath,
     });
-    printNudge(run.nudge, args.format, io);
+    printFeedback(run.feedback, args.format, io);
     return run.exitCode;
   } catch (error) {
     io.writeError(error instanceof Error ? error.message : String(error));
@@ -157,28 +157,28 @@ function parseNonNegativeInteger(value: string, flag: string): number {
   return parsed;
 }
 
-function printNudge(
-  nudge: ReturnType<typeof createNudgeFromReport>,
+function printFeedback(
+  feedback: ReturnType<typeof createAgentFeedbackFromReport>,
   format: "json" | "status" | "text",
   io: CliIo
 ): void {
   if (format === "json") {
-    io.write(renderNudgeJson(nudge));
+    io.write(renderAgentFeedbackJson(feedback));
   } else if (format === "status") {
-    io.write(renderNudgeStatusLine(nudge));
+    io.write(renderAgentFeedbackStatusLine(feedback));
   } else {
-    io.write(renderNudgeText(nudge));
+    io.write(renderAgentFeedbackText(feedback));
   }
 }
 
 function helpText(): string {
-  return `assura-codex-nudge
+  return `assura-agent-feedback
 
-Create an advisory Codex/agent nudge from Assura structure-check output.
+Create advisory agent feedback from Assura structure-check output.
 
 Usage:
-  assura-codex-nudge --report assura-report.json [--format text|status|json]
-  assura-codex-nudge [--path .] [--assura-bin assura] [--format text|status|json]
+  assura-agent-feedback --report assura-report.json [--format text|status|json]
+  assura-agent-feedback [--path .] [--assura-bin assura] [--format text|status|json]
 
 Options:
   --minimum-severity low|medium|high|critical
@@ -188,6 +188,6 @@ Options:
 Exit codes:
   0  Assura report passed
   1  Assura report contained validation failures
-  2  Nudge CLI error or invalid report
+  2  Agent feedback CLI error or invalid report
 `;
 }

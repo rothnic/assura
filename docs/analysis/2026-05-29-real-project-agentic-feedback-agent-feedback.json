@@ -1,8 +1,10 @@
 {
   "status": "fail",
   "advisory": true,
-  "summary": "Assura found 3 structural violation(s) across 3 rule(s). This nudge is advisory unless your workflow enforces the Assura exit code.",
+  "summary": "Assura found 3 structural violation(s); 3 advisory feedback(s) will be shown across 3 rule(s). This only blocks when the surrounding workflow enforces the Assura exit code or treats this feedback as blocking.",
   "violationCount": 3,
+  "suppressedViolationCount": 0,
+  "minimumSeverity": null,
   "affectedRules": [
     "exists_count",
     "file_naming",
@@ -67,6 +69,6 @@
       "packages/ui",
       "scratch.md"
     ],
-    "nudgeCount": 3
+    "feedbackCount": 3
   }
 }

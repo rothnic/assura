@@ -14,8 +14,8 @@ repository matches the shape described in `.assura/config.yml`.
 - **LS-Lint Migration**: Convert LS-Lint 2.3 naming, regex, exists, ignore,
   wildcard extension, and directory-scope rules into Assura config.
 - **CI-Friendly Reports**: Use text locally and JSON or YAML for automation.
-- **Agent Nudge MVP**: Turn Assura JSON reports into advisory Codex/agent
-  guidance.
+- **Guided Feedback**: Use `assura check --format advice` or `--format status`
+  for concise repair guidance.
 
 ## Quick Start
 
@@ -32,10 +32,10 @@ assura check
 Assura currently focuses on truthful CLI validation, structure-first project
 shape checks, LS-Lint migration, and reproducible benchmark evidence.
 
-> **Agent nudge MVP**
+> **Agent feedback MVP**
 >
-> The Codex integration package provides a small advisory nudge MVP. Automatic
-> hook installation and complete agent orchestration remain future work.
+> `assura check` can render guided advice or one-line status output. Native
+> agent hooks and complete agent orchestration remain future work.
 
 ## Help
 

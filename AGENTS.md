@@ -11,7 +11,7 @@ Rust. The supported v0.1 onboarding surface provides:
 - `assura status --format json` for project/config/rule summaries
 - text, JSON, and YAML reports for local and CI automation
 
-Dependency graph validation, long-running watch mode, agent nudges, quality
+Dependency graph validation, long-running watch mode, agent feedback, quality
 measurement, and plugin APIs are roadmap items until implemented and tested.
 
 ### Key Dependencies

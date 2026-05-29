@@ -76,6 +76,75 @@ fn real_project_policy_invalid_fixture_reports_intended_drift() {
 }
 
 #[test]
+fn check_advice_format_renders_guided_output_in_one_command() {
+    let project = fixture_path("invalid");
+
+    let output = Command::new(assura_bin())
+        .arg("check")
+        .arg(&project)
+        .arg("--config")
+        .arg(project.join(".assura/config.yml"))
+        .arg("--format")
+        .arg("advice")
+        .output()
+        .unwrap();
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert_eq!(output.status.code(), Some(1), "stdout was:\n{stdout}");
+    assert!(stdout.contains("Assura found 3 structural violation(s)"));
+    assert!(stdout.contains("Next:"));
+    assert!(stdout.contains("References: AGENTS.md, .agents/skills/, .assura/config.yml"));
+}
+
+#[test]
+fn check_status_format_supports_general_display_limits() {
+    let project = fixture_path("invalid");
+
+    let output = Command::new(assura_bin())
+        .arg("check")
+        .arg(&project)
+        .arg("--config")
+        .arg(project.join(".assura/config.yml"))
+        .arg("--format")
+        .arg("status")
+        .arg("--min-severity")
+        .arg("medium")
+        .arg("--max-issues")
+        .arg("1")
+        .output()
+        .unwrap();
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert_eq!(output.status.code(), Some(1), "stdout was:\n{stdout}");
+    assert!(stdout.contains("Assura: 3 violation(s); showing 1 guided item(s)"));
+    assert!(stdout.contains("medium+ severity"));
+}
+
+#[test]
+fn check_guided_output_rejects_unknown_minimum_severity() {
+    let project = fixture_path("invalid");
+
+    let output = Command::new(assura_bin())
+        .arg("check")
+        .arg(&project)
+        .arg("--config")
+        .arg(project.join(".assura/config.yml"))
+        .arg("--format")
+        .arg("advice")
+        .arg("--min-severity")
+        .arg("urgent")
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(2));
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("unsupported minimum severity 'urgent'"),
+        "stderr was:\n{stderr}"
+    );
+}
+
+#[test]
 fn hooks_install_status_and_verify_are_agent_runnable() {
     let project = TempDir::new().unwrap();
     fs::create_dir_all(project.path().join(".git/hooks")).unwrap();

@@ -40,7 +40,7 @@ run_assura() {
 # Check if assura is available
 if run_assura --help >/dev/null 2>&1; then
     # Run assura check and capture output
-    if run_assura check "$PROJECT_ROOT" 2>&1; then
+    if run_assura check "$PROJECT_ROOT" --format advice 2>&1; then
         echo "✓ Assura validation passed"
         exit 0
     else

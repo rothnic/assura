@@ -96,5 +96,5 @@ The report contains `success`, `project_root`, `config_path`, `checked_path`,
 
 > **Future work**
 >
-> Long-running watch mode, plugin APIs, and agent nudges are planned separately
+> Long-running watch mode, plugin APIs, and agent feedback are planned separately
 > from the v0.1 onboarding release.

@@ -2,15 +2,15 @@
 
 ## Goal
 
-Complete `docs/goals/assura-real-project-policy-proof.md` end to end: a realistic Assura policy scenario with valid and invalid project states, reproducible check/report/nudge evidence, a first-class local feedback install/status/verify path, user-facing docs, tests, performance notes for the same-turn agent path, and review evidence.
+Complete `docs/goals/assura-real-project-policy-proof.md` end to end: a realistic Assura policy scenario with valid and invalid project states, reproducible check/report/feedback evidence, a first-class local feedback install/status/verify path, user-facing docs, tests, performance notes for the same-turn agent path, and review evidence.
 
 ## What I Already Know
 
 - The current goal title is "Assura real project agentic feedback proof" and it is `status: planned`.
 - The goal requires a single canonical scenario that proves Assura can protect a real project shape and give useful agent/developer feedback.
-- Supported v0.1 surfaces include `assura check`, `assura init`, `assura migrate`, `assura status`, JSON/YAML/text reports, and advisory Codex nudges.
+- Supported v0.1 surfaces include `assura check`, `assura init`, `assura migrate`, `assura status`, JSON/YAML/text reports, and advisory agent feedback.
 - `assura hooks install`, `assura hooks uninstall`, and `assura hooks status` exist, but the goal requires a verify path and clearer agent-runnable status.
-- The Codex nudge package already parses `assura check --format json` reports and returns advisory messages plus basic nudge metrics.
+- The agent feedback package already parses `assura check --format json` reports and returns advisory messages plus basic feedback metrics.
 - Structure enforcement supports direct file/directory contracts, forbidden patterns, and Assura extension `exists` direct-count rules.
 - Trellis is the canonical workflow/source-of-truth layer; the scenario must not introduce a competing task system.
 
@@ -27,10 +27,10 @@ Complete `docs/goals/assura-real-project-policy-proof.md` end to end: a realisti
 - Include a readable scenario `.assura/config.yml` using supported structure-first fields.
 - Include intentional invalid drift covering unexpected direct contents, naming drift, and existence/count drift, including an Assura-specific exact `exists:1` rule for project guidance such as `AGENTS.md`.
 - Add focused tests proving the valid fixture passes and invalid fixture fails with the intended rule categories.
-- Add JSON report and nudge proof that are generated or reproducible from commands.
+- Add JSON report and feedback proof that are generated or reproducible from commands.
 - Extend the local feedback loop with install/status/verify behavior that an agent can run and reason about.
 - Add tests for idempotent install, missing/broken hook detection, and verify success/failure.
-- Add docs or website content showing install Assura, define policy, install/verify feedback loop, run check, inspect failure, receive nudge, fix drift, and rerun.
+- Add docs or website content showing install Assura, define policy, install/verify feedback loop, run check, inspect failure, receive feedback, fix drift, and rerun.
 - Record review evidence under `docs/analysis/` with exact commands, result paths, limitations, and user-facing notes.
 - Keep broader roadmap claims out of the user-facing content.
 
@@ -41,7 +41,7 @@ Complete `docs/goals/assura-real-project-policy-proof.md` end to end: a realisti
 - [ ] The invalid fixture failure includes `unexpected_file` or `unexpected_directory`, `file_naming` or `directory_naming`, and `exists_count`.
 - [ ] Scenario docs label LS-Lint-compatible behavior separately from Assura-specific exact `exists:1` behavior.
 - [ ] `assura hooks verify` or equivalent is implemented, documented, and tested.
-- [ ] Codex nudge output for the invalid fixture references useful local guidance and records same-turn feedback metrics.
+- [ ] Codex feedback output for the invalid fixture references useful local guidance and records same-turn feedback metrics.
 - [ ] Performance evidence describes the repeated same-turn check path and does not make unsupported aggregate claims.
 - [ ] Minimum validation commands from the goal pass or have a concrete platform blocker recorded.
 - [ ] PR description links the goal doc and review record.
@@ -67,5 +67,5 @@ Complete `docs/goals/assura-real-project-policy-proof.md` end to end: a realisti
 - Goal: `docs/goals/assura-real-project-policy-proof.md`
 - Specs: `.trellis/spec/assura/index.md`, `.trellis/spec/assura/structure-enforcement.md`, `.trellis/spec/assura/tooling-stabilization.md`
 - Existing hook manager: `src/cli/hooks.rs`, `src/cli/args.rs`, `src/cli/full_entry.rs`
-- Existing nudge package: `integrations/agents/codex/src/index.ts`, `integrations/agents/codex/src/cli.ts`
+- Existing feedback package: `integrations/agents/codex/src/index.ts`, `integrations/agents/codex/src/cli.ts`
 - Existing website routes: `website/src/content/docs/examples/` and `website/src/content/docs/guides/`

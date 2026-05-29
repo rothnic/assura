@@ -2,6 +2,9 @@
 #[cfg(feature = "full-cli")]
 pub mod args;
 pub mod check;
+pub mod check_feedback;
+#[cfg(feature = "full-cli")]
+pub mod check_report;
 #[cfg(feature = "full-cli")]
 mod command_options;
 #[cfg(feature = "full-cli")]

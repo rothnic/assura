@@ -6,10 +6,10 @@ import assert from "node:assert/strict";
 import {
   AssuraCheckExecutionError,
   compareEvaluationRuns,
-  createNudgeFromReport,
+  createAgentFeedbackFromReport,
   observeSameTurnFeedback,
   parseStructureCheckReport,
-  renderNudgeStatusLine,
+  renderAgentFeedbackStatusLine,
   runAssuraCheck,
   type AssuraProcessRunner,
   type StructureCheckReport,
@@ -43,29 +43,29 @@ const failingReport: StructureCheckReport = {
   ],
 };
 
-test("passing Assura JSON produces no blocking nudge", () => {
-  const nudge = createNudgeFromReport(passingReport);
+test("passing Assura JSON produces no blocking feedback", () => {
+  const feedback = createAgentFeedbackFromReport(passingReport);
 
-  assert.equal(nudge.status, "pass");
-  assert.equal(nudge.violationCount, 0);
-  assert.equal(nudge.messages.length, 0);
-  assert.equal(nudge.metrics.nudgeCount, 0);
+  assert.equal(feedback.status, "pass");
+  assert.equal(feedback.violationCount, 0);
+  assert.equal(feedback.messages.length, 0);
+  assert.equal(feedback.metrics.feedbackCount, 0);
 });
 
-test("failing Assura JSON produces actionable nudge content", () => {
-  const nudge = createNudgeFromReport(failingReport);
+test("failing Assura JSON produces actionable feedback content", () => {
+  const feedback = createAgentFeedbackFromReport(failingReport);
 
-  assert.equal(nudge.status, "fail");
-  assert.equal(nudge.violationCount, 1);
-  assert.equal(nudge.suppressedViolationCount, 0);
-  assert.deepEqual(nudge.affectedRules, ["file_naming"]);
-  assert.match(nudge.summary, /advisory/);
-  assert.match(nudge.messages[0]?.guidance.join(" "), /Rename the file/);
-  assert.ok(nudge.messages[0]?.references.includes(".assura/config.yml"));
+  assert.equal(feedback.status, "fail");
+  assert.equal(feedback.violationCount, 1);
+  assert.equal(feedback.suppressedViolationCount, 0);
+  assert.deepEqual(feedback.affectedRules, ["file_naming"]);
+  assert.match(feedback.summary, /advisory/);
+  assert.match(feedback.messages[0]?.guidance.join(" "), /Rename the file/);
+  assert.ok(feedback.messages[0]?.references.includes(".assura/config.yml"));
 });
 
-test("nudge options filter by severity and cap message count", () => {
-  const nudge = createNudgeFromReport(
+test("feedback options filter by severity and cap message count", () => {
+  const feedback = createAgentFeedbackFromReport(
     {
       ...failingReport,
       violations: [
@@ -92,12 +92,12 @@ test("nudge options filter by severity and cap message count", () => {
     { advisory: false, maxMessages: 1, minimumSeverity: "high" }
   );
 
-  assert.equal(nudge.violationCount, 3);
-  assert.equal(nudge.messages.length, 1);
-  assert.equal(nudge.messages[0]?.rule, "exists_count");
-  assert.equal(nudge.suppressedViolationCount, 2);
-  assert.match(renderNudgeStatusLine(nudge), /1 blocking nudge/);
-  assert.match(renderNudgeStatusLine(nudge), /high\+ severity/);
+  assert.equal(feedback.violationCount, 3);
+  assert.equal(feedback.messages.length, 1);
+  assert.equal(feedback.messages[0]?.rule, "exists_count");
+  assert.equal(feedback.suppressedViolationCount, 2);
+  assert.match(renderAgentFeedbackStatusLine(feedback), /1 blocking feedback/);
+  assert.match(renderAgentFeedbackStatusLine(feedback), /high\+ severity/);
 });
 
 test("invalid JSON is rejected with a clear error", () => {
@@ -119,33 +119,33 @@ test("measurement comparison computes precision and loop deltas", () => {
       structuralViolationsIntroduced: 4,
       correctionLoops: 5,
       instructionAdherence: 0.6,
-      nudgeCount: 0,
-      usefulNudges: 0,
-      noisyNudges: 0,
+      feedbackCount: 0,
+      usefulFeedback: 0,
+      noisyFeedback: 0,
       missedViolations: 4,
     },
     {
-      mode: "assura_runtime_nudges",
+      mode: "assura_runtime_feedback",
       structuralViolationsIntroduced: 1,
       correctionLoops: 2,
       instructionAdherence: 0.9,
-      nudgeCount: 3,
-      usefulNudges: 2,
-      noisyNudges: 1,
+      feedbackCount: 3,
+      usefulFeedback: 2,
+      noisyFeedback: 1,
       missedViolations: 1,
     },
   ]);
 
   const runtime = comparison.summaries.find(
-    (summary) => summary.mode === "assura_runtime_nudges"
+    (summary) => summary.mode === "assura_runtime_feedback"
   );
-  assert.equal(runtime?.nudgePrecision, 2 / 3);
+  assert.equal(runtime?.feedbackPrecision, 2 / 3);
   assert.equal(runtime?.correctionLoopDeltaVsInstructions, -3);
   assert.equal(runtime?.violationDeltaVsInstructions, -3);
 });
 
 test("same-turn feedback observation records fixed and remaining violations", () => {
-  const nudge = createNudgeFromReport({
+  const feedback = createAgentFeedbackFromReport({
     ...failingReport,
     violations: [
       failingReport.violations[0],
@@ -169,38 +169,38 @@ test("same-turn feedback observation records fixed and remaining violations", ()
     ],
   };
 
-  const observations = observeSameTurnFeedback(nudge, afterReport, 1, 1, {
+  const observations = observeSameTurnFeedback(feedback, afterReport, 1, 1, {
     responseSource: "codex-test",
     turnBoundary: "same_turn",
-    repeatNudgeCount: 0,
+    repeatFeedbackCount: 0,
   });
 
   assert.deepEqual(observations, [
     {
       violationClass: "exists_count",
-      nudgeCount: 1,
+      feedbackCount: 1,
       fixedBeforeNewTurn: false,
       usefulness: "mixed",
       remainingViolations: 1,
       responseSource: "codex-test",
       turnBoundary: "same_turn",
-      repeatNudgeCount: 0,
+      repeatFeedbackCount: 0,
     },
     {
       violationClass: "file_naming",
-      nudgeCount: 1,
+      feedbackCount: 1,
       fixedBeforeNewTurn: true,
       usefulness: "mixed",
       remainingViolations: 0,
       responseSource: "codex-test",
       turnBoundary: "same_turn",
-      repeatNudgeCount: 0,
+      repeatFeedbackCount: 0,
     },
   ]);
 });
 
-test("CLI reads a report file and outputs JSON nudge data", () => {
-  const dir = mkdtempSync(join(tmpdir(), "assura-codex-nudge-"));
+test("CLI reads a report file and outputs JSON feedback data", () => {
+  const dir = mkdtempSync(join(tmpdir(), "assura-agent-feedback-"));
   const reportPath = join(dir, "assura-report.json");
   writeFileSync(reportPath, JSON.stringify(failingReport), "utf8");
   const output: string[] = [];
@@ -215,15 +215,15 @@ test("CLI reads a report file and outputs JSON nudge data", () => {
   });
 
   assert.equal(exitCode, 1);
-  const nudge = JSON.parse(output.join("\n")) as {
+  const feedback = JSON.parse(output.join("\n")) as {
     status: string;
     violationCount: number;
   };
-  assert.equal(nudge.status, "fail");
-  assert.equal(nudge.violationCount, 1);
+  assert.equal(feedback.status, "fail");
+  assert.equal(feedback.violationCount, 1);
 });
 
-test("CLI can print a configured status-line nudge", () => {
+test("CLI can print a configured status-line feedback", () => {
   const output: string[] = [];
 
   const exitCode = runCli(
@@ -258,7 +258,7 @@ test("CLI can print a configured status-line nudge", () => {
   );
 
   assert.equal(exitCode, 1);
-  assert.match(output.join("\n"), /1 blocking nudge/);
+  assert.match(output.join("\n"), /1 blocking feedback/);
   assert.match(output.join("\n"), /high\+ severity/);
 });
 
@@ -268,7 +268,7 @@ test("runAssuraCheck preserves success exit code from JSON report", () => {
   const run = runAssuraCheck({ path: "src", runner });
 
   assert.equal(run.exitCode, 0);
-  assert.equal(run.nudge.status, "pass");
+  assert.equal(run.feedback.status, "pass");
   assert.equal(run.report.checked_path, passingReport.checked_path);
 });
 
@@ -278,8 +278,8 @@ test("runAssuraCheck preserves validation failure exit code from JSON report", (
   const run = runAssuraCheck({ assuraBin: "assura-dev", path: ".", runner });
 
   assert.equal(run.exitCode, 1);
-  assert.equal(run.nudge.status, "fail");
-  assert.equal(run.nudge.affectedRules[0], "file_naming");
+  assert.equal(run.feedback.status, "fail");
+  assert.equal(run.feedback.affectedRules[0], "file_naming");
 });
 
 test("runAssuraCheck preserves non-JSON Assura failure exit code", () => {

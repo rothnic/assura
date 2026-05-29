@@ -19,9 +19,9 @@ The current supported workflow is intentionally small:
 > **Pre-1.0 scope**
 >
 > This release focuses on truthful onboarding and LS-Lint-compatible structure
-> checks. The Codex agent nudge MVP is advisory; automatic hook installation,
-> custom plugin APIs, role profiles, and quality scoring are roadmap items, not
-> supported v0.1 features.
+> checks. Local Git hook install/status/verify and advisory guided output are
+> supported. Native agent hooks, hot editor sessions, custom plugin APIs, role
+> profiles, and quality scoring are roadmap items.
 
 ## The Problem
 
@@ -75,13 +75,12 @@ Use another tool alongside Assura when you need:
 The `assura watch` command in this release is a truthful one-shot wrapper over
 `assura check`; it is not a long-running file watcher yet.
 
-## Agent Nudge Direction
+## Agent Feedback Direction
 
-The Codex integration package provides the first advisory nudge MVP. It can
-consume `assura check --format json` output, explain structural failures, and
-track comparison metrics for instructions-only, `AGENTS.md`/skills, and Assura
-runtime-nudge workflows. Automatic hook installation and complete agent
-orchestration remain future work.
+`assura check --format advice` and `assura check --format status` provide the
+first guided feedback path. The lower-level integration package can still render
+feedback from JSON reports for wrappers, but native agent hooks, hot-session
+management, and complete agent orchestration remain future work.
 
 ## Start Here
 
