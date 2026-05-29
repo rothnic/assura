@@ -253,3 +253,24 @@ data.
   hooks or run a background service.
 - Same-turn observation is local evidence produced by the Codex integration
   library. It is not hosted telemetry.
+
+## PR Review Follow-Up
+
+Gemini Code Assist reviewed PR #13 on 2026-05-29 and opened three medium
+priority comments. The follow-up commit addressed them by:
+
+- reading only the first line of worktree `.git` files before parsing
+  `gitdir:`;
+- reading only the first line of Git `commondir` files before resolving common
+  hooks;
+- guarding `observeSameTurnFeedback` against a missing `violations` array in an
+  after-report.
+
+Focused verification after the review fixes:
+
+```bash
+cargo fmt --all -- --check
+cargo test hooks --quiet
+cargo test --test real_project_agentic_feedback_tests --quiet
+cd integrations/agents/codex && npm run lint && npm test && npm run build
+```

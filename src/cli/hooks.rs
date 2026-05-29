@@ -239,7 +239,10 @@ fn resolve_git_hooks_dir(project_root: &Path) -> HookResult<PathBuf> {
 
 fn resolve_gitdir_file(git_path: &Path) -> HookResult<PathBuf> {
     let content = std::fs::read_to_string(git_path)?;
-    let Some(raw_git_dir) = content.trim().strip_prefix("gitdir:") else {
+    let Some(first_line) = content.lines().next() else {
+        return Err(HookError::GitNotFound);
+    };
+    let Some(raw_git_dir) = first_line.trim().strip_prefix("gitdir:") else {
         return Err(HookError::GitNotFound);
     };
     let git_dir = PathBuf::from(raw_git_dir.trim());
@@ -258,7 +261,10 @@ fn resolve_common_git_dir(git_dir: &Path) -> PathBuf {
     let Ok(content) = std::fs::read_to_string(&common_dir_file) else {
         return git_dir.to_path_buf();
     };
-    let common_dir = PathBuf::from(content.trim());
+    let Some(first_line) = content.lines().next() else {
+        return git_dir.to_path_buf();
+    };
+    let common_dir = PathBuf::from(first_line.trim());
     let resolved = if common_dir.is_absolute() {
         common_dir
     } else {
@@ -358,10 +364,10 @@ mod tests {
         let git_dir = project.path().join("main.git/worktrees/agent");
         std::fs::create_dir_all(&git_dir).unwrap();
         std::fs::create_dir_all(project.path().join("main.git/hooks")).unwrap();
-        std::fs::write(git_dir.join("commondir"), "../..\n").unwrap();
+        std::fs::write(git_dir.join("commondir"), "../..\n# ignored metadata\n").unwrap();
         std::fs::write(
             project.path().join(".git"),
-            format!("gitdir: {}\n", git_dir.display()),
+            format!("gitdir: {}\n# ignored metadata\n", git_dir.display()),
         )
         .unwrap();
 

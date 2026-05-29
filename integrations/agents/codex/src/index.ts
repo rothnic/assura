@@ -275,7 +275,7 @@ export function observeSameTurnFeedback(
   const defaultUsefulness = classifyUsefulness(usefulNudges, noisyNudges);
   const turnBoundary = options.turnBoundary ?? "unknown";
   return nudge.affectedRules.map((violationClass) => {
-    const remainingViolations = afterReport.violations.filter(
+    const remainingViolations = (afterReport?.violations ?? []).filter(
       (violation) => violation.rule === violationClass
     ).length;
     const nudgeCount = nudge.messages.filter(
