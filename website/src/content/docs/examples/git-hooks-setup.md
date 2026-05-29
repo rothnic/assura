@@ -38,18 +38,22 @@ pre-push hook is advisory unless `ASSURA_BLOCKING_PUSH=1` is set.
 
 If the check fails, fix the reported files and commit again.
 
-## Hooks Versus Agent Nudges
+## Hooks Versus Agent Wrappers
 
 Git hooks and agent nudges are separate delivery paths:
 
 - Git hooks are executed by Git before commit, before push, or after checkout.
   They can block only when their script exits nonzero in a blocking mode.
-- Agent nudges are produced by `assura-codex-nudge` after an Assura JSON report
-  exists. They can be rendered as a concise status line, text guidance, or JSON
-  for a wrapper to attach to a later tool result or agent message.
+- Agent nudges are produced by the Codex nudge package or
+  `assura-codex-nudge` after an Assura JSON report exists. A wrapper decides
+  whether to show the nudge as a status line, text guidance, or JSON.
 
 Current Assura installs local Git hooks. It does not yet install a Codex tool
 hook that automatically injects nudge text into tool-call responses.
+
+See [Agent Feedback Delivery](/reference/agent-feedback/) for the distinction
+between manual CLI proof, Git hooks, nudge wrappers, and future native agent
+hooks.
 
 ## Manual Hook Alternative
 

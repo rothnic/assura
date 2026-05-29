@@ -138,4 +138,7 @@ assura hooks verify
 > workflow enforces the command exit code.
 
 See [Real Project Feedback](/examples/real-project-feedback/) for a complete
-policy, hook, check, nudge, and rerun walkthrough.
+policy, hook, check, nudge, and rerun walkthrough. See
+[Agent Feedback Delivery](/reference/agent-feedback/) for the difference
+between manual CLI proof, Git hooks, nudge wrappers, future native agent hooks,
+and warm-session reuse.
