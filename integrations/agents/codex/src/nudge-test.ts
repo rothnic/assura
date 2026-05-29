@@ -9,6 +9,7 @@ import {
   createNudgeFromReport,
   observeSameTurnFeedback,
   parseStructureCheckReport,
+  renderNudgeStatusLine,
   runAssuraCheck,
   type AssuraProcessRunner,
   type StructureCheckReport,
@@ -56,10 +57,47 @@ test("failing Assura JSON produces actionable nudge content", () => {
 
   assert.equal(nudge.status, "fail");
   assert.equal(nudge.violationCount, 1);
+  assert.equal(nudge.suppressedViolationCount, 0);
   assert.deepEqual(nudge.affectedRules, ["file_naming"]);
   assert.match(nudge.summary, /advisory/);
   assert.match(nudge.messages[0]?.guidance.join(" "), /Rename the file/);
   assert.ok(nudge.messages[0]?.references.includes(".assura/config.yml"));
+});
+
+test("nudge options filter by severity and cap message count", () => {
+  const nudge = createNudgeFromReport(
+    {
+      ...failingReport,
+      violations: [
+        {
+          path: "/repo/readme.md",
+          rule: "file_naming",
+          message: "File name should be README.md",
+          severity: "low",
+        },
+        {
+          path: "/repo/packages/ui",
+          rule: "exists_count",
+          message: "Directory has 0 files matching AGENTS.md, expected 1",
+          severity: "high",
+        },
+        {
+          path: "/repo/scratch.md",
+          rule: "unexpected_file",
+          message: "Unexpected file",
+          severity: "critical",
+        },
+      ],
+    },
+    { advisory: false, maxMessages: 1, minimumSeverity: "high" }
+  );
+
+  assert.equal(nudge.violationCount, 3);
+  assert.equal(nudge.messages.length, 1);
+  assert.equal(nudge.messages[0]?.rule, "exists_count");
+  assert.equal(nudge.suppressedViolationCount, 2);
+  assert.match(renderNudgeStatusLine(nudge), /1 blocking nudge/);
+  assert.match(renderNudgeStatusLine(nudge), /high\+ severity/);
 });
 
 test("invalid JSON is rejected with a clear error", () => {
@@ -183,6 +221,45 @@ test("CLI reads a report file and outputs JSON nudge data", () => {
   };
   assert.equal(nudge.status, "fail");
   assert.equal(nudge.violationCount, 1);
+});
+
+test("CLI can print a configured status-line nudge", () => {
+  const output: string[] = [];
+
+  const exitCode = runCli(
+    [
+      "--report",
+      "assura-report.json",
+      "--format",
+      "status",
+      "--blocking",
+      "--minimum-severity",
+      "high",
+      "--max-messages",
+      "1",
+    ],
+    {
+      readFile: () =>
+        JSON.stringify({
+          ...failingReport,
+          violations: [
+            failingReport.violations[0],
+            {
+              path: "/repo/scratch.md",
+              rule: "unexpected_file",
+              message: "Unexpected file",
+              severity: "high",
+            },
+          ],
+        }),
+      write: (message) => output.push(message),
+      writeError: (message) => output.push(message),
+    }
+  );
+
+  assert.equal(exitCode, 1);
+  assert.match(output.join("\n"), /1 blocking nudge/);
+  assert.match(output.join("\n"), /high\+ severity/);
 });
 
 test("runAssuraCheck preserves success exit code from JSON report", () => {

@@ -78,6 +78,55 @@ The nudge is advisory unless your workflow enforces the Assura exit code. It
 points back to project-local guidance such as `AGENTS.md` and
 `.assura/config.yml`.
 
+For compact agent output, render only the status line:
+
+```bash
+assura-codex-nudge --report assura-report.json --format status
+```
+
+For stricter workflows, configure the nudge surface:
+
+```bash
+assura-codex-nudge \
+  --report assura-report.json \
+  --format status \
+  --minimum-severity high \
+  --max-messages 3 \
+  --blocking
+```
+
+`--minimum-severity` controls which violation severities become nudge messages,
+`--max-messages` caps the number of messages shown, and `--blocking` marks the
+nudge as blocking metadata for the surrounding workflow. The CLI still exits
+with Assura's result: `0` when the report passes and `1` when the report
+contains validation failures.
+
+## When Feedback Runs
+
+There are two feedback paths:
+
+- Git hooks run when Git invokes them. The generated pre-commit hook runs before
+  a commit, the pre-push hook runs before a push, and the post-checkout hook
+  runs after checkout. On ordinary feature branches, the generated hooks are
+  advisory unless the hook configuration says otherwise.
+- Codex nudges run when a wrapper, script, or future Codex hook invokes
+  `assura-codex-nudge` after an Assura JSON report exists.
+
+This example verifies report-to-nudge conversion, configurable nudge rendering,
+hook install/status/verify behavior, and local same-turn observation data. It
+does not yet install a native Codex tool hook that automatically blocks a tool
+call or appends a nudge to the next tool result.
+
+A future Codex hook should make that delivery policy explicit:
+
+- before a tool call: optionally run a cheap status check and block only when
+  configured as blocking;
+- after a tool call: run Assura on the relevant scope, then append either a
+  concise status line or a bounded nudge list to the next tool result or agent
+  message;
+- before a user-facing response: include only unresolved, configured-severity
+  nudges so the agent does not repeat noisy advice.
+
 ## Observe Same-Turn Feedback
 
 The Codex integration exposes `observeSameTurnFeedback` for recording whether a

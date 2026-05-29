@@ -25,6 +25,8 @@ export interface StructureCheckReport {
 export interface NudgeOptions {
   advisory?: boolean;
   guidanceReferences?: string[];
+  minimumSeverity?: string;
+  maxMessages?: number;
 }
 
 export interface NudgeMessage {
@@ -48,6 +50,8 @@ export interface NudgeResult {
   advisory: boolean;
   summary: string;
   violationCount: number;
+  suppressedViolationCount: number;
+  minimumSeverity: string | null;
   affectedRules: string[];
   messages: NudgeMessage[];
   metrics: NudgeMetrics;
@@ -169,8 +173,16 @@ export function createNudgeFromReport(
 ): NudgeResult {
   const advisory = options.advisory ?? true;
   const references = options.guidanceReferences ?? DEFAULT_REFERENCES;
-  const affectedRules = unique(report.violations.map((violation) => violation.rule));
-  const affectedPaths = unique(report.violations.map((violation) => violation.path));
+  const minimumSeverity = options.minimumSeverity ?? null;
+  const maxMessages = normalizeMaxMessages(options.maxMessages);
+  const filteredViolations = report.violations.filter((violation) =>
+    meetsMinimumSeverity(violation.severity, minimumSeverity)
+  );
+  const shownViolations =
+    maxMessages === null ? filteredViolations : filteredViolations.slice(0, maxMessages);
+  const affectedRules = unique(shownViolations.map((violation) => violation.rule));
+  const affectedPaths = unique(shownViolations.map((violation) => violation.path));
+  const suppressedViolationCount = report.violations.length - shownViolations.length;
 
   if (report.success) {
     return {
@@ -178,6 +190,8 @@ export function createNudgeFromReport(
       advisory,
       summary: `Assura passed for ${report.checked_path}; no runtime nudge is needed.`,
       violationCount: 0,
+      suppressedViolationCount: 0,
+      minimumSeverity,
       affectedRules: [],
       messages: [],
       metrics: {
@@ -189,7 +203,7 @@ export function createNudgeFromReport(
     };
   }
 
-  const messages = report.violations.map((violation) => ({
+  const messages = shownViolations.map((violation) => ({
     path: violation.path,
     rule: violation.rule,
     severity: violation.severity,
@@ -201,8 +215,10 @@ export function createNudgeFromReport(
   return {
     status: "fail",
     advisory,
-    summary: `Assura found ${report.violations.length} structural violation(s) across ${affectedRules.length} rule(s). This nudge is advisory unless your workflow enforces the Assura exit code.`,
+    summary: summarizeNudge(report, messages.length, affectedRules.length, suppressedViolationCount, advisory, minimumSeverity),
     violationCount: report.violations.length,
+    suppressedViolationCount,
+    minimumSeverity,
     affectedRules,
     messages,
     metrics: {
@@ -212,6 +228,23 @@ export function createNudgeFromReport(
       nudgeCount: messages.length,
     },
   };
+}
+
+export function renderNudgeStatusLine(nudge: NudgeResult): string {
+  if (nudge.status === "pass") {
+    return "Assura: pass; no structural nudges.";
+  }
+
+  const mode = nudge.advisory ? "advisory" : "blocking";
+  const threshold = nudge.minimumSeverity
+    ? ` at ${nudge.minimumSeverity}+ severity`
+    : "";
+  const suppressed =
+    nudge.suppressedViolationCount > 0
+      ? `; ${nudge.suppressedViolationCount} lower-priority or overflow violation(s) suppressed`
+      : "";
+
+  return `Assura: ${nudge.violationCount} violation(s); ${nudge.messages.length} ${mode} nudge(s)${threshold}${suppressed}.`;
 }
 
 export function runAssuraCheck(
@@ -298,7 +331,7 @@ export function observeSameTurnFeedback(
 }
 
 export function renderNudgeText(nudge: NudgeResult): string {
-  const lines = [nudge.summary];
+  const lines = [renderNudgeStatusLine(nudge), nudge.summary];
   if (nudge.messages.length === 0) {
     return lines.join("\n");
   }
@@ -350,6 +383,65 @@ function classifyUsefulness(
     return "noisy";
   }
   return "useful";
+}
+
+function summarizeNudge(
+  report: StructureCheckReport,
+  shownMessageCount: number,
+  shownRuleCount: number,
+  suppressedViolationCount: number,
+  advisory: boolean,
+  minimumSeverity: string | null
+): string {
+  const threshold = minimumSeverity ? ` at ${minimumSeverity}+ severity` : "";
+  const mode = advisory ? "advisory" : "blocking";
+  const suppressed =
+    suppressedViolationCount > 0
+      ? ` ${suppressedViolationCount} violation(s) were suppressed by severity or message-count settings.`
+      : "";
+
+  return `Assura found ${report.violations.length} structural violation(s); ${shownMessageCount} ${mode} nudge(s)${threshold} will be shown across ${shownRuleCount} rule(s).${suppressed} This only blocks when the surrounding workflow enforces the Assura exit code or treats this nudge as blocking.`;
+}
+
+function normalizeMaxMessages(maxMessages: number | undefined): number | null {
+  if (maxMessages === undefined) {
+    return null;
+  }
+  if (!Number.isInteger(maxMessages) || maxMessages < 0) {
+    throw new Error("maxMessages must be a non-negative integer");
+  }
+  return maxMessages;
+}
+
+function meetsMinimumSeverity(
+  severity: string,
+  minimumSeverity: string | null
+): boolean {
+  if (!minimumSeverity) {
+    return true;
+  }
+
+  const severityRank = severityRankFor(severity);
+  const minimumRank = severityRankFor(minimumSeverity);
+  if (severityRank === null || minimumRank === null) {
+    return severity === minimumSeverity;
+  }
+  return severityRank >= minimumRank;
+}
+
+function severityRankFor(severity: string): number | null {
+  switch (severity.toLowerCase()) {
+    case "low":
+      return 1;
+    case "medium":
+      return 2;
+    case "high":
+      return 3;
+    case "critical":
+      return 4;
+    default:
+      return null;
+  }
 }
 
 function guidanceForViolation(violation: StructureViolation): string[] {
