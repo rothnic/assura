@@ -103,29 +103,35 @@ contains validation failures.
 
 ## When Feedback Runs
 
-There are two feedback paths:
+```text
+Git path today
 
-- Git hooks run when Git invokes them. The generated pre-commit hook runs before
-  a commit, the pre-push hook runs before a push, and the post-checkout hook
-  runs after checkout. On ordinary feature branches, the generated hooks are
-  advisory unless the hook configuration says otherwise.
-- Codex nudges run when a wrapper, script, or future Codex hook invokes
-  `assura-codex-nudge` after an Assura JSON report exists.
+git commit  -> pre-commit hook  -> assura check -> block on main/master
+git push    -> pre-push hook    -> assura check -> block only when configured
+git checkout -> post-checkout   -> assura check -> advisory status
 
-This example verifies report-to-nudge conversion, configurable nudge rendering,
-hook install/status/verify behavior, and local same-turn observation data. It
-does not yet install a native Codex tool hook that automatically blocks a tool
-call or appends a nudge to the next tool result.
+Agent path today
 
-A future Codex hook should make that delivery policy explicit:
+assura check --format json -> assura-codex-nudge -> status | text | json
+                                                   -> wrapper decides display/block
 
-- before a tool call: optionally run a cheap status check and block only when
-  configured as blocking;
-- after a tool call: run Assura on the relevant scope, then append either a
-  concise status line or a bounded nudge list to the next tool result or agent
-  message;
-- before a user-facing response: include only unresolved, configured-severity
-  nudges so the agent does not repeat noisy advice.
+Codex hook target
+
+tool call finishes -> scoped assura check -> append status or bounded nudge
+                                      \-> block only when policy says blocking
+```
+
+| Path | Trigger | Output | Can block today? |
+| --- | --- | --- | --- |
+| Git pre-commit | `git commit` | Hook output plus Assura report | Yes, on `main` and `master`; advisory elsewhere |
+| Git pre-push | `git push` | Hook output plus Assura report | Only with `ASSURA_BLOCKING_PUSH=1` |
+| Git post-checkout | `git checkout` | Local status output | No, advisory |
+| Nudge CLI | Existing Assura JSON report or `--path` run | `status`, `text`, or `json` | It returns Assura's exit code; the wrapper decides whether to block |
+| Native Codex hook | Future tool-call wrapper | Status line or bounded nudge attached to a tool result or agent message | Not implemented in this example |
+
+This example proves the current rows: hook install/status/verify,
+report-to-nudge conversion, configurable nudge output, and same-turn
+observation. It does not yet install the native Codex hook row.
 
 ## Observe Same-Turn Feedback
 
