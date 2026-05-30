@@ -15,7 +15,7 @@ library internals as unstable until a later release documents a stable API.
 ## Commands
 
 ```bash
-assura check [path] [--format text|json|yaml]
+assura check [path] [--format text|json|yaml|advice|status]
 assura status [path] [--format text|json|yaml]
 assura init [path] [--force] [--no-git-hooks]
 assura migrate [.ls-lint.yml] --output .assura/config.yml
@@ -25,6 +25,10 @@ assura watch [path]
 
 `assura check` is the primary validation command. `assura watch` currently runs
 one check and exits with the same status as `check`.
+
+`advice` and `status` are guided check output formats. Display filters such as
+`--min-severity low|medium|high|critical` and `--max-issues <count>` affect
+only those guided formats; they do not change the configured policy check.
 
 ## Exit Codes
 
@@ -73,3 +77,10 @@ assura check --format json . > assura-report.json
 ```
 
 Then parse `.success` and `.violations` in your CI or local script.
+
+For local repair guidance or compact hook output:
+
+```bash
+assura check --format advice .
+assura check --format status .
+```

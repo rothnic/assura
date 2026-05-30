@@ -1,0 +1,9 @@
+{
+  "success": true,
+  "project_root": "tests/fixtures/real-project-agentic-feedback/valid",
+  "config_path": "tests/fixtures/real-project-agentic-feedback/valid/.assura/config.yml",
+  "checked_path": "tests/fixtures/real-project-agentic-feedback/valid",
+  "files_checked": 20,
+  "dirs_checked": 12,
+  "violations": []
+}

@@ -1,0 +1,145 @@
+structure:
+  ./:
+    files:
+      allowed_names:
+        - README.md
+        - AGENTS.md
+        - package.json
+        - pnpm-workspace.yaml
+      allow_extra: false
+      exists:
+        README.md: "1"
+        AGENTS.md: "1"
+    directories:
+      allowed_names:
+        - .assura
+        - apps
+        - packages
+        - docs
+        - scripts
+      allow_extra: false
+      exists:
+        apps: "1"
+        packages: "1"
+    children:
+      .assura/:
+        files:
+          allowed_names:
+            - config.yml
+          allow_extra: false
+        directories:
+          allow_extra: false
+      apps/:
+        files:
+          allow_extra: false
+        directories:
+          allowed_names:
+            - web
+          allow_extra: false
+        children:
+          web/:
+            files:
+              allowed_names:
+                - AGENTS.md
+                - README.md
+                - package.json
+                - next.config.mjs
+                - tailwind.config.ts
+              allow_extra: false
+              exists:
+                AGENTS.md: "1"
+            directories:
+              allowed_names:
+                - src
+                - tests
+                - docs
+              allow_extra: false
+            children:
+              src/:
+                files:
+                  naming: kebab-case
+                  extensions:
+                    - ts
+                    - tsx
+                  forbidden_patterns:
+                    - "*.js"
+                    - "*.jsx"
+                    - "*.mjs"
+                    - "*.cjs"
+                directories:
+                  allow_extra: false
+              tests/:
+                files:
+                  naming: kebab-case
+                  extensions:
+                    - ts
+                    - tsx
+                directories:
+                  allow_extra: false
+              docs/:
+                files:
+                  naming: kebab-case
+                  extensions:
+                    - md
+                    - mdx
+                directories:
+                  allow_extra: false
+      packages/:
+        files:
+          allow_extra: false
+        directories:
+          allowed_names:
+            - ui
+          allow_extra: false
+        children:
+          ui/:
+            files:
+              allowed_names:
+                - AGENTS.md
+                - README.md
+                - package.json
+              allow_extra: false
+              exists:
+                AGENTS.md: "1"
+            directories:
+              allowed_names:
+                - src
+                - tests
+              allow_extra: false
+            children:
+              src/:
+                files:
+                  naming: kebab-case
+                  extensions:
+                    - ts
+                    - tsx
+                directories:
+                  allow_extra: false
+              tests/:
+                files:
+                  naming: kebab-case
+                  extensions:
+                    - ts
+                    - tsx
+                directories:
+                  allow_extra: false
+      docs/:
+        files:
+          naming: kebab-case
+          extensions:
+            - md
+        directories:
+          allow_extra: false
+      scripts/:
+        files:
+          allowed_names:
+            - verify.sh
+          allow_extra: false
+        directories:
+          allow_extra: false
+exclude:
+  - node_modules/**
+  - dist/**
+  - coverage/**
+  - .next/**
+  - .turbo/**

@@ -5,6 +5,7 @@ use super::{
     CheckTargetMode,
 };
 use super::{CheckError, StructureCheckReport};
+use crate::cli::check_feedback::{render_check_feedback, CheckFeedbackFormat, FeedbackOptions};
 use serde::Serialize;
 use std::ffi::{OsStr, OsString};
 use std::path::PathBuf;
@@ -16,6 +17,8 @@ struct Options {
     paths: Vec<PathBuf>,
     config: Option<PathBuf>,
     format: OutputFormat,
+    min_severity: Option<String>,
+    max_issues: Option<usize>,
     output: Option<PathBuf>,
     cache_dir: Option<PathBuf>,
     fail_fast: bool,
@@ -29,6 +32,8 @@ enum OutputFormat {
     Text,
     Json,
     Yaml,
+    Advice,
+    Status,
 }
 
 /// Run the lightweight check parser from process arguments.
@@ -134,6 +139,12 @@ where
         .opt_value_from_fn(["-f", "--format"], parse_format)
         .map_err(|error| error.to_string())?
         .unwrap_or(OutputFormat::Text);
+    let min_severity = args
+        .opt_value_from_fn("--min-severity", parse_min_severity)
+        .map_err(|error| error.to_string())?;
+    let max_issues = args
+        .opt_value_from_str("--max-issues")
+        .map_err(|error| error.to_string())?;
     let output = args
         .opt_value_from_os_str(["-o", "--output"], path_from_os_str)
         .map_err(|error| error.to_string())?;
@@ -156,6 +167,8 @@ where
         paths,
         config,
         format,
+        min_severity,
+        max_issues,
         output,
         cache_dir,
         fail_fast,
@@ -174,7 +187,18 @@ fn parse_format(value: &str) -> Result<OutputFormat, String> {
         "text" => Ok(OutputFormat::Text),
         "json" => Ok(OutputFormat::Json),
         "yaml" => Ok(OutputFormat::Yaml),
+        "advice" => Ok(OutputFormat::Advice),
+        "status" => Ok(OutputFormat::Status),
         other => Err(format!("unsupported format '{other}'")),
+    }
+}
+
+fn parse_min_severity(value: &str) -> Result<String, String> {
+    match value {
+        "low" | "medium" | "high" | "critical" => Ok(value.to_string()),
+        other => Err(format!(
+            "unsupported minimum severity '{other}'; expected low, medium, high, or critical"
+        )),
     }
 }
 
@@ -198,13 +222,13 @@ fn run(options: Options) -> Result<bool, CheckError> {
         };
         let report = run_structure_check_with_target_mode(
             path,
-            options.config,
+            options.config.clone(),
             options.fail_fast,
             target_mode,
         )?;
         let success = report.success;
         if !options.quiet || !success || options.output.is_some() {
-            let rendered = format_report(&report, options.format);
+            let rendered = format_report(&report, options.format, &options);
             if let Some(output) = options.output {
                 std::fs::write(output, rendered)?;
             } else {
@@ -217,7 +241,7 @@ fn run(options: Options) -> Result<bool, CheckError> {
     let paths = if options.paths.is_empty() {
         vec![None]
     } else {
-        options.paths.into_iter().map(Some).collect()
+        options.paths.iter().cloned().map(Some).collect()
     };
     if options.ls_lint_target_semantics {
         return Err(CheckError::Config(
@@ -226,7 +250,7 @@ fn run(options: Options) -> Result<bool, CheckError> {
             ),
         ));
     }
-    let reports = if let Some(cache_dir) = options.cache_dir {
+    let reports = if let Some(cache_dir) = &options.cache_dir {
         let mut reports = Vec::with_capacity(paths.len());
         for path in paths {
             reports.push(run_structure_check_cached(
@@ -239,12 +263,12 @@ fn run(options: Options) -> Result<bool, CheckError> {
         reports.sort_by(|left, right| left.checked_path.cmp(&right.checked_path));
         reports
     } else {
-        run_structure_checks(paths, options.config, options.fail_fast)?
+        run_structure_checks(paths, options.config.clone(), options.fail_fast)?
     };
     let success = reports.iter().all(|report| report.success);
 
     if !options.quiet || !success || options.output.is_some() {
-        let rendered = format_reports(&reports, options.format);
+        let rendered = format_reports(&reports, options.format, &options);
         if let Some(output) = options.output {
             std::fs::write(output, rendered)?;
         } else {
@@ -254,9 +278,13 @@ fn run(options: Options) -> Result<bool, CheckError> {
     Ok(success || options.warn)
 }
 
-fn format_reports(reports: &[StructureCheckReport], format: OutputFormat) -> String {
+fn format_reports(
+    reports: &[StructureCheckReport],
+    format: OutputFormat,
+    options: &Options,
+) -> String {
     if reports.len() == 1 {
-        return format_report(&reports[0], format);
+        return format_report(&reports[0], format, options);
     }
 
     let success = reports.iter().all(|report| report.success);
@@ -265,6 +293,12 @@ fn format_reports(reports: &[StructureCheckReport], format: OutputFormat) -> Str
         OutputFormat::Text => format_batch_text_report(reports),
         OutputFormat::Json => serde_json::to_string_pretty(&batch).unwrap_or_default(),
         OutputFormat::Yaml => serde_yaml::to_string(&batch).unwrap_or_default(),
+        OutputFormat::Advice => {
+            format_feedback_reports(reports, options, CheckFeedbackFormat::Advice)
+        }
+        OutputFormat::Status => {
+            format_feedback_reports(reports, options, CheckFeedbackFormat::Status)
+        }
     }
 }
 
@@ -274,12 +308,49 @@ struct BatchReport<'a> {
     reports: &'a [StructureCheckReport],
 }
 
-fn format_report(report: &StructureCheckReport, format: OutputFormat) -> String {
+fn format_report(report: &StructureCheckReport, format: OutputFormat, options: &Options) -> String {
     match format {
         OutputFormat::Text => format_text_report(report),
         OutputFormat::Json => serde_json::to_string_pretty(report).unwrap_or_default(),
         OutputFormat::Yaml => serde_yaml::to_string(report).unwrap_or_default(),
+        OutputFormat::Advice => format_feedback(report, options, CheckFeedbackFormat::Advice),
+        OutputFormat::Status => format_feedback(report, options, CheckFeedbackFormat::Status),
     }
+}
+
+fn format_feedback(
+    report: &StructureCheckReport,
+    options: &Options,
+    format: CheckFeedbackFormat,
+) -> String {
+    render_check_feedback(
+        report,
+        format,
+        &FeedbackOptions {
+            minimum_severity: options.min_severity.clone(),
+            max_issues: options.max_issues,
+            warn: options.warn,
+        },
+    )
+}
+
+fn format_feedback_reports(
+    reports: &[StructureCheckReport],
+    options: &Options,
+    format: CheckFeedbackFormat,
+) -> String {
+    if reports.len() == 1 {
+        return format_feedback(&reports[0], options, format);
+    }
+
+    let mut rendered = String::new();
+    for (index, report) in reports.iter().enumerate() {
+        if index > 0 {
+            rendered.push_str("\n\n");
+        }
+        rendered.push_str(&format_feedback(report, options, format));
+    }
+    rendered
 }
 
 fn format_batch_text_report(reports: &[StructureCheckReport]) -> String {
@@ -367,7 +438,11 @@ Usage:
 
 Options:
   -c, --config <PATH>    Assura config path
-  -f, --format <FORMAT>  Output format: text, json, yaml [default: text]
+  -f, --format <FORMAT>  Output format: text, json, yaml, advice, status [default: text]
+      --min-severity <SEVERITY>
+                          Only show advice and status items for this severity or higher
+      --max-issues <COUNT>
+                          Maximum advice and status items to show
   -o, --output <PATH>    Write report to a file
       --cache-dir <PATH> Reuse hot check results from this cache directory
       --fail-fast        Stop after the first violation

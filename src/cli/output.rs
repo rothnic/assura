@@ -41,6 +41,7 @@ impl ValidationReporter {
             OutputFormat::Text => self.format_text(),
             OutputFormat::Json => self.format_json(),
             OutputFormat::Yaml => self.format_yaml(),
+            OutputFormat::Advice | OutputFormat::Status => self.format_text(),
         };
         write!(writer, "{}", output)
     }
@@ -197,6 +198,7 @@ impl StatusReporter {
             OutputFormat::Text => self.format_text(),
             OutputFormat::Json => self.format_json(),
             OutputFormat::Yaml => self.format_yaml(),
+            OutputFormat::Advice | OutputFormat::Status => self.format_text(),
         };
         write!(writer, "{}", output)
     }

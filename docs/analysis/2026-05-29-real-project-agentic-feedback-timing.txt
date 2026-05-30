@@ -1,0 +1,25 @@
+Command: cargo build --release --bin assura && for i in 1 2 3 4 5; do /usr/bin/time -p target/release/assura check tests/fixtures/real-project-agentic-feedback/invalid --format json --output /tmp/assura-real-project-invalid-$i.json >/dev/null; done
+Expected check exit per run: 1
+
+   Compiling assura v0.1.0 (/Users/nroth/workspace/assura)
+    Finished `release` profile [optimized] target(s) in 1m 28s
+run 1
+real 0.43
+user 0.00
+sys 0.00
+run 2
+real 0.00
+user 0.00
+sys 0.00
+run 3
+real 0.00
+user 0.00
+sys 0.00
+run 4
+real 0.00
+user 0.00
+sys 0.00
+run 5
+real 0.00
+user 0.00
+sys 0.00

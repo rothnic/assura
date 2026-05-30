@@ -47,6 +47,7 @@ export default defineConfig({
 					items: [
 						{ label: 'Configuration Reference', slug: 'reference/configuration' },
 						{ label: 'API Reference', slug: 'reference/api' },
+						{ label: 'Agent Feedback Delivery', slug: 'reference/agent-feedback' },
 						{ label: 'Performance', slug: 'reference/performance' },
 						{ label: 'Performance Test Cases', slug: 'reference/performance-test-cases' },
 						{ label: 'Performance Implementation', slug: 'reference/performance-implementation' },
@@ -56,6 +57,7 @@ export default defineConfig({
 					label: 'Examples',
 					items: [
 						{ label: 'Basic Project Setup', slug: 'examples/basic-setup' },
+						{ label: 'Real Project Feedback', slug: 'examples/real-project-feedback' },
 						{ label: 'Custom Constraints', slug: 'examples/custom-constraints' },
 						{ label: 'CI/CD Integration', slug: 'examples/ci-cd-integration' },
 						{ label: 'Git Hooks Setup', slug: 'examples/git-hooks-setup' },

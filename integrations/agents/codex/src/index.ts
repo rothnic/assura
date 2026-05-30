@@ -3,7 +3,7 @@ import { spawnSync } from "node:child_process";
 export type WorkflowMode =
   | "instructions_only"
   | "agents_skills"
-  | "assura_runtime_nudges";
+  | "assura_runtime_feedback";
 
 export interface StructureViolation {
   path: string;
@@ -22,12 +22,14 @@ export interface StructureCheckReport {
   violations: StructureViolation[];
 }
 
-export interface NudgeOptions {
+export interface AgentFeedbackOptions {
   advisory?: boolean;
   guidanceReferences?: string[];
+  minimumSeverity?: string;
+  maxMessages?: number;
 }
 
-export interface NudgeMessage {
+export interface AgentFeedbackMessage {
   path: string;
   rule: string;
   severity: string;
@@ -36,24 +38,47 @@ export interface NudgeMessage {
   references: string[];
 }
 
-export interface NudgeMetrics {
+export interface AgentFeedbackMetrics {
   structuralViolations: number;
   affectedRules: string[];
   affectedPaths: string[];
-  nudgeCount: number;
+  feedbackCount: number;
 }
 
-export interface NudgeResult {
+export interface AgentFeedbackResult {
   status: "pass" | "fail";
   advisory: boolean;
   summary: string;
   violationCount: number;
+  suppressedViolationCount: number;
+  minimumSeverity: string | null;
   affectedRules: string[];
-  messages: NudgeMessage[];
-  metrics: NudgeMetrics;
+  messages: AgentFeedbackMessage[];
+  metrics: AgentFeedbackMetrics;
 }
 
-export interface AssuraCheckRunOptions extends NudgeOptions {
+export type FeedbackUsefulness = "useful" | "noisy" | "mixed";
+export type FeedbackTurnBoundary = "same_turn" | "new_turn" | "unknown";
+
+export interface SameTurnFeedbackOptions {
+  responseSource?: string;
+  turnBoundary?: FeedbackTurnBoundary;
+  repeatFeedbackCount?: number;
+  usefulnessByViolationClass?: Record<string, FeedbackUsefulness>;
+}
+
+export interface SameTurnFeedbackObservation {
+  violationClass: string;
+  feedbackCount: number;
+  fixedBeforeNewTurn: boolean;
+  usefulness: FeedbackUsefulness;
+  remainingViolations: number;
+  responseSource: string;
+  turnBoundary: FeedbackTurnBoundary;
+  repeatFeedbackCount: number;
+}
+
+export interface AssuraCheckRunOptions extends AgentFeedbackOptions {
   cwd?: string;
   path?: string;
   assuraBin?: string;
@@ -65,7 +90,7 @@ export interface AssuraCheckRunResult {
   stdout: string;
   stderr: string;
   report: StructureCheckReport;
-  nudge: NudgeResult;
+  feedback: AgentFeedbackResult;
 }
 
 export interface AssuraProcessResult {
@@ -100,14 +125,14 @@ export interface EvaluationRun {
   structuralViolationsIntroduced: number;
   correctionLoops: number;
   instructionAdherence: number;
-  nudgeCount: number;
-  usefulNudges: number;
-  noisyNudges: number;
+  feedbackCount: number;
+  usefulFeedback: number;
+  noisyFeedback: number;
   missedViolations: number;
 }
 
 export interface EvaluationModeSummary extends EvaluationRun {
-  nudgePrecision: number | null;
+  feedbackPrecision: number | null;
   correctionLoopDeltaVsInstructions: number | null;
   violationDeltaVsInstructions: number | null;
 }
@@ -142,33 +167,43 @@ export function parseStructureCheckReport(input: string): StructureCheckReport {
   return parsed;
 }
 
-export function createNudgeFromReport(
+export function createAgentFeedbackFromReport(
   report: StructureCheckReport,
-  options: NudgeOptions = {}
-): NudgeResult {
+  options: AgentFeedbackOptions = {}
+): AgentFeedbackResult {
   const advisory = options.advisory ?? true;
   const references = options.guidanceReferences ?? DEFAULT_REFERENCES;
-  const affectedRules = unique(report.violations.map((violation) => violation.rule));
-  const affectedPaths = unique(report.violations.map((violation) => violation.path));
+  const minimumSeverity = options.minimumSeverity ?? null;
+  const maxMessages = normalizeMaxMessages(options.maxMessages);
+  const filteredViolations = report.violations.filter((violation) =>
+    meetsMinimumSeverity(violation.severity, minimumSeverity)
+  );
+  const shownViolations =
+    maxMessages === null ? filteredViolations : filteredViolations.slice(0, maxMessages);
+  const affectedRules = unique(shownViolations.map((violation) => violation.rule));
+  const affectedPaths = unique(shownViolations.map((violation) => violation.path));
+  const suppressedViolationCount = report.violations.length - shownViolations.length;
 
   if (report.success) {
     return {
       status: "pass",
       advisory,
-      summary: `Assura passed for ${report.checked_path}; no runtime nudge is needed.`,
+      summary: `Assura passed for ${report.checked_path}; no runtime feedback is needed.`,
       violationCount: 0,
+      suppressedViolationCount: 0,
+      minimumSeverity,
       affectedRules: [],
       messages: [],
       metrics: {
         structuralViolations: 0,
         affectedRules: [],
         affectedPaths: [],
-        nudgeCount: 0,
+        feedbackCount: 0,
       },
     };
   }
 
-  const messages = report.violations.map((violation) => ({
+  const messages = shownViolations.map((violation) => ({
     path: violation.path,
     rule: violation.rule,
     severity: violation.severity,
@@ -180,17 +215,38 @@ export function createNudgeFromReport(
   return {
     status: "fail",
     advisory,
-    summary: `Assura found ${report.violations.length} structural violation(s) across ${affectedRules.length} rule(s). This nudge is advisory unless your workflow enforces the Assura exit code.`,
+    summary: summarizeAgentFeedback(report, messages.length, affectedRules.length, suppressedViolationCount, advisory, minimumSeverity),
     violationCount: report.violations.length,
+    suppressedViolationCount,
+    minimumSeverity,
     affectedRules,
     messages,
     metrics: {
       structuralViolations: report.violations.length,
       affectedRules,
       affectedPaths,
-      nudgeCount: messages.length,
+      feedbackCount: messages.length,
     },
   };
+}
+
+export function renderAgentFeedbackStatusLine(
+  feedback: AgentFeedbackResult
+): string {
+  if (feedback.status === "pass") {
+    return "Assura: pass; no structural feedback.";
+  }
+
+  const mode = feedback.advisory ? "advisory" : "blocking";
+  const threshold = feedback.minimumSeverity
+    ? ` at ${feedback.minimumSeverity}+ severity`
+    : "";
+  const suppressed =
+    feedback.suppressedViolationCount > 0
+      ? `; ${feedback.suppressedViolationCount} lower-priority or overflow violation(s) suppressed`
+      : "";
+
+  return `Assura: ${feedback.violationCount} violation(s); ${feedback.messages.length} ${mode} feedback(s)${threshold}${suppressed}.`;
 }
 
 export function runAssuraCheck(
@@ -230,7 +286,7 @@ export function runAssuraCheck(
     stdout,
     stderr,
     report,
-    nudge: createNudgeFromReport(report, options),
+    feedback: createAgentFeedbackFromReport(report, options),
   };
 }
 
@@ -244,14 +300,46 @@ export function compareEvaluationRuns(
   };
 }
 
-export function renderNudgeText(nudge: NudgeResult): string {
-  const lines = [nudge.summary];
-  if (nudge.messages.length === 0) {
+export function observeSameTurnFeedback(
+  feedback: AgentFeedbackResult,
+  afterReport: StructureCheckReport,
+  usefulFeedback: number,
+  noisyFeedback: number,
+  options: SameTurnFeedbackOptions = {}
+): SameTurnFeedbackObservation[] {
+  const defaultUsefulness = classifyUsefulness(usefulFeedback, noisyFeedback);
+  const turnBoundary = options.turnBoundary ?? "unknown";
+  return feedback.affectedRules.map((violationClass) => {
+    const remainingViolations = (afterReport?.violations ?? []).filter(
+      (violation) => violation.rule === violationClass
+    ).length;
+    const feedbackCount = feedback.messages.filter(
+      (message) => message.rule === violationClass
+    ).length;
+
+    return {
+      violationClass,
+      feedbackCount,
+      fixedBeforeNewTurn:
+        remainingViolations === 0 && turnBoundary === "same_turn",
+      usefulness:
+        options.usefulnessByViolationClass?.[violationClass] ?? defaultUsefulness,
+      remainingViolations,
+      responseSource: options.responseSource ?? "unspecified",
+      turnBoundary,
+      repeatFeedbackCount: options.repeatFeedbackCount ?? 0,
+    };
+  });
+}
+
+export function renderAgentFeedbackText(feedback: AgentFeedbackResult): string {
+  const lines = [renderAgentFeedbackStatusLine(feedback), feedback.summary];
+  if (feedback.messages.length === 0) {
     return lines.join("\n");
   }
 
   lines.push("");
-  for (const message of nudge.messages) {
+  for (const message of feedback.messages) {
     lines.push(`- ${message.path} [${message.rule}/${message.severity}]`);
     lines.push(`  Problem: ${message.problem}`);
     for (const guidance of message.guidance) {
@@ -263,19 +351,19 @@ export function renderNudgeText(nudge: NudgeResult): string {
   return lines.join("\n");
 }
 
-export function renderNudgeJson(nudge: NudgeResult): string {
-  return JSON.stringify(nudge, null, 2);
+export function renderAgentFeedbackJson(feedback: AgentFeedbackResult): string {
+  return JSON.stringify(feedback, null, 2);
 }
 
 function summarizeEvaluationRun(
   run: EvaluationRun,
   baseline: EvaluationRun | undefined
 ): EvaluationModeSummary {
-  const usefulAndNoisy = run.usefulNudges + run.noisyNudges;
+  const usefulAndNoisy = run.usefulFeedback + run.noisyFeedback;
   return {
     ...run,
-    nudgePrecision:
-      usefulAndNoisy === 0 ? null : run.usefulNudges / usefulAndNoisy,
+    feedbackPrecision:
+      usefulAndNoisy === 0 ? null : run.usefulFeedback / usefulAndNoisy,
     correctionLoopDeltaVsInstructions: baseline
       ? run.correctionLoops - baseline.correctionLoops
       : null,
@@ -284,6 +372,78 @@ function summarizeEvaluationRun(
         baseline.structuralViolationsIntroduced
       : null,
   };
+}
+
+function classifyUsefulness(
+  usefulFeedback: number,
+  noisyFeedback: number
+): FeedbackUsefulness {
+  if (usefulFeedback > 0 && noisyFeedback > 0) {
+    return "mixed";
+  }
+  if (noisyFeedback > 0) {
+    return "noisy";
+  }
+  return "useful";
+}
+
+function summarizeAgentFeedback(
+  report: StructureCheckReport,
+  shownMessageCount: number,
+  shownRuleCount: number,
+  suppressedViolationCount: number,
+  advisory: boolean,
+  minimumSeverity: string | null
+): string {
+  const threshold = minimumSeverity ? ` at ${minimumSeverity}+ severity` : "";
+  const mode = advisory ? "advisory" : "blocking";
+  const suppressed =
+    suppressedViolationCount > 0
+      ? ` ${suppressedViolationCount} violation(s) were suppressed by severity or message-count settings.`
+      : "";
+
+  return `Assura found ${report.violations.length} structural violation(s); ${shownMessageCount} ${mode} feedback(s)${threshold} will be shown across ${shownRuleCount} rule(s).${suppressed} This only blocks when the surrounding workflow enforces the Assura exit code or treats this feedback as blocking.`;
+}
+
+function normalizeMaxMessages(maxMessages: number | undefined): number | null {
+  if (maxMessages === undefined) {
+    return null;
+  }
+  if (!Number.isInteger(maxMessages) || maxMessages < 0) {
+    throw new Error("maxMessages must be a non-negative integer");
+  }
+  return maxMessages;
+}
+
+function meetsMinimumSeverity(
+  severity: string,
+  minimumSeverity: string | null
+): boolean {
+  if (!minimumSeverity) {
+    return true;
+  }
+
+  const severityRank = severityRankFor(severity);
+  const minimumRank = severityRankFor(minimumSeverity);
+  if (severityRank === null || minimumRank === null) {
+    return severity === minimumSeverity;
+  }
+  return severityRank >= minimumRank;
+}
+
+function severityRankFor(severity: string): number | null {
+  switch (severity.toLowerCase()) {
+    case "low":
+      return 1;
+    case "medium":
+      return 2;
+    case "high":
+      return 3;
+    case "critical":
+      return 4;
+    default:
+      return null;
+  }
 }
 
 function guidanceForViolation(violation: StructureViolation): string[] {

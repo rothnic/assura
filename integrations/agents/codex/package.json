@@ -1,12 +1,12 @@
 {
-  "name": "@assura/codex-integration",
+  "name": "@assura/agent-feedback",
   "version": "0.1.0",
-  "description": "Codex integration MVP for Assura validation nudges",
+  "description": "Agent-neutral feedback renderer for Assura validation reports",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "assura-codex-nudge": "dist/cli.js"
+    "assura-agent-feedback": "dist/cli.js"
   },
   "files": [
     "dist/cli.d.ts",
@@ -18,12 +18,12 @@
   "scripts": {
     "build": "tsc",
     "lint": "tsc --noEmit",
-    "test": "npm run build && node --test dist/nudge-test.js",
+    "test": "npm run build && node --test dist/agent-feedback-test.js",
     "clean": "rm -rf dist"
   },
   "keywords": [
     "assura",
-    "codex",
+    "agent-feedback",
     "validation",
     "agent-integration"
   ],

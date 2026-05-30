@@ -113,18 +113,32 @@ assura check
 
 See [LS-Lint Migration](/guides/ls-lint-migration/) for a complete example.
 
-## Agent Nudge MVP
+## Guided Feedback
 
-The Codex integration package now provides the first advisory nudge MVP. It can
-turn Assura JSON output into targeted guidance for a developer or agent:
+Assura can render either raw reports or guided output from the same check:
 
 ```bash
-assura check --format json . > assura-report.json
-assura-codex-nudge --report assura-report.json --format text
+assura check --format advice .
+assura check --format status .
+```
+
+For local Git feedback, run:
+
+```bash
+assura hooks install
+assura hooks status
+assura hooks verify
 ```
 
 > **Current release scope**
 >
-> This MVP does not install Codex hooks automatically and does not replace
-> repo-local `.agents/skills/` guidance. Treat it as advisory unless your
-> workflow enforces the command exit code.
+> Git hooks rerun Assura on Git events such as commit and push. They do not run
+> after every file edit, install Codex hooks automatically, start a daemon, or
+> replace repo-local `.agents/skills/` guidance. Use `--warn` when you want
+> advisory reporting that exits successfully.
+
+See [Real Project Feedback](/examples/real-project-feedback/) for a complete
+policy, hook, check, feedback, and rerun walkthrough. See
+[Agent Feedback Delivery](/reference/agent-feedback/) for the difference
+between manual CLI proof, Git hooks, feedback wrappers, future native agent hooks,
+and warm-session reuse.

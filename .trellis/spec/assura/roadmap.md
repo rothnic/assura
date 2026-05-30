@@ -13,26 +13,26 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 4 | Documentation Source Truth | Next | migrate, archive, or delete stale docs and workflow artifacts |
 | 5 | Windows CI Restore | Later | fix `libgit2-sys` MSVC linker failure and restore matrix entry |
 | 6 | Beyond Ls-Lint Rules | Active | `05-11-structure-check-benchmark-attribution` |
-| 7 | Agent Nudge MVP | Active | `05-14-assura-agent-nudge-mvp` |
+| 7 | Agent Feedback MVP | Active | `05-29-real-project-agentic-feedback-proof` |
 
 ## Active Epic
 
-**Agent Nudge MVP** is active.
+**Agent Feedback MVP** is active.
 
 Current owning task:
-`.trellis/tasks/05-14-assura-agent-nudge-mvp`.
+`.trellis/tasks/05-29-real-project-agentic-feedback-proof`.
 
-Current objective: prove the smallest Codex integration path that turns
-`assura check --format json` reports into advisory nudge messages and measured
-workflow comparisons.
+Current objective: prove a realistic project policy, local hook verification,
+agent-neutral feedback output, same-turn observation evidence, and user-facing
+docs without claiming unsupported daemon or native hook behavior.
 
 ## Recommended Next Epic
 
-After the current nudge MVP is reviewed, continue **Agent Nudge MVP** only
+After the current feedback MVP is reviewed, continue **Agent Feedback MVP** only
 where it improves dogfooding signal.
 
 The first recommended follow-up is a real Codex hook installation design that
-uses the MVP nudge library without making hook behavior mandatory for ordinary
+uses the MVP feedback library without making hook behavior mandatory for ordinary
 developer workflows.
 
 ## Roadmap Rules

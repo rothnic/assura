@@ -30,7 +30,7 @@ run_assura() {
 # Run full validation. This stays advisory until the repository passes its
 # self-check baseline; set ASSURA_BLOCKING_PUSH=1 to opt into local blocking.
 if run_assura --help >/dev/null 2>&1; then
-    if run_assura check "$PROJECT_ROOT"; then
+    if run_assura check "$PROJECT_ROOT" --format advice; then
         echo "Assura validation passed"
         exit 0
     else

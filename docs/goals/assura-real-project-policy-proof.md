@@ -42,7 +42,7 @@ Recent work proved several important pieces independently:
 
 - v0.1 onboarding is now tied to supported `assura check`, `assura init`,
   `assura migrate`, `assura status`, and website flows.
-- The Codex nudge MVP can turn Assura JSON reports into advisory feedback.
+- The agent feedback MVP can turn Assura JSON reports into advisory feedback.
 - The CLI-to-CLI performance path can make fair LS-Lint comparisons.
 - The lightweight `assura-check` path can support a truthful performance claim
   for LS-Lint-compatible structure checks.
@@ -65,7 +65,7 @@ evaluating Assura for agentic coding:
   repair without guessing?"
 - "Will the feedback arrive quickly enough to keep the agent inside the same
   implementation turn?"
-- "When Assura nudges the agent, can I see whether the nudge was useful,
+- "When Assura provides feedback to the agent, can I see whether the feedback was useful,
   ignored, noisy, or fixed?"
 - "Do the website and docs show the current supported path plainly, without
   hiding the real commands behind roadmap language?"
@@ -75,7 +75,7 @@ The known gaps are the next work, not claim-softening:
 - Hook setup is currently documentation/manual-workflow oriented. This goal
   should add an install/status/verify CLI surface or an equivalent supported
   command path that agents can run for themselves.
-- The Codex nudge MVP exists, but it is not yet packaged as the primary
+- The agent feedback MVP exists, but it is not yet packaged as the primary
   same-turn feedback loop that records whether the agent handled the feedback.
 - Real-project policy examples exist through benchmark fixtures, but the user
   adoption story needs one canonical walkthrough that protects the project shape
@@ -84,7 +84,7 @@ The known gaps are the next work, not claim-softening:
   directory requirements must be documented and tested as a positive capability.
 - Public performance evidence must connect to the agent hot path: repeated
   checks, changed-path checks, warm/editor-session checks, and the observed
-  behavior of nudged agents.
+  behavior of agents that received feedback.
 
 ## End-to-End Outcome
 
@@ -99,7 +99,7 @@ agentic feedback proof" scenario with all of these pieces connected:
 4. CLI evidence showing clean projects pass and drifted projects fail with
    stable, useful reports.
 5. A supported install/status/verify path for the local feedback loop.
-6. Agent/developer nudge evidence showing the failure report can be turned into
+6. Agent/developer feedback evidence showing the failure report can be turned into
    concise corrective guidance and that the agent response can be observed.
 7. Website or docs guidance that explains the scenario as a user-facing
    adoption example.
@@ -130,8 +130,8 @@ This goal covers:
   path for agents,
 - adding tests that lock the expected pass/fail behavior,
 - producing JSON report examples for the invalid state,
-- producing nudge examples from the invalid report,
-- recording whether the agent handled, ignored, or needed repeat nudges for the
+- producing feedback examples from the invalid report,
+- recording whether the agent handled, ignored, or needed repeat feedback for the
   same violation class,
 - updating docs or website content so the scenario is useful to a first-time
   adopter,
@@ -188,16 +188,16 @@ This goal is done only when all of the following are true.
   presented as native LS-Lint parity.
 - The config remains readable enough to serve as a user-facing example.
 
-### 3. Report And Nudge Proof
+### 3. Report And Feedback Proof
 
 - The failing scenario has a checked-in JSON report example or a reproducible
   command that writes one.
 - The report includes stable paths, rule names, counts, and success status.
-- The Codex nudge MVP can consume the failing report and emit actionable
+- The agent feedback MVP can consume the failing report and emit actionable
   guidance.
-- Nudge output points to useful project-local guidance such as `AGENTS.md`,
+- Feedback output points to useful project-local guidance such as `AGENTS.md`,
   `.assura/config.yml`, or scenario docs.
-- A measured nudge loop records at least: violation class, nudge count, whether
+- A measured feedback loop records at least: violation class, feedback count, whether
   the agent fixed the issue before a new turn, useful/noisy classification, and
   remaining violations.
 - Advisory behavior is stated clearly when the caller is not enforcing exit
@@ -222,7 +222,7 @@ This goal is done only when all of the following are true.
 
 - Website or docs content shows the scenario from a user's perspective:
   install Assura, define policy, install/verify feedback loop, run check,
-  inspect failure, receive nudge, fix project drift, rerun check.
+  inspect failure, receive feedback, fix project drift, rerun check.
 - The page or guide uses supported commands only.
 - The content distinguishes the current supported workflow from broader roadmap
   items such as dependency graphs, hosted telemetry, and autonomous agent
@@ -250,7 +250,7 @@ This goal is done only when all of the following are true.
 - Tests cover valid and invalid fixture behavior.
 - Tests assert the expected violation rule categories for the invalid fixture.
 - Tests cover JSON report shape or parseability where practical.
-- If nudge output is generated in tests, assertions check useful content rather
+- If feedback output is generated in tests, assertions check useful content rather
   than brittle full strings.
 - Tests cover install/status/verify behavior for the feedback loop, including
   idempotent install and missing/broken hook detection.
@@ -261,7 +261,7 @@ This goal is done only when all of the following are true.
 - `docs/analysis/` contains a short review record with:
   - exact commands run,
   - pass/fail results,
-  - paths to fixture/config/report/nudge/hook evidence,
+  - paths to fixture/config/report/feedback/hook evidence,
   - user-journey notes describing what a new user would experience,
   - any screenshots if website pages changed,
   - known limitations and follow-up recommendations.
@@ -281,7 +281,7 @@ cargo test --all-targets --quiet
 cargo run --quiet -- check --format json .
 ```
 
-If hook or Codex nudge integration code is changed, also run the relevant
+If hook or Codex feedback integration code is changed, also run the relevant
 package checks and the new install/status/verify proof command:
 
 ```bash
@@ -309,9 +309,9 @@ Reviewers should block completion if any of these are true:
 - hook install/status/verify behavior is only documented but not implemented,
 - docs imply unsupported daemon behavior, dependency graph validation, hosted
   telemetry, or autonomous agent enforcement,
-- the report or nudge examples are hand-written instead of generated or
+- the report or feedback examples are hand-written instead of generated or
   reproducible,
-- nudge evidence does not show whether the agent handled the feedback before a
+- feedback evidence does not show whether the agent handled the feedback before a
   new turn,
 - performance evidence does not reflect the real same-turn feedback path,
 - the scenario introduces a second source of truth for project workflow next to
@@ -325,10 +325,18 @@ Reviewers should block completion if any of these are true:
 2. Add valid and invalid fixtures plus supported Assura config.
 3. Implement the hook or local-feedback install/status/verify command path.
 4. Add fixture tests, hook tests, and JSON report proof.
-5. Add nudge proof using the existing Codex integration package, including
+5. Add feedback proof using the existing agent feedback package, including
    observed agent response metrics.
 6. Update website or docs adoption content around the full user journey.
 7. Run the validation commands and record a review artifact.
+
+## Progress Log
+
+| Date | Phase | Evidence |
+| --- | --- | --- |
+| 2026-05-29 | Execution started | Created Trellis task `.trellis/tasks/05-29-real-project-agentic-feedback-proof`, branched `codex/real-project-agentic-feedback-proof`, and seeded PRD from this goal. |
+| 2026-05-29 | Implementation slice | Added checked valid/invalid real-project fixtures, `assura hooks verify`, runnable hook status, Codex same-turn observation, user-facing docs, JSON/feedback evidence, and review record. |
+| 2026-05-29 | PR review follow-up | Opened PR #13, received Gemini Code Assist review, addressed three comments on worktree hook parsing and defensive same-turn observation handling, and recorded the follow-up in `docs/analysis/2026-05-29-real-project-agentic-feedback-review.md`. |
 
 ## Handoff Prompt
 
@@ -340,7 +348,7 @@ goal document, AGENTS.md, .agents/skills/assura-goal-execution/SKILL.md,
 .trellis/spec/assura/index.md, .trellis/spec/assura/structure-enforcement.md,
 and .trellis/spec/assura/tooling-stabilization.md. Implement the smallest
 end-to-end real project agentic feedback proof that satisfies the Definition Of
-Done: realistic policy, hook/status/verify workflow, same-turn nudge evidence,
+Done: realistic policy, hook/status/verify workflow, same-turn feedback evidence,
 hot-path performance evidence, docs, tests, and a review record under
 docs/analysis/.
 ```

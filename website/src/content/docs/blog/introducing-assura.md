@@ -54,5 +54,5 @@ jobs:
 
 ## Roadmap
 
-Agent nudges, richer quality measurement, and editor/agent integrations are
+Agent feedback, richer quality measurement, and editor/agent integrations are
 future work. They are not required for the current pre-1.0 onboarding release.
