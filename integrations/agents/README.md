@@ -11,5 +11,5 @@ agent adapters are developed under one source tree.
 ## Packages
 
 - `opencode/`: OpenCode plugin package for Assura validation feedback.
-- `codex/`: Codex integration skeleton. Runtime hook behavior is intentionally
-  deferred until the package contract is designed and verified.
+- `codex/`: Codex integration package with advisory nudge and optional native
+  `UserPromptSubmit` hook feedback commands.
