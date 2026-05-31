@@ -130,15 +130,32 @@ assura hooks status
 assura hooks verify
 ```
 
+Codex users can opt into native hook feedback by wiring the hook command into
+their Codex `UserPromptSubmit` hooks:
+
+```bash
+node /absolute/path/to/assura/integrations/agents/codex/dist/hook-cli.js --path . --min-severity medium --max-messages 5 --block-mode off
+```
+
+The Assura release installer installs only the `assura` CLI. The hook command
+comes from the separate `@assura/agent-feedback` npm package once published or
+a local build of `integrations/agents/codex`. Codex must also have hooks enabled
+in user config with `features.hooks = true`; run `/hooks` once and approve the
+project hook command before expecting feedback.
+
 > **Current release scope**
 >
 > Git hooks rerun Assura on Git events such as commit and push. They do not run
 > after every file edit, install Codex hooks automatically, start a daemon, or
-> replace repo-local `.agents/skills/` guidance. Use `--warn` when you want
-> advisory reporting that exits successfully.
+> replace repo-local `.agents/skills/` guidance. For Git hooks, use `--warn`
+> when you want advisory reporting that exits successfully.
+>
+> The Codex hook command does not install itself, reuse a daemon/editor session,
+> or replace repo-local `.agents/skills/` guidance. Treat it as advisory unless
+> your workflow opts into hook blocking.
 
 See [Real Project Feedback](/examples/real-project-feedback/) for a complete
 policy, hook, check, feedback, and rerun walkthrough. See
 [Agent Feedback Delivery](/reference/agent-feedback/) for the difference
-between manual CLI proof, Git hooks, feedback wrappers, future native agent hooks,
-and warm-session reuse.
+between manual CLI proof, Git hooks, feedback wrappers, optional Codex prompt
+hooks, future editor/daemon integrations, and warm-session reuse.

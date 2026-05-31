@@ -13,27 +13,26 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 4 | Documentation Source Truth | Next | migrate, archive, or delete stale docs and workflow artifacts |
 | 5 | Windows CI Restore | Later | fix `libgit2-sys` MSVC linker failure and restore matrix entry |
 | 6 | Beyond Ls-Lint Rules | Active | `05-11-structure-check-benchmark-attribution` |
-| 7 | Agent Feedback MVP | Active | `05-29-real-project-agentic-feedback-proof` |
+| 7 | Agent Feedback MVP | Active | `05-30-codex-hook-agent-feedback` |
 
 ## Active Epic
 
 **Agent Feedback MVP** is active.
 
 Current owning task:
-`.trellis/tasks/05-29-real-project-agentic-feedback-proof`.
+`.trellis/tasks/05-30-codex-hook-agent-feedback`.
 
-Current objective: prove a realistic project policy, local hook verification,
-agent-neutral feedback output, same-turn observation evidence, and user-facing
-docs without claiming unsupported daemon or native hook behavior.
+Current objective: prove the optional native Codex hook path that injects
+Assura feedback without making hook behavior mandatory for ordinary developer
+workflows.
 
 ## Recommended Next Epic
 
-After the current feedback MVP is reviewed, continue **Agent Feedback MVP** only
-where it improves dogfooding signal.
-
-The first recommended follow-up is a real Codex hook installation design that
-uses the MVP feedback library without making hook behavior mandatory for ordinary
-developer workflows.
+After the current hook-feedback task is reviewed, continue **Agent Nudge MVP**
+only where it improves dogfooding signal. The next goal is
+`docs/goals/assura-codex-feedback-install-status-verify.md`, which defines a
+separate install/status/verify command path that can inspect or merge hook
+configuration safely; do not treat that path as implemented until it has tests.
 
 ## Roadmap Rules
 

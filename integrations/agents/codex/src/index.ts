@@ -514,3 +514,5 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 function unique(values: string[]): string[] {
   return [...new Set(values)].sort();
 }
+
+export * from "./hook.js";

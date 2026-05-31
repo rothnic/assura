@@ -14,6 +14,8 @@ expanding into richer dependency and documentation constraints.
 - Project structure enforcement: `.assura/config.yml`
 - Closed-world structure config contract:
   `.trellis/spec/assura/structure-enforcement.md`
+- Codex agent feedback contract:
+  `.trellis/spec/assura/codex-agent-feedback.md`
 - Tooling and CI stabilization: `.trellis/spec/assura/tooling-stabilization.md`
 - CLI entrypoint: `src/main.rs`
 - Public check implementation: `src/cli/check.rs` and `src/cli/commands.rs`

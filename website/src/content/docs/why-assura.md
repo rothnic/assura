@@ -20,8 +20,10 @@ The current supported workflow is intentionally small:
 >
 > This release focuses on truthful onboarding and LS-Lint-compatible structure
 > checks. Local Git hook install/status/verify and advisory guided output are
-> supported. Native agent hooks, hot editor sessions, custom plugin APIs, role
-> profiles, and quality scoring are roadmap items.
+> supported. Optional Codex hook feedback is available only when users wire it
+> in. Automatic Codex hook installation, custom plugin APIs, role profiles,
+> daemon/editor support, and quality scoring are roadmap items, not supported
+> v0.1 features.
 
 ## The Problem
 
@@ -79,8 +81,12 @@ The `assura watch` command in this release is a truthful one-shot wrapper over
 
 `assura check --format advice` and `assura check --format status` provide the
 first guided feedback path. The lower-level integration package can still render
-feedback from JSON reports for wrappers, but native agent hooks, hot-session
-management, and complete agent orchestration remain future work.
+feedback from JSON reports for wrappers, explain structural failures, and track
+comparison metrics for instructions-only, `AGENTS.md`/skills, and Assura
+runtime-feedback workflows. It also includes an optional native Codex
+`UserPromptSubmit` hook command that injects feedback through
+`additionalContext`. Automatic Codex hook installation, daemon/editor support,
+and complete agent orchestration remain future work.
 
 ## Start Here
 

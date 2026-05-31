@@ -6,11 +6,16 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "assura-agent-feedback": "dist/cli.js"
+    "assura-agent-feedback": "dist/cli.js",
+    "assura-codex-hook": "dist/hook-cli.js"
   },
   "files": [
     "dist/cli.d.ts",
     "dist/cli.js",
+    "dist/hook-cli.d.ts",
+    "dist/hook-cli.js",
+    "dist/hook.d.ts",
+    "dist/hook.js",
     "dist/index.d.ts",
     "dist/index.js",
     "README.md"
@@ -33,6 +38,9 @@
     "type": "git",
     "url": "https://github.com/rothnic/assura.git",
     "directory": "integrations/agents/codex"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "engines": {
     "node": ">=18.0.0"

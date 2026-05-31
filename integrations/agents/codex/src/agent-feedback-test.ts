@@ -9,12 +9,15 @@ import {
   createAgentFeedbackFromReport,
   observeSameTurnFeedback,
   parseStructureCheckReport,
+  renderCodexHookFeedback,
+  renderCodexHookOutput,
   renderAgentFeedbackStatusLine,
   runAssuraCheck,
   type AssuraProcessRunner,
   type StructureCheckReport,
 } from "./index.js";
 import { runCli } from "./cli.js";
+import { runHookCli } from "./hook-cli.js";
 
 const passingReport: StructureCheckReport = {
   success: true,
@@ -39,6 +42,30 @@ const failingReport: StructureCheckReport = {
       rule: "file_naming",
       message: "File name 'BadName' does not match kebab-case",
       severity: "medium",
+    },
+  ],
+};
+
+const mixedSeverityReport: StructureCheckReport = {
+  ...failingReport,
+  violations: [
+    {
+      path: "/repo/low-name.ts",
+      rule: "file_naming",
+      message: "Low severity naming issue",
+      severity: "low",
+    },
+    {
+      path: "/repo/high-name.ts",
+      rule: "file_naming",
+      message: "High severity naming issue",
+      severity: "high",
+    },
+    {
+      path: "/repo/critical-name.ts",
+      rule: "file_naming",
+      message: "Critical severity naming issue",
+      severity: "critical",
     },
   ],
 };
@@ -317,6 +344,211 @@ test("direct CLI mode preserves non-JSON Assura failure exit code", () => {
 
   assert.equal(result, 4);
   assert.deepEqual(errors, ["config missing. Stderr: no config"]);
+});
+
+test("Codex hook feedback injects advisory additional context by default", () => {
+  const evaluation = renderCodexHookFeedback(failingReport, {
+    sourceDescription: "reused Assura report from assura-report.json",
+  });
+  const output = renderCodexHookOutput(evaluation);
+
+  assert.equal(evaluation.exitCode, 0);
+  assert.equal(evaluation.blockReason, null);
+  assert.equal(output.hookSpecificOutput.hookEventName, "UserPromptSubmit");
+  assert.match(
+    output.hookSpecificOutput.additionalContext,
+    /<assura-feedback>/
+  );
+  assert.match(
+    output.hookSpecificOutput.additionalContext,
+    /Check state: reused Assura report/
+  );
+  assert.match(output.hookSpecificOutput.additionalContext, /Blocking: no/);
+});
+
+test("Codex hook feedback filters severity and limits injected messages", () => {
+  const evaluation = renderCodexHookFeedback(mixedSeverityReport, {
+    minSeverity: "high",
+    maxMessages: 1,
+    blockMode: "off",
+  });
+
+  assert.equal(evaluation.filteredViolationCount, 2);
+  assert.equal(evaluation.totalViolationCount, 3);
+  assert.match(evaluation.additionalContext, /Assura found 2 structural/);
+  assert.match(evaluation.additionalContext, /high-name\.ts/);
+  assert.doesNotMatch(evaluation.additionalContext, /low-name\.ts/);
+  assert.doesNotMatch(evaluation.additionalContext, /critical-name\.ts/);
+  assert.match(evaluation.additionalContext, /Omitted: 1/);
+});
+
+test("Codex hook feedback can block on configured violation count", () => {
+  const evaluation = renderCodexHookFeedback(mixedSeverityReport, {
+    minSeverity: "high",
+    blockMode: "violations",
+    blockCount: 2,
+  });
+
+  assert.equal(evaluation.exitCode, 1);
+  assert.match(evaluation.blockReason ?? "", /2 matching violation/);
+  assert.match(evaluation.additionalContext, /Blocking: yes/);
+});
+
+test("Codex hook CLI reuses report files and preserves advisory default", () => {
+  const dir = mkdtempSync(join(tmpdir(), "assura-codex-hook-"));
+  const reportPath = join(dir, "assura-report.json");
+  writeFileSync(reportPath, JSON.stringify(failingReport), "utf8");
+  const output: string[] = [];
+
+  const exitCode = runHookCli(["--report", reportPath], {
+    readFile: (path) => {
+      assert.equal(path, reportPath);
+      return JSON.stringify(failingReport);
+    },
+    write: (message) => output.push(message),
+    writeError: (message) => output.push(message),
+  });
+
+  assert.equal(exitCode, 0);
+  const hookOutput = JSON.parse(output.join("\n")) as {
+    hookSpecificOutput: {
+      hookEventName: string;
+      additionalContext: string;
+    };
+  };
+  assert.equal(hookOutput.hookSpecificOutput.hookEventName, "UserPromptSubmit");
+  assert.match(hookOutput.hookSpecificOutput.additionalContext, /Blocking: no/);
+  assert.match(
+    hookOutput.hookSpecificOutput.additionalContext,
+    /reused Assura report/
+  );
+});
+
+test("Codex hook CLI blocks only when explicitly configured", () => {
+  const output: string[] = [];
+
+  const exitCode = runHookCli(
+    ["--report", "assura-report.json", "--block-mode", "violations"],
+    {
+      readFile: () => JSON.stringify(failingReport),
+      write: (message) => output.push(message),
+      writeError: (message) => output.push(message),
+    }
+  );
+
+  assert.equal(exitCode, 1);
+  const hookOutput = JSON.parse(output.join("\n")) as {
+    hookSpecificOutput: { additionalContext: string };
+  };
+  assert.match(hookOutput.hookSpecificOutput.additionalContext, /Blocking: yes/);
+});
+
+test("Codex hook CLI keeps hook execution errors advisory unless configured", () => {
+  const advisoryOutput: string[] = [];
+  const advisoryExit = runHookCli(["--path", "."], {
+    readFile: () => "",
+    write: (message) => advisoryOutput.push(message),
+    writeError: (message) => advisoryOutput.push(message),
+    runAssuraCheck: () => {
+      throw new Error("assura unavailable");
+    },
+  });
+
+  assert.equal(advisoryExit, 0);
+  assert.match(advisoryOutput.join("\n"), /hook error \(assura unavailable\)/);
+
+  const blockingOutput: string[] = [];
+  const blockingExit = runHookCli(["--path", ".", "--block-mode", "errors"], {
+    readFile: () => "",
+    write: (message) => blockingOutput.push(message),
+    writeError: (message) => blockingOutput.push(message),
+    runAssuraCheck: () => {
+      throw new Error("assura unavailable");
+    },
+  });
+
+  assert.equal(blockingExit, 2);
+  assert.match(blockingOutput.join("\n"), /Blocking: yes/);
+});
+
+test("Codex hook CLI attributes invalid report errors to report reuse", () => {
+  const output: string[] = [];
+
+  const exitCode = runHookCli(["--report", "missing-report.json"], {
+    readFile: () => "{not json",
+    write: (message) => output.push(message),
+    writeError: (message) => output.push(message),
+  });
+
+  assert.equal(exitCode, 0);
+  const hookOutput = JSON.parse(output[0] ?? "") as {
+    hookSpecificOutput: { additionalContext: string };
+  };
+  assert.match(
+    hookOutput.hookSpecificOutput.additionalContext,
+    /Check state: reused Assura report from missing-report\.json/
+  );
+  assert.doesNotMatch(
+    hookOutput.hookSpecificOutput.additionalContext,
+    /ran assura check --format json/
+  );
+  assert.match(hookOutput.hookSpecificOutput.additionalContext, /hook error/);
+});
+
+test("Codex hook CLI reports malformed arguments as advisory context", () => {
+  const output: string[] = [];
+  const errors: string[] = [];
+
+  const exitCode = runHookCli(["--unknown"], {
+    readFile: () => "",
+    write: (message) => output.push(message),
+    writeError: (message) => errors.push(message),
+  });
+
+  assert.equal(exitCode, 0);
+  assert.deepEqual(errors, ["Unknown argument: --unknown"]);
+  const hookOutput = JSON.parse(output[0] ?? "") as {
+    hookSpecificOutput: { additionalContext: string };
+  };
+  assert.match(
+    hookOutput.hookSpecificOutput.additionalContext,
+    /Check state: could not parse assura-codex-hook arguments/
+  );
+  assert.match(hookOutput.hookSpecificOutput.additionalContext, /Blocking: no/);
+});
+
+test("Codex hook CLI can block malformed arguments when error blocking is configured", () => {
+  const output: string[] = [];
+  const errors: string[] = [];
+
+  const exitCode = runHookCli(["--block-mode", "errors", "--unknown"], {
+    readFile: () => "",
+    write: (message) => output.push(message),
+    writeError: (message) => errors.push(message),
+  });
+
+  assert.equal(exitCode, 2);
+  assert.deepEqual(errors, ["Unknown argument: --unknown"]);
+  const hookOutput = JSON.parse(output[0] ?? "") as {
+    hookSpecificOutput: { additionalContext: string };
+  };
+  assert.match(hookOutput.hookSpecificOutput.additionalContext, /Blocking: yes/);
+});
+
+test("Codex hook CLI help describes install-debugging behavior", () => {
+  const output: string[] = [];
+
+  const exitCode = runHookCli(["--help"], {
+    readFile: () => "",
+    write: (message) => output.push(message),
+    writeError: (message) => output.push(message),
+  });
+
+  assert.equal(exitCode, 0);
+  assert.match(output.join("\n"), /--report <path>/);
+  assert.match(output.join("\n"), /assura check --format json <path>/);
+  assert.match(output.join("\n"), /hookSpecificOutput\.additionalContext/);
+  assert.match(output.join("\n"), /--block-count <n>/);
 });
 
 function runnerReturning(
