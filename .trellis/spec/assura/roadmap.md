@@ -13,18 +13,19 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 4 | Documentation Source Truth | Next | migrate, archive, or delete stale docs and workflow artifacts |
 | 5 | Windows CI Restore | Later | fix `libgit2-sys` MSVC linker failure and restore matrix entry |
 | 6 | Beyond Ls-Lint Rules | Active | `05-11-structure-check-benchmark-attribution` |
-| 7 | Agent Feedback MVP | Active | `05-31-codex-feedback-install-status-verify` |
+| 7 | Agent Feedback MVP | Active | `05-29-real-project-agentic-feedback-proof` |
 
 ## Active Epic
 
 **Agent Feedback MVP** is active.
 
 Current owning task:
-`.trellis/tasks/05-31-codex-feedback-install-status-verify`.
+`.trellis/tasks/05-29-real-project-agentic-feedback-proof`.
 
-Current objective: prove stable agent feedback through `assura check --format
-agent`, with `--agent codex` as an optional Codex delivery adapter, without
-making hook behavior mandatory for ordinary developer workflows.
+Current objective: complete the real-project policy proof using stable agent
+feedback through `assura check --format agent`, with `--agent codex` only as an
+optional Codex delivery adapter, without making hook behavior mandatory for
+ordinary developer workflows.
 
 Direction lock, clarified on 2026-05-31: do not create or revive
 `assura-codex-feedback`, do not add one CLI entrypoint per agent, and do not add
@@ -33,8 +34,8 @@ that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
 ## Recommended Next Epic
 
-After the current stable feedback task is reviewed, continue **Agent Nudge MVP**
-only where it improves dogfooding signal. Keep public feedback delivery under
+After the real-project proof is reviewed, continue **Agent Nudge MVP** only
+where it improves dogfooding signal. Keep public feedback delivery under
 `assura check` unless the codex-agent-feedback spec is intentionally reopened.
 
 ## Roadmap Rules
