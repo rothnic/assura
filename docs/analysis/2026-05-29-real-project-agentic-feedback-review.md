@@ -43,10 +43,10 @@ The current supported workflow is:
 
 1. Install Assura.
 2. Define or migrate `.assura/config.yml`.
-3. Run `assura hooks install`, `assura hooks status`, and
-   `assura hooks verify`.
-4. Run `assura check --format json`.
-5. Run `assura check --format advice` or `--format status` to get guided output.
+3. Run `assura check --format json`.
+4. Run `assura check --format agent --warn` to get stable agent feedback JSON.
+5. Use `assura check --format agent --agent codex --warn` only when a user has
+   manually wired a Codex `UserPromptSubmit` hook.
 6. Fix project drift and rerun `assura check`.
 
 The proof does not claim daemon behavior, hosted telemetry, dependency graph
@@ -91,15 +91,11 @@ cargo run --quiet -- check tests/fixtures/real-project-agentic-feedback/valid \
   --output target/real-project-agentic-feedback-agent-run/fixed.json
 ```
 
-Normalized the checked reports to repo-relative paths and generated the feedback:
+Normalized the checked reports to repo-relative paths:
 
 ```bash
 node --input-type=module <<'EOF'
 import { readFileSync, writeFileSync } from 'node:fs';
-import {
-  createAgentFeedbackFromReport,
-  observeSameTurnFeedback,
-} from './integrations/agents/codex/dist/index.js';
 
 const invalidPath = 'tests/fixtures/real-project-agentic-feedback/invalid';
 const validPath = 'tests/fixtures/real-project-agentic-feedback/valid';
@@ -119,7 +115,6 @@ const fixedRaw = JSON.parse(
 );
 const invalid = normalize(before, invalidPath);
 const fixed = normalize(fixedRaw, validPath);
-const feedback = createAgentFeedbackFromReport(invalid);
 writeFileSync(
   'docs/analysis/2026-05-29-real-project-agentic-feedback-invalid-report.json',
   JSON.stringify(invalid, null, 2) + '\n'
@@ -128,17 +123,23 @@ writeFileSync(
   'docs/analysis/2026-05-29-real-project-agentic-feedback-fixed-report.json',
   JSON.stringify(fixed, null, 2) + '\n'
 );
-writeFileSync(
-  'docs/analysis/2026-05-29-real-project-agentic-feedback-agent-feedback.json',
-  JSON.stringify(feedback, null, 2) + '\n'
-);
 EOF
 ```
 
-Generated advisory feedback through the current stable CLI surface:
+Generated the checked stable advisory feedback artifact through the current CLI
+surface:
 
 ```bash
 cargo run --quiet -- check --format agent \
+  --warn \
+  tests/fixtures/real-project-agentic-feedback/invalid \
+  > docs/analysis/2026-05-29-real-project-agentic-feedback-agent-feedback.json
+```
+
+Generated optional Codex delivery output through the adapter surface:
+
+```bash
+cargo run --quiet -- check --format agent --agent codex \
   --warn \
   tests/fixtures/real-project-agentic-feedback/invalid \
 ```
@@ -249,8 +250,9 @@ data.
 
 - The fixture is generated and checked in, not a pinned external repository.
   That keeps the proof deterministic and fast for ordinary validation.
-- The hook workflow installs local Git hooks only. It does not install Codex
-  hooks or run a background service.
+- Codex delivery is opt-in through `assura check --format agent --agent codex`.
+  The proof does not install Codex hooks, mutate `.codex/hooks.json`, or run a
+  background service.
 - Same-turn observation is local evidence produced by the Codex integration
   library. It is not hosted telemetry.
 
@@ -295,6 +297,31 @@ Follow-up changes made after that review:
 - Add a clone prerequisite for the fixture-based website walkthrough.
 - Replace the pseudo `--format advice/status` wording and long flow code block
   with tables.
+
+## Stable Agent Surface Follow-Up
+
+After PR #15 landed, the proof was refreshed to keep `assura check --format
+agent` as the stable public feedback surface and `--agent codex` as the only
+Codex delivery adapter. The old real-project proof language that centered
+`assura hooks install`, `assura hooks status`, and `assura hooks verify` was
+removed from the adoption flow. General Git hook documentation remains separate.
+
+Additional focused verification for this follow-up:
+
+```bash
+cargo test --test real_project_agentic_feedback_tests --quiet
+cargo run --quiet -- check --format agent tests/fixtures/real-project-agentic-feedback/invalid --warn
+cargo run --quiet -- check --format agent --agent codex tests/fixtures/real-project-agentic-feedback/invalid --warn
+npm run lint && npm test && npm run build && npm pack --dry-run
+node --run verify:fast
+node --run verify:docs
+npx pnpm@10.25.0 build
+```
+
+Independent review found two follow-up issues and both were addressed: the
+checked feedback artifact reproduction command now writes the stable CLI schema
+directly, and the real-project guide now states the required Codex
+`features.hooks = true` and one-time `/hooks` approval prerequisites.
 
 Focused verification after this review:
 

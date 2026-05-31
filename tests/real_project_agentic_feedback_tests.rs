@@ -1,9 +1,8 @@
 use std::collections::HashSet;
-use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use tempfile::TempDir;
+use serde_json::Value;
 
 fn assura_bin() -> &'static str {
     env!("CARGO_BIN_EXE_assura")
@@ -121,6 +120,87 @@ fn check_status_format_supports_general_display_limits() {
 }
 
 #[test]
+fn check_agent_format_emits_stable_feedback_for_real_project_fixture() {
+    let project = fixture_path("invalid");
+
+    let output = Command::new(assura_bin())
+        .arg("check")
+        .arg(&project)
+        .arg("--config")
+        .arg(project.join(".assura/config.yml"))
+        .arg("--format")
+        .arg("agent")
+        .arg("--warn")
+        .output()
+        .unwrap();
+
+    assert!(
+        output.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let json: Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(json["schema"], "assura.agent-feedback.v1");
+    assert_eq!(json["source"]["command"], "assura check --format agent");
+    assert_eq!(json["blocking"], false);
+    assert_eq!(json["feedback"][0]["status"], "fail");
+    assert_eq!(json["feedback"][0]["violation_count"], 3);
+    assert_eq!(json["feedback"][0]["metrics"]["feedback_count"], 3);
+    let first_paths = json["feedback"][0]["metrics"]["affected_paths"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|path| path.as_str().unwrap())
+        .collect::<HashSet<_>>();
+    assert!(first_paths.contains("apps/web/src/BadName.tsx"));
+    assert!(first_paths.contains("packages/ui"));
+    assert!(first_paths.contains("scratch.md"));
+}
+
+#[test]
+fn check_agent_codex_adapter_wraps_real_project_feedback_for_user_prompt_submit() {
+    let project = fixture_path("invalid");
+
+    let output = Command::new(assura_bin())
+        .arg("check")
+        .arg(&project)
+        .arg("--config")
+        .arg(project.join(".assura/config.yml"))
+        .arg("--format")
+        .arg("agent")
+        .arg("--agent")
+        .arg("codex")
+        .arg("--warn")
+        .output()
+        .unwrap();
+    assert!(
+        output.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let json: Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(
+        json["hookSpecificOutput"]["hookEventName"],
+        "UserPromptSubmit"
+    );
+    let context = json["hookSpecificOutput"]["additionalContext"]
+        .as_str()
+        .unwrap();
+    assert!(context.contains("<assura-feedback>"), "{context}");
+    assert!(
+        context.contains("Check state: ran assura check --format agent --agent codex"),
+        "{context}"
+    );
+    assert!(context.contains("Blocking: no (--warn)"), "{context}");
+    assert!(context.contains("apps/web/src/BadName.tsx"), "{context}");
+    assert!(context.contains("packages/ui"), "{context}");
+    assert!(context.contains("scratch.md"), "{context}");
+    assert!(context.contains("References: AGENTS.md, .agents/skills/, .assura/config.yml"));
+}
+
+#[test]
 fn check_guided_output_rejects_unknown_minimum_severity() {
     let project = fixture_path("invalid");
 
@@ -141,112 +221,5 @@ fn check_guided_output_rejects_unknown_minimum_severity() {
     assert!(
         stderr.contains("unsupported minimum severity 'urgent'"),
         "stderr was:\n{stderr}"
-    );
-}
-
-#[test]
-fn hooks_install_status_and_verify_are_agent_runnable() {
-    let project = TempDir::new().unwrap();
-    fs::create_dir_all(project.path().join(".git/hooks")).unwrap();
-
-    let install = Command::new(assura_bin())
-        .arg("hooks")
-        .arg("install")
-        .arg(project.path())
-        .output()
-        .unwrap();
-    assert!(
-        install.status.success(),
-        "stdout:\n{}\nstderr:\n{}",
-        String::from_utf8_lossy(&install.stdout),
-        String::from_utf8_lossy(&install.stderr)
-    );
-
-    let second_install = Command::new(assura_bin())
-        .arg("hooks")
-        .arg("install")
-        .arg(project.path())
-        .output()
-        .unwrap();
-    assert!(
-        second_install.status.success(),
-        "stdout:\n{}\nstderr:\n{}",
-        String::from_utf8_lossy(&second_install.stdout),
-        String::from_utf8_lossy(&second_install.stderr)
-    );
-    assert!(
-        String::from_utf8_lossy(&second_install.stdout).contains("already exist"),
-        "stdout was:\n{}",
-        String::from_utf8_lossy(&second_install.stdout)
-    );
-
-    let status = Command::new(assura_bin())
-        .arg("hooks")
-        .arg("status")
-        .arg(project.path())
-        .output()
-        .unwrap();
-    assert!(
-        status.status.success(),
-        "stdout:\n{}\nstderr:\n{}",
-        String::from_utf8_lossy(&status.stdout),
-        String::from_utf8_lossy(&status.stderr)
-    );
-    assert!(
-        String::from_utf8_lossy(&status.stdout).contains("runnable"),
-        "stdout was:\n{}",
-        String::from_utf8_lossy(&status.stdout)
-    );
-
-    let verify = Command::new(assura_bin())
-        .arg("hooks")
-        .arg("verify")
-        .arg(project.path())
-        .output()
-        .unwrap();
-    assert!(
-        verify.status.success(),
-        "stdout:\n{}\nstderr:\n{}",
-        String::from_utf8_lossy(&verify.stdout),
-        String::from_utf8_lossy(&verify.stderr)
-    );
-    assert!(
-        String::from_utf8_lossy(&verify.stdout).contains("All Assura hooks"),
-        "stdout was:\n{}",
-        String::from_utf8_lossy(&verify.stdout)
-    );
-}
-
-#[test]
-fn hooks_verify_fails_for_custom_or_broken_hook_state() {
-    let project = TempDir::new().unwrap();
-    let hooks_dir = project.path().join(".git/hooks");
-    fs::create_dir_all(&hooks_dir).unwrap();
-    fs::write(hooks_dir.join("pre-commit"), "#!/bin/sh\necho custom\n").unwrap();
-
-    let install = Command::new(assura_bin())
-        .arg("hooks")
-        .arg("install")
-        .arg(project.path())
-        .output()
-        .unwrap();
-    assert!(
-        install.status.success(),
-        "stdout:\n{}\nstderr:\n{}",
-        String::from_utf8_lossy(&install.stdout),
-        String::from_utf8_lossy(&install.stderr)
-    );
-
-    let verify = Command::new(assura_bin())
-        .arg("hooks")
-        .arg("verify")
-        .arg(project.path())
-        .output()
-        .unwrap();
-    assert_eq!(verify.status.code(), Some(1));
-    assert!(
-        String::from_utf8_lossy(&verify.stdout).contains("not managed by assura"),
-        "stdout was:\n{}",
-        String::from_utf8_lossy(&verify.stdout)
     );
 }

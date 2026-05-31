@@ -1,74 +1,86 @@
 {
-  "status": "fail",
-  "advisory": true,
-  "summary": "Assura found 3 structural violation(s); 3 advisory feedback(s) will be shown across 3 rule(s). This only blocks when the surrounding workflow enforces the Assura exit code or treats this feedback as blocking.",
-  "violationCount": 3,
-  "suppressedViolationCount": 0,
-  "minimumSeverity": null,
-  "affectedRules": [
-    "exists_count",
-    "file_naming",
-    "unexpected_file"
-  ],
-  "messages": [
+  "schema": "assura.agent-feedback.v1",
+  "source": {
+    "command": "assura check --format agent"
+  },
+  "filter": {
+    "minimumSeverity": null,
+    "maxIssues": null
+  },
+  "blocking": false,
+  "feedback": [
     {
-      "path": "apps/web/src/BadName.tsx",
-      "rule": "file_naming",
-      "severity": "medium",
-      "problem": "File 'BadName.tsx' does not match naming convention 'kebab-case'",
-      "guidance": [
-        "Rename the file to match the configured file naming convention for its directory.",
-        "Check `.assura/config.yml` for the effective file naming rule before editing nearby files."
+      "status": "fail",
+      "summary": "Assura found 3 structural violation(s); showing 3 guided item(s) across 3 rule(s). This command is running with --warn, so validation failures are reported without a failing exit code.",
+      "violation_count": 3,
+      "suppressed_violation_count": 0,
+      "minimum_severity": null,
+      "affected_rules": [
+        "file_naming",
+        "exists_count",
+        "unexpected_file"
       ],
-      "references": [
-        "AGENTS.md",
-        ".agents/skills/",
-        ".assura/config.yml"
-      ]
-    },
-    {
-      "path": "packages/ui",
-      "rule": "exists_count",
-      "severity": "medium",
-      "problem": "Directory 'packages/ui' has 0 files matching 'AGENTS.md', expected 1",
-      "guidance": [
-        "Create, remove, or rename direct children so the configured existence count is satisfied.",
-        "Remember that existence count rules apply to direct children only."
+      "messages": [
+        {
+          "path": "apps/web/src/BadName.tsx",
+          "rule": "file_naming",
+          "severity": "medium",
+          "problem": "File 'BadName.tsx' does not match naming convention 'kebab-case'",
+          "guidance": [
+            "Rename the file to match the configured file naming convention for its directory.",
+            "Check `.assura/config.yml` for the effective file naming rule before editing nearby files."
+          ],
+          "references": [
+            "AGENTS.md",
+            ".agents/skills/",
+            ".assura/config.yml"
+          ]
+        },
+        {
+          "path": "packages/ui",
+          "rule": "exists_count",
+          "severity": "medium",
+          "problem": "Directory 'packages/ui' has 0 files matching 'AGENTS.md', expected 1",
+          "guidance": [
+            "Create, remove, or move entries so the direct-count requirement is satisfied.",
+            "Exact count rules are Assura policy behavior; check `.assura/config.yml` before editing."
+          ],
+          "references": [
+            "AGENTS.md",
+            ".agents/skills/",
+            ".assura/config.yml"
+          ]
+        },
+        {
+          "path": "scratch.md",
+          "rule": "unexpected_file",
+          "severity": "medium",
+          "problem": "File 'scratch.md' is not allowed here",
+          "guidance": [
+            "Move or remove the unexpected path, or update the direct-content policy if it is intentional.",
+            "Read nearby `AGENTS.md` guidance before deciding whether the path belongs in this scope."
+          ],
+          "references": [
+            "AGENTS.md",
+            ".agents/skills/",
+            ".assura/config.yml"
+          ]
+        }
       ],
-      "references": [
-        "AGENTS.md",
-        ".agents/skills/",
-        ".assura/config.yml"
-      ]
-    },
-    {
-      "path": "scratch.md",
-      "rule": "unexpected_file",
-      "severity": "medium",
-      "problem": "File 'scratch.md' is not allowed here",
-      "guidance": [
-        "Move, remove, or explicitly allow this path in `.assura/config.yml` if it belongs in the project shape.",
-        "Prefer following the existing project shape over adding one-off exceptions."
-      ],
-      "references": [
-        "AGENTS.md",
-        ".agents/skills/",
-        ".assura/config.yml"
-      ]
+      "metrics": {
+        "structural_violations": 3,
+        "affected_rules": [
+          "file_naming",
+          "exists_count",
+          "unexpected_file"
+        ],
+        "affected_paths": [
+          "apps/web/src/BadName.tsx",
+          "packages/ui",
+          "scratch.md"
+        ],
+        "feedback_count": 3
+      }
     }
-  ],
-  "metrics": {
-    "structuralViolations": 3,
-    "affectedRules": [
-      "exists_count",
-      "file_naming",
-      "unexpected_file"
-    ],
-    "affectedPaths": [
-      "apps/web/src/BadName.tsx",
-      "packages/ui",
-      "scratch.md"
-    ],
-    "feedbackCount": 3
-  }
+  ]
 }

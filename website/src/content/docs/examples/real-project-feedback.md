@@ -7,14 +7,14 @@ sidebar:
 ---
 
 This example shows the current supported Assura workflow for a modern
-multi-package project. It protects the project shape, installs local feedback
-hooks, runs a check, shows guided output, and reruns after drift is fixed.
+multi-package project. It protects the project shape, runs the stable agent
+feedback check, shows guided output, and reruns after drift is fixed.
 
 > **No background service in this workflow**
 >
 > This walkthrough does not run a daemon or maintain a live repository index.
-> Checks run only when Git invokes an installed hook, when you run
-> `assura check`, or when an integration calls Assura.
+> Checks run only when you run `assura check`, when Git invokes a hook that you
+> configured separately, or when an integration calls Assura.
 
 This walkthrough is reproducible from a clone of the Assura repository. The
 fixture used by Assura's tests lives at
@@ -42,40 +42,39 @@ Exact file counts such as `AGENTS.md: "1"` are Assura behavior. Extension
 counts such as `*.md`-style direct file counts are the LS-Lint-compatible part
 of this policy family.
 
-## Install Local Feedback
+## Run Local Feedback
 
-Install Assura, initialize or copy a policy into `.assura/config.yml`, then wire
-the local feedback loop:
+Install Assura, initialize or copy a policy into `.assura/config.yml`, then run
+the local feedback loop through the stable check surface:
 
 ```bash
-assura hooks install
-assura hooks status
-assura hooks verify
+assura check --format agent . --warn
 ```
 
-`hooks verify` gives an agent a clear pass/fail signal before it starts editing.
-The hooks remain local Git hooks; they are not a daemon, hosted telemetry, or
-autonomous agent orchestration.
+`--format agent` emits stable `assura.agent-feedback.v1` JSON. `--warn` keeps
+the command advisory so an agent can inspect feedback without blocking the
+surrounding workflow.
 
-Installed Git hooks rerun Assura on Git events:
+Codex delivery is an optional adapter for users who manually wire a Codex
+`UserPromptSubmit` hook:
 
-| Trigger | What reruns | Hot session? |
-| --- | --- | --- |
-| `git commit` | `pre-commit` runs `assura check --format advice` | No |
-| `git push` | `pre-push` runs `assura check --format advice` | No |
-| `git checkout` | `post-checkout` runs `assura status` | No |
-| Agent edits a file | Nothing from Git hooks alone | Future native agent/editor integration |
+```bash
+assura check --format agent --agent codex . --warn
+```
 
-The hot daemon/session work exists below this UX as performance infrastructure,
-but `assura hooks install` does not start or manage that session yet.
+Codex only shows this prompt-hook feedback after the user enables
+`features.hooks = true` in Codex config and approves hooks once with `/hooks`.
+Assura does not automate those Codex user-level settings.
 
 The current flow is intentionally one command at each trigger:
 
 | Path | Command or integration | Output |
 | --- | --- | --- |
 | Manual check | `assura check --format advice` or `--format status` | Terminal output |
-| Git commit/push | Installed Git hook runs Assura | Hook output |
-| Native agent hook | Planned integration | Tool/result status |
+| Stable agent JSON | `assura check --format agent` | `assura.agent-feedback.v1` JSON |
+| Codex prompt hook | `assura check --format agent --agent codex` | Codex `UserPromptSubmit` JSON |
+| Git commit/push | User-configured Git hook runs Assura | Hook output |
+| Native post-tool agent hook | Planned integration | Tool/result status |
 | Warm session | Planned integration | Reused check state |
 
 ## Run The Valid Case
@@ -115,9 +114,10 @@ For noisier projects, limit what gets displayed without changing what Assura
 checks:
 
 ```bash
-assura check --format advice "$work" \
+assura check --format agent "$work" \
   --min-severity medium \
-  --max-issues 3
+  --max-issues 3 \
+  --warn
 ```
 
 `--min-severity` and `--max-issues` only control displayed feedback
@@ -137,20 +137,23 @@ output shape:
 | Machine facts | `--format json` | Raw report |
 | Repair guidance | `--format advice` | Bounded next steps |
 | Hook/tool status | `--format status` | One-line summary |
+| Stable agent feedback | `--format agent` | `assura.agent-feedback.v1` JSON |
+| Codex prompt delivery | `--format agent --agent codex` | Codex `UserPromptSubmit` JSON |
 | Advisory exit | `--warn` | Reports drift but exits `0` |
 
-This example proves the supported paths: manual CLI output, installed Git hook
-behavior, configurable guided output, and same-turn observation. Codex
-`UserPromptSubmit` delivery uses
-`assura check --format agent --agent codex` when users wire that hook manually.
+This example proves the supported paths: manual CLI output, stable agent JSON,
+optional Codex delivery, configurable guided output, and same-turn observation.
+Codex `UserPromptSubmit` delivery uses `--agent codex` only when users wire
+that hook manually.
 
 For the full delivery model, including warm sessions and index reuse for future
 agent integrations, see [Agent Feedback Delivery](/reference/agent-feedback/).
 
 ## Observe Same-Turn Feedback
 
-The agent feedback package exposes `observeSameTurnFeedback` for recording
-whether feedback helped before a new turn was needed. The observation records:
+The lower-level Codex library helper exposes `observeSameTurnFeedback` for
+recording whether feedback helped before a new turn was needed. The observation
+records:
 
 - violation class
 - feedback count
