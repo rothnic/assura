@@ -120,7 +120,7 @@ assura check --format advice "$work" \
   --max-issues 3
 ```
 
-`--min-severity` and `--max-issues` only control displayed advice and status
+`--min-severity` and `--max-issues` only control displayed feedback
 items.
 The check still evaluates the configured project policy, and the CLI still exits
 with Assura's result: `0` when the report passes and `1` when the report
@@ -140,8 +140,9 @@ output shape:
 | Advisory exit | `--warn` | Reports drift but exits `0` |
 
 This example proves the supported paths: manual CLI output, installed Git hook
-behavior, configurable guided output, and same-turn observation. It does not
-install the planned native Codex hook path.
+behavior, configurable guided output, and same-turn observation. Codex
+`UserPromptSubmit` delivery uses
+`assura check --format agent --agent codex` when users wire that hook manually.
 
 For the full delivery model, including warm sessions and index reuse for future
 agent integrations, see [Agent Feedback Delivery](/reference/agent-feedback/).

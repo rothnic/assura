@@ -61,8 +61,8 @@ evaluating Assura for agentic coding:
   not just a demo tree?"
 - "Can I require project-specific guidance files such as package-level
   `AGENTS.md` without confusing that with upstream LS-Lint behavior?"
-- "Can I install the feedback loop in a way an agent can discover, verify, and
-  repair without guessing?"
+- "Can I run the feedback loop through the stable `assura check` surface in a
+  way an agent can discover and verify without guessing?"
 - "Will the feedback arrive quickly enough to keep the agent inside the same
   implementation turn?"
 - "When Assura provides feedback to the agent, can I see whether the feedback was useful,
@@ -73,8 +73,8 @@ evaluating Assura for agentic coding:
 The known gaps are the next work, not claim-softening:
 
 - Hook setup is currently documentation/manual-workflow oriented. This goal
-  should add an install/status/verify CLI surface or an equivalent supported
-  command path that agents can run for themselves.
+  should use `assura check --format agent` and optional delivery adapters as
+  the supported command path that agents can run for themselves.
 - The agent feedback MVP exists, but it is not yet packaged as the primary
   same-turn feedback loop that records whether the agent handled the feedback.
 - Real-project policy examples exist through benchmark fixtures, but the user
@@ -98,7 +98,7 @@ agentic feedback proof" scenario with all of these pieces connected:
    surfaces.
 4. CLI evidence showing clean projects pass and drifted projects fail with
    stable, useful reports.
-5. A supported install/status/verify path for the local feedback loop.
+5. A supported `assura check --format agent` path for the local feedback loop.
 6. Agent/developer feedback evidence showing the failure report can be turned into
    concise corrective guidance and that the agent response can be observed.
 7. Website or docs guidance that explains the scenario as a user-facing
@@ -112,8 +112,8 @@ agentic feedback proof" scenario with all of these pieces connected:
 - `.assura/config.yml` dogfoods the current repository structure rules.
 - Closed-world direct file and directory contracts are documented in
   `.trellis/spec/assura/structure-enforcement.md`.
-- The Codex integration MVP is advisory and does not yet provide a polished
-  install/status/verify workflow for agents.
+- The stable agent feedback path is `assura check --format agent`; Codex
+  delivery uses `--agent codex`.
 - Performance comparison claims must use the executable and row-family
   contracts in `.trellis/spec/assura/tooling-stabilization.md`.
 - Existing performance goal docs already cover CLI-to-CLI fairness, lightweight
@@ -126,8 +126,7 @@ This goal covers:
 - selecting or creating one realistic policy scenario,
 - implementing or updating fixtures for valid and invalid project states,
 - ensuring the policy uses supported Assura v0.1 behavior,
-- implementing a supported hook or local-feedback install/status/verify command
-  path for agents,
+- implementing supported agent feedback through `assura check --format agent`,
 - adding tests that lock the expected pass/fail behavior,
 - producing JSON report examples for the invalid state,
 - producing feedback examples from the invalid report,
@@ -203,26 +202,24 @@ This goal is done only when all of the following are true.
 - Advisory behavior is stated clearly when the caller is not enforcing exit
   codes.
 
-### 4. Hook And Agent Install Proof
+### 4. Hook And Agent Feedback Proof
 
-- Add a supported command path for installing or wiring the local feedback loop
-  for agents. This may be `assura hooks install/status/verify`, an integration
-  package command, or another first-class CLI surface, but it must be documented
-  and tested.
-- The status command must tell an agent whether the hooks or local feedback
-  entrypoints are installed and whether they are runnable.
-- The verify command must produce a clear success/failure result an agent can
-  use before continuing work.
-- Re-running install must be idempotent and must not overwrite unrelated custom
-  hook content without an explicit flag or documented merge strategy.
+- Use `assura check --format agent` as the supported command path for local
+  feedback.
+- Use `assura check --format agent --agent codex` only as a Codex delivery
+  adapter for users who manually wire a `UserPromptSubmit` hook.
+- The proof must produce clear success/failure output an agent can use before
+  continuing work.
+- Hook examples must be append-only and must not overwrite unrelated custom hook
+  content.
 - The commands must include instructions an agent can follow without relying on
   hidden local state.
 
 ### 5. User-Facing Proof
 
 - Website or docs content shows the scenario from a user's perspective:
-  install Assura, define policy, install/verify feedback loop, run check,
-  inspect failure, receive feedback, fix project drift, rerun check.
+  install Assura, define policy, run `assura check`, inspect failure, receive
+  feedback, fix project drift, rerun check.
 - The page or guide uses supported commands only.
 - The content distinguishes the current supported workflow from broader roadmap
   items such as dependency graphs, hosted telemetry, and autonomous agent
@@ -252,8 +249,8 @@ This goal is done only when all of the following are true.
 - Tests cover JSON report shape or parseability where practical.
 - If feedback output is generated in tests, assertions check useful content rather
   than brittle full strings.
-- Tests cover install/status/verify behavior for the feedback loop, including
-  idempotent install and missing/broken hook detection.
+- Tests cover the supported agent feedback command path, including advisory and
+  blocking behavior where relevant.
 - Existing LS-Lint parity and structure-first behavior is not weakened.
 
 ### 8. Review Evidence
@@ -282,11 +279,11 @@ cargo run --quiet -- check --format json .
 ```
 
 If hook or Codex feedback integration code is changed, also run the relevant
-package checks and the new install/status/verify proof command:
+package checks and the supported agent feedback command:
 
 ```bash
 cd integrations/agents/codex && npm install && npm run lint && npm test && npm run build
-# plus the implemented hook/feedback-loop status and verify commands
+cargo run --quiet -- check --format agent --agent codex . --warn
 ```
 
 If website docs are changed, also run:
@@ -306,7 +303,8 @@ Reviewers should block completion if any of these are true:
 - the scenario is too synthetic to prove real adoption usefulness,
 - the invalid fixture fails for incidental reasons instead of intentional
   policy drift,
-- hook install/status/verify behavior is only documented but not implemented,
+- docs introduce a separate feedback install/status/verify CLI instead of the
+  stable `assura check --format agent` surface,
 - docs imply unsupported daemon behavior, dependency graph validation, hosted
   telemetry, or autonomous agent enforcement,
 - the report or feedback examples are hand-written instead of generated or
@@ -323,7 +321,7 @@ Reviewers should block completion if any of these are true:
 1. Select the policy scenario and write a short design note under
    `docs/analysis/`.
 2. Add valid and invalid fixtures plus supported Assura config.
-3. Implement the hook or local-feedback install/status/verify command path.
+3. Implement or verify the `assura check --format agent` feedback path.
 4. Add fixture tests, hook tests, and JSON report proof.
 5. Add feedback proof using the existing agent feedback package, including
    observed agent response metrics.

@@ -1,5 +1,17 @@
 # Current Codex Nudge Surface
 
+## Supersession Note
+
+This research note records the 2026-05-30 proof path for a lower-level package
+hook. It is superseded for public CLI/API direction by
+`.trellis/spec/assura/codex-agent-feedback.md` and
+`.trellis/tasks/05-31-codex-feedback-install-status-verify`.
+
+Do not use the selected proof path below to revive `assura-codex-feedback`, one
+CLI entrypoint per agent, or per-agent `assura check --format <agent>-hook`
+values. Stable user-facing feedback is `assura check --format agent`; Codex is
+only a delivery adapter via `--agent codex`.
+
 ## Existing repo facts
 
 - `integrations/agents/codex` is the canonical Codex integration package.
@@ -23,12 +35,14 @@
 - Documentation must not imply daemon, editor, hosted telemetry, or complete
   orchestration support.
 
-## Selected proof path
+## Superseded Proof Path
 
-Add an optional `assura-codex-hook` command to the existing Codex package. The
-command renders native Codex hook JSON for `UserPromptSubmit`. It can reuse a
-precomputed report via `--report`, or it can run `assura check --format json`
-for the configured path. It injects feedback through `additionalContext`.
+The package command proof path was superseded. Use the current spec and task
+instead:
 
-The default is advisory exit `0`. Users can opt into blocking based on violation
-severity, violation count, or runtime hook errors through explicit CLI options.
+```bash
+assura check --format agent --agent codex . --warn
+```
+
+Feedback is still injected through Codex `UserPromptSubmit` additional context,
+but the command surface is the Rust `assura check` CLI.

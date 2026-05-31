@@ -1,5 +1,18 @@
 # Codex Hook Agent Feedback
 
+## Superseded Direction
+
+This task is historical. Its original package-hook proof was removed from the
+current PR because package executable entrypoints are not the stable API. The
+stable user-facing direction was corrected on 2026-05-31 and is now owned by
+`.trellis/tasks/05-31-codex-feedback-install-status-verify` and
+`.trellis/spec/assura/codex-agent-feedback.md`.
+
+Do not use this task to reintroduce `assura-codex-feedback`, one CLI entrypoint
+per agent, or per-agent `assura check --format <agent>-hook` values. The stable
+surface is `assura check --format agent`; Codex delivery is
+`assura check --format agent --agent codex`.
+
 ## Goal
 
 Define and prove the native Codex hook installation path for Assura agent
@@ -28,15 +41,13 @@ hook, while keeping ordinary developer workflows optional and unaffected.
 
 ## Acceptance Criteria
 
-- A tested API renders Codex `UserPromptSubmit` hook JSON for Assura feedback.
-- A CLI entrypoint can run as the hook command and supports report reuse,
-  severity filtering, message count limits, and blocking mode.
-- Tests prove advisory mode does not block normal workflows by default.
-- Tests prove opt-in blocking can return a nonzero code when configured.
-- Documentation gives an explicit optional installation snippet and states that
-  existing hooks must be merged rather than overwritten.
-- Documentation explains hook timing, reused check state, injection mechanism,
-  blocking behavior, and configuration knobs.
+Historical acceptance criteria below are superseded by the current stable
+surface in `.trellis/spec/assura/codex-agent-feedback.md`.
+
+- Stable feedback is provided by `assura check --format agent`.
+- Codex `UserPromptSubmit` delivery is provided by
+  `assura check --format agent --agent codex`.
+- Package CLI entrypoints are not part of the accepted design.
 - Existing unsupported surfaces remain marked unsupported.
 
 ## Definition of Done
@@ -49,33 +60,17 @@ hook, while keeping ordinary developer workflows optional and unaffected.
   documented exactly.
 - Completion audit maps every explicit requirement to file or command evidence.
 
-## Technical Approach
+## Superseded Technical Approach
 
-Add a Codex-hook-specific renderer and CLI in the existing
-`@assura/codex-integration` package. The hook command will emit Codex hook JSON
-with `hookSpecificOutput.hookEventName = "UserPromptSubmit"` and
-`additionalContext` containing a concise Assura feedback block. It will reuse an
-existing Assura report when `--report` is supplied; otherwise it will run
-`assura check --format json` through the existing `runAssuraCheck` path.
+The package-hook CLI approach was superseded. The current supported approach is
+to emit Codex hook JSON from the Rust CLI with:
 
-Default behavior is advisory: feedback is injected but the hook exits `0`.
-Blocking is opt-in through a CLI option and only blocks when configured
-thresholds match the report. Runtime/hook errors stay non-blocking unless the
-user explicitly chooses strict error blocking.
+```bash
+assura check --format agent --agent codex . --warn
+```
 
-## Decision (ADR-lite)
-
-**Context**: The prior Assura agent nudge MVP intentionally did not install
-Codex hooks. This task must define a native Codex hook path without changing
-normal developer defaults or claiming unsupported automation.
-
-**Decision**: Implement an optional `assura-codex-hook` entrypoint in the Codex
-integration package. Document installation as an additive `UserPromptSubmit`
-hook command that users merge into their Codex hook config.
-
-**Consequences**: The proof is small and testable, and existing workflows remain
-unchanged. Users who want always-on feedback must explicitly wire the hook.
-Daemon/editor support remains future work.
+Default advisory/blocking behavior is controlled by normal `assura check`
+options such as `--warn`, not by package-specific hook flags.
 
 ## Out of Scope
 
@@ -87,9 +82,9 @@ Daemon/editor support remains future work.
 
 ## Technical Notes
 
-- Existing nudge implementation: `integrations/agents/codex/src/index.ts`.
-- Existing CLI: `integrations/agents/codex/src/cli.ts`.
-- Existing tests: `integrations/agents/codex/src/nudge-test.ts`.
+- Existing feedback implementation: `integrations/agents/codex/src/index.ts`.
+- Package CLI files were removed from the accepted direction.
+- Current tests: `integrations/agents/codex/src/agent-feedback-test.ts`.
 - Current repo Codex hook config wires only Trellis:
   `.codex/hooks.json`.
 - Current hook protocol example emits JSON with
@@ -103,14 +98,5 @@ Daemon/editor support remains future work.
 
 ## Completion Audit
 
-| Requirement | Evidence |
-| --- | --- |
-| Tested API renders Codex hook JSON | `integrations/agents/codex/src/hook.ts` exposes `renderCodexHookFeedback` and `renderCodexHookOutput`; tests assert `hookSpecificOutput.hookEventName = "UserPromptSubmit"` and `additionalContext` includes `<assura-feedback>`. |
-| CLI can run as hook command | `integrations/agents/codex/src/hook-cli.ts` exposes `runHookCli`; `package.json` adds the `assura-codex-hook` binary and package files. |
-| Report reuse and direct check state are explicit | `--report` path calls `parseStructureCheckReport`; direct mode calls `runAssuraCheck`; README documents both states. |
-| Severity/count/blocking configuration exists | CLI supports `--min-severity`, `--max-messages`, `--block-mode`, and `--block-count`; tests cover filtering, limits, advisory default, violation blocking, and error blocking. |
-| Normal developer workflows remain optional/unaffected | `.codex/hooks.json` is unchanged; docs say users append the hook command and the package does not edit hook config. Default hook mode exits `0`. |
-| Unsupported surfaces are not claimed | README and website docs state automatic hook mutation/installation, daemon/editor reuse, hosted telemetry, and complete orchestration are not implemented. |
-| End-user review findings addressed | Independent read-only Codex review found five user-facing gaps: package install/PATH, Codex hook enablement, report-error source attribution, malformed-argument advisory behavior, and thin hook help. Docs, CLI behavior, and regression tests now cover those cases. |
-| Durable code-spec captured | `.trellis/spec/assura/codex-agent-feedback.md` records command signatures, hook JSON contracts, install prerequisites, error matrix, and required tests. |
-| Validation passed | `cd integrations/agents/codex && npm run lint && npm test && npm run build`; `npm pack --dry-run`; `git diff --check`; `node --run verify:fast`; `node --run verify:docs`. |
+This task is superseded. Current completion evidence belongs to
+`.trellis/tasks/05-31-codex-feedback-install-status-verify` and PR #15.

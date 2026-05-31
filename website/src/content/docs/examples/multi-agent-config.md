@@ -3,9 +3,10 @@ title: Agent Feedback MVP
 description: Current agent feedback MVP and future agent-aware Assura feedback
 ---
 
-Assura has a small agent feedback MVP under `integrations/agents/codex`.
-It consumes `assura check --format json` output and turns structure violations
-into advisory messages for a developer or agent.
+Assura exposes agent feedback through the stable `assura check` command. The
+lower-level Codex package under `integrations/agents/codex` remains available
+for wrappers that already have JSON reports, but the primary user API is not a
+separate feedback binary.
 
 The supported validation command remains:
 
@@ -33,32 +34,22 @@ Primary CLI example:
 ```bash
 assura check --format advice .
 assura check --format status .
+assura check --format agent . --warn --min-severity medium --max-issues 5
 ```
 
 ## Optional Codex Hook Feedback
 
-Use the source-checkout hook command when you want Codex to receive Assura
-feedback during the native `UserPromptSubmit` hook event:
+Use `assura check --format agent` when a wrapper wants stable Assura feedback
+JSON. Add `--agent codex` only when Codex should receive Assura feedback during
+the native `UserPromptSubmit` hook event:
 
 ```bash
-node /absolute/path/to/assura/integrations/agents/codex/dist/hook-cli.js --path . --min-severity medium --max-messages 5 --block-mode off
-```
-
-The Assura release installer installs the `assura` CLI only. Build the separate
-agent-feedback package before adding the hook. The current proof path is a
-source checkout build:
-
-```bash
-cd integrations/agents/codex
-npm install
-npm run build
-node /absolute/path/to/assura/integrations/agents/codex/dist/hook-cli.js --path .
+assura check --format agent --agent codex . --warn --min-severity medium --max-issues 5
 ```
 
 The command writes Codex hook JSON with
-`hookSpecificOutput.additionalContext`. It reuses `--report <path>` when you
-already have an Assura JSON report; otherwise it runs
-`assura check --format json <path>`.
+`hookSpecificOutput.additionalContext`. Use `--warn` for advisory feedback that
+exits `0`; omit `--warn` when the hook should block on validation failures.
 
 Add it to `.codex/hooks.json` only if you want this per-prompt feedback. Codex
 must have hooks enabled in user config with `features.hooks = true`, and the
@@ -74,7 +65,7 @@ has Codex hooks, append the command instead of replacing the existing
         "hooks": [
           {
             "type": "command",
-            "command": "node /absolute/path/to/assura/integrations/agents/codex/dist/hook-cli.js --path . --min-severity medium --max-messages 5 --block-mode off",
+            "command": "assura check --format agent --agent codex . --warn --min-severity medium --max-issues 5",
             "timeout": 10
           }
         ]
@@ -84,8 +75,8 @@ has Codex hooks, append the command instead of replacing the existing
 }
 ```
 
-Default hook behavior is advisory and exits `0`. Configure strict behavior with
-`--block-mode violations|errors|all` and `--block-count <count>`.
+Default `assura check` behavior blocks on validation failures. Add `--warn` for
+advisory Codex feedback.
 
 ## Metrics
 
@@ -118,5 +109,4 @@ Assura can install local Git hooks with `assura hooks install`, `assura hooks
 status`, and `assura hooks verify`. The agent feedback MVP does not install
 Codex hooks automatically, provide hosted telemetry, reuse a daemon/editor
 session, or implement complete autonomous agent orchestration. Keep repo-local
-`.agents/skills/` as the durable project
-guidance surface.
+`.agents/skills/` as the durable project guidance surface.

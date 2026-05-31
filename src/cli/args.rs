@@ -28,16 +28,24 @@ pub enum Commands {
         path: Option<PathBuf>,
 
         #[arg(short, long, value_enum, default_value = "text")]
-        format: OutputFormat,
+        format: CheckOutputFormat,
+
+        #[arg(
+            long,
+            value_enum,
+            default_value = "generic",
+            help = "Delivery adapter for --format agent"
+        )]
+        agent: AgentTarget,
 
         #[arg(
             long,
             value_parser = ["low", "medium", "high", "critical"],
-            help = "Only show advice and status items for this severity or higher"
+            help = "Only show feedback items for this severity or higher"
         )]
         min_severity: Option<String>,
 
-        #[arg(long, help = "Maximum advice and status items to show")]
+        #[arg(long, help = "Maximum feedback items to show")]
         max_issues: Option<usize>,
 
         #[arg(short, long)]
@@ -195,6 +203,22 @@ pub enum OutputFormat {
     Yaml,
     Advice,
     Status,
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]
+pub enum CheckOutputFormat {
+    Text,
+    Json,
+    Yaml,
+    Advice,
+    Status,
+    Agent,
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]
+pub enum AgentTarget {
+    Generic,
+    Codex,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]

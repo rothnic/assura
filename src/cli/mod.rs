@@ -22,7 +22,10 @@ pub mod output;
 pub mod performance_report;
 
 #[cfg(feature = "full-cli")]
-pub use args::{Cli, Commands, ExitCode, HookCommands, OutputFormat, PerformanceReportFormat};
+pub use args::{
+    AgentTarget, CheckOutputFormat, Cli, Commands, ExitCode, HookCommands, OutputFormat,
+    PerformanceReportFormat,
+};
 #[cfg(all(feature = "yaml-config", feature = "json-output"))]
 pub use check::run_structure_check_cached;
 #[cfg(feature = "yaml-config")]

@@ -57,6 +57,42 @@ struct FeedbackMetrics {
     feedback_count: usize,
 }
 
+#[derive(Debug, Serialize)]
+struct AgentFeedbackOutput {
+    schema: &'static str,
+    source: AgentFeedbackSource,
+    filter: AgentFeedbackFilter,
+    blocking: bool,
+    feedback: Vec<CheckFeedback>,
+}
+
+#[derive(Debug, Serialize)]
+struct AgentFeedbackSource {
+    command: &'static str,
+}
+
+#[derive(Debug, Serialize)]
+struct AgentFeedbackFilter {
+    #[serde(rename = "minimumSeverity")]
+    minimum_severity: Option<String>,
+    #[serde(rename = "maxIssues")]
+    max_issues: Option<usize>,
+}
+
+#[derive(Debug, Serialize)]
+struct CodexHookOutput {
+    #[serde(rename = "hookSpecificOutput")]
+    hook_specific_output: CodexHookSpecificOutput,
+}
+
+#[derive(Debug, Serialize)]
+struct CodexHookSpecificOutput {
+    #[serde(rename = "hookEventName")]
+    hook_event_name: &'static str,
+    #[serde(rename = "additionalContext")]
+    additional_context: String,
+}
+
 const DEFAULT_REFERENCES: &[&str] = &["AGENTS.md", ".agents/skills/", ".assura/config.yml"];
 
 /// Create check-facing feedback from a raw structure report.
@@ -157,6 +193,81 @@ pub fn render_check_feedback(
         CheckFeedbackFormat::Status => render_status_line(&feedback),
         CheckFeedbackFormat::Advice => render_text(&feedback),
     }
+}
+
+/// Render one or more check reports as stable agent feedback JSON.
+pub fn render_agent_feedback<'a>(
+    reports: impl IntoIterator<Item = &'a StructureCheckReport>,
+    options: &FeedbackOptions,
+) -> String {
+    let feedback = reports
+        .into_iter()
+        .map(|report| create_check_feedback(report, options))
+        .collect::<Vec<_>>();
+
+    serde_json::to_string(&AgentFeedbackOutput {
+        schema: "assura.agent-feedback.v1",
+        source: AgentFeedbackSource {
+            command: "assura check --format agent",
+        },
+        filter: AgentFeedbackFilter {
+            minimum_severity: options.minimum_severity.clone(),
+            max_issues: options.max_issues,
+        },
+        blocking: !options.warn,
+        feedback,
+    })
+    .unwrap_or_default()
+}
+
+/// Render stable agent feedback in Codex `UserPromptSubmit` hook JSON.
+pub fn render_codex_agent_feedback<'a>(
+    reports: impl IntoIterator<Item = &'a StructureCheckReport>,
+    options: &FeedbackOptions,
+) -> String {
+    let feedback = reports
+        .into_iter()
+        .map(|report| create_check_feedback(report, options))
+        .collect::<Vec<_>>();
+    let mut lines = vec![
+        "<assura-feedback>".to_string(),
+        "Hook event: UserPromptSubmit".to_string(),
+        "Check state: ran assura check --format agent --agent codex".to_string(),
+        format!(
+            "Filter: severity >= {}; max issues {}",
+            options.minimum_severity.as_deref().unwrap_or("all"),
+            options
+                .max_issues
+                .map(|value| value.to_string())
+                .unwrap_or_else(|| "unbounded".to_string())
+        ),
+        format!(
+            "Blocking: {}",
+            if options.warn {
+                "no (--warn)"
+            } else {
+                "yes (validation failures exit 1)"
+            }
+        ),
+        String::new(),
+    ];
+
+    for (index, feedback) in feedback.iter().enumerate() {
+        if index > 0 {
+            lines.push(String::new());
+        }
+        lines.push(render_text(feedback));
+    }
+
+    lines.push("</assura-feedback>".to_string());
+
+    serde_json::to_string(&CodexHookOutput {
+        hook_specific_output: CodexHookSpecificOutput {
+            hook_event_name: "UserPromptSubmit",
+            additional_context: lines.join("\n"),
+        },
+    })
+    .unwrap_or_default()
 }
 
 fn render_status_line(feedback: &CheckFeedback) -> String {

@@ -98,13 +98,14 @@ See [Validation Command Tiers](docs/validation.md) for when to use each mode.
 
 ## Roadmap
 
-The agent feedback MVP is advisory. Local Git hook install/status/verify and
-guided `assura check --format advice` / `--format status` output are available.
-An optional native Codex `UserPromptSubmit` hook command can inject Assura
-feedback when users wire it into their Codex hooks. Automatic Codex hook
-install/status/verify commands, hot editor sessions, quality measurement beyond
-the local MVP, long-running watch mode, dependency graph validation, and plugin
-APIs are future work. They are not current v0.1 onboarding features.
+The agent feedback MVP is advisory. Guided `assura check --format advice`,
+`--format status`, and `--format agent` output are available. An optional Codex
+`UserPromptSubmit` hook can inject Assura feedback through
+`assura check --format agent --agent codex` when users wire it into their Codex
+hooks. Automatic Codex hook installation, separate feedback CLIs, hot editor
+sessions, quality measurement beyond the local MVP, long-running watch mode,
+dependency graph validation, and plugin APIs are future work. They are not
+current v0.1 onboarding features.
 
 ## License
 

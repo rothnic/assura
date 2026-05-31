@@ -34,10 +34,11 @@ shape checks, LS-Lint migration, and reproducible benchmark evidence.
 
 > **Agent feedback MVP**
 >
-> `assura check` can render guided advice or one-line status output. The
-> agent-feedback package also includes an optional native Codex
-> `UserPromptSubmit` hook command. Automatic Codex hook installation,
-> daemon/editor support, and complete agent orchestration remain future work.
+> `assura check` can render guided advice, one-line status output, and stable
+> agent feedback JSON. Codex `UserPromptSubmit` hooks can use
+> `assura check --format agent --agent codex` when users wire that command into
+> Codex manually. Automatic Codex hook installation, daemon/editor support, and
+> complete agent orchestration remain future work.
 
 ## Help
 

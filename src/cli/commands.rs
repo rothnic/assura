@@ -2,7 +2,7 @@
 //!
 //! Provides command-line interface for validation and migration.
 
-use crate::cli::args::OutputFormat;
+use crate::cli::args::{AgentTarget, CheckOutputFormat, OutputFormat};
 use crate::cli::check::{run_structure_check_with_target_mode, CheckError, CheckTargetMode};
 use crate::cli::check_report::format_structure_report;
 use crate::cli::init_support::{resolve_project_root, starter_config};
@@ -16,6 +16,11 @@ use std::path::{Path, PathBuf};
 
 /// Run validation check
 pub async fn check_command(options: CheckCommandOptions) -> ExitCode {
+    if options.agent != AgentTarget::Generic && options.format != CheckOutputFormat::Agent {
+        eprintln!("Error: --agent requires --format agent");
+        return ExitCode::ConfigurationError;
+    }
+
     let target_mode = if options.ls_lint_target_semantics {
         CheckTargetMode::LsLint
     } else {
@@ -166,7 +171,8 @@ pub async fn watch_command(
     check_command(CheckCommandOptions {
         path,
         config,
-        format: OutputFormat::Text,
+        format: crate::cli::args::CheckOutputFormat::Text,
+        agent: crate::cli::args::AgentTarget::Generic,
         min_severity: None,
         max_issues: None,
         output: None,

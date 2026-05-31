@@ -202,7 +202,7 @@ function renderHookContext({
   if (errorMessage) {
     lines.push(`Result: hook error (${errorMessage})`);
     lines.push(
-      "Next: fix the hook command or run assura check --format json manually."
+      "Next: fix the Codex hook command or run assura check --format agent --agent codex manually."
     );
     lines.push("</assura-feedback>");
     return lines.join("\n");
