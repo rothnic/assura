@@ -1,6 +1,6 @@
 ---
 title: Agent Feedback Delivery
-description: How Assura checks become Git hook output, agent feedback, or future low-latency feedback.
+description: How Assura checks become Git hook output, Codex prompt hook feedback, or future low-latency feedback.
 ---
 
 # Agent Feedback Delivery
@@ -25,7 +25,8 @@ the same CLI options as humans and hooks; there is no separate agent mode.
 | Manual CLI proof | Developer or agent command | `assura check --format advice` or `--format status` | Guided advice or one-line status | The caller |
 | Git hooks | Git | Installed hook scripts | Git hook stdout/stderr | The hook script |
 | Agent feedback package | Wrapper code that cannot call the Rust CLI directly | Report parsing and feedback rendering | Library return value or JSON | The wrapper |
-| Native agent hook | Future agent integration | Scoped check plus feedback rendering | Tool result, next agent message, or status line | Hook configuration |
+| Codex prompt hook | Optional Codex `UserPromptSubmit` command | Reused JSON report or `assura check --format json <path>` | Codex `hookSpecificOutput.additionalContext` | Hook configuration |
+| Future tool/editor hook | Future agent integration | Scoped check plus feedback rendering | Tool result, next agent message, or status line | Hook configuration |
 | Warm checker session | Future editor/agent integration | Prepared structure checker or hot daemon | Low-latency check result for changed paths | Integration policy |
 
 The primary DX is `assura check`. The package is a lower-level bridge for
@@ -68,7 +69,8 @@ assura check --format advice . --min-severity medium --max-issues 3
 | --- | --- | --- |
 | Before a commit | Git pre-commit hook | Catch drift before local history changes. |
 | Before a push | Git pre-push hook | Catch drift before PR/CI feedback. |
-| After an agent edits files | Future native hook or editor integration | Give the agent immediate repair guidance. |
+| Before Codex processes a user prompt | Optional Codex `UserPromptSubmit` hook | Inject bounded Assura context into Codex when the user has opted in. |
+| After an agent edits files | Future tool hook or editor integration | Give the agent immediate repair guidance after changed files are known. |
 | Before a user-facing agent response | Reuse the latest report or run a final scoped check | Avoid telling the user work is done while structure drift remains. |
 | After config or checkout changes | Full project check | Rebuild assumptions after policy or tree shape changes. |
 
@@ -88,7 +90,7 @@ integrations:
 - Performance evidence includes hot daemon and warm editor-session rows to
   measure repeated checks without paying full process startup every time.
 
-A future native agent integration should use that shape:
+A future editor or post-tool agent integration should use that shape:
 
 ```text
 startup or config change -> load policy and build prepared checker
@@ -105,6 +107,7 @@ step, while still giving the agent fresh feedback after edits.
 | Integration | Supported now | Expected delivery |
 | --- | --- | --- |
 | Codex package/CLI | Yes | A wrapper can call the package or CLI and attach status/text/JSON output. |
-| Codex native hook | Not yet | A hook should append a status line or bounded feedback after relevant tool calls. |
+| Codex `UserPromptSubmit` hook | Yes, optional source-checkout proof | A hook emits Codex JSON with bounded `additionalContext` before Codex processes a prompt. |
+| Codex post-tool/editor hook | Not yet | A future hook should append a status line or bounded feedback after relevant tool calls. |
 | Other agents with shell access | Partially | They can call `assura check --format advice` or `--format status` manually or through a wrapper. |
 | Editor/daemon integration | Not yet as public UX | Should reuse prepared checks or hot daemon state for repeated changed-path feedback. |

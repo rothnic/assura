@@ -147,8 +147,9 @@ project hook command before expecting feedback.
 >
 > Git hooks rerun Assura on Git events such as commit and push. They do not run
 > after every file edit, install Codex hooks automatically, start a daemon, or
-> replace repo-local `.agents/skills/` guidance. Use `--warn` when you want
-> advisory reporting that exits successfully.
+> replace repo-local `.agents/skills/` guidance. For Git hooks, use `--warn`
+> when you want advisory reporting that exits successfully.
+>
 > The Codex hook command does not install itself, reuse a daemon/editor session,
 > or replace repo-local `.agents/skills/` guidance. Treat it as advisory unless
 > your workflow opts into hook blocking.
@@ -156,5 +157,5 @@ project hook command before expecting feedback.
 See [Real Project Feedback](/examples/real-project-feedback/) for a complete
 policy, hook, check, feedback, and rerun walkthrough. See
 [Agent Feedback Delivery](/reference/agent-feedback/) for the difference
-between manual CLI proof, Git hooks, feedback wrappers, future native agent hooks,
-and warm-session reuse.
+between manual CLI proof, Git hooks, feedback wrappers, optional Codex prompt
+hooks, future editor/daemon integrations, and warm-session reuse.

@@ -27,7 +27,7 @@ Supported in this MVP:
   ```bash
   assura-agent-feedback --report assura-report.json --format text
   assura-agent-feedback --path . --format json
-  assura-codex-hook --path . --min-severity medium --max-messages 5 --block-mode off
+  node /absolute/path/to/assura/integrations/agents/codex/dist/hook-cli.js --path . --min-severity medium --max-messages 5 --block-mode off
   ```
 
 Not supported yet:
@@ -173,12 +173,15 @@ does not edit `.codex/hooks.json` for you.
 ### Hook Configuration
 
 ```bash
-assura-codex-hook --path . \
+node /absolute/path/to/assura/integrations/agents/codex/dist/hook-cli.js --path . \
   --min-severity medium \
   --max-messages 5 \
   --block-mode off \
   --block-count 1
 ```
+
+After `@assura/agent-feedback` is published and installed, use
+`assura-codex-hook` with the same options.
 
 - `--report <path>` reuses an existing `assura check --format json` report.
 - `--path <path>` is checked when no report is supplied. Default: `.`.

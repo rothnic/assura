@@ -37,20 +37,22 @@ assura check --format status .
 
 ## Optional Codex Hook Feedback
 
-Use `assura-codex-hook` when you want Codex to receive Assura feedback during
-the native `UserPromptSubmit` hook event:
+Use the source-checkout hook command when you want Codex to receive Assura
+feedback during the native `UserPromptSubmit` hook event:
 
 ```bash
-assura-codex-hook --path . --min-severity medium --max-messages 5 --block-mode off
+node /absolute/path/to/assura/integrations/agents/codex/dist/hook-cli.js --path . --min-severity medium --max-messages 5 --block-mode off
 ```
 
 The Assura release installer installs the `assura` CLI only. Build the separate
-agent-feedback package before adding the hook:
+agent-feedback package before adding the hook. The current proof path is a
+source checkout build:
 
 ```bash
 cd integrations/agents/codex
 npm install
 npm run build
+node /absolute/path/to/assura/integrations/agents/codex/dist/hook-cli.js --path .
 ```
 
 The command writes Codex hook JSON with

@@ -29,9 +29,10 @@ workflows.
 ## Recommended Next Epic
 
 After the current hook-feedback task is reviewed, continue **Agent Nudge MVP**
-only where it improves dogfooding signal. The next likely follow-up is a
-separate install/status/verify command that can inspect or merge hook
-configuration safely; do not treat that as implemented until it has tests.
+only where it improves dogfooding signal. The next goal is
+`docs/goals/assura-codex-feedback-install-status-verify.md`, which defines a
+separate install/status/verify command path that can inspect or merge hook
+configuration safely; do not treat that path as implemented until it has tests.
 
 ## Roadmap Rules
 

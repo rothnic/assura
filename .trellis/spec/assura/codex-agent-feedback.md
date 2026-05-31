@@ -49,7 +49,7 @@ Hook options:
 | Assura cannot produce a valid report, `--block-mode off` | Emit hook error context and exit `0`. |
 | Assura cannot produce a valid report, `--block-mode errors` | Emit hook error context and exit `2`. |
 | `--report` is stale or invalid | Hook context says report reuse failed, not that Assura ran. |
-| Hook CLI arguments are malformed | Emit hook error context with advisory defaults and exit `0`. |
+| Hook CLI arguments are malformed, `--block-mode off` | Emit hook error context and exit `0`. |
 | Hook CLI arguments are malformed, `--block-mode errors` | Emit hook error context and exit `2`. |
 
 ## 5. Good / Base / Bad Cases
