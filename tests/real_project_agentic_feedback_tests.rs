@@ -144,10 +144,12 @@ fn check_agent_format_emits_stable_feedback_for_real_project_fixture() {
     assert_eq!(json["schema"], "assura.agent-feedback.v1");
     assert_eq!(json["source"]["command"], "assura check --format agent");
     assert_eq!(json["blocking"], false);
-    assert_eq!(json["feedback"][0]["status"], "fail");
-    assert_eq!(json["feedback"][0]["violation_count"], 3);
-    assert_eq!(json["feedback"][0]["metrics"]["feedback_count"], 3);
-    let first_paths = json["feedback"][0]["metrics"]["affected_paths"]
+    let feedback = json["feedback"].as_array().unwrap();
+    assert_eq!(feedback.len(), 1, "feedback was:\n{json:#}");
+    assert_eq!(feedback[0]["status"], "fail");
+    assert_eq!(feedback[0]["violation_count"], 3);
+    assert_eq!(feedback[0]["metrics"]["feedback_count"], 3);
+    let first_paths = feedback[0]["metrics"]["affected_paths"]
         .as_array()
         .unwrap()
         .iter()
