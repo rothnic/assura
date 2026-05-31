@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/assura/index.md", "reason": "Assura canonical source and workflow constraints for this task"}
+{"file": ".trellis/spec/assura/codex-agent-feedback.md", "reason": "Codex feedback command signatures, hook JSON contract, install caveats, and error matrix"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Search and reuse existing hook CLI/status logic before adding utilities"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "The command spans the Rust CLI, package library, hook JSON, docs, and tests"}

@@ -1,6 +1,7 @@
 use std::fs;
 use std::process::Command;
 
+use serde_json::Value;
 use tempfile::TempDir;
 
 fn assura_bin() -> &'static str {
@@ -225,4 +226,254 @@ structure:
         "stdout was:\n{stdout}"
     );
     assert!(stdout.contains("file_naming"), "stdout was:\n{stdout}");
+}
+
+#[test]
+fn check_agent_format_with_codex_adapter_emits_user_prompt_submit_json() {
+    let project = bounded_structure_project();
+
+    let output = Command::new(assura_bin())
+        .arg("check")
+        .arg(project.path())
+        .arg("--format")
+        .arg("agent")
+        .arg("--agent")
+        .arg("codex")
+        .arg("--warn")
+        .arg("--min-severity")
+        .arg("medium")
+        .arg("--max-issues")
+        .arg("1")
+        .output()
+        .unwrap();
+
+    assert!(
+        output.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let json: Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(
+        json["hookSpecificOutput"]["hookEventName"],
+        "UserPromptSubmit"
+    );
+    let context = json["hookSpecificOutput"]["additionalContext"]
+        .as_str()
+        .unwrap();
+    assert!(context.contains("<assura-feedback>"), "{context}");
+    assert!(
+        context.contains("Check state: ran assura check --format agent --agent codex"),
+        "{context}"
+    );
+    assert!(context.contains("Blocking: no (--warn)"), "{context}");
+    assert!(context.contains("file_naming"), "{context}");
+    assert!(context.contains("showing 1 guided item(s)"), "{context}");
+    assert!(
+        context.contains("violation(s) were hidden by display filters"),
+        "{context}"
+    );
+}
+
+#[test]
+fn check_agent_format_emits_generic_feedback_json() {
+    let project = passing_structure_project();
+
+    let output = Command::new(assura_bin())
+        .arg("check")
+        .arg(project.path())
+        .arg("--format")
+        .arg("agent")
+        .output()
+        .unwrap();
+
+    assert!(
+        output.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let json: Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(json["schema"], "assura.agent-feedback.v1");
+    assert_eq!(json["source"]["command"], "assura check --format agent");
+    assert_eq!(json["feedback"][0]["status"], "pass");
+    assert_eq!(json["blocking"], true);
+}
+
+#[test]
+fn check_agent_format_with_codex_adapter_applies_min_severity_filter() {
+    let project = mixed_severity_project();
+
+    let output = Command::new(assura_bin())
+        .arg("check")
+        .arg(project.path())
+        .arg("--format")
+        .arg("agent")
+        .arg("--agent")
+        .arg("codex")
+        .arg("--warn")
+        .arg("--min-severity")
+        .arg("high")
+        .output()
+        .unwrap();
+
+    assert!(
+        output.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let json: Value = serde_json::from_slice(&output.stdout).unwrap();
+    let context = json["hookSpecificOutput"]["additionalContext"]
+        .as_str()
+        .unwrap();
+    assert!(context.contains("required_file"), "{context}");
+    assert!(!context.contains("file_naming"), "{context}");
+    assert!(context.contains("severity >= high"), "{context}");
+}
+
+#[test]
+fn check_agent_format_with_codex_adapter_blocks_without_warn() {
+    let project = invalid_structure_project();
+
+    let output = Command::new(assura_bin())
+        .arg("check")
+        .arg(project.path())
+        .arg("--format")
+        .arg("agent")
+        .arg("--agent")
+        .arg("codex")
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(1));
+    let json: Value = serde_json::from_slice(&output.stdout).unwrap();
+    let context = json["hookSpecificOutput"]["additionalContext"]
+        .as_str()
+        .unwrap();
+    assert!(
+        context.contains("Blocking: yes (validation failures exit 1)"),
+        "{context}"
+    );
+    assert!(context.contains("</assura-feedback>"), "{context}");
+}
+
+#[test]
+fn check_rejects_old_codex_hook_format() {
+    let project = passing_structure_project();
+
+    let output = Command::new(assura_bin())
+        .arg("check")
+        .arg(project.path())
+        .arg("--format")
+        .arg("codex-hook")
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(2));
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("unsupported format 'codex-hook'"),
+        "stderr was:\n{stderr}"
+    );
+}
+
+#[test]
+fn status_rejects_agent_format() {
+    let project = passing_structure_project();
+
+    let output = Command::new(assura_bin())
+        .arg("status")
+        .arg(project.path())
+        .arg("--format")
+        .arg("agent")
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(2));
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(stderr.contains("invalid value"), "stderr was:\n{stderr}");
+}
+
+#[test]
+fn agent_adapter_requires_agent_format() {
+    let project = passing_structure_project();
+
+    let output = Command::new(assura_bin())
+        .arg("check")
+        .arg(project.path())
+        .arg("--format")
+        .arg("status")
+        .arg("--agent")
+        .arg("codex")
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(2));
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("--agent requires --format agent"),
+        "stderr was:\n{stderr}"
+    );
+}
+
+fn passing_structure_project() -> TempDir {
+    let project = structure_project(
+        r#"
+structure:
+  ./:
+    files:
+      naming: kebab-case
+"#,
+    );
+    fs::write(project.path().join("good-name.rs"), "fn main() {}\n").unwrap();
+    project
+}
+
+fn bounded_structure_project() -> TempDir {
+    let project = invalid_structure_project();
+    fs::write(project.path().join("AnotherBad.rs"), "fn main() {}\n").unwrap();
+    project
+}
+
+fn mixed_severity_project() -> TempDir {
+    let project = structure_project(
+        r#"
+structure:
+  ./:
+    files:
+      naming: kebab-case
+      severity: low
+    children:
+      required-dir/:
+        files:
+          required:
+            - must-exist.md
+          severity: high
+"#,
+    );
+    fs::create_dir(project.path().join("required-dir")).unwrap();
+    fs::write(project.path().join("BadName.rs"), "fn main() {}\n").unwrap();
+    project
+}
+
+fn invalid_structure_project() -> TempDir {
+    let project = structure_project(
+        r#"
+structure:
+  ./:
+    files:
+      naming: kebab-case
+"#,
+    );
+    fs::write(project.path().join("BadName.rs"), "fn main() {}\n").unwrap();
+    project
+}
+
+fn structure_project(config: &str) -> TempDir {
+    let project = TempDir::new().unwrap();
+    let assura_dir = project.path().join(".assura");
+    fs::create_dir(&assura_dir).unwrap();
+    fs::write(assura_dir.join("config.yml"), config).unwrap();
+    project
 }

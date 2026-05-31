@@ -15,6 +15,8 @@ the same CLI options as humans and hooks; there is no separate agent mode.
 | Raw facts | `--format json` or `--format yaml` | CI, wrappers, reports |
 | Repair guidance | `--format advice` | Humans and agents fixing drift |
 | Compact status | `--format status` | Git hooks, tool results, final status lines |
+| Structured agent feedback | `--format agent` | Agents and wrappers that want stable JSON |
+| Codex prompt hook JSON | `--format agent --agent codex` | Optional Codex `UserPromptSubmit` hooks |
 | Display limits | `--min-severity` and `--max-issues` | Any noisy workflow |
 | Advisory exit | `--warn` | Workflows that should report without blocking |
 
@@ -25,7 +27,7 @@ the same CLI options as humans and hooks; there is no separate agent mode.
 | Manual CLI proof | Developer or agent command | `assura check --format advice` or `--format status` | Guided advice or one-line status | The caller |
 | Git hooks | Git | Installed hook scripts | Git hook stdout/stderr | The hook script |
 | Agent feedback package | Wrapper code that cannot call the Rust CLI directly | Report parsing and feedback rendering | Library return value or JSON | The wrapper |
-| Codex prompt hook | Optional Codex `UserPromptSubmit` command | Reused JSON report or `assura check --format json <path>` | Codex `hookSpecificOutput.additionalContext` | Hook configuration |
+| Codex prompt hook | Optional Codex `UserPromptSubmit` command | `assura check --format agent --agent codex` | Codex `hookSpecificOutput.additionalContext` | Hook configuration |
 | Future tool/editor hook | Future agent integration | Scoped check plus feedback rendering | Tool result, next agent message, or status line | Hook configuration |
 | Warm checker session | Future editor/agent integration | Prepared structure checker or hot daemon | Low-latency check result for changed paths | Integration policy |
 
@@ -53,14 +55,29 @@ Display controls limit what gets shown without changing what gets checked:
 assura check --format advice . --min-severity medium --max-issues 3
 ```
 
+Use structured agent output when a wrapper wants stable JSON:
+
+```bash
+assura check --format agent . --warn --min-severity medium --max-issues 5
+```
+
+Use the Codex delivery adapter only when a Codex `UserPromptSubmit` hook should
+inject bounded Assura context:
+
+```bash
+assura check --format agent --agent codex . --warn --min-severity medium --max-issues 5
+```
+
 | Option | Effect |
 | --- | --- |
 | `--format advice` | Emits human-readable guidance for fixing violations. |
 | `--format status` | Emits one concise line suitable for hooks and tool output. |
+| `--format agent` | Emits stable `assura.agent-feedback.v1` JSON. |
+| `--agent codex` | Wraps `--format agent` output for Codex `UserPromptSubmit` delivery. |
 | `--format json` | Emits the raw structure report. |
 | `--format yaml` | Emits the raw structure report as YAML. |
-| `--min-severity` | Hides lower-severity advice and status items from display. |
-| `--max-issues` | Caps displayed advice and status items. |
+| `--min-severity` | Hides lower-severity feedback items from display. |
+| `--max-issues` | Caps displayed feedback items. |
 | `--warn` | Reports failures but exits successfully. |
 
 ## When To Check
@@ -106,8 +123,8 @@ step, while still giving the agent fresh feedback after edits.
 
 | Integration | Supported now | Expected delivery |
 | --- | --- | --- |
-| Codex package/CLI | Yes | A wrapper can call the package or CLI and attach status/text/JSON output. |
-| Codex `UserPromptSubmit` hook | Yes, optional source-checkout proof | A hook emits Codex JSON with bounded `additionalContext` before Codex processes a prompt. |
+| Codex package library | Lower-level only | Wrapper code can use library helpers when it already has JSON. |
+| Codex `UserPromptSubmit` hook | Yes | A hook runs `assura check --format agent --agent codex` before Codex processes a prompt. |
 | Codex post-tool/editor hook | Not yet | A future hook should append a status line or bounded feedback after relevant tool calls. |
-| Other agents with shell access | Partially | They can call `assura check --format advice` or `--format status` manually or through a wrapper. |
+| Other agents with shell access | Partially | They can call `assura check --format advice`, `--format status`, or `--format agent` manually or through a wrapper. |
 | Editor/daemon integration | Not yet as public UX | Should reuse prepared checks or hot daemon state for repeated changed-path feedback. |

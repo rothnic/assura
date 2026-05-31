@@ -5,15 +5,7 @@
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "bin": {
-    "assura-agent-feedback": "dist/cli.js",
-    "assura-codex-hook": "dist/hook-cli.js"
-  },
   "files": [
-    "dist/cli.d.ts",
-    "dist/cli.js",
-    "dist/hook-cli.d.ts",
-    "dist/hook-cli.js",
     "dist/hook.d.ts",
     "dist/hook.js",
     "dist/index.d.ts",
@@ -24,6 +16,7 @@
     "build": "tsc",
     "lint": "tsc --noEmit",
     "test": "npm run build && node --test dist/agent-feedback-test.js",
+    "prepack": "npm run build",
     "clean": "rm -rf dist"
   },
   "keywords": [

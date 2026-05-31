@@ -26,9 +26,11 @@ assura watch [path]
 `assura check` is the primary validation command. `assura watch` currently runs
 one check and exits with the same status as `check`.
 
-`advice` and `status` are guided check output formats. Display filters such as
-`--min-severity low|medium|high|critical` and `--max-issues <count>` affect
-only those guided formats; they do not change the configured policy check.
+`advice`, `status`, and `agent` are guided check output formats. Display
+filters such as `--min-severity low|medium|high|critical` and
+`--max-issues <count>` affect only guided feedback; they do not change the
+configured policy check. Use `--agent codex` only with `--format agent` when
+Codex `UserPromptSubmit` hook JSON is required.
 
 ## Exit Codes
 
@@ -83,4 +85,6 @@ For local repair guidance or compact hook output:
 ```bash
 assura check --format advice .
 assura check --format status .
+assura check --format agent .
+assura check --format agent --agent codex . --warn
 ```

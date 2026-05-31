@@ -120,6 +120,7 @@ Assura can render either raw reports or guided output from the same check:
 ```bash
 assura check --format advice .
 assura check --format status .
+assura check --format agent . --warn --min-severity medium --max-issues 5
 ```
 
 For local Git feedback, run:
@@ -134,14 +135,12 @@ Codex users can opt into native hook feedback by wiring the hook command into
 their Codex `UserPromptSubmit` hooks:
 
 ```bash
-node /absolute/path/to/assura/integrations/agents/codex/dist/hook-cli.js --path . --min-severity medium --max-messages 5 --block-mode off
+assura check --format agent --agent codex . --warn --min-severity medium --max-issues 5
 ```
 
-The Assura release installer installs only the `assura` CLI. The hook command
-comes from the separate `@assura/agent-feedback` npm package once published or
-a local build of `integrations/agents/codex`. Codex must also have hooks enabled
-in user config with `features.hooks = true`; run `/hooks` once and approve the
-project hook command before expecting feedback.
+Codex must also have hooks enabled in user config with `features.hooks = true`;
+run `/hooks` once and approve the project hook command before expecting
+feedback.
 
 > **Current release scope**
 >
@@ -151,8 +150,8 @@ project hook command before expecting feedback.
 > when you want advisory reporting that exits successfully.
 >
 > The Codex hook command does not install itself, reuse a daemon/editor session,
-> or replace repo-local `.agents/skills/` guidance. Treat it as advisory unless
-> your workflow opts into hook blocking.
+> or replace repo-local `.agents/skills/` guidance. `--warn` makes it advisory;
+> omit `--warn` only when your workflow should block on validation failures.
 
 See [Real Project Feedback](/examples/real-project-feedback/) for a complete
 policy, hook, check, feedback, and rerun walkthrough. See

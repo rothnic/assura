@@ -59,6 +59,7 @@ async fn run_full_cli(cli: Cli) -> ExitCode {
         Commands::Check {
             path,
             format,
+            agent,
             min_severity,
             max_issues,
             output,
@@ -72,6 +73,7 @@ async fn run_full_cli(cli: Cli) -> ExitCode {
                 path,
                 config: config_path,
                 format,
+                agent,
                 min_severity,
                 max_issues,
                 output,

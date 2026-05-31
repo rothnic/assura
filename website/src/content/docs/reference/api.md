@@ -37,8 +37,9 @@ Supported status formats are `text`, `json`, and `yaml`.
 | `--fail-fast` | Stop after the first violation |
 | `--no-parallel` | Run validation without parallel traversal |
 | `--ls-lint-target-semantics` | Match LS-Lint path-argument behavior by checking only the explicit target path |
-| `--min-severity low|medium|high|critical` | Hide lower-severity items from `advice` and `status` output without changing what is checked |
-| `--max-issues <count>` | Cap displayed `advice` and `status` items without changing what is checked |
+| `--min-severity low|medium|high|critical` | Hide lower-severity feedback items without changing what is checked |
+| `--max-issues <count>` | Cap displayed feedback items without changing what is checked |
+| `--agent generic|codex` | Select a delivery adapter for `--format agent`; Codex wraps feedback for `UserPromptSubmit` |
 
 ## Check JSON Shape
 
@@ -92,6 +93,8 @@ For guided local output, use:
 ```bash
 assura check --format advice .
 assura check --format status .
+assura check --format agent .
+assura check --format agent --agent codex . --warn
 ```
 
 ## Future APIs

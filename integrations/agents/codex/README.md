@@ -1,9 +1,10 @@
 # Assura Agent Feedback
 
-This package is the lower-level Assura agent feedback bridge. The preferred
-user-facing CLI path is `assura check --format advice` or
-`assura check --format status`; use this package when a wrapper already has
-`assura check --format json` output or cannot call the Rust CLI directly.
+This package is the lower-level Assura agent feedback library. The stable
+user-facing CLI path is `assura check` with feedback formats such as
+`--format advice`, `--format status`, and `--format agent`. This package does
+not publish separate feedback CLI binaries; use it from wrapper code only when
+that wrapper already has `assura check --format json` output.
 
 ## Current Status
 
@@ -13,8 +14,7 @@ Supported in this MVP:
 - create actionable feedback messages for structure violations
 - filter feedback messages by minimum severity and cap displayed message count
 - render concise status lines for tool-result or agent-message wrappers
-- run `assura check --format json` and preserve Assura's exit code, including
-  non-JSON configuration/runtime failures
+- parse `assura check --format json` output produced by the Rust CLI
 - observe same-turn feedback by violation class after guidance is applied
 - render optional native Codex `UserPromptSubmit` hook feedback through
   `hookSpecificOutput.additionalContext`
@@ -22,17 +22,10 @@ Supported in this MVP:
   blocking behavior
 - compare evaluation runs for instructions-only, `AGENTS.md`/skills, and
   Assura runtime-feedback workflows
-- run small CLI entrypoints:
-
-  ```bash
-  assura-agent-feedback --report assura-report.json --format text
-  assura-agent-feedback --path . --format json
-  node /absolute/path/to/assura/integrations/agents/codex/dist/hook-cli.js --path . --min-severity medium --max-messages 5 --block-mode off
-  ```
 
 Not supported yet:
 
-- automatic Codex hook installation
+- package executable binaries
 - automatic tool-call blocking or tool-response injection
 - automatic mutation of Codex hook configuration
 - hosted telemetry
@@ -70,7 +63,7 @@ const observations = observeSameTurnFeedback(feedback, reportAfterFix, 2, 0, {
 console.log(observations);
 ```
 
-## CLI Usage
+## Stable CLI Usage
 
 For normal CLI use, prefer:
 
@@ -78,61 +71,41 @@ For normal CLI use, prefer:
 assura check --format advice .
 assura check --format status .
 assura check --format advice . --min-severity medium --max-issues 3
+assura check --format agent . --warn --min-severity medium --max-issues 5
+assura check --format agent --agent codex . --warn --min-severity medium --max-issues 5
 ```
 
-Read an existing report from wrapper code:
+Create reusable JSON for wrapper code with the Rust CLI:
 
 ```bash
 assura check --format json . > assura-report.json
-assura-agent-feedback --report assura-report.json --format text
-assura-agent-feedback --report assura-report.json --format status
-assura-agent-feedback \
-  --report assura-report.json \
-  --format status \
-  --minimum-severity high \
-  --max-messages 3 \
-  --blocking
+assura check --format agent . > assura-feedback.json
 ```
-
-Run Assura directly:
-
-```bash
-assura-agent-feedback --path . --format json
-```
-
-Exit codes:
-
-- `0`: the Assura report passed
-- `1`: the Assura report contained validation failures
-- `2`: the feedback CLI failed or the report was invalid
 
 ## Optional Native Codex Hook
 
-`assura-codex-hook` is a small proof of the native Codex hook path. It is not
-installed automatically. Users opt in by adding it to a Codex
-`UserPromptSubmit` hook alongside any existing hooks.
+Use the Rust CLI directly for Codex hook feedback:
+
+```bash
+assura check --format agent --agent codex . --warn --min-severity medium --max-issues 5
+```
+
+`--format agent` is the stable Assura feedback format. `--agent codex` wraps
+that feedback in native Codex `UserPromptSubmit` hook JSON. `--warn` keeps the
+hook advisory with exit `0`; omit `--warn` when the surrounding workflow should
+block on Assura validation failures.
 
 Prerequisites:
 
-- Install the `assura` CLI separately. The Assura release installer installs
-  `assura` and `assura-full`; it does not install `assura-codex-hook`.
-- Install or build this npm package so the hook command is available to the
-  Codex process. This package is not part of the Rust release installer. From
-  this source checkout, run `npm install && npm run build` in
-  `integrations/agents/codex/` and point Codex at
-  `node /absolute/path/to/assura/integrations/agents/codex/dist/hook-cli.js`.
-  After `@assura/agent-feedback` is published, users can install it globally or
-  use `npm exec --yes --package @assura/agent-feedback -- assura-codex-hook`.
+- Install the `assura` CLI. The Assura release installer installs `assura` and
+  `assura-full`.
 - Enable Codex hooks in user config with `features.hooks = true`, then run
   `/hooks` once in Codex and approve the project hook command.
 
-The hook runs when Codex invokes `UserPromptSubmit`, which is the per-prompt
-hook event used by this repository's `.codex/hooks.json`. On each run it either:
-
-- reuses a precomputed Assura report passed with `--report`, or
-- runs `assura check --format json <path>` when no report is supplied.
-
-Feedback is injected by writing Codex hook JSON to stdout:
+When configured with the Rust CLI command above, Codex invokes `assura check
+--format agent --agent codex` for the `UserPromptSubmit` hook event used by this
+repository's `.codex/hooks.json`. Feedback is injected by writing Codex hook JSON
+to stdout:
 
 ```json
 {
@@ -143,8 +116,8 @@ Feedback is injected by writing Codex hook JSON to stdout:
 }
 ```
 
-The injected context includes the check source, severity filter, message limit,
-blocking mode, violation counts, and path-specific Assura feedback messages.
+The injected context includes the check source, severity filter, issue limit,
+validation counts, and path-specific Assura feedback messages.
 
 Example optional hook entry:
 
@@ -156,7 +129,7 @@ Example optional hook entry:
         "hooks": [
           {
             "type": "command",
-            "command": "node /absolute/path/to/assura/integrations/agents/codex/dist/hook-cli.js --path . --min-severity medium --max-messages 5 --block-mode off",
+            "command": "assura check --format agent --agent codex . --warn --min-severity medium --max-issues 5",
             "timeout": 10
           }
         ]
@@ -169,43 +142,6 @@ Example optional hook entry:
 If a project already has `UserPromptSubmit` hooks, append the command to the
 existing hook list instead of replacing the file. This package intentionally
 does not edit `.codex/hooks.json` for you.
-
-### Hook Configuration
-
-```bash
-node /absolute/path/to/assura/integrations/agents/codex/dist/hook-cli.js --path . \
-  --min-severity medium \
-  --max-messages 5 \
-  --block-mode off \
-  --block-count 1
-```
-
-After `@assura/agent-feedback` is published and installed, use
-`assura-codex-hook` with the same options.
-
-- `--report <path>` reuses an existing `assura check --format json` report.
-- `--path <path>` is checked when no report is supplied. Default: `.`.
-- `--assura-bin <bin>` selects the Assura executable. Default: `assura`.
-- `--min-severity info|low|medium|high|critical` filters which violations are
-  shown and considered for violation blocking. Default: `info`.
-- `--max-messages <count>` limits injected path-specific messages. Default: `5`.
-- `--block-mode off|violations|errors|all` controls whether the hook command can
-  return nonzero. Default: `off`.
-- `--block-count <count>` sets the matching violation threshold for
-  `violations` or `all` blocking. Default: `1`.
-
-Default behavior is advisory: validation failures and hook execution errors are
-reported to Codex context but the hook exits `0`. Blocking is opt-in:
-
-- `--block-mode violations` exits `1` when matching violations meet
-  `--block-count`.
-- `--block-mode errors` exits `2` when the hook cannot produce a valid Assura
-  report.
-- `--block-mode all` enables both violation and error blocking.
-
-This hook does not start or reuse a daemon, watch files, integrate with an
-editor, or perform autonomous repair. It only emits per-prompt Codex hook
-context from one Assura JSON report or one `assura check --format json` run.
 
 ## Measurement Model
 
@@ -223,10 +159,10 @@ from the instructions-only baseline.
 
 ## Delivery Model
 
-The package currently produces feedback data and a focused Codex
-`UserPromptSubmit` hook command. It does not install hooks, intercept tool
-calls, mutate tool responses, keep a warm process, or decide editor-session
-policy.
+The package currently produces feedback data and Codex `UserPromptSubmit` JSON
+rendering helpers. It does not install hooks, expose CLI commands, intercept
+tool calls, mutate tool responses, keep a warm process, or decide
+editor-session policy.
 
 The intended wrapper contract for integrations beyond the implemented Codex
 prompt hook is:

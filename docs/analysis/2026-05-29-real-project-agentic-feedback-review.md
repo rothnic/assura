@@ -135,12 +135,12 @@ writeFileSync(
 EOF
 ```
 
-Generated advisory feedback, expected exit `1`:
+Generated advisory feedback through the current stable CLI surface:
 
 ```bash
-node integrations/agents/codex/dist/cli.js \
-  --report docs/analysis/2026-05-29-real-project-agentic-feedback-invalid-report.json \
-  --format json
+cargo run --quiet -- check --format agent \
+  --warn \
+  tests/fixtures/real-project-agentic-feedback/invalid \
 ```
 
 Observed same-turn repair run:
@@ -153,9 +153,9 @@ cp -R tests/fixtures/real-project-agentic-feedback/invalid \
 cargo run --quiet -- check target/real-project-agentic-feedback-agent-run/work \
   --format json \
   --output target/real-project-agentic-feedback-agent-run/before.json
-node integrations/agents/codex/dist/cli.js \
-  --report target/real-project-agentic-feedback-agent-run/before.json \
-  --format json \
+cargo run --quiet -- check --format agent \
+  --warn \
+  target/real-project-agentic-feedback-agent-run/work \
   > target/real-project-agentic-feedback-agent-run/feedback.json
 rm target/real-project-agentic-feedback-agent-run/work/scratch.md
 mv target/real-project-agentic-feedback-agent-run/work/apps/web/src/BadName.tsx \
@@ -290,8 +290,8 @@ Follow-up changes made after that review:
   `--warn`.
 - Document that Git hooks run on Git events only; native agent/editor hooks and
   hot-session management remain future integration work.
-- Update API and roadmap docs so local Git hook install/status/verify and
-  guided output are current, while native agent hooks remain future work.
+- Update API and roadmap docs so guided output and stable agent feedback are
+  current, while native agent/editor automation remains future work.
 - Add a clone prerequisite for the fixture-based website walkthrough.
 - Replace the pseudo `--format advice/status` wording and long flow code block
   with tables.

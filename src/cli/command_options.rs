@@ -1,6 +1,6 @@
 //! Option structs shared by full CLI command handlers.
 
-use crate::cli::args::OutputFormat;
+use crate::cli::args::{AgentTarget, CheckOutputFormat};
 use std::path::PathBuf;
 
 /// Options for a one-shot structure check command.
@@ -10,10 +10,12 @@ pub struct CheckCommandOptions {
     /// Explicit Assura configuration path.
     pub config: Option<PathBuf>,
     /// Report output format.
-    pub format: OutputFormat,
-    /// Minimum severity required for advice and status output.
+    pub format: CheckOutputFormat,
+    /// Delivery adapter for agent feedback output.
+    pub agent: AgentTarget,
+    /// Minimum severity required for feedback output.
     pub min_severity: Option<String>,
-    /// Maximum advice and status items to render.
+    /// Maximum feedback items to render.
     pub max_issues: Option<usize>,
     /// Optional report output path.
     pub output: Option<PathBuf>,

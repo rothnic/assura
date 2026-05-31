@@ -5,18 +5,21 @@ use super::{
     CheckTargetMode,
 };
 use super::{CheckError, StructureCheckReport};
-use crate::cli::check_feedback::{render_check_feedback, CheckFeedbackFormat, FeedbackOptions};
+use crate::cli::check_feedback::{
+    render_agent_feedback, render_check_feedback, render_codex_agent_feedback, CheckFeedbackFormat,
+    FeedbackOptions,
+};
 use serde::Serialize;
 use std::ffi::{OsStr, OsString};
 use std::path::PathBuf;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
-
 #[derive(Debug)]
 struct Options {
     paths: Vec<PathBuf>,
     config: Option<PathBuf>,
     format: OutputFormat,
+    agent: AgentTarget,
     min_severity: Option<String>,
     max_issues: Option<usize>,
     output: Option<PathBuf>,
@@ -26,7 +29,6 @@ struct Options {
     ls_lint_target_semantics: bool,
     quiet: bool,
 }
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum OutputFormat {
     Text,
@@ -34,13 +36,17 @@ enum OutputFormat {
     Yaml,
     Advice,
     Status,
+    Agent,
 }
-
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum AgentTarget {
+    Generic,
+    Codex,
+}
 /// Run the lightweight check parser from process arguments.
 pub fn run_check_cli_from_env(command_name: &str) -> i32 {
     run_check_cli(command_name, std::env::args_os().skip(1))
 }
-
 /// Run the lightweight check parser from already-normalized arguments.
 pub fn run_check_cli<I>(command_name: &str, args: I) -> i32
 where
@@ -139,6 +145,13 @@ where
         .opt_value_from_fn(["-f", "--format"], parse_format)
         .map_err(|error| error.to_string())?
         .unwrap_or(OutputFormat::Text);
+    let agent = args
+        .opt_value_from_fn("--agent", parse_agent_target)
+        .map_err(|error| error.to_string())?
+        .unwrap_or(AgentTarget::Generic);
+    if agent != AgentTarget::Generic && format != OutputFormat::Agent {
+        return Err("--agent requires --format agent".to_string());
+    }
     let min_severity = args
         .opt_value_from_fn("--min-severity", parse_min_severity)
         .map_err(|error| error.to_string())?;
@@ -167,6 +180,7 @@ where
         paths,
         config,
         format,
+        agent,
         min_severity,
         max_issues,
         output,
@@ -189,7 +203,18 @@ fn parse_format(value: &str) -> Result<OutputFormat, String> {
         "yaml" => Ok(OutputFormat::Yaml),
         "advice" => Ok(OutputFormat::Advice),
         "status" => Ok(OutputFormat::Status),
+        "agent" => Ok(OutputFormat::Agent),
         other => Err(format!("unsupported format '{other}'")),
+    }
+}
+
+fn parse_agent_target(value: &str) -> Result<AgentTarget, String> {
+    match value {
+        "generic" => Ok(AgentTarget::Generic),
+        "codex" => Ok(AgentTarget::Codex),
+        other => Err(format!(
+            "unsupported agent target '{other}'; expected generic or codex"
+        )),
     }
 }
 
@@ -299,6 +324,10 @@ fn format_reports(
         OutputFormat::Status => {
             format_feedback_reports(reports, options, CheckFeedbackFormat::Status)
         }
+        OutputFormat::Agent if options.agent == AgentTarget::Codex => {
+            render_codex_agent_feedback(reports.iter(), &feedback_options(options))
+        }
+        OutputFormat::Agent => render_agent_feedback(reports.iter(), &feedback_options(options)),
     }
 }
 
@@ -315,6 +344,10 @@ fn format_report(report: &StructureCheckReport, format: OutputFormat, options: &
         OutputFormat::Yaml => serde_yaml::to_string(report).unwrap_or_default(),
         OutputFormat::Advice => format_feedback(report, options, CheckFeedbackFormat::Advice),
         OutputFormat::Status => format_feedback(report, options, CheckFeedbackFormat::Status),
+        OutputFormat::Agent if options.agent == AgentTarget::Codex => {
+            render_codex_agent_feedback([report], &feedback_options(options))
+        }
+        OutputFormat::Agent => render_agent_feedback([report], &feedback_options(options)),
     }
 }
 
@@ -323,15 +356,15 @@ fn format_feedback(
     options: &Options,
     format: CheckFeedbackFormat,
 ) -> String {
-    render_check_feedback(
-        report,
-        format,
-        &FeedbackOptions {
-            minimum_severity: options.min_severity.clone(),
-            max_issues: options.max_issues,
-            warn: options.warn,
-        },
-    )
+    render_check_feedback(report, format, &feedback_options(options))
+}
+
+fn feedback_options(options: &Options) -> FeedbackOptions {
+    FeedbackOptions {
+        minimum_severity: options.min_severity.clone(),
+        max_issues: options.max_issues,
+        warn: options.warn,
+    }
 }
 
 fn format_feedback_reports(
@@ -438,17 +471,18 @@ Usage:
 
 Options:
   -c, --config <PATH>    Assura config path
-  -f, --format <FORMAT>  Output format: text, json, yaml, advice, status [default: text]
+  -f, --format <FORMAT>  Output format: text, json, yaml, advice, status, agent [default: text]
+      --agent <TARGET>   Delivery adapter for --format agent: generic, codex [default: generic]
       --min-severity <SEVERITY>
-                          Only show advice and status items for this severity or higher
+                          Only show feedback items for this severity or higher
       --max-issues <COUNT>
-                          Maximum advice and status items to show
+                          Maximum feedback items to show
   -o, --output <PATH>    Write report to a file
       --cache-dir <PATH> Reuse hot check results from this cache directory
       --fail-fast        Stop after the first violation
       --warn             Report violations but exit successfully
       --ls-lint-target-semantics
-                          Validate only the explicit target path, matching LS-Lint path arguments
+                          Validate only the explicit target path
   -q, --quiet            Suppress success output
   -h, --help             Show this help
   -V, --version          Show version

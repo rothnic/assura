@@ -19,9 +19,10 @@ The current supported workflow is intentionally small:
 > **Pre-1.0 scope**
 >
 > This release focuses on truthful onboarding and LS-Lint-compatible structure
-> checks. Local Git hook install/status/verify and advisory guided output are
-> supported. Optional Codex hook feedback is available only when users wire it
-> in. Automatic Codex hook installation, custom plugin APIs, role profiles,
+> checks. Advisory guided output and stable agent feedback are supported through
+> `assura check` formats. Optional Codex hook feedback is available only when
+> users wire `assura check --format agent --agent codex` into Codex hooks.
+> Automatic Codex hook installation, custom plugin APIs, role profiles,
 > daemon/editor support, and quality scoring are roadmap items, not supported
 > v0.1 features.
 
@@ -79,14 +80,13 @@ The `assura watch` command in this release is a truthful one-shot wrapper over
 
 ## Agent Feedback Direction
 
-`assura check --format advice` and `assura check --format status` provide the
-first guided feedback path. The lower-level integration package can still render
-feedback from JSON reports for wrappers, explain structural failures, and track
-comparison metrics for instructions-only, `AGENTS.md`/skills, and Assura
-runtime-feedback workflows. It also includes an optional native Codex
-`UserPromptSubmit` hook command that injects feedback through
-`additionalContext`. Automatic Codex hook installation, daemon/editor support,
-and complete agent orchestration remain future work.
+`assura check --format advice`, `--format status`, and `--format agent` provide
+the supported guided and agent feedback paths. Codex `UserPromptSubmit` hooks
+can inject feedback through `assura check --format agent --agent codex` when
+users wire that command manually. The lower-level integration package is a
+library helper for wrappers that already have JSON reports; it does not expose
+a separate feedback CLI. Automatic Codex hook installation, daemon/editor
+support, and complete agent orchestration remain future work.
 
 ## Start Here
 

@@ -53,8 +53,8 @@ hook, file watcher, or hot daemon session that automatically injects feedback
 after every file edit.
 
 See [Agent Feedback Delivery](/reference/agent-feedback/) for the distinction
-between manual CLI proof, Git hooks, feedback wrappers, and future native agent
-hooks.
+between manual CLI proof, Git hooks, stable agent feedback, optional Codex
+delivery, and future post-tool/editor automation.
 
 ## Manual Hook Alternative
 
