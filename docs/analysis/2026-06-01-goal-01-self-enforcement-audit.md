@@ -117,3 +117,19 @@ was not yet available and that the first version of the verifier checked allowed
 status values but not status truth. The verifier was tightened after that review
 to compare Phase 01 ledger status with per-goal frontmatter status, and PR #18
 was opened to provide review and clean-checkout CI evidence.
+
+PR #18 clean-checkout CI evidence passed after the branch was pushed:
+
+| Check | Result |
+| --- | --- |
+| Build Documentation | pass |
+| Check | pass |
+| Clippy | pass |
+| Code Coverage | pass |
+| GitGuardian Security Checks | pass |
+| Performance Report | pass |
+| Release Bundle Smoke | pass |
+| Rustfmt | pass |
+| Test Suite (macos-latest, stable) | pass |
+| Test Suite (ubuntu-latest, stable) | pass |
+| Windows Installer Smoke | pass |
