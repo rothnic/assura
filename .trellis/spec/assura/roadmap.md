@@ -13,19 +13,20 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 4 | Documentation Source Truth | Next | migrate, archive, or delete stale docs and workflow artifacts |
 | 5 | Windows CI Restore | Later | fix `libgit2-sys` MSVC linker failure and restore matrix entry |
 | 6 | Beyond Ls-Lint Rules | Active | `05-11-structure-check-benchmark-attribution` |
-| 7 | Agent Feedback MVP | Active | `05-29-real-project-agentic-feedback-proof` |
+| 7 | Agent Feedback MVP | Review | PR #16 merged; keep stable `assura check --format agent` surface |
+| 8 | Roadmap Phase 01 | Active | `06-01-assura-roadmap-goal-sequence` |
 
 ## Active Epic
 
-**Agent Feedback MVP** is active.
+**Roadmap Phase 01** is active.
 
 Current owning task:
-`.trellis/tasks/05-29-real-project-agentic-feedback-proof`.
+`.trellis/tasks/06-01-assura-roadmap-goal-sequence`.
 
-Current objective: complete the real-project policy proof using stable agent
-feedback through `assura check --format agent`, with `--agent codex` only as an
-optional Codex delivery adapter, without making hook behavior mandatory for
-ordinary developer workflows.
+Current objective: publish a bounded Phase 01 goal sequence with two-week team
+goals that define the next major chunks of Assura product work and the review
+tasks required to prove each goal complete. Completing Phase 01 should not mark
+the broader Assura roadmap complete.
 
 Direction lock, clarified on 2026-05-31: do not create or revive
 `assura-codex-feedback`, do not add one CLI entrypoint per agent, and do not add
@@ -34,9 +35,9 @@ that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
 ## Recommended Next Epic
 
-After the real-project proof is reviewed, continue **Agent Nudge MVP** only
-where it improves dogfooding signal. Keep public feedback delivery under
-`assura check` unless the codex-agent-feedback spec is intentionally reopened.
+After this roadmap PR is reviewed, start
+`docs/goals/assura-goal-01-trustworthy-self-enforcement.md` from
+`docs/goals/assura-roadmap-phase-01-agentic-adoption-foundation.md`.
 
 ## Roadmap Rules
 
