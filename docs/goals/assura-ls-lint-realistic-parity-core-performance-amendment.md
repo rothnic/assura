@@ -2,7 +2,7 @@
 id: goal-assura-ls-lint-realistic-parity-core-performance-amendment
 type: goal
 title: Assura LS-Lint performance completion amendment
-status: active
+status: completed
 created: 2026-05-16
 owners:
   - assura-maintainers

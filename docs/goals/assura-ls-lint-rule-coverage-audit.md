@@ -2,7 +2,7 @@
 id: goal-assura-ls-lint-rule-coverage-audit
 type: goal
 title: Assura LS-Lint Rule Coverage Audit
-status: complete
+status: completed
 created: 2026-05-26
 owners:
   - assura-maintainers

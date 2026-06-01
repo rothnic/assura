@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/assura/index.md", "reason": "Quality check against canonical Assura source map"}
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "Verify active epic, task, branch, PR, and next action"}
+{"file": ".trellis/spec/assura/structure-enforcement.md", "reason": "Verify self-check/config changes are not overfit"}
+{"file": ".trellis/spec/assura/codex-agent-feedback.md", "reason": "Verify forbidden feedback surfaces are not reintroduced"}
+{"file": ".trellis/spec/assura/tooling-stabilization.md", "reason": "Verify local/CI gates and known exceptions are accurate"}

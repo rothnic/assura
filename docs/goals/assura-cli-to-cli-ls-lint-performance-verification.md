@@ -2,7 +2,7 @@
 id: goal-assura-cli-to-cli-ls-lint-performance-verification
 type: goal
 title: Assura CLI-to-CLI LS-Lint performance verification
-status: complete
+status: completed
 created: 2026-05-17
 owners:
   - assura-maintainers

@@ -1,0 +1,6 @@
+{"file": ".trellis/spec/assura/index.md", "reason": "Canonical Assura sources, constraints, and active direction"}
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "Phase 01 active epic routing and execution state"}
+{"file": ".trellis/spec/assura/structure-enforcement.md", "reason": "Self-enforcement and .assura/config.yml contract"}
+{"file": ".trellis/spec/assura/codex-agent-feedback.md", "reason": "Stable agent feedback public surface constraints"}
+{"file": ".trellis/spec/assura/tooling-stabilization.md", "reason": "Validation gate policy and known baseline debt"}
+{"file": ".trellis/spec/guides/index.md", "reason": "Shared thinking guide routing before implementation"}

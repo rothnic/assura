@@ -37,6 +37,99 @@ run_self_check() {
   cargo run --quiet -- check --format json .
 }
 
+run_trellis_state_check() {
+  python3 - <<'PY'
+import json
+import pathlib
+import re
+import sys
+
+errors = []
+goal_statuses = {}
+task_root = pathlib.Path(".trellis/tasks")
+allowed_task_statuses = {"planning", "in_progress"}
+for task_file in sorted(task_root.glob("*/task.json")):
+    with task_file.open() as handle:
+        task = json.load(handle)
+    status = task.get("status")
+    if status not in allowed_task_statuses:
+        errors.append(
+            f"{task_file}: active task status {status!r} should be archived or in progress/planning"
+        )
+
+allowed_goal_statuses = {"planned", "active", "completed", "archived"}
+for goal_file in sorted(pathlib.Path("docs/goals").glob("*.md")):
+    text = goal_file.read_text()
+    frontmatter = re.match(r"---\n(.*?)\n---", text, re.DOTALL)
+    if not frontmatter:
+        continue
+    status_match = re.search(r"^status:\s*(\S+)\s*$", frontmatter.group(1), re.MULTILINE)
+    if not status_match:
+        errors.append(f"{goal_file}: missing frontmatter status")
+        continue
+    status = status_match.group(1)
+    if status not in allowed_goal_statuses:
+        errors.append(
+            f"{goal_file}: unsupported goal status {status!r}; expected one of {sorted(allowed_goal_statuses)}"
+        )
+    goal_statuses[goal_file.name] = status
+
+phase_goal = pathlib.Path("docs/goals/assura-roadmap-phase-01-agentic-adoption-foundation.md")
+phase_goal_files = {
+    1: "assura-goal-01-trustworthy-self-enforcement.md",
+    2: "assura-goal-02-policy-language-completeness.md",
+    3: "assura-goal-03-agent-feedback-delivery-loop.md",
+    4: "assura-goal-04-fast-incremental-check-engine.md",
+    5: "assura-goal-05-installable-adoption-path.md",
+    6: "assura-goal-06-review-evidence-and-quality-gates.md",
+    7: "assura-goal-07-extension-and-plugin-foundation.md",
+    8: "assura-goal-08-release-readiness-and-ecosystem.md",
+}
+ledger_statuses = {}
+if phase_goal.exists():
+    for line in phase_goal.read_text().splitlines():
+        match = re.match(r"^\|\s*(\d+)\.\s+[^|]+\|\s+([A-Za-z]+)\s+\|", line)
+        if match:
+            order = int(match.group(1))
+            ledger_statuses[order] = match.group(2).lower()
+
+    missing_orders = sorted(set(phase_goal_files) - set(ledger_statuses))
+    for order in missing_orders:
+        errors.append(f"{phase_goal}: missing Phase 01 ledger row for goal {order}")
+
+    for order, file_name in phase_goal_files.items():
+        expected = ledger_statuses.get(order)
+        actual = goal_statuses.get(file_name)
+        if actual is None:
+            errors.append(f"docs/goals/{file_name}: missing Phase 01 goal file")
+        elif expected is not None and actual != expected:
+            errors.append(
+                f"docs/goals/{file_name}: frontmatter status {actual!r} does not match Phase 01 ledger status {expected!r}"
+            )
+
+    allowed_active_goals = {
+        "assura-roadmap-phase-01-agentic-adoption-foundation.md",
+        *{
+            file_name
+            for order, file_name in phase_goal_files.items()
+            if ledger_statuses.get(order) == "active"
+        },
+    }
+    for file_name, status in goal_statuses.items():
+        if status == "active" and file_name not in allowed_active_goals:
+            errors.append(
+                f"docs/goals/{file_name}: active status is not listed as active in the Phase 01 ledger"
+            )
+
+if errors:
+    for error in errors:
+        print(error, file=sys.stderr)
+    sys.exit(1)
+
+print("Trellis task and goal status state is clean.")
+PY
+}
+
 run_docs() {
   if command -v pnpm >/dev/null 2>&1; then
     pnpm --dir website build
@@ -168,6 +261,7 @@ case "$mode" in
     run_check
     run_test
     run_self_check
+    run_trellis_state_check
     ;;
   check)
     run_check

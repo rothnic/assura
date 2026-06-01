@@ -1,0 +1,30 @@
+{
+  "id": "00-bootstrap-guidelines",
+  "name": "00-bootstrap-guidelines",
+  "title": "Bootstrap Assura Guidelines",
+  "description": "Fill in Assura-specific development, governance, and self-enforcement guidelines for AI agents",
+  "status": "completed",
+  "dev_type": "docs",
+  "scope": null,
+  "package": null,
+  "priority": "P1",
+  "creator": "nroth",
+  "assignee": "nroth",
+  "createdAt": "2026-05-09",
+  "completedAt": "2026-06-01",
+  "branch": null,
+  "base_branch": null,
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    ".trellis/spec/index.md",
+    ".trellis/spec/assura/",
+    ".trellis/spec/guides/"
+  ],
+  "notes": "First-time setup task adapted for Assura's Rust CLI/library, documentation governance, and self-enforcement workflow.",
+  "meta": {}
+}

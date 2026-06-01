@@ -18,7 +18,11 @@ node --run verify:fast
 
 This runs formatting, whitespace checks, focused compile checks for the primary
 `assura` launcher and `assura-full` companion, Rust tests without benchmark
-harness or standalone binary harness targets, and the Assura self-check.
+harness or standalone binary harness targets, the Assura self-check, and the
+Trellis/goal status sanity check. The status check fails when completed tasks
+remain under `.trellis/tasks/` instead of the archive, when goal frontmatter
+uses a status outside `planned`, `active`, `completed`, or `archived`, or when
+the Phase 01 ledger and `assura-goal-01..08` frontmatter statuses disagree.
 
 ## Targeted Gates
 
