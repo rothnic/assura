@@ -2,7 +2,7 @@
 id: goal-assura-roadmap-02-policy-language-completeness
 type: goal
 title: Assura roadmap 02 policy language completeness
-status: planned
+status: active
 created: 2026-06-01
 owners:
   - assura-maintainers
@@ -77,3 +77,12 @@ git diff --check
 
 Block the PR if docs claim LS-Lint parity for Assura-only behavior, if migration
 silently changes semantics, or if a new config field lacks failure coverage.
+
+## Progress Log
+
+| Date | Event | Evidence |
+| --- | --- | --- |
+| 2026-06-01 | Started Goal 02 from the Iteration 01 execution branch after Goal 01 merged; clarified the master roadmap artifact as an iteration ledger and moved active status to Goal 02. | `docs/goals/assura-roadmap-phase-01-agentic-adoption-foundation.md`; `.trellis/spec/assura/roadmap.md`; `bash scripts/verify.sh fast`. |
+| 2026-06-01 | Added corrective diagnostic context to structure violations, added a realistic multi-package policy fixture with passing and failing coverage, expanded configuration and LS-Lint migration docs, and produced the policy language audit. | `cargo test --test policy_language_completeness_tests --quiet`; `cargo test --test cli_command_surface_tests agent --quiet`; `docs/analysis/2026-06-01-goal-02-policy-language-audit.md`. |
+| 2026-06-01 | Addressed review findings for LS-Lint `.dir`/`self_directory` wording and naming-drift test coverage, then reran the full Goal 02 gates. | `cargo fmt --all -- --check`; `cargo test --test policy_language_completeness_tests --quiet`; `cargo test --test cli_command_surface_tests agent --quiet`; `cargo test --all-targets --quiet`; `cargo test ls_lint --quiet`; `cargo run --quiet -- check --format json .`; `git diff --check`; `node --run verify:docs`; `bash scripts/verify.sh fast`. |
+| 2026-06-01 | Addressed PR #19 Gemini review comments by replacing per-violation `format!` allocations in text feedback render loops with direct writes while preserving the `fast_cli.rs` line budget. | `cargo fmt --all -- --check`; `cargo test --test cli_command_surface_tests agent --quiet`; `cargo test --test policy_language_completeness_tests --quiet`; `cargo test --all-targets --quiet`; `cargo test ls_lint --quiet`; `cargo run --quiet -- check --format json .`; `node --run verify:docs`; `bash scripts/verify.sh fast`; `wc -l src/cli/check/fast_cli.rs`; `git diff --check`. |

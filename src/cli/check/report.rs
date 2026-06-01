@@ -42,6 +42,8 @@ pub struct StructureViolation {
     pub message: String,
     /// Violation severity.
     pub severity: String,
+    /// Stable corrective context for fixing the violation or policy.
+    pub corrective_context: String,
 }
 
 impl StructureViolation {
@@ -51,11 +53,69 @@ impl StructureViolation {
         message: impl Into<String>,
         severity: impl Into<String>,
     ) -> Self {
+        let rule = rule.into();
         Self {
             path,
-            rule: rule.into(),
+            corrective_context: corrective_context_for_rule(&rule).to_string(),
+            rule,
             message: message.into(),
             severity: severity.into(),
+        }
+    }
+}
+
+fn corrective_context_for_rule(rule: &str) -> &'static str {
+    match rule {
+        "file_naming" => {
+            "Rename the file to match the effective naming rule, or update files.naming/naming_patterns when the policy is stale."
+        }
+        "directory_naming" => {
+            "Rename the directory to match the effective directory naming rule, or update directories.naming/self_directory.naming when the policy is stale."
+        }
+        "required_file" => {
+            "Create the required file at the reported path, or remove it from files.required/exists.files when it is no longer required."
+        }
+        "required_directory" => {
+            "Create the required directory at the reported path, or remove it from directories.required/exists.directories/children when it is no longer required."
+        }
+        "unexpected_file" => {
+            "Remove or move the file, or declare it with files.allowed_names, files.allowed_patterns, extensions, or allow_extra."
+        }
+        "forbidden_file" => {
+            "Remove or rename the file, or narrow files.forbidden_patterns if this file should be allowed."
+        }
+        "unexpected_directory" => {
+            "Remove or move the directory, or declare it with children, directories.allowed_names, directories.allowed_patterns, or allow_extra."
+        }
+        "forbidden_directory" => {
+            "Remove or rename the directory, or narrow directories.forbidden_patterns if this directory should be allowed."
+        }
+        "exists_count" => {
+            "Adjust direct child files/directories until the count matches the configured exists range, or update the range in .assura/config.yml."
+        }
+        "markdown_frontmatter" | "markdown_frontmatter_field" | "markdown_frontmatter_parse" => {
+            "Add valid YAML frontmatter with the required fields, or relax markdown.require_frontmatter/required_fields for this scope."
+        }
+        "markdown_heading_depth" => {
+            "Promote deep headings or increase markdown.max_heading_depth when the deeper outline is intentional."
+        }
+        "markdown_required_section" => {
+            "Add the missing heading text or update markdown.required_sections when the section is no longer required."
+        }
+        "extension" => {
+            "Rename the file to an allowed extension or update files.extensions for this scope."
+        }
+        "max_lines" => {
+            "Split or shorten the file, or raise files.max_lines when the size is intentional."
+        }
+        "max_size" => {
+            "Reduce the file size or raise files.max_size when the larger file is intentional."
+        }
+        "require_docs" => {
+            "Add module or item rustdoc, or disable files.require_docs for this scope."
+        }
+        _ => {
+            "Inspect the reported path and effective rule, then update the file tree or .assura/config.yml so they agree."
         }
     }
 }

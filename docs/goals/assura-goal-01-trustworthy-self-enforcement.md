@@ -2,7 +2,7 @@
 id: goal-assura-roadmap-01-trustworthy-self-enforcement
 type: goal
 title: Assura roadmap 01 trustworthy self-enforcement
-status: active
+status: completed
 created: 2026-06-01
 owners:
   - assura-maintainers

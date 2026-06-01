@@ -74,7 +74,7 @@ for goal_file in sorted(pathlib.Path("docs/goals").glob("*.md")):
         )
     goal_statuses[goal_file.name] = status
 
-phase_goal = pathlib.Path("docs/goals/assura-roadmap-phase-01-agentic-adoption-foundation.md")
+phase_plan = pathlib.Path("docs/goals/assura-roadmap-phase-01-agentic-adoption-foundation.md")
 phase_goal_files = {
     1: "assura-goal-01-trustworthy-self-enforcement.md",
     2: "assura-goal-02-policy-language-completeness.md",
@@ -86,8 +86,8 @@ phase_goal_files = {
     8: "assura-goal-08-release-readiness-and-ecosystem.md",
 }
 ledger_statuses = {}
-if phase_goal.exists():
-    for line in phase_goal.read_text().splitlines():
+if phase_plan.exists():
+    for line in phase_plan.read_text().splitlines():
         match = re.match(r"^\|\s*(\d+)\.\s+[^|]+\|\s+([A-Za-z]+)\s+\|", line)
         if match:
             order = int(match.group(1))
@@ -95,16 +95,16 @@ if phase_goal.exists():
 
     missing_orders = sorted(set(phase_goal_files) - set(ledger_statuses))
     for order in missing_orders:
-        errors.append(f"{phase_goal}: missing Phase 01 ledger row for goal {order}")
+        errors.append(f"{phase_plan}: missing Iteration 01 ledger row for goal {order}")
 
     for order, file_name in phase_goal_files.items():
         expected = ledger_statuses.get(order)
         actual = goal_statuses.get(file_name)
         if actual is None:
-            errors.append(f"docs/goals/{file_name}: missing Phase 01 goal file")
+            errors.append(f"docs/goals/{file_name}: missing Iteration 01 goal file")
         elif expected is not None and actual != expected:
             errors.append(
-                f"docs/goals/{file_name}: frontmatter status {actual!r} does not match Phase 01 ledger status {expected!r}"
+                f"docs/goals/{file_name}: frontmatter status {actual!r} does not match Iteration 01 ledger status {expected!r}"
             )
 
     allowed_active_goals = {

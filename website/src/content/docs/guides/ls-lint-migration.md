@@ -44,8 +44,31 @@ assura check --format json .
 
 The migration path targets LS-Lint 2.3 naming, regex, `.dir`, ignore, OR
 syntax, wildcard/subextension rules, glob and brace directory scopes, and
-`exists` behavior. Exact filename `exists` rules are documented as an Assura
-compatibility extension.
+`exists` behavior.
+
+Native LS-Lint parity examples:
+
+```yaml
+ls:
+  .dir: kebab-case
+  .md: exists:1-2
+  packages/*:
+    .ts: camelCase
+```
+
+Assura compatibility extension examples:
+
+```yaml
+ls:
+  README.md: exists:1
+  docs/: exists:1
+```
+
+The extension examples become direct child count checks in `.assura/config.yml`.
+They are useful for policies such as required package `README.md` files, but
+they are not native LS-Lint 2.3 behavior. Upstream LS-Lint reports exact scalar
+filename `exists` keys differently, so Assura docs and tests keep this behavior
+separate from the native parity surface.
 
 Multiple LS-Lint config files can be passed to `assura migrate` in the same
 order you would pass repeated LS-Lint `--config` flags.
