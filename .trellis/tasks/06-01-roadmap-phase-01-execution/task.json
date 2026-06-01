@@ -1,7 +1,7 @@
 {
   "id": "roadmap-phase-01-execution",
   "name": "roadmap-phase-01-execution",
-  "title": "Roadmap Phase 01 execution",
+  "title": "Roadmap Iteration 01 execution",
   "description": "",
   "status": "in_progress",
   "dev_type": null,
@@ -12,7 +12,7 @@
   "assignee": "nroth",
   "createdAt": "2026-06-01",
   "completedAt": null,
-  "branch": "codex/roadmap-phase-01-execution",
+  "branch": "codex/phase-01-goal-02-policy-language",
   "base_branch": "master",
   "worktree_path": null,
   "commit": null,

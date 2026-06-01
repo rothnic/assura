@@ -65,8 +65,8 @@ fn format_structure_report_text(report: &StructureCheckReport) -> String {
         return output;
     }
 
-    output.push_str("\nViolations\n");
-    output.push_str("----------\n");
+    use std::fmt::Write as _;
+    output.push_str("\nViolations\n----------\n");
     for violation in &report.violations {
         output.push_str(&format!(
             "{} [{}:{}] {}\n",
@@ -75,6 +75,7 @@ fn format_structure_report_text(report: &StructureCheckReport) -> String {
             violation.rule,
             violation.message
         ));
+        let _ = writeln!(output, "  Fix: {}", violation.corrective_context);
     }
 
     output

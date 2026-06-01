@@ -1,12 +1,13 @@
-# Roadmap Phase 01 Execution
+# Roadmap Iteration 01 Execution
 
-## Goal
+## Iteration
 
-Execute `docs/goals/assura-roadmap-phase-01-agentic-adoption-foundation.md`
-from updated `master` on branch `codex/roadmap-phase-01-execution`.
+Execute the roadmap iteration described by
+`docs/goals/assura-roadmap-phase-01-agentic-adoption-foundation.md` from updated
+`master` on branch `codex/roadmap-phase-01-execution`.
 
 This task is not a roadmap-writing task. It owns implementation, validation,
-review, and evidence collection for the Phase 01 goal sequence.
+review, and evidence collection for the Iteration 01 goal sequence.
 
 ## Source Documents
 
@@ -34,32 +35,35 @@ review, and evidence collection for the Phase 01 goal sequence.
   `assura check --format agent --agent codex`.
 - Do not reintroduce package feedback CLIs, per-agent CLI entrypoints, or
   per-agent `--format` values.
-- Record progress in the active goal document before and after major phases.
+- Record progress in the active execution goal and the iteration ledger before
+  and after major phases.
 - Use review-agent review before PR creation and address or explicitly reject
   findings with rationale.
 
-## Phase Completion Criteria
+## Iteration Completion Criteria
 
-Phase 01 is complete only when:
+Iteration 01 is complete only when:
 
 - all eight linked goals are complete;
-- the Phase 01 ledger links each goal's evidence;
+- the Iteration 01 ledger links each goal's evidence;
 - each goal's required validation commands pass or have documented,
   owner-approved exceptions;
 - review tasks R0 through R5 are complete for every goal;
 - checked artifacts are reproducible from committed files;
 - CI and local verification evidence are linked from the PR; and
-- the next roadmap phase is created or identified without marking the broader
+- the next roadmap iteration is created or identified without marking the broader
   Assura roadmap complete.
 
-## First Slice
+## Current Slice
 
-Begin with Goal 01, Trustworthy Self-Enforcement:
+Continue with Goal 02, Policy Language Completeness:
 
-- audit active Trellis tasks and archive only completed merged work;
-- align roadmap, active goal docs, current branch, and PR state;
-- audit `.assura/config.yml` against current repository shape;
-- remove or mark stale workflow/command-surface docs as historical;
-- add targeted self-check fixtures or tests for any discovered config blind
-  spots;
-- run the Goal 01 required validation commands.
+- audit supported structure policy fields against tests and docs;
+- separate native LS-Lint migration parity from Assura compatibility
+  extensions;
+- add realistic passing and failing fixtures for direct files, directories,
+  required content, forbidden content, markdown frontmatter, and generated
+  output exclusions;
+- improve diagnostics for naming drift, unexpected contents, missing required
+  paths, and count failures;
+- run the Goal 02 required validation commands and review tasks.

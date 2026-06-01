@@ -32,7 +32,7 @@ This is a two-week team chunk for release, docs, CI, and product owners.
   extensions.
 - Add support policy for issues, bug reports, docs fixes, and future breaking
   changes before 1.0.
-- Define the next roadmap after this master sequence.
+- Define the next roadmap iteration after Iteration 01.
 
 ## Non-Goals
 
@@ -47,7 +47,8 @@ This is a two-week team chunk for release, docs, CI, and product owners.
 - Release notes identify breaking changes, removed experimental surfaces, and
   supported feedback delivery.
 - Compatibility claims are backed by checked tests or reports.
-- The next roadmap phase is linked from this goal and the Phase 01 goal.
+- The next roadmap iteration is linked from this goal and the Iteration 01
+  ledger.
 
 ## Required Validation
 
@@ -65,12 +66,12 @@ git diff --check
 
 ## Review Tasks
 
-- R0: Confirm release scope matches the current master roadmap state.
+- R0: Confirm release scope matches the current roadmap iteration state.
 - R1: Review every public compatibility and performance claim against evidence.
 - R2: Review release artifact and installer smoke results.
 - R3: Reproduce install and first-check flow from published artifacts.
 - R4: Review website navigation and release notes for stale claims.
-- R5: Confirm the next roadmap and support policy are explicit.
+- R5: Confirm the next roadmap iteration and support policy are explicit.
 
 ## Reviewer Blocking Criteria
 

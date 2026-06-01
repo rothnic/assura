@@ -44,6 +44,7 @@ struct FeedbackMessage {
     rule: String,
     severity: String,
     problem: String,
+    corrective_context: String,
     guidance: Vec<&'static str>,
     references: Vec<&'static str>,
 }
@@ -154,6 +155,7 @@ pub fn create_check_feedback(
             rule: violation.rule.clone(),
             severity: violation.severity.clone(),
             problem: violation.message.clone(),
+            corrective_context: violation.corrective_context.clone(),
             guidance: guidance_for_rule(&violation.rule),
             references: DEFAULT_REFERENCES.to_vec(),
         })
@@ -308,12 +310,15 @@ fn render_text(feedback: &CheckFeedback) -> String {
     }
 
     output.push('\n');
+    use std::fmt::Write as _;
     for message in &feedback.messages {
-        output.push_str(&format!(
-            "- {} [{}:{}]\n",
+        let _ = writeln!(
+            output,
+            "- {} [{}:{}]",
             message.path, message.rule, message.severity
-        ));
+        );
         output.push_str(&format!("  Problem: {}\n", message.problem));
+        let _ = writeln!(output, "  Fix: {}", message.corrective_context);
         for guidance in &message.guidance {
             output.push_str(&format!("  Next: {guidance}\n"));
         }

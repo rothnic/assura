@@ -2,15 +2,15 @@
 
 use super::{
     run_structure_check_cached, run_structure_check_with_target_mode, run_structure_checks,
-    CheckTargetMode,
+    CheckError, CheckTargetMode, StructureCheckReport,
 };
-use super::{CheckError, StructureCheckReport};
 use crate::cli::check_feedback::{
     render_agent_feedback, render_check_feedback, render_codex_agent_feedback, CheckFeedbackFormat,
     FeedbackOptions,
 };
 use serde::Serialize;
 use std::ffi::{OsStr, OsString};
+use std::fmt::Write as _;
 use std::path::PathBuf;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -406,18 +406,19 @@ fn format_batch_text_report(reports: &[StructureCheckReport]) -> String {
         return output;
     }
 
-    output.push_str("\nViolations\n");
-    output.push_str("----------\n");
+    output.push_str("\nViolations\n----------\n");
     for report in reports {
         for violation in &report.violations {
-            output.push_str(&format!(
-                "{}: {} [{}:{}] {}\n",
+            let _ = write!(
+                output,
+                "{}: {} [{}:{}] {}\n  Fix: {}\n",
                 report.checked_path.display(),
                 violation.path.display(),
                 violation.severity,
                 violation.rule,
-                violation.message
-            ));
+                violation.message,
+                violation.corrective_context,
+            );
         }
     }
     output
@@ -445,18 +446,18 @@ fn format_text_report(report: &StructureCheckReport) -> String {
         return output;
     }
 
-    output.push_str("\nViolations\n");
-    output.push_str("----------\n");
+    output.push_str("\nViolations\n----------\n");
     for violation in &report.violations {
-        output.push_str(&format!(
-            "{} [{}:{}] {}\n",
+        let _ = write!(
+            output,
+            "{} [{}:{}] {}\n  Fix: {}\n",
             violation.path.display(),
             violation.severity,
             violation.rule,
-            violation.message
-        ));
+            violation.message,
+            violation.corrective_context,
+        );
     }
-
     output
 }
 
