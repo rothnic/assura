@@ -6,7 +6,7 @@ Complete `docs/goals/assura-real-project-policy-proof.md` end to end: a realisti
 
 ## What I Already Know
 
-- The current goal title is "Assura real project agentic feedback proof" and it is `status: planned`.
+- The current goal title is "Assura real project agentic feedback proof" and it is `status: active`.
 - The goal requires a single canonical scenario that proves Assura can protect a real project shape and give useful agent/developer feedback.
 - Supported v0.1 surfaces include `assura check`, `assura init`, `assura migrate`, `assura status`, JSON/YAML/text reports, and advisory agent feedback.
 - Agent feedback should use `assura check --format agent`; Codex delivery should use `assura check --format agent --agent codex`.
@@ -66,6 +66,6 @@ Complete `docs/goals/assura-real-project-policy-proof.md` end to end: a realisti
 
 - Goal: `docs/goals/assura-real-project-policy-proof.md`
 - Specs: `.trellis/spec/assura/index.md`, `.trellis/spec/assura/structure-enforcement.md`, `.trellis/spec/assura/tooling-stabilization.md`
-- Existing hook manager: `src/cli/hooks.rs`, `src/cli/args.rs`, `src/cli/full_entry.rs`
+- Stable feedback surface: `assura check --format agent`, with Codex delivery only through `--agent codex`
 - Existing feedback package: `integrations/agents/codex/src/index.ts`
 - Existing website routes: `website/src/content/docs/examples/` and `website/src/content/docs/guides/`

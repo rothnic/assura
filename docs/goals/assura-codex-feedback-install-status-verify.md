@@ -2,7 +2,7 @@
 id: goal-assura-codex-feedback-install-status-verify
 type: goal
 title: Assura Codex feedback install status verify
-status: planned
+status: completed
 created: 2026-05-31
 owners:
   - assura-maintainers
@@ -173,3 +173,7 @@ Block the PR if:
   direction: the npm package no longer exposes feedback command binaries, docs
   no longer present package commands as fallback CLI surfaces, and the active
   API remains `assura check --format agent` with optional `--agent codex`.
+- 2026-05-31: Closed post-merge bookkeeping after PR #15 landed on `master`.
+  Archived Trellis task
+  `.trellis/tasks/05-31-codex-feedback-install-status-verify` and moved the
+  Agent Feedback MVP roadmap owner back to the real-project policy proof task.

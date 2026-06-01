@@ -2,7 +2,7 @@
 id: goal-assura-real-project-policy-proof
 type: goal
 title: Assura real project agentic feedback proof
-status: planned
+status: active
 created: 2026-05-26
 owners:
   - assura-maintainers
@@ -322,7 +322,7 @@ Reviewers should block completion if any of these are true:
    `docs/analysis/`.
 2. Add valid and invalid fixtures plus supported Assura config.
 3. Implement or verify the `assura check --format agent` feedback path.
-4. Add fixture tests, hook tests, and JSON report proof.
+4. Add fixture tests, stable agent feedback tests, and JSON report proof.
 5. Add feedback proof using the existing agent feedback package, including
    observed agent response metrics.
 6. Update website or docs adoption content around the full user journey.
@@ -333,8 +333,10 @@ Reviewers should block completion if any of these are true:
 | Date | Phase | Evidence |
 | --- | --- | --- |
 | 2026-05-29 | Execution started | Created Trellis task `.trellis/tasks/05-29-real-project-agentic-feedback-proof`, branched `codex/real-project-agentic-feedback-proof`, and seeded PRD from this goal. |
-| 2026-05-29 | Implementation slice | Added checked valid/invalid real-project fixtures, `assura hooks verify`, runnable hook status, Codex same-turn observation, user-facing docs, JSON/feedback evidence, and review record. |
+| 2026-05-29 | Implementation slice | Added checked valid/invalid real-project fixtures, same-turn observation, user-facing docs, JSON/feedback evidence, and review record. |
 | 2026-05-29 | PR review follow-up | Opened PR #13, received Gemini Code Assist review, addressed three comments on worktree hook parsing and defensive same-turn observation handling, and recorded the follow-up in `docs/analysis/2026-05-29-real-project-agentic-feedback-review.md`. |
+| 2026-05-31 | Stable surface follow-up | Synced to `master` after PR #15, archived the merged 05-31 install/status/verify task, refreshed the real-project proof around `assura check --format agent`, and kept Codex delivery only under `--agent codex`. |
+| 2026-05-31 | Validation and review | Iteration 1; context health: goal tracker exposed `tokensUsed=174387`, no remaining-token budget exposed. Review agent findings were resolved by making the checked feedback artifact reproducible from the stable CLI command and documenting Codex `features.hooks = true` plus `/hooks` approval. Passed `cargo fmt --all -- --check`, `cargo test --all-targets --quiet`, `cargo clippy --all-targets --all-features -- -D warnings`, `cargo run --quiet -- check --format json .`, `cargo run --quiet -- check --format agent tests/fixtures/real-project-agentic-feedback/invalid --warn`, `cargo run --quiet -- check --format agent --agent codex tests/fixtures/real-project-agentic-feedback/invalid --warn`, `npm run lint && npm test && npm run build && npm pack --dry-run` in `integrations/agents/codex`, `node --run verify:fast`, `node --run verify:docs`, `npx pnpm@10.25.0 build` in `website`, and `git diff --check`. |
 
 ## Handoff Prompt
 
@@ -346,7 +348,8 @@ goal document, AGENTS.md, .agents/skills/assura-goal-execution/SKILL.md,
 .trellis/spec/assura/index.md, .trellis/spec/assura/structure-enforcement.md,
 and .trellis/spec/assura/tooling-stabilization.md. Implement the smallest
 end-to-end real project agentic feedback proof that satisfies the Definition Of
-Done: realistic policy, hook/status/verify workflow, same-turn feedback evidence,
+Done: realistic policy, stable `assura check --format agent` feedback, optional
+Codex delivery only through `--agent codex`, same-turn feedback evidence,
 hot-path performance evidence, docs, tests, and a review record under
 docs/analysis/.
 ```
