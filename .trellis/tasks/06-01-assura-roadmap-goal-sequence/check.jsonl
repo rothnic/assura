@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/assura/index.md", "reason": "Quality check against canonical source and roadmap conventions"}
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "Verify master roadmap routing is accurate"}
+{"file": ".trellis/spec/assura/codex-agent-feedback.md", "reason": "Verify no forbidden feedback surfaces are reintroduced"}
+{"file": ".trellis/spec/assura/tooling-stabilization.md", "reason": "Verify validation and review gates are realistic"}

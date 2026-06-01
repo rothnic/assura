@@ -2,7 +2,7 @@
 id: goal-assura-real-project-policy-proof
 type: goal
 title: Assura real project agentic feedback proof
-status: active
+status: completed
 created: 2026-05-26
 owners:
   - assura-maintainers
@@ -337,6 +337,7 @@ Reviewers should block completion if any of these are true:
 | 2026-05-29 | PR review follow-up | Opened PR #13, received Gemini Code Assist review, addressed three comments on worktree hook parsing and defensive same-turn observation handling, and recorded the follow-up in `docs/analysis/2026-05-29-real-project-agentic-feedback-review.md`. |
 | 2026-05-31 | Stable surface follow-up | Synced to `master` after PR #15, archived the merged 05-31 install/status/verify task, refreshed the real-project proof around `assura check --format agent`, and kept Codex delivery only under `--agent codex`. |
 | 2026-05-31 | Validation and review | Iteration 1; context health: goal tracker exposed `tokensUsed=174387`, no remaining-token budget exposed. Review agent findings were resolved by making the checked feedback artifact reproducible from the stable CLI command and documenting Codex `features.hooks = true` plus `/hooks` approval. Passed `cargo fmt --all -- --check`, `cargo test --all-targets --quiet`, `cargo clippy --all-targets --all-features -- -D warnings`, `cargo run --quiet -- check --format json .`, `cargo run --quiet -- check --format agent tests/fixtures/real-project-agentic-feedback/invalid --warn`, `cargo run --quiet -- check --format agent --agent codex tests/fixtures/real-project-agentic-feedback/invalid --warn`, `npm run lint && npm test && npm run build && npm pack --dry-run` in `integrations/agents/codex`, `node --run verify:fast`, `node --run verify:docs`, `npx pnpm@10.25.0 build` in `website`, and `git diff --check`. |
+| 2026-06-01 | Merged and archived | User reported PR #16 merged. Archived Trellis task `.trellis/tasks/05-29-real-project-agentic-feedback-proof` while starting the follow-on roadmap goal sequence. |
 
 ## Handoff Prompt
 
