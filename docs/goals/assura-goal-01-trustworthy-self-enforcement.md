@@ -88,3 +88,4 @@ state cannot tell the next agent what to do.
 | Date | Event | Evidence |
 | --- | --- | --- |
 | 2026-06-01 | Started Goal 01 on fresh branch `codex/roadmap-phase-01-execution`; established `.trellis/tasks/06-01-roadmap-phase-01-execution` as current task; archived completed/merged Trellis tasks after checking live PR state. | `python3 ./.trellis/scripts/task.py current --source`; GitHub PRs #1-#5, #8, #11, #12, #17 are merged; `python3 ./.trellis/scripts/task.py list` now shows only the current Phase 01 task active. |
+| 2026-06-01 | Opened Goal 01 review PR after local validation and review-agent pass. | PR #18: `https://github.com/rothnic/assura/pull/18`; review agent `019e853b-84df-76a1-b03f-2c3a4d711fc7`; `node --run verify:fast`; `cargo test --all-targets --quiet`; `cargo clippy --all-targets --all-features -- -D warnings`; `node --run verify:docs`; `git diff --check`. |

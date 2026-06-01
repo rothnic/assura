@@ -15,6 +15,7 @@ This audit records the first implementation slice for
 - Created branch `codex/roadmap-phase-01-execution`.
 - Created active Trellis task
   `.trellis/tasks/06-01-roadmap-phase-01-execution`.
+- Opened PR #18: `https://github.com/rothnic/assura/pull/18`.
 - Confirmed `cargo run --quiet -- check --format json .` reports zero
   violations on the fresh branch.
 
@@ -114,4 +115,5 @@ git diff --check
 Review-agent pass `019e853b-84df-76a1-b03f-2c3a4d711fc7` found that PR evidence
 was not yet available and that the first version of the verifier checked allowed
 status values but not status truth. The verifier was tightened after that review
-to compare Phase 01 ledger status with per-goal frontmatter status.
+to compare Phase 01 ledger status with per-goal frontmatter status, and PR #18
+was opened to provide review and clean-checkout CI evidence.
