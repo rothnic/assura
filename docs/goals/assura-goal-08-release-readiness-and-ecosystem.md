@@ -7,7 +7,7 @@ created: 2026-06-01
 owners:
   - assura-maintainers
 related:
-  - docs/goals/assura-product-roadmap-master-goal.md
+  - docs/goals/assura-roadmap-phase-01-agentic-adoption-foundation.md
   - docs/release-notes.md
   - website/src/content/docs/
 ---
@@ -47,7 +47,7 @@ This is a two-week team chunk for release, docs, CI, and product owners.
 - Release notes identify breaking changes, removed experimental surfaces, and
   supported feedback delivery.
 - Compatibility claims are backed by checked tests or reports.
-- The next roadmap is linked from this goal and the master goal.
+- The next roadmap phase is linked from this goal and the Phase 01 goal.
 
 ## Required Validation
 

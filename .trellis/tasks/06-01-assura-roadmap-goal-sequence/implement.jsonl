@@ -1,5 +1,5 @@
 {"file": ".trellis/spec/assura/index.md", "reason": "Assura product direction, canonical source map, and roadmap constraints"}
-{"file": ".trellis/spec/assura/roadmap.md", "reason": "Current roadmap state to extend with the new master goal sequence"}
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "Current roadmap state to extend with the new Phase 01 goal sequence"}
 {"file": ".trellis/spec/assura/codex-agent-feedback.md", "reason": "Stable agent feedback surface constraints to preserve in roadmap goals"}
 {"file": ".trellis/spec/assura/structure-enforcement.md", "reason": "Structure-first validation contracts that inform roadmap sequencing"}
 {"file": ".trellis/spec/assura/tooling-stabilization.md", "reason": "Quality gates and performance evidence expectations for future goals"}

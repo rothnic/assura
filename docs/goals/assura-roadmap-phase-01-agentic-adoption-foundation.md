@@ -1,7 +1,7 @@
 ---
-id: goal-assura-product-roadmap-master
+id: goal-assura-roadmap-phase-01-agentic-adoption-foundation
 type: goal
-title: Assura product roadmap master goal
+title: Assura roadmap phase 01 agentic adoption foundation
 status: planned
 created: 2026-06-01
 owners:
@@ -19,19 +19,34 @@ related:
   - docs/goals/assura-goal-08-release-readiness-and-ecosystem.md
 ---
 
-# Assura Product Roadmap Master Goal
+# Assura Roadmap Phase 01: Agentic Adoption Foundation
 
 ## Objective
 
-Define the next major Assura roadmap as a sequence of reviewable, measurable,
-two-week team goals. This master goal is the routing document. Each linked goal
-is intended to be a large but bounded chunk that a small engineering team could
+Define the first execution phase of the broader Assura roadmap as a sequence of
+reviewable, measurable, two-week team goals. This phase goal is the routing
+document for Phase 01, not the whole product roadmap. Each linked goal is
+intended to be a large but bounded chunk that a small engineering team could
 complete in about two focused weeks, including implementation, validation,
 documentation, and review closure.
 
-The roadmap should move Assura from a structure-first validation CLI with stable
-agent feedback into a trustworthy, self-enforcing product that teams can adopt
-for agentic coding workflows without guessing which command surface is real.
+Phase 01 should move Assura from a structure-first validation CLI with stable
+agent feedback into a trustworthy, self-enforcing adoption foundation. Later
+roadmap phases should build on this foundation without treating Phase 01
+completion as completion of the full Assura roadmap.
+
+## Roadmap Hierarchy
+
+Use this document at the phase level:
+
+- Product roadmap: the long-lived direction tracked in
+  `.trellis/spec/assura/roadmap.md` and future phase docs.
+- Phase 01: this bounded goal sequence for agentic adoption foundation work.
+- Phase goals: the eight linked two-week chunks below.
+
+When all eight linked goals close, mark Phase 01 complete and create or point to
+the next roadmap phase. Do not mark the broader Assura roadmap complete because
+this phase finishes.
 
 ## Current Product Baseline
 
@@ -47,14 +62,14 @@ Assura currently supports:
 - Local docs, website pages, Trellis tasks, and checked analysis artifacts for
   recent real-project and LS-Lint performance proofs.
 
-The roadmap deliberately does not reintroduce package feedback CLIs,
+Phase 01 deliberately does not reintroduce package feedback CLIs,
 per-agent CLI entrypoints, or one `--format <agent>-hook` value per agent.
 
-## Roadmap Sequence
+## Phase 01 Goal Sequence
 
 | Order | Goal | Primary Outcome | Depends On | Review Gate |
 | --- | --- | --- | --- | --- |
-| 1 | [Trustworthy Self-Enforcement](./assura-goal-01-trustworthy-self-enforcement.md) | Assura reliably validates its own repository and closes stale workflow state. | Current master | Self-check and Trellis closure review |
+| 1 | [Trustworthy Self-Enforcement](./assura-goal-01-trustworthy-self-enforcement.md) | Assura reliably validates its own repository and closes stale workflow state. | Current Phase 01 baseline | Self-check and Trellis closure review |
 | 2 | [Policy Language Completeness](./assura-goal-02-policy-language-completeness.md) | Structure policy language covers real repo contracts with documented LS-Lint boundaries. | Goal 1 | Policy fixture and migration review |
 | 3 | [Agent Feedback Delivery Loop](./assura-goal-03-agent-feedback-delivery-loop.md) | Stable feedback output becomes a complete local agent loop with measured usefulness. | Goals 1-2 | Agent output and Codex delivery review |
 | 4 | [Fast Incremental Check Engine](./assura-goal-04-fast-incremental-check-engine.md) | Repeated agent checks are fast, scoped, deterministic, and backed by evidence. | Goals 1-3 | Performance and correctness review |
@@ -65,13 +80,13 @@ per-agent CLI entrypoints, or one `--format <agent>-hook` value per agent.
 
 ## Review Task Model
 
-Every roadmap goal must close these review tasks before it is marked complete.
+Every Phase 01 goal must close these review tasks before it is marked complete.
 Individual goal files specialize the tasks with concrete evidence.
 
 ### R0. Scope And Source-Of-Truth Review
 
 - Confirm the goal file is the current entrypoint.
-- Confirm `.trellis/spec/assura/roadmap.md` points to the owning task or master
+- Confirm `.trellis/spec/assura/roadmap.md` points to the owning task or phase
   goal when relevant.
 - Confirm older docs, historical task notes, or superseded branch history do not
   contradict the current command surface.
@@ -124,9 +139,9 @@ Individual goal files specialize the tasks with concrete evidence.
   actionable.
 - The final handoff includes the PR URL, next goal path, and any known risk.
 
-## Goal Completion Definition
+## Phase Goal Completion Definition
 
-A goal in this roadmap is complete only when:
+A goal in Phase 01 is complete only when:
 
 - the goal's definition of done is satisfied;
 - required validation commands pass;
@@ -134,12 +149,16 @@ A goal in this roadmap is complete only when:
 - docs and checked artifacts are reproducible from committed files;
 - the PR is open with review evidence linked;
 - all actionable review feedback is addressed; and
-- the next goal in this master sequence is ready to start.
+- the next goal in this phase sequence is ready to start.
+
+Phase 01 is complete only when all eight linked goals are complete, their
+evidence is linked in the ledger below, and the next phase is created or
+identified. Phase 01 completion is not product-roadmap completion.
 
 ## Progress And Evidence Ledger
 
-Future PRs should add one progress-log entry to the active goal and one summary
-entry here when each goal completes.
+Future PRs should add one progress-log entry to the active phase goal and one
+summary entry here when each goal completes.
 
 | Goal | Status | Required Completion Evidence | Next Action |
 | --- | --- | --- | --- |

@@ -14,18 +14,19 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 5 | Windows CI Restore | Later | fix `libgit2-sys` MSVC linker failure and restore matrix entry |
 | 6 | Beyond Ls-Lint Rules | Active | `05-11-structure-check-benchmark-attribution` |
 | 7 | Agent Feedback MVP | Review | PR #16 merged; keep stable `assura check --format agent` surface |
-| 8 | Product Roadmap Sequence | Active | `06-01-assura-roadmap-goal-sequence` |
+| 8 | Roadmap Phase 01 | Active | `06-01-assura-roadmap-goal-sequence` |
 
 ## Active Epic
 
-**Product Roadmap Sequence** is active.
+**Roadmap Phase 01** is active.
 
 Current owning task:
 `.trellis/tasks/06-01-assura-roadmap-goal-sequence`.
 
-Current objective: publish a master goal plus sequenced two-week roadmap goals
-that define the next major chunks of Assura product work and the review tasks
-required to prove each goal complete.
+Current objective: publish a bounded Phase 01 goal sequence with two-week team
+goals that define the next major chunks of Assura product work and the review
+tasks required to prove each goal complete. Completing Phase 01 should not mark
+the broader Assura roadmap complete.
 
 Direction lock, clarified on 2026-05-31: do not create or revive
 `assura-codex-feedback`, do not add one CLI entrypoint per agent, and do not add
@@ -36,7 +37,7 @@ that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
 After this roadmap PR is reviewed, start
 `docs/goals/assura-goal-01-trustworthy-self-enforcement.md` from
-`docs/goals/assura-product-roadmap-master-goal.md`.
+`docs/goals/assura-roadmap-phase-01-agentic-adoption-foundation.md`.
 
 ## Roadmap Rules
 

@@ -7,7 +7,7 @@ created: 2026-06-01
 owners:
   - assura-maintainers
 related:
-  - docs/goals/assura-product-roadmap-master-goal.md
+  - docs/goals/assura-roadmap-phase-01-agentic-adoption-foundation.md
   - website/src/content/docs/guides/installation.md
   - website/src/content/docs/guides/getting-started.md
 ---
