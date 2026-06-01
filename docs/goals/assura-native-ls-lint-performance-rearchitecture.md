@@ -1,6 +1,6 @@
 ---
 title: Assura Native LS-Lint Performance Rearchitecture
-status: complete-linux-static
+status: completed
 created: 2026-05-18
 ---
 

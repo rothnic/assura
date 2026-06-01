@@ -2,7 +2,7 @@
 id: goal-assura-roadmap-01-trustworthy-self-enforcement
 type: goal
 title: Assura roadmap 01 trustworthy self-enforcement
-status: planned
+status: active
 created: 2026-06-01
 owners:
   - assura-maintainers
@@ -82,3 +82,9 @@ git diff --check
 Block the PR if self-check is green only because exclusions hide active source
 or docs, if completed tasks remain active without explanation, or if roadmap
 state cannot tell the next agent what to do.
+
+## Progress Log
+
+| Date | Event | Evidence |
+| --- | --- | --- |
+| 2026-06-01 | Started Goal 01 on fresh branch `codex/roadmap-phase-01-execution`; established `.trellis/tasks/06-01-roadmap-phase-01-execution` as current task; archived completed/merged Trellis tasks after checking live PR state. | `python3 ./.trellis/scripts/task.py current --source`; GitHub PRs #1-#5, #8, #11, #12, #17 are merged; `python3 ./.trellis/scripts/task.py list` now shows only the current Phase 01 task active. |

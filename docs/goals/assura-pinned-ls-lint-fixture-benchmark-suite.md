@@ -2,7 +2,7 @@
 id: goal-assura-pinned-ls-lint-fixture-benchmark-suite
 type: goal
 title: Assura pinned LS-Lint fixture benchmark suite
-status: planned
+status: completed
 created: 2026-05-17
 owners:
   - assura-maintainers

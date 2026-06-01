@@ -7,26 +7,29 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 
 | Order | Epic | Status | Active/Open Work |
 | --- | --- | --- | --- |
-| 1 | Trellis Workflow Foundation | Active | `00-bootstrap-guidelines` |
-| 2 | Tooling Baseline Cleanup | Review | rustfmt, Clippy, CI cache, and self-check cleanup PRs |
-| 3 | Assura Self-Check Clean | Review | keep `cargo run -- check .` clean through normal review/merge flow |
-| 4 | Documentation Source Truth | Next | migrate, archive, or delete stale docs and workflow artifacts |
+| 1 | Trellis Workflow Foundation | Completed | PR #1 merged; task archived under `.trellis/tasks/archive/2026-06/` |
+| 2 | Tooling Baseline Cleanup | Completed | PRs #2-#4 merged; tasks archived under `.trellis/tasks/archive/2026-06/` |
+| 3 | Assura Self-Check Clean | Completed | PR #5 merged; current self-check remains clean |
+| 4 | Documentation Source Truth | Completed | Historical workflow systems are archived or marked historical |
 | 5 | Windows CI Restore | Later | fix `libgit2-sys` MSVC linker failure and restore matrix entry |
-| 6 | Beyond Ls-Lint Rules | Active | `05-11-structure-check-benchmark-attribution` |
-| 7 | Agent Feedback MVP | Review | PR #16 merged; keep stable `assura check --format agent` surface |
-| 8 | Roadmap Phase 01 | Active | `06-01-assura-roadmap-goal-sequence` |
+| 6 | Beyond Ls-Lint Rules | Completed | PRs #8, #11, and #12 merged; performance/parity tasks archived |
+| 7 | Agent Feedback MVP | Completed | PRs #13-#16 merged; keep stable `assura check --format agent` surface |
+| 8 | Roadmap Phase 01 | Active | `06-01-roadmap-phase-01-execution` |
 
 ## Active Epic
 
 **Roadmap Phase 01** is active.
 
 Current owning task:
-`.trellis/tasks/06-01-assura-roadmap-goal-sequence`.
+`.trellis/tasks/06-01-roadmap-phase-01-execution`.
 
-Current objective: publish a bounded Phase 01 goal sequence with two-week team
-goals that define the next major chunks of Assura product work and the review
-tasks required to prove each goal complete. Completing Phase 01 should not mark
-the broader Assura roadmap complete.
+Current branch:
+`codex/roadmap-phase-01-execution`.
+
+Current objective: execute the bounded Phase 01 goal sequence with two-week team
+goals, beginning with
+`docs/goals/assura-goal-01-trustworthy-self-enforcement.md`. Completing Phase
+01 should not mark the broader Assura roadmap complete.
 
 Direction lock, clarified on 2026-05-31: do not create or revive
 `assura-codex-feedback`, do not add one CLI entrypoint per agent, and do not add
@@ -35,8 +38,8 @@ that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
 ## Recommended Next Epic
 
-After this roadmap PR is reviewed, start
-`docs/goals/assura-goal-01-trustworthy-self-enforcement.md` from
+Continue with
+`docs/goals/assura-goal-01-trustworthy-self-enforcement.md` under
 `docs/goals/assura-roadmap-phase-01-agentic-adoption-foundation.md`.
 
 ## Roadmap Rules

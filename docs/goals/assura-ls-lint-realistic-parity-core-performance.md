@@ -2,7 +2,7 @@
 id: goal-assura-ls-lint-realistic-parity-core-performance
 type: goal
 title: Assura LS-Lint realistic parity and core performance
-status: planned
+status: completed
 created: 2026-05-15
 owners:
   - assura-maintainers

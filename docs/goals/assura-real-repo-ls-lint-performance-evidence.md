@@ -2,7 +2,7 @@
 id: goal-assura-real-repo-ls-lint-performance-evidence
 type: goal
 title: Assura real-repo LS-Lint performance evidence
-status: complete
+status: completed
 created: 2026-05-26
 owners:
   - assura-maintainers

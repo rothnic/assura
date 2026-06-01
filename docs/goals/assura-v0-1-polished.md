@@ -2,7 +2,7 @@
 id: goal-assura-v0-1-polished
 type: goal
 title: Assura v0.1 polished onboarding release
-status: planned
+status: completed
 created: 2026-05-14
 owners:
   - assura-maintainers

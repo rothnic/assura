@@ -2,7 +2,7 @@
 id: goal-assura-roadmap-phase-01-agentic-adoption-foundation
 type: goal
 title: Assura roadmap phase 01 agentic adoption foundation
-status: planned
+status: active
 created: 2026-06-01
 owners:
   - assura-maintainers
@@ -162,7 +162,7 @@ summary entry here when each goal completes.
 
 | Goal | Status | Required Completion Evidence | Next Action |
 | --- | --- | --- | --- |
-| 1. Trustworthy Self-Enforcement | Planned | Assura self-check report, archived stale Trellis task diff, root/config policy fixture updates, and PR review notes proving stale workflow state cannot remain active unnoticed. | Start with `docs/goals/assura-goal-01-trustworthy-self-enforcement.md`. |
+| 1. Trustworthy Self-Enforcement | Active | Assura self-check report, archived stale Trellis task diff, root/config policy fixture updates, and PR review notes proving stale workflow state cannot remain active unnoticed. | Execute and verify `docs/goals/assura-goal-01-trustworthy-self-enforcement.md`. |
 | 2. Policy Language Completeness | Planned | Supported policy matrix, unsupported LS-Lint boundary table, migration fixture corpus, generated docs examples, and passing CLI/config tests for good, base, and bad cases. | Start after Goal 1 review closes. |
 | 3. Agent Feedback Delivery Loop | Planned | Ten-violation same-turn feedback proof, generic agent JSON schema fixture, Codex `UserPromptSubmit` fixture under 24 KiB, deterministic rerun diff, and fixed-before-new-turn counts. | Start after Goal 2 establishes policy fixtures. |
 | 4. Fast Incremental Check Engine | Planned | Pre/post performance report with 30-run p95 rows, hardware metadata, cold CLI regression comparison, warm p95 <= 250 ms, changed-path p95 <= 100 ms, and deterministic output proof. | Start after Goal 3 defines feedback loop latency needs. |
@@ -170,6 +170,12 @@ summary entry here when each goal completes.
 | 6. Review Evidence And Quality Gates | Planned | Shared PR evidence template, goal completion checklist, reproduction script or command index, review-agent/Gemini closure process, and at least two backfilled example PR evidence records. | Start after install/docs flows stabilize. |
 | 7. Extension And Plugin Foundation | Planned | Public extension contract, safety model, fixture plugins, failure-mode tests, API docs, and review notes proving extensions cannot bypass core validation or fragment the CLI. | Start after review gates can protect extension behavior. |
 | 8. Release Readiness And Ecosystem | Planned | Release candidate checklist, version/support policy, changelog, migration/adoption docs, package artifact proof, website release page, and post-release issue triage plan. | Start after extension boundaries and evidence gates are proven. |
+
+## Progress Log
+
+| Date | Event | Evidence |
+| --- | --- | --- |
+| 2026-06-01 | Started Phase 01 execution from updated `master` on `codex/roadmap-phase-01-execution`; created `.trellis/tasks/06-01-roadmap-phase-01-execution`; archived the merged roadmap-publication task and stale completed/merged Trellis tasks; confirmed self-check baseline is clean. | `git switch -c codex/roadmap-phase-01-execution`; `python3 ./.trellis/scripts/task.py list` shows one active task; `cargo run --quiet -- check --format json .` reports zero violations. |
 
 ## Handoff Prompt
 
