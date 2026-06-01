@@ -1,7 +1,7 @@
 ---
 id: phase-assura-roadmap-iteration-01-agentic-adoption-foundation
 type: phase
-title: Assura roadmap iteration 01 agentic adoption foundation
+title: Assura phase 01 agentic adoption foundation
 status: active
 created: 2026-06-01
 owners:
@@ -19,34 +19,44 @@ related:
   - docs/goals/assura-goal-08-release-readiness-and-ecosystem.md
 ---
 
-# Assura Roadmap Iteration 01: Agentic Adoption Foundation
+# Assura Phase 01: Agentic Adoption Foundation
 
 ## Objective
 
-Define the first execution iteration of the broader Assura roadmap as a sequence
-of reviewable, measurable, two-week team goals. This phase document is the
-routing ledger for Iteration 01, not an executable goal and not the whole product
-roadmap. Each linked goal is intended to be a large but bounded chunk that a
-small engineering team could complete in about two focused weeks, including
-implementation, validation, documentation, and review closure.
+Define the first bounded execution phase of the broader Assura roadmap as a
+sequence of reviewable, measurable, two-week team goals. This document is the
+Phase 01 control plane and routing ledger, not the whole product roadmap and not
+a one-and-done master goal. Each linked goal is intended to be a large but
+bounded chunk that a small engineering team could complete in about two focused
+weeks, including implementation, validation, documentation, and review closure.
 
-Iteration 01 should move Assura from a structure-first validation CLI with stable
+Phase 01 should move Assura from a structure-first validation CLI with stable
 agent feedback into a trustworthy, self-enforcing adoption foundation. Later
-roadmap iterations should build on this foundation without treating Iteration 01
-completion as completion of the full Assura roadmap.
+phases should build on this foundation without treating Phase 01 completion as
+completion of the full Assura roadmap.
 
-## Roadmap Hierarchy
+## Planning Hierarchy
 
 Use this document at the phase level:
 
 - Product roadmap: the long-lived direction tracked in
-  `.trellis/spec/assura/roadmap.md` and future iteration docs.
-- Roadmap iteration: this bounded phase for agentic adoption foundation work.
+  `.trellis/spec/assura/roadmap.md` and future phase or iteration docs.
+- Product phase: this bounded Phase 01 program for agentic adoption foundation
+  work.
 - Execution goals: the eight linked two-week chunks below.
 
-When all eight linked goals close, mark Iteration 01 complete and create or
-point to the next roadmap iteration. Do not mark the broader Assura roadmap
-complete because this iteration finishes.
+When all eight linked goals close, mark Phase 01 complete and create or point to
+the next roadmap phase. Do not mark the broader Assura roadmap complete because
+this phase finishes.
+
+## Status Semantics
+
+- `status: active` on this document means Phase 01 is the active bounded program.
+- Closing all eight linked goals completes Phase 01 only.
+- The product roadmap remains open after Phase 01; the completion handoff must
+  name the next phase or explicitly record that it still needs definition.
+- Future phase documents should reuse this control-plane pattern instead of
+  extending Phase 01 indefinitely.
 
 ## Current Product Baseline
 
@@ -62,10 +72,10 @@ Assura currently supports:
 - Local docs, website pages, Trellis tasks, and checked analysis artifacts for
   recent real-project and LS-Lint performance proofs.
 
-Iteration 01 deliberately does not reintroduce package feedback CLIs,
-per-agent CLI entrypoints, or one `--format <agent>-hook` value per agent.
+Phase 01 deliberately does not reintroduce package feedback CLIs, per-agent CLI
+entrypoints, or one `--format <agent>-hook` value per agent.
 
-## Iteration 01 Execution Goal Sequence
+## Phase 01 Execution Goal Sequence
 
 | Order | Goal | Primary Outcome | Depends On | Review Gate |
 | --- | --- | --- | --- | --- |
@@ -80,7 +90,7 @@ per-agent CLI entrypoints, or one `--format <agent>-hook` value per agent.
 
 ## Review Task Model
 
-Every Iteration 01 execution goal must close these review tasks before it is
+Every Phase 01 execution goal must close these review tasks before it is
 marked complete. Individual goal files specialize the tasks with concrete
 evidence.
 
@@ -140,9 +150,9 @@ evidence.
   actionable.
 - The final handoff includes the PR URL, next goal path, and any known risk.
 
-## Execution Goal And Iteration Completion Definition
+## Execution Goal And Phase Completion Definition
 
-An execution goal in Iteration 01 is complete only when:
+An execution goal in Phase 01 is complete only when:
 
 - the goal's definition of done is satisfied;
 - required validation commands pass;
@@ -150,22 +160,24 @@ An execution goal in Iteration 01 is complete only when:
 - docs and checked artifacts are reproducible from committed files;
 - the PR is open with review evidence linked;
 - all actionable review feedback is addressed; and
-- the next goal in this iteration sequence is ready to start.
+- the next goal in this phase sequence is ready to start.
 
-Iteration 01 is complete only when all eight linked goals are complete, their
-evidence is linked in the ledger below, and the next roadmap iteration is
-created or identified. Iteration 01 completion is not product-roadmap completion.
+Phase 01 is complete only when all eight linked goals are complete, their
+evidence is linked in the ledger below, and the next roadmap phase is created or
+identified. Phase 01 completion is not product-roadmap completion.
 
 ## Progress And Evidence Ledger
 
 Future PRs should add one progress-log entry to the active execution goal and
-one summary entry here when each goal completes.
+one summary entry here when each goal completes. When Phase 01 itself completes,
+this ledger should point forward to the next phase instead of declaring the
+roadmap finished.
 
 | Goal | Status | Required Completion Evidence | Next Action |
 | --- | --- | --- | --- |
 | 1. Trustworthy Self-Enforcement | Completed | PR #18 merged with Assura self-check report, archived stale Trellis task diff, root/config policy fixture updates, and review notes proving stale workflow state cannot remain active unnoticed. | Complete; continue with Goal 2. |
-| 2. Policy Language Completeness | Active | Supported policy matrix, unsupported LS-Lint boundary table, migration fixture corpus, generated docs examples, and passing CLI/config tests for good, base, and bad cases. | Execute and verify `docs/goals/assura-goal-02-policy-language-completeness.md`. |
-| 3. Agent Feedback Delivery Loop | Planned | Ten-violation same-turn feedback proof, generic agent JSON schema fixture, Codex `UserPromptSubmit` fixture under 24 KiB, deterministic rerun diff, and fixed-before-new-turn counts. | Start after Goal 2 establishes policy fixtures. |
+| 2. Policy Language Completeness | Completed | PR #19 merged with supported policy matrix, unsupported LS-Lint boundary table, migration fixture corpus, generated docs examples, and passing CLI/config tests for good, base, and bad cases. | Complete; continue with Goal 3. |
+| 3. Agent Feedback Delivery Loop | Active | Ten-violation same-turn feedback proof, generic agent JSON schema fixture, Codex `UserPromptSubmit` fixture under 24 KiB, deterministic rerun diff, and fixed-before-new-turn counts. | Execute and verify `docs/goals/assura-goal-03-agent-feedback-delivery-loop.md`. |
 | 4. Fast Incremental Check Engine | Planned | Pre/post performance report with 30-run p95 rows, hardware metadata, cold CLI regression comparison, warm p95 <= 250 ms, changed-path p95 <= 100 ms, and deterministic output proof. | Start after Goal 3 defines feedback loop latency needs. |
 | 5. Installable Adoption Path | Planned | Release-style artifact smoke evidence for Ubuntu x86_64, macOS arm64, macOS x86_64, and Windows x86_64, plus first-run docs proving install, init, status, passing check, and failing check. | Start after Goal 4 proves local check performance. |
 | 6. Review Evidence And Quality Gates | Planned | Shared PR evidence template, goal completion checklist, reproduction script or command index, review-agent/Gemini closure process, and at least two backfilled example PR evidence records. | Start after install/docs flows stabilize. |
@@ -176,11 +188,12 @@ one summary entry here when each goal completes.
 
 | Date | Event | Evidence |
 | --- | --- | --- |
-| 2026-06-01 | Started Iteration 01 execution from updated `master` on `codex/roadmap-phase-01-execution`; created `.trellis/tasks/06-01-roadmap-phase-01-execution`; archived the merged roadmap-publication task and stale completed/merged Trellis tasks; confirmed self-check baseline is clean. | `git switch -c codex/roadmap-phase-01-execution`; `python3 ./.trellis/scripts/task.py list` shows one active task; `cargo run --quiet -- check --format json .` reports zero violations. |
-| 2026-06-01 | Completed Goal 01 via merged PR #18 and moved Iteration 01 execution to Goal 02 on `codex/phase-01-goal-02-policy-language`; clarified this document as an iteration ledger rather than an executable roadmap goal. | `gh pr view 18 --json state,mergedAt,url`; `git status --short --branch`; `.trellis/tasks/06-01-roadmap-phase-01-execution/task.json` branch field. |
+| 2026-06-01 | Started Phase 01 execution from updated `master` on `codex/roadmap-phase-01-execution`; created `.trellis/tasks/06-01-roadmap-phase-01-execution`; archived the merged roadmap-publication task and stale completed/merged Trellis tasks; confirmed self-check baseline is clean. | `git switch -c codex/roadmap-phase-01-execution`; `python3 ./.trellis/scripts/task.py list` shows one active task; `cargo run --quiet -- check --format json .` reports zero violations. |
+| 2026-06-01 | Completed Goal 01 via merged PR #18 and moved Phase 01 execution to Goal 02 on `codex/phase-01-goal-02-policy-language`; clarified this document as a phase ledger rather than an executable roadmap goal. | `gh pr view 18 --json state,mergedAt,url`; `git status --short --branch`; `.trellis/tasks/06-01-roadmap-phase-01-execution/task.json` branch field. |
+| 2026-06-01 | Completed Goal 02 via merged PR #19 and moved Phase 01 execution to Goal 03 on `codex/phase-01-goal-03-feedback-loop`. | `gh pr view 19 --json state,mergedAt,mergeCommit,url`; `python3 ./.trellis/scripts/task.py set-branch 06-01-roadmap-phase-01-execution codex/phase-01-goal-03-feedback-loop`. |
 
 ## Handoff Prompt
 
 ```text
-/goal docs/goals/assura-goal-02-policy-language-completeness.md
+/goal docs/goals/assura-goal-03-agent-feedback-delivery-loop.md
 ```

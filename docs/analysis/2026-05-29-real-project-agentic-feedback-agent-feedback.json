@@ -4,31 +4,66 @@
     "command": "assura check --format agent"
   },
   "filter": {
-    "minimumSeverity": null,
-    "maxIssues": null
+    "minimumSeverity": "medium",
+    "maxIssues": 11
   },
   "blocking": false,
   "feedback": [
     {
       "status": "fail",
-      "summary": "Assura found 3 structural violation(s); showing 3 guided item(s) across 3 rule(s). This command is running with --warn, so validation failures are reported without a failing exit code.",
-      "violation_count": 3,
-      "suppressed_violation_count": 0,
-      "minimum_severity": null,
+      "summary": "Assura found 12 structural violation(s); showing 11 guided item(s) at medium+ severity across 5 rule(s). 1 violation(s) were hidden by display filters. This command is running with --warn, so validation failures are reported without a failing exit code.",
+      "violation_count": 12,
+      "suppressed_violation_count": 1,
+      "minimum_severity": "medium",
       "affected_rules": [
-        "file_naming",
+        "unexpected_file",
         "exists_count",
-        "unexpected_file"
+        "file_naming",
+        "extension",
+        "forbidden_file"
       ],
       "messages": [
         {
-          "path": "apps/web/src/BadName.tsx",
-          "rule": "file_naming",
-          "severity": "medium",
-          "problem": "File 'BadName.tsx' does not match naming convention 'kebab-case'",
+          "path": "draft-plan.md",
+          "rule": "unexpected_file",
+          "severity": "critical",
+          "problem": "File 'draft-plan.md' is not allowed here",
+          "corrective_context": "Remove or move the file, or declare it with files.allowed_names, files.allowed_patterns, extensions, or allow_extra.",
           "guidance": [
-            "Rename the file to match the configured file naming convention for its directory.",
-            "Check `.assura/config.yml` for the effective file naming rule before editing nearby files."
+            "Move or remove the unexpected path, or update the direct-content policy if it is intentional.",
+            "Read nearby `AGENTS.md` guidance before deciding whether the path belongs in this scope."
+          ],
+          "references": [
+            "AGENTS.md",
+            ".agents/skills/",
+            ".assura/config.yml"
+          ]
+        },
+        {
+          "path": "scratch.md",
+          "rule": "unexpected_file",
+          "severity": "critical",
+          "problem": "File 'scratch.md' is not allowed here",
+          "corrective_context": "Remove or move the file, or declare it with files.allowed_names, files.allowed_patterns, extensions, or allow_extra.",
+          "guidance": [
+            "Move or remove the unexpected path, or update the direct-content policy if it is intentional.",
+            "Read nearby `AGENTS.md` guidance before deciding whether the path belongs in this scope."
+          ],
+          "references": [
+            "AGENTS.md",
+            ".agents/skills/",
+            ".assura/config.yml"
+          ]
+        },
+        {
+          "path": "apps/web/notes.txt",
+          "rule": "unexpected_file",
+          "severity": "high",
+          "problem": "File 'apps/web/notes.txt' is not allowed here",
+          "corrective_context": "Remove or move the file, or declare it with files.allowed_names, files.allowed_patterns, extensions, or allow_extra.",
+          "guidance": [
+            "Move or remove the unexpected path, or update the direct-content policy if it is intentional.",
+            "Read nearby `AGENTS.md` guidance before deciding whether the path belongs in this scope."
           ],
           "references": [
             "AGENTS.md",
@@ -39,8 +74,9 @@
         {
           "path": "packages/ui",
           "rule": "exists_count",
-          "severity": "medium",
+          "severity": "high",
           "problem": "Directory 'packages/ui' has 0 files matching 'AGENTS.md', expected 1",
+          "corrective_context": "Adjust direct child files/directories until the count matches the configured exists range, or update the range in .assura/config.yml.",
           "guidance": [
             "Create, remove, or move entries so the direct-count requirement is satisfied.",
             "Exact count rules are Assura policy behavior; check `.assura/config.yml` before editing."
@@ -52,13 +88,110 @@
           ]
         },
         {
-          "path": "scratch.md",
-          "rule": "unexpected_file",
+          "path": "apps/web/src/AnotherBad.tsx",
+          "rule": "file_naming",
           "severity": "medium",
-          "problem": "File 'scratch.md' is not allowed here",
+          "problem": "File 'AnotherBad.tsx' does not match naming convention 'kebab-case'",
+          "corrective_context": "Rename the file to match the effective naming rule, or update files.naming/naming_patterns when the policy is stale.",
           "guidance": [
-            "Move or remove the unexpected path, or update the direct-content policy if it is intentional.",
-            "Read nearby `AGENTS.md` guidance before deciding whether the path belongs in this scope."
+            "Rename the file to match the configured file naming convention for its directory.",
+            "Check `.assura/config.yml` for the effective file naming rule before editing nearby files."
+          ],
+          "references": [
+            "AGENTS.md",
+            ".agents/skills/",
+            ".assura/config.yml"
+          ]
+        },
+        {
+          "path": "apps/web/src/BadName.tsx",
+          "rule": "file_naming",
+          "severity": "medium",
+          "problem": "File 'BadName.tsx' does not match naming convention 'kebab-case'",
+          "corrective_context": "Rename the file to match the effective naming rule, or update files.naming/naming_patterns when the policy is stale.",
+          "guidance": [
+            "Rename the file to match the configured file naming convention for its directory.",
+            "Check `.assura/config.yml` for the effective file naming rule before editing nearby files."
+          ],
+          "references": [
+            "AGENTS.md",
+            ".agents/skills/",
+            ".assura/config.yml"
+          ]
+        },
+        {
+          "path": "apps/web/src/legacy.js",
+          "rule": "extension",
+          "severity": "medium",
+          "problem": "File 'legacy.js' has disallowed extension 'js'",
+          "corrective_context": "Rename the file to an allowed extension or update files.extensions for this scope.",
+          "guidance": [
+            "Inspect the reported path and rule, then update the file tree or policy so they agree.",
+            "Prefer changing project structure before weakening policy unless the policy is stale."
+          ],
+          "references": [
+            "AGENTS.md",
+            ".agents/skills/",
+            ".assura/config.yml"
+          ]
+        },
+        {
+          "path": "apps/web/src/legacy.js",
+          "rule": "forbidden_file",
+          "severity": "medium",
+          "problem": "File 'apps/web/src/legacy.js' is forbidden by policy",
+          "corrective_context": "Remove or rename the file, or narrow files.forbidden_patterns if this file should be allowed.",
+          "guidance": [
+            "Inspect the reported path and rule, then update the file tree or policy so they agree.",
+            "Prefer changing project structure before weakening policy unless the policy is stale."
+          ],
+          "references": [
+            "AGENTS.md",
+            ".agents/skills/",
+            ".assura/config.yml"
+          ]
+        },
+        {
+          "path": "apps/web/src/old-helper.js",
+          "rule": "extension",
+          "severity": "medium",
+          "problem": "File 'old-helper.js' has disallowed extension 'js'",
+          "corrective_context": "Rename the file to an allowed extension or update files.extensions for this scope.",
+          "guidance": [
+            "Inspect the reported path and rule, then update the file tree or policy so they agree.",
+            "Prefer changing project structure before weakening policy unless the policy is stale."
+          ],
+          "references": [
+            "AGENTS.md",
+            ".agents/skills/",
+            ".assura/config.yml"
+          ]
+        },
+        {
+          "path": "apps/web/src/old-helper.js",
+          "rule": "forbidden_file",
+          "severity": "medium",
+          "problem": "File 'apps/web/src/old-helper.js' is forbidden by policy",
+          "corrective_context": "Remove or rename the file, or narrow files.forbidden_patterns if this file should be allowed.",
+          "guidance": [
+            "Inspect the reported path and rule, then update the file tree or policy so they agree.",
+            "Prefer changing project structure before weakening policy unless the policy is stale."
+          ],
+          "references": [
+            "AGENTS.md",
+            ".agents/skills/",
+            ".assura/config.yml"
+          ]
+        },
+        {
+          "path": "apps/web/tests/BadSpec.ts",
+          "rule": "file_naming",
+          "severity": "medium",
+          "problem": "File 'BadSpec.ts' does not match naming convention 'kebab-case'",
+          "corrective_context": "Rename the file to match the effective naming rule, or update files.naming/naming_patterns when the policy is stale.",
+          "guidance": [
+            "Rename the file to match the configured file naming convention for its directory.",
+            "Check `.assura/config.yml` for the effective file naming rule before editing nearby files."
           ],
           "references": [
             "AGENTS.md",
@@ -68,18 +201,26 @@
         }
       ],
       "metrics": {
-        "structural_violations": 3,
+        "structural_violations": 12,
         "affected_rules": [
-          "file_naming",
+          "unexpected_file",
           "exists_count",
-          "unexpected_file"
+          "file_naming",
+          "extension",
+          "forbidden_file"
         ],
         "affected_paths": [
-          "apps/web/src/BadName.tsx",
+          "draft-plan.md",
+          "scratch.md",
+          "apps/web/notes.txt",
           "packages/ui",
-          "scratch.md"
+          "apps/web/src/AnotherBad.tsx",
+          "apps/web/src/BadName.tsx",
+          "apps/web/src/legacy.js",
+          "apps/web/src/old-helper.js",
+          "apps/web/tests/BadSpec.ts"
         ],
-        "feedback_count": 3
+        "feedback_count": 11
       }
     }
   ]

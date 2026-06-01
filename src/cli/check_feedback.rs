@@ -101,13 +101,21 @@ pub fn create_check_feedback(
     report: &StructureCheckReport,
     options: &FeedbackOptions,
 ) -> CheckFeedback {
-    let filtered = report
+    let mut filtered = report
         .violations
         .iter()
         .filter(|violation| {
             meets_minimum_severity(&violation.severity, options.minimum_severity.as_deref())
         })
         .collect::<Vec<_>>();
+    filtered.sort_by(|left, right| {
+        severity_rank(&right.severity)
+            .unwrap_or(0)
+            .cmp(&severity_rank(&left.severity).unwrap_or(0))
+            .then_with(|| left.path.cmp(&right.path))
+            .then_with(|| left.rule.cmp(&right.rule))
+            .then_with(|| left.message.cmp(&right.message))
+    });
     let shown = if let Some(max_issues) = options.max_issues {
         filtered.into_iter().take(max_issues).collect::<Vec<_>>()
     } else {

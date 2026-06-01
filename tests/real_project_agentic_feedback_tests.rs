@@ -1,8 +1,10 @@
 use std::collections::HashSet;
+use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use serde_json::Value;
+use tempfile::TempDir;
 
 fn assura_bin() -> &'static str {
     env!("CARGO_BIN_EXE_assura")
@@ -35,6 +37,71 @@ fn run_check(project: &Path) -> (std::process::ExitStatus, serde_json::Value) {
     (output.status, report)
 }
 
+fn run_agent_check(project: &Path, args: &[&str]) -> (std::process::ExitStatus, serde_json::Value) {
+    let output = Command::new(assura_bin())
+        .arg("check")
+        .arg(project)
+        .arg("--config")
+        .arg(project.join(".assura/config.yml"))
+        .arg("--format")
+        .arg("agent")
+        .args(args)
+        .output()
+        .unwrap();
+
+    let report = serde_json::from_slice(&output.stdout).unwrap_or_else(|error| {
+        panic!(
+            "failed to parse agent output as json: {error}\nstdout:\n{}\nstderr:\n{}",
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr)
+        )
+    });
+    (output.status, report)
+}
+
+fn copy_dir_all(from: &Path, to: &Path) {
+    fs::create_dir_all(to).unwrap();
+    for entry in fs::read_dir(from).unwrap() {
+        let entry = entry.unwrap();
+        let source = entry.path();
+        let target = to.join(entry.file_name());
+        if source.is_dir() {
+            copy_dir_all(&source, &target);
+        } else {
+            fs::copy(&source, &target).unwrap();
+        }
+    }
+}
+
+fn apply_scripted_same_turn_fix(project: &Path) {
+    for path in [
+        "scratch.md",
+        "draft-plan.md",
+        "apps/web/notes.txt",
+        "apps/web/src/legacy.js",
+        "apps/web/src/old-helper.js",
+        "apps/web/tests/BadSpec.ts",
+        "apps/web/tests/HomePage.test.ts",
+    ] {
+        fs::remove_file(project.join(path)).unwrap();
+    }
+    fs::rename(
+        project.join("apps/web/src/BadName.tsx"),
+        project.join("apps/web/src/bad-name.tsx"),
+    )
+    .unwrap();
+    fs::rename(
+        project.join("apps/web/src/AnotherBad.tsx"),
+        project.join("apps/web/src/another-bad.tsx"),
+    )
+    .unwrap();
+    fs::write(
+        project.join("packages/ui/AGENTS.md"),
+        "# UI Agent Guidance\n",
+    )
+    .unwrap();
+}
+
 #[test]
 fn real_project_policy_valid_fixture_passes() {
     let project = fixture_path("valid");
@@ -63,12 +130,36 @@ fn real_project_policy_invalid_fixture_reports_intended_drift() {
 
     assert_eq!(status.code(), Some(1), "report was:\n{report:#}");
     assert_eq!(report["success"], false, "report was:\n{report:#}");
+    assert_eq!(violations.len(), 12, "report was:\n{report:#}");
     assert!(rules.contains("unexpected_file"), "report was:\n{report:#}");
     assert!(rules.contains("file_naming"), "report was:\n{report:#}");
     assert!(rules.contains("exists_count"), "report was:\n{report:#}");
+    assert!(rules.contains("extension"), "report was:\n{report:#}");
+    assert!(rules.contains("forbidden_file"), "report was:\n{report:#}");
     assert!(paths.contains("scratch.md"), "report was:\n{report:#}");
+    assert!(paths.contains("draft-plan.md"), "report was:\n{report:#}");
+    assert!(
+        paths.contains("apps/web/notes.txt"),
+        "report was:\n{report:#}"
+    );
     assert!(
         paths.contains("apps/web/src/BadName.tsx"),
+        "report was:\n{report:#}"
+    );
+    assert!(
+        paths.contains("apps/web/src/AnotherBad.tsx"),
+        "report was:\n{report:#}"
+    );
+    assert!(
+        paths.contains("apps/web/src/legacy.js"),
+        "report was:\n{report:#}"
+    );
+    assert!(
+        paths.contains("apps/web/src/old-helper.js"),
+        "report was:\n{report:#}"
+    );
+    assert!(
+        paths.contains("apps/web/tests/BadSpec.ts"),
         "report was:\n{report:#}"
     );
     assert!(paths.contains("packages/ui"), "report was:\n{report:#}");
@@ -85,12 +176,20 @@ fn check_advice_format_renders_guided_output_in_one_command() {
         .arg(project.join(".assura/config.yml"))
         .arg("--format")
         .arg("advice")
+        .arg("--warn")
+        .arg("--min-severity")
+        .arg("medium")
+        .arg("--max-issues")
+        .arg("11")
         .output()
         .unwrap();
 
     let stdout = String::from_utf8_lossy(&output.stdout);
-    assert_eq!(output.status.code(), Some(1), "stdout was:\n{stdout}");
-    assert!(stdout.contains("Assura found 3 structural violation(s)"));
+    assert!(output.status.success(), "stdout was:\n{stdout}");
+    assert!(stdout.contains("Assura found 12 structural violation(s)"));
+    assert!(stdout.contains("showing 11 guided item(s)"));
+    assert!(stdout.contains("draft-plan.md [unexpected_file:critical]"));
+    assert!(stdout.contains("packages/ui [exists_count:high]"));
     assert!(stdout.contains("Next:"));
     assert!(stdout.contains("References: AGENTS.md, .agents/skills/, .assura/config.yml"));
 }
@@ -115,49 +214,104 @@ fn check_status_format_supports_general_display_limits() {
 
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert_eq!(output.status.code(), Some(1), "stdout was:\n{stdout}");
-    assert!(stdout.contains("Assura: 3 violation(s); showing 1 guided item(s)"));
+    assert!(stdout.contains("Assura: 12 violation(s); showing 1 guided item(s)"));
     assert!(stdout.contains("medium+ severity"));
 }
 
 #[test]
-fn check_agent_format_emits_stable_feedback_for_real_project_fixture() {
+fn check_agent_format_emits_stable_priority_feedback_for_real_project_fixture() {
     let project = fixture_path("invalid");
 
-    let output = Command::new(assura_bin())
-        .arg("check")
-        .arg(&project)
-        .arg("--config")
-        .arg(project.join(".assura/config.yml"))
-        .arg("--format")
-        .arg("agent")
-        .arg("--warn")
-        .output()
-        .unwrap();
-
-    assert!(
-        output.status.success(),
-        "stdout:\n{}\nstderr:\n{}",
-        String::from_utf8_lossy(&output.stdout),
-        String::from_utf8_lossy(&output.stderr)
+    let (status, json) = run_agent_check(
+        &project,
+        &["--warn", "--min-severity", "medium", "--max-issues", "11"],
     );
-    let json: Value = serde_json::from_slice(&output.stdout).unwrap();
+
+    assert!(status.success(), "feedback was:\n{json:#}");
     assert_eq!(json["schema"], "assura.agent-feedback.v1");
     assert_eq!(json["source"]["command"], "assura check --format agent");
     assert_eq!(json["blocking"], false);
     let feedback = json["feedback"].as_array().unwrap();
     assert_eq!(feedback.len(), 1, "feedback was:\n{json:#}");
     assert_eq!(feedback[0]["status"], "fail");
-    assert_eq!(feedback[0]["violation_count"], 3);
-    assert_eq!(feedback[0]["metrics"]["feedback_count"], 3);
+    assert_eq!(feedback[0]["violation_count"], 12);
+    assert_eq!(feedback[0]["suppressed_violation_count"], 1);
+    assert_eq!(feedback[0]["metrics"]["feedback_count"], 11);
+
+    let messages = feedback[0]["messages"].as_array().unwrap();
+    let shown_paths = messages
+        .iter()
+        .map(|message| message["path"].as_str().unwrap())
+        .collect::<HashSet<_>>();
+    let severities = messages
+        .iter()
+        .map(|message| message["severity"].as_str().unwrap())
+        .collect::<Vec<_>>();
+    let priority_keys = messages
+        .iter()
+        .map(|message| {
+            (
+                message["severity"].as_str().unwrap(),
+                message["path"].as_str().unwrap(),
+                message["rule"].as_str().unwrap(),
+            )
+        })
+        .collect::<Vec<_>>();
+    let medium_count = severities
+        .iter()
+        .filter(|severity| **severity == "medium")
+        .count();
+
+    assert_eq!(&severities[0..4], ["critical", "critical", "high", "high"]);
+    assert_eq!(
+        priority_keys,
+        vec![
+            ("critical", "draft-plan.md", "unexpected_file"),
+            ("critical", "scratch.md", "unexpected_file"),
+            ("high", "apps/web/notes.txt", "unexpected_file"),
+            ("high", "packages/ui", "exists_count"),
+            ("medium", "apps/web/src/AnotherBad.tsx", "file_naming"),
+            ("medium", "apps/web/src/BadName.tsx", "file_naming"),
+            ("medium", "apps/web/src/legacy.js", "extension"),
+            ("medium", "apps/web/src/legacy.js", "forbidden_file"),
+            ("medium", "apps/web/src/old-helper.js", "extension"),
+            ("medium", "apps/web/src/old-helper.js", "forbidden_file"),
+            ("medium", "apps/web/tests/BadSpec.ts", "file_naming"),
+        ],
+        "feedback was:\n{json:#}"
+    );
+    assert_eq!(medium_count, 7, "feedback was:\n{json:#}");
+    assert!(shown_paths.contains("draft-plan.md"));
+    assert!(shown_paths.contains("scratch.md"));
+    assert!(shown_paths.contains("apps/web/notes.txt"));
+    assert!(shown_paths.contains("packages/ui"));
+    assert!(shown_paths.contains("apps/web/src/BadName.tsx"));
+    for message in messages {
+        assert!(
+            message["corrective_context"]
+                .as_str()
+                .is_some_and(|context| !context.is_empty()),
+            "message should include corrective context: {message:#}"
+        );
+        assert!(
+            message["guidance"]
+                .as_array()
+                .is_some_and(|guidance| !guidance.is_empty()),
+            "message should include actionable guidance: {message:#}"
+        );
+    }
+
     let first_paths = feedback[0]["metrics"]["affected_paths"]
         .as_array()
         .unwrap()
         .iter()
         .map(|path| path.as_str().unwrap())
         .collect::<HashSet<_>>();
+    assert!(first_paths.contains("draft-plan.md"));
+    assert!(first_paths.contains("scratch.md"));
+    assert!(first_paths.contains("apps/web/notes.txt"));
     assert!(first_paths.contains("apps/web/src/BadName.tsx"));
     assert!(first_paths.contains("packages/ui"));
-    assert!(first_paths.contains("scratch.md"));
 }
 
 #[test]
@@ -174,6 +328,26 @@ fn check_agent_codex_adapter_wraps_real_project_feedback_for_user_prompt_submit(
         .arg("--agent")
         .arg("codex")
         .arg("--warn")
+        .arg("--min-severity")
+        .arg("medium")
+        .arg("--max-issues")
+        .arg("11")
+        .output()
+        .unwrap();
+    let repeat = Command::new(assura_bin())
+        .arg("check")
+        .arg(&project)
+        .arg("--config")
+        .arg(project.join(".assura/config.yml"))
+        .arg("--format")
+        .arg("agent")
+        .arg("--agent")
+        .arg("codex")
+        .arg("--warn")
+        .arg("--min-severity")
+        .arg("medium")
+        .arg("--max-issues")
+        .arg("11")
         .output()
         .unwrap();
     assert!(
@@ -190,16 +364,54 @@ fn check_agent_codex_adapter_wraps_real_project_feedback_for_user_prompt_submit(
     let context = json["hookSpecificOutput"]["additionalContext"]
         .as_str()
         .unwrap();
+    assert_eq!(
+        output.stdout, repeat.stdout,
+        "Codex output should be deterministic"
+    );
+    assert!(
+        context.len() < 24 * 1024,
+        "Codex additionalContext should stay under 24 KiB; got {} bytes",
+        context.len()
+    );
     assert!(context.contains("<assura-feedback>"), "{context}");
     assert!(
         context.contains("Check state: ran assura check --format agent --agent codex"),
         "{context}"
     );
     assert!(context.contains("Blocking: no (--warn)"), "{context}");
+    assert!(context.contains("draft-plan.md"), "{context}");
+    assert!(context.contains("apps/web/notes.txt"), "{context}");
     assert!(context.contains("apps/web/src/BadName.tsx"), "{context}");
     assert!(context.contains("packages/ui"), "{context}");
     assert!(context.contains("scratch.md"), "{context}");
     assert!(context.contains("References: AGENTS.md, .agents/skills/, .assura/config.yml"));
+}
+
+#[test]
+fn scripted_same_turn_fix_corrects_at_least_ten_seeded_violations() {
+    let temp = TempDir::new().unwrap();
+    let work = temp.path().join("work");
+    copy_dir_all(&fixture_path("invalid"), &work);
+
+    let (before_status, before_report) = run_check(&work);
+    assert_eq!(
+        before_status.code(),
+        Some(1),
+        "report was:\n{before_report:#}"
+    );
+    let before_count = before_report["violations"].as_array().unwrap().len();
+    assert_eq!(before_count, 12, "report was:\n{before_report:#}");
+
+    apply_scripted_same_turn_fix(&work);
+
+    let (after_status, after_report) = run_check(&work);
+    assert!(after_status.success(), "report was:\n{after_report:#}");
+    let after_count = after_report["violations"].as_array().unwrap().len();
+    assert_eq!(after_count, 0);
+    assert!(
+        before_count.saturating_sub(after_count) >= 10,
+        "scripted same-turn fixer should correct at least 10 seeded violations"
+    );
 }
 
 #[test]

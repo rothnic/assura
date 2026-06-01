@@ -94,11 +94,13 @@ cp -R tests/fixtures/real-project-agentic-feedback/invalid "$work"
 assura check --format advice "$work"
 ```
 
-The invalid fixture intentionally includes:
+The invalid fixture intentionally seeds 12 policy violations:
 
-- `scratch.md` at the root, which violates the closed direct-file list
-- `apps/web/src/BadName.tsx`, which violates kebab-case source naming
-- a missing `packages/ui/AGENTS.md`, which violates the exact direct count
+- two root scratch/draft files with Critical closed-world file drift
+- one app-level notes file with High closed-world file drift
+- one missing `packages/ui/AGENTS.md` with High exact-count drift
+- source and test files with Medium naming drift
+- JavaScript source files with Medium extension and forbidden-file drift
 
 The feedback is advisory unless your workflow enforces the Assura exit code. It
 points back to project-local guidance such as `AGENTS.md` and
@@ -116,7 +118,7 @@ checks:
 ```bash
 assura check --format agent "$work" \
   --min-severity medium \
-  --max-issues 3 \
+  --max-issues 11 \
   --warn
 ```
 
@@ -146,6 +148,12 @@ optional Codex delivery, configurable guided output, and same-turn observation.
 Codex `UserPromptSubmit` delivery uses `--agent codex` only when users wire
 that hook manually.
 
+The checked Goal 03 proof caps feedback at 11 messages for 12 seeded
+violations. Critical and High violations are prioritized before Medium
+violations, so all 4 Critical/High violations and 7 of 8 Medium violations
+appear before truncation. The checked Codex `additionalContext` is under 24 KiB
+and deterministic across repeated runs.
+
 For the full delivery model, including warm sessions and index reuse for future
 agent integrations, see [Agent Feedback Delivery](/reference/agent-feedback/).
 
@@ -169,13 +177,17 @@ claim complete autonomous repair.
 
 ## Rerun After Fixing
 
-Fix the drift in the disposable copy by removing the unexpected file, renaming
-the source file to kebab-case, and restoring package guidance:
+Fix the drift in the disposable copy by removing unexpected files, renaming
+source and test files to kebab-case, removing forbidden JavaScript files, and
+restoring package guidance:
 
 ```bash
 cd /tmp/assura-real-project-feedback
-rm scratch.md
+rm scratch.md draft-plan.md apps/web/notes.txt
+rm apps/web/src/legacy.js apps/web/src/old-helper.js
+rm apps/web/tests/BadSpec.ts apps/web/tests/HomePage.test.ts
 mv apps/web/src/BadName.tsx apps/web/src/bad-name.tsx
+mv apps/web/src/AnotherBad.tsx apps/web/src/another-bad.tsx
 printf '# UI Agent Guidance\n' > packages/ui/AGENTS.md
 assura check --format text .
 ```

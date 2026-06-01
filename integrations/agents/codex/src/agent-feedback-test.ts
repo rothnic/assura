@@ -37,6 +37,8 @@ const failingReport: StructureCheckReport = {
       rule: "file_naming",
       message: "File name 'BadName' does not match kebab-case",
       severity: "medium",
+      corrective_context:
+        "Rename the file to match the effective naming rule, or update files.naming when the policy is stale.",
     },
   ],
 };
@@ -82,6 +84,10 @@ test("failing Assura JSON produces actionable feedback content", () => {
   assert.equal(feedback.suppressedViolationCount, 0);
   assert.deepEqual(feedback.affectedRules, ["file_naming"]);
   assert.match(feedback.summary, /advisory/);
+  assert.equal(
+    feedback.messages[0]?.correctiveContext,
+    "Rename the file to match the effective naming rule, or update files.naming when the policy is stale."
+  );
   assert.match(feedback.messages[0]?.guidance.join(" "), /Rename the file/);
   assert.ok(feedback.messages[0]?.references.includes(".assura/config.yml"));
 });
@@ -116,10 +122,49 @@ test("feedback options filter by severity and cap message count", () => {
 
   assert.equal(feedback.violationCount, 3);
   assert.equal(feedback.messages.length, 1);
-  assert.equal(feedback.messages[0]?.rule, "exists_count");
+  assert.equal(feedback.messages[0]?.rule, "unexpected_file");
+  assert.equal(feedback.messages[0]?.severity, "critical");
   assert.equal(feedback.suppressedViolationCount, 2);
   assert.match(renderAgentFeedbackStatusLine(feedback), /1 blocking feedback/);
   assert.match(renderAgentFeedbackStatusLine(feedback), /high\+ severity/);
+});
+
+test("feedback priority uses deterministic tie breakers before truncation", () => {
+  const feedback = createAgentFeedbackFromReport(
+    {
+      ...failingReport,
+      violations: [
+        {
+          path: "/repo/zeta.ts",
+          rule: "file_naming",
+          message: "Zeta naming issue",
+          severity: "high",
+        },
+        {
+          path: "/repo/alpha.ts",
+          rule: "file_naming",
+          message: "Alpha naming issue",
+          severity: "high",
+        },
+        {
+          path: "/repo/critical.ts",
+          rule: "unexpected_file",
+          message: "Critical issue",
+          severity: "critical",
+        },
+      ],
+    },
+    { maxMessages: 2 }
+  );
+
+  assert.deepEqual(
+    feedback.messages.map((message) => [message.severity, message.path]),
+    [
+      ["critical", "/repo/critical.ts"],
+      ["high", "/repo/alpha.ts"],
+    ]
+  );
+  assert.equal(feedback.suppressedViolationCount, 1);
 });
 
 test("invalid JSON is rejected with a clear error", () => {
@@ -288,9 +333,9 @@ test("Codex hook feedback filters severity and limits injected messages", () => 
   assert.equal(evaluation.filteredViolationCount, 2);
   assert.equal(evaluation.totalViolationCount, 3);
   assert.match(evaluation.additionalContext, /Assura found 2 structural/);
-  assert.match(evaluation.additionalContext, /high-name\.ts/);
+  assert.match(evaluation.additionalContext, /critical-name\.ts/);
   assert.doesNotMatch(evaluation.additionalContext, /low-name\.ts/);
-  assert.doesNotMatch(evaluation.additionalContext, /critical-name\.ts/);
+  assert.doesNotMatch(evaluation.additionalContext, /high-name\.ts/);
   assert.match(evaluation.additionalContext, /Omitted: 1/);
 });
 

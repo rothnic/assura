@@ -10,6 +10,7 @@ structure:
       exists:
         README.md: "1"
         AGENTS.md: "1"
+      severity: critical
     directories:
       allowed_names:
         - .assura
@@ -21,6 +22,7 @@ structure:
       exists:
         apps: "1"
         packages: "1"
+      severity: high
     children:
       .assura/:
         files:
@@ -48,6 +50,7 @@ structure:
               allow_extra: false
               exists:
                 AGENTS.md: "1"
+              severity: high
             directories:
               allowed_names:
                 - src
@@ -66,6 +69,7 @@ structure:
                     - "*.jsx"
                     - "*.mjs"
                     - "*.cjs"
+                  severity: medium
                 directories:
                   allow_extra: false
               tests/:
@@ -74,6 +78,7 @@ structure:
                   extensions:
                     - ts
                     - tsx
+                  severity: medium
                 directories:
                   allow_extra: false
               docs/:
@@ -82,6 +87,7 @@ structure:
                   extensions:
                     - md
                     - mdx
+                  severity: medium
                 directories:
                   allow_extra: false
       packages/:
@@ -101,6 +107,7 @@ structure:
               allow_extra: false
               exists:
                 AGENTS.md: "1"
+              severity: high
             directories:
               allowed_names:
                 - src
@@ -113,6 +120,7 @@ structure:
                   extensions:
                     - ts
                     - tsx
+                  severity: medium
                 directories:
                   allow_extra: false
               tests/:
@@ -121,6 +129,7 @@ structure:
                   extensions:
                     - ts
                     - tsx
+                  severity: medium
                 directories:
                   allow_extra: false
       docs/:
@@ -128,6 +137,7 @@ structure:
           naming: kebab-case
           extensions:
             - md
+          severity: medium
         directories:
           allow_extra: false
       scripts/:
