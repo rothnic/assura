@@ -1,13 +1,13 @@
-# Roadmap Iteration 01 Execution
+# Agentic Adoption Phase 01 Execution
 
-## Iteration
+## Phase
 
-Execute the roadmap iteration described by
+Execute the roadmap phase described by
 `docs/goals/assura-roadmap-phase-01-agentic-adoption-foundation.md` from updated
 `master` on branch `codex/roadmap-phase-01-execution`.
 
 This task is not a roadmap-writing task. It owns implementation, validation,
-review, and evidence collection for the Iteration 01 goal sequence.
+review, and evidence collection for the Phase 01 goal sequence.
 
 ## Source Documents
 
@@ -35,35 +35,36 @@ review, and evidence collection for the Iteration 01 goal sequence.
   `assura check --format agent --agent codex`.
 - Do not reintroduce package feedback CLIs, per-agent CLI entrypoints, or
   per-agent `--format` values.
-- Record progress in the active execution goal and the iteration ledger before
+- Record progress in the active execution goal and the phase ledger before
   and after major phases.
 - Use review-agent review before PR creation and address or explicitly reject
   findings with rationale.
 
-## Iteration Completion Criteria
+## Phase Completion Criteria
 
-Iteration 01 is complete only when:
+Phase 01 is complete only when:
 
 - all eight linked goals are complete;
-- the Iteration 01 ledger links each goal's evidence;
+- the Phase 01 ledger links each goal's evidence;
 - each goal's required validation commands pass or have documented,
   owner-approved exceptions;
 - review tasks R0 through R5 are complete for every goal;
 - checked artifacts are reproducible from committed files;
 - CI and local verification evidence are linked from the PR; and
-- the next roadmap iteration is created or identified without marking the broader
+- the next roadmap phase is created or identified without marking the broader
   Assura roadmap complete.
 
 ## Current Slice
 
-Continue with Goal 02, Policy Language Completeness:
+Continue with Goal 03, Agent Feedback Delivery Loop:
 
-- audit supported structure policy fields against tests and docs;
-- separate native LS-Lint migration parity from Assura compatibility
-  extensions;
-- add realistic passing and failing fixtures for direct files, directories,
-  required content, forbidden content, markdown frontmatter, and generated
-  output exclusions;
-- improve diagnostics for naming drift, unexpected contents, missing required
-  paths, and count failures;
-- run the Goal 02 required validation commands and review tasks.
+- preserve `assura check --format agent` as the stable structured feedback
+  output;
+- preserve Codex delivery only through
+  `assura check --format agent --agent codex`;
+- harden generic agent JSON, Codex hook JSON, advisory mode, blocking mode,
+  severity filtering, and max-issue filtering examples;
+- produce checked same-turn feedback evidence with at least 10 seeded policy
+  violations, deterministic Codex context, payload-size proof, and
+  fixed-before-new-turn counts;
+- run the Goal 03 required validation commands and review tasks.

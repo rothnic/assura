@@ -2,7 +2,7 @@
 id: goal-assura-roadmap-02-policy-language-completeness
 type: goal
 title: Assura roadmap 02 policy language completeness
-status: active
+status: completed
 created: 2026-06-01
 owners:
   - assura-maintainers

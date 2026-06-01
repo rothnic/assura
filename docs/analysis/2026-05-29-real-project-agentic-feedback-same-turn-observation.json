@@ -5,27 +5,47 @@
     "fixedBeforeNewTurn": true,
     "usefulness": "useful",
     "remainingViolations": 0,
-    "responseSource": "codex-main-session",
+    "responseSource": "scripted-fixer",
+    "turnBoundary": "same_turn",
+    "repeatFeedbackCount": 0
+  },
+  {
+    "violationClass": "extension",
+    "feedbackCount": 2,
+    "fixedBeforeNewTurn": true,
+    "usefulness": "useful",
+    "remainingViolations": 0,
+    "responseSource": "scripted-fixer",
     "turnBoundary": "same_turn",
     "repeatFeedbackCount": 0
   },
   {
     "violationClass": "file_naming",
-    "feedbackCount": 1,
+    "feedbackCount": 3,
     "fixedBeforeNewTurn": true,
     "usefulness": "useful",
     "remainingViolations": 0,
-    "responseSource": "codex-main-session",
+    "responseSource": "scripted-fixer",
+    "turnBoundary": "same_turn",
+    "repeatFeedbackCount": 0
+  },
+  {
+    "violationClass": "forbidden_file",
+    "feedbackCount": 2,
+    "fixedBeforeNewTurn": true,
+    "usefulness": "useful",
+    "remainingViolations": 0,
+    "responseSource": "scripted-fixer",
     "turnBoundary": "same_turn",
     "repeatFeedbackCount": 0
   },
   {
     "violationClass": "unexpected_file",
-    "feedbackCount": 1,
+    "feedbackCount": 3,
     "fixedBeforeNewTurn": true,
     "usefulness": "useful",
     "remainingViolations": 0,
-    "responseSource": "codex-main-session",
+    "responseSource": "scripted-fixer",
     "turnBoundary": "same_turn",
     "repeatFeedbackCount": 0
   }

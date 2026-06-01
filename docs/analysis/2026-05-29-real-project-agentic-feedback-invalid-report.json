@@ -3,26 +3,92 @@
   "project_root": "tests/fixtures/real-project-agentic-feedback/invalid",
   "config_path": "tests/fixtures/real-project-agentic-feedback/invalid/.assura/config.yml",
   "checked_path": "tests/fixtures/real-project-agentic-feedback/invalid",
-  "files_checked": 21,
+  "files_checked": 28,
   "dirs_checked": 12,
   "violations": [
+    {
+      "path": "apps/web/notes.txt",
+      "rule": "unexpected_file",
+      "message": "File 'apps/web/notes.txt' is not allowed here",
+      "severity": "high",
+      "corrective_context": "Remove or move the file, or declare it with files.allowed_names, files.allowed_patterns, extensions, or allow_extra."
+    },
+    {
+      "path": "apps/web/src/AnotherBad.tsx",
+      "rule": "file_naming",
+      "message": "File 'AnotherBad.tsx' does not match naming convention 'kebab-case'",
+      "severity": "medium",
+      "corrective_context": "Rename the file to match the effective naming rule, or update files.naming/naming_patterns when the policy is stale."
+    },
     {
       "path": "apps/web/src/BadName.tsx",
       "rule": "file_naming",
       "message": "File 'BadName.tsx' does not match naming convention 'kebab-case'",
-      "severity": "medium"
+      "severity": "medium",
+      "corrective_context": "Rename the file to match the effective naming rule, or update files.naming/naming_patterns when the policy is stale."
+    },
+    {
+      "path": "apps/web/src/legacy.js",
+      "rule": "extension",
+      "message": "File 'legacy.js' has disallowed extension 'js'",
+      "severity": "medium",
+      "corrective_context": "Rename the file to an allowed extension or update files.extensions for this scope."
+    },
+    {
+      "path": "apps/web/src/legacy.js",
+      "rule": "forbidden_file",
+      "message": "File 'apps/web/src/legacy.js' is forbidden by policy",
+      "severity": "medium",
+      "corrective_context": "Remove or rename the file, or narrow files.forbidden_patterns if this file should be allowed."
+    },
+    {
+      "path": "apps/web/src/old-helper.js",
+      "rule": "extension",
+      "message": "File 'old-helper.js' has disallowed extension 'js'",
+      "severity": "medium",
+      "corrective_context": "Rename the file to an allowed extension or update files.extensions for this scope."
+    },
+    {
+      "path": "apps/web/src/old-helper.js",
+      "rule": "forbidden_file",
+      "message": "File 'apps/web/src/old-helper.js' is forbidden by policy",
+      "severity": "medium",
+      "corrective_context": "Remove or rename the file, or narrow files.forbidden_patterns if this file should be allowed."
+    },
+    {
+      "path": "apps/web/tests/BadSpec.ts",
+      "rule": "file_naming",
+      "message": "File 'BadSpec.ts' does not match naming convention 'kebab-case'",
+      "severity": "medium",
+      "corrective_context": "Rename the file to match the effective naming rule, or update files.naming/naming_patterns when the policy is stale."
+    },
+    {
+      "path": "apps/web/tests/HomePage.test.ts",
+      "rule": "file_naming",
+      "message": "File 'HomePage.test.ts' does not match naming convention 'kebab-case'",
+      "severity": "medium",
+      "corrective_context": "Rename the file to match the effective naming rule, or update files.naming/naming_patterns when the policy is stale."
+    },
+    {
+      "path": "draft-plan.md",
+      "rule": "unexpected_file",
+      "message": "File 'draft-plan.md' is not allowed here",
+      "severity": "critical",
+      "corrective_context": "Remove or move the file, or declare it with files.allowed_names, files.allowed_patterns, extensions, or allow_extra."
     },
     {
       "path": "packages/ui",
       "rule": "exists_count",
       "message": "Directory 'packages/ui' has 0 files matching 'AGENTS.md', expected 1",
-      "severity": "medium"
+      "severity": "high",
+      "corrective_context": "Adjust direct child files/directories until the count matches the configured exists range, or update the range in .assura/config.yml."
     },
     {
       "path": "scratch.md",
       "rule": "unexpected_file",
       "message": "File 'scratch.md' is not allowed here",
-      "severity": "medium"
+      "severity": "critical",
+      "corrective_context": "Remove or move the file, or declare it with files.allowed_names, files.allowed_patterns, extensions, or allow_extra."
     }
   ]
 }

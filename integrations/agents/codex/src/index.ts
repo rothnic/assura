@@ -10,6 +10,7 @@ export interface StructureViolation {
   rule: string;
   message: string;
   severity: string;
+  corrective_context?: string;
 }
 
 export interface StructureCheckReport {
@@ -34,6 +35,7 @@ export interface AgentFeedbackMessage {
   rule: string;
   severity: string;
   problem: string;
+  correctiveContext: string | null;
   guidance: string[];
   references: string[];
 }
@@ -178,6 +180,7 @@ export function createAgentFeedbackFromReport(
   const filteredViolations = report.violations.filter((violation) =>
     meetsMinimumSeverity(violation.severity, minimumSeverity)
   );
+  filteredViolations.sort(compareViolationsByPriority);
   const shownViolations =
     maxMessages === null ? filteredViolations : filteredViolations.slice(0, maxMessages);
   const affectedRules = unique(shownViolations.map((violation) => violation.rule));
@@ -208,6 +211,7 @@ export function createAgentFeedbackFromReport(
     rule: violation.rule,
     severity: violation.severity,
     problem: violation.message,
+    correctiveContext: violation.corrective_context ?? null,
     guidance: guidanceForViolation(violation),
     references,
   }));
@@ -342,6 +346,9 @@ export function renderAgentFeedbackText(feedback: AgentFeedbackResult): string {
   for (const message of feedback.messages) {
     lines.push(`- ${message.path} [${message.rule}/${message.severity}]`);
     lines.push(`  Problem: ${message.problem}`);
+    if (message.correctiveContext) {
+      lines.push(`  Fix: ${message.correctiveContext}`);
+    }
     for (const guidance of message.guidance) {
       lines.push(`  Next: ${guidance}`);
     }
@@ -446,6 +453,34 @@ function severityRankFor(severity: string): number | null {
   }
 }
 
+function compareViolationsByPriority(
+  left: StructureViolation,
+  right: StructureViolation
+): number {
+  const severityComparison =
+    (severityRankFor(right.severity) ?? 0) -
+    (severityRankFor(left.severity) ?? 0);
+  if (severityComparison !== 0) {
+    return severityComparison;
+  }
+
+  return (
+    compareText(left.path, right.path) ||
+    compareText(left.rule, right.rule) ||
+    compareText(left.message, right.message)
+  );
+}
+
+function compareText(left: string, right: string): number {
+  if (left < right) {
+    return -1;
+  }
+  if (left > right) {
+    return 1;
+  }
+  return 0;
+}
+
 function guidanceForViolation(violation: StructureViolation): string[] {
   switch (violation.rule) {
     case "file_naming":
@@ -503,7 +538,9 @@ function isStructureViolation(value: unknown): value is StructureViolation {
     typeof value.path === "string" &&
     typeof value.rule === "string" &&
     typeof value.message === "string" &&
-    typeof value.severity === "string"
+    typeof value.severity === "string" &&
+    (value.corrective_context === undefined ||
+      typeof value.corrective_context === "string")
   );
 }
 

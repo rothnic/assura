@@ -1,0 +1,103 @@
+{
+  "schema": "assura.goal-03-agent-feedback-proof.v1",
+  "generatedFrom": {
+    "invalidReport": "docs/analysis/2026-05-29-real-project-agentic-feedback-invalid-report.json",
+    "fixedReport": "docs/analysis/2026-05-29-real-project-agentic-feedback-fixed-report.json",
+    "agentFeedback": "docs/analysis/2026-05-29-real-project-agentic-feedback-agent-feedback.json",
+    "codexHook": "docs/analysis/2026-06-01-goal-03-agent-feedback-codex-hook.json"
+  },
+  "commandSurface": {
+    "genericAgentJson": "assura check --format agent --warn --min-severity medium --max-issues 11",
+    "codexHookJson": "assura check --format agent --agent codex --warn --min-severity medium --max-issues 11",
+    "advisoryMode": "assura check --format advice --warn --min-severity medium --max-issues 11"
+  },
+  "seededViolations": 12,
+  "feedbackMessages": 11,
+  "suppressedViolations": 1,
+  "severityCounts": {
+    "critical": 2,
+    "high": 2,
+    "medium": 8
+  },
+  "ruleCounts": {
+    "exists_count": 1,
+    "extension": 2,
+    "file_naming": 4,
+    "forbidden_file": 2,
+    "unexpected_file": 3
+  },
+  "priorityCoverage": {
+    "criticalAndHighViolations": 4,
+    "criticalAndHighShown": 4,
+    "allCriticalAndHighShown": true,
+    "mediumViolations": 8,
+    "mediumShown": 7,
+    "mediumCoverage": 0.875
+  },
+  "codexAdditionalContext": {
+    "bytes": 5835,
+    "under24KiB": true,
+    "deterministicAcrossTwoRuns": true,
+    "sha256": "910797af9ab2e7ad29e676c06c550f9112d57cfdea97f5c879a4e478dd349ca2",
+    "repeatSha256": "910797af9ab2e7ad29e676c06c550f9112d57cfdea97f5c879a4e478dd349ca2"
+  },
+  "sameTurnFix": {
+    "beforeViolations": 12,
+    "afterViolations": 0,
+    "fixedBeforeNewTurn": 12,
+    "fixedAtLeastEightOfTen": true,
+    "repeatFeedbackCount": 0,
+    "observations": [
+      {
+        "violationClass": "exists_count",
+        "feedbackCount": 1,
+        "fixedBeforeNewTurn": true,
+        "usefulness": "useful",
+        "remainingViolations": 0,
+        "responseSource": "scripted-fixer",
+        "turnBoundary": "same_turn",
+        "repeatFeedbackCount": 0
+      },
+      {
+        "violationClass": "extension",
+        "feedbackCount": 2,
+        "fixedBeforeNewTurn": true,
+        "usefulness": "useful",
+        "remainingViolations": 0,
+        "responseSource": "scripted-fixer",
+        "turnBoundary": "same_turn",
+        "repeatFeedbackCount": 0
+      },
+      {
+        "violationClass": "file_naming",
+        "feedbackCount": 3,
+        "fixedBeforeNewTurn": true,
+        "usefulness": "useful",
+        "remainingViolations": 0,
+        "responseSource": "scripted-fixer",
+        "turnBoundary": "same_turn",
+        "repeatFeedbackCount": 0
+      },
+      {
+        "violationClass": "forbidden_file",
+        "feedbackCount": 2,
+        "fixedBeforeNewTurn": true,
+        "usefulness": "useful",
+        "remainingViolations": 0,
+        "responseSource": "scripted-fixer",
+        "turnBoundary": "same_turn",
+        "repeatFeedbackCount": 0
+      },
+      {
+        "violationClass": "unexpected_file",
+        "feedbackCount": 3,
+        "fixedBeforeNewTurn": true,
+        "usefulness": "useful",
+        "remainingViolations": 0,
+        "responseSource": "scripted-fixer",
+        "turnBoundary": "same_turn",
+        "repeatFeedbackCount": 0
+      }
+    ]
+  }
+}

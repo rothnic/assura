@@ -131,7 +131,7 @@ surface:
 
 ```bash
 cargo run --quiet -- check --format agent \
-  --warn \
+  --warn --min-severity medium --max-issues 11 \
   tests/fixtures/real-project-agentic-feedback/invalid \
   > docs/analysis/2026-05-29-real-project-agentic-feedback-agent-feedback.json
 ```
@@ -140,7 +140,7 @@ Generated optional Codex delivery output through the adapter surface:
 
 ```bash
 cargo run --quiet -- check --format agent --agent codex \
-  --warn \
+  --warn --min-severity medium --max-issues 11 \
   tests/fixtures/real-project-agentic-feedback/invalid \
 ```
 
@@ -155,12 +155,20 @@ cargo run --quiet -- check target/real-project-agentic-feedback-agent-run/work \
   --format json \
   --output target/real-project-agentic-feedback-agent-run/before.json
 cargo run --quiet -- check --format agent \
-  --warn \
+  --warn --min-severity medium --max-issues 11 \
   target/real-project-agentic-feedback-agent-run/work \
   > target/real-project-agentic-feedback-agent-run/feedback.json
 rm target/real-project-agentic-feedback-agent-run/work/scratch.md
+rm target/real-project-agentic-feedback-agent-run/work/draft-plan.md
+rm target/real-project-agentic-feedback-agent-run/work/apps/web/notes.txt
+rm target/real-project-agentic-feedback-agent-run/work/apps/web/src/legacy.js
+rm target/real-project-agentic-feedback-agent-run/work/apps/web/src/old-helper.js
+rm target/real-project-agentic-feedback-agent-run/work/apps/web/tests/BadSpec.ts
+rm target/real-project-agentic-feedback-agent-run/work/apps/web/tests/HomePage.test.ts
 mv target/real-project-agentic-feedback-agent-run/work/apps/web/src/BadName.tsx \
   target/real-project-agentic-feedback-agent-run/work/apps/web/src/bad-name.tsx
+mv target/real-project-agentic-feedback-agent-run/work/apps/web/src/AnotherBad.tsx \
+  target/real-project-agentic-feedback-agent-run/work/apps/web/src/another-bad.tsx
 printf '# UI Agent Guidance\n' \
   > target/real-project-agentic-feedback-agent-run/work/packages/ui/AGENTS.md
 cargo run --quiet -- check target/real-project-agentic-feedback-agent-run/work \
@@ -194,7 +202,7 @@ writeFileSync(
   'docs/analysis/2026-05-29-real-project-agentic-feedback-same-turn-observation.json',
   JSON.stringify(
     observeSameTurnFeedback(feedback, after, feedback.messages.length, 0, {
-      responseSource: 'codex-main-session',
+      responseSource: 'scripted-fixer',
       turnBoundary: 'same_turn',
       repeatFeedbackCount: 0,
     }),
@@ -205,18 +213,23 @@ writeFileSync(
 EOF
 ```
 
-The observed response source is `codex-main-session`, the turn boundary is
+The observed response source is `scripted-fixer`, the turn boundary is
 `same_turn`, and no repeat feedback was needed. Raw target files are intentionally
 not checked in because `target/` is build output; the normalized observation is
 checked in under `docs/analysis/`.
 
 ## Drift Covered
 
-The invalid fixture reports the intentional policy drift:
+The invalid fixture reports 12 intentional policy violations:
 
-- `apps/web/src/BadName.tsx` -> `file_naming`
-- `packages/ui` -> `exists_count` for missing package-local `AGENTS.md`
-- `scratch.md` -> `unexpected_file`
+- `draft-plan.md` and `scratch.md` -> Critical `unexpected_file`
+- `apps/web/notes.txt` -> High `unexpected_file`
+- `packages/ui` -> High `exists_count` for missing package-local `AGENTS.md`
+- `apps/web/src/AnotherBad.tsx`, `apps/web/src/BadName.tsx`,
+  `apps/web/tests/BadSpec.ts`, and `apps/web/tests/HomePage.test.ts` ->
+  Medium `file_naming`
+- `apps/web/src/legacy.js` and `apps/web/src/old-helper.js` -> Medium
+  `extension` and `forbidden_file`
 
 The feedback output includes local references to `AGENTS.md`,
 `.agents/skills/`, and `.assura/config.yml`.
@@ -225,7 +238,7 @@ The feedback output includes local references to `AGENTS.md`,
 
 `observeSameTurnFeedback` recorded one useful feedback per violation class from
 the observed repair run above. The after-report had zero remaining violations,
-the response source was `codex-main-session`, the turn boundary was
+the response source was `scripted-fixer`, the turn boundary was
 `same_turn`, and no repeat feedback was needed:
 
 - `exists_count`
