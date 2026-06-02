@@ -182,8 +182,8 @@ declaring the roadmap finished.
 | 2. Policy Language Completeness | Completed | PR #19 merged with supported policy matrix, unsupported LS-Lint boundary table, migration fixture corpus, generated docs examples, and passing CLI/config tests for good, base, and bad cases. | Complete; continue with Goal 3. |
 | 3. Agent Feedback Delivery Loop | Completed | PR #20 merged with ten-plus-violation same-turn feedback proof, generic agent JSON schema fixture, Codex `UserPromptSubmit` fixture under 24 KiB, deterministic rerun diff, deterministic priority tie-breakers, and fixed-before-new-turn counts. | Complete; continue with Goal 4. |
 | 4. Fast Incremental Check Engine | Completed | PR #21 merged with 30-run p95 rows, hardware metadata, cold CLI regression comparison, warm p95 <= 250 ms, changed-path p95 <= 100 ms, pinned external fixture proof, and deterministic output contract evidence. | Complete; continue with Goal 5. |
-| 5. Installable Adoption Path | Active | Release-style artifact smoke evidence for Ubuntu x86_64, macOS arm64, macOS x86_64, and Windows x86_64, plus first-run docs proving install, init, status, passing check, and failing check. | Execute and verify `docs/goals/assura-goal-05-installable-adoption-path.md`. |
-| 6. Review Evidence And Quality Gates | Planned | Shared PR evidence template, goal completion checklist, reproduction script or command index, review-agent/Gemini closure process, and at least two backfilled example PR evidence records. | Start after install/docs flows stabilize. |
+| 5. Installable Adoption Path | Completed | PR #22 merged with release-style artifact smoke evidence for Ubuntu x86_64, macOS arm64, macOS x86_64, and Windows x86_64, plus first-run docs proving install, init, status, passing check, and failing check. | Complete; continue with Goal 6. |
+| 6. Review Evidence And Quality Gates | Active | Shared PR evidence template, goal completion checklist, reproduction script or command index, review-agent/Gemini closure process, and at least two backfilled example PR evidence records. | Execute and verify `docs/goals/assura-goal-06-review-evidence-and-quality-gates.md`. |
 | 7. Extension And Plugin Foundation | Planned | Public extension contract, safety model, fixture plugins, failure-mode tests, API docs, and review notes proving extensions cannot bypass core validation or fragment the CLI. | Start after review gates can protect extension behavior. |
 | 8. Release Readiness And Ecosystem | Planned | Release candidate checklist, version/support policy, changelog, migration/adoption docs, package artifact proof, website release page, and post-release issue triage plan. | Start after extension boundaries and evidence gates are proven. |
 
@@ -196,9 +196,10 @@ declaring the roadmap finished.
 | 2026-06-01 | Completed Goal 02 via merged PR #19 and moved Phase 01 execution to Goal 03 on `codex/phase-01-goal-03-feedback-loop`. | `gh pr view 19 --json state,mergedAt,mergeCommit,url`; `python3 ./.trellis/scripts/task.py set-branch 06-01-roadmap-phase-01-execution codex/phase-01-goal-03-feedback-loop`. |
 | 2026-06-01 | Completed Goal 03 via merged PR #20 and moved Phase 01 execution to Goal 04 on `codex/phase-01-goal-04-incremental-check-engine`. | `gh pr view 20 --json state,mergedAt,mergeCommit,url`; `python3 ./.trellis/scripts/task.py set-branch 06-01-roadmap-phase-01-execution codex/phase-01-goal-04-incremental-check-engine`. |
 | 2026-06-02 | Completed Goal 04 via merged PR #21 and moved Phase 01 execution to Goal 05 on `codex/phase-01-goal-05-installable-adoption-path`. | `gh pr view 21 --json state,mergedAt,mergeCommit,url`; `python3 ./.trellis/scripts/task.py set-branch 06-01-roadmap-phase-01-execution codex/phase-01-goal-05-installable-adoption-path`; `node --run verify:release-smoke`. |
+| 2026-06-02 | Completed Goal 05 via merged PR #22 and moved Phase 01 execution to Goal 06 on `codex/phase-01-goal-06-review-evidence-gates`. | `gh pr view 22 --json state,mergedAt,mergeCommit,url`; `python3 ./.trellis/scripts/task.py set-branch 06-01-roadmap-phase-01-execution codex/phase-01-goal-06-review-evidence-gates`; `node --run verify:evidence`. |
 
 ## Handoff Prompt
 
 ```text
-/goal docs/goals/assura-goal-05-installable-adoption-path.md
+/goal docs/goals/assura-goal-06-review-evidence-and-quality-gates.md
 ```

@@ -2,7 +2,7 @@
 id: goal-assura-roadmap-05-installable-adoption-path
 type: goal
 title: Assura roadmap 05 installable adoption path
-status: active
+status: completed
 created: 2026-06-01
 owners:
   - assura-maintainers
@@ -99,3 +99,4 @@ an explicit owner-approved exception.
 | 2026-06-02 | Added release-archive adoption smoke scripts and CI matrix wiring for Ubuntu x86_64, macOS arm64, macOS x86_64, and Windows x86_64. The local macOS archive smoke installed from `target/assura-macos-amd64-preview.tar.gz` and proved version, init, status JSON, passing check JSON, failing check JSON, and LS-Lint migration. | `scripts/smoke-install-adoption.sh`; `scripts/smoke-install-adoption.ps1`; `.github/workflows/ci.yml`; `node --run verify:release-smoke`; `target/adoption-smoke/local/empty-check-pass.json`; `target/adoption-smoke/local/empty-check-fail.json`; `target/adoption-smoke/local/lslint-check-pass.json`. |
 | 2026-06-02 | Completed local Goal 05 validation and review-agent pass before PR creation. Full platform smoke remains delegated to PR CI because Windows and macOS arm64 require GitHub-hosted runners. | `cargo test --all-targets --quiet`; `cargo clippy --all-targets --all-features -- -D warnings`; `cargo build --release --bin assura --no-default-features --features json-output,yaml-config`; `cargo run --quiet -- check --format json .`; `cd website && npx pnpm@10.25.0 build`; `git diff --check`; review agent `019e8604-7d65-7842-b89b-ef24e6356a12`. |
 | 2026-06-02 | Replaced stale Intel macOS CI label `macos-13` with the current GitHub-hosted Intel label `macos-15-intel` after the x86_64 adoption smoke remained queued with no runner assigned. | `gh api repos/rothnic/assura/actions/jobs/78985721463`; GitHub-hosted runners reference for Intel macOS labels. |
+| 2026-06-02 | Completed Goal 05 via merged PR #22 and moved Iteration 01 execution to Goal 06 from updated `master`. | `gh pr view 22 --json state,mergedAt,mergeCommit,url`; `git switch -c codex/phase-01-goal-06-review-evidence-gates`; `python3 ./.trellis/scripts/task.py set-branch 06-01-roadmap-phase-01-execution codex/phase-01-goal-06-review-evidence-gates`. |
