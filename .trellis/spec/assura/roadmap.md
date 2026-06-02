@@ -24,11 +24,11 @@ Current owning task:
 `.trellis/tasks/06-01-roadmap-phase-01-execution`.
 
 Current branch:
-`codex/phase-01-goal-06-review-evidence-gates`.
+`codex/phase-01-goal-07-extension-plugin-foundation`.
 
 Current objective: execute the bounded Iteration 01 / Phase 01 sequence with
-two-week team goals. Goals 01 through 05 are complete; the active chunk is
-`docs/goals/assura-goal-06-review-evidence-and-quality-gates.md`. Completing
+two-week team goals. Goals 01 through 06 are complete; the active chunk is
+`docs/goals/assura-goal-07-extension-and-plugin-foundation.md`. Completing
 Iteration 01 should create or identify the next roadmap iteration, not mark the
 broader Assura roadmap complete.
 
@@ -40,7 +40,7 @@ that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 ## Recommended Next Epic
 
 Continue with
-`docs/goals/assura-goal-06-review-evidence-and-quality-gates.md` under
+`docs/goals/assura-goal-07-extension-and-plugin-foundation.md` under
 `docs/goals/assura-roadmap-phase-01-agentic-adoption-foundation.md`.
 That document is the control plane for the active roadmap iteration; it is not
 the product roadmap and should not be treated as the final roadmap completion

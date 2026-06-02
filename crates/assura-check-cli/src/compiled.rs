@@ -1,7 +1,7 @@
 //! Structure-check CLI that consumes a precompiled binary config artifact.
 
 use assura::cli::{
-    config::ConfigError, run_structure_check_with_prechecked_fast_artifact, CheckError,
+    config::ConfigError, run_structure_check_with_artifact, CheckError,
     CompiledStructureConfigArtifact, ConfigDiscovery, StructureCheckReport,
 };
 use std::ffi::OsStr;
@@ -172,11 +172,12 @@ fn run_with_artifact_bytes(
         }
     }
 
-    let report = run_structure_check_with_prechecked_fast_artifact(
+    let report = run_structure_check_with_artifact(
         project_root,
         compiled_config,
         checked_path,
         artifact,
+        false,
     )?;
     if !quiet || !report.success {
         println!("{}", format_text_report(&report));

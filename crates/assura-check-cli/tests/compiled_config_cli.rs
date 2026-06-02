@@ -265,6 +265,86 @@ exclude:
 }
 
 #[test]
+fn compiled_config_cli_supports_custom_constraint_artifacts() {
+    let temp = tempfile::tempdir().unwrap();
+    let project = temp.path().join("compiled-custom-project");
+    let compiled_config = temp.path().join("check-config.bin");
+    fs::create_dir_all(project.join(".assura")).unwrap();
+    fs::create_dir_all(project.join("src")).unwrap();
+    fs::create_dir_all(project.join("tests")).unwrap();
+    fs::write(
+        project.join(".assura/config.yml"),
+        r#"
+extensions:
+  custom_constraints:
+    - id: source_test_pair
+      type: paired_file_exists
+      source: "src/*.rs"
+      target: "tests/{stem}_test.rs"
+      severity: high
+structure:
+  ./:
+    files:
+      allow_extra: true
+    directories:
+      allow_extra: true
+exclude:
+  - ".assura/**"
+"#,
+    )
+    .unwrap();
+    fs::write(project.join("src").join("parser.rs"), "pub fn parse() {}\n").unwrap();
+
+    let compile = Command::new(env!("CARGO_BIN_EXE_assura-check-compile-config"))
+        .arg("--config")
+        .arg(project.join(".assura/config.yml"))
+        .arg("--output")
+        .arg(&compiled_config)
+        .output()
+        .unwrap();
+    assert!(
+        compile.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&compile.stdout),
+        String::from_utf8_lossy(&compile.stderr)
+    );
+
+    let invalid = Command::new(env!("CARGO_BIN_EXE_assura-check-compiled"))
+        .arg("--compiled-config")
+        .arg(&compiled_config)
+        .arg("--quiet")
+        .arg(&project)
+        .output()
+        .unwrap();
+    assert_eq!(invalid.status.code(), Some(1));
+    let stdout = String::from_utf8_lossy(&invalid.stdout);
+    assert!(
+        stdout.contains("custom:source_test_pair"),
+        "stdout:\n{stdout}"
+    );
+    assert!(stdout.contains("tests/parser_test.rs"), "stdout:\n{stdout}");
+
+    fs::write(
+        project.join("tests").join("parser_test.rs"),
+        "#[test]\nfn parser() {}\n",
+    )
+    .unwrap();
+    let valid = Command::new(env!("CARGO_BIN_EXE_assura-check-compiled"))
+        .arg("--compiled-config")
+        .arg(&compiled_config)
+        .arg("--quiet")
+        .arg(&project)
+        .output()
+        .unwrap();
+    assert!(
+        valid.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&valid.stdout),
+        String::from_utf8_lossy(&valid.stderr)
+    );
+}
+
+#[test]
 fn compiled_config_cli_rejects_stale_source_config_when_checked() {
     let temp = tempfile::tempdir().unwrap();
     let project = temp.path().join("compiled-project");

@@ -6,19 +6,21 @@ sidebar:
   order: 2
 ---
 
-Assura v0.1 does not expose a stable custom constraint plugin API. Use the
-supported structure configuration first, and run language-specific or custom
-tools beside Assura in CI when you need checks outside the current rule set.
+Assura v0.1 exposes a constrained experimental custom-constraint surface through
+`.assura/config.yml`. Custom constraints still run through `assura check`; there
+is no separate plugin command, remote loader, marketplace, or per-agent
+entrypoint.
 
-> **Not a v0.1 plugin surface**
+> **Experimental extension surface**
 >
-> Rust constraint traits, TypeScript plugins, and runtime extension hooks are
-> roadmap items. Do not rely on examples from older docs or internal modules as
-> public APIs.
+> The current surface is a first-party registry. A config selects supported
+> constraint types by name, and Assura executes them inside the normal structure
+> checker after configured exclusions are applied. Rust traits, TypeScript
+> plugins, shell hooks, and network-loaded plugins are not public APIs.
 
 ## Supported Customization Today
 
-Use `.assura/config.yml` to express project shape:
+Use `.assura/config.yml` to express project shape first:
 
 ```yaml
 structure:
@@ -38,7 +40,7 @@ structure:
         files:
           naming: snake_case
           extensions:
-            rs: snake_case
+            - rs
 exclude:
   - "target/**"
   - "node_modules/**"
@@ -48,9 +50,58 @@ Supported rule families include naming conventions, allowed names, direct-child
 existence counts, extension rules, directory naming, markdown rules, and
 exclusions.
 
+## First-Party Custom Constraints
+
+Use `extensions.custom_constraints` when the built-in structure bundles cannot
+express a repo-reviewed structure relationship.
+
+```yaml
+extensions:
+  custom_constraints:
+    - id: source_test_pair
+      type: paired_file_exists
+      source: "src/*.rs"
+      target: "tests/{stem}_test.rs"
+      severity: high
+
+structure:
+  ./:
+    files:
+      allow_extra: true
+    directories:
+      allow_extra: true
+exclude:
+  - "target/**"
+```
+
+`paired_file_exists` checks every non-excluded file matching `source` and
+requires the expanded `target` path to exist. Supported placeholders are:
+
+| Placeholder | Value |
+| --- | --- |
+| `{stem}` / `{source_stem}` | Source file stem, such as `parser` for `src/parser.rs`. |
+| `{source_name}` | Source file name, such as `parser.rs`. |
+| `{source}` | Source path relative to the project root. |
+| `{source_parent}` | Source parent path relative to the project root. |
+
+If `src/parser.rs` exists and `tests/parser_test.rs` does not, `assura check`
+emits a normal structure violation:
+
+```json
+{
+  "path": "src/parser.rs",
+  "rule": "custom:source_test_pair",
+  "severity": "high"
+}
+```
+
+Custom constraints use the same report shape as built-in rules and are sorted
+with the rest of the check output.
+
 ## Pairing With Other Tools
 
-For checks outside Assura's current scope, run tools side by side:
+For language semantics or arbitrary scripts outside Assura's current structure
+scope, run tools side by side:
 
 ```bash
 assura check --format text .
@@ -61,8 +112,10 @@ pnpm lint
 This keeps Assura responsible for repository shape while language-specific
 tools handle language semantics.
 
-## Future Direction
+## Boundary
 
-Future work is expected to add agent-facing feedback and quality measurement
-before exposing broad plugin contracts. Until that is implemented and tested,
-document custom behavior as external CI checks rather than Assura plugins.
+Choose a built-in rule when the validation is generally useful across projects.
+Choose a custom constraint when the rule is project-specific, deterministic, and
+reviewed in the repository. Keep external linters as separate CI steps when the
+check needs language analysis, network access, process execution, or untrusted
+third-party code.

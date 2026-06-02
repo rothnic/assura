@@ -2,7 +2,7 @@
 id: goal-assura-roadmap-07-extension-and-plugin-foundation
 type: goal
 title: Assura roadmap 07 extension and plugin foundation
-status: planned
+status: active
 created: 2026-06-01
 owners:
   - assura-maintainers
@@ -74,3 +74,10 @@ git diff --check
 Block the PR if extensions require network loading, if custom diagnostics do
 not fit the stable report model, or if examples encourage ad hoc scripts instead
 of repo-reviewed constraints.
+
+## Progress Log
+
+| Date | Event | Evidence |
+| --- | --- | --- |
+| 2026-06-02 | Started Goal 07 from updated `master` after Goal 06 merged; moved the active Trellis task to `codex/phase-01-goal-07-extension-plugin-foundation`. | `gh pr view 23 --json state,mergedAt,mergeCommit,url`; `git switch -c codex/phase-01-goal-07-extension-plugin-foundation`. |
+| 2026-06-02 | Added the first constrained extension slice: `extensions.custom_constraints`, first-party `paired_file_exists`, config validation, normal `assura check` diagnostics, exclusion-aware execution, fixtures, and docs. | `src/config/config/extensions.rs`; `src/cli/check/custom_constraints.rs`; `tests/custom_constraints_tests.rs`; `crates/assura-check-cli/tests/compiled_config_cli.rs`; `website/src/content/docs/examples/custom-constraints.md`. |
