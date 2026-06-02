@@ -56,15 +56,17 @@ Iteration 01 / Phase 01 is complete only when:
 
 ## Current Slice
 
-Continue with Goal 07, Extension And Plugin Foundation:
+Continue with Goal 08, Release Readiness And Ecosystem:
 
-- define the constrained extension boundary for first-party custom constraints;
-- keep custom constraints inside `assura check` without new plugin commands,
-  remote loaders, marketplaces, or per-agent entrypoints;
-- add one first-party example constraint with passing, failing, and exclusion
-  fixtures;
-- preserve stable report diagnostics, deterministic ordering, and existing
-  path-exclusion behavior;
-- document when to use a built-in rule, a custom constraint, or an external CI
-  tool;
-- run the Goal 07 required validation commands and review tasks.
+- produce the release candidate checklist for builds, installers, docs,
+  examples, and known limitations;
+- update release notes with current supported surfaces and removed or
+  superseded surfaces;
+- verify artifact checksums, install scripts, version output, and first-run
+  flows from documented commands;
+- publish compatibility language for LS-Lint migration and Assura-specific
+  extensions;
+- add support policy for issues, docs fixes, and pre-1.0 breaking changes;
+- define the next roadmap iteration after Iteration 01 without marking the
+  broader Assura roadmap complete;
+- run the Goal 08 required validation commands and review tasks.
