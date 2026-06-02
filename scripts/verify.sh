@@ -214,15 +214,23 @@ for goal_file in phase_goal_files:
 
 checked_markdown_files = [
     pathlib.Path("docs/validation.md"),
+    pathlib.Path("docs/release-notes.md"),
+    pathlib.Path("docs/release-candidate-checklist.md"),
+    pathlib.Path("docs/support-policy.md"),
+    pathlib.Path("docs/compatibility-and-surface.md"),
+    pathlib.Path("docs/project-memories.md"),
     pr_template,
     pathlib.Path("docs/analysis/review-record-template.md"),
     pathlib.Path("docs/analysis/evidence-and-review-policy.md"),
     pathlib.Path("docs/analysis/2026-06-02-goal-06-review-evidence-gates-review.md"),
     pathlib.Path("docs/analysis/2026-06-02-goal-07-extension-plugin-foundation-review.md"),
+    pathlib.Path("docs/analysis/2026-06-02-goal-08-release-readiness-review.md"),
     pathlib.Path(".trellis/spec/assura/index.md"),
     pathlib.Path(".trellis/spec/assura/roadmap.md"),
     pathlib.Path(".trellis/spec/assura/codex-agent-feedback.md"),
     pathlib.Path(".trellis/spec/assura/tooling-stabilization.md"),
+    pathlib.Path("docs/goals/assura-roadmap-iteration-02-policy-depth-and-ecosystem.md"),
+    pathlib.Path("website/src/content/docs/reference/release-readiness.md"),
     *phase_goal_files,
 ]
 
@@ -416,6 +424,13 @@ run_release_bundle() {
   mkdir -p target/release-bundle
   cp target/release/assura target/release/assura-full target/release-bundle/
   tar -C target/release-bundle -czf "$archive" assura assura-full
+  if command -v sha256sum >/dev/null 2>&1; then
+    sha256sum "$archive" >"$archive.sha256"
+    sha256sum -c "$archive.sha256"
+  else
+    shasum -a 256 "$archive" >"$archive.sha256"
+    shasum -a 256 -c "$archive.sha256"
+  fi
   RELEASE_ARCHIVE="$archive"
 }
 
@@ -476,9 +491,15 @@ run_release_live() {
   public_url_ok "https://raw.githubusercontent.com/$repo/master/website/public/install.sh"
   public_url_ok "https://raw.githubusercontent.com/$repo/master/website/public/install.ps1"
   public_url_ok "$release_base/assura-linux-amd64.tar.gz"
+  public_url_ok "$release_base/assura-linux-amd64.tar.gz.sha256"
+  public_url_ok "$release_base/assura-linux-musl-amd64.tar.gz"
+  public_url_ok "$release_base/assura-linux-musl-amd64.tar.gz.sha256"
   public_url_ok "$release_base/assura-macos-amd64.tar.gz"
+  public_url_ok "$release_base/assura-macos-amd64.tar.gz.sha256"
   public_url_ok "$release_base/assura-macos-arm64.tar.gz"
+  public_url_ok "$release_base/assura-macos-arm64.tar.gz.sha256"
   public_url_ok "$release_base/assura-windows-amd64.zip"
+  public_url_ok "$release_base/assura-windows-amd64.zip.sha256"
 }
 
 case "$mode" in

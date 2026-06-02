@@ -1,0 +1,90 @@
+---
+title: Support Policy
+status: active
+---
+
+# Support Policy
+
+This policy applies to Assura pre-1.0 releases.
+
+## Support Levels
+
+| Surface | Level | Policy |
+| --- | --- | --- |
+| `assura check` structure validation | Supported | Bugs that produce incorrect pass/fail results are release blockers. |
+| `assura check --format json` and `--format yaml` | Supported | Schema changes must be called out in release notes before 1.0. |
+| `assura check --format agent` | Supported | Agent JSON shape must remain deterministic and documented. |
+| `--agent codex` delivery | Supported adapter | Delivery may depend on user-approved Codex hooks, but it must not require a separate CLI. |
+| `assura init` | Supported | Starter config output must be valid and self-checkable. |
+| `assura status --format json` | Supported | JSON summaries must remain usable for automation. |
+| `assura migrate` for LS-Lint 2.3-compatible rules | Supported | Unsupported LS-Lint behavior must fail clearly. |
+| `assura hooks` for local git hooks | Supported local workflow | Hooks must be opt-in and local to a checkout. |
+| `assura performance-report` | Supported evidence command | Claims must cite checked benchmark or CI artifacts. |
+| `extensions.custom_constraints` | Experimental first-party | Breaking changes are allowed before 1.0 with release-note disclosure. |
+| `assura watch` | Experimental | Do not advertise as release-grade until watch-mode tests and docs exist. |
+| Internal Rust APIs | Unstable | No compatibility guarantee before 1.0. |
+
+## Unsupported Surfaces
+
+Do not document these as supported:
+
+- package feedback CLIs such as `assura-codex-feedback`;
+- per-agent command entrypoints;
+- per-agent `--format` values such as `--format codex-hook`;
+- remote plugin loading;
+- plugin marketplaces;
+- shell-executed validation plugins;
+- hosted telemetry or dashboards;
+- automatic repair;
+- dependency graph validation as a current release feature.
+
+## Issue Triage
+
+Use these labels or equivalent GitHub issue language:
+
+- `release-blocker`: install, crash, data-loss, or incorrect validation
+  behavior on a supported surface.
+- `compatibility`: LS-Lint migration, output shape, install archive, or
+  documented platform mismatch.
+- `docs`: stale command, unclear limitation, broken example, or missing
+  release-note disclosure.
+- `experimental`: custom constraint or watch-mode behavior that is not yet a
+  supported release contract.
+- `roadmap`: accepted idea that needs a future goal before implementation.
+
+## Response Targets
+
+- Release blockers: triage within two business days.
+- Compatibility and docs issues: triage within one week.
+- Experimental and roadmap issues: batch into roadmap planning unless they
+  expose a security or install blocker.
+
+These are maintainer targets, not a paid service-level agreement.
+
+## Breaking Changes Before 1.0
+
+Assura can make breaking changes before 1.0 when they are intentional and
+documented. Every breaking release note must identify:
+
+- affected command, config field, output field, or archive name;
+- replacement path, if one exists;
+- migration command or manual edit;
+- validation command that proves the new behavior; and
+- whether old behavior is removed, deprecated, or experimental-only.
+
+## Security
+
+Report security issues through GitHub private vulnerability reporting when
+available, or by opening a minimal issue that does not include exploit details.
+Security fixes can bypass normal roadmap sequencing when necessary.
+
+## Maintainer Completion Rules
+
+A release PR cannot close if:
+
+- it advertises unsupported surfaces;
+- issue/support policy language conflicts with release notes;
+- install docs name assets that the release workflow does not publish;
+- agent feedback docs drift from `assura check --format agent`; or
+- Codex delivery is described as anything other than `--agent codex` on the
+  shared agent format.

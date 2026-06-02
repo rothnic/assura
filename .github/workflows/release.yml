@@ -97,11 +97,37 @@ jobs:
             throw "Release archive exceeds size budget"
           }
 
+      - name: Generate and verify checksum (Unix)
+        if: matrix.os != 'windows-latest'
+        run: |
+          if command -v sha256sum >/dev/null 2>&1; then
+            sha256sum target/${{ matrix.archive_name }} > target/${{ matrix.archive_name }}.sha256
+            sha256sum -c target/${{ matrix.archive_name }}.sha256
+          else
+            shasum -a 256 target/${{ matrix.archive_name }} > target/${{ matrix.archive_name }}.sha256
+            shasum -a 256 -c target/${{ matrix.archive_name }}.sha256
+          fi
+
+      - name: Generate and verify checksum (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          $archive = "target/${{ matrix.archive_name }}"
+          $checksum = "$archive.sha256"
+          $hash = (Get-FileHash $archive -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  $archive" | Set-Content -NoNewline $checksum
+          $recorded = (Get-Content $checksum).Split(" ")[0]
+          if ($recorded -ne $hash) {
+            throw "Checksum verification failed for $archive"
+          }
+
       - name: Upload release archive artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.asset_name }}
-          path: target/${{ matrix.archive_name }}
+          path: |
+            target/${{ matrix.archive_name }}
+            target/${{ matrix.archive_name }}.sha256
           if-no-files-found: error
           retention-days: 7
 
