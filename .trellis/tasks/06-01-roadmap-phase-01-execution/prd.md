@@ -56,15 +56,17 @@ Iteration 01 / Phase 01 is complete only when:
 
 ## Current Slice
 
-Continue with Goal 04, Fast Incremental Check Engine:
+Continue with Goal 05, Installable Adoption Path:
 
-- define the product contract for full-project checks, changed-path checks, and
-  prepared checker reuse;
-- measure cold CLI, warm prepared checks, changed-path checks, and process-floor
-  rows on the real-project feedback scenario and pinned realistic fixtures;
-- preserve deterministic full-project correctness and JSON/text ordering;
-- produce checked 30-run p95 evidence for warm and changed-path thresholds plus
-  cold CLI baseline comparison;
-- update website/docs so cold, warm, changed-path, and diagnostic rows are not
-  overstated;
-- run the Goal 04 required validation commands and review tasks.
+- prove install scripts from release-style artifacts, not a source checkout;
+- smoke `assura --version`, `assura init`, `assura status --format json`,
+  `assura check --format json`, and a failing validation case on
+  `ubuntu-latest` x86_64, `macos-14` arm64, `macos-15-intel` x86_64, and
+  `windows-latest` x86_64;
+- keep `assura init`, `assura migrate`, `assura check`, and `assura status`
+  coherent in the first-run docs;
+- add an adoption walkthrough for an empty project and an LS-Lint migration
+  project;
+- document recovery for missing config, invalid config, unsupported migration
+  rules, and hook prerequisites;
+- run the Goal 05 required validation commands and review tasks.

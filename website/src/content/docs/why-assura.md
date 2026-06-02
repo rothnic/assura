@@ -90,7 +90,7 @@ support, and complete agent orchestration remain future work.
 
 ## Start Here
 
-- [Getting Started](/guides/getting-started/): Install from source,
+- [Getting Started](/guides/getting-started/): Install from a release archive,
   initialize config, run checks, fix a failure, and wire CI.
 - [LS-Lint Migration](/guides/ls-lint-migration/): Convert an LS-Lint 2.3
   `.ls-lint.yml` file and validate the migrated project.

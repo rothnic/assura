@@ -72,3 +72,24 @@ separate from the native parity surface.
 
 Multiple LS-Lint config files can be passed to `assura migrate` in the same
 order you would pass repeated LS-Lint `--config` flags.
+
+## Unsupported Or Explicitly Bounded Behavior
+
+`assura migrate` is intentionally a structure-policy migration, not a full
+LS-Lint runtime emulator.
+
+| Input shape | Result |
+| --- | --- |
+| Invalid YAML | `migrate` exits nonzero and prints the parse error. |
+| Empty `ls:` section | Assura writes a config with exclusions but no structure rules. |
+| Empty `exists:` value | `migrate` exits nonzero with an invalid exists-rule error. |
+| Empty `regex:` value | `migrate` exits nonzero with an unsupported regex-rule error. |
+| Exact `README.md: exists:1` style keys | Migrated as Assura compatibility extensions, not native LS-Lint parity. |
+| Non-structure behavior such as editor hooks or auto-fix | Not migrated; configure those workflows separately. |
+
+After conversion, use the same first-run commands as a new project:
+
+```bash
+assura status --format json
+assura check --format json .
+```
