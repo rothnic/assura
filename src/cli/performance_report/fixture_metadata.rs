@@ -20,13 +20,13 @@ pub(super) fn fixture_metadata(
         directory_count: counts.directory_count,
         rule_count: rule_count(scenario.kind),
         rule_surface_summary: rule_surface_summary(scenario.kind),
-        native_ls_lint_parity: true,
+        native_ls_lint_parity: native_ls_lint_parity(scenario.kind),
         assura_config_path: ".assura/config.yml",
-        ls_lint_config_path: ".ls-lint.yml",
+        ls_lint_config_path: ls_lint_config_path(scenario.kind),
         config_generation_method: config_generation_method(scenario.kind),
         shared_config_id: format!("{}:{}", source_revision, scenario.id),
         expected_assura_exit_status: 0,
-        expected_ls_lint_exit_status: 0,
+        expected_ls_lint_exit_status: expected_ls_lint_exit_status(scenario.kind),
     })
 }
 
@@ -96,6 +96,14 @@ fn ignored_paths(kind: FixtureKind) -> &'static [&'static str] {
             "packages/ui-kit/.turbo",
             ".turbo",
             "coverage",
+        ],
+        FixtureKind::RealProjectAgenticFeedback => &[
+            ".assura",
+            "node_modules",
+            "dist",
+            "coverage",
+            ".next",
+            ".turbo",
         ],
         FixtureKind::RuleHeavyRepo => &[".assura", ".ls-lint.yml"],
         FixtureKind::IgnoredGeneratedHeavyRepo => &[".assura", "generated", "coverage"],
@@ -184,7 +192,9 @@ fn external_ignored_paths(kind: FixtureKind) -> &'static [&'static str] {
 }
 
 fn source_type(kind: FixtureKind) -> &'static str {
-    if kind.is_external_pinned() {
+    if matches!(kind, FixtureKind::RealProjectAgenticFeedback) {
+        "checked-repo-fixture"
+    } else if kind.is_external_pinned() {
         "external-pinned-repo"
     } else {
         "generated"
@@ -210,10 +220,17 @@ fn fixture_cohort(kind: FixtureKind) -> &'static str {
         | FixtureKind::WebApp
         | FixtureKind::MonorepoPackages
         | FixtureKind::MonorepoPolicy
+        | FixtureKind::RealProjectAgenticFeedback
         | FixtureKind::RuleHeavyRepo
         | FixtureKind::IgnoredGeneratedHeavyRepo
         | FixtureKind::MultipartExtensionRegression
-        | FixtureKind::ManyConfiguredScopesRegression => "realistic-equivalent",
+        | FixtureKind::ManyConfiguredScopesRegression => {
+            if matches!(kind, FixtureKind::RealProjectAgenticFeedback) {
+                "agent-feedback-loop"
+            } else {
+                "realistic-equivalent"
+            }
+        }
         FixtureKind::PinnedNextJs
         | FixtureKind::PinnedMdBook
         | FixtureKind::PinnedVite
@@ -237,6 +254,7 @@ fn rule_count(kind: FixtureKind) -> usize {
         FixtureKind::WebApp => 7,
         FixtureKind::MonorepoPackages => 10,
         FixtureKind::MonorepoPolicy => 38,
+        FixtureKind::RealProjectAgenticFeedback => 19,
         FixtureKind::RuleHeavyRepo => 38,
         FixtureKind::MultipartExtensionRegression => 1,
         FixtureKind::ManyConfiguredScopesRegression => 801,
@@ -273,6 +291,9 @@ fn rule_surface_summary(kind: FixtureKind) -> &'static str {
         }
         FixtureKind::MonorepoPolicy => {
             "strict monorepo policy with root whitelisting, app/package scopes, source bans, docs/scripts/infra rules, and generated-output pruning"
+        }
+        FixtureKind::RealProjectAgenticFeedback => {
+            "Goal 03 real-project agent feedback fixture with root whitelisting, app/package scopes, direct-count rules, source bans, and generated-output pruning"
         }
         FixtureKind::RuleHeavyRepo => {
             "repo-shaped multi-extension naming with wildcard file naming parity"
@@ -331,6 +352,7 @@ fn config_generation_method(kind: FixtureKind) -> &'static str {
         | FixtureKind::IgnoredGeneratedHeavyRepo
         | FixtureKind::MultipartExtensionRegression
         | FixtureKind::ManyConfiguredScopesRegression => "ls-lint-conversion",
+        FixtureKind::RealProjectAgenticFeedback => "assura-native-policy-fixture",
         FixtureKind::MonorepoPolicy => "hand-authored-equivalent-pair",
         FixtureKind::PinnedNextJs
         | FixtureKind::PinnedMdBook
@@ -342,5 +364,25 @@ fn config_generation_method(kind: FixtureKind) -> &'static str {
         | FixtureKind::PinnedClap
         | FixtureKind::PinnedRipgrep
         | FixtureKind::PinnedTokio => "external-ls-lint-conversion",
+    }
+}
+
+fn native_ls_lint_parity(kind: FixtureKind) -> bool {
+    !matches!(kind, FixtureKind::RealProjectAgenticFeedback)
+}
+
+fn ls_lint_config_path(kind: FixtureKind) -> &'static str {
+    if matches!(kind, FixtureKind::RealProjectAgenticFeedback) {
+        "not-applicable"
+    } else {
+        ".ls-lint.yml"
+    }
+}
+
+fn expected_ls_lint_exit_status(kind: FixtureKind) -> i32 {
+    if matches!(kind, FixtureKind::RealProjectAgenticFeedback) {
+        1
+    } else {
+        0
     }
 }

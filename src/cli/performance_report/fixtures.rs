@@ -11,6 +11,7 @@ use super::monorepo_policy::{
     create_ignored_generated_heavy_project, create_monorepo_policy_project,
     create_realistic_rule_heavy_project,
 };
+use super::real_project_feedback_fixture::create_real_project_agentic_feedback;
 use super::realistic_fixtures::create_monorepo_packages_project;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -62,6 +63,7 @@ pub(in crate::cli::performance_report) enum FixtureKind {
     WebApp,
     MonorepoPackages,
     MonorepoPolicy,
+    RealProjectAgenticFeedback,
     RuleHeavyRepo,
     IgnoredGeneratedHeavyRepo,
     MultipartExtensionRegression,
@@ -173,6 +175,14 @@ pub(in crate::cli::performance_report) fn scenarios(
             kind: FixtureKind::MonorepoPolicy,
         },
         FixtureScenario {
+            id: "real_project_agentic_feedback",
+            source_revision: "goal-03-real-project-feedback-fixture-v1",
+            rule_cohort: "agentic-feedback-policy",
+            dirs: 0,
+            files_per_dir: 0,
+            kind: FixtureKind::RealProjectAgenticFeedback,
+        },
+        FixtureScenario {
             id: "rule_heavy_repo",
             source_revision: "generated-fixtures-v1",
             rule_cohort: "realistic-multi-extension-patterns",
@@ -238,6 +248,7 @@ pub(in crate::cli::performance_report) fn materialize_fixture(
         FixtureKind::WebApp => create_web_app_project(&root)?,
         FixtureKind::MonorepoPackages => create_monorepo_packages_project(&root)?,
         FixtureKind::MonorepoPolicy => create_monorepo_policy_project(&root)?,
+        FixtureKind::RealProjectAgenticFeedback => create_real_project_agentic_feedback(&root)?,
         FixtureKind::RuleHeavyRepo => create_realistic_rule_heavy_project(&root)?,
         FixtureKind::IgnoredGeneratedHeavyRepo => create_ignored_generated_heavy_project(&root)?,
         FixtureKind::MultipartExtensionRegression => {

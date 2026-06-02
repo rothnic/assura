@@ -12,6 +12,7 @@ use super::dirty_project_socket::measure_assura_check_dirty_project_socket;
 use super::fixtures::FixtureScenario;
 use super::hot_cli::{measure_assura_check_hot_cli, measure_assura_check_status_cli};
 use super::ls_lint::PreparedLsLint;
+use super::prepared_rows::{measure_prepared_five_changed_paths, measure_prepared_full_check};
 use super::process_floor::{measure_assura_rust_cli_floor, measure_process_floor};
 use super::session_cli::measure_assura_check_dirty_project_session_cli;
 use super::traversal::{
@@ -89,6 +90,26 @@ pub(super) fn measure_scenario_rows(
             baseline_id,
             ls_lint_status,
             assura_check_cli,
+        ),
+        measure_prepared_full_check(
+            &fixture,
+            iterations,
+            timestamp,
+            commit_sha,
+            branch,
+            environment,
+            baseline_id,
+            ls_lint_status,
+        ),
+        measure_prepared_five_changed_paths(
+            &fixture,
+            iterations,
+            timestamp,
+            commit_sha,
+            branch,
+            environment,
+            baseline_id,
+            ls_lint_status,
         ),
         measure_assura_check_cached_cli(
             &fixture,

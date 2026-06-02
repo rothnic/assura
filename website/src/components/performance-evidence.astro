@@ -10,6 +10,7 @@ type ResultRow = {
   evidence_role?: string;
   diagnostic?: boolean;
   median_runtime_ms?: number | null;
+  p95_runtime_ms?: number | null;
   two_x_target_runtime_ms?: number | null;
   two_x_claim_status?: string | null;
   process_floor_runtime_ms?: number | null;
@@ -31,17 +32,26 @@ type ResultRow = {
   ls_lint_version?: string;
   ls_lint_execution_mode?: string | null;
   assura_binary_profile?: string | null;
+  proves_whole_project_success?: boolean;
+  changed_path_count?: number | null;
+  latency_threshold_ms?: number | null;
+  latency_threshold_met?: boolean | null;
 };
 
 type CurrentReport = {
   timestamp?: string;
   commit_sha?: string;
   branch?: string;
+  source_worktree_dirty?: boolean;
+  command_line?: string;
   assura_version?: string;
   ls_lint_version?: string;
   environment?: {
     os?: string;
     arch?: string;
+    cpu_model?: string;
+    logical_cpu_count?: number;
+    total_memory_bytes?: number | null;
   };
   claim_summary?: {
     fixture_cohort?: string;
@@ -243,6 +253,12 @@ const firstAssuraRow =
 const firstLsLintRow = rows.find((row) => row.row_family === 'ls-lint-cli');
 const releaseProfile = firstAssuraRow?.assura_binary_profile ?? 'unknown profile';
 const platformLabel = [report.environment?.os, report.environment?.arch].filter(Boolean).join(' / ') || 'unknown platform';
+const hardwareLabel = [
+  report.environment?.cpu_model,
+  report.environment?.logical_cpu_count ? `${report.environment.logical_cpu_count} logical CPUs` : null,
+].filter(Boolean).join('; ') || 'unknown hardware';
+const commandLine = report.command_line ?? 'not recorded';
+const sourceState = report.source_worktree_dirty ? 'dirty worktree' : 'clean worktree';
 
 const totalAssura = headlinePairs.reduce(
   (total, pair) => total + (pair.assura.median_runtime_ms ?? 0),
@@ -384,6 +400,10 @@ function testCaseHref(fixtureId: string): string {
           <dd>{releaseProfile}; {platformLabel}</dd>
         </div>
         <div>
+          <dt>Hardware</dt>
+          <dd>{hardwareLabel}</dd>
+        </div>
+        <div>
           <dt>Closest case</dt>
           <dd>{closestPair ? `${formatSpeedup(closestPair.ratio)} on ${closestPair.copy.label}` : 'n/a'}</dd>
         </div>
@@ -397,7 +417,11 @@ function testCaseHref(fixtureId: string): string {
         </div>
         <div>
           <dt>Evidence source</dt>
-          <dd>Checked report at <code>{shortSha(report.commit_sha)}</code></dd>
+          <dd>Commit <code>{shortSha(report.commit_sha)}</code>; {sourceState}</dd>
+        </div>
+        <div>
+          <dt>Command</dt>
+          <dd><code>{commandLine}</code></dd>
         </div>
         <div>
           <dt>Captured</dt>

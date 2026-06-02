@@ -2,7 +2,7 @@
 id: goal-assura-roadmap-03-agent-feedback-delivery-loop
 type: goal
 title: Assura roadmap 03 agent feedback delivery loop
-status: active
+status: completed
 created: 2026-06-01
 owners:
   - assura-maintainers
@@ -101,4 +101,4 @@ per-agent format, or docs that imply Codex hook enablement can be automated.
 | --- | --- | --- |
 | 2026-06-01 | Started Goal 03 from updated `master` after Goal 02 merged; preserved the stable public surface as `assura check --format agent` with Codex delivery only through `--agent codex`. | `gh pr view 19 --json state,mergedAt,mergeCommit,url`; `git switch -c codex/phase-01-goal-03-feedback-loop`; `.trellis/spec/assura/codex-agent-feedback.md`. |
 | 2026-06-01 | Expanded the real-project feedback fixture to 12 seeded violations, prioritized Critical/High feedback before max-issue truncation, carried corrective context through package helpers, and generated checked Goal 03 proof artifacts. | `cargo test --test real_project_agentic_feedback_tests --quiet`; `cd integrations/agents/codex && npm run lint && npm test && npm run build && npm pack --dry-run`; `docs/analysis/2026-06-01-goal-03-agent-feedback-delivery-proof.json`. |
-| 2026-06-01 | Completed the full local Goal 03 validation chain and reframed the master roadmap artifact as bounded Phase 01 control-plane work, so closing the eight linked goals completes the phase rather than the broader Assura roadmap. | `cargo fmt --all -- --check`; `cargo test --all-targets --quiet`; `cargo run --quiet -- check --format agent . --warn`; `cargo run --quiet -- check --format agent --agent codex . --warn`; `node --run verify:docs`; `bash scripts/verify.sh fast`; `docs/goals/assura-roadmap-phase-01-agentic-adoption-foundation.md`. |
+| 2026-06-01 | Completed the full local Goal 03 validation chain and reframed the Iteration 01 control-plane artifact as bounded roadmap-iteration work, so closing the eight linked goals completes the phase rather than the broader Assura roadmap. | `cargo fmt --all -- --check`; `cargo test --all-targets --quiet`; `cargo run --quiet -- check --format agent . --warn`; `cargo run --quiet -- check --format agent --agent codex . --warn`; `node --run verify:docs`; `bash scripts/verify.sh fast`; `docs/goals/assura-roadmap-phase-01-agentic-adoption-foundation.md`. |

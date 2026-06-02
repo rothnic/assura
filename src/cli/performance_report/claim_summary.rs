@@ -215,6 +215,9 @@ mod tests {
         PerformanceEnvironment {
             os: "test-os".to_string(),
             arch: "test-arch".to_string(),
+            cpu_model: "test-cpu".to_string(),
+            logical_cpu_count: 8,
+            total_memory_bytes: Some(16 * 1024 * 1024 * 1024),
             rust_version: "rustc test".to_string(),
             node_version: "node test".to_string(),
             npm_version: "npm test".to_string(),

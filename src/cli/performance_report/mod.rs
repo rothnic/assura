@@ -34,7 +34,9 @@ mod ls_lint;
 mod metadata;
 mod monorepo_policy;
 mod phases;
+mod prepared_rows;
 mod process_floor;
+mod real_project_feedback_fixture;
 mod realistic_fixtures;
 mod rows;
 #[cfg(test)]
@@ -75,10 +77,14 @@ pub struct PerformanceReport {
     pub commit_sha: String,
     /// Current git branch when available.
     pub branch: String,
+    /// Whether the source worktree had uncommitted changes during the run.
+    pub source_worktree_dirty: bool,
     /// Environment and toolchain metadata for this measurement run.
     pub environment: PerformanceEnvironment,
     /// Baseline identifier used for longitudinal comparison.
     pub comparison_baseline_id: String,
+    /// Command line used to generate this report.
+    pub command_line: String,
     /// Number of measured iterations requested per tool and fixture.
     pub iterations: usize,
     /// Exact LS-Lint package spec requested for comparison.
@@ -126,11 +132,13 @@ pub struct PerformanceReportCommandOptions {
 
 /// Generate and write a performance report.
 pub async fn performance_report_command(options: PerformanceReportCommandOptions) -> ExitCode {
+    let command_line = std::env::args().collect::<Vec<_>>().join(" ");
     match generate_report(
         options.iterations.max(1),
         options.baseline_id,
         options.ls_lint_package,
         options.include_external_fixtures,
+        command_line,
     ) {
         Ok(report) => {
             let rendered = match options.format {
@@ -186,10 +194,13 @@ fn generate_report(
     baseline_id: String,
     ls_lint_package: String,
     include_external_fixtures: bool,
+    command_line: String,
 ) -> Result<PerformanceReport, String> {
     let timestamp = utc_timestamp();
     let commit_sha = git_value(["rev-parse", "HEAD"]).unwrap_or_else(|| "unknown".to_string());
     let branch = git_value(["branch", "--show-current"]).unwrap_or_else(|| "unknown".to_string());
+    let source_worktree_dirty =
+        git_value(["status", "--porcelain"]).is_some_and(|status| !status.trim().is_empty());
     let environment = collect_environment();
     let assura_cli = prepare_assura_cli();
     let assura_check_cli = prepare_assura_check_cli();
@@ -235,8 +246,10 @@ fn generate_report(
         timestamp,
         commit_sha,
         branch,
+        source_worktree_dirty,
         environment,
         comparison_baseline_id: baseline_id,
+        command_line,
         iterations,
         ls_lint_package,
         ls_lint_status,
