@@ -108,8 +108,15 @@ fn expand_target_template(template: &str, source_rel: &Path) -> Option<PathBuf> 
         .replace("{source}", &rel_to_string(source_rel))
         .replace("{source_name}", &source_name)
         .replace("{source_stem}", &source_stem)
-        .replace("{stem}", &source_stem)
-        .replace("{source_parent}", &source_parent);
+        .replace("{stem}", &source_stem);
+
+    let expanded = if source_parent.is_empty() {
+        expanded
+            .replace("{source_parent}/", "")
+            .replace("{source_parent}", "")
+    } else {
+        expanded.replace("{source_parent}", &source_parent)
+    };
 
     let path = PathBuf::from(expanded);
     is_safe_relative_path(&path).then_some(path)
@@ -135,6 +142,15 @@ mod tests {
             )
             .unwrap(),
             PathBuf::from("tests/src/core/config_test.rs")
+        );
+    }
+
+    #[test]
+    fn target_template_drops_empty_source_parent_prefix() {
+        assert_eq!(
+            expand_target_template("{source_parent}/{stem}_test.rs", Path::new("README.md"))
+                .unwrap(),
+            PathBuf::from("README_test.rs")
         );
     }
 

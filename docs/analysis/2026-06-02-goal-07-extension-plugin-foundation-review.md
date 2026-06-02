@@ -40,7 +40,7 @@ Goal file: `docs/goals/assura-goal-07-extension-and-plugin-foundation.md`.
 | Command | Status | Notes |
 | --- | --- | --- |
 | `cargo fmt --all -- --check` | Passed | Re-ran after the target-template safety cleanup. |
-| `cargo test --test custom_constraints_tests --quiet` | Passed | Covers missing target, existing target, and excluded source behavior. |
+| `cargo test --test custom_constraints_tests --quiet` | Passed | Covers missing target, existing target, excluded source, and root source-parent behavior. |
 | `cargo test custom_constraint --quiet` | Passed | Covers config parsing and custom executor unit tests across harnesses. |
 | `cargo test --all-targets --quiet` | Passed | Full Rust test suite, including benchmark-style harnesses. |
 | `cargo test --test compiled_config_cli --package assura-check-cli --quiet` | Passed | Proves compiled artifacts preserve and execute `extensions.custom_constraints`. |
@@ -57,7 +57,7 @@ Goal file: `docs/goals/assura-goal-07-extension-and-plugin-foundation.md`.
 | --- | --- | --- |
 | R0. Scope and source-of-truth review | Complete locally | Goal 06 is completed in the Iteration 01 ledger; Goal 07 is active in the goal file, Trellis task, and roadmap spec. |
 | R1. API boundary and stability review | Complete locally | `extensions.custom_constraints` is documented as experimental and first-party; unsupported plugin surfaces remain rejected in docs and policy. |
-| R2. Fixture and diagnostics review | Complete locally | `tests/custom_constraints_tests.rs` proves normal `StructureViolation` shape with `custom:<id>` rule names and configured severity. |
+| R2. Fixture and diagnostics review | Complete locally | `tests/custom_constraints_tests.rs` proves normal `StructureViolation` shape with `custom:<id>` rule names, configured severity, and root-level source handling. |
 | R3. Docs reproduction review | Complete locally | `node --run verify:docs` builds the updated custom-constraints page. |
 | R4. Safety review | Complete locally | Runtime walks only checked paths, prunes exclusions, sorts sources, rejects parent/prefix target escapes, and disables LS-Lint fast-only plans when custom constraints exist. |
 | R5. Command-surface review | Complete locally | No new CLI commands or per-agent formats were added; custom constraints execute through `assura check`. |
@@ -70,11 +70,11 @@ Goal file: `docs/goals/assura-goal-07-extension-and-plugin-foundation.md`.
 | Local review | Target template safety allowed Windows prefix components in `is_safe_relative_path`. | Fixed | Rejected prefix components and reran `cargo test --test custom_constraints_tests --quiet`. |
 | Review agent Nietzsche (`019e865e-6cc8-77d3-a9cb-b907f41b7425`) | `assura-check-compile-config` accepted extension-bearing configs, but `assura-check-compiled` used the fast-only artifact path and rejected them at runtime. | Fixed | Switched `assura-check-compiled` to the fallback-capable artifact runner and added `compiled_config_cli_supports_custom_constraint_artifacts`. |
 | Review agent Nietzsche (`019e865e-6cc8-77d3-a9cb-b907f41b7425`) | Goal/review evidence pointed at stale test paths and overclaimed compiled artifact coverage before the compiled CLI smoke existed. | Fixed | Updated Goal 07 progress log and this review record to reference `tests/custom_constraints_tests.rs` and `crates/assura-check-cli/tests/compiled_config_cli.rs`. |
-| Gemini or PR review | Pending after PR opens. | Pending | PR template requires review feedback closure. |
+| Gemini Code Assist | Root-level sources made `{source_parent}/...` expand to a leading slash, which target safety rejected before the paired-file check could report the missing target. | Fixed | `expand_target_template` now collapses `{source_parent}/` when the parent is empty; `target_template_drops_empty_source_parent_prefix` and `check_custom_paired_file_constraint_handles_root_source_parent` cover helper and CLI behavior. |
 
 ## Handoff
 
-- PR: pending.
+- PR: https://github.com/rothnic/assura/pull/24.
 - Next goal after completion:
   `/goal docs/goals/assura-goal-08-release-readiness-and-ecosystem.md`
 - Known risks: `extensions.custom_constraints` is intentionally first-party

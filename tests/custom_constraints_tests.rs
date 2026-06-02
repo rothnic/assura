@@ -110,3 +110,22 @@ exclude:
     assert!(report.success, "{:#?}", report.violations);
     assert!(report.violations.is_empty());
 }
+
+#[test]
+fn check_custom_paired_file_constraint_handles_root_source_parent() {
+    let project = TempDir::new().unwrap();
+    write_config(
+        &project,
+        &permissive_pair_config("*.md", "{source_parent}/{stem}_docs.md", ""),
+    );
+    fs::write(project.path().join("README.md"), "# Project\n").unwrap();
+
+    let report = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+
+    assert!(!report.success);
+    assert_eq!(report.violations.len(), 1);
+    let violation = &report.violations[0];
+    assert_eq!(violation.path, PathBuf::from("README.md"));
+    assert_eq!(violation.rule, "custom:source_test_pair");
+    assert!(violation.message.contains("README_docs.md"));
+}
