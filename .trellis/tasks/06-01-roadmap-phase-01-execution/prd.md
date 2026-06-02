@@ -56,17 +56,13 @@ Iteration 01 / Phase 01 is complete only when:
 
 ## Current Slice
 
-Continue with Goal 05, Installable Adoption Path:
+Continue with Goal 06, Review Evidence And Quality Gates:
 
-- prove install scripts from release-style artifacts, not a source checkout;
-- smoke `assura --version`, `assura init`, `assura status --format json`,
-  `assura check --format json`, and a failing validation case on
-  `ubuntu-latest` x86_64, `macos-14` arm64, `macos-15-intel` x86_64, and
-  `windows-latest` x86_64;
-- keep `assura init`, `assura migrate`, `assura check`, and `assura status`
-  coherent in the first-run docs;
-- add an adoption walkthrough for an empty project and an LS-Lint migration
-  project;
-- document recovery for missing config, invalid config, unsupported migration
-  rules, and hook prerequisites;
-- run the Goal 05 required validation commands and review tasks.
+- standardize goal PR review records under `docs/analysis/`;
+- define checked-in versus generated evidence expectations;
+- add concise reproduction commands and CI coverage for review evidence,
+  goal metadata, docs links, and stale command-surface checks where practical;
+- align PR templates with goal docs, review tasks, and validation gates;
+- document how review-agent and PR review findings are resolved or rejected;
+- keep Trellis as the canonical workflow rather than creating a second process;
+- run the Goal 06 required validation commands and review tasks.

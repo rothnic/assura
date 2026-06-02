@@ -31,6 +31,7 @@ Use focused commands when the change is narrow:
 ```bash
 node --run verify:check
 node --run verify:test
+node --run verify:evidence
 node --run verify:docs
 node --run verify:release-size
 node --run verify:release-smoke
@@ -64,6 +65,17 @@ the default 8 MiB archive budget only when the PR explains why:
 ```bash
 ASSURA_MAX_RELEASE_ARCHIVE_BYTES=8388608 node --run verify:release-size
 ```
+
+Run the evidence gate when changing goal docs, PR templates, review records,
+Trellis roadmap state, or public agent feedback wording:
+
+```bash
+node --run verify:evidence
+```
+
+This checks review evidence templates, goal frontmatter metadata, local
+markdown links in goal/review/spec docs, and stale forbidden user-facing command
+surfaces such as per-agent feedback CLIs or per-agent check formats.
 
 ## PR Gate
 

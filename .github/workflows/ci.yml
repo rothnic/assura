@@ -23,6 +23,18 @@ jobs:
     - name: Check
       run: cargo check --all-targets --all-features
 
+  evidence:
+    name: Evidence Gates
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22
+    - name: Verify review evidence policy
+      run: node --run verify:evidence
+
   fmt:
     name: Rustfmt
     runs-on: ubuntu-latest

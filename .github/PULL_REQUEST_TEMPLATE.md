@@ -1,45 +1,39 @@
----
-name: Pull request
-about: Submit a pull request
-title: ''
-labels: ''
-assignees: ''
----
+## Goal
 
-## Description
-<!-- Describe your changes in detail -->
+- Goal doc:
+- Active Trellis task:
+- Related issue or PR:
 
-## Related Issue
-<!-- Please link to the issue here if applicable -->
-Fixes #(issue)
+## Summary
 
-## Type of Change
-<!-- Mark the relevant option with an [x] -->
-- [ ] Bug fix (non-breaking change which fixes an issue)
-- [ ] New feature (non-breaking change which adds functionality)
-- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
-- [ ] Documentation update
-- [ ] Performance improvement
-- [ ] Code refactoring
+<!-- Explain the user-visible outcome and the main implementation path. -->
 
-## Testing
-<!-- Describe the tests you ran and how to reproduce them -->
-- [ ] Fast verification passes (`node --run verify:fast`)
-- [ ] Integration tests pass
-- [ ] Manual testing performed
+## Evidence
 
-## Checklist
-<!-- Mark completed items with [x] -->
-- [ ] My code follows the style guidelines of this project
-- [ ] I have performed a self-review of my own code
-- [ ] I have commented my code, particularly in hard-to-understand areas
-- [ ] I have made corresponding changes to the documentation
-- [ ] My changes generate no new warnings (clippy)
-- [ ] I have added tests that prove my fix is effective or that my feature works
-- [ ] New and existing relevant tests pass locally with my changes
+- Review record:
+- Checked artifacts:
+- Generated artifacts in `target/`:
+- CI evidence links:
 
-## Screenshots (if applicable)
-<!-- Add screenshots to help explain your changes -->
+## Validation
 
-## Additional Notes
-<!-- Add any other notes about the PR here -->
+<!-- List exact commands reviewers can rerun. Mark commands not run with rationale. -->
+
+- [ ] `node --run verify:fast`
+- [ ] `node --run verify:evidence`
+- [ ] `node --run verify:docs`
+- [ ] Goal-specific validation commands are listed above.
+
+## Review Feedback
+
+- Review-agent findings:
+- Gemini or other PR review findings:
+- Rejected findings and rationale:
+
+## Completion And Handoff
+
+- [ ] Review tasks R0-R5 are complete or explicitly marked not applicable.
+- [ ] PR evidence can be understood without chat history.
+- [ ] Known baseline issues are linked to `.trellis/spec/assura/tooling-stabilization.md`.
+- [ ] Stable agent surface remains `assura check --format agent`, with Codex delivery only through `--agent codex`.
+- Next goal:
