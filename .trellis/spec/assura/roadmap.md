@@ -14,24 +14,22 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 5 | Windows CI Restore | Later | fix `libgit2-sys` MSVC linker failure and restore matrix entry |
 | 6 | Beyond Ls-Lint Rules | Completed | PRs #8, #11, and #12 merged; performance/parity tasks archived |
 | 7 | Agent Feedback MVP | Completed | PRs #13-#16 merged; keep stable `assura check --format agent` surface |
-| 8 | Agentic Adoption Iteration 01 / Phase 01 | Active | `06-01-roadmap-phase-01-execution` |
+| 8 | Agentic Adoption Iteration 01 / Phase 01 | Completed | Archived task `.trellis/tasks/archive/2026-06/06-01-roadmap-phase-01-execution` |
 | 9 | Policy Depth Iteration 02 | Planned | `docs/goals/assura-roadmap-iteration-02-policy-depth-and-ecosystem.md` |
 
 ## Active Roadmap Iteration
 
-**Agentic Adoption Iteration 01 / Phase 01** is active.
+No roadmap iteration is active after Iteration 01 completion.
 
 Current owning task:
-`.trellis/tasks/06-01-roadmap-phase-01-execution`.
+None.
 
 Current branch:
-`codex/phase-01-goal-08-release-readiness`.
+None.
 
-Current objective: execute the bounded Iteration 01 / Phase 01 sequence with
-two-week team goals. Goals 01 through 07 are complete; the active chunk is
-`docs/goals/assura-goal-08-release-readiness-and-ecosystem.md`. Completing
-Iteration 01 should create or identify the next roadmap iteration, not mark the
-broader Assura roadmap complete.
+Most recent completed iteration: Agentic Adoption Iteration 01 / Phase 01.
+Goals 01 through 08 are complete and the execution task is archived. This
+completion does not mark the broader Assura roadmap complete.
 
 Direction lock, clarified on 2026-05-31: do not create or revive
 `assura-codex-feedback`, do not add one CLI entrypoint per agent, and do not add
@@ -43,12 +41,12 @@ Planned next roadmap iteration:
 
 ## Recommended Next Epic
 
-Continue with
-`docs/goals/assura-goal-08-release-readiness-and-ecosystem.md` under
-`docs/goals/assura-roadmap-phase-01-agentic-adoption-foundation.md`.
-That document is the control plane for the active roadmap iteration; it is not
-the product roadmap and should not be treated as the final roadmap completion
-state.
+Activate Policy Depth Iteration 02 when maintainers are ready to start the next
+bounded program:
+`docs/goals/assura-roadmap-iteration-02-policy-depth-and-ecosystem.md`.
+Starting that iteration should create a new Trellis task and branch. The
+product roadmap remains open until a separate product decision declares it
+complete.
 
 ## Roadmap Rules
 

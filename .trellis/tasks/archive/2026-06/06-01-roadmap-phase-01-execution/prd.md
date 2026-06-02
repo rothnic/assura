@@ -2,11 +2,11 @@
 
 ## Roadmap Iteration
 
-Execute the roadmap iteration, also referred to as Phase 01, described by
+Executed the roadmap iteration, also referred to as Phase 01, described by
 `docs/goals/assura-roadmap-phase-01-agentic-adoption-foundation.md` from updated
 `master` on branch `codex/roadmap-phase-01-execution`.
 
-This task is not a roadmap-writing task. It owns implementation, validation,
+This task was not a roadmap-writing task. It owned implementation, validation,
 review, and evidence collection for the Iteration 01 goal sequence.
 
 ## Source Documents
@@ -54,19 +54,11 @@ Iteration 01 / Phase 01 is complete only when:
 - the next roadmap iteration is created or identified without marking the
   broader Assura roadmap complete.
 
-## Current Slice
+## Completion Summary
 
-Continue with Goal 08, Release Readiness And Ecosystem:
+Iteration 01 completed after PR #25 merged Goal 08, Release Readiness And
+Ecosystem. The completion ledger is
+`docs/goals/assura-roadmap-phase-01-agentic-adoption-foundation.md`.
 
-- produce the release candidate checklist for builds, installers, docs,
-  examples, and known limitations;
-- update release notes with current supported surfaces and removed or
-  superseded surfaces;
-- verify artifact checksums, install scripts, version output, and first-run
-  flows from documented commands;
-- publish compatibility language for LS-Lint migration and Assura-specific
-  extensions;
-- add support policy for issues, docs fixes, and pre-1.0 breaking changes;
-- define the next roadmap iteration after Iteration 01 without marking the
-  broader Assura roadmap complete;
-- run the Goal 08 required validation commands and review tasks.
+The product roadmap remains open. The planned next bounded program is
+`docs/goals/assura-roadmap-iteration-02-policy-depth-and-ecosystem.md`.

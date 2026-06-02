@@ -2,7 +2,7 @@
 id: roadmap-iteration-01-agentic-adoption-foundation
 type: roadmap_iteration
 title: Assura roadmap iteration 01 agentic adoption foundation
-status: active
+status: completed
 created: 2026-06-01
 owners:
   - assura-maintainers
@@ -51,12 +51,11 @@ complete because this iteration finishes.
 
 ## Status Semantics
 
-- `status: active` on this document means Iteration 01 / Phase 01 is the active
-  bounded program.
-- Closing all eight linked goals completes Iteration 01 only.
+- `status: completed` on this document means Iteration 01 / Phase 01 is closed
+  as a bounded program.
+- Closing all eight linked goals completed Iteration 01 only.
 - The product roadmap remains open after Iteration 01; the completion handoff
-  must name the next iteration or explicitly record that it still needs
-  definition.
+  names Iteration 02 as the planned next iteration.
 - Future roadmap iteration documents should reuse this control-plane pattern
   instead of extending Iteration 01 indefinitely.
 
@@ -185,7 +184,7 @@ declaring the roadmap finished.
 | 5. Installable Adoption Path | Completed | PR #22 merged with release-style artifact smoke evidence for Ubuntu x86_64, macOS arm64, macOS x86_64, and Windows x86_64, plus first-run docs proving install, init, status, passing check, and failing check. | Complete; continue with Goal 6. |
 | 6. Review Evidence And Quality Gates | Completed | PR #23 merged with review-record template, evidence policy, PR template, `node --run verify:evidence`, CI `Evidence Gates`, backfilled PR evidence examples, and review-agent/Gemini closure evidence. | Complete; continue with Goal 7. |
 | 7. Extension And Plugin Foundation | Completed | PR #24 merged with constrained first-party custom constraints, `paired_file_exists`, config validation, compiled artifact support, docs, fixture coverage, review-agent closure, Gemini closure, and full CI. | Complete; continue with Goal 8. |
-| 8. Release Readiness And Ecosystem | Active | Release candidate checklist, version/support policy, changelog, migration/adoption docs, package artifact proof, website release page, and post-release issue triage plan. | Execute and verify `docs/goals/assura-goal-08-release-readiness-and-ecosystem.md`. |
+| 8. Release Readiness And Ecosystem | Completed | PR #25 merged with release candidate checklist, release notes, support policy, compatibility matrix, release-ready website navigation, checksum-producing release/CI workflows, review-agent closure, Gemini closure, and full CI. | Complete; Iteration 01 closed. |
 
 ## Progress Log
 
@@ -199,9 +198,10 @@ declaring the roadmap finished.
 | 2026-06-02 | Completed Goal 05 via merged PR #22 and moved Phase 01 execution to Goal 06 on `codex/phase-01-goal-06-review-evidence-gates`. | `gh pr view 22 --json state,mergedAt,mergeCommit,url`; `python3 ./.trellis/scripts/task.py set-branch 06-01-roadmap-phase-01-execution codex/phase-01-goal-06-review-evidence-gates`; `node --run verify:evidence`. |
 | 2026-06-02 | Completed Goal 06 via merged PR #23 and moved Phase 01 execution to Goal 07 on `codex/phase-01-goal-07-extension-plugin-foundation`. | `gh pr view 23 --json state,mergedAt,mergeCommit,url`; `git switch -c codex/phase-01-goal-07-extension-plugin-foundation`; `node --run verify:evidence`. |
 | 2026-06-02 | Completed Goal 07 via merged PR #24 and moved Phase 01 execution to Goal 08 on `codex/phase-01-goal-08-release-readiness`. | `gh pr view 24 --json state,mergedAt,mergeCommit,url`; `gh pr checks 24 --watch --interval 10`; `git switch -c codex/phase-01-goal-08-release-readiness`. |
+| 2026-06-02 | Completed Goal 08 via merged PR #25 and closed Iteration 01 as a bounded roadmap iteration, while leaving the product roadmap open with Iteration 02 planned. | `gh pr view 25 --json state,mergedAt,mergeCommit,url`; `gh pr checks 25 --watch --interval 10`; `docs/goals/assura-roadmap-iteration-02-policy-depth-and-ecosystem.md`; `.trellis/tasks/archive/2026-06/06-01-roadmap-phase-01-execution`. |
 
 ## Handoff Prompt
 
 ```text
-/goal docs/goals/assura-goal-08-release-readiness-and-ecosystem.md
+/goal docs/goals/assura-roadmap-iteration-02-policy-depth-and-ecosystem.md
 ```

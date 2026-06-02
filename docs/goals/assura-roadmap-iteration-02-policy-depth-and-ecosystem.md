@@ -19,8 +19,8 @@ related:
 ## Objective
 
 Plan the next bounded roadmap iteration after Iteration 01. This document is
-not active until Iteration 01 closes. It prevents the Iteration 01 completion
-from being mistaken for completion of the full product roadmap.
+planned, not active. It prevents the Iteration 01 completion from being
+mistaken for completion of the full product roadmap.
 
 Iteration 02 should deepen Assura's policy coverage and ecosystem fit while
 preserving the stable public surface proven in Iteration 01.
@@ -35,6 +35,11 @@ Activate this iteration only after:
 - `.trellis/spec/assura/roadmap.md` is updated to make Iteration 02 active;
 - a Trellis task is created to own Iteration 02 execution; and
 - the previous active Iteration 01 task is archived or marked complete.
+
+Current handoff state: Iteration 01 is complete, Goal 08 merged in PR #25, and
+the Iteration 01 Trellis task is archived under
+`.trellis/tasks/archive/2026-06/06-01-roadmap-phase-01-execution`. Iteration 02
+still needs an explicit activation PR or task before implementation starts.
 
 ## Direction Locks
 
@@ -70,8 +75,7 @@ before implementation starts.
 
 ## Handoff Prompt
 
-When Iteration 01 closes and the maintainers choose to start this iteration,
-use:
+When maintainers choose to start this iteration, use:
 
 ```text
 /goal docs/goals/assura-roadmap-iteration-02-policy-depth-and-ecosystem.md
