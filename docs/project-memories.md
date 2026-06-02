@@ -49,8 +49,8 @@ No internal backwards compatibility is guaranteed before 1.0.
 
 ## Current Roadmap State
 
-- Iteration 01 / Phase 01 is the active bounded roadmap iteration.
-- Goal 08, Release Readiness And Ecosystem, is the active execution goal.
+- Iteration 01 / Phase 01 is completed as a bounded roadmap iteration.
+- Goal 08, Release Readiness And Ecosystem, completed in PR #25.
 - Iteration 02 is planned in
   [`docs/goals/assura-roadmap-iteration-02-policy-depth-and-ecosystem.md`](./goals/assura-roadmap-iteration-02-policy-depth-and-ecosystem.md).
 - Completing Iteration 01 does not complete the full product roadmap.

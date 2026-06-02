@@ -2,7 +2,7 @@
 id: goal-assura-roadmap-08-release-readiness-and-ecosystem
 type: goal
 title: Assura roadmap 08 release readiness and ecosystem
-status: active
+status: completed
 created: 2026-06-01
 owners:
   - assura-maintainers
@@ -91,3 +91,4 @@ removed feedback surfaces reappear as supported paths.
 | --- | --- | --- |
 | 2026-06-02 | Started Goal 08 from updated `master` after Goal 07 merged; moved the active Trellis task to `codex/phase-01-goal-08-release-readiness`. | `gh pr view 24 --json state,mergedAt,mergeCommit,url`; `git switch -c codex/phase-01-goal-08-release-readiness`. |
 | 2026-06-02 | Added release readiness artifacts: release notes, release candidate checklist, support policy, compatibility matrix, website release readiness page, and planned Iteration 02 handoff. | `docs/release-notes.md`; `docs/release-candidate-checklist.md`; `docs/support-policy.md`; `docs/compatibility-and-surface.md`; `website/src/content/docs/reference/release-readiness.md`; `docs/goals/assura-roadmap-iteration-02-policy-depth-and-ecosystem.md`. |
+| 2026-06-02 | Completed Goal 08 via merged PR #25 with release bundle checksums, release/support/compatibility docs, website release readiness navigation, Iteration 02 handoff, review-agent closure, Gemini closure, and full CI. | `gh pr view 25 --json state,mergedAt,mergeCommit,url`; `gh pr checks 25 --watch --interval 10`; `node --run verify:release-smoke`; `node --run verify:evidence`; `docs/analysis/2026-06-02-goal-08-release-readiness-review.md`. |
