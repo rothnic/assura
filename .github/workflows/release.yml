@@ -100,19 +100,21 @@ jobs:
       - name: Generate and verify checksum (Unix)
         if: matrix.os != 'windows-latest'
         run: |
+          cd target
           if command -v sha256sum >/dev/null 2>&1; then
-            sha256sum target/${{ matrix.archive_name }} > target/${{ matrix.archive_name }}.sha256
-            sha256sum -c target/${{ matrix.archive_name }}.sha256
+            sha256sum ${{ matrix.archive_name }} > ${{ matrix.archive_name }}.sha256
+            sha256sum -c ${{ matrix.archive_name }}.sha256
           else
-            shasum -a 256 target/${{ matrix.archive_name }} > target/${{ matrix.archive_name }}.sha256
-            shasum -a 256 -c target/${{ matrix.archive_name }}.sha256
+            shasum -a 256 ${{ matrix.archive_name }} > ${{ matrix.archive_name }}.sha256
+            shasum -a 256 -c ${{ matrix.archive_name }}.sha256
           fi
 
       - name: Generate and verify checksum (Windows)
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
-          $archive = "target/${{ matrix.archive_name }}"
+          Push-Location target
+          $archive = "${{ matrix.archive_name }}"
           $checksum = "$archive.sha256"
           $hash = (Get-FileHash $archive -Algorithm SHA256).Hash.ToLowerInvariant()
           "$hash  $archive" | Set-Content -NoNewline $checksum
@@ -120,6 +122,7 @@ jobs:
           if ($recorded -ne $hash) {
             throw "Checksum verification failed for $archive"
           }
+          Pop-Location
 
       - name: Upload release archive artifact
         uses: actions/upload-artifact@v4

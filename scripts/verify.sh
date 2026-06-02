@@ -424,13 +424,17 @@ run_release_bundle() {
   mkdir -p target/release-bundle
   cp target/release/assura target/release/assura-full target/release-bundle/
   tar -C target/release-bundle -czf "$archive" assura assura-full
-  if command -v sha256sum >/dev/null 2>&1; then
-    sha256sum "$archive" >"$archive.sha256"
-    sha256sum -c "$archive.sha256"
-  else
-    shasum -a 256 "$archive" >"$archive.sha256"
-    shasum -a 256 -c "$archive.sha256"
-  fi
+  (
+    cd "$(dirname "$archive")"
+    base_archive="$(basename "$archive")"
+    if command -v sha256sum >/dev/null 2>&1; then
+      sha256sum "$base_archive" >"$base_archive.sha256"
+      sha256sum -c "$base_archive.sha256"
+    else
+      shasum -a 256 "$base_archive" >"$base_archive.sha256"
+      shasum -a 256 -c "$base_archive.sha256"
+    fi
+  )
   RELEASE_ARCHIVE="$archive"
 }
 

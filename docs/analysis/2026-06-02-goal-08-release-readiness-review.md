@@ -74,7 +74,7 @@ Goal file:
 | Review agent Faraday (`019e8686-3058-7592-b6b8-040dda60389f`) | `docs/project-memories.md` contained stale release and package/plugin claims and was outside evidence checks. | Fixed | Rewrote `docs/project-memories.md` to defer release truth to current docs and added it to `scripts/verify.sh` checked markdown files. |
 | Review agent Faraday (`019e8686-3058-7592-b6b8-040dda60389f`) | Live release verification omitted the musl release asset. | Fixed | Added musl archive and all checksum URLs to `run_release_live`. |
 | Review agent Faraday (`019e8686-3058-7592-b6b8-040dda60389f`) | Review-agent closure was pending. | Fixed | Recorded findings and decisions in this closure table. |
-| Gemini or PR review | Pending after PR opens. | Pending | PR template requires review feedback closure. |
+| Gemini Code Assist | Checksum files recorded `target/...` paths, which would make downloaded checksum verification fail for users outside the build directory. | Fixed | Local release bundle, release workflow, and CI installable smoke now generate and verify checksum files from the archive directory so the recorded path is only the archive basename. |
 
 ## Handoff
 
