@@ -4,14 +4,15 @@ use super::compiled_config::CompiledStructureConfig;
 use super::compiled_fingerprint::SourceConfigFingerprint;
 use super::compiled_plan_artifact::PortableCompiledPlan;
 use crate::config::config::{
-    Config, DirectoryBundle, DirectoryNode, ExistsValidation, FileBundle, MarkdownBundle,
+    Config, DirectoryBundle, DirectoryNode, ExistsValidation, ExtensionConfig, FileBundle,
+    MarkdownBundle,
 };
 use crate::config::ls_compat::LsLintCompatibility;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-const COMPILED_CONFIG_SCHEMA_VERSION: u32 = 8;
+const COMPILED_CONFIG_SCHEMA_VERSION: u32 = 9;
 const ASSURA_VERSION_HASH: u64 = stable_hash(env!("CARGO_PKG_VERSION").as_bytes());
 
 /// Portable artifact containing a parsed Assura structure config.
@@ -223,6 +224,7 @@ struct PortableConfig {
     patterns: HashMap<String, PortableFileBundle>,
     structure: HashMap<String, PortableDirectoryNode>,
     ls: Option<LsLintCompatibility>,
+    extensions: Option<ExtensionConfig>,
     exclude: Vec<String>,
 }
 
@@ -296,6 +298,7 @@ impl From<Config> for PortableConfig {
                 .map(|(path, node)| (path, node.into()))
                 .collect(),
             ls: config.ls,
+            extensions: config.extensions,
             exclude: config.exclude,
         }
     }
@@ -315,6 +318,7 @@ impl From<PortableConfig> for Config {
                 .map(|(path, node)| (path, node.into()))
                 .collect(),
             ls: config.ls,
+            extensions: config.extensions,
             exclude: config.exclude,
         }
     }

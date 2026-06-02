@@ -65,6 +65,10 @@ impl StructureViolation {
 }
 
 fn corrective_context_for_rule(rule: &str) -> &'static str {
+    if rule.starts_with("custom:") {
+        return "Fix the configured custom constraint target, or update extensions.custom_constraints in .assura/config.yml when the project policy changed.";
+    }
+
     match rule {
         "file_naming" => {
             "Rename the file to match the effective naming rule, or update files.naming/naming_patterns when the policy is stale."

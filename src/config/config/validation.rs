@@ -1,7 +1,16 @@
 //! Validators shared by structure-first config bundles.
 
 #[cfg(feature = "yaml-config")]
-use super::{Config, DirectoryBundle, DirectoryNode, FileBundle, MarkdownBundle};
+use super::{
+    Config, CustomConstraintConfig, DirectoryBundle, DirectoryNode, ExtensionConfig, FileBundle,
+    MarkdownBundle,
+};
+#[cfg(feature = "yaml-config")]
+use glob::Pattern;
+#[cfg(feature = "yaml-config")]
+use std::collections::HashSet;
+#[cfg(feature = "yaml-config")]
+use std::path::{Component, Path};
 
 /// Validate structure-first config semantics without the full validator stack.
 #[cfg(feature = "yaml-config")]
@@ -12,6 +21,9 @@ pub(crate) fn validate_config_semantics(config: &Config) -> Result<(), String> {
 
     for (path, node) in &config.structure {
         validate_directory_node(node, &format!("structure.{path}"))?;
+    }
+    if let Some(extensions) = &config.extensions {
+        validate_extension_config(extensions)?;
     }
 
     Ok(())
@@ -85,6 +97,88 @@ fn validate_markdown_bundle(bundle: &MarkdownBundle, context: &str) -> Result<()
     }
 
     Ok(())
+}
+
+#[cfg(feature = "yaml-config")]
+fn validate_extension_config(config: &ExtensionConfig) -> Result<(), String> {
+    let mut ids = HashSet::new();
+    for constraint in &config.custom_constraints {
+        validate_custom_constraint(constraint)?;
+        if !ids.insert(&constraint.id) {
+            return Err(format!(
+                "extensions.custom_constraints.{}: duplicate custom constraint id",
+                constraint.id
+            ));
+        }
+    }
+    Ok(())
+}
+
+#[cfg(feature = "yaml-config")]
+fn validate_custom_constraint(constraint: &CustomConstraintConfig) -> Result<(), String> {
+    let context = format!("extensions.custom_constraints.{}", constraint.id);
+    if constraint.id.trim().is_empty() {
+        return Err("extensions.custom_constraints: id must not be empty".to_string());
+    }
+    if !constraint
+        .id
+        .chars()
+        .all(|ch| ch.is_ascii_lowercase() || ch.is_ascii_digit() || ch == '-' || ch == '_')
+    {
+        return Err(format!(
+            "{context}.id: expected lowercase ASCII letters, digits, '-' or '_'"
+        ));
+    }
+    if constraint.kind != "paired_file_exists" {
+        return Err(format!(
+            "{context}.type: unsupported custom constraint {:?}",
+            constraint.kind
+        ));
+    }
+    validate_relative_pattern(&constraint.source, &format!("{context}.source"))?;
+    validate_relative_template(&constraint.target, &format!("{context}.target"))?;
+    if let Some(severity) = &constraint.severity {
+        validate_severity(severity).map_err(|error| format!("{context}.severity: {error}"))?;
+    }
+    Ok(())
+}
+
+#[cfg(feature = "yaml-config")]
+fn validate_relative_pattern(value: &str, context: &str) -> Result<(), String> {
+    validate_relative_path_text(value, context)?;
+    Pattern::new(value).map_err(|error| format!("{context}: invalid glob pattern: {error}"))?;
+    Ok(())
+}
+
+#[cfg(feature = "yaml-config")]
+fn validate_relative_template(value: &str, context: &str) -> Result<(), String> {
+    validate_relative_path_text(value, context)
+}
+
+#[cfg(feature = "yaml-config")]
+fn validate_relative_path_text(value: &str, context: &str) -> Result<(), String> {
+    if value.trim().is_empty() {
+        return Err(format!("{context}: value must not be empty"));
+    }
+    let path = Path::new(value);
+    if path.is_absolute()
+        || path
+            .components()
+            .any(|component| matches!(component, Component::ParentDir))
+    {
+        return Err(format!(
+            "{context}: value must be relative and must not contain '..'"
+        ));
+    }
+    Ok(())
+}
+
+#[cfg(feature = "yaml-config")]
+fn validate_severity(value: &str) -> Result<(), String> {
+    match value {
+        "critical" | "high" | "medium" | "low" => Ok(()),
+        _ => Err("expected one of critical, high, medium, or low".to_string()),
+    }
 }
 
 #[cfg(feature = "yaml-config")]

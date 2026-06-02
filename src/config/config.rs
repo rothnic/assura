@@ -12,6 +12,7 @@ use std::collections::HashMap;
 use validator::Validate;
 
 mod bundles;
+mod extensions;
 mod validation;
 
 pub use crate::config::inheritance::{ResolvedRule, RuleResolver};
@@ -21,6 +22,7 @@ pub use crate::config::ls_compat::LsLintCompatibility;
 pub use bundles::{
     DirectoryBundle, ExistsValidation, FileBundle, MarkdownBundle, ResolvedFileBundle,
 };
+pub use extensions::{CustomConstraintConfig, ExtensionConfig};
 pub(crate) use validation::split_naming_conventions;
 #[cfg(feature = "yaml-config")]
 pub(crate) use validation::validate_config_semantics;
@@ -44,6 +46,10 @@ pub struct Config {
     /// Optional LS-Lint compatibility layer (for testing only)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ls: Option<LsLintCompatibility>,
+
+    /// Experimental first-party extension configuration.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub extensions: Option<ExtensionConfig>,
 
     /// Paths to exclude from validation
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -117,6 +123,7 @@ impl Config {
             patterns: HashMap::new(),
             structure: HashMap::new(),
             ls: None,
+            extensions: None,
             exclude: Vec::new(),
         }
     }
@@ -136,6 +143,12 @@ impl Config {
     /// Add a top-level pattern
     pub fn with_pattern(mut self, pattern: impl Into<String>, bundle: FileBundle) -> Self {
         self.patterns.insert(pattern.into(), bundle);
+        self
+    }
+
+    /// Add experimental extension configuration.
+    pub fn with_extensions(mut self, extensions: ExtensionConfig) -> Self {
+        self.extensions = Some(extensions);
         self
     }
 

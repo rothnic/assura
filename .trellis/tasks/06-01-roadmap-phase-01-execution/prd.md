@@ -56,13 +56,15 @@ Iteration 01 / Phase 01 is complete only when:
 
 ## Current Slice
 
-Continue with Goal 06, Review Evidence And Quality Gates:
+Continue with Goal 07, Extension And Plugin Foundation:
 
-- standardize goal PR review records under `docs/analysis/`;
-- define checked-in versus generated evidence expectations;
-- add concise reproduction commands and CI coverage for review evidence,
-  goal metadata, docs links, and stale command-surface checks where practical;
-- align PR templates with goal docs, review tasks, and validation gates;
-- document how review-agent and PR review findings are resolved or rejected;
-- keep Trellis as the canonical workflow rather than creating a second process;
-- run the Goal 06 required validation commands and review tasks.
+- define the constrained extension boundary for first-party custom constraints;
+- keep custom constraints inside `assura check` without new plugin commands,
+  remote loaders, marketplaces, or per-agent entrypoints;
+- add one first-party example constraint with passing, failing, and exclusion
+  fixtures;
+- preserve stable report diagnostics, deterministic ordering, and existing
+  path-exclusion behavior;
+- document when to use a built-in rule, a custom constraint, or an external CI
+  tool;
+- run the Goal 07 required validation commands and review tasks.

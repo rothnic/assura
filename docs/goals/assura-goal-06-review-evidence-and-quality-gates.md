@@ -2,7 +2,7 @@
 id: goal-assura-roadmap-06-review-evidence-and-quality-gates
 type: goal
 title: Assura roadmap 06 review evidence and quality gates
-status: active
+status: completed
 created: 2026-06-01
 owners:
   - assura-maintainers
@@ -80,3 +80,4 @@ create a second workflow system, or if CI checks are too noisy to be useful.
 | 2026-06-02 | Added the initial Goal 06 evidence gate slice: review-record template, evidence policy, PR template, `node --run verify:evidence`, and CI evidence-gates job for review metadata, markdown links, goal frontmatter, and stale command-surface checks. | `docs/analysis/review-record-template.md`; `docs/analysis/evidence-and-review-policy.md`; `.github/PULL_REQUEST_TEMPLATE.md`; `scripts/verify.sh`; `.github/workflows/ci.yml`. |
 | 2026-06-02 | Added the Goal 06 review record with backfilled PR #21 and PR #22 evidence examples, then proved the new artifact with the evidence gate. | `docs/analysis/2026-06-02-goal-06-review-evidence-gates-review.md`; `node --run verify:evidence`. |
 | 2026-06-02 | Addressed review-agent findings by broadening stale-surface detection, narrowing markdown link checks to current evidence, and recording review feedback closure. | Review agent `019e8636-de87-7941-b958-48433238b284`; `node --run verify:evidence`; `node --run verify:fast`. |
+| 2026-06-02 | Completed Goal 06 via merged PR #23 and moved Iteration 01 execution to Goal 07 on `codex/phase-01-goal-07-extension-plugin-foundation`. | `gh pr view 23 --json state,mergedAt,mergeCommit,url`; CI `Evidence Gates` plus existing checks passed on amended commit `b96a01b`. |

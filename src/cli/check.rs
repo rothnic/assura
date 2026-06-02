@@ -13,6 +13,7 @@ mod compiled_config;
 mod compiled_fingerprint;
 mod compiled_plan_artifact;
 mod configured_structure;
+mod custom_constraints;
 mod direct_contents;
 #[cfg(all(feature = "yaml-config", feature = "json-output"))]
 pub mod fast_cli;
@@ -343,6 +344,10 @@ impl StructureChecker {
         let walk_started = Instant::now();
         self.walk_and_validate(&checked_path, &mut report)?;
         timings.walk_and_validate_ms = walk_started.elapsed().as_secs_f64() * 1000.0;
+
+        if !self.fail_fast || report.violations.is_empty() {
+            self.validate_custom_constraints(&checked_path, &mut report)?;
+        }
 
         let sort_started = Instant::now();
         report

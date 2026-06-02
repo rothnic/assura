@@ -218,6 +218,7 @@ checked_markdown_files = [
     pathlib.Path("docs/analysis/review-record-template.md"),
     pathlib.Path("docs/analysis/evidence-and-review-policy.md"),
     pathlib.Path("docs/analysis/2026-06-02-goal-06-review-evidence-gates-review.md"),
+    pathlib.Path("docs/analysis/2026-06-02-goal-07-extension-plugin-foundation-review.md"),
     pathlib.Path(".trellis/spec/assura/index.md"),
     pathlib.Path(".trellis/spec/assura/roadmap.md"),
     pathlib.Path(".trellis/spec/assura/codex-agent-feedback.md"),

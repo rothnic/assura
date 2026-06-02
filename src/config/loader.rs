@@ -30,6 +30,7 @@ impl ConfigLoader {
     pub fn parse(content: &str) -> ConfigResult<Config> {
         let config: Config =
             serde_yaml::from_str(content).map_err(|error| ConfigError::Yaml(error.to_string()))?;
+        validate_config_semantics(&config).map_err(ConfigError::Invalid)?;
         #[cfg(feature = "full-cli")]
         config
             .validate()
@@ -150,5 +151,61 @@ structure:
         let exists = root_node.exists.as_ref().unwrap();
         assert_eq!(exists.files.as_ref().unwrap().len(), 2);
         assert_eq!(exists.directories.as_ref().unwrap().len(), 2);
+    }
+
+    #[test]
+    fn test_parse_with_custom_constraint() {
+        let yaml = r#"
+extensions:
+  custom_constraints:
+    - id: source_test_pair
+      type: paired_file_exists
+      source: "src/*.rs"
+      target: "tests/{stem}_test.rs"
+structure: {}
+"#;
+
+        let config = ConfigLoader::parse(yaml).unwrap();
+        let extensions = config.extensions.unwrap();
+        assert_eq!(extensions.custom_constraints.len(), 1);
+        assert_eq!(extensions.custom_constraints[0].id, "source_test_pair");
+    }
+
+    #[test]
+    fn test_parse_rejects_unsupported_custom_constraint_type() {
+        let yaml = r#"
+extensions:
+  custom_constraints:
+    - id: shell_plugin
+      type: shell
+      source: "src/*.rs"
+      target: "tests/{stem}_test.rs"
+structure: {}
+"#;
+
+        let error = ConfigLoader::parse(yaml).unwrap_err().to_string();
+        assert!(
+            error.contains("unsupported custom constraint"),
+            "unexpected error: {error}"
+        );
+    }
+
+    #[test]
+    fn test_parse_rejects_custom_constraint_path_escape() {
+        let yaml = r#"
+extensions:
+  custom_constraints:
+    - id: source_test_pair
+      type: paired_file_exists
+      source: "src/*.rs"
+      target: "../tests/{stem}_test.rs"
+structure: {}
+"#;
+
+        let error = ConfigLoader::parse(yaml).unwrap_err().to_string();
+        assert!(
+            error.contains("must be relative"),
+            "unexpected error: {error}"
+        );
     }
 }
