@@ -64,6 +64,9 @@
     "branch": { "type": "string" },
     "os": { "type": "string" },
     "arch": { "type": "string" },
+    "cpu_model": { "type": "string" },
+    "logical_cpu_count": { "type": "integer", "minimum": 1 },
+    "total_memory_bytes": { "type": ["integer", "null"], "minimum": 0 },
     "rust_version": { "type": "string" },
     "node_version": { "type": "string" },
     "npm_version": { "type": "string" },
@@ -87,6 +90,8 @@
             "assura-check-dirty-project-cli",
             "assura-check-dirty-project-session-cli",
             "assura-check-dirty-project-socket",
+            "assura-prepared-full-check",
+            "assura-prepared-five-changed-paths",
             "assura-check-status-cli",
             "assura-rust-cli-floor",
             "ls-lint-cli",
@@ -117,6 +122,8 @@
         "hot-daemon-dirty-project-cli",
         "hot-daemon-dirty-project-session-cli",
         "hot-daemon-dirty-project-socket",
+        "prepared-full-project-check",
+        "prepared-scoped-changed-paths",
         "status-file-cli",
         "rust-cli-floor",
         "in-process",
@@ -129,7 +136,12 @@
     },
     "diagnostic": { "type": "boolean" },
     "source_type": {
-      "enum": ["generated", "external-pinned-repo", "materialized-local-fixture"]
+      "enum": [
+        "generated",
+        "external-pinned-repo",
+        "materialized-local-fixture",
+        "checked-repo-fixture"
+      ]
     },
     "checked_file_count": { "type": "integer", "minimum": 0 },
     "ignored_file_count": { "type": "integer", "minimum": 0 },
@@ -143,6 +155,8 @@
       "enum": [
         "hand-authored-equivalent-pair",
         "hand-authored-external-policy",
+        "assura-native-policy-fixture",
+        "external-ls-lint-conversion",
         "ls-lint-conversion"
       ]
     },
@@ -169,6 +183,8 @@
             "assura-check-dirty-project-cli",
             "assura-check-dirty-project-session-cli",
             "assura-check-dirty-project-socket",
+            "assura-prepared-full-check",
+            "assura-prepared-five-changed-paths",
             "assura-check-status-cli",
             "assura-rust-cli-floor",
             "assura-in-process",
@@ -202,6 +218,7 @@
       ]
     },
     "median_runtime_ms": { "type": ["number", "null"], "minimum": 0 },
+    "p95_runtime_ms": { "type": ["number", "null"], "minimum": 0 },
     "two_x_target_runtime_ms": { "type": ["number", "null"], "minimum": 0 },
     "process_floor_runtime_ms": { "type": ["number", "null"], "minimum": 0 },
     "process_floor_to_two_x_target_ratio": {
@@ -238,11 +255,16 @@
         null
       ]
     },
+    "proves_whole_project_success": { "type": "boolean" },
+    "changed_path_count": { "type": ["integer", "null"], "minimum": 1 },
+    "latency_threshold_ms": { "type": ["number", "null"], "minimum": 0 },
+    "latency_threshold_met": { "type": ["boolean", "null"] },
     "distribution": {
       "type": "object",
       "required": ["samples", "samples_ms", "min_ms", "max_ms"],
       "properties": {
         "samples": { "type": "integer", "minimum": 0 },
+        "p95_ms": { "type": ["number", "null"], "minimum": 0 },
         "samples_ms": {
           "type": "array",
           "items": { "type": "number", "minimum": 0 }

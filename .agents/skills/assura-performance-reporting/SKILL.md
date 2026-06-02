@@ -42,6 +42,8 @@ Expected row families:
 - `assura-check-dirty-project-cli`
 - `assura-check-dirty-project-session-cli`
 - `assura-check-dirty-project-socket`
+- `assura-prepared-full-check`
+- `assura-prepared-five-changed-paths`
 - `assura-check-status-cli`
 - `assura-rust-cli-floor`
 - `process-floor`

@@ -16,6 +16,16 @@ fn current_report_claim_summary_matches_headline_rows() {
         .get("results")
         .and_then(serde_json::Value::as_array)
         .expect("current report includes result rows");
+    assert!(
+        report["source_worktree_dirty"].is_boolean(),
+        "current report records source worktree cleanliness"
+    );
+    assert!(
+        report["command_line"]
+            .as_str()
+            .is_some_and(|value| !value.is_empty()),
+        "current report records the generating command line"
+    );
     if let Some(warm_summary) = report.get("warm_claim_summary") {
         assert_summary_matches_rows(
             warm_summary,
@@ -27,7 +37,7 @@ fn current_report_claim_summary_matches_headline_rows() {
 
     assert_eq!(
         summary["fixture_cohort"],
-        serde_json::Value::String("real-repo-headline".to_string())
+        serde_json::Value::String("realistic-equivalent".to_string())
     );
     assert_eq!(
         summary["assura_row_family"],
@@ -257,6 +267,8 @@ fn expected_execution_mode(row_family: &str) -> &'static str {
         "assura-check-dirty-project-cli" => "hot-daemon-dirty-project-cli",
         "assura-check-dirty-project-session-cli" => "hot-daemon-dirty-project-session-cli",
         "assura-check-dirty-project-socket" => "hot-daemon-dirty-project-socket",
+        "assura-prepared-full-check" => "prepared-full-project-check",
+        "assura-prepared-five-changed-paths" => "prepared-scoped-changed-paths",
         "assura-check-status-cli" => "status-file-cli",
         "assura-rust-cli-floor" => "rust-cli-floor",
         "assura-in-process" => "in-process",

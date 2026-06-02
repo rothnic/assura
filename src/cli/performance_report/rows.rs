@@ -85,6 +85,8 @@ pub struct PerformanceResultRow {
     pub tool_name: String,
     /// Median runtime in milliseconds, when measured.
     pub median_runtime_ms: Option<f64>,
+    /// Nearest-rank p95 runtime in milliseconds, when measured.
+    pub p95_runtime_ms: Option<f64>,
     /// Half of the native LS-Lint median for this fixture, when available.
     pub two_x_target_runtime_ms: Option<f64>,
     /// Median process-launch floor for this fixture, when available.
@@ -109,6 +111,14 @@ pub struct PerformanceResultRow {
     pub meets_two_x_target: Option<bool>,
     /// Machine-readable status for a two-times-faster Assura CLI claim.
     pub two_x_claim_status: Option<String>,
+    /// Whether this row proves full-project success rather than scoped feedback.
+    pub proves_whole_project_success: bool,
+    /// Number of changed paths validated by each measured sample, when scoped.
+    pub changed_path_count: Option<usize>,
+    /// Goal-specific latency threshold for this row, when applicable.
+    pub latency_threshold_ms: Option<f64>,
+    /// Whether this row's p95 latency meets the goal-specific threshold.
+    pub latency_threshold_met: Option<bool>,
     /// Distribution details for charting and review.
     pub distribution: RuntimeDistribution,
     /// Whether this tool run passed.
@@ -126,6 +136,8 @@ pub struct PerformanceResultRow {
 pub struct RuntimeDistribution {
     /// Number of samples in this row.
     pub samples: usize,
+    /// Nearest-rank p95 runtime in milliseconds.
+    pub p95_ms: Option<f64>,
     /// Individual sample runtimes in milliseconds.
     pub samples_ms: Vec<f64>,
     /// Minimum sample runtime in milliseconds.
@@ -196,6 +208,8 @@ pub(in crate::cli::performance_report) fn row(
 ) -> PerformanceResultRow {
     let distribution = stats::distribution(samples);
     let median_runtime_ms = stats::median(&distribution.samples_ms);
+    let p95_runtime_ms = distribution.p95_ms;
+    let latency_threshold_ms = latency_threshold_ms(measurement.row_family);
     let skipped = median_runtime_ms.is_none() && failure.is_some();
     let success = failure.is_none() && median_runtime_ms.is_some();
     let metadata = &fixture.metadata;
@@ -249,6 +263,7 @@ pub(in crate::cli::performance_report) fn row(
         ls_lint_execution_mode: measurement.ls_lint_execution_mode.map(str::to_string),
         tool_name: measurement.tool_name.to_string(),
         median_runtime_ms,
+        p95_runtime_ms,
         two_x_target_runtime_ms: None,
         process_floor_runtime_ms: None,
         process_floor_to_two_x_target_ratio: None,
@@ -261,6 +276,12 @@ pub(in crate::cli::performance_report) fn row(
         runtime_to_two_x_target_ratio: None,
         meets_two_x_target: None,
         two_x_claim_status: None,
+        proves_whole_project_success: proves_whole_project_success(measurement.row_family),
+        changed_path_count: changed_path_count(measurement.row_family),
+        latency_threshold_ms,
+        latency_threshold_met: latency_threshold_ms
+            .zip(p95_runtime_ms)
+            .map(|(threshold, p95)| p95 <= threshold),
         distribution,
         success,
         status: if success {
@@ -288,12 +309,42 @@ pub(super) fn is_diagnostic_row(row_family: &str, fixture_cohort: &str) -> bool 
         || row_family == "assura-check-dirty-project-cli"
         || row_family == "assura-check-dirty-project-session-cli"
         || row_family == "assura-check-dirty-project-socket"
+        || row_family == "assura-prepared-full-check"
+        || row_family == "assura-prepared-five-changed-paths"
         || row_family == "assura-check-status-cli"
         || row_family == "assura-rust-cli-floor"
         || row_family == "process-floor"
         || row_family.starts_with("assura:phase:")
         || row_family.starts_with("strategy:")
         || row_family.starts_with("traversal:")
+}
+
+fn proves_whole_project_success(row_family: &str) -> bool {
+    !matches!(
+        row_family,
+        "assura-check-changed-path-cli"
+            | "assura-prepared-five-changed-paths"
+            | "assura-check-dirty-project-socket"
+    )
+}
+
+fn changed_path_count(row_family: &str) -> Option<usize> {
+    match row_family {
+        "assura-prepared-five-changed-paths" => Some(5),
+        "assura-check-changed-path-cli"
+        | "assura-check-dirty-project-cli"
+        | "assura-check-dirty-project-session-cli"
+        | "assura-check-dirty-project-socket" => Some(1),
+        _ => None,
+    }
+}
+
+fn latency_threshold_ms(row_family: &str) -> Option<f64> {
+    match row_family {
+        "assura-prepared-full-check" => Some(250.0),
+        "assura-prepared-five-changed-paths" => Some(100.0),
+        _ => None,
+    }
 }
 
 pub(super) fn validation_execution_mode(row_family: &str) -> &'static str {
@@ -306,6 +357,8 @@ pub(super) fn validation_execution_mode(row_family: &str) -> &'static str {
         "assura-check-dirty-project-cli" => "hot-daemon-dirty-project-cli",
         "assura-check-dirty-project-session-cli" => "hot-daemon-dirty-project-session-cli",
         "assura-check-dirty-project-socket" => "hot-daemon-dirty-project-socket",
+        "assura-prepared-full-check" => "prepared-full-project-check",
+        "assura-prepared-five-changed-paths" => "prepared-scoped-changed-paths",
         "assura-check-status-cli" => "status-file-cli",
         "assura-rust-cli-floor" => "rust-cli-floor",
         "assura-in-process" => "in-process",

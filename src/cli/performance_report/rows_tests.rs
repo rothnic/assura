@@ -8,6 +8,9 @@ fn test_environment() -> PerformanceEnvironment {
     PerformanceEnvironment {
         os: "test-os".to_string(),
         arch: "test-arch".to_string(),
+        cpu_model: "test-cpu".to_string(),
+        logical_cpu_count: 8,
+        total_memory_bytes: Some(16 * 1024 * 1024 * 1024),
         rust_version: "rustc test".to_string(),
         node_version: "node test".to_string(),
         npm_version: "npm test".to_string(),
@@ -38,6 +41,9 @@ fn cli_row_carries_fixture_metadata_and_headline_label() {
     );
 
     assert_eq!(result.tool_name, "assura-cli");
+    assert_eq!(result.median_runtime_ms, Some(2.0));
+    assert_eq!(result.p95_runtime_ms, Some(3.0));
+    assert_eq!(result.distribution.p95_ms, Some(3.0));
     assert_eq!(result.row_family, "assura-cli");
     assert_eq!(result.validation_execution_mode, "cold-cli");
     assert_eq!(result.evidence_role, "headline-candidate");

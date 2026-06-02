@@ -21,6 +21,7 @@ pub struct PreparedStructureCheck {
     config_hash: u64,
     config_fingerprint: Option<SourceConfigFingerprint>,
     fail_fast: bool,
+    check_compiled: CompiledStructureConfig,
     compiled: CompiledStructureConfig,
 }
 
@@ -68,7 +69,7 @@ impl PreparedStructureCheck {
 
         let mut checker = StructureChecker::from_compiled(
             self.project_root.clone(),
-            &self.compiled,
+            &self.check_compiled,
             self.fail_fast,
         );
         let mut timings = StructureCheckTimings::default();
@@ -167,6 +168,7 @@ impl PreparedStructureCheck {
         config: Config,
         fail_fast: bool,
     ) -> Self {
+        let check_compiled = CompiledStructureConfig::new_for_check(config.clone(), fail_fast);
         let compiled = CompiledStructureConfig::new(config, fail_fast);
         Self {
             project_root,
@@ -174,6 +176,7 @@ impl PreparedStructureCheck {
             config_hash: 0,
             config_fingerprint: None,
             fail_fast,
+            check_compiled,
             compiled,
         }
     }
@@ -196,6 +199,8 @@ impl PreparedStructureCheck {
         }
 
         let config = ConfigLoader::parse_validated(&content)?;
+        self.check_compiled =
+            CompiledStructureConfig::new_for_check(config.clone(), self.fail_fast);
         self.compiled = CompiledStructureConfig::new(config, self.fail_fast);
         self.config_hash = config_hash;
         self.config_fingerprint = SourceConfigFingerprint::from_path(&self.config_path).ok();
@@ -210,6 +215,7 @@ impl PreparedStructureCheck {
         let content = fs::read_to_string(&config_path).map_err(CheckError::Io)?;
         let config_hash = stable_hash(content.as_bytes());
         let config = ConfigLoader::parse_validated(&content)?;
+        let check_compiled = CompiledStructureConfig::new_for_check(config.clone(), fail_fast);
         let compiled = CompiledStructureConfig::new(config, fail_fast);
         let config_fingerprint = SourceConfigFingerprint::from_path(&config_path).ok();
 
@@ -219,6 +225,7 @@ impl PreparedStructureCheck {
             config_hash,
             config_fingerprint,
             fail_fast,
+            check_compiled,
             compiled,
         })
     }

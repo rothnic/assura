@@ -2,7 +2,7 @@
 id: goal-assura-roadmap-04-fast-incremental-check-engine
 type: goal
 title: Assura roadmap 04 fast incremental check engine
-status: planned
+status: active
 created: 2026-06-01
 owners:
   - assura-maintainers
@@ -89,3 +89,10 @@ Block the PR if a headline claim is synthetic-only, if changed-path checks are
 misrepresented as full validation, or if deterministic output changes without a
 test and documented reason. Also block if the warm same-turn p95 threshold is
 missed and the PR attempts to redefine the target after implementation.
+
+## Progress Log
+
+| Date | Event | Evidence |
+| --- | --- | --- |
+| 2026-06-01 | Started Goal 04 from updated `master` after Goal 03 merged; loaded the performance-reporting workflow and moved Phase 01 execution to `codex/phase-01-goal-04-incremental-check-engine`. | `gh pr view 20 --json state,mergedAt,mergeCommit,url`; `git switch -c codex/phase-01-goal-04-incremental-check-engine`; `.agents/skills/assura-performance-reporting/SKILL.md`; `python3 ./.trellis/scripts/task.py set-branch 06-01-roadmap-phase-01-execution codex/phase-01-goal-04-incremental-check-engine`. |
+| 2026-06-02 | Added the Goal 04 evidence contract for prepared full-project and five-path changed-path checks, including hardware metadata, command-line recording, dirty-worktree provenance, p95 rows, threshold fields, and whole-project-success labeling. Generated a 30-run default proof, a 30-run opt-in pinned external fixture proof with all 10 pinned repositories, and a 30-run pre-Goal-04 baseline comparison from commit `56937c6`. Aggregate cold `assura-cli` and `assura-check-cli` medians improved versus the adjacent baseline; the proof note preserves row-level variance and one noisy small-fixture outlier for review. | `docs/analysis/2026-06-01-goal-04-fast-incremental-check-proof.json`; `docs/analysis/2026-06-01-goal-04-fast-incremental-check-external-fixtures-proof.json`; `docs/analysis/2026-06-01-goal-04-fast-incremental-check-review.md`; `cargo test prepared --quiet`; `cargo test performance_report --quiet`; `cargo test --test performance_report_contract_tests --quiet`; `cargo run --quiet -- check --format agent . --warn`. |
