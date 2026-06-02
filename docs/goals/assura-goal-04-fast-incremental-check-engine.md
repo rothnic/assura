@@ -2,7 +2,7 @@
 id: goal-assura-roadmap-04-fast-incremental-check-engine
 type: goal
 title: Assura roadmap 04 fast incremental check engine
-status: active
+status: completed
 created: 2026-06-01
 owners:
   - assura-maintainers
@@ -96,3 +96,4 @@ missed and the PR attempts to redefine the target after implementation.
 | --- | --- | --- |
 | 2026-06-01 | Started Goal 04 from updated `master` after Goal 03 merged; loaded the performance-reporting workflow and moved Phase 01 execution to `codex/phase-01-goal-04-incremental-check-engine`. | `gh pr view 20 --json state,mergedAt,mergeCommit,url`; `git switch -c codex/phase-01-goal-04-incremental-check-engine`; `.agents/skills/assura-performance-reporting/SKILL.md`; `python3 ./.trellis/scripts/task.py set-branch 06-01-roadmap-phase-01-execution codex/phase-01-goal-04-incremental-check-engine`. |
 | 2026-06-02 | Added the Goal 04 evidence contract for prepared full-project and five-path changed-path checks, including hardware metadata, command-line recording, dirty-worktree provenance, p95 rows, threshold fields, and whole-project-success labeling. Generated a 30-run default proof, a 30-run opt-in pinned external fixture proof with all 10 pinned repositories, and a 30-run pre-Goal-04 baseline comparison from commit `56937c6`. Aggregate cold `assura-cli` and `assura-check-cli` medians improved versus the adjacent baseline; the proof note preserves row-level variance and one noisy small-fixture outlier for review. | `docs/analysis/2026-06-01-goal-04-fast-incremental-check-proof.json`; `docs/analysis/2026-06-01-goal-04-fast-incremental-check-external-fixtures-proof.json`; `docs/analysis/2026-06-01-goal-04-fast-incremental-check-review.md`; `cargo test prepared --quiet`; `cargo test performance_report --quiet`; `cargo test --test performance_report_contract_tests --quiet`; `cargo run --quiet -- check --format agent . --warn`. |
+| 2026-06-02 | Completed Goal 04 via merged PR #21 and moved Iteration 01 execution to Goal 05 from updated `master`. | `gh pr view 21 --json state,mergedAt,mergeCommit,url`; `git switch -c codex/phase-01-goal-05-installable-adoption-path`; `python3 ./.trellis/scripts/task.py set-branch 06-01-roadmap-phase-01-execution codex/phase-01-goal-05-installable-adoption-path`. |

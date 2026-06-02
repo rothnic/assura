@@ -198,6 +198,8 @@ structure:
         files:
           naming: "kebab-case"
           allowed_names:
+            - "smoke-install-adoption.ps1"
+            - "smoke-install-adoption.sh"
             - "verify.sh"
           allow_extra: false
         directories:

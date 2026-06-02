@@ -2,7 +2,7 @@
 id: goal-assura-roadmap-05-installable-adoption-path
 type: goal
 title: Assura roadmap 05 installable adoption path
-status: planned
+status: active
 created: 2026-06-01
 owners:
   - assura-maintainers
@@ -45,8 +45,8 @@ This is a two-week team chunk for release, website, CLI, and docs owners.
 - A reviewer can install Assura from documented artifacts and run a check
   without cloning this repository.
 - Install scripts are smoke-tested from release-style artifacts on this platform
-  matrix: `ubuntu-latest` x86_64, `macos-14` arm64, `macos-13` x86_64, and
-  `windows-latest` x86_64. If one platform is unavailable in CI, the PR must
+  matrix: `ubuntu-latest` x86_64, `macos-14` arm64, `macos-15-intel` x86_64,
+  and `windows-latest` x86_64. If one platform is unavailable in CI, the PR must
   include dated manual terminal evidence for that platform and a follow-up issue
   to restore automation.
 - The artifact source is explicit: smoke tests must install from a release
@@ -90,3 +90,12 @@ Block the PR if docs require an unmentioned source checkout, if install scripts
 overwrite user files without opt-in, or if first-run examples use unsupported
 feedback command surfaces. Also block if the platform matrix is reduced without
 an explicit owner-approved exception.
+
+## Progress Log
+
+| Date | Event | Evidence |
+| --- | --- | --- |
+| 2026-06-02 | Started Goal 05 from updated `master` after Goal 04 merged; moved the active Trellis task to `codex/phase-01-goal-05-installable-adoption-path`. | `gh pr view 21 --json state,mergedAt,mergeCommit,url`; `git status --short --branch`; `python3 ./.trellis/scripts/task.py set-branch 06-01-roadmap-phase-01-execution codex/phase-01-goal-05-installable-adoption-path`. |
+| 2026-06-02 | Added release-archive adoption smoke scripts and CI matrix wiring for Ubuntu x86_64, macOS arm64, macOS x86_64, and Windows x86_64. The local macOS archive smoke installed from `target/assura-macos-amd64-preview.tar.gz` and proved version, init, status JSON, passing check JSON, failing check JSON, and LS-Lint migration. | `scripts/smoke-install-adoption.sh`; `scripts/smoke-install-adoption.ps1`; `.github/workflows/ci.yml`; `node --run verify:release-smoke`; `target/adoption-smoke/local/empty-check-pass.json`; `target/adoption-smoke/local/empty-check-fail.json`; `target/adoption-smoke/local/lslint-check-pass.json`. |
+| 2026-06-02 | Completed local Goal 05 validation and review-agent pass before PR creation. Full platform smoke remains delegated to PR CI because Windows and macOS arm64 require GitHub-hosted runners. | `cargo test --all-targets --quiet`; `cargo clippy --all-targets --all-features -- -D warnings`; `cargo build --release --bin assura --no-default-features --features json-output,yaml-config`; `cargo run --quiet -- check --format json .`; `cd website && npx pnpm@10.25.0 build`; `git diff --check`; review agent `019e8604-7d65-7842-b89b-ef24e6356a12`. |
+| 2026-06-02 | Replaced stale Intel macOS CI label `macos-13` with the current GitHub-hosted Intel label `macos-15-intel` after the x86_64 adoption smoke remained queued with no runner assigned. | `gh api repos/rothnic/assura/actions/jobs/78985721463`; GitHub-hosted runners reference for Intel macOS labels. |

@@ -17,10 +17,10 @@ supported command is `assura check`.
    curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sh
    ```
 
-   The installer supports Linux x64, macOS Apple Silicon, and macOS Intel.
-   Windows users can run the PowerShell installer from the
-   [Installation guide](/guides/installation/) or download the zip from
-   [GitHub Releases](https://github.com/rothnic/assura/releases/latest).
+   The installer downloads a release archive. It does not require a Rust
+   toolchain or a source checkout. Windows users can run the PowerShell
+   installer from the [Installation guide](/guides/installation/) or download
+   the zip from [GitHub Releases](https://github.com/rothnic/assura/releases/latest).
 
 2. **Create a project config**
 
@@ -79,7 +79,7 @@ Example shape:
 }
 ```
 
-The supported `assura check` formats are `text`, `json`, and `yaml`.
+The raw report formats for `assura check` are `text`, `json`, and `yaml`.
 
 ## CI
 
@@ -112,6 +112,8 @@ assura check
 ```
 
 See [LS-Lint Migration](/guides/ls-lint-migration/) for a complete example.
+See [Adoption Walkthrough](/guides/adoption-walkthrough/) for the release-smoke
+journey that covers empty projects, LS-Lint migration, and recovery cases.
 
 ## Guided Feedback
 
@@ -140,7 +142,7 @@ assura check --format agent --agent codex . --warn --min-severity medium --max-i
 
 Codex must also have hooks enabled in user config with `features.hooks = true`;
 run `/hooks` once and approve the project hook command before expecting
-feedback.
+feedback from `assura check --format agent --agent codex`.
 
 > **Current release scope**
 >

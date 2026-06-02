@@ -39,9 +39,13 @@ node --run verify:release-live
 
 Run the website build for docs or frontend changes. Run the release smoke for
 installer, release workflow, or primary launcher changes; on Unix it builds the
-local archive and installs it through `website/public/install.sh` with a local
-asset override. Run the release-size gate when changing build profiles, release
-packaging, install scripts, or the primary/full CLI split.
+local archive, installs it through `website/public/install.sh` with a local
+asset override, and runs the first-run adoption smoke against the installed
+binary. That smoke proves `assura --version`, `assura init`,
+`assura status --format json`, `assura check --format json`, a failing
+validation case, and an LS-Lint migration walkthrough. Run the release-size gate
+when changing build profiles, release packaging, install scripts, or the
+primary/full CLI split.
 
 After a release tag is published, run the live release gate to verify the exact
 unauthenticated URLs used by new users:

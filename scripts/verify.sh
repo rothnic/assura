@@ -221,10 +221,10 @@ run_release_smoke() {
 
   install_dir="$tmp/bin"
   ASSURA_ASSET_URL="$PWD/$archive" BIN_DIR="$install_dir" ./website/public/install.sh
-  "$install_dir/assura" check --quiet .
-  "$install_dir/assura" --version
   "$install_dir/assura" --help >"$tmp/assura-help.txt"
   grep -q "Usage: assura" "$tmp/assura-help.txt"
+  ASSURA_BIN="$install_dir/assura" ASSURA_SMOKE_DIR="$tmp/adoption" \
+    ./scripts/smoke-install-adoption.sh
 }
 
 public_url_ok() {

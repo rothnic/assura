@@ -31,11 +31,11 @@ jobs:
             target: x86_64-pc-windows-msvc
             asset_name: assura-windows-amd64
             archive_name: assura-windows-amd64.zip
-          - os: macos-latest
+          - os: macos-15-intel
             target: x86_64-apple-darwin
             asset_name: assura-macos-amd64
             archive_name: assura-macos-amd64.tar.gz
-          - os: macos-latest
+          - os: macos-14
             target: aarch64-apple-darwin
             asset_name: assura-macos-arm64
             archive_name: assura-macos-arm64.tar.gz

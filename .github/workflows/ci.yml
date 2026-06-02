@@ -96,10 +96,10 @@ jobs:
       run: |
         tmp="$(mktemp -d)"
         ASSURA_ASSET_URL="$PWD/target/assura-linux-amd64-preview.tar.gz" BIN_DIR="$tmp/bin" ./website/public/install.sh
-        "$tmp/bin/assura" check --quiet .
         "$tmp/bin/assura" --version
         "$tmp/bin/assura" --help >/tmp/assura-help.txt
         grep -q "Usage: assura" /tmp/assura-help.txt
+        ASSURA_BIN="$tmp/bin/assura" ASSURA_SMOKE_DIR="$PWD/target/adoption-smoke/release-bundle" ./scripts/smoke-install-adoption.sh
     - name: Upload preview bundle
       uses: actions/upload-artifact@v4
       with:
@@ -139,9 +139,116 @@ jobs:
       run: |
         $bin = Join-Path $env:RUNNER_TEMP "assura-bin"
         ./website/public/install.ps1 -AssetUrl (Resolve-Path target/assura-windows-amd64.zip) -BinDir $bin
-        & (Join-Path $bin "assura.exe") check --quiet .
         & (Join-Path $bin "assura.exe") --version
         & (Join-Path $bin "assura.exe") --help | Select-String "Usage: assura"
+        ./scripts/smoke-install-adoption.ps1 `
+          -AssuraBin (Join-Path $bin "assura.exe") `
+          -WorkRoot (Join-Path (Resolve-Path target) "adoption-smoke/windows-installer")
+
+  installable-adoption:
+    name: Installable Adoption Smoke (${{ matrix.label }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: ubuntu-x86_64
+            os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            archive_name: assura-linux-amd64.tar.gz
+            archive_kind: tar
+          - label: macos-arm64
+            os: macos-14
+            target: aarch64-apple-darwin
+            archive_name: assura-macos-arm64.tar.gz
+            archive_kind: tar
+          - label: macos-x86_64
+            os: macos-15-intel
+            target: x86_64-apple-darwin
+            archive_name: assura-macos-amd64.tar.gz
+            archive_kind: tar
+          - label: windows-x86_64
+            os: windows-latest
+            target: x86_64-pc-windows-msvc
+            archive_name: assura-windows-amd64.zip
+            archive_kind: zip
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: ${{ matrix.target }}
+    - name: Cache Rust builds
+      uses: Swatinem/rust-cache@v2
+    - name: Build release-style archive (Unix)
+      if: matrix.archive_kind == 'tar'
+      shell: bash
+      run: |
+        if [ "${{ matrix.target }}" = "x86_64-unknown-linux-gnu" ]; then
+          cargo rustc --release --target ${{ matrix.target }} --bin assura --no-default-features --features json-output,yaml-config -- -C target-feature=+crt-static -C link-arg=-lgcc_eh
+        else
+          cargo build --release --target ${{ matrix.target }} --bin assura --no-default-features --features json-output,yaml-config
+        fi
+        cargo build --release --target ${{ matrix.target }} --bin assura-full
+        mkdir -p target/release-bundle/${{ matrix.label }}
+        cp target/${{ matrix.target }}/release/assura target/${{ matrix.target }}/release/assura-full target/release-bundle/${{ matrix.label }}/
+        tar -C target/release-bundle/${{ matrix.label }} -czf target/${{ matrix.archive_name }} assura assura-full
+    - name: Build release-style archive (Windows)
+      if: matrix.archive_kind == 'zip'
+      shell: pwsh
+      run: |
+        cargo build --release --target ${{ matrix.target }} --bin assura --no-default-features --features json-output,yaml-config
+        cargo build --release --target ${{ matrix.target }} --bin assura-full
+        New-Item -ItemType Directory -Force -Path target/release-bundle/${{ matrix.label }} | Out-Null
+        Copy-Item target/${{ matrix.target }}/release/assura.exe target/release-bundle/${{ matrix.label }}/assura.exe
+        Copy-Item target/${{ matrix.target }}/release/assura-full.exe target/release-bundle/${{ matrix.label }}/assura-full.exe
+        Compress-Archive -Path target/release-bundle/${{ matrix.label }}/* -DestinationPath target/${{ matrix.archive_name }} -Force
+    - name: Enforce release archive size (Unix)
+      if: matrix.archive_kind == 'tar'
+      shell: bash
+      run: |
+        bytes="$(wc -c < target/${{ matrix.archive_name }} | tr -d '[:space:]')"
+        echo "${{ matrix.archive_name }}: ${bytes} bytes"
+        test "$bytes" -le "$ASSURA_MAX_RELEASE_ARCHIVE_BYTES"
+    - name: Enforce release archive size (Windows)
+      if: matrix.archive_kind == 'zip'
+      shell: pwsh
+      run: |
+        $bytes = (Get-Item target/${{ matrix.archive_name }}).Length
+        Write-Host "${{ matrix.archive_name }}: $bytes bytes"
+        if ($bytes -gt [int64]$env:ASSURA_MAX_RELEASE_ARCHIVE_BYTES) {
+          throw "Release archive exceeds size budget"
+        }
+    - name: Smoke installed archive (Unix)
+      if: matrix.archive_kind == 'tar'
+      shell: bash
+      run: |
+        tmp="$(mktemp -d)"
+        ASSURA_ASSET_URL="$PWD/target/${{ matrix.archive_name }}" BIN_DIR="$tmp/bin" ./website/public/install.sh
+        ASSURA_BIN="$tmp/bin/assura" ASSURA_SMOKE_DIR="$PWD/target/adoption-smoke/${{ matrix.label }}" ./scripts/smoke-install-adoption.sh
+    - name: Smoke installed archive (Windows)
+      if: matrix.archive_kind == 'zip'
+      shell: pwsh
+      run: |
+        $bin = Join-Path $env:RUNNER_TEMP "assura-${{ matrix.label }}-bin"
+        ./website/public/install.ps1 -AssetUrl (Resolve-Path target/${{ matrix.archive_name }}) -BinDir $bin
+        ./scripts/smoke-install-adoption.ps1 `
+          -AssuraBin (Join-Path $bin "assura.exe") `
+          -WorkRoot (Join-Path (Resolve-Path target) "adoption-smoke/${{ matrix.label }}")
+    - name: Upload adoption smoke evidence
+      uses: actions/upload-artifact@v4
+      with:
+        name: adoption-smoke-${{ matrix.label }}
+        path: target/adoption-smoke/${{ matrix.label }}
+        if-no-files-found: error
+        retention-days: 14
+    - name: Upload release-style archive
+      uses: actions/upload-artifact@v4
+      with:
+        name: adoption-archive-${{ matrix.label }}
+        path: target/${{ matrix.archive_name }}
+        if-no-files-found: error
+        retention-days: 14
 
   coverage:
     name: Code Coverage
