@@ -417,7 +417,18 @@ structure:
         directories:
           allowed_names:
             - "fixtures"
+            - "ls_lint_rule_coverage"
           allow_extra: false
+        children:
+          ls_lint_rule_coverage/:
+            files:
+              naming: "snake_case"
+              max_lines: 1000
+              allowed_names:
+                - "mod.rs"
+              allowed_patterns:
+                - "*.rs"
+              allow_extra: false
       
       website/:
         files:

@@ -6,6 +6,8 @@ use std::sync::OnceLock;
 use assura::config::ls_compat::{convert_ls_lint_documents_to_config, convert_ls_lint_to_config};
 use tempfile::TempDir;
 
+mod shell_artifacts;
+
 static LS_LINT_BINARY: OnceLock<PathBuf> = OnceLock::new();
 
 fn native_ls_lint_binary() -> &'static Path {

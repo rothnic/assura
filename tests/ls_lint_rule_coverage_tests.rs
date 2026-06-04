@@ -4,7 +4,7 @@ use std::process::Command;
 use assura::config::ls_compat::convert_ls_lint_to_config;
 use tempfile::TempDir;
 
-#[path = "fixtures/ls-lint/native_golden.rs"]
+#[path = "ls_lint_rule_coverage/mod.rs"]
 mod ls_lint_native_golden;
 
 fn assura_bin() -> &'static str {
