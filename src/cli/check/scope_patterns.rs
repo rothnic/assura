@@ -1,7 +1,7 @@
 //! LS-Lint-compatible directory scope pattern matching.
 
 use glob::Pattern;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 #[derive(Debug, Clone)]
 pub(super) struct CompiledScopePattern {
@@ -46,14 +46,18 @@ impl CompiledScopePattern {
     }
 
     pub(super) fn has_matching_ancestor(&self, target: &Path) -> bool {
+        self.matching_ancestor(target).is_some()
+    }
+
+    pub(super) fn matching_ancestor(&self, target: &Path) -> Option<PathBuf> {
         let mut ancestor = target.parent();
         while let Some(path) = ancestor {
             if self.matches_path(path) {
-                return true;
+                return Some(path.to_path_buf());
             }
             ancestor = path.parent();
         }
-        false
+        None
     }
 }
 

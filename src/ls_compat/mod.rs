@@ -1,9 +1,11 @@
-//! LS-Lint Compatibility Module
+//! Legacy LS-Lint compatibility module.
 //!
-//! Provides migration from LS-Lint to Assura format.
+//! This module is retained for internal regression tests only. Runtime
+//! migration behavior and migration reports are authoritative in
+//! `crate::config::ls_compat`.
 
 #[cfg(test)]
 mod parity_tests;
 pub mod parser;
 
-pub use parser::{LsLintConfig, LsLintParseError, LsLintParser, MigrationReport, MigrationTool};
+pub use parser::{LsLintParser, MigrationTool};

@@ -90,8 +90,8 @@ fn realistic_fixture_manifest_is_pinned_and_complete() {
     let extension = manifest
         .fixtures
         .iter()
-        .find(|entry| entry.id == "assura_exact_filename_exists_extension")
-        .expect("exact filename exists extension fixture should be declared");
+        .find(|entry| entry.id == "assura_exact_filename_exists_native_config")
+        .expect("exact filename exists native fixture should be declared");
     assert!(!extension.native_lslint_parity);
     assert_eq!(extension.assura_extensions, ["exact_filename_exists"]);
 
@@ -393,7 +393,7 @@ ls:
 }
 
 #[test]
-fn converted_exact_file_exists_is_a_file_count_not_required_directory() {
+fn converted_exact_file_exists_matches_lslint_noop_when_present() {
     let project = TempDir::new().unwrap();
     let config = convert_ls_lint_to_config(
         r#"
@@ -415,7 +415,7 @@ ls:
 }
 
 #[test]
-fn converted_missing_exact_file_exists_reports_count_not_required_directory() {
+fn converted_missing_exact_file_exists_reports_default_count_violation() {
     let project = TempDir::new().unwrap();
     let config = convert_ls_lint_to_config(
         r#"

@@ -142,6 +142,11 @@ fn node_has_direct_count_constraints(node: &crate::config::config::DirectoryNode
             .and_then(|directories| directories.exists.as_ref())
             .is_some()
         || node
+            .self_directory
+            .as_ref()
+            .and_then(|directory| directory.exists.as_ref())
+            .is_some()
+        || node
             .children
             .as_ref()
             .is_some_and(|children| children.values().any(node_has_direct_count_constraints))

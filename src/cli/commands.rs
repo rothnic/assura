@@ -9,9 +9,8 @@ use crate::cli::init_support::{resolve_project_root, starter_config};
 use crate::cli::{CheckCommandOptions, ConfigDiscovery, ExitCode};
 use crate::config::config::{Config, DirectoryNode};
 use crate::config::loader::ConfigLoader;
-use crate::config::ls_compat::convert_ls_lint_documents_to_config;
+use crate::config::ls_compat::convert_ls_lint_documents_to_migration;
 use crate::config::parser::ConfigParser;
-use crate::ls_compat::MigrationTool;
 use std::path::{Path, PathBuf};
 
 /// Run validation check
@@ -259,24 +258,22 @@ impl Cli {
             .collect::<Result<Vec<_>, _>>()?;
         let ls_content_refs = ls_contents.iter().map(String::as_str).collect::<Vec<_>>();
 
-        // Generate migration report
-        let report = MigrationTool::generate_report(&ls_contents.join("\n"))?;
+        let migration = convert_ls_lint_documents_to_migration(&ls_content_refs)?;
+        let assura_yaml = serde_yaml::to_string(&migration.config)?;
+        ConfigLoader::parse_validated(&assura_yaml)?;
 
-        println!("\\nMigration Report:");
-        println!("  Extension rules: {}", report.extension_rules);
-        println!("  Path rules: {}", report.path_rules);
-        println!("  Exists rules: {}", report.exists_rules);
-        println!("  Ignored patterns: {}", report.ignored_patterns);
+        println!("\nMigration Report:");
+        println!("  Extension rules: {}", migration.report.extension_rules);
+        println!("  Path rules: {}", migration.report.path_rules);
+        println!("  Exists rules: {}", migration.report.exists_rules);
+        println!("  Ignored patterns: {}", migration.report.ignored_patterns);
 
-        if !report.warnings.is_empty() {
-            println!("\\nWarnings:");
-            for warning in &report.warnings {
+        if !migration.report.warnings.is_empty() {
+            println!("\nWarnings:");
+            for warning in &migration.report.warnings {
                 println!("  - {}", warning);
             }
         }
-
-        let assura_config = convert_ls_lint_documents_to_config(&ls_content_refs)?;
-        let assura_yaml = serde_yaml::to_string(&assura_config)?;
 
         // Write output
         if let Some(output) = output_path {
@@ -286,9 +283,9 @@ impl Cli {
                 }
             }
             std::fs::write(output, assura_yaml)?;
-            println!("\\nMigrated config written to {:?}", output);
+            println!("\nMigrated config written to {:?}", output);
         } else {
-            println!("\\n--- Migrated Configuration ---");
+            println!("\n--- Migrated Configuration ---");
             println!("{}", assura_yaml);
         }
 

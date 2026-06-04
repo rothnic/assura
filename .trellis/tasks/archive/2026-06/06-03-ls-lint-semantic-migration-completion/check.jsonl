@@ -1,0 +1,4 @@
+{"file":".trellis/spec/assura/structure-enforcement.md","reason":"Check direct exists and LS-Lint compatibility behavior against the durable contract."}
+{"file":".trellis/spec/assura/tooling-stabilization.md","reason":"Check required cargo, docs, and LS-Lint evidence gates."}
+{"file":".trellis/spec/assura/index.md","reason":"Confirm docs and public surface remain aligned with canonical Assura direction."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Review converter-to-CLI-to-docs data flow and validation boundaries."}

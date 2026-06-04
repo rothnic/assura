@@ -4,11 +4,45 @@
 //! NOTE: This is for testing purposes only. Internal backwards compatibility
 //! will not be maintained until the 1.0 release.
 
-use super::config::{split_naming_conventions, DirectoryNode, FileBundle};
 #[cfg(feature = "yaml-config")]
-use super::config::{Config, DirectoryBundle};
+use super::config::DirectoryBundle;
+use super::config::{Config, DirectoryNode, FileBundle};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+
+mod validation;
+
+#[cfg(feature = "yaml-config")]
+use validation::validate_lslint_document_shape;
+#[cfg(feature = "yaml-config")]
+use validation::{migration_report_for_mapping, validate_converted_config};
+use validation::{normalize_lslint_naming_token, parse_exists_token, split_rule_tokens};
+
+/// Metadata emitted by the authoritative LS-Lint converter.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct LsLintMigrationReport {
+    /// Extension or subextension rule entries in the merged `ls` tree.
+    pub extension_rules: usize,
+    /// Directory-scope mappings in the merged `ls` tree.
+    pub path_rules: usize,
+    /// `exists` tokens in the merged `ls` tree.
+    pub exists_rules: usize,
+    /// User-provided `ignore` patterns, excluding Assura's own generated config
+    /// exclusion.
+    pub ignored_patterns: usize,
+    /// Non-fatal migration notes.
+    pub warnings: Vec<String>,
+}
+
+/// Converted Assura config plus the report generated from the same conversion
+/// pass.
+#[derive(Debug, Clone)]
+pub struct LsLintMigration {
+    /// Converted structure-first Assura config.
+    pub config: Config,
+    /// Report counts derived from the authoritative converter.
+    pub report: LsLintMigrationReport,
+}
 
 /// LS-Lint compatibility configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -117,19 +151,37 @@ pub fn convert_ls_lint_to_config(ls_lint_content: &str) -> Result<Config, String
     convert_ls_lint_documents_to_config(&[ls_lint_content])
 }
 
+/// Convert an LS-Lint YAML config and return migration metadata.
+#[cfg(feature = "yaml-config")]
+pub fn convert_ls_lint_to_migration(ls_lint_content: &str) -> Result<LsLintMigration, String> {
+    convert_ls_lint_documents_to_migration(&[ls_lint_content])
+}
+
 /// Convert one or more LS-Lint YAML configs using LS-Lint's `--config` merge shape.
 #[cfg(feature = "yaml-config")]
 pub fn convert_ls_lint_documents_to_config(contents: &[&str]) -> Result<Config, String> {
+    Ok(convert_ls_lint_documents_to_migration(contents)?.config)
+}
+
+/// Convert one or more LS-Lint YAML configs and return migration metadata.
+#[cfg(feature = "yaml-config")]
+pub fn convert_ls_lint_documents_to_migration(
+    contents: &[&str],
+) -> Result<LsLintMigration, String> {
     let mut config = Config::new();
     let mut ls_section = serde_yaml::Mapping::new();
+    let mut ignored_patterns = 0;
 
     for content in contents {
         let ls_config: serde_yaml::Value = serde_yaml::from_str(content)
             .map_err(|e| format!("Failed to parse LS-Lint config: {}", e))?;
-        config.exclude.extend(parse_ignore(&ls_config));
+        validate_lslint_document_shape(&ls_config)?;
+        let ignore = parse_ignore(&ls_config)?;
+        ignored_patterns += ignore.len();
+        config.exclude.extend(ignore);
 
         if let Some(mapping) = ls_config.get("ls").and_then(|value| value.as_mapping()) {
-            deep_merge_lslint_mapping(&mut ls_section, mapping);
+            merge_lslint_mapping(&mut ls_section, mapping);
         }
     }
 
@@ -137,34 +189,29 @@ pub fn convert_ls_lint_documents_to_config(contents: &[&str]) -> Result<Config, 
     config.exclude.dedup();
     ensure_assura_config_excluded(&mut config.exclude);
 
+    let report = migration_report_for_mapping(&ls_section, ignored_patterns)?;
+
     if ls_section.is_empty() {
-        return Ok(config);
+        validate_converted_config(&config)?;
+        return Ok(LsLintMigration { config, report });
     }
 
     let root = parse_ls_directory(&ls_section)?;
     config.structure.insert("./".to_string(), root);
-    Ok(config)
+    validate_converted_config(&config)?;
+    Ok(LsLintMigration { config, report })
 }
 
 #[cfg(feature = "yaml-config")]
-fn deep_merge_lslint_mapping(target: &mut serde_yaml::Mapping, source: &serde_yaml::Mapping) {
+fn merge_lslint_mapping(target: &mut serde_yaml::Mapping, source: &serde_yaml::Mapping) {
     for (key, source_value) in source {
-        if let Some(target_value) = target.get_mut(key) {
-            if let (Some(target_mapping), Some(source_mapping)) =
-                (target_value.as_mapping_mut(), source_value.as_mapping())
-            {
-                deep_merge_lslint_mapping(target_mapping, source_mapping);
-                continue;
-            }
-        }
-
         target.insert(key.clone(), source_value.clone());
     }
 }
 
 #[cfg(feature = "yaml-config")]
-fn parse_ignore(config: &serde_yaml::Value) -> Vec<String> {
-    config
+fn parse_ignore(config: &serde_yaml::Value) -> Result<Vec<String>, String> {
+    Ok(config
         .get("ignore")
         .and_then(|value| value.as_sequence())
         .map(|items| {
@@ -173,7 +220,7 @@ fn parse_ignore(config: &serde_yaml::Value) -> Vec<String> {
                 .filter_map(|item| item.as_str().map(ToOwned::to_owned))
                 .collect()
         })
-        .unwrap_or_default()
+        .unwrap_or_default())
 }
 
 #[cfg(feature = "yaml-config")]
@@ -197,17 +244,21 @@ fn parse_ls_directory(mapping: &serde_yaml::Mapping) -> Result<DirectoryNode, St
 
     for (key, value) in mapping {
         let Some(key) = key.as_str() else {
-            continue;
+            return Err("Unsupported LS-Lint YAML shape: 'ls' keys must be strings".to_string());
         };
 
         if key == ".dir" {
-            let rule = value.as_str().unwrap_or("");
+            let rule = value.as_str().ok_or_else(|| {
+                "Unsupported LS-Lint YAML shape: '.dir' rule must be a string".to_string()
+            })?;
             apply_directory_rule(rule, &mut self_directory_bundle, &mut self_directory_exists)?;
             continue;
         }
 
         if key.starts_with('.') {
-            let rule = value.as_str().unwrap_or("");
+            let rule = value.as_str().ok_or_else(|| {
+                format!("Unsupported LS-Lint YAML shape: rule for '{key}' must be a string")
+            })?;
             apply_file_rule(key, rule, &mut naming_patterns, &mut file_exists)?;
             continue;
         }
@@ -220,9 +271,11 @@ fn parse_ls_directory(mapping: &serde_yaml::Mapping) -> Result<DirectoryNode, St
                     .with_inherit(false),
             );
         } else if let Some(rule) = value.as_str() {
-            if apply_direct_child_exists_rule(key, rule, &mut file_exists, &mut directory_exists)? {
-                continue;
-            }
+            apply_scalar_rule(key, rule, &mut file_exists, &mut directory_exists)?;
+        } else {
+            return Err(format!(
+                "Unsupported LS-Lint YAML shape: value for '{key}' must be a rule string or mapping"
+            ));
         }
     }
 
@@ -263,33 +316,30 @@ fn parse_ls_directory(mapping: &serde_yaml::Mapping) -> Result<DirectoryNode, St
     Ok(node)
 }
 
-#[cfg(feature = "yaml-config")]
-fn apply_direct_child_exists_rule(
+fn apply_scalar_rule(
     key: &str,
     rule: &str,
     file_exists: &mut HashMap<String, String>,
     directory_exists: &mut HashMap<String, String>,
-) -> Result<bool, String> {
-    let tokens = split_rule_tokens(rule);
-    if tokens.is_empty() {
-        return Ok(false);
-    }
-
+) -> Result<(), String> {
     let mut exists = Vec::new();
-    for token in tokens {
-        let Some(count) = parse_exists_token(token)? else {
-            return Ok(false);
-        };
-        exists.push(count);
+    for token in split_rule_tokens(rule)? {
+        if let Some(count) = parse_exists_token(token)? {
+            exists.push(count);
+        } else {
+            normalize_lslint_naming_token(token)?;
+        }
     }
 
-    let count = exists.join(" | ");
-    if key.ends_with('/') {
-        directory_exists.insert(normalize_child_key(key), count);
-    } else {
-        file_exists.insert(key.to_string(), count);
+    if !exists.is_empty() {
+        let count = exists.join(" | ");
+        if key.ends_with('/') {
+            directory_exists.insert(normalize_child_key(key), count);
+        } else {
+            file_exists.insert(key.to_string(), count);
+        }
     }
-    Ok(true)
+    Ok(())
 }
 
 #[cfg(feature = "yaml-config")]
@@ -304,7 +354,7 @@ fn apply_file_rule(
     exists: &mut HashMap<String, String>,
 ) -> Result<(), String> {
     let mut naming = Vec::new();
-    for token in split_rule_tokens(rule) {
+    for token in split_rule_tokens(rule)? {
         if let Some(count) = parse_exists_token(token)? {
             exists.insert(ls_file_pattern_to_glob(pattern), count);
         } else {
@@ -325,7 +375,7 @@ fn apply_directory_rule(
     exists: &mut HashMap<String, String>,
 ) -> Result<(), String> {
     let mut naming = Vec::new();
-    for token in split_rule_tokens(rule) {
+    for token in split_rule_tokens(rule)? {
         if let Some(count) = parse_exists_token(token)? {
             exists.insert("*".to_string(), count);
         } else {
@@ -337,73 +387,6 @@ fn apply_directory_rule(
         directories.naming = Some(naming.join(" | "));
     }
     Ok(())
-}
-
-fn split_rule_tokens(rule: &str) -> Vec<&str> {
-    if rule.contains("exists") && rule.contains(" | ") {
-        return rule
-            .split(" | ")
-            .map(str::trim)
-            .filter(|token| !token.is_empty())
-            .collect();
-    }
-
-    split_naming_conventions(rule)
-}
-
-fn parse_exists_token(token: &str) -> Result<Option<String>, String> {
-    if token == "exists" {
-        Ok(Some("exists".to_string()))
-    } else if let Some(raw) = token.strip_prefix("exists:") {
-        Ok(Some(parse_exists_count(raw)?))
-    } else {
-        Ok(None)
-    }
-}
-
-fn parse_exists_count(raw: &str) -> Result<String, String> {
-    let raw = raw.trim();
-    if raw.is_empty() {
-        return Err("Invalid LS-Lint exists rule: exists value is empty".to_string());
-    }
-
-    if let Some((min, max)) = raw.split_once('-') {
-        parse_exists_bound(min, raw)?;
-        parse_exists_bound(max, raw)?;
-        return Ok(raw.to_string());
-    }
-
-    parse_exists_bound(raw, raw)?;
-    Ok(raw.to_string())
-}
-
-fn parse_exists_bound(bound: &str, raw: &str) -> Result<(), String> {
-    let bound = bound.trim();
-    if bound.is_empty() {
-        return Err(format!(
-            "Invalid LS-Lint exists rule 'exists:{raw}': range bounds must be non-empty"
-        ));
-    }
-    bound
-        .parse::<u16>()
-        .map(|_| ())
-        .map_err(|error| format!("Invalid LS-Lint exists rule 'exists:{raw}': {error}"))
-}
-
-fn normalize_lslint_naming_token(token: &str) -> Result<String, String> {
-    let Some(pattern) = token.strip_prefix("regex:") else {
-        return Ok(token.to_string());
-    };
-
-    if pattern.is_empty() {
-        return Err("Unsupported LS-Lint regex rule: pattern is empty".to_string());
-    }
-
-    if let Some(pattern) = pattern.strip_prefix('!') {
-        return Ok(format!("regex:!^{pattern}$"));
-    }
-
-    Ok(format!("regex:^{pattern}$"))
 }
 
 fn ls_file_pattern_to_glob(pattern: &str) -> String {

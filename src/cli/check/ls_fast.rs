@@ -1,6 +1,6 @@
 //! Narrow LS-Lint-compatible validation path.
 
-use super::ls_fast_counts::fast_rules_have_direct_counts;
+use super::ls_fast_counts::fast_rules_have_child_counts;
 use super::ls_fast_naming::{validate_fast_file_stem, validate_fast_name};
 use super::ls_fast_plan::{fast_rules_for_dir, fast_rules_for_dir_indexed, FastRules, FastScope};
 use super::patterns::{lslint_file_stem, matches_any_compiled_pattern};
@@ -107,8 +107,11 @@ impl StructureChecker {
     ) -> Result<(), CheckError> {
         let dir_rules = self.fast_rules_for_dir(dir_rel, scopes);
         let collect_counts =
-            self.has_direct_count_constraints && fast_rules_have_direct_counts(dir_rules);
+            self.has_direct_count_constraints && fast_rules_have_child_counts(dir_rules);
         if !collect_counts {
+            if let Some(rules) = dir_rules {
+                self.validate_fast_self_directory_count(dir_rel, report, rules);
+            }
             return self.walk_lslint_fast_dir_streaming(dir, dir_rel, report, scopes, dir_rules);
         }
 

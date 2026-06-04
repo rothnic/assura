@@ -56,7 +56,7 @@ ls:
     .ts: camelCase
 ```
 
-Assura compatibility extension examples:
+Assura native direct-count examples:
 
 ```yaml
 ls:
@@ -64,11 +64,11 @@ ls:
   docs/: exists:1
 ```
 
-The extension examples become direct child count checks in `.assura/config.yml`.
-They are useful for policies such as required package `README.md` files, but
-they are not native LS-Lint 2.3 behavior. Upstream LS-Lint reports exact scalar
-filename `exists` keys differently, so Assura docs and tests keep this behavior
-separate from the native parity surface.
+These are useful for policies such as required package `README.md` files.
+During LS-Lint migration, exact scalar `exists` keys such as
+`README.md: exists:1` and `docs/: exists:1` become direct counts for default
+validation. Scalar naming keys such as `src: kebab-case` are validated and
+otherwise ignored to match upstream LS-Lint 2.3.
 
 Multiple LS-Lint config files can be passed to `assura migrate` in the same
 order you would pass repeated LS-Lint `--config` flags.
@@ -84,7 +84,7 @@ LS-Lint runtime emulator.
 | Empty `ls:` section | Assura writes a config with exclusions but no structure rules. |
 | Empty `exists:` value | `migrate` exits nonzero with an invalid exists-rule error. |
 | Empty `regex:` value | `migrate` exits nonzero with an unsupported regex-rule error. |
-| Exact `README.md: exists:1` style keys | Migrated as Assura compatibility extensions, not native LS-Lint parity. |
+| Exact `README.md: exists:1` style keys | Migrated as direct counts for default validation; explicit target-path behavior is covered separately. |
 | Non-structure behavior such as editor hooks or auto-fix | Not migrated; configure those workflows separately. |
 
 After conversion, use the same first-run commands as a new project:

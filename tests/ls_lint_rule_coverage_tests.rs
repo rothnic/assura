@@ -4,6 +4,9 @@ use std::process::Command;
 use assura::config::ls_compat::convert_ls_lint_to_config;
 use tempfile::TempDir;
 
+#[path = "ls_lint_rule_coverage/mod.rs"]
+mod ls_lint_native_golden;
+
 fn assura_bin() -> &'static str {
     env!("CARGO_BIN_EXE_assura")
 }
@@ -45,6 +48,54 @@ fn run_json_check_path(
             String::from_utf8_lossy(&output.stderr)
         )
     })
+}
+
+#[test]
+fn lslint_migration_rejects_unknown_rules_and_invalid_syntax() {
+    for (yaml, expected) in [
+        (
+            "ls:\n  .js: dot.case\n",
+            "Unknown LS-Lint rule name 'dot.case'",
+        ),
+        (
+            "ls:\n  .js: kebab-case|camelCase\n",
+            "multiple rules must use ' | '",
+        ),
+        ("ls:\n  .js: \"kebab-case | \"\n", "empty rule around ' | '"),
+        ("ls:\n  .js: \"regex:\"\n", "pattern is empty"),
+        ("ls:\n  .js: regex:[\n", "Invalid LS-Lint regex rule"),
+        (
+            "ls:\n  src: dot.case\n",
+            "Unknown LS-Lint rule name 'dot.case'",
+        ),
+    ] {
+        let error = convert_ls_lint_to_config(yaml).unwrap_err();
+        assert!(
+            error.contains(expected),
+            "expected {expected:?} in error {error:?}"
+        );
+    }
+}
+
+#[test]
+fn lslint_migration_rejects_unsupported_yaml_shapes() {
+    for (yaml, expected) in [
+        ("[]\n", "document must be a mapping"),
+        ("rules: {}\n", "unknown top-level key 'rules'"),
+        ("ignore: ignored/**\n", "'ignore' must be a sequence"),
+        ("ignore:\n  - 1\n", "'ignore' entries must be strings"),
+        ("ls: []\n", "'ls' must be a mapping"),
+        (
+            "ls:\n  .js:\n    nested: nope\n",
+            "rule for '.js' must be a string",
+        ),
+    ] {
+        let error = convert_ls_lint_to_config(yaml).unwrap_err();
+        assert!(
+            error.contains(expected),
+            "expected {expected:?} in error {error:?}"
+        );
+    }
 }
 
 #[test]
@@ -281,7 +332,13 @@ ls:
 
 #[test]
 fn invalid_lslint_exists_syntax_returns_clear_errors() {
-    for rule in ["exists:", "exists:-1", "exists:1-", "exists:2342323423234"] {
+    for rule in [
+        "exists:",
+        "exists:-1",
+        "exists:1-",
+        "exists:32768",
+        "exists:2342323423234",
+    ] {
         let ls_lint_yaml = format!(
             r#"
 ls:
@@ -294,6 +351,26 @@ ls:
             "unexpected error for {rule}: {error}"
         );
     }
+}
+
+#[test]
+fn converted_lslint_exists_extra_range_segments_match_upstream_parser() {
+    let project = TempDir::new().unwrap();
+    let config = convert_ls_lint_to_config(
+        r#"
+ls:
+  .md: exists:1-2-3
+"#,
+    )
+    .unwrap();
+    write_generated_config(&project, &config);
+
+    fs::write(project.path().join("README.md"), "# Fixture\n").unwrap();
+
+    let report = run_json_check(&project);
+
+    assert_eq!(report["success"], true, "report was:\n{report:#}");
+    assert_eq!(report["violations"].as_array().unwrap().len(), 0);
 }
 
 #[test]
@@ -363,27 +440,24 @@ ls:
 }
 
 #[test]
-fn converted_assura_extended_exists_requires_files_and_directories() {
+fn converted_lslint_scalar_rules_match_default_target_behavior() {
     let project = TempDir::new().unwrap();
     let config = convert_ls_lint_to_config(
         r#"
 ls:
   README.md: exists:1
   src/: exists:1
-  packages/*:
-    AGENTS.md: exists:1
+  src: kebab-case
 "#,
     )
     .unwrap();
     write_generated_config(&project, &config);
 
-    fs::write(project.path().join("README.md"), "# Fixture\n").unwrap();
     fs::create_dir(project.path().join("src")).unwrap();
-    fs::create_dir_all(project.path().join("packages/core")).unwrap();
-    fs::create_dir_all(project.path().join("packages/ui")).unwrap();
-    fs::write(project.path().join("packages/core/AGENTS.md"), "").unwrap();
+    fs::write(project.path().join("src/BadName.js"), "").unwrap();
 
     let report = run_json_check(&project);
+
     let paths = report["violations"]
         .as_array()
         .unwrap()
@@ -393,29 +467,23 @@ ls:
 
     assert_eq!(report["success"], false, "report was:\n{report:#}");
     assert_eq!(paths.len(), 1, "report was:\n{report:#}");
-    assert!(paths.contains("packages/ui"), "report was:\n{report:#}");
+    assert!(paths.contains(""), "report was:\n{report:#}");
 }
 
 #[test]
-fn converted_lslint_non_dot_scalar_naming_keys_match_upstream_noop() {
-    let project = TempDir::new().unwrap();
-    let config = convert_ls_lint_to_config(
+fn converted_lslint_non_dot_scalar_invalid_rules_are_rejected() {
+    let error = convert_ls_lint_to_config(
         r#"
 ls:
-  src: kebab-case
-  BadDir: kebab-case
+  src: dot.case
 "#,
     )
-    .unwrap();
-    write_generated_config(&project, &config);
-    fs::create_dir(project.path().join("src")).unwrap();
-    fs::write(project.path().join("src/BadName.js"), "").unwrap();
-    fs::create_dir(project.path().join("BadDir")).unwrap();
+    .unwrap_err();
 
-    let report = run_json_check(&project);
-
-    assert_eq!(report["success"], true, "report was:\n{report:#}");
-    assert_eq!(report["violations"].as_array().unwrap().len(), 0);
+    assert!(
+        error.contains("Unknown LS-Lint rule name 'dot.case'"),
+        "unexpected error: {error}"
+    );
 }
 
 #[test]
@@ -726,6 +794,42 @@ ls:
 }
 
 #[test]
+fn check_with_external_config_handles_relative_file_in_current_directory() {
+    let project = TempDir::new().unwrap();
+    let config = convert_ls_lint_to_config(
+        r#"
+ls:
+  .txt: kebabcase
+"#,
+    )
+    .unwrap();
+    write_generated_config(&project, &config);
+    fs::write(project.path().join("good-name.txt"), "").unwrap();
+
+    let output = Command::new(assura_bin())
+        .current_dir(project.path())
+        .arg("check")
+        .arg("good-name.txt")
+        .arg("--config")
+        .arg(".assura/config.yml")
+        .arg("--format")
+        .arg("json")
+        .output()
+        .unwrap();
+    let report: serde_json::Value =
+        serde_json::from_slice(&output.stdout).unwrap_or_else(|error| {
+            panic!(
+                "failed to parse check output as json: {error}\nstdout:\n{}\nstderr:\n{}",
+                String::from_utf8_lossy(&output.stdout),
+                String::from_utf8_lossy(&output.stderr)
+            )
+        });
+
+    assert_eq!(output.status.code(), Some(0), "report was:\n{report:#}");
+    assert_eq!(report["success"], true, "report was:\n{report:#}");
+}
+
+#[test]
 fn cli_migrate_accepts_multiple_lslint_configs_in_merge_order() {
     let project = TempDir::new().unwrap();
     let first = project.path().join("base.yml");
@@ -784,4 +888,65 @@ ls:
     assert_eq!(report["success"], false, "report was:\n{report:#}");
     assert_eq!(violations.len(), 1, "report was:\n{report:#}");
     assert_eq!(violations[0]["path"], "bad_name.ts");
+}
+
+#[test]
+fn check_with_external_migrated_config_uses_explicit_directory_as_root() {
+    let project = TempDir::new().unwrap();
+    let fixture = project.path().join("fixture");
+    fs::create_dir(&fixture).unwrap();
+    fs::write(
+        project.path().join(".ls-lint.yml"),
+        r#"
+ignore:
+  - ignored/**
+ls:
+  .js: kebab-case
+  src:
+    .ts: camelCase
+"#,
+    )
+    .unwrap();
+
+    let output_config = project.path().join("generated-assura.yml");
+    let migrate = Command::new(assura_bin())
+        .arg("migrate")
+        .arg(project.path().join(".ls-lint.yml"))
+        .arg("--output")
+        .arg(&output_config)
+        .output()
+        .unwrap();
+    assert!(
+        migrate.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&migrate.stdout),
+        String::from_utf8_lossy(&migrate.stderr)
+    );
+
+    fs::write(fixture.join("good-name.js"), "").unwrap();
+    fs::create_dir(fixture.join("src")).unwrap();
+    fs::write(fixture.join("src/goodName.ts"), "").unwrap();
+    fs::create_dir(fixture.join("ignored")).unwrap();
+    fs::write(fixture.join("ignored/BadName.js"), "").unwrap();
+
+    let output = Command::new(assura_bin())
+        .arg("check")
+        .arg("--config")
+        .arg(&output_config)
+        .arg(&fixture)
+        .arg("--format")
+        .arg("json")
+        .output()
+        .unwrap();
+    let report: serde_json::Value =
+        serde_json::from_slice(&output.stdout).unwrap_or_else(|error| {
+            panic!(
+                "failed to parse check output as json: {error}\nstdout:\n{}\nstderr:\n{}",
+                String::from_utf8_lossy(&output.stdout),
+                String::from_utf8_lossy(&output.stderr)
+            )
+        });
+
+    assert_eq!(output.status.code(), Some(0), "report was:\n{report:#}");
+    assert_eq!(report["success"], true, "report was:\n{report:#}");
 }
