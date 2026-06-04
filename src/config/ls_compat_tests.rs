@@ -1,7 +1,8 @@
 //! Unit coverage for LS-Lint config conversion.
 
 use super::ls_compat::{
-    convert_ls_lint_documents_to_config, convert_ls_lint_to_config, LsLintCompatibility,
+    convert_ls_lint_documents_to_config, convert_ls_lint_documents_to_migration,
+    convert_ls_lint_to_config, LsLintCompatibility,
 };
 
 #[test]
@@ -112,7 +113,7 @@ ls:
         .naming_patterns
         .as_ref()
         .unwrap();
-    assert_eq!(src_patterns.get("*.js"), Some(&"camelCase".to_string()));
+    assert_eq!(src_patterns.get("*.js"), None);
     assert_eq!(src_patterns.get("*.ts"), Some(&"kebab-case".to_string()));
 
     let components = src.children.as_ref().unwrap().get("components").unwrap();
@@ -123,14 +124,40 @@ ls:
         .naming_patterns
         .as_ref()
         .unwrap();
-    assert_eq!(
-        component_patterns.get("*.tsx"),
-        Some(&"PascalCase".to_string())
-    );
+    assert_eq!(component_patterns.get("*.tsx"), None);
     assert_eq!(
         component_patterns.get("*.test.tsx"),
         Some(&"kebab-case".to_string())
     );
+}
+
+#[test]
+fn test_migration_report_comes_from_authoritative_converter() {
+    let migration = convert_ls_lint_documents_to_migration(&[
+        r#"
+ignore:
+  - ignored/**
+ls:
+  .js: kebab-case | exists:1
+  packages/*:
+    .dir: kebab-case
+"#,
+        r#"
+ignore:
+  - generated/**
+ls:
+  .d.ts: PascalCase
+  packages/*:
+    .ts: camelCase
+"#,
+    ])
+    .unwrap();
+
+    assert!(migration.config.structure.contains_key("./"));
+    assert_eq!(migration.report.extension_rules, 3);
+    assert_eq!(migration.report.path_rules, 1);
+    assert_eq!(migration.report.exists_rules, 1);
+    assert_eq!(migration.report.ignored_patterns, 2);
 }
 
 #[test]

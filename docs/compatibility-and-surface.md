@@ -32,21 +32,30 @@ publishes and verifies a `.sha256` file next to every archive.
 | `assura check --format agent --agent codex` | Supported adapter | Codex delivery fixture under the shared agent format. |
 | `assura init` | Supported | Installable adoption smoke. |
 | `assura status --format json` | Supported | Installable adoption smoke. |
-| `assura migrate` | Supported for documented LS-Lint rules | LS-Lint migration tests and adoption smoke. |
+| `assura migrate` | Supported for complete LS-Lint 2.3 config semantics | LS-Lint feature matrix, native golden parity tests, migration tests, and adoption smoke. |
 | `assura hooks` | Supported for local git hooks | CLI help and local hook behavior. |
 | `assura performance-report` | Supported evidence command | Performance report CI job and checked report data. |
 | `assura watch` | Experimental | CLI exists, but release-grade watch behavior is not claimed. |
 
 ## LS-Lint Compatibility
 
-Assura supports migration for the LS-Lint 2.3 naming and ignore patterns
-documented in the LS-Lint migration guide. Compatibility is not a promise to
-run LS-Lint itself or to implement every LS-Lint edge case.
+Assura supports migration for complete LS-Lint 2.3 config semantics documented
+in `docs/ls-lint-2.3-feature-matrix.md`: `ls`, `ignore`, extension and
+subextension rules, wildcard extension rules, `.dir`, nested/glob/brace
+directory scopes, multiple rules, LS-Lint naming rules and aliases, `regex:`,
+regex negation, regex directory substitutions, `exists`, file and directory
+existence checks, LS-Lint scalar naming no-op keys, multi-config merge
+behavior, and explicit target-path semantics as an Assura validation mode.
+
+Compatibility is not a promise to run LS-Lint itself, match LS-Lint's CLI flags,
+or provide exact LS-Lint JSON output. CLI drop-in parity is out of scope.
 
 Supported claims require one of:
 
-- a parser or config test under `src/ls_compat/` or `src/config/`;
+- a feature row in `docs/ls-lint-2.3-feature-matrix.md`;
+- a converter or config test under `src/config/`;
 - a migration fixture in the Rust test suite;
+- a native LS-Lint golden parity test;
 - an adoption smoke that runs `assura migrate`; or
 - a checked analysis report linked from a PR.
 

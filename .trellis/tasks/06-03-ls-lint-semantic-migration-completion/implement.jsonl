@@ -1,0 +1,6 @@
+{"file":".trellis/spec/assura/index.md","reason":"Assura canonical sources, current direction, and source-of-truth constraints for structure-first CLI work."}
+{"file":".trellis/spec/assura/structure-enforcement.md","reason":"Direct exists conversion contract and LS-Lint compatibility requirements."}
+{"file":".trellis/spec/assura/tooling-stabilization.md","reason":"Required local quality gates, LS-Lint evidence contract, and no duplicated compatibility paths."}
+{"file":".trellis/spec/backend/quality-guidelines.md","reason":"Backend quality checklist for Rust implementation and tests."}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Avoid introducing parallel migration/report logic."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Migration spans YAML input, converter, CLI output, validation, tests, and docs."}

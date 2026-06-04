@@ -25,6 +25,7 @@ mod ls_fast_parallel;
 mod ls_fast_plan;
 #[cfg(test)]
 mod ls_fast_plan_tests;
+mod ls_fast_target;
 #[cfg(feature = "yaml-config")]
 mod markdown;
 mod patterns;
@@ -192,8 +193,11 @@ pub(super) fn discover_project(
                     .ok_or_else(|| CheckError::InvalidConfigLocation(config_path.clone()))?
                     .to_path_buf()
             } else {
-                ConfigDiscovery::find_project_root(checked_path)
-                    .ok_or_else(|| CheckError::NoConfig(checked_path.to_path_buf()))?
+                checked_path
+                    .is_file()
+                    .then(|| checked_path.parent().map(Path::to_path_buf))
+                    .flatten()
+                    .unwrap_or_else(|| checked_path.to_path_buf())
             };
 
         return Ok((project_root.canonicalize()?, config_path));
@@ -313,6 +317,18 @@ impl StructureChecker {
 
         if target_mode == CheckTargetMode::LsLint && checked_path != self.project_root {
             let walk_started = Instant::now();
+            if let Some(scopes) = self.lslint_fast_scopes.as_deref() {
+                if self.try_check_lslint_explicit_target(&checked_path, &mut report, scopes)? {
+                    timings.walk_and_validate_ms = walk_started.elapsed().as_secs_f64() * 1000.0;
+                    let sort_started = Instant::now();
+                    report.violations.sort_by(|left, right| {
+                        left.path.cmp(&right.path).then(left.rule.cmp(&right.rule))
+                    });
+                    timings.report_sort_ms = sort_started.elapsed().as_secs_f64() * 1000.0;
+                    report.success = report.violations.is_empty();
+                    return Ok(report);
+                }
+            }
             let has_direct_count_constraints = self.has_direct_count_constraints;
             self.has_direct_count_constraints = false;
             self.validate_one_existing_path(&checked_path, &mut report);

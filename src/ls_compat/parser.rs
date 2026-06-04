@@ -289,9 +289,6 @@ impl LsLintParser {
 pub enum LsLintParseError {
     #[error("Invalid LS-Lint syntax: {0}")]
     InvalidSyntax(String),
-
-    #[error("Unknown convention: {0}")]
-    UnknownConvention(String),
 }
 
 /// Migration tool from LS-Lint to Assura
@@ -310,29 +307,6 @@ impl MigrationTool {
 
         Ok(yaml)
     }
-
-    /// Generate migration report
-    pub fn generate_report(ls_lint_yaml: &str) -> Result<MigrationReport, LsLintParseError> {
-        let ls_config = LsLintParser::parse(ls_lint_yaml)?;
-
-        Ok(MigrationReport {
-            extension_rules: ls_config.extensions.len(),
-            path_rules: ls_config.paths.len(),
-            exists_rules: ls_config.exists.len(),
-            ignored_patterns: ls_config.ignore.len(),
-            warnings: vec![],
-        })
-    }
-}
-
-/// Migration report
-#[derive(Debug, Clone)]
-pub struct MigrationReport {
-    pub extension_rules: usize,
-    pub path_rules: usize,
-    pub exists_rules: usize,
-    pub ignored_patterns: usize,
-    pub warnings: Vec<String>,
 }
 
 #[cfg(test)]

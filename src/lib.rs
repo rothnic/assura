@@ -5,8 +5,8 @@ pub mod config;
 pub mod constraints;
 #[cfg(feature = "full-cli")]
 pub mod intelligence;
-#[cfg(feature = "full-cli")]
-pub mod ls_compat;
+#[cfg(test)]
+mod ls_compat;
 #[cfg(feature = "full-cli")]
 pub mod markdown;
 #[cfg(feature = "full-cli")]

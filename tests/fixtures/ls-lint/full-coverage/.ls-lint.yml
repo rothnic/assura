@@ -1,0 +1,25 @@
+ignore:
+  - .assura/**
+  - .ls-lint.yml
+  - ignored/**
+ls:
+  .*: kebab-case
+  .js: kebab-case
+  .test.js: PascalCase
+  .d.ts: PascalCase
+  packages/*/{src,tests}:
+    .ts: camelCase | PascalCase
+    .spec.ts: regex:${1}
+  components/*:
+    .ts: regex:${0}
+    tests:
+      .*: exists:0
+      .test.ts: regex:${1} | exists:1
+  docs:
+    .md: regex:README|AGENTS
+  no-logs:
+    .log: exists:0
+  single:
+    .ts: exists:1
+  range:
+    .md: exists:1-2

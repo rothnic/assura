@@ -79,15 +79,69 @@ pub(super) fn fast_rules_for_dir_indexed<'a>(
     scopes: &'a [FastScope],
     index: &HashMap<PathBuf, usize>,
 ) -> Option<&'a FastRules> {
+    fast_scope_for_dir_indexed(dir_rel, scopes, index).map(|scope| scope.rules)
+}
+
+pub(super) struct FastScopeMatch<'a> {
+    pub(super) rules: &'a FastRules,
+}
+
+pub(super) struct FastTargetScopeMatch<'a> {
+    pub(super) index_dir: PathBuf,
+    pub(super) rules: &'a FastRules,
+    pub(super) exact_rules: &'a FastRules,
+}
+
+pub(super) fn fast_target_scope_for_dir<'a>(
+    dir_rel: &Path,
+    scopes: &'a [FastScope],
+) -> Option<FastTargetScopeMatch<'a>> {
+    scopes.iter().find_map(|scope| {
+        if scope.has_scope_magic {
+            let pattern = scope.scope_pattern.as_ref()?;
+            if pattern.matches_path(dir_rel) {
+                return Some(FastTargetScopeMatch {
+                    index_dir: dir_rel.to_path_buf(),
+                    rules: &scope.exact,
+                    exact_rules: &scope.exact,
+                });
+            }
+            return pattern
+                .matching_ancestor(dir_rel)
+                .map(|index_dir| FastTargetScopeMatch {
+                    index_dir,
+                    rules: &scope.descendant,
+                    exact_rules: &scope.exact,
+                });
+        }
+
+        dir_contains(&scope.path, dir_rel).then(|| FastTargetScopeMatch {
+            index_dir: scope.path.clone(),
+            rules: if dir_rel == scope.path {
+                &scope.exact
+            } else {
+                &scope.descendant
+            },
+            exact_rules: &scope.exact,
+        })
+    })
+}
+
+pub(super) fn fast_scope_for_dir_indexed<'a>(
+    dir_rel: &Path,
+    scopes: &'a [FastScope],
+    index: &HashMap<PathBuf, usize>,
+) -> Option<FastScopeMatch<'a>> {
     let mut cursor = Some(dir_rel);
     while let Some(candidate) = cursor {
         if let Some(scope_index) = index.get(candidate) {
             let scope = scopes.get(*scope_index)?;
-            return if dir_rel == scope.path {
-                Some(&scope.exact)
+            let rules = if dir_rel == scope.path {
+                &scope.exact
             } else {
-                Some(&scope.descendant)
+                &scope.descendant
             };
+            return Some(FastScopeMatch { rules });
         }
         cursor = candidate.parent();
     }
@@ -353,5 +407,4 @@ fn is_fast_self_directory_bundle(directory: &DirectoryBundle) -> bool {
         && directory.allowed_patterns.is_none()
         && directory.forbidden_patterns.is_none()
         && directory.allow_extra.is_none()
-        && directory.exists.is_none()
 }

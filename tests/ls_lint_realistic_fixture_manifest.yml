@@ -125,18 +125,18 @@ fixtures:
     cohort: stable_baseline
     native_lslint_parity: true
     assura_extensions: []
-  - id: assura_exact_filename_exists_extension
-    name: Exact filename exists extension
+  - id: assura_exact_filename_exists_native_config
+    name: Exact filename exists native config
     source:
       kind: generated
       repository: https://github.com/assura/assura
       revision: generated-fixture-v1
-    purpose: Labels exact direct filename exists as an Assura compatibility extension, not native LS-Lint parity.
+    purpose: Labels exact direct filename exists as Assura-native config, not LS-Lint migration parity.
     ls_lint_rules:
       - exists
     assura_rules:
       - files.exists
-    cohort: feature_exact_filename_exists
+    cohort: feature_exact_filename_exists_native
     native_lslint_parity: false
     assura_extensions:
       - exact_filename_exists

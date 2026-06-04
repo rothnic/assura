@@ -113,9 +113,10 @@ Read these files before implementation work starts:
 - `jwalk` is already a dependency and is used in profiling benchmarks, but it
   is not yet the production traversal implementation for `assura check`.
 - Existing parity coverage includes core LS-Lint extension rules, wildcard
-  extension rules, `.dir`, OR syntax, ignore/exclude behavior, direct
-  `exists` counts, direct-child count semantics, and exact filename `exists`
-  as an Assura compatibility extension.
+  extension rules, `.dir`, OR syntax, ignore/exclude behavior, extension and
+  `.dir` `exists` counts, direct-child count semantics, scalar exact `exists`
+  keys as direct counts for default validation, and scalar naming no-op keys
+  matching upstream LS-Lint 2.3.
 - Existing parity coverage is still mostly generated in test code rather than
   organized as realistic reusable repository fixtures.
 - The compatibility layer now supports directory pattern scopes such as

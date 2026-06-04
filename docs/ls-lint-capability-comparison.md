@@ -14,19 +14,22 @@ audit in `docs/analysis/2026-05-26-ls-lint-rule-coverage-audit.md`.
 
 ## Executive Summary
 
-**Status:** Assura has LS-Lint 2.3 rule compatibility for naming, regex,
-`exists`, `.dir`, ignore, wildcard/subextension, glob/brace directory scopes,
-multi-config migration merge, JSON output, and advisory `--warn`, plus
-Assura-only direct-content extensions.
+**Status:** Assura has complete LS-Lint 2.3 config semantic migration coverage
+for naming, regex, extension/subextension `exists`, `.dir`, ignore,
+wildcard/subextension, glob/brace directory scopes, scalar exact `exists`
+keys, LS-Lint scalar naming no-op keys, multi-config migration merge, and
+explicit target-path semantics as an Assura validation mode. CLI drop-in
+parity, LS-Lint flags, and exact LS-Lint JSON output are out of scope.
 
 **Critical Gaps:**
-1. ❌ No top-level glob patterns (must nest everything under `structure`)
+1. ⚠️ No LS-Lint CLI drop-in parity claim; Assura migrates config semantics.
 2. ✅ Glob and brace directory scopes such as `packages/*`, `**`, and
    `{src,tests}` are represented as validation scopes, not required literal
    directories.
 3. ⚠️ OR syntax works but is string-based, not elegant
-4. ✅ Direct `exists`, `exists:0`, `exists:1`, and `exists:N-M` counts are
-   implemented for direct child files and directories.
+4. ✅ LS-Lint extension/subextension, scalar exact, and `.dir` `exists`,
+   `exists:0`, `exists:1`, and `exists:N-M` counts are implemented. Scalar
+   naming keys are validated no-ops to match LS-Lint.
 5. ✅ Multi-part extensions and 12 case conventions are supported.
 
 **Efficiency Issues:**
@@ -186,22 +189,24 @@ structure:
 
 ---
 
-### 6. Required Files Existence (PR #355)
+### 6. Extension And Directory Count Existence
 
 **LS-Lint:**
 ```yaml
 ls:
   packages/*:
-    AGENTS.md: exists:1
-    README.md: exists:1
-    src: exists:1
+    .md: exists:1-3
+    .dir: exists:1
 ```
 
 **Assura Current:** ✅ **SUPPORTED**
 
 **Can Assura Do It?** Yes. LS-Lint pattern directory scopes are converted into
-matcher-backed validation scopes, and direct child `exists` checks run in each
-matched directory without requiring a literal `packages/*` directory.
+matcher-backed validation scopes, and extension/subextension plus `.dir`
+`exists` checks run in each matched directory without requiring a literal
+`packages/*` directory. Scalar exact `exists` keys such as
+`README.md: exists:1` are converted to direct counts for default validation.
+Scalar naming keys are validated and otherwise ignored.
 
 **Proposed Efficient Syntax:**
 ```yaml
@@ -295,16 +300,18 @@ exclude:
 
 ---
 
-### 10. Root File Constraints (Dogfooding)
+### 10. Root File Constraints (Assura Native)
 
-**LS-Lint:**
+**Assura native config:**
 ```yaml
-ls:
-  README.md: exists:1  # Required in root
-  # Implicit: other files not restricted
+structure:
+  ./:
+    files:
+      exists:
+        README.md: "1"
 ```
 
-**Assura Current:** ✅ **SUPPORTED**
+**Assura Current:** ✅ **SUPPORTED OUTSIDE LS-LINT MIGRATION PARITY**
 
 **Need:** Only allow specific files in root  
 **Use Case:** Prevent clutter, enforce documentation
@@ -365,21 +372,11 @@ pattern and direct-content shorthand cases.
 
 ---
 
-## Critical Gaps to Address
+## Remaining Assura Ergonomics
 
-### Gap 1: Pattern Scope Notation
+These are native Assura syntax improvements, not LS-Lint migration blockers.
 
-**Priority:** CRITICAL  
-**Use Case:** Apply rules to every existing package without requiring a
-literal `packages/*` directory.
-**LS-Lint Syntax:** `packages/*:`
-**Planned Assura Syntax:** Pattern scopes compiled as matchers over existing
-directories.
-
-**Implementation:** Add validation-scope matchers that do not create child
-`DirectoryNode` requirements.
-
-### Gap 2: Ergonomic Direct-Content Shorthand
+### Gap 1: Ergonomic Direct-Content Shorthand
 
 **Priority:** HIGH  
 **Use Case:** Express required files, direct counts, and root closed-world
@@ -392,7 +389,7 @@ compiles to the current explicit fields.
 **Implementation:** Add syntax sugar only after the current direct-content
 semantics remain covered by fixtures.
 
-### Gap 3: Top-Level Glob Patterns
+### Gap 2: Top-Level Glob Patterns
 
 **Priority:** HIGH
 **Use Case:** Apply rules to `**/*.rs` without repeating structure nodes.
@@ -421,21 +418,20 @@ directory requirements.
 
 ## Recommended Implementation Order
 
-### Phase 1: Critical Gaps (Must Have)
+### Phase 1: Native Ergonomics
 
-1. ✅ **Pattern scopes** - validation scopes that do not imply required dirs
-2. ⏳ **Direct-content shorthand** - ergonomic sugar for existing explicit fields
-3. ⏳ **Top-level patterns** - compiled/indexed matchers
+1. ⏳ **Direct-content shorthand** - ergonomic sugar for existing explicit fields
+2. ⏳ **Top-level patterns** - compiled/indexed matchers
 
 ### Phase 2: Efficiency Improvements
 
-4. Array-based OR syntax - `naming: [kebab-case, snake_case]`
-5. Double-glob support - `**/*.test.ts` in structure keys
+3. Array-based OR syntax - `naming: [kebab-case, snake_case]`
+4. Double-glob support - `**/*.test.ts` in structure keys
 
 ### Phase 3: Nice to Have
 
-6. Rule groups - `use: @group-name`
-7. Verbose mode for exists - detailed error messages
+5. Rule groups - `use: @group-name`
+6. Verbose mode for exists - detailed error messages
 
 ---
 
