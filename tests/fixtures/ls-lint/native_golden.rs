@@ -505,6 +505,27 @@ ls:
 }
 
 #[test]
+fn native_lslint_golden_explicit_file_target_ignores_exact_scalar_exists_count() {
+    let project = TempDir::new().unwrap();
+    let config = r#"
+ignore:
+  - .assura/**
+  - .ls-lint.yml
+ls:
+  README.md: exists:2
+"#;
+    write_lslint_config(&project, config);
+    fs::write(project.path().join("README.md"), "").unwrap();
+
+    let (native_success, native_paths) = run_native_ls_lint_target(&project, "README.md");
+    let (assura_success, assura_paths) = run_assura_lslint_target(&project, "README.md");
+    assert!(native_success);
+    assert!(assura_success);
+    assert!(native_paths.is_empty());
+    assert_eq!(assura_paths, native_paths);
+}
+
+#[test]
 fn native_lslint_golden_explicit_descendant_file_target_finalizes_index_exists_count() {
     let project = TempDir::new().unwrap();
     let config = r#"
@@ -573,5 +594,47 @@ ls:
     assert!(!native_success);
     assert!(!assura_success);
     assert_eq!(native_paths, vec!["src"]);
+    assert_eq!(assura_paths, native_paths);
+}
+
+#[test]
+fn native_lslint_golden_explicit_directory_target_validates_parent_dir_naming() {
+    let project = TempDir::new().unwrap();
+    let config = r#"
+ignore:
+  - .assura/**
+  - .ls-lint.yml
+ls:
+  .dir: kebabcase
+"#;
+    write_lslint_config(&project, config);
+    fs::create_dir(project.path().join("BadDir")).unwrap();
+
+    let (native_success, native_paths) = run_native_ls_lint_target(&project, "BadDir");
+    let (assura_success, assura_paths) = run_assura_lslint_target(&project, "BadDir");
+    assert!(!native_success);
+    assert!(!assura_success);
+    assert_eq!(native_paths, vec!["BadDir"]);
+    assert_eq!(assura_paths, native_paths);
+}
+
+#[test]
+fn native_lslint_golden_explicit_directory_target_ignores_parent_scalar_exists_count() {
+    let project = TempDir::new().unwrap();
+    let config = r#"
+ignore:
+  - .assura/**
+  - .ls-lint.yml
+ls:
+  src/: exists:2
+"#;
+    write_lslint_config(&project, config);
+    fs::create_dir(project.path().join("src")).unwrap();
+
+    let (native_success, native_paths) = run_native_ls_lint_target(&project, "src");
+    let (assura_success, assura_paths) = run_assura_lslint_target(&project, "src");
+    assert!(native_success);
+    assert!(assura_success);
+    assert!(native_paths.is_empty());
     assert_eq!(assura_paths, native_paths);
 }

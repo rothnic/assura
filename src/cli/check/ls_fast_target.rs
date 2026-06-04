@@ -30,23 +30,30 @@ impl StructureChecker {
             report.dirs_checked += 1;
             let parent_rel = rel.parent().unwrap_or_else(|| Path::new(""));
             let parent_rules = self.fast_rules_for_dir(parent_rel, scopes);
-            let Some(scope_match) = fast_target_scope_for_dir(rel, scopes) else {
-                return Ok(true);
-            };
+            let scope_match = fast_target_scope_for_dir(rel, scopes);
             let name = checked_path
                 .file_name()
                 .and_then(|name| name.to_str())
                 .unwrap_or("");
-            self.validate_fast_directory(rel, name, parent_rules, Some(scope_match.rules), report);
+            self.validate_fast_directory(
+                rel,
+                name,
+                parent_rules,
+                scope_match.as_ref().map(|matched| matched.rules),
+                report,
+            );
 
-            if fast_rules_have_direct_counts(Some(scope_match.exact_rules)) {
-                self.validate_fast_directory_target_counts(
-                    &scope_match.index_dir,
-                    rel,
-                    report,
-                    scope_match.exact_rules,
-                );
+            if let Some(matched) = scope_match.as_ref() {
+                if fast_rules_have_direct_counts(Some(matched.exact_rules)) {
+                    self.validate_fast_directory_target_counts(
+                        &matched.index_dir,
+                        rel,
+                        report,
+                        matched.exact_rules,
+                    );
+                }
             }
+
             return Ok(true);
         }
 

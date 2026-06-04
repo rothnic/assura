@@ -195,7 +195,15 @@ pub(super) fn discover_project(
             } else {
                 checked_path
                     .is_file()
-                    .then(|| checked_path.parent().map(Path::to_path_buf))
+                    .then(|| {
+                        checked_path.parent().map(|parent| {
+                            if parent.as_os_str().is_empty() {
+                                PathBuf::from(".")
+                            } else {
+                                parent.to_path_buf()
+                            }
+                        })
+                    })
                     .flatten()
                     .unwrap_or_else(|| checked_path.to_path_buf())
             };

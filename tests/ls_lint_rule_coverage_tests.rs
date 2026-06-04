@@ -794,6 +794,42 @@ ls:
 }
 
 #[test]
+fn check_with_external_config_handles_relative_file_in_current_directory() {
+    let project = TempDir::new().unwrap();
+    let config = convert_ls_lint_to_config(
+        r#"
+ls:
+  .txt: kebabcase
+"#,
+    )
+    .unwrap();
+    write_generated_config(&project, &config);
+    fs::write(project.path().join("good-name.txt"), "").unwrap();
+
+    let output = Command::new(assura_bin())
+        .current_dir(project.path())
+        .arg("check")
+        .arg("good-name.txt")
+        .arg("--config")
+        .arg(".assura/config.yml")
+        .arg("--format")
+        .arg("json")
+        .output()
+        .unwrap();
+    let report: serde_json::Value =
+        serde_json::from_slice(&output.stdout).unwrap_or_else(|error| {
+            panic!(
+                "failed to parse check output as json: {error}\nstdout:\n{}\nstderr:\n{}",
+                String::from_utf8_lossy(&output.stdout),
+                String::from_utf8_lossy(&output.stderr)
+            )
+        });
+
+    assert_eq!(output.status.code(), Some(0), "report was:\n{report:#}");
+    assert_eq!(report["success"], true, "report was:\n{report:#}");
+}
+
+#[test]
 fn cli_migrate_accepts_multiple_lslint_configs_in_merge_order() {
     let project = TempDir::new().unwrap();
     let first = project.path().join("base.yml");
