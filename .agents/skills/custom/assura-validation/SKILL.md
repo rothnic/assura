@@ -1,12 +1,13 @@
 ---
 name: assura-validation
-description: "Validate project files using Assura constraints. Use when you need to check file naming conventions, validate markdown files, detect circular dependencies, or enforce project structure rules. Works with any project that has an .assura/config.yml file."
+description: "Validate project structure with assura check and .assura/config.yml."
 triggers: ["validate", "assura check", "file naming", "project structure"]
 ---
 
 # Assura Validation
 
-Use this skill to validate project files using Assura's constraint engine.
+Use this skill to validate project structure with Assura's supported
+structure-first CLI surface.
 
 ## Quick Start
 
@@ -16,40 +17,41 @@ assura check
 
 # Check specific files or directories
 assura check src/
-assura check docs/*.md
+assura check docs/
 
-# Check with specific maturity level
-assura check --maturity stable
+# Machine-readable output
+assura check --format json .
 ```
 
 ## Common Use Cases
 
-### 1. Validate File Naming Conventions
+### 1. Validate Project Structure
 
 ```bash
-# Check if all files follow naming conventions defined in .assura/config.yml
-assura check --constraint naming
+# Enforce naming, file extension, direct contents, and markdown rules from config
+assura check
 ```
 
-### 2. Validate Markdown Files
+### 2. Produce Agent Feedback
 
 ```bash
-# Check markdown files for frontmatter, heading structure, etc.
-assura check --constraint markdown
+# Generic structured feedback
+assura check --format agent . --warn
+
+# Codex delivery adapter for approved hooks
+assura check --format agent --agent codex . --warn
 ```
 
-### 3. Check for Circular Dependencies
+### 3. Show Project Status
 
 ```bash
-# Analyze import/require statements for circular dependencies
-assura check --constraint dependencies
+assura status --format json
 ```
 
-### 4. Validate Project Structure
+### 4. Migrate LS-Lint Rules
 
 ```bash
-# Ensure files are in the correct directories
-assura check --constraint organization
+assura migrate .ls-lint.yml --output .assura/config.yml
 ```
 
 ## Configuration
@@ -57,28 +59,26 @@ assura check --constraint organization
 Assura looks for `.assura/config.yml` in the project root. Example configuration:
 
 ```yaml
-version: "1.0"
-maturity: stable
+version: "2.0"
 
-naming:
-  conventions:
-    - name: "rust_source"
-      pattern: "^[a-z_][a-z0-9_]*\.rs$"
-      applies_to: "src/**/*.rs"
-      severity: high
-
-markdown:
-  validation:
-    enabled: true
-    rules:
-      - id: "frontmatter-required"
-        applies_to: "**/*.md"
-        severity: medium
-
-dependencies:
-  constraints:
-    - id: "no-circular-deps"
-      severity: critical
+structure:
+  ./:
+    files:
+      allowed_names:
+        - "README.md"
+        - "Cargo.toml"
+      allow_extra: false
+    directories:
+      allowed_names:
+        - "src"
+        - "tests"
+      allow_extra: false
+    children:
+      src/:
+        files:
+          naming: "snake_case"
+          extensions:
+            - "rs"
 ```
 
 ## Best Practices
@@ -92,7 +92,7 @@ dependencies:
 
 3. **Exclude generated files**: Use `exclude.paths` for build artifacts
 
-4. **Document exceptions**: Add comments in code when suppressing rules
+4. **Document exceptions**: Keep policy exceptions in `.assura/config.yml`
 
 ## Troubleshooting
 
@@ -103,21 +103,21 @@ dependencies:
 - Ensure you have read access to all files being validated
 
 ### Slow performance
-- Use `--parallel` flag for large projects
+- Use `assura check --cache-dir <path>` for repeated checks
 - Exclude `node_modules`, `target`, `.git` directories
 
 ## Examples
 
 ### Validate a Rust project
 ```bash
-# Check all Rust files follow snake_case
-assura check src/ --pattern "*.rs" --convention snake_case
+# Check Rust source structure and naming policy from .assura/config.yml
+assura check src/
 ```
 
 ### Validate documentation
 ```bash
-# Ensure all markdown files have frontmatter
-assura check docs/ --require-frontmatter
+# Check docs rules configured for markdown/frontmatter
+assura check docs/
 ```
 
 ### CI/CD Integration
@@ -131,7 +131,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: assura/assura-action@v1
-      - run: assura check --strict
+      - run: assura check --format json .
 ```
 
 ## See Also
