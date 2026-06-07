@@ -39,7 +39,13 @@ Keep it short. The goal is orientation, not a second report.
 ## Rules
 
 - Prefer facts from repo state: `task.py current --source`, `git status`,
-  current branch, PR checks, and active Trellis specs.
+  `workflow_gate.py`, current branch, PR checks, and active Trellis specs.
+- Use `python3 ./.trellis/scripts/workflow_gate.py --platform <current-platform>`
+  as the concise turn-start state machine before reading longer workflow docs;
+  Codex uses `--platform codex`. If injected workflow-state provides a Task path
+  but session state is unresolved, rerun with `--task <task-path>` instead of
+  guessing between session files. If it reports `Ready: no`, follow its `Next`
+  and `Needs` output first.
 - Pull the active roadmap epic from `.trellis/spec/assura/roadmap.md`.
 - Include the git summary even when the tree is clean. State staged,
   unstaged, and untracked status explicitly.

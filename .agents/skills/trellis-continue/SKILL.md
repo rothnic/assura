@@ -12,19 +12,26 @@ Resume work on the current task — pick up at the right phase/step in `.trellis
 ## Step 1: Load Current Context
 
 ```bash
-python3 ./.trellis/scripts/get_context.py
+python3 ./.trellis/scripts/workflow_gate.py --platform codex
+# If an injected <workflow-state> Task path is available but the gate cannot
+# resolve it from session state, rerun with:
+# python3 ./.trellis/scripts/workflow_gate.py --platform codex --task <task-path>
 ```
 
-Confirms: current task, git state, recent commits.
+Run `python3 ./.trellis/scripts/get_context.py` only when the gate says
+`Ready: no`, when no task is active and you need task listings, or when you need
+full session detail.
 
-Before routing phases, enforce a clean-start gate:
+Before routing phases, enforce the workflow gate:
 
-- If the worktree is clean, continue.
-- If dirty paths clearly belong to the active task, route to the commit/check
-  phase before doing new work.
-- If dirty paths clearly belong to completed prior work, validate and commit
-  them before continuing.
-- If ownership is unclear, stop and offer exactly these options:
+- Run `workflow_gate.py` on each new user request before changing files or
+  scope. Steering/correction messages inside the same turn count as part of the
+  original request.
+- If it prints `Ready: yes`, continue without reading the full workflow doc
+  unless you are changing phase, blocked, or unsure.
+- If it prints `Ready: no`, follow its `Next` and `Needs` output before
+  continuing.
+- If dirty ownership is unclear, offer exactly these options:
   1. Commit prior work now
   2. Park it on a branch
   3. Leave it untouched and continue in a fresh worktree/branch
@@ -37,15 +44,18 @@ Never carry unclassified uncommitted changes into a new task or phase.
 python3 ./.trellis/scripts/get_context.py --mode phase
 ```
 
-Shows the Phase Index (Plan / Execute / Finish) with routing + skill mapping.
+Skip this when the gate says `Ready: yes` and you are not changing phase,
+blocked, or unsure. It shows the Phase Index (Plan / Execute / Finish) with
+routing + skill mapping.
 
 ## Step 3: Decide Where You Are
 
 `get_context.py` shows the active task's `status` field. Route by `status` + artifact presence:
 
 - `status=planning` + no `prd.md` → **1.1** (load `trellis-brainstorm`)
-- `status=planning` + `prd.md` exists + `implement.jsonl` not curated (only the seed `_example` row) → **1.3**
-- `status=planning` + `prd.md` + curated `implement.jsonl` → **1.4** (run `task.py start` to enter Phase 2)
+- `status=planning` + Codex inline mode + `prd.md` exists → **1.4** (run `task.py start`; JSONL curation is skipped)
+- `status=planning` + `prd.md` exists + `implement.jsonl` or `check.jsonl` not curated (only the seed `_example` row) → **1.3**
+- `status=planning` + `prd.md` + curated `implement.jsonl` + curated `check.jsonl` → **1.4** (run `task.py start` to enter Phase 2)
 - `status=in_progress` + implementation not started → **2.1**
 - `status=in_progress` + implementation done, not yet checked → **2.2**
 - `status=in_progress` + check passed → **3.1**

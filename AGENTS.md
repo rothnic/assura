@@ -44,11 +44,24 @@ measurement, and plugin APIs are roadmap items until implemented and tested.
 ### Workflow Guidelines
 
 1. **Always start by reading AGENTS.md** - Check for project-specific context
-2. **Read SKILL.md files** before using built-in skills
-3. **Check existing code patterns** before introducing new ones
-4. **Use concurrency safely** - Assura uses multi-threading (Rayon, Tokio)
-5. **Document public APIs** - All public structs/functions need rustdoc
-6. **Write tests for validation logic** - All validators need unit tests
+2. **Run the workflow gate on each new user request** - use
+   `python3 ./.trellis/scripts/workflow_gate.py --platform <current-platform>`
+   before changing files or scope; Codex uses `--platform codex`.
+   Steering/correction messages inside the same turn count as part of the
+   original request. If injected workflow-state provides a Task path but session
+   state is unresolved, rerun with `--task <task-path>`. If the gate says
+   `Ready: no`, follow its `Next`/`Needs` output before reading long workflow
+   docs or starting work.
+3. **Read SKILL.md files** before using built-in skills
+4. **Check existing code patterns** before introducing new ones
+5. **Use concurrency safely** - Assura uses multi-threading (Rayon, Tokio)
+6. **Document public APIs** - All public structs/functions need rustdoc
+7. **Write tests for validation logic** - All validators need unit tests
+8. **Scope validation to changed surfaces** - Docs/Trellis/workflow-only edits
+   should run the workflow gate, `cargo run --quiet -- check --format json .`,
+   `node --run verify:evidence`, and docs build when website/docs are touched.
+   Reserve full Rust test/clippy/release gates for Rust, Cargo, CI, release, or
+   behavior changes.
 
 ### Decision Authority
 
