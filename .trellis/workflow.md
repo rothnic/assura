@@ -92,10 +92,21 @@ python3 ./.trellis/scripts/add_session.py --title "Title" --commit "hash" --summ
 ### Context Script
 
 ```bash
+python3 ./.trellis/scripts/workflow_gate.py --platform <platform>        # concise turn-start gate
+python3 ./.trellis/scripts/workflow_gate.py --platform <platform> --json # machine-readable state
+python3 ./.trellis/scripts/workflow_gate.py --platform <platform> --task <task-path>
 python3 ./.trellis/scripts/get_context.py                            # full session runtime
 python3 ./.trellis/scripts/get_context.py --mode packages            # available packages + spec layers
 python3 ./.trellis/scripts/get_context.py --mode phase --step <X.Y>  # detailed guide for a workflow step
 ```
+
+Use `workflow_gate.py` at the start of each new user request before changing
+files or scope. Steering/correction messages inside the same turn count as part
+of the original request. If injected workflow-state provides a Task path but the
+gate cannot resolve session state, rerun with `--task <task-path>`; do not guess
+between multiple session files. If the gate reports ready state, the agent can
+proceed without reading the long workflow guide unless it is changing phase,
+blocked, or unsure.
 
 ### Clean-Start Gate
 
@@ -169,6 +180,7 @@ Phase 3: Finish  → distill lessons + wrap-up
 <!-- Per-turn breadcrumb: shown when there is no active task (before Phase 1) -->
 
 [workflow-state:no_task]
+Run `python3 ./.trellis/scripts/workflow_gate.py --platform <current-platform>` first on each new non-steering user request; if an injected Task path exists and session state is unresolved, rerun with `--task <task-path>`; if it says `Ready: no`, follow its `Next`/`Needs` before route A/B/C.
 Clean-start gate: before route A/B/C, inspect `git status --short`. Do not start a task with unclassified dirty paths; resolve automatically when ownership is clear, otherwise offer exactly: (1) commit prior work now, (2) park it on a branch, (3) leave it untouched and start in a fresh worktree/branch.
 No active task. **A Direct answer** — pure Q&A / explanation / lookup / chat; no file writes + one-line answer + repo reads ≤ 2 files → AI judges, no override needed.
 **B Create a task** — any implementation / code change / build / refactor work. Entry sequence: (1) `python3 ./.trellis/scripts/task.py create "<title>"` to create the task (status=planning, breadcrumb switches to [workflow-state:planning] for brainstorm + jsonl phase guidance) → (2) load `trellis-brainstorm` skill to discuss requirements with the user and iterate on prd.md → (3) once prd is done and jsonl is curated, run `task.py start <task-dir>` to enter [workflow-state:in_progress] for the implementation skeleton. **"It looks small" is NOT grounds for downgrading B to A or C**.
@@ -186,6 +198,7 @@ No active task. **A Direct answer** — pure Q&A / explanation / lookup / chat; 
 <!-- Per-turn breadcrumb: shown throughout Phase 1 (status='planning') -->
 
 [workflow-state:planning]
+Run `python3 ./.trellis/scripts/workflow_gate.py --platform <current-platform>` first on each new non-steering user request; if an injected Task path exists and session state is unresolved, rerun with `--task <task-path>`; if it says `Ready: no`, follow its `Next`/`Needs` before continuing.
 Clean-start gate: before continuing planning or starting implementation, inspect `git status --short`. Do not proceed with unclassified dirty paths; resolve automatically when ownership is clear, otherwise offer exactly: (1) commit prior work now, (2) park it on a branch, (3) leave it untouched and continue in a fresh worktree/branch.
 Load the `trellis-brainstorm` skill and iterate on prd.md with the user.
 Phase 1.3 (required, once): before `task.py start`, you MUST curate `implement.jsonl` and `check.jsonl` — list the spec / research files sub-agents need so they get the right context injected. You may skip only if the jsonl already has agent-curated entries (the seed `_example` row alone doesn't count).
@@ -199,6 +212,7 @@ Then run `task.py start <task-dir>` to flip status to in_progress.
      into a sub-agent. -->
 
 [workflow-state:planning-inline]
+Run `python3 ./.trellis/scripts/workflow_gate.py --platform <current-platform>` first on each new non-steering user request; if an injected Task path exists and session state is unresolved, rerun with `--task <task-path>`; if it says `Ready: no`, follow its `Next`/`Needs` before continuing.
 Clean-start gate: before continuing planning or starting implementation, inspect `git status --short`. Do not proceed with unclassified dirty paths; resolve automatically when ownership is clear, otherwise offer exactly: (1) commit prior work now, (2) park it on a branch, (3) leave it untouched and continue in a fresh worktree/branch.
 Load the `trellis-brainstorm` skill and iterate on prd.md with the user.
 Phase 1.3 jsonl curation is **skipped** in inline dispatch mode — the main session loads `trellis-before-dev` directly in Phase 2 and reads spec context itself, so there is no sub-agent to inject jsonl into.
@@ -217,6 +231,7 @@ Then run `task.py start <task-dir>` to flip status to in_progress.
      commit, including Phase 3.3 spec update and Phase 3.4 commit. -->
 
 [workflow-state:in_progress]
+Run `python3 ./.trellis/scripts/workflow_gate.py --platform <current-platform>` first on each new non-steering user request; if an injected Task path exists and session state is unresolved, rerun with `--task <task-path>`; if it says `Ready: no`, follow its `Next`/`Needs` before continuing.
 Clean-start gate: before continuing or changing scope, inspect `git status --short`. Do not proceed with unclassified dirty paths; resolve automatically when ownership is clear, otherwise offer exactly: (1) commit prior/current work now, (2) park it on a branch, (3) leave it untouched and continue in a fresh worktree/branch.
 **Flow**: trellis-implement → trellis-check → trellis-update-spec → commit (Phase 3.4) → `/trellis:finish-work`.
 **Main-session default (no override)**: dispatch the `trellis-implement` / `trellis-check` sub-agents — the main agent does NOT edit code by default. Phase 3.4 commit (required, once): after trellis-update-spec, or whenever implementation is verifiably complete, the main agent **drives the commit** — state the commit plan in user-facing text, then run `git commit` — BEFORE suggesting `/trellis:finish-work`. `/finish-work` refuses to run on a dirty working tree (paths outside `.trellis/workspace/` and `.trellis/tasks/`).
@@ -231,6 +246,7 @@ Clean-start gate: before continuing or changing scope, inspect `git status --sho
      instead of dispatching sub-agents. -->
 
 [workflow-state:in_progress-inline]
+Run `python3 ./.trellis/scripts/workflow_gate.py --platform <current-platform>` first on each new non-steering user request; if an injected Task path exists and session state is unresolved, rerun with `--task <task-path>`; if it says `Ready: no`, follow its `Next`/`Needs` before continuing.
 Clean-start gate: before continuing or changing scope, inspect `git status --short`. Do not proceed with unclassified dirty paths; resolve automatically when ownership is clear, otherwise offer exactly: (1) commit prior/current work now, (2) park it on a branch, (3) leave it untouched and continue in a fresh worktree/branch.
 **Flow** (inline mode): main session loads `trellis-before-dev` → main session edits code → main session loads `trellis-check` → run lint / type-check / tests → fix → `trellis-update-spec` → commit (Phase 3.4) → `/trellis:finish-work`.
 **Main-session default (inline dispatch_mode)**: the main agent edits code directly. Do NOT dispatch `trellis-implement` / `trellis-check` sub-agents. Load the `trellis-before-dev` skill before writing code; load the `trellis-check` skill before reporting completion.

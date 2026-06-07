@@ -13,19 +13,28 @@ Initialize a Trellis-managed development session. This platform has no session-s
 Identity, git status, current task, active tasks, journal location.
 
 ```bash
-python3 ./.trellis/scripts/get_context.py
+python3 ./.trellis/scripts/workflow_gate.py --platform codex
+# If an injected <workflow-state> Task path is available but the gate cannot
+# resolve it from session state, rerun with:
+# python3 ./.trellis/scripts/workflow_gate.py --platform codex --task <task-path>
 ```
 
-If this output includes a line beginning `Trellis update available:`, copy the full line verbatim when summarizing session context. Do not shorten operational command hints.
+Run `python3 ./.trellis/scripts/get_context.py` only when the gate says
+`Ready: no`, when no task is active and you need task listings, or when you need
+full session detail. If that output includes a line beginning `Trellis update
+available:`, copy the full line verbatim when summarizing session context. Do
+not shorten operational command hints.
 
-Clean-start gate:
+Workflow gate:
 
-- If the worktree is clean, continue.
-- If dirty paths clearly belong to the current requested work, finish the work
-  and commit before switching tasks.
-- If dirty paths clearly belong to a completed prior task, validate and commit
-  them before starting new work.
-- If ownership is unclear, stop and offer exactly these options:
+- Run `workflow_gate.py` on each new user request before changing files or
+  scope. Steering/correction messages inside the same turn count as part of the
+  original request.
+- If it prints `Ready: yes`, continue without reading the full workflow doc
+  unless you are changing phase, blocked, or unsure.
+- If it prints `Ready: no`, follow its `Next` and `Needs` output before
+  continuing.
+- If dirty ownership is unclear, offer exactly these options:
   1. Commit prior work now
   2. Park it on a branch
   3. Leave it untouched and start in a fresh worktree/branch
@@ -39,7 +48,8 @@ Phase Index + skill routing table + DO-NOT-skip rules.
 python3 ./.trellis/scripts/get_context.py --mode phase
 ```
 
-Full guide in `.trellis/workflow.md` (read on demand).
+Skip this when the gate says `Ready: yes` and you are not changing phase,
+blocked, or unsure. Full guide in `.trellis/workflow.md` (read on demand).
 
 ## Step 3: Guideline indexes
 Discover packages + spec layers, then read each relevant index file.
@@ -53,14 +63,12 @@ cat .trellis/spec/<package>/<layer>/index.md   # for each relevant layer
 Index files list the specific guideline docs to read when you actually start coding.
 
 ## Step 4: Decide next action
-From Step 1 you know the current task. Check the task directory:
+Follow the gate's `Next` line first. Load specific phase detail only when the
+gate says work is not ready, you are changing phase, blocked, or unsure:
 
-- **Active task + `prd.md` exists** → Phase 2 step 2.1. Load the step detail:
-  ```bash
-  python3 ./.trellis/scripts/get_context.py --mode phase --step 2.1 --platform codex
-  ```
-- **Active task + no `prd.md`** → Phase 1.1. Load the `trellis-brainstorm` skill.
-- **No active task** → when the user describes multi-step work, load the `trellis-brainstorm` skill to clarify requirements, then create a task via `task.py create`. For simple one-off questions or trivial edits, skip this and just answer directly — no task needed.
+```bash
+python3 ./.trellis/scripts/get_context.py --mode phase --step <X.X> --platform codex
+```
 
 ---
 

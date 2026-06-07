@@ -20,6 +20,23 @@ between product work and tooling-baseline work explicit.
 - Document every paused or non-blocking check here before treating it as
   acceptable.
 
+## Change-Scoped Validation
+
+Use the narrowest gate that proves the changed surface. This keeps docs and
+workflow cleanup from paying the full Rust test cost while preserving strong
+checks for product behavior.
+
+| Change surface | Expected local gate |
+| --- | --- |
+| AGENTS, Trellis workflow, skills, specs, docs analysis | `python3 ./.trellis/scripts/workflow_gate.py --platform <current-platform>` (Codex: `--platform codex`), `cargo run --quiet -- check --format json .`, `node --run verify:evidence`, `git diff --check` |
+| Website docs/content | Above plus `node --run verify:docs` |
+| Rust source, Cargo metadata, CLI behavior, tests, benchmarks | `node --run verify:pr` or the task-specific Rust commands from the PRD |
+| Release packaging, install scripts, performance evidence | Relevant release/performance skill plus `node --run verify:release-smoke` or `node --run verify:full` as appropriate |
+
+Do not run the full Rust suite just because any file changed. Do run it when a
+docs/workflow change alters a command contract, CI behavior, release process, or
+validation logic that Rust tests exercise.
+
 ## Performance Evidence Contract
 
 Performance claims that compare Assura with LS-Lint must state the executable

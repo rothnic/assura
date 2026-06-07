@@ -8,6 +8,7 @@ expanding into richer dependency and documentation constraints.
 ## Canonical Sources
 
 - Workflow and task execution: `.trellis/workflow.md` and `.trellis/tasks/`
+- Turn-start workflow gate: `.trellis/scripts/workflow_gate.py`
 - Epic roadmap: `.trellis/spec/assura/roadmap.md`
 - Workflow status snapshots: `.trellis/spec/assura/workflow-status.md`
 - Spec routing: `.trellis/spec/index.md`
