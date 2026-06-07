@@ -59,3 +59,17 @@ cargo run --quiet --bin assura -- check --help
 
 Use `cargo build --bins` or remove stale `target/debug/assura-full` before
 treating `cargo run --bin assura -- --help` as authoritative.
+
+## Workflow Lessons
+
+This cleanup thread exposed two workflow gaps:
+
+1. New work began while prior uncommitted work was still present. Future
+   sessions must run a clean-start gate before task routing: commit obvious
+   prior/current work, park it on a branch, or move to a fresh worktree/branch.
+2. A listed GitHub plugin skill path was stale because the plugin cache hash
+   had changed. The GitHub workflow itself was usable; the fallback should be
+   to locate the current plugin skill path or use authenticated `gh` directly.
+
+The Trellis start/continue/finish guidance now records the clean-start gate and
+requires explicit multi-choice options when dirty-path ownership is unclear.

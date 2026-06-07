@@ -9,6 +9,9 @@
 3. **Persist everything** — research, decisions, and lessons all go to files; conversations get compacted, files don't
 4. **Incremental development** — one task at a time
 5. **Capture learnings** — after each task, review and write new knowledge back to spec
+6. **Clean handoffs** — never start or resume a task with unclassified
+   uncommitted changes. Commit obvious prior/current work, park it on a
+   branch, or move to a fresh worktree/branch before continuing.
 
 ---
 
@@ -94,6 +97,22 @@ python3 ./.trellis/scripts/get_context.py --mode packages            # available
 python3 ./.trellis/scripts/get_context.py --mode phase --step <X.Y>  # detailed guide for a workflow step
 ```
 
+### Clean-Start Gate
+
+At the beginning of every new or resumed task, inspect `git status --short`.
+
+- Clean tree: continue.
+- Dirty paths clearly belong to the current task: route to validation and
+  Phase 3.4 commit before switching scope.
+- Dirty paths clearly belong to completed prior work: validate and commit them
+  before starting the new task.
+- Unclear ownership: stop and offer exactly these options:
+  1. Commit prior work now
+  2. Park it on a branch
+  3. Leave it untouched and start/continue in a fresh worktree or branch
+
+Never carry unclassified uncommitted changes across task boundaries.
+
 ---
 
 <!--
@@ -150,6 +169,7 @@ Phase 3: Finish  → distill lessons + wrap-up
 <!-- Per-turn breadcrumb: shown when there is no active task (before Phase 1) -->
 
 [workflow-state:no_task]
+Clean-start gate: before route A/B/C, inspect `git status --short`. Do not start a task with unclassified dirty paths; resolve automatically when ownership is clear, otherwise offer exactly: (1) commit prior work now, (2) park it on a branch, (3) leave it untouched and start in a fresh worktree/branch.
 No active task. **A Direct answer** — pure Q&A / explanation / lookup / chat; no file writes + one-line answer + repo reads ≤ 2 files → AI judges, no override needed.
 **B Create a task** — any implementation / code change / build / refactor work. Entry sequence: (1) `python3 ./.trellis/scripts/task.py create "<title>"` to create the task (status=planning, breadcrumb switches to [workflow-state:planning] for brainstorm + jsonl phase guidance) → (2) load `trellis-brainstorm` skill to discuss requirements with the user and iterate on prd.md → (3) once prd is done and jsonl is curated, run `task.py start <task-dir>` to enter [workflow-state:in_progress] for the implementation skeleton. **"It looks small" is NOT grounds for downgrading B to A or C**.
 **C Inline change** (per-turn only, escape hatch for B) — the user's CURRENT message MUST contain one of: "skip trellis" / "no task" / "just do it" / "don't create a task" / "跳过 trellis" / "别走流程" / "小修一下" / "直接改" / "先别建任务" → briefly acknowledge ("ok, skipping trellis flow this turn"), then inline. **Without seeing one of these phrases you must NOT inline on your own**; do not invent an override the user never said.
@@ -166,6 +186,7 @@ No active task. **A Direct answer** — pure Q&A / explanation / lookup / chat; 
 <!-- Per-turn breadcrumb: shown throughout Phase 1 (status='planning') -->
 
 [workflow-state:planning]
+Clean-start gate: before continuing planning or starting implementation, inspect `git status --short`. Do not proceed with unclassified dirty paths; resolve automatically when ownership is clear, otherwise offer exactly: (1) commit prior work now, (2) park it on a branch, (3) leave it untouched and continue in a fresh worktree/branch.
 Load the `trellis-brainstorm` skill and iterate on prd.md with the user.
 Phase 1.3 (required, once): before `task.py start`, you MUST curate `implement.jsonl` and `check.jsonl` — list the spec / research files sub-agents need so they get the right context injected. You may skip only if the jsonl already has agent-curated entries (the seed `_example` row alone doesn't count).
 Then run `task.py start <task-dir>` to flip status to in_progress.
@@ -178,6 +199,7 @@ Then run `task.py start <task-dir>` to flip status to in_progress.
      into a sub-agent. -->
 
 [workflow-state:planning-inline]
+Clean-start gate: before continuing planning or starting implementation, inspect `git status --short`. Do not proceed with unclassified dirty paths; resolve automatically when ownership is clear, otherwise offer exactly: (1) commit prior work now, (2) park it on a branch, (3) leave it untouched and continue in a fresh worktree/branch.
 Load the `trellis-brainstorm` skill and iterate on prd.md with the user.
 Phase 1.3 jsonl curation is **skipped** in inline dispatch mode — the main session loads `trellis-before-dev` directly in Phase 2 and reads spec context itself, so there is no sub-agent to inject jsonl into.
 Then run `task.py start <task-dir>` to flip status to in_progress.
@@ -195,6 +217,7 @@ Then run `task.py start <task-dir>` to flip status to in_progress.
      commit, including Phase 3.3 spec update and Phase 3.4 commit. -->
 
 [workflow-state:in_progress]
+Clean-start gate: before continuing or changing scope, inspect `git status --short`. Do not proceed with unclassified dirty paths; resolve automatically when ownership is clear, otherwise offer exactly: (1) commit prior/current work now, (2) park it on a branch, (3) leave it untouched and continue in a fresh worktree/branch.
 **Flow**: trellis-implement → trellis-check → trellis-update-spec → commit (Phase 3.4) → `/trellis:finish-work`.
 **Main-session default (no override)**: dispatch the `trellis-implement` / `trellis-check` sub-agents — the main agent does NOT edit code by default. Phase 3.4 commit (required, once): after trellis-update-spec, or whenever implementation is verifiably complete, the main agent **drives the commit** — state the commit plan in user-facing text, then run `git commit` — BEFORE suggesting `/trellis:finish-work`. `/finish-work` refuses to run on a dirty working tree (paths outside `.trellis/workspace/` and `.trellis/tasks/`).
 **Sub-agent self-exemption**: if you are already running as `trellis-implement`, implement directly from the loaded task context and do NOT spawn another `trellis-implement`; if you are already running as `trellis-check`, review/fix directly and do NOT spawn another `trellis-check`. The default dispatch rule applies to the main session only.
@@ -208,6 +231,7 @@ Then run `task.py start <task-dir>` to flip status to in_progress.
      instead of dispatching sub-agents. -->
 
 [workflow-state:in_progress-inline]
+Clean-start gate: before continuing or changing scope, inspect `git status --short`. Do not proceed with unclassified dirty paths; resolve automatically when ownership is clear, otherwise offer exactly: (1) commit prior/current work now, (2) park it on a branch, (3) leave it untouched and continue in a fresh worktree/branch.
 **Flow** (inline mode): main session loads `trellis-before-dev` → main session edits code → main session loads `trellis-check` → run lint / type-check / tests → fix → `trellis-update-spec` → commit (Phase 3.4) → `/trellis:finish-work`.
 **Main-session default (inline dispatch_mode)**: the main agent edits code directly. Do NOT dispatch `trellis-implement` / `trellis-check` sub-agents. Load the `trellis-before-dev` skill before writing code; load the `trellis-check` skill before reporting completion.
 Phase 3.4 commit (required, once): after `trellis-update-spec`, or whenever implementation is verifiably complete, the main agent **drives the commit** — state the commit plan in user-facing text, then run `git commit` — BEFORE suggesting `/trellis:finish-work`. `/finish-work` refuses to run on a dirty working tree (paths outside `.trellis/workspace/` and `.trellis/tasks/`).

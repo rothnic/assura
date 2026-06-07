@@ -17,6 +17,20 @@ python3 ./.trellis/scripts/get_context.py
 
 Confirms: current task, git state, recent commits.
 
+Before routing phases, enforce a clean-start gate:
+
+- If the worktree is clean, continue.
+- If dirty paths clearly belong to the active task, route to the commit/check
+  phase before doing new work.
+- If dirty paths clearly belong to completed prior work, validate and commit
+  them before continuing.
+- If ownership is unclear, stop and offer exactly these options:
+  1. Commit prior work now
+  2. Park it on a branch
+  3. Leave it untouched and continue in a fresh worktree/branch
+
+Never carry unclassified uncommitted changes into a new task or phase.
+
 ## Step 2: Load the Phase Index
 
 ```bash
