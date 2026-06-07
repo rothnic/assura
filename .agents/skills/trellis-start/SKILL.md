@@ -18,6 +18,20 @@ python3 ./.trellis/scripts/get_context.py
 
 If this output includes a line beginning `Trellis update available:`, copy the full line verbatim when summarizing session context. Do not shorten operational command hints.
 
+Clean-start gate:
+
+- If the worktree is clean, continue.
+- If dirty paths clearly belong to the current requested work, finish the work
+  and commit before switching tasks.
+- If dirty paths clearly belong to a completed prior task, validate and commit
+  them before starting new work.
+- If ownership is unclear, stop and offer exactly these options:
+  1. Commit prior work now
+  2. Park it on a branch
+  3. Leave it untouched and start in a fresh worktree/branch
+
+Never start a new task while carrying unclassified uncommitted changes.
+
 ## Step 2: Workflow overview
 Phase Index + skill routing table + DO-NOT-skip rules.
 

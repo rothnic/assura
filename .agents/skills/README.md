@@ -42,6 +42,13 @@ Skills imported from external sources (e.g., GitHub skill repositories). Use the
 
 3. **Document any adaptations** - If you modify a skill's approach, note it in your work summary.
 
+## Plugin Skill Paths
+
+Plugin-provided skill cache paths can change between sessions. Do not rely on a
+previous hash in a path. Use the current Skills list or `tool_search` to locate
+the active skill; if discovery fails during GitHub PR work, fall back to the
+authenticated `gh` CLI and record the fallback in the task notes.
+
 ## Creating New Skills
 
 See TEMPLATE.md for a starter template.
