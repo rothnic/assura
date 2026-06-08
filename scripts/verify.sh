@@ -523,6 +523,7 @@ case "$mode" in
     run_test
     ;;
   evidence)
+    scripts/check-ci-scope.sh
     run_trellis_state_check
     run_evidence_policy_check
     ;;

@@ -77,6 +77,34 @@ This checks review evidence templates, goal frontmatter metadata, local
 markdown links in goal/review/spec docs, and stale forbidden user-facing command
 surfaces such as per-agent feedback CLIs or per-agent check formats.
 
+## CI Scope Gate
+
+GitHub Actions uses `scripts/ci-scope.sh` to classify changed paths before
+running expensive jobs. Classifier policy is covered by `node --run
+verify:evidence`; test it directly with:
+
+```bash
+scripts/check-ci-scope.sh
+```
+
+Use representative file lists for quick manual probes:
+
+```bash
+printf 'AGENTS.md\n.trellis/workflow.md\n' | scripts/ci-scope.sh --files-from -
+printf 'src/main.rs\nCargo.toml\n' | scripts/ci-scope.sh --files-from -
+printf 'website/public/install.sh\n' | scripts/ci-scope.sh --files-from -
+printf '.github/workflows/ci.yml\n' | scripts/ci-scope.sh --files-from -
+```
+
+Workflow or classifier changes intentionally force every CI scope. Docs,
+Trellis, skill, Assura config, and agent-policy-only changes keep evidence
+validation and Assura self-check active without scheduling Rust compile/test,
+release, coverage, rustdoc, or performance jobs.
+
+Security Audit uses the same classifier. It runs for Cargo metadata changes and
+scheduled audits; source-only Rust changes are covered by Rust compile/test
+gates without scheduling `cargo audit`.
+
 ## PR Gate
 
 Run this before pushing broad Rust or mixed changes:

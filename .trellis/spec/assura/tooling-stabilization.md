@@ -37,6 +37,20 @@ Do not run the full Rust suite just because any file changed. Do run it when a
 docs/workflow change alters a command contract, CI behavior, release process, or
 validation logic that Rust tests exercise.
 
+CI uses `scripts/ci-scope.sh` to apply the same policy in GitHub Actions. The
+classifier is intentionally conservative: Rust/Cargo changes run Rust, release,
+coverage, rustdoc, and performance gates; release/install changes run release
+gates; performance evidence changes run performance gates; workflow or
+classifier changes run everything. Docs, Trellis, skills, Assura config, and
+agent-policy-only changes keep the evidence gates and Assura self-check active
+without scheduling the expensive Rust, release, rustdoc, coverage, and
+performance jobs.
+
+The Security Audit workflow also uses the classifier instead of workflow-level
+path filters. It runs for Cargo metadata changes and scheduled audits, while
+source-only Rust changes use the Rust compile/test gates without scheduling a
+dependency audit.
+
 ## Performance Evidence Contract
 
 Performance claims that compare Assura with LS-Lint must state the executable

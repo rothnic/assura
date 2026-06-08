@@ -11,8 +11,44 @@ env:
   ASSURA_MAX_RELEASE_ARCHIVE_BYTES: 8388608
 
 jobs:
+  changes:
+    name: CI Scope
+    runs-on: ubuntu-latest
+    outputs:
+      rust: ${{ steps.scope.outputs.rust }}
+      release: ${{ steps.scope.outputs.release }}
+      performance: ${{ steps.scope.outputs.performance }}
+      evidence: ${{ steps.scope.outputs.evidence }}
+      website: ${{ steps.scope.outputs.website }}
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Classify changed paths
+      id: scope
+      shell: bash
+      run: |
+        case "${{ github.event_name }}" in
+          pull_request)
+            scripts/ci-scope.sh \
+              --base "${{ github.event.pull_request.base.sha }}" \
+              --head "${{ github.event.pull_request.head.sha }}" \
+              --merge-base
+            ;;
+          push)
+            scripts/ci-scope.sh \
+              --base "${{ github.event.before }}" \
+              --head "${{ github.sha }}"
+            ;;
+          *)
+            scripts/ci-scope.sh --all "unsupported event"
+            ;;
+        esac
+
   check:
     name: Check
+    needs: changes
+    if: needs.changes.outputs.rust == 'true'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -25,9 +61,16 @@ jobs:
 
   evidence:
     name: Evidence Gates
+    needs: changes
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+    - name: Cache Rust builds
+      uses: Swatinem/rust-cache@v2
+    - name: Verify Assura project structure
+      run: cargo run --quiet -- check --format json .
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
@@ -37,6 +80,8 @@ jobs:
 
   fmt:
     name: Rustfmt
+    needs: changes
+    if: needs.changes.outputs.rust == 'true'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -49,6 +94,8 @@ jobs:
 
   clippy:
     name: Clippy
+    needs: changes
+    if: needs.changes.outputs.rust == 'true'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -63,6 +110,8 @@ jobs:
 
   test:
     name: Test Suite
+    needs: changes
+    if: needs.changes.outputs.rust == 'true'
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -85,6 +134,8 @@ jobs:
 
   release-bundle:
     name: Release Bundle Smoke
+    needs: changes
+    if: needs.changes.outputs.release == 'true'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -122,6 +173,8 @@ jobs:
 
   windows-installer:
     name: Windows Installer Smoke
+    needs: changes
+    if: needs.changes.outputs.release == 'true'
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v4
@@ -159,6 +212,8 @@ jobs:
 
   installable-adoption:
     name: Installable Adoption Smoke (${{ matrix.label }})
+    needs: changes
+    if: needs.changes.outputs.release == 'true'
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -292,6 +347,8 @@ jobs:
 
   coverage:
     name: Code Coverage
+    needs: changes
+    if: needs.changes.outputs.rust == 'true'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -328,6 +385,8 @@ jobs:
 
   performance:
     name: Performance Report
+    needs: changes
+    if: needs.changes.outputs.performance == 'true'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
