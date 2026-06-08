@@ -20,11 +20,13 @@ pub mod init_support;
 pub mod output;
 #[cfg(feature = "full-cli")]
 pub mod performance_report;
+#[cfg(feature = "full-cli")]
+pub mod quality;
 
 #[cfg(feature = "full-cli")]
 pub use args::{
     AgentTarget, CheckOutputFormat, Cli, Commands, ExitCode, HookCommands, OutputFormat,
-    PerformanceReportFormat,
+    PerformanceReportFormat, QualityCommands, QualityPhase, QualityPlanFormat,
 };
 #[cfg(all(feature = "yaml-config", feature = "json-output"))]
 pub use check::run_structure_check_cached;
@@ -57,3 +59,5 @@ pub use performance_report::{
     performance_report_command, PerformanceReport, PerformanceReportCommandOptions,
     PerformanceResultRow,
 };
+#[cfg(feature = "full-cli")]
+pub use quality::{quality_plan_command, QualityPlan, QualityPlanCommandOptions};

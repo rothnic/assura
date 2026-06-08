@@ -3,7 +3,7 @@
 #[cfg(feature = "yaml-config")]
 use super::{
     Config, CustomConstraintConfig, DirectoryBundle, DirectoryNode, ExtensionConfig, FileBundle,
-    MarkdownBundle,
+    MarkdownBundle, QualityConfig,
 };
 #[cfg(feature = "yaml-config")]
 use glob::Pattern;
@@ -24,6 +24,9 @@ pub(crate) fn validate_config_semantics(config: &Config) -> Result<(), String> {
     }
     if let Some(extensions) = &config.extensions {
         validate_extension_config(extensions)?;
+    }
+    if let Some(quality) = &config.quality {
+        validate_quality_config(quality)?;
     }
 
     Ok(())
@@ -115,20 +118,49 @@ fn validate_extension_config(config: &ExtensionConfig) -> Result<(), String> {
 }
 
 #[cfg(feature = "yaml-config")]
+fn validate_quality_config(config: &QualityConfig) -> Result<(), String> {
+    let mut ids = HashSet::new();
+    for (id, scope) in &config.scopes {
+        let context = format!("quality.scopes.{id}");
+        validate_identifier(id, &context)?;
+        if !ids.insert(id) {
+            return Err(format!("{context}: duplicate quality scope id"));
+        }
+        if scope.paths.is_empty() {
+            return Err(format!(
+                "{context}.paths: at least one path pattern is required"
+            ));
+        }
+        for pattern in &scope.paths {
+            validate_relative_pattern(pattern, &format!("{context}.paths"))?;
+        }
+    }
+    Ok(())
+}
+
+#[cfg(feature = "yaml-config")]
+fn validate_identifier(value: &str, context: &str) -> Result<(), String> {
+    if value.trim().is_empty() {
+        return Err(format!("{context}: id must not be empty"));
+    }
+    if !value
+        .chars()
+        .all(|ch| ch.is_ascii_lowercase() || ch.is_ascii_digit() || ch == '-' || ch == '_')
+    {
+        return Err(format!(
+            "{context}: expected lowercase ASCII letters, digits, '-' or '_'"
+        ));
+    }
+    Ok(())
+}
+
+#[cfg(feature = "yaml-config")]
 fn validate_custom_constraint(constraint: &CustomConstraintConfig) -> Result<(), String> {
     let context = format!("extensions.custom_constraints.{}", constraint.id);
     if constraint.id.trim().is_empty() {
         return Err("extensions.custom_constraints: id must not be empty".to_string());
     }
-    if !constraint
-        .id
-        .chars()
-        .all(|ch| ch.is_ascii_lowercase() || ch.is_ascii_digit() || ch == '-' || ch == '_')
-    {
-        return Err(format!(
-            "{context}.id: expected lowercase ASCII letters, digits, '-' or '_'"
-        ));
-    }
+    validate_identifier(&constraint.id, &format!("{context}.id"))?;
     if constraint.kind != "paired_file_exists" {
         return Err(format!(
             "{context}.type: unsupported custom constraint {:?}",

@@ -37,11 +37,20 @@ Do not run the full Rust suite just because any file changed. Do run it when a
 docs/workflow change alters a command contract, CI behavior, release process, or
 validation logic that Rust tests exercise.
 
-CI uses `scripts/ci-scope.sh` to apply the same policy in GitHub Actions. The
-classifier is intentionally conservative: Rust/Cargo changes run Rust, release,
-coverage, rustdoc, and performance gates; release/install changes run release
-gates; performance evidence changes run performance gates; workflow or
-classifier changes run everything. Docs, Trellis, skills, Assura config, and
+Assura owns this policy in `.assura/config.yml` under `quality.scopes`.
+`assura quality plan` is the config-backed command surface for planning checks
+from changed paths and workflow phase. Phases are cumulative for normal
+development: `frequent`, `pre-push`, `pr`, `merge`, then `release`;
+`scheduled` is reserved for background audits.
+
+CI uses `scripts/ci-scope.sh` as the lightweight bootstrap classifier before
+running expensive jobs. The script should mirror `quality.scopes`, but it must
+not call `cargo run -- quality plan` in the first scope job because compiling
+Assura there would erase the speed win for docs-only changes. The classifier is
+intentionally conservative: Rust/Cargo changes run Rust, release, coverage,
+rustdoc, and performance gates; release/install changes run release gates;
+performance evidence changes run performance gates; workflow or classifier
+changes run everything. Docs, Trellis, skills, Assura config, and
 agent-policy-only changes keep the evidence gates and Assura self-check active
 without scheduling the expensive Rust, release, rustdoc, coverage, and
 performance jobs.

@@ -5,7 +5,7 @@ use super::compiled_fingerprint::SourceConfigFingerprint;
 use super::compiled_plan_artifact::PortableCompiledPlan;
 use crate::config::config::{
     Config, DirectoryBundle, DirectoryNode, ExistsValidation, ExtensionConfig, FileBundle,
-    MarkdownBundle,
+    MarkdownBundle, QualityConfig,
 };
 use crate::config::ls_compat::LsLintCompatibility;
 use serde::{Deserialize, Serialize};
@@ -225,6 +225,7 @@ struct PortableConfig {
     structure: HashMap<String, PortableDirectoryNode>,
     ls: Option<LsLintCompatibility>,
     extensions: Option<ExtensionConfig>,
+    quality: Option<QualityConfig>,
     exclude: Vec<String>,
 }
 
@@ -299,6 +300,7 @@ impl From<Config> for PortableConfig {
                 .collect(),
             ls: config.ls,
             extensions: config.extensions,
+            quality: config.quality,
             exclude: config.exclude,
         }
     }
@@ -319,6 +321,7 @@ impl From<PortableConfig> for Config {
                 .collect(),
             ls: config.ls,
             extensions: config.extensions,
+            quality: config.quality,
             exclude: config.exclude,
         }
     }

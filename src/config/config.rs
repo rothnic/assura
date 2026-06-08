@@ -13,6 +13,7 @@ use validator::Validate;
 
 mod bundles;
 mod extensions;
+mod quality;
 mod validation;
 
 pub use crate::config::inheritance::{ResolvedRule, RuleResolver};
@@ -23,6 +24,7 @@ pub use bundles::{
     DirectoryBundle, ExistsValidation, FileBundle, MarkdownBundle, ResolvedFileBundle,
 };
 pub use extensions::{CustomConstraintConfig, ExtensionConfig};
+pub use quality::{QualityConfig, QualityScopeConfig};
 pub(crate) use validation::split_naming_conventions;
 #[cfg(feature = "yaml-config")]
 pub(crate) use validation::validate_config_semantics;
@@ -50,6 +52,10 @@ pub struct Config {
     /// Experimental first-party extension configuration.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub extensions: Option<ExtensionConfig>,
+
+    /// High-level quality gate policy for changed-file planning.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub quality: Option<QualityConfig>,
 
     /// Paths to exclude from validation
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -124,6 +130,7 @@ impl Config {
             structure: HashMap::new(),
             ls: None,
             extensions: None,
+            quality: None,
             exclude: Vec::new(),
         }
     }
@@ -149,6 +156,12 @@ impl Config {
     /// Add experimental extension configuration.
     pub fn with_extensions(mut self, extensions: ExtensionConfig) -> Self {
         self.extensions = Some(extensions);
+        self
+    }
+
+    /// Add high-level quality gate policy.
+    pub fn with_quality(mut self, quality: QualityConfig) -> Self {
+        self.quality = Some(quality);
         self
     }
 
