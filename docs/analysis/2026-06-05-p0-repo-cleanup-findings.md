@@ -29,6 +29,19 @@ flags after the skill update. Archived docs and proposals were excluded from
 the blocking scan because they may intentionally preserve historical or
 future-design command examples.
 
+The same skill also advertised an `assura/assura-action@v1` GitHub Action that
+is not a released or checked integration surface in this repository. The CI
+example now installs the supported release script and runs
+`assura check --format json .` directly. `node --run verify:evidence` scans
+active skill docs for that unreleased action reference so the stale example
+cannot be reintroduced silently.
+
+The cleanup also tightened `.assura/config.yml` for the current `src/cli`
+module topology. `src/cli/check` and `src/cli/performance_report` are now the
+only allowed `src/cli` subdirectories, and their Rust files inherit the same
+snake-case plus 500-line limit as the top-level CLI module files. The repo
+self-check passes with that stricter policy.
+
 ## Deterministic Follow-Up Rules
 
 Assura should eventually be able to detect this class of drift directly:

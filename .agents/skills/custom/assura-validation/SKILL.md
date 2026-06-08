@@ -129,8 +129,8 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: assura/assura-action@v1
+      - uses: actions/checkout@v4
+      - run: curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sh
       - run: assura check --format json .
 ```
 

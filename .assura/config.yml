@@ -432,6 +432,20 @@ structure:
             files:
               naming: "snake_case"
               max_lines: 500
+            directories:
+              allowed_names:
+                - "check"
+                - "performance_report"
+              allow_extra: false
+            children:
+              check/:
+                files:
+                  naming: "snake_case"
+                  max_lines: 500
+              performance_report/:
+                files:
+                  naming: "snake_case"
+                  max_lines: 500
           
           config/:
             files:

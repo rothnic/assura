@@ -289,6 +289,17 @@ forbidden_surface_patterns = [
         ),
         "per-agent format",
     ),
+    (
+        re.compile(r"\bassura/assura-action(?:@[a-z0-9._/-]+)?\b", re.IGNORECASE),
+        "unreleased GitHub Action",
+    ),
+    (
+        re.compile(
+            r"(?:\bassura\s+check\b|\bcargo\s+run[^\n]*\bcheck\b)[^\n]*--(?:maturity|constraint|pattern|convention|require-frontmatter|strict|parallel)\b",
+            re.IGNORECASE,
+        ),
+        "unsupported assura check flag",
+    ),
 ]
 
 def forbidden_surface_hits(text):
@@ -307,6 +318,11 @@ for sample in [
     "assura check --format cursor-hook .",
     "assura check --format opencode .",
     "assura check --format OpenCode .",
+    "uses: assura/assura-action@v1",
+    "uses: assura/assura-action@main",
+    "uses: assura/assura-action",
+    "assura check --maturity --strict .",
+    "cargo run --quiet --bin assura-full -- check --require-frontmatter docs/",
 ]:
     if not forbidden_surface_hits(sample):
         errors.append(f"stale-surface self-test failed to reject {sample!r}")
@@ -322,6 +338,7 @@ for sample in [
 
 scan_roots = [
     pathlib.Path("README.md"),
+    pathlib.Path(".agents/skills"),
     pathlib.Path("website/src/content"),
     pathlib.Path(".github/PULL_REQUEST_TEMPLATE.md"),
     pathlib.Path(".github/workflows"),
