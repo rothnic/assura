@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/assura/index.md", "reason": "Canonical Assura direction, support-boundary constraints, and cleanup expectations"}
+{"file": ".trellis/spec/assura/tooling-stabilization.md", "reason": "Change-scoped validation and performance/no-regression gate policy"}
+{"file": ".trellis/spec/guides/index.md", "reason": "Cross-layer and code-reuse thinking triggers for cleanup changes"}
+{"file": "docs/analysis/2026-06-05-p0-repo-cleanup-findings.md", "reason": "Completed stale-surface cleanup and command-surface follow-up rule context"}
