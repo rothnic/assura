@@ -107,6 +107,44 @@ quality:
         - "Performance Report"
         - "Security Audit"
 
+extensions:
+  custom_constraints:
+    - id: command_surface_docs
+      type: command_surface_docs
+      source: "docs/*.md"
+      target: ".assura/command-surface.yml"
+      severity: high
+    - id: command_surface_readme
+      type: command_surface_docs
+      source: "README.md"
+      target: ".assura/command-surface.yml"
+      severity: high
+    - id: command_surface_website
+      type: command_surface_docs
+      source: "website/src/content/docs/**/*.mdx"
+      target: ".assura/command-surface.yml"
+      severity: high
+    - id: command_surface_analysis
+      type: command_surface_docs
+      source: "docs/analysis/*.md"
+      target: ".assura/command-surface.yml"
+      severity: high
+    - id: command_surface_goals
+      type: command_surface_docs
+      source: "docs/goals/*.md"
+      target: ".assura/command-surface.yml"
+      severity: high
+    - id: command_surface_agents
+      type: command_surface_docs
+      source: "AGENTS.md"
+      target: ".assura/command-surface.yml"
+      severity: high
+    - id: command_surface_skills
+      type: command_surface_docs
+      source: ".agents/**/*.md"
+      target: ".assura/command-surface.yml"
+      severity: high
+
 # Root directory - only standard project files allowed
 # Special documents (AGENTS.md, CONSTITUTION.md) allowed in SCREAMING_SNAKE_CASE
 # All other root files must be standard project files
@@ -408,6 +446,7 @@ structure:
         files:
           naming: "kebab-case"
           allowed_names:
+            - "command-surface.yml"
             - "config.new.yml"
             - "config.yml"
             - "config.yml.v1"

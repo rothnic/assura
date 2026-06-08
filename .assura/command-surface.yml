@@ -1,0 +1,223 @@
+commands:
+  - name: "assura"
+    allow_positionals: false
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --version:
+        aliases: ["-V"]
+  - name: "assura check"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status", "agent"]
+      --agent:
+        takes_value: true
+        values: ["generic", "codex"]
+        requires:
+          --format: "agent"
+      --min-severity:
+        takes_value: true
+        values: ["low", "medium", "high", "critical"]
+      --max-issues:
+        takes_value: true
+      --output:
+        aliases: ["-o"]
+        takes_value: true
+      --fail-fast: {}
+      --warn: {}
+      --no-parallel: {}
+      --ls-lint-target-semantics: {}
+      --watch: {}
+  - name: "assura status"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status"]
+  - name: "assura init"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --force: {}
+      --no-git-hooks: {}
+  - name: "assura watch"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --debounce:
+        aliases: ["-d"]
+        takes_value: true
+      --no-git: {}
+  - name: "assura migrate"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --output:
+        aliases: ["-o"]
+        takes_value: true
+  - name: "assura info"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+  - name: "assura performance-report"
+    allow_positionals: false
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --output:
+        aliases: ["-o"]
+        takes_value: true
+      --history:
+        takes_value: true
+      --website-dir:
+        takes_value: true
+      --iterations:
+        takes_value: true
+      --baseline-id:
+        takes_value: true
+      --format:
+        takes_value: true
+        values: ["json", "jsonl"]
+      --ls-lint-package:
+        takes_value: true
+      --include-external-fixtures: {}
+  - name: "assura quality plan"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --files-from:
+        takes_value: true
+      --base:
+        takes_value: true
+      --head:
+        takes_value: true
+      --phase:
+        takes_value: true
+        values: ["frequent", "pre-push", "pr", "merge", "release", "scheduled"]
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "github"]
+  - name: "assura hooks install"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --force: {}
+  - name: "assura hooks"
+    allow_positionals: false
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+  - name: "assura hooks uninstall"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+  - name: "assura hooks status"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+  - name: "assura hooks verify"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]

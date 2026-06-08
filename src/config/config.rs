@@ -23,7 +23,10 @@ pub use crate::config::ls_compat::LsLintCompatibility;
 pub use bundles::{
     DirectoryBundle, ExistsValidation, FileBundle, MarkdownBundle, ResolvedFileBundle,
 };
-pub use extensions::{CustomConstraintConfig, ExtensionConfig};
+pub use extensions::{
+    CommandSurfaceCommand, CommandSurfaceContract, CommandSurfaceFlag, CustomConstraintConfig,
+    ExtensionConfig,
+};
 pub use quality::{QualityConfig, QualityScopeConfig};
 pub(crate) use validation::split_naming_conventions;
 #[cfg(feature = "yaml-config")]

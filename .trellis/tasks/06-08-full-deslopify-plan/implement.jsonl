@@ -7,3 +7,9 @@
 {"file": "Cargo.toml", "reason": "Public package claim alignment and unused dependency removal"}
 {"file": "docs/analysis/2026-06-08-deslopify-dead-path-classification.md", "reason": "Dead or abandoned path classification evidence for audited module families"}
 {"file": "docs/goals/assura-rule-public-surface-support-matrix.md", "reason": "Durable generalized rule follow-up pattern for support-matrix detection"}
+{"file": "src/cli/check/custom_constraints.rs", "reason": "Implemented configurable command_surface_docs custom constraint for documented command/flag/value drift"}
+{"file": "src/cli/check/command_surface_docs.rs", "reason": "Separated command-surface contract parsing and docs example analysis from custom constraint walking"}
+{"file": ".assura/command-surface.yml", "reason": "Checked command contract used by Assura self-config to dogfood command-surface documentation validation"}
+{"file": "docs/goals/assura-rule-command-surface-documentation.md", "reason": "Marked command-surface rule follow-up implemented with detector shape, examples, and validation evidence"}
+{"file": "src/cli/check/custom_constraints.rs", "reason": "Review fix: batched command_surface_docs evaluation into one walk with cached command contracts"}
+{"file": "src/cli/check/command_surface_docs.rs", "reason": "Review fix: validate cargo-run examples, longest nested command prefixes, flag requirements, and contract alias collisions"}

@@ -166,9 +166,9 @@ Block the PR if:
   `--agent` without `--format agent`.
 - 2026-05-31: Added a durable direction lock after the user called out context
   drift across sessions. Future work must treat `assura-codex-feedback`,
-  `assura check --format codex-hook`, and one-entrypoint/one-format-per-agent
-  designs as superseded unless `.trellis/spec/assura/codex-agent-feedback.md`
-  is explicitly changed first.
+  unsupported `assura check --format codex-hook`, and
+  one-entrypoint/one-format-per-agent designs as superseded unless
+  `.trellis/spec/assura/codex-agent-feedback.md` is explicitly changed first.
 - 2026-05-31: Removed package executable tech debt from the superseded
   direction: the npm package no longer exposes feedback command binaries, docs
   no longer present package commands as fallback CLI surfaces, and the active

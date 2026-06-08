@@ -1,6 +1,7 @@
 //! Experimental extension configuration.
 
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 /// Experimental extension configuration for first-party custom constraints.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -27,6 +28,48 @@ pub struct CustomConstraintConfig {
     /// Optional diagnostic severity.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub severity: Option<String>,
+}
+
+/// Checked command-surface contract loaded by the `command_surface_docs`
+/// custom constraint.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub struct CommandSurfaceContract {
+    /// Supported command families and their documented flag/value surface.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub commands: Vec<CommandSurfaceCommand>,
+}
+
+/// A command family in a checked command-surface contract.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub struct CommandSurfaceCommand {
+    /// Canonical command name, such as `assura check`.
+    pub name: String,
+    /// Whether non-flag positional arguments are allowed.
+    #[serde(default)]
+    pub allow_positionals: bool,
+    /// Supported flags keyed by their canonical spelling.
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub flags: HashMap<String, CommandSurfaceFlag>,
+}
+
+/// A supported flag in a checked command-surface contract.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub struct CommandSurfaceFlag {
+    /// Whether this flag takes a value.
+    #[serde(default)]
+    pub takes_value: bool,
+    /// Optional aliases such as short flags.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub aliases: Vec<String>,
+    /// Optional allowlist of accepted values for value-taking flags.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub values: Vec<String>,
+    /// Required companion flag values keyed by canonical flag name.
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub requires: HashMap<String, String>,
 }
 
 impl ExtensionConfig {
