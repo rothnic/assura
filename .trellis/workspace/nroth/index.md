@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 1
-- **Last Active**: 2026-05-11
+- **Total Sessions**: 2
+- **Last Active**: 2026-06-08
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~39 | Active |
+| `journal-1.md` | ~73 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 2 | 2026-06-08 | Complete deslopify plan | `fec37f2`, `de893ff` | `codex/archive-deslopify-task` |
 | 1 | 2026-05-11 | LS-Lint parity performance regression audit | `267eca4` | `codex/ls-lint-parity-performance-regression-audit` |
 <!-- @@@/auto:session-history -->
 
