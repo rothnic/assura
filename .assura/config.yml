@@ -86,9 +86,15 @@ quality:
     workflow:
       paths:
         - ".github/workflows/**"
+        - "package.json"
         - "scripts/ci-scope.sh"
         - "scripts/check-ci-scope.sh"
         - "scripts/verify.sh"
+      frequent:
+        - "python3 ./.trellis/scripts/workflow_gate.py --platform codex"
+        - "cargo run --quiet -- check --format json ."
+        - "node --run verify:evidence"
+        - "git diff --check"
       pr:
         - "node --run verify:pr"
         - "Release Bundle Smoke"

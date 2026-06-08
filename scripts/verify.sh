@@ -3,7 +3,7 @@ set -euo pipefail
 
 usage() {
   cat <<'USAGE'
-Usage: scripts/verify.sh <fast|check|test|evidence|docs|release-size|release-smoke|release-live|pr|full>
+Usage: scripts/verify.sh <fast|check|test|evidence|docs|release-size|release-smoke|release-live|changed|pr|full>
 
 Modes:
   fast           Format, whitespace, focused compile checks, normal tests, and Assura self-check.
@@ -14,8 +14,16 @@ Modes:
   release-size   Build the local installable release archive and enforce its size budget.
   release-smoke  Build and smoke the local installable release archive.
   release-live   Verify public no-auth install URLs for an already-published release.
+  changed        Execute local checks selected by assura quality plan.
   pr             Fast gate plus clippy and docs build.
   full           PR gate plus cargo test --all-targets for benchmark-adjacent changes.
+
+Changed mode options:
+  --phase <phase>       Quality phase to run; defaults to frequent.
+  --files-from <path|-> Read changed paths from a file, or stdin.
+  --base <rev>          Base git revision for diff-based planning.
+  --head <rev>          Head git revision for diff-based planning.
+  --dry-run             Print selected checks without executing them.
 USAGE
 }
 
@@ -24,6 +32,7 @@ if [ -z "$mode" ]; then
   usage >&2
   exit 2
 fi
+shift || true
 
 run_check() {
   cargo check -p assura --bin assura --no-default-features --features json-output,yaml-config
@@ -506,6 +515,141 @@ run_release_live() {
   public_url_ok "$release_base/assura-windows-amd64.zip.sha256"
 }
 
+run_changed() {
+  local phase dry_run tmp
+  local has_verify_pr has_verify_full
+  local -a plan_args checks
+  phase="frequent"
+  dry_run="false"
+  has_verify_pr="false"
+  has_verify_full="false"
+  plan_args=(".")
+
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --phase)
+        if [ "$#" -lt 2 ]; then
+          printf 'Missing value for --phase.\n' >&2
+          return 2
+        fi
+        phase="$2"
+        shift 2
+        ;;
+      --files-from|--base|--head)
+        if [ "$#" -lt 2 ]; then
+          printf 'Missing value for %s.\n' "$1" >&2
+          return 2
+        fi
+        plan_args+=("$1" "$2")
+        shift 2
+        ;;
+      --dry-run)
+        dry_run="true"
+        shift
+        ;;
+      --)
+        shift
+        ;;
+      *)
+        printf 'Unknown changed-mode option: %s\n' "$1" >&2
+        return 2
+        ;;
+    esac
+  done
+
+  tmp="$(mktemp)"
+  cleanup_changed_plan() {
+    rm -f "$tmp"
+  }
+  trap cleanup_changed_plan RETURN
+
+  cargo run --quiet --bin assura-full -- \
+    quality plan "${plan_args[@]}" --phase "$phase" --format json >"$tmp"
+
+  python3 - "$tmp" <<'PY'
+import json
+import pathlib
+import sys
+
+plan = json.loads(pathlib.Path(sys.argv[1]).read_text())
+print(f"Assura changed-check plan: phase={plan['phase']} changed_paths={len(plan['changed_paths'])} scopes={len(plan['scopes'])}")
+for scope in plan["scopes"]:
+    print(f"- {scope['id']}: {', '.join(scope['matched_paths'])}")
+if not plan["checks"]:
+    print("No quality checks selected.")
+PY
+
+  checks=()
+  while IFS= read -r check; do
+    checks+=("$check")
+  done < <(python3 - "$tmp" <<'PY'
+import json
+import pathlib
+import sys
+
+plan = json.loads(pathlib.Path(sys.argv[1]).read_text())
+for check in plan["checks"]:
+    print(check)
+PY
+)
+
+  if [ "${#checks[@]}" -eq 0 ]; then
+    return 0
+  fi
+
+  for check in "${checks[@]}"; do
+    case "$check" in
+      "node --run verify:pr")
+        has_verify_pr="true"
+        ;;
+      "node --run verify:full")
+        has_verify_full="true"
+        ;;
+    esac
+  done
+
+  for check in "${checks[@]}"; do
+    case "$check" in
+      "node --run verify:changed"|\
+      "node --run verify:changed "*|\
+      "scripts/verify.sh changed"|\
+      "scripts/verify.sh changed "*|\
+      "./scripts/verify.sh changed"|\
+      "./scripts/verify.sh changed "*)
+        printf 'Refusing recursive changed-check command: %s\n' "$check" >&2
+        return 2
+        ;;
+    esac
+
+    if [ "$has_verify_full" = "true" ] || [ "$has_verify_pr" = "true" ]; then
+      case "$check" in
+        "node --run verify:check"|"node --run verify:test"|"node --run verify:evidence"|"cargo run --quiet -- check --format json ."|"git diff --check")
+          printf 'Skipping check covered by broader local gate: %s\n' "$check"
+          continue
+          ;;
+      esac
+    fi
+    if [ "$has_verify_full" = "true" ] && [ "$check" = "node --run verify:pr" ]; then
+      printf 'Skipping check covered by broader local gate: %s\n' "$check"
+      continue
+    fi
+
+    case "$check" in
+      cargo\ *|git\ *|node\ *|npm\ *|pnpm\ *|python3\ *|scripts/*|./scripts/*)
+        if [ "$dry_run" = "true" ]; then
+          printf '[dry-run] %s\n' "$check"
+        else
+          printf '\n$ %s\n' "$check"
+          bash -lc "$check"
+        fi
+        ;;
+      *)
+        printf 'Skipping non-local check: %s\n' "$check"
+        ;;
+    esac
+  done
+}
+
 case "$mode" in
   fast)
     cargo fmt --all -- --check
@@ -538,6 +682,9 @@ case "$mode" in
     ;;
   release-live)
     run_release_live
+    ;;
+  changed)
+    run_changed "$@"
     ;;
   pr)
     "$0" fast

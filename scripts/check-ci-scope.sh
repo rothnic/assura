@@ -94,7 +94,7 @@ website=true
 security=true'
 
 check_scope "validation command" \
-  'scripts/verify.sh\n' \
+  'package.json\nscripts/verify.sh\n' \
   'rust=true
 release=true
 performance=true
@@ -102,4 +102,3 @@ rustdoc=true
 evidence=true
 website=true
 security=true'
-
