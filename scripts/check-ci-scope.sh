@@ -94,7 +94,7 @@ website=true
 security=true'
 
 check_scope "validation command" \
-  'package.json\nscripts/verify.sh\n' \
+  'package.json\nscripts/verify.sh\nscripts/summarize-rust-cache.sh\n' \
   'rust=true
 release=true
 performance=true

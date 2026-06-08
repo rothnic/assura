@@ -127,7 +127,7 @@ classify_path() {
   local path="$1"
 
   case "$path" in
-    .github/workflows/*|package.json|scripts/ci-scope.sh|scripts/verify.sh)
+    .github/workflows/*|package.json|scripts/ci-scope.sh|scripts/summarize-rust-cache.sh|scripts/verify.sh)
       set_all "workflow, classifier, or validation command changed"
       return
       ;;

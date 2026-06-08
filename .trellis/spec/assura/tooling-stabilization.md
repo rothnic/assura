@@ -57,6 +57,12 @@ outputs worth restoring. For Assura's current Rust validation loop, prefer
 scoped gates first, then Rust-native tooling only after a local timing probe
 shows a win.
 
+GitHub Actions uses the native cache service through `Swatinem/rust-cache`.
+Rust jobs should prefer explicit shared keys by OS/toolchain/profile/target so
+related CI jobs and reruns can reuse compiled artifacts. Cache-hit state must be
+written to the job summary with `scripts/summarize-rust-cache.sh` so future
+timing claims can distinguish cold runs, warm restores, and exact key hits.
+
 CI uses `scripts/ci-scope.sh` as the lightweight bootstrap classifier before
 running expensive jobs. The script should mirror `quality.scopes`, but it must
 not call `cargo run -- quality plan` in the first scope job because compiling

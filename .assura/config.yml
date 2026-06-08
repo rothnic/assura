@@ -89,6 +89,7 @@ quality:
         - "package.json"
         - "scripts/ci-scope.sh"
         - "scripts/check-ci-scope.sh"
+        - "scripts/summarize-rust-cache.sh"
         - "scripts/verify.sh"
       frequent:
         - "python3 ./.trellis/scripts/workflow_gate.py --platform codex"
@@ -302,6 +303,7 @@ structure:
             - "ci-scope.sh"
             - "smoke-install-adoption.ps1"
             - "smoke-install-adoption.sh"
+            - "summarize-rust-cache.sh"
             - "verify.sh"
           allow_extra: false
         directories:
