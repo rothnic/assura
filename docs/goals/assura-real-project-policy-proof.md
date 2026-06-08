@@ -13,7 +13,7 @@ related:
   - .trellis/spec/assura/tooling-stabilization.md
   - docs/goals/assura-v0-1-polished.md
   - docs/goals/assura-agent-nudge-mvp.md
-  - docs/goals/assura-native-ls-lint-performance-rearchitecture.md
+  - docs/archive/assura-native-ls-lint-performance-rearchitecture.md
   - docs/goals/assura-pinned-ls-lint-fixture-benchmark-suite.md
   - docs/analysis/2026-05-19-ls-lint-performance-progress-ledger.md
 ---

@@ -30,7 +30,7 @@ new performance work:
 | `website/public/data/performance/ls-lint-comparison-history.jsonl` | Website copy of the checked-in history. |
 | `docs/analysis/2026-05-19-ls-lint-2x-completion-audit.md` | Completion audit and rejected experiment evidence. |
 | `docs/analysis/2026-05-19-ls-lint-performance-scope-decision.md` | Scope decision for cold, warm, and diagnostic claims. |
-| `docs/goals/assura-native-ls-lint-performance-rearchitecture.md` | Active goal log and detailed implementation trail. |
+| `docs/archive/assura-native-ls-lint-performance-rearchitecture.md` | Archived goal log and detailed implementation trail. |
 
 The current goal document is intentionally not the only record. It is capped by
 project structure limits and should stay focused on the active goal trail. Use
@@ -259,7 +259,7 @@ Retained documentation:
 - Scope decision:
   `docs/analysis/2026-05-19-ls-lint-performance-scope-decision.md`
 - Active goal log:
-  `docs/goals/assura-native-ls-lint-performance-rearchitecture.md`
+  `docs/archive/assura-native-ls-lint-performance-rearchitecture.md`
 
 ## Rejected Or Exhausted Experiment Areas
 

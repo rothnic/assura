@@ -52,5 +52,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 24
+    - name: Install cargo-machete
+      run: cargo install cargo-machete --version 0.9.2 --locked
+    - name: Run dependency hygiene
+      run: node --run verify:hygiene
     - name: Run cargo audit
       uses: actions-rust-lang/audit@v1

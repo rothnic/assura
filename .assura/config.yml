@@ -2,7 +2,7 @@ version: "2.0"
 
 project:
   name: "assura"
-  description: "Dependency-aware file system validation engine"
+  description: "Structure-first repository validation CLI"
 
 quality:
   scopes:
@@ -54,8 +54,10 @@ quality:
         - "Cargo.toml"
         - "Cargo.lock"
       pr:
+        - "node --run verify:hygiene"
         - "Security Audit"
       scheduled:
+        - "node --run verify:hygiene"
         - "Security Audit"
     release:
       paths:
@@ -175,6 +177,8 @@ structure:
           skills/:
             files:
               naming: "kebab-case"
+              max_lines: 600
+              max_size: "24KB"
               naming_patterns:
                 "SKILL.md": "regex:^SKILL$"
               allowed_names:
@@ -183,6 +187,222 @@ structure:
               allow_extra: false
             directories:
               naming: "kebab-case"
+              allowed_names:
+                - "assura-goal-execution"
+                - "assura-local-build"
+                - "assura-performance-reporting"
+                - "built-in"
+                - "custom"
+                - "trellis-before-dev"
+                - "trellis-brainstorm"
+                - "trellis-break-loop"
+                - "trellis-check"
+                - "trellis-continue"
+                - "trellis-finish-work"
+                - "trellis-meta"
+                - "trellis-start"
+                - "trellis-update-spec"
+              allow_extra: false
+            children:
+              assura-goal-execution/:
+                files:
+                  naming: "kebab-case"
+                  naming_patterns:
+                    "SKILL.md": "regex:^SKILL$"
+                  allowed_names:
+                    - "SKILL.md"
+                  max_lines: 600
+                  max_size: "24KB"
+                  allow_extra: false
+                directories:
+                  allow_extra: false
+              assura-local-build/:
+                files:
+                  naming: "kebab-case"
+                  naming_patterns:
+                    "SKILL.md": "regex:^SKILL$"
+                  allowed_names:
+                    - "SKILL.md"
+                  max_lines: 600
+                  max_size: "24KB"
+                  allow_extra: false
+                directories:
+                  allow_extra: false
+              assura-performance-reporting/:
+                files:
+                  naming: "kebab-case"
+                  naming_patterns:
+                    "SKILL.md": "regex:^SKILL$"
+                  allowed_names:
+                    - "SKILL.md"
+                  max_lines: 600
+                  max_size: "24KB"
+                  allow_extra: false
+                directories:
+                  allow_extra: false
+              built-in/:
+                files:
+                  allow_extra: false
+                directories:
+                  allowed_names:
+                    - "find-skills"
+                  allow_extra: false
+                children:
+                  find-skills/:
+                    files:
+                      naming: "kebab-case"
+                      naming_patterns:
+                        "SKILL.md": "regex:^SKILL$"
+                      allowed_names:
+                        - "SKILL.md"
+                      max_lines: 600
+                      max_size: "24KB"
+                      allow_extra: false
+                    directories:
+                      allow_extra: false
+              custom/:
+                files:
+                  allow_extra: false
+                directories:
+                  allowed_names:
+                    - "assura-validation"
+                    - "constraint-development"
+                  allow_extra: false
+                children:
+                  assura-validation/:
+                    files:
+                      naming: "kebab-case"
+                      naming_patterns:
+                        "SKILL.md": "regex:^SKILL$"
+                      allowed_names:
+                        - "SKILL.md"
+                      max_lines: 600
+                      max_size: "24KB"
+                      allow_extra: false
+                    directories:
+                      allow_extra: false
+                  constraint-development/:
+                    files:
+                      naming: "kebab-case"
+                      naming_patterns:
+                        "SKILL.md": "regex:^SKILL$"
+                      allowed_names:
+                        - "SKILL.md"
+                      max_lines: 600
+                      max_size: "24KB"
+                      allow_extra: false
+                    directories:
+                      allow_extra: false
+              trellis-before-dev/:
+                files:
+                  naming: "kebab-case"
+                  naming_patterns:
+                    "SKILL.md": "regex:^SKILL$"
+                  allowed_names:
+                    - "SKILL.md"
+                  max_lines: 600
+                  max_size: "24KB"
+                  allow_extra: false
+                directories:
+                  allow_extra: false
+              trellis-brainstorm/:
+                files:
+                  naming: "kebab-case"
+                  naming_patterns:
+                    "SKILL.md": "regex:^SKILL$"
+                  allowed_names:
+                    - "SKILL.md"
+                  max_lines: 600
+                  max_size: "24KB"
+                  allow_extra: false
+                directories:
+                  allow_extra: false
+              trellis-break-loop/:
+                files:
+                  naming: "kebab-case"
+                  naming_patterns:
+                    "SKILL.md": "regex:^SKILL$"
+                  allowed_names:
+                    - "SKILL.md"
+                  max_lines: 600
+                  max_size: "24KB"
+                  allow_extra: false
+                directories:
+                  allow_extra: false
+              trellis-check/:
+                files:
+                  naming: "kebab-case"
+                  naming_patterns:
+                    "SKILL.md": "regex:^SKILL$"
+                  allowed_names:
+                    - "SKILL.md"
+                  max_lines: 600
+                  max_size: "24KB"
+                  allow_extra: false
+                directories:
+                  allow_extra: false
+              trellis-continue/:
+                files:
+                  naming: "kebab-case"
+                  naming_patterns:
+                    "SKILL.md": "regex:^SKILL$"
+                  allowed_names:
+                    - "SKILL.md"
+                  max_lines: 600
+                  max_size: "24KB"
+                  allow_extra: false
+                directories:
+                  allow_extra: false
+              trellis-finish-work/:
+                files:
+                  naming: "kebab-case"
+                  naming_patterns:
+                    "SKILL.md": "regex:^SKILL$"
+                  allowed_names:
+                    - "SKILL.md"
+                  max_lines: 600
+                  max_size: "24KB"
+                  allow_extra: false
+                directories:
+                  allow_extra: false
+              trellis-meta/:
+                files:
+                  naming: "kebab-case"
+                  naming_patterns:
+                    "SKILL.md": "regex:^SKILL$"
+                  allowed_names:
+                    - "SKILL.md"
+                  max_lines: 600
+                  max_size: "24KB"
+                  allow_extra: false
+                directories:
+                  allowed_names:
+                    - "references"
+                  allow_extra: false
+              trellis-start/:
+                files:
+                  naming: "kebab-case"
+                  naming_patterns:
+                    "SKILL.md": "regex:^SKILL$"
+                  allowed_names:
+                    - "SKILL.md"
+                  max_lines: 600
+                  max_size: "24KB"
+                  allow_extra: false
+                directories:
+                  allow_extra: false
+              trellis-update-spec/:
+                files:
+                  naming: "kebab-case"
+                  naming_patterns:
+                    "SKILL.md": "regex:^SKILL$"
+                  allowed_names:
+                    - "SKILL.md"
+                  max_lines: 600
+                  max_size: "24KB"
+                  allow_extra: false
+                directories:
+                  allow_extra: false
       
       .assura/:
         files:
@@ -338,7 +558,7 @@ structure:
           goals/:
             files:
               naming: "kebab-case"
-              max_lines: 2000
+              max_lines: 1000
             markdown:
               require_frontmatter: true
           proposals/:
@@ -456,6 +676,13 @@ structure:
             files:
               naming: "snake_case"
               max_lines: 500
+            directories:
+              allowed_names:
+                - "ls_lint"
+                - "naming"
+                - "severity"
+                - "trigger"
+              allow_extra: false
           
           intelligence/:
             files:
@@ -471,16 +698,33 @@ structure:
             files:
               naming: "snake_case"
               max_lines: 500
+            directories:
+              allowed_names:
+                - "frontmatter"
+                - "frontmatter_field"
+                - "headings"
+                - "parser"
+                - "template"
+              allow_extra: false
           
           maturity/:
             files:
               naming: "snake_case"
               max_lines: 500
+            directories:
+              allowed_names:
+                - "engine"
+                - "filesystem"
+              allow_extra: false
           
           validation/:
             files:
               naming: "snake_case"
               max_lines: 500
+            directories:
+              allowed_names:
+                - "constraints"
+              allow_extra: false
       
       .trellis/:
         files:
@@ -586,4 +830,5 @@ exclude:
   - "**/dist"
   - "package-lock.json"
   - "**/package-lock.json"
-  - "tests/fixtures/**"
+  - "tests/fixtures/ls-lint/**"
+  - "tests/fixtures/real-project-agentic-feedback/**"

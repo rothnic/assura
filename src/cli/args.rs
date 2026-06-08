@@ -4,7 +4,7 @@ use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
 #[command(name = "assura")]
-#[command(about = "Dependency-aware file system validation engine")]
+#[command(about = "Structure-first repository validation CLI")]
 #[command(version = env!("CARGO_PKG_VERSION"))]
 pub struct Cli {
     #[command(subcommand)]

@@ -81,7 +81,7 @@ dynamic rows remain diagnostic.
   - `docs/analysis/2026-05-19-ls-lint-2x-completion-audit.md`
   - `docs/analysis/2026-05-19-ls-lint-performance-progress-ledger.md`
   - `docs/analysis/2026-05-19-ls-lint-performance-scope-decision.md`
-  - `docs/goals/assura-native-ls-lint-performance-rearchitecture.md`
+  - `docs/archive/assura-native-ls-lint-performance-rearchitecture.md`
 - Key website files:
   - `website/src/components/performance-evidence.astro`
   - `website/src/content/docs/reference/performance.mdx`
