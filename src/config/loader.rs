@@ -172,6 +172,27 @@ structure: {}
     }
 
     #[test]
+    fn test_parse_with_command_surface_docs_constraint() {
+        let yaml = r#"
+extensions:
+  custom_constraints:
+    - id: command_surface_docs
+      type: command_surface_docs
+      source: "docs/*.md"
+      target: ".assura/command-surface.yml"
+structure: {}
+"#;
+
+        let config = ConfigLoader::parse(yaml).unwrap();
+        let extensions = config.extensions.unwrap();
+        assert_eq!(extensions.custom_constraints.len(), 1);
+        assert_eq!(
+            extensions.custom_constraints[0].kind,
+            "command_surface_docs"
+        );
+    }
+
+    #[test]
     fn test_parse_with_quality_scopes() {
         let yaml = r#"
 quality:

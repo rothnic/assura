@@ -161,14 +161,22 @@ fn validate_custom_constraint(constraint: &CustomConstraintConfig) -> Result<(),
         return Err("extensions.custom_constraints: id must not be empty".to_string());
     }
     validate_identifier(&constraint.id, &format!("{context}.id"))?;
-    if constraint.kind != "paired_file_exists" {
-        return Err(format!(
-            "{context}.type: unsupported custom constraint {:?}",
-            constraint.kind
-        ));
+    match constraint.kind.as_str() {
+        "paired_file_exists" => {
+            validate_relative_pattern(&constraint.source, &format!("{context}.source"))?;
+            validate_relative_template(&constraint.target, &format!("{context}.target"))?;
+        }
+        "command_surface_docs" => {
+            validate_relative_pattern(&constraint.source, &format!("{context}.source"))?;
+            validate_relative_path_text(&constraint.target, &format!("{context}.target"))?;
+        }
+        _ => {
+            return Err(format!(
+                "{context}.type: unsupported custom constraint {:?}",
+                constraint.kind
+            ));
+        }
     }
-    validate_relative_pattern(&constraint.source, &format!("{context}.source"))?;
-    validate_relative_template(&constraint.target, &format!("{context}.target"))?;
     if let Some(severity) = &constraint.severity {
         validate_severity(severity).map_err(|error| format!("{context}.severity: {error}"))?;
     }

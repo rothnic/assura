@@ -90,7 +90,8 @@ after a tag is published.
 The following older ideas are not supported release surfaces:
 
 - `assura-codex-feedback` or other package feedback CLIs.
-- `assura check --format codex-hook` or one format value per agent.
+- Unsupported historical: `assura check --format codex-hook` or one format
+  value per agent.
 - Per-agent command entrypoints.
 - Hosted telemetry, dashboards, or automatic remote reporting.
 - Dependency graph validation as a release claim.

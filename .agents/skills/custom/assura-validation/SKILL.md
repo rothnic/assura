@@ -103,7 +103,7 @@ structure:
 - Ensure you have read access to all files being validated
 
 ### Slow performance
-- Use `assura check --cache-dir <path>` for repeated checks
+- Prefer narrow path checks such as `assura check src/` while iterating
 - Exclude `node_modules`, `target`, `.git` directories
 
 ## Examples

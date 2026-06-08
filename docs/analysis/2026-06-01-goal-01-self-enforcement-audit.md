@@ -84,7 +84,7 @@ Searches for retired surfaces still find historical or prohibitive references,
 but no active docs that present them as supported public APIs:
 
 - `assura-codex-feedback`
-- `assura check --format codex-hook`
+- Unsupported historical: `assura check --format codex-hook`
 - package feedback CLI
 - per-agent CLI entrypoints
 - per-agent `--format` values

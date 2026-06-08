@@ -4,3 +4,8 @@
 {"file": "scripts/verify.sh", "reason": "Local gates run: verify:changed, verify:changed --phase pr, verify:evidence, verify:hygiene"}
 {"file": ".github/workflows/security.yml", "reason": "CI security workflow updated for pinned cargo-machete and Node 24 before verify:hygiene"}
 {"file": "docs/analysis/2026-06-08-deslopify-hygiene-evaluation.md", "reason": "Records cargo-machete baseline, nextest rejection, and deferred deny/semver decisions"}
+{"file": "tests/custom_constraints_tests.rs", "reason": "Focused command-surface docs tests cover supported examples plus unsupported flag/value failures"}
+{"file": ".assura/config.yml", "reason": "Self-check now dogfoods command_surface_docs over active docs, analysis docs, goal docs, AGENTS.md, and project skills"}
+{"file": ".assura/config.yml", "reason": "Review fix: expanded dogfood scope to README and website docs while keeping archived/proposal docs out of active policy"}
+{"file": "src/cli/check/command_surface_docs.rs", "reason": "Review agent Locke found cargo-run examples were skipped, nested commands were under-modeled, and contract validation was weak; fixes added tests and passed focused validation"}
+{"file": "src/cli/check/custom_constraints.rs", "reason": "Review agent Locke flagged repeated walks/contract loads; fixes batch command-surface constraints into one walk with cached contracts"}
