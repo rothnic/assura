@@ -9,3 +9,5 @@
 {"file": ".assura/config.yml", "reason": "Review fix: expanded dogfood scope to README and website docs while keeping archived/proposal docs out of active policy"}
 {"file": "src/cli/check/command_surface_docs.rs", "reason": "Review agent Locke found cargo-run examples were skipped, nested commands were under-modeled, and contract validation was weak; fixes added tests and passed focused validation"}
 {"file": "src/cli/check/custom_constraints.rs", "reason": "Review agent Locke flagged repeated walks/contract loads; fixes batch command-surface constraints into one walk with cached contracts"}
+{"file": "scripts/verify.sh", "reason": "Validated completion-audit slice with node --run verify:changed -- --phase pr, cargo fmt --all -- --check, cargo test --all-targets --quiet, cargo clippy --all-targets --all-features -- -D warnings, cargo run --quiet -- check --format json ., node --run verify:evidence, and git diff --check"}
+{"file": "scripts/verify.sh", "reason": "Review agent Noether flagged exact Node engine matching; fixed evidence gate to parse CI workflow node-version baselines and require package engines.node to meet or exceed the highest CI major"}

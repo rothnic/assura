@@ -1,4 +1,7 @@
 {
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "verify:fast": "./scripts/verify.sh fast",
     "verify:check": "./scripts/verify.sh check",
