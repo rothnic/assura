@@ -5,7 +5,7 @@ description: "Brief description of what this skill does and when to use it"
 license: Proprietary. LICENSE.txt has complete terms
 # or: MIT, Apache-2.0, etc.
 compatibility: "Required tools, OS support, dependencies"
-# Example: "Requires Node.js 18+. Works on macOS, Linux, and Windows."
+# Example: "Requires Node.js 24+. Works on macOS, Linux, and Windows."
 ---
 
 # Skill Name
