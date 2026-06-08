@@ -3,13 +3,14 @@ set -euo pipefail
 
 usage() {
   cat <<'USAGE'
-Usage: scripts/verify.sh <fast|check|test|evidence|docs|release-size|release-smoke|release-live|changed|pr|full>
+Usage: scripts/verify.sh <fast|check|test|evidence|hygiene|docs|release-size|release-smoke|release-live|changed|pr|full>
 
 Modes:
   fast           Format, whitespace, focused compile checks, normal tests, and Assura self-check.
   check          Focused compile checks for the primary launcher and full companion.
   test           Rust tests excluding benchmark harness targets.
   evidence       Review evidence, goal metadata, docs links, and stale surface checks.
+  hygiene        Rust dependency hygiene checks that are scoped to Cargo metadata.
   docs           Website static build.
   release-size   Build the local installable release archive and enforce its size budget.
   release-smoke  Build and smoke the local installable release archive.
@@ -45,6 +46,15 @@ run_test() {
 
 run_self_check() {
   cargo run --quiet -- check --format json .
+}
+
+run_hygiene() {
+  if ! command -v cargo-machete >/dev/null 2>&1; then
+    printf 'cargo-machete is required for verify:hygiene. Install with: cargo install cargo-machete --version 0.9.2 --locked\n' >&2
+    return 127
+  fi
+
+  cargo machete
 }
 
 run_trellis_state_check() {
@@ -382,6 +392,123 @@ for manifest in manifest_files:
         ):
             errors.append(f"{manifest}: forbidden per-agent CLI bin {bin_name!r}")
 
+manifest_claims = [
+    (
+        pathlib.Path("Cargo.toml"),
+        re.compile(r'^description\s*=\s*"([^"]*)"', re.MULTILINE),
+        "package description",
+    ),
+    (
+        pathlib.Path("src/cli/args.rs"),
+        re.compile(r'#\[command\(about\s*=\s*"([^"]*)"\)\]'),
+        "CLI about text",
+    ),
+]
+unsupported_claim_patterns = [
+    (
+        re.compile(r"\bdependency-aware\b", re.IGNORECASE),
+        "dependency-aware release positioning",
+    ),
+    (
+        re.compile(r"\bcircular dependency detection\b", re.IGNORECASE),
+        "circular dependency detection release positioning",
+    ),
+    (
+        re.compile(r"\bdependency graph validation\b", re.IGNORECASE),
+        "dependency graph validation release positioning",
+    ),
+    (
+        re.compile(r"\bmaturity detection\b", re.IGNORECASE),
+        "maturity detection release positioning",
+    ),
+]
+
+def unsupported_release_claim_hits(text):
+    hits = []
+    for pattern, reason in unsupported_claim_patterns:
+        for match in pattern.finditer(text):
+            hits.append((match.group(0), reason))
+    return hits
+
+for sample in [
+    "Dependency-aware file system validation engine",
+    "circular dependency detection",
+    "dependency graph validation",
+    "maturity detection",
+]:
+    if not unsupported_release_claim_hits(sample):
+        errors.append(f"public-surface self-test failed to reject {sample!r}")
+
+for sample in [
+    "Structure-first repository validation CLI",
+    "dependency graph validation is unsupported",
+]:
+    # The detector is intentionally used only on release-positioning fields;
+    # docs may mention unsupported surfaces when clearly classifying them.
+    if sample == "Structure-first repository validation CLI" and unsupported_release_claim_hits(sample):
+        errors.append(f"public-surface self-test rejected valid claim {sample!r}")
+
+for path, pattern, field_name in manifest_claims:
+    if not path.exists():
+        errors.append(f"{path}: required public-surface claim file is missing")
+        continue
+    text = path.read_text(errors="ignore")
+    match = pattern.search(text)
+    if not match:
+        errors.append(f"{path}: missing {field_name}")
+        continue
+    claim = match.group(1)
+    for surface, reason in unsupported_release_claim_hits(claim):
+        errors.append(f"{path}: {field_name} contains unsupported claim {surface!r} ({reason})")
+
+cargo_manifest = pathlib.Path("Cargo.toml")
+if cargo_manifest.exists():
+    text = cargo_manifest.read_text(errors="ignore")
+    keyword_match = re.search(r'^keywords\s*=\s*\[(.*?)\]', text, re.MULTILINE)
+    if keyword_match and re.search(r'"dependencies"', keyword_match.group(1)):
+        errors.append(f"{cargo_manifest}: keywords must not imply dependency graph validation support")
+
+lib_rs = pathlib.Path("src/lib.rs")
+if lib_rs.exists():
+    lib_text = lib_rs.read_text(errors="ignore")
+    if "unstable internal APIs" not in lib_text:
+        errors.append(f"{lib_rs}: missing crate-level unstable internal API marker")
+    module_markers = {
+        "intelligence": "not a supported dependency graph validation release surface",
+        "maturity": "not a supported maturity detection release surface",
+        "validation": "do not carry a pre-1.0 compatibility guarantee",
+    }
+    for module, marker in module_markers.items():
+        module_pattern = re.compile(
+            rf"{re.escape(marker)}(?:(?!^pub mod ).)*^pub mod {module};",
+            re.MULTILINE | re.DOTALL,
+        )
+        if not module_pattern.search(lib_text):
+            errors.append(f"{lib_rs}: public module {module!r} is missing adjacent marker {marker!r}")
+else:
+    errors.append(f"{lib_rs}: required library entrypoint is missing")
+
+support_policy = pathlib.Path("docs/support-policy.md")
+compatibility_surface = pathlib.Path("docs/compatibility-and-surface.md")
+if support_policy.exists():
+    support_text = support_policy.read_text(errors="ignore")
+    if "Public Rust module visibility in `src/lib.rs`" not in support_text:
+        errors.append(f"{support_policy}: missing Rust module visibility support-policy language")
+else:
+    errors.append(f"{support_policy}: required support policy is missing")
+
+if compatibility_surface.exists():
+    compatibility_text = compatibility_surface.read_text(errors="ignore")
+    for marker in [
+        "## Rust Library Surface",
+        "These exports are unstable internal APIs before 1.0",
+        "Public module visibility in `src/lib.rs` does not imply release support",
+    ]:
+        if marker not in compatibility_text:
+            errors.append(f"{compatibility_surface}: missing public-surface marker {marker!r}")
+else:
+    errors.append(f"{compatibility_surface}: required compatibility matrix is missing")
+
 if errors:
     for error in errors:
         print(error, file=sys.stderr)
@@ -687,6 +814,9 @@ case "$mode" in
     scripts/check-ci-scope.sh
     run_trellis_state_check
     run_evidence_policy_check
+    ;;
+  hygiene)
+    run_hygiene
     ;;
   docs)
     run_docs

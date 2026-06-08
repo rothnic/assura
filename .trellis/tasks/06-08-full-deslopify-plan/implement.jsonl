@@ -2,3 +2,8 @@
 {"file": ".trellis/spec/assura/tooling-stabilization.md", "reason": "Change-scoped validation and performance/no-regression gate policy"}
 {"file": ".trellis/spec/guides/index.md", "reason": "Cross-layer and code-reuse thinking triggers for cleanup changes"}
 {"file": "docs/analysis/2026-06-05-p0-repo-cleanup-findings.md", "reason": "Completed stale-surface cleanup and command-surface follow-up rule context"}
+{"file": "scripts/verify.sh", "reason": "Public-surface claim detector and scoped cargo-machete hygiene gate implementation"}
+{"file": ".assura/config.yml", "reason": "Dogfood policy tightening for skills, fixtures, live goals, module topology, and scoped hygiene checks"}
+{"file": "Cargo.toml", "reason": "Public package claim alignment and unused dependency removal"}
+{"file": "docs/analysis/2026-06-08-deslopify-dead-path-classification.md", "reason": "Dead or abandoned path classification evidence for audited module families"}
+{"file": "docs/goals/assura-rule-public-surface-support-matrix.md", "reason": "Durable generalized rule follow-up pattern for support-matrix detection"}

@@ -48,7 +48,7 @@ Create the repository:
 cd /Users/nroth/workspace/assura
 gh repo create rothnic/assura \
   --public \
-  --description "Dependency-aware file system validation engine" \
+  --description "Structure-first repository validation CLI" \
   --source=. \
   --remote=origin \
   --push

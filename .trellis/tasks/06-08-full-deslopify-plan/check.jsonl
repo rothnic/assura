@@ -1,3 +1,6 @@
 {"file": ".trellis/spec/assura/tooling-stabilization.md", "reason": "Required local/CI validation gates and performance evidence policy"}
 {"file": ".trellis/spec/assura/index.md", "reason": "Reviewer blocking criteria for unsupported surfaces and validation debt"}
 {"file": "docs/analysis/2026-06-05-p0-repo-cleanup-findings.md", "reason": "Regression scope for stale command/action examples and deterministic follow-up rules"}
+{"file": "scripts/verify.sh", "reason": "Local gates run: verify:changed, verify:changed --phase pr, verify:evidence, verify:hygiene"}
+{"file": ".github/workflows/security.yml", "reason": "CI security workflow updated for pinned cargo-machete and Node 24 before verify:hygiene"}
+{"file": "docs/analysis/2026-06-08-deslopify-hygiene-evaluation.md", "reason": "Records cargo-machete baseline, nextest rejection, and deferred deny/semver decisions"}

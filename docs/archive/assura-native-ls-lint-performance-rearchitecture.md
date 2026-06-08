@@ -1249,7 +1249,7 @@ Reviewers should block on any of these:
   validation hygiene for the performance branch, not a new speed claim.
   Evidence: `src/cli/check.rs`, `src/cli/check/report.rs`, `wc -l
   src/cli/check.rs src/cli/check/report.rs`, and `target/release/assura-check
-  --quiet docs/goals/assura-native-ls-lint-performance-rearchitecture.md
+  --quiet docs/archive/assura-native-ls-lint-performance-rearchitecture.md
   src/cli/check.rs src/cli/check/report.rs src/cli/check/prepared.rs
   src/cli/check/traversal.rs`.
 - 2026-05-19: Split LS-Lint fast naming compilation/matching into
@@ -1478,7 +1478,7 @@ Reviewers should block on any of these:
   --all -- --check`, `cargo clippy -p assura --lib -- -D warnings`, `cargo
   build --release -p assura-check-cli`, `target/release/assura-check --quiet
   src/cli/check/direct_contents.rs tests/direct_count_exclusion_tests.rs
-  docs/goals/assura-native-ls-lint-performance-rearchitecture.md`, and
+  docs/archive/assura-native-ls-lint-performance-rearchitecture.md`, and
   `target/performance/direct-count-one-pass-smoke.json`, and `git diff
   --check`.
 - 2026-05-19: Reduced duplicated traversal work in the LS-Lint-compatible fast
@@ -1502,7 +1502,7 @@ Reviewers should block on any of these:
   `target/release/assura-check --quiet src/cli/check/ls_fast.rs
   src/cli/check/ls_fast_counts.rs src/cli/check/direct_contents.rs
   tests/direct_count_exclusion_tests.rs
-  docs/goals/assura-native-ls-lint-performance-rearchitecture.md`,
+  docs/archive/assura-native-ls-lint-performance-rearchitecture.md`,
   `target/performance/fast-count-one-pass-smoke.json`, and `git diff --check`.
 - 2026-05-19: Tightened the fast-count helper after the one-pass traversal
   refactor by removing duplicate child-name vectors for count-bearing
@@ -1525,7 +1525,7 @@ Reviewers should block on any of these:
   `target/release/assura-check --quiet src/cli/check/ls_fast.rs
   src/cli/check/ls_fast_counts.rs src/cli/check/direct_contents.rs
   tests/direct_count_exclusion_tests.rs
-  docs/goals/assura-native-ls-lint-performance-rearchitecture.md`,
+  docs/archive/assura-native-ls-lint-performance-rearchitecture.md`,
   `target/performance/fast-count-entry-reuse-smoke.json`, and `git diff
   --check`.
 - 2026-05-19: Rejected a dot-suffix lookup map for LS-Lint fast filename

@@ -1,6 +1,6 @@
 # Assura Project Spec
 
-Assura is a pre-1.0 Rust CLI and library for dependency-aware filesystem
+Assura is a pre-1.0 Rust CLI and library for structure-first repository
 validation. The current product priority is a reliable structure-first CLI that
 can dogfood this repository through `.assura/config.yml` and git hooks before
 expanding into richer dependency and documentation constraints.

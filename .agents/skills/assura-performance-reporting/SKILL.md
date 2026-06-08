@@ -109,7 +109,7 @@ If `pnpm build` fails because dependencies are missing, run `pnpm install` in
   Node wrapper per iteration.
 - Before proposing another cold-start micro-optimization for the native LS-Lint
   2x goal, check `docs/analysis/2026-05-19-ls-lint-2x-completion-audit.md`
-  and `docs/goals/assura-native-ls-lint-performance-rearchitecture.md`. Already
+  and `docs/archive/assura-native-ls-lint-performance-rearchitecture.md`. Already
   rejected experiments include `opt-level=z`, minimal quiet binaries, raw Unix
   entrypoints, quiet-only parser fast paths, default builds without JSON/cache,
   automatic compiled-plan caches, count integration, lazy relative path

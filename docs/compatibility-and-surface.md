@@ -93,6 +93,16 @@ Custom constraints are experimental and first-party in v0.1.0:
 Breaking changes to this experimental surface are allowed before 1.0, but must
 be named in release notes.
 
+## Rust Library Surface
+
+The Rust crate exposes modules used by the binaries, tests, and benchmark
+harnesses. These exports are unstable internal APIs before 1.0 unless a support
+matrix row explicitly says otherwise.
+
+Public module visibility in `src/lib.rs` does not imply release support for
+dependency graph validation, maturity detection, or broad validation-engine
+APIs.
+
 ## Unsupported Claims
 
 Do not claim release support for:

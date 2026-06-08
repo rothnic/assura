@@ -22,7 +22,7 @@ This policy applies to Assura pre-1.0 releases.
 | `assura performance-report` | Supported evidence command | Claims must cite checked benchmark or CI artifacts. |
 | `extensions.custom_constraints` | Experimental first-party | Breaking changes are allowed before 1.0 with release-note disclosure. |
 | `assura watch` | Experimental | Do not advertise as release-grade until watch-mode tests and docs exist. |
-| Internal Rust APIs | Unstable | No compatibility guarantee before 1.0. |
+| Internal Rust APIs | Unstable | Public Rust module visibility in `src/lib.rs` is for binaries, tests, and benchmark harnesses unless a row explicitly promotes the API. No compatibility guarantee before 1.0. |
 
 ## Unsupported Surfaces
 
