@@ -198,6 +198,8 @@ structure:
         files:
           naming: "kebab-case"
           allowed_names:
+            - "check-ci-scope.sh"
+            - "ci-scope.sh"
             - "smoke-install-adoption.ps1"
             - "smoke-install-adoption.sh"
             - "verify.sh"

@@ -10,8 +10,40 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  changes:
+    name: Documentation Scope
+    runs-on: ubuntu-latest
+    outputs:
+      rustdoc: ${{ steps.scope.outputs.rustdoc }}
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Classify changed paths
+      id: scope
+      shell: bash
+      run: |
+        case "${{ github.event_name }}" in
+          pull_request)
+            scripts/ci-scope.sh \
+              --base "${{ github.event.pull_request.base.sha }}" \
+              --head "${{ github.event.pull_request.head.sha }}" \
+              --merge-base
+            ;;
+          push)
+            scripts/ci-scope.sh \
+              --base "${{ github.event.before }}" \
+              --head "${{ github.sha }}"
+            ;;
+          *)
+            scripts/ci-scope.sh --all "unsupported event"
+            ;;
+        esac
+
   docs:
     name: Build Documentation
+    needs: changes
+    if: needs.changes.outputs.rustdoc == 'true'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4

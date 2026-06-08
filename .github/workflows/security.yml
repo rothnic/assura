@@ -3,20 +3,49 @@ name: Security Audit
 on:
   push:
     branches: [ main, master ]
-    paths:
-      - '**/Cargo.toml'
-      - '**/Cargo.lock'
   pull_request:
     branches: [ main, master ]
-    paths:
-      - '**/Cargo.toml'
-      - '**/Cargo.lock'
   schedule:
     - cron: '0 0 * * *'  # Run daily at midnight
 
 jobs:
+  changes:
+    name: Security Scope
+    runs-on: ubuntu-latest
+    outputs:
+      security: ${{ steps.scope.outputs.security }}
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Classify changed paths
+      id: scope
+      shell: bash
+      run: |
+        case "${{ github.event_name }}" in
+          pull_request)
+            scripts/ci-scope.sh \
+              --base "${{ github.event.pull_request.base.sha }}" \
+              --head "${{ github.event.pull_request.head.sha }}" \
+              --merge-base
+            ;;
+          push)
+            scripts/ci-scope.sh \
+              --base "${{ github.event.before }}" \
+              --head "${{ github.sha }}"
+            ;;
+          schedule)
+            scripts/ci-scope.sh --all "scheduled audit"
+            ;;
+          *)
+            scripts/ci-scope.sh --all "unsupported event"
+            ;;
+        esac
+
   audit:
     name: Security Audit
+    needs: changes
+    if: needs.changes.outputs.security == 'true'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
