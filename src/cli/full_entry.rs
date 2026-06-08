@@ -6,8 +6,8 @@ use tracing::{error, info};
 
 use super::{
     check_command, info_command, init_command, migrate_command, performance_report_command,
-    status_command, watch_command, CheckCommandOptions, Cli, Commands, ExitCode, HookCommands,
-    PerformanceReportCommandOptions,
+    quality_plan_command, status_command, watch_command, CheckCommandOptions, Cli, Commands,
+    ExitCode, HookCommands, PerformanceReportCommandOptions, QualityCommands,
 };
 
 /// Run the complete Clap/Tokio-powered CLI for non-check commands and fallbacks.
@@ -123,6 +123,27 @@ async fn run_full_cli(cli: Cli) -> ExitCode {
             HookCommands::Uninstall { path } => handle_hooks_uninstall(path).await,
             HookCommands::Status { path } => handle_hooks_status(path).await,
             HookCommands::Verify { path } => handle_hooks_verify(path).await,
+        },
+        Commands::Quality { command } => match command {
+            QualityCommands::Plan {
+                path,
+                files_from,
+                base,
+                head,
+                phase,
+                format,
+            } => {
+                quality_plan_command(super::QualityPlanCommandOptions {
+                    path,
+                    config: config_path,
+                    files_from,
+                    base,
+                    head,
+                    phase,
+                    format,
+                })
+                .await
+            }
         },
     };
 

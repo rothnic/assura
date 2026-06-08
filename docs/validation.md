@@ -10,7 +10,29 @@ Use the narrowest tier that proves the change.
 
 ## Fast Local Gate
 
-Run this during normal editing:
+Run the changed-file gate during normal editing:
+
+```bash
+node --run verify:changed
+node --run verify:changed -- --phase pre-push
+```
+
+This asks `assura quality plan` for the checks selected by
+`.assura/config.yml` under `quality.scopes`, then executes only local shell
+commands selected for the requested phase. It is the default local loop for
+docs, Trellis, website, release, and Rust changes because it avoids rebuilding
+or retesting unrelated surfaces. When a broader local gate such as
+`node --run verify:pr` is selected, narrower checks already covered by that
+gate are skipped. Use `--dry-run` or `--files-from` to inspect a deterministic
+plan:
+
+```bash
+printf 'docs/validation.md\n' \
+  | node --run verify:changed -- --files-from - --dry-run
+```
+
+Run the full fast gate when the changed-file plan is not enough or when you
+want a broad local confidence sweep:
 
 ```bash
 node --run verify:fast
@@ -79,9 +101,25 @@ surfaces such as per-agent feedback CLIs or per-agent check formats.
 
 ## CI Scope Gate
 
-GitHub Actions uses `scripts/ci-scope.sh` to classify changed paths before
-running expensive jobs. Classifier policy is covered by `node --run
-verify:evidence`; test it directly with:
+Assura owns the high-level quality policy in `.assura/config.yml` under
+`quality.scopes`. Use `assura quality plan` to ask which checks apply to a
+changed-file set and workflow phase:
+
+```bash
+printf 'docs/validation.md\nsrc/main.rs\n' \
+  | assura quality plan . --files-from - --phase merge --format json
+```
+
+Phases are cumulative for normal development: `frequent` is the local loop,
+`pre-push` adds branch-push checks, `pr` adds pull-request checks, and `merge`
+adds final merge confidence. `release` adds release-specific checks.
+`scheduled` is separate for background audits.
+
+GitHub Actions currently uses `scripts/ci-scope.sh` as the lightweight bootstrap
+classifier before running expensive jobs. It mirrors the same policy shape but
+does not invoke `assura quality plan` yet because compiling Assura inside the
+first scope job would erase the speed win for docs-only changes. Classifier
+policy is covered by `node --run verify:evidence`; test it directly with:
 
 ```bash
 scripts/check-ci-scope.sh

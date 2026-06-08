@@ -8,6 +8,7 @@
     "verify:release-size": "./scripts/verify.sh release-size",
     "verify:release-smoke": "./scripts/verify.sh release-smoke",
     "verify:release-live": "./scripts/verify.sh release-live",
+    "verify:changed": "./scripts/verify.sh changed",
     "verify:pr": "./scripts/verify.sh pr",
     "verify:full": "./scripts/verify.sh full"
   },

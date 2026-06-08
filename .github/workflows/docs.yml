@@ -50,7 +50,13 @@ jobs:
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
     - name: Cache Rust builds
+      id: rust-cache
       uses: Swatinem/rust-cache@v2
+      with:
+        shared-key: assura-docs-${{ runner.os }}-stable
+        cache-all-crates: true
+    - name: Summarize Rust cache
+      run: bash scripts/summarize-rust-cache.sh "Build Documentation" "${{ steps.rust-cache.outputs.cache-hit }}" "assura-docs-${{ runner.os }}-stable"
     - name: Build docs
       run: cargo doc --no-deps --all-features
       env:

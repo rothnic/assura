@@ -164,6 +164,36 @@ pub enum Commands {
         #[command(subcommand)]
         command: HookCommands,
     },
+
+    #[command(about = "Plan quality gates for changed files")]
+    Quality {
+        #[command(subcommand)]
+        command: QualityCommands,
+    },
+}
+
+#[derive(Subcommand, Debug)]
+pub enum QualityCommands {
+    #[command(about = "Plan required quality gates for changed files")]
+    Plan {
+        #[arg(help = "Project root directory (defaults to current directory)")]
+        path: Option<PathBuf>,
+
+        #[arg(long, help = "Read changed paths from a file, or '-' for stdin")]
+        files_from: Option<String>,
+
+        #[arg(long, help = "Base git revision for diff-based planning")]
+        base: Option<String>,
+
+        #[arg(long, help = "Head git revision for diff-based planning")]
+        head: Option<String>,
+
+        #[arg(long, value_enum, default_value = "pr")]
+        phase: QualityPhase,
+
+        #[arg(short, long, value_enum, default_value = "text")]
+        format: QualityPlanFormat,
+    },
 }
 
 #[derive(Subcommand, Debug)]
@@ -225,6 +255,37 @@ pub enum AgentTarget {
 pub enum PerformanceReportFormat {
     Json,
     Jsonl,
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]
+pub enum QualityPhase {
+    Frequent,
+    PrePush,
+    Pr,
+    Merge,
+    Release,
+    Scheduled,
+}
+
+impl QualityPhase {
+    /// Stable config key for this workflow phase.
+    pub fn as_config_key(self) -> &'static str {
+        match self {
+            Self::Frequent => "frequent",
+            Self::PrePush => "pre_push",
+            Self::Pr => "pr",
+            Self::Merge => "merge",
+            Self::Release => "release",
+            Self::Scheduled => "scheduled",
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]
+pub enum QualityPlanFormat {
+    Text,
+    Json,
+    Github,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]

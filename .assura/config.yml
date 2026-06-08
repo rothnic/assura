@@ -4,6 +4,107 @@ project:
   name: "assura"
   description: "Dependency-aware file system validation engine"
 
+quality:
+  scopes:
+    docs:
+      paths:
+        - "AGENTS.md"
+        - ".agents/**"
+        - ".assura/**"
+        - ".github/PULL_REQUEST_TEMPLATE.md"
+        - ".trellis/**"
+        - "docs/**"
+      frequent:
+        - "python3 ./.trellis/scripts/workflow_gate.py --platform codex"
+        - "cargo run --quiet -- check --format json ."
+        - "node --run verify:evidence"
+        - "git diff --check"
+    website:
+      paths:
+        - "website/package.json"
+        - "website/pnpm-lock.yaml"
+        - "website/astro.config.mjs"
+        - "website/src/**"
+        - "website/public/**"
+        - "website/README.md"
+        - "website/tsconfig.json"
+      pre_push:
+        - "node --run verify:docs"
+    rust:
+      paths:
+        - "Cargo.toml"
+        - "Cargo.lock"
+        - ".cargo/**"
+        - "benches/**"
+        - "build.rs"
+        - "src/**"
+        - "tests/**"
+        - "crates/**"
+        - "examples/**"
+      frequent:
+        - "node --run verify:check"
+        - "node --run verify:test"
+        - "cargo run --quiet -- check --format json ."
+      pr:
+        - "node --run verify:pr"
+      merge:
+        - "Code Coverage"
+    security:
+      paths:
+        - "Cargo.toml"
+        - "Cargo.lock"
+      pr:
+        - "Security Audit"
+      scheduled:
+        - "Security Audit"
+    release:
+      paths:
+        - "website/public/install.sh"
+        - "website/public/install.ps1"
+        - "scripts/smoke-install-adoption.sh"
+        - "scripts/smoke-install-adoption.ps1"
+        - "docs/release-notes.md"
+        - "docs/release-candidate-checklist.md"
+        - "docs/support-policy.md"
+        - "docs/compatibility-and-surface.md"
+      pr:
+        - "node --run verify:release-smoke"
+      merge:
+        - "Release Bundle Smoke"
+        - "Windows Installer Smoke"
+        - "Installable Adoption Smoke"
+    performance:
+      paths:
+        - "benches/**"
+        - "benches/history/**"
+        - "website/public/data/performance/**"
+        - "website/src/content/docs/reference/performance*"
+        - "docs/analysis/*performance*"
+      pr:
+        - "Performance Report"
+        - "node --run verify:docs"
+    workflow:
+      paths:
+        - ".github/workflows/**"
+        - "package.json"
+        - "scripts/ci-scope.sh"
+        - "scripts/check-ci-scope.sh"
+        - "scripts/summarize-rust-cache.sh"
+        - "scripts/verify.sh"
+      frequent:
+        - "python3 ./.trellis/scripts/workflow_gate.py --platform codex"
+        - "cargo run --quiet -- check --format json ."
+        - "node --run verify:evidence"
+        - "git diff --check"
+      pr:
+        - "node --run verify:pr"
+        - "Release Bundle Smoke"
+        - "Windows Installer Smoke"
+        - "Installable Adoption Smoke"
+        - "Code Coverage"
+        - "Performance Report"
+        - "Security Audit"
+
 # Root directory - only standard project files allowed
 # Special documents (AGENTS.md, CONSTITUTION.md) allowed in SCREAMING_SNAKE_CASE
 # All other root files must be standard project files
@@ -202,6 +303,7 @@ structure:
             - "ci-scope.sh"
             - "smoke-install-adoption.ps1"
             - "smoke-install-adoption.sh"
+            - "summarize-rust-cache.sh"
             - "verify.sh"
           allow_extra: false
         directories:

@@ -197,6 +197,68 @@ structure:
 }
 
 #[test]
+fn quality_plan_emits_config_backed_checks_for_changed_paths() {
+    let project = TempDir::new().unwrap();
+    let assura_dir = project.path().join(".assura");
+    fs::create_dir(&assura_dir).unwrap();
+    fs::write(
+        assura_dir.join("config.yml"),
+        r#"
+quality:
+  scopes:
+    docs:
+      paths:
+        - "docs/**"
+      frequent:
+        - "node --run verify:evidence"
+    rust:
+      paths:
+        - "src/**"
+      frequent:
+        - "node --run verify:check"
+      pr:
+        - "node --run verify:pr"
+      merge:
+        - "Code Coverage"
+structure: {}
+"#,
+    )
+    .unwrap();
+    let changed = project.path().join("changed.txt");
+    fs::write(&changed, "docs/validation.md\nsrc/main.rs\n").unwrap();
+
+    let output = Command::new(assura_bin())
+        .arg("quality")
+        .arg("plan")
+        .arg(project.path())
+        .arg("--files-from")
+        .arg(&changed)
+        .arg("--phase")
+        .arg("merge")
+        .arg("--format")
+        .arg("json")
+        .output()
+        .unwrap();
+
+    assert!(
+        output.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    let json: Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(json["schema_version"], "assura.quality-plan.v1");
+    assert_eq!(json["phase"], "merge");
+    assert_eq!(json["scopes"].as_array().unwrap().len(), 2);
+    let checks = json["checks"].as_array().unwrap();
+    assert!(checks.contains(&Value::String("node --run verify:evidence".to_string())));
+    assert!(checks.contains(&Value::String("node --run verify:check".to_string())));
+    assert!(checks.contains(&Value::String("node --run verify:pr".to_string())));
+    assert!(checks.contains(&Value::String("Code Coverage".to_string())));
+}
+
+#[test]
 fn watch_returns_check_failure_for_invalid_project() {
     let project = TempDir::new().unwrap();
     let assura_dir = project.path().join(".assura");

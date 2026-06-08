@@ -55,7 +55,13 @@ jobs:
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
     - name: Cache Rust builds
+      id: rust-cache
       uses: Swatinem/rust-cache@v2
+      with:
+        shared-key: assura-debug-${{ runner.os }}-stable
+        cache-all-crates: true
+    - name: Summarize Rust cache
+      run: bash scripts/summarize-rust-cache.sh "Check" "${{ steps.rust-cache.outputs.cache-hit }}" "assura-debug-${{ runner.os }}-stable"
     - name: Check
       run: cargo check --all-targets --all-features
 
@@ -68,7 +74,13 @@ jobs:
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
     - name: Cache Rust builds
+      id: rust-cache
       uses: Swatinem/rust-cache@v2
+      with:
+        shared-key: assura-debug-${{ runner.os }}-stable
+        cache-all-crates: true
+    - name: Summarize Rust cache
+      run: bash scripts/summarize-rust-cache.sh "Evidence Gates" "${{ steps.rust-cache.outputs.cache-hit }}" "assura-debug-${{ runner.os }}-stable"
     - name: Verify Assura project structure
       run: cargo run --quiet -- check --format json .
     - name: Setup Node
@@ -104,7 +116,13 @@ jobs:
       with:
         components: clippy
     - name: Cache Rust builds
+      id: rust-cache
       uses: Swatinem/rust-cache@v2
+      with:
+        shared-key: assura-debug-${{ runner.os }}-stable
+        cache-all-crates: true
+    - name: Summarize Rust cache
+      run: bash scripts/summarize-rust-cache.sh "Clippy" "${{ steps.rust-cache.outputs.cache-hit }}" "assura-debug-${{ runner.os }}-stable"
     - name: Lint with clippy
       run: cargo clippy --all-targets --all-features -- -D warnings
 
@@ -128,7 +146,13 @@ jobs:
       with:
         toolchain: ${{ matrix.rust }}
     - name: Cache Rust builds
+      id: rust-cache
       uses: Swatinem/rust-cache@v2
+      with:
+        shared-key: assura-debug-${{ runner.os }}-${{ matrix.rust }}
+        cache-all-crates: true
+    - name: Summarize Rust cache
+      run: bash scripts/summarize-rust-cache.sh "Test Suite" "${{ steps.rust-cache.outputs.cache-hit }}" "assura-debug-${{ runner.os }}-${{ matrix.rust }}"
     - name: Run tests
       run: cargo test --all-features
 
@@ -142,7 +166,13 @@ jobs:
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
     - name: Cache Rust builds
+      id: rust-cache
       uses: Swatinem/rust-cache@v2
+      with:
+        shared-key: assura-release-${{ runner.os }}-host
+        cache-all-crates: true
+    - name: Summarize Rust cache
+      run: bash scripts/summarize-rust-cache.sh "Release Bundle Smoke" "${{ steps.rust-cache.outputs.cache-hit }}" "assura-release-${{ runner.os }}-host"
     - name: Build installable bundle
       run: |
         cargo rustc --release --bin assura --no-default-features --features json-output,yaml-config -- -C target-feature=+crt-static -C link-arg=-lgcc_eh
@@ -181,7 +211,14 @@ jobs:
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
     - name: Cache Rust builds
+      id: rust-cache
       uses: Swatinem/rust-cache@v2
+      with:
+        shared-key: assura-release-${{ runner.os }}-host
+        cache-all-crates: true
+    - name: Summarize Rust cache
+      shell: bash
+      run: bash scripts/summarize-rust-cache.sh "Windows Installer Smoke" "${{ steps.rust-cache.outputs.cache-hit }}" "assura-release-${{ runner.os }}-host"
     - name: Build installable Windows bundle
       shell: pwsh
       run: |
@@ -246,7 +283,14 @@ jobs:
       with:
         targets: ${{ matrix.target }}
     - name: Cache Rust builds
+      id: rust-cache
       uses: Swatinem/rust-cache@v2
+      with:
+        shared-key: assura-release-${{ runner.os }}-${{ matrix.target }}
+        cache-all-crates: true
+    - name: Summarize Rust cache
+      shell: bash
+      run: bash scripts/summarize-rust-cache.sh "Installable Adoption Smoke (${{ matrix.label }})" "${{ steps.rust-cache.outputs.cache-hit }}" "assura-release-${{ runner.os }}-${{ matrix.target }}"
     - name: Build release-style archive (Unix)
       if: matrix.archive_kind == 'tar'
       shell: bash
@@ -355,7 +399,13 @@ jobs:
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
     - name: Cache Rust builds
+      id: rust-cache
       uses: Swatinem/rust-cache@v2
+      with:
+        shared-key: assura-debug-${{ runner.os }}-stable
+        cache-all-crates: true
+    - name: Summarize Rust cache
+      run: bash scripts/summarize-rust-cache.sh "Code Coverage" "${{ steps.rust-cache.outputs.cache-hit }}" "assura-debug-${{ runner.os }}-stable"
     - name: Install tarpaulin
       run: cargo install cargo-tarpaulin
     - name: Generate coverage
@@ -397,7 +447,13 @@ jobs:
       with:
         node-version: 22
     - name: Cache Rust builds
+      id: rust-cache
       uses: Swatinem/rust-cache@v2
+      with:
+        shared-key: assura-release-${{ runner.os }}-host
+        cache-all-crates: true
+    - name: Summarize Rust cache
+      run: bash scripts/summarize-rust-cache.sh "Performance Report" "${{ steps.rust-cache.outputs.cache-hit }}" "assura-release-${{ runner.os }}-host"
     - name: Build release performance bundle
       run: |
         cargo build --release --bin assura --no-default-features --features json-output,yaml-config

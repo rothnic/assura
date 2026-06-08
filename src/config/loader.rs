@@ -172,6 +172,67 @@ structure: {}
     }
 
     #[test]
+    fn test_parse_with_quality_scopes() {
+        let yaml = r#"
+quality:
+  scopes:
+    rust:
+      paths:
+        - "src/**"
+      frequent:
+        - "node --run verify:check"
+      pr:
+        - "node --run verify:pr"
+structure: {}
+"#;
+
+        let config = ConfigLoader::parse(yaml).unwrap();
+        let quality = config.quality.unwrap();
+        let rust = quality.scopes.get("rust").unwrap();
+        assert_eq!(rust.paths, vec!["src/**"]);
+        assert_eq!(rust.frequent, vec!["node --run verify:check"]);
+        assert_eq!(rust.pr, vec!["node --run verify:pr"]);
+    }
+
+    #[test]
+    fn test_parse_rejects_invalid_quality_scope_pattern() {
+        let yaml = r#"
+quality:
+  scopes:
+    rust:
+      paths:
+        - "../src/**"
+structure: {}
+"#;
+
+        let error = ConfigLoader::parse(yaml).unwrap_err().to_string();
+        assert!(
+            error.contains("must be relative"),
+            "unexpected error: {error}"
+        );
+    }
+
+    #[test]
+    fn test_parse_rejects_unknown_quality_scope_keys() {
+        let yaml = r#"
+quality:
+  scopes:
+    rust:
+      paths:
+        - "src/**"
+      pre-push:
+        - "node --run verify:test"
+structure: {}
+"#;
+
+        let error = ConfigLoader::parse(yaml).unwrap_err().to_string();
+        assert!(
+            error.contains("unknown field") && error.contains("pre-push"),
+            "unexpected error: {error}"
+        );
+    }
+
+    #[test]
     fn test_parse_rejects_unsupported_custom_constraint_type() {
         let yaml = r#"
 extensions:
