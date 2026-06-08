@@ -392,6 +392,30 @@ for manifest in manifest_files:
         ):
             errors.append(f"{manifest}: forbidden per-agent CLI bin {bin_name!r}")
 
+root_package = pathlib.Path("package.json")
+if root_package.exists():
+    data = json.loads(root_package.read_text())
+    node_engine = data.get("engines", {}).get("node")
+    workflow_node_versions = []
+    for workflow in sorted(pathlib.Path(".github/workflows").glob("*.yml")):
+        for match in re.finditer(
+            r"(?m)^\s*node-version:\s*['\"]?([0-9]+)(?:\.[0-9]+){0,2}['\"]?\s*$",
+            workflow.read_text(errors="ignore"),
+        ):
+            workflow_node_versions.append((workflow, int(match.group(1))))
+    if not workflow_node_versions:
+        errors.append(".github/workflows: missing setup-node node-version baseline")
+    else:
+        required_node_major = max(version for _, version in workflow_node_versions)
+        engine_match = re.fullmatch(
+            r">=\s*([0-9]+)(?:\.[0-9]+){0,2}", str(node_engine or "")
+        )
+        if not engine_match or int(engine_match.group(1)) < required_node_major:
+            errors.append(
+                f"{root_package}: engines.node must be >= {required_node_major} "
+                "to match the highest CI setup-node baseline"
+            )
+
 manifest_claims = [
     (
         pathlib.Path("Cargo.toml"),

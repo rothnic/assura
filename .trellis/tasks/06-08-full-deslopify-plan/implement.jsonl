@@ -13,3 +13,6 @@
 {"file": "docs/goals/assura-rule-command-surface-documentation.md", "reason": "Marked command-surface rule follow-up implemented with detector shape, examples, and validation evidence"}
 {"file": "src/cli/check/custom_constraints.rs", "reason": "Review fix: batched command_surface_docs evaluation into one walk with cached command contracts"}
 {"file": "src/cli/check/command_surface_docs.rs", "reason": "Review fix: validate cargo-run examples, longest nested command prefixes, flag requirements, and contract alias collisions"}
+{"file": "package.json", "reason": "Pinned local Node runtime policy to >=24 to match CI setup-node 24"}
+{"file": "scripts/verify.sh", "reason": "Evidence gate now rejects package Node engine drift below the CI Node 24 baseline"}
+{"file": "docs/analysis/2026-06-08-deslopify-completion-audit.md", "reason": "Maps the deslopify PRD requirements to current checked evidence and remaining durable follow-up boundaries"}
