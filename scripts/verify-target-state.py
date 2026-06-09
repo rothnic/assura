@@ -297,7 +297,7 @@ def check_agent_workflow_state(checks: Checks) -> None:
     workflow_json = json.loads(command_output(["python3", "-B", ".trellis/scripts/workflow_gate.py", "--platform", "codex", "--json"]))
     task = workflow_json.get("task") or {}
     git = workflow_json.get("git") or {}
-    if task:
+    if task.get("path"):
         checks.require(
             task.get("status") in {"planning", "in_progress"},
             "workflow gate: active task must be planning or in_progress",
