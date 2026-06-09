@@ -11,7 +11,7 @@ release until a newer release process replaces it.
 ## Release Scope
 
 - Public CLI surface: `assura check`, `init`, `status`, `migrate`, `hooks`,
-  and `performance-report`.
+  `quality plan`, and `performance-report`.
 - Stable agent feedback surface: `assura check --format agent`.
 - Codex adapter: `assura check --format agent --agent codex`.
 - Experimental extension surface: first-party

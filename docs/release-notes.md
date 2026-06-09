@@ -23,12 +23,15 @@ The v0.1.0 release candidate supports these public commands:
 - `assura status --format json` for project/config/rule summaries.
 - `assura migrate` for supported LS-Lint configuration migration.
 - `assura hooks` for local git hook installation and inspection.
+- `assura quality plan` for deterministic local quality-gate planning from
+  `.assura/config.yml`.
 - `assura performance-report` for checked Assura versus LS-Lint performance
   evidence.
 
-`assura watch` remains present in the CLI, but the release support policy treats
-long-running watch behavior as experimental until a dedicated watch-mode goal
-adds release-grade tests and docs.
+`assura info` and `assura watch` remain present in the CLI, but the release
+support policy treats `assura info` as an experimental diagnostic and
+long-running watch behavior as experimental until dedicated goals add
+release-grade tests and docs.
 
 ## Installable Archives
 

@@ -3,13 +3,14 @@ set -euo pipefail
 
 usage() {
   cat <<'USAGE'
-Usage: scripts/verify.sh <fast|check|test|evidence|hygiene|docs|release-size|release-smoke|release-live|changed|pr|full>
+Usage: scripts/verify.sh <fast|check|test|evidence|target-state|hygiene|docs|release-size|release-smoke|release-live|changed|pr|full>
 
 Modes:
   fast           Format, whitespace, focused compile checks, normal tests, and Assura self-check.
   check          Focused compile checks for the primary launcher and full companion.
   test           Rust tests excluding benchmark harness targets.
   evidence       Review evidence, goal metadata, docs links, and stale surface checks.
+  target-state   Source-of-truth repo target-state audit and P0 drift detectors.
   hygiene        Rust dependency hygiene checks that are scoped to Cargo metadata.
   docs           Website static build.
   release-size   Build the local installable release archive and enforce its size budget.
@@ -542,6 +543,10 @@ print("Review evidence policy checks passed.")
 PY
 }
 
+run_target_state() {
+  python3 scripts/verify-target-state.py
+}
+
 run_docs() {
   if command -v pnpm >/dev/null 2>&1; then
     pnpm --dir website build
@@ -839,6 +844,9 @@ case "$mode" in
     run_trellis_state_check
     run_evidence_policy_check
     ;;
+  target-state)
+    run_target_state
+    ;;
   hygiene)
     run_hygiene
     ;;
@@ -859,6 +867,7 @@ case "$mode" in
     ;;
   pr)
     "$0" fast
+    run_target_state
     cargo clippy --all-targets --all-features -- -D warnings
     run_docs
     ;;

@@ -44,6 +44,33 @@ starting broad cleanup.
 | Agent workflow | `AGENTS.md`, Trellis, skills, and `workflow_gate.py` now encode clean-start state. Recent user corrections show the state machine must be consulted every turn and dirty work must be resolved automatically when ownership is clear. | Aligned in tooling, needs enforcement habit. | Add deterministic workflow-state checks to planning/PR gates and keep root `AGENTS.md` concise. |
 | Assura-rule generalization | Follow-up goals exist for command surface, manifest semantics, module topology, test relationship, release sync, and public surface support matrix. | Good backlog, not done. | Prioritize implementation by risk and reuse across repositories. |
 
+## Repo Inventory
+
+| Area | Inventory Evidence | Target-State Role | Current Classification |
+| --- | --- | --- | --- |
+| src | Rust library and CLI implementation, including `cli`, `config`, `constraints`, `intelligence`, `markdown`, `maturity`, and `validation`. | Product implementation plus contained internal/experimental modules. | contained/acceptable |
+| crates | `crates/assura-check-cli` internal low-latency support binaries and daemon/client helpers. | Internal workspace member for performance and local-check evidence. | contained/acceptable |
+| tests | CLI, LS-Lint, config, constraints, markdown, maturity, policy-language, performance-contract, and agent-feedback tests. | Supported surface proof and regression coverage. | aligned |
+| benches | Criterion benchmarks and checked history under `benches/history`. | Performance evidence and claim governance. | aligned |
+| docs | Active support, compatibility, release, validation, analysis, goals, archive, and proposal documents. | Human-facing source of truth, release claims, and durable planning evidence. | misaligned |
+| .agents | Project skills and skill routing. | Progressive-disclosure operational guidance for agents. | aligned |
+| .trellis | Canonical workflow, task, spec, and state scripts. | Agent workflow state machine and task continuity. | aligned |
+| .github | PR template, issue templates, and CI/release/security workflows. | Hosted validation, release, and review evidence. | aligned |
+| .assura | Structure config, command-surface contract, and local hooks. | Self-enforcement configuration and quality-scope source of truth. | aligned |
+| release files | `Cargo.toml`, `Cargo.lock`, release notes, release checklist, install scripts, smoke scripts, and release workflow. | Version, install, release, and compatibility contract. | uncertain |
+| website-facing claims | Website docs, install scripts, and checked performance data under `website/public`. | Public onboarding, release, and performance claim surface. | uncertain |
+
+## Source-of-Truth Classification
+
+| Surface | Classification | Evidence | Required Action |
+| --- | --- | --- | --- |
+| `assura check`, reports, and structure validation | aligned | Support policy, compatibility matrix, CLI tests, and self-check. | Keep command-surface and test relationship detectors active. |
+| `assura quality plan` local workflow | aligned | Tooling spec, `.assura/config.yml`, `docs/validation.md`, and changed-check scripts. | Keep classified as supported local workflow. |
+| `assura info` diagnostic CLI | uncertain | CLI and website docs expose it, but release notes did not previously classify it. | Classify as experimental diagnostic until release-grade tests/docs exist. |
+| `src/intelligence`, `src/maturity`, broad `src/validation` exports | contained/acceptable | `src/lib.rs` unstable/internal markers and support policy. | Keep support-matrix detector; do not delete before test relationship audit. |
+| Dense active docs/history | misaligned | Many active dated analysis files and release/performance claims. | Add docs lifecycle and stale-claim detectors before broad cleanup. |
+| Manual ignored performance test | remove/refactor candidate | `tests/ls_lint_parity_regression_tests.rs` has an ignored manual audit fixture. | Keep as the only allowed ignored Rust test until it is replaced with automated benchmark evidence. |
+
 ## Priority Backlog
 
 | Priority | Change | Detector Owner |
@@ -56,6 +83,19 @@ starting broad cleanup.
 | P1 | Implement release-sync checks across version, MSRV, installers, release notes, support docs, website install copy, and workflows. | New release-sync rule plus evidence verifier. |
 | P2 | Evaluate license/source policy before `cargo-deny`; evaluate semver checks after public API support policy is stricter. | External tools with Assura quality-scope routing. |
 | P2 | Consider splitting or renaming modules only after the support matrix distinguishes current product code from experimental/internal evidence code. | Human architecture review plus module topology reports. |
+
+## Backlog And Detector Ownership
+
+| Priority | Concrete Finding | Affected Files/Surfaces | Expected Target State | Remediation Action | Deterministic Detector | Owner |
+| --- | --- | --- | --- | --- | --- | --- |
+| P0 | CLI commands can exist without clear support classification. | `.assura/command-surface.yml`, `docs/support-policy.md`, `docs/compatibility-and-surface.md`, `docs/release-notes.md` | Every exposed command is supported, experimental, internal, roadmap, or unsupported. | Classify `assura quality plan` and `assura info`; reject future unclassified commands. | `node --run verify:target-state` command-surface support check | Assura support-matrix rule |
+| P0 | Workspace member metadata can drift from release/MSRV policy. | `Cargo.toml`, `crates/assura-check-cli/Cargo.toml` | Root and internal workspace crates declare compatible version, MSRV, license, and publish policy. | Add internal crate metadata and check Cargo manifests. | `node --run verify:target-state` manifest semantics check | Cargo manifest semantics rule |
+| P0 | Supported surfaces can lose test or source coverage evidence. | `tests/**`, `src/cli/**`, `crates/assura-check-cli/tests/**` | Supported CLI and workflow surfaces have mapped coverage markers. | Add relationship mapping for current supported surfaces. | `node --run verify:target-state` test relationship check | Test relationship rule |
+| P0 | Release and performance claims can drift across docs, installers, and checked JSON. | Release docs, install scripts, `benches/history/current.json`, `website/public/data/performance/current.json` | Version, archive names, and current performance data agree. | Check release docs/scripts and compare performance JSON artifacts. | `node --run verify:target-state` docs/release/performance check | Release-sync rule |
+| P0 | Agents can claim readiness while workflow state is ambiguous. | `.trellis/scripts/workflow_gate.py`, active task metadata, branch state | Active task, branch, and task artifacts are deterministic before target-state validation. | Run workflow gate JSON checks and keep final clean status as handoff evidence. | `node --run verify:target-state` workflow-state check plus `git status --short --branch` | Agent workflow gate |
+| P1 | Active docs can accumulate stale roadmap or historical analysis claims. | `docs/analysis/**`, `docs/goals/**`, website docs | Active docs have lifecycle status and stale public claims are rejected. | Extend docs lifecycle detection beyond current command-surface patterns. | `node --run verify:evidence` plus future stale-claim custom constraint | Docs lifecycle rule |
+| P1 | Module topology limits cap file size but do not prove cohesion. | `src/cli/check/**`, `src/cli/performance_report/**`, `src/{intelligence,maturity,validation}` | Module families have named ownership and public-support status. | Implement module topology rule before large refactors. | Future module-topology rule | Human architecture review |
+| P2 | License/source policy is not defined. | Cargo dependencies and CI security workflow | Dependency source and license policy is explicit before adopting `cargo-deny`. | Draft policy, then wire external tool. | External `cargo-deny` only after policy | Security/tooling follow-up |
 
 ## Deterministic Detection Strategy
 

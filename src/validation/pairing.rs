@@ -178,10 +178,23 @@ impl PairingValidator {
 
         if let Some(end) = rest.find('}') {
             let suffix = &rest[end + 1..];
-            let file_str = file_path.to_string_lossy();
+            let file_name = file_path.file_name()?.to_string_lossy();
+            let full_path = file_path.to_string_lossy();
+            let candidate = if prefix.contains('/') || prefix.contains('\\') {
+                full_path.as_ref()
+            } else {
+                file_name.as_ref()
+            };
 
-            if file_str.starts_with(prefix) && file_str.ends_with(suffix) {
-                let var_value = &file_str[prefix.len()..file_str.len() - suffix.len()];
+            if candidate.starts_with(prefix) && candidate.ends_with(suffix) {
+                let var_value = &candidate[prefix.len()..candidate.len() - suffix.len()];
+                if var_value.is_empty()
+                    || var_value.contains('/')
+                    || var_value.contains('\\')
+                    || var_value.contains('.')
+                {
+                    return None;
+                }
                 return Some(var_value.to_string());
             }
         }
@@ -200,33 +213,10 @@ impl PairingValidator {
                 return false;
             }
 
-            let template = pattern.replace(&format!("${{{}}}", var_name), "*");
-            return Self::glob_matches(&template, &file_str);
+            return Self::extract_var_value(pattern, file_path).is_some();
         }
 
         file_str.ends_with(pattern)
-    }
-
-    /// Simple glob matching
-    fn glob_matches(pattern: &str, text: &str) -> bool {
-        if pattern == "*" {
-            return true;
-        }
-
-        if pattern.starts_with("*") && pattern.ends_with("*") {
-            let middle = &pattern[1..pattern.len() - 1];
-            return text.contains(middle);
-        }
-
-        if let Some(stripped) = pattern.strip_prefix('*') {
-            return text.ends_with(stripped);
-        }
-
-        if let Some(stripped) = pattern.strip_suffix('*') {
-            return text.starts_with(stripped);
-        }
-
-        text == pattern
     }
 }
 
@@ -253,7 +243,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "Phase 4: File pairing validation - to be implemented after core LS-Lint parity"]
     fn test_extract_var_value() {
         assert_eq!(
             PairingValidator::extract_var_value(
@@ -265,7 +254,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "Phase 4: File pairing validation - to be implemented after core LS-Lint parity"]
     fn test_pattern_matching() {
         assert!(PairingValidator::pattern_matches_path(
             "${name}.tsx",
@@ -278,7 +266,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "Phase 4: File pairing validation - to be implemented after core LS-Lint parity"]
     fn test_validate_pairings_missing() {
         let req = PairingRequirement {
             source_pattern: "src/components/${name}.tsx".to_string(),

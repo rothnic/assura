@@ -7,6 +7,7 @@
     "verify:check": "./scripts/verify.sh check",
     "verify:test": "./scripts/verify.sh test",
     "verify:evidence": "./scripts/verify.sh evidence",
+    "verify:target-state": "./scripts/verify.sh target-state",
     "verify:hygiene": "./scripts/verify.sh hygiene",
     "verify:docs": "./scripts/verify.sh docs",
     "verify:release-size": "./scripts/verify.sh release-size",
