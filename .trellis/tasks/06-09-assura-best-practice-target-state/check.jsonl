@@ -1,0 +1,5 @@
+{"file":".trellis/spec/assura/index.md","reason":"Review Assura-specific quality checklist and scope boundaries."}
+{"file":".trellis/spec/assura/workflow-status.md","reason":"Check workflow-state claims and clean-workspace expectations."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Review cross-file detector mapping and prevent narrow single-file conclusions."}
+{"file":".trellis/tasks/06-09-assura-best-practice-target-state/research/rust-agent-repo-best-practices.md","reason":"Verify the analysis is grounded in current primary-source research."}
+{"file":"docs/analysis/2026-06-09-assura-best-practice-target-state.md","reason":"Review the target-state rubric, current-state comparison, priorities, and deterministic detection strategy."}

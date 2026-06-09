@@ -1,0 +1,6 @@
+{"file":".trellis/spec/assura/index.md","reason":"Assura-specific specs and pre-development checklist for planning follow-up implementation."}
+{"file":".trellis/spec/assura/structure-enforcement.md","reason":"Current structure-enforcement contract that future cleanup and config changes must preserve."}
+{"file":".trellis/spec/assura/tooling-stabilization.md","reason":"Local workflow, validation, and tooling stabilization guidance for implementing detectors."}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Reusable guidance for deciding whether findings become repo cleanup, config, generalized rules, or external tooling."}
+{"file":".trellis/tasks/06-09-assura-best-practice-target-state/research/rust-agent-repo-best-practices.md","reason":"Primary-source research that defines the target-state rubric."}
+{"file":"docs/analysis/2026-06-09-assura-best-practice-target-state.md","reason":"Current task's target-state comparison and prioritized detector backlog."}
