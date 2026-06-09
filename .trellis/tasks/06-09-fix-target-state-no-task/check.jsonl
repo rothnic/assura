@@ -1,2 +1,0 @@
-{"file": ".trellis/workflow.md", "reason": "Check the verifier behavior against the workflow state model."}
-{"file": "docs/analysis/2026-06-09-assura-best-practice-target-state.md", "reason": "Check the change preserves the target-state detector contract."}
