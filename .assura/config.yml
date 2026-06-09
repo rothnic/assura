@@ -18,6 +18,7 @@ quality:
         - "python3 ./.trellis/scripts/workflow_gate.py --platform codex"
         - "cargo run --quiet -- check --format json ."
         - "node --run verify:evidence"
+        - "node --run verify:target-state"
         - "git diff --check"
     website:
       paths:
@@ -44,6 +45,7 @@ quality:
       frequent:
         - "node --run verify:check"
         - "node --run verify:test"
+        - "node --run verify:target-state"
         - "cargo run --quiet -- check --format json ."
       pr:
         - "node --run verify:pr"
@@ -84,6 +86,7 @@ quality:
         - "docs/analysis/*performance*"
       pr:
         - "Performance Report"
+        - "node --run verify:target-state"
         - "node --run verify:docs"
     workflow:
       paths:
@@ -93,10 +96,12 @@ quality:
         - "scripts/check-ci-scope.sh"
         - "scripts/summarize-rust-cache.sh"
         - "scripts/verify.sh"
+        - "scripts/verify-target-state.py"
       frequent:
         - "python3 ./.trellis/scripts/workflow_gate.py --platform codex"
         - "cargo run --quiet -- check --format json ."
         - "node --run verify:evidence"
+        - "node --run verify:target-state"
         - "git diff --check"
       pr:
         - "node --run verify:pr"
@@ -564,6 +569,7 @@ structure:
             - "smoke-install-adoption.sh"
             - "summarize-rust-cache.sh"
             - "verify.sh"
+            - "verify-target-state.py"
           allow_extra: false
         directories:
           allow_extra: false

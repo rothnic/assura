@@ -19,7 +19,9 @@ This policy applies to Assura pre-1.0 releases.
 | `assura status --format json` | Supported | JSON summaries must remain usable for automation. |
 | `assura migrate` for complete LS-Lint 2.3 config semantics | Supported | Invalid LS-Lint config shapes and unsupported rule syntax must fail clearly. CLI drop-in parity is out of scope. |
 | `assura hooks` for local git hooks | Supported local workflow | Hooks must be opt-in and local to a checkout. |
+| `assura quality plan` | Supported local workflow | Quality-scope planning must stay config-backed and deterministic. |
 | `assura performance-report` | Supported evidence command | Claims must cite checked benchmark or CI artifacts. |
+| `assura info` | Experimental diagnostic | Text output can change before a documented automation contract exists. |
 | `extensions.custom_constraints` | Experimental first-party | Breaking changes are allowed before 1.0 with release-note disclosure. |
 | `assura watch` | Experimental | Do not advertise as release-grade until watch-mode tests and docs exist. |
 | Internal Rust APIs | Unstable | Public Rust module visibility in `src/lib.rs` is for binaries, tests, and benchmark harnesses unless a row explicitly promotes the API. No compatibility guarantee before 1.0. |

@@ -34,7 +34,9 @@ publishes and verifies a `.sha256` file next to every archive.
 | `assura status --format json` | Supported | Installable adoption smoke. |
 | `assura migrate` | Supported for complete LS-Lint 2.3 config semantics | LS-Lint feature matrix, native golden parity tests, migration tests, and adoption smoke. |
 | `assura hooks` | Supported for local git hooks | CLI help and local hook behavior. |
+| `assura quality plan` | Supported for local quality planning | `.assura/config.yml`, `docs/validation.md`, and changed-check scripts. |
 | `assura performance-report` | Supported evidence command | Performance report CI job and checked report data. |
+| `assura info` | Experimental diagnostic | CLI exists, but text output is not an automation contract. |
 | `assura watch` | Experimental | CLI exists, but release-grade watch behavior is not claimed. |
 
 ## LS-Lint Compatibility
