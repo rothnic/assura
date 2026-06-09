@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 3
+- **Total Sessions**: 4
 - **Last Active**: 2026-06-09
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~117 | Active |
+| `journal-1.md` | ~150 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 4 | 2026-06-09 | Fix target-state no-task verifier | `f69ea9d` | `master` |
 | 3 | 2026-06-09 | Assura target-state audit gate | `74eadf9` | `master` |
 | 2 | 2026-06-08 | Complete deslopify plan | `fec37f2`, `de893ff` | `codex/archive-deslopify-task` |
 | 1 | 2026-05-11 | LS-Lint parity performance regression audit | `267eca4` | `codex/ls-lint-parity-performance-regression-audit` |

@@ -115,3 +115,36 @@ Defined the Assura best-practice target-state audit, added deterministic target-
 ### Next Steps
 
 - None - task complete
+
+
+## Session 4: Fix target-state no-task verifier
+
+**Date**: 2026-06-09
+**Task**: Fix target-state no-task verifier
+**Branch**: `master`
+
+### Summary
+
+Merged PR #42 to fix the target-state verifier's no-task handling, verified active and clean no-task behavior, then archived the follow-up Trellis task.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `f69ea9d` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
