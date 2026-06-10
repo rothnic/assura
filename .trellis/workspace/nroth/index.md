@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 5
+- **Total Sessions**: 6
 - **Last Active**: 2026-06-09
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~183 | Active |
+| `journal-1.md` | ~216 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 6 | 2026-06-09 | Release README professionalization | `96c46a3` | `master` |
 | 5 | 2026-06-09 | Rust-first quality cleanup | `fcf1d4f` | `master` |
 | 4 | 2026-06-09 | Fix target-state no-task verifier | `f69ea9d` | `master` |
 | 3 | 2026-06-09 | Assura target-state audit gate | `74eadf9` | `master` |

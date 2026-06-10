@@ -181,3 +181,36 @@ Merged PR #43 moving root validation to cargo xtask, removing root Node/Python v
 ### Next Steps
 
 - None - task complete
+
+
+## Session 6: Release README professionalization
+
+**Date**: 2026-06-09
+**Task**: Release README professionalization
+**Branch**: `master`
+
+### Summary
+
+Clarified release cadence and durable build semantics in README, documented support/security surface, repaired v0.1.0 checksum release assets, validated docs/release smoke gates, and merged PR #44.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `96c46a3` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
