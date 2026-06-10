@@ -5,18 +5,20 @@ status: active
 
 # Assura v0.1.0 Release Notes
 
-These notes describe the current pre-1.0 release candidate surface. Assura is
-ready to publish installable archives when the release checklist in
+These notes describe the current pre-1.0 public release surface for `v0.1.0`.
+Assura publishes installable archives from
+[`.github/workflows/release.yml`](../.github/workflows/release.yml) when a
+maintainer pushes an intentional `v*` tag after the release checklist in
 [`docs/release-candidate-checklist.md`](./release-candidate-checklist.md)
-passes on the release tag.
+passes.
 
 ## Supported Commands
 
-The v0.1.0 release candidate supports these public commands:
+The v0.1.0 release supports these public commands:
 
 - `assura check` for structure-first repository validation.
-- `assura check --format json`, `--format yaml`, and `--format agent` for
-  automation and agent feedback.
+- `assura check --format json`, `--format yaml`, `--format advice`,
+  `--format status`, and `--format agent` for automation and agent feedback.
 - `assura check --format agent --agent codex` for optional Codex
   `UserPromptSubmit` delivery when Codex hooks are enabled and approved.
 - `assura init` for starter `.assura/config.yml` creation.
@@ -53,6 +55,11 @@ The release workflow verifies those checksums before upload, and
 `cargo xtask release-live` checks that public checksum URLs are reachable
 after a tag is published.
 
+The original `v0.1.0` archives were published on 2026-05-24. On 2026-06-10,
+maintainers uploaded the missing `.sha256` sidecar files generated from those
+published archives. No release binary was rebuilt and no new version was cut
+for that asset repair.
+
 ## Current Feature Surface
 
 ### Structure Validation
@@ -77,7 +84,7 @@ after a tag is published.
 - Codex delivery is an adapter on that shared surface:
   `assura check --format agent --agent codex`.
 - There are no package feedback CLIs, per-agent CLI entrypoints, or per-agent
-  `--format` values in this release candidate.
+  `--format` values in this release.
 
 ### Custom Constraints
 

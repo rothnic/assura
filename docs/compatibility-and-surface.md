@@ -28,6 +28,8 @@ publishes and verifies a `.sha256` file next to every archive.
 | `assura check` | Supported | Rust test suite, Assura self-check, installable adoption smoke. |
 | `assura check --format json` | Supported | Installable adoption smoke and CLI report tests. |
 | `assura check --format yaml` | Supported | CLI report formatter tests. |
+| `assura check --format advice` | Supported | Agent feedback rendering tests and real-project feedback fixtures. |
+| `assura check --format status` | Supported | Agent feedback rendering tests and real-project feedback fixtures. |
 | `assura check --format agent` | Supported | Agent feedback tests and real-project feedback fixtures. |
 | `assura check --format agent --agent codex` | Supported adapter | Codex delivery fixture under the shared agent format. |
 | `assura init` | Supported | Installable adoption smoke. |
