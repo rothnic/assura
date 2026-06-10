@@ -8,6 +8,9 @@ use core::ffi::{c_char, c_int, c_void};
 #[cfg(all(unix, not(debug_assertions), not(test)))]
 use core::panic::PanicInfo;
 
+#[cfg(all(unix, not(test)))]
+use assura_stable_hash::stable_hash_const;
+
 #[cfg(not(unix))]
 mod status_file;
 
@@ -51,7 +54,7 @@ const STATUS_LEN: usize = 4 + 8 + 1 + 1;
 #[cfg(all(unix, not(test)))]
 const DEFAULT_STATUS_PATH: &[u8] = b"assura-check.status\0";
 #[cfg(all(unix, not(test)))]
-const VERSION_HASH: u64 = stable_hash(env!("CARGO_PKG_VERSION").as_bytes());
+const VERSION_HASH: u64 = stable_hash_const(env!("CARGO_PKG_VERSION").as_bytes());
 #[cfg(all(unix, not(test)))]
 const CLEAN: u8 = 0;
 #[cfg(all(unix, not(test)))]
@@ -199,16 +202,4 @@ unsafe fn read_status(path: *const c_char) -> Result<Status, ReadStatusError> {
 #[cfg(all(unix, not(test)))]
 unsafe fn write_stderr(message: &[u8]) {
     let _ = write(STDERR_FILENO, message.as_ptr().cast(), message.len());
-}
-
-#[cfg(all(unix, not(test)))]
-const fn stable_hash(bytes: &[u8]) -> u64 {
-    let mut hash = 0xcbf29ce484222325_u64;
-    let mut index = 0;
-    while index < bytes.len() {
-        hash ^= bytes[index] as u64;
-        hash = hash.wrapping_mul(0x100000001b3);
-        index += 1;
-    }
-    hash
 }

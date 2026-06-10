@@ -27,8 +27,8 @@ Use this template for goal PR evidence records under `docs/analysis/`.
 
 | Command | Status | Notes |
 | --- | --- | --- |
-| `node --run verify:fast` | Not run | Replace before PR. |
-| `node --run verify:evidence` | Not run | Replace before PR. |
+| `cargo xtask fast` | Not run | Replace before PR. |
+| `cargo xtask evidence` | Not run | Replace before PR. |
 
 ## Review Tasks
 

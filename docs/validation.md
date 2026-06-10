@@ -13,8 +13,8 @@ Use the narrowest tier that proves the change.
 Run the changed-file gate during normal editing:
 
 ```bash
-node --run verify:changed
-node --run verify:changed -- --phase pre-push
+cargo xtask changed
+cargo xtask changed -- --phase pre-push
 ```
 
 This asks `assura quality plan` for the checks selected by
@@ -22,20 +22,20 @@ This asks `assura quality plan` for the checks selected by
 commands selected for the requested phase. It is the default local loop for
 docs, Trellis, website, release, and Rust changes because it avoids rebuilding
 or retesting unrelated surfaces. When a broader local gate such as
-`node --run verify:pr` is selected, narrower checks already covered by that
+`cargo xtask pr` is selected, narrower checks already covered by that
 gate are skipped. Use `--dry-run` or `--files-from` to inspect a deterministic
 plan:
 
 ```bash
 printf 'docs/validation.md\n' \
-  | node --run verify:changed -- --files-from - --dry-run
+  | cargo xtask changed -- --files-from - --dry-run
 ```
 
 Run the full fast gate when the changed-file plan is not enough or when you
 want a broad local confidence sweep:
 
 ```bash
-node --run verify:fast
+cargo xtask fast
 ```
 
 This runs formatting, whitespace checks, focused compile checks for the primary
@@ -51,13 +51,13 @@ the Phase 01 ledger and `assura-goal-01..08` frontmatter statuses disagree.
 Use focused commands when the change is narrow:
 
 ```bash
-node --run verify:check
-node --run verify:test
-node --run verify:evidence
-node --run verify:docs
-node --run verify:release-size
-node --run verify:release-smoke
-node --run verify:release-live
+cargo xtask check
+cargo xtask test
+cargo xtask evidence
+cargo xtask docs
+cargo xtask release-size
+cargo xtask release-smoke
+cargo xtask release-live
 ```
 
 Run the website build for docs or frontend changes. Run the release smoke for
@@ -74,8 +74,8 @@ After a release tag is published, run the live release gate to verify the exact
 unauthenticated URLs used by new users:
 
 ```bash
-node --run verify:release-live
-ASSURA_VERSION=v0.1.0 node --run verify:release-live
+cargo xtask release-live
+ASSURA_VERSION=v0.1.0 cargo xtask release-live
 ```
 
 `target/` is Cargo's build cache and can be many gigabytes after local test,
@@ -85,14 +85,14 @@ release-size gate checks that archive instead of the cache directory. Override
 the default 8 MiB archive budget only when the PR explains why:
 
 ```bash
-ASSURA_MAX_RELEASE_ARCHIVE_BYTES=8388608 node --run verify:release-size
+ASSURA_MAX_RELEASE_ARCHIVE_BYTES=8388608 cargo xtask release-size
 ```
 
 Run the evidence gate when changing goal docs, PR templates, review records,
 Trellis roadmap state, or public agent feedback wording:
 
 ```bash
-node --run verify:evidence
+cargo xtask evidence
 ```
 
 This checks review evidence templates, goal frontmatter metadata, local
@@ -119,7 +119,7 @@ GitHub Actions currently uses `scripts/ci-scope.sh` as the lightweight bootstrap
 classifier before running expensive jobs. It mirrors the same policy shape but
 does not invoke `assura quality plan` yet because compiling Assura inside the
 first scope job would erase the speed win for docs-only changes. Classifier
-policy is covered by `node --run verify:evidence`; test it directly with:
+policy is covered by `cargo xtask evidence`; test it directly with:
 
 ```bash
 scripts/check-ci-scope.sh
@@ -148,7 +148,7 @@ gates without scheduling `cargo audit`.
 Run this before pushing broad Rust or mixed changes:
 
 ```bash
-node --run verify:pr
+cargo xtask pr
 ```
 
 This adds Clippy and the website build to the fast local gate.
@@ -159,7 +159,7 @@ Reserve the full gate for benchmark-adjacent code, benchmark harness changes,
 or final release confidence:
 
 ```bash
-node --run verify:full
+cargo xtask full
 ```
 
 This intentionally runs `cargo test --all-targets`, which executes benchmark

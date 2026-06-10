@@ -839,6 +839,7 @@ fn create_rule_heavy_project(project: &TempDir, dirs: usize, files_per_dir: usiz
     }
 }
 
+// allow-reason: retained helper supports manual LS-Lint parity fixture audits.
 #[allow(dead_code)]
 fn count_files(path: &Path) -> usize {
     fs::read_dir(path)

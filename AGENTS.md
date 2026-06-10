@@ -59,7 +59,7 @@ measurement, and plugin APIs are roadmap items until implemented and tested.
 7. **Write tests for validation logic** - All validators need unit tests
 8. **Scope validation to changed surfaces** - Docs/Trellis/workflow-only edits
    should run the workflow gate, `cargo run --quiet -- check --format json .`,
-   `node --run verify:evidence`, and docs build when website/docs are touched.
+   `cargo xtask evidence`, and `cargo xtask docs` when website/docs are touched.
    Reserve full Rust test/clippy/release gates for Rust, Cargo, CI, release, or
    behavior changes.
 

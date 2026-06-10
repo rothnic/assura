@@ -1,0 +1,8 @@
+[package]
+name = "assura-stable-hash"
+version = "0.1.0"
+edition = "2021"
+description = "Internal no-std stable hash helpers for Assura cache artifacts"
+license = "MIT OR Apache-2.0"
+rust-version = "1.70.0"
+publish = false

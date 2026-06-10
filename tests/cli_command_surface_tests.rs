@@ -210,14 +210,14 @@ quality:
       paths:
         - "docs/**"
       frequent:
-        - "node --run verify:evidence"
+        - "cargo xtask evidence"
     rust:
       paths:
         - "src/**"
       frequent:
-        - "node --run verify:check"
+        - "cargo xtask check"
       pr:
-        - "node --run verify:pr"
+        - "cargo xtask pr"
       merge:
         - "Code Coverage"
 structure: {}
@@ -252,9 +252,9 @@ structure: {}
     assert_eq!(json["phase"], "merge");
     assert_eq!(json["scopes"].as_array().unwrap().len(), 2);
     let checks = json["checks"].as_array().unwrap();
-    assert!(checks.contains(&Value::String("node --run verify:evidence".to_string())));
-    assert!(checks.contains(&Value::String("node --run verify:check".to_string())));
-    assert!(checks.contains(&Value::String("node --run verify:pr".to_string())));
+    assert!(checks.contains(&Value::String("cargo xtask evidence".to_string())));
+    assert!(checks.contains(&Value::String("cargo xtask check".to_string())));
+    assert!(checks.contains(&Value::String("cargo xtask pr".to_string())));
     assert!(checks.contains(&Value::String("Code Coverage".to_string())));
 }
 

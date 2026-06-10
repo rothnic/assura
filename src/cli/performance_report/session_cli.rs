@@ -1,4 +1,6 @@
 //! Persistent session-client measurement for editor-loop validation evidence.
+// allow-reason: performance row factories keep measured dimensions explicit
+// for benchmark auditability despite wide argument lists.
 
 use super::assura_cli::PreparedAssuraCli;
 use super::changed_path_cli::{changed_path_candidate, mark_changed_path};
@@ -11,6 +13,7 @@ use std::io::{BufRead, Write};
 use std::process::{Child, ChildStdin, ChildStdout, Command, Stdio};
 use std::time::Instant;
 
+// allow-reason: performance row factory keeps measured dimensions explicit for benchmark auditability.
 #[allow(clippy::too_many_arguments)]
 pub(super) fn measure_assura_check_dirty_project_session_cli(
     fixture: &MaterializedFixture,

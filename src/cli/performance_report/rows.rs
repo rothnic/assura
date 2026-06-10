@@ -1,4 +1,6 @@
 //! Performance report row schema and row construction helpers.
+// allow-reason: performance row factories keep measured dimensions explicit
+// for benchmark auditability despite wide argument lists.
 
 use super::{stats, MaterializedFixture, PerformanceEnvironment, ASSURA_VERSION, SCHEMA_VERSION};
 use serde::Serialize;
@@ -193,6 +195,7 @@ impl<'a> RowMeasurement<'a> {
     }
 }
 
+// allow-reason: performance row factory keeps measured dimensions explicit for benchmark auditability.
 #[allow(clippy::too_many_arguments)]
 pub(in crate::cli::performance_report) fn row(
     fixture: &MaterializedFixture,

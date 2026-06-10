@@ -1,4 +1,6 @@
 //! Per-fixture performance row orchestration.
+// allow-reason: performance row factories keep measured dimensions explicit
+// for benchmark auditability despite wide argument lists.
 
 use super::assura_cli::{
     measure_assura_check_cli, measure_assura_cli, measure_assura_strategy, PreparedAssuraCli,
@@ -24,6 +26,7 @@ use super::{
 };
 use std::fs;
 
+// allow-reason: performance row factory keeps measured dimensions explicit for benchmark auditability.
 #[allow(clippy::too_many_arguments)]
 pub(super) fn measure_scenario_rows(
     scenario: FixtureScenario,

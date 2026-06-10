@@ -1,4 +1,6 @@
 //! Performance comparison report generation for CI artifacts and docs data.
+// allow-reason: performance row factories keep measured dimensions explicit
+// for benchmark auditability despite wide argument lists.
 
 use crate::cli::args::PerformanceReportFormat;
 use crate::cli::check::run_structure_check_with_timings;
@@ -259,6 +261,7 @@ fn generate_report(
     })
 }
 
+// allow-reason: performance row factory keeps measured dimensions explicit for benchmark auditability.
 #[allow(clippy::too_many_arguments)]
 fn measure_assura(
     fixture: &MaterializedFixture,
@@ -318,6 +321,7 @@ fn measure_assura(
     rows
 }
 
+// allow-reason: performance row factory keeps measured dimensions explicit for benchmark auditability.
 #[allow(clippy::too_many_arguments)]
 fn measure_ls_lint(
     fixture: &MaterializedFixture,

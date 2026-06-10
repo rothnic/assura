@@ -50,7 +50,7 @@ both files together. The public command is still `assura`.
 
 Release automation publishes a `.sha256` checksum file next to every archive.
 The release workflow verifies those checksums before upload, and
-`node --run verify:release-live` checks that public checksum URLs are reachable
+`cargo xtask release-live` checks that public checksum URLs are reachable
 after a tag is published.
 
 ## Current Feature Surface
@@ -120,18 +120,18 @@ cargo test --all-targets --quiet
 cargo clippy --all-targets --all-features -- -D warnings
 cargo build --release --bin assura --no-default-features --features json-output,yaml-config
 cargo run --quiet -- check --format json .
-node --run verify:fast
-node --run verify:docs
-node --run verify:release-smoke
-node --run verify:evidence
+cargo xtask fast
+cargo xtask docs
+cargo xtask release-smoke
+cargo xtask evidence
 git diff --check
 ```
 
 After publishing a tag, maintainers must also run:
 
 ```bash
-node --run verify:release-live
-ASSURA_VERSION=v0.1.0 node --run verify:release-live
+cargo xtask release-live
+ASSURA_VERSION=v0.1.0 cargo xtask release-live
 ```
 
 ## Next

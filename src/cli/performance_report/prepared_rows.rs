@@ -1,4 +1,6 @@
 //! Prepared checker rows for same-turn agent feedback latency evidence.
+// allow-reason: performance row factories keep measured dimensions explicit
+// for benchmark auditability despite wide argument lists.
 
 use super::changed_path_cli::mark_changed_path;
 use super::{
@@ -11,6 +13,7 @@ use std::time::Instant;
 
 const FIVE_CHANGED_PATH_COUNT: usize = 5;
 
+// allow-reason: performance row factory keeps measured dimensions explicit for benchmark auditability.
 #[allow(clippy::too_many_arguments)]
 pub(super) fn measure_prepared_full_check(
     fixture: &MaterializedFixture,
@@ -77,6 +80,7 @@ pub(super) fn measure_prepared_full_check(
     )
 }
 
+// allow-reason: performance row factory keeps measured dimensions explicit for benchmark auditability.
 #[allow(clippy::too_many_arguments)]
 pub(super) fn measure_prepared_five_changed_paths(
     fixture: &MaterializedFixture,
@@ -171,6 +175,7 @@ pub(super) fn measure_prepared_five_changed_paths(
     )
 }
 
+// allow-reason: performance row factory keeps measured dimensions explicit for benchmark auditability.
 #[allow(clippy::too_many_arguments)]
 fn unavailable_prepared_row(
     fixture: &MaterializedFixture,

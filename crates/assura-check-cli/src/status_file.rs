@@ -2,8 +2,11 @@
 
 // Binary test harnesses compile this shared module per executable, so one side
 // can appear unused even though another binary uses the same helpers.
+// allow-reason: shared across companion binaries whose test harnesses compile
+// only a subset of callers.
 #![allow(dead_code)]
 
+use assura_stable_hash::stable_hash_const;
 use std::fs;
 use std::io::{self, Read};
 use std::path::{Path, PathBuf};
@@ -12,7 +15,7 @@ const MAGIC: &[u8; 4] = b"AS2\0";
 const STATUS_LEN: usize = 4 + 8 + 1 + 1;
 const CLEAN: u8 = 0;
 const DIRTY: u8 = 1;
-const VERSION_HASH: u64 = stable_hash(env!("CARGO_PKG_VERSION").as_bytes());
+const VERSION_HASH: u64 = stable_hash_const(env!("CARGO_PKG_VERSION").as_bytes());
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) struct CheckStatus {
@@ -71,17 +74,6 @@ fn temp_status_path(path: &Path) -> PathBuf {
 
 fn invalid_data(message: &'static str) -> io::Error {
     io::Error::new(io::ErrorKind::InvalidData, message)
-}
-
-const fn stable_hash(bytes: &[u8]) -> u64 {
-    let mut hash = 0xcbf29ce484222325_u64;
-    let mut index = 0;
-    while index < bytes.len() {
-        hash ^= bytes[index] as u64;
-        hash = hash.wrapping_mul(0x100000001b3);
-        index += 1;
-    }
-    hash
 }
 
 #[cfg(test)]

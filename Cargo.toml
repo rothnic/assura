@@ -15,8 +15,8 @@ rust-version = "1.70.0"
 readme = "README.md"
 
 [workspace]
-members = [".", "crates/assura-check-cli"]
-default-members = [".", "crates/assura-check-cli"]
+members = [".", "crates/assura-check-cli", "crates/assura-stable-hash", "xtask"]
+default-members = [".", "crates/assura-check-cli", "crates/assura-stable-hash", "xtask"]
 
 [[bin]]
 name = "assura"
@@ -53,6 +53,7 @@ json-output = ["dep:serde_json"]
 yaml-config = ["dep:serde_yaml"]
 
 [dependencies]
+assura-stable-hash = { path = "crates/assura-stable-hash" }
 tokio = { version = "1.0", features = ["full", "rt-multi-thread"], optional = true }
 serde = { version = "1.0", features = ["derive"] }
 serde_yaml = { version = "0.9", optional = true }
