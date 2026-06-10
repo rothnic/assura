@@ -1,3 +1,0 @@
-{"file": ".trellis/spec/assura/tooling-stabilization.md", "reason": "Check validation scope and CI/release wording against project policy."}
-{"file": "docs/support-policy.md", "reason": "Check README does not promote unsupported or experimental surfaces."}
-{"file": "docs/compatibility-and-surface.md", "reason": "Check platform/archive and command support claims."}

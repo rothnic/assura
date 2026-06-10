@@ -1,4 +1,0 @@
-{"file": ".trellis/spec/assura/index.md", "reason": "Defines current supported Assura product surface and source-of-truth docs."}
-{"file": ".trellis/spec/assura/tooling-stabilization.md", "reason": "Defines release, CI, and scoped validation expectations."}
-{"file": "docs/support-policy.md", "reason": "Defines supported, experimental, and unsupported surfaces for README claims."}
-{"file": "docs/compatibility-and-surface.md", "reason": "Defines release-time platform and command compatibility claims."}
