@@ -1,4 +1,0 @@
-{"file": ".trellis/spec/assura/index.md", "reason": "Defines Assura source-of-truth and preference for direct replacement of confusing compatibility paths."}
-{"file": ".trellis/spec/assura/tooling-stabilization.md", "reason": "Defines current validation policy and known Node/LS-Lint performance history."}
-{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Applies to duplicated stable hash helpers and new utility extraction."}
-{"file": "docs/analysis/2026-06-09-assura-best-practice-target-state.md", "reason": "Defines the target-state audit and P0 detector ownership to preserve."}
