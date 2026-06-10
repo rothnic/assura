@@ -1,4 +1,6 @@
 //! Changed-path hot daemon measurement for incremental validation evidence.
+// allow-reason: performance row factories keep measured dimensions explicit
+// for benchmark auditability despite wide argument lists.
 
 use super::assura_cli::PreparedAssuraCli;
 use super::hot_cli::{start_hot_server, unavailable_row};
@@ -11,6 +13,7 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::time::Instant;
 
+// allow-reason: performance row factory keeps measured dimensions explicit for benchmark auditability.
 #[allow(clippy::too_many_arguments)]
 pub(super) fn measure_assura_check_changed_path_cli(
     fixture: &MaterializedFixture,
@@ -151,6 +154,7 @@ pub(super) fn measure_assura_check_changed_path_cli(
     )
 }
 
+// allow-reason: performance row factory keeps measured dimensions explicit for benchmark auditability.
 #[allow(clippy::too_many_arguments)]
 pub(super) fn measure_assura_check_dirty_project_cli(
     fixture: &MaterializedFixture,

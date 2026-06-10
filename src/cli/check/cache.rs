@@ -6,6 +6,7 @@ use super::{
     StructureChecker,
 };
 use crate::config::loader::ConfigLoader;
+use crate::stable_hash::{stable_hash, StableHasher};
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::hash::{Hash, Hasher};
@@ -311,37 +312,6 @@ fn cache_file_path(
     config_path.hash(&mut hasher);
     checked_path.hash(&mut hasher);
     cache_dir.join(format!("{:016x}.json", hasher.finish()))
-}
-
-fn stable_hash(bytes: &[u8]) -> u64 {
-    let mut hash = 0xcbf29ce484222325_u64;
-    for byte in bytes {
-        hash ^= u64::from(*byte);
-        hash = hash.wrapping_mul(0x100000001b3);
-    }
-    hash
-}
-
-#[derive(Default)]
-struct StableHasher(u64);
-
-impl Hasher for StableHasher {
-    fn write(&mut self, bytes: &[u8]) {
-        self.0 = stable_hash_with_seed(self.0, bytes);
-    }
-
-    fn finish(&self) -> u64 {
-        self.0
-    }
-}
-
-fn stable_hash_with_seed(seed: u64, bytes: &[u8]) -> u64 {
-    let mut hash = if seed == 0 { 0xcbf29ce484222325 } else { seed };
-    for byte in bytes {
-        hash ^= u64::from(*byte);
-        hash = hash.wrapping_mul(0x100000001b3);
-    }
-    hash
 }
 
 #[cfg(test)]

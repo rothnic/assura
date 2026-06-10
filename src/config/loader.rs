@@ -201,9 +201,9 @@ quality:
       paths:
         - "src/**"
       frequent:
-        - "node --run verify:check"
+        - "cargo xtask check"
       pr:
-        - "node --run verify:pr"
+        - "cargo xtask pr"
 structure: {}
 "#;
 
@@ -211,8 +211,8 @@ structure: {}
         let quality = config.quality.unwrap();
         let rust = quality.scopes.get("rust").unwrap();
         assert_eq!(rust.paths, vec!["src/**"]);
-        assert_eq!(rust.frequent, vec!["node --run verify:check"]);
-        assert_eq!(rust.pr, vec!["node --run verify:pr"]);
+        assert_eq!(rust.frequent, vec!["cargo xtask check"]);
+        assert_eq!(rust.pr, vec!["cargo xtask pr"]);
     }
 
     #[test]
@@ -242,7 +242,7 @@ quality:
       paths:
         - "src/**"
       pre-push:
-        - "node --run verify:test"
+        - "cargo xtask test"
 structure: {}
 "#;
 

@@ -15,10 +15,9 @@ quality:
         - ".trellis/**"
         - "docs/**"
       frequent:
-        - "python3 ./.trellis/scripts/workflow_gate.py --platform codex"
         - "cargo run --quiet -- check --format json ."
-        - "node --run verify:evidence"
-        - "node --run verify:target-state"
+        - "cargo xtask evidence"
+        - "cargo xtask target-state"
         - "git diff --check"
     website:
       paths:
@@ -30,7 +29,7 @@ quality:
         - "website/README.md"
         - "website/tsconfig.json"
       pre_push:
-        - "node --run verify:docs"
+        - "cargo xtask docs"
     rust:
       paths:
         - "Cargo.toml"
@@ -43,12 +42,12 @@ quality:
         - "crates/**"
         - "examples/**"
       frequent:
-        - "node --run verify:check"
-        - "node --run verify:test"
-        - "node --run verify:target-state"
+        - "cargo xtask check"
+        - "cargo xtask test"
+        - "cargo xtask target-state"
         - "cargo run --quiet -- check --format json ."
       pr:
-        - "node --run verify:pr"
+        - "cargo xtask pr"
       merge:
         - "Code Coverage"
     security:
@@ -56,10 +55,10 @@ quality:
         - "Cargo.toml"
         - "Cargo.lock"
       pr:
-        - "node --run verify:hygiene"
+        - "cargo xtask hygiene"
         - "Security Audit"
       scheduled:
-        - "node --run verify:hygiene"
+        - "cargo xtask hygiene"
         - "Security Audit"
     release:
       paths:
@@ -72,7 +71,7 @@ quality:
         - "docs/support-policy.md"
         - "docs/compatibility-and-surface.md"
       pr:
-        - "node --run verify:release-smoke"
+        - "cargo xtask release-smoke"
       merge:
         - "Release Bundle Smoke"
         - "Windows Installer Smoke"
@@ -86,25 +85,23 @@ quality:
         - "docs/analysis/*performance*"
       pr:
         - "Performance Report"
-        - "node --run verify:target-state"
-        - "node --run verify:docs"
+        - "cargo xtask target-state"
+        - "cargo xtask docs"
     workflow:
       paths:
         - ".github/workflows/**"
-        - "package.json"
+        - ".cargo/config.toml"
         - "scripts/ci-scope.sh"
         - "scripts/check-ci-scope.sh"
         - "scripts/summarize-rust-cache.sh"
-        - "scripts/verify.sh"
-        - "scripts/verify-target-state.py"
+        - "xtask/**"
       frequent:
-        - "python3 ./.trellis/scripts/workflow_gate.py --platform codex"
         - "cargo run --quiet -- check --format json ."
-        - "node --run verify:evidence"
-        - "node --run verify:target-state"
+        - "cargo xtask evidence"
+        - "cargo xtask target-state"
         - "git diff --check"
       pr:
-        - "node --run verify:pr"
+        - "cargo xtask pr"
         - "Release Bundle Smoke"
         - "Windows Installer Smoke"
         - "Installable Adoption Smoke"
@@ -175,7 +172,6 @@ structure:
         - ".gitignore"
         - "Cargo.lock"
         - "Cargo.toml"
-        - "package.json"
         - "PROJECT_CONTEXT.md"
       # Required files that must exist in root
       required:
@@ -199,6 +195,7 @@ structure:
         - "src"
         - "tests"
         - "website"
+        - "xtask"
       allow_extra: false
     
     # Subdirectories
@@ -537,6 +534,9 @@ structure:
           allow_extra: false
         directories:
           naming: "kebab-case"
+          allowed_names:
+            - "assura-check-cli"
+            - "assura-stable-hash"
         children:
           assura-check-cli/:
             files:
@@ -558,6 +558,23 @@ structure:
                 files:
                   naming: "snake_case"
                   max_lines: 500
+          assura-stable-hash/:
+            files:
+              naming: "kebab-case"
+              allowed_names:
+                - "Cargo.toml"
+              allow_extra: false
+            directories:
+              allowed_names:
+                - "src"
+              allow_extra: false
+            children:
+              src/:
+                files:
+                  naming: "snake_case"
+                  allowed_names:
+                    - "lib.rs"
+                  allow_extra: false
 
       scripts/:
         files:
@@ -568,11 +585,29 @@ structure:
             - "smoke-install-adoption.ps1"
             - "smoke-install-adoption.sh"
             - "summarize-rust-cache.sh"
-            - "verify.sh"
-            - "verify-target-state.py"
           allow_extra: false
         directories:
           allow_extra: false
+
+      xtask/:
+        files:
+          naming: "kebab-case"
+          allowed_names:
+            - "Cargo.toml"
+          allow_extra: false
+        directories:
+          allowed_names:
+            - "src"
+          allow_extra: false
+        children:
+          src/:
+            files:
+              naming: "snake_case"
+              allowed_names:
+                - "main.rs"
+              allow_extra: false
+            directories:
+              allow_extra: false
       
       docs/:
         files:

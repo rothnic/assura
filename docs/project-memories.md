@@ -70,8 +70,8 @@ cargo fmt --all -- --check
 cargo test --all-targets --quiet
 cargo clippy --all-targets --all-features -- -D warnings
 cargo run --quiet -- check --format json .
-node --run verify:fast
-node --run verify:evidence
-node --run verify:docs
-node --run verify:release-smoke
+cargo xtask fast
+cargo xtask evidence
+cargo xtask docs
+cargo xtask release-smoke
 ```

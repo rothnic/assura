@@ -8,7 +8,6 @@ Assura v0.1 provides:
 
 - **Structure validation** - Check file names, directory names, required entries, forbidden entries, and direct-child counts
 - **LS-Lint migration** - Convert LS-Lint 2.3 `.ls-lint.yml` rule configs into `.assura/config.yml`
-- **Watch command** - A truthful one-shot wrapper over `assura check`
 - **CI reports** - Text, JSON, and YAML output for automation
 
 ## Features
@@ -29,9 +28,6 @@ assura init
 
 # Validate your project
 assura check
-
-# Run the current watch wrapper
-assura watch
 
 # Migrate an LS-Lint config
 assura migrate .ls-lint.yml --output .assura/config.yml
@@ -82,16 +78,16 @@ Use the repo verification tiers instead of defaulting to the slowest Cargo
 target set:
 
 ```bash
-node --run verify:fast          # normal local edit gate
-node --run verify:pr            # pre-push / PR gate
-node --run verify:release-size  # installable archive size gate
-node --run verify:release-smoke # no-Rust local archive smoke
-node --run verify:release-live  # public post-release install URL gate
-node --run verify:full          # includes cargo test --all-targets
+cargo xtask fast          # normal local edit gate
+cargo xtask pr            # pre-push / PR gate
+cargo xtask release-size  # installable archive size gate
+cargo xtask release-smoke # no-Rust local archive smoke
+cargo xtask release-live  # public post-release install URL gate
+cargo xtask full          # includes cargo test --all-targets
 ```
 
-`verify:fast` runs Rust tests without benchmark harness or standalone binary
-harness targets. Save `verify:full` for benchmark-adjacent changes or final
+`cargo xtask fast` runs Rust tests without benchmark harness or standalone binary
+harness targets. Save `cargo xtask full` for benchmark-adjacent changes or final
 release confidence. Cargo's `target/` cache can be large; the release-size gate
 checks the compressed public archive instead.
 See [Validation Command Tiers](docs/validation.md) for when to use each mode.

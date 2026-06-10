@@ -1,4 +1,6 @@
 //! Assura phase row collection for performance reports.
+// allow-reason: performance row factories keep measured dimensions explicit
+// for benchmark auditability despite wide argument lists.
 
 use super::{
     row, MaterializedFixture, PerformanceEnvironment, PerformanceResultRow, RowMeasurement,
@@ -37,6 +39,7 @@ impl AssuraPhaseSamples {
         self.report_sort.push(timings.report_sort_ms);
     }
 
+    // allow-reason: performance row factory keeps measured dimensions explicit for benchmark auditability.
     #[allow(clippy::too_many_arguments)]
     pub(super) fn into_rows(
         self,

@@ -84,12 +84,8 @@ jobs:
       run: bash scripts/summarize-rust-cache.sh "Evidence Gates" "${{ steps.rust-cache.outputs.cache-hit }}" "assura-debug-${{ runner.os }}-stable"
     - name: Verify Assura project structure
       run: cargo run --quiet -- check --format json .
-    - name: Setup Node
-      uses: actions/setup-node@v4
-      with:
-        node-version: 24
     - name: Verify review evidence policy
-      run: node --run verify:evidence
+      run: cargo xtask evidence
 
   fmt:
     name: Rustfmt

@@ -197,7 +197,7 @@ The release workflow will automatically:
 **If release fails:**
 - Ensure version in `Cargo.toml` matches the tag.
 - Check the archive-size gate output before raising the 8 MiB budget.
-- Reproduce the platform package locally with `node --run verify:release-smoke`
+- Reproduce the platform package locally with `cargo xtask release-smoke`
   on Unix or the Windows installer smoke in CI.
 
 ## References

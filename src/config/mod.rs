@@ -5,6 +5,8 @@
 
 #[cfg(feature = "full-cli")]
 pub mod ast;
+// allow-reason: the public module name mirrors the existing configuration
+// namespace used throughout the CLI before a pre-1.0 module split.
 #[allow(clippy::module_inception)]
 pub mod config;
 #[cfg(feature = "full-cli")]

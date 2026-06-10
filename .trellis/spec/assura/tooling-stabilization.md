@@ -28,10 +28,10 @@ checks for product behavior.
 
 | Change surface | Expected local gate |
 | --- | --- |
-| AGENTS, Trellis workflow, skills, specs, docs analysis | `python3 ./.trellis/scripts/workflow_gate.py --platform <current-platform>` (Codex: `--platform codex`), `cargo run --quiet -- check --format json .`, `node --run verify:evidence`, `git diff --check` |
-| Website docs/content | Above plus `node --run verify:docs` |
-| Rust source, Cargo metadata, CLI behavior, tests, benchmarks | `node --run verify:pr` or the task-specific Rust commands from the PRD |
-| Release packaging, install scripts, performance evidence | Relevant release/performance skill plus `node --run verify:release-smoke` or `node --run verify:full` as appropriate |
+| AGENTS, Trellis workflow, skills, specs, docs analysis | `python3 ./.trellis/scripts/workflow_gate.py --platform <current-platform>` (Codex: `--platform codex`), `cargo run --quiet -- check --format json .`, `cargo xtask evidence`, `git diff --check` |
+| Website docs/content | Above plus `cargo xtask docs` |
+| Rust source, Cargo metadata, CLI behavior, tests, benchmarks | `cargo xtask pr` or the task-specific Rust commands from the PRD |
+| Release packaging, install scripts, performance evidence | Relevant release/performance skill plus `cargo xtask release-smoke` or `cargo xtask full` as appropriate |
 
 Do not run the full Rust suite just because any file changed. Do run it when a
 docs/workflow change alters a command contract, CI behavior, release process, or
@@ -43,11 +43,11 @@ from changed paths and workflow phase. Phases are cumulative for normal
 development: `frequent`, `pre-push`, `pr`, `merge`, then `release`;
 `scheduled` is reserved for background audits.
 
-Local development should use `node --run verify:changed` as the default
+Local development should use `cargo xtask changed` as the default
 changed-file gate. It shells out to `assura quality plan`, executes selected
 local commands, skips GitHub-only check names, and does not rerun narrower
 local checks that are covered by a selected broader gate such as
-`node --run verify:pr`. Use `--dry-run`, `--files-from`, `--base`, and `--head`
+`cargo xtask pr`. Use `--dry-run`, `--files-from`, `--base`, and `--head`
 when the changed-file set must be deterministic for review or timing evidence.
 
 Do not adopt generic command caches blindly. Cargo already owns the warm

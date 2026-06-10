@@ -52,6 +52,7 @@ path = "src/compile_config.rs"
 
 [dependencies]
 assura = { path = "../..", default-features = false, features = ["json-output", "yaml-config"] }
+assura-stable-hash = { path = "../assura-stable-hash" }
 lexopt = "0.3.2"
 notify = "6.0"
 pico-args = "0.5"

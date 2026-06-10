@@ -28,11 +28,11 @@ release until a newer release process replaces it.
 | Lint | `cargo clippy --all-targets --all-features -- -D warnings` | Any warning. |
 | Primary release build | `cargo build --release --bin assura --no-default-features --features json-output,yaml-config` | Public launcher cannot build. |
 | Self-check | `cargo run --quiet -- check --format json .` | Any Assura violation. |
-| Fast gate | `node --run verify:fast` | Any local fast gate failure. |
-| Docs | `node --run verify:docs` | Website build fails or docs links break. |
-| Release smoke | `node --run verify:release-smoke` | Local archive install or first-run smoke fails. |
-| Checksums | `node --run verify:release-smoke` and release workflow checksum steps | Archive checksum generation or verification fails. |
-| Evidence | `node --run verify:evidence` | Goal status, review evidence, or stale command-surface checks fail. |
+| Fast gate | `cargo xtask fast` | Any local fast gate failure. |
+| Docs | `cargo xtask docs` | Website build fails or docs links break. |
+| Release smoke | `cargo xtask release-smoke` | Local archive install or first-run smoke fails. |
+| Checksums | `cargo xtask release-smoke` and release workflow checksum steps | Archive checksum generation or verification fails. |
+| Evidence | `cargo xtask evidence` | Goal status, review evidence, or stale command-surface checks fail. |
 | Whitespace | `git diff --check` | Whitespace errors. |
 
 ## CI Checklist
@@ -87,8 +87,8 @@ maintainer-owned exception recorded in the PR.
 Run the live public URL gate after the release exists:
 
 ```bash
-node --run verify:release-live
-ASSURA_VERSION=v0.1.0 node --run verify:release-live
+cargo xtask release-live
+ASSURA_VERSION=v0.1.0 cargo xtask release-live
 ```
 
 The live gate verifies unauthenticated access to the install scripts, all

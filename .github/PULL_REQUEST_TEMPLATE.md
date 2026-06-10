@@ -19,9 +19,9 @@
 
 <!-- List exact commands reviewers can rerun. Mark commands not run with rationale. -->
 
-- [ ] `node --run verify:fast`
-- [ ] `node --run verify:evidence`
-- [ ] `node --run verify:docs`
+- [ ] `cargo xtask fast`
+- [ ] `cargo xtask evidence`
+- [ ] `cargo xtask docs`
 - [ ] Goal-specific validation commands are listed above.
 
 ## Review Feedback

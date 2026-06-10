@@ -6,6 +6,11 @@
 //!
 //! Full-CLI Rust modules are unstable internal APIs for the current binary,
 //! tests, and benchmark harnesses unless a support-policy row says otherwise.
+#[doc(hidden)]
+pub mod stable_hash {
+    pub use assura_stable_hash::*;
+}
+
 pub mod cli;
 pub mod config;
 #[cfg(feature = "full-cli")]

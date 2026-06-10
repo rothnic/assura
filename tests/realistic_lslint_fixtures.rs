@@ -1,3 +1,5 @@
+// allow-reason: fixture DTOs intentionally include fields only some regression
+// cases inspect.
 #![allow(dead_code)]
 
 use assura::config::ls_compat::convert_ls_lint_to_config;

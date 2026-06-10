@@ -21,7 +21,8 @@ Rust-native checks that prevent the same drift from returning.
 ## Requirements
 
 - Add a Rust-first root quality command surface with `cargo xtask`.
-- Preserve existing validation behavior during migration.
+- Replace the root Node and Python validation wrappers outright; this project is
+  pre-adoption, so there is no compatibility reason to keep wrapper entrypoints.
 - Remove root Node/LS-Lint validation dependencies when no root command needs
   them.
 - Keep website and Node agent integrations out of root Node-removal policy.
@@ -32,14 +33,14 @@ Rust-native checks that prevent the same drift from returning.
 
 ## Acceptance Criteria
 
-- [ ] `cargo xtask target-state` passes.
-- [ ] `cargo xtask pr` passes or any skipped long-running portion is explicitly
+- [x] `cargo xtask target-state` passes.
+- [x] `cargo xtask pr` passes or any skipped long-running portion is explicitly
       justified in the PR.
-- [ ] Root `package.json`/root npm dependency usage is removed or blocked by a
-      documented allowlist.
-- [ ] CI/docs/PR template prefer `cargo xtask` for root validation.
-- [ ] New lint suppressions without reason comments fail a deterministic check.
-- [ ] Existing `cargo clippy --all-targets --all-features -- -D warnings`
+- [x] Root `package.json` and root npm dependency usage are removed and blocked
+      by `cargo xtask target-state`.
+- [x] CI/docs/PR template prefer `cargo xtask` for root validation.
+- [x] New lint suppressions without reason comments fail a deterministic check.
+- [x] Existing `cargo clippy --all-targets --all-features -- -D warnings`
       remains clean.
 - [ ] Workspace ends clean, task archived or advanced, and PR is merged.
 
@@ -56,5 +57,5 @@ Rust-native checks that prevent the same drift from returning.
 - Relevant specs: `.trellis/spec/assura/index.md`,
   `.trellis/spec/assura/tooling-stabilization.md`, and
   `.trellis/spec/guides/code-reuse-thinking-guide.md`.
-- Existing validation shell entrypoint: `scripts/verify.sh`.
-- Existing target-state verifier: `scripts/verify-target-state.py`.
+- Removed validation shell entrypoint: `scripts/verify.sh`.
+- Removed target-state verifier: `scripts/verify-target-state.py`.

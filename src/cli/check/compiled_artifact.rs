@@ -8,12 +8,13 @@ use crate::config::config::{
     MarkdownBundle, QualityConfig,
 };
 use crate::config::ls_compat::LsLintCompatibility;
+use crate::stable_hash::{stable_hash, stable_hash_const};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
 const COMPILED_CONFIG_SCHEMA_VERSION: u32 = 9;
-const ASSURA_VERSION_HASH: u64 = stable_hash(env!("CARGO_PKG_VERSION").as_bytes());
+const ASSURA_VERSION_HASH: u64 = stable_hash_const(env!("CARGO_PKG_VERSION").as_bytes());
 
 /// Portable artifact containing a parsed Assura structure config.
 #[derive(Debug, Deserialize, Serialize)]
@@ -173,17 +174,6 @@ impl CompiledStructureConfigArtifact {
         };
         Ok(self.plan.into_compiled_config(config.into(), fail_fast))
     }
-}
-
-const fn stable_hash(bytes: &[u8]) -> u64 {
-    let mut hash = 0xcbf29ce484222325_u64;
-    let mut index = 0;
-    while index < bytes.len() {
-        hash ^= bytes[index] as u64;
-        hash = hash.wrapping_mul(0x100000001b3);
-        index += 1;
-    }
-    hash
 }
 
 fn infer_project_root(config_path: &Path) -> std::io::Result<PathBuf> {

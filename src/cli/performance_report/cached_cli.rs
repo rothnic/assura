@@ -1,4 +1,6 @@
 //! Cached check CLI subprocess measurement.
+// allow-reason: performance row factories keep measured dimensions explicit
+// for benchmark auditability despite wide argument lists.
 
 use super::assura_cli::{measure_assura_cli_row, AssuraInvocation, PreparedAssuraCli};
 use super::{
@@ -6,6 +8,7 @@ use super::{
     ToolAvailability,
 };
 
+// allow-reason: performance row factory keeps measured dimensions explicit for benchmark auditability.
 #[allow(clippy::too_many_arguments)]
 pub(super) fn measure_assura_check_cached_cli(
     fixture: &MaterializedFixture,

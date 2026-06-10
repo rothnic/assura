@@ -1,4 +1,6 @@
 //! Hot daemon/client measurement for repeated validation checks.
+// allow-reason: performance row factories keep measured dimensions explicit
+// for benchmark auditability despite wide argument lists.
 
 use super::assura_cli::PreparedAssuraCli;
 use super::{
@@ -12,6 +14,7 @@ use std::path::Path;
 use std::process::{Child, Command, Stdio};
 use std::time::Instant;
 
+// allow-reason: performance row factory keeps measured dimensions explicit for benchmark auditability.
 #[allow(clippy::too_many_arguments)]
 pub(super) fn measure_assura_check_hot_cli(
     fixture: &MaterializedFixture,
@@ -109,6 +112,7 @@ pub(super) fn measure_assura_check_hot_cli(
     )
 }
 
+// allow-reason: performance row factory keeps measured dimensions explicit for benchmark auditability.
 #[allow(clippy::too_many_arguments)]
 pub(super) fn measure_assura_check_status_cli(
     fixture: &MaterializedFixture,
@@ -218,6 +222,7 @@ pub(super) fn measure_assura_check_status_cli(
     )
 }
 
+// allow-reason: performance row factory keeps measured dimensions explicit for benchmark auditability.
 #[allow(clippy::too_many_arguments)]
 pub(super) fn unavailable_row(
     fixture: &MaterializedFixture,

@@ -259,6 +259,8 @@ fn format_text_report(report: &StructureCheckReport) -> String {
     output
 }
 
+// allow-reason: keep the catch-all arm when feature-gated CheckError variants
+// differ across companion binary builds.
 #[allow(unreachable_patterns)]
 fn exit_code_for_check_error(error: &CheckError) -> i32 {
     match error {

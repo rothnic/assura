@@ -1,4 +1,6 @@
 //! Filesystem traversal-only measurements for migration evidence.
+// allow-reason: performance row factories keep measured dimensions explicit
+// for benchmark auditability despite wide argument lists.
 
 use super::{
     row, MaterializedFixture, PerformanceEnvironment, PerformanceResultRow, RowMeasurement,
@@ -8,6 +10,7 @@ use std::path::Path;
 use std::thread;
 use std::time::Instant;
 
+// allow-reason: performance row factory keeps measured dimensions explicit for benchmark auditability.
 #[allow(clippy::too_many_arguments)]
 pub(super) fn measure_walkdir_traversal(
     fixture: &MaterializedFixture,
@@ -33,6 +36,7 @@ pub(super) fn measure_walkdir_traversal(
     )
 }
 
+// allow-reason: performance row factory keeps measured dimensions explicit for benchmark auditability.
 #[allow(clippy::too_many_arguments)]
 pub(super) fn measure_serial_jwalk_traversal(
     fixture: &MaterializedFixture,
@@ -58,6 +62,7 @@ pub(super) fn measure_serial_jwalk_traversal(
     )
 }
 
+// allow-reason: performance row factory keeps measured dimensions explicit for benchmark auditability.
 #[allow(clippy::too_many_arguments)]
 pub(super) fn measure_parallel_jwalk_traversal(
     fixture: &MaterializedFixture,
@@ -83,6 +88,7 @@ pub(super) fn measure_parallel_jwalk_traversal(
     )
 }
 
+// allow-reason: performance row factory keeps measured dimensions explicit for benchmark auditability.
 #[allow(clippy::too_many_arguments)]
 fn measure_traversal<F>(
     fixture: &MaterializedFixture,

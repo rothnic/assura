@@ -1,4 +1,6 @@
 //! Assura CLI subprocess measurement for performance reports.
+// allow-reason: performance row factories keep measured dimensions explicit
+// for benchmark auditability despite wide argument lists.
 
 use super::{
     row, MaterializedFixture, PerformanceEnvironment, PerformanceResultRow, RowMeasurement,
@@ -254,6 +256,7 @@ fn depinfo_candidates(sibling_binary: &Path) -> Vec<PathBuf> {
 #[path = "assura_cli_tests.rs"]
 mod tests;
 
+// allow-reason: performance row factory keeps measured dimensions explicit for benchmark auditability.
 #[allow(clippy::too_many_arguments)]
 pub(super) fn measure_assura_cli(
     fixture: &MaterializedFixture,
@@ -282,6 +285,7 @@ pub(super) fn measure_assura_cli(
     )
 }
 
+// allow-reason: performance row factory keeps measured dimensions explicit for benchmark auditability.
 #[allow(clippy::too_many_arguments)]
 pub(super) fn measure_assura_check_cli(
     fixture: &MaterializedFixture,
@@ -310,6 +314,7 @@ pub(super) fn measure_assura_check_cli(
     )
 }
 
+// allow-reason: performance row factory keeps measured dimensions explicit for benchmark auditability.
 #[allow(clippy::too_many_arguments)]
 pub(super) fn measure_assura_strategy(
     fixture: &MaterializedFixture,
@@ -348,6 +353,7 @@ pub(super) enum AssuraInvocation {
     CheckOnlyCompiled,
 }
 
+// allow-reason: performance row factory keeps measured dimensions explicit for benchmark auditability.
 #[allow(clippy::too_many_arguments)]
 pub(super) fn measure_assura_cli_row(
     fixture: &MaterializedFixture,

@@ -94,7 +94,7 @@ website=true
 security=true'
 
 check_scope "validation command" \
-  'package.json\nscripts/verify.sh\nscripts/verify-target-state.py\nscripts/summarize-rust-cache.sh\n' \
+  '.cargo/config.toml\nxtask/src/main.rs\nscripts/summarize-rust-cache.sh\n' \
   'rust=true
 release=true
 performance=true
