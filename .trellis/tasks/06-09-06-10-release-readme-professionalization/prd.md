@@ -44,4 +44,4 @@ surfaces.
 - [x] `cargo xtask evidence` passes.
 - [x] `cargo xtask target-state` passes.
 - [x] `git diff --check` passes.
-- [ ] Workspace ends clean with a PR ready for review.
+- [x] Workspace ends clean with a PR ready for review.
