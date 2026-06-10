@@ -148,3 +148,36 @@ Merged PR #42 to fix the target-state verifier's no-task handling, verified acti
 ### Next Steps
 
 - None - task complete
+
+
+## Session 5: Rust-first quality cleanup
+
+**Date**: 2026-06-09
+**Task**: Rust-first quality cleanup
+**Branch**: `master`
+
+### Summary
+
+Merged PR #43 moving root validation to cargo xtask, removing root Node/Python validation wrappers, adding deterministic target-state checks, and consolidating stable hashing for warm-check paths.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `fcf1d4f` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
