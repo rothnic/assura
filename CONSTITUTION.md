@@ -1,17 +1,25 @@
 # Assura Constitution
 
-## Version 1.1
+## Version 1.2
 
-**IMPORTANT**: This document establishes core principles only. It does not contain specific notation examples or syntax definitions. Notation is documented in SPEC.md and user-facing documentation.
+**IMPORTANT**: This document establishes core principles only. It does not
+contain specific notation examples or syntax definitions. Current notation
+classification and target syntax are documented in the active Trellis and docs
+references below.
 ---
 
 ## 0. Reference Documents
 
 **For configuration syntax, notation, and examples, see:**
-- **docs/archive/configuration-spec.md** - Complete configuration format specification
-- **docs/archive/ls-lint-notation-guide.md** - LS-Lint notation compatibility guide
+- **.trellis/spec/assura/config-notation.md** - Target compact
+  Assura-native notation for future implementation
+- **docs/analysis/2026-05-15-notation-source-truth.md** - Current implemented
+  notation and LS-Lint compatibility classification
+- **.trellis/spec/assura/structure-enforcement.md** - Current closed-world
+  direct-content contract
 
-These documents contain the authoritative syntax definitions, file pairing patterns, and organization strategies.
+Historical files under `docs/archive/` remain design input only. They are not
+the authoritative syntax source for current or future implementation work.
 
 
 This document establishes the core principles and requirements for the Assura project. All changes must be reviewed against these principles before merging.
@@ -201,7 +209,7 @@ Users must be able to:
 ### 8.1 Before Merging
 All PRs must:
 1. Update CONSTITUTION.md if changing core principles
-2. Update SPEC.md with feature status
+2. Update active Trellis specs and docs analysis files with feature status
 3. Pass performance benchmarks (2x ls-lint target)
 4. Maintain ls-lint feature parity
 
@@ -215,11 +223,14 @@ All PRs must:
 ## 9. References
 
 - **AGENTS.md**: Project guidance (references this Constitution)
-- **SPEC.md**: Feature specifications and implementation status
+- **.trellis/spec/assura/**: Active Assura specifications and implementation
+  targets
+- **docs/analysis/**: Current analysis, compatibility, and source-truth
+  classification records
 - **docs/**: User-facing documentation
 
 ---
 
-*Last Updated: 2026-03-24*
-*Version: 1.2 - Added Glob Foundation with Regex Enhancement principle*
-*Next Review: 2026-04-24*
+*Last Updated: 2026-06-12*
+*Version: 1.2 - Active notation references updated*
+*Next Review: 2026-07-12*

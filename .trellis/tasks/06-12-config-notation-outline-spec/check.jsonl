@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/assura/index.md", "reason": "Verify the new notation spec is discoverable from the Assura source-truth index."}
+{"file": ".trellis/spec/assura/structure-enforcement.md", "reason": "Check compact notation remains compatible with current direct-content semantics."}
+{"file": "docs/analysis/2026-05-15-notation-source-truth.md", "reason": "Check active notation docs consistently reference the new target."}
+{"file": ".trellis/tasks/06-12-config-notation-outline-spec/research/config-notation-references.md", "reason": "Check claims about YAML and LS-Lint fork inputs are reflected accurately."}

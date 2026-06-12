@@ -8,6 +8,7 @@ owners:
   - assura-maintainers
 related:
   - docs/goals/assura-ls-lint-realistic-parity-core-performance.md
+  - .trellis/spec/assura/config-notation.md
   - .trellis/spec/assura/structure-enforcement.md
   - docs/ls-lint-capability-comparison.md
   - docs/unified-tree-design.md
@@ -22,6 +23,11 @@ parity and performance work. It separates implemented structure-first behavior
 from LS-Lint parity, Assura extensions, unsupported behavior, and planned
 notation. Historical `policy`/`rules`/`apply` proposals remain useful design
 input, but they are not the current product config surface.
+
+**2026-06-12 update:** `.trellis/spec/assura/config-notation.md` is now the
+stable target for the future compact Assura-native notation. This analysis
+continues to classify implemented behavior and LS-Lint parity boundaries; the
+Trellis spec owns the target syntax for new implementation work.
 
 **2026-05-26 update:** the LS-Lint rule coverage audit added support for
 regex negation, regex directory substitutions, wildcard/brace directory scopes,
@@ -129,22 +135,24 @@ Planned notation should refine the older LS-Lint proposal direction around the
 current structure-first model rather than switching abruptly to a parallel
 config language.
 
-Preferred next steps:
+Use `.trellis/spec/assura/config-notation.md` as the target design for these
+extensions.
 
-1. Add an ergonomic direct-content shorthand that compiles to current
-   `allowed_*`, `required`, `exists`, and `allow_extra` fields.
-2. Promote pattern scopes into first-class documented Assura-native notation.
-   The LS-Lint converter already treats them as validation scopes, not required
-   literal directories.
-3. Add a future Assura-native `rules:` directive for reusable named rule
-   groups only after repeated structure-first examples prove the duplication is
-   material. This should be the replacement for the historical `groups:`
-   concept: define a named bundle once, then reference it from the relevant
-   structure scopes without duplicating rule text.
-4. Add array-based OR naming as a readability improvement while preserving the
+Target implementation order:
+
+1. Add path-key shorthand under `structure:` for exact files, exact
+   directories, extension rules, subextension rules, and directory scopes.
+2. Use `exists` cardinality as the common presence model so required,
+   optional, forbidden, and bounded direct contents do not require duplicate
+   `required` and `allowed` declarations.
+3. Add reusable `rules:` fragments and `"@rule"` references, with `use` for
+   tree fragments and deterministic merge order.
+4. Add nested Markdown `outline:` validation with `?? ` optional heading
+   markers and object-form escape hatches for custom cases.
+5. Add deterministic relation checks for code-to-doc use cases only after the
+   path-key, reusable-rule, and outline surfaces are stable.
+6. Add array-based OR naming as a readability improvement while preserving the
    existing string OR syntax.
-5. Add future pairing/package/dependency notation only with explicit
-   dependency footprints for incremental invalidation.
 
 ## Pattern Scope Model
 

@@ -15,6 +15,8 @@ expanding into richer dependency and documentation constraints.
 - Project structure enforcement: `.assura/config.yml`
 - Closed-world structure config contract:
   `.trellis/spec/assura/structure-enforcement.md`
+- Target compact config notation:
+  `.trellis/spec/assura/config-notation.md`
 - Codex agent feedback contract:
   `.trellis/spec/assura/codex-agent-feedback.md`
 - Tooling and CI stabilization: `.trellis/spec/assura/tooling-stabilization.md`
@@ -33,6 +35,10 @@ expanding into richer dependency and documentation constraints.
    `specs-bak/` treated as historical unless a later ADR changes that.
 4. Keep the ls-lint-like baseline compatible while adding explicit
    closed-world structure contracts for this repo.
+5. Move future config ergonomics toward the compact tree-first notation in
+   `config-notation.md`: direct children as keys, `exists` cardinality for
+   common presence checks, reusable `@rule` fragments, nested Markdown
+   outlines, and deterministic code-to-doc relations.
 
 ## Constraints
 
