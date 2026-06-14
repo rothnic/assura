@@ -12,18 +12,29 @@ dynamic rows remain diagnostic.
 
 - The branch is `codex/ls-lint-realistic-parity-core-performance`.
 - There is a large local dirty layer on top of the pushed PR branch.
-- Fresh 2026-06-12 reruns turned green again: `cargo test --all-targets
+- Fresh 2026-06-14 reruns turned green again: `cargo test --all-targets
   --quiet` now passes.
-- Both named exact repro commands still pass in isolation: `cargo test
-  --quiet cli::check::prepared::tests::prepared_check_reloads_when_config_changes
-  -- --exact` and `cargo test --quiet
+- The named exact repro commands also pass in their current venues:
+  `cargo test --quiet
+  cli::check::prepared::tests::prepared_check_reloads_when_config_changes
+  -- --exact`, `cargo test --quiet
+  cli::check::compiled_artifact_tests::source_fingerprint_detects_same_size_rewrite_on_unix
+  -- --exact`, and `cargo test -p assura --lib
   cli::check::compiled_artifact_tests::source_fingerprint_detects_same_size_rewrite_on_unix
   -- --exact`.
-- The remaining blocker is now the docs / handoff / review batch needed to turn
-  the broad dirty branch into one narrow truthful PR-update slice.
+- The remaining blocker is now collapsing the still-dirty docs / handoff /
+  review batch plus the committed cache/fingerprint fixes into one narrow,
+  truthful PR-facing slice instead of continuing to route from stale
+  verification failures.
+- `cargo clippy --all-targets --all-features -- -D warnings` still fails in
+  both the clean base clone and the assigned worktree on the pre-existing
+  `src/constraints/ls_lint/directory.rs:257` `collapsible_else_if` lint, so
+  that broad gate remains outside this lane's new green verification
+  checkpoint.
 - The branch still needs shaping because the current work is a broad docs /
-  handoff batch, not yet a narrow reviewable PR update slice, even though the
-  canonical verification checkpoint is green again.
+  handoff batch plus uncommitted code fixes, not yet a narrow reviewable PR
+  update slice, even though the canonical verification checkpoint is green
+  again.
 - `git diff --check`, `cargo fmt --all -- --check`,
   `cargo clippy --all-targets --all-features -- -D warnings`, and
   `cargo run --quiet -- check --format json .` passed in the prior review pass.
@@ -62,6 +73,7 @@ dynamic rows remain diagnostic.
 - [x] `cargo test --all-targets --quiet` passes.
 - [x] `cargo test --quiet cli::check::prepared::tests::prepared_check_reloads_when_config_changes -- --exact` passes.
 - [x] `cargo test --quiet cli::check::compiled_artifact_tests::source_fingerprint_detects_same_size_rewrite_on_unix -- --exact` passes.
+- [x] `cargo test -p assura --lib cli::check::compiled_artifact_tests::source_fingerprint_detects_same_size_rewrite_on_unix -- --exact` passes.
 - [ ] `cargo fmt --all -- --check` passes.
 - [ ] `git diff --check` passes.
 - [ ] `cargo clippy --all-targets --all-features -- -D warnings` passes.

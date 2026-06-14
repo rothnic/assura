@@ -25,15 +25,23 @@ Current owning task:
 Current objective: finish the PR 11 performance lane on
 `codex/ls-lint-realistic-parity-core-performance` so the branch is coherent,
 validated, and ready for a truthful PR update covering the scoped Linux
-static-CRT cold claim and the warm/editor-session claim. Fresh 2026-06-12
+static-CRT cold claim and the warm/editor-session claim. Fresh 2026-06-14
 verification reruns turned green again: the canonical command `cargo test
---all-targets --quiet` passes, and both named exact repro commands also pass in
-isolation. Keep the branch in shaping mode anyway because the remaining blocker
-is now the broad dirty docs/handoff batch across
-`.trellis/spec/assura/roadmap.md`, `.trellis/spec/assura/workflow-status.md`,
-and `.trellis/tasks/05-21-bring-pr11-performance-home/prd.md`; the next
-narrowing step is to collapse that batch into one reviewable PR-update handoff
-before any claim says the branch is review-ready.
+--all-targets --quiet` passes, and all named exact repro commands also pass in
+their current venues:
+
+- `cargo test --quiet cli::check::prepared::tests::prepared_check_reloads_when_config_changes -- --exact`
+- `cargo test --quiet cli::check::compiled_artifact_tests::source_fingerprint_detects_same_size_rewrite_on_unix -- --exact`
+- `cargo test -p assura --lib cli::check::compiled_artifact_tests::source_fingerprint_detects_same_size_rewrite_on_unix -- --exact`
+
+Keep the branch in shaping mode anyway because the remaining blocker is now the
+broad dirty review/handoff batch across `.trellis/spec/assura/roadmap.md`,
+`.trellis/spec/assura/workflow-status.md`, `.trellis/tasks/05-21-bring-pr11-performance-home/prd.md`,
+and the committed cache/fingerprint fixes in `src/cli/check/cache.rs`,
+`src/cli/check/compiled_artifact.rs`, `src/cli/check/compiled_fingerprint.rs`,
+and `src/cli/check/prepared.rs`. The next narrowing step is to collapse that
+verified green checkpoint into one reviewable PR-facing slice instead of
+continuing to narrate stale verification failures.
 
 ## Recommended Next Epic
 

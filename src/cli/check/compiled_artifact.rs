@@ -126,9 +126,9 @@ impl CompiledStructureConfigArtifact {
         if self
             .source_config_fingerprint
             .as_ref()
-            .is_some_and(|expected| expected.matches_path(config_path))
+            .is_some_and(|expected| expected.differs_from_path(config_path))
         {
-            return Ok(true);
+            return Ok(false);
         }
         let source_bytes = std::fs::read(config_path)?;
         Ok(stable_hash(&source_bytes) == expected_hash)

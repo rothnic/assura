@@ -61,21 +61,23 @@ Current shaping default for the live branch `codex/ls-lint-realistic-parity-core
    - The current owning task is `.trellis/tasks/05-21-bring-pr11-performance-home`.
    - The live branch and recent commits are still release/performance verification work, so future workers should stay on that lane instead of reviving the older Agent Nudge ownership story.
 2. Treat the fresh verification matrix as source of truth.
-   - Fresh 2026-06-12 reruns turned green again: `cargo test --all-targets --quiet` now passes.
-   - Both named exact repro commands still pass in isolation: `cargo test --quiet cli::check::prepared::tests::prepared_check_reloads_when_config_changes -- --exact` and `cargo test --quiet cli::check::compiled_artifact_tests::source_fingerprint_detects_same_size_rewrite_on_unix -- --exact`.
-   - Consume the stale suite-red/shared-state story and keep the lane framed as green verification plus a remaining docs/handoff review gate.
+   - Fresh 2026-06-14 reruns turned green again: `cargo test --all-targets --quiet` now passes.
+   - The named exact repro commands also pass in their current venues: `cargo test --quiet cli::check::prepared::tests::prepared_check_reloads_when_config_changes -- --exact`, `cargo test --quiet cli::check::compiled_artifact_tests::source_fingerprint_detects_same_size_rewrite_on_unix -- --exact`, and `cargo test -p assura --lib cli::check::compiled_artifact_tests::source_fingerprint_detects_same_size_rewrite_on_unix -- --exact`.
+   - Consume the stale suite-red / venue-split story and keep the lane framed as green verification plus a remaining reviewable handoff gate.
 3. Keep worker capacity at zero until the broad dirty branch has a narrower reviewable handoff.
-   - The checkout is still dirty in `.trellis/spec/assura/roadmap.md`, `.trellis/spec/assura/workflow-status.md`, and `.trellis/tasks/05-21-bring-pr11-performance-home/prd.md`.
-   - The next shaping step is to collapse the docs/handoff batch to this refreshed green-verification checkpoint and turn it into one reviewable PR-update handoff before any claim says the branch is review-ready.
+   - The checkout is still dirty in the docs/handoff batch plus the committed cache/fingerprint fixes in `src/cli/check/cache.rs`, `src/cli/check/compiled_artifact.rs`, `src/cli/check/compiled_fingerprint.rs`, and `src/cli/check/prepared.rs`.
+   - `cargo clippy --all-targets --all-features -- -D warnings` still fails in the clean base clone and the assigned worktree on the pre-existing `src/constraints/ls_lint/directory.rs:257` `collapsible_else_if` lint, so that broad gate is not introduced by this lane.
+   - The next shaping step is to collapse the now-green verification checkpoint into one reviewable PR-facing slice rather than continue reopening stale verification diagnostics.
 4. Next deterministic inspection commands:
    - `cargo test --all-targets --quiet`
    - `cargo test --quiet cli::check::prepared::tests::prepared_check_reloads_when_config_changes -- --exact`
    - `cargo test --quiet cli::check::compiled_artifact_tests::source_fingerprint_detects_same_size_rewrite_on_unix -- --exact`
+   - `cargo test -p assura --lib cli::check::compiled_artifact_tests::source_fingerprint_detects_same_size_rewrite_on_unix -- --exact`
    - `git status --short`
    - `git diff --stat`
    - `git diff -- .trellis/spec/assura/roadmap.md .trellis/spec/assura/workflow-status.md`
    - `git diff -- .trellis/tasks/05-21-bring-pr11-performance-home/prd.md`
-   - `git diff -- .trellis/spec/assura/roadmap.md .trellis/spec/assura/workflow-status.md .trellis/tasks/05-21-bring-pr11-performance-home/prd.md`
+   - `git diff -- src/cli/check/cache.rs src/cli/check/compiled_artifact.rs src/cli/check/compiled_fingerprint.rs src/cli/check/prepared.rs`
    - `git log --oneline -5`
 
 ## Git Summary Format

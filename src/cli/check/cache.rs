@@ -167,10 +167,15 @@ fn fresh_cached_report(
 
 impl CachedCheckReport {
     fn config_is_fresh(&self, config_path: &Path, config_hash: Option<u64>) -> bool {
-        self.config_fingerprint
+        if self
+            .config_fingerprint
             .as_ref()
-            .is_some_and(|fingerprint| fingerprint.matches_path(config_path))
-            || config_hash.is_some_and(|hash| self.config_hash == hash)
+            .is_some_and(|fingerprint| fingerprint.differs_from_path(config_path))
+        {
+            return false;
+        }
+
+        config_hash.is_some_and(|hash| self.config_hash == hash)
     }
 }
 
@@ -348,7 +353,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn cached_report_accepts_matching_config_fingerprint_without_hash() {
+    fn cached_report_requires_hash_even_when_config_fingerprint_matches() {
         let temp = tempfile::tempdir().unwrap();
         fs::create_dir(temp.path().join(".assura")).unwrap();
         fs::write(temp.path().join(".assura/config.yml"), "structure: {}\n").unwrap();
@@ -376,12 +381,10 @@ mod tests {
             },
         };
 
-        let report =
+        assert!(
             fresh_cached_report(Some(&cached), None, temp.path(), &config_path, checked_path)
-                .unwrap();
-
-        assert!(report.success);
-        assert_eq!(report.files_checked, 1);
+                .is_none()
+        );
     }
 
     #[test]
