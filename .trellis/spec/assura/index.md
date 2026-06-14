@@ -13,6 +13,8 @@ expanding into richer dependency and documentation constraints.
 - Workflow status snapshots: `.trellis/spec/assura/workflow-status.md`
 - Spec routing: `.trellis/spec/index.md`
 - Project structure enforcement: `.assura/config.yml`
+- Canonical hand-authored config notation:
+  `.trellis/spec/assura/config-notation.md`
 - Closed-world structure config contract:
   `.trellis/spec/assura/structure-enforcement.md`
 - Target compact config notation:

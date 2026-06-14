@@ -59,8 +59,10 @@ per-agent `--format` values.
 ## Custom Constraints
 
 `extensions.custom_constraints` is experimental and first-party in the pre-1.0
-release line. The supported example is `paired_file_exists`, which runs through
-`assura check` and reports normal diagnostics with `custom:<id>` rule names.
+release line. Common source/test and package/doc relationships should use
+`structure` captures, `exists:1`, `needs`, and `provides`. Specialized custom
+constraints run through `assura check` and report normal diagnostics with
+`custom:<id>` rule names.
 
 Remote plugin loading, marketplace behavior, shell-executed plugins, and
 third-party plugin APIs are not release surfaces.

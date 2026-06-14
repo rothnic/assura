@@ -1,70 +1,67 @@
-# Assura Config Notation Target
+# Assura Config Notation
 
-This document defines the target Assura-native notation for future
-implementation work. It is a product spec, not a claim that every example is
-implemented today. Current implemented behavior remains documented in
-`structure-enforcement.md` and `docs/analysis/2026-05-15-notation-source-truth.md`.
+This is the canonical source for Assura's hand-authored structure notation.
+Assura is pre-1.0, so removed alpha notation is not preserved for compatibility.
 
 ## Purpose
 
-Assura config should look like the project or document it validates. The common
-path should be compact enough to compete with LS-Lint, while richer object
-attributes stay available for custom validation.
+Assura config should look like the project, file, or document it validates. The
+common path should be compact enough to compete with LS-Lint, while richer
+attributes stay available in place when a rule needs more detail.
 
-This target notation is designed to:
+This notation is designed to:
 
 - keep `structure:` as the project tree source of truth;
+- put policy where the artifact lives;
 - avoid a separate `contents:` layer for direct children;
 - avoid duplicate `required` and `allowed` declarations for the same item;
 - use `exists` cardinality for required, optional, forbidden, and bounded
   direct contents;
-- support reusable rule fragments through `rules:` and `@rule` references;
+- support reusable rule fragments through `rules:` and `use:`;
 - validate Markdown outlines with the same visual hierarchy as the document;
-- leave room for code-to-doc relationship checks without arbitrary commands.
+- express common source-to-test and code-to-doc relationships without detached
+  custom constraints.
 
-## Core Shape
+## Principles
 
-The native tree stays under `structure:`. Keys name the thing being validated.
-Values are either concise shorthand or detailed attributes.
+- `structure:` mirrors the project tree.
+- The simple case should be terse. A file, directory, extension, heading, or
+  relationship should not require a nested object unless extra attributes are
+  needed.
+- The detailed case expands in place. Add nested attributes under the same path
+  key only when a directive needs more configuration.
+- Captures use single braces: `{component}`, `{package}`.
+- Removed alpha captures such as `${name}` and `{{name}}` are invalid in
+  Assura-authored structure notation.
+- `.assura/` is Assura-owned tool state. Users should not need to add it to
+  ordinary project-shape excludes just to make closed-world root policies work.
+
+## Direct Structure
+
+Use the tree for normal files and directories. `exists:N` is the concise count
+form; a mapping form is available when a node needs more attributes.
 
 ```yaml
-rules:
-  readme-standard:
-    exists: 1
-    markdown:
-      outline:
-        - Overview
-        - Quick Start:
-            - Installation
-            - ?? Configuration
-        - Usage
-        - ?? Troubleshooting
-
-  agents-standard:
-    exists: 1
-    markdown:
-      outline:
-        - Project Guidance
-        - Commands
-        - Validation
-        - ?? Escalation
-
-  project-docs:
-    README.md: "@readme-standard"
-    AGENTS.md: "@agents-standard"
-
 structure:
   ./:
-    use: "@project-docs"
+    extra: false
+    README.md: exists:1
+    AGENTS.md: exists:1
     Cargo.toml: exists:1
     src/: exists:1
     docs/: exists:1
-
-  packages/*/:
-    use: "@project-docs"
-    package.json: exists:1
-    src/: exists:1
+    .rs: snake_case
 ```
+
+This expands to the existing internal structure model:
+
+- `extra: false` closes both direct files and direct directories for the scope.
+- `README.md: exists:1` requires exactly one direct file named `README.md`.
+- `src/: exists:1` requires exactly one direct directory named `src`.
+- `.rs: snake_case` applies a naming rule to direct `*.rs` files.
+
+Closed-world checks remain directory-local. `extra: false` does not recursively
+make descendants closed-world unless a descendant scope also says so.
 
 ## Path Keys
 
@@ -78,10 +75,12 @@ Path-like keys are first-class structure entries.
 | `.md` | Direct file extension rule in the current scope. |
 | `.test.ts` | Direct file subextension rule in the current scope. |
 | `.dir` | Directory rule for the current directory scope. |
+| `{component}.tsx` | Direct file capture. |
+| `{package}/` | Direct directory capture. |
 
-Trailing slash is the native way to disambiguate directories from exact files.
-Compatibility migrations may accept LS-Lint-style directory keys without the
-slash, but native examples should include the slash.
+Trailing slash is the authoring convention for directories. Migration from
+LS-Lint may accept older directory shapes, but new Assura-authored examples
+should include the slash.
 
 Pattern scopes validate existing matches. They do not create required literal
 directories unless an `exists` rule explicitly requires a match.
@@ -99,8 +98,8 @@ directories unless an `exists` rule explicitly requires a match.
 
 This replaces most duplicated `required` plus `allowed` declarations. A direct
 child with `exists:1` is both required and allowed. A direct child with
-`exists:0-1` is allowed but not required. A direct child with `exists:0` is
-not allowed.
+`exists:0-1` is allowed but not required. A direct child with `exists:0` is not
+allowed.
 
 Detailed attributes remain available when shorthand is not enough:
 
@@ -113,58 +112,46 @@ structure:
         max_lines: 300
 ```
 
-## Closed-World Direct Contents
-
-Closed-world checks should remain directory-local. The compact notation should
-compile to the same direct-child fields described by
-`structure-enforcement.md`.
-
-```yaml
-structure:
-  ./:
-    extra: false
-    README.md: exists:1
-    AGENTS.md: exists:1
-    Cargo.toml: exists:1
-    src/: exists:1
-    docs/: exists:1
-```
-
-`extra: false` means undeclared direct files and directories are rejected in
-that scope. It does not recursively make descendants closed-world unless a
-descendant scope also says so.
-
 ## Reusable Rules
 
-`rules:` defines reusable fragments. `"@name"` references a fragment. References
-are quoted in examples because bare `@` values are not valid YAML scalars.
-Future parser work may add preprocessing for unquoted `@name`, but the stable
-documented form must remain valid YAML after preprocessing.
+Use top-level `rules:` to remove repeated local policy. A rule can be a node
+fragment or a tree fragment; `use:` applies it where the structure already is.
 
 ```yaml
 rules:
-  package-standard:
+  "@readme-standard":
+    exists: 1
+    markdown:
+      outline:
+        - Overview
+        - Quick Start:
+            - Installation
+            - ?? Configuration
+        - Usage
+        - ?? Troubleshooting
+
+  "@agents-standard":
+    exists: 1
+    markdown:
+      outline:
+        - Project Guidance
+        - Commands
+        - Validation
+        - ?? Escalation
+
+  "@project-docs":
     README.md: "@readme-standard"
     AGENTS.md: "@agents-standard"
-    package.json: exists:1
-    src/: exists:1
 
 structure:
-  packages/*/:
-    use: "@package-standard"
+  ./:
+    use: "@project-docs"
+    Cargo.toml: exists:1
+    src/: exists:1
 ```
 
-Fragments have inferred kinds:
-
-- A node fragment contains attributes for one file, directory, extension, or
-  scope, such as `exists`, `markdown`, `naming`, `max_lines`, or `validate`.
-  It is valid as the value of a path-like key.
-- A tree fragment contains path-like child keys and optional `use` entries. It
-  is valid through `use` at a structure node or inside another tree fragment.
-- A fragment must not mix node attributes and path-like child keys at the same
-  map level. Put node attributes under a path key when composing tree fragments.
-- Referencing a tree fragment where a node fragment is required, or the reverse,
-  is a configuration error.
+Rules are an authoring convenience. They compile into normal structure and
+relationship constraints before validation.
 
 Merge order should be deterministic:
 
@@ -196,8 +183,8 @@ Rules:
 - A heading string beginning with `?? ` is optional.
 - A heading that contains or ends with `?` is still a normal heading.
 - A heading that starts with literal `?? ` can use the object escape hatch.
-- Nesting derives heading levels. Implementations should not require users to
-  maintain separate `h2`/`h3` depth fields for normal documents.
+- Nesting derives heading levels. Users should not maintain separate `h2`/`h3`
+  depth fields for ordinary documents.
 - Matching is relative by default. If the document starts with exactly one H1
   before any lower-level headings, treat that H1 as the document title and match
   root outline entries below it. Otherwise, match the root outline against the
@@ -236,68 +223,99 @@ markdown:
         - public-api-links
 ```
 
-## Code-To-Documentation Relations
+## Optional Producers And Required Counterparts
 
-Some projects need structure relationships across directories. Assura should
-support deterministic relation checks without requiring custom shell execution.
+A captured path without `exists` is optional: if it exists, Assura validates any
+relationship implied by other paths with the same capture names. A captured path
+with `exists:1` becomes the required counterpart for each matching producer.
+
+```yaml
+structure:
+  src/components/:
+    "{component}.tsx":
+      use: "@react-component"
+    "{component}.test.tsx": exists:1
+```
+
+If `src/components/Button.tsx` exists, Assura requires
+`src/components/Button.test.tsx`. If no component exists, no test file is
+required.
+
+The target still lives where the target artifact appears in the project tree:
+
+```yaml
+structure:
+  src/components/:
+    "{component}.tsx":
+      use: "@react-component"
+
+  tests/components/:
+    "{component}.test.tsx": exists:1
+```
+
+## Named Needs And Providers
+
+Use `needs:` and `provides:` when one source can be satisfied by more than one
+kind of artifact. Provider alternatives also live where the provider artifact
+appears.
 
 ```yaml
 rules:
-  package-doc:
-    markdown:
-      outline:
-        - Overview
-        - Public API
-        - ?? Examples
-        - ?? Migration Notes
+  "@package-standard":
+    README.md: exists:1
+    AGENTS.md: exists:1
+    src/: exists:1
 
-  package-doc-section:
-    markdown:
-      outline:
-        - Overview
-        - Public API
-        - ?? Examples
+structure:
+  packages/:
+    "{package}/":
+      use: "@package-standard"
+      needs: doc
 
-relations:
-  package-docs:
-    for_each: src/packages/*/
-    capture:
-      package: basename
-    require:
-      any:
-        - docs/packages/{package}.md:
-            use: "@package-doc"
-        - docs/packages.md:
-            section: "{package}"
-            use: "@package-doc-section"
+  docs/packages/:
+    required: false
+    "{package}.md":
+      provides: doc
+      markdown:
+        outline:
+          - Overview
+          - Public API
+          - ?? Examples
+
+  docs/:
+    required: false
+    packages.md:
+      sections:
+        "{package}":
+          provides: doc
+          markdown:
+            outline:
+              - Overview
+              - Public API
+              - ?? Examples
 ```
 
-This means every package directory must be documented either by a dedicated
-document or by a section in an aggregate document. The captured `{package}`
-token comes from the matched directory basename.
+For each package directory, either `docs/packages/<package>.md` or a heading
+named `<package>` in `docs/packages.md` satisfies the `doc` need.
 
-Relation semantics:
+## When To Use Nested Attributes
 
-- Relation paths are resolved from the project root unless documented
-  otherwise.
-- `capture: { package: basename }` captures the matched directory basename.
-  Implementations may later add explicit normalization functions, but the
-  default value is the literal basename.
-- Template placeholders are expanded before path or heading matching.
-- `section: "{package}"` selects exactly one heading with the expanded title in
-  the target document. Zero matches fail the alternative. Multiple matches are
-  ambiguous and fail unless a future selector disambiguates them.
-- When `section` is present, the referenced rule validates inside that section;
-  its outline starts with child headings under the selected section, not with
-  the selected heading itself.
+Prefer shorthand for ordinary existence, naming, optional producers, required
+counterparts, and optional headings. Use nested attributes only when the
+directive needs additional detail, such as severity, Markdown heading
+constraints, or future custom validators.
 
-Relation checks should be:
-
-- opt-in;
-- deterministic;
-- based on paths and parsed document structure;
-- independent of network access;
-- independent of repository-defined shell commands.
+```yaml
+structure:
+  docs/:
+    "{topic}.md":
+      exists: 1
+      markdown:
+        outline:
+          - Summary
+          - Status
+          - ?? Decisions
+```
 
 ## Proof Use Cases
 
@@ -319,8 +337,18 @@ Implementation should prove these before declaring the notation ready:
    optional headings such as `?? Why Assura?`.
 7. Escaped/custom headings: support object-form nodes for headings that collide
    with shorthand or need custom match attributes.
-8. Code-to-doc relation: for every matched package directory, require either a
+8. Code-to-test relation: for every matched source capture, require the matching
+   test artifact where the test appears in the project tree.
+9. Code-to-doc relation: for every matched package directory, require either a
    dedicated docs file or a package section in an aggregate docs file.
+
+## Relationship Boundary
+
+`extensions.custom_constraints` remains an experimental first-party execution
+surface for specialized constraints. It is not the preferred notation for common
+repo relationships. Common source-to-test, package-to-doc, and aggregate-section
+relationships belong in `structure:` through captures, `exists:1`, `needs:`,
+and `provides:`.
 
 ## Non-Goals
 
@@ -331,11 +359,6 @@ Implementation should prove these before declaring the notation ready:
   notation for the same child.
 - Do not require users to sync Markdown heading depth numbers with outline
   indentation.
-- Do not execute arbitrary repository-defined commands as part of relation or
-  Markdown validation.
-
-## Implementation Boundary
-
-This spec is the target notation. Parser and validator work should land in
-separate implementation tasks with fixtures that show shorthand expansion into
-the existing structure model where possible.
+- Do not execute arbitrary repository-defined commands as part of relationship
+  or Markdown validation.
+- Do not preserve removed alpha notation for backwards compatibility.

@@ -10,6 +10,8 @@ use regex_lite::Regex;
 use std::collections::HashMap;
 use std::path::PathBuf;
 
+const TOOL_STATE_EXCLUSIONS: &[&str] = &[".assura/**"];
+
 #[derive(Clone)]
 pub(in crate::cli::check) struct CompiledStructureConfig {
     pub(super) config: Config,
@@ -69,11 +71,7 @@ impl CompiledStructureConfig {
                     .retain(|pattern, _| required_patterns.binary_search(pattern).is_ok());
             }
         }
-        let exclude_patterns = config
-            .exclude
-            .iter()
-            .map(|pattern| CompiledExclusion::new(pattern))
-            .collect();
+        let exclude_patterns = compile_exclusions(config.exclude.iter().map(String::as_str));
         let rule_scopes = if keep_full_rule_plan || lslint_fast_scopes.is_none() {
             compile_rule_scopes(&config)
         } else {
@@ -97,11 +95,8 @@ impl CompiledStructureConfig {
         plan: PrecompiledStructurePlan,
         fail_fast: bool,
     ) -> Self {
-        let exclude_patterns = plan
-            .exclusion_patterns
-            .iter()
-            .map(|pattern| CompiledExclusion::new(pattern))
-            .collect();
+        let exclude_patterns =
+            compile_exclusions(plan.exclusion_patterns.iter().map(String::as_str));
         let naming_regexes = plan
             .naming_regex_patterns
             .into_iter()
@@ -129,6 +124,15 @@ impl CompiledStructureConfig {
             has_direct_count_constraints: plan.has_direct_count_constraints,
         }
     }
+}
+
+fn compile_exclusions<'a>(configured: impl Iterator<Item = &'a str>) -> Vec<CompiledExclusion> {
+    TOOL_STATE_EXCLUSIONS
+        .iter()
+        .copied()
+        .chain(configured)
+        .map(CompiledExclusion::new)
+        .collect()
 }
 
 fn node_has_direct_count_constraints(node: &crate::config::config::DirectoryNode) -> bool {

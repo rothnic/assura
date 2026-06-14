@@ -34,6 +34,7 @@ The CLI can also receive a config path with the global `--config` option.
 ```yaml
 structure: {}
 exclude: []
+rules: {}
 ls: null
 ```
 
@@ -41,8 +42,52 @@ ls: null
 | --- | --- |
 | `structure` | Directory-shaped policy tree used by `assura check`. |
 | `exclude` | Glob-like paths excluded from validation and direct-child counts. |
+| `rules` | Optional reusable authoring fragments referenced from `structure` with `use:`. Rules compile into the normal structure model before validation. |
 | `ls` | Compatibility input used by migration and tests, not the public `assura check` policy surface. Prefer `assura migrate` so LS-Lint rules are converted into `structure`. |
 | `patterns` | Library resolver field from the older config model. It is accepted by the config type but is not the public `assura check` policy surface. Use `structure` instead. |
+
+Assura excludes its own `.assura/**` tool-state directory automatically during
+checks. Do not add it to ordinary project-shape excludes unless a future command
+explicitly asks for that directory to be validated.
+
+## Concise Structure Notation
+
+Simple policy should stay in the tree:
+
+```yaml
+structure:
+  ./:
+    extra: false
+    README.md: exists:1
+    AGENTS.md: exists:1
+    src/: exists:1
+    .rs: snake_case
+```
+
+Concise keys expand to the same internal model documented below:
+
+| Notation | Behavior |
+| --- | --- |
+| `extra: false` | Rejects unrecognized direct files and directories in this scope. |
+| `README.md: exists:1` | Requires exactly one direct file named `README.md`. |
+| `src/: exists:1` | Requires exactly one direct child directory named `src`. |
+| `.rs: snake_case` | Applies `snake_case` naming to direct `*.rs` files. |
+
+Use a mapping under the same path key when the directive needs more detail:
+
+```yaml
+structure:
+  docs/:
+    "{topic}.md":
+      exists: 1
+      markdown:
+        required_sections:
+          - Summary
+```
+
+Captures use single braces such as `{topic}`. Removed alpha capture forms such
+as `${name}` and `{{name}}` are not supported in hand-authored structure
+notation.
 
 ## Directory Nodes
 
@@ -168,6 +213,46 @@ markdown:
 | `required_sections` | Requires headings with the configured text. |
 | `check_links` | Accepted by the config type but not enforced by current `assura check`. |
 
+## Relationships
+
+Captured paths can express relationships without leaving the project tree. A
+captured path without `exists` is optional; a captured path with `exists:1`
+becomes required for each matching source with the same capture names.
+
+```yaml
+structure:
+  src/components/:
+    "{component}.tsx": {}
+    "{component}.test.tsx": exists:1
+```
+
+If `src/components/Button.tsx` exists, Assura requires
+`src/components/Button.test.tsx`. If no component exists, no test file is
+required.
+
+Use `needs:` and `provides:` when a relationship can be satisfied by more than
+one artifact:
+
+```yaml
+structure:
+  packages/:
+    "{package}/":
+      needs: doc
+  docs/packages/:
+    required: false
+    "{package}.md":
+      provides: doc
+  docs/:
+    required: false
+    packages.md:
+      sections:
+        "{package}":
+          provides: doc
+```
+
+For each package directory, either `docs/packages/<package>.md` or a heading
+named `<package>` in `docs/packages.md` satisfies the `doc` need.
+
 ## Closed-World Example
 
 This policy rejects stray files and directories at the project root while
@@ -176,28 +261,15 @@ allowing generated output to stay outside the source contract.
 ```yaml
 structure:
   ./:
-    files:
-      required:
-        - README.md
-      allowed_names:
-        - README.md
-        - Cargo.toml
-      allowed_patterns:
-        - "*.lock"
-      forbidden_patterns:
-        - "draft-*"
-      allow_extra: false
-    directories:
-      required:
-        - src
-      allowed_names:
-        - src
-        - docs
-      allowed_patterns:
-        - "package-*"
-      forbidden_patterns:
-        - "tmp-*"
-      allow_extra: false
+    extra: false
+    README.md: exists:1
+    Cargo.toml: exists:1
+    "*.lock": exists:0-1
+    src/: exists:1
+    docs/: exists:1
+    "package-*/": exists:0-20
+    draft-*: exists:0
+    tmp-*/: exists:0
 exclude:
   - "target/**"
   - "generated/**"

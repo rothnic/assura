@@ -85,10 +85,12 @@ command names, or one `--format` value per agent.
 
 ## Extension Compatibility
 
-Custom constraints are experimental and first-party in v0.1.0:
+Common repository relationships are authored in `structure` with single-brace
+captures, `exists:1`, `needs`, and `provides`. Custom constraints are
+experimental and first-party in v0.1.0:
 
 - config lives under `extensions.custom_constraints`;
-- supported type: `paired_file_exists`;
+- supported specialized types: `paired_file_exists` and `command_surface_docs`;
 - execution surface: `assura check`;
 - diagnostics: normal report entries with `custom:<id>` rule names;
 - safety: no absolute paths, parent escapes, Windows prefixes, remote loading,

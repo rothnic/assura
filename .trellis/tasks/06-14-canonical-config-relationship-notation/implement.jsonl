@@ -1,0 +1,6 @@
+{"file":"src/config/loader.rs","reason":"Config parsing entrypoint currently deserializes directly into Config and must normalize concise structure notation before validation."}
+{"file":"src/config/config.rs","reason":"DirectoryNode and Config are the lower-level runtime model that concise notation must normalize into."}
+{"file":"src/config/config/extensions.rs","reason":"Current relationship implementation surface lives under experimental custom constraints."}
+{"file":"src/cli/check/custom_constraints.rs","reason":"Existing paired_file_exists runtime behavior can inform or host canonical relationship validation internals."}
+{"file":"tests/custom_constraints_tests.rs","reason":"Existing relationship fixtures prove missing target, existing target, exclusion, and root source-parent behavior."}
+{"file":"docs/analysis/2026-05-15-notation-source-truth.md","reason":"Current active notation classification needs updating or replacement by the canonical spec."}

@@ -10,6 +10,10 @@ pub struct ExtensionConfig {
     /// First-party custom constraints executed by `assura check`.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub custom_constraints: Vec<CustomConstraintConfig>,
+
+    /// Internal relationship constraints normalized from structure notation.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub relationships: Vec<RelationshipConstraintConfig>,
 }
 
 /// A first-party custom constraint declaration.
@@ -28,6 +32,35 @@ pub struct CustomConstraintConfig {
     /// Optional diagnostic severity.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub severity: Option<String>,
+}
+
+/// A capture-based relationship constraint normalized from structure notation.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub struct RelationshipConstraintConfig {
+    /// Stable local identifier used in diagnostics.
+    pub id: String,
+    /// Source path pattern with named captures, relative to the project root.
+    pub source: String,
+    /// Logical relationship name, such as `doc` or a generated counterpart id.
+    pub need: String,
+    /// Provider alternatives that can satisfy the need.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub providers: Vec<RelationshipProviderConfig>,
+    /// Optional diagnostic severity.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub severity: Option<String>,
+}
+
+/// One provider alternative for a relationship need.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub struct RelationshipProviderConfig {
+    /// Provider path template with named captures, relative to the project root.
+    pub path: String,
+    /// Optional Markdown heading text template inside the provider path.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub section: Option<String>,
 }
 
 /// Checked command-surface contract loaded by the `command_surface_docs`
@@ -81,6 +114,12 @@ impl ExtensionConfig {
     /// Add a custom constraint declaration.
     pub fn with_custom_constraint(mut self, constraint: CustomConstraintConfig) -> Self {
         self.custom_constraints.push(constraint);
+        self
+    }
+
+    /// Add an internal relationship constraint declaration.
+    pub fn with_relationship(mut self, relationship: RelationshipConstraintConfig) -> Self {
+        self.relationships.push(relationship);
         self
     }
 }

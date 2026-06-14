@@ -14,8 +14,10 @@ release until a newer release process replaces it.
   `quality plan`, and `performance-report`.
 - Stable agent feedback surface: `assura check --format agent`.
 - Codex adapter: `assura check --format agent --agent codex`.
-- Experimental extension surface: first-party
-  `extensions.custom_constraints` with `paired_file_exists`.
+- Relationship notation: `structure` captures, `exists:1`, `needs`, and
+  `provides`.
+- Experimental extension surface: first-party specialized
+  `extensions.custom_constraints`.
 - Installable artifacts: GitHub release archives consumed by
   `website/public/install.sh` and `website/public/install.ps1`.
 
