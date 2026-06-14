@@ -45,7 +45,7 @@ ls: null
 | `ls` | Compatibility input used by migration and tests, not the public `assura check` policy surface. Prefer `assura migrate` so LS-Lint rules are converted into `structure`. |
 | `patterns` | Library resolver field from the older config model. It is accepted by the config type but is not the public `assura check` policy surface. Use `structure` instead. |
 
-## Compact Structure Notation
+## Native Structure Notation
 
 The native authoring path is a tree under `structure:`. Path-like keys describe
 direct files, direct directories, file-extension rules, and wildcard directory
@@ -99,7 +99,7 @@ Because `packages/` is an exact directory key, that parent directory is required
 by default. Because `*/` is a wildcard scope, it is optional unless
 `required: true` is set.
 
-`exists` is the compact count model:
+`exists` is the common count model:
 
 | Shorthand | Behavior |
 | --- | --- |
@@ -108,7 +108,7 @@ by default. Because `*/` is a wildcard scope, it is optional unless
 | `exists:0` | Matching direct children are forbidden. |
 | `exists:N-M` | Matching direct child count must be within the inclusive range. |
 
-Use the expanded fields below for advanced cases such as severity overrides,
+Use nested attributes for advanced cases such as severity overrides,
 inheritance edge cases, closed-world allow/forbid combinations, markdown
 frontmatter requirements, file size limits, and custom validation extensions.
 

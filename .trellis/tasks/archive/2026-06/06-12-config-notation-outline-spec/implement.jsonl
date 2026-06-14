@@ -1,4 +1,4 @@
 {"file": ".trellis/spec/assura/index.md", "reason": "Assura spec source-truth index that must link the new notation spec."}
-{"file": ".trellis/spec/assura/structure-enforcement.md", "reason": "Current closed-world structure contract that the compact notation must compile toward."}
+{"file": ".trellis/spec/assura/structure-enforcement.md", "reason": "Current closed-world structure contract that the native notation must compile toward."}
 {"file": "docs/analysis/2026-05-15-notation-source-truth.md", "reason": "Current notation source truth that must point at the new stable target."}
 {"file": ".trellis/tasks/06-12-config-notation-outline-spec/research/config-notation-references.md", "reason": "Research references for YAML markers, heading structure precedent, and LS-Lint fork examples."}

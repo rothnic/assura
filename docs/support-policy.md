@@ -13,7 +13,7 @@ This policy applies to Assura pre-1.0 releases.
 | --- | --- | --- |
 | `assura check` structure validation | Supported | Bugs that produce incorrect pass/fail results are release blockers. |
 | `assura check --format json` and `--format yaml` | Supported | Schema changes must be called out in release notes before 1.0. |
-| `assura check --format advice` and `--format status` | Supported | Guided and compact output must stay deterministic enough for local hooks and agent tools. |
+| `assura check --format advice` and `--format status` | Supported | Guided status output must stay deterministic enough for local hooks and agent tools. |
 | `assura check --format agent` | Supported | Agent JSON shape must remain deterministic and documented. |
 | `--agent codex` delivery | Supported adapter | Delivery may depend on user-approved Codex hooks, but it must not require a separate CLI. |
 | `assura init` | Supported | Starter config output must be valid and self-checkable. |
@@ -25,7 +25,7 @@ This policy applies to Assura pre-1.0 releases.
 | `assura info` | Experimental diagnostic | Text output can change before a documented automation contract exists. |
 | `extensions.custom_constraints` | Experimental first-party | Breaking changes are allowed before 1.0 with release-note disclosure. |
 | `assura watch` | Experimental | Do not advertise as release-grade until watch-mode tests and docs exist. |
-| Internal Rust APIs | Unstable | Public Rust module visibility in `src/lib.rs` is for binaries, tests, and benchmark harnesses unless a row explicitly promotes the API. No compatibility guarantee before 1.0. |
+| Internal Rust APIs | Unstable | Public Rust module visibility in `src/lib.rs` is for binaries, tests, and benchmark harnesses unless a row explicitly promotes the API. No internal compatibility guarantee before Assura reaches both 1.0 and 10 GitHub stars. |
 
 ## Unsupported Surfaces
 
@@ -64,10 +64,11 @@ Use these labels or equivalent GitHub issue language:
 
 These are maintainer targets, not a paid service-level agreement.
 
-## Breaking Changes Before 1.0
+## Breaking Changes Before 1.0 And 10 Stars
 
-Assura can make breaking changes before 1.0 when they are intentional and
-documented. Every breaking release note must identify:
+Assura can make breaking changes before it reaches both 1.0 and 10 GitHub
+stars when they are intentional and documented. Every breaking release note must
+identify:
 
 - affected command, config field, output field, or archive name;
 - replacement path, if one exists;

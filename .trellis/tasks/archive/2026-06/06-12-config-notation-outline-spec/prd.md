@@ -2,7 +2,7 @@
 
 ## Goal
 
-Define the stable Assura-native config notation target for compact structure
+Define the stable Assura-native config notation target for native structure
 rules, reusable rule fragments, Markdown outline validation, and code-to-doc
 relationship checks. The spec should give implementation work a clear product
 target while preserving the current structure-first direction and LS-Lint
@@ -31,14 +31,14 @@ simplicity.
 
 ## Requirements
 
-- Add a durable Assura spec document for the target compact notation.
+- Add a durable Assura spec document for the target native notation.
 - Define key use cases that implementation should prove.
 - Make clear which pieces are implemented today versus target notation.
 - Preserve current `structure:` as the native tree; do not introduce a parallel
   root language that conflicts with the current product surface.
 - Prefer concise shorthand for simple cases and object attributes only for
   customization.
-- Define a compact Markdown outline syntax where nesting represents heading
+- Define a native Markdown outline syntax where nesting represents heading
   nesting and `?? ` marks optional headings.
 - Explain how headings containing `?` are represented without ambiguity.
 - Define how reusable rules reduce duplication across root and monorepo package

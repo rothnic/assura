@@ -4,7 +4,7 @@
 
 use super::config::Config;
 use crate::cli::config::{ConfigError, ConfigResult};
-use crate::config::config::{normalize_compact_config_value, validate_config_semantics};
+use crate::config::config::{normalize_native_config_value, validate_config_semantics};
 use std::path::Path;
 #[cfg(feature = "full-cli")]
 use validator::Validate;
@@ -59,7 +59,7 @@ impl ConfigLoader {
     fn parse_config_value(content: &str) -> ConfigResult<Config> {
         let value: serde_yaml::Value =
             serde_yaml::from_str(content).map_err(|error| ConfigError::Yaml(error.to_string()))?;
-        let value = normalize_compact_config_value(value).map_err(ConfigError::Invalid)?;
+        let value = normalize_native_config_value(value).map_err(ConfigError::Invalid)?;
         serde_yaml::from_value(value).map_err(|error| ConfigError::Yaml(error.to_string()))
     }
 }

@@ -113,9 +113,10 @@ The release support policy is in
 [`docs/support-policy.md`](./support-policy.md). The compatibility matrix is in
 [`docs/compatibility-and-surface.md`](./compatibility-and-surface.md).
 
-Assura remains pre-1.0. Configuration formats, experimental extension fields,
-and internal APIs can change before 1.0, but public release notes must identify
-breaking changes and removed experimental surfaces.
+Assura remains pre-1.0 and below the internal stability threshold.
+Configuration formats, experimental extension fields, and internal APIs can
+change before Assura reaches both 1.0 and 10 GitHub stars, but public release
+notes must identify breaking changes and removed experimental surfaces.
 
 ## Verification
 

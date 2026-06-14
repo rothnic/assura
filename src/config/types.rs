@@ -128,7 +128,7 @@ pub struct Config {
     #[cfg_attr(feature = "full-cli", validate(nested))]
     pub policy: Option<PolicyNode>,
 
-    /// Legacy structure format (for backwards compatibility)
+    /// Structure-first validation tree.
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub structure: HashMap<String, crate::config::config::DirectoryNode>,
 

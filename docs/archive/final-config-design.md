@@ -29,7 +29,7 @@ Assura uses a **unified tree configuration** where:
 2. Every policy node is a path, pattern, or well-known directive
 3. No arbitrary directive names in policy tree
 4. LS-Lint compatibility maintained where possible
-5. NO backwards compatibility with previous Assura versions (pre-1.0)
+5. NO pre-1.0 stability guarantee for previous Assura versions
 
 ---
 
@@ -430,7 +430,7 @@ policy:
 
 ### 3.3 No Assura Version Compatibility
 
-**IMPORTANT:** No backwards compatibility with previous Assura config versions.
+**IMPORTANT:** No pre-1.0 stability guarantee for previous Assura config versions.
 - This is pre-1.0
 - Only the unified format described here is supported
 - No `version` field in config

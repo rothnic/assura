@@ -36,14 +36,14 @@
 - `rothnic/ls-lint` PR #1 merged required file/directory validation under
   `exists` and removed a separate `required` directive.
 - Product implication: Assura should use cardinality (`exists:1`,
-  `exists:0-1`, `exists:0`, `exists:N-M`) as the compact common-case model
+  `exists:0-1`, `exists:0`, `exists:N-M`) as the concise common-case model
   instead of duplicating required and allow concepts.
 - Source: https://github.com/rothnic/ls-lint/pull/1
 
-- `rothnic/ls-lint` PR #4 keeps examples compact with `groups:`, `@group`
+- `rothnic/ls-lint` PR #4 keeps examples concise with `groups:`, `@group`
   references, composed rules, and content-rule prototypes.
 - Product implication: Assura should support reusable rule fragments and
-  compact references, but adapt the syntax to Assura's tree-first `structure:`
+  concise references, but adapt the syntax to Assura's tree-first `structure:`
   model.
 - Source: https://github.com/rothnic/ls-lint/pull/4
 

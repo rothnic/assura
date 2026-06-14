@@ -49,31 +49,19 @@ ls:
   .tsx: PascalCase
 ```
 
-**Assura Current (Verbose):**
+**Assura Native:**
 ```yaml
 structure:
   ./:
-    files:
-      extensions: ["rs"]
-      naming: snake_case
-  src/:
-    files:
-      extensions: ["tsx"]
-      naming: PascalCase
+    .rs: snake_case
+    src/:
+      .tsx: PascalCase
 ```
 
-**Can Assura Do It?** ✅ Yes, but verbose  
-**Efficiency:** Poor - requires structure wrapping  
-**Gap:** No top-level extension shorthand
-
-**Proposed Efficient Syntax:**
-```yaml
-patterns:
-  "**/*.rs": snake_case
-  "**/*.tsx": PascalCase
-```
-
-**Verdict:** Needs `patterns` key for efficiency
+**Can Assura Do It?** ✅ Yes
+**Efficiency:** Good for structure-local extension policy
+**Verdict:** Native tree notation keeps extension rules inside the project
+scope they govern.
 
 ---
 
@@ -208,11 +196,13 @@ matcher-backed validation scopes, and extension/subextension plus `.dir`
 `README.md: exists:1` are converted to direct counts for default validation.
 Scalar naming keys are validated and otherwise ignored.
 
-**Proposed Efficient Syntax:**
+**Native Assura Syntax:**
 ```yaml
 structure:
-  packages/*:
-    require: [AGENTS.md, README.md, src/]
+  packages/*/:
+    AGENTS.md: exists:1
+    README.md: exists:1
+    src/: exists:1
 ```
 
 **Verdict:** ✅ Direct `exists` and wildcard scopes are implemented.
@@ -316,16 +306,17 @@ structure:
 **Need:** Only allow specific files in root  
 **Use Case:** Prevent clutter, enforce documentation
 
-**Proposed Efficient Syntax:**
+**Native Assura Syntax:**
 ```yaml
 structure:
   ./:
-    allow: [README.md, AGENTS.md, LICENSE*]
-    # Implicitly denies everything else
+    extra: false
+    README.md: exists:1
+    AGENTS.md: exists:1
+    LICENSE: exists:0-1
 ```
 
-**Verdict:** ✅ Current explicit direct-content fields support this behavior;
-the gap is only ergonomic shorthand.
+**Verdict:** ✅ Native path keys and `extra: false` support this behavior.
 
 ---
 
@@ -333,16 +324,17 @@ the gap is only ergonomic shorthand.
 
 | Feature | LS-Lint Lines | Assura Lines | Efficiency | Status |
 |---------|--------------|--------------|------------|---------|
-| Extension rules | 2 | 6-10 | ⚠️ Poor | Implemented, verbose |
+| Extension rules | 2 | 4 | ✅ Good | Implemented through native extension keys |
 | Path rules | 4 | 4 | ✅ Good | Explicit scopes implemented |
 | OR syntax | 1 | 1 | ✅ Good | Implemented, string-based |
 | Multi-part ext | 3 | 3 | ✅ Good | Implemented |
 | Directory rules | 1 | 3 | ✅ Good | Implemented |
-| Required direct children | 3 | 4-8 | ⚠️ Verbose | Implemented through `exists` / `required` |
-| Root constraints | Not direct | 6-10 | ⚠️ Verbose | Implemented through closed-world direct contents |
+| Required direct children | 3 | 3-5 | ✅ Good | Implemented through native path keys and `exists` |
+| Root constraints | Not direct | 4-8 | ✅ Good | Implemented through `extra: false` and native path keys |
 
-**Overall Efficiency:** Good for explicit structure, still verbose for broad
-pattern and direct-content shorthand cases.
+**Overall Efficiency:** Good for explicit structure and direct-content
+contracts. Broad recursive file patterns remain a deliberate non-goal for the
+structure tree unless a future relation or pattern surface proves necessary.
 
 ---
 
@@ -350,13 +342,13 @@ pattern and direct-content shorthand cases.
 
 | Capability | LS-Lint | Assura | Can Do? | Efficient? |
 |-----------|---------|--------|---------|------------|
-| Extension rules | ✅ | ✅ | Yes | ⚠️ No |
+| Extension rules | ✅ | ✅ | Yes | ✅ Yes |
 | Path-specific rules | ✅ | ✅ | Yes | ✅ Yes |
 | OR syntax | ✅ | ✅ | Yes | ✅ Yes |
 | Multi-part extensions | ✅ | ✅ | Yes | ✅ Yes |
 | Directory rules | ✅ | ✅ | Yes | ✅ Yes |
-| Required files/directories | ✅ | ✅ | Yes for direct scopes, including wildcard/brace scopes | ⚠️ Verbose |
-| Root whitelist / closed world | ❌ | ✅ | Yes as Assura extension | ⚠️ Verbose |
+| Required files/directories | ✅ | ✅ | Yes for direct scopes, including wildcard/brace scopes | ✅ Yes |
+| Root whitelist / closed world | ❌ | ✅ | Yes as Assura extension | ✅ Yes |
 | Glob patterns `**` | ✅ | ✅ | Yes for LS-Lint directory scopes | ⚠️ Native shorthand pending |
 | Exclude patterns | ✅ | ✅ | Yes | ✅ Yes |
 | Count-based exists | ✅ | ✅ | Yes for direct children | ✅ Yes |
@@ -376,26 +368,26 @@ pattern and direct-content shorthand cases.
 
 These are native Assura syntax improvements, not LS-Lint migration blockers.
 
-### Gap 1: Ergonomic Direct-Content Shorthand
+### Resolved: Direct-Content Shorthand
 
-**Priority:** HIGH  
+**Priority:** Implemented
 **Use Case:** Express required files, direct counts, and root closed-world
-policies without verbose `files.*` / `directories.*` bundles.
-**Current Assura Syntax:** `files.exists`, `directories.exists`,
-`directories.required`, and `allow_extra: false`.
-**Planned Assura Syntax:** A `require` or direct-content shorthand that
-compiles to the current explicit fields.
+policies without low-level `files.*` / `directories.*` bundles.
+**Current Assura Syntax:** Native path keys with `exists` shorthand and
+`extra: false`.
 
-**Implementation:** Add syntax sugar only after the current direct-content
-semantics remain covered by fixtures.
+**Implementation:** Keep fixtures for native path keys, wildcard scopes, count
+shorthand, and `extra: false`; extend the same native tree notation only when a
+use case cannot be represented by path keys plus nested attributes.
 
 ### Gap 2: Top-Level Glob Patterns
 
 **Priority:** HIGH
 **Use Case:** Apply rules to `**/*.rs` without repeating structure nodes.
 **LS-Lint Syntax:** `.rs: snake_case` or broad glob scopes.
-**Planned Assura Syntax:** Either pattern scopes under `structure` or a
-dedicated pattern section, with compiled and indexed matchers.
+**Future Assura Syntax:** Extend native notation with explicit pattern
+attributes or pattern scopes only if repeated structure nodes become a proven
+burden.
 
 **Implementation:** Preserve the distinction between file matchers and
 directory requirements.
@@ -431,7 +423,7 @@ directory requirements.
 ### Phase 3: Nice to Have
 
 5. Rule groups - `use: @group-name`
-6. Verbose mode for exists - detailed error messages
+6. Detailed `exists` diagnostics for count failures
 
 ---
 

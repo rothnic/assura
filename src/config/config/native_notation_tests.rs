@@ -1,12 +1,12 @@
-//! Unit coverage for compact config normalization.
+//! Unit coverage for Assura config normalization.
 
 use serde_yaml::Value;
 
-use super::normalize_compact_config_value;
+use super::normalize_native_config_value;
 
 fn normalize(yaml: &str) -> Value {
     let value: Value = serde_yaml::from_str(yaml).unwrap();
-    normalize_compact_config_value(value).unwrap()
+    normalize_native_config_value(value).unwrap()
 }
 
 fn key(value: &str) -> Value {
@@ -283,8 +283,8 @@ structure:
 "#,
     )
     .unwrap();
-    let error = normalize_compact_config_value(value).unwrap_err();
-    assert!(error.contains("unknown compact config rule '@missing'"));
+    let error = normalize_native_config_value(value).unwrap_err();
+    assert!(error.contains("unknown Assura config rule '@missing'"));
 }
 
 #[test]
@@ -300,7 +300,7 @@ structure:
 "#,
     )
     .unwrap();
-    let error = normalize_compact_config_value(value).unwrap_err();
+    let error = normalize_native_config_value(value).unwrap_err();
     assert!(error.contains("node fragment but a tree fragment is required"));
 }
 
@@ -317,7 +317,7 @@ structure:
 "#,
     )
     .unwrap();
-    let error = normalize_compact_config_value(value).unwrap_err();
+    let error = normalize_native_config_value(value).unwrap_err();
     assert!(error.contains("tree fragment but a node fragment is required"));
 }
 
@@ -331,8 +331,8 @@ structure:
 "#,
     )
     .unwrap();
-    let error = normalize_compact_config_value(value).unwrap_err();
-    assert!(error.contains("unknown compact config rule '@missing'"));
+    let error = normalize_native_config_value(value).unwrap_err();
+    assert!(error.contains("unknown Assura config rule '@missing'"));
 }
 
 #[test]
@@ -345,7 +345,7 @@ structure:
 "#,
     )
     .unwrap();
-    let error = normalize_compact_config_value(value).unwrap_err();
+    let error = normalize_native_config_value(value).unwrap_err();
     assert!(error.contains("lower bound greater than its upper bound"));
 }
 
@@ -359,7 +359,7 @@ structure:
 "#,
     )
     .unwrap();
-    let error = normalize_compact_config_value(value).unwrap_err();
+    let error = normalize_native_config_value(value).unwrap_err();
     assert!(error.contains("exists shorthand must include cardinality"));
 }
 
@@ -373,7 +373,7 @@ structure:
 "#,
     )
     .unwrap();
-    let error = normalize_compact_config_value(value).unwrap_err();
+    let error = normalize_native_config_value(value).unwrap_err();
     assert!(error.contains("node directive numbers are not supported"));
 }
 
@@ -387,7 +387,7 @@ structure:
 "#,
     )
     .unwrap();
-    let error = normalize_compact_config_value(value).unwrap_err();
+    let error = normalize_native_config_value(value).unwrap_err();
     assert!(error.contains("exact file key 'README.md' only supports exists"));
 }
 
@@ -401,12 +401,12 @@ structure:
 "#,
     )
     .unwrap();
-    let error = normalize_compact_config_value(value).unwrap_err();
+    let error = normalize_native_config_value(value).unwrap_err();
     assert!(error.contains("exact directory key 'docs/' only supports exists"));
 }
 
 #[test]
-fn rejects_compact_severity_attribute() {
+fn rejects_native_severity_attribute() {
     let value: Value = serde_yaml::from_str(
         r#"
 structure:
@@ -417,6 +417,6 @@ structure:
 "#,
     )
     .unwrap();
-    let error = normalize_compact_config_value(value).unwrap_err();
+    let error = normalize_native_config_value(value).unwrap_err();
     assert!(error.contains("attribute 'severity' is not supported"));
 }

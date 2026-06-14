@@ -1,4 +1,4 @@
-//! Helper functions for compact config normalization.
+//! Helper functions for Assura config normalization.
 
 use serde_yaml::{Mapping, Value};
 
@@ -67,7 +67,7 @@ pub(super) fn mapping_entry(key: &str, value: impl Into<String>) -> Value {
 
 pub(super) fn into_mapping(value: Value, context: &str) -> Result<Mapping, String> {
     let Value::Mapping(mapping) = value else {
-        return Err(format!("compact config {context} must be a mapping"));
+        return Err(format!("Assura config {context} must be a mapping"));
     };
     Ok(mapping)
 }
@@ -135,7 +135,7 @@ pub(super) fn is_node_attr_key(key: &str) -> bool {
     )
 }
 
-pub(super) fn is_verbose_directory_node_key(key: &str) -> bool {
+pub(super) fn is_directory_node_attr_key(key: &str) -> bool {
     matches!(
         key,
         "files"

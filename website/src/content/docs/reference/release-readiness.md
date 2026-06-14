@@ -1,6 +1,6 @@
 ---
 title: Release Readiness
-description: Supported release surfaces, install artifacts, and pre-1.0 compatibility policy
+description: Supported release surfaces, install artifacts, and pre-1.0 stability policy
 ---
 
 Assura's pre-1.0 release surface is intentionally narrow. The supported path is
@@ -67,9 +67,10 @@ third-party plugin APIs are not release surfaces.
 
 ## Pre-1.0 Policy
 
-Before 1.0, configuration fields and experimental surfaces can change. Release
-notes must call out breaking changes, removed experimental surfaces, and the
-validation evidence behind compatibility claims.
+Before Assura reaches both 1.0 and 10 GitHub stars, configuration fields and
+experimental surfaces can change. Release notes must call out breaking changes,
+removed experimental surfaces, and the validation evidence behind compatibility
+claims.
 
 Maintainer-facing details live in the repository:
 

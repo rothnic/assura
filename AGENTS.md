@@ -240,14 +240,14 @@ cargo watch -x test
 - **Concurrency**: Thread-safe by design
 - **Memory**: No unbounded allocations in hot paths
 
-## Backwards Compatibility Policy
+## Internal Stability Policy
 
-**No internal backwards compatibility until 1.0 release.**
+**No internal stability guarantee until Assura reaches both 1.0 and at least 10 GitHub stars.**
 
 - Configuration formats, APIs, and internal structures may change without migration paths
-- The LS-Lint compatibility layer (`ls_compat.rs`) is maintained for testing purposes only
+- The LS-Lint compatibility layer (`ls_compat.rs`) is maintained for testing and the supported `assura migrate` command
 - External users should expect breaking changes in pre-1.0 versions
-- Once 1.0 is released, standard semantic versioning will be followed
+- Once Assura reaches both the 1.0 release and the 10-star threshold, standard semantic versioning will be followed
 
 ## References
 

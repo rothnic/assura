@@ -1,17 +1,16 @@
-//! Compact structure notation normalization.
+//! Native structure notation normalization.
 //!
-//! The runtime validator still consumes the verbose structure-first `Config`
-//! model. This module accepts the concise notation from the product spec and
-//! lowers it into that existing shape before deserialization.
+//! This module accepts Assura's YAML tree notation and normalizes shorthand
+//! path keys, rule fragments, and cardinality directives before deserialization.
 
 use serde_yaml::{Mapping, Value};
 
-use super::compact_helpers::{
-    append_nested_sequence, into_mapping, is_extension_key, is_node_attr_key,
-    is_verbose_directory_node_key, mapping_entry, merge_mapping, path_has_scope_magic,
-    set_nested_bool, set_nested_mapping, set_nested_value, string_value,
+use super::native_notation_helpers::{
+    append_nested_sequence, into_mapping, is_directory_node_attr_key, is_extension_key,
+    is_node_attr_key, mapping_entry, merge_mapping, path_has_scope_magic, set_nested_bool,
+    set_nested_mapping, set_nested_value, string_value,
 };
-use super::compact_rules::{
+use super::native_notation_rules::{
     is_rule_reference, parse_rule_reference, push_rule_stack, RuleRegistry,
 };
 
@@ -19,8 +18,8 @@ const STRUCTURE: &str = "structure";
 const USE: &str = "use";
 const EXTRA: &str = "extra";
 
-/// Normalize compact Assura config notation into the verbose config shape.
-pub(crate) fn normalize_compact_config_value(value: Value) -> Result<Value, String> {
+/// Normalize native Assura config notation into the internal config shape.
+pub(crate) fn normalize_native_config_value(value: Value) -> Result<Value, String> {
     let Value::Mapping(mut root) = value else {
         return Ok(value);
     };
@@ -37,13 +36,13 @@ pub(crate) fn normalize_compact_config_value(value: Value) -> Result<Value, Stri
 
 fn normalize_structure(value: Value, rules: &RuleRegistry) -> Result<Value, String> {
     let Value::Mapping(mapping) = value else {
-        return Err("compact config structure must be a mapping".to_string());
+        return Err("Assura config structure must be a mapping".to_string());
     };
 
     let mut normalized = Mapping::new();
     for (key, node_value) in mapping {
         let Some(path) = key.as_str() else {
-            return Err("compact config structure paths must be strings".to_string());
+            return Err("Assura config structure paths must be strings".to_string());
         };
         let mut stack = Vec::new();
         let node = normalize_structure_node(node_value, rules, &mut stack)?;
@@ -67,28 +66,28 @@ fn normalize_structure_node(
     stack: &mut Vec<String>,
 ) -> Result<Value, String> {
     let Value::Mapping(mapping) = value else {
-        return Err("compact config structure nodes must be mappings".to_string());
+        return Err("Assura config structure nodes must be mappings".to_string());
     };
     let expanded = expand_tree_mapping(mapping, rules, stack)?;
     let mut output = Mapping::new();
 
     for (key, value) in expanded {
         let Some(key) = key.as_str() else {
-            return Err("compact config structure node keys must be strings".to_string());
+            return Err("Assura config structure node keys must be strings".to_string());
         };
         if key == USE {
             continue;
         }
         if key == EXTRA {
             let Some(allow_extra) = value.as_bool() else {
-                return Err("compact config extra must be a boolean".to_string());
+                return Err("Assura config extra must be a boolean".to_string());
             };
             set_nested_bool(&mut output, "files", "allow_extra", allow_extra);
             set_nested_bool(&mut output, "directories", "allow_extra", allow_extra);
             continue;
         }
-        if is_verbose_directory_node_key(key) {
-            insert_verbose_node_key(&mut output, key, value, rules, stack)?;
+        if is_directory_node_attr_key(key) {
+            insert_directory_node_attr(&mut output, key, value, rules, stack)?;
             continue;
         }
 
@@ -170,7 +169,7 @@ fn normalize_path_key(
     Ok(())
 }
 
-fn insert_verbose_node_key(
+fn insert_directory_node_attr(
     output: &mut Mapping,
     key: &str,
     value: Value,
@@ -179,12 +178,12 @@ fn insert_verbose_node_key(
 ) -> Result<(), String> {
     if key == "children" {
         let Value::Mapping(children) = value else {
-            return Err("compact config children must be a mapping".to_string());
+            return Err("Assura config children must be a mapping".to_string());
         };
         let mut normalized = Mapping::new();
         for (child_key, child_value) in children {
             let Some(child_name) = child_key.as_str() else {
-                return Err("compact config child names must be strings".to_string());
+                return Err("Assura config child names must be strings".to_string());
             };
             let mut child =
                 into_mapping(normalize_structure_node(child_value, rules, stack)?, key)?;
@@ -237,12 +236,12 @@ fn node_directive(
             }
         }
         Value::Number(_) => Err(
-            "compact config node directive numbers are not supported; use exists:N or { exists: N }"
+            "Assura config node directive numbers are not supported; use exists:N or { exists: N }"
                 .to_string(),
         ),
         Value::Mapping(mapping) => node_directive_from_mapping(mapping),
         other => Err(format!(
-            "compact config node directives must be strings or mappings, got {other:?}"
+            "Assura config node directives must be strings or mappings, got {other:?}"
         )),
     }
 }
@@ -251,29 +250,29 @@ fn node_directive_from_mapping(mapping: Mapping) -> Result<NodeDirective, String
     let mut directive = NodeDirective::default();
     for (key, value) in mapping {
         let Some(key) = key.as_str() else {
-            return Err("compact config node attributes must use string keys".to_string());
+            return Err("Assura config node attributes must use string keys".to_string());
         };
         match key {
             "exists" => directive.exists = Some(parse_exists_value(value)?),
             "naming" => {
                 let Some(naming) = value.as_str() else {
-                    return Err("compact config naming must be a string".to_string());
+                    return Err("Assura config naming must be a string".to_string());
                 };
                 directive.naming = Some(naming.to_string());
             }
             "severity" => {
                 return Err(
-                    "compact config attribute 'severity' is not supported in this MVP".to_string(),
+                    "Assura config attribute 'severity' is not supported in this MVP".to_string(),
                 );
             }
             "markdown" | "outline" | "relations" | "validate" => {
                 return Err(format!(
-                    "compact config attribute '{key}' is not supported in this MVP"
+                    "Assura config attribute '{key}' is not supported in this MVP"
                 ));
             }
             unsupported => {
                 return Err(format!(
-                    "compact config node attribute '{unsupported}' is not supported in this MVP"
+                    "Assura config node attribute '{unsupported}' is not supported in this MVP"
                 ));
             }
         }
@@ -288,7 +287,7 @@ fn apply_file_directive(
 ) -> Result<(), String> {
     if directive.naming.is_some() {
         return Err(format!(
-            "compact config exact file key '{filename}' only supports exists in this MVP"
+            "Assura config exact file key '{filename}' only supports exists in this MVP"
         ));
     }
     if let Some(exists) = directive.exists {
@@ -325,7 +324,7 @@ fn apply_directory_directive(
 ) -> Result<(), String> {
     if directive.naming.is_some() {
         return Err(format!(
-            "compact config exact directory key '{directory}/' only supports exists in this MVP"
+            "Assura config exact directory key '{directory}/' only supports exists in this MVP"
         ));
     }
     if let Some(exists) = directive.exists {
@@ -367,7 +366,7 @@ fn is_tree_value(value: &Value) -> Result<bool, String> {
 
     for key in mapping.keys() {
         let Some(key) = key.as_str() else {
-            return Err("compact config fragments must use string keys".to_string());
+            return Err("Assura config fragments must use string keys".to_string());
         };
         if key == USE || key == EXTRA || !is_node_attr_key(key) {
             return Ok(true);
@@ -386,10 +385,10 @@ fn use_references(value: &Value) -> Result<Vec<String>, String> {
                 entry
                     .as_str()
                     .map(str::to_string)
-                    .ok_or_else(|| "compact config use entries must be strings".to_string())
+                    .ok_or_else(|| "Assura config use entries must be strings".to_string())
             })
             .collect(),
-        _ => Err("compact config use must be a string or list of strings".to_string()),
+        _ => Err("Assura config use must be a string or list of strings".to_string()),
     }
 }
 
@@ -404,7 +403,7 @@ fn parse_exists_value(value: Value) -> Result<String, String> {
             }
         }
         other => Err(format!(
-            "compact config exists value must be a string or number, got {other:?}"
+            "Assura config exists value must be a string or number, got {other:?}"
         )),
     }
 }
@@ -412,7 +411,7 @@ fn parse_exists_value(value: Value) -> Result<String, String> {
 fn parse_exists_shorthand(value: &str) -> Result<Option<String>, String> {
     if value == "exists" {
         return Err(
-            "compact config exists shorthand must include cardinality; use exists:1".to_string(),
+            "Assura config exists shorthand must include cardinality; use exists:1".to_string(),
         );
     }
     let Some(raw) = value.strip_prefix("exists:") else {
@@ -423,29 +422,29 @@ fn parse_exists_shorthand(value: &str) -> Result<Option<String>, String> {
 
 fn parse_exists_count(raw: &str) -> Result<String, String> {
     if raw.is_empty() {
-        return Err("compact config exists value must not be empty".to_string());
+        return Err("Assura config exists value must not be empty".to_string());
     }
     let parts: Vec<&str> = raw.split('-').collect();
     if parts.len() > 2 {
         return Err(format!(
-            "compact config exists value '{raw}' must be N or N-M"
+            "Assura config exists value '{raw}' must be N or N-M"
         ));
     }
     let mut bounds = Vec::new();
     for part in parts {
         if part.is_empty() {
             return Err(format!(
-                "compact config exists value '{raw}' has an empty range bound"
+                "Assura config exists value '{raw}' has an empty range bound"
             ));
         }
         let bound = part.parse::<u16>().map_err(|error| {
-            format!("compact config exists value '{raw}' has an invalid bound: {error}")
+            format!("Assura config exists value '{raw}' has an invalid bound: {error}")
         })?;
         bounds.push(bound);
     }
     if bounds.len() == 2 && bounds[0] > bounds[1] {
         return Err(format!(
-            "compact config exists value '{raw}' has a lower bound greater than its upper bound"
+            "Assura config exists value '{raw}' has a lower bound greater than its upper bound"
         ));
     }
     Ok(raw.to_string())

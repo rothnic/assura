@@ -51,7 +51,7 @@ fn output_text(output: &std::process::Output) -> String {
     )
 }
 
-fn compact_config() -> &'static str {
+fn native_config() -> &'static str {
     r#"
 rules:
   readme:
@@ -78,9 +78,9 @@ exclude:
 }
 
 #[test]
-fn check_accepts_compact_config_and_rejects_extra_direct_files() {
+fn check_accepts_native_config_and_rejects_extra_direct_files() {
     let project = TempDir::new().unwrap();
-    write_config(&project, compact_config());
+    write_config(&project, native_config());
 
     fs::create_dir(project.path().join("src")).unwrap();
     fs::write(project.path().join("README.md"), "# Example\n").unwrap();
@@ -96,7 +96,7 @@ fn check_accepts_compact_config_and_rejects_extra_direct_files() {
 
     assert!(
         pass.status.success(),
-        "expected compact config fixture to pass:\nstdout:\n{}\nstderr:\n{}",
+        "expected Assura config fixture to pass:\nstdout:\n{}\nstderr:\n{}",
         String::from_utf8_lossy(&pass.stdout),
         String::from_utf8_lossy(&pass.stderr)
     );
@@ -118,7 +118,7 @@ fn check_accepts_compact_config_and_rejects_extra_direct_files() {
 }
 
 #[test]
-fn check_reports_missing_required_and_forbidden_compact_files() {
+fn check_reports_missing_required_and_forbidden_native_files() {
     let project = TempDir::new().unwrap();
     write_config(
         &project,
@@ -411,7 +411,7 @@ exclude:
 }
 
 #[test]
-fn check_rejects_removed_compact_exists_shortcuts() {
+fn check_rejects_removed_native_exists_shortcuts() {
     let project = TempDir::new().unwrap();
     write_config(
         &project,

@@ -10,12 +10,12 @@ status: historical
 
 ### Guiding Principle
 
-**Assura should support extended features but NOT require verbose representations.**
+**Assura should support extended features but NOT require low-level representations.**
 
 We don't need to mimic every LS-Lint directive exactly. Instead:
 - ✅ Support the same USE CASES (require files exist, validate structure)
 - ✅ Design our own efficient syntax
-- ✅ Concise by default, verbose when necessary
+- ✅ Concise by default, nested attributes when necessary
 - ✅ Simple things simple, complex things possible
 
 ### What This Means
@@ -44,11 +44,11 @@ structure:
 ```
 
 **Key Difference:**
-- LS-Lint uses `exists:1` (count-based, verbose)
+- LS-Lint uses `exists:1` (count-based)
 - Assura can use `require: [...]` (list-based, concise)
 - Same capability, more efficient representation
 
-### Efficient vs Verbose
+### Efficient vs Detailed
 
 **Efficient (Default):**
 ```yaml
@@ -58,7 +58,7 @@ structure:
     require: [lib.rs, mod.rs]
 ```
 
-**Verbose (When Needed):**
+**Detailed attributes when needed:**
 ```yaml
 structure:
   src/:
@@ -112,7 +112,7 @@ structure:
   packages/*:
     require: [AGENTS.md, README.md, src/]
 
-# Verbose when you need details
+# Nested attributes when you need details
 structure:
   packages/*:
     require:
@@ -130,7 +130,7 @@ patterns:
   "**/*.tsx": PascalCase
   "**/*.md": kebab-case
 
-# Verbose when you need constraints
+# Nested attributes when you need constraints
 patterns:
   "**/*.rs":
     naming: snake_case
@@ -145,7 +145,7 @@ structure:
   ./:
     allow: [README.md, AGENTS.md, CHANGELOG.md, LICENSE*]
 
-# Verbose with violations
+# Detailed violations
 structure:
   ./:
     files:
@@ -165,7 +165,7 @@ structure:
 
 **Medium (Nice to Have):**
 4. Rule groups (`use: @group`)
-5. Verbose mode for exists/require
+5. Detailed exists/require diagnostics
 
 **Low (Out of Scope):**
 6. Count-based exists (`exists:1-4`)
@@ -186,7 +186,7 @@ structure:
 
 Not:
 ```yaml
-# Don't do this - too verbose
+# Historical anti-pattern - too much boilerplate
 structure:
   ./:
     files:

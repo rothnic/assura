@@ -11,8 +11,8 @@ references below.
 ## 0. Reference Documents
 
 **For configuration syntax, notation, and examples, see:**
-- **.trellis/spec/assura/config-notation.md** - Target compact
-  Assura-native notation for future implementation
+- **.trellis/spec/assura/config-notation.md** - Canonical Assura-native
+  notation and extension points
 - **docs/analysis/2026-05-15-notation-source-truth.md** - Current implemented
   notation and LS-Lint compatibility classification
 - **.trellis/spec/assura/structure-enforcement.md** - Current closed-world

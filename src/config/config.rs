@@ -12,13 +12,13 @@ use std::collections::HashMap;
 use validator::Validate;
 
 mod bundles;
-#[cfg(feature = "yaml-config")]
-mod compact;
-#[cfg(feature = "yaml-config")]
-mod compact_helpers;
-#[cfg(feature = "yaml-config")]
-mod compact_rules;
 mod extensions;
+#[cfg(feature = "yaml-config")]
+mod native_notation;
+#[cfg(feature = "yaml-config")]
+mod native_notation_helpers;
+#[cfg(feature = "yaml-config")]
+mod native_notation_rules;
 mod quality;
 mod validation;
 
@@ -29,12 +29,12 @@ pub use crate::config::ls_compat::LsLintCompatibility;
 pub use bundles::{
     DirectoryBundle, ExistsValidation, FileBundle, MarkdownBundle, ResolvedFileBundle,
 };
-#[cfg(feature = "yaml-config")]
-pub(crate) use compact::normalize_compact_config_value;
 pub use extensions::{
     CommandSurfaceCommand, CommandSurfaceContract, CommandSurfaceFlag, CustomConstraintConfig,
     ExtensionConfig,
 };
+#[cfg(feature = "yaml-config")]
+pub(crate) use native_notation::normalize_native_config_value;
 pub use quality::{QualityConfig, QualityScopeConfig};
 pub(crate) use validation::split_naming_conventions;
 #[cfg(feature = "yaml-config")]
@@ -56,7 +56,7 @@ pub struct Config {
     #[cfg_attr(feature = "full-cli", validate(nested))]
     pub structure: HashMap<String, DirectoryNode>,
 
-    /// Optional LS-Lint compatibility layer (for testing only)
+    /// Optional LS-Lint migration input used by tests and `assura migrate`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ls: Option<LsLintCompatibility>,
 
@@ -261,7 +261,7 @@ impl Default for DirectoryNode {
     }
 }
 
-#[cfg(all(test, feature = "yaml-config"))]
-mod compact_tests;
 #[cfg(test)]
 mod config_tests;
+#[cfg(all(test, feature = "yaml-config"))]
+mod native_notation_tests;

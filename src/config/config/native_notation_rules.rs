@@ -1,9 +1,9 @@
-//! Rule fragment lookup for compact config normalization.
+//! Rule fragment lookup for Assura config normalization.
 
 use serde_yaml::{Mapping, Value};
 use std::collections::HashMap;
 
-use super::compact_helpers::{is_node_attr_key, string_value};
+use super::native_notation_helpers::{is_node_attr_key, string_value};
 
 #[derive(Default)]
 pub(super) struct RuleRegistry {
@@ -16,13 +16,13 @@ impl RuleRegistry {
             return Ok(Self::default());
         };
         let Value::Mapping(mapping) = value else {
-            return Err("compact config rules must be a mapping".to_string());
+            return Err("Assura config rules must be a mapping".to_string());
         };
 
         let mut rules = HashMap::new();
         for (key, value) in mapping {
             let Some(name) = key.as_str() else {
-                return Err("compact config rule names must be strings".to_string());
+                return Err("Assura config rule names must be strings".to_string());
             };
             rules.insert(name.to_string(), value);
         }
@@ -35,7 +35,7 @@ impl RuleRegistry {
         match classify_fragment(&value)? {
             FragmentKind::Node => Ok(value),
             FragmentKind::Tree => Err(format!(
-                "compact config rule '@{name}' is a tree fragment but a node fragment is required"
+                "Assura config rule '@{name}' is a tree fragment but a node fragment is required"
             )),
         }
     }
@@ -47,13 +47,13 @@ impl RuleRegistry {
             FragmentKind::Tree => {
                 let Value::Mapping(mapping) = value else {
                     return Err(format!(
-                        "compact config rule '@{name}' must be a mapping when used through use"
+                        "Assura config rule '@{name}' must be a mapping when used through use"
                     ));
                 };
                 Ok(mapping)
             }
             FragmentKind::Node => Err(format!(
-                "compact config rule '@{name}' is a node fragment but a tree fragment is required"
+                "Assura config rule '@{name}' is a node fragment but a tree fragment is required"
             )),
         }
     }
@@ -62,7 +62,7 @@ impl RuleRegistry {
         self.rules
             .get(name)
             .cloned()
-            .ok_or_else(|| format!("unknown compact config rule '@{name}'"))
+            .ok_or_else(|| format!("unknown Assura config rule '@{name}'"))
     }
 }
 
@@ -81,7 +81,7 @@ pub(super) fn classify_fragment(value: &Value) -> Result<FragmentKind, String> {
     let mut has_tree_attrs = false;
     for key in mapping.keys() {
         let Some(key) = key.as_str() else {
-            return Err("compact config fragments must use string keys".to_string());
+            return Err("Assura config fragments must use string keys".to_string());
         };
         if is_node_attr_key(key) {
             has_node_attrs = true;
@@ -92,7 +92,7 @@ pub(super) fn classify_fragment(value: &Value) -> Result<FragmentKind, String> {
 
     match (has_node_attrs, has_tree_attrs) {
         (true, true) => Err(
-            "compact config fragments cannot mix node attributes and path keys at the same level"
+            "Assura config fragments cannot mix node attributes and path keys at the same level"
                 .to_string(),
         ),
         (true, false) => Ok(FragmentKind::Node),
@@ -104,7 +104,7 @@ pub(super) fn parse_rule_reference(reference: &str) -> Result<&str, String> {
     reference
         .strip_prefix('@')
         .filter(|name| !name.is_empty())
-        .ok_or_else(|| format!("compact config rule reference must start with '@': {reference}"))
+        .ok_or_else(|| format!("Assura config rule reference must start with '@': {reference}"))
 }
 
 pub(super) fn push_rule_stack(stack: &[String], name: &str) -> Result<(), String> {
@@ -112,7 +112,7 @@ pub(super) fn push_rule_stack(stack: &[String], name: &str) -> Result<(), String
         let mut cycle = stack.to_vec();
         cycle.push(name.to_string());
         return Err(format!(
-            "compact config rule cycle detected: {}",
+            "Assura config rule cycle detected: {}",
             cycle.join(" -> ")
         ));
     }

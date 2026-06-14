@@ -305,7 +305,7 @@ Historical upstream LS-Lint PR discussion that informs this direction:
 - `rothnic/ls-lint#4`: TypeScript/docs best-practice examples, failure
   messages that point agents to analysis scripts and policy docs, explicit
   owner approval boundaries, composable naming/size groups, and removal of
-  `rule-groups:` in favor of `groups:` with no backwards compatibility.
+  `rule-groups:` in favor of `groups:` with no internal stability guarantee.
 
 ## Non-Goals
 

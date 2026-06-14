@@ -1,14 +1,14 @@
-# Assura Config Notation Target
+# Assura Native Config Notation
 
-This document defines the target Assura-native notation for future
-implementation work. It is a product spec, not a claim that every example is
-implemented today. Current implemented behavior remains documented in
-`structure-enforcement.md` and `docs/analysis/2026-05-15-notation-source-truth.md`.
+This document defines Assura's canonical native notation. The structure,
+cardinality, and reusable-rule sections describe the implemented authoring
+surface. The Markdown outline and code-to-document relation sections are
+planned extension points until their validators and fixtures land.
 
 ## Purpose
 
 Assura config should look like the project or document it validates. The common
-path should be compact enough to compete with LS-Lint, while richer object
+path should be concise enough to compete with LS-Lint, while richer object
 attributes stay available for custom validation.
 
 This target notation is designed to:
@@ -19,7 +19,8 @@ This target notation is designed to:
 - use `exists` cardinality for required, optional, forbidden, and bounded
   direct contents;
 - support reusable rule fragments through `rules:` and `@rule` references;
-- validate Markdown outlines with the same visual hierarchy as the document;
+- reserve Markdown outline notation with the same visual hierarchy as the
+  document;
 - leave room for code-to-doc relationship checks without arbitrary commands.
 
 ## Core Shape
@@ -31,23 +32,9 @@ Values are either concise shorthand or detailed attributes.
 rules:
   readme-standard:
     exists: 1
-    markdown:
-      outline:
-        - Overview
-        - Quick Start:
-            - Installation
-            - ?? Configuration
-        - Usage
-        - ?? Troubleshooting
 
   agents-standard:
     exists: 1
-    markdown:
-      outline:
-        - Project Guidance
-        - Commands
-        - Validation
-        - ?? Escalation
 
   project-docs:
     README.md: "@readme-standard"
@@ -102,21 +89,22 @@ child with `exists:1` is both required and allowed. A direct child with
 `exists:0-1` is allowed but not required. A direct child with `exists:0` is
 not allowed.
 
-Detailed attributes remain available when shorthand is not enough:
+Nested attributes remain available when shorthand is not enough. The current
+implemented node attributes are `exists` and `naming`; future validators may add
+more attributes under the same path key shape.
 
 ```yaml
 structure:
   packages/*/:
-    README.md:
-      exists: 1
-      markdown:
-        max_lines: 300
+    .md:
+      exists: 1-4
+      naming: kebab-case
 ```
 
 ## Closed-World Direct Contents
 
-Closed-world checks should remain directory-local. The compact notation should
-compile to the same direct-child fields described by
+Closed-world checks should remain directory-local. Native tree notation maps to
+the direct-child file and directory policies described by
 `structure-enforcement.md`.
 
 ```yaml
@@ -157,7 +145,7 @@ structure:
 Fragments have inferred kinds:
 
 - A node fragment contains attributes for one file, directory, extension, or
-  scope, such as `exists`, `markdown`, `naming`, `max_lines`, or `validate`.
+  scope. Current node fragments support `exists` and `naming`.
   It is valid as the value of a path-like key.
 - A tree fragment contains path-like child keys and optional `use` entries. It
   is valid through `use` at a structure node or inside another tree fragment.
@@ -173,10 +161,11 @@ Merge order should be deterministic:
 3. Prefer exact keys over pattern keys.
 4. Prefer more specific scopes over broader scopes.
 
-## Markdown Outline Notation
+## Planned Markdown Outline Notation
 
-Markdown outlines use nested YAML lists and maps. The nesting is the heading
-hierarchy; the order is the expected document order.
+Markdown outline validation is not implemented in the current native parser.
+When added, outlines should use nested YAML lists and maps. The nesting is the
+heading hierarchy; the order is the expected document order.
 
 ```yaml
 markdown:
@@ -236,10 +225,12 @@ markdown:
         - public-api-links
 ```
 
-## Code-To-Documentation Relations
+## Planned Code-To-Documentation Relations
 
-Some projects need structure relationships across directories. Assura should
-support deterministic relation checks without requiring custom shell execution.
+Relation validation is not implemented in the current native parser. Some
+projects need structure relationships across directories; when added, Assura
+should support deterministic relation checks without requiring custom shell
+execution.
 
 ```yaml
 rules:
@@ -336,6 +327,6 @@ Implementation should prove these before declaring the notation ready:
 
 ## Implementation Boundary
 
-This spec is the target notation. Parser and validator work should land in
-separate implementation tasks with fixtures that show shorthand expansion into
-the existing structure model where possible.
+Parser and validator work should land in focused implementation tasks with
+fixtures that prove the native notation directly, plus normalization coverage
+where shorthand maps to lower-level file or directory attributes.

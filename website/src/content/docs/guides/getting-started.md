@@ -83,9 +83,9 @@ Example shape:
 The raw report formats for `assura check` are `text`, `json`, and `yaml`.
 Guided formats are `advice`, `status`, and `agent`.
 
-## Compact Monorepo Policy
+## Native Monorepo Policy
 
-For hand-authored config, prefer the compact tree notation for common project
+For hand-authored config, prefer the native tree notation for common project
 shape rules. This example requires root docs and package metadata, then applies
 one package contract to every existing directory under `packages/`:
 

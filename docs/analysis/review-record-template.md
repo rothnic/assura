@@ -40,7 +40,7 @@ Use this template for goal PR evidence records under `docs/analysis/`.
 | R3. Evidence reproduction review | Pending |  |
 | R4. User journey review | Pending |  |
 | R5. PR and completion review | Pending |  |
-| R6. Alpha compatibility and stale-docs review | Pending | Confirm no internal backwards-compatibility shim was preserved unless tied to an explicit current support claim, and docs were updated or removed with the behavior change. |
+| R6. Alpha stability and stale-docs review | Pending | Confirm no internal stability shim was preserved unless tied to an explicit current support claim, and docs were updated or removed with the behavior change. |
 
 ## Review Feedback Closure
 

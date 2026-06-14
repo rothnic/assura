@@ -176,7 +176,7 @@ Block if the work:
 - makes unsupported features look supported;
 - adds broad exclusions instead of deterministic policy;
 - removes public exports without updating tests/benchmarks/docs;
-- introduces a new long-lived compatibility shim without support-policy
+- introduces a new long-lived stability shim without support-policy
   justification;
 - leaves performance checks unrun for Rust/workflow/performance changes;
 - leaves dirty or uncommitted work after a task boundary.

@@ -84,10 +84,10 @@ exclude:
   - "**/dist/**"
 ```
 
-Compact structure keys mirror the project tree. Exact files such as
+Native structure keys mirror the project tree. Exact files such as
 `README.md`, exact directories such as `packages/`, and wildcard directory
-scopes such as `*/` compile to the same structure-first validation model as the
-expanded reference format.
+scopes such as `*/` are the preferred way to author structure-first validation
+policy.
 
 ## Supported Surface
 

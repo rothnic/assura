@@ -154,7 +154,7 @@ ls:
   .tsx: PascalCase       # All .tsx files
 ```
 
-**Assura Current (Verbose):**
+**Historical Assura Draft:**
 ```yaml
 structure:
   ./:                      # Must explicitly define root
@@ -499,7 +499,7 @@ structure:
 - Keeps structure-first benefits (inheritance, visual clarity)
 - Adds pattern-first conciseness for common cases
 - Users choose the right tool for each rule
-- Maintains backward compatibility
+- Historical note: no current stability guarantee
 
 ---
 
@@ -636,7 +636,7 @@ exclude:
 
 ### Rationale
 1. **Technical Debt:** Versioned configs create cognitive overhead and maintenance burden
-2. **Pre-1.0 Status:** Per PROJECT_MEMORIES.md: "No internal backwards compatibility until 1.0 release"
+2. **Pre-1.0 Status:** Per PROJECT_MEMORIES.md: "No internal stability guarantee before Assura reaches both 1.0 and 10 GitHub stars"
 3. **Single Source of Truth:** One config format to document, maintain, and extend
 4. **Simpler Onboarding:** Users don't need to understand version differences
 
@@ -776,7 +776,7 @@ structure:
 ### Backwards Compatibility
 
 **Per PROJECT_MEMORIES.md:**
-> "No internal backwards compatibility until 1.0 release."
+> "No internal stability guarantee before Assura reaches both 1.0 and 10 GitHub stars."
 
 **Action:** Break compatibility intentionally:
 - Remove `version` field requirement

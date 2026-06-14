@@ -5,7 +5,7 @@ status: active
 
 # Assura Project Memories
 
-This file preserves compact project context for agents. Current release claims
+This file preserves concise project context for agents. Current release claims
 must defer to [`docs/release-notes.md`](./release-notes.md),
 [`docs/support-policy.md`](./support-policy.md), and
 [`docs/compatibility-and-surface.md`](./compatibility-and-surface.md).
@@ -36,16 +36,17 @@ per-agent `--format` values as supported release surfaces.
 - `petgraph`, `tokio`, and `notify` remain in the dependency set for planned
   or experimental work, but they are not release claims by themselves.
 
-## Backwards Compatibility Policy
+## Internal Stability Policy
 
-No internal backwards compatibility is guaranteed before 1.0.
+No internal compatibility guarantee applies until Assura reaches both 1.0 and
+at least 10 GitHub stars.
 
 - Configuration formats, output fields, and experimental extension fields may
-  change before 1.0.
+  change before the 1.0 and 10-star threshold.
 - Breaking changes must be called out in release notes.
 - Supported LS-Lint migration behavior should be backed by tests or checked
   analysis evidence.
-- Once 1.0 is released, standard semantic versioning should apply.
+- Once both thresholds are met, standard semantic versioning should apply.
 
 ## Current Roadmap State
 

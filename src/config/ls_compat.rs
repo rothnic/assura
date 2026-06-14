@@ -1,8 +1,9 @@
 //! LS-Lint compatibility layer for unified config
 //!
 //! Provides support for LS-Lint style rules in unified config format.
-//! NOTE: This is for testing purposes only. Internal backwards compatibility
-//! will not be maintained until the 1.0 release.
+//! NOTE: This is for testing and the supported `assura migrate` command.
+//! Internal Assura stability shims are not maintained before 1.0 and
+//! the 10-star threshold.
 
 #[cfg(feature = "yaml-config")]
 use super::config::DirectoryBundle;

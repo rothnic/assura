@@ -118,7 +118,7 @@ evidence.
 
 ### R2. Implementation Review
 
-- Inspect the diff for duplicate logic, compatibility shims, stale helpers, and
+- Inspect the diff for duplicate logic, stability shims, stale helpers, and
   unclear ownership boundaries.
 - Confirm public items have appropriate rustdoc or equivalent docs.
 - Confirm tests exercise both passing and failing paths.

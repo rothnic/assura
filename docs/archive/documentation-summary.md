@@ -87,7 +87,7 @@ status: historical
 #### `website/src/content/docs/guides/getting-started.md`
 - Updated quickstart to use V2 as default
 - Added V2 initialization example
-- Added legacy V1 example for backwards compatibility
+- Recorded historical V1 example during early design exploration
 - Updated basic configuration section to show both V1 and V2
 - Updated next steps to link to V2 docs
 
@@ -172,4 +172,4 @@ Users can now:
 4. Refer to V2 reference documentation
 5. Access updated getting started guide with V2 examples
 
-All documentation maintains backwards compatibility notes and acknowledges V1 as the legacy format while positioning V2 as the recommended approach for new projects.
+This archived summary is historical and no longer describes current Assura notation guidance.

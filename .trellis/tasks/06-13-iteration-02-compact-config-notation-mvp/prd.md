@@ -1,13 +1,13 @@
-# Iteration 02 compact config notation MVP
+# Iteration 02 native config notation MVP
 
 ## Goal
 
-Implement the first Policy Expressiveness compact config notation MVP from
+Implement the first Policy Expressiveness native config notation MVP from
 `.trellis/spec/assura/config-notation.md` without changing the stable runtime
 validation model. The parser should accept concise structure path keys,
 quoted `"@rule"` references, `use` tree-fragment merges, and `exists`
-cardinality shorthand, then normalize that notation into the existing
-structure-first `Config` model.
+cardinality shorthand, then normalize that notation into the structure-first
+`Config` model.
 
 ## What I Already Know
 
@@ -40,19 +40,20 @@ structure-first `Config` model.
   wrong-use references with clear config errors.
 - Normalize `exists:1`, `exists:0-1`, `exists:0`, and `exists:N-M` shorthand
   into existing direct file/directory count fields.
-- Preserve current verbose `.assura/config.yml` support.
+- Replace superseded notation and stale docs instead of maintaining parallel
+  compatibility paths.
 
 ## Acceptance Criteria
 
-- [x] Parser accepts a compact root project contract using path keys and
+- [x] Parser accepts a native root project contract using path keys and
   `exists` shorthand.
 - [x] Parser accepts reusable node and tree fragments through quoted
   `"@rule"` references and `use`.
 - [x] `use` merge order is covered by tests.
 - [x] Wrong fragment kind and unknown rule references produce clear errors.
-- [x] CLI `assura check` passes/fails against a compact config fixture without
+- [x] CLI `assura check` passes/fails against a native config fixture without
   first converting it through an external migration command.
-- [x] Existing verbose config parsing and self-check still pass.
+- [x] Assura self-check still passes with the current native config surface.
 - [x] Markdown outline and relation syntax remain explicitly out of scope.
 
 ## Out Of Scope
@@ -60,7 +61,7 @@ structure-first `Config` model.
 - Markdown `outline:` parsing or validation.
 - Code-to-document `relations:` parsing or validation.
 - Unquoted `@rule` value preprocessing.
-- Migrating Assura's own `.assura/config.yml` to compact notation.
+- Migrating Assura's own `.assura/config.yml` to the newest native notation.
 - Changing LS-Lint migration behavior beyond shared helper reuse.
 
 ## Technical Notes
@@ -72,5 +73,5 @@ structure-first `Config` model.
 - Existing LS-Lint direct-count helpers: `src/config/ls_compat.rs` and
   `src/config/ls_compat/validation.rs`.
 - Good candidate implementation shape: parse YAML into `serde_yaml::Value`,
-  normalize compact structure/rules into a standard `Config`-compatible value,
+  normalize native structure/rules into a standard `Config`-compatible value,
   then deserialize and run existing semantic validation.

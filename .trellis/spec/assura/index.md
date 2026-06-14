@@ -15,7 +15,7 @@ expanding into richer dependency and documentation constraints.
 - Project structure enforcement: `.assura/config.yml`
 - Closed-world structure config contract:
   `.trellis/spec/assura/structure-enforcement.md`
-- Target compact config notation:
+- Native config notation:
   `.trellis/spec/assura/config-notation.md`
 - Codex agent feedback contract:
   `.trellis/spec/assura/codex-agent-feedback.md`
@@ -35,7 +35,7 @@ expanding into richer dependency and documentation constraints.
    `specs-bak/` treated as historical unless a later ADR changes that.
 4. Keep the ls-lint-like baseline compatible while adding explicit
    closed-world structure contracts for this repo.
-5. Move future config ergonomics toward the compact tree-first notation in
+5. Move future config ergonomics through the native tree-first notation in
    `config-notation.md`: direct children as keys, `exists` cardinality for
    common presence checks, reusable `@rule` fragments, nested Markdown
    outlines, and deterministic code-to-doc relations.
@@ -47,14 +47,15 @@ expanding into richer dependency and documentation constraints.
 - Keep hooks advisory on ordinary branches until the repo passes its own
   structure checks consistently.
 - Do not add a second active spec/task system next to Trellis.
-- Treat PR feedback about new duplication, compatibility shims, unused
+- Treat PR feedback about new duplication, stability shims, unused
   scaffolding, or confusing parallel paths as in-scope cleanup for the current
   branch. Assura is pre-production and pre-1.0, so prefer a direct replacement
   or removal over preserving compatibility layers that would become debt.
-- PR review must reject internal backwards-compatibility preservation unless it
+- PR review must reject internal stability preservation unless it
   protects an explicit current support claim such as LS-Lint migration parity.
-  Alpha-stage Assura config, APIs, docs, and internal structures should move to
-  the best current shape without compatibility shims for superseded designs.
+  Until Assura has reached both 1.0 and at least 10 GitHub stars, alpha-stage
+  config, APIs, docs, and internal structures should move to the best current
+  shape without stability shims for superseded designs.
 - PR review must check docs against the changed behavior and remove or update
   stale claims in the same branch. Out-of-date docs are review blockers, not
   follow-up cleanup.

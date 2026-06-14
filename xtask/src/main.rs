@@ -1050,7 +1050,8 @@ fn check_release_surface_claims(checks: &mut Checks) {
         "unstable internal APIs",
         "not a supported dependency graph validation release surface",
         "not a supported maturity detection release surface",
-        "do not carry a pre-1.0 compatibility guarantee",
+        "No internal stability guarantee applies before Assura reaches both 1.0 and",
+        "10 GitHub stars",
     ] {
         checks.require(
             lib_text.contains(marker),
@@ -1066,7 +1067,8 @@ fn check_release_surface_claims(checks: &mut Checks) {
     let compatibility_text = read("docs/compatibility-and-surface.md");
     for marker in [
         "## Rust Library Surface",
-        "These exports are unstable internal APIs before 1.0",
+        "These exports are unstable internal APIs before Assura reaches both",
+        "1.0 and 10 GitHub stars",
         "Public module visibility in `src/lib.rs` does not imply release support",
     ] {
         checks.require(

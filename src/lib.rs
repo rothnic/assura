@@ -6,6 +6,8 @@
 //!
 //! Full-CLI Rust modules are unstable internal APIs for the current binary,
 //! tests, and benchmark harnesses unless a support-policy row says otherwise.
+//! No internal stability guarantee applies before Assura reaches both 1.0 and
+//! 10 GitHub stars.
 #[doc(hidden)]
 pub mod stable_hash {
     pub use assura_stable_hash::*;
@@ -31,7 +33,8 @@ pub mod markdown;
 pub mod maturity;
 #[cfg(feature = "full-cli")]
 /// Internal validation engine APIs used by CLI and compatibility tests. These
-/// exports do not carry a pre-1.0 compatibility guarantee.
+/// exports do not carry an internal stability guarantee before Assura reaches
+/// both 1.0 and 10 GitHub stars.
 pub mod validation;
 
 #[cfg(feature = "full-cli")]

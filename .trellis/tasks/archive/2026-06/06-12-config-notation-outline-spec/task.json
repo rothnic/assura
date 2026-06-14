@@ -2,7 +2,7 @@
   "id": "config-notation-outline-spec",
   "name": "config-notation-outline-spec",
   "title": "Config notation outline spec",
-  "description": "Specify the Assura-native compact config notation for project-structure rules, document heading outlines, reusable rules, and code-to-doc relationships.",
+  "description": "Specify the Assura-native native config notation for project-structure rules, document heading outlines, reusable rules, and code-to-doc relationships.",
   "status": "completed",
   "dev_type": null,
   "scope": null,
