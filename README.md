@@ -66,22 +66,35 @@ assura migrate .ls-lint.yml --output .assura/config.yml
 Create `.assura/config.yml`:
 
 ```yaml
+version: "2.0"
+
 structure:
   ./:
-    files:
-      naming: kebab-case
-    directories:
-      naming: kebab-case
+    README.md: exists:1
+    AGENTS.md: exists:1
+    package.json: exists:1
+    packages/:
+      "*/":
+        package.json: exists:1
+        src/:
+          .ts: kebab-case
 exclude:
-  - "target/**"
+  - "node_modules/**"
+  - "dist/**"
+  - "**/dist/**"
 ```
+
+Compact structure keys mirror the project tree. Exact files such as
+`README.md`, exact directories such as `packages/`, and wildcard directory
+scopes such as `*/` compile to the same structure-first validation model as the
+expanded reference format.
 
 ## Supported Surface
 
 | Surface | Status |
 | --- | --- |
 | `assura check` | Supported structure validation command |
-| `assura check --format json`, `yaml`, `advice`, `status`, `agent` | Supported automation output |
+| `assura check --format text`, `json`, `yaml`, `advice`, `status`, `agent` | Supported automation output |
 | `assura check --format agent --agent codex` | Supported Codex adapter on the shared agent format |
 | `assura init` | Supported starter config creation |
 | `assura status --format json` | Supported project/config/rule summary |

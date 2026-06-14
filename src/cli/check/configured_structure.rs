@@ -33,19 +33,35 @@ impl StructureChecker {
             return;
         }
 
-        let node_abs = self.project_root.join(node_rel);
-        if !node_abs.is_dir() {
-            let is_pattern_scope = path_has_scope_magic(node_rel);
-            let pattern_has_matches =
-                is_pattern_scope && self.has_matching_directory_scope(node_rel);
-            if is_pattern_scope && !pattern_has_matches && !node.required {
+        if path_has_scope_magic(node_rel) {
+            let matches = self.matching_directory_scopes(node_rel);
+            if matches.is_empty() {
                 self.validate_self_directory_exists(node_rel, node, 0, report);
+                if node.required {
+                    self.push_violation(
+                        report,
+                        node_rel.to_path_buf(),
+                        "required_directory",
+                        format!(
+                            "Configured directory scope '{}' has no matches",
+                            display_rel(node_rel)
+                        ),
+                        severity_for_node(node),
+                    );
+                }
                 return;
             }
-            if !pattern_has_matches {
-                self.validate_self_directory_exists(node_rel, node, 0, report);
-                self.validate_missing_direct_counts(node_rel, node, report);
+
+            for matched_rel in matches {
+                self.validate_existing_node_requirements(&matched_rel, node, report);
             }
+            return;
+        }
+
+        let node_abs = self.project_root.join(node_rel);
+        if !node_abs.is_dir() {
+            self.validate_self_directory_exists(node_rel, node, 0, report);
+            self.validate_missing_direct_counts(node_rel, node, report);
 
             if !node.required {
                 self.validate_child_node_requirements(node_rel, node, report);
@@ -64,6 +80,15 @@ impl StructureChecker {
             return;
         }
 
+        self.validate_existing_node_requirements(node_rel, node, report);
+    }
+
+    fn validate_existing_node_requirements(
+        &self,
+        node_rel: &Path,
+        node: &DirectoryNode,
+        report: &mut StructureCheckReport,
+    ) {
         self.validate_required_file_names(node_rel, node, report);
         self.validate_required_directory_names(node_rel, node, report);
         self.validate_legacy_exists_lists(node_rel, node, report);
@@ -270,14 +295,15 @@ impl StructureChecker {
         }
     }
 
-    fn has_matching_directory_scope(&self, pattern: &Path) -> bool {
+    fn matching_directory_scopes(&self, pattern: &Path) -> Vec<std::path::PathBuf> {
+        let mut matches = Vec::new();
         let mut stack = vec![self.project_root.clone()];
         while let Some(directory) = stack.pop() {
             let rel = directory
                 .strip_prefix(&self.project_root)
                 .unwrap_or(&directory);
             if !rel.as_os_str().is_empty() && path_matches_scope_pattern(pattern, rel) {
-                return true;
+                matches.push(rel.to_path_buf());
             }
 
             let Ok(entries) = std::fs::read_dir(&directory) else {
@@ -298,7 +324,8 @@ impl StructureChecker {
                 stack.push(child);
             }
         }
-        false
+        matches.sort();
+        matches
     }
 }
 

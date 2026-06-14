@@ -26,6 +26,7 @@ structure:
       naming: "kebab-case"
       allowed_names:
         - "README.md"
+        - "AGENTS.md"
         - "LICENSE"
         - ".gitignore"
         - "Cargo.toml"

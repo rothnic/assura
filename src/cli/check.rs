@@ -82,6 +82,7 @@ pub struct StructureCheckTimings {
 use regex_lite::Regex;
 use rule_plan::{rules_for_dir, RuleScope};
 use rules::{is_excluded_rel_with, normalize_config_dir, CompiledExclusion, EffectiveRules};
+use scope_patterns::{path_has_scope_magic, path_matches_scope_pattern};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::time::Instant;
@@ -405,9 +406,18 @@ impl StructureChecker {
     }
 
     pub(super) fn is_configured_dir(&self, rel: &Path) -> bool {
-        self.configured_dirs
+        if self
+            .configured_dirs
             .binary_search_by(|configured| configured.as_path().cmp(rel))
             .is_ok()
+        {
+            return true;
+        }
+
+        self.configured_dirs
+            .iter()
+            .filter(|configured| path_has_scope_magic(configured))
+            .any(|configured| path_matches_scope_pattern(configured, rel))
     }
 
     pub(super) fn push_violation(

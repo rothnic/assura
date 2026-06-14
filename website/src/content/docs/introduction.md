@@ -14,8 +14,8 @@ repository matches the shape described in `.assura/config.yml`.
 - **LS-Lint Migration**: Convert LS-Lint 2.3 naming, regex, exists, ignore,
   wildcard extension, and directory-scope rules into Assura config.
 - **CI-Friendly Reports**: Use text locally and JSON or YAML for automation.
-- **Guided Feedback**: Use `assura check --format advice` or `--format status`
-  for concise repair guidance.
+- **Guided Feedback**: Use `advice`, `status`, or `agent` output for concise
+  repair guidance and coding-agent workflows.
 
 ## Quick Start
 

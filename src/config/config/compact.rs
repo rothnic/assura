@@ -7,13 +7,12 @@
 use serde_yaml::{Mapping, Value};
 
 use super::compact_helpers::{
-    append_nested_sequence, into_mapping, is_extension_key, is_verbose_directory_node_key,
-    mapping_entry, merge_mapping, path_has_scope_magic, set_nested_bool, set_nested_mapping,
-    set_nested_value, string_value,
+    append_nested_sequence, into_mapping, is_extension_key, is_node_attr_key,
+    is_verbose_directory_node_key, mapping_entry, merge_mapping, path_has_scope_magic,
+    set_nested_bool, set_nested_mapping, set_nested_value, string_value,
 };
 use super::compact_rules::{
-    classify_fragment, is_rule_reference, parse_rule_reference, push_rule_stack, FragmentKind,
-    RuleRegistry,
+    is_rule_reference, parse_rule_reference, push_rule_stack, RuleRegistry,
 };
 
 const STRUCTURE: &str = "structure";
@@ -187,8 +186,14 @@ fn insert_verbose_node_key(
             let Some(child_name) = child_key.as_str() else {
                 return Err("compact config child names must be strings".to_string());
             };
-            let child = normalize_structure_node(child_value, rules, stack)?;
-            normalized.insert(Value::String(child_name.to_string()), child);
+            let mut child =
+                into_mapping(normalize_structure_node(child_value, rules, stack)?, key)?;
+            if path_has_scope_magic(child_name) {
+                child
+                    .entry(string_value("required"))
+                    .or_insert(Value::Bool(false));
+            }
+            normalized.insert(Value::String(child_name.to_string()), Value::Mapping(child));
         }
         output.insert(string_value(key), Value::Mapping(normalized));
     } else {
@@ -356,10 +361,20 @@ fn apply_self_directory_directive(output: &mut Mapping, directive: NodeDirective
 }
 
 fn is_tree_value(value: &Value) -> Result<bool, String> {
-    match classify_fragment(value)? {
-        FragmentKind::Tree => Ok(true),
-        FragmentKind::Node => Ok(false),
+    let Value::Mapping(mapping) = value else {
+        return Ok(false);
+    };
+
+    for key in mapping.keys() {
+        let Some(key) = key.as_str() else {
+            return Err("compact config fragments must use string keys".to_string());
+        };
+        if key == USE || key == EXTRA || !is_node_attr_key(key) {
+            return Ok(true);
+        }
     }
+
+    Ok(false)
 }
 
 fn use_references(value: &Value) -> Result<Vec<String>, String> {

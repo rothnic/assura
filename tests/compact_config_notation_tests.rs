@@ -35,6 +35,14 @@ fn has_rule(output: &std::process::Output, rule: &str) -> bool {
         .any(|violation| violation["rule"] == rule)
 }
 
+fn has_violation(output: &std::process::Output, rule: &str, path: &str) -> bool {
+    report(output)["violations"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|violation| violation["rule"] == rule && violation["path"] == path)
+}
+
 fn output_text(output: &std::process::Output) -> String {
     format!(
         "{}\n{}",
@@ -245,6 +253,138 @@ exclude:
     let missing_agents = check(&project);
     assert!(!missing_agents.status.success());
     assert!(has_rule(&missing_agents, "exists_count"));
+}
+
+#[test]
+fn check_nested_wildcard_package_scope_matches_existing_packages() {
+    let project = TempDir::new().unwrap();
+    write_config(
+        &project,
+        r#"
+structure:
+  ./:
+    extra: false
+    README.md: exists:1
+    AGENTS.md: exists:1
+    package.json: exists:1
+    packages/:
+      extra: false
+      "*/":
+        extra: false
+        package.json: exists:1
+        src/:
+          .ts: kebab-case
+exclude:
+  - ".assura/**"
+  - "node_modules/**"
+  - "dist/**"
+  - "**/dist/**"
+"#,
+    );
+
+    fs::write(project.path().join("README.md"), "# Example\n").unwrap();
+    fs::write(project.path().join("AGENTS.md"), "# Guidance\n").unwrap();
+    fs::write(project.path().join("package.json"), "{}\n").unwrap();
+
+    let core_src = project.path().join("packages/core/src");
+    let ui_src = project.path().join("packages/ui/src");
+    fs::create_dir_all(&core_src).unwrap();
+    fs::create_dir_all(&ui_src).unwrap();
+    fs::write(project.path().join("packages/core/package.json"), "{}\n").unwrap();
+    fs::write(project.path().join("packages/ui/package.json"), "{}\n").unwrap();
+    fs::write(core_src.join("index.ts"), "export {};\n").unwrap();
+    fs::write(ui_src.join("button.ts"), "export {};\n").unwrap();
+
+    assert!(check(&project).status.success());
+
+    fs::remove_file(project.path().join("packages/ui/package.json")).unwrap();
+    let missing_package_json = check(&project);
+    assert!(!missing_package_json.status.success());
+    assert!(has_rule(&missing_package_json, "exists_count"));
+
+    fs::write(project.path().join("packages/ui/package.json"), "{}\n").unwrap();
+    fs::write(ui_src.join("BadName.ts"), "export {};\n").unwrap();
+    let bad_source_name = check(&project);
+    assert!(!bad_source_name.status.success());
+    assert!(has_rule(&bad_source_name, "file_naming"));
+
+    fs::remove_file(ui_src.join("BadName.ts")).unwrap();
+    fs::create_dir(project.path().join("packages/core/tmp")).unwrap();
+    let extra_package_dir = check(&project);
+    assert!(!extra_package_dir.status.success());
+    assert!(has_violation(
+        &extra_package_dir,
+        "unexpected_directory",
+        "packages/core/tmp"
+    ));
+}
+
+#[test]
+fn check_required_wildcard_scope_fails_when_no_directories_match() {
+    let project = TempDir::new().unwrap();
+    write_config(
+        &project,
+        r#"
+structure:
+  packages/*/:
+    required: true
+    package.json: exists:1
+exclude:
+  - ".assura/**"
+"#,
+    );
+
+    let missing_packages = check(&project);
+    assert!(!missing_packages.status.success());
+    assert!(has_violation(
+        &missing_packages,
+        "required_directory",
+        "packages/*"
+    ));
+}
+
+#[test]
+fn check_nested_required_wildcard_scope_fails_when_no_children_match() {
+    let project = TempDir::new().unwrap();
+    write_config(
+        &project,
+        r#"
+structure:
+  ./:
+    packages/:
+      "*/":
+        required: true
+        package.json: exists:1
+exclude:
+  - ".assura/**"
+"#,
+    );
+
+    let missing_parent = check(&project);
+    assert!(!missing_parent.status.success());
+    assert!(has_violation(
+        &missing_parent,
+        "required_directory",
+        "packages"
+    ));
+
+    fs::create_dir(project.path().join("packages")).unwrap();
+    let missing_package = check(&project);
+    assert!(!missing_package.status.success());
+    assert!(has_violation(
+        &missing_package,
+        "required_directory",
+        "packages/*"
+    ));
+
+    fs::create_dir(project.path().join("packages/core")).unwrap();
+    let missing_package_json = check(&project);
+    assert!(!missing_package_json.status.success());
+    assert!(has_violation(
+        &missing_package_json,
+        "exists_count",
+        "packages/core"
+    ));
 }
 
 #[test]

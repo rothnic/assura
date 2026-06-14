@@ -81,8 +81,10 @@ fn init_creates_supported_structure_config() {
     assert!(config_path.is_file());
     let config = fs::read_to_string(config_path).unwrap();
     assert!(config.contains("structure:"));
+    assert!(config.contains("AGENTS.md"));
 
     fs::write(project.path().join("README.md"), "# Example\n").unwrap();
+    fs::write(project.path().join("AGENTS.md"), "# Guidance\n").unwrap();
     let check = Command::new(assura_bin())
         .arg("check")
         .arg(project.path())

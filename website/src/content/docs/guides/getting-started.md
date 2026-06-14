@@ -31,7 +31,8 @@ supported command is `assura check`.
    ```
 
    `init` creates `.assura/config.yml` and refuses to overwrite an existing
-   config unless `--force` is provided.
+   config unless `--force` is provided. The starter allows common root files
+   such as `README.md`, `AGENTS.md`, `Cargo.toml`, and `package.json`.
 
 3. **Run validation**
 
@@ -80,6 +81,43 @@ Example shape:
 ```
 
 The raw report formats for `assura check` are `text`, `json`, and `yaml`.
+Guided formats are `advice`, `status`, and `agent`.
+
+## Compact Monorepo Policy
+
+For hand-authored config, prefer the compact tree notation for common project
+shape rules. This example requires root docs and package metadata, then applies
+one package contract to every existing directory under `packages/`:
+
+```yaml
+version: "2.0"
+
+structure:
+  ./:
+    extra: false
+    README.md: exists:1
+    AGENTS.md: exists:1
+    package.json: exists:1
+    packages/:
+      extra: false
+      "*/":
+        extra: false
+        package.json: exists:1
+        src/:
+          .ts: kebab-case
+
+exclude:
+  - ".git/**"
+  - "node_modules/**"
+  - "dist/**"
+  - "**/dist/**"
+```
+
+`packages/` is an exact directory in the project tree, so this policy requires
+that directory. The nested `*/` is a wildcard directory scope over existing
+package directories; it does not require a literal `packages/*` directory.
+`extra: false` is directory-local, so this example sets it both on `packages/`
+and on each matched package scope.
 
 ## CI
 

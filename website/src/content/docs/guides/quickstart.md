@@ -48,7 +48,7 @@ Use this path for a first local check.
 - Read the full [Getting Started guide](/guides/getting-started/).
 - Follow the [Adoption Walkthrough](/guides/adoption-walkthrough/) for the
   empty-project and LS-Lint migration paths.
-- See [Configuration](/docs/configuration/) for the supported structure-first
+- See [Configuration](/reference/configuration/) for the supported structure-first
   config shape.
 - See [LS-Lint Migration](/guides/ls-lint-migration/) when adopting Assura from
   an existing `.ls-lint.yml`.

@@ -32,6 +32,7 @@ The CLI can also receive a config path with the global `--config` option.
 ## Top-Level Fields
 
 ```yaml
+version: "2.0"
 structure: {}
 exclude: []
 ls: null
@@ -43,6 +44,73 @@ ls: null
 | `exclude` | Glob-like paths excluded from validation and direct-child counts. |
 | `ls` | Compatibility input used by migration and tests, not the public `assura check` policy surface. Prefer `assura migrate` so LS-Lint rules are converted into `structure`. |
 | `patterns` | Library resolver field from the older config model. It is accepted by the config type but is not the public `assura check` policy surface. Use `structure` instead. |
+
+## Compact Structure Notation
+
+The native authoring path is a tree under `structure:`. Path-like keys describe
+direct files, direct directories, file-extension rules, and wildcard directory
+scopes.
+
+```yaml
+version: "2.0"
+
+structure:
+  ./:
+    README.md: exists:1
+    AGENTS.md: exists:1
+    packages/:
+      "*/":
+        extra: false
+        package.json: exists:1
+        src/:
+          .ts: kebab-case
+
+exclude:
+  - "node_modules/**"
+  - "dist/**"
+  - "**/dist/**"
+```
+
+| Key shape | Behavior |
+| --- | --- |
+| `README.md` | Exact direct file in the current directory scope. |
+| `src/` | Exact direct child directory. |
+| `packages/` | Exact direct child directory with nested rules. |
+| `*/` | Wildcard child directory scope under the current directory. |
+| `packages/*/` | Wildcard directory scope when used directly under `structure`. |
+| `.md` | Direct Markdown file rule in the current directory scope. |
+| `.test.ts` | Direct multi-part extension rule in the current directory scope. |
+| `.dir` | Rule for matched directories themselves. |
+
+Wildcard directory scopes validate existing matching directories. They do not
+require a literal `*` directory. Add `required: true` inside the wildcard scope
+when at least one matching directory must exist:
+
+```yaml
+structure:
+  ./:
+    packages/:
+      "*/":
+        required: true
+        package.json: exists:1
+```
+
+Because `packages/` is an exact directory key, that parent directory is required
+by default. Because `*/` is a wildcard scope, it is optional unless
+`required: true` is set.
+
+`exists` is the compact count model:
+
+| Shorthand | Behavior |
+| --- | --- |
+| `exists:1` | Exactly one matching direct child is required and allowed. |
+| `exists:0-1` | The direct child is optional and allowed when present. |
+| `exists:0` | Matching direct children are forbidden. |
+| `exists:N-M` | Matching direct child count must be within the inclusive range. |
+
+Use the expanded fields below for advanced cases such as severity overrides,
+inheritance edge cases, closed-world allow/forbid combinations, markdown
+frontmatter requirements, file size limits, and custom validation extensions.
 
 ## Directory Nodes
 
@@ -244,6 +312,8 @@ count targets.
 assura check --format text
 assura check --format json .
 assura check --format yaml .
+assura check --format advice .
+assura check --format status .
 assura check --format agent .
 assura check --format agent --agent codex . --warn
 ```

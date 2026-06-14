@@ -233,6 +233,47 @@ structure:
 }
 
 #[test]
+fn nested_pattern_children_are_not_required_by_default() {
+    let value = normalize(
+        r#"
+structure:
+  ./:
+    packages/:
+      "*/":
+        package.json: exists:1
+"#,
+    );
+    assert_eq!(
+        value["structure"]["./"]["children"]["packages"]["children"]["*"]["required"].as_bool(),
+        Some(false)
+    );
+}
+
+#[test]
+fn nested_pattern_children_can_be_explicitly_required() {
+    let value = normalize(
+        r#"
+structure:
+  ./:
+    packages/:
+      "*/":
+        required: true
+        package.json: exists:1
+"#,
+    );
+    assert_eq!(
+        value["structure"]["./"]["children"]["packages"]["children"]["*"]["required"].as_bool(),
+        Some(true)
+    );
+    assert_eq!(
+        value["structure"]["./"]["children"]["packages"]["children"]["*"]["files"]["exists"]
+            ["package.json"]
+            .as_str(),
+        Some("1")
+    );
+}
+
+#[test]
 fn rejects_unknown_rule_reference() {
     let value: Value = serde_yaml::from_str(
         r#"
