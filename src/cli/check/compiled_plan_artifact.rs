@@ -337,8 +337,10 @@ fn node_has_direct_count_constraints(node: &DirectoryNode) -> bool {
 }
 
 fn path_to_portable(path: PathBuf) -> String {
-    path.components()
-        .map(|component| component.as_os_str().to_string_lossy())
-        .collect::<Vec<_>>()
-        .join("/")
+    let portable = path.to_string_lossy().replace('\\', "/");
+    portable
+        .strip_prefix("//?/")
+        .or_else(|| portable.strip_prefix("//./"))
+        .unwrap_or(&portable)
+        .to_string()
 }

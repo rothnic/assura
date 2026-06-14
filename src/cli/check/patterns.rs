@@ -75,20 +75,13 @@ pub(super) fn best_lslint_suffix_match<'a>(
     patterns: &'a HashMap<String, String>,
     filename: &str,
 ) -> Option<(&'a str, &'a str)> {
-    if !patterns
-        .keys()
-        .all(|pattern| simple_dot_suffix_pattern(pattern).is_some())
-    {
-        return None;
-    }
-
-    filename
-        .match_indices('.')
-        .filter_map(|(index, _)| {
-            let pattern = format!("*{}", &filename[index..]);
-            patterns
-                .get_key_value(&pattern)
-                .map(|(pattern, naming)| (pattern.as_str(), naming.as_str()))
+    patterns
+        .iter()
+        .filter_map(|(pattern, naming)| {
+            let suffix = simple_suffix_pattern(pattern)?;
+            filename
+                .ends_with(suffix)
+                .then_some((pattern.as_str(), naming.as_str()))
         })
         .max_by(|(left, _), (right, _)| left.len().cmp(&right.len()).then_with(|| right.cmp(left)))
 }
@@ -99,11 +92,6 @@ pub(super) fn simple_suffix_pattern(pattern: &str) -> Option<&str> {
         return None;
     }
     Some(suffix)
-}
-
-fn simple_dot_suffix_pattern(pattern: &str) -> Option<&str> {
-    let suffix = simple_suffix_pattern(pattern)?;
-    suffix.starts_with('.').then_some(suffix)
 }
 
 fn collect_patterns<'a>(
@@ -148,6 +136,22 @@ mod tests {
             ("component-*.ts".to_string(), "camelCase".to_string()),
         ]);
 
-        assert_eq!(best_lslint_suffix_match(&patterns, "component-a.ts"), None);
+        assert_eq!(
+            best_lslint_suffix_match(&patterns, "component-a.ts"),
+            Some(("*.ts", "kebab-case"))
+        );
+    }
+
+    #[test]
+    fn best_lslint_suffix_match_handles_simple_non_dot_suffixes_without_allocating_patterns() {
+        let patterns = HashMap::from([
+            ("*rc".to_string(), "flatcase".to_string()),
+            ("component-*.ts".to_string(), "camelCase".to_string()),
+        ]);
+
+        assert_eq!(
+            best_lslint_suffix_match(&patterns, "bashrc"),
+            Some(("*rc", "flatcase"))
+        );
     }
 }
