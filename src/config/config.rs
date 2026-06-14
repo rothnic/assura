@@ -12,6 +12,12 @@ use std::collections::HashMap;
 use validator::Validate;
 
 mod bundles;
+#[cfg(feature = "yaml-config")]
+mod compact;
+#[cfg(feature = "yaml-config")]
+mod compact_helpers;
+#[cfg(feature = "yaml-config")]
+mod compact_rules;
 mod extensions;
 mod quality;
 mod validation;
@@ -23,6 +29,8 @@ pub use crate::config::ls_compat::LsLintCompatibility;
 pub use bundles::{
     DirectoryBundle, ExistsValidation, FileBundle, MarkdownBundle, ResolvedFileBundle,
 };
+#[cfg(feature = "yaml-config")]
+pub(crate) use compact::normalize_compact_config_value;
 pub use extensions::{
     CommandSurfaceCommand, CommandSurfaceContract, CommandSurfaceFlag, CustomConstraintConfig,
     ExtensionConfig,
@@ -253,5 +261,7 @@ impl Default for DirectoryNode {
     }
 }
 
+#[cfg(all(test, feature = "yaml-config"))]
+mod compact_tests;
 #[cfg(test)]
 mod config_tests;

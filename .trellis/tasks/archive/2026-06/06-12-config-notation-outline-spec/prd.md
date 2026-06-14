@@ -57,7 +57,7 @@ simplicity.
   markdownlint, and the personal LS-Lint fork examples.
 - [x] Docs validation passes for the changed surface.
 - [x] A review pass happens before PR creation.
-- [ ] A PR is created and merged into `master`.
+- [x] A PR is created and merged into `master`.
 
 ## Out Of Scope
 

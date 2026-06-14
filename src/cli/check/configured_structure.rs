@@ -35,8 +35,13 @@ impl StructureChecker {
 
         let node_abs = self.project_root.join(node_rel);
         if !node_abs.is_dir() {
+            let is_pattern_scope = path_has_scope_magic(node_rel);
             let pattern_has_matches =
-                path_has_scope_magic(node_rel) && self.has_matching_directory_scope(node_rel);
+                is_pattern_scope && self.has_matching_directory_scope(node_rel);
+            if is_pattern_scope && !pattern_has_matches && !node.required {
+                self.validate_self_directory_exists(node_rel, node, 0, report);
+                return;
+            }
             if !pattern_has_matches {
                 self.validate_self_directory_exists(node_rel, node, 0, report);
                 self.validate_missing_direct_counts(node_rel, node, report);

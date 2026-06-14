@@ -4,7 +4,7 @@
 
 use super::config::Config;
 use crate::cli::config::{ConfigError, ConfigResult};
-use crate::config::config::validate_config_semantics;
+use crate::config::config::{normalize_compact_config_value, validate_config_semantics};
 use std::path::Path;
 #[cfg(feature = "full-cli")]
 use validator::Validate;
@@ -28,8 +28,7 @@ impl ConfigLoader {
 
     /// Parse config from YAML string
     pub fn parse(content: &str) -> ConfigResult<Config> {
-        let config: Config =
-            serde_yaml::from_str(content).map_err(|error| ConfigError::Yaml(error.to_string()))?;
+        let config = Self::parse_config_value(content)?;
         validate_config_semantics(&config).map_err(ConfigError::Invalid)?;
         #[cfg(feature = "full-cli")]
         config
@@ -40,8 +39,7 @@ impl ConfigLoader {
 
     /// Parse and semantically validate config from a YAML string.
     pub fn parse_validated(content: &str) -> ConfigResult<Config> {
-        let config: Config =
-            serde_yaml::from_str(content).map_err(|error| ConfigError::Yaml(error.to_string()))?;
+        let config = Self::parse_config_value(content)?;
         validate_config_semantics(&config).map_err(ConfigError::Invalid)?;
         #[cfg(feature = "full-cli")]
         config
@@ -56,6 +54,13 @@ impl ConfigLoader {
             .map_err(|e| ConfigError::Invalid(format!("Failed to serialize config: {}", e)))?;
         std::fs::write(path, content).map_err(ConfigError::Io)?;
         Ok(())
+    }
+
+    fn parse_config_value(content: &str) -> ConfigResult<Config> {
+        let value: serde_yaml::Value =
+            serde_yaml::from_str(content).map_err(|error| ConfigError::Yaml(error.to_string()))?;
+        let value = normalize_compact_config_value(value).map_err(ConfigError::Invalid)?;
+        serde_yaml::from_value(value).map_err(|error| ConfigError::Yaml(error.to_string()))
     }
 }
 
