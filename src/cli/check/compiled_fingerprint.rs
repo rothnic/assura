@@ -21,8 +21,8 @@ impl SourceConfigFingerprint {
         Ok(Self::from_metadata(&metadata))
     }
 
-    pub(super) fn matches_path(&self, path: &Path) -> bool {
-        self.has_strong_identity() && Self::from_path(path).is_ok_and(|current| &current == self)
+    pub(super) fn differs_from_path(&self, path: &Path) -> bool {
+        self.has_strong_identity() && Self::from_path(path).is_ok_and(|current| &current != self)
     }
 
     fn from_metadata(metadata: &std::fs::Metadata) -> Self {

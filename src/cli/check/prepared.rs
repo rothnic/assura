@@ -184,14 +184,6 @@ impl PreparedStructureCheck {
 
     /// Reload the compiled plan only when the configuration content changed.
     pub fn reload_if_config_changed(&mut self) -> Result<bool, CheckError> {
-        if self
-            .config_fingerprint
-            .as_ref()
-            .is_some_and(|fingerprint| fingerprint.matches_path(&self.config_path))
-        {
-            return Ok(false);
-        }
-
         let content = fs::read_to_string(&self.config_path).map_err(CheckError::Io)?;
         let config_hash = stable_hash(content.as_bytes());
         if config_hash == self.config_hash {
