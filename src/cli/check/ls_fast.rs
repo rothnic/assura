@@ -341,6 +341,11 @@ impl StructureChecker {
                 rel,
                 &self.glob_patterns,
             );
+            let allowed_by_naming_pattern = rules
+                .file_naming
+                .as_ref()
+                .and_then(|file_naming| file_naming.naming_for(filename, &self.glob_patterns))
+                .is_some();
             let forbidden_by_pattern = matches_any_compiled_pattern(
                 files.forbidden_patterns.as_deref(),
                 filename,
@@ -361,6 +366,7 @@ impl StructureChecker {
             if files.allow_extra == Some(false)
                 && !allowed_by_name
                 && !allowed_by_pattern
+                && !allowed_by_naming_pattern
                 && !file_matches_any_extension(filename, files.extensions.as_deref())
             {
                 self.push_violation(

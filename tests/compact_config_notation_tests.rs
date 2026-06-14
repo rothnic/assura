@@ -35,6 +35,14 @@ fn has_rule(output: &std::process::Output, rule: &str) -> bool {
         .any(|violation| violation["rule"] == rule)
 }
 
+fn output_text(output: &std::process::Output) -> String {
+    format!(
+        "{}\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    )
+}
+
 fn compact_config() -> &'static str {
     r#"
 rules:
@@ -154,6 +162,33 @@ exclude:
 }
 
 #[test]
+fn check_combined_extension_exists_and_naming_allows_valid_matches() {
+    let project = TempDir::new().unwrap();
+    write_config(
+        &project,
+        r#"
+structure:
+  ./:
+    extra: false
+    .md:
+      exists: 1
+      naming: kebab-case
+exclude:
+  - ".assura/**"
+"#,
+    );
+
+    fs::write(project.path().join("guide.md"), "# Guide\n").unwrap();
+    assert!(check(&project).status.success());
+
+    fs::remove_file(project.path().join("guide.md")).unwrap();
+    fs::write(project.path().join("BadGuide.md"), "# Guide\n").unwrap();
+    let bad_name = check(&project);
+    assert!(!bad_name.status.success());
+    assert!(has_rule(&bad_name, "file_naming"));
+}
+
+#[test]
 fn check_optional_pattern_scope_does_not_require_missing_matches() {
     let project = TempDir::new().unwrap();
     write_config(
@@ -174,6 +209,97 @@ exclude:
     let missing_nested_readme = check(&project);
     assert!(!missing_nested_readme.status.success());
     assert!(has_rule(&missing_nested_readme, "exists_count"));
+}
+
+#[test]
+fn check_package_fragment_requires_multiple_files_per_package() {
+    let project = TempDir::new().unwrap();
+    write_config(
+        &project,
+        r#"
+rules:
+  package-standard:
+    README.md: exists:1
+    AGENTS.md: exists:1
+    package.json: exists:1
+    src/: exists:1
+structure:
+  packages/*/:
+    use: "@package-standard"
+exclude:
+  - ".assura/**"
+"#,
+    );
+
+    let core = project.path().join("packages/core");
+    fs::create_dir_all(core.join("src")).unwrap();
+    fs::write(core.join("README.md"), "# Core\n").unwrap();
+    fs::write(core.join("AGENTS.md"), "# Guidance\n").unwrap();
+    fs::write(core.join("package.json"), "{}\n").unwrap();
+    assert!(check(&project).status.success());
+
+    let ui = project.path().join("packages/ui");
+    fs::create_dir_all(ui.join("src")).unwrap();
+    fs::write(ui.join("README.md"), "# UI\n").unwrap();
+    fs::write(ui.join("package.json"), "{}\n").unwrap();
+    let missing_agents = check(&project);
+    assert!(!missing_agents.status.success());
+    assert!(has_rule(&missing_agents, "exists_count"));
+}
+
+#[test]
+fn check_dir_rule_validates_matched_directory_names() {
+    let project = TempDir::new().unwrap();
+    write_config(
+        &project,
+        r#"
+structure:
+  packages/*/:
+    .dir: kebab-case
+exclude:
+  - ".assura/**"
+"#,
+    );
+
+    fs::create_dir_all(project.path().join("packages/core-lib")).unwrap();
+    assert!(check(&project).status.success());
+
+    fs::create_dir_all(project.path().join("packages/CoreLib")).unwrap();
+    let bad_dir = check(&project);
+    assert!(!bad_dir.status.success());
+    assert!(has_rule(&bad_dir, "directory_naming"));
+}
+
+#[test]
+fn check_rejects_removed_compact_exists_shortcuts() {
+    let project = TempDir::new().unwrap();
+    write_config(
+        &project,
+        r#"
+structure:
+  ./:
+    README.md: exists
+exclude:
+  - ".assura/**"
+"#,
+    );
+    let bare_exists = check(&project);
+    assert!(!bare_exists.status.success());
+    assert!(output_text(&bare_exists).contains("exists shorthand must include cardinality"));
+
+    write_config(
+        &project,
+        r#"
+structure:
+  ./:
+    README.md: 1
+exclude:
+  - ".assura/**"
+"#,
+    );
+    let numeric_node = check(&project);
+    assert!(!numeric_node.status.success());
+    assert!(output_text(&numeric_node).contains("node directive numbers are not supported"));
 }
 
 #[test]

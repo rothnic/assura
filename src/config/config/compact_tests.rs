@@ -115,6 +115,54 @@ structure:
 }
 
 #[test]
+fn normalizes_combined_extension_exists_and_naming_as_allowed_pattern() {
+    let value = normalize(
+        r#"
+structure:
+  ./:
+    .md:
+      exists: 1
+      naming: kebab-case
+"#,
+    );
+    let files = value["structure"]["./"]["files"].as_mapping().unwrap();
+    assert_eq!(
+        files["exists"]
+            .as_mapping()
+            .unwrap()
+            .get(key("*.md"))
+            .unwrap(),
+        "1"
+    );
+    assert_eq!(
+        files["naming_patterns"]
+            .as_mapping()
+            .unwrap()
+            .get(key("*.md"))
+            .unwrap(),
+        "kebab-case"
+    );
+    assert!(files.get(key("allowed_patterns")).is_none());
+}
+
+#[test]
+fn normalizes_self_directory_rule() {
+    let value = normalize(
+        r#"
+structure:
+  packages/*/:
+    .dir: kebab-case
+"#,
+    );
+    let package = value["structure"]["packages/*/"].as_mapping().unwrap();
+    assert_eq!(
+        package["self_directory"]["naming"].as_str(),
+        Some("kebab-case")
+    );
+    assert_eq!(package["required"].as_bool(), Some(false));
+}
+
+#[test]
 fn use_fragments_merge_left_to_right_then_local_wins() {
     let value = normalize(
         r#"
@@ -135,6 +183,38 @@ structure:
         .unwrap();
     assert_eq!(exists.get(key("README.md")).unwrap().as_str(), Some("0"));
     assert_eq!(exists.get(key("AGENTS.md")).unwrap().as_str(), Some("1"));
+}
+
+#[test]
+fn tree_fragments_support_multiple_required_package_files() {
+    let value = normalize(
+        r#"
+rules:
+  package-standard:
+    README.md: exists:1
+    AGENTS.md: exists:1
+    package.json: exists:1
+    src/: exists:1
+structure:
+  packages/*/:
+    use: "@package-standard"
+"#,
+    );
+    let package = &value["structure"]["packages/*/"];
+    let file_exists = package["files"]["exists"].as_mapping().unwrap();
+    assert_eq!(
+        file_exists.get(key("README.md")).unwrap().as_str(),
+        Some("1")
+    );
+    assert_eq!(
+        file_exists.get(key("AGENTS.md")).unwrap().as_str(),
+        Some("1")
+    );
+    assert_eq!(
+        file_exists.get(key("package.json")).unwrap().as_str(),
+        Some("1")
+    );
+    assert_eq!(package["directories"]["exists"]["src"].as_str(), Some("1"));
 }
 
 #[test]
@@ -229,6 +309,34 @@ structure:
 }
 
 #[test]
+fn rejects_bare_exists_node_directive() {
+    let value: Value = serde_yaml::from_str(
+        r#"
+structure:
+  ./:
+    README.md: exists
+"#,
+    )
+    .unwrap();
+    let error = normalize_compact_config_value(value).unwrap_err();
+    assert!(error.contains("exists shorthand must include cardinality"));
+}
+
+#[test]
+fn rejects_numeric_node_directive() {
+    let value: Value = serde_yaml::from_str(
+        r#"
+structure:
+  ./:
+    README.md: 1
+"#,
+    )
+    .unwrap();
+    let error = normalize_compact_config_value(value).unwrap_err();
+    assert!(error.contains("node directive numbers are not supported"));
+}
+
+#[test]
 fn rejects_lossy_exact_file_attributes() {
     let value: Value = serde_yaml::from_str(
         r#"
@@ -240,6 +348,20 @@ structure:
     .unwrap();
     let error = normalize_compact_config_value(value).unwrap_err();
     assert!(error.contains("exact file key 'README.md' only supports exists"));
+}
+
+#[test]
+fn rejects_lossy_exact_directory_attributes() {
+    let value: Value = serde_yaml::from_str(
+        r#"
+structure:
+  ./:
+    docs/: kebab-case
+"#,
+    )
+    .unwrap();
+    let error = normalize_compact_config_value(value).unwrap_err();
+    assert!(error.contains("exact directory key 'docs/' only supports exists"));
 }
 
 #[test]

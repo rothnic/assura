@@ -15,6 +15,7 @@ pub(super) struct DirectFilePolicy<'a> {
     pub(super) filename: &'a str,
     pub(super) allowed_by_name: bool,
     pub(super) allowed_by_pattern: bool,
+    pub(super) allowed_by_naming_pattern: bool,
     pub(super) forbidden_by_pattern: bool,
 }
 
@@ -88,6 +89,7 @@ impl StructureChecker {
         if files.allow_extra == Some(false)
             && !policy.allowed_by_name
             && !policy.allowed_by_pattern
+            && !policy.allowed_by_naming_pattern
             && !file_matches_any_extension(policy.filename, files.extensions.as_deref())
         {
             self.push_violation(

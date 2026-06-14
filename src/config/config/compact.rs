@@ -231,13 +231,13 @@ fn node_directive(
                 })
             }
         }
-        Value::Number(number) => Ok(NodeDirective {
-            exists: Some(parse_exists_count(&number.to_string())?),
-            ..NodeDirective::default()
-        }),
+        Value::Number(_) => Err(
+            "compact config node directive numbers are not supported; use exists:N or { exists: N }"
+                .to_string(),
+        ),
         Value::Mapping(mapping) => node_directive_from_mapping(mapping),
         other => Err(format!(
-            "compact config node directives must be strings, numbers, or mappings, got {other:?}"
+            "compact config node directives must be strings or mappings, got {other:?}"
         )),
     }
 }
@@ -396,7 +396,9 @@ fn parse_exists_value(value: Value) -> Result<String, String> {
 
 fn parse_exists_shorthand(value: &str) -> Result<Option<String>, String> {
     if value == "exists" {
-        return Ok(Some("exists".to_string()));
+        return Err(
+            "compact config exists shorthand must include cardinality; use exists:1".to_string(),
+        );
     }
     let Some(raw) = value.strip_prefix("exists:") else {
         return Ok(None);

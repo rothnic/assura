@@ -244,6 +244,15 @@ impl StructureChecker {
             rel,
             &self.glob_patterns,
         );
+        let allowed_by_naming_pattern =
+            files
+                .naming_patterns
+                .as_ref()
+                .is_some_and(|naming_patterns| {
+                    naming_patterns.keys().any(|pattern| {
+                        matches_single_compiled_pattern(pattern, filename, &self.glob_patterns)
+                    })
+                });
         let forbidden_by_pattern = matches_any_compiled_pattern(
             files.forbidden_patterns.as_deref(),
             filename,
@@ -258,6 +267,7 @@ impl StructureChecker {
                 filename,
                 allowed_by_name,
                 allowed_by_pattern,
+                allowed_by_naming_pattern,
                 forbidden_by_pattern,
             },
             report,
