@@ -51,6 +51,13 @@ expanding into richer dependency and documentation constraints.
   scaffolding, or confusing parallel paths as in-scope cleanup for the current
   branch. Assura is pre-production and pre-1.0, so prefer a direct replacement
   or removal over preserving compatibility layers that would become debt.
+- PR review must reject internal backwards-compatibility preservation unless it
+  protects an explicit current support claim such as LS-Lint migration parity.
+  Alpha-stage Assura config, APIs, docs, and internal structures should move to
+  the best current shape without compatibility shims for superseded designs.
+- PR review must check docs against the changed behavior and remove or update
+  stale claims in the same branch. Out-of-date docs are review blockers, not
+  follow-up cleanup.
 - Treat known failing checks as explicit stabilization work. Do not leave them
   as tribal knowledge in PR comments only.
 - Every non-trivial task response should include or preserve a concise workflow
