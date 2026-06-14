@@ -12,9 +12,18 @@ dynamic rows remain diagnostic.
 
 - The branch is `codex/ls-lint-realistic-parity-core-performance`.
 - There is a large local dirty layer on top of the pushed PR branch.
-- `cargo test --all-targets --quiet` currently fails in
-  `crates/assura-check-cli/tests/batch_cli.rs` because
-  `status_cli_reads_clean_daemon_status_file` reads an empty daemon address.
+- Fresh 2026-06-12 reruns turned green again: `cargo test --all-targets
+  --quiet` now passes.
+- Both named exact repro commands still pass in isolation: `cargo test
+  --quiet cli::check::prepared::tests::prepared_check_reloads_when_config_changes
+  -- --exact` and `cargo test --quiet
+  cli::check::compiled_artifact_tests::source_fingerprint_detects_same_size_rewrite_on_unix
+  -- --exact`.
+- The remaining blocker is now the docs / handoff / review batch needed to turn
+  the broad dirty branch into one narrow truthful PR-update slice.
+- The branch still needs shaping because the current work is a broad docs /
+  handoff batch, not yet a narrow reviewable PR update slice, even though the
+  canonical verification checkpoint is green again.
 - `git diff --check`, `cargo fmt --all -- --check`,
   `cargo clippy --all-targets --all-features -- -D warnings`, and
   `cargo run --quiet -- check --format json .` passed in the prior review pass.
@@ -34,8 +43,8 @@ dynamic rows remain diagnostic.
 
 ## Requirements
 
-- Fix the current test failure without weakening the daemon/status-file
-  behavior being tested.
+- Narrow the branch to a reviewable PR-update batch while the refreshed green
+  verification checkpoint stays truthfully documented.
 - Reconcile performance docs into one consistent scoped claim:
   Linux static-CRT cold release evidence is complete; macOS dynamic evidence is
   diagnostic; persistent warm/editor-session evidence is separately complete.
@@ -50,7 +59,9 @@ dynamic rows remain diagnostic.
 
 ## Acceptance Criteria
 
-- [ ] `cargo test --all-targets --quiet` passes.
+- [x] `cargo test --all-targets --quiet` passes.
+- [x] `cargo test --quiet cli::check::prepared::tests::prepared_check_reloads_when_config_changes -- --exact` passes.
+- [x] `cargo test --quiet cli::check::compiled_artifact_tests::source_fingerprint_detects_same_size_rewrite_on_unix -- --exact` passes.
 - [ ] `cargo fmt --all -- --check` passes.
 - [ ] `git diff --check` passes.
 - [ ] `cargo clippy --all-targets --all-features -- -D warnings` passes.

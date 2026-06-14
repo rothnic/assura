@@ -12,19 +12,28 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 3 | Assura Self-Check Clean | Review | keep `cargo run -- check .` clean through normal review/merge flow |
 | 4 | Documentation Source Truth | Next | migrate, archive, or delete stale docs and workflow artifacts |
 | 5 | Windows CI Restore | Later | fix `libgit2-sys` MSVC linker failure and restore matrix entry |
-| 6 | Beyond Ls-Lint Rules | Active | `05-11-structure-check-benchmark-attribution` |
-| 7 | Agent Nudge MVP | Active | `05-14-assura-agent-nudge-mvp` |
+| 6 | Beyond Ls-Lint Rules | Active | `05-21-bring-pr11-performance-home` |
+| 7 | Agent Nudge MVP | Next | resume only after the current PR 11 performance lane is coherent and validated |
 
 ## Active Epic
 
-**Agent Nudge MVP** is active.
+**Beyond Ls-Lint Rules** is active.
 
 Current owning task:
-`.trellis/tasks/05-14-assura-agent-nudge-mvp`.
+`.trellis/tasks/05-21-bring-pr11-performance-home`.
 
-Current objective: prove the smallest Codex integration path that turns
-`assura check --format json` reports into advisory nudge messages and measured
-workflow comparisons.
+Current objective: finish the PR 11 performance lane on
+`codex/ls-lint-realistic-parity-core-performance` so the branch is coherent,
+validated, and ready for a truthful PR update covering the scoped Linux
+static-CRT cold claim and the warm/editor-session claim. Fresh 2026-06-12
+verification reruns turned green again: the canonical command `cargo test
+--all-targets --quiet` passes, and both named exact repro commands also pass in
+isolation. Keep the branch in shaping mode anyway because the remaining blocker
+is now the broad dirty docs/handoff batch across
+`.trellis/spec/assura/roadmap.md`, `.trellis/spec/assura/workflow-status.md`,
+and `.trellis/tasks/05-21-bring-pr11-performance-home/prd.md`; the next
+narrowing step is to collapse that batch into one reviewable PR-update handoff
+before any claim says the branch is review-ready.
 
 ## Recommended Next Epic
 
