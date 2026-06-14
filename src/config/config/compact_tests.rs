@@ -24,6 +24,7 @@ structure:
     .gitignore: exists:1
     docs/: exists:0-1
     .md: kebab-case
+    .graphql: kebab-case
 "#,
     );
     let root = value
@@ -68,6 +69,17 @@ structure:
             .as_mapping()
             .unwrap()
             .get(key("*.md"))
+            .unwrap()
+            .as_str(),
+        Some("kebab-case")
+    );
+    assert_eq!(
+        files
+            .get(key("naming_patterns"))
+            .unwrap()
+            .as_mapping()
+            .unwrap()
+            .get(key("*.graphql"))
             .unwrap()
             .as_str(),
         Some("kebab-case")
@@ -200,4 +212,48 @@ structure:
     .unwrap();
     let error = normalize_compact_config_value(value).unwrap_err();
     assert!(error.contains("unknown compact config rule '@missing'"));
+}
+
+#[test]
+fn rejects_inverted_exists_ranges() {
+    let value: Value = serde_yaml::from_str(
+        r#"
+structure:
+  ./:
+    README.md: exists:2-1
+"#,
+    )
+    .unwrap();
+    let error = normalize_compact_config_value(value).unwrap_err();
+    assert!(error.contains("lower bound greater than its upper bound"));
+}
+
+#[test]
+fn rejects_lossy_exact_file_attributes() {
+    let value: Value = serde_yaml::from_str(
+        r#"
+structure:
+  ./:
+    README.md: kebab-case
+"#,
+    )
+    .unwrap();
+    let error = normalize_compact_config_value(value).unwrap_err();
+    assert!(error.contains("exact file key 'README.md' only supports exists"));
+}
+
+#[test]
+fn rejects_compact_severity_attribute() {
+    let value: Value = serde_yaml::from_str(
+        r#"
+structure:
+  ./:
+    README.md:
+      exists: 1
+      severity: high
+"#,
+    )
+    .unwrap();
+    let error = normalize_compact_config_value(value).unwrap_err();
+    assert!(error.contains("attribute 'severity' is not supported"));
 }

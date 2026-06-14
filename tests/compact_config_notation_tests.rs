@@ -198,3 +198,26 @@ exclude:
     fs::write(project.path().join(".gitignore"), "target\n").unwrap();
     assert!(check(&project).status.success());
 }
+
+#[test]
+fn check_treats_long_dot_keys_as_extension_rules() {
+    let project = TempDir::new().unwrap();
+    write_config(
+        &project,
+        r#"
+structure:
+  ./:
+    .graphql: kebab-case
+exclude:
+  - ".assura/**"
+"#,
+    );
+
+    fs::write(project.path().join("valid-schema.graphql"), "type Query\n").unwrap();
+    assert!(check(&project).status.success());
+
+    fs::write(project.path().join("InvalidSchema.graphql"), "type Query\n").unwrap();
+    let bad_name = check(&project);
+    assert!(!bad_name.status.success());
+    assert!(has_rule(&bad_name, "file_naming"));
+}

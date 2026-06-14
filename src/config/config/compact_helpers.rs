@@ -83,10 +83,29 @@ pub(super) fn is_extension_key(key: &str) -> bool {
     if token.is_empty() || key.ends_with('/') || key == ".dir" {
         return false;
     }
+    if is_common_dotfile_name(key) {
+        return false;
+    }
     if token.contains('.') {
         return true;
     }
-    token.len() <= 4 && token.chars().all(|char| char.is_ascii_alphanumeric())
+    token.chars().all(|char| char.is_ascii_alphanumeric())
+}
+
+fn is_common_dotfile_name(key: &str) -> bool {
+    matches!(
+        key,
+        ".env"
+            | ".gitignore"
+            | ".gitattributes"
+            | ".dockerignore"
+            | ".npmrc"
+            | ".yarnrc"
+            | ".editorconfig"
+            | ".prettierrc"
+            | ".eslintrc"
+            | ".markdownlintignore"
+    )
 }
 
 pub(super) fn is_node_attr_key(key: &str) -> bool {

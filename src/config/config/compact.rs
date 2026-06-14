@@ -161,13 +161,13 @@ fn normalize_path_key(
             set_nested_mapping(output, "children", directory, Value::Mapping(child));
         } else {
             let directive = node_directive(value, rules, stack)?;
-            apply_directory_directive(output, directory, directive);
+            apply_directory_directive(output, directory, directive)?;
         }
         return Ok(());
     }
 
     let directive = node_directive(value, rules, stack)?;
-    apply_file_directive(output, key, directive);
+    apply_file_directive(output, key, directive)?;
     Ok(())
 }
 
@@ -201,7 +201,6 @@ fn insert_verbose_node_key(
 struct NodeDirective {
     exists: Option<String>,
     naming: Option<String>,
-    severity: Option<Value>,
 }
 
 fn node_directive(
@@ -233,7 +232,7 @@ fn node_directive(
             }
         }
         Value::Number(number) => Ok(NodeDirective {
-            exists: Some(number.to_string()),
+            exists: Some(parse_exists_count(&number.to_string())?),
             ..NodeDirective::default()
         }),
         Value::Mapping(mapping) => node_directive_from_mapping(mapping),
@@ -257,7 +256,11 @@ fn node_directive_from_mapping(mapping: Mapping) -> Result<NodeDirective, String
                 };
                 directive.naming = Some(naming.to_string());
             }
-            "severity" => directive.severity = Some(value),
+            "severity" => {
+                return Err(
+                    "compact config attribute 'severity' is not supported in this MVP".to_string(),
+                );
+            }
             "markdown" | "outline" | "relations" | "validate" => {
                 return Err(format!(
                     "compact config attribute '{key}' is not supported in this MVP"
@@ -273,20 +276,27 @@ fn node_directive_from_mapping(mapping: Mapping) -> Result<NodeDirective, String
     Ok(directive)
 }
 
-fn apply_file_directive(output: &mut Mapping, filename: &str, directive: NodeDirective) {
+fn apply_file_directive(
+    output: &mut Mapping,
+    filename: &str,
+    directive: NodeDirective,
+) -> Result<(), String> {
+    if directive.naming.is_some() {
+        return Err(format!(
+            "compact config exact file key '{filename}' only supports exists in this MVP"
+        ));
+    }
     if let Some(exists) = directive.exists {
         set_nested_mapping(output, "files", "exists", mapping_entry(filename, exists));
         if filename_count_is_allowed(output, "files", filename) {
             append_nested_sequence(output, "files", "allowed_names", filename);
         }
     }
-    if let Some(severity) = directive.severity {
-        set_nested_value(output, "files", "severity", severity);
-    }
+    Ok(())
 }
 
 fn apply_file_pattern_directive(output: &mut Mapping, pattern: &str, directive: NodeDirective) {
-    append_nested_sequence(output, "files", "allowed_patterns", pattern);
+    let allows_by_count = directive.exists.is_some() && directive.naming.is_none();
     if let Some(naming) = directive.naming {
         set_nested_mapping(
             output,
@@ -298,12 +308,21 @@ fn apply_file_pattern_directive(output: &mut Mapping, pattern: &str, directive: 
     if let Some(exists) = directive.exists {
         set_nested_mapping(output, "files", "exists", mapping_entry(pattern, exists));
     }
-    if let Some(severity) = directive.severity {
-        set_nested_value(output, "files", "severity", severity);
+    if allows_by_count {
+        append_nested_sequence(output, "files", "allowed_patterns", pattern);
     }
 }
 
-fn apply_directory_directive(output: &mut Mapping, directory: &str, directive: NodeDirective) {
+fn apply_directory_directive(
+    output: &mut Mapping,
+    directory: &str,
+    directive: NodeDirective,
+) -> Result<(), String> {
+    if directive.naming.is_some() {
+        return Err(format!(
+            "compact config exact directory key '{directory}/' only supports exists in this MVP"
+        ));
+    }
     if let Some(exists) = directive.exists {
         set_nested_mapping(
             output,
@@ -319,12 +338,7 @@ fn apply_directory_directive(output: &mut Mapping, directory: &str, directive: N
             }
         }
     }
-    if let Some(naming) = directive.naming {
-        set_nested_value(output, "directories", "naming", Value::String(naming));
-    }
-    if let Some(severity) = directive.severity {
-        set_nested_value(output, "directories", "severity", severity);
-    }
+    Ok(())
 }
 
 fn apply_self_directory_directive(output: &mut Mapping, directive: NodeDirective) {
@@ -338,9 +352,6 @@ fn apply_self_directory_directive(output: &mut Mapping, directive: NodeDirective
     }
     if let Some(naming) = directive.naming {
         set_nested_value(output, "self_directory", "naming", Value::String(naming));
-    }
-    if let Some(severity) = directive.severity {
-        set_nested_value(output, "self_directory", "severity", severity);
     }
 }
 
@@ -369,10 +380,14 @@ fn use_references(value: &Value) -> Result<Vec<String>, String> {
 
 fn parse_exists_value(value: Value) -> Result<String, String> {
     match value {
-        Value::Number(number) => Ok(number.to_string()),
-        Value::String(text) => parse_exists_shorthand(&text)?
-            .or(Some(text))
-            .ok_or_else(|| "compact config exists value must not be empty".to_string()),
+        Value::Number(number) => parse_exists_count(&number.to_string()),
+        Value::String(text) => {
+            if let Some(exists) = parse_exists_shorthand(&text)? {
+                Ok(exists)
+            } else {
+                parse_exists_count(&text)
+            }
+        }
         other => Err(format!(
             "compact config exists value must be a string or number, got {other:?}"
         )),
@@ -399,15 +414,22 @@ fn parse_exists_count(raw: &str) -> Result<String, String> {
             "compact config exists value '{raw}' must be N or N-M"
         ));
     }
+    let mut bounds = Vec::new();
     for part in parts {
         if part.is_empty() {
             return Err(format!(
                 "compact config exists value '{raw}' has an empty range bound"
             ));
         }
-        part.parse::<u16>().map_err(|error| {
+        let bound = part.parse::<u16>().map_err(|error| {
             format!("compact config exists value '{raw}' has an invalid bound: {error}")
         })?;
+        bounds.push(bound);
+    }
+    if bounds.len() == 2 && bounds[0] > bounds[1] {
+        return Err(format!(
+            "compact config exists value '{raw}' has a lower bound greater than its upper bound"
+        ));
     }
     Ok(raw.to_string())
 }
