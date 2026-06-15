@@ -128,9 +128,9 @@ impl CompiledStructureConfigArtifact {
         if self
             .source_config_fingerprint
             .as_ref()
-            .is_some_and(|expected| expected.matches_path(config_path))
+            .is_some_and(|expected| expected.differs_from_path(config_path))
         {
-            return Ok(true);
+            return Ok(false);
         }
         let source_bytes = std::fs::read(config_path)?;
         Ok(stable_hash(&source_bytes) == expected_hash)
@@ -195,10 +195,12 @@ fn infer_project_root(config_path: &Path) -> std::io::Result<PathBuf> {
 }
 
 fn path_to_portable(path: PathBuf) -> String {
-    path.components()
-        .map(|component| component.as_os_str().to_string_lossy())
-        .collect::<Vec<_>>()
-        .join("/")
+    let portable = path.to_string_lossy().replace('\\', "/");
+    portable
+        .strip_prefix("//?/")
+        .or_else(|| portable.strip_prefix("//./"))
+        .unwrap_or(&portable)
+        .to_string()
 }
 
 fn portable_path_matches(path: &Path, expected: &str) -> std::io::Result<bool> {
@@ -466,5 +468,27 @@ impl From<PortableExistsValidation> for ExistsValidation {
             files: exists.files,
             directories: exists.directories,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::path_to_portable;
+    use std::path::PathBuf;
+
+    #[test]
+    fn path_to_portable_preserves_unix_absolute_paths() {
+        assert_eq!(
+            path_to_portable(PathBuf::from("/tmp/assura/config.yaml")),
+            "/tmp/assura/config.yaml"
+        );
+    }
+
+    #[test]
+    fn path_to_portable_normalizes_windows_separators() {
+        assert_eq!(
+            path_to_portable(PathBuf::from(r"C:\Users\nick\assura\config.yaml")),
+            "C:/Users/nick/assura/config.yaml"
+        );
     }
 }

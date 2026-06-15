@@ -27,7 +27,7 @@ pub(super) struct CompiledExclusion {
 
 impl CompiledExclusion {
     pub(super) fn new(pattern: &str) -> Self {
-        let prefix = pattern.strip_suffix("/**").map(PathBuf::from);
+        let prefix = literal_descendant_prefix(pattern);
         let scope_pattern = (prefix.is_none() && path_has_scope_magic(Path::new(pattern)))
             .then(|| CompiledScopePattern::from_str(pattern));
         let compiled_pattern = if prefix.is_some() {
@@ -67,6 +67,11 @@ impl CompiledExclusion {
     fn has_pattern(&self) -> bool {
         self.pattern.is_some() || self.scope_pattern.is_some()
     }
+}
+
+fn literal_descendant_prefix(pattern: &str) -> Option<PathBuf> {
+    let prefix = pattern.strip_suffix("/**")?;
+    (!prefix.contains(['*', '?', '[', ']'])).then(|| PathBuf::from(prefix))
 }
 
 pub(super) fn collect_configured_dirs(
@@ -456,5 +461,23 @@ mod tests {
 
         assert!(is_excluded_rel_with(&patterns, Path::new("src/cache.tmp")));
         assert!(!is_excluded_rel_with(&patterns, Path::new("src/cache.ts")));
+    }
+
+    #[test]
+    fn wildcard_prefix_exclusions_fall_back_to_glob_matching() {
+        let patterns = vec![CompiledExclusion::new("build-*/**")];
+
+        assert!(is_excluded_rel_with(
+            &patterns,
+            Path::new("build-app/cache.bin")
+        ));
+        assert!(is_excluded_rel_with(
+            &patterns,
+            Path::new("build-web/nested/cache.bin")
+        ));
+        assert!(!is_excluded_rel_with(
+            &patterns,
+            Path::new("src/build-app/cache.bin")
+        ));
     }
 }
