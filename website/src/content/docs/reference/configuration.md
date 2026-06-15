@@ -305,10 +305,10 @@ structure:
 ```
 
 LS-Lint extension rules such as `.md: exists:1-2` map to direct file counts and
-are treated as native LS-Lint parity. Exact direct filename rules such as
+are treated as LS-Lint parity. Exact direct filename rules such as
 `README.md: exists:1` are an Assura compatibility extension when produced by
-`assura migrate`; upstream LS-Lint 2.3 does not treat exact filenames as native
-count targets.
+`assura migrate`; upstream LS-Lint 2.3 does not treat exact filenames as count
+targets.
 
 ## Report Formats
 

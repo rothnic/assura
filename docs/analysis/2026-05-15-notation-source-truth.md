@@ -27,9 +27,9 @@ not the current product config surface. Top-level `rules:` is now supported only
 as a reusable authoring fragment system referenced from the `structure:` tree.
 
 **2026-06-12 update:** `.trellis/spec/assura/config-notation.md` is now the
-stable target for the future compact Assura-native notation. This analysis
+canonical source for compact hand-authored Assura notation. This analysis
 continues to classify implemented behavior and LS-Lint parity boundaries; the
-Trellis spec owns the target syntax for new implementation work.
+Trellis spec owns the syntax for new implementation work.
 
 **2026-05-26 update:** the LS-Lint rule coverage audit added support for
 regex negation, regex directory substitutions, wildcard/brace directory scopes,
@@ -89,7 +89,7 @@ The LS-Lint compatibility layer currently supports these LS-Lint 2.3 concepts:
 - `.dir` `exists` self-directory presence checks;
 - direct-child-only count semantics.
 
-Native LS-Lint parity claims must be limited to behavior supported by LS-Lint
+LS-Lint parity claims must be limited to behavior supported by LS-Lint
 2.3 and covered by equivalent fixtures.
 
 ## Assura Compatibility Extensions
@@ -115,8 +115,8 @@ filename count.
 
 No known LS-Lint 2.3 rule behavior is currently classified as unsupported by
 the LS-Lint compatibility claim. Exact filename `exists` remains an Assura
-extension, and future Assura-native `rules:`/`directive` grouping is separate
-from LS-Lint compatibility.
+extension, and hand-authored Assura `rules:` grouping is separate from LS-Lint
+compatibility.
 
 ## Naming Decisions
 
@@ -135,8 +135,8 @@ Historical docs use several names for similar concepts. Current status:
 | `require` | Historical shorthand concept; current product uses `exists:N` and relationships. |
 | `allow` / `strict` | Historical shorthand concepts; current product uses explicit `allowed_*` and `allow_extra`. |
 
-Future docs should use `structure` for current behavior and reserve
-`policy`, top-level `rules`, `apply`, and `require` for explicitly planned
+Future docs should use `structure`, `rules`, and `use` for current behavior and
+reserve `policy`, `apply`, and `require` for explicitly historical or rejected
 notation sections.
 
 ## Next Planned Notation Extensions
@@ -167,7 +167,7 @@ Target implementation order:
 ## Pattern Scope Model
 
 LS-Lint migration pattern scopes compile into a scope matcher plus rule
-payload. Future Assura-native notation should expose the same model directly:
+payload. Hand-authored Assura notation exposes the same model directly:
 
 - exact path scopes match one known directory path;
 - single-segment wildcard scopes match existing direct children;

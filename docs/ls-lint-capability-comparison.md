@@ -261,7 +261,7 @@ structure:
 ```
 
 **Can Assura Do It?** ✅ Yes for LS-Lint directory scopes.
-**Gap:** Top-level file glob shorthand remains an Assura-native ergonomics
+**Gap:** Top-level file glob shorthand remains an Assura-authored ergonomics
 improvement, not an LS-Lint migration blocker.
 
 **Proposed Solution:**
