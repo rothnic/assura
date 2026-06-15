@@ -3,7 +3,7 @@
 #[cfg(feature = "yaml-config")]
 use super::{
     Config, CustomConstraintConfig, DirectoryBundle, DirectoryNode, ExtensionConfig, FileBundle,
-    MarkdownBundle, QualityConfig,
+    MarkdownBundle, QualityConfig, RelationshipConstraintConfig,
 };
 #[cfg(feature = "yaml-config")]
 use glob::Pattern;
@@ -114,6 +114,16 @@ fn validate_extension_config(config: &ExtensionConfig) -> Result<(), String> {
             ));
         }
     }
+    let mut relationship_ids = HashSet::new();
+    for relationship in &config.relationships {
+        validate_relationship_constraint(relationship)?;
+        if !relationship_ids.insert(&relationship.id) {
+            return Err(format!(
+                "extensions.relationships.{}: duplicate relationship id",
+                relationship.id
+            ));
+        }
+    }
     Ok(())
 }
 
@@ -178,6 +188,37 @@ fn validate_custom_constraint(constraint: &CustomConstraintConfig) -> Result<(),
         }
     }
     if let Some(severity) = &constraint.severity {
+        validate_severity(severity).map_err(|error| format!("{context}.severity: {error}"))?;
+    }
+    Ok(())
+}
+
+#[cfg(feature = "yaml-config")]
+fn validate_relationship_constraint(
+    relationship: &RelationshipConstraintConfig,
+) -> Result<(), String> {
+    let context = format!("extensions.relationships.{}", relationship.id);
+    validate_identifier(&relationship.id, &format!("{context}.id"))?;
+    validate_identifier(&relationship.need, &format!("{context}.need"))?;
+    validate_relative_path_text(&relationship.source, &format!("{context}.source"))?;
+    if relationship.providers.is_empty() {
+        return Err(format!(
+            "{context}.providers: at least one provider is required"
+        ));
+    }
+    for provider in &relationship.providers {
+        validate_relative_template(&provider.path, &format!("{context}.providers.path"))?;
+        if provider
+            .section
+            .as_ref()
+            .is_some_and(|section| section.trim().is_empty())
+        {
+            return Err(format!(
+                "{context}.providers.section: value must not be empty"
+            ));
+        }
+    }
+    if let Some(severity) = &relationship.severity {
         validate_severity(severity).map_err(|error| format!("{context}.severity: {error}"))?;
     }
     Ok(())

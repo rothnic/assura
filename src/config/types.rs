@@ -46,7 +46,7 @@ pub struct Rule {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub require_docs: Option<bool>,
 
-    /// Test file pattern (e.g., "{{name}}.test.tsx")
+    /// Test file pattern (e.g., "{name}.test.tsx")
     #[serde(skip_serializing_if = "Option::is_none")]
     pub require_test: Option<String>,
 

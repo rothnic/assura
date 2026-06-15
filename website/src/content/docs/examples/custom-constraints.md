@@ -50,18 +50,37 @@ Supported rule families include naming conventions, allowed names, direct-child
 existence counts, extension rules, directory naming, markdown rules, and
 exclusions.
 
+## Relationship Notation First
+
+For common repository relationships, prefer structure notation. It keeps the
+source and target artifacts in the project tree and avoids a separate
+constraint block.
+
+```yaml
+structure:
+  src/:
+    "{module}.rs": {}
+  tests/:
+    "{module}_test.rs": exists:1
+```
+
+Use `needs:` and `provides:` when several provider locations can satisfy the
+same relationship.
+
 ## First-Party Custom Constraints
 
-Use `extensions.custom_constraints` when the built-in structure bundles cannot
-express a repo-reviewed structure relationship.
+`extensions.custom_constraints` remains an experimental first-party execution
+surface for specialized checks that cannot yet be expressed by structure
+notation. It is not the preferred authoring surface for ordinary source/test or
+package/doc relationships.
 
 ```yaml
 extensions:
   custom_constraints:
-    - id: source_test_pair
-      type: paired_file_exists
-      source: "src/*.rs"
-      target: "tests/{stem}_test.rs"
+    - id: command_surface_docs
+      type: command_surface_docs
+      source: "docs/*.md"
+      target: ".assura/command-surface.yml"
       severity: high
 
 structure:
@@ -74,23 +93,13 @@ exclude:
   - "target/**"
 ```
 
-`paired_file_exists` checks every non-excluded file matching `source` and
-requires the expanded `target` path to exist. Supported placeholders are:
-
-| Placeholder | Value |
-| --- | --- |
-| `{stem}` / `{source_stem}` | Source file stem, such as `parser` for `src/parser.rs`. |
-| `{source_name}` | Source file name, such as `parser.rs`. |
-| `{source}` | Source path relative to the project root. |
-| `{source_parent}` | Source parent path relative to the project root. |
-
-If `src/parser.rs` exists and `tests/parser_test.rs` does not, `assura check`
-emits a normal structure violation:
+If a docs file includes a command example outside the configured command
+surface, `assura check` emits a normal structure violation:
 
 ```json
 {
-  "path": "src/parser.rs",
-  "rule": "custom:source_test_pair",
+  "path": "docs/usage.md",
+  "rule": "custom:command_surface_docs",
   "severity": "high"
 }
 ```

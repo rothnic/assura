@@ -195,11 +195,6 @@ structure:
       naming: kebab-case
     directories:
       naming: kebab-case
-    children:
-      .assura/:
-        inherit: false
-        files:
-          naming: kebab-case
 exclude:
   - generated/**
 "#,
@@ -216,8 +211,8 @@ exclude:
     assert!(report.success, "report was: {report:#?}");
     assert_eq!(report.violations.len(), 0);
     assert_eq!(
-        report.dirs_checked, 2,
-        ".assura and src should be checked while generated descendants are pruned"
+        report.dirs_checked, 1,
+        "src should be checked while .assura and generated descendants are pruned"
     );
 }
 

@@ -14,6 +14,8 @@ use validator::Validate;
 mod bundles;
 mod extensions;
 mod quality;
+#[cfg(feature = "yaml-config")]
+mod structure_notation;
 mod validation;
 
 pub use crate::config::inheritance::{ResolvedRule, RuleResolver};
@@ -25,9 +27,11 @@ pub use bundles::{
 };
 pub use extensions::{
     CommandSurfaceCommand, CommandSurfaceContract, CommandSurfaceFlag, CustomConstraintConfig,
-    ExtensionConfig,
+    ExtensionConfig, RelationshipConstraintConfig, RelationshipProviderConfig,
 };
 pub use quality::{QualityConfig, QualityScopeConfig};
+#[cfg(feature = "yaml-config")]
+pub(crate) use structure_notation::normalize_structure_config_value;
 pub(crate) use validation::split_naming_conventions;
 #[cfg(feature = "yaml-config")]
 pub(crate) use validation::validate_config_semantics;

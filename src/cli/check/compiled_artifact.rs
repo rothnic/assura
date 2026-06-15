@@ -4,8 +4,9 @@ use super::compiled_config::CompiledStructureConfig;
 use super::compiled_fingerprint::SourceConfigFingerprint;
 use super::compiled_plan_artifact::PortableCompiledPlan;
 use crate::config::config::{
-    Config, DirectoryBundle, DirectoryNode, ExistsValidation, ExtensionConfig, FileBundle,
-    MarkdownBundle, QualityConfig,
+    Config, CustomConstraintConfig, DirectoryBundle, DirectoryNode, ExistsValidation,
+    ExtensionConfig, FileBundle, MarkdownBundle, QualityConfig, RelationshipConstraintConfig,
+    RelationshipProviderConfig,
 };
 use crate::config::ls_compat::LsLintCompatibility;
 use crate::stable_hash::{stable_hash, stable_hash_const};
@@ -13,7 +14,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-const COMPILED_CONFIG_SCHEMA_VERSION: u32 = 9;
+const COMPILED_CONFIG_SCHEMA_VERSION: u32 = 10;
 const ASSURA_VERSION_HASH: u64 = stable_hash_const(env!("CARGO_PKG_VERSION").as_bytes());
 
 /// Portable artifact containing a parsed Assura structure config.
@@ -216,10 +217,12 @@ struct PortableConfig {
     patterns: HashMap<String, PortableFileBundle>,
     structure: HashMap<String, PortableDirectoryNode>,
     ls: Option<LsLintCompatibility>,
-    extensions: Option<ExtensionConfig>,
+    extensions: Option<PortableExtensionConfig>,
     quality: Option<QualityConfig>,
     exclude: Vec<String>,
 }
+
+include!("compiled_artifact_extensions.rs");
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub(super) struct PortableDirectoryNode {
@@ -291,7 +294,7 @@ impl From<Config> for PortableConfig {
                 .map(|(path, node)| (path, node.into()))
                 .collect(),
             ls: config.ls,
-            extensions: config.extensions,
+            extensions: config.extensions.map(Into::into),
             quality: config.quality,
             exclude: config.exclude,
         }
@@ -312,7 +315,7 @@ impl From<PortableConfig> for Config {
                 .map(|(path, node)| (path, node.into()))
                 .collect(),
             ls: config.ls,
-            extensions: config.extensions,
+            extensions: config.extensions.map(Into::into),
             quality: config.quality,
             exclude: config.exclude,
         }

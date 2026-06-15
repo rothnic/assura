@@ -1,0 +1,3 @@
+{"file":".trellis/spec/assura/config-notation.md","reason":"Verify implementation and docs match the single canonical hand-authored notation direction."}
+{"file":"docs/analysis/2026-06-15-notation-clean-start-roadmap.md","reason":"Verify follow-up chunks and performance analysis work are captured durably after cleanup."}
+{"file":"docs/analysis/2026-05-15-performance-architecture-statement.md","reason":"Verify performance follow-up language stays evidence-backed and does not imply unmeasured optimizations."}

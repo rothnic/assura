@@ -410,21 +410,22 @@ mod tests {
     #[test]
     fn test_cli_info() {
         let mut temp_file = NamedTempFile::new().unwrap();
-        write!(
-            temp_file,
-            r#"
+        temp_file
+            .write_all(
+                r#"
 rules:
   react:
-    ${{name}}.tsx:
+    "{name}.tsx":
       - constraints: [PascalCase]
 
 policy:
   src/:
-    ${{name}}.tsx:
+    "{name}.tsx":
       - apply: react
 "#
-        )
-        .unwrap();
+                .as_bytes(),
+            )
+            .unwrap();
 
         let result = Cli::info(temp_file.path());
         assert!(result.is_ok());

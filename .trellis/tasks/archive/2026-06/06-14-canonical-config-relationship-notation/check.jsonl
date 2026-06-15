@@ -1,0 +1,4 @@
+{"file":"docs/analysis/2026-05-15-notation-source-truth.md","reason":"Existing active notation classification must be superseded or reconciled by the canonical spec."}
+{"file":"website/src/content/docs/reference/configuration.md","reason":"Public configuration reference must not contradict the canonical notation."}
+{"file":"tests/custom_constraints_tests.rs","reason":"Regression coverage for current relationship executor if retained as an internal implementation detail."}
+{"file":"docs/support-policy.md","reason":"Support policy must remain aligned when alpha notation is removed without compatibility."}

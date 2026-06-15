@@ -18,16 +18,18 @@ related:
 
 # Assura Notation Source Truth
 
-This document is the current notation source of truth for the next LS-Lint
-parity and performance work. It separates implemented structure-first behavior
-from LS-Lint parity, Assura extensions, unsupported behavior, and planned
-notation. Historical `policy`/`rules`/`apply` proposals remain useful design
-input, but they are not the current product config surface.
+This document records the LS-Lint parity and performance context that informed
+Assura's notation work. The canonical source for hand-authored Assura config
+notation is now `.trellis/spec/assura/config-notation.md`.
+
+Historical `policy`/`apply` proposals remain useful design input, but they are
+not the current product config surface. Top-level `rules:` is now supported only
+as a reusable authoring fragment system referenced from the `structure:` tree.
 
 **2026-06-12 update:** `.trellis/spec/assura/config-notation.md` is now the
-stable target for the future compact Assura-native notation. This analysis
+canonical source for compact hand-authored Assura notation. This analysis
 continues to classify implemented behavior and LS-Lint parity boundaries; the
-Trellis spec owns the target syntax for new implementation work.
+Trellis spec owns the syntax for new implementation work.
 
 **2026-05-26 update:** the LS-Lint rule coverage audit added support for
 regex negation, regex directory substitutions, wildcard/brace directory scopes,
@@ -38,7 +40,8 @@ multi-config merge conversion. See
 ## Current Supported Structure-First Notation
 
 Assura's supported public config surface is `.assura/config.yml` with a
-top-level `structure:` tree and `exclude:` patterns.
+top-level `structure:` tree, optional reusable `rules:`, and `exclude:`
+patterns.
 
 Current structure nodes support:
 
@@ -53,6 +56,10 @@ Current structure nodes support:
   `directories.forbidden_patterns`, and `directories.allow_extra`;
 - `directories.exists` for direct child directory count patterns;
 - `children` for explicit nested structure nodes.
+- concise direct path keys such as `README.md: exists:1`, `src/: exists:1`,
+  and `.rs: snake_case`;
+- single-brace captures such as `{component}` for optional producers,
+  required counterparts, and named `needs:`/`provides:` relationships.
 
 Direct-content rules are hierarchical but not recursively strict by default:
 `allow_extra`, allowed names/patterns, forbidden patterns, and direct count
@@ -82,7 +89,7 @@ The LS-Lint compatibility layer currently supports these LS-Lint 2.3 concepts:
 - `.dir` `exists` self-directory presence checks;
 - direct-child-only count semantics.
 
-Native LS-Lint parity claims must be limited to behavior supported by LS-Lint
+LS-Lint parity claims must be limited to behavior supported by LS-Lint
 2.3 and covered by equivalent fixtures.
 
 ## Assura Compatibility Extensions
@@ -97,6 +104,8 @@ Assura intentionally supports some behavior beyond native LS-Lint 2.3:
   directories through `allow_extra: false`;
 - exact allowed names and forbidden patterns can express root/project hygiene
   that LS-Lint does not model directly.
+- tree-shaped capture relationships can express common source/test and
+  package/documentation relationships without `extensions.custom_constraints`.
 
 Exact filename `exists` must remain labeled as an Assura compatibility
 extension. Live LS-Lint 2.3 does not treat `README.md: exists:1` as an exact
@@ -106,8 +115,8 @@ filename count.
 
 No known LS-Lint 2.3 rule behavior is currently classified as unsupported by
 the LS-Lint compatibility claim. Exact filename `exists` remains an Assura
-extension, and future Assura-native `rules:`/`directive` grouping is separate
-from LS-Lint compatibility.
+extension, and hand-authored Assura `rules:` grouping is separate from LS-Lint
+compatibility.
 
 ## Naming Decisions
 
@@ -120,13 +129,14 @@ Historical docs use several names for similar concepts. Current status:
 | `files.exists` / `directories.exists` | Current direct count checks. Keep for LS-Lint parity and range counts. |
 | `directories.required` | Current exact required direct directory list. |
 | `policy` | Historical proposed replacement for `structure`; not implemented. |
-| top-level `rules` | Historical reusable-rule proposal; not implemented as the current config surface. |
+| top-level `rules` | Current reusable authoring fragments referenced with `use:` from `structure`. |
+| `use` | Current reusable-rule attachment inside structure nodes. |
 | `apply` | Historical reusable-rule attachment proposal; not implemented. |
-| `require` | Planned shorthand for required files/directories, but not current product notation. |
+| `require` | Historical shorthand concept; current product uses `exists:N` and relationships. |
 | `allow` / `strict` | Historical shorthand concepts; current product uses explicit `allowed_*` and `allow_extra`. |
 
-Future docs should use `structure` for current behavior and reserve
-`policy`, top-level `rules`, `apply`, and `require` for explicitly planned
+Future docs should use `structure`, `rules`, and `use` for current behavior and
+reserve `policy`, `apply`, and `require` for explicitly historical or rejected
 notation sections.
 
 ## Next Planned Notation Extensions
@@ -157,7 +167,7 @@ Target implementation order:
 ## Pattern Scope Model
 
 LS-Lint migration pattern scopes compile into a scope matcher plus rule
-payload. Future Assura-native notation should expose the same model directly:
+payload. Hand-authored Assura notation exposes the same model directly:
 
 - exact path scopes match one known directory path;
 - single-segment wildcard scopes match existing direct children;
