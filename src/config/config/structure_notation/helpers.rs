@@ -231,6 +231,36 @@ fn is_node_attr_key(key: &str) -> bool {
     )
 }
 
+fn is_file_bundle_attr_key(key: &str) -> bool {
+    matches!(
+        key,
+        "naming"
+            | "max_lines"
+            | "max_size"
+            | "require_docs"
+            | "extensions"
+            | "severity"
+            | "required"
+            | "allowed_names"
+            | "allowed_patterns"
+            | "forbidden_patterns"
+            | "allow_extra"
+    )
+}
+
+fn is_directory_bundle_attr_key(key: &str) -> bool {
+    matches!(
+        key,
+        "naming"
+            | "severity"
+            | "required"
+            | "allowed_names"
+            | "allowed_patterns"
+            | "forbidden_patterns"
+            | "allow_extra"
+    )
+}
+
 fn is_directory_node_attr_key(key: &str) -> bool {
     matches!(
         key,

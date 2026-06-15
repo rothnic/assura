@@ -65,7 +65,8 @@ fn record_relationship_metadata(
             let Some(section) = section_key.as_str() else {
                 return Err("Assura config section names must be strings".to_string());
             };
-            let section_captures = capture_names(section);
+            let mut section_captures = captures.clone();
+            section_captures.extend(capture_names(section));
             let Value::Mapping(section_mapping) = section_value else {
                 continue;
             };

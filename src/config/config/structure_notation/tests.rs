@@ -113,6 +113,100 @@ structure:
 }
 
 #[test]
+fn rule_keys_with_at_prefix_resolve_from_use_references() {
+    let config = parse_config(
+        r#"
+rules:
+  "@readme-standard":
+    exists: 1
+  "@project-docs":
+    README.md: "@readme-standard"
+structure:
+  ./:
+    use: "@project-docs"
+"#,
+    )
+    .unwrap();
+
+    let root = config.structure.get("./").unwrap();
+    let files = root.files.as_ref().unwrap();
+    assert_eq!(
+        files.exists.as_ref().unwrap().get("README.md"),
+        Some(&"1".to_string())
+    );
+    assert_eq!(
+        files.allowed_names.as_ref().unwrap(),
+        &vec!["README.md".to_string()]
+    );
+}
+
+#[test]
+fn detailed_file_directive_merges_markdown_attributes_in_place() {
+    let config = parse_config(
+        r#"
+structure:
+  docs/:
+    "{topic}.md":
+      exists: 1
+      markdown:
+        required_sections:
+          - Summary
+"#,
+    )
+    .unwrap();
+
+    let docs = config.structure.get("docs/").unwrap();
+    let files = docs.files.as_ref().unwrap();
+    assert_eq!(
+        files.allowed_patterns.as_ref().unwrap(),
+        &vec!["{topic}.md".to_string()]
+    );
+    assert_eq!(
+        docs.markdown
+            .as_ref()
+            .unwrap()
+            .required_sections
+            .as_ref()
+            .unwrap(),
+        &vec!["Summary".to_string()]
+    );
+}
+
+#[test]
+fn section_providers_include_path_and_section_captures() {
+    let config = parse_config(
+        r#"
+structure:
+  workspaces/:
+    "{workspace}/":
+      "{package}/":
+        needs: doc
+  docs/:
+    "{workspace}/":
+      packages.md:
+        sections:
+          "{package}":
+            provides: doc
+"#,
+    )
+    .unwrap();
+
+    let relationships = &config.extensions.unwrap().relationships;
+    assert_eq!(relationships.len(), 1);
+    let relationship = &relationships[0];
+    assert_eq!(relationship.source, "workspaces/{workspace}/{package}");
+    assert_eq!(relationship.providers.len(), 1);
+    assert_eq!(
+        relationship.providers[0].path,
+        "docs/{workspace}/packages.md"
+    );
+    assert_eq!(
+        relationship.providers[0].section.as_deref(),
+        Some("{package}")
+    );
+}
+
+#[test]
 fn removed_capture_notations_are_rejected() {
     for path in ["${component}.tsx", "{{component}}.tsx"] {
         let yaml = format!(

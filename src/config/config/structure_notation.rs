@@ -160,14 +160,14 @@ fn normalize_path_key(
 ) -> Result<(), String> {
     if key == ".dir" {
         let directive = node_directive(value, rules, stack)?;
-        apply_self_directory_directive(output, directive);
+        apply_self_directory_directive(output, directive)?;
         return Ok(());
     }
 
     if is_extension_key(key) {
         let pattern = format!("*{key}");
         let directive = node_directive(value, rules, stack)?;
-        apply_file_pattern_directive(output, &pattern, directive);
+        apply_file_pattern_directive(output, &pattern, directive)?;
         return Ok(());
     }
 
@@ -202,7 +202,7 @@ fn normalize_path_key(
 
     let directive = node_directive(value, rules, stack)?;
     if has_captures {
-        apply_captured_file_directive(output, key, directive);
+        apply_captured_file_directive(output, key, directive)?;
     } else {
         apply_file_directive(output, key, directive)?;
     }

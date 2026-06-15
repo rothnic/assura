@@ -18,7 +18,10 @@ impl RuleRegistry {
             let Some(name) = key.as_str() else {
                 return Err("Assura config rule names must be strings".to_string());
             };
-            rules.insert(name.to_string(), value);
+            let name = normalize_rule_name(name)?;
+            if rules.insert(name.to_string(), value).is_some() {
+                return Err(format!("duplicate Assura config rule '@{name}'"));
+            }
         }
         Ok(Self { rules })
     }
@@ -95,10 +98,23 @@ fn classify_fragment(value: &Value) -> Result<FragmentKind, String> {
 }
 
 fn parse_rule_reference(reference: &str) -> Result<&str, String> {
-    reference
-        .strip_prefix('@')
-        .filter(|name| !name.is_empty())
-        .ok_or_else(|| format!("Assura config rule reference must start with '@': {reference}"))
+    normalize_rule_name(reference).and_then(|name| {
+        if reference.starts_with('@') {
+            Ok(name)
+        } else {
+            Err(format!(
+                "Assura config rule reference must start with '@': {reference}"
+            ))
+        }
+    })
+}
+
+fn normalize_rule_name(name: &str) -> Result<&str, String> {
+    let name = name.strip_prefix('@').unwrap_or(name);
+    if name.is_empty() {
+        return Err("Assura config rule names must not be empty".to_string());
+    }
+    Ok(name)
 }
 
 fn push_rule_stack(stack: &[String], name: &str) -> Result<(), String> {
