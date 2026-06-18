@@ -15,7 +15,7 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 6 | Beyond Ls-Lint Rules | Completed | PRs #8, #11, and #12 merged; performance/parity tasks archived |
 | 7 | Agent Feedback MVP | Completed | PRs #13-#16 merged; keep stable `assura check --format agent` surface |
 | 8 | Agentic Adoption Iteration 01 / Phase 01 | Completed | Archived task `.trellis/tasks/archive/2026-06/06-01-roadmap-phase-01-execution` |
-| 9 | Policy Depth Iteration 02 | Planned | `docs/goals/assura-roadmap-iteration-02-policy-depth-and-ecosystem.md` |
+| 9 | Policy Depth Iteration 02 | Planned | `docs/goals/assura-roadmap-iteration-02-policy-depth-and-ecosystem.md`; goals 09-13 now define the next major chunks |
 
 ## Active Roadmap Iteration
 
@@ -38,6 +38,8 @@ that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
 Planned next roadmap iteration:
 `docs/goals/assura-roadmap-iteration-02-policy-depth-and-ecosystem.md`.
+The planned Iteration 02 major goal sequence now lives in goals 09 through 13
+under `docs/goals/`.
 
 ## Recommended Next Epic
 

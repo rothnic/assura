@@ -36,6 +36,47 @@ This notation is designed to:
 - `.assura/` is Assura-owned tool state. Users should not need to add it to
   ordinary project-shape excludes just to make closed-world root policies work.
 
+## Notation Change Gates
+
+Any future change to Assura-authored notation must update the whole user-facing
+surface in the same goal:
+
+- Update public docs and examples, website examples, generated examples,
+  fixture configs, and test-case `.assura/config.yml` files that teach or
+  exercise the changed notation.
+- Remove superseded alpha notation rather than preserving backwards
+  compatibility shims. Assura is pre-1.0, so compatibility exceptions require a
+  documented support-policy reason and an explicit removal plan.
+- Run performance gates for notation changes that affect parsing,
+  normalization, compiled artifacts, traversal, relationship validation, or
+  fast-path eligibility.
+- If a notation improvement has inherent performance costs, record the limit,
+  explain why the user value justifies it, and prove the cost is bounded by
+  checked evidence.
+- Keep LS-Lint compatibility claims separate from Assura-authored notation
+  robustness claims.
+
+## Notation Coverage Proof
+
+Before Iteration 02 notation work is called complete, Assura needs a checked
+coverage matrix that starts with LS-Lint-equivalent use cases and then extends
+into Assura-native notation.
+
+The matrix should prove:
+
+- LS-Lint-style naming, extension, closed-world, ignore, and direct-child
+  presence cases remain expressible without more ceremony than LS-Lint.
+- Assura-native `exists`, capture, relationship, Markdown outline, and
+  reusable `rules:` cases cover useful policies LS-Lint cannot model directly.
+- Reusable `@rule` fragments reduce duplication for repeated file, docs, and
+  package policies instead of introducing hidden behavior.
+- Equivalent LS-Lint-style checks stay effectively as efficient as LS-Lint in
+  measured CLI-to-CLI evidence, with any inherent notation cost bounded and
+  justified.
+- Independent review confirms LS-Lint-style cases are effectively as efficient
+  as LS-Lint and reusable rules make broader Assura policies more modular
+  without weakening the common LS-Lint-like path.
+
 ## Direct Structure
 
 Use the tree for normal files and directories. `exists:N` is the concise count
@@ -324,22 +365,25 @@ Implementation should prove these before declaring the notation ready:
 1. Root project contract: require `README.md`, `AGENTS.md`, `Cargo.toml`,
    `src/`, and `docs/`, while rejecting undeclared root files when
    `extra: false`.
-2. Monorepo package contract: every `packages/*/` directory has `README.md`,
+2. LS-Lint-equivalent naming and extension rules: apply direct-file naming
+   rules such as `snake_case`, exact extension rules such as `.rs`, and ignore
+   policy without requiring more ceremony than the LS-Lint baseline.
+3. Monorepo package contract: every `packages/*/` directory has `README.md`,
    `AGENTS.md`, `package.json`, and `src/` without duplicating those rules at
    each package path.
-3. Optional singleton files: allow but do not require files such as
+4. Optional singleton files: allow but do not require files such as
    `CHANGELOG.md` through `exists:0-1`.
-4. Forbidden files: reject root scratch files or generated artifacts through
+5. Forbidden files: reject root scratch files or generated artifacts through
    `exists:0` or forbidden pattern attributes.
-5. Markdown outline contract: validate ordered nested headings with optional
+6. Markdown outline contract: validate ordered nested headings with optional
    sections marked by `?? `.
-6. Question headings: allow required headings such as `Why Assura?` and
+7. Question headings: allow required headings such as `Why Assura?` and
    optional headings such as `?? Why Assura?`.
-7. Escaped/custom headings: support object-form nodes for headings that collide
+8. Escaped/custom headings: support object-form nodes for headings that collide
    with shorthand or need custom match attributes.
-8. Code-to-test relation: for every matched source capture, require the matching
+9. Code-to-test relation: for every matched source capture, require the matching
    test artifact where the test appears in the project tree.
-9. Code-to-doc relation: for every matched package directory, require either a
+10. Code-to-doc relation: for every matched package directory, require either a
    dedicated docs file or a package section in an aggregate docs file.
 
 ## Relationship Boundary
