@@ -1,0 +1,4 @@
+{"file":"docs/goals/assura-goal-09-first-time-configuration-authoring.md","reason":"Check completion against Goal 09 definition of done, validation commands, review tasks, and blocking criteria."}
+{"file":".trellis/spec/assura/config-notation.md","reason":"Check examples and matrix against current canonical notation and no-alpha-compatibility policy."}
+{"file":"docs/goals/assura-roadmap-iteration-02-policy-depth-and-ecosystem.md","reason":"Check the slice preserves Iteration 02 direction locks and does not skip review/performance gates."}
+{"file":".assura/config.yml","reason":"Check self-enforcement constraints include any new docs, fixtures, examples, or review artifacts introduced by Goal 09."}

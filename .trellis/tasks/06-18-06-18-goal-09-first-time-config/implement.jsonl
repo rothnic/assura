@@ -1,0 +1,4 @@
+{"file":"docs/goals/assura-goal-09-first-time-configuration-authoring.md","reason":"Execution contract for first-time configuration authoring, notation matrix, review, and validation gates."}
+{"file":".trellis/spec/assura/config-notation.md","reason":"Canonical first-path notation, LS-Lint-equivalent baseline, Assura-native extensions, and notation-change gates."}
+{"file":"docs/goals/assura-roadmap-iteration-02-policy-depth-and-ecosystem.md","reason":"Iteration 02 direction locks and required goal ordering after planning PR #50."}
+{"file":".agents/skills/assura-goal-validation/SKILL.md","reason":"Revalidation workflow required before executing old or separate-context goals."}
