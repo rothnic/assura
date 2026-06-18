@@ -1,0 +1,4 @@
+{"file":".trellis/spec/assura/roadmap.md","reason":"Update planned Iteration 02 routing without reopening completed Iteration 01 or canonical relationship notation work."}
+{"file":".trellis/spec/assura/config-notation.md","reason":"Add durable notation-change gates and proof-use-case requirements for future notation execution goals."}
+{"file":"docs/goals/assura-roadmap-iteration-02-policy-depth-and-ecosystem.md","reason":"Update the roadmap iteration with goals 09-13, direction locks, and handoff guidance."}
+{"file":"AGENTS.md","reason":"Register the reusable goal-validation skill as concise routing for future agents."}

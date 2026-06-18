@@ -79,6 +79,7 @@ Located in `.agents/skills/`:
 | Skill | Description | Use When |
 |-------|-------------|----------|
 | `assura-goal-execution` | Long-running goal execution loop with iteration/context review and progressive-disclosure skill maintenance | Executing a goal from `docs/goals/` |
+| `assura-goal-validation` | Goal creation and revalidation workflow for old or separate-context goal docs | Creating a goal, choosing the next goal, or starting an older goal that may be stale |
 | `assura-local-build` | Local Cargo/OpenSSL/network troubleshooting for WSL or locked-down environments | Cargo validation fails for platform or dependency-access reasons |
 | `assura-performance-reporting` | Performance-report, LS-Lint warm comparison, benchmark history, and website performance data workflow | Changing `assura performance-report` or PR performance evidence |
 

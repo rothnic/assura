@@ -229,6 +229,7 @@ structure:
               naming: "kebab-case"
               allowed_names:
                 - "assura-goal-execution"
+                - "assura-goal-validation"
                 - "assura-local-build"
                 - "assura-performance-reporting"
                 - "built-in"
@@ -245,6 +246,18 @@ structure:
               allow_extra: false
             children:
               assura-goal-execution/:
+                files:
+                  naming: "kebab-case"
+                  naming_patterns:
+                    "SKILL.md": "regex:^SKILL$"
+                  allowed_names:
+                    - "SKILL.md"
+                  max_lines: 600
+                  max_size: "24KB"
+                  allow_extra: false
+                directories:
+                  allow_extra: false
+              assura-goal-validation/:
                 files:
                   naming: "kebab-case"
                   naming_patterns:

@@ -1,0 +1,4 @@
+{"file":".trellis/spec/assura/roadmap.md","reason":"Check Iteration 02 routing against the canonical roadmap state and completed Iteration 01 status."}
+{"file":".trellis/spec/assura/config-notation.md","reason":"Check notation gates, LS-Lint-equivalent baseline coverage, Assura-native extensions, and removed alpha notation policy."}
+{"file":"docs/goals/assura-roadmap-iteration-02-policy-depth-and-ecosystem.md","reason":"Check the roadmap iteration goal links goals 09-13 in order and records activation constraints."}
+{"file":"docs/analysis/2026-06-18-markdown-tooling-evaluation.md","reason":"Check Markdown outline planning requires tooling evaluation before custom generic Markdown checks."}
