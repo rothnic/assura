@@ -16,6 +16,7 @@ mod compiled_plan_artifact;
 mod configured_structure;
 mod custom_constraints;
 mod direct_contents;
+mod docs_lifecycle;
 #[cfg(all(feature = "yaml-config", feature = "json-output"))]
 pub mod fast_cli;
 mod ls_fast;

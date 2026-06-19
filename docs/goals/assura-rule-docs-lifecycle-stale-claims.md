@@ -215,3 +215,16 @@ historical exceptions.
   lifecycle/stale-claim detection. Result: valid with a narrowed first slice
   based on explicit lifecycle metadata, configured claim patterns, and evidence
   owners rather than broad natural-language inference.
+- 2026-06-19: Started implementation under Trellis task
+  `06-19-docs-lifecycle-rule-implementation`. Added config/runtime/compiled
+  docs-lifecycle policy support, independent tests, Assura dogfood policy,
+  support-policy documentation, and config-notation docs.
+- 2026-06-19: Implementation validation passed for the first reusable
+  `extensions.docs_lifecycles` slice: `cargo fmt --all -- --check`,
+  `cargo test --all-targets --quiet`,
+  `cargo clippy --all-targets --all-features -- -D warnings`,
+  `cargo xtask target-state`, `cargo run --quiet -- check --format json .`,
+  `cargo xtask evidence`, `cargo xtask docs`, and `git diff --check`.
+- 2026-06-19: Independent review found and closure-verified fixes for
+  historical exception claim preservation, token-bounded literal claim matching,
+  and expected-evidence diagnostics. Closure review passed PR readiness.

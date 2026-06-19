@@ -1,9 +1,10 @@
 use crate::config::config::{
-    CustomConstraintConfig, ExtensionConfig, ManifestSemanticsConfig,
-    ManifestSemanticsManifestConfig, RelationshipConstraintConfig, RelationshipProviderConfig,
-    ReleaseArtifactConfig, ReleaseContractConfig, SupportMatrixConfig, SupportMatrixEntryConfig,
-    TestRelationshipConfig, TestRelationshipFixtureFamilyConfig,
-    TestRelationshipIgnoredTestConfig, TestRelationshipSourceConfig, ModuleTopologyConfig,
+    CustomConstraintConfig, DocsLifecycleClaimPatternConfig, DocsLifecycleConfig, ExtensionConfig,
+    ManifestSemanticsConfig, ManifestSemanticsManifestConfig, ModuleTopologyConfig,
+    RelationshipConstraintConfig, RelationshipProviderConfig, ReleaseArtifactConfig,
+    ReleaseContractConfig, SupportMatrixConfig, SupportMatrixEntryConfig, TestRelationshipConfig,
+    TestRelationshipFixtureFamilyConfig, TestRelationshipIgnoredTestConfig,
+    TestRelationshipSourceConfig,
 };
 
 /// Binary-safe extension config stored inside compiled artifacts.
@@ -15,6 +16,7 @@ struct PortableExtensionConfig {
     manifest_semantics: Vec<PortableManifestSemanticsConfig>,
     test_relationships: Vec<PortableTestRelationshipConfig>,
     module_topologies: Vec<PortableModuleTopologyConfig>,
+    docs_lifecycles: Vec<PortableDocsLifecycleConfig>,
     relationships: Vec<PortableRelationshipConstraintConfig>,
 }
 
@@ -155,6 +157,7 @@ impl From<ExtensionConfig> for PortableExtensionConfig {
                 .collect(),
             test_relationships: config.test_relationships.into_iter().map(Into::into).collect(),
             module_topologies: config.module_topologies.into_iter().map(Into::into).collect(),
+            docs_lifecycles: config.docs_lifecycles.into_iter().map(Into::into).collect(),
             relationships: config.relationships.into_iter().map(Into::into).collect(),
         }
     }
@@ -185,6 +188,7 @@ impl From<PortableExtensionConfig> for ExtensionConfig {
                 .collect(),
             test_relationships: config.test_relationships.into_iter().map(Into::into).collect(),
             module_topologies: config.module_topologies.into_iter().map(Into::into).collect(),
+            docs_lifecycles: config.docs_lifecycles.into_iter().map(Into::into).collect(),
             relationships: config.relationships.into_iter().map(Into::into).collect(),
         }
     }

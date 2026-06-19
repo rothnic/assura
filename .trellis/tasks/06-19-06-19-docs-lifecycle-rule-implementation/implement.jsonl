@@ -1,0 +1,5 @@
+{"file": "docs/goals/assura-rule-docs-lifecycle-stale-claims.md", "reason": "Primary goal, first-slice scope, definition of done, and review criteria."}
+{"file": ".trellis/spec/assura/config-notation.md", "reason": "Config extension notation must follow existing explicit extension conventions."}
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "Roadmap routes this branch as the next implementation goal."}
+{"file": "docs/analysis/2026-06-09-assura-best-practice-target-state.md", "reason": "Target-state evidence defines the docs lifecycle/stale-claim detector gap."}
+{"file": "docs/analysis/evidence-and-review-policy.md", "reason": "Implementation must preserve evidence and review gate expectations."}

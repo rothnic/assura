@@ -176,6 +176,10 @@ extensions:
     - id: supported_surface_tests
       severity: high
       relationships:
+        - source: src/cli/check/docs_lifecycle.rs
+          required_tests:
+            - tests/docs_lifecycle_tests.rs
+            - crates/assura-check-cli/tests/compiled_docs_lifecycle_cli.rs
         - source: src/cli/check/module_topology.rs
           required_tests:
             - tests/module_topology_tests.rs
@@ -267,6 +271,29 @@ extensions:
             - src/validation
           public_exports:
             - validation
+  docs_lifecycles:
+    - id: active_goal_docs
+      severity: medium
+      active:
+        - .trellis/spec/assura/roadmap.md
+        - docs/goals/assura-rule-docs-lifecycle-stale-claims.md
+      historical:
+        - docs/archive/**
+      require_frontmatter_status:
+        - docs/goals/assura-rule-docs-lifecycle-stale-claims.md
+      allowed_statuses:
+        - planned
+        - active
+        - completed
+        - archived
+        - historical
+      claim_patterns:
+        - id: docs_lifecycle_goal
+          pattern: "docs-lifecycle"
+          evidence_files:
+            - docs/goals/assura-rule-docs-lifecycle-stale-claims.md
+      historical_exceptions:
+        - docs/archive/**
   support_matrices:
     - id: public_surface
       severity: high

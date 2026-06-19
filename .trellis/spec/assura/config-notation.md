@@ -499,6 +499,43 @@ must not appear as a public export in configured `rust_exports` files. Do not
 use it as a broad Rust parser, public API semver guarantee, or refactoring
 mandate.
 
+Docs lifecycle policies use `extensions.docs_lifecycles`:
+
+```yaml
+extensions:
+  docs_lifecycles:
+    - id: project_docs
+      severity: medium
+      active:
+        - docs/**/*.md
+        - website/src/content/docs/**/*.mdx
+      historical:
+        - docs/archive/**
+      require_frontmatter_status:
+        - docs/analysis/*.md
+        - docs/goals/*.md
+      allowed_statuses:
+        - active
+        - planned
+        - completed
+        - archived
+        - historical
+      claim_patterns:
+        - id: performance_current
+          pattern: "2x"
+          evidence_files:
+            - benches/history/current.json
+            - website/public/data/performance/current.json
+      historical_exceptions:
+        - docs/archive/**
+```
+
+Use this rule for explicit active/historical documentation boundaries, required
+frontmatter lifecycle status, historical-reference exceptions, and deterministic
+claim tokens that must have current evidence files. Claim patterns are literal
+tokens or glob-style token patterns. Do not use it as broad natural-language
+stale-prose detection or automatic archival.
+
 ## Relationship Boundary
 
 `extensions.custom_constraints` remains an experimental first-party execution

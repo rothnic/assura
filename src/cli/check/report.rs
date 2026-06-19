@@ -83,6 +83,9 @@ fn corrective_context_for_rule(rule: &str) -> &'static str {
     if rule.starts_with("module_topology:") {
         return "Classify the public module/export, fix the configured module root, or update extensions.module_topologies when module ownership changed.";
     }
+    if rule.starts_with("docs_lifecycle:") {
+        return "Add lifecycle metadata, declare current evidence for the claim, add an explicit historical exception, or update extensions.docs_lifecycles when docs policy changed.";
+    }
     if rule.starts_with("relationship:") {
         return "Create one of the expected counterpart/provider artifacts named in the relationship message, or update the declaring structure entry in .assura/config.yml.";
     }
