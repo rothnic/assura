@@ -152,3 +152,9 @@ as paused after the restore.
   with Node 24 to the Rust Test Suite job to make the existing test dependency
   explicit across Linux, macOS, and Windows. Hosted Windows proof is still
   required before completion.
+- 2026-06-19: The next PR #93 hosted Windows run confirmed Node setup was
+  present but the native LS-Lint golden helper still spawned `npm` directly;
+  Rust process spawning on Windows needs the command shim name `npm.cmd`.
+  Updated the helper to use `npm.cmd` on Windows and `npm` elsewhere while
+  preserving the pinned LS-Lint package install. Hosted Windows proof is still
+  required before completion.

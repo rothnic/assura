@@ -18,7 +18,7 @@ fn native_ls_lint_binary() -> &'static Path {
                 std::process::id()
             ));
             fs::create_dir_all(&install_dir).unwrap();
-            let status = Command::new("npm")
+            let status = Command::new(npm_command_name())
                 .current_dir(&install_dir)
                 .args([
                     "install",
@@ -41,6 +41,14 @@ fn native_ls_lint_binary() -> &'static Path {
             binary
         })
         .as_path()
+}
+
+fn npm_command_name() -> &'static str {
+    if cfg!(windows) {
+        "npm.cmd"
+    } else {
+        "npm"
+    }
 }
 
 fn native_ls_lint_binary_name() -> &'static str {
