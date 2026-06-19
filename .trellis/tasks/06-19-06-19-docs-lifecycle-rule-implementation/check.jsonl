@@ -1,5 +1,0 @@
-{"file": "docs/goals/assura-rule-docs-lifecycle-stale-claims.md", "reason": "Check implementation coverage against the goal definition of done and reviewer blocking criteria."}
-{"file": ".trellis/spec/assura/config-notation.md", "reason": "Check docs-lifecycle notation is documented consistently with other extensions."}
-{"file": ".trellis/spec/assura/roadmap.md", "reason": "Check roadmap status and next routing after implementation."}
-{"file": "docs/analysis/2026-06-09-assura-best-practice-target-state.md", "reason": "Check implementation advances the stated target-state detector gap without overclaiming."}
-{"file": "docs/analysis/evidence-and-review-policy.md", "reason": "Check local and hosted proof gates remain aligned with evidence policy."}
