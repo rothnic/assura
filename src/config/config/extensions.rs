@@ -253,9 +253,24 @@ pub struct SupportMatrixConfig {
     /// Rust source files whose public export families must be classified.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub rust_exports: Vec<String>,
+    /// Documentation files whose support-claim tables must match this matrix.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub docs_claim_sources: Vec<SupportMatrixDocsClaimSourceConfig>,
+    /// Manifest-semantics policy ids whose package and binary surfaces must be
+    /// classified by this matrix.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub manifest_policies: Vec<String>,
     /// Optional diagnostic severity.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub severity: Option<String>,
+}
+
+/// One documentation support-claim source for a support matrix.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub struct SupportMatrixDocsClaimSourceConfig {
+    /// Markdown file path relative to the project root.
+    pub path: String,
 }
 
 /// One classified public surface entry.

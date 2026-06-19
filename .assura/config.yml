@@ -191,6 +191,12 @@ extensions:
         - source: src/cli/check/support_matrix.rs
           required_tests:
             - tests/custom_constraints_tests.rs
+            - tests/support_matrix_expansion_tests.rs
+            - crates/assura-check-cli/tests/compiled_support_matrix_cli.rs
+        - source: src/cli/check/support_matrix_docs.rs
+          required_tests:
+            - tests/support_matrix_expansion_tests.rs
+            - crates/assura-check-cli/tests/compiled_support_matrix_cli.rs
         - source: src/cli/check/manifest_semantics.rs
           required_tests:
             - tests/custom_constraints_tests.rs
@@ -355,12 +361,30 @@ extensions:
         - .assura/command-surface.yml
       rust_exports:
         - src/lib.rs
+      docs_claim_sources:
+        - path: docs/compatibility-and-surface.md
+      manifest_policies:
+        - cargo_workspace
       entries:
         - surface: "command:assura"
           status: supported
         - surface: "command:assura check"
           status: supported
+        - surface: "command:assura check --format json"
+          status: supported
+        - surface: "command:assura check --format yaml"
+          status: supported
+        - surface: "command:assura check --format advice"
+          status: supported
+        - surface: "command:assura check --format status"
+          status: supported
+        - surface: "command:assura check --format agent"
+          status: supported
+        - surface: "command:assura check --format agent --agent codex"
+          status: supported
         - surface: "command:assura status"
+          status: supported
+        - surface: "command:assura status --format json"
           status: supported
         - surface: "command:assura init"
           status: supported
@@ -371,7 +395,7 @@ extensions:
         - surface: "command:assura info"
           status: experimental
         - surface: "command:assura performance-report"
-          status: experimental
+          status: supported
         - surface: "command:assura quality plan"
           status: supported
         - surface: "command:assura hooks"
@@ -399,6 +423,36 @@ extensions:
         - surface: "rust:maturity"
           status: internal
         - surface: "rust:validation"
+          status: internal
+        - surface: "package:assura"
+          status: supported
+        - surface: "package:assura-check-cli"
+          status: internal
+        - surface: "package:assura-stable-hash"
+          status: internal
+        - surface: "package:xtask"
+          status: internal
+        - surface: "binary:assura"
+          status: supported
+        - surface: "binary:assura-full"
+          status: internal
+        - surface: "binary:assura-check"
+          status: internal
+        - surface: "binary:assura-checkd"
+          status: internal
+        - surface: "binary:assura-check-client"
+          status: internal
+        - surface: "binary:assura-check-session"
+          status: internal
+        - surface: "binary:assura-check-unix-client"
+          status: internal
+        - surface: "binary:assura-check-status"
+          status: internal
+        - surface: "binary:assura-check-noop"
+          status: internal
+        - surface: "binary:assura-check-compiled"
+          status: internal
+        - surface: "binary:assura-check-compile-config"
           status: internal
   custom_constraints:
     - id: command_surface_docs

@@ -1,0 +1,8 @@
+{"file":"docs/goals/assura-rule-support-matrix-surface-expansion.md","reason":"Primary goal and proof gates for implementation."}
+{"file":"src/config/config/extensions.rs","reason":"Add support matrix config fields for docs and manifest sources."}
+{"file":"src/config/config/validation/support_matrices.rs","reason":"Validate new support matrix source fields and statuses."}
+{"file":"src/cli/check/support_matrix.rs","reason":"Runtime support matrix validation implementation."}
+{"file":"src/cli/check/compiled_artifact_extensions.rs","reason":"Keep compiled-config portability for new source fields."}
+{"file":"tests/custom_constraints_tests.rs","reason":"Focused runtime fixture coverage."}
+{"file":"crates/assura-check-cli/tests/compiled_support_matrix_cli.rs","reason":"Compiled artifact fixture coverage."}
+{"file":".assura/config.yml","reason":"Assura dogfood configuration for bounded sources."}

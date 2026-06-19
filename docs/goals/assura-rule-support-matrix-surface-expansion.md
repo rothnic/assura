@@ -169,3 +169,25 @@ coverage proves equivalence.
   PRs #84/#85 completed. Revalidated against current target-state evidence,
   completed support-matrix PR #61, completed manifest-semantics PR #64,
   completed test-relationship PR #68, and Goal 12 joined-matrix review.
+- 2026-06-19: Started implementation task
+  `.trellis/tasks/06-19-support-matrix-surface-expansion-implementation` on
+  branch `codex/support-matrix-surface-expansion`; revalidated current
+  `SupportMatrixConfig`, runtime support-matrix checks, manifest-semantics
+  boundaries, compiled artifact plumbing, and existing fixture coverage before
+  changing code.
+- 2026-06-19: Implemented first slice fields `docs_claim_sources` and
+  `manifest_policies`, using deterministic Markdown support tables and existing
+  `extensions.manifest_semantics` package/binary declarations. Added passing
+  and failing fixtures plus compiled-config coverage, updated notation/docs,
+  and dogfooded Assura with `docs/compatibility-and-surface.md` and
+  `cargo_workspace`. Focused checks passed:
+  `cargo test --test custom_constraints_tests check_support_matrix --quiet`,
+  `cargo test --test support_matrix_expansion_tests --quiet`,
+  `cargo test -p assura-check-cli --test compiled_support_matrix_cli --quiet`,
+  and `cargo run --quiet -- check --format json .`.
+- 2026-06-19: Independent review by Lorentz found no blockers and two low test
+  and diagnostic gaps. Addressed both by proving compiled docs and manifest
+  source preservation and including parsed docs-claim status in unclassified
+  diagnostics. Required validation passed after fixes: format check, all-target
+  tests, all-feature clippy, target-state, Assura JSON self-check, evidence,
+  docs, and diff whitespace gates.

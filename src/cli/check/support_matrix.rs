@@ -1,9 +1,10 @@
 //! Public surface support-matrix validation.
 
 use super::command_surface_docs::load_command_surface_contract;
+use super::support_matrix_docs::docs_claim_surfaces;
 use super::{CheckError, StructureCheckReport, StructureChecker, StructureViolation};
-use crate::config::config::SupportMatrixConfig;
-use std::collections::HashSet;
+use crate::config::config::{ManifestSemanticsConfig, SupportMatrixConfig};
+use std::collections::HashMap;
 use std::fs;
 use std::path::{Component, Path, PathBuf};
 
@@ -11,10 +12,11 @@ impl StructureChecker {
     pub(super) fn validate_support_matrices(
         &self,
         matrices: &[SupportMatrixConfig],
+        manifest_semantics: &[ManifestSemanticsConfig],
         report: &mut StructureCheckReport,
     ) -> Result<(), CheckError> {
         for matrix in matrices {
-            self.validate_support_matrix(matrix, report)?;
+            self.validate_support_matrix(matrix, manifest_semantics, report)?;
         }
         Ok(())
     }
@@ -22,13 +24,14 @@ impl StructureChecker {
     fn validate_support_matrix(
         &self,
         matrix: &SupportMatrixConfig,
+        manifest_semantics: &[ManifestSemanticsConfig],
         report: &mut StructureCheckReport,
     ) -> Result<(), CheckError> {
         let classified = matrix
             .entries
             .iter()
-            .map(|entry| entry.surface.as_str())
-            .collect::<HashSet<_>>();
+            .map(|entry| (entry.surface.as_str(), entry.status.as_str()))
+            .collect::<HashMap<_, _>>();
 
         for contract_path in &matrix.command_contracts {
             let rel = safe_support_matrix_path(contract_path)?;
@@ -48,7 +51,7 @@ impl StructureChecker {
             let contract = load_command_surface_contract(&path)?;
             for command in contract.commands {
                 let surface = format!("command:{}", command.name);
-                if !classified.contains(surface.as_str()) {
+                if !classified.contains_key(surface.as_str()) {
                     self.push_support_matrix_violation(
                         report,
                         matrix,
@@ -80,7 +83,7 @@ impl StructureChecker {
             }
             let content = fs::read_to_string(&path)?;
             for surface in rust_export_surfaces(&content) {
-                if !classified.contains(surface.as_str()) {
+                if !classified.contains_key(surface.as_str()) {
                     self.push_support_matrix_violation(
                         report,
                         matrix,
@@ -91,6 +94,106 @@ impl StructureChecker {
                             display_rel_path(&rel)
                         ),
                     );
+                }
+            }
+        }
+
+        for docs_claim_source in &matrix.docs_claim_sources {
+            let rel = safe_support_matrix_path(&docs_claim_source.path)?;
+            let path = self.project_root.join(&rel);
+            if !path.exists() {
+                self.push_support_matrix_violation(
+                    report,
+                    matrix,
+                    rel,
+                    format!(
+                        "Support matrix `{}` configured docs claim source `{}` does not exist",
+                        matrix.id, docs_claim_source.path
+                    ),
+                );
+                continue;
+            }
+            let content = fs::read_to_string(&path)?;
+            for claim in docs_claim_surfaces(&content) {
+                let Some(configured_status) = classified.get(claim.surface.as_str()) else {
+                    self.push_support_matrix_violation(
+                        report,
+                        matrix,
+                        rel.clone(),
+                        format!(
+                            "Support matrix `{}` does not classify docs support-claim surface `{}` claimed as `{}` from `{}`",
+                            matrix.id,
+                            claim.surface,
+                            claim.status,
+                            display_rel_path(&rel)
+                        ),
+                    );
+                    continue;
+                };
+                if claim.status == "supported" && *configured_status != "supported" {
+                    self.push_support_matrix_violation(
+                        report,
+                        matrix,
+                        rel.clone(),
+                        format!(
+                            "Support matrix `{}` classifies docs support-claim surface `{}` as `{}`, but `{}` says it is `supported`",
+                            matrix.id,
+                            claim.surface,
+                            configured_status,
+                            display_rel_path(&rel)
+                        ),
+                    );
+                }
+            }
+        }
+
+        let manifest_semantics_by_id = manifest_semantics
+            .iter()
+            .map(|policy| (policy.id.as_str(), policy))
+            .collect::<HashMap<_, _>>();
+        for manifest_policy_id in &matrix.manifest_policies {
+            let Some(manifest_policy) = manifest_semantics_by_id.get(manifest_policy_id.as_str())
+            else {
+                self.push_support_matrix_violation(
+                    report,
+                    matrix,
+                    PathBuf::from(".assura/config.yml"),
+                    format!(
+                        "Support matrix `{}` references unknown manifest semantics policy `{manifest_policy_id}`",
+                        matrix.id
+                    ),
+                );
+                continue;
+            };
+            for manifest in &manifest_policy.manifests {
+                let rel = safe_support_matrix_path(&manifest.path)?;
+                if let Some(package) = &manifest.package {
+                    let surface = format!("package:{package}");
+                    if !classified.contains_key(surface.as_str()) {
+                        self.push_support_matrix_violation(
+                            report,
+                            matrix,
+                            rel.clone(),
+                            format!(
+                                "Support matrix `{}` does not classify package surface `{surface}` from manifest policy `{manifest_policy_id}`",
+                                matrix.id
+                            ),
+                        );
+                    }
+                }
+                for binary in &manifest.binaries {
+                    let surface = format!("binary:{binary}");
+                    if !classified.contains_key(surface.as_str()) {
+                        self.push_support_matrix_violation(
+                            report,
+                            matrix,
+                            rel.clone(),
+                            format!(
+                                "Support matrix `{}` does not classify binary surface `{surface}` from manifest policy `{manifest_policy_id}`",
+                                matrix.id
+                            ),
+                        );
+                    }
                 }
             }
         }

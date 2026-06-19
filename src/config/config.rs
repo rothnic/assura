@@ -32,9 +32,9 @@ pub use extensions::{
     DocsLifecycleClaimPatternConfig, DocsLifecycleConfig, ExtensionConfig, ManifestSemanticsConfig,
     ManifestSemanticsManifestConfig, ModuleTopologyConfig, ModuleTopologyModuleConfig,
     RelationshipConstraintConfig, RelationshipProviderConfig, ReleaseArtifactConfig,
-    ReleaseContractConfig, SupportMatrixConfig, SupportMatrixEntryConfig, TestRelationshipConfig,
-    TestRelationshipFixtureFamilyConfig, TestRelationshipIgnoredTestConfig,
-    TestRelationshipSourceConfig,
+    ReleaseContractConfig, SupportMatrixConfig, SupportMatrixDocsClaimSourceConfig,
+    SupportMatrixEntryConfig, TestRelationshipConfig, TestRelationshipFixtureFamilyConfig,
+    TestRelationshipIgnoredTestConfig, TestRelationshipSourceConfig,
 };
 pub use quality::{QualityConfig, QualityScopeConfig};
 #[cfg(feature = "yaml-config")]

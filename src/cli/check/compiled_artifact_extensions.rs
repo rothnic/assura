@@ -2,9 +2,9 @@ use crate::config::config::{
     CustomConstraintConfig, DocsLifecycleClaimPatternConfig, DocsLifecycleConfig, ExtensionConfig,
     ManifestSemanticsConfig, ManifestSemanticsManifestConfig, ModuleTopologyConfig,
     RelationshipConstraintConfig, RelationshipProviderConfig, ReleaseArtifactConfig,
-    ReleaseContractConfig, SupportMatrixConfig, SupportMatrixEntryConfig, TestRelationshipConfig,
-    TestRelationshipFixtureFamilyConfig, TestRelationshipIgnoredTestConfig,
-    TestRelationshipSourceConfig,
+    ReleaseContractConfig, SupportMatrixConfig, SupportMatrixEntryConfig,
+    SupportMatrixDocsClaimSourceConfig, TestRelationshipConfig, TestRelationshipFixtureFamilyConfig,
+    TestRelationshipIgnoredTestConfig, TestRelationshipSourceConfig,
 };
 
 /// Binary-safe extension config stored inside compiled artifacts.
@@ -49,16 +49,12 @@ struct PortableReleaseArtifactConfig {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 struct PortableSupportMatrixConfig {
     id: String,
-    entries: Vec<PortableSupportMatrixEntryConfig>,
+    entries: Vec<SupportMatrixEntryConfig>,
     command_contracts: Vec<String>,
     rust_exports: Vec<String>,
+    docs_claim_sources: Vec<SupportMatrixDocsClaimSourceConfig>,
+    manifest_policies: Vec<String>,
     severity: Option<String>,
-}
-
-#[derive(Clone, Debug, Deserialize, Serialize)]
-struct PortableSupportMatrixEntryConfig {
-    surface: String,
-    status: String,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -268,9 +264,11 @@ impl From<SupportMatrixConfig> for PortableSupportMatrixConfig {
     fn from(config: SupportMatrixConfig) -> Self {
         Self {
             id: config.id,
-            entries: config.entries.into_iter().map(Into::into).collect(),
+            entries: config.entries,
             command_contracts: config.command_contracts,
             rust_exports: config.rust_exports,
+            docs_claim_sources: config.docs_claim_sources,
+            manifest_policies: config.manifest_policies,
             severity: config.severity,
         }
     }
@@ -280,28 +278,12 @@ impl From<PortableSupportMatrixConfig> for SupportMatrixConfig {
     fn from(config: PortableSupportMatrixConfig) -> Self {
         Self {
             id: config.id,
-            entries: config.entries.into_iter().map(Into::into).collect(),
+            entries: config.entries,
             command_contracts: config.command_contracts,
             rust_exports: config.rust_exports,
+            docs_claim_sources: config.docs_claim_sources,
+            manifest_policies: config.manifest_policies,
             severity: config.severity,
-        }
-    }
-}
-
-impl From<SupportMatrixEntryConfig> for PortableSupportMatrixEntryConfig {
-    fn from(config: SupportMatrixEntryConfig) -> Self {
-        Self {
-            surface: config.surface,
-            status: config.status,
-        }
-    }
-}
-
-impl From<PortableSupportMatrixEntryConfig> for SupportMatrixEntryConfig {
-    fn from(config: PortableSupportMatrixEntryConfig) -> Self {
-        Self {
-            surface: config.surface,
-            status: config.status,
         }
     }
 }
