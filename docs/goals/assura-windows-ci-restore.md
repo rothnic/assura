@@ -145,3 +145,10 @@ as paused after the restore.
   produced CRLF. Normalized that test readback while keeping the pinned
   revision and cache-materialization coverage. Hosted Windows proof is still
   required before completion.
+- 2026-06-19: The following PR #93 hosted Windows run passed the external
+  fixture readback assertion and failed later in the native LS-Lint golden tests
+  because the restored Test Suite matrix did not install Node/npm before tests
+  that intentionally install the pinned LS-Lint package. Added `setup-node`
+  with Node 24 to the Rust Test Suite job to make the existing test dependency
+  explicit across Linux, macOS, and Windows. Hosted Windows proof is still
+  required before completion.
