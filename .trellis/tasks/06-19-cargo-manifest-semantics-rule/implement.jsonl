@@ -1,3 +1,0 @@
-{"file": ".trellis/spec/assura/roadmap.md", "reason": "Current roadmap must route the next candidate after public surface matrix completion."}
-{"file": "docs/analysis/2026-06-09-assura-best-practice-target-state.md", "reason": "Target-state backlog identifies manifest semantics as a remaining P0 detector."}
-{"file": "docs/goals/assura-rule-cargo-manifest-semantics.md", "reason": "Candidate goal that needs revalidation and first-slice proof gates."}
