@@ -1,0 +1,5 @@
+{"file":"docs/goals/assura-rule-release-sync.md","reason":"Candidate release-sync rule goal to revalidate against current target-state checks."}
+{"file":".trellis/spec/assura/roadmap.md","reason":"Current roadmap routes the next candidate to release-sync rule validation."}
+{"file":"docs/goals/assura-goal-13-performance-and-release-evidence-governance.md","reason":"Goal 13 completion context for release/performance target-state checks."}
+{"file":"docs/analysis/2026-06-19-goal-13-release-performance-review.md","reason":"Review artifact documenting current release/performance evidence boundaries."}
+{"file":".agents/skills/assura-goal-validation/SKILL.md","reason":"Project workflow for revalidating stale or separate-context goals."}
