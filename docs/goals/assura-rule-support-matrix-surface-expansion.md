@@ -169,3 +169,9 @@ coverage proves equivalence.
   PRs #84/#85 completed. Revalidated against current target-state evidence,
   completed support-matrix PR #61, completed manifest-semantics PR #64,
   completed test-relationship PR #68, and Goal 12 joined-matrix review.
+- 2026-06-19: Started implementation task
+  `.trellis/tasks/06-19-support-matrix-surface-expansion-implementation` on
+  branch `codex/support-matrix-surface-expansion`; revalidated current
+  `SupportMatrixConfig`, runtime support-matrix checks, manifest-semantics
+  boundaries, compiled artifact plumbing, and existing fixture coverage before
+  changing code.

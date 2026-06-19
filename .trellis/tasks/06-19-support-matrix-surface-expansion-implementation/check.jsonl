@@ -1,0 +1,6 @@
+{"file":"src/cli/check/support_matrix.rs","reason":"Check bounded parsing, diagnostics, and no command/Rust regression."}
+{"file":"src/config/config/extensions.rs","reason":"Check config fields remain explicit and backwards-compatible."}
+{"file":"tests/custom_constraints_tests.rs","reason":"Check passing/failing docs and manifest cases."}
+{"file":"crates/assura-check-cli/tests/compiled_support_matrix_cli.rs","reason":"Check compiled artifact support for new fields."}
+{"file":".assura/config.yml","reason":"Check self-dogfood sources are explicit and current."}
+{"file":"docs/goals/assura-rule-support-matrix-surface-expansion.md","reason":"Check progress/completion log and validation evidence."}
