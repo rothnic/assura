@@ -204,7 +204,9 @@ fn first_time_package_project_config_reports_missing_doc_provider() {
         violation.rule.starts_with("relationship:captured-doc-"),
         "{violation:#?}"
     );
-    assert!(violation.message.contains("doc"));
+    assert!(violation.message.contains("provider kind 'doc'"));
+    assert!(violation.message.contains("packages/{package}"));
+    assert!(violation.message.contains("docs/packages/{package}.md"));
 }
 
 #[test]
@@ -250,7 +252,12 @@ fn captured_counterpart_reports_missing_test_file() {
     let violation = &report.violations[0];
     assert_eq!(violation.path, PathBuf::from("src/components/Button.tsx"));
     assert_eq!(violation.rule, "relationship:captured-counterpart-1");
-    assert!(violation.message.contains("counterpart-1"));
+    assert!(violation.message.contains("missing counterpart"));
+    assert!(violation.message.contains("src/components/{component}.tsx"));
+    assert!(violation.message.contains("src/components/Button.test.tsx"));
+    assert!(violation
+        .message
+        .contains("src/components/{component}.test.tsx"));
 }
 
 #[test]
@@ -312,6 +319,29 @@ fn package_doc_relationship_passes_with_dedicated_doc_file() {
 }
 
 #[test]
+fn package_doc_relationship_passes_when_file_and_section_providers_overlap() {
+    let project = TempDir::new().unwrap();
+    write_config(&project, package_doc_config());
+    fs::create_dir_all(project.path().join("packages/core")).unwrap();
+    fs::create_dir_all(project.path().join("docs/packages")).unwrap();
+    fs::write(
+        project.path().join("docs/packages/core.md"),
+        "# Core package\n",
+    )
+    .unwrap();
+    fs::write(
+        project.path().join("docs/packages.md"),
+        "# Packages\n\n## core\n",
+    )
+    .unwrap();
+
+    let report = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+
+    assert!(report.success, "{:#?}", report.violations);
+    assert!(report.violations.is_empty());
+}
+
+#[test]
 fn package_doc_relationship_reports_missing_doc_provider() {
     let project = TempDir::new().unwrap();
     write_config(&project, package_doc_config());
@@ -324,5 +354,42 @@ fn package_doc_relationship_reports_missing_doc_provider() {
     let violation = &report.violations[0];
     assert_eq!(violation.path, PathBuf::from("packages/core"));
     assert_eq!(violation.rule, "relationship:captured-doc-1");
-    assert!(violation.message.contains("doc"));
+    assert!(violation.message.contains("provider kind 'doc'"));
+    assert!(violation.message.contains("packages/{package}"));
+    assert!(violation.message.contains("docs/packages/core.md"));
+    assert!(violation.message.contains("docs/packages.md#core"));
+    assert!(violation.message.contains("docs/packages/{package}.md"));
+    assert!(violation.message.contains("docs/packages.md"));
+}
+
+#[test]
+fn same_name_captures_in_separate_scopes_do_not_cross_require_counterparts() {
+    let project = TempDir::new().unwrap();
+    write_config(
+        &project,
+        r#"
+structure:
+  ./:
+    extra: true
+  src/components/:
+    "{name}.tsx": {}
+    "{name}.test.tsx": exists:1
+  src/hooks/:
+    "{name}.ts": {}
+    "{name}.test.ts": exists:1
+exclude:
+  - target/**
+"#,
+    );
+    fs::create_dir_all(project.path().join("src/components")).unwrap();
+    fs::create_dir_all(project.path().join("src/hooks")).unwrap();
+    fs::write(project.path().join("src/components/Button.tsx"), "").unwrap();
+    fs::write(project.path().join("src/components/Button.test.tsx"), "").unwrap();
+    fs::write(project.path().join("src/hooks/use-data.ts"), "").unwrap();
+    fs::write(project.path().join("src/hooks/use-data.test.ts"), "").unwrap();
+
+    let report = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+
+    assert!(report.success, "{:#?}", report.violations);
+    assert!(report.violations.is_empty());
 }

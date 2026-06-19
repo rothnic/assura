@@ -68,6 +68,9 @@ fn corrective_context_for_rule(rule: &str) -> &'static str {
     if rule.starts_with("custom:") {
         return "Fix the configured custom constraint target, or update extensions.custom_constraints in .assura/config.yml when the project policy changed.";
     }
+    if rule.starts_with("relationship:") {
+        return "Create one of the expected counterpart/provider artifacts named in the relationship message, or update the declaring structure entry in .assura/config.yml.";
+    }
 
     match rule {
         "file_naming" => {

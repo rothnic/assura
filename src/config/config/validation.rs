@@ -201,6 +201,15 @@ fn validate_relationship_constraint(
     validate_identifier(&relationship.id, &format!("{context}.id"))?;
     validate_identifier(&relationship.need, &format!("{context}.need"))?;
     validate_relative_path_text(&relationship.source, &format!("{context}.source"))?;
+    if relationship
+        .source_declaration
+        .as_ref()
+        .is_some_and(|source_declaration| source_declaration.trim().is_empty())
+    {
+        return Err(format!(
+            "{context}.source_declaration: value must not be empty"
+        ));
+    }
     if relationship.providers.is_empty() {
         return Err(format!(
             "{context}.providers: at least one provider is required"
@@ -215,6 +224,22 @@ fn validate_relationship_constraint(
         {
             return Err(format!(
                 "{context}.providers.section: value must not be empty"
+            ));
+        }
+        if provider
+            .kind
+            .as_ref()
+            .is_some_and(|kind| kind.trim().is_empty())
+        {
+            return Err(format!("{context}.providers.kind: value must not be empty"));
+        }
+        if provider
+            .declaration
+            .as_ref()
+            .is_some_and(|declaration| declaration.trim().is_empty())
+        {
+            return Err(format!(
+                "{context}.providers.declaration: value must not be empty"
             ));
         }
     }

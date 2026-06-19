@@ -35,7 +35,7 @@ fn record_relationship_metadata(
         .unwrap_or_default();
 
     if !captures.is_empty() {
-        if exists.is_none() || !needs.is_empty() {
+        if (exists.is_none() && provides.is_empty()) || !needs.is_empty() {
             relationships.push(RelationshipSpec::implicit_producer(path, captures.clone()));
         }
         for need in needs {
@@ -143,19 +143,56 @@ fn compile_relationship_specs(specs: Vec<RelationshipSpec>) -> Result<Vec<Value>
 
     let mut output = Vec::new();
     let mut index = 0usize;
-    for counterpart in counterparts {
-        for producer in producers.iter().copied() {
-            if producer.path == counterpart.path || producer.captures != counterpart.captures {
-                continue;
-            }
-            index += 1;
-            output.push(relationship_value(
-                &format!("captured-counterpart-{index}"),
-                &producer.path,
-                &format!("counterpart-{index}"),
-                vec![provider_value(&counterpart.path, None)],
+    for producer in &producers {
+        let candidates = counterparts
+            .iter()
+            .copied()
+            .filter(|counterpart| {
+                producer.path != counterpart.path
+                    && producer.captures == counterpart.captures
+                    && !is_nested_structure_requirement(&producer.path, &counterpart.path)
+            })
+            .collect::<Vec<_>>();
+        if candidates.is_empty() {
+            continue;
+        }
+
+        let same_scope = candidates
+            .iter()
+            .copied()
+            .filter(|counterpart| parent_scope(&producer.path) == parent_scope(&counterpart.path))
+            .collect::<Vec<_>>();
+        let selected = if same_scope.is_empty() {
+            candidates
+        } else {
+            same_scope
+        };
+        if selected.len() > 1 {
+            return Err(format!(
+                "Assura config relationship source '{}' has ambiguous captured counterparts: {}",
+                producer.path,
+                selected
+                    .iter()
+                    .map(|counterpart| format!("'{}'", counterpart.path))
+                    .collect::<Vec<_>>()
+                    .join(", ")
             ));
         }
+
+        let counterpart = selected[0];
+        index += 1;
+        output.push(relationship_value(
+            &format!("captured-counterpart-{index}"),
+            &producer.path,
+            Some(&producer.path),
+            &format!("counterpart-{index}"),
+            vec![provider_value(
+                &counterpart.path,
+                None,
+                "counterpart",
+                Some(&counterpart.path),
+            )],
+        ));
     }
 
     for (need_source, need) in needs {
@@ -164,7 +201,14 @@ fn compile_relationship_specs(specs: Vec<RelationshipSpec>) -> Result<Vec<Value>
             .filter(|(provider, provided)| {
                 *provided == need && provider.captures == need_source.captures
             })
-            .map(|(provider, _)| provider_value(&provider.path, provider.section.as_deref()))
+            .map(|(provider, _)| {
+                provider_value(
+                    &provider.path,
+                    provider.section.as_deref(),
+                    provider_kind(provider),
+                    Some(&provider.path),
+                )
+            })
             .collect::<Vec<_>>();
         if alternatives.is_empty() {
             return Err(format!(
@@ -172,10 +216,12 @@ fn compile_relationship_specs(specs: Vec<RelationshipSpec>) -> Result<Vec<Value>
                 need_source.path
             ));
         }
+        reject_duplicate_providers(need_source.path.as_str(), need, &alternatives)?;
         index += 1;
         output.push(relationship_value(
             &format!("captured-{need}-{index}"),
             &need_source.path,
+            Some(&need_source.path),
             need,
             alternatives,
         ));
@@ -184,22 +230,125 @@ fn compile_relationship_specs(specs: Vec<RelationshipSpec>) -> Result<Vec<Value>
     Ok(output)
 }
 
-fn relationship_value(id: &str, source: &str, need: &str, providers: Vec<Value>) -> Value {
+fn relationship_value(
+    id: &str,
+    source: &str,
+    source_declaration: Option<&str>,
+    need: &str,
+    providers: Vec<Value>,
+) -> Value {
     let mut mapping = Mapping::new();
     mapping.insert(string_value("id"), Value::String(id.to_string()));
     mapping.insert(string_value("source"), Value::String(source.to_string()));
+    if let Some(source_declaration) = source_declaration {
+        mapping.insert(
+            string_value("source_declaration"),
+            Value::String(source_declaration.to_string()),
+        );
+    }
     mapping.insert(string_value("need"), Value::String(need.to_string()));
     mapping.insert(string_value("providers"), Value::Sequence(providers));
     Value::Mapping(mapping)
 }
 
-fn provider_value(path: &str, section: Option<&str>) -> Value {
+fn provider_value(
+    path: &str,
+    section: Option<&str>,
+    kind: &str,
+    declaration: Option<&str>,
+) -> Value {
     let mut mapping = Mapping::new();
     mapping.insert(string_value("path"), Value::String(path.to_string()));
     if let Some(section) = section {
         mapping.insert(string_value("section"), Value::String(section.to_string()));
     }
+    mapping.insert(string_value("kind"), Value::String(kind.to_string()));
+    if let Some(declaration) = declaration {
+        mapping.insert(
+            string_value("declaration"),
+            Value::String(declaration.to_string()),
+        );
+    }
     Value::Mapping(mapping)
+}
+
+fn provider_kind(provider: &RelationshipSpec) -> &'static str {
+    if provider.section.is_some() {
+        "section"
+    } else {
+        "file"
+    }
+}
+
+fn reject_duplicate_providers(
+    source: &str,
+    need: &str,
+    alternatives: &[Value],
+) -> Result<(), String> {
+    let mut seen = BTreeSet::new();
+    for alternative in alternatives {
+        let Value::Mapping(mapping) = alternative else {
+            continue;
+        };
+        let path = mapping
+            .get(string_value("path"))
+            .and_then(Value::as_str)
+            .unwrap_or_default();
+        let section = mapping
+            .get(string_value("section"))
+            .and_then(Value::as_str)
+            .unwrap_or_default();
+        let kind = mapping
+            .get(string_value("kind"))
+            .and_then(Value::as_str)
+            .unwrap_or_default();
+        if !seen.insert((path.to_string(), section.to_string(), kind.to_string())) {
+            return Err(format!(
+                "Assura config relationship need '{need}' at '{source}' has ambiguous duplicate provider '{path}'"
+            ));
+        }
+    }
+    Ok(())
+}
+
+fn parent_scope(path: &str) -> &str {
+    let path = path.trim_end_matches('/');
+    path.rsplit_once('/').map_or("", |(parent, _)| parent)
+}
+
+fn is_nested_structure_requirement(producer_path: &str, counterpart_path: &str) -> bool {
+    let producer_path = producer_path.trim_end_matches('/');
+    let counterpart_path = counterpart_path.trim_end_matches('/');
+    counterpart_path
+        .strip_prefix(producer_path)
+        .is_some_and(|suffix| suffix.starts_with('/'))
+}
+
+#[cfg(test)]
+mod relationship_helper_tests {
+    use super::*;
+
+    #[test]
+    fn parent_scope_ignores_trailing_slash() {
+        assert_eq!(parent_scope("packages/{package}/"), "packages");
+        assert_eq!(parent_scope("packages/{package}"), "packages");
+    }
+
+    #[test]
+    fn nested_structure_requirement_ignores_trailing_slash() {
+        assert!(is_nested_structure_requirement(
+            "packages/{package}/",
+            "packages/{package}/README.md"
+        ));
+        assert!(is_nested_structure_requirement(
+            "packages/{package}",
+            "packages/{package}/README.md/"
+        ));
+        assert!(!is_nested_structure_requirement(
+            "packages/{package}/",
+            "packages/{package}-docs/README.md"
+        ));
+    }
 }
 
 #[derive(Debug, Clone)]

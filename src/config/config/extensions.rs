@@ -42,6 +42,9 @@ pub struct RelationshipConstraintConfig {
     pub id: String,
     /// Source path pattern with named captures, relative to the project root.
     pub source: String,
+    /// Structure entry that declared the source side of this relationship.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub source_declaration: Option<String>,
     /// Logical relationship name, such as `doc` or a generated counterpart id.
     pub need: String,
     /// Provider alternatives that can satisfy the need.
@@ -61,6 +64,12 @@ pub struct RelationshipProviderConfig {
     /// Optional Markdown heading text template inside the provider path.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub section: Option<String>,
+    /// Human-readable provider kind used in diagnostics.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub kind: Option<String>,
+    /// Structure entry that declared this provider alternative.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub declaration: Option<String>,
 }
 
 /// Checked command-surface contract loaded by the `command_surface_docs`

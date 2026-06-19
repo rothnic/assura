@@ -69,10 +69,22 @@ structure:
     assert_eq!(relationships.len(), 1);
     let relationship = &relationships[0];
     assert_eq!(relationship.source, "src/components/{component}.tsx");
+    assert_eq!(
+        relationship.source_declaration.as_deref(),
+        Some("src/components/{component}.tsx")
+    );
     assert_eq!(relationship.providers.len(), 1);
     assert_eq!(
         relationship.providers[0].path,
         "src/components/{component}.test.tsx"
+    );
+    assert_eq!(
+        relationship.providers[0].kind.as_deref(),
+        Some("counterpart")
+    );
+    assert_eq!(
+        relationship.providers[0].declaration.as_deref(),
+        Some("src/components/{component}.test.tsx")
     );
 }
 
@@ -102,14 +114,99 @@ structure:
     assert_eq!(relationships.len(), 1);
     let relationship = &relationships[0];
     assert_eq!(relationship.source, "packages/{package}");
+    assert_eq!(
+        relationship.source_declaration.as_deref(),
+        Some("packages/{package}")
+    );
     assert_eq!(relationship.need, "doc");
     assert_eq!(relationship.providers.len(), 2);
     assert!(relationship.providers.iter().any(|provider| {
-        provider.path == "docs/packages/{package}.md" && provider.section.is_none()
+        provider.path == "docs/packages/{package}.md"
+            && provider.section.is_none()
+            && provider.kind.as_deref() == Some("file")
+            && provider.declaration.as_deref() == Some("docs/packages/{package}.md")
     }));
     assert!(relationship.providers.iter().any(|provider| {
-        provider.path == "docs/packages.md" && provider.section.as_deref() == Some("{package}")
+        provider.path == "docs/packages.md"
+            && provider.section.as_deref() == Some("{package}")
+            && provider.kind.as_deref() == Some("section")
+            && provider.declaration.as_deref() == Some("docs/packages.md")
     }));
+}
+
+#[test]
+fn same_named_captures_in_separate_scopes_pair_with_local_counterparts() {
+    let config = parse_config(
+        r#"
+structure:
+  src/components/:
+    "{name}.tsx": {}
+    "{name}.test.tsx": exists:1
+  src/hooks/:
+    "{name}.ts": {}
+    "{name}.test.ts": exists:1
+"#,
+    )
+    .unwrap();
+
+    let relationships = &config.extensions.unwrap().relationships;
+    assert_eq!(relationships.len(), 2);
+    assert!(relationships.iter().any(|relationship| {
+        relationship.source == "src/components/{name}.tsx"
+            && relationship.providers.len() == 1
+            && relationship.providers[0].path == "src/components/{name}.test.tsx"
+    }));
+    assert!(relationships.iter().any(|relationship| {
+        relationship.source == "src/hooks/{name}.ts"
+            && relationship.providers.len() == 1
+            && relationship.providers[0].path == "src/hooks/{name}.test.ts"
+    }));
+}
+
+#[test]
+fn provider_only_captured_entries_do_not_become_counterpart_producers() {
+    let config = parse_config(
+        r#"
+structure:
+  docs/packages/:
+    "{package}.md":
+      provides: doc
+    "{package}.review.md": exists:1
+"#,
+    )
+    .unwrap();
+
+    let relationships_are_empty = match config.extensions.as_ref() {
+        Some(extensions) => extensions.relationships.is_empty(),
+        None => true,
+    };
+    assert!(
+        relationships_are_empty,
+        "provider-only captured entries should not produce counterpart relationships: {:#?}",
+        config.extensions
+    );
+}
+
+#[test]
+fn ambiguous_captured_counterparts_are_rejected() {
+    let error = parse_config(
+        r#"
+structure:
+  src/:
+    "{name}.rs": {}
+  tests/:
+    "{name}_test.rs": exists:1
+  docs/:
+    "{name}.md": exists:1
+"#,
+    )
+    .unwrap_err()
+    .to_string();
+
+    assert!(
+        error.contains("ambiguous captured counterparts"),
+        "unexpected error: {error}"
+    );
 }
 
 #[test]
@@ -203,6 +300,30 @@ structure:
     assert_eq!(
         relationship.providers[0].section.as_deref(),
         Some("{package}")
+    );
+}
+
+#[test]
+fn duplicate_provider_declarations_are_rejected_as_ambiguous() {
+    let error = parse_config(
+        r#"
+structure:
+  packages/:
+    "{package}/":
+      needs: doc
+  docs/packages/:
+    "{package}.md":
+      provides:
+        - doc
+        - doc
+"#,
+    )
+    .unwrap_err()
+    .to_string();
+
+    assert!(
+        error.contains("ambiguous duplicate provider"),
+        "unexpected error: {error}"
     );
 }
 
