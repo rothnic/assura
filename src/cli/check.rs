@@ -34,6 +34,7 @@ mod patterns;
 mod prepared;
 #[cfg(feature = "yaml-config")]
 mod profiling;
+mod release_contract;
 mod report;
 mod rule_plan;
 mod rules;

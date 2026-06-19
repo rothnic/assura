@@ -30,6 +30,7 @@ pub use bundles::{
 pub use extensions::{
     CommandSurfaceCommand, CommandSurfaceContract, CommandSurfaceFlag, CustomConstraintConfig,
     ExtensionConfig, RelationshipConstraintConfig, RelationshipProviderConfig,
+    ReleaseArtifactConfig, ReleaseContractConfig,
 };
 pub use quality::{QualityConfig, QualityScopeConfig};
 #[cfg(feature = "yaml-config")]

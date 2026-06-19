@@ -1,8 +1,13 @@
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+use std::process::Command;
 
 use assura::cli::run_structure_check;
 use tempfile::TempDir;
+
+fn assura_bin() -> &'static str {
+    env!("CARGO_BIN_EXE_assura")
+}
 
 fn write_config(project: &TempDir, config: &str) {
     let assura_dir = project.path().join(".assura");
@@ -73,6 +78,49 @@ commands:
 "#,
     )
     .unwrap();
+}
+
+fn release_contract_config() -> &'static str {
+    r#"
+extensions:
+  release_contracts:
+    - id: cli_release
+      severity: high
+      artifacts:
+        - name: example-linux-x86_64.tar.gz
+          checksum_sidecar: true
+        - name: example-darwin-aarch64.tar.gz
+          checksum_sidecar: true
+      workflow_files:
+        - .github/workflows/release.yml
+      docs_files:
+        - docs/install.md
+      installer_files:
+        - scripts/install.sh
+      allowed_url_branches:
+        - main
+structure:
+  ./:
+    files:
+      allow_extra: true
+    directories:
+      allow_extra: true
+exclude:
+  - target/**
+"#
+}
+
+fn write_release_contract_files(project: &TempDir, workflow: &str, docs: &str, installer: &str) {
+    fs::create_dir_all(project.path().join(".github/workflows")).unwrap();
+    fs::create_dir_all(project.path().join("docs")).unwrap();
+    fs::create_dir_all(project.path().join("scripts")).unwrap();
+    fs::write(
+        project.path().join(".github/workflows/release.yml"),
+        workflow,
+    )
+    .unwrap();
+    fs::write(project.path().join("docs/install.md"), docs).unwrap();
+    fs::write(project.path().join("scripts/install.sh"), installer).unwrap();
 }
 
 #[test]
@@ -324,5 +372,192 @@ commands:
     assert!(
         error.contains("collides") || error.contains("duplicate flag"),
         "unexpected error: {error}"
+    );
+}
+
+#[test]
+fn check_release_contract_passes_when_workflow_docs_and_installer_match() {
+    let project = TempDir::new().unwrap();
+    write_config(&project, release_contract_config());
+    write_release_contract_files(
+        &project,
+        r#"
+name: release
+jobs:
+  build:
+    strategy:
+      matrix:
+        asset:
+          - example-linux-x86_64.tar.gz
+          - example-linux-x86_64.tar.gz.sha256
+          - example-darwin-aarch64.tar.gz
+          - example-darwin-aarch64.tar.gz.sha256
+"#,
+        "Download example-linux-x86_64.tar.gz and verify example-linux-x86_64.tar.gz.sha256. Download example-darwin-aarch64.tar.gz and verify example-darwin-aarch64.tar.gz.sha256.\n",
+        r#"#!/bin/sh
+curl -L https://raw.githubusercontent.com/example/project/main/releases/example-linux-x86_64.tar.gz
+curl -L https://raw.githubusercontent.com/example/project/main/releases/example-linux-x86_64.tar.gz.sha256
+"#,
+    );
+
+    let report = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+
+    assert!(report.success, "{:#?}", report.violations);
+    assert!(report.violations.is_empty());
+}
+
+#[test]
+fn check_release_contract_reports_documented_asset_outside_contract() {
+    let project = TempDir::new().unwrap();
+    write_config(&project, release_contract_config());
+    write_release_contract_files(
+        &project,
+        r#"
+uploads:
+  - example-linux-x86_64.tar.gz
+  - example-linux-x86_64.tar.gz.sha256
+  - example-darwin-aarch64.tar.gz
+  - example-darwin-aarch64.tar.gz.sha256
+"#,
+        "Download example-linux-x86_64.tar.gz, example-darwin-aarch64.tar.gz, and example-windows-x86_64.zip.\nVerify example-linux-x86_64.tar.gz.sha256 and example-darwin-aarch64.tar.gz.sha256.\n",
+        r#"#!/bin/sh
+curl -L https://raw.githubusercontent.com/example/project/main/releases/example-linux-x86_64.tar.gz
+"#,
+    );
+
+    let report = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+
+    assert!(!report.success);
+    assert!(
+        report.violations.iter().any(|violation| {
+            violation.path == Path::new("docs/install.md")
+                && violation.rule == "release_contract:cli_release"
+                && violation.severity == "high"
+                && violation.message.contains("example-windows-x86_64.zip")
+        }),
+        "{:#?}",
+        report.violations
+    );
+}
+
+#[test]
+fn check_release_contract_reports_installer_url_branch_and_asset_drift() {
+    let project = TempDir::new().unwrap();
+    write_config(&project, release_contract_config());
+    write_release_contract_files(
+        &project,
+        r#"
+uploads:
+  - example-linux-x86_64.tar.gz
+  - example-linux-x86_64.tar.gz.sha256
+  - example-darwin-aarch64.tar.gz
+  - example-darwin-aarch64.tar.gz.sha256
+"#,
+        "Download example-linux-x86_64.tar.gz and example-darwin-aarch64.tar.gz. Verify example-linux-x86_64.tar.gz.sha256 and example-darwin-aarch64.tar.gz.sha256.\n",
+        r#"#!/bin/sh
+curl -L https://raw.githubusercontent.com/example/project/dev/releases/example-freebsd-x86_64.tar.gz
+"#,
+    );
+
+    let report = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+
+    assert!(!report.success);
+    let messages = report
+        .violations
+        .iter()
+        .map(|violation| violation.message.as_str())
+        .collect::<Vec<_>>();
+    assert!(
+        messages
+            .iter()
+            .any(|message| message.contains("branch `dev`")),
+        "{messages:#?}"
+    );
+    assert!(
+        messages
+            .iter()
+            .any(|message| message.contains("example-freebsd-x86_64.tar.gz")),
+        "{messages:#?}"
+    );
+}
+
+#[test]
+fn check_release_contract_reports_missing_workflow_checksum_sidecar() {
+    let project = TempDir::new().unwrap();
+    write_config(&project, release_contract_config());
+    write_release_contract_files(
+        &project,
+        r#"
+uploads:
+  - example-linux-x86_64.tar.gz
+  - example-linux-x86_64.tar.gz.sha256
+  - example-darwin-aarch64.tar.gz
+"#,
+        "Download example-linux-x86_64.tar.gz and example-darwin-aarch64.tar.gz. Verify example-linux-x86_64.tar.gz.sha256 and example-darwin-aarch64.tar.gz.sha256.\n",
+        r#"#!/bin/sh
+curl -L https://raw.githubusercontent.com/example/project/main/releases/example-linux-x86_64.tar.gz
+"#,
+    );
+
+    let report = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+
+    assert!(!report.success);
+    assert!(
+        report.violations.iter().any(|violation| {
+            violation.path == Path::new(".github/workflows/release.yml")
+                && violation.rule == "release_contract:cli_release"
+                && violation
+                    .message
+                    .contains("example-darwin-aarch64.tar.gz.sha256")
+        }),
+        "{:#?}",
+        report.violations
+    );
+}
+
+#[test]
+fn check_release_contract_cli_json_reports_actionable_rule_context() {
+    let project = TempDir::new().unwrap();
+    write_config(&project, release_contract_config());
+    write_release_contract_files(
+        &project,
+        r#"
+uploads:
+  - example-linux-x86_64.tar.gz
+  - example-linux-x86_64.tar.gz.sha256
+  - example-darwin-aarch64.tar.gz
+  - example-darwin-aarch64.tar.gz.sha256
+"#,
+        "Download example-linux-x86_64.tar.gz, example-darwin-aarch64.tar.gz, and example-plan9-x86_64.zip.\nVerify example-linux-x86_64.tar.gz.sha256 and example-darwin-aarch64.tar.gz.sha256.\n",
+        r#"#!/bin/sh
+curl -L https://raw.githubusercontent.com/example/project/main/releases/example-linux-x86_64.tar.gz
+"#,
+    );
+
+    let output = Command::new(assura_bin())
+        .arg("check")
+        .arg(project.path())
+        .arg("--format")
+        .arg("json")
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(1));
+    let report: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    let violations = report["violations"].as_array().unwrap();
+    assert!(
+        violations.iter().any(|violation| {
+            violation["path"] == "docs/install.md"
+                && violation["rule"] == "release_contract:cli_release"
+                && violation["message"]
+                    .as_str()
+                    .unwrap()
+                    .contains("example-plan9-x86_64.zip")
+                && violation["corrective_context"]
+                    .as_str()
+                    .unwrap()
+                    .contains("release artifact contract")
+        }),
+        "{report:#?}"
     );
 }

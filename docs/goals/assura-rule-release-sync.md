@@ -63,6 +63,41 @@ The first implementation should prefer an explicit configured contract over
 inferring release intent from arbitrary prose. A future rule can add inference
 only after the configured contract is stable and tested.
 
+## First Slice Config Notation
+
+The first implementation slice uses an explicit first-party extension entry
+instead of a custom prose inference layer:
+
+```yaml
+extensions:
+  release_contracts:
+    - id: cli_release
+      severity: high
+      artifacts:
+        - name: example-linux-x86_64.tar.gz
+          checksum_sidecar: true
+        - name: example-darwin-aarch64.tar.gz
+          checksum_sidecar: true
+      workflow_files:
+        - .github/workflows/release.yml
+      docs_files:
+        - docs/install.md
+      installer_files:
+        - scripts/install.sh
+      allowed_url_branches:
+        - main
+```
+
+The contract is deliberately explicit:
+
+- `artifacts` is the allowed publish set.
+- `checksum_sidecar: true` requires `<artifact>.sha256` in workflows and
+  configured docs/installers.
+- `workflow_files` are checked for configured artifact and sidecar mentions.
+- `docs_files` and `installer_files` are checked for artifact names outside
+  the contract.
+- `allowed_url_branches` constrains raw/blob installer URLs.
+
 ## Scope
 
 - Define a minimal release-contract config surface for archive names, optional
@@ -142,3 +177,11 @@ coverage is weakened before the reusable rule proves equivalent coverage.
   handoff merged in PR #57. Result: valid with narrowed scope. Goal 13 covers
   Assura's own release/performance drift through target-state checks; this
   goal remains as a reusable configured release-contract rule candidate.
+- 2026-06-19: Started the first implementation slice under Trellis task
+  `06-18-release-contract-rule-slice`. Added explicit
+  `extensions.release_contracts` notation, product validation for workflow,
+  docs, installer URL, and checksum sidecar drift, plus integration coverage.
+  Local gates passed before review: `cargo test --all-targets --quiet`,
+  `cargo clippy --all-targets --all-features -- -D warnings`,
+  `cargo xtask target-state`, `cargo run --quiet -- check --format json .`,
+  `cargo xtask evidence`, `cargo xtask docs`, and `git diff --check`.

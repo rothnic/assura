@@ -26,6 +26,17 @@ impl StructureChecker {
         let Some(extensions) = &self.config.extensions else {
             return Ok(());
         };
+        if extensions.custom_constraints.is_empty()
+            && extensions.relationships.is_empty()
+            && extensions.release_contracts.is_empty()
+        {
+            return Ok(());
+        }
+
+        if !extensions.release_contracts.is_empty() {
+            self.validate_release_contracts(&extensions.release_contracts, report)?;
+        }
+
         if extensions.custom_constraints.is_empty() && extensions.relationships.is_empty() {
             return Ok(());
         }
