@@ -2,7 +2,7 @@
 id: goal-assura-rule-module-topology
 type: goal
 title: Assura module topology rule
-status: planned
+status: completed
 created: 2026-06-08
 owners:
   - assura-maintainers
@@ -55,6 +55,19 @@ when a configured module family drifts from its declared status.
   trees, support rows, and explicit topology ownership together.
 - Broad refactors or deletions should wait until a detector distinguishes
   supported product modules from contained experimental/internal evidence code.
+
+## Completion Result
+
+Completed as a first reusable rule slice in PR #72 and archived in PR #73.
+The shipped surface adds explicit `extensions.module_topologies` notation,
+semantic config validation, bounded Rust module/export inventory, missing-root
+checks, unclassified-public-export diagnostics, status-conflict diagnostics for
+internal or unsupported public exports, compiled-config portability, Assura
+self-dogfood policy, and independent parser/runtime/compiled CLI tests.
+
+The first slice intentionally avoids broad module deletion, public API semver
+claims, and natural-language docs lifecycle detection. Docs lifecycle and
+stale-claim checks remain separate follow-up work.
 
 ## Detector Hypothesis
 
@@ -174,3 +187,8 @@ families plus CLI integration coverage.
   Added semantic conflict rejection, unsupported-public-export runtime
   diagnostics, and regression coverage. Re-ran focused tests plus the full
   local gate set successfully.
+- 2026-06-19: Completed the module topology first slice in PR #72 and archived
+  Trellis task `06-19-module-topology-rule-implementation` in PR #73. The
+  completed slice provides configurable module-family ownership/status checks
+  and leaves docs lifecycle/stale-claim detection as the next target-state
+  follow-up.
