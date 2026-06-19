@@ -1,7 +1,7 @@
 use crate::config::config::{
-    CustomConstraintConfig, ExtensionConfig, RelationshipConstraintConfig,
-    RelationshipProviderConfig, ReleaseArtifactConfig, ReleaseContractConfig, SupportMatrixConfig,
-    SupportMatrixEntryConfig,
+    CustomConstraintConfig, ExtensionConfig, ManifestSemanticsConfig,
+    ManifestSemanticsManifestConfig, RelationshipConstraintConfig, RelationshipProviderConfig,
+    ReleaseArtifactConfig, ReleaseContractConfig, SupportMatrixConfig, SupportMatrixEntryConfig,
 };
 
 /// Binary-safe extension config stored inside compiled artifacts.
@@ -10,6 +10,7 @@ struct PortableExtensionConfig {
     custom_constraints: Vec<PortableCustomConstraintConfig>,
     release_contracts: Vec<PortableReleaseContractConfig>,
     support_matrices: Vec<PortableSupportMatrixConfig>,
+    manifest_semantics: Vec<PortableManifestSemanticsConfig>,
     relationships: Vec<PortableRelationshipConstraintConfig>,
 }
 
@@ -55,6 +56,28 @@ struct PortableSupportMatrixEntryConfig {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
+struct PortableManifestSemanticsConfig {
+    id: String,
+    manifests: Vec<PortableManifestSemanticsManifestConfig>,
+    severity: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+struct PortableManifestSemanticsManifestConfig {
+    path: String,
+    package: Option<String>,
+    role: Option<String>,
+    version: Option<String>,
+    rust_version: Option<String>,
+    license: Option<String>,
+    publish: Option<String>,
+    description_required_terms: Vec<String>,
+    description_forbidden_terms: Vec<String>,
+    keywords: Vec<String>,
+    binaries: Vec<String>,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
 struct PortableRelationshipConstraintConfig {
     id: String,
     source: String,
@@ -90,6 +113,11 @@ impl From<ExtensionConfig> for PortableExtensionConfig {
                 .into_iter()
                 .map(Into::into)
                 .collect(),
+            manifest_semantics: config
+                .manifest_semantics
+                .into_iter()
+                .map(Into::into)
+                .collect(),
             relationships: config.relationships.into_iter().map(Into::into).collect(),
         }
     }
@@ -110,6 +138,11 @@ impl From<PortableExtensionConfig> for ExtensionConfig {
                 .collect(),
             support_matrices: config
                 .support_matrices
+                .into_iter()
+                .map(Into::into)
+                .collect(),
+            manifest_semantics: config
+                .manifest_semantics
                 .into_iter()
                 .map(Into::into)
                 .collect(),
@@ -226,6 +259,62 @@ impl From<PortableSupportMatrixEntryConfig> for SupportMatrixEntryConfig {
         Self {
             surface: config.surface,
             status: config.status,
+        }
+    }
+}
+
+impl From<ManifestSemanticsConfig> for PortableManifestSemanticsConfig {
+    fn from(config: ManifestSemanticsConfig) -> Self {
+        Self {
+            id: config.id,
+            manifests: config.manifests.into_iter().map(Into::into).collect(),
+            severity: config.severity,
+        }
+    }
+}
+
+impl From<PortableManifestSemanticsConfig> for ManifestSemanticsConfig {
+    fn from(config: PortableManifestSemanticsConfig) -> Self {
+        Self {
+            id: config.id,
+            manifests: config.manifests.into_iter().map(Into::into).collect(),
+            severity: config.severity,
+        }
+    }
+}
+
+impl From<ManifestSemanticsManifestConfig> for PortableManifestSemanticsManifestConfig {
+    fn from(config: ManifestSemanticsManifestConfig) -> Self {
+        Self {
+            path: config.path,
+            package: config.package,
+            role: config.role,
+            version: config.version,
+            rust_version: config.rust_version,
+            license: config.license,
+            publish: config.publish,
+            description_required_terms: config.description_required_terms,
+            description_forbidden_terms: config.description_forbidden_terms,
+            keywords: config.keywords,
+            binaries: config.binaries,
+        }
+    }
+}
+
+impl From<PortableManifestSemanticsManifestConfig> for ManifestSemanticsManifestConfig {
+    fn from(config: PortableManifestSemanticsManifestConfig) -> Self {
+        Self {
+            path: config.path,
+            package: config.package,
+            role: config.role,
+            version: config.version,
+            rust_version: config.rust_version,
+            license: config.license,
+            publish: config.publish,
+            description_required_terms: config.description_required_terms,
+            description_forbidden_terms: config.description_forbidden_terms,
+            keywords: config.keywords,
+            binaries: config.binaries,
         }
     }
 }

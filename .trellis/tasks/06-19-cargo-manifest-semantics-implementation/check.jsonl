@@ -1,0 +1,2 @@
+{"file": "docs/goals/assura-rule-cargo-manifest-semantics.md", "reason": "Check implementation against definition of done and reviewer blocking criteria."}
+{"file": "docs/analysis/2026-06-09-assura-best-practice-target-state.md", "reason": "Confirm delivered detector addresses the P0 manifest metadata gap without expanding to deferred tools."}

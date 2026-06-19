@@ -42,6 +42,7 @@ pub(super) fn compile_lslint_fast_scopes(config: &Config) -> Option<Vec<FastScop
         !extensions.custom_constraints.is_empty()
             || !extensions.release_contracts.is_empty()
             || !extensions.support_matrices.is_empty()
+            || !extensions.manifest_semantics.is_empty()
             || !extensions.relationships.is_empty()
     }) {
         return None;

@@ -110,6 +110,68 @@ quality:
         - "Security Audit"
 
 extensions:
+  manifest_semantics:
+    - id: cargo_workspace
+      severity: high
+      manifests:
+        - path: Cargo.toml
+          package: assura
+          role: public
+          version: "0.1.0"
+          rust_version: "1.70.0"
+          license: "MIT OR Apache-2.0"
+          publish: public
+          description_required_terms:
+            - Structure-first
+            - repository validation
+          description_forbidden_terms:
+            - dependency graph validation
+          keywords:
+            - structure
+            - validation
+          binaries:
+            - assura
+            - assura-full
+        - path: crates/assura-check-cli/Cargo.toml
+          package: assura-check-cli
+          role: internal
+          version: "0.1.0"
+          rust_version: "1.70.0"
+          license: "MIT OR Apache-2.0"
+          publish: internal
+          description_required_terms:
+            - Internal
+            - structure-check
+          binaries:
+            - assura-check
+            - assura-checkd
+            - assura-check-client
+            - assura-check-session
+            - assura-check-unix-client
+            - assura-check-status
+            - assura-check-noop
+            - assura-check-compiled
+            - assura-check-compile-config
+        - path: crates/assura-stable-hash/Cargo.toml
+          package: assura-stable-hash
+          role: internal
+          version: "0.1.0"
+          rust_version: "1.70.0"
+          license: "MIT OR Apache-2.0"
+          publish: internal
+          description_required_terms:
+            - Internal
+            - stable hash
+        - path: xtask/Cargo.toml
+          package: xtask
+          role: internal
+          version: "0.1.0"
+          rust_version: "1.70.0"
+          license: "MIT OR Apache-2.0"
+          publish: internal
+          description_required_terms:
+            - Repository-local
+            - maintenance tasks
   support_matrices:
     - id: public_surface
       severity: high

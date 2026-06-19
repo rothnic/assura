@@ -19,9 +19,66 @@ pub struct ExtensionConfig {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub support_matrices: Vec<SupportMatrixConfig>,
 
+    /// Configured Cargo manifest semantic policies executed by `assura check`.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub manifest_semantics: Vec<ManifestSemanticsConfig>,
+
     /// Internal relationship constraints normalized from structure notation.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub relationships: Vec<RelationshipConstraintConfig>,
+}
+
+/// A reusable Cargo manifest metadata policy.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub struct ManifestSemanticsConfig {
+    /// Stable local identifier used in diagnostics.
+    pub id: String,
+    /// Manifest files and package policies checked by this rule.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub manifests: Vec<ManifestSemanticsManifestConfig>,
+    /// Optional diagnostic severity.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub severity: Option<String>,
+}
+
+/// One configured Cargo manifest policy.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub struct ManifestSemanticsManifestConfig {
+    /// Cargo manifest path relative to the project root.
+    pub path: String,
+    /// Expected package name.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub package: Option<String>,
+    /// Declared role for policy and diagnostics, such as `public` or
+    /// `internal`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub role: Option<String>,
+    /// Expected package version.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub version: Option<String>,
+    /// Expected package rust-version.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rust_version: Option<String>,
+    /// Expected package license.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub license: Option<String>,
+    /// Expected publish policy: `public` or `internal`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub publish: Option<String>,
+    /// Terms that must appear in the package description.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub description_required_terms: Vec<String>,
+    /// Terms that must not appear in the package description.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub description_forbidden_terms: Vec<String>,
+    /// Keywords that must be declared in package metadata.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub keywords: Vec<String>,
+    /// Binary names that must be declared in `[[bin]]` entries.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub binaries: Vec<String>,
 }
 
 /// A reusable public surface support classification matrix.
@@ -210,6 +267,12 @@ impl ExtensionConfig {
     /// Add a public surface support matrix.
     pub fn with_support_matrix(mut self, matrix: SupportMatrixConfig) -> Self {
         self.support_matrices.push(matrix);
+        self
+    }
+
+    /// Add a Cargo manifest semantic policy.
+    pub fn with_manifest_semantics(mut self, policy: ManifestSemanticsConfig) -> Self {
+        self.manifest_semantics.push(policy);
         self
     }
 

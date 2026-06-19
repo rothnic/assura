@@ -27,6 +27,7 @@ mod ls_fast_plan;
 #[cfg(test)]
 mod ls_fast_plan_tests;
 mod ls_fast_target;
+mod manifest_semantics;
 #[cfg(feature = "yaml-config")]
 mod markdown;
 mod patterns;
