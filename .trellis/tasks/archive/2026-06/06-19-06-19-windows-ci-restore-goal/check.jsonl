@@ -1,0 +1,5 @@
+{"file":".trellis/spec/assura/roadmap.md","reason":"Check that Windows CI Restore is named as planned next candidate without being marked complete."}
+{"file":".trellis/spec/assura/tooling-stabilization.md","reason":"Check that the goal aligns with the known Windows CI baseline debt and closure criteria."}
+{"file":"docs/goals/assura-windows-ci-restore.md","reason":"Check that the planned goal remains bounded and requires hosted Windows proof."}
+{"file":"docs/compatibility-and-surface.md","reason":"Check that Windows support claims remain tied to release/install evidence."}
+{"file":"docs/release-candidate-checklist.md","reason":"Check that the goal preserves release artifact proof expectations."}
