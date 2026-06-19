@@ -2011,6 +2011,14 @@ fn check_docs_release_performance(checks: &mut Checks) {
     let release_checklist_text = read("docs/release-candidate-checklist.md");
     let release_readiness_text = read("website/src/content/docs/reference/release-readiness.md");
     let installation_text = read("website/src/content/docs/guides/installation.md");
+    let performance_text = read("website/src/content/docs/reference/performance.mdx");
+    let performance_cases_text =
+        read("website/src/content/docs/reference/performance-test-cases.mdx");
+    let why_assura_text = read("website/src/content/docs/why-assura.md");
+    let performance_review_text =
+        read("docs/analysis/2026-06-19-goal-13-release-performance-review.md");
+    let goal_13_text =
+        read("docs/goals/assura-goal-13-performance-and-release-evidence-governance.md");
     let release_workflow = read(".github/workflows/release.yml");
     let ci_workflow = read(".github/workflows/ci.yml");
     let install_sh = read("website/public/install.sh");
@@ -2136,6 +2144,97 @@ fn check_docs_release_performance(checks: &mut Checks) {
                 .is_some(),
         "performance current.json: missing cold or warm claim verdict",
     );
+
+    let current_cohort = bench_current
+        .pointer("/claim_summary/fixture_cohort")
+        .and_then(Value::as_str)
+        .unwrap_or_default();
+    checks.require(
+        !current_cohort.is_empty(),
+        "performance current.json: missing claim_summary.fixture_cohort",
+    );
+    if !current_cohort.is_empty() {
+        let cohort_marker = format!("`{current_cohort}`");
+        checks.require(
+            performance_text.contains(&cohort_marker),
+            format!("performance docs: missing current checked cohort {cohort_marker}"),
+        );
+        checks.require(
+            performance_cases_text.contains(&cohort_marker),
+            format!("performance test cases docs: missing current checked cohort {cohort_marker}"),
+        );
+        checks.require(
+            why_assura_text.contains(&cohort_marker),
+            format!("why-assura docs: missing current checked cohort {cohort_marker}"),
+        );
+    }
+
+    let current_command = bench_current
+        .get("command_line")
+        .and_then(Value::as_str)
+        .unwrap_or_default();
+    checks.require(
+        !current_command.is_empty(),
+        "performance current.json: missing command_line",
+    );
+    for fragment in [
+        "--output benches/history/current.json",
+        "--history benches/history/ls-lint-comparison-history.jsonl",
+        "--website-dir website/public/data/performance",
+        "--iterations 5",
+    ] {
+        checks.require(
+            current_command.contains(fragment),
+            format!("performance current.json command_line missing {fragment}"),
+        );
+        checks.require(
+            performance_text.contains(fragment),
+            format!("performance docs baseline command missing {fragment}"),
+        );
+        checks.require(
+            performance_cases_text.contains(fragment),
+            format!("performance test cases command missing {fragment}"),
+        );
+    }
+    if !current_command.contains("--include-external-fixtures")
+        && current_cohort != "real-repo-headline"
+    {
+        checks.require(
+            !performance_text.contains("--include-external-fixtures"),
+            "performance docs: baseline command must not include external fixtures when current report does not",
+        );
+        checks.require(
+            !performance_text.contains("ten pinned open-source repositories"),
+            "performance docs: current checked claim must not cite ten pinned repositories without real-repo-headline data",
+        );
+        checks.require(
+            !why_assura_text.contains("ten pinned real"),
+            "why-assura docs: current checked claim must not cite ten pinned real repositories without real-repo-headline data",
+        );
+    }
+
+    let cold_verdict = bench_current
+        .pointer("/claim_summary/two_x_claim_verdict")
+        .and_then(Value::as_str)
+        .unwrap_or_default();
+    if cold_verdict != "complete" {
+        checks.require(
+            performance_review_text.contains("Cold Gate Follow-Up Acceptance"),
+            "performance review: non-complete cold verdict requires accepted bounded follow-up",
+        );
+        checks.require(
+            performance_review_text.contains("accepted follow-up is bounded"),
+            "performance review: cold follow-up must state a bounded accepted follow-up",
+        );
+        checks.require(
+            performance_review_text.contains(cold_verdict),
+            format!("performance review: missing cold verdict {cold_verdict}"),
+        );
+        checks.require(
+            goal_13_text.contains("accepted bounded follow-up"),
+            "Goal 13 progress log: missing accepted bounded follow-up record",
+        );
+    }
 }
 
 struct ReleaseArtifact {
