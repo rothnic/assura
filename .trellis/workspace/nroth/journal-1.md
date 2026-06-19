@@ -214,3 +214,36 @@ Clarified release cadence and durable build semantics in README, documented supp
 ### Next Steps
 
 - None - task complete
+
+
+## Session 7: Docs lifecycle rule first slice
+
+**Date**: 2026-06-19
+**Task**: Docs lifecycle rule first slice
+**Branch**: `codex/archive-docs-lifecycle-implementation`
+
+### Summary
+
+Implemented and merged the first reusable docs lifecycle/stale-claim rule slice with config validation, runtime checks, compiled artifact support, dogfood policy, tests, independent review closure, PR #78, and green hosted checks.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `021fe10` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

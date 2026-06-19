@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 6
-- **Last Active**: 2026-06-09
+- **Total Sessions**: 7
+- **Last Active**: 2026-06-19
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~216 | Active |
+| `journal-1.md` | ~249 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 7 | 2026-06-19 | Docs lifecycle rule first slice | `021fe10` | `codex/archive-docs-lifecycle-implementation` |
 | 6 | 2026-06-09 | Release README professionalization | `96c46a3` | `master` |
 | 5 | 2026-06-09 | Rust-first quality cleanup | `fcf1d4f` | `master` |
 | 4 | 2026-06-09 | Fix target-state no-task verifier | `f69ea9d` | `master` |
