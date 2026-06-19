@@ -2,7 +2,7 @@
 id: goal-assura-rule-public-surface-support-matrix
 type: goal
 title: Assura public surface support matrix rule
-status: planned
+status: completed
 created: 2026-06-08
 owners:
   - assura-maintainers
@@ -153,3 +153,7 @@ the unclassified surface and owning matrix.
   `pub use crate::...` paths as scanner gaps. Fixed the export scanner to
   classify anchored and grouped top-level `pub use` forms without scanning
   nested module bodies, then added regression coverage.
+- 2026-06-19: Completed the public-surface support matrix first slice in PR
+  #61 and archived Trellis task `06-19-public-surface-support-matrix-rule` in
+  PR #62. Manifest metadata, stale-doc prose, module topology, and
+  test-relationship checks remain follow-up owners.
