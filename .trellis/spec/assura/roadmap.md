@@ -20,7 +20,7 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 11 | Public Surface Matrix | Completed | PR #61 merged; archive PR #62 merged |
 | 12 | Cargo Manifest Semantics | Completed | PR #64 merged; archive PR #65 merged |
 | 13 | Test Relationship Rule | Completed | PR #68 merged; archive PR #69 merged |
-| 14 | Module Topology Rule | Planned | Validate and execute `docs/goals/assura-rule-module-topology.md` |
+| 14 | Module Topology Rule | Completed | PR #72 merged; archive PR #73 merged |
 
 ## Active Roadmap Iteration
 
@@ -39,6 +39,7 @@ Public Surface Matrix first slice is complete via PR #61 and archive PR #62.
 Cargo Manifest Semantics first slice is complete via PR #64 and archive PR
 #65.
 Test Relationship Rule first slice is complete via PR #68 and archive PR #69.
+Module Topology Rule first slice is complete via PR #72 and archive PR #73.
 This completion does not mark the broader Assura roadmap complete.
 
 Direction lock, clarified on 2026-05-31: do not create or revive
@@ -47,23 +48,24 @@ one `--format <agent>-hook` value per agent. Treat older roadmap/task wording in
 that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
 Planned next roadmap candidate:
-`docs/goals/assura-rule-module-topology.md`. The next planning decision is the
-first reusable module-topology slice now that support matrix, manifest
-semantics, release contract, and test relationship rules provide classified
-public surface, manifest, release, and test-evidence inputs.
+Docs lifecycle and stale-claim detection. The next planning decision is whether
+to create a dedicated goal for active/archive lifecycle, stale roadmap claims,
+and stale public release/performance claims now that support matrix, manifest
+semantics, release contract, test relationship, and module topology first
+slices provide the main structured inputs.
 
 ## Recommended Next Epic
 
-Validate the Module Topology candidate:
-`docs/goals/assura-rule-module-topology.md`.
+Create or validate a Docs Lifecycle candidate goal.
 
-The next agent should create or reuse a Trellis task to revalidate that goal
-against the current target-state analysis before implementing anything. The
-first decision is which module inventory and public-surface evidence belongs in
-the first slice: Rust module declarations, top-level `pub mod` exports,
-configured module-family ownership/status rows, support-matrix rows, or
-explicit experimental/internal exceptions. The product roadmap remains open
-until a separate product decision declares it complete.
+The next agent should create or reuse a Trellis task to define a narrow first
+slice for docs lifecycle and stale-claim detection against the current
+target-state analysis before implementing anything. The first decision is which
+active docs and claims are deterministic enough for a reusable rule: active
+analysis/goals versus archived/historical files, stale roadmap candidate
+claims, stale support/release/performance copy, or explicit historical
+exceptions. The product roadmap remains open until a separate product decision
+declares it complete.
 
 ## Roadmap Rules
 
