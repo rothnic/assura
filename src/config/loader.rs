@@ -66,6 +66,9 @@ impl ConfigLoader {
 }
 
 #[cfg(test)]
+mod manifest_semantics_tests;
+
+#[cfg(test)]
 mod tests {
     use super::super::config::{DirectoryNode, FileBundle};
     use super::*;

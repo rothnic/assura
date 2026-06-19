@@ -74,6 +74,9 @@ fn corrective_context_for_rule(rule: &str) -> &'static str {
     if rule.starts_with("support_matrix:") {
         return "Add the public surface to the configured support matrix, or remove/rename the exposed command/API surface when it is not intentional.";
     }
+    if rule.starts_with("manifest_semantics:") {
+        return "Update the Cargo manifest metadata or the configured manifest semantics policy so package fields, publish status, and binary declarations agree.";
+    }
     if rule.starts_with("relationship:") {
         return "Create one of the expected counterpart/provider artifacts named in the relationship message, or update the declaring structure entry in .assura/config.yml.";
     }

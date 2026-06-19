@@ -147,3 +147,21 @@ coverage is weakened.
   for public/internal crates, using structured TOML or Cargo metadata and
   leaving optional dependency usage, license/source policy, and semver checks
   for later owners.
+- 2026-06-19: Implemented the first reusable manifest-semantics slice under
+  Trellis task `06-19-cargo-manifest-semantics-implementation`: added
+  `extensions.manifest_semantics` config, structured TOML runtime validation,
+  semantic config validation, compiled artifact portability, Assura dogfood
+  manifest policies, notation docs, and focused fixture/CLI coverage. Local
+  gates run so far: `cargo test --all-targets --quiet`,
+  `cargo clippy --all-targets --all-features -- -D warnings`, and
+  `cargo run --quiet -- check --format json .`.
+- 2026-06-19: Independent review found two gaps before PR creation:
+  workspace-inherited `version.workspace = true`, `rust-version.workspace =
+  true`, and `license.workspace = true` fields produced false positives, and
+  diagnostics did not consistently include package context. Fixed inherited
+  field resolution from `[workspace.package]`, updated diagnostics to include
+  package names, and added regression coverage. Final local gates passed:
+  `cargo fmt --all -- --check`, `cargo test --all-targets --quiet`,
+  `cargo clippy --all-targets --all-features -- -D warnings`,
+  `cargo xtask target-state`, `cargo run --quiet -- check --format json .`,
+  `cargo xtask evidence`, `cargo xtask docs`, and `git diff --check`.

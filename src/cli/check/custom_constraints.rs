@@ -30,6 +30,7 @@ impl StructureChecker {
             && extensions.relationships.is_empty()
             && extensions.release_contracts.is_empty()
             && extensions.support_matrices.is_empty()
+            && extensions.manifest_semantics.is_empty()
         {
             return Ok(());
         }
@@ -39,6 +40,9 @@ impl StructureChecker {
         }
         if !extensions.support_matrices.is_empty() {
             self.validate_support_matrices(&extensions.support_matrices, report)?;
+        }
+        if !extensions.manifest_semantics.is_empty() {
+            self.validate_manifest_semantics(&extensions.manifest_semantics, report)?;
         }
 
         if extensions.custom_constraints.is_empty() && extensions.relationships.is_empty() {

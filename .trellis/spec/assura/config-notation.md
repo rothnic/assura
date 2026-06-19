@@ -400,6 +400,43 @@ Implementation should prove these before declaring the notation ready:
 10. Code-to-doc relation: for every matched package directory, require either a
    dedicated docs file or a package section in an aggregate docs file.
 
+## First-Party Extension Policies
+
+First-party extension policies live under `extensions:` when they model
+cross-file semantics that do not fit the directory tree itself. They must stay
+explicit and deterministic: configured inputs, configured expected values, and
+actionable diagnostics.
+
+Cargo manifest semantics use `extensions.manifest_semantics`:
+
+```yaml
+extensions:
+  manifest_semantics:
+    - id: cargo_workspace
+      severity: high
+      manifests:
+        - path: Cargo.toml
+          package: assura
+          role: public
+          version: "0.1.0"
+          rust_version: "1.70.0"
+          license: "MIT OR Apache-2.0"
+          publish: public
+          description_required_terms:
+            - Structure-first
+          description_forbidden_terms:
+            - dependency graph validation
+          keywords:
+            - structure
+          binaries:
+            - assura
+```
+
+Use this rule for Cargo package metadata, publish policy, expected keywords,
+description claim checks, and declared `[[bin]]` names. Do not use it as a
+replacement for Cargo, dependency usage tools, license/source policy tools, or
+semver compatibility checks.
+
 ## Relationship Boundary
 
 `extensions.custom_constraints` remains an experimental first-party execution

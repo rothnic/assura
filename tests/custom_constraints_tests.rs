@@ -162,6 +162,93 @@ fn write_release_contract_files(project: &TempDir, workflow: &str, docs: &str, i
     fs::write(project.path().join("scripts/install.sh"), installer).unwrap();
 }
 
+fn manifest_semantics_config() -> &'static str {
+    r#"
+extensions:
+  manifest_semantics:
+    - id: cargo_workspace
+      severity: high
+      manifests:
+        - path: Cargo.toml
+          package: example-root
+          role: public
+          version: "0.1.0"
+          rust_version: "1.70.0"
+          license: MIT
+          publish: public
+          description_required_terms: ["structure-first"]
+          description_forbidden_terms: ["dependency graph validation"]
+          keywords: ["structure"]
+          binaries: ["example-root"]
+        - path: crates/helper/Cargo.toml
+          package: helper
+          role: internal
+          version: "0.1.0"
+          rust_version: "1.70.0"
+          license: MIT
+          publish: internal
+          description_required_terms: ["internal"]
+          binaries: ["helper-tool"]
+structure:
+  ./:
+    files:
+      allow_extra: true
+    directories:
+      allow_extra: true
+exclude:
+  - target/**
+"#
+}
+
+fn write_manifest_semantics_files(project: &TempDir, root_manifest: &str, helper_manifest: &str) {
+    fs::create_dir_all(project.path().join("crates/helper/src")).unwrap();
+    fs::write(project.path().join("Cargo.toml"), root_manifest).unwrap();
+    fs::write(
+        project.path().join("crates/helper/Cargo.toml"),
+        helper_manifest,
+    )
+    .unwrap();
+}
+
+fn passing_root_manifest() -> &'static str {
+    r#"
+[package]
+name = "example-root"
+version = "0.1.0"
+edition = "2021"
+description = "Structure-first repository validation"
+license = "MIT"
+rust-version = "1.70.0"
+keywords = ["structure", "validation"]
+
+[workspace.package]
+version = "0.1.0"
+license = "MIT"
+rust-version = "1.70.0"
+
+[[bin]]
+name = "example-root"
+path = "src/main.rs"
+"#
+}
+
+fn passing_helper_manifest() -> &'static str {
+    r#"
+[package]
+name = "helper"
+version.workspace = true
+edition = "2021"
+description = "Internal helper binary for structure checks"
+license.workspace = true
+rust-version.workspace = true
+publish = false
+
+[[bin]]
+name = "helper-tool"
+path = "src/main.rs"
+"#
+}
+
 #[test]
 fn check_support_matrix_passes_when_surfaces_are_classified() {
     let project = TempDir::new().unwrap();
@@ -541,6 +628,142 @@ commands:
     assert!(
         error.contains("collides") || error.contains("duplicate flag"),
         "unexpected error: {error}"
+    );
+}
+
+#[test]
+fn check_manifest_semantics_passes_when_manifests_match_policy() {
+    let project = TempDir::new().unwrap();
+    write_config(&project, manifest_semantics_config());
+    write_manifest_semantics_files(&project, passing_root_manifest(), passing_helper_manifest());
+
+    let report = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+
+    assert!(report.success, "{:#?}", report.violations);
+    assert!(report.violations.is_empty());
+}
+
+#[test]
+fn check_manifest_semantics_reports_metadata_publish_and_binary_drift() {
+    let project = TempDir::new().unwrap();
+    write_config(&project, manifest_semantics_config());
+    write_manifest_semantics_files(
+        &project,
+        r#"
+[package]
+name = "example-root"
+version = "0.1.0"
+edition = "2021"
+description = "Dependency graph validation for Rust workspaces"
+license = "MIT"
+rust-version = "1.70.0"
+keywords = ["validation"]
+
+[[bin]]
+name = "wrong-name"
+path = "src/main.rs"
+"#,
+        r#"
+[package]
+name = "helper"
+version = "0.1.0"
+edition = "2021"
+description = "Internal helper binary for structure checks"
+license = "MIT"
+rust-version = "1.70.0"
+publish = true
+
+[[bin]]
+name = "helper-tool"
+path = "src/main.rs"
+"#,
+    );
+
+    let report = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+
+    assert!(!report.success);
+    let messages = report
+        .violations
+        .iter()
+        .map(|violation| violation.message.as_str())
+        .collect::<Vec<_>>();
+    assert!(
+        messages.iter().any(|message| {
+            message.contains("forbids package")
+                && message.contains("example-root")
+                && message.contains("description")
+        }),
+        "{messages:#?}"
+    );
+    assert!(
+        messages
+            .iter()
+            .any(|message| message.contains("keywords") && message.contains("structure")),
+        "{messages:#?}"
+    );
+    assert!(
+        messages
+            .iter()
+            .any(|message| message.contains("binary `example-root`")),
+        "{messages:#?}"
+    );
+    assert!(
+        messages
+            .iter()
+            .any(|message| message.contains("publish policy") && message.contains("internal")),
+        "{messages:#?}"
+    );
+}
+
+#[test]
+fn check_manifest_semantics_cli_json_reports_actionable_rule_context() {
+    let project = TempDir::new().unwrap();
+    write_config(&project, manifest_semantics_config());
+    write_manifest_semantics_files(
+        &project,
+        passing_root_manifest(),
+        r#"
+[package]
+name = "helper"
+version = "0.1.0"
+edition = "2021"
+description = "Internal helper binary for structure checks"
+license = "MIT"
+rust-version = "1.70.0"
+publish = true
+
+[[bin]]
+name = "helper-tool"
+path = "src/main.rs"
+"#,
+    );
+
+    let output = Command::new(assura_bin())
+        .arg("check")
+        .arg(project.path())
+        .arg("--format")
+        .arg("json")
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(1));
+    let report: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    let violations = report["violations"].as_array().unwrap();
+    assert!(
+        violations.iter().any(|violation| {
+            violation["path"] == "crates/helper/Cargo.toml"
+                && violation["rule"] == "manifest_semantics:cargo_workspace"
+                && violation["message"]
+                    .as_str()
+                    .unwrap()
+                    .contains("publish policy")
+                && violation["message"].as_str().unwrap().contains("helper")
+                && violation["corrective_context"]
+                    .as_str()
+                    .unwrap()
+                    .contains("Cargo manifest metadata")
+        }),
+        "{report:#?}"
     );
 }
 

@@ -13,6 +13,8 @@ use std::collections::HashSet;
 use std::path::{Component, Path};
 
 #[cfg(feature = "yaml-config")]
+mod manifest_semantics;
+#[cfg(feature = "yaml-config")]
 mod release_contracts;
 #[cfg(feature = "yaml-config")]
 mod support_matrices;
@@ -138,6 +140,16 @@ fn validate_extension_config(config: &ExtensionConfig) -> Result<(), String> {
             return Err(format!(
                 "extensions.support_matrices.{}: duplicate support matrix id",
                 matrix.id
+            ));
+        }
+    }
+    let mut manifest_semantics_ids = HashSet::new();
+    for policy in &config.manifest_semantics {
+        manifest_semantics::validate_manifest_semantics_config(policy)?;
+        if !manifest_semantics_ids.insert(&policy.id) {
+            return Err(format!(
+                "extensions.manifest_semantics.{}: duplicate manifest semantics id",
+                policy.id
             ));
         }
     }
