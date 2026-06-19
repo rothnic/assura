@@ -2,7 +2,7 @@
 id: goal-assura-rule-docs-lifecycle-dogfood-expansion
 type: goal
 title: Assura docs lifecycle dogfood expansion
-status: planned
+status: completed
 created: 2026-06-19
 owners:
   - assura-maintainers
@@ -211,3 +211,7 @@ or if existing target-state/evidence checks are weakened.
   `performance-report` claim token. Left website docs and `2x` out of the first
   implementation slice because their exact evidence boundaries remain
   conditional or deferred by the goal.
+- 2026-06-19: Completed first dogfood expansion slice in PR #83
+  (`7a56a2c6f6a3ca8b03fa07ed180919211d3638ba`). Hosted scope and evidence
+  checks passed. Follow-up remains limited to explicit website docs or `2x`
+  coverage only after exact evidence/token boundaries are defined.

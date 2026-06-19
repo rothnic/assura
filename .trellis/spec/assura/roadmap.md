@@ -27,17 +27,17 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 13 | Test Relationship Rule | Completed | PR #68 merged; archive PR #69 merged |
 | 14 | Module Topology Rule | Completed | PR #72 merged; archive PR #73 merged |
 | 15 | Docs Lifecycle Rule | Completed | PR #78 merged; archive PR #79 merged |
-| 16 | Docs Lifecycle Coverage | Active | Task `.trellis/tasks/06-19-docs-lifecycle-dogfood-expansion-implementation` |
+| 16 | Docs Lifecycle Coverage | Completed | PR #83 merged; archive/sync in progress |
 
 ## Active Roadmap Iteration
 
 No roadmap iteration is active after Iteration 01 completion.
 
 Current owning task:
-`.trellis/tasks/06-19-docs-lifecycle-dogfood-expansion-implementation`.
+None.
 
 Current branch:
-`codex/docs-lifecycle-dogfood-expansion`.
+None.
 
 Most recent completed iteration: Policy Depth Iteration 02. Goals 09 through
 13 are complete and archived, ending with Goal 13 PR #55 and archive PR #56.
@@ -48,6 +48,7 @@ Cargo Manifest Semantics first slice is complete via PR #64 and archive PR
 Test Relationship Rule first slice is complete via PR #68 and archive PR #69.
 Module Topology Rule first slice is complete via PR #72 and archive PR #73.
 Docs Lifecycle Rule first slice is complete via PR #78 and archive PR #79.
+Docs Lifecycle Coverage first dogfood expansion is complete via PR #83.
 This completion does not mark the broader Assura roadmap complete.
 
 Direction lock, clarified on 2026-05-31: do not create or revive
@@ -56,24 +57,21 @@ one `--format <agent>-hook` value per agent. Treat older roadmap/task wording in
 that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
 Planned next roadmap candidate:
-`docs/goals/assura-rule-docs-lifecycle-dogfood-expansion.md`. The next slice
-should broaden `extensions.docs_lifecycles` dogfood coverage from the first
-merged proof policy to current release, support, validation, roadmap, and
-performance-facing docs with explicit claim evidence.
+No immediate docs lifecycle implementation is queued. Future docs lifecycle
+coverage should be limited to explicit website docs or `2x` performance claims
+only after exact evidence/token boundaries are defined.
 
 ## Recommended Next Action
 
-Review and merge the active Docs Lifecycle Coverage implementation.
+Archive the Docs Lifecycle Coverage implementation task, then revalidate the
+next roadmap candidate from current target-state evidence.
 
-The active task
-`.trellis/tasks/06-19-docs-lifecycle-dogfood-expansion-implementation` expands
-`.assura/config.yml` docs lifecycle coverage only for the concrete active docs
-and claim tokens named by
-`docs/goals/assura-rule-docs-lifecycle-dogfood-expansion.md`. Finish review,
-merge that implementation, then sync this roadmap and target-state from the new
-self-check output. Do not start broad cleanup until the follow-up detector scope
-is implemented, reviewed, and merged. The product roadmap remains open until a
-separate product decision declares it complete.
+The next agent should use `assura-goal-validation` against current
+target-state, roadmap, and `.assura/config.yml` output before selecting another
+goal. Do not start broad cleanup or additional docs lifecycle coverage unless a
+new bounded goal names explicit active docs and executable evidence tokens. The
+product roadmap remains open until a separate product decision declares it
+complete.
 
 ## Roadmap Rules
 
