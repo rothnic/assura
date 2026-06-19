@@ -14,4 +14,4 @@
 {"file":"tests/ls_lint_parity_regression_tests.rs","reason":"Windows test failure showed external git fixture materialization readback must tolerate Git checkout newline differences."}
 {"file":".github/workflows/ci.yml","reason":"Windows test failure showed the restored Test Suite matrix must install Node/npm for native LS-Lint golden tests."}
 {"file":"tests/ls_lint_rule_coverage/mod.rs","reason":"Windows test failure showed direct Rust process spawning must use npm.cmd for the Node package manager shim."}
-{"file":"tests/ls_lint_rule_coverage/mod.rs","reason":"Windows test failure showed native LS-Lint JSON paths must be normalized before comparing against slash-separated golden fixture paths."}
+{"file":"tests/ls_lint_rule_coverage/mod.rs","reason":"Windows test failure showed native LS-Lint and Assura JSON paths must be normalized before comparing against slash-separated golden fixture paths."}

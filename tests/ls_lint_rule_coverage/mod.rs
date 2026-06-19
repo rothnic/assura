@@ -91,7 +91,7 @@ fn run_native_ls_lint(project: &TempDir) -> (bool, Vec<String>) {
             .as_object()
             .unwrap_or_else(|| panic!("native LS-Lint JSON should be an object: {value:#}"))
             .keys()
-            .map(|path| normalize_native_lslint_path(path))
+            .map(|path| normalize_lslint_test_path(path))
             .collect::<Vec<_>>();
         paths.sort();
         paths
@@ -109,7 +109,7 @@ fn paths_from_assura_report(report: &serde_json::Value) -> (bool, Vec<String>) {
         .as_array()
         .unwrap()
         .iter()
-        .map(|violation| violation["path"].as_str().unwrap().to_string())
+        .map(|violation| normalize_lslint_test_path(violation["path"].as_str().unwrap()))
         .collect::<Vec<_>>();
     paths.sort();
     (report["success"].as_bool().unwrap(), paths)
@@ -180,14 +180,14 @@ fn run_native_ls_lint_target(project: &TempDir, target: &str) -> (bool, Vec<Stri
             .as_object()
             .unwrap()
             .keys()
-            .map(|path| normalize_native_lslint_path(path))
+            .map(|path| normalize_lslint_test_path(path))
             .collect::<Vec<_>>()
     };
     paths.sort();
     (success, paths)
 }
 
-fn normalize_native_lslint_path(path: &str) -> String {
+fn normalize_lslint_test_path(path: &str) -> String {
     if path == "." {
         String::new()
     } else {
@@ -398,7 +398,7 @@ ls:
         .as_object()
         .unwrap()
         .keys()
-        .map(|path| normalize_native_lslint_path(path))
+        .map(|path| normalize_lslint_test_path(path))
         .collect::<Vec<_>>();
     native_paths.sort();
 
@@ -454,7 +454,7 @@ ls:
         .as_object()
         .unwrap()
         .keys()
-        .map(|path| normalize_native_lslint_path(path))
+        .map(|path| normalize_lslint_test_path(path))
         .collect::<Vec<_>>();
     native_paths.sort();
 

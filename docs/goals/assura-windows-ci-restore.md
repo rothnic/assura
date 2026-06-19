@@ -161,8 +161,9 @@ as paused after the restore.
 - 2026-06-19: The next PR #93 hosted Windows run passed Node/npm setup and
   failed in the native LS-Lint golden assertions because LS-Lint reports JSON
   keys with Windows `\` separators while the expected fixture paths use `/`.
-  Normalized native LS-Lint JSON keys at each test collection boundary while
-  keeping Assura output assertions unchanged. Local
+  Normalized native LS-Lint and Assura JSON paths at each test collection
+  boundary so the golden tests compare logical paths without changing product
+  output. Local
   `cargo test --all-features -p assura --test ls_lint_rule_coverage_tests
   ls_lint_native_golden`, `cargo fmt --all -- --check`,
   `cargo check --all-targets --all-features`,
