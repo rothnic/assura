@@ -14,6 +14,10 @@ fn assura_bin() -> &'static str {
     env!("CARGO_BIN_EXE_assura")
 }
 
+fn read_text_with_normalized_newlines(path: impl AsRef<Path>) -> String {
+    fs::read_to_string(path).unwrap().replace("\r\n", "\n")
+}
+
 fn write_generated_config(project: &TempDir, config: &assura::config::config::Config) {
     let assura_dir = project.path().join(".assura");
     fs::create_dir_all(&assura_dir).unwrap();
@@ -243,7 +247,7 @@ fn external_git_fixture_materializer_uses_pinned_revision_and_cache() {
     .unwrap();
 
     assert_eq!(
-        fs::read_to_string(destination.path().join("README.md")).unwrap(),
+        read_text_with_normalized_newlines(destination.path().join("README.md")),
         "# Fixture\n"
     );
     #[cfg(unix)]

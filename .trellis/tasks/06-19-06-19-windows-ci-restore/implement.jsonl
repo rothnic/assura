@@ -11,3 +11,4 @@
 {"file":"tests/test_relationship_tests.rs","reason":"Normalize nested JSON path assertions that would otherwise compare native Windows separators to Unix separators."}
 {"file":"tests/ls_lint_rule_coverage_tests.rs","reason":"Normalize nested JSON path assertions that would otherwise compare native Windows separators to Unix separators."}
 {"file":"tests/real_project_agentic_feedback_tests.rs","reason":"Normalize nested JSON and guided-output path assertions that would otherwise compare native Windows separators to Unix separators."}
+{"file":"tests/ls_lint_parity_regression_tests.rs","reason":"Windows test failure showed external git fixture materialization readback must tolerate Git checkout newline differences."}

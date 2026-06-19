@@ -138,3 +138,10 @@ as paused after the restore.
   downstream integration tests to compare logical paths while preserving native
   serialized `PathBuf` output. Hosted Windows proof is still required before
   completion.
+- 2026-06-19: The next PR #93 hosted Windows run passed the downstream
+  nested-path assertions and failed later in
+  `tests/ls_lint_parity_regression_tests.rs` because an external fixture
+  materialization readback asserted LF newlines while Windows Git checkout
+  produced CRLF. Normalized that test readback while keeping the pinned
+  revision and cache-materialization coverage. Hosted Windows proof is still
+  required before completion.

@@ -11,3 +11,4 @@
 {"file":"tests/test_relationship_tests.rs","reason":"Check nested JSON path assertions remain platform-portable while still proving actionable rule context."}
 {"file":"tests/ls_lint_rule_coverage_tests.rs","reason":"Check nested JSON path assertions remain platform-portable while still proving LS-Lint parity semantics."}
 {"file":"tests/real_project_agentic_feedback_tests.rs","reason":"Check nested JSON and guided-output path assertions remain platform-portable while still proving stable agent feedback."}
+{"file":"tests/ls_lint_parity_regression_tests.rs","reason":"Check external git fixture materialization readback remains newline-portable without weakening pinned revision or cache reuse assertions."}
