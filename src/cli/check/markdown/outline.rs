@@ -89,13 +89,14 @@ fn choose_root_match(
     first_required: MarkdownOutlineView<'_>,
     headings: &[MarkdownHeading<'_>],
 ) -> Result<RootMatch, String> {
+    let matcher = HeadingMatcher::new(first_required)?;
     if document_title_boundary(headings).is_some() {
         let root_level = 2;
         let start_index = 1;
         let end_index = root_scope_end(headings, start_index, root_level);
         let mut matches = 0usize;
         for heading in &headings[start_index..end_index] {
-            if heading.depth == root_level && matches_heading(first_required, heading)? {
+            if heading.depth == root_level && matcher.matches(heading)? {
                 matches += 1;
             }
         }
@@ -118,7 +119,7 @@ fn choose_root_match(
 
     let mut matches = Vec::new();
     for (index, heading) in headings.iter().enumerate() {
-        if matches_heading(first_required, heading)? {
+        if matcher.matches(heading)? {
             matches.push((index, heading.depth));
         }
     }
@@ -200,12 +201,10 @@ fn find_heading(
     end_index: usize,
     level: usize,
 ) -> Result<Option<usize>, String> {
-    for (index, heading) in headings
-        .iter()
-        .enumerate()
-        .take(end_index)
-        .skip(start_index)
-    {
+    let matcher = HeadingMatcher::new(view)?;
+    let mut index = start_index;
+    while index < end_index {
+        let heading = &headings[index];
         if heading.depth < level {
             return Ok(None);
         }
@@ -215,9 +214,14 @@ fn find_heading(
                 view.title, level, heading.depth, heading.text, heading.line_number
             ));
         }
-        if heading.depth == level && matches_heading(view, heading)? {
-            return Ok(Some(index));
+        if heading.depth == level {
+            if matcher.matches(heading)? {
+                return Ok(Some(index));
+            }
+            index = section_end(headings, index + 1, end_index, level);
+            continue;
         }
+        index += 1;
     }
     Ok(None)
 }
@@ -237,24 +241,39 @@ fn section_end(
         .unwrap_or(end_index)
 }
 
-fn matches_heading(
-    view: MarkdownOutlineView<'_>,
-    heading: &MarkdownHeading<'_>,
-) -> Result<bool, String> {
-    match view.match_mode {
-        "exact" => Ok(heading.text == view.title),
-        "regex" => Regex::new(view.title)
-            .map(|regex| regex.is_match(heading.text))
-            .map_err(|error| {
+struct HeadingMatcher<'a> {
+    view: MarkdownOutlineView<'a>,
+    regex: Option<Regex>,
+}
+
+impl<'a> HeadingMatcher<'a> {
+    fn new(view: MarkdownOutlineView<'a>) -> Result<Self, String> {
+        let regex = if view.match_mode == "regex" {
+            Some(Regex::new(view.title).map_err(|error| {
                 format!(
                     "markdown.outline regex '{}' could not be compiled: {}",
                     view.title, error
                 )
-            }),
-        mode => Err(format!(
-            "markdown.outline match mode '{}' is not supported",
-            mode
-        )),
+            })?)
+        } else {
+            None
+        };
+        Ok(Self { view, regex })
+    }
+
+    fn matches(&self, heading: &MarkdownHeading<'_>) -> Result<bool, String> {
+        match self.view.match_mode {
+            "exact" => Ok(heading.text == self.view.title),
+            "regex" => Ok(self
+                .regex
+                .as_ref()
+                .expect("regex is compiled for regex match mode")
+                .is_match(heading.text)),
+            mode => Err(format!(
+                "markdown.outline match mode '{}' is not supported",
+                mode
+            )),
+        }
     }
 }
 

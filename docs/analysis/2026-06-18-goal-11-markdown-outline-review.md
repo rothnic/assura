@@ -70,3 +70,17 @@ Resolution:
   outline made entirely of optional entries can be absent.
 - Added `markdown_outline_allows_headingless_document_when_every_entry_is_optional`
   to cover the regression.
+
+GitHub review:
+
+- Gemini flagged a high-priority false positive where `find_heading` walked
+  into child headings of an unmatched sibling section and reported a skipped
+  level.
+- Gemini flagged repeated regex compilation in root and heading matching.
+
+Resolution:
+
+- `find_heading` now skips unmatched sibling sections with `section_end`.
+- Outline entry regexes are compiled once per root search or entry search.
+- Added `markdown_outline_skips_unmatched_sibling_sections` to cover the false
+  positive.

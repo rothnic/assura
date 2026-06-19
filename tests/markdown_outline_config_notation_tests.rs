@@ -114,6 +114,35 @@ exclude:
 }
 
 #[test]
+fn markdown_outline_skips_unmatched_sibling_sections() {
+    let project = TempDir::new().unwrap();
+    write_config(
+        &project,
+        r#"
+structure:
+  ./:
+    extra: true
+    guide.md:
+      markdown:
+        outline:
+          - Overview
+exclude:
+  - target/**
+"#,
+    );
+    fs::write(
+        project.path().join("guide.md"),
+        "# Guide\n\n## Intro\n\n### Context\n\n## Overview\n",
+    )
+    .unwrap();
+
+    let report = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+
+    assert!(report.success, "{:#?}", report.violations);
+    assert!(report.violations.is_empty());
+}
+
+#[test]
 fn markdown_outline_reports_required_child_under_present_optional_parent() {
     let project = TempDir::new().unwrap();
     write_config(
