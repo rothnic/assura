@@ -158,3 +158,14 @@ as paused after the restore.
   Updated the helper to use `npm.cmd` on Windows and `npm` elsewhere while
   preserving the pinned LS-Lint package install. Hosted Windows proof is still
   required before completion.
+- 2026-06-19: The next PR #93 hosted Windows run passed Node/npm setup and
+  failed in the native LS-Lint golden assertions because LS-Lint reports JSON
+  keys with Windows `\` separators while the expected fixture paths use `/`.
+  Normalized native LS-Lint JSON keys at each test collection boundary while
+  keeping Assura output assertions unchanged. Local
+  `cargo test --all-features -p assura --test ls_lint_rule_coverage_tests
+  ls_lint_native_golden`, `cargo fmt --all -- --check`,
+  `cargo check --all-targets --all-features`,
+  `cargo clippy --all-targets --all-features -- -D warnings`, and
+  `cargo test --all-features` passed. Hosted Windows proof is still required
+  before completion.

@@ -14,3 +14,4 @@
 {"file":"tests/ls_lint_parity_regression_tests.rs","reason":"Check external git fixture materialization readback remains newline-portable without weakening pinned revision or cache reuse assertions."}
 {"file":".github/workflows/ci.yml","reason":"Check the Rust Test Suite matrix installs Node/npm before running native LS-Lint golden tests on Windows."}
 {"file":"tests/ls_lint_rule_coverage/mod.rs","reason":"Check the native LS-Lint golden helper uses the platform-appropriate npm command without weakening pinned package installation."}
+{"file":"tests/ls_lint_rule_coverage/mod.rs","reason":"Check native LS-Lint JSON path normalization keeps golden comparisons platform-portable without changing Assura path output assertions."}

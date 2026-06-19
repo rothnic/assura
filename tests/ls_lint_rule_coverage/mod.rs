@@ -91,13 +91,7 @@ fn run_native_ls_lint(project: &TempDir) -> (bool, Vec<String>) {
             .as_object()
             .unwrap_or_else(|| panic!("native LS-Lint JSON should be an object: {value:#}"))
             .keys()
-            .map(|path| {
-                if path == "." {
-                    String::new()
-                } else {
-                    path.clone()
-                }
-            })
+            .map(|path| normalize_native_lslint_path(path))
             .collect::<Vec<_>>();
         paths.sort();
         paths
@@ -186,17 +180,19 @@ fn run_native_ls_lint_target(project: &TempDir, target: &str) -> (bool, Vec<Stri
             .as_object()
             .unwrap()
             .keys()
-            .map(|path| {
-                if path == "." {
-                    String::new()
-                } else {
-                    path.clone()
-                }
-            })
+            .map(|path| normalize_native_lslint_path(path))
             .collect::<Vec<_>>()
     };
     paths.sort();
     (success, paths)
+}
+
+fn normalize_native_lslint_path(path: &str) -> String {
+    if path == "." {
+        String::new()
+    } else {
+        path.replace('\\', "/")
+    }
 }
 
 fn run_assura_lslint_target(project: &TempDir, target: &str) -> (bool, Vec<String>) {
@@ -402,7 +398,7 @@ ls:
         .as_object()
         .unwrap()
         .keys()
-        .cloned()
+        .map(|path| normalize_native_lslint_path(path))
         .collect::<Vec<_>>();
     native_paths.sort();
 
@@ -458,7 +454,7 @@ ls:
         .as_object()
         .unwrap()
         .keys()
-        .cloned()
+        .map(|path| normalize_native_lslint_path(path))
         .collect::<Vec<_>>();
     native_paths.sort();
 
