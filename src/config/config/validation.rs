@@ -12,6 +12,9 @@ use std::collections::HashSet;
 #[cfg(feature = "yaml-config")]
 use std::path::{Component, Path};
 
+#[cfg(feature = "yaml-config")]
+mod release_contracts;
+
 /// Validate structure-first config semantics without the full validator stack.
 #[cfg(feature = "yaml-config")]
 pub(crate) fn validate_config_semantics(config: &Config) -> Result<(), String> {
@@ -116,6 +119,16 @@ fn validate_extension_config(config: &ExtensionConfig) -> Result<(), String> {
             ));
         }
     }
+    let mut release_contract_ids = HashSet::new();
+    for contract in &config.release_contracts {
+        release_contracts::validate_release_contract_config(contract)?;
+        if !release_contract_ids.insert(&contract.id) {
+            return Err(format!(
+                "extensions.release_contracts.{}: duplicate release contract id",
+                contract.id
+            ));
+        }
+    }
     let mut relationship_ids = HashSet::new();
     for relationship in &config.relationships {
         validate_relationship_constraint(relationship)?;
@@ -129,7 +142,6 @@ fn validate_extension_config(config: &ExtensionConfig) -> Result<(), String> {
     Ok(())
 }
 
-#[cfg(feature = "yaml-config")]
 fn validate_quality_config(config: &QualityConfig) -> Result<(), String> {
     let mut ids = HashSet::new();
     for (id, scope) in &config.scopes {
@@ -281,7 +293,6 @@ fn validate_relative_path_text(value: &str, context: &str) -> Result<(), String>
     Ok(())
 }
 
-#[cfg(feature = "yaml-config")]
 fn validate_severity(value: &str) -> Result<(), String> {
     match value {
         "critical" | "high" | "medium" | "low" => Ok(()),

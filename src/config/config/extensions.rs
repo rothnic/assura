@@ -11,9 +11,50 @@ pub struct ExtensionConfig {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub custom_constraints: Vec<CustomConstraintConfig>,
 
+    /// Configured release artifact contracts executed by `assura check`.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub release_contracts: Vec<ReleaseContractConfig>,
+
     /// Internal relationship constraints normalized from structure notation.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub relationships: Vec<RelationshipConstraintConfig>,
+}
+
+/// A reusable release artifact synchronization contract.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub struct ReleaseContractConfig {
+    /// Stable local identifier used in diagnostics.
+    pub id: String,
+    /// Artifacts this project intentionally publishes.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub artifacts: Vec<ReleaseArtifactConfig>,
+    /// Workflow files expected to publish the configured artifacts.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub workflow_files: Vec<String>,
+    /// Documentation files expected to mention supported artifacts.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub docs_files: Vec<String>,
+    /// Installer or bootstrap scripts expected to mention supported artifacts.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub installer_files: Vec<String>,
+    /// Allowed branch names in raw/blob install URLs.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub allowed_url_branches: Vec<String>,
+    /// Optional diagnostic severity.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub severity: Option<String>,
+}
+
+/// One artifact declared by a release contract.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub struct ReleaseArtifactConfig {
+    /// Published archive or package asset name.
+    pub name: String,
+    /// Whether the artifact requires a `<name>.sha256` sidecar mention.
+    #[serde(default)]
+    pub checksum_sidecar: bool,
 }
 
 /// A first-party custom constraint declaration.
@@ -123,6 +164,12 @@ impl ExtensionConfig {
     /// Add a custom constraint declaration.
     pub fn with_custom_constraint(mut self, constraint: CustomConstraintConfig) -> Self {
         self.custom_constraints.push(constraint);
+        self
+    }
+
+    /// Add a release artifact contract.
+    pub fn with_release_contract(mut self, contract: ReleaseContractConfig) -> Self {
+        self.release_contracts.push(contract);
         self
     }
 

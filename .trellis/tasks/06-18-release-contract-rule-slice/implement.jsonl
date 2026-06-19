@@ -1,0 +1,4 @@
+{"file":"docs/goals/assura-rule-release-sync.md","reason":"Canonical goal, narrowed scope, definition of done, and reviewer blocking criteria for the release-contract rule."}
+{"file":".trellis/spec/assura/config-notation.md","reason":"Config notation principles and gates for new Assura-authored validation notation."}
+{"file":".trellis/spec/assura/structure-enforcement.md","reason":"Existing structure-validation contract and diagnostic expectations to align the new rule with current validation behavior."}
+{"file":".trellis/spec/assura/roadmap.md","reason":"Roadmap context confirming this is the next planned release-contract rule candidate after iteration 02."}
