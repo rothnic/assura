@@ -2177,23 +2177,44 @@ fn check_docs_release_performance(checks: &mut Checks) {
         !current_command.is_empty(),
         "performance current.json: missing command_line",
     );
-    for fragment in [
-        "--output benches/history/current.json",
-        "--history benches/history/ls-lint-comparison-history.jsonl",
-        "--website-dir website/public/data/performance",
-        "--iterations 5",
+    for (option, expected_value) in [
+        ("--output", "benches/history/current.json"),
+        (
+            "--history",
+            "benches/history/ls-lint-comparison-history.jsonl",
+        ),
+        ("--website-dir", "website/public/data/performance"),
     ] {
+        let actual_value = command_option_value(current_command, option);
         checks.require(
-            current_command.contains(fragment),
-            format!("performance current.json command_line missing {fragment}"),
+            actual_value == Some(expected_value),
+            format!("performance current.json command_line must set {option} to {expected_value}"),
         );
         checks.require(
-            performance_text.contains(fragment),
-            format!("performance docs baseline command missing {fragment}"),
+            text_contains_option_value(&performance_text, option, expected_value),
+            format!("performance docs baseline command missing {option} {expected_value}"),
         );
         checks.require(
-            performance_cases_text.contains(fragment),
-            format!("performance test cases command missing {fragment}"),
+            text_contains_option_value(&performance_cases_text, option, expected_value),
+            format!("performance test cases command missing {option} {expected_value}"),
+        );
+    }
+    let report_iterations = bench_current.get("iterations").and_then(Value::as_u64);
+    let command_iterations =
+        command_option_value(current_command, "--iterations").and_then(|value| value.parse().ok());
+    checks.require(
+        command_iterations.is_some() && command_iterations == report_iterations,
+        "performance current.json command_line iterations must match iterations field",
+    );
+    if let Some(iterations) = report_iterations {
+        let iterations = iterations.to_string();
+        checks.require(
+            text_contains_option_value(&performance_text, "--iterations", &iterations),
+            format!("performance docs baseline command missing --iterations {iterations}"),
+        );
+        checks.require(
+            text_contains_option_value(&performance_cases_text, "--iterations", &iterations),
+            format!("performance test cases command missing --iterations {iterations}"),
         );
     }
     if !current_command.contains("--include-external-fixtures")
@@ -2217,6 +2238,10 @@ fn check_docs_release_performance(checks: &mut Checks) {
         .pointer("/claim_summary/two_x_claim_verdict")
         .and_then(Value::as_str)
         .unwrap_or_default();
+    checks.require(
+        !cold_verdict.is_empty(),
+        "performance current.json: cold claim verdict must be a non-empty string",
+    );
     if cold_verdict != "complete" {
         checks.require(
             performance_review_text.contains("Cold Gate Follow-Up Acceptance"),
@@ -2235,6 +2260,24 @@ fn check_docs_release_performance(checks: &mut Checks) {
             "Goal 13 progress log: missing accepted bounded follow-up record",
         );
     }
+}
+
+fn command_option_value<'a>(command_line: &'a str, option: &str) -> Option<&'a str> {
+    let equals_prefix = format!("{option}=");
+    let mut tokens = command_line.split_whitespace();
+    while let Some(token) = tokens.next() {
+        if token == option {
+            return tokens.next();
+        }
+        if let Some(value) = token.strip_prefix(&equals_prefix) {
+            return Some(value);
+        }
+    }
+    None
+}
+
+fn text_contains_option_value(text: &str, option: &str, value: &str) -> bool {
+    text.contains(&format!("{option} {value}")) || text.contains(&format!("{option}={value}"))
 }
 
 struct ReleaseArtifact {
