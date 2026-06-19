@@ -66,6 +66,15 @@ Independent review: Descartes, `trellis-check`, 2026-06-18.
 | Test relationship markers could be satisfied by source-only text. | Added external `assura hooks --help` command-surface coverage and changed matrix test markers to require test-file text. Source markers are checked separately. |
 | Validation evidence was incomplete. | Expanded this artifact to include the full Goal 12 validation set. |
 
+Gemini review on PR #54, 2026-06-19.
+
+| Finding | Resolution |
+| --- | --- |
+| `metadata_package` used suffix matching and could select the wrong `Cargo.toml`. | Manifest lookup now normalizes Cargo metadata paths to exact repo-relative paths before matching matrix rows. |
+| `workspace_default_members` may be absent from Cargo 1.70 metadata. | Default-member enforcement now runs only when Cargo metadata exposes `workspace_default_members`; workspace membership remains required. |
+| CLI enum parsing counted braces inside comments. | Enum inventory parsing now skips line, block, and doc-comment lines before variant/depth handling. |
+| Experimental support-claim scanning could flag negated statements. | Public-claim scanning now excludes `unsupported`, `not supported`, and `not yet supported` phrases before treating a line as a supported-status claim. |
+
 ## Validation Commands
 
 ```bash

@@ -1252,6 +1252,9 @@ fn enum_variant_names<'a>(text: &'a str, enum_name: &str) -> BTreeSet<&'a str> {
     let mut variants = BTreeSet::new();
     for line in rest.lines() {
         let trimmed = line.trim();
+        if trimmed.starts_with("//") || trimmed.starts_with("/*") || trimmed.starts_with('*') {
+            continue;
+        }
         if depth == 1
             && trimmed
                 .chars()
@@ -1285,6 +1288,8 @@ fn check_public_support_claim_consistency(checks: &mut Checks) {
                 if lower.contains(surface)
                     && lower.contains("supported")
                     && !lower.contains("unsupported")
+                    && !lower.contains("not supported")
+                    && !lower.contains("not yet supported")
                     && !lower.contains(expected_level)
                 {
                     checks.add(format!(
@@ -1711,10 +1716,12 @@ fn check_manifest_semantics(checks: &mut Checks) {
         workspace_member_names(&metadata, "workspace_members") == expected_members,
         "Cargo.toml: workspace members drifted",
     );
-    checks.require(
-        workspace_member_names(&metadata, "workspace_default_members") == expected_members,
-        "Cargo.toml: workspace default-members must include all current members",
-    );
+    if metadata.get("workspace_default_members").is_some() {
+        checks.require(
+            workspace_member_names(&metadata, "workspace_default_members") == expected_members,
+            "Cargo.toml: workspace default-members must include all current members",
+        );
+    }
 }
 
 fn cargo_metadata(checks: &mut Checks) -> Option<Value> {
@@ -1743,8 +1750,18 @@ fn metadata_package<'a>(metadata: &'a Value, manifest: &str) -> Option<&'a Value
             package
                 .get("manifest_path")
                 .and_then(Value::as_str)
-                .is_some_and(|path| rel(Path::new(path)).ends_with(manifest))
+                .is_some_and(|path| metadata_manifest_rel(path) == manifest)
         })
+}
+
+fn metadata_manifest_rel(path: &str) -> String {
+    let path = Path::new(path);
+    if let Ok(cwd) = env::current_dir() {
+        if let Ok(relative) = path.strip_prefix(cwd) {
+            return rel(relative);
+        }
+    }
+    rel(path)
 }
 
 fn metadata_string_field(package: &Value, field: &str) -> Option<String> {

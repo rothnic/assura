@@ -124,3 +124,7 @@ instead of producing actionable classification evidence.
   inventory from `src/cli/args.rs`, scanning public docs for experimental
   command support-claim drift, using `cargo metadata` for manifest policy
   rows, and requiring test markers to come from test files.
+- 2026-06-18: Addressed Gemini PR review feedback on PR #54 by making manifest
+  lookup use exact repo-relative paths, treating `workspace_default_members` as
+  an optional Cargo metadata field for MSRV compatibility, skipping enum comment
+  lines while parsing CLI variants, and excluding common negated support claims.
