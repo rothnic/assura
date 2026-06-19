@@ -23,8 +23,8 @@ related:
 
 ## Objective
 
-Plan the next bounded roadmap iteration after Iteration 01. This document is
-planned, not active. It prevents the Iteration 01 completion from being
+This document records the bounded roadmap iteration after Iteration 01 as
+completed. It prevents the Iteration 01 completion from being
 mistaken for completion of the full product roadmap.
 
 Iteration 02 deepened Assura's policy coverage and ecosystem fit while
@@ -37,7 +37,7 @@ claims because the repo enforces those promises.
 
 ## Activation Criteria
 
-This iteration was activated and completed after:
+This iteration was activated after:
 
 - all Iteration 01 goals are completed;
 - the v0.1.0 release readiness checklist is satisfied or an explicit release
