@@ -2,3 +2,5 @@
 {"file":".trellis/spec/assura/tooling-stabilization.md","reason":"Check Windows CI baseline debt is closed only after hosted proof."}
 {"file":".trellis/spec/assura/roadmap.md","reason":"Check roadmap status after Windows CI restore."}
 {"file":"docs/compatibility-and-surface.md","reason":"Check Windows release support claims remain accurate."}
+{"file":"src/cli/performance_report/ls_lint.rs","reason":"Check the native LS-Lint binary path test remains separator-portable and still rejects the Node wrapper path."}
+{"file":"src/cli/performance_report/external_fixtures.rs","reason":"Check the external fixture cache test remains newline-portable without weakening pinned revision or cache reuse assertions."}

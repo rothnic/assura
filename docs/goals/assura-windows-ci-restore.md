@@ -111,3 +111,17 @@ as paused after the restore.
   `cargo clippy --all-targets --all-features -- -D warnings`, and
   `cargo test --all-features` passed. Hosted Windows proof still required
   before completion.
+- 2026-06-19: PR #93 hosted Windows `Test Suite (windows-latest, stable)` ran
+  far enough to prove the `libgit2-sys`/MSVC linker failure is cleared, then
+  failed on two Unix-specific performance-report test assertions: a native
+  LS-Lint binary path string check that assumed `/` separators and an external
+  fixture content check that assumed LF checkout newlines. Updated the tests to
+  assert path components and normalize readback newlines while preserving the
+  same product coverage. Local `cargo fmt --all -- --check`,
+  `cargo test --all-features -p assura --lib`,
+  `cargo check --all-targets --all-features`,
+  `cargo clippy --all-targets --all-features -- -D warnings`,
+  `cargo run --quiet -- check --format json .`, `cargo xtask evidence`,
+  `cargo xtask target-state`, `git diff --check`, and
+  `cargo test --all-features` passed. Hosted Windows proof is still required
+  before completion.
