@@ -131,3 +131,6 @@ independently reviewed.
   `56937c6f688dd4182b195363569b1a4dbeb8f815` run with
   `source_worktree_dirty: true`, and release-sync enforcement is still partial
   even though PR #54 CI proved the current install/release smoke matrix.
+- 2026-06-19: Started the first implementation slice by converting
+  release/performance target-state checks to an explicit release artifact
+  matrix and making dirty-source performance artifacts fail deterministically.

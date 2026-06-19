@@ -2008,18 +2008,16 @@ fn check_docs_release_performance(checks: &mut Checks) {
 
     let release_text = read("docs/release-notes.md");
     let compatibility_text = read("docs/compatibility-and-surface.md");
-    let install_scripts = format!(
-        "{}\n{}",
-        read("website/public/install.sh"),
-        read("website/public/install.ps1")
-    );
-    for archive in [
-        "assura-linux-amd64.tar.gz",
-        "assura-linux-musl-amd64.tar.gz",
-        "assura-macos-arm64.tar.gz",
-        "assura-macos-amd64.tar.gz",
-        "assura-windows-amd64.zip",
-    ] {
+    let release_checklist_text = read("docs/release-candidate-checklist.md");
+    let release_readiness_text = read("website/src/content/docs/reference/release-readiness.md");
+    let installation_text = read("website/src/content/docs/guides/installation.md");
+    let release_workflow = read(".github/workflows/release.yml");
+    let ci_workflow = read(".github/workflows/ci.yml");
+    let install_sh = read("website/public/install.sh");
+    let install_ps1 = read("website/public/install.ps1");
+
+    for artifact in release_artifacts() {
+        let archive = artifact.archive;
         checks.require(
             compatibility_text.contains(archive),
             format!("docs/compatibility-and-surface.md: missing {archive}"),
@@ -2028,11 +2026,52 @@ fn check_docs_release_performance(checks: &mut Checks) {
             release_text.contains(archive),
             format!("docs/release-notes.md: missing {archive}"),
         );
+        checks.require(
+            release_checklist_text.contains(archive),
+            format!("docs/release-candidate-checklist.md: missing {archive}"),
+        );
+        checks.require(
+            release_readiness_text.contains(archive),
+            format!("website release readiness docs: missing {archive}"),
+        );
+        checks.require(
+            release_workflow.contains(&format!("archive_name: {archive}")),
+            format!(".github/workflows/release.yml: missing release artifact {archive}"),
+        );
+        if let Some(installer) = artifact.installer {
+            let install_text = if installer == "install.ps1" {
+                &install_ps1
+            } else {
+                &install_sh
+            };
+            checks.require(
+                install_text.contains(archive),
+                format!("website/public/{installer}: missing installer archive {archive}"),
+            );
+            checks.require(
+                installation_text.contains(archive),
+                format!("website installation docs: missing installer archive {archive}"),
+            );
+        }
+        if let Some(ci_label) = artifact.ci_smoke_label {
+            checks.require(
+                ci_workflow.contains(&format!("archive_name: {archive}"))
+                    && ci_workflow.contains(ci_label),
+                format!(
+                    ".github/workflows/ci.yml: missing installable adoption smoke for {archive}"
+                ),
+            );
+        }
     }
     checks.require(
-        install_scripts.contains("assura-linux-amd64.tar.gz")
-            && install_scripts.contains("assura-windows-amd64.zip"),
-        "website install scripts: expected public archive names are missing",
+        release_workflow.contains("target/${{ matrix.archive_name }}.sha256")
+            && ci_workflow.contains("target/${{ matrix.archive_name }}.sha256"),
+        "release workflows must upload checksum sidecars for every archive",
+    );
+    checks.require(
+        release_text.contains("`.sha256` checksum file next to every archive")
+            && compatibility_text.contains(".sha256"),
+        "release docs must describe checksum sidecars for every archive",
     );
 
     let Ok(bench_current) = serde_json::from_str::<Value>(&read("benches/history/current.json"))
@@ -2062,11 +2101,79 @@ fn check_docs_release_performance(checks: &mut Checks) {
             format!("performance current.json: missing {field}"),
         );
     }
+    for field in [
+        "commit_sha",
+        "branch",
+        "source_worktree_dirty",
+        "environment",
+        "command_line",
+        "iterations",
+        "ls_lint_status",
+    ] {
+        checks.require(
+            bench_current.get(field).is_some(),
+            format!("performance current.json: missing provenance field {field}"),
+        );
+    }
     checks.require(
         bench_current.get("schema_version").and_then(Value::as_str)
             == Some("assura.performance.v1"),
         "performance current.json: unexpected schema_version",
     );
+    checks.require(
+        bench_current
+            .get("source_worktree_dirty")
+            .and_then(Value::as_bool)
+            == Some(false),
+        "performance current.json: source_worktree_dirty must be false",
+    );
+    checks.require(
+        bench_current
+            .pointer("/claim_summary/two_x_claim_verdict")
+            .is_some()
+            && bench_current
+                .pointer("/warm_claim_summary/two_x_claim_verdict")
+                .is_some(),
+        "performance current.json: missing cold or warm claim verdict",
+    );
+}
+
+struct ReleaseArtifact {
+    archive: &'static str,
+    installer: Option<&'static str>,
+    ci_smoke_label: Option<&'static str>,
+}
+
+const RELEASE_ARTIFACTS: &[ReleaseArtifact] = &[
+    ReleaseArtifact {
+        archive: "assura-linux-amd64.tar.gz",
+        installer: Some("install.sh"),
+        ci_smoke_label: Some("ubuntu-x86_64"),
+    },
+    ReleaseArtifact {
+        archive: "assura-linux-musl-amd64.tar.gz",
+        installer: None,
+        ci_smoke_label: None,
+    },
+    ReleaseArtifact {
+        archive: "assura-macos-arm64.tar.gz",
+        installer: Some("install.sh"),
+        ci_smoke_label: Some("macos-arm64"),
+    },
+    ReleaseArtifact {
+        archive: "assura-macos-amd64.tar.gz",
+        installer: Some("install.sh"),
+        ci_smoke_label: Some("macos-x86_64"),
+    },
+    ReleaseArtifact {
+        archive: "assura-windows-amd64.zip",
+        installer: Some("install.ps1"),
+        ci_smoke_label: Some("windows-x86_64"),
+    },
+];
+
+fn release_artifacts() -> &'static [ReleaseArtifact] {
+    RELEASE_ARTIFACTS
 }
 
 fn check_agent_workflow_state(checks: &mut Checks) {
