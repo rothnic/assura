@@ -1,0 +1,5 @@
+{"file":"docs/goals/assura-rule-support-matrix-surface-expansion.md","reason":"Check new goal completeness, boundaries, validation commands, and reviewer blocking criteria."}
+{"file":".trellis/spec/assura/roadmap.md","reason":"Check roadmap routes the next executable candidate without reopening completed first slices."}
+{"file":"docs/analysis/2026-06-09-assura-best-practice-target-state.md","reason":"Check target-state backlog aligns with the new goal and does not overclaim implementation."}
+{"file":".assura/config.yml","reason":"Check current dogfood coverage remains unchanged until the implementation task expands it."}
+{"file":".trellis/spec/assura/config-notation.md","reason":"Check planned notation aligns with existing support-matrix and manifest-semantics surfaces."}

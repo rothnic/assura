@@ -1,0 +1,5 @@
+{"file":"docs/analysis/2026-06-09-assura-best-practice-target-state.md","reason":"Target-state backlog names the remaining P0 support-matrix join gap."}
+{"file":"docs/goals/assura-rule-public-surface-support-matrix.md","reason":"Completed first support-matrix slice; new goal must not duplicate it."}
+{"file":"docs/analysis/2026-06-18-goal-12-support-test-matrix-review.md","reason":"Existing target-state verifier already joins support, docs, manifest, and tests; reusable rule should draw from this evidence."}
+{"file":"src/cli/check/support_matrix.rs","reason":"Current reusable support-matrix implementation covers command contracts and Rust exports only."}
+{"file":"docs/goals/assura-rule-cargo-manifest-semantics.md","reason":"Completed manifest-semantics rule provides manifest metadata boundaries for the next support-matrix slice."}
