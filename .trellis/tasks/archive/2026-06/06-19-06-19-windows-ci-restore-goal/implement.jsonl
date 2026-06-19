@@ -1,0 +1,5 @@
+{"file":".trellis/spec/assura/roadmap.md","reason":"Source of truth for the remaining Windows CI Restore roadmap item and next-candidate routing."}
+{"file":".trellis/spec/assura/tooling-stabilization.md","reason":"Records the deferred libgit2-sys MSVC failure and re-enable criteria."}
+{"file":"docs/goals/assura-windows-ci-restore.md","reason":"New planned goal that defines the Windows CI restore objective and proof gates."}
+{"file":"docs/compatibility-and-surface.md","reason":"Documents supported Windows artifact claims that the goal must not overclaim."}
+{"file":"docs/release-candidate-checklist.md","reason":"Defines release evidence expectations for Windows assets and smoke checks."}

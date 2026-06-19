@@ -16,7 +16,7 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 2 | Tooling Baseline Cleanup | Completed | PRs #2-#4 merged; tasks archived under `.trellis/tasks/archive/2026-06/` |
 | 3 | Assura Self-Check Clean | Completed | PR #5 merged; current self-check remains clean |
 | 4 | Documentation Source Truth | Completed | Historical workflow systems are archived or marked historical |
-| 5 | Windows CI Restore | Later | fix `libgit2-sys` MSVC linker failure and restore matrix entry |
+| 5 | Windows CI Restore | Planned | next candidate: `docs/goals/assura-windows-ci-restore.md` |
 | 6 | Beyond Ls-Lint Rules | Completed | PRs #8, #11, and #12 merged; performance/parity tasks archived |
 | 7 | Agent Feedback MVP | Completed | PRs #13-#16 merged; keep stable `assura check --format agent` surface |
 | 8 | Agentic Adoption Iteration 01 / Phase 01 | Completed | Archived task `.trellis/tasks/archive/2026-06/06-01-roadmap-phase-01-execution` |
@@ -60,20 +60,22 @@ one `--format <agent>-hook` value per agent. Treat older roadmap/task wording in
 that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
 Planned next roadmap candidate:
-None selected after Support Matrix Surface Expansion completion. The next
-candidate should come from fresh target-state evidence, not from reopening the
-completed support-matrix expansion slice.
+Windows CI Restore, defined in `docs/goals/assura-windows-ci-restore.md`.
+Fresh target-state evidence after Support Matrix Surface Expansion completion
+shows no active Trellis task and no planned goal docs remaining; the remaining
+roadmap debt is the deferred `windows-latest` Rust test matrix restore recorded
+in `.trellis/spec/assura/tooling-stabilization.md`.
 
 ## Recommended Next Action
 
-Revalidate current target-state evidence before selecting the next goal.
+Execute or revalidate `docs/goals/assura-windows-ci-restore.md`.
 
-The next agent should use `assura-goal-validation` to compare
-`.assura/config.yml`, `cargo xtask target-state`, and this roadmap before
-creating a new bounded goal. Do not reopen the completed support-matrix
-expansion unless a new concrete docs, manifest, package, binary, or support
-status drift case is named with executable evidence. The product roadmap
-remains open until a separate product decision declares it complete.
+The next agent should use `assura-goal-validation` before implementation, then
+restore `windows-latest` to the Rust test matrix only with hosted Windows proof.
+Do not reopen the completed support-matrix expansion unless a new concrete
+docs, manifest, package, binary, or support status drift case is named with
+executable evidence. The product roadmap remains open until a separate product
+decision declares it complete.
 
 ## Roadmap Rules
 
