@@ -28,7 +28,7 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 14 | Module Topology Rule | Completed | PR #72 merged; archive PR #73 merged |
 | 15 | Docs Lifecycle Rule | Completed | PR #78 merged; archive PR #79 merged |
 | 16 | Docs Lifecycle Coverage | Completed | PR #83 merged; archive/sync PR #84 merged |
-| 17 | Support Matrix Surface Expansion | Completed | PR #88 merged; archive/sync pending in current PR |
+| 17 | Support Matrix Surface Expansion | Completed | PR #88 merged; archive/sync PR #89 merged |
 
 ## Active Roadmap Iteration
 
@@ -50,8 +50,8 @@ Test Relationship Rule first slice is complete via PR #68 and archive PR #69.
 Module Topology Rule first slice is complete via PR #72 and archive PR #73.
 Docs Lifecycle Rule first slice is complete via PR #78 and archive PR #79.
 Docs Lifecycle Coverage first dogfood expansion is complete via PR #83.
-Support Matrix Surface Expansion is complete via PR #88; archive/sync is
-pending in the current PR.
+Support Matrix Surface Expansion is complete via PR #88 and archive/sync PR
+#89.
 This completion does not mark the broader Assura roadmap complete.
 
 Direction lock, clarified on 2026-05-31: do not create or revive
