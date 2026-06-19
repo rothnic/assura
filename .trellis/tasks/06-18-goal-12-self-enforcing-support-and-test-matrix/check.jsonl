@@ -4,3 +4,4 @@
 {"file": "docs/goals/assura-rule-cargo-manifest-semantics.md", "reason": "Check manifest metadata behavior matches the planned detector contract."}
 {"file": "docs/goals/assura-rule-test-relationship.md", "reason": "Check test relationship behavior matches the planned detector contract."}
 {"file": ".trellis/spec/assura/index.md", "reason": "Check the implementation preserves Assura project constraints and target-state direction."}
+{"file": "docs/analysis/2026-06-18-goal-12-support-test-matrix-review.md", "reason": "Review the support/test matrix evidence artifact and Goal 12 review-task closure."}
