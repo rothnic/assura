@@ -80,6 +80,9 @@ fn corrective_context_for_rule(rule: &str) -> &'static str {
     if rule.starts_with("test_relationship:") {
         return "Add the missing test evidence, classify the ignored/manual test or fixture family, or update extensions.test_relationships when the project policy changed.";
     }
+    if rule.starts_with("module_topology:") {
+        return "Classify the public module/export, fix the configured module root, or update extensions.module_topologies when module ownership changed.";
+    }
     if rule.starts_with("relationship:") {
         return "Create one of the expected counterpart/provider artifacts named in the relationship message, or update the declaring structure entry in .assura/config.yml.";
     }

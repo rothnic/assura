@@ -159,3 +159,18 @@ families plus CLI integration coverage.
   bounded Rust module/export inventory, public export/status conflict checks,
   and Assura dogfood policy while leaving module deletion/refactoring and docs
   lifecycle detection to later work.
+- 2026-06-19: Started implementation under Trellis task
+  `06-19-module-topology-rule-implementation`. Added
+  `extensions.module_topologies` config, semantic validation, runtime root and
+  public-export checks, compiled-config portability, Assura dogfood policy,
+  notation/support-policy docs, and focused parser/runtime/compiled CLI tests.
+  Local gates run so far: `cargo fmt --all -- --check`,
+  `cargo test --all-targets --quiet`, `cargo clippy --all-targets
+  --all-features -- -D warnings`, and
+  `cargo run --quiet -- check --format json .`.
+- 2026-06-19: Independent review found two blockers: conflicting export keys
+  across `family` and `public_exports` could silently overwrite at runtime, and
+  `status: unsupported` public exports were not covered as status conflicts.
+  Added semantic conflict rejection, unsupported-public-export runtime
+  diagnostics, and regression coverage. Re-ran focused tests plus the full
+  local gate set successfully.

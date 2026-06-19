@@ -466,6 +466,39 @@ Use this rule for explicit source-to-test evidence, accepted ignored/manual
 test files, and fixture-family ownership. Do not use it as a coverage
 percentage, mutation-test, or semantic test-adequacy claim.
 
+Module topology policies use `extensions.module_topologies`:
+
+```yaml
+extensions:
+  module_topologies:
+    - id: public_rust_modules
+      severity: high
+      rust_exports:
+        - src/lib.rs
+      modules:
+        - family: cli
+          status: supported
+          owner: assura-maintainers
+          purpose: supported CLI implementation
+          roots:
+            - src/cli
+          public_exports:
+            - cli
+        - family: experimental_graph
+          status: internal
+          owner: assura-maintainers
+          purpose: contained graph experiment
+          roots:
+            - src/experimental_graph
+          visibility: internal
+```
+
+Use this rule for explicit Rust module-family ownership, root existence, and
+bounded public export classification. `visibility: internal` means the family
+must not appear as a public export in configured `rust_exports` files. Do not
+use it as a broad Rust parser, public API semver guarantee, or refactoring
+mandate.
+
 ## Relationship Boundary
 
 `extensions.custom_constraints` remains an experimental first-party execution

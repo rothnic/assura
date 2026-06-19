@@ -176,6 +176,10 @@ extensions:
     - id: supported_surface_tests
       severity: high
       relationships:
+        - source: src/cli/check/module_topology.rs
+          required_tests:
+            - tests/module_topology_tests.rs
+            - crates/assura-check-cli/tests/compiled_module_topology_cli.rs
         - source: src/cli/check/test_relationship.rs
           required_tests:
             - tests/custom_constraints_tests.rs
@@ -193,6 +197,76 @@ extensions:
         - path: tests/ls_lint_parity_regression_tests.rs
           test: ls_lint_parity_audit_performance_shapes
           reason: manual_performance_audit
+  module_topologies:
+    - id: public_rust_modules
+      severity: high
+      rust_exports:
+        - src/lib.rs
+      modules:
+        - family: stable_hash
+          status: internal
+          owner: assura-maintainers
+          purpose: internal stable hash implementation re-export
+          roots:
+            - crates/assura-stable-hash
+          public_exports:
+            - stable_hash
+        - family: cli
+          status: supported
+          owner: assura-maintainers
+          purpose: supported CLI and report surface implementation
+          roots:
+            - src/cli
+          public_exports:
+            - cli
+        - family: config
+          status: supported
+          owner: assura-maintainers
+          purpose: supported configuration format implementation
+          roots:
+            - src/config
+          public_exports:
+            - config
+        - family: constraints
+          status: experimental
+          owner: assura-maintainers
+          purpose: experimental full-cli constraint internals
+          roots:
+            - src/constraints
+          public_exports:
+            - constraints
+        - family: intelligence
+          status: internal
+          owner: assura-maintainers
+          purpose: contained dependency-intelligence internals
+          roots:
+            - src/intelligence
+          public_exports:
+            - intelligence
+        - family: markdown
+          status: experimental
+          owner: assura-maintainers
+          purpose: experimental Markdown validation internals
+          roots:
+            - src/markdown
+          public_exports:
+            - markdown
+        - family: maturity
+          status: internal
+          owner: assura-maintainers
+          purpose: contained maturity detection internals
+          roots:
+            - src/maturity
+          public_exports:
+            - maturity
+        - family: validation
+          status: internal
+          owner: assura-maintainers
+          purpose: internal validation engine APIs
+          roots:
+            - src/validation
+          public_exports:
+            - validation
   support_matrices:
     - id: public_surface
       severity: high

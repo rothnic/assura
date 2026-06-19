@@ -27,6 +27,7 @@ This policy applies to Assura pre-1.0 releases.
 | `extensions.support_matrices` | Experimental first-party | Public command/API classification checks for repository policy. Rows must use `supported`, `experimental`, `internal`, `roadmap`, or `unsupported`. Breaking changes are allowed before 1.0 with release-note disclosure. |
 | `extensions.manifest_semantics` | Experimental first-party | Configured Cargo manifest metadata checks for package policy, publish status, descriptions, keywords, and declared binaries. It does not replace Cargo, dependency hygiene, license/source policy, or semver tooling. |
 | `extensions.test_relationships` | Experimental first-party | Configured source/test evidence, ignored/manual test, and fixture-family ownership checks. It does not claim coverage percentage or semantic test adequacy. |
+| `extensions.module_topologies` | Experimental first-party | Configured Rust module-family ownership, root existence, and bounded public export classification checks. It does not provide a full Rust parser, public API semver guarantee, or refactoring mandate. |
 | `assura watch` | Experimental | Do not advertise as release-grade until watch-mode tests and docs exist. |
 | Internal Rust APIs | Unstable | Public Rust module visibility in `src/lib.rs` is for binaries, tests, and benchmark harnesses unless a row explicitly promotes the API. No compatibility guarantee before 1.0. |
 

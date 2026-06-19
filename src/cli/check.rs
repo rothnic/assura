@@ -30,6 +30,7 @@ mod ls_fast_target;
 mod manifest_semantics;
 #[cfg(feature = "yaml-config")]
 mod markdown;
+mod module_topology;
 mod patterns;
 #[cfg(feature = "yaml-config")]
 mod prepared;

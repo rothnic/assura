@@ -3,7 +3,7 @@ use crate::config::config::{
     ManifestSemanticsManifestConfig, RelationshipConstraintConfig, RelationshipProviderConfig,
     ReleaseArtifactConfig, ReleaseContractConfig, SupportMatrixConfig, SupportMatrixEntryConfig,
     TestRelationshipConfig, TestRelationshipFixtureFamilyConfig,
-    TestRelationshipIgnoredTestConfig, TestRelationshipSourceConfig,
+    TestRelationshipIgnoredTestConfig, TestRelationshipSourceConfig, ModuleTopologyConfig,
 };
 
 /// Binary-safe extension config stored inside compiled artifacts.
@@ -14,6 +14,7 @@ struct PortableExtensionConfig {
     support_matrices: Vec<PortableSupportMatrixConfig>,
     manifest_semantics: Vec<PortableManifestSemanticsConfig>,
     test_relationships: Vec<PortableTestRelationshipConfig>,
+    module_topologies: Vec<PortableModuleTopologyConfig>,
     relationships: Vec<PortableRelationshipConstraintConfig>,
 }
 
@@ -152,11 +153,8 @@ impl From<ExtensionConfig> for PortableExtensionConfig {
                 .into_iter()
                 .map(Into::into)
                 .collect(),
-            test_relationships: config
-                .test_relationships
-                .into_iter()
-                .map(Into::into)
-                .collect(),
+            test_relationships: config.test_relationships.into_iter().map(Into::into).collect(),
+            module_topologies: config.module_topologies.into_iter().map(Into::into).collect(),
             relationships: config.relationships.into_iter().map(Into::into).collect(),
         }
     }
@@ -185,11 +183,8 @@ impl From<PortableExtensionConfig> for ExtensionConfig {
                 .into_iter()
                 .map(Into::into)
                 .collect(),
-            test_relationships: config
-                .test_relationships
-                .into_iter()
-                .map(Into::into)
-                .collect(),
+            test_relationships: config.test_relationships.into_iter().map(Into::into).collect(),
+            module_topologies: config.module_topologies.into_iter().map(Into::into).collect(),
             relationships: config.relationships.into_iter().map(Into::into).collect(),
         }
     }

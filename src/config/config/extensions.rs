@@ -27,9 +27,53 @@ pub struct ExtensionConfig {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub test_relationships: Vec<TestRelationshipConfig>,
 
+    /// Configured Rust module topology policies executed by `assura check`.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub module_topologies: Vec<ModuleTopologyConfig>,
+
     /// Internal relationship constraints normalized from structure notation.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub relationships: Vec<RelationshipConstraintConfig>,
+}
+
+/// A reusable Rust module topology policy.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub struct ModuleTopologyConfig {
+    /// Stable local identifier used in diagnostics.
+    pub id: String,
+    /// Module families intentionally classified by this policy.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub modules: Vec<ModuleTopologyModuleConfig>,
+    /// Rust source files whose public module/export families must be classified.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub rust_exports: Vec<String>,
+    /// Optional diagnostic severity.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub severity: Option<String>,
+}
+
+/// One classified Rust module family.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub struct ModuleTopologyModuleConfig {
+    /// Module family name, usually the top-level Rust module/export name.
+    pub family: String,
+    /// Support/topology status for this family.
+    pub status: String,
+    /// Owning surface, team, or maintainer group.
+    pub owner: String,
+    /// Short purpose for keeping this module family.
+    pub purpose: String,
+    /// Root files or directories that must exist for this module family.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub roots: Vec<String>,
+    /// Public export names intentionally allowed for this family.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub public_exports: Vec<String>,
+    /// Optional visibility marker: `public` or `internal`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub visibility: Option<String>,
 }
 
 /// A reusable source/test evidence policy.
@@ -345,6 +389,12 @@ impl ExtensionConfig {
     /// Add a source/test relationship policy.
     pub fn with_test_relationship(mut self, policy: TestRelationshipConfig) -> Self {
         self.test_relationships.push(policy);
+        self
+    }
+
+    /// Add a Rust module topology policy.
+    pub fn with_module_topology(mut self, policy: ModuleTopologyConfig) -> Self {
+        self.module_topologies.push(policy);
         self
     }
 
