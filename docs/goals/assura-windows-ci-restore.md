@@ -239,3 +239,13 @@ as paused after the restore.
   Performance Report, Documentation, Security Audit, and GitGuardian all passed.
   Gemini's earlier compile-warning review comment was contradicted by local and
   hosted `cargo check`, Clippy, and Test Suite success on the final head.
+- 2026-06-19: Final PR #93 head
+  `0217c1cf18ada9ac5dcad54c3efaffa4c39f97d2` passed hosted Rust CI run
+  `27839085592`, including `Test Suite (windows-latest, stable)` job
+  `82393863614`, plus Check, Clippy, Rustfmt, Evidence Gates, Code Coverage,
+  Performance Report, Documentation, Security Audit, GitGuardian, release smoke,
+  Windows installer smoke, and all installable adoption smoke jobs. The PR was
+  merged to `master` as merge commit
+  `272f3debc107c6ca29674130d9acbe67e23c7a40`; the stale Gemini review comment
+  was addressed in PR comment
+  `https://github.com/rothnic/assura/pull/93#issuecomment-4753545626`.
