@@ -201,3 +201,13 @@ or if existing target-state/evidence checks are weakened.
 - 2026-06-19: Created after docs lifecycle first slice merged in PR #78, task
   archive PR #79 merged, and completion sync PR #80 routed follow-up work to
   broaden dogfood coverage from live target-state evidence.
+- 2026-06-19: Started implementation task
+  `.trellis/tasks/06-19-docs-lifecycle-dogfood-expansion-implementation` on
+  branch `codex/docs-lifecycle-dogfood-expansion`; revalidated scope against
+  current `.assura/config.yml`, roadmap, target-state, and config-notation
+  token semantics before editing the dogfood policy.
+- 2026-06-19: Expanded `.assura/config.yml` with explicit active docs,
+  frontmatter status requirements, release archive claim tokens, and the
+  `performance-report` claim token. Left website docs and `2x` out of the first
+  implementation slice because their exact evidence boundaries remain
+  conditional or deferred by the goal.

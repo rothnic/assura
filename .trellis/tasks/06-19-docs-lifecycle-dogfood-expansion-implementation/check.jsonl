@@ -1,0 +1,5 @@
+{"file":".assura/config.yml","reason":"Check expanded policy remains explicit and bounded."}
+{"file":"docs/goals/assura-rule-docs-lifecycle-dogfood-expansion.md","reason":"Check implementation progress, completion criteria, and deferred `2x` scope."}
+{"file":".trellis/spec/assura/roadmap.md","reason":"Check roadmap does not overclaim completion and leaves next route."}
+{"file":"docs/analysis/2026-06-09-assura-best-practice-target-state.md","reason":"Check target-state language matches the implemented coverage."}
+{"file":"tests/docs_lifecycle_tests.rs","reason":"Check whether existing regression coverage proves policy behavior or needs a focused addition."}
