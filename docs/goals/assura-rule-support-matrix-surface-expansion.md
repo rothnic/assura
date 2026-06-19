@@ -2,7 +2,7 @@
 id: goal-assura-rule-support-matrix-surface-expansion
 type: goal
 title: Assura support matrix surface expansion
-status: planned
+status: completed
 created: 2026-06-19
 owners:
   - assura-maintainers
@@ -191,3 +191,9 @@ coverage proves equivalence.
   diagnostics. Required validation passed after fixes: format check, all-target
   tests, all-feature clippy, target-state, Assura JSON self-check, evidence,
   docs, and diff whitespace gates.
+- 2026-06-19: PR #88 merged as
+  `ebbdfa4765ab18b1c22589e22c8825fe7e1994e4` after all hosted checks passed.
+  Archived implementation task under
+  `.trellis/tasks/archive/2026-06/06-19-support-matrix-surface-expansion-implementation`
+  and routed roadmap/target-state follow-up toward fresh revalidation of
+  remaining concrete drift rather than reopening this completed slice.
