@@ -107,3 +107,11 @@ git diff --check
 Block the PR if a public surface can remain unclassified, if supported behavior
 has no test or documented exception, or if the rule set forces broad deletion
 instead of producing actionable classification evidence.
+
+## Progress Log
+
+- 2026-06-18: Revalidated against live repo state after Goal 11 merged in PR
+  #53. Goal remains valid: `cargo xtask target-state` already exists, but the
+  repo still needs a joined support/test matrix that connects command support,
+  docs claims, manifest metadata, public Rust exports, and required test
+  evidence with deterministic failures.

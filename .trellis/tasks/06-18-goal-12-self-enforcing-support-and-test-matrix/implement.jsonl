@@ -1,0 +1,7 @@
+{"file": "docs/goals/assura-goal-12-self-enforcing-support-and-test-matrix.md", "reason": "Primary execution contract for Goal 12 scope, validation, and review gates."}
+{"file": "docs/goals/assura-roadmap-iteration-02-policy-depth-and-ecosystem.md", "reason": "Iteration 02 sequencing and direction locks for support, tests, public examples, and stale-goal validation."}
+{"file": "docs/analysis/2026-06-09-assura-best-practice-target-state.md", "reason": "Defines the target-state detector backlog and current P0 support/test matrix gaps."}
+{"file": "docs/goals/assura-rule-public-surface-support-matrix.md", "reason": "Planned support-matrix rule intent and examples to reuse."}
+{"file": "docs/goals/assura-rule-cargo-manifest-semantics.md", "reason": "Planned manifest semantics rule intent and examples to reuse."}
+{"file": "docs/goals/assura-rule-test-relationship.md", "reason": "Planned test relationship rule intent and examples to reuse."}
+{"file": ".trellis/spec/assura/index.md", "reason": "Canonical Assura spec routing, constraints, and current direction."}

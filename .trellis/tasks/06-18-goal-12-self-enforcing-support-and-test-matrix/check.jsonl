@@ -1,0 +1,6 @@
+{"file": "docs/goals/assura-goal-12-self-enforcing-support-and-test-matrix.md", "reason": "Check the delivered PR satisfies Goal 12 definition of done and review tasks."}
+{"file": "docs/analysis/2026-06-09-assura-best-practice-target-state.md", "reason": "Check target-state detector behavior and P0 backlog ownership remain aligned."}
+{"file": "docs/goals/assura-rule-public-surface-support-matrix.md", "reason": "Check support-matrix behavior reuses the planned detector contract."}
+{"file": "docs/goals/assura-rule-cargo-manifest-semantics.md", "reason": "Check manifest metadata behavior matches the planned detector contract."}
+{"file": "docs/goals/assura-rule-test-relationship.md", "reason": "Check test relationship behavior matches the planned detector contract."}
+{"file": ".trellis/spec/assura/index.md", "reason": "Check the implementation preserves Assura project constraints and target-state direction."}
