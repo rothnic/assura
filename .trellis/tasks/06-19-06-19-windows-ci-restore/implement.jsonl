@@ -1,0 +1,4 @@
+{"file":"docs/goals/assura-windows-ci-restore.md","reason":"Canonical goal and proof gates for the Windows CI restore implementation."}
+{"file":".trellis/spec/assura/tooling-stabilization.md","reason":"Records the deferred Windows CI baseline debt and closure criteria."}
+{"file":".trellis/spec/assura/roadmap.md","reason":"Roadmap routing for the active Windows CI Restore candidate."}
+{"file":"docs/compatibility-and-surface.md","reason":"Windows support claims that must remain tied to release/install evidence."}

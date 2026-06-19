@@ -155,7 +155,6 @@ node_modules/@ls-lint/ls-lint/bin/ls-lint-<platform>
 
 | Issue | Current Evidence | Treatment | Re-enable / Close Criteria |
 | --- | --- | --- | --- |
-| Windows CI test job paused | GitHub Actions `windows-latest` test job failed linking `libgit2_sys` with unresolved MSVC symbols including `GetNamedSecurityInfoW`, registry APIs, and CryptoAPI symbols. | Temporarily removed from the PR test matrix while stabilizing core workflow. This is not a product-behavior signal yet. | Add the required Windows linker/system-library fix or dependency configuration, prove `cargo test --all-features` passes on `windows-latest`, then restore Windows to the CI matrix. |
 | Coverage reporting is local to CI | Code coverage generation succeeds, but hosted Codecov upload added external account, token, and rate-limit failure modes before the core tooling baseline was stable. | Keep `cargo tarpaulin` coverage generation in CI, summarize coverage in the GitHub job summary, and publish the Cobertura XML as a GitHub Actions artifact. Do not require Codecov for the current workflow. | Decide on a coverage threshold and enforce it locally in CI, or adopt a hosted service only when trend dashboards and PR annotations are worth the extra dependency. |
 | Assura hooks remain advisory | Local cleanup on `codex/assura-self-check-baseline-cleanup` reduced `cargo run -- check .` to zero violations. | Keep hooks advisory until the clean baseline lands on `master` and is observed through normal CI/developer flow. | After the clean baseline is merged and remains stable, switch protected-path pre-push behavior from advisory to blocking or document the remaining reason not to. |
 
@@ -167,7 +166,8 @@ node_modules/@ls-lint/ls-lint/bin/ls-lint-<platform>
      undocumented red checks.
    - Prefer GitHub-native artifacts and summaries over external reporting
      services until the required credentials and blocking policy are justified.
-   - Keep platform tests active for Linux and macOS while Windows is paused.
+   - Keep platform tests active for Linux, macOS, and Windows unless a new
+     platform-specific blocker is recorded here with re-enable criteria.
 
 2. Promote Assura self-check from clean to enforced.
    - Confirm the clean baseline after this cleanup lands on `master`.
@@ -176,10 +176,10 @@ node_modules/@ls-lint/ls-lint/bin/ls-lint-<platform>
    - Move hooks from advisory to blocking only after the clean baseline is
      stable on the protected branch.
 
-3. Re-enable Windows.
-   - Investigate the `libgit2_sys` MSVC linker failure after the main workflow
-     gates are reliable.
-   - Restore the `windows-latest` matrix entry once the fix is proven in CI.
+3. Monitor restored Windows CI.
+   - Treat a new `windows-latest` failure as a fresh CI regression unless it is
+     recorded in Deferred Baseline Issues with explicit close criteria.
+   - Preserve release Windows smoke jobs separately from the Rust test matrix.
 
 ## Closed Baselines
 
@@ -188,6 +188,7 @@ node_modules/@ls-lint/ls-lint/bin/ls-lint-<platform>
 | Repository-wide rustfmt drift | Dedicated formatting cleanup landed in PR #2. `cargo fmt --all -- --check` is now expected to pass in CI. |
 | Repository-wide clippy warnings | Dedicated Clippy cleanup removed the existing warning baseline. `cargo clippy --all-targets --all-features -- -D warnings` is now expected to pass locally and block in CI. |
 | Assura self-check violations | Dedicated self-check cleanup archived historical docs, removed non-canonical OpenSpec surfaces, added missing Rust module docs, and split oversized modules. `cargo run -- check .` now reports zero violations locally on the cleanup branch. |
+| Windows CI test job restored | Updated `git2` from 0.18.3 to 0.21.0, which refreshes `libgit2-sys` from 0.16.2+1.7.2 to 0.18.5+1.9.4, then restored `windows-latest` to the Rust `Test Suite` matrix. The restoring PR must show hosted `Test Suite (windows-latest, stable)` proof before merge. |
 
 ## Agent Rules
 

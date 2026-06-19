@@ -102,3 +102,12 @@ as paused after the restore.
   Surface Expansion completion. All existing Assura goal docs are completed,
   current target-state passes, and Windows CI Restore is the only non-completed
   roadmap item. Created this planned goal as the next bounded candidate.
+- 2026-06-19: Implemented the local restore candidate by updating `git2` from
+  0.18.3 to 0.21.0, refreshing `libgit2-sys` from 0.16.2+1.7.2 to
+  0.18.5+1.9.4, preserving explicit SSH/HTTPS features, adapting the changed
+  `Signature::email` API, and restoring `windows-latest` to the Rust test
+  matrix. Local `cargo fmt --all -- --check`,
+  `cargo check --all-targets --all-features`,
+  `cargo clippy --all-targets --all-features -- -D warnings`, and
+  `cargo test --all-features` passed. Hosted Windows proof still required
+  before completion.

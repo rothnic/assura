@@ -1,0 +1,4 @@
+{"file":"docs/goals/assura-windows-ci-restore.md","reason":"Check that progress and evidence satisfy the goal proof gates."}
+{"file":".trellis/spec/assura/tooling-stabilization.md","reason":"Check Windows CI baseline debt is closed only after hosted proof."}
+{"file":".trellis/spec/assura/roadmap.md","reason":"Check roadmap status after Windows CI restore."}
+{"file":"docs/compatibility-and-surface.md","reason":"Check Windows release support claims remain accurate."}

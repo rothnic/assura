@@ -130,11 +130,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        # Windows is temporarily paused while the pre-1.0 tooling baseline is
-        # stabilized. The current failure is a libgit2-sys/MSVC linker issue,
-        # not a product behavior regression. Re-enable after the deferred item
-        # in .trellis/spec/assura/tooling-stabilization.md is resolved.
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
         rust: [stable]
     steps:
     - uses: actions/checkout@v4
