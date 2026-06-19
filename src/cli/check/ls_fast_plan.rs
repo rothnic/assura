@@ -44,6 +44,7 @@ pub(super) fn compile_lslint_fast_scopes(config: &Config) -> Option<Vec<FastScop
             || !extensions.support_matrices.is_empty()
             || !extensions.manifest_semantics.is_empty()
             || !extensions.test_relationships.is_empty()
+            || !extensions.module_topologies.is_empty()
             || !extensions.relationships.is_empty()
     }) {
         return None;

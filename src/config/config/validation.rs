@@ -15,6 +15,8 @@ use std::path::{Component, Path};
 #[cfg(feature = "yaml-config")]
 mod manifest_semantics;
 #[cfg(feature = "yaml-config")]
+mod module_topologies;
+#[cfg(feature = "yaml-config")]
 mod release_contracts;
 #[cfg(feature = "yaml-config")]
 mod support_matrices;
@@ -161,6 +163,16 @@ fn validate_extension_config(config: &ExtensionConfig) -> Result<(), String> {
         if !test_relationship_ids.insert(&policy.id) {
             return Err(format!(
                 "extensions.test_relationships.{}: duplicate test relationship id",
+                policy.id
+            ));
+        }
+    }
+    let mut module_topology_ids = HashSet::new();
+    for policy in &config.module_topologies {
+        module_topologies::validate_module_topology_config(policy)?;
+        if !module_topology_ids.insert(&policy.id) {
+            return Err(format!(
+                "extensions.module_topologies.{}: duplicate module topology id",
                 policy.id
             ));
         }

@@ -32,6 +32,7 @@ impl StructureChecker {
             && extensions.support_matrices.is_empty()
             && extensions.manifest_semantics.is_empty()
             && extensions.test_relationships.is_empty()
+            && extensions.module_topologies.is_empty()
         {
             return Ok(());
         }
@@ -47,6 +48,9 @@ impl StructureChecker {
         }
         if !extensions.test_relationships.is_empty() {
             self.validate_test_relationships(&extensions.test_relationships, checked_path, report)?;
+        }
+        if !extensions.module_topologies.is_empty() {
+            self.validate_module_topologies(&extensions.module_topologies, report)?;
         }
 
         if extensions.custom_constraints.is_empty() && extensions.relationships.is_empty() {
