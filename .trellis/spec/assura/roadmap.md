@@ -28,7 +28,7 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 14 | Module Topology Rule | Completed | PR #72 merged; archive PR #73 merged |
 | 15 | Docs Lifecycle Rule | Completed | PR #78 merged; archive PR #79 merged |
 | 16 | Docs Lifecycle Coverage | Completed | PR #83 merged; archive/sync PR #84 merged |
-| 17 | Support Matrix Surface Expansion | Planned | Goal `docs/goals/assura-rule-support-matrix-surface-expansion.md` |
+| 17 | Support Matrix Surface Expansion | Completed | PR #88 merged; archive/sync pending in current PR |
 
 ## Active Roadmap Iteration
 
@@ -50,6 +50,8 @@ Test Relationship Rule first slice is complete via PR #68 and archive PR #69.
 Module Topology Rule first slice is complete via PR #72 and archive PR #73.
 Docs Lifecycle Rule first slice is complete via PR #78 and archive PR #79.
 Docs Lifecycle Coverage first dogfood expansion is complete via PR #83.
+Support Matrix Surface Expansion is complete via PR #88; archive/sync is
+pending in the current PR.
 This completion does not mark the broader Assura roadmap complete.
 
 Direction lock, clarified on 2026-05-31: do not create or revive
@@ -58,21 +60,19 @@ one `--format <agent>-hook` value per agent. Treat older roadmap/task wording in
 that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
 Planned next roadmap candidate:
-`docs/goals/assura-rule-support-matrix-surface-expansion.md`. The next slice
-should expand reusable support-matrix coverage across bounded docs
-support-claim sources and manifest/package-facing surfaces while reusing the
-completed command-surface, manifest-semantics, and test-relationship rules.
+None selected after Support Matrix Surface Expansion completion. The next
+candidate should come from fresh target-state evidence, not from reopening the
+completed support-matrix expansion slice.
 
 ## Recommended Next Action
 
-Revalidate the next roadmap candidate from current target-state evidence.
+Revalidate current target-state evidence before selecting the next goal.
 
-The next agent should use `assura-goal-validation` to revalidate
-`docs/goals/assura-rule-support-matrix-surface-expansion.md`, then create a
-Trellis implementation task only if the goal still matches current
-target-state, roadmap, and `.assura/config.yml` output. Do not start broad
-cleanup or additional docs lifecycle coverage unless a new bounded goal names
-explicit active docs and executable evidence tokens. The product roadmap
+The next agent should use `assura-goal-validation` to compare
+`.assura/config.yml`, `cargo xtask target-state`, and this roadmap before
+creating a new bounded goal. Do not reopen the completed support-matrix
+expansion unless a new concrete docs, manifest, package, binary, or support
+status drift case is named with executable evidence. The product roadmap
 remains open until a separate product decision declares it complete.
 
 ## Roadmap Rules

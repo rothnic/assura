@@ -75,7 +75,7 @@ starting broad cleanup.
 
 | Priority | Change | Detector Owner |
 | --- | --- | --- |
-| P0 | Implement `docs/goals/assura-rule-support-matrix-surface-expansion.md` so the reusable support matrix joins bounded docs support claims and manifest/package-facing surfaces with existing CLI command and public Rust export coverage. | Completed first-slice support-matrix rule plus manifest-semantics and target-state evidence. |
+| P0 | Keep the completed support-matrix docs/manifest expansion active; broaden it only when current evidence exposes a new bounded docs, package, binary, or support-status drift case. | Completed support-matrix expansion PR #88 plus `.assura/config.yml` self-check. |
 | P0 | Keep the completed manifest-semantics policy active; add follow-up manifest checks only for concrete feature-policy, license/source, or semver drift. | Completed manifest-semantics rule plus Cargo metadata. |
 | P0 | Keep the completed test-relationship policy active; broaden relationships only when support-matrix expansion exposes a new supported surface or test-family gap. | Completed test-relationship rule plus support-matrix evidence. |
 | P1 | Expand module topology coverage only where reports expose concrete drift beyond the completed first slice. | Existing `.assura/config.yml` plus completed module topology rule. |
@@ -88,7 +88,7 @@ starting broad cleanup.
 
 | Priority | Concrete Finding | Affected Files/Surfaces | Expected Target State | Remediation Action | Deterministic Detector | Owner |
 | --- | --- | --- | --- | --- | --- | --- |
-| P0 | Docs support claims and manifest/package-facing surfaces can drift from the reusable support matrix. | `.assura/command-surface.yml`, `docs/support-policy.md`, `docs/compatibility-and-surface.md`, `docs/release-notes.md`, Cargo manifests, `src/lib.rs` | Every exposed command, public Rust export, package/binary surface, and bounded docs support claim is classified as supported, experimental, internal, roadmap, or unsupported. | Implement the support matrix surface expansion goal with explicit docs and manifest/package sources. | `cargo xtask target-state` support matrix checks plus `extensions.support_matrices` self-check | Assura support-matrix rule |
+| P0 | New docs support claims or manifest/package-facing surfaces can drift if added outside the completed support-matrix sources. | `.assura/command-surface.yml`, `docs/compatibility-and-surface.md`, configured Cargo manifests, `src/lib.rs` | Every exposed command, public Rust export, package/binary surface, and bounded docs support claim is classified as supported, experimental, internal, roadmap, or unsupported. | Keep completed support-matrix expansion active; create a new bounded goal only when a concrete uncovered docs or manifest source is named. | `cargo xtask target-state` support matrix checks plus `extensions.support_matrices` self-check | Assura support-matrix rule |
 | P0 | Workspace member metadata can drift beyond the completed first manifest-semantics slice. | Cargo manifests and future package policy docs | Root and internal workspace crates keep compatible configured metadata; new manifest policy depth is explicit before implementation. | Keep completed manifest-semantics self-check active; create a new goal only for concrete feature, license/source, or semver drift. | `extensions.manifest_semantics` self-check plus `cargo xtask target-state` manifest checks | Cargo manifest semantics rule |
 | P0 | Supported surfaces can lose test or source coverage evidence beyond the completed first test-relationship slice. | `tests/**`, `src/cli/**`, `crates/assura-check-cli/tests/**` | Supported CLI and workflow surfaces keep mapped coverage markers, and new supported surfaces add relationships when introduced. | Keep completed test-relationship self-check active; broaden only when support-matrix expansion exposes a concrete gap. | `extensions.test_relationships` self-check plus `cargo xtask target-state` test relationship checks | Test relationship rule |
 | P0 | Release and performance claims can drift across docs, installers, and checked JSON. | Release docs, install scripts, `benches/history/current.json`, `website/public/data/performance/current.json` | Version, archive names, and current performance data agree. | Check release docs/scripts and compare performance JSON artifacts. | `cargo xtask target-state` docs/release/performance check | Release-sync rule |
@@ -118,10 +118,11 @@ starting broad cleanup.
 ## What This Changes About The Deslopify Plan
 
 The correct next move is not another broad cleanup pass. The next move is to
-turn this rubric into a checked audit artifact and then implement P0 detectors
-in small PRs. Only after those detectors can distinguish product code from
-contained experimental/internal code should broad module deletion or large
-reorganization happen.
+rerun the checked audit artifact and select a bounded follow-up only where the
+current detectors expose concrete drift. The completed support-matrix,
+manifest-semantics, test-relationship, module-topology, release-contract, and
+docs-lifecycle rules should stay active while broader module deletion or large
+reorganization waits for detector evidence.
 
 ## Source Notes
 
