@@ -28,6 +28,7 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 14 | Module Topology Rule | Completed | PR #72 merged; archive PR #73 merged |
 | 15 | Docs Lifecycle Rule | Completed | PR #78 merged; archive PR #79 merged |
 | 16 | Docs Lifecycle Coverage | Completed | PR #83 merged; archive/sync PR #84 merged |
+| 17 | Support Matrix Surface Expansion | Planned | Goal `docs/goals/assura-rule-support-matrix-surface-expansion.md` |
 
 ## Active Roadmap Iteration
 
@@ -57,20 +58,22 @@ one `--format <agent>-hook` value per agent. Treat older roadmap/task wording in
 that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
 Planned next roadmap candidate:
-No immediate docs lifecycle implementation is queued. Future docs lifecycle
-coverage should be limited to explicit website docs or `2x` performance claims
-only after exact evidence/token boundaries are defined.
+`docs/goals/assura-rule-support-matrix-surface-expansion.md`. The next slice
+should expand reusable support-matrix coverage across bounded docs
+support-claim sources and manifest/package-facing surfaces while reusing the
+completed command-surface, manifest-semantics, and test-relationship rules.
 
 ## Recommended Next Action
 
 Revalidate the next roadmap candidate from current target-state evidence.
 
-The next agent should use `assura-goal-validation` against current
-target-state, roadmap, and `.assura/config.yml` output before selecting another
-goal. Do not start broad cleanup or additional docs lifecycle coverage unless a
-new bounded goal names explicit active docs and executable evidence tokens. The
-product roadmap remains open until a separate product decision declares it
-complete.
+The next agent should use `assura-goal-validation` to revalidate
+`docs/goals/assura-rule-support-matrix-surface-expansion.md`, then create a
+Trellis implementation task only if the goal still matches current
+target-state, roadmap, and `.assura/config.yml` output. Do not start broad
+cleanup or additional docs lifecycle coverage unless a new bounded goal names
+explicit active docs and executable evidence tokens. The product roadmap
+remains open until a separate product decision declares it complete.
 
 ## Roadmap Rules
 
