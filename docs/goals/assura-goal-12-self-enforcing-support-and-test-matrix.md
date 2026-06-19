@@ -2,7 +2,7 @@
 id: goal-assura-roadmap-12-self-enforcing-support-and-test-matrix
 type: goal
 title: Assura roadmap 12 self-enforcing support and test matrix
-status: planned
+status: completed
 created: 2026-06-18
 owners:
   - assura-maintainers
@@ -128,3 +128,6 @@ instead of producing actionable classification evidence.
   lookup use exact repo-relative paths, treating `workspace_default_members` as
   an optional Cargo metadata field for MSRV compatibility, skipping enum comment
   lines while parsing CLI variants, and excluding common negated support claims.
+- 2026-06-19: Revalidated status against live PR and Trellis evidence. Goal 12
+  merged in PR #54 (`3c4806deece72b1e8b7577902434519f5de11d5c`) and is
+  archived under `.trellis/tasks/archive/2026-06/06-18-goal-12-self-enforcing-support-and-test-matrix`.
