@@ -21,16 +21,17 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 12 | Cargo Manifest Semantics | Completed | PR #64 merged; archive PR #65 merged |
 | 13 | Test Relationship Rule | Completed | PR #68 merged; archive PR #69 merged |
 | 14 | Module Topology Rule | Completed | PR #72 merged; archive PR #73 merged |
+| 15 | Docs Lifecycle Rule | Active | Trellis task `.trellis/tasks/06-19-06-19-docs-lifecycle-rule-implementation` on branch `codex/docs-lifecycle-rule` |
 
 ## Active Roadmap Iteration
 
 No roadmap iteration is active after Iteration 01 completion.
 
 Current owning task:
-None.
+`.trellis/tasks/06-19-06-19-docs-lifecycle-rule-implementation`.
 
 Current branch:
-None.
+`codex/docs-lifecycle-rule`.
 
 Most recent completed iteration: Policy Depth Iteration 02. Goals 09 through
 13 are complete and archived, ending with Goal 13 PR #55 and archive PR #56.
@@ -40,6 +41,8 @@ Cargo Manifest Semantics first slice is complete via PR #64 and archive PR
 #65.
 Test Relationship Rule first slice is complete via PR #68 and archive PR #69.
 Module Topology Rule first slice is complete via PR #72 and archive PR #73.
+Docs Lifecycle Rule first slice is in review on branch
+`codex/docs-lifecycle-rule`.
 This completion does not mark the broader Assura roadmap complete.
 
 Direction lock, clarified on 2026-05-31: do not create or revive
@@ -47,25 +50,23 @@ Direction lock, clarified on 2026-05-31: do not create or revive
 one `--format <agent>-hook` value per agent. Treat older roadmap/task wording in
 that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
-Planned next roadmap candidate:
-`docs/goals/assura-rule-docs-lifecycle-stale-claims.md`. The next planning
-decision is the first reusable docs lifecycle and stale-claim slice now that
-support matrix, manifest semantics, release contract, test relationship, and
-module topology first slices provide the main structured inputs.
+Active roadmap candidate:
+`docs/goals/assura-rule-docs-lifecycle-stale-claims.md`. The current
+implementation slice adds the first reusable docs lifecycle and stale-claim
+policy now that support matrix, manifest semantics, release contract, test
+relationship, and module topology first slices provide the main structured
+inputs.
 
 ## Recommended Next Epic
 
-Implement the Docs Lifecycle candidate:
+Review and merge the Docs Lifecycle candidate implementation:
 `docs/goals/assura-rule-docs-lifecycle-stale-claims.md`.
 
-The next agent should create or reuse a Trellis implementation task for that
-goal and run the normal workflow gate/current-state preflight before editing.
-The first implementation decision is which active docs and claims are
-deterministic enough for the first reusable rule slice: active analysis/goals
-versus archived/historical files, stale roadmap candidate claims, stale
-support/release/performance copy, or explicit historical exceptions. The
-product roadmap remains open until a separate product decision declares it
-complete.
+The next agent should continue the active Trellis implementation task, preserve
+the clean validation gates, complete independent review, open/merge the PR, and
+then archive the task. After merge, update this roadmap to route the next
+candidate based on live target-state evidence. The product roadmap remains open
+until a separate product decision declares it complete.
 
 ## Roadmap Rules
 

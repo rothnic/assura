@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-const COMPILED_CONFIG_SCHEMA_VERSION: u32 = 15;
+const COMPILED_CONFIG_SCHEMA_VERSION: u32 = 16;
 const ASSURA_VERSION_HASH: u64 = stable_hash_const(env!("CARGO_PKG_VERSION").as_bytes());
 
 /// Portable artifact containing a parsed Assura structure config.
@@ -223,7 +223,7 @@ struct PortableConfig {
 
 include!("compiled_artifact_extensions.rs");
 include!("compiled_artifact_module_topology.rs");
-
+include!("compiled_artifact_docs_lifecycle.rs");
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub(super) struct PortableDirectoryNode {
     files: Option<PortableFileBundle>,

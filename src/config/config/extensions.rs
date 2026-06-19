@@ -31,9 +31,56 @@ pub struct ExtensionConfig {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub module_topologies: Vec<ModuleTopologyConfig>,
 
+    /// Configured docs lifecycle and stale-claim policies executed by
+    /// `assura check`.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub docs_lifecycles: Vec<DocsLifecycleConfig>,
+
     /// Internal relationship constraints normalized from structure notation.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub relationships: Vec<RelationshipConstraintConfig>,
+}
+
+/// A reusable docs lifecycle and stale-claim policy.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub struct DocsLifecycleConfig {
+    /// Stable local identifier used in diagnostics.
+    pub id: String,
+    /// Active documentation files checked by this policy.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub active: Vec<String>,
+    /// Historical or archived documentation files.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub historical: Vec<String>,
+    /// Documentation files that must declare an allowed frontmatter status.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub require_frontmatter_status: Vec<String>,
+    /// Allowed lifecycle status vocabulary for configured frontmatter.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub allowed_statuses: Vec<String>,
+    /// Deterministic claim token policies checked in active docs.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub claim_patterns: Vec<DocsLifecycleClaimPatternConfig>,
+    /// Historical targets that active docs may reference.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub historical_exceptions: Vec<String>,
+    /// Optional diagnostic severity.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub severity: Option<String>,
+}
+
+/// One deterministic stale-claim token and its evidence files.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub struct DocsLifecycleClaimPatternConfig {
+    /// Stable claim identifier used in diagnostics.
+    pub id: String,
+    /// Literal token or glob-style token pattern to find in active docs.
+    pub pattern: String,
+    /// Files expected to carry current evidence for this claim.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub evidence_files: Vec<String>,
 }
 
 /// A reusable Rust module topology policy.
@@ -395,6 +442,12 @@ impl ExtensionConfig {
     /// Add a Rust module topology policy.
     pub fn with_module_topology(mut self, policy: ModuleTopologyConfig) -> Self {
         self.module_topologies.push(policy);
+        self
+    }
+
+    /// Add a docs lifecycle and stale-claim policy.
+    pub fn with_docs_lifecycle(mut self, policy: DocsLifecycleConfig) -> Self {
+        self.docs_lifecycles.push(policy);
         self
     }
 

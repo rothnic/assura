@@ -66,6 +66,8 @@ impl ConfigLoader {
 }
 
 #[cfg(test)]
+mod docs_lifecycle_tests;
+#[cfg(test)]
 mod manifest_semantics_tests;
 #[cfg(test)]
 mod module_topology_tests;

@@ -33,6 +33,7 @@ impl StructureChecker {
             && extensions.manifest_semantics.is_empty()
             && extensions.test_relationships.is_empty()
             && extensions.module_topologies.is_empty()
+            && extensions.docs_lifecycles.is_empty()
         {
             return Ok(());
         }
@@ -51,6 +52,9 @@ impl StructureChecker {
         }
         if !extensions.module_topologies.is_empty() {
             self.validate_module_topologies(&extensions.module_topologies, report)?;
+        }
+        if !extensions.docs_lifecycles.is_empty() {
+            self.validate_docs_lifecycles(&extensions.docs_lifecycles, checked_path, report)?;
         }
 
         if extensions.custom_constraints.is_empty() && extensions.relationships.is_empty() {

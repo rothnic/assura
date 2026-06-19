@@ -3,7 +3,7 @@
 #[cfg(feature = "yaml-config")]
 use super::{
     Config, CustomConstraintConfig, DirectoryBundle, DirectoryNode, ExtensionConfig, FileBundle,
-    MarkdownBundle, QualityConfig, RelationshipConstraintConfig,
+    MarkdownBundle, RelationshipConstraintConfig,
 };
 #[cfg(feature = "yaml-config")]
 use glob::Pattern;
@@ -13,9 +13,13 @@ use std::collections::HashSet;
 use std::path::{Component, Path};
 
 #[cfg(feature = "yaml-config")]
+mod docs_lifecycles;
+#[cfg(feature = "yaml-config")]
 mod manifest_semantics;
 #[cfg(feature = "yaml-config")]
 mod module_topologies;
+#[cfg(feature = "yaml-config")]
+mod quality;
 #[cfg(feature = "yaml-config")]
 mod release_contracts;
 #[cfg(feature = "yaml-config")]
@@ -37,7 +41,7 @@ pub(crate) fn validate_config_semantics(config: &Config) -> Result<(), String> {
         validate_extension_config(extensions)?;
     }
     if let Some(quality) = &config.quality {
-        validate_quality_config(quality)?;
+        quality::validate_quality_config(quality)?;
     }
 
     Ok(())
@@ -177,6 +181,16 @@ fn validate_extension_config(config: &ExtensionConfig) -> Result<(), String> {
             ));
         }
     }
+    let mut docs_lifecycle_ids = HashSet::new();
+    for policy in &config.docs_lifecycles {
+        docs_lifecycles::validate_docs_lifecycle_config(policy)?;
+        if !docs_lifecycle_ids.insert(&policy.id) {
+            return Err(format!(
+                "extensions.docs_lifecycles.{}: duplicate docs lifecycle id",
+                policy.id
+            ));
+        }
+    }
     let mut relationship_ids = HashSet::new();
     for relationship in &config.relationships {
         validate_relationship_constraint(relationship)?;
@@ -185,26 +199,6 @@ fn validate_extension_config(config: &ExtensionConfig) -> Result<(), String> {
                 "extensions.relationships.{}: duplicate relationship id",
                 relationship.id
             ));
-        }
-    }
-    Ok(())
-}
-
-fn validate_quality_config(config: &QualityConfig) -> Result<(), String> {
-    let mut ids = HashSet::new();
-    for (id, scope) in &config.scopes {
-        let context = format!("quality.scopes.{id}");
-        validate_identifier(id, &context)?;
-        if !ids.insert(id) {
-            return Err(format!("{context}: duplicate quality scope id"));
-        }
-        if scope.paths.is_empty() {
-            return Err(format!(
-                "{context}.paths: at least one path pattern is required"
-            ));
-        }
-        for pattern in &scope.paths {
-            validate_relative_pattern(pattern, &format!("{context}.paths"))?;
         }
     }
     Ok(())
