@@ -19,6 +19,7 @@ pub fn run_structure_check_with_artifact(
         return Err(CheckError::MissingPath(checked_path));
     }
 
+    let project_root = project_root.canonicalize()?;
     let checked_path = checked_path.canonicalize()?;
     if !checked_path.starts_with(&project_root) {
         return Err(CheckError::OutsideProject {
@@ -50,6 +51,7 @@ pub fn run_structure_check_with_fast_artifact(
         return Err(CheckError::MissingPath(checked_path));
     }
 
+    let project_root = project_root.canonicalize()?;
     let checked_path = checked_path.canonicalize()?;
     run_structure_check_with_prechecked_fast_artifact(
         project_root,

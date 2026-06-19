@@ -19,3 +19,5 @@
 {"file":"src/constraints/ls_lint/rules/rules_tests.rs","reason":"Check Windows-style absolute path coverage proves PathRule matches slash-based LS-Lint patterns on Windows."}
 {"file":"tests/policy_language_completeness_tests.rs","reason":"Check directory diagnostic JSON path assertions remain platform-portable while still proving self-directory corrective context."}
 {"file":"crates/assura-check-cli/tests/batch_cli.rs","reason":"Check the status-file smoke test remains platform-portable while still proving assura-check-status reads a clean daemon status file."}
+{"file":"src/cli/check/artifact_check.rs","reason":"Check compiled-artifact execution canonicalizes project root and checked path consistently before containment checks."}
+{"file":"crates/assura-check-cli/tests/compiled_config_cli.rs","reason":"Check compiled-config default artifact path behavior remains covered by hosted Windows and local integration tests."}

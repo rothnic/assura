@@ -211,3 +211,22 @@ as paused after the restore.
   `assura-check-status` reads a clean daemon-written status file after the
   existing daemon refresh path. Hosted Windows proof is still required before
   completion.
+- 2026-06-19: The next PR #93 hosted Windows run passed the status-file smoke
+  test and failed later in
+  `crates/assura-check-cli/tests/compiled_config_cli.rs` because the compiled
+  artifact runner canonicalized the checked path but not the project root before
+  testing containment. On Windows this mixed the same directory's long
+  `runneradmin` path spelling with the artifact's DOS 8.3 `RUNNER~1` spelling.
+  Canonicalized the project root at the compiled-artifact execution boundary so
+  both sides use the same filesystem spelling before `starts_with`. Hosted
+  Windows proof is still required before completion.
+- 2026-06-19: Local validation for the compiled-artifact canonicalization fix
+  passed: `cargo fmt --all -- --check`, targeted and full
+  `compiled_config_cli`, `cargo check --all-targets --all-features`,
+  `cargo clippy --all-targets --all-features -- -D warnings`,
+  `cargo test --all-features`, `cargo run --quiet -- check --format json .`,
+  `cargo xtask evidence`, `cargo xtask target-state`, `cargo xtask docs`, and
+  `git diff --check`. Review agent Archimedes found no blockers and confirmed
+  the change is at the correct compiled-artifact execution boundary without
+  weakening artifact staleness validation. Hosted Windows proof is still
+  required before completion.
