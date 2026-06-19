@@ -63,6 +63,7 @@ fn test_path_rule_matching() {
 
     assert!(rule.matches(Path::new("src/main.rs")));
     assert!(rule.matches(Path::new("src/utils/helpers.rs")));
+    assert!(rule.matches(Path::new(r"C:\tmp\project\src\utils\helpers.rs")));
     assert!(!rule.matches(Path::new("tests/main.rs")));
     assert!(!rule.matches(Path::new("src/main.js")));
 }

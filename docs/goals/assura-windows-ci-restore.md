@@ -170,3 +170,10 @@ as paused after the restore.
   `cargo clippy --all-targets --all-features -- -D warnings`, and
   `cargo test --all-features` passed. Hosted Windows proof is still required
   before completion.
+- 2026-06-19: The following PR #93 hosted Windows run passed the native
+  LS-Lint golden tests and failed in `tests/ls_lint_tests.rs` because
+  `PathRule::matches` only treated `/` as a path separator when matching
+  slash-based LS-Lint glob patterns against absolute Windows paths. Normalized
+  path separators inside the matcher and added a Windows-style absolute path
+  regression assertion. Hosted Windows proof is still required before
+  completion.

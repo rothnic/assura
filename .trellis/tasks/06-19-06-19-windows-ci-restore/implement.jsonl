@@ -15,3 +15,5 @@
 {"file":".github/workflows/ci.yml","reason":"Windows test failure showed the restored Test Suite matrix must install Node/npm for native LS-Lint golden tests."}
 {"file":"tests/ls_lint_rule_coverage/mod.rs","reason":"Windows test failure showed direct Rust process spawning must use npm.cmd for the Node package manager shim."}
 {"file":"tests/ls_lint_rule_coverage/mod.rs","reason":"Windows test failure showed native LS-Lint and Assura JSON paths must be normalized before comparing against slash-separated golden fixture paths."}
+{"file":"src/constraints/ls_lint/rules.rs","reason":"Windows test failure showed PathRule glob matching must normalize Windows separators before matching slash-based LS-Lint patterns."}
+{"file":"src/constraints/ls_lint/rules/rules_tests.rs","reason":"Add regression coverage for PathRule matching Windows-style absolute paths against slash-based LS-Lint patterns."}

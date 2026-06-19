@@ -15,3 +15,5 @@
 {"file":".github/workflows/ci.yml","reason":"Check the Rust Test Suite matrix installs Node/npm before running native LS-Lint golden tests on Windows."}
 {"file":"tests/ls_lint_rule_coverage/mod.rs","reason":"Check the native LS-Lint golden helper uses the platform-appropriate npm command without weakening pinned package installation."}
 {"file":"tests/ls_lint_rule_coverage/mod.rs","reason":"Check native LS-Lint and Assura JSON path normalization keeps golden comparisons platform-portable without changing product output."}
+{"file":"src/constraints/ls_lint/rules.rs","reason":"Check PathRule glob matching normalizes Windows separators without changing slash-based LS-Lint pattern semantics."}
+{"file":"src/constraints/ls_lint/rules/rules_tests.rs","reason":"Check Windows-style absolute path coverage proves PathRule matches slash-based LS-Lint patterns on Windows."}
