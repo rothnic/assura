@@ -123,3 +123,11 @@ not publish, or if release-sync checks rely on manual review only. Also block if
 LS-Lint-equivalent notation cases fail the performance target without an
 accepted bounded-cost record, or if the reusable-rule modularity claim is not
 independently reviewed.
+
+## Progress Log
+
+- 2026-06-19: Revalidated after Goal 12 merged in PR #54. Goal remains valid:
+  tracked performance artifacts still point at the older
+  `56937c6f688dd4182b195363569b1a4dbeb8f815` run with
+  `source_worktree_dirty: true`, and release-sync enforcement is still partial
+  even though PR #54 CI proved the current install/release smoke matrix.

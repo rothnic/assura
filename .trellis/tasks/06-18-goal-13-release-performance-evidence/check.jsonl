@@ -1,0 +1,6 @@
+{"file": "docs/goals/assura-goal-13-performance-and-release-evidence-governance.md", "reason": "Check delivered work against Goal 13 definition of done and reviewer blocking criteria."}
+{"file": "docs/goals/assura-rule-release-sync.md", "reason": "Check release-sync implementation against planned detector examples."}
+{"file": "docs/analysis/2026-06-09-assura-best-practice-target-state.md", "reason": "Check release/performance detector behavior remains aligned with the target-state backlog."}
+{"file": "docs/analysis/2026-06-15-notation-clean-start-roadmap.md", "reason": "Check LS-Lint-equivalent, Assura-native, and reusable-rule claims stay separated."}
+{"file": ".agents/skills/assura-performance-reporting/SKILL.md", "reason": "Check performance evidence workflow, tracked data updates, and before/after proof handling."}
+{"file": ".trellis/spec/assura/index.md", "reason": "Check implementation preserves Assura project constraints and current direction."}

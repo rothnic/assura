@@ -1,0 +1,7 @@
+{"file": "docs/goals/assura-goal-13-performance-and-release-evidence-governance.md", "reason": "Primary execution contract for Goal 13 scope, validation, and review gates."}
+{"file": "docs/goals/assura-roadmap-iteration-02-policy-depth-and-ecosystem.md", "reason": "Iteration 02 sequencing and direction locks for notation performance, release certainty, and independent review."}
+{"file": "docs/goals/assura-rule-release-sync.md", "reason": "Planned release-sync detector intent and required examples to reuse."}
+{"file": "docs/analysis/2026-06-09-assura-best-practice-target-state.md", "reason": "Target-state backlog identifies release and performance drift as remaining detector work."}
+{"file": "docs/analysis/2026-06-15-notation-clean-start-roadmap.md", "reason": "Notation clean-start context for separating LS-Lint-equivalent and Assura-native claims."}
+{"file": ".agents/skills/assura-performance-reporting/SKILL.md", "reason": "Project workflow for performance artifacts, before/after evidence, and website performance data updates."}
+{"file": ".trellis/spec/assura/index.md", "reason": "Canonical Assura spec routing, constraints, and current direction."}
