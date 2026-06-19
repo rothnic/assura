@@ -185,3 +185,8 @@ coverage is weakened before the reusable rule proves equivalent coverage.
   `cargo clippy --all-targets --all-features -- -D warnings`,
   `cargo xtask target-state`, `cargo run --quiet -- check --format json .`,
   `cargo xtask evidence`, `cargo xtask docs`, and `git diff --check`.
+- 2026-06-19: Independent review found release contracts were runtime-validated
+  but not included in config semantic validation. Added semantic checks for
+  release-contract ids, duplicate contracts, artifacts, paths, branch allowlist
+  values, and severity; split the validator into a child module to keep
+  structure policy green. Re-ran the full local gate set successfully.

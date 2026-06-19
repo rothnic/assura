@@ -199,6 +199,110 @@ structure: {}
     }
 
     #[test]
+    fn test_parse_with_release_contract() {
+        let yaml = r#"
+extensions:
+  release_contracts:
+    - id: cli_release
+      severity: high
+      artifacts:
+        - name: example-linux-x86_64.tar.gz
+          checksum_sidecar: true
+      workflow_files:
+        - .github/workflows/release.yml
+      docs_files:
+        - docs/install.md
+      installer_files:
+        - scripts/install.sh
+      allowed_url_branches:
+        - main
+structure: {}
+"#;
+
+        let config = ConfigLoader::parse(yaml).unwrap();
+        let extensions = config.extensions.unwrap();
+        assert_eq!(extensions.release_contracts.len(), 1);
+        let contract = &extensions.release_contracts[0];
+        assert_eq!(contract.id, "cli_release");
+        assert_eq!(contract.artifacts[0].name, "example-linux-x86_64.tar.gz");
+        assert!(contract.artifacts[0].checksum_sidecar);
+    }
+
+    #[test]
+    fn test_parse_rejects_release_contract_invalid_severity() {
+        let yaml = r#"
+extensions:
+  release_contracts:
+    - id: cli_release
+      severity: urgent
+      artifacts:
+        - name: example-linux-x86_64.tar.gz
+      workflow_files:
+        - .github/workflows/release.yml
+      docs_files:
+        - docs/install.md
+structure: {}
+"#;
+
+        let error = ConfigLoader::parse(yaml).unwrap_err().to_string();
+        assert!(
+            error.contains("extensions.release_contracts.cli_release.severity"),
+            "unexpected error: {error}"
+        );
+    }
+
+    #[test]
+    fn test_parse_rejects_duplicate_release_contract_id() {
+        let yaml = r#"
+extensions:
+  release_contracts:
+    - id: cli_release
+      artifacts:
+        - name: example-linux-x86_64.tar.gz
+      workflow_files:
+        - .github/workflows/release.yml
+      docs_files:
+        - docs/install.md
+    - id: cli_release
+      artifacts:
+        - name: example-darwin-aarch64.tar.gz
+      workflow_files:
+        - .github/workflows/release.yml
+      docs_files:
+        - docs/install.md
+structure: {}
+"#;
+
+        let error = ConfigLoader::parse(yaml).unwrap_err().to_string();
+        assert!(
+            error.contains("duplicate release contract id"),
+            "unexpected error: {error}"
+        );
+    }
+
+    #[test]
+    fn test_parse_rejects_release_contract_path_escape() {
+        let yaml = r#"
+extensions:
+  release_contracts:
+    - id: cli_release
+      artifacts:
+        - name: example-linux-x86_64.tar.gz
+      workflow_files:
+        - ../release.yml
+      docs_files:
+        - docs/install.md
+structure: {}
+"#;
+
+        let error = ConfigLoader::parse(yaml).unwrap_err().to_string();
+        assert!(
+            error.contains("workflow_files") && error.contains("must be relative"),
+            "unexpected error: {error}"
+        );
+    }
+
+    #[test]
     fn test_parse_with_quality_scopes() {
         let yaml = r#"
 quality:
