@@ -1,3 +1,8 @@
+---
+title: Assura Roadmap
+status: active
+---
+
 # Assura Roadmap
 
 This is the high-level roadmap agents should use to orient work. Keep each epic
@@ -22,17 +27,17 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 13 | Test Relationship Rule | Completed | PR #68 merged; archive PR #69 merged |
 | 14 | Module Topology Rule | Completed | PR #72 merged; archive PR #73 merged |
 | 15 | Docs Lifecycle Rule | Completed | PR #78 merged; archive PR #79 merged |
-| 16 | Docs Lifecycle Coverage | Planned | Goal `docs/goals/assura-rule-docs-lifecycle-dogfood-expansion.md` |
+| 16 | Docs Lifecycle Coverage | Active | Task `.trellis/tasks/06-19-docs-lifecycle-dogfood-expansion-implementation` |
 
 ## Active Roadmap Iteration
 
 No roadmap iteration is active after Iteration 01 completion.
 
 Current owning task:
-None.
+`.trellis/tasks/06-19-docs-lifecycle-dogfood-expansion-implementation`.
 
 Current branch:
-None.
+`codex/docs-lifecycle-dogfood-expansion`.
 
 Most recent completed iteration: Policy Depth Iteration 02. Goals 09 through
 13 are complete and archived, ending with Goal 13 PR #55 and archive PR #56.
@@ -56,17 +61,19 @@ should broaden `extensions.docs_lifecycles` dogfood coverage from the first
 merged proof policy to current release, support, validation, roadmap, and
 performance-facing docs with explicit claim evidence.
 
-## Recommended Next Epic
+## Recommended Next Action
 
-Implement the Docs Lifecycle Coverage goal.
+Review and merge the active Docs Lifecycle Coverage implementation.
 
-The next agent should revalidate
-`docs/goals/assura-rule-docs-lifecycle-dogfood-expansion.md`, then create a
-Trellis implementation task that expands `.assura/config.yml` docs lifecycle
-coverage only for the concrete active docs and claim tokens named by that goal.
-Do not start broad cleanup until the follow-up detector scope is implemented,
-reviewed, and merged. The product roadmap remains open until a separate
-product decision declares it complete.
+The active task
+`.trellis/tasks/06-19-docs-lifecycle-dogfood-expansion-implementation` expands
+`.assura/config.yml` docs lifecycle coverage only for the concrete active docs
+and claim tokens named by
+`docs/goals/assura-rule-docs-lifecycle-dogfood-expansion.md`. Finish review,
+merge that implementation, then sync this roadmap and target-state from the new
+self-check output. Do not start broad cleanup until the follow-up detector scope
+is implemented, reviewed, and merged. The product roadmap remains open until a
+separate product decision declares it complete.
 
 ## Roadmap Rules
 

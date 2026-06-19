@@ -1,0 +1,5 @@
+{"file":"docs/goals/assura-rule-docs-lifecycle-dogfood-expansion.md","reason":"Primary executable goal and proof gates for this implementation."}
+{"file":".assura/config.yml","reason":"Dogfood policy to expand with bounded active docs and claim evidence."}
+{"file":".trellis/spec/assura/config-notation.md","reason":"Defines docs lifecycle token-pattern semantics and supported fields."}
+{"file":".trellis/spec/assura/roadmap.md","reason":"Roadmap must route current/next docs lifecycle coverage state."}
+{"file":"docs/analysis/2026-06-09-assura-best-practice-target-state.md","reason":"Target-state evidence names docs lifecycle coverage as a remaining gap."}

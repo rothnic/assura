@@ -276,11 +276,28 @@ extensions:
       severity: medium
       active:
         - .trellis/spec/assura/roadmap.md
+        - docs/project-memories.md
+        - docs/release-notes.md
+        - docs/support-policy.md
+        - docs/compatibility-and-surface.md
+        - docs/release-candidate-checklist.md
+        - docs/validation.md
+        - docs/analysis/2026-06-09-assura-best-practice-target-state.md
         - docs/goals/assura-rule-docs-lifecycle-stale-claims.md
+        - docs/goals/assura-rule-docs-lifecycle-dogfood-expansion.md
       historical:
         - docs/archive/**
       require_frontmatter_status:
+        - .trellis/spec/assura/roadmap.md
+        - docs/project-memories.md
+        - docs/release-notes.md
+        - docs/support-policy.md
+        - docs/compatibility-and-surface.md
+        - docs/release-candidate-checklist.md
+        - docs/validation.md
+        - docs/analysis/2026-06-09-assura-best-practice-target-state.md
         - docs/goals/assura-rule-docs-lifecycle-stale-claims.md
+        - docs/goals/assura-rule-docs-lifecycle-dogfood-expansion.md
       allowed_statuses:
         - planned
         - active
@@ -292,6 +309,43 @@ extensions:
           pattern: "docs-lifecycle"
           evidence_files:
             - docs/goals/assura-rule-docs-lifecycle-stale-claims.md
+            - docs/goals/assura-rule-docs-lifecycle-dogfood-expansion.md
+        - id: release_archive_linux_amd64
+          pattern: "assura-linux-amd64.tar.gz"
+          evidence_files:
+            - .github/workflows/release.yml
+            - docs/compatibility-and-surface.md
+            - docs/release-notes.md
+        - id: release_archive_linux_musl_amd64
+          pattern: "assura-linux-musl-amd64.tar.gz"
+          evidence_files:
+            - .github/workflows/release.yml
+            - docs/compatibility-and-surface.md
+            - docs/release-notes.md
+        - id: release_archive_macos_arm64
+          pattern: "assura-macos-arm64.tar.gz"
+          evidence_files:
+            - .github/workflows/release.yml
+            - docs/compatibility-and-surface.md
+            - docs/release-notes.md
+        - id: release_archive_macos_amd64
+          pattern: "assura-macos-amd64.tar.gz"
+          evidence_files:
+            - .github/workflows/release.yml
+            - docs/compatibility-and-surface.md
+            - docs/release-notes.md
+        - id: release_archive_windows_amd64
+          pattern: "assura-windows-amd64.zip"
+          evidence_files:
+            - .github/workflows/release.yml
+            - docs/compatibility-and-surface.md
+            - docs/release-notes.md
+        - id: performance_report_command
+          pattern: "performance-report"
+          evidence_files:
+            - src/cli/performance_report/mod.rs
+            - docs/support-policy.md
+            - docs/release-notes.md
       historical_exceptions:
         - docs/archive/**
   support_matrices:
