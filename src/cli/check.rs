@@ -39,6 +39,7 @@ mod report;
 mod rule_plan;
 mod rules;
 mod scope_patterns;
+mod support_matrix;
 mod traversal;
 mod validators;
 

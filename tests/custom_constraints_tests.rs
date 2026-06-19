@@ -80,6 +80,45 @@ commands:
     .unwrap();
 }
 
+fn support_matrix_config() -> &'static str {
+    r#"
+extensions:
+  support_matrices:
+    - id: public_surface
+      severity: high
+      command_contracts:
+        - .assura/command-surface.yml
+      rust_exports:
+        - src/lib.rs
+      entries:
+        - surface: "command:assura check"
+          status: supported
+        - surface: "rust:cli"
+          status: supported
+        - surface: "rust:intelligence"
+          status: internal
+structure:
+  ./:
+    files:
+      allow_extra: true
+    directories:
+      allow_extra: true
+exclude:
+  - target/**
+"#
+}
+
+fn write_support_matrix_files(project: &TempDir, command_contract: &str, lib_rs: &str) {
+    fs::create_dir_all(project.path().join(".assura")).unwrap();
+    fs::create_dir_all(project.path().join("src")).unwrap();
+    fs::write(
+        project.path().join(".assura/command-surface.yml"),
+        command_contract,
+    )
+    .unwrap();
+    fs::write(project.path().join("src/lib.rs"), lib_rs).unwrap();
+}
+
 fn release_contract_config() -> &'static str {
     r#"
 extensions:
@@ -121,6 +160,136 @@ fn write_release_contract_files(project: &TempDir, workflow: &str, docs: &str, i
     .unwrap();
     fs::write(project.path().join("docs/install.md"), docs).unwrap();
     fs::write(project.path().join("scripts/install.sh"), installer).unwrap();
+}
+
+#[test]
+fn check_support_matrix_passes_when_surfaces_are_classified() {
+    let project = TempDir::new().unwrap();
+    write_config(&project, support_matrix_config());
+    write_support_matrix_files(
+        &project,
+        r#"
+commands:
+  - name: "assura check"
+    allow_positionals: true
+"#,
+        r#"
+pub mod cli;
+/// Experimental dependency-intelligence internals.
+pub mod intelligence;
+"#,
+    );
+
+    let report = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+
+    assert!(report.success, "{:#?}", report.violations);
+}
+
+#[test]
+fn check_support_matrix_reports_unclassified_command_surface() {
+    let project = TempDir::new().unwrap();
+    write_config(&project, support_matrix_config());
+    write_support_matrix_files(
+        &project,
+        r#"
+commands:
+  - name: "assura check"
+    allow_positionals: true
+  - name: "assura status"
+    allow_positionals: true
+"#,
+        "pub mod cli;\n",
+    );
+
+    let report = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+
+    assert!(!report.success);
+    assert!(
+        report.violations.iter().any(|violation| {
+            violation.path == Path::new(".assura/command-surface.yml")
+                && violation.rule == "support_matrix:public_surface"
+                && violation.severity == "high"
+                && violation.message.contains("command:assura status")
+        }),
+        "{:#?}",
+        report.violations
+    );
+}
+
+#[test]
+fn check_support_matrix_reports_unclassified_rust_export_surface() {
+    let project = TempDir::new().unwrap();
+    write_config(&project, support_matrix_config());
+    write_support_matrix_files(
+        &project,
+        r#"
+commands:
+  - name: "assura check"
+    allow_positionals: true
+"#,
+        r#"
+pub mod cli;
+pub mod validation;
+"#,
+    );
+
+    let report = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+
+    assert!(!report.success);
+    assert!(
+        report.violations.iter().any(|violation| {
+            violation.path == Path::new("src/lib.rs")
+                && violation.rule == "support_matrix:public_surface"
+                && violation.message.contains("rust:validation")
+        }),
+        "{:#?}",
+        report.violations
+    );
+}
+
+#[test]
+fn check_support_matrix_cli_json_reports_actionable_rule_context() {
+    let project = TempDir::new().unwrap();
+    write_config(&project, support_matrix_config());
+    write_support_matrix_files(
+        &project,
+        r#"
+commands:
+  - name: "assura check"
+    allow_positionals: true
+"#,
+        r#"
+pub mod cli;
+pub mod validation;
+"#,
+    );
+
+    let output = Command::new(assura_bin())
+        .arg("check")
+        .arg(project.path())
+        .arg("--format")
+        .arg("json")
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(1));
+    let report: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    let violations = report["violations"].as_array().unwrap();
+    assert!(
+        violations.iter().any(|violation| {
+            violation["path"] == "src/lib.rs"
+                && violation["rule"] == "support_matrix:public_surface"
+                && violation["message"]
+                    .as_str()
+                    .unwrap()
+                    .contains("rust:validation")
+                && violation["corrective_context"]
+                    .as_str()
+                    .unwrap()
+                    .contains("support matrix")
+        }),
+        "{violations:#?}"
+    );
 }
 
 #[test]

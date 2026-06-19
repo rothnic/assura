@@ -31,13 +31,13 @@ experimental, internal, roadmap, or unsupported.
 
 ## Acceptance Criteria
 
-- [ ] Passing fixture covers a supported command and an internal/experimental
+- [x] Passing fixture covers a supported command and an internal/experimental
       Rust export.
-- [ ] Failing fixture covers an unclassified command family.
-- [ ] Failing fixture covers an unclassified public Rust export.
-- [ ] `assura check --format json` includes actionable support-matrix
+- [x] Failing fixture covers an unclassified command family.
+- [x] Failing fixture covers an unclassified public Rust export.
+- [x] `assura check --format json` includes actionable support-matrix
       diagnostics.
-- [ ] Assura self-check passes with the new rule enabled.
+- [x] Assura self-check passes with the new rule enabled.
 
 ## Definition Of Done
 

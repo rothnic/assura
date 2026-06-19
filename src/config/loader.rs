@@ -303,6 +303,78 @@ structure: {}
     }
 
     #[test]
+    fn test_parse_with_support_matrix() {
+        let yaml = r#"
+extensions:
+  support_matrices:
+    - id: public_surface
+      severity: high
+      command_contracts:
+        - .assura/command-surface.yml
+      rust_exports:
+        - src/lib.rs
+      entries:
+        - surface: "command:assura check"
+          status: supported
+        - surface: "rust:intelligence"
+          status: internal
+structure: {}
+"#;
+
+        let config = ConfigLoader::parse(yaml).unwrap();
+        let extensions = config.extensions.unwrap();
+        assert_eq!(extensions.support_matrices.len(), 1);
+        let matrix = &extensions.support_matrices[0];
+        assert_eq!(matrix.id, "public_surface");
+        assert_eq!(matrix.entries[0].surface, "command:assura check");
+        assert_eq!(matrix.entries[0].status, "supported");
+    }
+
+    #[test]
+    fn test_parse_rejects_support_matrix_invalid_status() {
+        let yaml = r#"
+extensions:
+  support_matrices:
+    - id: public_surface
+      command_contracts:
+        - .assura/command-surface.yml
+      entries:
+        - surface: "command:assura check"
+          status: stable
+structure: {}
+"#;
+
+        let error = ConfigLoader::parse(yaml).unwrap_err().to_string();
+        assert!(
+            error.contains(
+                "extensions.support_matrices.public_surface.entries.command:assura check.status"
+            ),
+            "unexpected error: {error}"
+        );
+    }
+
+    #[test]
+    fn test_parse_rejects_support_matrix_path_escape() {
+        let yaml = r#"
+extensions:
+  support_matrices:
+    - id: public_surface
+      command_contracts:
+        - ../command-surface.yml
+      entries:
+        - surface: "command:assura check"
+          status: supported
+structure: {}
+"#;
+
+        let error = ConfigLoader::parse(yaml).unwrap_err().to_string();
+        assert!(
+            error.contains("command_contracts") && error.contains("must be relative"),
+            "unexpected error: {error}"
+        );
+    }
+
+    #[test]
     fn test_parse_with_quality_scopes() {
         let yaml = r#"
 quality:

@@ -139,3 +139,17 @@ the unclassified surface and owning matrix.
   existing command-surface contract with explicit support rows and configured
   Rust export scanning; manifest metadata and stale-doc prose remain follow-up
   owners.
+- 2026-06-19: Implemented `extensions.support_matrices` with stable status
+  validation, command-surface contract inventory, bounded top-level Rust export
+  scanning, `support_matrix:<id>` diagnostics, compiled artifact portability,
+  Assura self-dogfood rows, and independent fixtures for classified and
+  unclassified command/Rust surfaces. Local validation passed:
+  `cargo test --all-targets --quiet`,
+  `cargo clippy --all-targets --all-features -- -D warnings`,
+  `cargo fmt --all -- --check`, `cargo xtask target-state`,
+  `cargo run --quiet -- check --format json .`, `cargo xtask evidence`,
+  `cargo xtask docs`, and `git diff --check`.
+- 2026-06-19: Review agent flagged grouped Rust re-exports and
+  `pub use crate::...` paths as scanner gaps. Fixed the export scanner to
+  classify anchored and grouped top-level `pub use` forms without scanning
+  nested module bodies, then added regression coverage.

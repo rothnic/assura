@@ -15,9 +15,43 @@ pub struct ExtensionConfig {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub release_contracts: Vec<ReleaseContractConfig>,
 
+    /// Configured public surface support matrices executed by `assura check`.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub support_matrices: Vec<SupportMatrixConfig>,
+
     /// Internal relationship constraints normalized from structure notation.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub relationships: Vec<RelationshipConstraintConfig>,
+}
+
+/// A reusable public surface support classification matrix.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub struct SupportMatrixConfig {
+    /// Stable local identifier used in diagnostics.
+    pub id: String,
+    /// Surfaces intentionally classified by this matrix.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub entries: Vec<SupportMatrixEntryConfig>,
+    /// Command-surface contract files whose command families must be classified.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub command_contracts: Vec<String>,
+    /// Rust source files whose public export families must be classified.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub rust_exports: Vec<String>,
+    /// Optional diagnostic severity.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub severity: Option<String>,
+}
+
+/// One classified public surface entry.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub struct SupportMatrixEntryConfig {
+    /// Surface identifier, such as `command:assura check` or `rust:cli`.
+    pub surface: String,
+    /// Support status for the surface.
+    pub status: String,
 }
 
 /// A reusable release artifact synchronization contract.
@@ -170,6 +204,12 @@ impl ExtensionConfig {
     /// Add a release artifact contract.
     pub fn with_release_contract(mut self, contract: ReleaseContractConfig) -> Self {
         self.release_contracts.push(contract);
+        self
+    }
+
+    /// Add a public surface support matrix.
+    pub fn with_support_matrix(mut self, matrix: SupportMatrixConfig) -> Self {
+        self.support_matrices.push(matrix);
         self
     }
 

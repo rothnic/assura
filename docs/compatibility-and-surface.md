@@ -99,6 +99,32 @@ experimental and first-party in v0.1.0:
 Breaking changes to this experimental surface are allowed before 1.0, but must
 be named in release notes.
 
+Support matrices are experimental and first-party in v0.1.0. They classify
+public commands and Rust export families so `assura check` can report newly
+exposed surfaces that do not have an explicit support status:
+
+```yaml
+extensions:
+  support_matrices:
+    - id: public_surface
+      severity: high
+      command_contracts:
+        - .assura/command-surface.yml
+      rust_exports:
+        - src/lib.rs
+      entries:
+        - surface: "command:assura check"
+          status: supported
+        - surface: "rust:intelligence"
+          status: internal
+```
+
+The supported status vocabulary is `supported`, `experimental`, `internal`,
+`roadmap`, and `unsupported`. Command surfaces are read from configured
+command-surface contracts. Rust surfaces are bounded to top-level `pub mod`
+and `pub use` families in configured source files. Diagnostics use
+`support_matrix:<id>` rule names.
+
 ## Rust Library Surface
 
 The Rust crate exposes modules used by the binaries, tests, and benchmark
