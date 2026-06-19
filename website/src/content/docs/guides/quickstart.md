@@ -24,19 +24,41 @@ Use this path for a first local check.
 
    This creates `.assura/config.yml` if one does not already exist.
 
-3. **Run the supported validation command**
+3. **Write the first useful project shape**
+
+   For a small Rust CLI or library, start with the files a new clone should
+   always have:
+
+   ```yaml
+   structure:
+     ./:
+       extra: false
+       README.md: exists:1
+       Cargo.toml: exists:1
+       src/: exists:1
+       "*.lock": exists:0-1
+     src/:
+       .rs: snake_case
+   exclude:
+     - "target/**"
+   ```
+
+   This keeps the project root closed, requires the core files, allows one
+   optional lockfile, and checks direct Rust files under `src/`.
+
+4. **Run the supported validation command**
 
    ```bash
    assura check
    ```
 
-4. **Inspect JSON output when needed**
+5. **Inspect JSON output when needed**
 
    ```bash
    assura check --format json .
    ```
 
-5. **Use the same command in CI**
+6. **Use the same command in CI**
 
    ```bash
    curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sudo env BIN_DIR=/usr/local/bin sh

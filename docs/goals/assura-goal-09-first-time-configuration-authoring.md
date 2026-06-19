@@ -115,3 +115,11 @@ if examples rely on notation that the current spec rejects, or if notation
 changes skip performance evidence without a documented bounded-cost exception.
 Also block if the use-case matrix does not start from LS-Lint-equivalent cases
 or fails to show how reusable rules make broader Assura policies more modular.
+
+## Progress Log
+
+- 2026-06-18: Started Goal 09 execution after PR #50 merged. Revalidated the
+  goal as current, added first-time configuration docs/examples, recorded the
+  simulated first-run review artifact, and added executable temp-project tests
+  for the small Rust and package-style first-run paths. Migrated the generated
+  `assura init` starter config to concise tree-shaped notation.

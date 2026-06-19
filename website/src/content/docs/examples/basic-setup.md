@@ -52,23 +52,20 @@ my-rust-project/
    ```yaml
    structure:
      ./:
-       files:
-         allowed_names:
-           - Cargo.toml
-           - README.md
-         allow_extra: false
-       directories:
-         allowed_names:
-           - src
-         allow_extra: false
-       children:
-         src/:
-           files:
-             naming_patterns:
-               "*.rs": snake_case
+       extra: false
+       README.md: exists:1
+       Cargo.toml: exists:1
+       src/: exists:1
+       "*.lock": exists:0-1
+     src/:
+       .rs: snake_case
    exclude:
      - "target/**"
    ```
+
+   The root policy mirrors the project tree. It requires the public files,
+   allows one lockfile, closes the root to unexpected direct children, and
+   checks Rust source names where the source files live.
 
 6. **Check again**
 
