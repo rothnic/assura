@@ -2,6 +2,8 @@ use crate::config::config::{
     CustomConstraintConfig, ExtensionConfig, ManifestSemanticsConfig,
     ManifestSemanticsManifestConfig, RelationshipConstraintConfig, RelationshipProviderConfig,
     ReleaseArtifactConfig, ReleaseContractConfig, SupportMatrixConfig, SupportMatrixEntryConfig,
+    TestRelationshipConfig, TestRelationshipFixtureFamilyConfig,
+    TestRelationshipIgnoredTestConfig, TestRelationshipSourceConfig,
 };
 
 /// Binary-safe extension config stored inside compiled artifacts.
@@ -11,6 +13,7 @@ struct PortableExtensionConfig {
     release_contracts: Vec<PortableReleaseContractConfig>,
     support_matrices: Vec<PortableSupportMatrixConfig>,
     manifest_semantics: Vec<PortableManifestSemanticsConfig>,
+    test_relationships: Vec<PortableTestRelationshipConfig>,
     relationships: Vec<PortableRelationshipConstraintConfig>,
 }
 
@@ -78,6 +81,37 @@ struct PortableManifestSemanticsManifestConfig {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
+struct PortableTestRelationshipConfig {
+    id: String,
+    relationships: Vec<PortableTestRelationshipSourceConfig>,
+    fixture_roots: Vec<String>,
+    fixture_families: Vec<PortableTestRelationshipFixtureFamilyConfig>,
+    allowed_ignore_reasons: Vec<String>,
+    ignored_tests: Vec<PortableTestRelationshipIgnoredTestConfig>,
+    severity: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+struct PortableTestRelationshipSourceConfig {
+    source: String,
+    required_tests: Vec<String>,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+struct PortableTestRelationshipFixtureFamilyConfig {
+    path: String,
+    owner: String,
+    purpose: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+struct PortableTestRelationshipIgnoredTestConfig {
+    path: String,
+    test: String,
+    reason: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
 struct PortableRelationshipConstraintConfig {
     id: String,
     source: String,
@@ -118,6 +152,11 @@ impl From<ExtensionConfig> for PortableExtensionConfig {
                 .into_iter()
                 .map(Into::into)
                 .collect(),
+            test_relationships: config
+                .test_relationships
+                .into_iter()
+                .map(Into::into)
+                .collect(),
             relationships: config.relationships.into_iter().map(Into::into).collect(),
         }
     }
@@ -143,6 +182,11 @@ impl From<PortableExtensionConfig> for ExtensionConfig {
                 .collect(),
             manifest_semantics: config
                 .manifest_semantics
+                .into_iter()
+                .map(Into::into)
+                .collect(),
+            test_relationships: config
+                .test_relationships
                 .into_iter()
                 .map(Into::into)
                 .collect(),
@@ -315,6 +359,93 @@ impl From<PortableManifestSemanticsManifestConfig> for ManifestSemanticsManifest
             description_forbidden_terms: config.description_forbidden_terms,
             keywords: config.keywords,
             binaries: config.binaries,
+        }
+    }
+}
+
+impl From<TestRelationshipConfig> for PortableTestRelationshipConfig {
+    fn from(config: TestRelationshipConfig) -> Self {
+        Self {
+            id: config.id,
+            relationships: config.relationships.into_iter().map(Into::into).collect(),
+            fixture_roots: config.fixture_roots,
+            fixture_families: config
+                .fixture_families
+                .into_iter()
+                .map(Into::into)
+                .collect(),
+            allowed_ignore_reasons: config.allowed_ignore_reasons,
+            ignored_tests: config.ignored_tests.into_iter().map(Into::into).collect(),
+            severity: config.severity,
+        }
+    }
+}
+impl From<PortableTestRelationshipConfig> for TestRelationshipConfig {
+    fn from(config: PortableTestRelationshipConfig) -> Self {
+        Self {
+            id: config.id,
+            relationships: config.relationships.into_iter().map(Into::into).collect(),
+            fixture_roots: config.fixture_roots,
+            fixture_families: config
+                .fixture_families
+                .into_iter()
+                .map(Into::into)
+                .collect(),
+            allowed_ignore_reasons: config.allowed_ignore_reasons,
+            ignored_tests: config.ignored_tests.into_iter().map(Into::into).collect(),
+            severity: config.severity,
+        }
+    }
+}
+impl From<TestRelationshipSourceConfig> for PortableTestRelationshipSourceConfig {
+    fn from(config: TestRelationshipSourceConfig) -> Self {
+        Self {
+            source: config.source,
+            required_tests: config.required_tests,
+        }
+    }
+}
+impl From<PortableTestRelationshipSourceConfig> for TestRelationshipSourceConfig {
+    fn from(config: PortableTestRelationshipSourceConfig) -> Self {
+        Self {
+            source: config.source,
+            required_tests: config.required_tests,
+        }
+    }
+}
+impl From<TestRelationshipFixtureFamilyConfig> for PortableTestRelationshipFixtureFamilyConfig {
+    fn from(config: TestRelationshipFixtureFamilyConfig) -> Self {
+        Self {
+            path: config.path,
+            owner: config.owner,
+            purpose: config.purpose,
+        }
+    }
+}
+impl From<PortableTestRelationshipFixtureFamilyConfig> for TestRelationshipFixtureFamilyConfig {
+    fn from(config: PortableTestRelationshipFixtureFamilyConfig) -> Self {
+        Self {
+            path: config.path,
+            owner: config.owner,
+            purpose: config.purpose,
+        }
+    }
+}
+impl From<TestRelationshipIgnoredTestConfig> for PortableTestRelationshipIgnoredTestConfig {
+    fn from(config: TestRelationshipIgnoredTestConfig) -> Self {
+        Self {
+            path: config.path,
+            test: config.test,
+            reason: config.reason,
+        }
+    }
+}
+impl From<PortableTestRelationshipIgnoredTestConfig> for TestRelationshipIgnoredTestConfig {
+    fn from(config: PortableTestRelationshipIgnoredTestConfig) -> Self {
+        Self {
+            path: config.path,
+            test: config.test,
+            reason: config.reason,
         }
     }
 }

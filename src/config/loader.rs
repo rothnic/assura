@@ -67,6 +67,8 @@ impl ConfigLoader {
 
 #[cfg(test)]
 mod manifest_semantics_tests;
+#[cfg(test)]
+mod test_relationship_tests;
 
 #[cfg(test)]
 mod tests {

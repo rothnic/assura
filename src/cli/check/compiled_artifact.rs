@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-const COMPILED_CONFIG_SCHEMA_VERSION: u32 = 13;
+const COMPILED_CONFIG_SCHEMA_VERSION: u32 = 14;
 const ASSURA_VERSION_HASH: u64 = stable_hash_const(env!("CARGO_PKG_VERSION").as_bytes());
 
 /// Portable artifact containing a parsed Assura structure config.

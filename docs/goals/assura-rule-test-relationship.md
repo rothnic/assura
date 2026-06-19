@@ -102,7 +102,8 @@ exclusions.
 
 ## Required Examples
 
-- Passing: `src/cli/check/**` has integration/unit coverage.
+- Passing: a configured source relationship under `src/cli/check/` has
+  integration/unit coverage evidence.
 - Failing: ignored test without an accepted reason category.
 - Failing: new `tests/fixtures/**` family not listed in config.
 
@@ -147,3 +148,22 @@ specific relationship and missing evidence.
   should implement configurable source/test evidence, ignored/manual test
   reason categories, and fixture-family ownership checks while leaving coverage
   percentages and semantic test adequacy to external tools or future goals.
+- 2026-06-19: Implemented the first reusable test-relationship slice under
+  Trellis task `06-19-test-relationship-rule-implementation`: added
+  `extensions.test_relationships` config, semantic config validation, runtime
+  source/test evidence checks, ignored/manual test classification,
+  fixture-family ownership checks, compiled artifact portability, Assura
+  dogfood policy, notation docs, and focused runtime/compiled-config coverage.
+  Local gates run so far: `cargo fmt --all -- --check`,
+  `cargo test --all-targets --quiet`, `cargo clippy --all-targets
+  --all-features -- -D warnings`, `cargo xtask target-state`,
+  `cargo run --quiet -- check --format json .`, and focused
+  `test_relationship` test targets.
+- 2026-06-19: Independent review found the initial ignored-test allowlist was
+  file-scoped, the required example overclaimed `src/cli/check/**`, subpath
+  checks could false-positive when evidence lived outside the checked subtree,
+  and fixture-family schema did not prove families were under configured roots.
+  Fixed the rule to classify ignored tests by file pattern plus test function,
+  use project-wide test evidence for scoped source checks, validate fixture
+  families under configured roots, and narrow this goal's passing example to
+  configured source relationships rather than whole-tree coverage.
