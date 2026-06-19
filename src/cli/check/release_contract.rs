@@ -108,10 +108,13 @@ impl StructureChecker {
         workflow_files: &[ReleaseContractFile],
         report: &mut StructureCheckReport,
     ) {
-        let workflow_content = combined_content(workflow_files);
         let fallback_path = first_file_path(workflow_files);
         for artifact in &contract.artifacts {
-            if !workflow_content.contains(&artifact.name) {
+            if !artifact.name.is_empty()
+                && !workflow_files
+                    .iter()
+                    .any(|file| file.content.contains(&artifact.name))
+            {
                 self.push_release_contract_violation(
                     report,
                     contract,
@@ -124,7 +127,11 @@ impl StructureChecker {
             }
             if artifact.checksum_sidecar {
                 let sidecar = format!("{}.sha256", artifact.name);
-                if !workflow_content.contains(&sidecar) {
+                if !sidecar.is_empty()
+                    && !workflow_files
+                        .iter()
+                        .any(|file| file.content.contains(&sidecar))
+                {
                     self.push_release_contract_violation(
                         report,
                         contract,
@@ -187,13 +194,7 @@ impl StructureChecker {
             return;
         }
 
-        let workflow_content = combined_content(workflow_files);
         let docs_and_installers = docs_and_installers.collect::<Vec<_>>();
-        let docs_content = docs_and_installers
-            .iter()
-            .map(|file| file.content.as_str())
-            .collect::<Vec<_>>()
-            .join("\n");
         let docs_fallback = docs_and_installers
             .first()
             .map(|file| file.rel.clone())
@@ -201,7 +202,11 @@ impl StructureChecker {
         let workflow_fallback = first_file_path(workflow_files);
 
         for sidecar in checksum_sidecars {
-            if !workflow_content.contains(sidecar) {
+            if !sidecar.is_empty()
+                && !workflow_files
+                    .iter()
+                    .any(|file| file.content.contains(sidecar))
+            {
                 self.push_release_contract_violation(
                     report,
                     contract,
@@ -212,7 +217,11 @@ impl StructureChecker {
                     ),
                 );
             }
-            if !docs_content.contains(sidecar) {
+            if !sidecar.is_empty()
+                && !docs_and_installers
+                    .iter()
+                    .any(|file| file.content.contains(sidecar))
+            {
                 self.push_release_contract_violation(
                     report,
                     contract,
@@ -362,14 +371,6 @@ fn invalid_release_contract<T>(message: &str) -> Result<T, CheckError> {
     )))
 }
 
-fn combined_content(files: &[ReleaseContractFile]) -> String {
-    files
-        .iter()
-        .map(|file| file.content.as_str())
-        .collect::<Vec<_>>()
-        .join("\n")
-}
-
 fn first_file_path(files: &[ReleaseContractFile]) -> PathBuf {
     files
         .first()
@@ -401,16 +402,45 @@ fn is_release_asset_token(token: &str) -> bool {
 }
 
 fn url_tokens(content: &str) -> Vec<String> {
-    content
-        .split_whitespace()
-        .filter_map(|token| {
-            let token = token.trim_matches(|ch: char| {
-                matches!(ch, '"' | '\'' | ')' | '(' | ']' | '[' | ',' | ';')
-            });
-            (token.starts_with("http://") || token.starts_with("https://"))
-                .then(|| token.trim_end_matches('\\').to_string())
-        })
-        .collect()
+    let mut urls = Vec::new();
+    let mut remaining = content;
+    while let Some(index) = next_url_start(remaining) {
+        let start_slice = &remaining[index..];
+        let end_index = start_slice
+            .find(|ch: char| {
+                ch.is_whitespace()
+                    || matches!(
+                        ch,
+                        '"' | '\''
+                            | '`'
+                            | '('
+                            | ')'
+                            | '['
+                            | ']'
+                            | '{'
+                            | '}'
+                            | '<'
+                            | '>'
+                            | ';'
+                            | ','
+                            | '\\'
+                    )
+            })
+            .unwrap_or(start_slice.len());
+        if end_index > 0 {
+            urls.push(start_slice[..end_index].to_string());
+        }
+        remaining = &start_slice[end_index..];
+    }
+    urls
+}
+
+fn next_url_start(content: &str) -> Option<usize> {
+    match (content.find("http://"), content.find("https://")) {
+        (Some(http), Some(https)) => Some(http.min(https)),
+        (Some(index), None) | (None, Some(index)) => Some(index),
+        (None, None) => None,
+    }
 }
 
 fn raw_or_blob_url_branch(url: &str) -> Option<&str> {

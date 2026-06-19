@@ -455,8 +455,9 @@ uploads:
 "#,
         "Download example-linux-x86_64.tar.gz and example-darwin-aarch64.tar.gz. Verify example-linux-x86_64.tar.gz.sha256 and example-darwin-aarch64.tar.gz.sha256.\n",
         r#"#!/bin/sh
-curl -L https://raw.githubusercontent.com/example/project/dev/releases/example-freebsd-x86_64.tar.gz
-"#,
+	artifact_url="https://raw.githubusercontent.com/example/project/dev/releases/example-freebsd-x86_64.tar.gz"
+	curl -L "$artifact_url"
+	"#,
     );
 
     let report = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();

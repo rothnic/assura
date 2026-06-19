@@ -190,3 +190,7 @@ coverage is weakened before the reusable rule proves equivalent coverage.
   release-contract ids, duplicate contracts, artifacts, paths, branch allowlist
   values, and severity; split the validator into a child module to keep
   structure policy green. Re-ran the full local gate set successfully.
+- 2026-06-19: Addressed PR review feedback on release-contract validation by
+  scanning workflow/docs/installer files directly instead of joining large
+  content buffers, guarding substring checks against empty search terms, and
+  hardening install URL extraction for shell assignments and Markdown links.
