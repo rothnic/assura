@@ -110,6 +110,58 @@ quality:
         - "Security Audit"
 
 extensions:
+  support_matrices:
+    - id: public_surface
+      severity: high
+      command_contracts:
+        - .assura/command-surface.yml
+      rust_exports:
+        - src/lib.rs
+      entries:
+        - surface: "command:assura"
+          status: supported
+        - surface: "command:assura check"
+          status: supported
+        - surface: "command:assura status"
+          status: supported
+        - surface: "command:assura init"
+          status: supported
+        - surface: "command:assura watch"
+          status: experimental
+        - surface: "command:assura migrate"
+          status: supported
+        - surface: "command:assura info"
+          status: experimental
+        - surface: "command:assura performance-report"
+          status: experimental
+        - surface: "command:assura quality plan"
+          status: supported
+        - surface: "command:assura hooks"
+          status: supported
+        - surface: "command:assura hooks install"
+          status: supported
+        - surface: "command:assura hooks uninstall"
+          status: supported
+        - surface: "command:assura hooks status"
+          status: supported
+        - surface: "command:assura hooks verify"
+          status: supported
+        - surface: "rust:stable_hash"
+          status: internal
+        - surface: "rust:cli"
+          status: supported
+        - surface: "rust:config"
+          status: supported
+        - surface: "rust:constraints"
+          status: experimental
+        - surface: "rust:intelligence"
+          status: internal
+        - surface: "rust:markdown"
+          status: experimental
+        - surface: "rust:maturity"
+          status: internal
+        - surface: "rust:validation"
+          status: internal
   custom_constraints:
     - id: command_surface_docs
       type: command_surface_docs

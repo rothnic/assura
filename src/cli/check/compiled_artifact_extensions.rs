@@ -1,8 +1,15 @@
+use crate::config::config::{
+    CustomConstraintConfig, ExtensionConfig, RelationshipConstraintConfig,
+    RelationshipProviderConfig, ReleaseArtifactConfig, ReleaseContractConfig, SupportMatrixConfig,
+    SupportMatrixEntryConfig,
+};
+
 /// Binary-safe extension config stored inside compiled artifacts.
 #[derive(Clone, Debug, Deserialize, Serialize)]
 struct PortableExtensionConfig {
     custom_constraints: Vec<PortableCustomConstraintConfig>,
     release_contracts: Vec<PortableReleaseContractConfig>,
+    support_matrices: Vec<PortableSupportMatrixConfig>,
     relationships: Vec<PortableRelationshipConstraintConfig>,
 }
 
@@ -30,6 +37,21 @@ struct PortableReleaseContractConfig {
 struct PortableReleaseArtifactConfig {
     name: String,
     checksum_sidecar: bool,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+struct PortableSupportMatrixConfig {
+    id: String,
+    entries: Vec<PortableSupportMatrixEntryConfig>,
+    command_contracts: Vec<String>,
+    rust_exports: Vec<String>,
+    severity: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+struct PortableSupportMatrixEntryConfig {
+    surface: String,
+    status: String,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -63,6 +85,11 @@ impl From<ExtensionConfig> for PortableExtensionConfig {
                 .into_iter()
                 .map(Into::into)
                 .collect(),
+            support_matrices: config
+                .support_matrices
+                .into_iter()
+                .map(Into::into)
+                .collect(),
             relationships: config.relationships.into_iter().map(Into::into).collect(),
         }
     }
@@ -78,6 +105,11 @@ impl From<PortableExtensionConfig> for ExtensionConfig {
                 .collect(),
             release_contracts: config
                 .release_contracts
+                .into_iter()
+                .map(Into::into)
+                .collect(),
+            support_matrices: config
+                .support_matrices
                 .into_iter()
                 .map(Into::into)
                 .collect(),
@@ -152,6 +184,48 @@ impl From<PortableReleaseArtifactConfig> for ReleaseArtifactConfig {
         Self {
             name: config.name,
             checksum_sidecar: config.checksum_sidecar,
+        }
+    }
+}
+
+impl From<SupportMatrixConfig> for PortableSupportMatrixConfig {
+    fn from(config: SupportMatrixConfig) -> Self {
+        Self {
+            id: config.id,
+            entries: config.entries.into_iter().map(Into::into).collect(),
+            command_contracts: config.command_contracts,
+            rust_exports: config.rust_exports,
+            severity: config.severity,
+        }
+    }
+}
+
+impl From<PortableSupportMatrixConfig> for SupportMatrixConfig {
+    fn from(config: PortableSupportMatrixConfig) -> Self {
+        Self {
+            id: config.id,
+            entries: config.entries.into_iter().map(Into::into).collect(),
+            command_contracts: config.command_contracts,
+            rust_exports: config.rust_exports,
+            severity: config.severity,
+        }
+    }
+}
+
+impl From<SupportMatrixEntryConfig> for PortableSupportMatrixEntryConfig {
+    fn from(config: SupportMatrixEntryConfig) -> Self {
+        Self {
+            surface: config.surface,
+            status: config.status,
+        }
+    }
+}
+
+impl From<PortableSupportMatrixEntryConfig> for SupportMatrixEntryConfig {
+    fn from(config: PortableSupportMatrixEntryConfig) -> Self {
+        Self {
+            surface: config.surface,
+            status: config.status,
         }
     }
 }

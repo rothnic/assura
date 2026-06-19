@@ -2,7 +2,7 @@
 id: goal-assura-rule-release-sync
 type: goal
 title: Assura release sync rule
-status: planned
+status: completed
 created: 2026-06-08
 owners:
   - assura-maintainers
@@ -46,12 +46,27 @@ A repository maintainer should be able to declare the release artifacts their
 project publishes and have Assura report drift when docs, installers, workflow
 matrices, checksums, or package metadata stop agreeing.
 
-## Current Boundary
+## Completion Result
+
+Completed as a first reusable rule slice in PR #59 and archived in PR #60.
+The shipped surface adds explicit `extensions.release_contracts` notation,
+semantic config validation, workflow/docs/installer/checksum drift checks,
+installer URL branch and asset checks, CLI JSON diagnostics, compiled-config
+portability, and integration fixtures.
+
+The first slice intentionally keeps Assura's own hard-coded
+`cargo xtask target-state` release checks. Package metadata and support-matrix
+joins remain better follow-up owners for the manifest-semantics and
+public-surface support-matrix rules.
+
+## Starting Boundary
 
 - Assura repo release governance: covered by `cargo xtask target-state`.
-- Public reusable Assura validation: not implemented.
-- Release-contract configuration notation: not specified.
-- Fixture and CLI integration coverage for release-contract drift: not present.
+- Public reusable Assura validation: implemented for the first explicit
+  release-contract slice.
+- Release-contract configuration notation: specified in this goal and
+  represented in `extensions.release_contracts`.
+- Fixture and CLI integration coverage for release-contract drift: present.
 
 ## Detector Hypothesis
 
@@ -194,3 +209,7 @@ coverage is weakened before the reusable rule proves equivalent coverage.
   scanning workflow/docs/installer files directly instead of joining large
   content buffers, guarding substring checks against empty search terms, and
   hardening install URL extraction for shell assignments and Markdown links.
+- 2026-06-19: Completed the release-contract first slice in PR #59 and archived
+  Trellis task `06-18-release-contract-rule-slice` in PR #60. Remaining package
+  metadata and support-policy joins route to manifest-semantics and
+  public-surface support-matrix follow-up goals.

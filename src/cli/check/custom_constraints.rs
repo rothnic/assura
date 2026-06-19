@@ -29,12 +29,16 @@ impl StructureChecker {
         if extensions.custom_constraints.is_empty()
             && extensions.relationships.is_empty()
             && extensions.release_contracts.is_empty()
+            && extensions.support_matrices.is_empty()
         {
             return Ok(());
         }
 
         if !extensions.release_contracts.is_empty() {
             self.validate_release_contracts(&extensions.release_contracts, report)?;
+        }
+        if !extensions.support_matrices.is_empty() {
+            self.validate_support_matrices(&extensions.support_matrices, report)?;
         }
 
         if extensions.custom_constraints.is_empty() && extensions.relationships.is_empty() {

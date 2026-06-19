@@ -4,9 +4,8 @@ use super::compiled_config::CompiledStructureConfig;
 use super::compiled_fingerprint::SourceConfigFingerprint;
 use super::compiled_plan_artifact::PortableCompiledPlan;
 use crate::config::config::{
-    Config, CustomConstraintConfig, DirectoryBundle, DirectoryNode, ExistsValidation,
-    ExtensionConfig, FileBundle, MarkdownBundle, QualityConfig, RelationshipConstraintConfig,
-    RelationshipProviderConfig, ReleaseArtifactConfig, ReleaseContractConfig,
+    Config, DirectoryBundle, DirectoryNode, ExistsValidation, FileBundle, MarkdownBundle,
+    QualityConfig,
 };
 use crate::config::ls_compat::LsLintCompatibility;
 use crate::stable_hash::{stable_hash, stable_hash_const};
@@ -14,7 +13,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-const COMPILED_CONFIG_SCHEMA_VERSION: u32 = 11;
+const COMPILED_CONFIG_SCHEMA_VERSION: u32 = 12;
 const ASSURA_VERSION_HASH: u64 = stable_hash_const(env!("CARGO_PKG_VERSION").as_bytes());
 
 /// Portable artifact containing a parsed Assura structure config.

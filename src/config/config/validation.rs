@@ -14,6 +14,8 @@ use std::path::{Component, Path};
 
 #[cfg(feature = "yaml-config")]
 mod release_contracts;
+#[cfg(feature = "yaml-config")]
+mod support_matrices;
 
 /// Validate structure-first config semantics without the full validator stack.
 #[cfg(feature = "yaml-config")]
@@ -126,6 +128,16 @@ fn validate_extension_config(config: &ExtensionConfig) -> Result<(), String> {
             return Err(format!(
                 "extensions.release_contracts.{}: duplicate release contract id",
                 contract.id
+            ));
+        }
+    }
+    let mut support_matrix_ids = HashSet::new();
+    for matrix in &config.support_matrices {
+        support_matrices::validate_support_matrix_config(matrix)?;
+        if !support_matrix_ids.insert(&matrix.id) {
+            return Err(format!(
+                "extensions.support_matrices.{}: duplicate support matrix id",
+                matrix.id
             ));
         }
     }
