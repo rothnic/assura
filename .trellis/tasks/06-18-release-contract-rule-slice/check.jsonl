@@ -1,4 +1,0 @@
-{"file":"docs/goals/assura-rule-release-sync.md","reason":"Review against required examples, validation commands, and blocking criteria."}
-{"file":".trellis/spec/assura/config-notation.md","reason":"Check that the new notation remains explicit, compact, and updated consistently with the public surface."}
-{"file":".trellis/spec/assura/structure-enforcement.md","reason":"Check that diagnostics and validation behavior match existing rule contracts."}
-{"file":"docs/analysis/2026-06-19-goal-13-release-performance-review.md","reason":"Confirm the implementation does not weaken the existing target-state release/performance governance."}
