@@ -21,17 +21,17 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 12 | Cargo Manifest Semantics | Completed | PR #64 merged; archive PR #65 merged |
 | 13 | Test Relationship Rule | Completed | PR #68 merged; archive PR #69 merged |
 | 14 | Module Topology Rule | Completed | PR #72 merged; archive PR #73 merged |
-| 15 | Docs Lifecycle Rule | Active | Trellis task `.trellis/tasks/06-19-06-19-docs-lifecycle-rule-implementation` on branch `codex/docs-lifecycle-rule` |
+| 15 | Docs Lifecycle Rule | Completed | PR #78 merged; archive PR #79 merged |
 
 ## Active Roadmap Iteration
 
 No roadmap iteration is active after Iteration 01 completion.
 
 Current owning task:
-`.trellis/tasks/06-19-06-19-docs-lifecycle-rule-implementation`.
+None.
 
 Current branch:
-`codex/docs-lifecycle-rule`.
+None.
 
 Most recent completed iteration: Policy Depth Iteration 02. Goals 09 through
 13 are complete and archived, ending with Goal 13 PR #55 and archive PR #56.
@@ -41,8 +41,7 @@ Cargo Manifest Semantics first slice is complete via PR #64 and archive PR
 #65.
 Test Relationship Rule first slice is complete via PR #68 and archive PR #69.
 Module Topology Rule first slice is complete via PR #72 and archive PR #73.
-Docs Lifecycle Rule first slice is in review on branch
-`codex/docs-lifecycle-rule`.
+Docs Lifecycle Rule first slice is complete via PR #78 and archive PR #79.
 This completion does not mark the broader Assura roadmap complete.
 
 Direction lock, clarified on 2026-05-31: do not create or revive
@@ -50,23 +49,24 @@ Direction lock, clarified on 2026-05-31: do not create or revive
 one `--format <agent>-hook` value per agent. Treat older roadmap/task wording in
 that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
-Active roadmap candidate:
-`docs/goals/assura-rule-docs-lifecycle-stale-claims.md`. The current
-implementation slice adds the first reusable docs lifecycle and stale-claim
-policy now that support matrix, manifest semantics, release contract, test
-relationship, and module topology first slices provide the main structured
-inputs.
+Planned next roadmap candidate:
+Create and validate a follow-up goal for broadening docs lifecycle coverage
+beyond the completed first slice. Use live target-state evidence to decide
+whether the next slice should cover active analysis docs, active goal docs,
+website docs, stale roadmap/performance claim tokens, or additional historical
+exception patterns.
 
 ## Recommended Next Epic
 
-Review and merge the Docs Lifecycle candidate implementation:
-`docs/goals/assura-rule-docs-lifecycle-stale-claims.md`.
+Validate the next docs lifecycle coverage goal.
 
-The next agent should continue the active Trellis implementation task, preserve
-the clean validation gates, complete independent review, open/merge the PR, and
-then archive the task. After merge, update this roadmap to route the next
-candidate based on live target-state evidence. The product roadmap remains open
-until a separate product decision declares it complete.
+The next agent should use `assura-goal-validation` to create or revalidate a
+new goal for broadening `extensions.docs_lifecycles` dogfood coverage beyond
+the first merged slice. Start from current `.assura/config.yml`, this roadmap,
+and `docs/analysis/2026-06-09-assura-best-practice-target-state.md`; do not
+start broad cleanup until the follow-up detector scope is concrete and
+reviewable. The product roadmap remains open until a separate product decision
+declares it complete.
 
 ## Roadmap Rules
 

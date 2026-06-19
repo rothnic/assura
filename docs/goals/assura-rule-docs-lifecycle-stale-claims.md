@@ -2,7 +2,7 @@
 id: goal-assura-rule-docs-lifecycle-stale-claims
 type: goal
 title: Assura docs lifecycle and stale-claim rule
-status: planned
+status: completed
 created: 2026-06-19
 owners:
   - assura-maintainers
@@ -228,3 +228,7 @@ historical exceptions.
 - 2026-06-19: Independent review found and closure-verified fixes for
   historical exception claim preservation, token-bounded literal claim matching,
   and expected-evidence diagnostics. Closure review passed PR readiness.
+- 2026-06-19: First reusable docs lifecycle/stale-claim slice merged in PR
+  #78 with hosted checks green, then Trellis task archive and session journal
+  merged in PR #79. Follow-up work should broaden configured coverage only
+  after revalidating concrete active-doc and stale-claim drift evidence.
