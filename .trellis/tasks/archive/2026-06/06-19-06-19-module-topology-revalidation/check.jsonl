@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "Verify roadmap no longer routes to the completed test-relationship goal."}
+{"file": "docs/goals/assura-rule-test-relationship.md", "reason": "Verify completion metadata matches merged PR and archive evidence."}
+{"file": "docs/goals/assura-rule-module-topology.md", "reason": "Verify revalidation result, narrowed scope, examples, validation, and reviewer blocking criteria."}
