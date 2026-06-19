@@ -23,9 +23,75 @@ pub struct ExtensionConfig {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub manifest_semantics: Vec<ManifestSemanticsConfig>,
 
+    /// Configured source/test relationship policies executed by `assura check`.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub test_relationships: Vec<TestRelationshipConfig>,
+
     /// Internal relationship constraints normalized from structure notation.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub relationships: Vec<RelationshipConstraintConfig>,
+}
+
+/// A reusable source/test evidence policy.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub struct TestRelationshipConfig {
+    /// Stable local identifier used in diagnostics.
+    pub id: String,
+    /// Source-to-test evidence relationships checked by this policy.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub relationships: Vec<TestRelationshipSourceConfig>,
+    /// Fixture roots whose direct child families must be declared.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub fixture_roots: Vec<String>,
+    /// Fixture families accepted under the configured roots.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub fixture_families: Vec<TestRelationshipFixtureFamilyConfig>,
+    /// Allowed reason categories for configured ignored/manual tests.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub allowed_ignore_reasons: Vec<String>,
+    /// Ignored/manual tests accepted by this policy.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub ignored_tests: Vec<TestRelationshipIgnoredTestConfig>,
+    /// Optional diagnostic severity.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub severity: Option<String>,
+}
+
+/// One configured source-to-test evidence relationship.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub struct TestRelationshipSourceConfig {
+    /// Source glob, relative to the project root.
+    pub source: String,
+    /// Test evidence globs that must match at least one file when source files
+    /// exist.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub required_tests: Vec<String>,
+}
+
+/// One declared fixture family under a configured fixture root.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub struct TestRelationshipFixtureFamilyConfig {
+    /// Fixture family directory path relative to the project root.
+    pub path: String,
+    /// Owning surface or team for the fixture family.
+    pub owner: String,
+    /// Short purpose for keeping the fixture family.
+    pub purpose: String,
+}
+
+/// One accepted ignored/manual test file.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub struct TestRelationshipIgnoredTestConfig {
+    /// File path or glob relative to the project root.
+    pub path: String,
+    /// Ignored test function name accepted by this entry.
+    pub test: String,
+    /// Reason category, constrained by `allowed_ignore_reasons`.
+    pub reason: String,
 }
 
 /// A reusable Cargo manifest metadata policy.
@@ -273,6 +339,12 @@ impl ExtensionConfig {
     /// Add a Cargo manifest semantic policy.
     pub fn with_manifest_semantics(mut self, policy: ManifestSemanticsConfig) -> Self {
         self.manifest_semantics.push(policy);
+        self
+    }
+
+    /// Add a source/test relationship policy.
+    pub fn with_test_relationship(mut self, policy: TestRelationshipConfig) -> Self {
+        self.test_relationships.push(policy);
         self
     }
 

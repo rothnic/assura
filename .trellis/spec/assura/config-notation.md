@@ -437,6 +437,35 @@ description claim checks, and declared `[[bin]]` names. Do not use it as a
 replacement for Cargo, dependency usage tools, license/source policy tools, or
 semver compatibility checks.
 
+Test relationship policies use `extensions.test_relationships`:
+
+```yaml
+extensions:
+  test_relationships:
+    - id: supported_surface_tests
+      severity: high
+      relationships:
+        - source: src/cli/check/*.rs
+          required_tests:
+            - tests/custom_constraints_tests.rs
+      fixture_roots:
+        - tests/fixtures
+      fixture_families:
+        - path: tests/fixtures/test-relationship
+          owner: validation-tests
+          purpose: reusable test relationship rule coverage
+      allowed_ignore_reasons:
+        - manual_performance_audit
+      ignored_tests:
+        - path: tests/manual_performance.rs
+          test: manual_performance_audit
+          reason: manual_performance_audit
+```
+
+Use this rule for explicit source-to-test evidence, accepted ignored/manual
+test files, and fixture-family ownership. Do not use it as a coverage
+percentage, mutation-test, or semantic test-adequacy claim.
+
 ## Relationship Boundary
 
 `extensions.custom_constraints` remains an experimental first-party execution

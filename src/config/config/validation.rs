@@ -18,6 +18,8 @@ mod manifest_semantics;
 mod release_contracts;
 #[cfg(feature = "yaml-config")]
 mod support_matrices;
+#[cfg(feature = "yaml-config")]
+mod test_relationships;
 
 /// Validate structure-first config semantics without the full validator stack.
 #[cfg(feature = "yaml-config")]
@@ -149,6 +151,16 @@ fn validate_extension_config(config: &ExtensionConfig) -> Result<(), String> {
         if !manifest_semantics_ids.insert(&policy.id) {
             return Err(format!(
                 "extensions.manifest_semantics.{}: duplicate manifest semantics id",
+                policy.id
+            ));
+        }
+    }
+    let mut test_relationship_ids = HashSet::new();
+    for policy in &config.test_relationships {
+        test_relationships::validate_test_relationship_config(policy)?;
+        if !test_relationship_ids.insert(&policy.id) {
+            return Err(format!(
+                "extensions.test_relationships.{}: duplicate test relationship id",
                 policy.id
             ));
         }

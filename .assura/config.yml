@@ -172,6 +172,27 @@ extensions:
           description_required_terms:
             - Repository-local
             - maintenance tasks
+  test_relationships:
+    - id: supported_surface_tests
+      severity: high
+      relationships:
+        - source: src/cli/check/test_relationship.rs
+          required_tests:
+            - tests/custom_constraints_tests.rs
+            - crates/assura-check-cli/tests/compiled_test_relationship_cli.rs
+        - source: src/cli/check/support_matrix.rs
+          required_tests:
+            - tests/custom_constraints_tests.rs
+        - source: src/cli/check/manifest_semantics.rs
+          required_tests:
+            - tests/custom_constraints_tests.rs
+            - crates/assura-check-cli/tests/compiled_manifest_semantics_cli.rs
+      allowed_ignore_reasons:
+        - manual_performance_audit
+      ignored_tests:
+        - path: tests/ls_lint_parity_regression_tests.rs
+          test: ls_lint_parity_audit_performance_shapes
+          reason: manual_performance_audit
   support_matrices:
     - id: public_surface
       severity: high
