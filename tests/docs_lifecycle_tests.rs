@@ -8,6 +8,10 @@ fn assura_bin() -> &'static str {
     env!("CARGO_BIN_EXE_assura")
 }
 
+fn normalized_json_path(value: &serde_json::Value) -> String {
+    value.as_str().unwrap().replace('\\', "/")
+}
+
 fn write_config(project: &TempDir, config: &str) {
     let assura_dir = project.path().join(".assura");
     fs::create_dir_all(&assura_dir).unwrap();
@@ -204,7 +208,7 @@ fn check_docs_lifecycle_cli_json_reports_actionable_context() {
     let violations = report["violations"].as_array().unwrap();
     assert!(
         violations.iter().any(|violation| {
-            violation["path"] == "docs/analysis/current.md"
+            normalized_json_path(&violation["path"]) == "docs/analysis/current.md"
                 && violation["rule"] == "docs_lifecycle:project_docs"
                 && violation["message"]
                     .as_str()

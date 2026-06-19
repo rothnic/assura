@@ -5,3 +5,9 @@
 {"file":"src/cli/performance_report/ls_lint.rs","reason":"Check the native LS-Lint binary path test remains separator-portable and still rejects the Node wrapper path."}
 {"file":"src/cli/performance_report/external_fixtures.rs","reason":"Check the external fixture cache test remains newline-portable without weakening pinned revision or cache reuse assertions."}
 {"file":"tests/cli_check_tests.rs","reason":"Check the fail-fast JSON path assertion remains platform-portable while still proving the first sorted traversal violation."}
+{"file":"tests/docs_lifecycle_tests.rs","reason":"Check the docs lifecycle JSON path assertion remains platform-portable while still proving actionable context."}
+{"file":"tests/custom_constraints_tests.rs","reason":"Check nested JSON path assertions remain platform-portable while still proving actionable rule context."}
+{"file":"tests/module_topology_tests.rs","reason":"Check nested JSON path assertions remain platform-portable while still proving actionable rule context."}
+{"file":"tests/test_relationship_tests.rs","reason":"Check nested JSON path assertions remain platform-portable while still proving actionable rule context."}
+{"file":"tests/ls_lint_rule_coverage_tests.rs","reason":"Check nested JSON path assertions remain platform-portable while still proving LS-Lint parity semantics."}
+{"file":"tests/real_project_agentic_feedback_tests.rs","reason":"Check nested JSON and guided-output path assertions remain platform-portable while still proving stable agent feedback."}

@@ -9,6 +9,10 @@ fn assura_bin() -> &'static str {
     env!("CARGO_BIN_EXE_assura")
 }
 
+fn normalized_json_path(value: &serde_json::Value) -> String {
+    value.as_str().unwrap().replace('\\', "/")
+}
+
 fn write_config(project: &TempDir, config: &str) {
     let assura_dir = project.path().join(".assura");
     fs::create_dir_all(&assura_dir).unwrap();
@@ -224,7 +228,7 @@ exclude:
     let violations = report["violations"].as_array().unwrap();
     assert!(
         violations.iter().any(|violation| {
-            violation["path"] == "src/cli/check/test_relationship.rs"
+            normalized_json_path(&violation["path"]) == "src/cli/check/test_relationship.rs"
                 && violation["rule"] == "test_relationship:supported_tests"
                 && violation["message"]
                     .as_str()

@@ -131,3 +131,10 @@ as paused after the restore.
   serialized `PathBuf` values use `\` on Windows. Normalized that test
   assertion to compare the logical path without changing the check output
   contract. Hosted Windows proof is still required before completion.
+- 2026-06-19: The following PR #93 hosted Windows run passed the prior
+  fail-fast assertion and failed later in `tests/docs_lifecycle_tests.rs`
+  because the docs lifecycle JSON path assertion also assumed `/` separators.
+  Normalized that assertion and the other nested-path JSON/advice assertions in
+  downstream integration tests to compare logical paths while preserving native
+  serialized `PathBuf` output. Hosted Windows proof is still required before
+  completion.

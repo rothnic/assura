@@ -8,6 +8,10 @@ fn assura_bin() -> &'static str {
     env!("CARGO_BIN_EXE_assura")
 }
 
+fn normalized_json_path(value: &serde_json::Value) -> String {
+    value.as_str().unwrap().replace('\\', "/")
+}
+
 fn write_config(project: &TempDir, config: &str) {
     let assura_dir = project.path().join(".assura");
     fs::create_dir_all(&assura_dir).unwrap();
@@ -166,7 +170,7 @@ fn check_module_topology_cli_json_reports_actionable_context() {
     let violations = report["violations"].as_array().unwrap();
     assert!(
         violations.iter().any(|violation| {
-            violation["path"] == "src/lib.rs"
+            normalized_json_path(&violation["path"]) == "src/lib.rs"
                 && violation["rule"] == "module_topology:public_modules"
                 && violation["message"]
                     .as_str()

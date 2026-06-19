@@ -10,6 +10,10 @@ fn assura_bin() -> &'static str {
     env!("CARGO_BIN_EXE_assura")
 }
 
+fn normalized_json_path(value: &Value) -> String {
+    value.as_str().unwrap().replace('\\', "/")
+}
+
 fn fixture_path(name: &str) -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests/fixtures/real-project-agentic-feedback")
@@ -125,7 +129,7 @@ fn real_project_policy_invalid_fixture_reports_intended_drift() {
         .collect::<HashSet<_>>();
     let paths = violations
         .iter()
-        .map(|violation| violation["path"].as_str().unwrap())
+        .map(|violation| normalized_json_path(&violation["path"]))
         .collect::<HashSet<_>>();
 
     assert_eq!(status.code(), Some(1), "report was:\n{report:#}");
@@ -185,13 +189,16 @@ fn check_advice_format_renders_guided_output_in_one_command() {
         .unwrap();
 
     let stdout = String::from_utf8_lossy(&output.stdout);
+    let normalized_stdout = stdout.replace('\\', "/");
     assert!(output.status.success(), "stdout was:\n{stdout}");
-    assert!(stdout.contains("Assura found 12 structural violation(s)"));
-    assert!(stdout.contains("showing 11 guided item(s)"));
-    assert!(stdout.contains("draft-plan.md [unexpected_file:critical]"));
-    assert!(stdout.contains("packages/ui [exists_count:high]"));
-    assert!(stdout.contains("Next:"));
-    assert!(stdout.contains("References: AGENTS.md, .agents/skills/, .assura/config.yml"));
+    assert!(normalized_stdout.contains("Assura found 12 structural violation(s)"));
+    assert!(normalized_stdout.contains("showing 11 guided item(s)"));
+    assert!(normalized_stdout.contains("draft-plan.md [unexpected_file:critical]"));
+    assert!(normalized_stdout.contains("packages/ui [exists_count:high]"));
+    assert!(normalized_stdout.contains("Next:"));
+    assert!(
+        normalized_stdout.contains("References: AGENTS.md, .agents/skills/, .assura/config.yml")
+    );
 }
 
 #[test]
@@ -241,7 +248,7 @@ fn check_agent_format_emits_stable_priority_feedback_for_real_project_fixture() 
     let messages = feedback[0]["messages"].as_array().unwrap();
     let shown_paths = messages
         .iter()
-        .map(|message| message["path"].as_str().unwrap())
+        .map(|message| normalized_json_path(&message["path"]))
         .collect::<HashSet<_>>();
     let severities = messages
         .iter()
@@ -252,7 +259,7 @@ fn check_agent_format_emits_stable_priority_feedback_for_real_project_fixture() 
         .map(|message| {
             (
                 message["severity"].as_str().unwrap(),
-                message["path"].as_str().unwrap(),
+                normalized_json_path(&message["path"]),
                 message["rule"].as_str().unwrap(),
             )
         })
@@ -265,7 +272,7 @@ fn check_agent_format_emits_stable_priority_feedback_for_real_project_fixture() 
     assert_eq!(&severities[0..4], ["critical", "critical", "high", "high"]);
     assert_eq!(
         priority_keys,
-        vec![
+        [
             ("critical", "draft-plan.md", "unexpected_file"),
             ("critical", "scratch.md", "unexpected_file"),
             ("high", "apps/web/notes.txt", "unexpected_file"),
@@ -277,7 +284,9 @@ fn check_agent_format_emits_stable_priority_feedback_for_real_project_fixture() 
             ("medium", "apps/web/src/old-helper.js", "extension"),
             ("medium", "apps/web/src/old-helper.js", "forbidden_file"),
             ("medium", "apps/web/tests/BadSpec.ts", "file_naming"),
-        ],
+        ]
+        .map(|(severity, path, rule)| (severity, path.to_string(), rule))
+        .to_vec(),
         "feedback was:\n{json:#}"
     );
     assert_eq!(medium_count, 7, "feedback was:\n{json:#}");
@@ -305,7 +314,7 @@ fn check_agent_format_emits_stable_priority_feedback_for_real_project_fixture() 
         .as_array()
         .unwrap()
         .iter()
-        .map(|path| path.as_str().unwrap())
+        .map(normalized_json_path)
         .collect::<HashSet<_>>();
     assert!(first_paths.contains("draft-plan.md"));
     assert!(first_paths.contains("scratch.md"));
@@ -364,6 +373,7 @@ fn check_agent_codex_adapter_wraps_real_project_feedback_for_user_prompt_submit(
     let context = json["hookSpecificOutput"]["additionalContext"]
         .as_str()
         .unwrap();
+    let normalized_context = context.replace('\\', "/");
     assert_eq!(
         output.stdout, repeat.stdout,
         "Codex output should be deterministic"
@@ -373,18 +383,32 @@ fn check_agent_codex_adapter_wraps_real_project_feedback_for_user_prompt_submit(
         "Codex additionalContext should stay under 24 KiB; got {} bytes",
         context.len()
     );
-    assert!(context.contains("<assura-feedback>"), "{context}");
     assert!(
-        context.contains("Check state: ran assura check --format agent --agent codex"),
+        normalized_context.contains("<assura-feedback>"),
         "{context}"
     );
-    assert!(context.contains("Blocking: no (--warn)"), "{context}");
-    assert!(context.contains("draft-plan.md"), "{context}");
-    assert!(context.contains("apps/web/notes.txt"), "{context}");
-    assert!(context.contains("apps/web/src/BadName.tsx"), "{context}");
-    assert!(context.contains("packages/ui"), "{context}");
-    assert!(context.contains("scratch.md"), "{context}");
-    assert!(context.contains("References: AGENTS.md, .agents/skills/, .assura/config.yml"));
+    assert!(
+        normalized_context.contains("Check state: ran assura check --format agent --agent codex"),
+        "{context}"
+    );
+    assert!(
+        normalized_context.contains("Blocking: no (--warn)"),
+        "{context}"
+    );
+    assert!(normalized_context.contains("draft-plan.md"), "{context}");
+    assert!(
+        normalized_context.contains("apps/web/notes.txt"),
+        "{context}"
+    );
+    assert!(
+        normalized_context.contains("apps/web/src/BadName.tsx"),
+        "{context}"
+    );
+    assert!(normalized_context.contains("packages/ui"), "{context}");
+    assert!(normalized_context.contains("scratch.md"), "{context}");
+    assert!(
+        normalized_context.contains("References: AGENTS.md, .agents/skills/, .assura/config.yml")
+    );
 }
 
 #[test]
