@@ -18,3 +18,4 @@
 {"file":"src/constraints/ls_lint/rules.rs","reason":"Check PathRule glob matching normalizes Windows separators without changing slash-based LS-Lint pattern semantics."}
 {"file":"src/constraints/ls_lint/rules/rules_tests.rs","reason":"Check Windows-style absolute path coverage proves PathRule matches slash-based LS-Lint patterns on Windows."}
 {"file":"tests/policy_language_completeness_tests.rs","reason":"Check directory diagnostic JSON path assertions remain platform-portable while still proving self-directory corrective context."}
+{"file":"crates/assura-check-cli/tests/batch_cli.rs","reason":"Check the status-file smoke test remains platform-portable while still proving assura-check-status reads a clean daemon status file."}

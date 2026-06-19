@@ -193,3 +193,21 @@ as paused after the restore.
   `git diff --check`. Review agent Aquinas found no blockers and confirmed the
   test still proves the self-directory corrective context without changing
   product output. Hosted Windows proof is still required before completion.
+- 2026-06-19: The next PR #93 hosted Windows run passed the policy-language
+  path assertion and failed later in
+  `crates/assura-check-cli/tests/batch_cli.rs` because the status-file smoke
+  test read `assura-check-status` immediately after daemon startup while
+  Windows watcher startup events can leave the status file dirty until the
+  daemon is asked to refresh. Updated the test to refresh the daemon through
+  `assura-check-client` before asserting the tiny status client reads the clean
+  status file. Hosted Windows proof is still required before completion.
+- 2026-06-19: Local validation for the status-file smoke fix passed:
+  `cargo fmt --all -- --check`, targeted and full `batch_cli`,
+  `cargo check --all-targets --all-features`, `cargo clippy --all-targets
+  --all-features -- -D warnings`, `cargo test --all-features`,
+  `cargo run --quiet -- check --format json .`, `cargo xtask evidence`,
+  `cargo xtask target-state`, `cargo xtask docs`, and `git diff --check`.
+  Review agent Pascal found no blockers and confirmed the test still proves
+  `assura-check-status` reads a clean daemon-written status file after the
+  existing daemon refresh path. Hosted Windows proof is still required before
+  completion.

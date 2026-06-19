@@ -71,6 +71,19 @@ fn read_daemon_addr_or_skip(server: &mut Child) -> Option<String> {
     panic!("assura-checkd exited before publishing an address:\n{stderr}");
 }
 
+fn refresh_daemon_status(addr: &str) {
+    let refresh = Command::new(env!("CARGO_BIN_EXE_assura-check-client"))
+        .arg(addr)
+        .output()
+        .unwrap();
+    assert!(
+        refresh.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&refresh.stdout),
+        String::from_utf8_lossy(&refresh.stderr)
+    );
+}
+
 #[test]
 fn quiet_single_project_suppresses_success_output() {
     let temp = tempfile::tempdir().unwrap();
@@ -371,9 +384,10 @@ fn status_cli_reads_clean_daemon_status_file() {
         .spawn()
         .unwrap();
 
-    let Some(_addr) = read_daemon_addr_or_skip(&mut server) else {
+    let Some(addr) = read_daemon_addr_or_skip(&mut server) else {
         return;
     };
+    refresh_daemon_status(&addr);
 
     let status = Command::new(env!("CARGO_BIN_EXE_assura-check-status"))
         .arg(&status_file)
