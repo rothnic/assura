@@ -141,23 +141,23 @@ fn validate_extension_config(config: &ExtensionConfig) -> Result<(), String> {
             ));
         }
     }
+    let mut manifest_semantics_ids = HashSet::new();
+    for policy in &config.manifest_semantics {
+        manifest_semantics::validate_manifest_semantics_config(policy)?;
+        if !manifest_semantics_ids.insert(policy.id.as_str()) {
+            return Err(format!(
+                "extensions.manifest_semantics.{}: duplicate manifest semantics id",
+                policy.id
+            ));
+        }
+    }
     let mut support_matrix_ids = HashSet::new();
     for matrix in &config.support_matrices {
-        support_matrices::validate_support_matrix_config(matrix)?;
+        support_matrices::validate_support_matrix_config(matrix, &manifest_semantics_ids)?;
         if !support_matrix_ids.insert(&matrix.id) {
             return Err(format!(
                 "extensions.support_matrices.{}: duplicate support matrix id",
                 matrix.id
-            ));
-        }
-    }
-    let mut manifest_semantics_ids = HashSet::new();
-    for policy in &config.manifest_semantics {
-        manifest_semantics::validate_manifest_semantics_config(policy)?;
-        if !manifest_semantics_ids.insert(&policy.id) {
-            return Err(format!(
-                "extensions.manifest_semantics.{}: duplicate manifest semantics id",
-                policy.id
             ));
         }
     }

@@ -32,11 +32,11 @@ and manifest/package-facing surface sources.
 
 ## Acceptance Criteria
 
-- [ ] Config notation documents the new support-matrix source fields.
-- [ ] Runtime checks support docs claim sources and manifest/package sources.
-- [ ] Tests cover passing and failing docs/manifest support matrix cases.
-- [ ] `.assura/config.yml` dogfoods the expanded sources with explicit paths.
-- [ ] Required validation and independent review pass before PR.
+- [x] Config notation documents the new support-matrix source fields.
+- [x] Runtime checks support docs claim sources and manifest/package sources.
+- [x] Tests cover passing and failing docs/manifest support matrix cases.
+- [x] `.assura/config.yml` dogfoods the expanded sources with explicit paths.
+- [x] Required validation and independent review pass before PR.
 
 ## Out Of Scope
 

@@ -112,18 +112,28 @@ extensions:
         - .assura/command-surface.yml
       rust_exports:
         - src/lib.rs
+      docs_claim_sources:
+        - path: docs/compatibility-and-surface.md
+      manifest_policies:
+        - cargo_workspace
       entries:
         - surface: "command:assura check"
           status: supported
         - surface: "rust:intelligence"
           status: internal
+        - surface: "package:assura"
+          status: supported
+        - surface: "binary:assura"
+          status: supported
 ```
 
 The supported status vocabulary is `supported`, `experimental`, `internal`,
 `roadmap`, and `unsupported`. Command surfaces are read from configured
 command-surface contracts. Rust surfaces are bounded to top-level `pub mod`
-and `pub use` families in configured source files. Diagnostics use
-`support_matrix:<id>` rule names.
+and `pub use` families in configured source files. Docs claim sources are
+bounded Markdown tables, and manifest policies reuse configured
+`extensions.manifest_semantics` package and binary declarations. Diagnostics
+use `support_matrix:<id>` rule names.
 
 ## Rust Library Surface
 

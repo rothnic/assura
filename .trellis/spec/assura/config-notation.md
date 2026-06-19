@@ -437,6 +437,45 @@ description claim checks, and declared `[[bin]]` names. Do not use it as a
 replacement for Cargo, dependency usage tools, license/source policy tools, or
 semver compatibility checks.
 
+Support matrix policies use `extensions.support_matrices`:
+
+```yaml
+extensions:
+  support_matrices:
+    - id: public_surface
+      severity: high
+      command_contracts:
+        - .assura/command-surface.yml
+      rust_exports:
+        - src/lib.rs
+      docs_claim_sources:
+        - path: docs/compatibility-and-surface.md
+      manifest_policies:
+        - cargo_workspace
+      entries:
+        - surface: "command:assura check"
+          status: supported
+        - surface: "rust:cli"
+          status: supported
+        - surface: "package:assura"
+          status: supported
+        - surface: "binary:assura"
+          status: supported
+```
+
+Use this rule for explicit public surface support classification. Command
+surfaces come from configured command-surface contracts. Rust export surfaces
+come from top-level `pub mod` and `pub use` families in configured files. Docs
+claim sources are bounded Markdown files with a table containing `Command` or
+`Surface` and `Status`, `Level`, or `Support` columns; only deterministic table
+rows are read, and broad prose is ignored. Manifest policy sources reference
+configured `extensions.manifest_semantics` policy ids and use their declared
+`package` and `binaries` values as `package:<name>` and `binary:<name>`
+surfaces. Support statuses are `supported`, `experimental`, `internal`,
+`roadmap`, and `unsupported`. Do not use it as a broad semantic-versioning
+guarantee, dependency usage analyzer, manifest metadata validator, or docs
+prose classifier.
+
 Test relationship policies use `extensions.test_relationships`:
 
 ```yaml

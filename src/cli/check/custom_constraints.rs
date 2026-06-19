@@ -42,7 +42,11 @@ impl StructureChecker {
             self.validate_release_contracts(&extensions.release_contracts, report)?;
         }
         if !extensions.support_matrices.is_empty() {
-            self.validate_support_matrices(&extensions.support_matrices, report)?;
+            self.validate_support_matrices(
+                &extensions.support_matrices,
+                &extensions.manifest_semantics,
+                report,
+            )?;
         }
         if !extensions.manifest_semantics.is_empty() {
             self.validate_manifest_semantics(&extensions.manifest_semantics, report)?;
