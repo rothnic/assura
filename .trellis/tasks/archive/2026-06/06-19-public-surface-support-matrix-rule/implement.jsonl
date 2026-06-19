@@ -1,0 +1,8 @@
+{"file":"docs/goals/assura-rule-public-surface-support-matrix.md","reason":"Canonical objective, first-slice scope, definition of done, and review blocking criteria."}
+{"file":"docs/analysis/2026-06-09-assura-best-practice-target-state.md","reason":"Target-state evidence and P0 detector ordering that keeps this goal valid."}
+{"file":".trellis/spec/assura/config-notation.md","reason":"Config notation requirements for new Assura-authored validation surfaces."}
+{"file":".trellis/spec/assura/structure-enforcement.md","reason":"Existing validation diagnostic and self-check expectations."}
+{"file":".assura/command-surface.yml","reason":"Existing command inventory contract to join with support classifications."}
+{"file":"src/lib.rs","reason":"Initial Rust public export inventory source for the first support-matrix slice."}
+{"file":"src/cli/check/custom_constraints.rs","reason":"Existing custom constraint integration pattern for cross-file repository checks."}
+{"file":"tests/custom_constraints_tests.rs","reason":"Integration fixture style for Assura check custom constraints."}
