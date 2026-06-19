@@ -1,0 +1,3 @@
+{"file": "docs/goals/assura-rule-module-topology.md", "reason": "Check implementation against definition of done and reviewer blocking criteria."}
+{"file": "docs/analysis/2026-06-09-assura-best-practice-target-state.md", "reason": "Confirm delivered detector addresses the module topology gap without expanding to broad refactors."}
+{"file": ".trellis/spec/assura/config-notation.md", "reason": "Verify new notation is documented and consistent with existing first-party extension patterns."}
