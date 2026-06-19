@@ -1,4 +1,0 @@
-{"file": "docs/goals/assura-rule-cargo-manifest-semantics.md", "reason": "Canonical goal with first-slice scope, proof gates, and review criteria."}
-{"file": ".trellis/spec/assura/roadmap.md", "reason": "Roadmap routes the current P0 candidate to manifest semantics."}
-{"file": "docs/analysis/2026-06-09-assura-best-practice-target-state.md", "reason": "Target-state analysis identifies workspace manifest metadata drift as a P0 detector gap."}
-{"file": ".trellis/spec/assura/config-notation.md", "reason": "Config notation source of truth for adding a first-party extension surface."}
