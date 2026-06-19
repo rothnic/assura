@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "Current roadmap must route the next candidate after test-relationship completion."}
+{"file": "docs/analysis/2026-06-09-assura-best-practice-target-state.md", "reason": "Target-state backlog identifies module topology as the remaining planned detector after P0 rule slices."}
+{"file": "docs/goals/assura-rule-test-relationship.md", "reason": "Completed candidate whose metadata and roadmap handoff need updating."}
+{"file": "docs/goals/assura-rule-module-topology.md", "reason": "Candidate goal that needs revalidation and first-slice proof gates."}
