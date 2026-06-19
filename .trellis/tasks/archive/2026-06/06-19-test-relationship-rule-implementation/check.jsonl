@@ -1,0 +1,2 @@
+{"file": "docs/goals/assura-rule-test-relationship.md", "reason": "Check implementation against required examples, validation commands, and blocking criteria."}
+{"file": ".trellis/spec/assura/config-notation.md", "reason": "Check notation docs stay consistent with first-party extension style."}
