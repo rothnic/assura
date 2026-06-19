@@ -25,30 +25,23 @@ Use `.assura/config.yml` to express project shape first:
 ```yaml
 structure:
   ./:
-    files:
-      naming: kebab-case
-      allowed_names:
-        - README.md
-        - Cargo.toml
-    directories:
-      naming: kebab-case
-      allowed_names:
-        - src
-        - tests
-    children:
-      src:
-        files:
-          naming: snake_case
-          extensions:
-            - rs
+    extra: false
+    README.md: exists:1
+    Cargo.toml: exists:1
+    src/: exists:1
+    tests/: exists:0-1
+  src/:
+    .rs: snake_case
+  tests/:
+    required: false
+    .rs: snake_case
 exclude:
   - "target/**"
   - "node_modules/**"
 ```
 
-Supported rule families include naming conventions, allowed names, direct-child
-existence counts, extension rules, directory naming, markdown rules, and
-exclusions.
+Supported rule families include naming conventions, direct-child existence
+counts, extension rules, directory naming, markdown rules, and exclusions.
 
 ## Relationship Notation First
 
@@ -85,10 +78,7 @@ extensions:
 
 structure:
   ./:
-    files:
-      allow_extra: true
-    directories:
-      allow_extra: true
+    extra: true
 exclude:
   - "target/**"
 ```

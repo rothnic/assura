@@ -46,6 +46,47 @@ exclude:
 "#
 }
 
+fn first_time_rust_project_config() -> &'static str {
+    r#"
+structure:
+  ./:
+    extra: false
+    README.md: exists:1
+    Cargo.toml: exists:1
+    src/: exists:1
+    "*.lock": exists:0-1
+  src/:
+    .rs: snake_case
+exclude:
+  - target/**
+"#
+}
+
+fn first_time_package_project_config() -> &'static str {
+    r#"
+rules:
+  "@package-standard":
+    README.md: exists:1
+    package.json: exists:1
+    src/: exists:1
+    .ts: kebab-case
+structure:
+  ./:
+    extra: true
+  packages/:
+    "{package}/":
+      use: "@package-standard"
+      needs: doc
+  docs/packages/:
+    required: false
+    "{package}.md":
+      provides: doc
+exclude:
+  - node_modules/**
+  - dist/**
+"#
+}
+
 #[test]
 fn strict_root_policy_ignores_assura_tool_state_without_user_exclude() {
     let project = TempDir::new().unwrap();
@@ -64,6 +105,131 @@ structure:
 
     assert!(report.success, "{:#?}", report.violations);
     assert!(report.violations.is_empty());
+}
+
+#[test]
+fn first_time_rust_project_config_accepts_minimal_useful_shape() {
+    let project = TempDir::new().unwrap();
+    write_config(&project, first_time_rust_project_config());
+    fs::create_dir_all(project.path().join("src")).unwrap();
+    fs::write(project.path().join("README.md"), "# Example\n").unwrap();
+    fs::write(
+        project.path().join("Cargo.toml"),
+        "[package]\nname = \"example\"\nversion = \"0.1.0\"\n",
+    )
+    .unwrap();
+    fs::write(project.path().join("src/main.rs"), "fn main() {}\n").unwrap();
+
+    let report = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+
+    assert!(report.success, "{:#?}", report.violations);
+    assert!(report.violations.is_empty());
+}
+
+#[test]
+fn first_time_rust_project_config_reports_actionable_drift() {
+    let project = TempDir::new().unwrap();
+    write_config(&project, first_time_rust_project_config());
+    fs::create_dir_all(project.path().join("src")).unwrap();
+    fs::write(project.path().join("README.md"), "# Example\n").unwrap();
+    fs::write(
+        project.path().join("Cargo.toml"),
+        "[package]\nname = \"example\"\nversion = \"0.1.0\"\n",
+    )
+    .unwrap();
+    fs::write(project.path().join("src/BadName.rs"), "fn main() {}\n").unwrap();
+
+    let report = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+
+    assert!(!report.success);
+    assert_eq!(report.violations.len(), 1);
+    let violation = &report.violations[0];
+    assert_eq!(violation.path, PathBuf::from("src/BadName.rs"));
+    assert_eq!(violation.rule, "file_naming");
+    assert!(
+        violation.corrective_context.contains("Rename"),
+        "{violation:#?}"
+    );
+}
+
+#[test]
+fn first_time_package_project_config_accepts_reusable_rules_and_docs() {
+    let project = TempDir::new().unwrap();
+    write_config(&project, first_time_package_project_config());
+    fs::create_dir_all(project.path().join("packages/core/src")).unwrap();
+    fs::create_dir_all(project.path().join("docs/packages")).unwrap();
+    fs::write(project.path().join("packages/core/README.md"), "# Core\n").unwrap();
+    fs::write(
+        project.path().join("packages/core/package.json"),
+        "{\"name\":\"@example/core\"}\n",
+    )
+    .unwrap();
+    fs::write(
+        project.path().join("packages/core/src/index.ts"),
+        "export const core = true;\n",
+    )
+    .unwrap();
+    fs::write(project.path().join("docs/packages/core.md"), "# Core\n").unwrap();
+
+    let report = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+
+    assert!(report.success, "{:#?}", report.violations);
+    assert!(report.violations.is_empty());
+}
+
+#[test]
+fn first_time_package_project_config_reports_missing_doc_provider() {
+    let project = TempDir::new().unwrap();
+    write_config(&project, first_time_package_project_config());
+    fs::create_dir_all(project.path().join("packages/core/src")).unwrap();
+    fs::write(project.path().join("packages/core/README.md"), "# Core\n").unwrap();
+    fs::write(
+        project.path().join("packages/core/package.json"),
+        "{\"name\":\"@example/core\"}\n",
+    )
+    .unwrap();
+    fs::write(
+        project.path().join("packages/core/src/index.ts"),
+        "export const core = true;\n",
+    )
+    .unwrap();
+
+    let report = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+
+    assert!(!report.success);
+    assert_eq!(report.violations.len(), 1);
+    let violation = &report.violations[0];
+    assert_eq!(violation.path, PathBuf::from("packages/core"));
+    assert!(
+        violation.rule.starts_with("relationship:captured-doc-"),
+        "{violation:#?}"
+    );
+    assert!(violation.message.contains("doc"));
+}
+
+#[test]
+fn first_time_configs_do_not_accept_removed_alpha_capture_forms() {
+    let project = TempDir::new().unwrap();
+    write_config(
+        &project,
+        r#"
+structure:
+  src/:
+    "${module}.rs": {}
+"#,
+    );
+    fs::create_dir_all(project.path().join("src")).unwrap();
+    fs::write(project.path().join("src/main.rs"), "fn main() {}\n").unwrap();
+
+    let error = run_structure_check(Some(project.path().to_path_buf()), None, false)
+        .expect_err("removed alpha capture syntax should be rejected");
+
+    assert!(
+        error
+            .to_string()
+            .contains("captures use single braces like {name}"),
+        "{error:#}"
+    );
 }
 
 #[test]

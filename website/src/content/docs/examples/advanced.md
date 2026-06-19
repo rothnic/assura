@@ -8,45 +8,35 @@ configuration. They avoid undocumented Rust APIs and plugin surfaces.
 
 ## Closed Project Shape
 
-Use `allowed_names` with `allow_extra: false` when a directory should contain
-only known direct children.
+Use `extra: false` when a directory should contain only known direct children.
 
 ```yaml
 structure:
   ./:
-    files:
-      allowed_names:
-        - README.md
-        - Cargo.toml
-      allow_extra: false
-    directories:
-      allowed_names:
-        - src
-        - tests
-        - docs
-      allow_extra: false
+    extra: false
+    README.md: exists:1
+    Cargo.toml: exists:1
+    src/: exists:1
+    tests/: exists:0-1
+    docs/: exists:0-1
 exclude:
   - "target/**"
 ```
 
 ## Directory-Specific Naming
 
-Use nested `children` to apply different rules to explicit subdirectories.
+Apply direct file rules where the files live.
 
 ```yaml
 structure:
   ./:
-    files:
-      naming: kebab-case
-    children:
-      src:
-        files:
-          extensions:
-            rs: snake_case
-      docs:
-        files:
-          extensions:
-            md: kebab-case
+    README.md: exists:1
+    src/: exists:1
+    docs/: exists:0-1
+  src/:
+    .rs: snake_case
+  docs/:
+    .md: kebab-case
 ```
 
 Assura supports explicit child scopes and LS-Lint-compatible glob or brace
@@ -59,16 +49,38 @@ Existence counts apply to direct children of the configured directory.
 ```yaml
 structure:
   ./:
-    files:
-      exists:
-        "README.md": "1"
-        "*.tmp": "0"
-    directories:
-      exists:
-        "package-*": "1-5"
+    README.md: exists:1
+    "*.tmp": exists:0
+    package-*/: exists:1-5
 ```
 
-Supported count forms include `1`, `0`, and inclusive ranges like `1-5`.
+Supported count forms include `exists:1`, `exists:0`, and inclusive ranges like
+`exists:1-5`.
+
+## Reusable Package Rules
+
+Use `rules:` and `use:` when the same policy repeats across package folders.
+
+```yaml
+rules:
+  "@package-standard":
+    README.md: exists:1
+    package.json: exists:1
+    src/: exists:1
+
+structure:
+  packages/:
+    "{package}/":
+      use: "@package-standard"
+      needs: doc
+  docs/packages/:
+    required: false
+    "{package}.md":
+      provides: doc
+```
+
+This keeps the package contract in one reusable fragment while each package and
+documentation provider still appears where it lives in the tree.
 
 ## Generated Output Exclusions
 

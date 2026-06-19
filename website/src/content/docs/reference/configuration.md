@@ -89,6 +89,31 @@ Captures use single braces such as `{topic}`. Removed alpha capture forms such
 as `${name}` and `{{name}}` are not supported in hand-authored structure
 notation.
 
+## First-Time Notation Matrix
+
+Start with LS-Lint-equivalent policies, then add Assura-native structure when
+the project needs relationships or reusable contracts.
+
+| Use case | Notation |
+| --- | --- |
+| Direct file naming | `.rs: snake_case` |
+| Direct file count | `README.md: exists:1` |
+| Optional singleton | `"*.lock": exists:0-1` |
+| Forbidden direct children | `draft-*: exists:0` |
+| Closed-world scope | `extra: false` |
+| Generated output ignore | `exclude: ["target/**", "node_modules/**"]` |
+| Captured source/test pair | `"{component}.tsx"` and `"{component}.test.tsx": exists:1` |
+| Package documentation need | `needs: doc` with `provides: doc` |
+| Reusable package policy | `rules:` plus `use: "@package-standard"` |
+| Markdown outline | `markdown.outline` with nested heading lists |
+
+Use the detailed fields below when a rule needs extra attributes or when you
+are reading generated migration output.
+
+Markdown outline notation is the planned authoring shape for document outlines.
+Current release checks still expose the detailed Markdown fields documented
+below; full shorthand outline runtime proof is tracked by Goal 11.
+
 ## Directory Nodes
 
 Each key under `structure` is a directory scope. Use `./` for the project root.

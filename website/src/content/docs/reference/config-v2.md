@@ -1,10 +1,13 @@
 ---
-title: Structure Configuration Reference
-description: Reference for the current Assura structure-first config
+title: Structure Configuration Legacy Reference
+description: Legacy reference for expanded Assura structure config fields
 ---
 
-The current Assura config is structure-first. Current onboarding should use
-`.assura/config.yml` with the fields below.
+The current Assura config is structure-first. First-time users should start
+with the concise tree-shaped notation in
+[Configuration Reference](/reference/configuration/). This page is retained as
+a legacy reference for the expanded fields that migration output and older
+configs may still contain.
 
 ## Top-Level Fields
 
@@ -16,7 +19,8 @@ ls: null
 ```
 
 - `patterns`: optional top-level file patterns.
-- `structure`: required directory-shape rules.
+- `structure`: directory-shape rules. Prefer concise direct keys for new
+  hand-authored config.
 - `exclude`: paths excluded from validation.
 - `ls`: optional LS-Lint compatibility section used by conversion and tests.
 

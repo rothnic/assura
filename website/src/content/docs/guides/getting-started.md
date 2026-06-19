@@ -33,13 +33,36 @@ supported command is `assura check`.
    `init` creates `.assura/config.yml` and refuses to overwrite an existing
    config unless `--force` is provided.
 
-3. **Run validation**
+3. **Author a minimal policy**
+
+   Replace the generated starter with a focused policy for the project shape
+   you want to keep:
+
+   ```yaml
+   structure:
+     ./:
+       extra: false
+       README.md: exists:1
+       Cargo.toml: exists:1
+       src/: exists:1
+       "*.lock": exists:0-1
+     src/:
+       .rs: snake_case
+   exclude:
+     - "target/**"
+   ```
+
+   Use `exists:1` for required direct children, `exists:0-1` for optional
+   singletons, extension keys such as `.rs` for direct file naming, and
+   `extra: false` when unexpected root files should fail the check.
+
+4. **Run validation**
 
    ```bash
    assura check
    ```
 
-4. **Create an intentional failure**
+5. **Create an intentional failure**
 
    Add a file that violates your generated naming rules, then run:
 
@@ -49,7 +72,7 @@ supported command is `assura check`.
 
    Assura exits nonzero when violations are present.
 
-5. **Fix and re-run**
+6. **Fix and re-run**
 
    Rename or move the file so it matches `.assura/config.yml`, then run:
 

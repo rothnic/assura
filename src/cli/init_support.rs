@@ -22,25 +22,21 @@ pub fn starter_config() -> &'static str {
 
 structure:
   ./:
-    files:
-      naming: "kebab-case"
-      allowed_names:
-        - "README.md"
-        - "LICENSE"
-        - ".gitignore"
-        - "Cargo.toml"
-        - "package.json"
-      allow_extra: true
-    directories:
-      naming: "kebab-case"
-      allowed_names:
-        - ".assura"
-      allow_extra: true
-    children:
-      .assura/:
-        inherit: false
-        files:
-          naming: "kebab-case"
+    extra: true
+    README.md: exists:0-1
+    LICENSE: exists:0-1
+    ".gitignore": exists:0-1
+    Cargo.toml: exists:0-1
+    package.json: exists:0-1
+    src/: exists:0-1
+    tests/: exists:0-1
+    .rs: snake_case
+  src/:
+    required: false
+    .rs: snake_case
+  tests/:
+    required: false
+    .rs: snake_case
 
 exclude:
   - ".git/**"
