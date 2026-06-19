@@ -243,6 +243,8 @@ markdown:
 Captured paths can express relationships without leaving the project tree. A
 captured path without `exists` is optional; a captured path with `exists:1`
 becomes required for each matching source with the same capture names.
+Required captured children inside a captured directory stay ordinary structure
+requirements for that directory.
 
 ```yaml
 structure:
@@ -277,6 +279,12 @@ structure:
 
 For each package directory, either `docs/packages/<package>.md` or a heading
 named `<package>` in `docs/packages.md` satisfies the `doc` need.
+
+Entries that only declare `provides:` are providers, not producers. Missing
+relationship reports name the producer, source pattern, declaring structure
+entry, provider kind, and expanded counterpart or provider path. Duplicate
+provider alternatives for the same need and capture set are rejected as
+ambiguous during config loading.
 
 ## Closed-World Example
 

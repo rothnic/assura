@@ -1,5 +1,8 @@
 //! First-party custom constraints for the structure checker.
 
+mod relationships;
+
+use self::relationships::{relationship_missing_message, relationship_provider_expectation};
 use super::rules::{display_rel, is_excluded_rel_with, rel_to_string};
 use super::{CheckError, StructureCheckReport, StructureChecker};
 use crate::cli::check::command_surface_docs::{
@@ -7,7 +10,6 @@ use crate::cli::check::command_surface_docs::{
 };
 use crate::config::config::{
     CommandSurfaceContract, CustomConstraintConfig, RelationshipConstraintConfig,
-    RelationshipProviderConfig,
 };
 use glob::Pattern;
 use regex_lite::Regex;
@@ -236,9 +238,17 @@ impl StructureChecker {
                 let Some(captures) = source_pattern.captures(entry) else {
                     continue;
                 };
-                if relationship.providers.iter().any(|provider| {
-                    relationship_provider_exists(&self.project_root, provider, &captures)
-                }) {
+                let expectations = relationship
+                    .providers
+                    .iter()
+                    .map(|provider| {
+                        relationship_provider_expectation(&self.project_root, provider, &captures)
+                    })
+                    .collect::<Vec<_>>();
+                if expectations
+                    .iter()
+                    .any(|expectation| expectation.is_satisfied())
+                {
                     continue;
                 }
 
@@ -246,11 +256,7 @@ impl StructureChecker {
                     report,
                     PathBuf::from(entry),
                     format!("relationship:{}", relationship.id),
-                    format!(
-                        "'{}' must provide relationship '{}'",
-                        display_rel(Path::new(entry)),
-                        relationship.need
-                    ),
+                    relationship_missing_message(relationship, entry, &expectations),
                     relationship.severity.as_deref().unwrap_or("medium"),
                 );
             }
@@ -288,74 +294,6 @@ impl StructureChecker {
         entries.dedup();
         Ok(entries)
     }
-}
-
-fn relationship_provider_exists(
-    project_root: &Path,
-    provider: &RelationshipProviderConfig,
-    captures: &HashMap<String, String>,
-) -> bool {
-    let Some(path) = expand_named_path_template(&provider.path, captures) else {
-        return false;
-    };
-    let full_path = project_root.join(&path);
-    if !full_path.exists() {
-        return false;
-    }
-
-    let Some(section) = &provider.section else {
-        return true;
-    };
-    let Some(section) = expand_named_text_template(section, captures) else {
-        return false;
-    };
-    let Ok(content) = fs::read_to_string(full_path) else {
-        return false;
-    };
-    markdown_contains_heading(&content, &section)
-}
-
-fn expand_named_path_template(
-    template: &str,
-    captures: &HashMap<String, String>,
-) -> Option<PathBuf> {
-    let expanded = expand_named_text_template(template, captures)?;
-    let path = PathBuf::from(expanded);
-    is_safe_relative_path(&path).then_some(path)
-}
-
-fn expand_named_text_template(
-    template: &str,
-    captures: &HashMap<String, String>,
-) -> Option<String> {
-    let mut expanded = String::new();
-    let mut rest = template;
-    while let Some(start) = rest.find('{') {
-        expanded.push_str(&rest[..start]);
-        let after_start = &rest[start + 1..];
-        let end = after_start.find('}')?;
-        let name = &after_start[..end];
-        expanded.push_str(captures.get(name)?);
-        rest = &after_start[end + 1..];
-    }
-    expanded.push_str(rest);
-    Some(expanded)
-}
-
-fn markdown_contains_heading(content: &str, expected: &str) -> bool {
-    content.lines().any(|line| {
-        let trimmed = line.trim_start();
-        let depth = trimmed.chars().take_while(|ch| *ch == '#').count();
-        if !(1..=6).contains(&depth) {
-            return false;
-        }
-        let after_marks = &trimmed[depth..];
-        after_marks
-            .chars()
-            .next()
-            .is_some_and(|ch| ch.is_whitespace())
-            && after_marks.trim().trim_end_matches('#').trim_end().trim() == expected
-    })
 }
 
 struct CapturePattern {

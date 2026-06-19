@@ -269,6 +269,9 @@ markdown:
 A captured path without `exists` is optional: if it exists, Assura validates any
 relationship implied by other paths with the same capture names. A captured path
 with `exists:1` becomes the required counterpart for each matching producer.
+Required captured children inside a captured directory remain ordinary
+structure requirements for that directory; they are not treated as counterparts
+for the directory itself.
 
 ```yaml
 structure:
@@ -293,6 +296,11 @@ structure:
   tests/components/:
     "{component}.test.tsx": exists:1
 ```
+
+If the same capture name is reused in separate scopes, Assura pairs same-scope
+counterparts first. If there is no same-scope counterpart and multiple
+cross-tree counterparts could satisfy one producer, config loading fails as
+ambiguous instead of silently choosing one.
 
 ## Named Needs And Providers
 
@@ -338,6 +346,12 @@ structure:
 
 For each package directory, either `docs/packages/<package>.md` or a heading
 named `<package>` in `docs/packages.md` satisfies the `doc` need.
+
+Captured entries that only declare `provides:` are providers, not producers.
+Duplicate provider alternatives for the same need, capture set, provider kind,
+path, and section are configuration errors. Missing relationship diagnostics
+name the producer, source pattern, declaring structure entry, provider kind, and
+expanded provider or counterpart path.
 
 ## When To Use Nested Attributes
 

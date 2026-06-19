@@ -18,6 +18,7 @@ struct PortableCustomConstraintConfig {
 struct PortableRelationshipConstraintConfig {
     id: String,
     source: String,
+    source_declaration: Option<String>,
     need: String,
     providers: Vec<PortableRelationshipProviderConfig>,
     severity: Option<String>,
@@ -27,6 +28,8 @@ struct PortableRelationshipConstraintConfig {
 struct PortableRelationshipProviderConfig {
     path: String,
     section: Option<String>,
+    kind: Option<String>,
+    declaration: Option<String>,
 }
 
 impl From<ExtensionConfig> for PortableExtensionConfig {
@@ -84,6 +87,7 @@ impl From<RelationshipConstraintConfig> for PortableRelationshipConstraintConfig
         Self {
             id: config.id,
             source: config.source,
+            source_declaration: config.source_declaration,
             need: config.need,
             providers: config.providers.into_iter().map(Into::into).collect(),
             severity: config.severity,
@@ -96,6 +100,7 @@ impl From<PortableRelationshipConstraintConfig> for RelationshipConstraintConfig
         Self {
             id: config.id,
             source: config.source,
+            source_declaration: config.source_declaration,
             need: config.need,
             providers: config.providers.into_iter().map(Into::into).collect(),
             severity: config.severity,
@@ -108,6 +113,8 @@ impl From<RelationshipProviderConfig> for PortableRelationshipProviderConfig {
         Self {
             path: config.path,
             section: config.section,
+            kind: config.kind,
+            declaration: config.declaration,
         }
     }
 }
@@ -117,6 +124,8 @@ impl From<PortableRelationshipProviderConfig> for RelationshipProviderConfig {
         Self {
             path: config.path,
             section: config.section,
+            kind: config.kind,
+            declaration: config.declaration,
         }
     }
 }

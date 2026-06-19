@@ -10,6 +10,7 @@ related:
   - docs/goals/assura-roadmap-iteration-02-policy-depth-and-ecosystem.md
   - .trellis/spec/assura/config-notation.md
   - docs/analysis/2026-06-15-notation-clean-start-roadmap.md
+  - docs/analysis/2026-06-18-goal-10-relationship-semantics-review.md
   - tests/structure_config_notation_tests.rs
 ---
 
@@ -76,7 +77,6 @@ declared the relationship, and what edit will make the project pass.
   text and docs without knowing the internal normalized `extensions` model.
 - Relationship notation changes have checked performance evidence or a bounded
   inherent-cost record.
-
 ## Required Validation
 
 ```bash
@@ -106,3 +106,12 @@ entry, if ambiguous providers silently pass, or if the implementation requires
 targets to be declared away from the tree location where they live. Also block
 if a relationship notation change skips performance evidence or keeps
 backwards-compatibility support for superseded alpha notation.
+
+## Progress Log
+
+| Date | Entry | Evidence |
+| --- | --- | --- |
+| 2026-06-18 | Revalidated Goal 10 as still needed. Canonical relationship notation and happy-path tests existed, but live code still allowed provider-only artifacts to become producers, lacked same-name capture isolation across scopes, did not reject duplicate provider alternatives, and emitted generic relationship diagnostics without the declaring structure entry. | `docs/analysis/2026-06-18-goal-10-relationship-semantics-review.md`; `src/config/config/structure_notation/relationships.rs`; `src/cli/check/custom_constraints.rs`; `tests/structure_config_notation_tests.rs` |
+| 2026-06-18 | Hardened relationship compiler and runtime behavior for local counterpart pairing, provider-only entries, duplicate provider ambiguity, overlapping file/section provider alternatives, missing counterparts, and actionable diagnostics. | `cargo test structure_notation --quiet`; `cargo test --test structure_config_notation_tests --quiet` |
+| 2026-06-18 | Recorded bounded performance evidence for the relationship notation/runtime change. The report completed with 392 result rows; the implementation adds constant-size relationship metadata and preserves the existing relationship validation traversal shape. | `cargo run --quiet -- performance-report --output target/performance/current.json`; `docs/analysis/2026-06-18-goal-10-relationship-semantics-review.md` |
+| 2026-06-18 | Independent review found no blockers and called out two residual test gaps; added compiler tests for provider-only captured entries not becoming counterpart producers and ambiguous cross-tree counterparts failing config loading. Split relationship helpers out of `custom_constraints.rs` to keep the repo line-count policy green. | Review agent Kant; `cargo test structure_notation --quiet`; `cargo clippy --workspace --all-targets --all-features -- -D warnings`; `cargo run --quiet -- check --format json .`; `git diff --check` |

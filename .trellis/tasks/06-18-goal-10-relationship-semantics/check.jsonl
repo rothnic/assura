@@ -1,0 +1,3 @@
+{"file": "docs/goals/assura-goal-10-relationship-semantics-hardening.md", "reason": "Review against Goal 10 definition of done, required validation, and blocking criteria."}
+{"file": ".trellis/spec/assura/config-notation.md", "reason": "Review relationship behavior against canonical notation and change gates."}
+{"file": "docs/analysis/2026-06-18-goal-09-first-time-configuration-review.md", "reason": "Confirm Goal 10 builds on the completed Goal 09 first-time configuration surface without regressing it."}
