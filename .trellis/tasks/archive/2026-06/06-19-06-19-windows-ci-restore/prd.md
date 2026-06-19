@@ -12,9 +12,10 @@ path links and passes on Windows.
 - `.github/workflows/ci.yml` restores `windows-latest` to the Rust `Test Suite`
   matrix.
 - `Cargo.lock` resolves `git2 0.21.0` and `libgit2-sys 0.18.5+1.9.4`.
-- PR #93 head `6fe115f6efb7190dce43fef4c26fc1f2c850c1e9` passed hosted
-  Rust CI run `27838378002`, including `Test Suite (windows-latest, stable)`
-  job `82391630094`.
+- PR #93 head `0217c1cf18ada9ac5dcad54c3efaffa4c39f97d2` passed hosted
+  Rust CI run `27839085592`, including `Test Suite (windows-latest, stable)`
+  job `82393863614`, and merged as
+  `272f3debc107c6ca29674130d9acbe67e23c7a40`.
 
 ## Acceptance Criteria
 
