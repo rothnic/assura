@@ -231,9 +231,18 @@ mod tests {
             native_ls_lint_binary_name(std::env::consts::OS, std::env::consts::ARCH)
                 .unwrap_or("unsupported")
         ));
-        assert!(binary_path
-            .to_string_lossy()
-            .contains("node_modules/@ls-lint/ls-lint/bin"));
+        let components: Vec<_> = binary_path
+            .components()
+            .map(|component| component.as_os_str().to_string_lossy())
+            .collect();
+        assert!(components.windows(4).any(|window| {
+            window.iter().map(|component| component.as_ref()).eq([
+                "node_modules",
+                "@ls-lint",
+                "ls-lint",
+                "bin",
+            ])
+        }));
         assert_ne!(binary_path, wrapper_path);
     }
 }

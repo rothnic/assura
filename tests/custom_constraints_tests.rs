@@ -9,6 +9,10 @@ fn assura_bin() -> &'static str {
     env!("CARGO_BIN_EXE_assura")
 }
 
+fn normalized_json_path(value: &serde_json::Value) -> String {
+    value.as_str().unwrap().replace('\\', "/")
+}
+
 fn write_config(project: &TempDir, config: &str) {
     let assura_dir = project.path().join(".assura");
     fs::create_dir_all(&assura_dir).unwrap();
@@ -364,7 +368,7 @@ pub mod validation;
     let violations = report["violations"].as_array().unwrap();
     assert!(
         violations.iter().any(|violation| {
-            violation["path"] == "src/lib.rs"
+            normalized_json_path(&violation["path"]) == "src/lib.rs"
                 && violation["rule"] == "support_matrix:public_surface"
                 && violation["message"]
                     .as_str()
@@ -751,7 +755,7 @@ path = "src/main.rs"
     let violations = report["violations"].as_array().unwrap();
     assert!(
         violations.iter().any(|violation| {
-            violation["path"] == "crates/helper/Cargo.toml"
+            normalized_json_path(&violation["path"]) == "crates/helper/Cargo.toml"
                 && violation["rule"] == "manifest_semantics:cargo_workspace"
                 && violation["message"]
                     .as_str()
@@ -940,7 +944,7 @@ curl -L https://raw.githubusercontent.com/example/project/main/releases/example-
     let violations = report["violations"].as_array().unwrap();
     assert!(
         violations.iter().any(|violation| {
-            violation["path"] == "docs/install.md"
+            normalized_json_path(&violation["path"]) == "docs/install.md"
                 && violation["rule"] == "release_contract:cli_release"
                 && violation["message"]
                     .as_str()

@@ -1,0 +1,23 @@
+{"file":"docs/goals/assura-windows-ci-restore.md","reason":"Canonical goal and proof gates for the Windows CI restore implementation."}
+{"file":".trellis/spec/assura/tooling-stabilization.md","reason":"Records the deferred Windows CI baseline debt and closure criteria."}
+{"file":".trellis/spec/assura/roadmap.md","reason":"Roadmap routing for the active Windows CI Restore candidate."}
+{"file":"docs/compatibility-and-surface.md","reason":"Windows support claims that must remain tied to release/install evidence."}
+{"file":"src/cli/performance_report/ls_lint.rs","reason":"Windows test failure showed the native LS-Lint binary path assertion assumed Unix separators."}
+{"file":"src/cli/performance_report/external_fixtures.rs","reason":"Windows test failure showed external fixture content assertions must tolerate Git checkout newline differences."}
+{"file":"tests/cli_check_tests.rs","reason":"Windows test failure showed a fail-fast JSON path assertion assumed Unix separators."}
+{"file":"tests/docs_lifecycle_tests.rs","reason":"Windows test failure showed a docs lifecycle JSON path assertion assumed Unix separators."}
+{"file":"tests/custom_constraints_tests.rs","reason":"Normalize nested JSON path assertions that would otherwise compare native Windows separators to Unix separators."}
+{"file":"tests/module_topology_tests.rs","reason":"Normalize nested JSON path assertions that would otherwise compare native Windows separators to Unix separators."}
+{"file":"tests/test_relationship_tests.rs","reason":"Normalize nested JSON path assertions that would otherwise compare native Windows separators to Unix separators."}
+{"file":"tests/ls_lint_rule_coverage_tests.rs","reason":"Normalize nested JSON path assertions that would otherwise compare native Windows separators to Unix separators."}
+{"file":"tests/real_project_agentic_feedback_tests.rs","reason":"Normalize nested JSON and guided-output path assertions that would otherwise compare native Windows separators to Unix separators."}
+{"file":"tests/ls_lint_parity_regression_tests.rs","reason":"Windows test failure showed external git fixture materialization readback must tolerate Git checkout newline differences."}
+{"file":".github/workflows/ci.yml","reason":"Windows test failure showed the restored Test Suite matrix must install Node/npm for native LS-Lint golden tests."}
+{"file":"tests/ls_lint_rule_coverage/mod.rs","reason":"Windows test failure showed direct Rust process spawning must use npm.cmd for the Node package manager shim."}
+{"file":"tests/ls_lint_rule_coverage/mod.rs","reason":"Windows test failure showed native LS-Lint and Assura JSON paths must be normalized before comparing against slash-separated golden fixture paths."}
+{"file":"src/constraints/ls_lint/rules.rs","reason":"Windows test failure showed PathRule glob matching must normalize Windows separators before matching slash-based LS-Lint patterns."}
+{"file":"src/constraints/ls_lint/rules/rules_tests.rs","reason":"Add regression coverage for PathRule matching Windows-style absolute paths against slash-based LS-Lint patterns."}
+{"file":"tests/policy_language_completeness_tests.rs","reason":"Windows test failure showed a directory diagnostic JSON path assertion assumed Unix separators."}
+{"file":"crates/assura-check-cli/tests/batch_cli.rs","reason":"Windows test failure showed the status-file smoke test must refresh the daemon before reading a clean status after startup watcher events."}
+{"file":"src/cli/check/artifact_check.rs","reason":"Windows test failure showed compiled-artifact execution must canonicalize project root and checked path consistently before containment checks."}
+{"file":"crates/assura-check-cli/tests/compiled_config_cli.rs","reason":"Hosted Windows coverage for compiled-config default artifact path behavior exposed short-vs-long project root spelling drift."}

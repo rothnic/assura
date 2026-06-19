@@ -11,6 +11,10 @@ fn assura_bin() -> &'static str {
     env!("CARGO_BIN_EXE_assura")
 }
 
+fn normalized_json_path(value: &serde_json::Value) -> String {
+    value.as_str().unwrap().replace('\\', "/")
+}
+
 fn write_generated_config(project: &TempDir, config: &assura::config::config::Config) {
     let assura_dir = project.path().join(".assura");
     fs::create_dir_all(&assura_dir).unwrap();
@@ -164,7 +168,7 @@ ls:
         .as_array()
         .unwrap()
         .iter()
-        .map(|violation| violation["path"].as_str().unwrap())
+        .map(|violation| normalized_json_path(&violation["path"]))
         .collect::<std::collections::HashSet<_>>();
 
     assert_eq!(report["success"], false, "report was:\n{report:#}");
@@ -315,7 +319,7 @@ ls:
         .as_array()
         .unwrap()
         .iter()
-        .map(|violation| violation["path"].as_str().unwrap())
+        .map(|violation| normalized_json_path(&violation["path"]))
         .collect::<std::collections::HashSet<_>>();
 
     assert_eq!(report["success"], false, "report was:\n{report:#}");
@@ -462,7 +466,7 @@ ls:
         .as_array()
         .unwrap()
         .iter()
-        .map(|violation| violation["path"].as_str().unwrap())
+        .map(|violation| normalized_json_path(&violation["path"]))
         .collect::<std::collections::HashSet<_>>();
 
     assert_eq!(report["success"], false, "report was:\n{report:#}");
@@ -510,7 +514,7 @@ ls:
     let violations = report["violations"].as_array().unwrap();
     let paths = violations
         .iter()
-        .map(|violation| violation["path"].as_str().unwrap())
+        .map(|violation| normalized_json_path(&violation["path"]))
         .collect::<std::collections::HashSet<_>>();
 
     assert_eq!(report["success"], false, "report was:\n{report:#}");
@@ -557,7 +561,7 @@ ls:
     let violations = report["violations"].as_array().unwrap();
     let paths = violations
         .iter()
-        .map(|violation| violation["path"].as_str().unwrap())
+        .map(|violation| normalized_json_path(&violation["path"]))
         .collect::<std::collections::HashSet<_>>();
 
     assert_eq!(report["success"], false, "report was:\n{report:#}");
@@ -620,7 +624,7 @@ ls:
         .as_array()
         .unwrap()
         .iter()
-        .map(|violation| violation["path"].as_str().unwrap())
+        .map(|violation| normalized_json_path(&violation["path"]))
         .collect::<std::collections::HashSet<_>>();
 
     assert_eq!(report["success"], false, "report was:\n{report:#}");
@@ -737,7 +741,10 @@ ls:
 
     assert_eq!(report["success"], false, "report was:\n{report:#}");
     assert_eq!(violations.len(), 1, "report was:\n{report:#}");
-    assert_eq!(violations[0]["path"], "src/c/BAD.tmp");
+    assert_eq!(
+        normalized_json_path(&violations[0]["path"]),
+        "src/c/BAD.tmp"
+    );
 }
 
 #[test]

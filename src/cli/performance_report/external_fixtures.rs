@@ -272,7 +272,7 @@ ls:
         materialize_external_fixture_spec(spec, first_destination.path(), cache.path()).unwrap();
 
         assert_eq!(
-            fs::read_to_string(first_destination.path().join("README.md")).unwrap(),
+            read_text_with_normalized_newlines(first_destination.path().join("README.md")),
             "# Fixture\n"
         );
         assert!(first_destination.path().join(".ls-lint.yml").exists());
@@ -300,10 +300,14 @@ ls:
         materialize_external_fixture_spec(spec, second_destination.path(), cache.path()).unwrap();
 
         assert_eq!(
-            fs::read_to_string(second_destination.path().join("README.md")).unwrap(),
+            read_text_with_normalized_newlines(second_destination.path().join("README.md")),
             "# Fixture\n"
         );
         assert!(fs::read_dir(cache.path()).unwrap().next().is_some());
+    }
+
+    fn read_text_with_normalized_newlines(path: impl AsRef<std::path::Path>) -> String {
+        fs::read_to_string(path).unwrap().replace("\r\n", "\n")
     }
 
     fn run_git<const N: usize>(args: [&str; N], current_dir: Option<&std::path::Path>) {

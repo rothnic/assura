@@ -220,7 +220,7 @@ impl PathRule {
 
     /// Check if this rule matches a path
     pub fn matches(&self, path: &Path) -> bool {
-        let path_str = path.to_string_lossy();
+        let path_str = path.to_string_lossy().replace('\\', "/");
 
         // First try matching the full path
         if self.regex.is_match(&path_str) {

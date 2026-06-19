@@ -24,6 +24,10 @@ fn write_generated_config(project: &TempDir, config: &assura::config::config::Co
     .unwrap();
 }
 
+fn normalized_json_path(value: &serde_json::Value) -> String {
+    value.as_str().unwrap().replace('\\', "/")
+}
+
 #[test]
 fn check_passes_realistic_multi_package_policy_matrix() {
     let project = TempDir::new().unwrap();
@@ -177,7 +181,10 @@ ls:
         .find(|violation| violation["rule"] == "directory_naming")
         .unwrap_or_else(|| panic!("missing directory_naming; report was:\n{report:#}"));
 
-    assert_eq!(directory_naming["path"], "src/bad_dir");
+    assert_eq!(
+        normalized_json_path(&directory_naming["path"]),
+        "src/bad_dir"
+    );
     assert!(
         directory_naming["corrective_context"]
             .as_str()

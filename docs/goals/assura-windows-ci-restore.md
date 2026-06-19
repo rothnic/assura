@@ -2,7 +2,7 @@
 id: goal-assura-windows-ci-restore
 type: goal
 title: Assura Windows CI restore
-status: planned
+status: completed
 created: 2026-06-19
 owners:
   - assura-maintainers
@@ -22,13 +22,13 @@ related:
 Restore `windows-latest` to the Rust test matrix with hosted proof that the
 full-feature test path links and passes on Windows.
 
-## Current Gap
+## Original Gap
 
-The roadmap still carries one deferred tooling baseline item: Windows CI
-Restore. The Rust test matrix currently runs on Linux and macOS only because a
-previous `windows-latest` run failed while linking `libgit2-sys` with unresolved
-MSVC system-library symbols. The release and installer workflows still define
-Windows smoke paths, but they build the lean release feature set and do not
+The roadmap carried one deferred tooling baseline item: Windows CI Restore. The
+Rust test matrix previously ran on Linux and macOS only because a prior
+`windows-latest` run failed while linking `libgit2-sys` with unresolved MSVC
+system-library symbols. The release and installer workflows still defined
+Windows smoke paths, but they built the lean release feature set and did not
 prove `cargo test --all-features` on Windows.
 
 ## Scope
@@ -102,3 +102,140 @@ as paused after the restore.
   Surface Expansion completion. All existing Assura goal docs are completed,
   current target-state passes, and Windows CI Restore is the only non-completed
   roadmap item. Created this planned goal as the next bounded candidate.
+- 2026-06-19: Implemented the local restore candidate by updating `git2` from
+  0.18.3 to 0.21.0, refreshing `libgit2-sys` from 0.16.2+1.7.2 to
+  0.18.5+1.9.4, preserving explicit SSH/HTTPS features, adapting the changed
+  `Signature::email` API, and restoring `windows-latest` to the Rust test
+  matrix. Local `cargo fmt --all -- --check`,
+  `cargo check --all-targets --all-features`,
+  `cargo clippy --all-targets --all-features -- -D warnings`, and
+  `cargo test --all-features` passed. Hosted Windows proof still required
+  before completion.
+- 2026-06-19: PR #93 hosted Windows `Test Suite (windows-latest, stable)` ran
+  far enough to prove the `libgit2-sys`/MSVC linker failure is cleared, then
+  failed on two Unix-specific performance-report test assertions: a native
+  LS-Lint binary path string check that assumed `/` separators and an external
+  fixture content check that assumed LF checkout newlines. Updated the tests to
+  assert path components and normalize readback newlines while preserving the
+  same product coverage. Local `cargo fmt --all -- --check`,
+  `cargo test --all-features -p assura --lib`,
+  `cargo check --all-targets --all-features`,
+  `cargo clippy --all-targets --all-features -- -D warnings`,
+  `cargo run --quiet -- check --format json .`, `cargo xtask evidence`,
+  `cargo xtask target-state`, `git diff --check`, and
+  `cargo test --all-features` passed. Hosted Windows proof is still required
+  before completion.
+- 2026-06-19: The next PR #93 hosted Windows run passed the previously failing
+  performance-report assertions and failed later in `tests/cli_check_tests.rs`
+  because the fail-fast JSON path assertion assumed `/` separators while
+  serialized `PathBuf` values use `\` on Windows. Normalized that test
+  assertion to compare the logical path without changing the check output
+  contract. Hosted Windows proof is still required before completion.
+- 2026-06-19: The following PR #93 hosted Windows run passed the prior
+  fail-fast assertion and failed later in `tests/docs_lifecycle_tests.rs`
+  because the docs lifecycle JSON path assertion also assumed `/` separators.
+  Normalized that assertion and the other nested-path JSON/advice assertions in
+  downstream integration tests to compare logical paths while preserving native
+  serialized `PathBuf` output. Hosted Windows proof is still required before
+  completion.
+- 2026-06-19: The next PR #93 hosted Windows run passed the downstream
+  nested-path assertions and failed later in
+  `tests/ls_lint_parity_regression_tests.rs` because an external fixture
+  materialization readback asserted LF newlines while Windows Git checkout
+  produced CRLF. Normalized that test readback while keeping the pinned
+  revision and cache-materialization coverage. Hosted Windows proof is still
+  required before completion.
+- 2026-06-19: The following PR #93 hosted Windows run passed the external
+  fixture readback assertion and failed later in the native LS-Lint golden tests
+  because the restored Test Suite matrix did not install Node/npm before tests
+  that intentionally install the pinned LS-Lint package. Added `setup-node`
+  with Node 24 to the Rust Test Suite job to make the existing test dependency
+  explicit across Linux, macOS, and Windows. Hosted Windows proof is still
+  required before completion.
+- 2026-06-19: The next PR #93 hosted Windows run confirmed Node setup was
+  present but the native LS-Lint golden helper still spawned `npm` directly;
+  Rust process spawning on Windows needs the command shim name `npm.cmd`.
+  Updated the helper to use `npm.cmd` on Windows and `npm` elsewhere while
+  preserving the pinned LS-Lint package install. Hosted Windows proof is still
+  required before completion.
+- 2026-06-19: The next PR #93 hosted Windows run passed Node/npm setup and
+  failed in the native LS-Lint golden assertions because LS-Lint reports JSON
+  keys with Windows `\` separators while the expected fixture paths use `/`.
+  Normalized native LS-Lint and Assura JSON paths at each test collection
+  boundary so the golden tests compare logical paths without changing product
+  output. Local
+  `cargo test --all-features -p assura --test ls_lint_rule_coverage_tests
+  ls_lint_native_golden`, `cargo fmt --all -- --check`,
+  `cargo check --all-targets --all-features`,
+  `cargo clippy --all-targets --all-features -- -D warnings`, and
+  `cargo test --all-features` passed. Hosted Windows proof is still required
+  before completion.
+- 2026-06-19: The following PR #93 hosted Windows run passed the native
+  LS-Lint golden tests and failed in `tests/ls_lint_tests.rs` because
+  `PathRule::matches` only treated `/` as a path separator when matching
+  slash-based LS-Lint glob patterns against absolute Windows paths. Normalized
+  path separators inside the matcher and added a Windows-style absolute path
+  regression assertion. Hosted Windows proof is still required before
+  completion.
+- 2026-06-19: The next PR #93 hosted Windows run passed the native LS-Lint
+  golden tests and `tests/ls_lint_tests.rs`, then failed in
+  `tests/policy_language_completeness_tests.rs` because a directory diagnostic
+  JSON path assertion assumed `/` separators while serialized `PathBuf` values
+  use `\` on Windows. Normalized that assertion to compare the logical path
+  without changing the check output contract. Hosted Windows proof is still
+  required before completion.
+- 2026-06-19: Local validation for the policy-language path assertion fix
+  passed: rustfmt check, targeted and full
+  `policy_language_completeness_tests`, `cargo check --all-targets
+  --all-features`, `cargo clippy --all-targets --all-features -- -D warnings`,
+  `cargo test --all-features`, `cargo run --quiet -- check --format json .`,
+  `cargo xtask evidence`, `cargo xtask target-state`, `cargo xtask docs`, and
+  `git diff --check`. Review agent Aquinas found no blockers and confirmed the
+  test still proves the self-directory corrective context without changing
+  product output. Hosted Windows proof is still required before completion.
+- 2026-06-19: The next PR #93 hosted Windows run passed the policy-language
+  path assertion and failed later in
+  `crates/assura-check-cli/tests/batch_cli.rs` because the status-file smoke
+  test read `assura-check-status` immediately after daemon startup while
+  Windows watcher startup events can leave the status file dirty until the
+  daemon is asked to refresh. Updated the test to refresh the daemon through
+  `assura-check-client` before asserting the tiny status client reads the clean
+  status file. Hosted Windows proof is still required before completion.
+- 2026-06-19: Local validation for the status-file smoke fix passed:
+  `cargo fmt --all -- --check`, targeted and full `batch_cli`,
+  `cargo check --all-targets --all-features`, `cargo clippy --all-targets
+  --all-features -- -D warnings`, `cargo test --all-features`,
+  `cargo run --quiet -- check --format json .`, `cargo xtask evidence`,
+  `cargo xtask target-state`, `cargo xtask docs`, and `git diff --check`.
+  Review agent Pascal found no blockers and confirmed the test still proves
+  `assura-check-status` reads a clean daemon-written status file after the
+  existing daemon refresh path. Hosted Windows proof is still required before
+  completion.
+- 2026-06-19: The next PR #93 hosted Windows run passed the status-file smoke
+  test and failed later in
+  `crates/assura-check-cli/tests/compiled_config_cli.rs` because the compiled
+  artifact runner canonicalized the checked path but not the project root before
+  testing containment. On Windows this mixed the same directory's long
+  `runneradmin` path spelling with the artifact's DOS 8.3 `RUNNER~1` spelling.
+  Canonicalized the project root at the compiled-artifact execution boundary so
+  both sides use the same filesystem spelling before `starts_with`. Hosted
+  Windows proof is still required before completion.
+- 2026-06-19: Local validation for the compiled-artifact canonicalization fix
+  passed: `cargo fmt --all -- --check`, targeted and full
+  `compiled_config_cli`, `cargo check --all-targets --all-features`,
+  `cargo clippy --all-targets --all-features -- -D warnings`,
+  `cargo test --all-features`, `cargo run --quiet -- check --format json .`,
+  `cargo xtask evidence`, `cargo xtask target-state`, `cargo xtask docs`, and
+  `git diff --check`. Review agent Archimedes found no blockers and confirmed
+  the change is at the correct compiled-artifact execution boundary without
+  weakening artifact staleness validation. Hosted Windows proof is still
+  required before completion.
+- 2026-06-19: PR #93 head `6fe115f6efb7190dce43fef4c26fc1f2c850c1e9`
+  passed all hosted checks. Rust CI run `27838378002` showed
+  `Test Suite (windows-latest, stable)` job `82391630094` passing after
+  `windows-latest` was restored to the Test Suite matrix; Linux and macOS Test
+  Suite jobs, Windows Installer Smoke, release bundle smoke, installable
+  adoption smoke jobs, Check, Clippy, Rustfmt, Evidence Gates, Code Coverage,
+  Performance Report, Documentation, Security Audit, and GitGuardian all passed.
+  Gemini's earlier compile-warning review comment was contradicted by local and
+  hosted `cargo check`, Clippy, and Test Suite success on the final head.

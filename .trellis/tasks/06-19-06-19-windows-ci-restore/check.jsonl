@@ -1,0 +1,23 @@
+{"file":"docs/goals/assura-windows-ci-restore.md","reason":"Check that progress and evidence satisfy the goal proof gates."}
+{"file":".trellis/spec/assura/tooling-stabilization.md","reason":"Check Windows CI baseline debt is closed only after hosted proof."}
+{"file":".trellis/spec/assura/roadmap.md","reason":"Check roadmap status after Windows CI restore."}
+{"file":"docs/compatibility-and-surface.md","reason":"Check Windows release support claims remain accurate."}
+{"file":"src/cli/performance_report/ls_lint.rs","reason":"Check the native LS-Lint binary path test remains separator-portable and still rejects the Node wrapper path."}
+{"file":"src/cli/performance_report/external_fixtures.rs","reason":"Check the external fixture cache test remains newline-portable without weakening pinned revision or cache reuse assertions."}
+{"file":"tests/cli_check_tests.rs","reason":"Check the fail-fast JSON path assertion remains platform-portable while still proving the first sorted traversal violation."}
+{"file":"tests/docs_lifecycle_tests.rs","reason":"Check the docs lifecycle JSON path assertion remains platform-portable while still proving actionable context."}
+{"file":"tests/custom_constraints_tests.rs","reason":"Check nested JSON path assertions remain platform-portable while still proving actionable rule context."}
+{"file":"tests/module_topology_tests.rs","reason":"Check nested JSON path assertions remain platform-portable while still proving actionable rule context."}
+{"file":"tests/test_relationship_tests.rs","reason":"Check nested JSON path assertions remain platform-portable while still proving actionable rule context."}
+{"file":"tests/ls_lint_rule_coverage_tests.rs","reason":"Check nested JSON path assertions remain platform-portable while still proving LS-Lint parity semantics."}
+{"file":"tests/real_project_agentic_feedback_tests.rs","reason":"Check nested JSON and guided-output path assertions remain platform-portable while still proving stable agent feedback."}
+{"file":"tests/ls_lint_parity_regression_tests.rs","reason":"Check external git fixture materialization readback remains newline-portable without weakening pinned revision or cache reuse assertions."}
+{"file":".github/workflows/ci.yml","reason":"Check the Rust Test Suite matrix installs Node/npm before running native LS-Lint golden tests on Windows."}
+{"file":"tests/ls_lint_rule_coverage/mod.rs","reason":"Check the native LS-Lint golden helper uses the platform-appropriate npm command without weakening pinned package installation."}
+{"file":"tests/ls_lint_rule_coverage/mod.rs","reason":"Check native LS-Lint and Assura JSON path normalization keeps golden comparisons platform-portable without changing product output."}
+{"file":"src/constraints/ls_lint/rules.rs","reason":"Check PathRule glob matching normalizes Windows separators without changing slash-based LS-Lint pattern semantics."}
+{"file":"src/constraints/ls_lint/rules/rules_tests.rs","reason":"Check Windows-style absolute path coverage proves PathRule matches slash-based LS-Lint patterns on Windows."}
+{"file":"tests/policy_language_completeness_tests.rs","reason":"Check directory diagnostic JSON path assertions remain platform-portable while still proving self-directory corrective context."}
+{"file":"crates/assura-check-cli/tests/batch_cli.rs","reason":"Check the status-file smoke test remains platform-portable while still proving assura-check-status reads a clean daemon status file."}
+{"file":"src/cli/check/artifact_check.rs","reason":"Check compiled-artifact execution canonicalizes project root and checked path consistently before containment checks."}
+{"file":"crates/assura-check-cli/tests/compiled_config_cli.rs","reason":"Check compiled-config default artifact path behavior remains covered by hosted Windows and local integration tests."}

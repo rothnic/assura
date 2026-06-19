@@ -18,7 +18,7 @@ fn native_ls_lint_binary() -> &'static Path {
                 std::process::id()
             ));
             fs::create_dir_all(&install_dir).unwrap();
-            let status = Command::new("npm")
+            let status = Command::new(npm_command_name())
                 .current_dir(&install_dir)
                 .args([
                     "install",
@@ -41,6 +41,14 @@ fn native_ls_lint_binary() -> &'static Path {
             binary
         })
         .as_path()
+}
+
+fn npm_command_name() -> &'static str {
+    if cfg!(windows) {
+        "npm.cmd"
+    } else {
+        "npm"
+    }
 }
 
 fn native_ls_lint_binary_name() -> &'static str {
@@ -83,13 +91,7 @@ fn run_native_ls_lint(project: &TempDir) -> (bool, Vec<String>) {
             .as_object()
             .unwrap_or_else(|| panic!("native LS-Lint JSON should be an object: {value:#}"))
             .keys()
-            .map(|path| {
-                if path == "." {
-                    String::new()
-                } else {
-                    path.clone()
-                }
-            })
+            .map(|path| normalize_lslint_test_path(path))
             .collect::<Vec<_>>();
         paths.sort();
         paths
@@ -107,7 +109,7 @@ fn paths_from_assura_report(report: &serde_json::Value) -> (bool, Vec<String>) {
         .as_array()
         .unwrap()
         .iter()
-        .map(|violation| violation["path"].as_str().unwrap().to_string())
+        .map(|violation| normalize_lslint_test_path(violation["path"].as_str().unwrap()))
         .collect::<Vec<_>>();
     paths.sort();
     (report["success"].as_bool().unwrap(), paths)
@@ -178,17 +180,19 @@ fn run_native_ls_lint_target(project: &TempDir, target: &str) -> (bool, Vec<Stri
             .as_object()
             .unwrap()
             .keys()
-            .map(|path| {
-                if path == "." {
-                    String::new()
-                } else {
-                    path.clone()
-                }
-            })
+            .map(|path| normalize_lslint_test_path(path))
             .collect::<Vec<_>>()
     };
     paths.sort();
     (success, paths)
+}
+
+fn normalize_lslint_test_path(path: &str) -> String {
+    if path == "." {
+        String::new()
+    } else {
+        path.replace('\\', "/")
+    }
 }
 
 fn run_assura_lslint_target(project: &TempDir, target: &str) -> (bool, Vec<String>) {
@@ -394,7 +398,7 @@ ls:
         .as_object()
         .unwrap()
         .keys()
-        .cloned()
+        .map(|path| normalize_lslint_test_path(path))
         .collect::<Vec<_>>();
     native_paths.sort();
 
@@ -450,7 +454,7 @@ ls:
         .as_object()
         .unwrap()
         .keys()
-        .cloned()
+        .map(|path| normalize_lslint_test_path(path))
         .collect::<Vec<_>>();
     native_paths.sort();
 
