@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "Roadmap routes the next candidate to a docs lifecycle follow-up goal based on live target-state evidence."}
+{"file": "docs/analysis/2026-06-09-assura-best-practice-target-state.md", "reason": "Target-state evidence names dense active docs/history and deterministic stale claims as the remaining gap."}
+{"file": "docs/goals/assura-rule-docs-lifecycle-stale-claims.md", "reason": "Completed first-slice goal defines the merged docs lifecycle rule boundary and follow-up handoff."}
+{"file": ".trellis/spec/assura/config-notation.md", "reason": "Docs lifecycle config notation defines available fields and claim-pattern behavior."}
+{"file": "docs/analysis/evidence-and-review-policy.md", "reason": "Planning and implementation must preserve existing evidence/review gates."}

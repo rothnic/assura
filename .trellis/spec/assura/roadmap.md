@@ -22,6 +22,7 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 13 | Test Relationship Rule | Completed | PR #68 merged; archive PR #69 merged |
 | 14 | Module Topology Rule | Completed | PR #72 merged; archive PR #73 merged |
 | 15 | Docs Lifecycle Rule | Completed | PR #78 merged; archive PR #79 merged |
+| 16 | Docs Lifecycle Coverage | Planned | Goal `docs/goals/assura-rule-docs-lifecycle-dogfood-expansion.md` |
 
 ## Active Roadmap Iteration
 
@@ -50,23 +51,22 @@ one `--format <agent>-hook` value per agent. Treat older roadmap/task wording in
 that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
 Planned next roadmap candidate:
-Create and validate a follow-up goal for broadening docs lifecycle coverage
-beyond the completed first slice. Use live target-state evidence to decide
-whether the next slice should cover active analysis docs, active goal docs,
-website docs, stale roadmap/performance claim tokens, or additional historical
-exception patterns.
+`docs/goals/assura-rule-docs-lifecycle-dogfood-expansion.md`. The next slice
+should broaden `extensions.docs_lifecycles` dogfood coverage from the first
+merged proof policy to current release, support, validation, roadmap, and
+performance-facing docs with explicit claim evidence.
 
 ## Recommended Next Epic
 
-Validate the next docs lifecycle coverage goal.
+Implement the Docs Lifecycle Coverage goal.
 
-The next agent should use `assura-goal-validation` to create or revalidate a
-new goal for broadening `extensions.docs_lifecycles` dogfood coverage beyond
-the first merged slice. Start from current `.assura/config.yml`, this roadmap,
-and `docs/analysis/2026-06-09-assura-best-practice-target-state.md`; do not
-start broad cleanup until the follow-up detector scope is concrete and
-reviewable. The product roadmap remains open until a separate product decision
-declares it complete.
+The next agent should revalidate
+`docs/goals/assura-rule-docs-lifecycle-dogfood-expansion.md`, then create a
+Trellis implementation task that expands `.assura/config.yml` docs lifecycle
+coverage only for the concrete active docs and claim tokens named by that goal.
+Do not start broad cleanup until the follow-up detector scope is implemented,
+reviewed, and merged. The product roadmap remains open until a separate
+product decision declares it complete.
 
 ## Roadmap Rules
 

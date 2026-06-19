@@ -1,0 +1,5 @@
+{"file": "docs/goals/assura-rule-docs-lifecycle-dogfood-expansion.md", "reason": "Check new goal completeness, scope, validation commands, review tasks, and blocker criteria."}
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "Check roadmap points to the follow-up goal without reopening completed first-slice work."}
+{"file": "docs/analysis/2026-06-09-assura-best-practice-target-state.md", "reason": "Check target-state language matches the new goal and does not overclaim completion."}
+{"file": ".assura/config.yml", "reason": "Check current dogfood coverage remains narrow until implementation task expands it."}
+{"file": "docs/analysis/evidence-and-review-policy.md", "reason": "Check validation and review expectations remain aligned with existing policy."}
