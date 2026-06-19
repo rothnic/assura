@@ -4,3 +4,4 @@
 {"file":"docs/compatibility-and-surface.md","reason":"Windows support claims that must remain tied to release/install evidence."}
 {"file":"src/cli/performance_report/ls_lint.rs","reason":"Windows test failure showed the native LS-Lint binary path assertion assumed Unix separators."}
 {"file":"src/cli/performance_report/external_fixtures.rs","reason":"Windows test failure showed external fixture content assertions must tolerate Git checkout newline differences."}
+{"file":"tests/cli_check_tests.rs","reason":"Windows test failure showed a fail-fast JSON path assertion assumed Unix separators."}

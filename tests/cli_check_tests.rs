@@ -505,7 +505,10 @@ structure:
         });
     let violations = report["violations"].as_array().unwrap();
     assert_eq!(violations.len(), 1);
-    assert_eq!(violations[0]["path"], "a-dir/BadName.rs");
+    assert_eq!(
+        violations[0]["path"].as_str().unwrap().replace('\\', "/"),
+        "a-dir/BadName.rs"
+    );
 }
 
 #[test]

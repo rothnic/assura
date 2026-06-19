@@ -125,3 +125,9 @@ as paused after the restore.
   `cargo xtask target-state`, `git diff --check`, and
   `cargo test --all-features` passed. Hosted Windows proof is still required
   before completion.
+- 2026-06-19: The next PR #93 hosted Windows run passed the previously failing
+  performance-report assertions and failed later in `tests/cli_check_tests.rs`
+  because the fail-fast JSON path assertion assumed `/` separators while
+  serialized `PathBuf` values use `\` on Windows. Normalized that test
+  assertion to compare the logical path without changing the check output
+  contract. Hosted Windows proof is still required before completion.
