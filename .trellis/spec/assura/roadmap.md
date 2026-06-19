@@ -19,7 +19,8 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 10 | Release Contract Rules | Completed | First reusable release-contract rule slice merged in PR #59; task archived in PR #60 |
 | 11 | Public Surface Matrix | Completed | PR #61 merged; archive PR #62 merged |
 | 12 | Cargo Manifest Semantics | Completed | PR #64 merged; archive PR #65 merged |
-| 13 | Test Relationship Rule | Planned | Validate and execute `docs/goals/assura-rule-test-relationship.md` |
+| 13 | Test Relationship Rule | Completed | PR #68 merged; archive PR #69 merged |
+| 14 | Module Topology Rule | Planned | Validate and execute `docs/goals/assura-rule-module-topology.md` |
 
 ## Active Roadmap Iteration
 
@@ -37,6 +38,7 @@ Release Contract Rules first slice is complete via PR #59 and archive PR #60.
 Public Surface Matrix first slice is complete via PR #61 and archive PR #62.
 Cargo Manifest Semantics first slice is complete via PR #64 and archive PR
 #65.
+Test Relationship Rule first slice is complete via PR #68 and archive PR #69.
 This completion does not mark the broader Assura roadmap complete.
 
 Direction lock, clarified on 2026-05-31: do not create or revive
@@ -45,23 +47,23 @@ one `--format <agent>-hook` value per agent. Treat older roadmap/task wording in
 that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
 Planned next roadmap candidate:
-`docs/goals/assura-rule-test-relationship.md`. The next planning decision is
-the first reusable test-relationship slice now that the support matrix and
-manifest-semantics rules provide classified command, public Rust export, and
-manifest policy inputs.
+`docs/goals/assura-rule-module-topology.md`. The next planning decision is the
+first reusable module-topology slice now that support matrix, manifest
+semantics, release contract, and test relationship rules provide classified
+public surface, manifest, release, and test-evidence inputs.
 
 ## Recommended Next Epic
 
-Validate the Test Relationship candidate:
-`docs/goals/assura-rule-test-relationship.md`.
+Validate the Module Topology candidate:
+`docs/goals/assura-rule-module-topology.md`.
 
 The next agent should create or reuse a Trellis task to revalidate that goal
 against the current target-state analysis before implementing anything. The
-first decision is which relationship evidence belongs in the first slice:
-source-to-test coverage mapping, ignored/manual test classification, fixture
-family ownership, supported command coverage, or explicit exceptions. The
-product roadmap remains open until a separate product decision declares it
-complete.
+first decision is which module inventory and public-surface evidence belongs in
+the first slice: Rust module declarations, top-level `pub mod` exports,
+configured module-family ownership/status rows, support-matrix rows, or
+explicit experimental/internal exceptions. The product roadmap remains open
+until a separate product decision declares it complete.
 
 ## Roadmap Rules
 
