@@ -2,7 +2,7 @@
 id: goal-assura-roadmap-13-performance-and-release-evidence-governance
 type: goal
 title: Assura roadmap 13 install release and performance certainty
-status: planned
+status: completed
 created: 2026-06-18
 owners:
   - assura-maintainers
@@ -145,3 +145,8 @@ independently reviewed.
   no cold complete claim in this PR, then rerun Linux static-CRT release
   evidence before reopening only startup-floor removal or same-profile
   implementation optimizations with at least a 10% measured win.
+- 2026-06-19: Revalidated status against live PR and Trellis evidence. Goal 13
+  merged in PR #55 (`7cd26f9a562cb9b5b374b5476b889ee6cdffc13e`) and its
+  archive move merged in PR #56 (`7331e72c3f2e533ca5493e6a16df80ada0c743a1`).
+  The execution task is archived under
+  `.trellis/tasks/archive/2026-06/06-18-goal-13-release-performance-evidence`.

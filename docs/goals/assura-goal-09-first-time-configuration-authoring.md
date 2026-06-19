@@ -2,7 +2,7 @@
 id: goal-assura-roadmap-09-first-time-configuration-authoring
 type: goal
 title: Assura roadmap 09 first-time configuration authoring
-status: planned
+status: completed
 created: 2026-06-18
 owners:
   - assura-maintainers
@@ -123,3 +123,6 @@ or fails to show how reusable rules make broader Assura policies more modular.
   simulated first-run review artifact, and added executable temp-project tests
   for the small Rust and package-style first-run paths. Migrated the generated
   `assura init` starter config to concise tree-shaped notation.
+- 2026-06-19: Revalidated status against live PR and Trellis evidence. Goal 09
+  merged in PR #51 (`979a86138fe6eb0fc72751fa6dd71f2404d7e5fc`) and is
+  archived under `.trellis/tasks/archive/2026-06/06-18-goal-09-first-time-config`.

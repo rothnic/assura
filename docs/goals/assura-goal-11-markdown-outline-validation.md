@@ -2,7 +2,7 @@
 id: goal-assura-roadmap-11-markdown-outline-validation
 type: goal
 title: Assura roadmap 11 markdown outline validation
-status: planned
+status: completed
 created: 2026-06-18
 owners:
   - assura-maintainers
@@ -144,3 +144,6 @@ Assura's needs.
   failure, skipped-level failure, question-mark escape coverage, relationship
   provider composition tests, docs updates, and bounded-cost tooling decision
   evidence. Independent review requested before PR publication.
+- 2026-06-19: Revalidated status against live PR and Trellis evidence. Goal 11
+  merged in PR #53 (`cf7dc05ce97fdd5ac3fdff65a514cb53ddebf677`) and is
+  archived under `.trellis/tasks/archive/2026-06/06-18-goal-11-markdown-outline-validation`.

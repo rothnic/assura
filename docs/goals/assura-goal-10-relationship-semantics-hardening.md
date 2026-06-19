@@ -2,7 +2,7 @@
 id: goal-assura-roadmap-10-relationship-semantics-hardening
 type: goal
 title: Assura roadmap 10 relationship semantics hardening
-status: planned
+status: completed
 created: 2026-06-18
 owners:
   - assura-maintainers
@@ -115,3 +115,4 @@ backwards-compatibility support for superseded alpha notation.
 | 2026-06-18 | Hardened relationship compiler and runtime behavior for local counterpart pairing, provider-only entries, duplicate provider ambiguity, overlapping file/section provider alternatives, missing counterparts, and actionable diagnostics. | `cargo test structure_notation --quiet`; `cargo test --test structure_config_notation_tests --quiet` |
 | 2026-06-18 | Recorded bounded performance evidence for the relationship notation/runtime change. The report completed with 392 result rows; the implementation adds constant-size relationship metadata and preserves the existing relationship validation traversal shape. | `cargo run --quiet -- performance-report --output target/performance/current.json`; `docs/analysis/2026-06-18-goal-10-relationship-semantics-review.md` |
 | 2026-06-18 | Independent review found no blockers and called out two residual test gaps; added compiler tests for provider-only captured entries not becoming counterpart producers and ambiguous cross-tree counterparts failing config loading. Split relationship helpers out of `custom_constraints.rs` to keep the repo line-count policy green. | Review agent Kant; `cargo test structure_notation --quiet`; `cargo clippy --workspace --all-targets --all-features -- -D warnings`; `cargo run --quiet -- check --format json .`; `git diff --check` |
+| 2026-06-19 | Revalidated status against live PR and Trellis evidence. Goal 10 merged in PR #52 (`73690fad9299b10324146ccd37b75b73cdd1d0e7`) and is archived under `.trellis/tasks/archive/2026-06/06-18-goal-10-relationship-semantics`. | `gh pr view 52`; `.trellis/spec/assura/roadmap.md` |
