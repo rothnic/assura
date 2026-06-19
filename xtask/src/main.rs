@@ -598,6 +598,7 @@ fn run_target_state() -> Result<()> {
     check_test_relationships(&mut checks);
     check_docs_release_performance(&mut checks);
     check_agent_workflow_state(&mut checks);
+    check_goal_revalidation_route(&mut checks);
     check_root_tooling_boundary(&mut checks);
     check_lint_suppression_reasons(&mut checks);
     checks.finish("Target-state audit checks passed.")
@@ -1164,13 +1165,12 @@ fn check_audit_artifact(checks: &mut Checks) {
 }
 
 fn check_command_surface_support(checks: &mut Checks) {
-    let classified_text = [
-        read("docs/support-policy.md"),
-        read("docs/compatibility-and-surface.md"),
-        read("docs/release-notes.md"),
-        read("docs/validation.md"),
-    ]
-    .join("\n");
+    let support_text = read("docs/support-policy.md");
+    let compatibility_text = read("docs/compatibility-and-surface.md");
+    let args_text = read("src/cli/args.rs");
+    check_cli_command_inventory(checks, &args_text);
+    check_public_support_claim_consistency(checks);
+
     let command_surface = read(".assura/command-surface.yml");
     let commands = command_surface
         .lines()
@@ -1181,101 +1181,717 @@ fn check_command_surface_support(checks: &mut Checks) {
         !commands.is_empty(),
         ".assura/command-surface.yml: no command names found",
     );
+
+    let mut matrix_commands = BTreeSet::new();
+    for row in support_matrix_rows() {
+        for command in row.command_surface_names {
+            matrix_commands.insert(*command);
+        }
+        for marker in row.support_policy_markers {
+            checks.require(
+                support_text.contains(marker),
+                format!("{}: support policy missing marker {marker:?}", row.surface),
+            );
+        }
+        for marker in row.compatibility_markers {
+            checks.require(
+                compatibility_text.contains(marker),
+                format!(
+                    "{}: compatibility docs missing marker {marker:?}",
+                    row.surface
+                ),
+            );
+        }
+    }
+
     for command in commands {
-        let mut candidates = vec![command.to_string()];
-        if command == "assura status" {
-            candidates.push("assura status --format json".to_string());
-        }
-        if command.starts_with("assura hooks ") {
-            candidates.push("assura hooks".to_string());
-        }
-        let classified = candidates
-            .iter()
-            .any(|candidate| classified_text.contains(&format!("`{candidate}`")));
         checks.require(
-            classified,
-            format!("{command}: command is not classified in support/release docs"),
+            matrix_commands.contains(command),
+            format!("{command}: command surface is missing from the support matrix"),
         );
     }
 }
 
-fn check_manifest_semantics(checks: &mut Checks) {
-    let cargo_text = read("Cargo.toml");
-    for field in [
-        "name",
-        "version",
-        "edition",
-        "default-run",
-        "description",
-        "license",
-        "repository",
-        "homepage",
-        "documentation",
-        "rust-version",
-        "readme",
-    ] {
+fn check_cli_command_inventory(checks: &mut Checks, args_text: &str) {
+    let mut expected = BTreeMap::<&str, BTreeSet<&str>>::new();
+    for row in cli_command_variant_rows() {
+        expected
+            .entry(row.enum_name)
+            .or_default()
+            .insert(row.variant_name);
+        for command in row.command_surface_names {
+            checks.require(
+                support_matrix_rows()
+                    .iter()
+                    .any(|matrix_row| matrix_row.command_surface_names.contains(command)),
+                format!(
+                    "{}::{} maps {command:?} but the support matrix has no matching command row",
+                    row.enum_name, row.variant_name
+                ),
+            );
+        }
+    }
+
+    for (enum_name, expected_variants) in expected {
+        let actual_variants = enum_variant_names(args_text, enum_name);
         checks.require(
-            toml_string_value(&cargo_text, field).is_some(),
-            format!("Cargo.toml: missing package.{field}"),
+            actual_variants == expected_variants,
+            format!(
+                "src/cli/args.rs: {enum_name} variants {actual_variants:?} do not match support matrix inventory {expected_variants:?}"
+            ),
         );
     }
-    let version = toml_string_value(&cargo_text, "version").unwrap_or_default();
-    checks.require(
-        semver_like(&version),
-        "Cargo.toml: package.version must be SemVer-like",
+}
+
+fn enum_variant_names<'a>(text: &'a str, enum_name: &str) -> BTreeSet<&'a str> {
+    let marker = format!("pub enum {enum_name} {{");
+    let Some(rest) = text.split_once(&marker).map(|(_, rest)| rest) else {
+        return BTreeSet::new();
+    };
+    let mut depth = 1i32;
+    let mut variants = BTreeSet::new();
+    for line in rest.lines() {
+        let trimmed = line.trim();
+        if trimmed.starts_with("//") || trimmed.starts_with("/*") || trimmed.starts_with('*') {
+            continue;
+        }
+        if depth == 1
+            && trimmed
+                .chars()
+                .next()
+                .is_some_and(|first| first.is_ascii_uppercase())
+        {
+            let name = trimmed.split([' ', '{', ',', '(']).next().unwrap_or("");
+            if !name.is_empty() {
+                variants.insert(name);
+            }
+        }
+        depth += line.matches('{').count() as i32;
+        depth -= line.matches('}').count() as i32;
+        if depth <= 0 {
+            break;
+        }
+    }
+    variants
+}
+
+fn check_public_support_claim_consistency(checks: &mut Checks) {
+    let experimental_surfaces = [
+        ("assura info", "experimental diagnostic"),
+        ("assura watch", "experimental"),
+    ];
+    for path in public_claim_files() {
+        let text = read(&path);
+        for (line_index, line) in text.lines().enumerate() {
+            let lower = line.to_ascii_lowercase();
+            for (surface, expected_level) in experimental_surfaces {
+                if lower.contains(surface)
+                    && lower.contains("supported")
+                    && !lower.contains("unsupported")
+                    && !lower.contains("not supported")
+                    && !lower.contains("not yet supported")
+                    && !lower.contains(expected_level)
+                {
+                    checks.add(format!(
+                        "{}:{}: {surface} is experimental but this line claims supported status",
+                        path,
+                        line_index + 1
+                    ));
+                }
+            }
+        }
+    }
+}
+
+fn public_claim_files() -> Vec<String> {
+    let mut paths = vec![
+        "README.md".to_string(),
+        "docs/release-notes.md".to_string(),
+        "docs/support-policy.md".to_string(),
+        "docs/compatibility-and-surface.md".to_string(),
+        "docs/validation.md".to_string(),
+    ];
+    paths.extend(
+        collect_files("website/src/content", None)
+            .into_iter()
+            .filter(|path| {
+                matches!(
+                    path.extension().and_then(OsStr::to_str),
+                    Some("md" | "mdx" | "astro")
+                )
+            })
+            .map(|path| rel(&path)),
     );
+    paths
+}
+
+struct CliCommandVariantRow {
+    enum_name: &'static str,
+    variant_name: &'static str,
+    command_surface_names: &'static [&'static str],
+}
+
+const CLI_COMMAND_VARIANT_ROWS: &[CliCommandVariantRow] = &[
+    CliCommandVariantRow {
+        enum_name: "Commands",
+        variant_name: "Check",
+        command_surface_names: &["assura check"],
+    },
+    CliCommandVariantRow {
+        enum_name: "Commands",
+        variant_name: "Status",
+        command_surface_names: &["assura status"],
+    },
+    CliCommandVariantRow {
+        enum_name: "Commands",
+        variant_name: "Init",
+        command_surface_names: &["assura init"],
+    },
+    CliCommandVariantRow {
+        enum_name: "Commands",
+        variant_name: "Watch",
+        command_surface_names: &["assura watch"],
+    },
+    CliCommandVariantRow {
+        enum_name: "Commands",
+        variant_name: "Migrate",
+        command_surface_names: &["assura migrate"],
+    },
+    CliCommandVariantRow {
+        enum_name: "Commands",
+        variant_name: "Info",
+        command_surface_names: &["assura info"],
+    },
+    CliCommandVariantRow {
+        enum_name: "Commands",
+        variant_name: "PerformanceReport",
+        command_surface_names: &["assura performance-report"],
+    },
+    CliCommandVariantRow {
+        enum_name: "Commands",
+        variant_name: "Hooks",
+        command_surface_names: &["assura hooks"],
+    },
+    CliCommandVariantRow {
+        enum_name: "Commands",
+        variant_name: "Quality",
+        command_surface_names: &["assura quality plan"],
+    },
+    CliCommandVariantRow {
+        enum_name: "HookCommands",
+        variant_name: "Install",
+        command_surface_names: &["assura hooks install"],
+    },
+    CliCommandVariantRow {
+        enum_name: "HookCommands",
+        variant_name: "Uninstall",
+        command_surface_names: &["assura hooks uninstall"],
+    },
+    CliCommandVariantRow {
+        enum_name: "HookCommands",
+        variant_name: "Status",
+        command_surface_names: &["assura hooks status"],
+    },
+    CliCommandVariantRow {
+        enum_name: "HookCommands",
+        variant_name: "Verify",
+        command_surface_names: &["assura hooks verify"],
+    },
+    CliCommandVariantRow {
+        enum_name: "QualityCommands",
+        variant_name: "Plan",
+        command_surface_names: &["assura quality plan"],
+    },
+];
+
+fn cli_command_variant_rows() -> &'static [CliCommandVariantRow] {
+    CLI_COMMAND_VARIANT_ROWS
+}
+
+struct SupportMatrixRow {
+    surface: &'static str,
+    command_surface_names: &'static [&'static str],
+    support_policy_markers: &'static [&'static str],
+    compatibility_markers: &'static [&'static str],
+    source_markers: &'static [&'static str],
+    test_markers: &'static [&'static str],
+    exception_markers: &'static [&'static str],
+}
+
+const SUPPORT_MATRIX_ROWS: &[SupportMatrixRow] = &[
+    SupportMatrixRow {
+        surface: "assura CLI root",
+        command_surface_names: &["assura"],
+        support_policy_markers: &["This policy applies to Assura pre-1.0 releases."],
+        compatibility_markers: &["# Compatibility And Public Surface"],
+        source_markers: &["#[command(name = \"assura\")]"],
+        test_markers: &[],
+        exception_markers: &[],
+    },
+    SupportMatrixRow {
+        surface: "assura check",
+        command_surface_names: &["assura check"],
+        support_policy_markers: &["`assura check` structure validation"],
+        compatibility_markers: &["| `assura check` | Supported |"],
+        source_markers: &["Commands::Check"],
+        test_markers: &["tests/cli_check_tests.rs", "run_check", "--format"],
+        exception_markers: &[],
+    },
+    SupportMatrixRow {
+        surface: "assura check --format json",
+        command_surface_names: &[],
+        support_policy_markers: &["`assura check --format json` and `--format yaml`"],
+        compatibility_markers: &["| `assura check --format json` | Supported |"],
+        source_markers: &["CheckOutputFormat::Json"],
+        test_markers: &["tests/cli_command_surface_tests.rs", "\"json\""],
+        exception_markers: &[],
+    },
+    SupportMatrixRow {
+        surface: "assura check --format yaml",
+        command_surface_names: &[],
+        support_policy_markers: &["`assura check --format json` and `--format yaml`"],
+        compatibility_markers: &["| `assura check --format yaml` | Supported |"],
+        source_markers: &["CheckOutputFormat::Yaml"],
+        test_markers: &["tests/cli_command_surface_tests.rs", "\"yaml\""],
+        exception_markers: &[],
+    },
+    SupportMatrixRow {
+        surface: "assura check --format advice",
+        command_surface_names: &[],
+        support_policy_markers: &["`assura check --format advice` and `--format status`"],
+        compatibility_markers: &["| `assura check --format advice` | Supported |"],
+        source_markers: &["CheckOutputFormat::Advice"],
+        test_markers: &[
+            "tests/real_project_agentic_feedback_tests.rs",
+            "check_advice_format_renders_guided_output_in_one_command",
+        ],
+        exception_markers: &[],
+    },
+    SupportMatrixRow {
+        surface: "assura check --format status",
+        command_surface_names: &[],
+        support_policy_markers: &["`assura check --format advice` and `--format status`"],
+        compatibility_markers: &["| `assura check --format status` | Supported |"],
+        source_markers: &["CheckOutputFormat::Status"],
+        test_markers: &[
+            "tests/real_project_agentic_feedback_tests.rs",
+            "check_status_format_supports_general_display_limits",
+        ],
+        exception_markers: &[],
+    },
+    SupportMatrixRow {
+        surface: "assura check --format agent",
+        command_surface_names: &[],
+        support_policy_markers: &["`assura check --format agent`"],
+        compatibility_markers: &["| `assura check --format agent` | Supported |"],
+        source_markers: &["CheckOutputFormat::Agent"],
+        test_markers: &["tests/cli_command_surface_tests.rs", "--format", "agent"],
+        exception_markers: &[],
+    },
+    SupportMatrixRow {
+        surface: "assura check --format agent --agent codex",
+        command_surface_names: &[],
+        support_policy_markers: &["`--agent codex` delivery"],
+        compatibility_markers: &[
+            "| `assura check --format agent --agent codex` | Supported adapter |",
+        ],
+        source_markers: &["AgentTarget::Codex"],
+        test_markers: &["tests/cli_command_surface_tests.rs", "--agent", "codex"],
+        exception_markers: &[],
+    },
+    SupportMatrixRow {
+        surface: "assura init",
+        command_surface_names: &["assura init"],
+        support_policy_markers: &["`assura init`"],
+        compatibility_markers: &["| `assura init` | Supported |"],
+        source_markers: &["Commands::Init"],
+        test_markers: &[
+            "tests/cli_command_surface_tests.rs",
+            ".arg(\"init\")",
+            "--no-git-hooks",
+        ],
+        exception_markers: &[],
+    },
+    SupportMatrixRow {
+        surface: "assura status --format json",
+        command_surface_names: &["assura status"],
+        support_policy_markers: &["`assura status --format json`"],
+        compatibility_markers: &["| `assura status --format json` | Supported |"],
+        source_markers: &["Commands::Status"],
+        test_markers: &[
+            "tests/real_project_agentic_feedback_tests.rs",
+            ".arg(\"status\")",
+            "\"json\"",
+        ],
+        exception_markers: &[],
+    },
+    SupportMatrixRow {
+        surface: "assura migrate",
+        command_surface_names: &["assura migrate"],
+        support_policy_markers: &["`assura migrate` for complete LS-Lint 2.3 config semantics"],
+        compatibility_markers: &[
+            "| `assura migrate` | Supported for complete LS-Lint 2.3 config semantics |",
+        ],
+        source_markers: &["Commands::Migrate"],
+        test_markers: &["tests/ls_lint_rule_coverage_tests.rs", ".arg(\"migrate\")"],
+        exception_markers: &[],
+    },
+    SupportMatrixRow {
+        surface: "assura hooks",
+        command_surface_names: &[
+            "assura hooks",
+            "assura hooks install",
+            "assura hooks uninstall",
+            "assura hooks status",
+            "assura hooks verify",
+        ],
+        support_policy_markers: &["`assura hooks` for local git hooks"],
+        compatibility_markers: &["| `assura hooks` | Supported for local git hooks |"],
+        source_markers: &["HookCommands::Install", "GitHooksManager"],
+        test_markers: &[
+            "tests/cli_command_surface_tests.rs",
+            "hooks_help_lists_local_hook_subcommands",
+        ],
+        exception_markers: &[],
+    },
+    SupportMatrixRow {
+        surface: "assura quality plan",
+        command_surface_names: &["assura quality plan"],
+        support_policy_markers: &["`assura quality plan`"],
+        compatibility_markers: &[
+            "| `assura quality plan` | Supported for local quality planning |",
+        ],
+        source_markers: &["QualityCommands::Plan", "QualityPlanCommandOptions"],
+        test_markers: &[
+            "tests/cli_command_surface_tests.rs",
+            "quality_plan_emits_config_backed_checks_for_changed_paths",
+        ],
+        exception_markers: &[],
+    },
+    SupportMatrixRow {
+        surface: "assura performance-report",
+        command_surface_names: &["assura performance-report"],
+        support_policy_markers: &["`assura performance-report`"],
+        compatibility_markers: &["| `assura performance-report` | Supported evidence command |"],
+        source_markers: &[
+            "Commands::PerformanceReport",
+            "PerformanceReportCommandOptions",
+        ],
+        test_markers: &[
+            "tests/performance_report_contract_tests.rs",
+            "two_x_claim_status",
+        ],
+        exception_markers: &[],
+    },
+    SupportMatrixRow {
+        surface: "assura info",
+        command_surface_names: &["assura info"],
+        support_policy_markers: &["`assura info`"],
+        compatibility_markers: &["| `assura info` | Experimental diagnostic |"],
+        source_markers: &["Commands::Info"],
+        test_markers: &[],
+        exception_markers: &["Experimental diagnostic"],
+    },
+    SupportMatrixRow {
+        surface: "assura watch",
+        command_surface_names: &["assura watch"],
+        support_policy_markers: &["`assura watch`"],
+        compatibility_markers: &["| `assura watch` | Experimental |"],
+        source_markers: &["Commands::Watch"],
+        test_markers: &[],
+        exception_markers: &["Experimental"],
+    },
+    SupportMatrixRow {
+        surface: "internal Rust APIs",
+        command_surface_names: &[],
+        support_policy_markers: &["Internal Rust APIs"],
+        compatibility_markers: &[
+            "## Rust Library Surface",
+            "Public module visibility in `src/lib.rs` does not imply release support",
+        ],
+        source_markers: &[
+            "pub mod intelligence;",
+            "pub mod maturity;",
+            "pub mod validation;",
+        ],
+        test_markers: &[],
+        exception_markers: &["unstable internal APIs"],
+    },
+];
+
+fn support_matrix_rows() -> &'static [SupportMatrixRow] {
+    SUPPORT_MATRIX_ROWS
+}
+
+fn check_manifest_semantics(checks: &mut Checks) {
+    let Some(metadata) = cargo_metadata(checks) else {
+        return;
+    };
+    let root_version = metadata_package(&metadata, "Cargo.toml")
+        .and_then(|package| package.get("version"))
+        .and_then(Value::as_str)
+        .unwrap_or_default()
+        .to_string();
+    let root_rust_version = metadata_package(&metadata, "Cargo.toml")
+        .and_then(|package| package.get("rust_version"))
+        .and_then(Value::as_str)
+        .unwrap_or_default()
+        .to_string();
+
+    for row in manifest_matrix_rows() {
+        let Some(package) = metadata_package(&metadata, row.manifest) else {
+            checks.add(format!(
+                "{}: {} manifest is missing from cargo metadata",
+                row.manifest, row.classification
+            ));
+            continue;
+        };
+        for field in row.required_package_fields {
+            checks.require(
+                metadata_string_field(package, field).is_some(),
+                format!(
+                    "{}: {} manifest missing package.{field}",
+                    row.manifest, row.classification
+                ),
+            );
+        }
+        if row.semver_version {
+            let version = metadata_string_field(package, "version").unwrap_or_default();
+            checks.require(
+                semver_like(&version),
+                format!(
+                    "{}: {} package.version must be SemVer-like",
+                    row.manifest, row.classification
+                ),
+            );
+        }
+        if row.version_matches_root {
+            checks.require(
+                metadata_string_field(package, "version").as_deref() == Some(root_version.as_str()),
+                format!(
+                    "{}: {} crate version must match root package",
+                    row.manifest, row.classification
+                ),
+            );
+        }
+        if row.rust_version_matches_root {
+            checks.require(
+                metadata_string_field(package, "rust_version").as_deref()
+                    == Some(root_rust_version.as_str()),
+                format!(
+                    "{}: {} crate MSRV must match root package",
+                    row.manifest, row.classification
+                ),
+            );
+        }
+        if let Some(expected_publish) = row.publish {
+            checks.require(
+                metadata_publish_value(package) == Some(expected_publish),
+                format!(
+                    "{}: {} crate publish policy must be publish={expected_publish}",
+                    row.manifest, row.classification
+                ),
+            );
+        }
+        if let Some(expected_default_run) = row.default_run {
+            checks.require(
+                metadata_string_field(package, "default_run").as_deref()
+                    == Some(expected_default_run),
+                format!(
+                    "{}: {} package default-run must be {expected_default_run}",
+                    row.manifest, row.classification
+                ),
+            );
+        }
+    }
+
+    let expected_members = manifest_matrix_rows()
+        .iter()
+        .filter_map(|row| {
+            metadata_package(&metadata, row.manifest)
+                .and_then(|package| metadata_string_field(package, "name"))
+        })
+        .collect::<BTreeSet<_>>();
     checks.require(
-        toml_string_value(&cargo_text, "default-run").as_deref() == Some("assura"),
-        "Cargo.toml: default-run must be assura",
-    );
-    let expected_members = BTreeSet::from([
-        ".".to_string(),
-        "crates/assura-check-cli".to_string(),
-        "crates/assura-stable-hash".to_string(),
-        "xtask".to_string(),
-    ]);
-    checks.require(
-        toml_array_value(&cargo_text, "members") == expected_members,
+        workspace_member_names(&metadata, "workspace_members") == expected_members,
         "Cargo.toml: workspace members drifted",
     );
-    checks.require(
-        toml_array_value(&cargo_text, "default-members") == expected_members,
-        "Cargo.toml: workspace default-members must include all current members",
-    );
+    if metadata.get("workspace_default_members").is_some() {
+        checks.require(
+            workspace_member_names(&metadata, "workspace_default_members") == expected_members,
+            "Cargo.toml: workspace default-members must include all current members",
+        );
+    }
+}
 
-    for manifest in [
-        "crates/assura-check-cli/Cargo.toml",
-        "crates/assura-stable-hash/Cargo.toml",
-    ] {
-        let internal_text = read(manifest);
-        for field in [
+fn cargo_metadata(checks: &mut Checks) -> Option<Value> {
+    let output = match command_stdout("cargo", ["metadata", "--no-deps", "--format-version", "1"]) {
+        Ok(output) => output,
+        Err(error) => {
+            checks.add(format!("cargo metadata failed: {error}"));
+            return None;
+        }
+    };
+    match serde_json::from_str::<Value>(&output) {
+        Ok(metadata) => Some(metadata),
+        Err(error) => {
+            checks.add(format!("cargo metadata output is invalid JSON: {error}"));
+            None
+        }
+    }
+}
+
+fn metadata_package<'a>(metadata: &'a Value, manifest: &str) -> Option<&'a Value> {
+    metadata
+        .get("packages")
+        .and_then(Value::as_array)?
+        .iter()
+        .find(|package| {
+            package
+                .get("manifest_path")
+                .and_then(Value::as_str)
+                .is_some_and(|path| metadata_manifest_rel(path) == manifest)
+        })
+}
+
+fn metadata_manifest_rel(path: &str) -> String {
+    let path = Path::new(path);
+    if let Ok(cwd) = env::current_dir() {
+        if let Ok(relative) = path.strip_prefix(cwd) {
+            return rel(relative);
+        }
+    }
+    rel(path)
+}
+
+fn metadata_string_field(package: &Value, field: &str) -> Option<String> {
+    package
+        .get(field)
+        .and_then(Value::as_str)
+        .filter(|value| !value.is_empty())
+        .map(str::to_string)
+}
+
+fn metadata_publish_value(package: &Value) -> Option<bool> {
+    match package.get("publish") {
+        Some(Value::Array(values)) if values.is_empty() => Some(false),
+        Some(Value::Array(_)) => Some(true),
+        Some(Value::Null) => None,
+        _ => None,
+    }
+}
+
+fn workspace_member_names(metadata: &Value, field: &str) -> BTreeSet<String> {
+    let packages = metadata
+        .get("packages")
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+        .filter_map(|package| {
+            let id = package.get("id").and_then(Value::as_str)?;
+            let name = metadata_string_field(package, "name")?;
+            Some((id.to_string(), name))
+        })
+        .collect::<BTreeMap<_, _>>();
+    metadata
+        .get(field)
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+        .filter_map(Value::as_str)
+        .map(|id| packages.get(id).cloned().unwrap_or_else(|| id.to_string()))
+        .collect()
+}
+
+struct ManifestMatrixRow {
+    manifest: &'static str,
+    classification: &'static str,
+    required_package_fields: &'static [&'static str],
+    semver_version: bool,
+    version_matches_root: bool,
+    rust_version_matches_root: bool,
+    publish: Option<bool>,
+    default_run: Option<&'static str>,
+}
+
+const MANIFEST_MATRIX_ROWS: &[ManifestMatrixRow] = &[
+    ManifestMatrixRow {
+        manifest: "Cargo.toml",
+        classification: "public root",
+        required_package_fields: &[
+            "name",
+            "version",
+            "edition",
+            "default_run",
+            "description",
+            "license",
+            "repository",
+            "homepage",
+            "documentation",
+            "rust_version",
+            "readme",
+        ],
+        semver_version: true,
+        version_matches_root: false,
+        rust_version_matches_root: false,
+        publish: None,
+        default_run: Some("assura"),
+    },
+    ManifestMatrixRow {
+        manifest: "crates/assura-check-cli/Cargo.toml",
+        classification: "internal support",
+        required_package_fields: &[
             "name",
             "version",
             "edition",
             "description",
             "license",
-            "rust-version",
-        ] {
-            checks.require(
-                toml_string_value(&internal_text, field).is_some(),
-                format!("{manifest}: missing package.{field}"),
-            );
-        }
-        checks.require(
-            toml_string_value(&internal_text, "version")
-                == toml_string_value(&cargo_text, "version"),
-            format!("{manifest}: internal crate version must match root package"),
-        );
-        checks.require(
-            toml_string_value(&internal_text, "rust-version")
-                == toml_string_value(&cargo_text, "rust-version"),
-            format!("{manifest}: internal crate MSRV must match root package"),
-        );
-        checks.require(
-            toml_bool_value(&internal_text, "publish") == Some(false),
-            format!("{manifest}: internal crate must remain publish=false"),
-        );
-    }
+            "rust_version",
+        ],
+        semver_version: true,
+        version_matches_root: true,
+        rust_version_matches_root: true,
+        publish: Some(false),
+        default_run: None,
+    },
+    ManifestMatrixRow {
+        manifest: "crates/assura-stable-hash/Cargo.toml",
+        classification: "internal support",
+        required_package_fields: &[
+            "name",
+            "version",
+            "edition",
+            "description",
+            "license",
+            "rust_version",
+        ],
+        semver_version: true,
+        version_matches_root: true,
+        rust_version_matches_root: true,
+        publish: Some(false),
+        default_run: None,
+    },
+    ManifestMatrixRow {
+        manifest: "xtask/Cargo.toml",
+        classification: "internal maintenance",
+        required_package_fields: &[
+            "name",
+            "version",
+            "edition",
+            "description",
+            "license",
+            "rust_version",
+        ],
+        semver_version: true,
+        version_matches_root: true,
+        rust_version_matches_root: true,
+        publish: Some(false),
+        default_run: None,
+    },
+];
+
+fn manifest_matrix_rows() -> &'static [ManifestMatrixRow] {
+    MANIFEST_MATRIX_ROWS
 }
 
 fn toml_string_value(text: &str, key: &str) -> Option<String> {
@@ -1284,35 +1900,6 @@ fn toml_string_value(text: &str, key: &str) -> Option<String> {
         let rest = trimmed.strip_prefix(&format!("{key} = "))?;
         Some(rest.trim().trim_matches('"').to_string())
     })
-}
-
-fn toml_bool_value(text: &str, key: &str) -> Option<bool> {
-    text.lines().find_map(|line| {
-        let trimmed = line.trim();
-        let rest = trimmed.strip_prefix(&format!("{key} = "))?;
-        match rest.trim() {
-            "true" => Some(true),
-            "false" => Some(false),
-            _ => None,
-        }
-    })
-}
-
-fn toml_array_value(text: &str, key: &str) -> BTreeSet<String> {
-    text.lines()
-        .find_map(|line| {
-            let trimmed = line.trim();
-            let rest = trimmed.strip_prefix(&format!("{key} = ["))?;
-            let rest = rest.trim_end_matches(']');
-            Some(
-                rest.split(',')
-                    .map(str::trim)
-                    .filter(|value| !value.is_empty())
-                    .map(|value| value.trim_matches('"').to_string())
-                    .collect(),
-            )
-        })
-        .unwrap_or_default()
 }
 
 fn semver_like(version: &str) -> bool {
@@ -1324,6 +1911,8 @@ fn semver_like(version: &str) -> bool {
 }
 
 fn check_test_relationships(checks: &mut Checks) {
+    let support_text = read("docs/support-policy.md");
+    let compatibility_text = read("docs/compatibility-and-surface.md");
     let test_text = [
         collect_files("tests", Some(".rs")),
         collect_files("crates/assura-check-cli/tests", Some(".rs")),
@@ -1338,112 +1927,44 @@ fn check_test_relationships(checks: &mut Checks) {
         .map(|path| format!("{}\n{}", rel(&path), read(&path)))
         .collect::<Vec<_>>()
         .join("\n");
-    let coverage: BTreeMap<&str, (Vec<&str>, Vec<&str>)> = BTreeMap::from([
-        (
-            "assura check",
-            (
-                vec!["tests/cli_check_tests.rs", "run_check", "--format"],
-                vec![],
-            ),
-        ),
-        (
-            "assura check --format json",
-            (
-                vec!["tests/cli_command_surface_tests.rs", "\"json\""],
-                vec![],
-            ),
-        ),
-        (
-            "assura check --format yaml",
-            (
-                vec!["tests/cli_command_surface_tests.rs", "\"yaml\""],
-                vec![],
-            ),
-        ),
-        (
-            "assura check --format agent",
-            (
-                vec!["tests/cli_command_surface_tests.rs", "--format", "agent"],
-                vec![],
-            ),
-        ),
-        (
-            "assura check --format agent --agent codex",
-            (
-                vec!["tests/cli_command_surface_tests.rs", "--agent", "codex"],
-                vec![],
-            ),
-        ),
-        (
-            "assura init",
-            (
-                vec![
-                    "tests/cli_command_surface_tests.rs",
-                    ".arg(\"init\")",
-                    "--no-git-hooks",
-                ],
-                vec![],
-            ),
-        ),
-        (
-            "assura status --format json",
-            (
-                vec![
-                    "tests/real_project_agentic_feedback_tests.rs",
-                    ".arg(\"status\")",
-                    "\"json\"",
-                ],
-                vec![],
-            ),
-        ),
-        (
-            "assura migrate",
-            (
-                vec!["tests/ls_lint_rule_coverage_tests.rs", ".arg(\"migrate\")"],
-                vec![],
-            ),
-        ),
-        (
-            "assura performance-report",
-            (
-                vec![
-                    "tests/performance_report_contract_tests.rs",
-                    "two_x_claim_status",
-                ],
-                vec![],
-            ),
-        ),
-        (
-            "assura hooks",
-            (
-                vec!["git_hooks_dir_resolves_regular_git_directory"],
-                vec!["GitHooksManager"],
-            ),
-        ),
-        (
-            "assura quality plan",
-            (
-                vec!["plan_uses_cumulative_phase_checks", "QualityPhase::Merge"],
-                vec!["QualityPlanCommandOptions"],
-            ),
-        ),
-    ]);
-    for (surface, (tests, sources)) in coverage {
-        let missing_tests = tests
-            .into_iter()
-            .filter(|marker| !test_text.contains(marker) && !source_text.contains(marker))
+
+    for row in support_matrix_rows() {
+        let has_exception = row.exception_markers.iter().any(|marker| {
+            support_text.contains(marker)
+                || compatibility_text.contains(marker)
+                || source_text.contains(marker)
+        });
+        let missing_tests = row
+            .test_markers
+            .iter()
+            .filter(|marker| !test_text.contains(**marker))
+            .copied()
             .collect::<Vec<_>>();
+        if row.test_markers.is_empty() {
+            checks.require(
+                has_exception || row.command_surface_names == ["assura"],
+                format!(
+                    "{}: support matrix row needs test markers or an explicit exception",
+                    row.surface
+                ),
+            );
+        }
         checks.require(
             missing_tests.is_empty(),
-            format!("{surface}: missing test coverage markers {missing_tests:?}"),
+            format!(
+                "{}: missing test coverage markers {missing_tests:?}",
+                row.surface
+            ),
         );
-        let missing_source = sources
-            .into_iter()
-            .filter(|marker| !source_text.contains(marker))
+        let missing_source = row
+            .source_markers
+            .iter()
+            .filter(|marker| !source_text.contains(**marker))
+            .copied()
             .collect::<Vec<_>>();
         checks.require(
             missing_source.is_empty(),
-            format!("{surface}: missing source markers {missing_source:?}"),
+            format!("{}: missing source markers {missing_source:?}", row.surface),
         );
     }
 
@@ -1581,6 +2102,39 @@ fn check_agent_workflow_state(checks: &mut Checks) {
                 .is_some_and(|task_dir| task_dir.join("prd.md").exists())
     });
     checks.require(has_prd, "workflow gate: active task needs prd.md");
+}
+
+fn check_goal_revalidation_route(checks: &mut Checks) {
+    let skill = ".agents/skills/assura-goal-validation/SKILL.md";
+    checks.require(
+        exists(skill),
+        format!("{skill}: stale-goal validation skill is missing"),
+    );
+    if exists(skill) {
+        let skill_text = read(skill);
+        for marker in [
+            "selecting the next goal",
+            "already achieved, superseded, duplicated",
+            "record the revalidation result",
+        ] {
+            checks.require(
+                skill_text.contains(marker),
+                format!("{skill}: missing stale-goal validation marker {marker:?}"),
+            );
+        }
+    }
+
+    let agents_text = read("AGENTS.md");
+    checks.require(
+        agents_text.contains("assura-goal-validation"),
+        "AGENTS.md: missing assura-goal-validation routing entry",
+    );
+    let iteration_text =
+        read("docs/goals/assura-roadmap-iteration-02-policy-depth-and-ecosystem.md");
+    checks.require(
+        iteration_text.contains("assura-goal-validation"),
+        "Iteration 02 roadmap: missing stale-goal validation direction lock",
+    );
 }
 
 fn direct_task_files() -> Vec<PathBuf> {

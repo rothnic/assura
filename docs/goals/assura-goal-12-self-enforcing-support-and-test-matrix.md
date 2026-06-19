@@ -107,3 +107,24 @@ git diff --check
 Block the PR if a public surface can remain unclassified, if supported behavior
 has no test or documented exception, or if the rule set forces broad deletion
 instead of producing actionable classification evidence.
+
+## Progress Log
+
+- 2026-06-18: Revalidated against live repo state after Goal 11 merged in PR
+  #53. Goal remains valid: `cargo xtask target-state` already exists, but the
+  repo still needs a joined support/test matrix that connects command support,
+  docs claims, manifest metadata, public Rust exports, and required test
+  evidence with deterministic failures.
+- 2026-06-18: Started implementation by moving command support, source markers,
+  test markers, and experimental/internal exceptions into joined
+  `cargo xtask target-state` support matrix rows. Added
+  `docs/analysis/2026-06-18-goal-12-support-test-matrix-review.md` as the
+  matrix review artifact.
+- 2026-06-18: Addressed independent review findings by deriving CLI command
+  inventory from `src/cli/args.rs`, scanning public docs for experimental
+  command support-claim drift, using `cargo metadata` for manifest policy
+  rows, and requiring test markers to come from test files.
+- 2026-06-18: Addressed Gemini PR review feedback on PR #54 by making manifest
+  lookup use exact repo-relative paths, treating `workspace_default_members` as
+  an optional Cargo metadata field for MSRV compatibility, skipping enum comment
+  lines while parsing CLI variants, and excluding common negated support claims.

@@ -263,6 +263,26 @@ structure: {}
 }
 
 #[test]
+fn hooks_help_lists_local_hook_subcommands() {
+    let output = Command::new(assura_full_bin())
+        .arg("hooks")
+        .arg("--help")
+        .output()
+        .unwrap();
+
+    assert!(
+        output.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    for command in ["install", "uninstall", "status", "verify"] {
+        assert!(stdout.contains(command), "stdout was:\n{stdout}");
+    }
+}
+
+#[test]
 fn watch_returns_check_failure_for_invalid_project() {
     let project = TempDir::new().unwrap();
     let assura_dir = project.path().join(".assura");
