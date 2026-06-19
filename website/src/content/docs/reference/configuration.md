@@ -81,8 +81,15 @@ structure:
     "{topic}.md":
       exists: 1
       markdown:
-        required_sections:
-          - Summary
+        outline:
+          - Overview
+          - ?? Prerequisites
+          - Quick Start:
+              - Installation
+              - ?? Configuration
+          - Why Assura?
+          - title: "?? Debug Mode"
+            optional: false
 ```
 
 Captures use single braces such as `{topic}`. Removed alpha capture forms such
@@ -110,9 +117,9 @@ the project needs relationships or reusable contracts.
 Use the detailed fields below when a rule needs extra attributes or when you
 are reading generated migration output.
 
-Markdown outline notation is the planned authoring shape for document outlines.
-Current release checks still expose the detailed Markdown fields documented
-below; full shorthand outline runtime proof is tracked by Goal 11.
+Markdown outline notation validates ordered heading structure without separate
+heading-depth fields. It is for Assura-specific document structure checks, not
+a replacement for generic Markdown linting or link validation.
 
 ## Directory Nodes
 
@@ -228,6 +235,12 @@ markdown:
   max_heading_depth: 3
   required_sections:
     - Summary
+  outline:
+    - Overview
+    - ?? Prerequisites
+    - Quick Start:
+        - Installation
+        - ?? Configuration
 ```
 
 | Field | Behavior |
@@ -236,6 +249,7 @@ markdown:
 | `required_fields` | Requires fields inside YAML frontmatter. |
 | `max_heading_depth` | Fails when a Markdown heading is deeper than the configured level. |
 | `required_sections` | Requires headings with the configured text. |
+| `outline` | Validates ordered nested headings without requiring users to maintain heading depth numbers. Use `?? ` for optional headings and object form such as `title: "?? Debug Mode"` when a required heading starts with literal question marks. |
 | `check_links` | Accepted by the config type but not enforced by current `assura check`. |
 
 ## Relationships

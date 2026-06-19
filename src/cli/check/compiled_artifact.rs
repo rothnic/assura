@@ -272,6 +272,7 @@ pub(super) struct PortableMarkdownBundle {
     max_heading_depth: Option<u8>,
     check_links: Option<bool>,
     required_sections: Option<Vec<String>>,
+    outline: Option<Vec<crate::config::config::MarkdownOutlineEntry>>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -440,6 +441,7 @@ impl From<MarkdownBundle> for PortableMarkdownBundle {
             max_heading_depth: bundle.max_heading_depth,
             check_links: bundle.check_links,
             required_sections: bundle.required_sections,
+            outline: bundle.outline,
         }
     }
 }
@@ -452,6 +454,7 @@ impl From<PortableMarkdownBundle> for MarkdownBundle {
             max_heading_depth: bundle.max_heading_depth,
             check_links: bundle.check_links,
             required_sections: bundle.required_sections,
+            outline: bundle.outline,
         }
     }
 }

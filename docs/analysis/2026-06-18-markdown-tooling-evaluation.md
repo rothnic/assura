@@ -71,3 +71,32 @@ The expected default is:
 The implementation decision must compare library versus CLI integration,
 configuration model, output normalization, offline behavior, internal-anchor
 support, performance cost, and support surface before adding dependencies.
+
+## Goal 11 Decision
+
+Assura will not add a new generic Markdown lint, link-checking, or frontmatter
+dependency for the Goal 11 outline slice. The runtime change is deliberately
+limited to config-specific `markdown.outline` semantics:
+
+- keep existing lightweight frontmatter, heading-depth, and required-section
+  checks in place for the current `assura check` surface;
+- continue treating `rumdl` as the preferred future candidate for broad
+  markdownlint-compatible rules, but do not wrap it until Assura exposes a
+  supported generic Markdown lint contract;
+- continue treating `lychee` as the preferred future candidate for link
+  validation, because link checking needs offline/network policy and output
+  normalization that this goal does not define;
+- keep `pulldown-cmark` available for the full internal Markdown module, but
+  avoid making the check-only CLI path depend on that optional full-CLI stack
+  solely for outline matching;
+- use Assura-owned code for nested outline semantics, relationship-provider
+  composition, deterministic ambiguous-root errors, and diagnostics that name
+  the configured outline entry and observed heading location.
+
+This keeps the implementation cost bounded: outline matching scans extracted
+ATX headings once and then walks configured outline entries in document order.
+The scan ignores fenced code blocks and indented code in the same way as the
+existing heading-depth and required-section checks. If future support requires
+CommonMark/GFM edge cases beyond this scanner, the next decision should compare
+moving the check-only path to a parser/AST dependency against the measured
+binary-size and runtime cost.

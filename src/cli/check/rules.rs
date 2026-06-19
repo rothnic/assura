@@ -273,6 +273,7 @@ pub(super) fn merge_markdown_bundle(
                 .required_sections
                 .clone()
                 .or_else(|| parent.required_sections.clone()),
+            outline: child.outline.clone().or_else(|| parent.outline.clone()),
         })),
     }
 }

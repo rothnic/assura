@@ -138,3 +138,9 @@ Assura's needs.
   the repo still exposes older frontmatter/required-section/heading-depth
   Markdown checks, and the tooling evaluation is an initial candidate list
   rather than a completed implementation decision.
+- 2026-06-18: Implemented the first runtime proof for `markdown.outline`:
+  config model support, semantic validation, inherited rule/artifact
+  propagation, CLI diagnostics, optional-parent handling, ambiguous-root
+  failure, skipped-level failure, question-mark escape coverage, relationship
+  provider composition tests, docs updates, and bounded-cost tooling decision
+  evidence. Independent review requested before PR publication.
