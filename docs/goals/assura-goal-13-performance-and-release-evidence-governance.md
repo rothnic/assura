@@ -134,3 +134,7 @@ independently reviewed.
 - 2026-06-19: Started the first implementation slice by converting
   release/performance target-state checks to an explicit release artifact
   matrix and making dirty-source performance artifacts fail deterministically.
+- 2026-06-19: Refreshed tracked performance artifacts from clean source commit
+  `c515e189566c8b2b87cd772851c7d13e6940a5f4`. Cold
+  `claim_summary.two_x_claim_verdict` remains `not-complete`; warm
+  `warm_claim_summary.two_x_claim_verdict` remains `complete`.
