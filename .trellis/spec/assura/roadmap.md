@@ -17,7 +17,8 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 8 | Agentic Adoption Iteration 01 / Phase 01 | Completed | Archived task `.trellis/tasks/archive/2026-06/06-01-roadmap-phase-01-execution` |
 | 9 | Policy Depth Iteration 02 | Completed | Goals 09-13 merged and archived under `.trellis/tasks/archive/2026-06/` |
 | 10 | Release Contract Rules | Completed | First reusable release-contract rule slice merged in PR #59; task archived in PR #60 |
-| 11 | Public Surface Matrix | Planned | Validate and execute `docs/goals/assura-rule-public-surface-support-matrix.md` |
+| 11 | Public Surface Matrix | Completed | PR #61 merged; archive PR #62 merged |
+| 12 | Cargo Manifest Semantics | Planned | Validate and execute `docs/goals/assura-rule-cargo-manifest-semantics.md` |
 
 ## Active Roadmap Iteration
 
@@ -31,8 +32,9 @@ None.
 
 Most recent completed iteration: Policy Depth Iteration 02. Goals 09 through
 13 are complete and archived, ending with Goal 13 PR #55 and archive PR #56.
-Release Contract Rules first slice is also complete via PR #59 and archive PR
-#60. This completion does not mark the broader Assura roadmap complete.
+Release Contract Rules first slice is complete via PR #59 and archive PR #60.
+Public Surface Matrix first slice is complete via PR #61 and archive PR #62.
+This completion does not mark the broader Assura roadmap complete.
 
 Direction lock, clarified on 2026-05-31: do not create or revive
 `assura-codex-feedback`, do not add one CLI entrypoint per agent, and do not add
@@ -40,21 +42,21 @@ one `--format <agent>-hook` value per agent. Treat older roadmap/task wording in
 that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
 Planned next roadmap candidate:
-`docs/goals/assura-rule-public-surface-support-matrix.md`. The next planning
-decision is how much of the P0 support-matrix detector should land in the first
-slice before manifest semantics and test-relationship rules build on it.
+`docs/goals/assura-rule-cargo-manifest-semantics.md`. The next planning
+decision is the first reusable manifest-semantics slice now that the support
+matrix provides public command and Rust export classification.
 
 ## Recommended Next Epic
 
-Validate the Public Surface Matrix candidate:
-`docs/goals/assura-rule-public-surface-support-matrix.md`.
+Validate the Cargo Manifest Semantics candidate:
+`docs/goals/assura-rule-cargo-manifest-semantics.md`.
 
 The next agent should create or reuse a Trellis task to revalidate that goal
 against the current target-state analysis before implementing anything. The
-first decision is which public surfaces belong in the first slice: command
-contracts, support-policy rows, Rust exports, manifest metadata, or docs claims.
-The product roadmap remains open until a separate product decision declares it
-complete.
+first decision is which manifest fields belong in the first slice: package
+metadata, workspace member/internal crate policy, MSRV inheritance, publish
+status, feature policy, or release metadata. The product roadmap remains open
+until a separate product decision declares it complete.
 
 ## Roadmap Rules
 
