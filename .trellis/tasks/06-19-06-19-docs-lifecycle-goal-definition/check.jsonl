@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "Confirm the goal path becomes the recommended next executable candidate."}
+{"file": "docs/analysis/2026-06-09-assura-best-practice-target-state.md", "reason": "Confirm the goal scope matches the current P1 docs lifecycle detector gap."}
+{"file": ".trellis/spec/assura/config-notation.md", "reason": "Confirm proposed first-slice notation uses explicit, reusable config conventions."}
+{"file": "docs/analysis/evidence-and-review-policy.md", "reason": "Confirm review and proof gates preserve existing repo evidence policy."}

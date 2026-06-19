@@ -48,24 +48,24 @@ one `--format <agent>-hook` value per agent. Treat older roadmap/task wording in
 that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
 Planned next roadmap candidate:
-Docs lifecycle and stale-claim detection. The next planning decision is whether
-to create a dedicated goal for active/archive lifecycle, stale roadmap claims,
-and stale public release/performance claims now that support matrix, manifest
-semantics, release contract, test relationship, and module topology first
-slices provide the main structured inputs.
+`docs/goals/assura-rule-docs-lifecycle-stale-claims.md`. The next planning
+decision is the first reusable docs lifecycle and stale-claim slice now that
+support matrix, manifest semantics, release contract, test relationship, and
+module topology first slices provide the main structured inputs.
 
 ## Recommended Next Epic
 
-Create or validate a Docs Lifecycle candidate goal.
+Implement the Docs Lifecycle candidate:
+`docs/goals/assura-rule-docs-lifecycle-stale-claims.md`.
 
-The next agent should create or reuse a Trellis task to define a narrow first
-slice for docs lifecycle and stale-claim detection against the current
-target-state analysis before implementing anything. The first decision is which
-active docs and claims are deterministic enough for a reusable rule: active
-analysis/goals versus archived/historical files, stale roadmap candidate
-claims, stale support/release/performance copy, or explicit historical
-exceptions. The product roadmap remains open until a separate product decision
-declares it complete.
+The next agent should create or reuse a Trellis implementation task for that
+goal and run the normal workflow gate/current-state preflight before editing.
+The first implementation decision is which active docs and claims are
+deterministic enough for the first reusable rule slice: active analysis/goals
+versus archived/historical files, stale roadmap candidate claims, stale
+support/release/performance copy, or explicit historical exceptions. The
+product roadmap remains open until a separate product decision declares it
+complete.
 
 ## Roadmap Rules
 
