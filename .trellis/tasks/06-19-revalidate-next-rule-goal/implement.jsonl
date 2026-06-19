@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "Current roadmap source for next reusable rule routing."}
+{"file": "docs/analysis/2026-06-09-assura-best-practice-target-state.md", "reason": "Priority backlog evidence for remaining P0/P1 detectors."}
+{"file": "docs/goals/assura-rule-cargo-manifest-semantics.md", "reason": "Completed goal whose status and progress log need final routing cleanup."}
+{"file": "docs/goals/assura-rule-test-relationship.md", "reason": "Candidate goal to revalidate and refresh before implementation."}

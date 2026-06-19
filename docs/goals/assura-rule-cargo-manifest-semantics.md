@@ -2,7 +2,7 @@
 id: goal-assura-rule-cargo-manifest-semantics
 type: goal
 title: Assura Cargo manifest semantics rule
-status: planned
+status: completed
 created: 2026-06-08
 owners:
   - assura-maintainers
@@ -55,6 +55,18 @@ keyword, binary, or workspace-member expectations.
 - Support-matrix checks classify commands and Rust exports, but manifest-facing
   claims such as descriptions, keywords, package publish status, and binary
   names remain outside that detector.
+
+## Completion Result
+
+Completed as a first reusable rule slice in PR #64 and archived in PR #65. The
+shipped surface adds explicit `extensions.manifest_semantics` notation,
+semantic config validation, structured TOML runtime checks, workspace-inherited
+package field resolution, binary metadata checks, CLI JSON diagnostics,
+compiled-config portability, fixture coverage, and Assura self-dogfood rows.
+
+Dependency usage analysis, license/source policy, semver compatibility, and
+feature-policy depth remain follow-up owners outside this completed first
+slice.
 
 ## Detector Hypothesis
 
@@ -165,3 +177,7 @@ coverage is weakened.
   `cargo clippy --all-targets --all-features -- -D warnings`,
   `cargo xtask target-state`, `cargo run --quiet -- check --format json .`,
   `cargo xtask evidence`, `cargo xtask docs`, and `git diff --check`.
+- 2026-06-19: Completed the Cargo manifest semantics first slice in PR #64 and
+  archived Trellis task `06-19-cargo-manifest-semantics-implementation` in PR
+  #65. Remaining dependency hygiene, license/source policy, semver, and
+  feature-policy checks route to future specialized goals.
