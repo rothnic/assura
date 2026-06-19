@@ -27,7 +27,7 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 13 | Test Relationship Rule | Completed | PR #68 merged; archive PR #69 merged |
 | 14 | Module Topology Rule | Completed | PR #72 merged; archive PR #73 merged |
 | 15 | Docs Lifecycle Rule | Completed | PR #78 merged; archive PR #79 merged |
-| 16 | Docs Lifecycle Coverage | Completed | PR #83 merged; archive/sync in progress |
+| 16 | Docs Lifecycle Coverage | Completed | PR #83 merged; archive/sync PR #84 merged |
 
 ## Active Roadmap Iteration
 
@@ -63,8 +63,7 @@ only after exact evidence/token boundaries are defined.
 
 ## Recommended Next Action
 
-Archive the Docs Lifecycle Coverage implementation task, then revalidate the
-next roadmap candidate from current target-state evidence.
+Revalidate the next roadmap candidate from current target-state evidence.
 
 The next agent should use `assura-goal-validation` against current
 target-state, roadmap, and `.assura/config.yml` output before selecting another
