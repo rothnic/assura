@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "Roadmap names docs lifecycle and stale-claim detection as the next candidate after module topology completion."}
+{"file": "docs/analysis/2026-06-09-assura-best-practice-target-state.md", "reason": "Target-state analysis defines the docs lifecycle/stale-claim gap and detector ownership."}
+{"file": ".trellis/spec/assura/config-notation.md", "reason": "Goal notation should follow existing explicit extension patterns instead of natural-language inference."}
+{"file": "docs/analysis/evidence-and-review-policy.md", "reason": "Docs lifecycle goal must preserve current evidence and review requirements."}
