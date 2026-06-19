@@ -2,7 +2,7 @@
 id: goal-assura-windows-ci-restore
 type: goal
 title: Assura Windows CI restore
-status: planned
+status: completed
 created: 2026-06-19
 owners:
   - assura-maintainers
@@ -22,13 +22,13 @@ related:
 Restore `windows-latest` to the Rust test matrix with hosted proof that the
 full-feature test path links and passes on Windows.
 
-## Current Gap
+## Original Gap
 
-The roadmap still carries one deferred tooling baseline item: Windows CI
-Restore. The Rust test matrix currently runs on Linux and macOS only because a
-previous `windows-latest` run failed while linking `libgit2-sys` with unresolved
-MSVC system-library symbols. The release and installer workflows still define
-Windows smoke paths, but they build the lean release feature set and do not
+The roadmap carried one deferred tooling baseline item: Windows CI Restore. The
+Rust test matrix previously ran on Linux and macOS only because a prior
+`windows-latest` run failed while linking `libgit2-sys` with unresolved MSVC
+system-library symbols. The release and installer workflows still defined
+Windows smoke paths, but they built the lean release feature set and did not
 prove `cargo test --all-features` on Windows.
 
 ## Scope
@@ -230,3 +230,12 @@ as paused after the restore.
   the change is at the correct compiled-artifact execution boundary without
   weakening artifact staleness validation. Hosted Windows proof is still
   required before completion.
+- 2026-06-19: PR #93 head `6fe115f6efb7190dce43fef4c26fc1f2c850c1e9`
+  passed all hosted checks. Rust CI run `27838378002` showed
+  `Test Suite (windows-latest, stable)` job `82391630094` passing after
+  `windows-latest` was restored to the Test Suite matrix; Linux and macOS Test
+  Suite jobs, Windows Installer Smoke, release bundle smoke, installable
+  adoption smoke jobs, Check, Clippy, Rustfmt, Evidence Gates, Code Coverage,
+  Performance Report, Documentation, Security Audit, and GitGuardian all passed.
+  Gemini's earlier compile-warning review comment was contradicted by local and
+  hosted `cargo check`, Clippy, and Test Suite success on the final head.

@@ -188,7 +188,7 @@ node_modules/@ls-lint/ls-lint/bin/ls-lint-<platform>
 | Repository-wide rustfmt drift | Dedicated formatting cleanup landed in PR #2. `cargo fmt --all -- --check` is now expected to pass in CI. |
 | Repository-wide clippy warnings | Dedicated Clippy cleanup removed the existing warning baseline. `cargo clippy --all-targets --all-features -- -D warnings` is now expected to pass locally and block in CI. |
 | Assura self-check violations | Dedicated self-check cleanup archived historical docs, removed non-canonical OpenSpec surfaces, added missing Rust module docs, and split oversized modules. `cargo run -- check .` now reports zero violations locally on the cleanup branch. |
-| Windows CI test job restored | Updated `git2` from 0.18.3 to 0.21.0, which refreshes `libgit2-sys` from 0.16.2+1.7.2 to 0.18.5+1.9.4, then restored `windows-latest` to the Rust `Test Suite` matrix. The restoring PR must show hosted `Test Suite (windows-latest, stable)` proof before merge. |
+| Windows CI test job restored | PR #93 updated `git2` from 0.18.3 to 0.21.0, which refreshes `libgit2-sys` from 0.16.2+1.7.2 to 0.18.5+1.9.4, then restored `windows-latest` to the Rust `Test Suite` matrix. Hosted Rust CI run `27838378002` showed `Test Suite (windows-latest, stable)` job `82391630094` passing before merge. |
 
 ## Agent Rules
 

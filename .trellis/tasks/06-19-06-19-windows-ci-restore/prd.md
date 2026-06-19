@@ -6,15 +6,15 @@ Execute `docs/goals/assura-windows-ci-restore.md` by restoring the
 `windows-latest` Rust test matrix with hosted proof that the full-feature test
 path links and passes on Windows.
 
-## Current Evidence
+## Completion Evidence
 
 - `docs/goals/assura-windows-ci-restore.md` defines the active proof gates.
-- `.github/workflows/ci.yml` currently limits the Rust `Test Suite` matrix to
-  Linux and macOS because of a deferred `libgit2-sys` MSVC linker failure.
-- `Cargo.lock` currently resolves `git2 0.18.3` and
-  `libgit2-sys 0.16.2+1.7.2`.
-- `cargo info` reports current crates.io availability of `git2 0.21.0` and
-  newer `libgit2-sys` releases.
+- `.github/workflows/ci.yml` restores `windows-latest` to the Rust `Test Suite`
+  matrix.
+- `Cargo.lock` resolves `git2 0.21.0` and `libgit2-sys 0.18.5+1.9.4`.
+- PR #93 head `6fe115f6efb7190dce43fef4c26fc1f2c850c1e9` passed hosted
+  Rust CI run `27838378002`, including `Test Suite (windows-latest, stable)`
+  job `82391630094`.
 
 ## Acceptance Criteria
 
@@ -25,10 +25,10 @@ path links and passes on Windows.
   `Test Suite` matrix.
 - [x] `.trellis/spec/assura/tooling-stabilization.md` no longer lists Windows
   CI as paused baseline debt after hosted proof passes.
-- [ ] `docs/goals/assura-windows-ci-restore.md` progress log records the
+- [x] `docs/goals/assura-windows-ci-restore.md` progress log records the
   implementation, review, and hosted Windows evidence.
 - [x] Local gates pass for changed surfaces.
-- [ ] Hosted PR checks include a passing Windows `Test Suite` job before merge.
+- [x] Hosted PR checks include a passing Windows `Test Suite` job before merge.
 
 ## Review Scope
 
