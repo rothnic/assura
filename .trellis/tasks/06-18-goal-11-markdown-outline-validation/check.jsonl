@@ -1,0 +1,4 @@
+{"file": "docs/goals/assura-goal-11-markdown-outline-validation.md", "reason": "Reviewers must verify every definition-of-done and blocking criterion against the implementation."}
+{"file": ".trellis/spec/assura/config-notation.md", "reason": "Reviewers must compare runtime behavior, fixtures, and docs to the canonical outline notation contract."}
+{"file": "docs/analysis/2026-06-18-markdown-tooling-evaluation.md", "reason": "Reviewers must verify the final decision record covers maintained linter, link checker, parser/AST, and frontmatter options."}
+{"file": "docs/goals/assura-roadmap-iteration-02-policy-depth-and-ecosystem.md", "reason": "Reviewers must check notation-work direction locks: no superseded notation, migrated examples, and performance evidence."}
