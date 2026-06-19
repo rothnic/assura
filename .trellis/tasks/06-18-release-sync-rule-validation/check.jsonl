@@ -1,0 +1,5 @@
+{"file":"docs/goals/assura-rule-release-sync.md","reason":"Check the revalidation result and next implementation slice are explicit."}
+{"file":".trellis/spec/assura/roadmap.md","reason":"Check roadmap routing remains consistent with the revalidated goal."}
+{"file":"docs/goals/assura-goal-13-performance-and-release-evidence-governance.md","reason":"Check remaining release-sync gap is not duplicate Goal 13 work."}
+{"file":"docs/analysis/2026-06-19-goal-13-release-performance-review.md","reason":"Check release/performance evidence boundaries remain accurate."}
+{"file":".agents/skills/assura-goal-validation/SKILL.md","reason":"Check validation output follows the project goal-validation workflow."}

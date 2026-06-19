@@ -6,14 +6,52 @@ status: planned
 created: 2026-06-08
 owners:
   - assura-maintainers
+related:
+  - docs/goals/assura-goal-13-performance-and-release-evidence-governance.md
+  - docs/analysis/2026-06-19-goal-13-release-performance-review.md
+  - .trellis/spec/assura/roadmap.md
+  - xtask/src/main.rs
 ---
 
 # Assura Release Sync Rule
 
 ## Objective
 
-Create a rule family that verifies release docs, install scripts, workflow
-asset names, support matrix rows, and package metadata stay synchronized.
+Create a reusable release-contract rule family that verifies configured release
+docs, install scripts, workflow asset names, support matrix rows, checksum
+sidecars, and package metadata stay synchronized.
+
+This should generalize the current Assura repo release checks without
+duplicating the hard-coded `cargo xtask target-state` governance that now
+protects this repository.
+
+## Revalidation Result
+
+`valid`, with narrowed scope.
+
+Goal 13, merged in PR #55, already made Assura's own release/performance claims
+deterministic through `cargo xtask target-state`. That current repo-local check
+covers public archive names, installer archive references, CI install smoke
+labels, checksum sidecars, release docs, website install copy, performance JSON
+freshness, and public performance copy.
+
+The remaining gap is not another Assura-only target-state assertion. The valid
+next product question is whether Assura should offer a configurable release
+contract rule family that other repositories can use for the same class of
+drift.
+
+## User Certainty Bar
+
+A repository maintainer should be able to declare the release artifacts their
+project publishes and have Assura report drift when docs, installers, workflow
+matrices, checksums, or package metadata stop agreeing.
+
+## Current Boundary
+
+- Assura repo release governance: covered by `cargo xtask target-state`.
+- Public reusable Assura validation: not implemented.
+- Release-contract configuration notation: not specified.
+- Fixture and CLI integration coverage for release-contract drift: not present.
 
 ## Detector Hypothesis
 
@@ -21,13 +59,86 @@ Extract archive names, checksums, install URLs, version mentions, and release
 workflow matrix entries from configured files, then compare them against a
 single release contract.
 
+The first implementation should prefer an explicit configured contract over
+inferring release intent from arbitrary prose. A future rule can add inference
+only after the configured contract is stable and tested.
+
+## Scope
+
+- Define a minimal release-contract config surface for archive names, optional
+  checksum sidecars, installer files, workflow files, and docs files.
+- Implement validation that reports:
+  - docs or installers mention an artifact absent from the contract;
+  - the contract names an artifact absent from configured workflow matrices;
+  - checksum sidecar expectations are missing from docs or workflows;
+  - installer URLs point at unsupported branches or asset names.
+- Add passing and failing fixtures that are independent of Assura's own release
+  docs.
+- Add CLI integration coverage proving the rule runs through `assura check`.
+- Keep Assura's own hard-coded target-state release checks until the reusable
+  rule proves it can replace them without losing coverage.
+
+## Non-Goals
+
+- No release publishing automation.
+- No GitHub API access or remote release inspection.
+- No broad natural-language parsing of arbitrary release prose.
+- No removal of current `cargo xtask target-state` release checks in the first
+  implementation slice.
+
+## Definition Of Done
+
+- Release-contract config notation is documented in the goal or spec before
+  implementation.
+- Passing fixture covers a complete configured release contract.
+- Failing fixtures cover workflow/doc mismatch, installer asset mismatch,
+  checksum sidecar drift, and unsupported branch/asset URLs.
+- `assura check --format json` reports actionable release-contract violations
+  with file and contract context.
+- Assura repo target-state checks remain green and are not weakened.
+- Independent review confirms this rule adds reusable product coverage rather
+  than duplicating repo-local `xtask` governance.
+
 ## Required Examples
 
 - Passing: all platform archive names match the release matrix.
 - Failing: docs mention an asset that release workflow does not publish.
 - Failing: install script URL points at an unsupported branch or asset name.
+- Failing: workflow uploads an archive but omits its required `.sha256`
+  sidecar.
 
-## Tests
+## Required Validation
 
-Add release-contract fixtures, workflow/doc mismatch fixtures, and CLI
-integration coverage.
+```bash
+cargo fmt --all -- --check
+cargo test --all-targets --quiet
+cargo xtask target-state
+cargo run --quiet -- check --format json .
+git diff --check
+```
+
+## Review Tasks
+
+- R0: Confirm the implementation does not weaken current Goal 13
+  target-state release/performance checks.
+- R1: Review release-contract notation for explicitness and avoid hidden prose
+  inference.
+- R2: Review passing/failing fixtures for docs, installer, workflow, checksum,
+  and package metadata drift.
+- R3: Review JSON diagnostics for actionable file and contract context.
+- R4: Confirm the rule is reusable outside the Assura repository.
+
+## Reviewer Blocking Criteria
+
+Block the PR if the implementation only moves hard-coded Assura release checks
+into product code, if release intent is inferred from arbitrary prose without a
+configured contract, if checksum sidecars are not covered, if fixtures do not
+exercise both docs and workflow drift, or if current `cargo xtask target-state`
+coverage is weakened before the reusable rule proves equivalent coverage.
+
+## Progress Log
+
+- 2026-06-19: Revalidated after Goal 13 merged in PR #55 and the roadmap
+  handoff merged in PR #57. Result: valid with narrowed scope. Goal 13 covers
+  Assura's own release/performance drift through target-state checks; this
+  goal remains as a reusable configured release-contract rule candidate.
