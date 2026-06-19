@@ -1,6 +1,0 @@
-{"file": "docs/goals/assura-rule-test-relationship.md", "reason": "Authoritative objective, scope, validation, and reviewer blocking criteria."}
-{"file": ".trellis/spec/assura/roadmap.md", "reason": "Current roadmap routing and sequencing for reusable rule work."}
-{"file": "docs/analysis/2026-06-09-assura-best-practice-target-state.md", "reason": "Target-state evidence for supported-surface tests, ignored tests, and fixture ownership."}
-{"file": ".trellis/spec/assura/config-notation.md", "reason": "First-party extension notation examples and config style."}
-{"file": "docs/goals/assura-rule-public-surface-support-matrix.md", "reason": "Prior reusable rule pattern for support matrices and review expectations."}
-{"file": "docs/goals/assura-rule-cargo-manifest-semantics.md", "reason": "Prior reusable rule pattern for manifest semantics and diagnostics."}
