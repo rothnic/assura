@@ -270,6 +270,32 @@ structure:
 }
 
 #[test]
+fn detailed_file_directive_preserves_markdown_outline_notation() {
+    let config = parse_config(
+        r#"
+structure:
+  docs/:
+    guide.md:
+      markdown:
+        outline:
+          - Overview
+          - ?? Prerequisites
+          - Quick Start:
+              - Installation
+              - ?? Configuration
+          - Why Assura?
+          - title: "?? Debug Mode"
+            optional: false
+"#,
+    )
+    .unwrap();
+
+    let docs = config.structure.get("docs/").unwrap();
+    let outline = docs.markdown.as_ref().unwrap().outline.as_ref().unwrap();
+    assert_eq!(outline.len(), 5);
+}
+
+#[test]
 fn section_providers_include_path_and_section_captures() {
     let config = parse_config(
         r#"

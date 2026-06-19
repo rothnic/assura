@@ -1,0 +1,4 @@
+{"file": "docs/goals/assura-goal-11-markdown-outline-validation.md", "reason": "Goal contract, validation commands, review criteria, and non-goals for Markdown outline validation."}
+{"file": ".trellis/spec/assura/config-notation.md", "reason": "Source-of-truth Markdown outline shorthand semantics and examples."}
+{"file": "docs/analysis/2026-06-18-markdown-tooling-evaluation.md", "reason": "Existing Markdown tooling candidates and decision requirements before custom implementation."}
+{"file": "docs/goals/assura-roadmap-iteration-02-policy-depth-and-ecosystem.md", "reason": "Iteration 02 direction locks for notation work, performance proof, tooling evaluation, and example migration."}

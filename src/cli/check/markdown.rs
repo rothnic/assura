@@ -1,8 +1,11 @@
 //! Markdown-specific validators for structure-first checks.
 
+mod outline;
+
 use super::rules::{display_rel, parse_frontmatter};
 use super::{StructureCheckReport, StructureChecker};
 use crate::config::config::MarkdownBundle;
+use outline::validate_markdown_outline;
 use std::collections::HashSet;
 use std::path::Path;
 
@@ -19,6 +22,7 @@ impl StructureChecker {
         self.validate_markdown_frontmatter(rel, markdown, frontmatter, report);
         self.validate_markdown_heading_depth(rel, markdown, content, report);
         self.validate_markdown_required_sections(rel, markdown, content, report);
+        validate_markdown_outline(self, rel, markdown, content, report);
     }
 
     fn validate_markdown_frontmatter(
@@ -144,16 +148,17 @@ impl StructureChecker {
     }
 }
 
-struct MarkdownHeading<'a> {
-    depth: usize,
-    text: &'a str,
+pub(super) struct MarkdownHeading<'a> {
+    pub(super) depth: usize,
+    pub(super) text: &'a str,
+    pub(super) line_number: usize,
 }
 
-fn markdown_headings(content: &str) -> Vec<MarkdownHeading<'_>> {
+pub(super) fn markdown_headings(content: &str) -> Vec<MarkdownHeading<'_>> {
     let mut headings = Vec::new();
     let mut in_fence = false;
 
-    for line in content.lines() {
+    for (line_index, line) in content.lines().enumerate() {
         let trimmed = line.trim_start();
         if is_fence_start(trimmed) {
             in_fence = !in_fence;
@@ -186,7 +191,11 @@ fn markdown_headings(content: &str) -> Vec<MarkdownHeading<'_>> {
 
         let text = after_marks.trim().trim_end_matches('#').trim_end().trim();
         if !text.is_empty() {
-            headings.push(MarkdownHeading { depth, text });
+            headings.push(MarkdownHeading {
+                depth,
+                text,
+                line_number: line_index + 1,
+            });
         }
     }
 

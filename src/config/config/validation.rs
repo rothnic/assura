@@ -99,6 +99,8 @@ fn validate_markdown_bundle(bundle: &MarkdownBundle, context: &str) -> Result<()
         )?;
     }
 
+    bundle.validate_outline_semantics(context)?;
+
     Ok(())
 }
 

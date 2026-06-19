@@ -94,6 +94,23 @@ Supported markdown fields include:
 - `max_heading_depth`
 - `check_links`
 - `required_sections`
+- `outline`
+
+`outline` uses nested YAML lists to describe required heading order. Prefix a
+heading with `?? ` to make it optional, and use object form when a required
+heading starts with literal question marks:
+
+```yaml
+markdown:
+  outline:
+    - Overview
+    - ?? Prerequisites
+    - Quick Start:
+        - Installation
+        - ?? Configuration
+    - title: "?? Debug Mode"
+      optional: false
+```
 
 ## Existence Rules
 

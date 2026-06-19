@@ -109,6 +109,9 @@ fn corrective_context_for_rule(rule: &str) -> &'static str {
         "markdown_required_section" => {
             "Add the missing heading text or update markdown.required_sections when the section is no longer required."
         }
+        "markdown_outline" => {
+            "Add or reorder headings to match markdown.outline, or update the configured outline when the documented structure changed."
+        }
         "extension" => {
             "Rename the file to an allowed extension or update files.extensions for this scope."
         }

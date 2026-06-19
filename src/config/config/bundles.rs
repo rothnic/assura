@@ -8,6 +8,10 @@ use validator::Validate;
 #[cfg(feature = "full-cli")]
 use super::validation::{validate_naming_convention, validate_size_string};
 
+mod markdown;
+pub(crate) use markdown::MarkdownOutlineView;
+pub use markdown::{MarkdownBundle, MarkdownOutlineEntry, MarkdownOutlineNode};
+
 /// Bundle of all file validations for a directory node
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "full-cli", derive(Validate))]
@@ -115,33 +119,6 @@ pub struct DirectoryBundle {
     /// Direct child directory count constraints keyed by glob pattern
     #[serde(skip_serializing_if = "Option::is_none")]
     pub exists: Option<HashMap<String, String>>,
-}
-
-/// Bundle of markdown validations for a directory node
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[cfg_attr(feature = "full-cli", derive(Validate))]
-#[serde(rename_all = "snake_case")]
-pub struct MarkdownBundle {
-    /// Whether frontmatter is required
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub require_frontmatter: Option<bool>,
-
-    /// Required frontmatter fields
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub required_fields: Option<Vec<String>>,
-
-    /// Maximum heading level depth
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[cfg_attr(feature = "full-cli", validate(range(min = 1, max = 6)))]
-    pub max_heading_depth: Option<u8>,
-
-    /// Whether to check for dead links
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub check_links: Option<bool>,
-
-    /// Required sections in markdown files
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub required_sections: Option<Vec<String>>,
 }
 
 /// Required files/directories existence validation
@@ -361,55 +338,6 @@ impl DirectoryBundle {
 }
 
 impl Default for DirectoryBundle {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl MarkdownBundle {
-    /// Create a new empty bundle
-    pub fn new() -> Self {
-        Self {
-            require_frontmatter: None,
-            required_fields: None,
-            max_heading_depth: None,
-            check_links: None,
-            required_sections: None,
-        }
-    }
-
-    /// Set frontmatter requirement
-    pub fn with_require_frontmatter(mut self, require: bool) -> Self {
-        self.require_frontmatter = Some(require);
-        self
-    }
-
-    /// Set required frontmatter fields
-    pub fn with_required_fields(mut self, fields: Vec<String>) -> Self {
-        self.required_fields = Some(fields);
-        self
-    }
-
-    /// Set maximum heading depth
-    pub fn with_max_heading_depth(mut self, depth: u8) -> Self {
-        self.max_heading_depth = Some(depth);
-        self
-    }
-
-    /// Set link checking
-    pub fn with_check_links(mut self, check: bool) -> Self {
-        self.check_links = Some(check);
-        self
-    }
-
-    /// Set required sections
-    pub fn with_required_sections(mut self, sections: Vec<String>) -> Self {
-        self.required_sections = Some(sections);
-        self
-    }
-}
-
-impl Default for MarkdownBundle {
     fn default() -> Self {
         Self::new()
     }

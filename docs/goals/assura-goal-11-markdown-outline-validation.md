@@ -130,3 +130,17 @@ or preserve superseded notation without an explicit support-policy exception.
 Block custom generic Markdown linting, frontmatter parsing, or link checking
 unless the tooling decision record proves maintained tooling is unsuitable for
 Assura's needs.
+
+## Progress Log
+
+- 2026-06-18: Revalidated against current `origin/master` after Goal 10 merged.
+  The goal remains valid: the spec defines nested `markdown.outline` shorthand,
+  the repo still exposes older frontmatter/required-section/heading-depth
+  Markdown checks, and the tooling evaluation is an initial candidate list
+  rather than a completed implementation decision.
+- 2026-06-18: Implemented the first runtime proof for `markdown.outline`:
+  config model support, semantic validation, inherited rule/artifact
+  propagation, CLI diagnostics, optional-parent handling, ambiguous-root
+  failure, skipped-level failure, question-mark escape coverage, relationship
+  provider composition tests, docs updates, and bounded-cost tooling decision
+  evidence. Independent review requested before PR publication.
