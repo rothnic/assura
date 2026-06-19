@@ -2,7 +2,7 @@
 id: goal-assura-rule-test-relationship
 type: goal
 title: Assura test relationship rule
-status: planned
+status: completed
 created: 2026-06-08
 owners:
   - assura-maintainers
@@ -37,6 +37,19 @@ surfaces.
 live repository repair. It remains a valid P0 detector because the target-state
 analysis still identifies supported-surface test evidence, ignored/manual test
 classification, and fixture ownership as only partially aligned.
+
+## Completion Result
+
+Completed as a first reusable rule slice in PR #68 and archived in PR #69.
+The shipped surface adds explicit `extensions.test_relationships` notation,
+semantic config validation, source-to-required-test evidence checks,
+ignored/manual Rust test classification by file pattern and test function,
+fixture-family ownership checks, compiled-config portability, JSON diagnostics,
+and Assura self-dogfood coverage.
+
+The first slice intentionally does not claim coverage percentage or semantic
+test adequacy. Deeper support-matrix joins and module-family policy route to
+the module-topology follow-up goal.
 
 ## User Certainty Bar
 
@@ -167,3 +180,7 @@ specific relationship and missing evidence.
   use project-wide test evidence for scoped source checks, validate fixture
   families under configured roots, and narrow this goal's passing example to
   configured source relationships rather than whole-tree coverage.
+- 2026-06-19: Completed the test-relationship first slice in PR #68 and
+  archived Trellis task `06-19-test-relationship-rule-implementation` in PR
+  #69. Remaining module-family ownership and public-surface topology policy
+  route to `docs/goals/assura-rule-module-topology.md`.

@@ -50,5 +50,6 @@ python3 ./.trellis/scripts/workflow_gate.py --platform codex
 python3 ./.trellis/scripts/task.py validate 06-19-06-19-module-topology-revalidation
 cargo run --quiet -- check --format json .
 cargo xtask evidence
+cargo xtask docs
 git diff --check origin/master...HEAD
 ```
