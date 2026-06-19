@@ -1,7 +1,0 @@
-{"file":"docs/goals/assura-rule-public-surface-support-matrix.md","reason":"Review against required examples, validation commands, and blocking criteria."}
-{"file":"docs/analysis/2026-06-09-assura-best-practice-target-state.md","reason":"Confirm implementation satisfies the intended P0 support-matrix detector boundary."}
-{"file":".trellis/spec/assura/config-notation.md","reason":"Check notation explicitness and consistency with Assura config guidance."}
-{"file":".trellis/spec/assura/structure-enforcement.md","reason":"Check diagnostics and rule behavior against existing structure-validation contracts."}
-{"file":".assura/command-surface.yml","reason":"Confirm support-matrix behavior composes with the existing command-surface contract."}
-{"file":"src/lib.rs","reason":"Confirm Rust public export scanning handles current internal/experimental surfaces."}
-{"file":"tests/custom_constraints_tests.rs","reason":"Review reusable passing/failing fixture coverage."}
