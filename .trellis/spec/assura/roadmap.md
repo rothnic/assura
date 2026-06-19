@@ -15,7 +15,8 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 6 | Beyond Ls-Lint Rules | Completed | PRs #8, #11, and #12 merged; performance/parity tasks archived |
 | 7 | Agent Feedback MVP | Completed | PRs #13-#16 merged; keep stable `assura check --format agent` surface |
 | 8 | Agentic Adoption Iteration 01 / Phase 01 | Completed | Archived task `.trellis/tasks/archive/2026-06/06-01-roadmap-phase-01-execution` |
-| 9 | Policy Depth Iteration 02 | Planned | `docs/goals/assura-roadmap-iteration-02-policy-depth-and-ecosystem.md`; goals 09-13 now define the next major chunks |
+| 9 | Policy Depth Iteration 02 | Completed | Goals 09-13 merged and archived under `.trellis/tasks/archive/2026-06/` |
+| 10 | Release Contract Rules | Planned | Validate `docs/goals/assura-rule-release-sync.md` against the Goal 13 target-state release checks |
 
 ## Active Roadmap Iteration
 
@@ -27,28 +28,32 @@ None.
 Current branch:
 None.
 
-Most recent completed iteration: Agentic Adoption Iteration 01 / Phase 01.
-Goals 01 through 08 are complete and the execution task is archived. This
-completion does not mark the broader Assura roadmap complete.
+Most recent completed iteration: Policy Depth Iteration 02. Goals 09 through
+13 are complete and archived, ending with Goal 13 PR #55 and archive PR #56.
+This completion does not mark the broader Assura roadmap complete.
 
 Direction lock, clarified on 2026-05-31: do not create or revive
 `assura-codex-feedback`, do not add one CLI entrypoint per agent, and do not add
 one `--format <agent>-hook` value per agent. Treat older roadmap/task wording in
 that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
-Planned next roadmap iteration:
-`docs/goals/assura-roadmap-iteration-02-policy-depth-and-ecosystem.md`.
-The planned Iteration 02 major goal sequence now lives in goals 09 through 13
-under `docs/goals/`.
+Planned next roadmap candidate:
+`docs/goals/assura-rule-release-sync.md`. Goal 13 added deterministic
+target-state release/performance checks; the next planning decision is whether
+to promote that release contract into a reusable Assura rule family or keep it
+as repo-local target-state governance.
 
 ## Recommended Next Epic
 
-Activate Policy Depth Iteration 02 when maintainers are ready to start the next
-bounded program:
-`docs/goals/assura-roadmap-iteration-02-policy-depth-and-ecosystem.md`.
-Starting that iteration should create a new Trellis task and branch. The
-product roadmap remains open until a separate product decision declares it
-complete.
+Validate the Release Contract Rules candidate:
+`docs/goals/assura-rule-release-sync.md`.
+
+The next agent should create or reuse a Trellis task to revalidate that goal
+against the current Goal 13 target-state checks before implementing anything.
+The first decision is whether Assura needs a general user-facing rule family for
+release docs/installers/workflows, or whether the current repo-local
+`cargo xtask target-state` checks are the right boundary. The product roadmap
+remains open until a separate product decision declares it complete.
 
 ## Roadmap Rules
 

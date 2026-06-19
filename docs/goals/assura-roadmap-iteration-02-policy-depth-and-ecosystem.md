@@ -2,7 +2,7 @@
 id: roadmap-iteration-02-policy-depth-and-ecosystem
 type: roadmap_iteration
 title: Assura roadmap iteration 02 policy depth and ecosystem
-status: planned
+status: completed
 created: 2026-06-02
 owners:
   - assura-maintainers
@@ -23,11 +23,11 @@ related:
 
 ## Objective
 
-Plan the next bounded roadmap iteration after Iteration 01. This document is
-planned, not active. It prevents the Iteration 01 completion from being
+This document records the bounded roadmap iteration after Iteration 01 as
+completed. It prevents the Iteration 01 completion from being
 mistaken for completion of the full product roadmap.
 
-Iteration 02 should deepen Assura's policy coverage and ecosystem fit while
+Iteration 02 deepened Assura's policy coverage and ecosystem fit while
 preserving the stable public surface proven in Iteration 01.
 
 The product goal is to stop hoping stability happens. Iteration 02 should make
@@ -37,7 +37,7 @@ claims because the repo enforces those promises.
 
 ## Activation Criteria
 
-Activate this iteration only after:
+This iteration was activated after:
 
 - all Iteration 01 goals are completed;
 - the v0.1.0 release readiness checklist is satisfied or an explicit release
@@ -46,10 +46,9 @@ Activate this iteration only after:
 - a Trellis task is created to own Iteration 02 execution; and
 - the previous active Iteration 01 task is archived or marked complete.
 
-Current handoff state: Iteration 01 is complete, Goal 08 merged in PR #25, and
-the Iteration 01 Trellis task is archived under
-`.trellis/tasks/archive/2026-06/06-01-roadmap-phase-01-execution`. Iteration 02
-still needs an explicit activation PR or task before implementation starts.
+Completion state: Goals 09 through 13 are merged and archived under
+`.trellis/tasks/archive/2026-06/`, ending with Goal 13 PR #55 and archive PR
+#56. The next roadmap handoff is recorded in `.trellis/spec/assura/roadmap.md`.
 
 ## Direction Locks
 
@@ -80,11 +79,11 @@ still needs an explicit activation PR or task before implementation starts.
 ## Current Gap
 
 Iteration 01 proved an adoption foundation, and PR #49 proved canonical
-relationship notation. That does not yet prove that a first-time user can reach
-a correct config without source reading, that every relationship edge case has
-actionable diagnostics, that Markdown outline notation works as specified, or
-that public support/release/performance claims cannot drift. Goals 09 through
-13 are only complete when those proof gaps are closed by checked artifacts.
+relationship notation. Iteration 02 then closed the planned proof gaps for
+first-time configuration authoring, relationship semantics, Markdown outline
+validation, self-enforcing support/test matrices, and release/performance
+evidence. Future work should start from the current roadmap rather than
+reopening Goals 09 through 13 as planned work.
 
 ## Planned Goal Sequence
 
@@ -96,9 +95,8 @@ that public support/release/performance claims cannot drift. Goals 09 through
 | 4 | [Self-Enforcing Support And Test Matrix](./assura-goal-12-self-enforcing-support-and-test-matrix.md) | Supported commands, public exports, manifests, docs, and tests cannot drift silently. | Support-matrix and test-relationship review |
 | 5 | [Install, Release, And Performance Certainty](./assura-goal-13-performance-and-release-evidence-governance.md) | New-user install, performance, and release claims are current, reproducible, and checked by deterministic gates, including LS-Lint-equivalent notation performance. | Install smoke, performance evidence, notation efficiency, and release-sync review |
 
-Each goal should be written as a two-week team chunk with objective, scope,
-definition of done, validation commands, review tasks, and blocking criteria
-before implementation starts.
+Each goal was executed through a Trellis task and archived after merge. Keep
+these links as historical routing, not as the next active work queue.
 
 Watch-mode hardening, compatibility expansion beyond these goals, and broader
 ecosystem integrations remain valid future Iteration 02 candidates, but they
@@ -126,3 +124,6 @@ When maintainers choose to start this iteration, use:
 - 2026-06-18: Reviewed the Iteration 02 planning slice against current repo
   state and tightened notation gates for public examples, support-policy
   exceptions, performance proof, and independent modularity review.
+- 2026-06-19: Completed Iteration 02 execution. Goals 09, 10, 11, 12, and 13
+  are merged and archived under `.trellis/tasks/archive/2026-06/`. Goal 13
+  merged in PR #55 and its archive move merged in PR #56.

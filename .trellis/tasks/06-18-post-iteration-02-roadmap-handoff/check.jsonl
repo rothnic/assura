@@ -1,0 +1,3 @@
+{"file":"docs/goals/assura-roadmap-iteration-02-policy-depth-and-ecosystem.md","reason":"Check completion wording against archived Goals 09 through 13."}
+{"file":".trellis/spec/assura/roadmap.md","reason":"Check next-agent routing no longer points at completed Iteration 02 as planned work."}
+{"file":".trellis/spec/assura/index.md","reason":"Check roadmap changes preserve canonical Trellis routing constraints."}
