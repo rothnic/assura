@@ -19,11 +19,12 @@ commands to `assura-full`. The LS-Lint binary is resolved from the pinned
 `@ls-lint/ls-lint` package before timing so the measured loop does not include
 npm package resolution or the package's Node wrapper.
 
-The current headline data is real-repo-backed when the report cohort is
-`real-repo-headline`: ten pinned open-source repositories, each with its own
-LS-Lint policy and immutable source revision. Generated fixtures remain in the
-report as support and regression coverage; they are not the public aggregate
-when real-repo rows are present.
+The current checked data uses the `realistic-equivalent` report cohort: eight
+in-repo fixtures that exercise LS-Lint-compatible naming, ignore, scope, and
+extension behavior without requiring an external checkout cache. Pinned
+real-repository rows are optional extended evidence when a report is generated
+with the external fixture flag; they are not part of the checked report
+rendered on this page today.
 
 The warm gate is a separate editor-session measurement. It uses a persistent
 `assura-check-session` CLI process connected to `assura-checkd`, so it is not a
@@ -32,8 +33,8 @@ replacement for the cold one-process `assura check` headline path.
 ## More Detail
 
 - [Performance test cases](/reference/performance-test-cases/) defines the
-  pinned real repositories, generated support cases, and diagnostic stress
-  cases.
+  current checked cohort, optional pinned real repositories, generated support
+  cases, and diagnostic stress cases.
 - [Performance implementation notes](/reference/performance-implementation/) explains
   traversal rows, why `walkdir` is the default non-fail-fast traversal path, and
   why implementation-detail rows are not headline product evidence.
@@ -51,7 +52,6 @@ Baseline updates are explicit source changes:
 cargo build --release -p assura --bins
 cargo build --release -p assura-check-cli
 target/release/assura performance-report \
-  --include-external-fixtures \
   --output benches/history/current.json \
   --history benches/history/ls-lint-comparison-history.jsonl \
   --website-dir website/public/data/performance \

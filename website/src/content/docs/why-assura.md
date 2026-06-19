@@ -47,10 +47,11 @@ Assura turns those expectations into a checked project shape.
   wildcard extension, and directory-scope rules into `.assura/config.yml`.
 - **Automation Output**: Use text output for people and JSON/YAML reports for
   scripts, CI jobs, and release evidence.
-- **Benchmark Evidence**: The benchmark suite compares the current
-  `assura check` path against `@ls-lint/ls-lint@2.3.0` on ten pinned real
-  repositories when the external fixture cohort is included. Generated
-  fixtures remain supporting regression coverage.
+- **Benchmark Evidence**: The checked benchmark report compares the current
+  `assura check` path against `@ls-lint/ls-lint@2.3.0` on the
+  `realistic-equivalent` LS-Lint-compatible fixture cohort. Optional pinned
+  real-repository rows can be generated as extended evidence, but they are not
+  part of the current checked public report.
 
 ## When Assura Fits
 

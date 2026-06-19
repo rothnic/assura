@@ -7,18 +7,49 @@ This page is the source of truth for benchmark case definitions. The
 [performance summary](/reference/performance/) should link here instead of embedding
 rulesets in the results table.
 
-Assura reports three kinds of evidence:
+Assura reports four kinds of evidence:
 
-- headline cases: pinned real repositories in the `real-repo-headline` cohort
+- current checked cases: generated LS-Lint-equivalent repositories in the
+  `realistic-equivalent` cohort
+- optional external cases: pinned real repositories in the
+  `real-repo-headline` cohort
 - support cases: generated fixtures in `generated-fixtures-v1` and
   `generated-fixtures-v2`
 - diagnostic stress cases: synthetic cases used for regression detection
 
-## Headline Pinned Repository Cases
+## Current Checked Cohort
 
-The headline comparison uses pinned external repositories. They are cloned on
+The checked-in report rendered on the public performance page uses the
+`realistic-equivalent` cohort. These fixtures are generated in-repo so the
+baseline can be refreshed without downloading third-party source trees:
+
+- `simple_library`
+- `web_app`
+- `monorepo_packages`
+- `monorepo_policy`
+- `rule_heavy_repo`
+- `ignored_generated_heavy_repo`
+- `multipart_extension_regression`
+- `many_configured_scopes_regression`
+
+Refresh the current checked artifacts with:
+
+```bash
+cargo build --release -p assura --bins
+cargo build --release -p assura-check-cli
+target/release/assura performance-report \
+  --output benches/history/current.json \
+  --history benches/history/ls-lint-comparison-history.jsonl \
+  --website-dir website/public/data/performance \
+  --iterations 5
+```
+
+## Optional Pinned Repository Cases
+
+Pinned external repositories are optional extended evidence. They are cloned on
 demand so Assura can measure real project trees without vendoring third-party
-source.
+source, but they are only part of a checked report when the command includes
+`--include-external-fixtures`.
 
 Run them with:
 

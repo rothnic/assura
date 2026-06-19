@@ -123,3 +123,25 @@ not publish, or if release-sync checks rely on manual review only. Also block if
 LS-Lint-equivalent notation cases fail the performance target without an
 accepted bounded-cost record, or if the reusable-rule modularity claim is not
 independently reviewed.
+
+## Progress Log
+
+- 2026-06-19: Revalidated after Goal 12 merged in PR #54. Goal remains valid:
+  tracked performance artifacts still point at the older
+  `56937c6f688dd4182b195363569b1a4dbeb8f815` run with
+  `source_worktree_dirty: true`, and release-sync enforcement is still partial
+  even though PR #54 CI proved the current install/release smoke matrix.
+- 2026-06-19: Started the first implementation slice by converting
+  release/performance target-state checks to an explicit release artifact
+  matrix and making dirty-source performance artifacts fail deterministically.
+- 2026-06-19: Refreshed tracked performance artifacts from clean source commit
+  `c515e189566c8b2b87cd772851c7d13e6940a5f4`. Cold
+  `claim_summary.two_x_claim_verdict` remains `not-complete`; warm
+  `warm_claim_summary.two_x_claim_verdict` remains `complete`.
+- 2026-06-19: Independent review blocked PR handoff until public performance
+  copy matched the current checked `realistic-equivalent` report and the cold
+  2x miss had an accepted bounded follow-up. The accepted bounded follow-up is
+  recorded in `docs/analysis/2026-06-19-goal-13-release-performance-review.md`:
+  no cold complete claim in this PR, then rerun Linux static-CRT release
+  evidence before reopening only startup-floor removal or same-profile
+  implementation optimizations with at least a 10% measured win.
