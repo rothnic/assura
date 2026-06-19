@@ -17,3 +17,4 @@
 {"file":"tests/ls_lint_rule_coverage/mod.rs","reason":"Windows test failure showed native LS-Lint and Assura JSON paths must be normalized before comparing against slash-separated golden fixture paths."}
 {"file":"src/constraints/ls_lint/rules.rs","reason":"Windows test failure showed PathRule glob matching must normalize Windows separators before matching slash-based LS-Lint patterns."}
 {"file":"src/constraints/ls_lint/rules/rules_tests.rs","reason":"Add regression coverage for PathRule matching Windows-style absolute paths against slash-based LS-Lint patterns."}
+{"file":"tests/policy_language_completeness_tests.rs","reason":"Windows test failure showed a directory diagnostic JSON path assertion assumed Unix separators."}

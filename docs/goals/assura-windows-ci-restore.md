@@ -177,3 +177,19 @@ as paused after the restore.
   path separators inside the matcher and added a Windows-style absolute path
   regression assertion. Hosted Windows proof is still required before
   completion.
+- 2026-06-19: The next PR #93 hosted Windows run passed the native LS-Lint
+  golden tests and `tests/ls_lint_tests.rs`, then failed in
+  `tests/policy_language_completeness_tests.rs` because a directory diagnostic
+  JSON path assertion assumed `/` separators while serialized `PathBuf` values
+  use `\` on Windows. Normalized that assertion to compare the logical path
+  without changing the check output contract. Hosted Windows proof is still
+  required before completion.
+- 2026-06-19: Local validation for the policy-language path assertion fix
+  passed: rustfmt check, targeted and full
+  `policy_language_completeness_tests`, `cargo check --all-targets
+  --all-features`, `cargo clippy --all-targets --all-features -- -D warnings`,
+  `cargo test --all-features`, `cargo run --quiet -- check --format json .`,
+  `cargo xtask evidence`, `cargo xtask target-state`, `cargo xtask docs`, and
+  `git diff --check`. Review agent Aquinas found no blockers and confirmed the
+  test still proves the self-directory corrective context without changing
+  product output. Hosted Windows proof is still required before completion.
