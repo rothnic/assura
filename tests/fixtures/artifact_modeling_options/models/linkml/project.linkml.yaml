@@ -1,0 +1,77 @@
+id: https://assura.dev/schemas/artifacts
+name: assura_artifacts
+description: Artifact models for Assura repo-native content collections.
+prefixes:
+  assura: https://assura.dev/schemas/artifacts/
+default_prefix: assura
+default_range: string
+
+enums:
+  GoalStatus:
+    permissible_values:
+      active:
+      completed:
+  SpecStatus:
+    permissible_values:
+      draft:
+      active:
+  DecisionStatus:
+    permissible_values:
+      active:
+      superseded:
+
+classes:
+  Goal:
+    description: Goal artifact stored as Markdown frontmatter or JSON.
+    slots:
+      - id
+      - title
+      - status
+      - owners
+      - specs
+    slot_usage:
+      status:
+        range: GoalStatus
+  Spec:
+    slots:
+      - id
+      - title
+      - status
+    slot_usage:
+      status:
+        range: SpecStatus
+  Decision:
+    slots:
+      - id
+      - title
+      - status
+      - supersedes
+    slot_usage:
+      status:
+        range: DecisionStatus
+
+slots:
+  id:
+    identifier: true
+    required: true
+    range: string
+    pattern: "^.+$"
+  title:
+    required: true
+    range: string
+    pattern: "^.+$"
+  status:
+    required: true
+    range: string
+  owners:
+    required: true
+    multivalued: true
+    minimum_cardinality: 1
+    range: string
+  specs:
+    description: Spec identifiers referenced by this goal.
+    multivalued: true
+    range: string
+  supersedes:
+    range: string
+    pattern: "^.+$"

@@ -1077,6 +1077,7 @@ structure:
           allowed_names:
             - "cli"
             - "config"
+            - "content_repository"
             - "constraints"
             - "intelligence"
             - "ls_compat"
@@ -1108,6 +1109,12 @@ structure:
             files:
               naming: "snake_case"
               max_lines: 500
+
+          content_repository/:
+            files:
+              naming: "snake_case"
+              max_lines: 500
+              require_docs: true
           
           constraints/:
             files:

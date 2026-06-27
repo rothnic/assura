@@ -1,0 +1,19 @@
+classes:
+  Goal:
+    fields:
+      id: { type: string, required: true, id: true, min_length: 1 }
+      title: { type: string, required: true, min_length: 1 }
+      status: { enum: [active, completed], required: true }
+      owners: { type: string[], required: true, min_items: 1, item_min_length: 1 }
+      specs: { type: ref[], target: Spec, required: false }
+  Spec:
+    fields:
+      id: { type: string, required: true, id: true, min_length: 1 }
+      title: { type: string, required: true, min_length: 1 }
+      status: { enum: [draft, active], required: true }
+  Decision:
+    fields:
+      id: { type: string, required: true, id: true, min_length: 1 }
+      title: { type: string, required: true, min_length: 1 }
+      status: { enum: [active, superseded], required: true }
+      supersedes: { type: ref, target: Decision, required: false, min_length: 1 }

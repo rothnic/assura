@@ -1,0 +1,292 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://assura.dev/runtime/project-artifacts.schema.json",
+  "title": "Assura Project Artifacts Runtime Contract",
+  "x-assura-source": "typespec_decorators",
+  "x-assura": {
+    "runtime": "json_schema",
+    "collections": [
+      {
+        "class": "Goal",
+        "path": "docs/goals/*.md",
+        "adapter": "markdown_frontmatter",
+        "id": "id"
+      },
+      {
+        "class": "Spec",
+        "path": "specs/*.json",
+        "adapter": "json_record",
+        "id": "id"
+      },
+      {
+        "class": "Task",
+        "path": "tasks/*.yaml",
+        "adapter": "yaml_record",
+        "id": "id"
+      },
+      {
+        "class": "Decision",
+        "path": "decisions/*.jsonl",
+        "adapter": "jsonl_record",
+        "id": "id"
+      }
+    ],
+    "relations": [
+      {
+        "from": "Goal.specs",
+        "to": "Spec.id",
+        "many": true
+      },
+      {
+        "from": "Goal.tasks",
+        "to": "Task.id",
+        "many": true
+      },
+      {
+        "from": "Goal.decisions",
+        "to": "Decision.id",
+        "many": true
+      },
+      {
+        "from": "Task.goal",
+        "to": "Goal.id"
+      },
+      {
+        "from": "Task.spec",
+        "to": "Spec.id",
+        "optional": true
+      },
+      {
+        "from": "Decision.supersedes",
+        "to": "Decision.id",
+        "optional": true
+      },
+      {
+        "from": "Decision.affects_specs",
+        "to": "Spec.id",
+        "many": true
+      },
+      {
+        "from": "Decision.affects_tasks",
+        "to": "Task.id",
+        "many": true
+      }
+    ]
+  },
+  "$defs": {
+    "ArtifactStatus": {
+      "type": "string",
+      "enum": ["active", "complete", "deprecated"]
+    },
+    "RiskLevel": {
+      "type": "string",
+      "enum": ["low", "medium", "high"]
+    },
+    "Priority": {
+      "type": "string",
+      "enum": ["p0", "p1", "p2"]
+    },
+    "EvidenceKind": {
+      "type": "string",
+      "enum": ["file", "url"]
+    },
+    "ArtifactMetadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["summary", "risk"],
+      "properties": {
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "risk": {
+          "$ref": "#/$defs/RiskLevel"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "Evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "value"],
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/EvidenceKind"
+        },
+        "value": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "Goal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "status", "owners", "metadata"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "$ref": "#/$defs/ArtifactStatus"
+        },
+        "owners": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "specs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "tasks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "decisions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "metadata": {
+          "$ref": "#/$defs/ArtifactMetadata"
+        }
+      }
+    },
+    "Spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "status", "owner", "metadata"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "$ref": "#/$defs/ArtifactStatus"
+        },
+        "owner": {
+          "type": "string",
+          "minLength": 1
+        },
+        "metadata": {
+          "$ref": "#/$defs/ArtifactMetadata"
+        },
+        "decisions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "Task": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "status", "goal", "priority", "metadata"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "$ref": "#/$defs/ArtifactStatus"
+        },
+        "goal": {
+          "type": "string",
+          "minLength": 1
+        },
+        "spec": {
+          "type": "string",
+          "minLength": 1
+        },
+        "assignee": {
+          "type": "string",
+          "minLength": 1
+        },
+        "priority": {
+          "$ref": "#/$defs/Priority"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          }
+        },
+        "metadata": {
+          "$ref": "#/$defs/ArtifactMetadata"
+        }
+      }
+    },
+    "Decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "status", "metadata"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "$ref": "#/$defs/ArtifactStatus"
+        },
+        "supersedes": {
+          "type": "string",
+          "minLength": 1
+        },
+        "affects_specs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "affects_tasks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "metadata": {
+          "$ref": "#/$defs/ArtifactMetadata"
+        }
+      }
+    }
+  }
+}

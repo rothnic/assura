@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "not": {
+        "const": ""
+      }
+    },
+    "status": {
+      "enum": ["active", "superseded"]
+    },
+    "supersedes": {
+      "type": "string",
+      "not": {
+        "const": ""
+      }
+    },
+    "title": {
+      "type": "string",
+      "not": {
+        "const": ""
+      }
+    }
+  },
+  "required": ["id", "status", "title"]
+}

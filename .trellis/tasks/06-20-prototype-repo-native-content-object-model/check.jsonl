@@ -1,0 +1,8 @@
+{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file": ".trellis/tasks/06-20-prototype-repo-native-content-object-model/prd.md", "reason": "Acceptance criteria and definition of done"}
+{"file": ".trellis/spec/assura/config-notation.md", "reason": "Verify prototype remains compatible with current notation direction"}
+{"file": "docs/analysis/2026-06-18-markdown-tooling-evaluation.md", "reason": "Verify markdown adapter decisions account for current tooling constraints"}
+{"file": ".trellis/tasks/06-20-prototype-repo-native-content-object-model/research/prototype-baseline-results.md", "reason": "Verify implemented prototype covers comparison and recommendation"}
+{"file": "docs/goals/assura-artifact-modeling-options-comparison.md", "reason": "Verify scoring criteria and proof gates for follow-on comparison goal"}
+{"file": "docs/analysis/2026-06-27-artifact-modeling-options-comparison.md", "reason": "Verify scoring, generation evidence, safe-write proof, and independent review findings"}
+{"file": "docs/analysis/2026-06-27-artifact-modeling-options-review-record.md", "reason": "Verify independent review coverage, blocker findings, and resolutions"}

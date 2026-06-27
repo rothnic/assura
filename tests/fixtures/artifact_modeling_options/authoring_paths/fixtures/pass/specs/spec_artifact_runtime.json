@@ -1,0 +1,12 @@
+{
+  "id": "spec_artifact_runtime",
+  "title": "Artifact runtime contract",
+  "status": "active",
+  "owner": "platform",
+  "metadata": {
+    "summary": "Shared JSON Schema contract generated from authoring models.",
+    "risk": "low",
+    "tags": ["json_schema", "rust"]
+  },
+  "decisions": ["decision_runtime_target"]
+}
