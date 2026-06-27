@@ -49,8 +49,8 @@ fn round_trip_writes_preserve_formatting_for_markdown_yaml_json_jsonl() {
     update_markdown_frontmatter_scalar(&goal_path, "title", "Updated native runtime model");
     let updated_goal = fs::read_to_string(&goal_path).expect("updated goal markdown");
     assert!(updated_goal.contains("\nThe body stays as normal Markdown"));
-    assert!(updated_goal.ends_with(
-        "Agents should be able to update the frontmatter without rewriting this prose.\n"
+    assert!(updated_goal.trim_end().ends_with(
+        "Agents should be able to update the frontmatter without rewriting this prose."
     ));
     assert_eq!(
         markdown_body(&original_goal),
@@ -194,6 +194,15 @@ fn native_runtime_performance_uses_cached_json_schema_validators() {
         elapsed < Duration::from_secs(5),
         "expected cached Rust JSON Schema validation of 800 file-backed records under 5s, got {elapsed:?}"
     );
+}
+
+#[test]
+fn markdown_frontmatter_split_accepts_crlf_line_endings() {
+    let contents = "---\r\nid: goal\r\ntitle: Goal\r\n---\r\n\r\nBody\r\n";
+    let (frontmatter, body) = split_markdown_frontmatter(contents);
+
+    assert_eq!(frontmatter, "id: goal\r\ntitle: Goal");
+    assert_eq!(body, "\r\nBody\r\n");
 }
 
 struct RuntimeValidators {
@@ -345,14 +354,18 @@ fn read_jsonl(path: &Path) -> Vec<Value> {
 }
 
 fn split_markdown_frontmatter(contents: &str) -> (&str, &str) {
-    let body_start = contents
-        .strip_prefix("---\n")
-        .expect("markdown starts with frontmatter");
+    let (body_start, delimiter) = if let Some(body_start) = contents.strip_prefix("---\n") {
+        (body_start, "\n---\n")
+    } else if let Some(body_start) = contents.strip_prefix("---\r\n") {
+        (body_start, "\r\n---\r\n")
+    } else {
+        panic!("markdown starts with frontmatter");
+    };
     let end = body_start
-        .find("\n---\n")
+        .find(delimiter)
         .expect("markdown closes frontmatter");
     let frontmatter = &body_start[..end];
-    let body = &body_start[end + "\n---\n".len()..];
+    let body = &body_start[end + delimiter.len()..];
     (frontmatter, body)
 }
 
