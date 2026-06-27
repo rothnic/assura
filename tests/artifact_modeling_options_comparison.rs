@@ -380,13 +380,9 @@ fn validate_field(
     match schema.get("type").and_then(Value::as_str) {
         Some("string") => validate_string(label, field, schema, value, findings),
         Some("array") => validate_array(label, field, schema, value, findings),
-        Some("object") => {
-            if !value.is_object() {
-                findings.push(format!(
-                    "{label} schema violation: field '{field}' must be object"
-                ));
-            }
-        }
+        Some("object") if !value.is_object() => findings.push(format!(
+            "{label} schema violation: field '{field}' must be object"
+        )),
         _ => {}
     }
 
