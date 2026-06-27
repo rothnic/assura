@@ -1,0 +1,11 @@
+Command:
+npx --yes --package @typespec/compiler tsp compile tests/fixtures/artifact_modeling_options/authoring_paths/models/typespec_decorators/project.tsp --no-emit
+
+Result:
+failed with four missing-implementation diagnostics for the custom decorators:
+id, ref, collection, and adapter.
+
+Interpretation:
+The TypeSpec source shape is readable, but Assura-specific decorators require a
+small TypeSpec JavaScript library/emitter bridge before the source can compile.
+The normalized runtime schema snapshot remains valid for the Rust runtime proof.

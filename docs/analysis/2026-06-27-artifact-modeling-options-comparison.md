@@ -20,6 +20,10 @@ related:
 The strongest path to prototype next is a standards-based split: **LinkML as
 the current leading authoring candidate, TypeSpec as the close DX fallback, and
 JSON Schema/JTD-like compiled artifacts as the runtime validation target**.
+The second-stage proof strengthened that recommendation: the restricted LinkML
+profile validates with current LinkML tooling, while the readable TypeSpec
+decorator shape needs an Assura-owned JavaScript decorator/emitter bridge before
+it can compile.
 
 The important product constraint is not "which tool can validate data." Assura
 needs users to install one compiled binary that can validate, transform, and
@@ -29,11 +33,11 @@ Python, Go, CUE, or a server in the hot path.
 The authoring source and runtime target should be treated as different layers.
 JSON Schema or JTD is the best Rust runtime target, but it is not the best
 human-facing model syntax. LinkML currently leads the next-prototype score
-because it has the strongest cross-language and relationship-modeling story
-while still allowing Assura to validate generated artifacts natively. The
-evidence does not justify permanently choosing LinkML yet; TypeSpec is close
-enough that the next production slice should keep the model-source interface
-open.
+because it has the strongest cross-language and relationship-modeling story,
+the lowest authoring-bridge work after the second proof, and still allows
+Assura to validate generated artifacts natively. The evidence does not justify
+permanently choosing LinkML yet; TypeSpec is close enough that the next
+production slice should keep the model-source interface open.
 
 ## Prototype Matrix
 
@@ -56,6 +60,8 @@ Artifacts and fixtures:
 - Runtime schemas: `tests/fixtures/artifact_modeling_options/schemas/*.artifacts.schema.json`
 - Generated-output snapshots: `tests/fixtures/artifact_modeling_options/generated_outputs/`
 - Fixtures: `tests/fixtures/artifact_modeling_options/fixtures/`
+- Second-stage authoring proof:
+  `tests/fixtures/artifact_modeling_options/authoring_paths/`
 
 The runtime proof validates Markdown frontmatter, JSON records, YAML records,
 and cross-collection references through one Rust integration test:
@@ -94,6 +100,10 @@ dialect differences in native Rust before fixture validation.
   https://zod.dev/json-schema
 - TypeSpec documents a VS Code extension for authoring support:
   https://typespec.io/docs/introduction/editor/vscode/
+- TypeSpec custom decorators are implemented in JavaScript and declared with
+  `extern dec`, which is why Assura-specific decorators need a small TypeSpec
+  package instead of source-only declarations:
+  https://typespec.io/docs/extending-typespec/create-decorators/
 - LinkML documents schema-aware YAML editing via its JSON Schema metamodel:
   https://linkml.io/linkml/faq/tools.html
 - VS Code documents JSON Schema support for JSON editing, with draft caveats:
@@ -220,32 +230,132 @@ This is not a production benchmark. It is enough for this comparison goal to
 prove the selected architecture can keep authoring toolchains out of Assura's
 normal validation and safe-write hot path.
 
-## Scoring
+## Second-Stage Authoring Proof
 
-Scores are 1 to 5. Weighted total is out of 5.
+The second-stage prototype uses a larger repository artifact model with nested
+objects, arrays, optional references, backrefs, JSONL records, and explicit
+collection adapters:
 
-Weights:
+- `Goal`: Markdown frontmatter plus Markdown body.
+- `Spec`: JSON record.
+- `Task`: YAML record.
+- `Decision`: JSONL record.
+- Nested objects: `ArtifactMetadata` and `Evidence`.
+- Relations: `Goal.specs`, `Goal.tasks`, `Goal.decisions`, `Task.goal`,
+  `Task.spec`, `Decision.supersedes`, `Decision.affects_specs`, and
+  `Decision.affects_tasks`.
 
-- Developer readability and authoring: 15%
-- IDE/tooling and ecosystem leverage: 15%
-- Native Assura runtime performance and single-binary operation: 30%
-- Cross-language project fit and storage-neutral artifact modeling: 25%
-- References and constraints: 10%
-- Agent usability and maintainability: 5%
+Prototype files:
 
-| Option | Readability and authoring 15% | IDE/tooling and ecosystem 15% | Native Assura runtime 30% | Cross-language and storage-neutral 25% | References and constraints 10% | Agent/maintenance 5% | Weighted total | Outcome |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| LinkML | 3 | 5 | 4 | 5 | 5 | 3 | 4.30 | Preferred authoring candidate |
-| JSON Schema/JTD | 2 | 5 | 5 | 5 | 3 | 3 | 4.25 | Runtime target, poor authoring |
-| TypeSpec | 5 | 5 | 4 | 4 | 3 | 4 | 4.20 | DX fallback and strong challenger |
-| Assura-owned control | 4 | 2 | 5 | 4 | 3 | 2 | 3.80 | Control only; avoid unless standards fail |
-| CUE | 3 | 4 | 3 | 4 | 5 | 3 | 3.60 | Strong constraints, weaker mainstream DX |
-| Zod/TypeBox | 5 | 4 | 4 | 2 | 3 | 4 | 3.55 | Great TS DX, too TS-centered |
+- LinkML profile:
+  `tests/fixtures/artifact_modeling_options/authoring_paths/models/linkml_profile/project.linkml.yaml`
+- TypeSpec decorator sketch:
+  `tests/fixtures/artifact_modeling_options/authoring_paths/models/typespec_decorators/project.tsp`
+- Manual normalized runtime snapshots:
+  `tests/fixtures/artifact_modeling_options/authoring_paths/generated_outputs/*.runtime.schema.json`
+- Agent operation contract:
+  `tests/fixtures/artifact_modeling_options/authoring_paths/contracts/agent_operations.schema.json`
+- Cross-format fixtures:
+  `tests/fixtures/artifact_modeling_options/authoring_paths/fixtures/pass/`
+- Rust proof:
+  `tests/artifact_authoring_paths_proof.rs`
 
-The scoring gives 55% of the total to native runtime behavior plus
-cross-language, storage-neutral modeling. That is deliberate: Assura's product
-promise is not a prettier schema file, it is fast native validation and writes
-for many repository types after installing one binary.
+Commands and observed results:
+
+```bash
+uvx --from linkml linkml-validate \
+  tests/fixtures/artifact_modeling_options/authoring_paths/models/linkml_profile/project.linkml.yaml
+```
+
+Observed result: `No issues found`.
+
+```bash
+npx --yes --package @typespec/compiler tsp compile \
+  tests/fixtures/artifact_modeling_options/authoring_paths/models/typespec_decorators/project.tsp \
+  --no-emit
+```
+
+Observed result: TypeSpec recognized the decorator declarations but failed with
+four `missing-implementation` diagnostics for `id`, `ref`, `collection`, and
+`adapter`. This is expected TypeSpec extension behavior: custom decorators need
+a JavaScript implementation library. That makes TypeSpec viable, but not
+zero-glue.
+
+```bash
+cargo test --test artifact_authoring_paths_proof --quiet
+```
+
+Observed result: `5 passed; 0 failed`.
+
+```bash
+cargo test --test artifact_authoring_paths_proof \
+  native_runtime_performance_uses_cached_json_schema_validators -- --nocapture
+```
+
+Observed result: 800 file-backed records loaded through Markdown, JSON, YAML,
+and JSONL adapters and validated through cached Rust `jsonschema` validators in
+`79.845601ms`; the full single-test run finished in `0.32s`.
+
+What this proves:
+
+- The authoring model can be separate from stored representation.
+- The same object model can cover frontmatter, JSON, YAML, and JSONL records.
+- References and backrefs belong in Assura's collection/reference layer, even
+  when the source model describes them.
+- Write fidelity is an adapter concern. The proof preserves Markdown body bytes
+  and YAML list layout for targeted edits, while JSON and JSONL use valid
+  canonical rewrites rather than byte-preserving formatting.
+- Agent writes should go through typed operations. The proof validates
+  operation payloads against a checked-in JSON Schema contract, creates a
+  `Task`, appends it to a `Goal`, validates record shape and references, and
+  rejects a task with a missing `goal`.
+- Runtime performance is not the limiting factor if validators are compiled and
+  cached in native Rust.
+
+What remains open:
+
+- The second-stage runtime schemas are manual normalized snapshots, not proven
+  generated output. That is enough to validate the runtime interface and test
+  authoring shape, but not enough to claim an end-to-end compiler.
+- A production TypeSpec path needs a tiny Assura TypeSpec package or emitter
+  that implements `@id`, `@ref`, `@collection`, and `@adapter`.
+- A production LinkML path needs a documented Assura profile so users do not
+  have to learn the whole LinkML metamodel.
+- Neither authoring source should be required in the normal Assura hot path.
+
+## Feature Scorecard
+
+The earlier numeric score was useful for a first pass, but it was too easy to
+read as arbitrary. The more meaningful comparison is feature proof against the
+actual product requirements.
+
+Legend: `Proven` means covered by checked-in fixture, command output, or Rust
+test. `Partial` means plausible but needs Assura glue. `Weak` means the option
+fights the requirement.
+
+| Requirement | LinkML profile | TypeSpec decorators | JSON Schema/JTD | CUE | Zod/TypeBox | Assura DSL |
+| --- | --- | --- | --- | --- | --- | --- |
+| Source validates with current authoring tool | Proven: `linkml-validate` passed | Partial: syntax is readable, but decorators need JS implementation | Proven | Proven for constrained CUE exports | Proven in TS | Weak until Assura builds validator/tooling |
+| Runtime works in one native Assura binary | Proven through manual normalized JSON Schema snapshot | Proven through manual normalized JSON Schema snapshot | Proven directly | Partial if generated artifact is checked in | Partial if generated artifact is checked in | Proven if built |
+| Cached Rust validation performance | Proven: 800 file-backed records in 79.845601ms | Proven: same runtime artifact | Proven | Same if normalized to JSON Schema | Same if normalized to JSON Schema | Proven if built |
+| Storage-neutral object model | Proven with Markdown, JSON, YAML, JSONL adapters | Proven at runtime; authoring metadata needs emitter bridge | Partial: noisy authoring | Partial: good constraints, less obvious content model | Weak: TS-centered source of truth | Proven if built |
+| References and backrefs | Proven in LinkML slots plus Assura relation metadata | Partial: decorators are clear, implementation missing | Partial: needs Assura metadata | Strong constraints, but not mainstream | Partial: custom metadata | Proven if built |
+| Developer readability for Python and TS users | Partial: understandable YAML profile, but specialized | Strong: TS-like syntax | Weak: too verbose | Partial: unfamiliar semantics | Strong for TS, weaker for Python/Rust | Strong only if designed well |
+| IDE and ecosystem leverage | Strong: generators, docs, validation, Python/data ecosystem | Strong after package setup; VS Code/compiler story is good | Strong editor support | Good but niche | Strong TS ecosystem | Weak initially |
+| Agent write contract | Proven by operation schema plus Assura operation semantics test | Proven by same runtime interface | Proven by same runtime interface | Proven only after normalization | Proven only after normalization | Proven if built |
+| Assura implementation cost | Lowest now: profile plus normalizer | Medium: needs TypeSpec library/emitter | Low runtime, poor authoring | Medium/high normalization | Medium, but TS-centric | Highest ecosystem cost |
+
+Outcome:
+
+- LinkML is highest now because the second-stage proof reduced uncertainty:
+  the profile is valid today, references map naturally, and the runtime remains
+  native JSON Schema.
+- TypeSpec is still the best readability challenger, but no longer tied with
+  LinkML until Assura proves the custom decorator package. The source sketch is
+  pleasant; the toolchain bridge is real work.
+- JSON Schema/JTD is the runtime target, not the primary authoring format.
+- A custom Assura DSL should remain a fallback only if LinkML profile UX and
+  TypeSpec decorators both fail in real authoring tests.
 
 ## Candidate Notes
 
@@ -255,6 +365,8 @@ Best semantic modeling ecosystem. It has the most direct story for linked data,
 documentation, diagrams, JSON Schema, Python, TypeScript, Rust, SQL-ish, and
 data-dictionary workflows. It is also the closest fit for modeling repository
 objects and references independently from how each object is stored on disk.
+The second-stage profile validated with `linkml-validate` without adding
+LinkML to Assura's runtime.
 
 Risk: authoring UX is YAML-heavy and more specialized. Assura should avoid
 exposing full LinkML complexity at first. The likely product shape is a small
@@ -278,9 +390,11 @@ of truth. It has strong editor and emitter positioning, and JSON Schema output
 can become Assura's compiled validation artifact. It remains the strongest
 fallback if LinkML authoring feels too specialized after a real editor pass.
 
-Risk: references and semantic linked-data concepts are weaker than LinkML.
-Assura will still own repo-specific references, collection bindings, source
-locations, and adapter behavior.
+Risk: references and semantic linked-data concepts are weaker than LinkML, and
+the second-stage decorator sketch proved that `@id`, `@ref`, `@collection`,
+and `@adapter` need a JavaScript TypeSpec implementation package before the
+source compiles. Assura will still own repo-specific references, collection
+bindings, source locations, and adapter behavior.
 
 ### CUE
 
@@ -347,12 +461,17 @@ Addressed findings:
 | Requirement | Current evidence | Status |
 | --- | --- | --- |
 | Comparable TypeSpec, LinkML, CUE, and JSON Schema/JTD MVPs | Candidate source files under `tests/fixtures/artifact_modeling_options/models/` | Satisfied |
+| Larger LinkML and TypeSpec authoring paths | Second-stage profiles under `tests/fixtures/artifact_modeling_options/authoring_paths/models/` | Satisfied, with TypeSpec decorator implementation risk |
 | Same artifact classes, fixtures, references, and storage bindings | Shared bindings, pass/fail fixtures, and normalized runtime schemas under `tests/fixtures/artifact_modeling_options/` | Satisfied |
+| Frontmatter, JSON, YAML, and JSONL as storage adapters for one object model | `tests/artifact_authoring_paths_proof.rs` loads and validates all four representations | Satisfied |
+| References, optional refs, arrays, backrefs, and nested objects | Second-stage runtime schemas and fixtures include nested metadata/evidence and cross-record references | Satisfied |
 | Rust validation over generated or compiled artifacts | `tests/artifact_modeling_options_comparison.rs` validates normalized runtime artifacts and candidate generated/compiled artifacts | Satisfied |
-| Safe update or blocked write support | Native safe-update test updates Markdown frontmatter, preserves `id`, revalidates, writes, and rejects identity changes | Satisfied |
+| Rust validation with a real JSON Schema validator/cache | `jsonschema` validators compile once and validate 800 file-backed records in 79.845601ms | Satisfied for prototype scale |
+| Safe update or blocked write support | Native safe-update tests update Markdown frontmatter, YAML, JSON, and JSONL, preserve `id`, revalidate, write, and reject bad references; JSON and JSONL are canonical rewrites, not byte-preserving edits | Satisfied for prototype adapters |
+| Agent typed create/update contract | `agent_operations.schema.json` plus `agent_typed_operations_create_update_records_against_contract` validate operation payloads, create a task, append it to a goal, validate, and reject a missing ref | Satisfied for prototype operation contract |
 | Command sequence and generated artifacts | Generator commands and snapshots in `generated_outputs/` | Satisfied for authoring-time probes |
 | Editor, CLI, or generated-docs evidence | CLI command results, generated snapshots, and `generated_outputs/dx_evidence.md` with source links | Satisfied for comparison-level evidence |
-| Weighted score sheet and reviewer notes | Scoring table, Independent Review Notes, and preserved review record | Satisfied |
+| Meaningful feature comparison and reviewer notes | Feature scorecard, Independent Review Notes, and preserved review record | Satisfied |
 | Independent review per serious candidate | Review record maps TypeSpec, LinkML, JSON Schema/JTD, CUE, Zod/TypeBox, and Assura control to independent reviewer coverage | Satisfied |
 | Final recommendation with winner, fallback, rejected paths, next implementation goal | Recommendation and Next Implementation Goal sections | Satisfied, with explicit provisional language |
 

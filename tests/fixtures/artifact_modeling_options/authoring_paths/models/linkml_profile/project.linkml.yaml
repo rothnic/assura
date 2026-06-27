@@ -1,0 +1,186 @@
+id: https://assura.dev/profiles/project_artifacts
+name: assura_project_artifacts
+description: Assura artifact model written as a restricted LinkML profile.
+prefixes:
+  assura: https://assura.dev/schema/
+default_prefix: assura
+
+annotations:
+  assura_profile:
+    value: repo_content_objects_v1
+  assura_runtime_target:
+    value: json_schema
+
+classes:
+  ArtifactMetadata:
+    description: Shared metadata embedded in repository objects.
+    slots:
+      - summary
+      - risk
+      - tags
+
+  Evidence:
+    description: Evidence attached to a task or decision.
+    slots:
+      - kind
+      - value
+
+  Goal:
+    annotations:
+      collection_path:
+        value: docs/goals/*.md
+      adapter:
+        value: markdown_frontmatter
+    slots:
+      - id
+      - title
+      - status
+      - owners
+      - specs
+      - tasks
+      - decisions
+      - metadata
+
+  Spec:
+    annotations:
+      collection_path:
+        value: specs/*.json
+      adapter:
+        value: json_record
+    slots:
+      - id
+      - title
+      - status
+      - owner
+      - metadata
+      - decisions
+
+  Task:
+    annotations:
+      collection_path:
+        value: tasks/*.yaml
+      adapter:
+        value: yaml_record
+    slots:
+      - id
+      - title
+      - status
+      - goal
+      - spec
+      - assignee
+      - priority
+      - evidence
+      - metadata
+
+  Decision:
+    annotations:
+      collection_path:
+        value: decisions/*.jsonl
+      adapter:
+        value: jsonl_record
+    slots:
+      - id
+      - title
+      - status
+      - supersedes
+      - affects_specs
+      - affects_tasks
+      - metadata
+
+slots:
+  id:
+    identifier: true
+    range: string
+    required: true
+  title:
+    range: string
+    required: true
+  status:
+    range: ArtifactStatus
+    required: true
+  owners:
+    range: string
+    multivalued: true
+    required: true
+  owner:
+    range: string
+    required: true
+  specs:
+    range: Spec
+    multivalued: true
+    inlined: false
+  tasks:
+    range: Task
+    multivalued: true
+    inlined: false
+  decisions:
+    range: Decision
+    multivalued: true
+    inlined: false
+  metadata:
+    range: ArtifactMetadata
+    required: true
+    inlined: true
+  summary:
+    range: string
+    required: true
+  risk:
+    range: RiskLevel
+    required: true
+  tags:
+    range: string
+    multivalued: true
+  goal:
+    range: Goal
+    required: true
+    inlined: false
+  spec:
+    range: Spec
+    inlined: false
+  assignee:
+    range: string
+  priority:
+    range: Priority
+    required: true
+  evidence:
+    range: Evidence
+    multivalued: true
+    inlined: true
+  kind:
+    range: EvidenceKind
+    required: true
+  value:
+    range: string
+    required: true
+  supersedes:
+    range: Decision
+    inlined: false
+  affects_specs:
+    range: Spec
+    multivalued: true
+    inlined: false
+  affects_tasks:
+    range: Task
+    multivalued: true
+    inlined: false
+
+enums:
+  ArtifactStatus:
+    permissible_values:
+      active:
+      complete:
+      deprecated:
+  RiskLevel:
+    permissible_values:
+      low:
+      medium:
+      high:
+  Priority:
+    permissible_values:
+      p0:
+      p1:
+      p2:
+  EvidenceKind:
+    permissible_values:
+      file:
+      url:

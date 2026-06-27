@@ -1,0 +1,10 @@
+Command:
+uvx --from linkml linkml-validate tests/fixtures/artifact_modeling_options/authoring_paths/models/linkml_profile/project.linkml.yaml
+
+Result:
+No issues found
+
+Interpretation:
+The restricted LinkML profile is accepted by current LinkML tooling without
+adding Python packages to Assura. Runtime validation still uses generated JSON
+Schema inside Rust.

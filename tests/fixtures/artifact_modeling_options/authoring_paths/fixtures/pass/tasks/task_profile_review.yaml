@@ -1,0 +1,16 @@
+id: task_profile_review
+title: Compare LinkML profile and TypeSpec decorators
+status: active
+goal: goal_model_runtime
+spec: spec_artifact_runtime
+assignee: agent
+priority: p1
+evidence:
+  - kind: file
+    value: docs/analysis/2026-06-27-artifact-modeling-options-comparison.md
+metadata:
+  summary: Score authoring models against the same runtime interface.
+  risk: medium
+  tags:
+    - linkml
+    - typespec
