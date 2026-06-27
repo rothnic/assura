@@ -1,0 +1,81 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: artifacts
+$defs:
+  Goal:
+    $schema: https://json-schema.org/draft/2020-12/schema
+    $id: Goal.yaml
+    type: object
+    properties:
+      id:
+        type: string
+        minLength: 1
+        description: Stable artifact identifier.
+      title:
+        type: string
+        minLength: 1
+      status:
+        anyOf:
+          - type: string
+            const: active
+          - type: string
+            const: completed
+      owners:
+        type: array
+        items:
+          type: string
+        minItems: 1
+      specs:
+        type: array
+        items:
+          type: string
+        description: Referenced Spec identifiers.
+    required:
+      - id
+      - title
+      - status
+      - owners
+  Spec:
+    $schema: https://json-schema.org/draft/2020-12/schema
+    $id: Spec.yaml
+    type: object
+    properties:
+      id:
+        type: string
+        minLength: 1
+      title:
+        type: string
+        minLength: 1
+      status:
+        anyOf:
+          - type: string
+            const: draft
+          - type: string
+            const: active
+    required:
+      - id
+      - title
+      - status
+  Decision:
+    $schema: https://json-schema.org/draft/2020-12/schema
+    $id: Decision.yaml
+    type: object
+    properties:
+      id:
+        type: string
+        minLength: 1
+      title:
+        type: string
+        minLength: 1
+      status:
+        anyOf:
+          - type: string
+            const: active
+          - type: string
+            const: superseded
+      supersedes:
+        type: string
+        minLength: 1
+    required:
+      - id
+      - title
+      - status

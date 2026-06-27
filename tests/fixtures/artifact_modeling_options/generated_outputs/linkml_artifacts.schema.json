@@ -1,0 +1,96 @@
+{
+  "$defs": {
+    "Decision": {
+      "additionalProperties": false,
+      "description": "",
+      "properties": {
+        "id": {
+          "pattern": "^.+$"
+        },
+        "status": {
+          "$ref": "#/$defs/DecisionStatus"
+        },
+        "supersedes": {
+          "pattern": "^.+$"
+        },
+        "title": {
+          "pattern": "^.+$"
+        }
+      },
+      "required": ["id", "title", "status"],
+      "title": "Decision",
+      "type": "object"
+    },
+    "DecisionStatus": {
+      "description": "",
+      "enum": ["active", "superseded"],
+      "title": "DecisionStatus",
+      "type": "string"
+    },
+    "Goal": {
+      "additionalProperties": false,
+      "description": "Goal artifact stored as Markdown frontmatter or JSON.",
+      "properties": {
+        "id": {
+          "pattern": "^.+$"
+        },
+        "owners": {
+          "items": {},
+          "minItems": 1,
+          "type": "array"
+        },
+        "specs": {
+          "description": "Spec identifiers referenced by this goal.",
+          "items": {},
+          "type": ["array", "null"]
+        },
+        "status": {
+          "$ref": "#/$defs/GoalStatus"
+        },
+        "title": {
+          "pattern": "^.+$"
+        }
+      },
+      "required": ["id", "title", "status", "owners"],
+      "title": "Goal",
+      "type": "object"
+    },
+    "GoalStatus": {
+      "description": "",
+      "enum": ["active", "completed"],
+      "title": "GoalStatus",
+      "type": "string"
+    },
+    "Spec": {
+      "additionalProperties": false,
+      "description": "",
+      "properties": {
+        "id": {
+          "pattern": "^.+$"
+        },
+        "status": {
+          "$ref": "#/$defs/SpecStatus"
+        },
+        "title": {
+          "pattern": "^.+$"
+        }
+      },
+      "required": ["id", "title", "status"],
+      "title": "Spec",
+      "type": "object"
+    },
+    "SpecStatus": {
+      "description": "",
+      "enum": ["draft", "active"],
+      "title": "SpecStatus",
+      "type": "string"
+    }
+  },
+  "$id": "https://assura.dev/schemas/artifacts",
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "additionalProperties": true,
+  "metamodel_version": "1.11.0",
+  "title": "assura_artifacts",
+  "type": "object",
+  "version": null
+}

@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "not": {
+        "const": ""
+      }
+    },
+    "owners": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "prefixItems": [
+        {
+          "type": "string",
+          "not": {
+            "const": ""
+          }
+        }
+      ],
+      "minLength": 1
+    },
+    "specs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "status": {
+      "enum": ["active", "completed"]
+    },
+    "title": {
+      "type": "string",
+      "not": {
+        "const": ""
+      }
+    }
+  },
+  "required": ["id", "owners", "status", "title"]
+}

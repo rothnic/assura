@@ -1,0 +1,12 @@
+{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file": ".trellis/tasks/06-20-prototype-repo-native-content-object-model/prd.md", "reason": "Prototype requirements and MVP boundaries"}
+{"file": ".trellis/tasks/06-20-prototype-repo-native-content-object-model/research/solution-space.md", "reason": "Content repository and content collection solution-space framing"}
+{"file": ".trellis/tasks/06-20-prototype-repo-native-content-object-model/research/model-layer-options.md", "reason": "Model/schema layer options for prototype comparison"}
+{"file": ".trellis/tasks/06-20-prototype-repo-native-content-object-model/research/storage-index-options.md", "reason": "Storage and index backend options for prototype comparison"}
+{"file": ".trellis/tasks/06-20-prototype-repo-native-content-object-model/research/file-collection-options.md", "reason": "File collection and adapter options for prototype comparison"}
+{"file": ".trellis/spec/assura/config-notation.md", "reason": "Existing Assura notation and relationship source of truth"}
+{"file": "docs/analysis/2026-06-18-markdown-tooling-evaluation.md", "reason": "Current markdown/frontmatter tooling decision context"}
+{"file": ".trellis/tasks/06-20-prototype-repo-native-content-object-model/research/prototype-baseline-results.md", "reason": "Implemented file-native baseline and recommendation"}
+{"file": "docs/goals/assura-artifact-modeling-options-comparison.md", "reason": "Follow-on goal for evidence-based artifact modeling option comparison"}
+{"file": "docs/analysis/2026-06-27-artifact-modeling-options-comparison.md", "reason": "Artifact modeling option score sheet, generator evidence, safe-write proof, and reviewer findings"}
+{"file": "docs/analysis/2026-06-27-artifact-modeling-options-review-record.md", "reason": "Independent review record with candidate coverage, blocker findings, and resolutions"}

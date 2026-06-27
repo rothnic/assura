@@ -1,0 +1,28 @@
+models:
+  source: tests/fixtures/artifact_modeling_options/models/<candidate>
+  validation_artifact: tests/fixtures/artifact_modeling_options/schemas/<candidate>.artifacts.schema.json
+
+collections:
+  goal_docs:
+    class: Goal
+    path: docs/goals/*.md
+    adapter: markdown_frontmatter
+    data: frontmatter
+    body: markdown
+    id: id
+  spec_records:
+    class: Spec
+    path: specs/*.json
+    adapter: json_record
+    id: id
+  decision_records:
+    class: Decision
+    path: decisions/*.yaml
+    adapter: yaml_record
+    id: id
+
+relations:
+  goal_docs.specs:
+    target: spec_records
+  decision_records.supersedes:
+    target: decision_records
