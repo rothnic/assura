@@ -1,0 +1,7 @@
+{"file": "docs/goals/assura-repo-native-content-runtime-implementation.md", "reason": "Increment 9 acceptance criteria and full-goal completion boundaries"}
+{"file": "docs/content-runtime.md", "reason": "User-facing contract must stay aligned with performance/index conclusions"}
+{"file": "benches/README.md", "reason": "Expected performance-report command and evidence shape"}
+{"file": "benches/history/README.md", "reason": "Checked history/data validation expectations"}
+{"file": ".trellis/spec/assura/index.md", "reason": "Project validation and canonical source constraints"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Review data-flow and cache/source-of-truth boundaries"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Review whether new index/cache code duplicates existing patterns"}

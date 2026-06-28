@@ -458,6 +458,23 @@ experiment, not the public model source.
   `cargo xtask docs`, and
   `git diff --check`.
 
+### 2026-06-28 - Increment 8 merged and increment 9 started
+
+- PR #103, `[codex] Add content runtime inspection DX`, merged into `master`
+  at `35a5e9c`.
+- Hosted CI passed, including documentation, evidence, Rustfmt, Clippy, code
+  coverage, performance report, release smoke, Linux/macOS/Windows tests,
+  Windows installer smoke, installable adoption smokes, GitGuardian, and scope
+  checks.
+- Archived increment 8 task
+  `.trellis/tasks/archive/2026-06/06-28-content-runtime-dx-inspection`.
+- Started increment 9 on branch `codex/content-runtime-index-performance` with
+  task `.trellis/tasks/06-28-content-runtime-index-performance`.
+- Increment 9 scope: index and performance hardening, including benchmark
+  evidence against a no-content-runtime baseline and an internal-only
+  cache/index decision with Deeb compared or rejected if it remains a
+  candidate.
+
 ### 2026-06-28 - Increment 6 review hardening
 
 - Independent review agent `Banach` initially found two blockers: duplicate-ID
