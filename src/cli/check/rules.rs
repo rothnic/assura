@@ -271,6 +271,7 @@ pub(super) fn merge_markdown_bundle(
                 .clone()
                 .or_else(|| parent.required_sections.clone()),
             outline: child.outline.clone().or_else(|| parent.outline.clone()),
+            lint_trailing_spaces: child.lint_trailing_spaces.or(parent.lint_trailing_spaces),
         })),
     }
 }

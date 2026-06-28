@@ -102,6 +102,20 @@ commands:
       --output:
         aliases: ["-o"]
         takes_value: true
+  - name: "assura fix markdown"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --rule:
+        takes_value: true
+        values: ["trailing-spaces"]
   - name: "assura info"
     allow_positionals: true
     flags:

@@ -94,11 +94,16 @@ Supported markdown fields include:
 - `check_links`
 - `required_sections`
 - `outline`
+- `lint_trailing_spaces`
 
 Use `require_frontmatter` only for generic Markdown files that must contain a
 frontmatter block. Typed frontmatter fields belong to content runtime `models`,
 `collections`, and `relations`; `markdown.required_fields` is rejected so the
 same field policy is not declared twice.
+
+Set `lint_trailing_spaces: true` to report blank Markdown lines that contain
+spaces or tabs. `assura fix markdown` removes this safe whitespace class for
+configured Markdown scopes.
 
 `outline` uses nested YAML lists to describe required heading order. Prefix a
 heading with `?? ` to make it optional, and use object form when a required

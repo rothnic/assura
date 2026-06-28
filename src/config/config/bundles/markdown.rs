@@ -36,6 +36,10 @@ pub struct MarkdownBundle {
     /// Ordered Markdown heading outline.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub outline: Option<Vec<MarkdownOutlineEntry>>,
+
+    /// Whether to report blank Markdown lines that contain trailing spaces or tabs.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub lint_trailing_spaces: Option<bool>,
 }
 
 /// Markdown outline entry accepted by config shorthand and object notation.
@@ -117,6 +121,7 @@ impl MarkdownBundle {
             check_links: None,
             required_sections: None,
             outline: None,
+            lint_trailing_spaces: None,
         }
     }
 
@@ -155,6 +160,12 @@ impl MarkdownBundle {
     /// Set required outline.
     pub fn with_outline(mut self, outline: Vec<MarkdownOutlineEntry>) -> Self {
         self.outline = Some(outline);
+        self
+    }
+
+    /// Set blank-line trailing whitespace linting.
+    pub fn with_lint_trailing_spaces(mut self, lint: bool) -> Self {
+        self.lint_trailing_spaces = Some(lint);
         self
     }
 

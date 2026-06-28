@@ -33,6 +33,8 @@ mod ls_fast_target;
 mod manifest_semantics;
 #[cfg(feature = "yaml-config")]
 mod markdown;
+#[cfg(feature = "yaml-config")]
+mod markdown_fix;
 mod module_topology;
 mod patterns;
 #[cfg(feature = "yaml-config")]
@@ -67,6 +69,8 @@ pub use compiled_artifact::CompiledStructureConfigArtifact;
 use compiled_config::CompiledStructureConfig;
 use glob::Pattern;
 use ls_fast_plan::FastScope;
+#[cfg(feature = "yaml-config")]
+pub use markdown_fix::{run_markdown_fix, MarkdownFixReport, MarkdownFixRule};
 #[cfg(feature = "yaml-config")]
 pub use prepared::PreparedStructureCheck;
 #[cfg(feature = "yaml-config")]

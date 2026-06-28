@@ -435,6 +435,7 @@ impl From<MarkdownBundle> for PortableMarkdownBundle {
             check_links: bundle.check_links,
             required_sections: bundle.required_sections,
             outline: bundle.outline,
+            lint_trailing_spaces: bundle.lint_trailing_spaces,
         }
     }
 }
@@ -448,6 +449,7 @@ impl From<PortableMarkdownBundle> for MarkdownBundle {
             check_links: bundle.check_links,
             required_sections: bundle.required_sections,
             outline: bundle.outline,
+            lint_trailing_spaces: bundle.lint_trailing_spaces,
         }
     }
 }

@@ -400,6 +400,8 @@ extensions:
           status: experimental
         - surface: "command:assura migrate"
           status: supported
+        - surface: "command:assura fix markdown"
+          status: experimental
         - surface: "command:assura info"
           status: experimental
         - surface: "command:assura performance-report"

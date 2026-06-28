@@ -112,6 +112,12 @@ pub enum Commands {
         output: Option<PathBuf>,
     },
 
+    #[command(about = "Apply safe deterministic fixes")]
+    Fix {
+        #[command(subcommand)]
+        command: FixCommands,
+    },
+
     #[command(about = "Show Assura configuration information")]
     Info {
         #[arg(help = "Assura configuration path (defaults to discovered config)")]
@@ -226,6 +232,18 @@ pub enum HookCommands {
     },
 }
 
+#[derive(Subcommand, Debug)]
+pub enum FixCommands {
+    #[command(about = "Apply safe Markdown fixes for configured Markdown scopes")]
+    Markdown {
+        #[arg(help = "Path to fix (defaults to current directory)")]
+        path: Option<PathBuf>,
+
+        #[arg(long, value_enum, default_value = "trailing-spaces")]
+        rule: MarkdownFixRuleArg,
+    },
+}
+
 #[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]
 pub enum OutputFormat {
     Text,
@@ -249,6 +267,11 @@ pub enum CheckOutputFormat {
 pub enum AgentTarget {
     Generic,
     Codex,
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]
+pub enum MarkdownFixRuleArg {
+    TrailingSpaces,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]

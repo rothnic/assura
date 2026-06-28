@@ -250,6 +250,8 @@ Rules:
 
 - Supported generic Markdown presence field:
   `markdown.require_frontmatter: bool`.
+- Supported first-slice generic Markdown lint field:
+  `markdown.lint_trailing_spaces: bool`.
 - Unsupported legacy typed-field field:
   `markdown.required_fields: string[]`.
 - Typed frontmatter fields use top-level `models`, `collections`, and
@@ -263,6 +265,10 @@ Rules:
   guidance to content runtime models and collections.
 - Structure Markdown validation must not emit `markdown_frontmatter_field` for
   typed fields.
+- `markdown.lint_trailing_spaces: true` reports blank Markdown lines that
+  contain spaces or tabs as `markdown_trailing_spaces`. The first safe fix
+  operation removes only this blank-line whitespace class and must not rewrite
+  content-line hard breaks.
 - Markdown heading depth, required sections, and `markdown.outline` remain
   Assura-owned Markdown structure behavior.
 
@@ -273,6 +279,7 @@ Rules:
 | Markdown file lacks frontmatter and `require_frontmatter: true` | `markdown_frontmatter` violation |
 | Config contains `markdown.required_fields` | Config error naming `models` and `collections` |
 | Markdown frontmatter record lacks a model-required field | `content_runtime:invalid_object_shape` or model-field finding |
+| Blank Markdown line has spaces or tabs and `lint_trailing_spaces: true` | `markdown_trailing_spaces` violation |
 | Markdown headings do not satisfy `outline` | `markdown_outline` violation |
 
 ### 5. Good/Base/Bad Cases
@@ -281,6 +288,8 @@ Rules:
   model schema and validates through `collections.goals`.
 - Base: an ordinary Markdown style policy uses `require_frontmatter: true`
   without typed field checks.
+- Good: a Markdown style policy opts into `lint_trailing_spaces: true` and
+  `assura fix markdown` removes spaces from otherwise blank lines only.
 - Bad: a structure Markdown bundle declares `required_fields: [title]` and
   duplicates the content model.
 
@@ -292,6 +301,8 @@ Rules:
   frontmatter field is reported through modeled collection validation.
 - Markdown regression proving generic `require_frontmatter` still reports
   missing frontmatter.
+- Markdown lint/fix regression proving `lint_trailing_spaces` reports and fixes
+  blank-line whitespace while preserving frontmatter and body content.
 - Outline/heading tests proving Markdown structure behavior remains unchanged.
 
 ### 7. Wrong vs Correct

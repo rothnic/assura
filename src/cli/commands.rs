@@ -3,9 +3,13 @@
 //! Provides command-line interface for validation and migration.
 
 use crate::cli::args::{AgentTarget, CheckOutputFormat, OutputFormat};
-use crate::cli::check::{run_structure_check_with_target_mode, CheckError, CheckTargetMode};
+use crate::cli::check::{
+    run_markdown_fix, run_structure_check_with_target_mode, CheckError, CheckTargetMode,
+    MarkdownFixRule,
+};
 use crate::cli::check_report::format_structure_report;
 use crate::cli::init_support::{resolve_project_root, starter_config};
+use crate::cli::MarkdownFixRuleArg;
 use crate::cli::{CheckCommandOptions, ConfigDiscovery, ExitCode};
 use crate::config::config::{Config, DirectoryNode};
 use crate::config::loader::ConfigLoader;
@@ -194,6 +198,31 @@ pub async fn migrate_command(input: Vec<PathBuf>, output: Option<PathBuf>) -> Ex
         Err(error) => {
             eprintln!("Error: {}", error);
             ExitCode::RuntimeError
+        }
+    }
+}
+
+/// Apply safe Markdown fixes.
+pub async fn fix_markdown_command(
+    path: Option<PathBuf>,
+    config: Option<PathBuf>,
+    rule: MarkdownFixRuleArg,
+) -> ExitCode {
+    let rule = match rule {
+        MarkdownFixRuleArg::TrailingSpaces => MarkdownFixRule::TrailingSpaces,
+    };
+
+    match run_markdown_fix(path, config, rule) {
+        Ok(report) => {
+            println!(
+                "Checked {} Markdown file(s); changed {} file(s); applied {} fix(es).",
+                report.files_checked, report.files_changed, report.fixes_applied
+            );
+            ExitCode::Success
+        }
+        Err(error) => {
+            eprintln!("Error: {}", error);
+            exit_code_for_check_error(&error)
         }
     }
 }

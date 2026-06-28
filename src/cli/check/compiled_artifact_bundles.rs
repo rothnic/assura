@@ -15,6 +15,8 @@ pub(super) struct PortableMarkdownBundle {
     pub(super) required_sections: Option<Vec<String>>,
     /// Structured Markdown outline policy.
     pub(super) outline: Option<Vec<MarkdownOutlineEntry>>,
+    /// Whether to lint blank-line trailing spaces.
+    pub(super) lint_trailing_spaces: Option<bool>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
