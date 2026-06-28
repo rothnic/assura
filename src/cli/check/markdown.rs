@@ -123,7 +123,7 @@ impl StructureChecker {
                 rel.to_path_buf(),
                 "markdown_trailing_spaces",
                 format!(
-                    "Markdown file '{}' has {} trailing whitespace character(s) on blank line {}",
+                    "Markdown file '{}' has {} trailing whitespace character(s) on blank line {}, column 1",
                     display_rel(rel),
                     violation.trailing_count,
                     violation.line_number

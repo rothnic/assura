@@ -1,5 +1,7 @@
 use serde_json::Value;
+use std::fs;
 use std::process::{Command, Output};
+use tempfile::TempDir;
 
 const FIXTURE_ROOT: &str = "tests/fixtures/content_runtime";
 
@@ -37,6 +39,44 @@ fn stderr(output: &Output) -> String {
 
 fn json_path(value: &Value) -> String {
     value.as_str().unwrap().replace('\\', "/")
+}
+
+fn copy_missing_model_frontmatter_fixture_with_markdown_lint() -> TempDir {
+    let source = format!("{FIXTURE_ROOT}/missing_model_frontmatter_field");
+    let project = TempDir::new().unwrap();
+    let root = project.path();
+
+    for dir in [".assura", "docs/goals", "schemas", "specs"] {
+        fs::create_dir_all(root.join(dir)).unwrap();
+    }
+
+    fs::copy(
+        format!("{source}/schemas/content_runtime.schema.json"),
+        root.join("schemas/content_runtime.schema.json"),
+    )
+    .unwrap();
+    fs::copy(
+        format!("{source}/specs/spec_portable_structure.json"),
+        root.join("specs/spec_portable_structure.json"),
+    )
+    .unwrap();
+
+    let config = fs::read_to_string(format!("{source}/.assura/config.yml")).unwrap();
+    let config = config.replace(
+        "structure:\n  ./:\n    required: false\n",
+        "structure:\n  ./:\n    required: false\n    children:\n      docs/:\n        children:\n          goals/:\n            markdown:\n              lint_trailing_spaces: true\n",
+    );
+    fs::write(root.join(".assura/config.yml"), config).unwrap();
+
+    let markdown =
+        fs::read_to_string(format!("{source}/docs/goals/goal_portable_structure.md")).unwrap();
+    let markdown = markdown.replace(
+        "---\n# Portable Structure Policy",
+        "---\n   \n# Portable Structure Policy",
+    );
+    fs::write(root.join("docs/goals/goal_portable_structure.md"), markdown).unwrap();
+
+    project
 }
 
 #[test]
@@ -175,6 +215,37 @@ fn check_reports_content_model_construction_errors() {
         .as_str()
         .unwrap()
         .contains("models.validation_artifact"));
+}
+
+#[test]
+fn markdown_lint_coexists_with_model_owned_frontmatter_validation() {
+    let project = copy_missing_model_frontmatter_fixture_with_markdown_lint();
+    let output = check_path(project.path().to_str().unwrap(), &["--format", "json"]);
+
+    assert_eq!(
+        output.status.code(),
+        Some(1),
+        "stdout:\n{}\nstderr:\n{}",
+        stdout(&output),
+        stderr(&output)
+    );
+    let report: Value = serde_json::from_slice(&output.stdout).unwrap();
+    let violations = report["violations"].as_array().unwrap();
+
+    assert!(violations.iter().any(|violation| {
+        violation["rule"] == "content_runtime:invalid_object_shape"
+            && json_path(&violation["path"]) == "docs/goals/goal_portable_structure.md"
+            && violation["message"]
+                .as_str()
+                .is_some_and(|message| message.contains("field=title"))
+    }));
+    assert!(violations.iter().any(|violation| {
+        violation["rule"] == "markdown_trailing_spaces"
+            && json_path(&violation["path"]) == "docs/goals/goal_portable_structure.md"
+    }));
+    assert!(!violations
+        .iter()
+        .any(|violation| violation["rule"] == "markdown_frontmatter_field"));
 }
 
 #[test]

@@ -162,3 +162,34 @@ Implementation direction for this successor goal:
 - Revisit `rumdl`/`mkdlint` integration when Assura either raises MSRV or
   defines an external-binary packaging contract that does not depend on the
   user's repo installing JavaScript or arbitrary commands.
+
+### First-Slice Overhead Evidence
+
+Release-mode timing used a temporary copy of this repository's `docs/` corpus
+with 139 Markdown files. Before timing, `assura fix markdown` cleaned the copied
+corpus so JSON diagnostic rendering would not dominate the lint-on run; the
+cleaning step changed 14 files and applied 503 blank-line whitespace fixes in
+the temporary copy only.
+
+The timing compared two otherwise identical configs:
+
+- `markdown.lint_trailing_spaces: false`
+- `markdown.lint_trailing_spaces: true`
+
+Both used `target/release/assura check --format json <fixture>`, measured with
+`hyperfine 1.20.0`, 5 warmups, and 30 runs.
+
+| Scenario | Mean | Median | Range | Interpretation |
+| --- | ---: | ---: | ---: | --- |
+| Markdown scope configured, trailing-space lint off | 10.1 ms ± 1.2 ms | 10.06 ms | 7.9-13.2 ms | Baseline configured Markdown traversal over copied docs. |
+| Markdown scope configured, trailing-space lint on | 12.8 ms ± 2.2 ms | 11.97 ms | 10.6-19.2 ms | Adds about 2.7 ms mean over 139 Markdown files. |
+
+Evidence command shape:
+
+```bash
+cargo build --release --quiet
+target/release/assura fix markdown "$bench_root/on"
+hyperfine --warmup 5 --runs 30 \
+  "target/release/assura check --format json $bench_root/off" \
+  "target/release/assura check --format json $bench_root/on"
+```
