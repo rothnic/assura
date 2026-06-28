@@ -1,0 +1,41 @@
+{
+  "selected_profile": "linkml_profile",
+  "fallback_profile": "typespec_decorators",
+  "runtime_artifact": "linkml_profile.runtime.schema.json",
+  "source_model": "../models/linkml_profile/project.linkml.yaml",
+  "runtime": "json_schema",
+  "normalizer": "assura_content_runtime_profile_v1",
+  "normalizer_version": 1,
+  "artifact_status": "checked_normalized_snapshot",
+  "compiler_command_status": "pending_assura_command",
+  "hash_normalization": "crlf_to_lf",
+  "runtime_hot_path_dependencies": [],
+  "reproducibility": {
+    "source_model": "../models/linkml_profile/project.linkml.yaml",
+    "source_sha256": "f44741d46e01f7a8722dbcbedafc5b9143afdfc19f8a4692b66a7a293b7427a3",
+    "runtime_artifact": "linkml_profile.runtime.schema.json",
+    "runtime_artifact_sha256": "6e8352d7feacbd265af577504b34f212d12fd0c7d32aa5c6cebc1acaca3312bd",
+    "authoring_validation": {
+      "command": "uvx --from linkml linkml-validate tests/fixtures/artifact_modeling_options/authoring_paths/models/linkml_profile/project.linkml.yaml",
+      "result_file": "linkml_profile_validate_result.txt",
+      "result_sha256": "926727230277f5dcc4c6a2f6b40dbcbf2b10e9083193921e9d07ee1ead42f941",
+      "expected_result": "No issues found"
+    }
+  },
+  "deferred_profiles": [
+    {
+      "profile": "typespec_decorators",
+      "reason": "Readable source shape, but custom decorators need an Assura TypeSpec package before compilation is production-ready."
+    }
+  ],
+  "rejected_for_runtime": [
+    {
+      "profile": "cue",
+      "reason": "Useful constraint language, but CUE/Go must remain an authoring-time generator input only."
+    },
+    {
+      "profile": "assura_dsl",
+      "reason": "A standalone Assura DSL would duplicate schema ecosystem work before LinkML and TypeSpec are proven inadequate."
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+{"file": "docs/goals/assura-repo-native-content-runtime-implementation.md", "reason": "Verify increment 7 proof/merge gate and non-goal boundaries."}
+{"file": ".trellis/tasks/06-28-06-28-content-runtime-authoring-decision/prd.md", "reason": "Task-specific authoring decision requirements and validation commands."}
+{"file": "docs/analysis/2026-06-27-artifact-modeling-options-comparison.md", "reason": "Check new decision against existing comparison evidence and avoid duplicating stale claims."}
+{"file": "tests/artifact_authoring_paths_proof.rs", "reason": "Regression coverage for generated/runtime artifact equivalence and no runtime subprocess dependency."}
+{"file": "tests/content_runtime_validation.rs", "reason": "Regression coverage that runtime validation remains Rust-native and schema-artifact based."}

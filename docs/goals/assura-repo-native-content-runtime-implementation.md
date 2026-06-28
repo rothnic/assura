@@ -340,6 +340,65 @@ experiment, not the public model source.
   `git diff --check`.
 - Independent review and PR publication remain pending.
 
+### 2026-06-28 - Increment 6 merged and increment 7 started
+
+- PR #101, `[codex] Complete content reference graph validation`, merged into
+  `master` at `34f97f0`.
+- Hosted CI passed, including documentation, evidence, Rustfmt, Clippy,
+  Linux/macOS/Windows tests, release smoke, Windows installer smoke,
+  installable adoption smokes, performance report, code coverage, and security
+  scope checks.
+- Archived increment 6 task
+  `.trellis/tasks/archive/2026-06/06-27-06-28-content-runtime-reference-completeness`.
+- Started increment 7 on branch
+  `codex/content-runtime-authoring-decision` with task
+  `.trellis/tasks/06-28-06-28-content-runtime-authoring-decision`.
+- Increment 7 scope: authoring toolchain decision and compile path into
+  checked-in runtime schema artifacts, comparing LinkML, TypeSpec, CUE, and a
+  minimal Assura-owned profile without adding authoring tools to runtime
+  validation.
+
+### 2026-06-28 - Increment 7 local implementation
+
+- Added
+  `docs/analysis/2026-06-28-content-runtime-authoring-decision.md`, selecting a
+  restricted LinkML profile as the first authoring path, TypeSpec decorators as
+  the fallback, and rejecting CUE plus a standalone Assura DSL for the current
+  production path.
+- Added checked compile evidence at
+  `tests/fixtures/artifact_modeling_options/authoring_paths/generated_outputs/selected_authoring_profile.compile.json`,
+  pointing to the selected runtime artifact, recording no runtime hot-path
+  authoring dependencies, and hashing the checked source model, runtime
+  artifact, and LinkML validation result.
+- Extended `tests/artifact_authoring_paths_proof.rs` so the selected artifact
+  validates the same runtime contract as the TypeSpec fallback, verifies the
+  compile manifest's reproducibility fields, and still validates records plus
+  references through Assura-owned logic.
+- Focused validation passed:
+  `cargo test --test artifact_authoring_paths_proof --quiet`,
+  `cargo test --test content_runtime_validation --quiet`,
+  `cargo run --quiet -- check --format json .`, and
+  `git diff --check`.
+- Independent review agent `Archimedes` initially found one blocker: the first
+  manifest proved runtime-boundary intent, but not source-to-artifact
+  reproducibility.
+- Addressed the blocker by adding manifest hashes for the checked LinkML
+  source, selected runtime artifact, and LinkML validation result; the proof
+  test now verifies those fields against checked files.
+- `Archimedes` re-checked the blocker and reported no remaining blocker, with
+  the residual non-blocking caveat that the production compiler command remains
+  future work.
+- PR-boundary validation passed:
+  `cargo fmt --check`,
+  `cargo test --test artifact_authoring_paths_proof --quiet`,
+  `cargo test --test content_runtime_validation --quiet`,
+  `cargo run --quiet -- check --format json .`,
+  `cargo clippy --workspace --all-targets --all-features -- -D warnings`,
+  `cargo test --workspace --all-targets --all-features`,
+  `cargo xtask evidence`,
+  `cargo xtask docs`, and
+  `git diff --check`.
+
 ### 2026-06-28 - Increment 6 review hardening
 
 - Independent review agent `Banach` initially found two blockers: duplicate-ID

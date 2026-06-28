@@ -100,6 +100,9 @@ language used by the project.
 
 ## Current Limits
 
-Authoring-tool generation, indexing, performance hardening, and
+The authoring decision is recorded in
+`docs/analysis/2026-06-28-content-runtime-authoring-decision.md`: LinkML
+profile first, TypeSpec fallback, checked JSON Schema-compatible runtime
+artifacts in the validation hot path. Indexing, performance hardening, and
 release-readiness docs are tracked in
 `docs/goals/assura-repo-native-content-runtime-implementation.md`.
