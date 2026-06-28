@@ -1,0 +1,5 @@
+id: decision-runtime-shape
+title: Runtime shape decision
+status: accepted
+events:
+  - event-runtime-proof

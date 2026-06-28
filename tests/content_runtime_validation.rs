@@ -149,15 +149,21 @@ fn rejects_malformed_or_unknown_relation_config() {
     config.relations.insert(
         "goal.specs".to_string(),
         ContentRelationConfig {
-            target: "specs".to_string(),
+            target: Some("specs".to_string()),
+            targets: Vec::new(),
             many: true,
+            required: false,
+            acyclic: false,
         },
     );
     config.relations.insert(
         "goals.unknown_target".to_string(),
         ContentRelationConfig {
-            target: "specz".to_string(),
+            target: Some("specz".to_string()),
+            targets: Vec::new(),
             many: true,
+            required: false,
+            acyclic: false,
         },
     );
 

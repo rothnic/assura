@@ -40,9 +40,20 @@ pub struct ContentCollectionConfig {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub struct ContentRelationConfig {
-    /// Target collection id.
-    pub target: String,
+    /// Target collection id for ordinary single-target references.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub target: Option<String>,
+    /// Explicit candidate target collections for references that may point at
+    /// more than one collection.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub targets: Vec<String>,
     /// Whether this relation stores multiple target IDs.
     #[serde(default)]
     pub many: bool,
+    /// Whether the source field must be present and non-empty.
+    #[serde(default)]
+    pub required: bool,
+    /// Whether this relation must not participate in a directed cycle.
+    #[serde(default)]
+    pub acyclic: bool,
 }

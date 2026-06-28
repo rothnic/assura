@@ -81,16 +81,20 @@ impl FieldSpec {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ReferenceSpec {
     pub field: String,
-    pub target_collection: String,
+    pub target_collections: Vec<String>,
     pub many: bool,
+    pub required: bool,
+    pub acyclic: bool,
 }
 
 impl ReferenceSpec {
     pub fn many(field: impl Into<String>, target_collection: impl Into<String>) -> Self {
         Self {
             field: field.into(),
-            target_collection: target_collection.into(),
+            target_collections: vec![target_collection.into()],
             many: true,
+            required: false,
+            acyclic: false,
         }
     }
 }
@@ -245,8 +249,9 @@ pub struct MarkdownHeading {
 pub struct RepoEdge {
     pub source: ObjectKey,
     pub field: String,
-    pub target_collection: String,
+    pub target_collections: Vec<String>,
     pub target_id: String,
+    pub acyclic: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -380,13 +385,43 @@ fn references_by_collection(
             ));
             continue;
         }
-        if !config.collections.contains_key(&relation.target) {
+        if relation.target.is_some() && !relation.targets.is_empty() {
             findings.push(ContentFinding::new(
-                "unknown_content_relation_target",
+                "invalid_content_relation",
+                None,
+                format!("Content relation '{key}' must use either target or targets, not both"),
+            ));
+            continue;
+        }
+        let mut target_collections = Vec::new();
+        if let Some(target) = relation.target.as_ref() {
+            target_collections.push(target.clone());
+        }
+        target_collections.extend(relation.targets.iter().cloned());
+        target_collections.sort();
+        target_collections.dedup();
+        let mut relation_has_error = false;
+        for target in &target_collections {
+            if !config.collections.contains_key(target) {
+                relation_has_error = true;
+                findings.push(ContentFinding::new(
+                    "unknown_content_relation_target",
+                    None,
+                    format!(
+                        "Content relation '{key}' references unknown target collection '{target}'"
+                    ),
+                ));
+            }
+        }
+        if relation_has_error {
+            continue;
+        }
+        if target_collections.is_empty() && relation.acyclic {
+            findings.push(ContentFinding::new(
+                "invalid_content_relation",
                 None,
                 format!(
-                    "Content relation '{key}' references unknown target collection '{}'",
-                    relation.target
+                    "Content relation '{key}' must declare target or targets when acyclic is true"
                 ),
             ));
             continue;
@@ -396,8 +431,10 @@ fn references_by_collection(
             .or_default()
             .push(ReferenceSpec {
                 field: field.to_string(),
-                target_collection: relation.target.clone(),
+                target_collections,
                 many: relation.many,
+                required: relation.required,
+                acyclic: relation.acyclic,
             });
     }
     for relations in references.values_mut() {

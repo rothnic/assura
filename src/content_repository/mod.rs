@@ -23,12 +23,12 @@ pub use operations::{
     UpdateRecordResult,
 };
 use serde_json::json;
-use std::collections::HashMap;
+use std::collections::{btree_map::Entry, HashMap};
 use std::fs;
 use std::path::Path;
 use validation::{
-    edge_from, invalid_reference_scalar, validate_object_data, validate_placement,
-    validate_references,
+    edge_from, invalid_reference_scalar, missing_required_reference, validate_object_data,
+    validate_placement, validate_references,
 };
 
 /// File-native content repository runner.
@@ -93,6 +93,7 @@ impl ContentRepository {
             }
         };
 
+        let mut matched_entries = Vec::new();
         for entry in walkdir::WalkDir::new(root)
             .into_iter()
             .filter_entry(|entry| !is_ignored_dir(entry.path()))
@@ -106,20 +107,24 @@ impl ContentRepository {
             if !pattern.matches(&rel_key) {
                 continue;
             }
+            matched_entries.push((rel_key, rel_path.to_path_buf(), entry.path().to_path_buf()));
+        }
+        matched_entries.sort_by(|left, right| left.0.cmp(&right.0));
 
-            let content = match fs::read_to_string(entry.path()) {
+        for (_, rel_path, absolute_path) in matched_entries {
+            let content = match fs::read_to_string(&absolute_path) {
                 Ok(content) => content,
                 Err(error) => {
                     findings.push(ContentFinding::new(
                         "read_error",
-                        Some(rel_path.to_path_buf()),
+                        Some(rel_path.clone()),
                         format!("Failed to read '{}': {error}", rel_path.display()),
                     ));
                     continue;
                 }
             };
 
-            match parse_objects(collection, rel_path, &content) {
+            match parse_objects(collection, &rel_path, &content) {
                 Ok(objects) => {
                     for object in objects {
                         validate_placement(&self.model, &object, findings);
@@ -131,15 +136,25 @@ impl ContentRepository {
                         );
 
                         let key = (object.collection.clone(), object.id.clone());
-                        if snapshot.objects.insert(key.clone(), object).is_some() {
-                            findings.push(ContentFinding::new(
-                                "duplicate_object_id",
-                                Some(rel_path.to_path_buf()),
-                                format!(
-                                    "Collection '{}' contains duplicate object id '{}'",
-                                    key.0, key.1
-                                ),
-                            ));
+                        match snapshot.objects.entry(key) {
+                            Entry::Occupied(entry) => {
+                                findings.push(
+                                    ContentFinding::new(
+                                        "duplicate_object_id",
+                                        Some(rel_path.to_path_buf()),
+                                        format!(
+                                            "Collection '{}' contains duplicate object id '{}'",
+                                            entry.key().0,
+                                            entry.key().1
+                                        ),
+                                    )
+                                    .with_object_type(object.object_type.clone())
+                                    .with_field(collection.id_field.clone()),
+                                );
+                            }
+                            Entry::Vacant(entry) => {
+                                entry.insert(object);
+                            }
                         }
                     }
                 }
@@ -173,6 +188,9 @@ pub(super) fn collect_object_edges(
 ) {
     for reference in &collection.references {
         let Some(value) = object.data.get(&reference.field) else {
+            if reference.required {
+                findings.push(missing_required_reference(object, reference));
+            }
             continue;
         };
         if reference.many {
@@ -190,6 +208,9 @@ pub(super) fn collect_object_edges(
                 );
                 continue;
             };
+            if reference.required && items.is_empty() {
+                findings.push(missing_required_reference(object, reference));
+            }
             for item in items {
                 if let Some(target_id) = item.as_str() {
                     edges.push(edge_from(object, reference, target_id));
@@ -198,6 +219,12 @@ pub(super) fn collect_object_edges(
                 }
             }
         } else if let Some(target_id) = value.as_str() {
+            if target_id.is_empty() {
+                if reference.required {
+                    findings.push(missing_required_reference(object, reference));
+                }
+                continue;
+            }
             edges.push(edge_from(object, reference, target_id));
         } else {
             findings.push(invalid_reference_scalar(object, reference));
