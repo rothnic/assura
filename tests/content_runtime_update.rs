@@ -229,6 +229,13 @@ fn rejects_path_mismatch_before_writing() {
     assert_eq!(tree_snapshot(repo.path()), before);
 }
 
+#[test]
+fn markdown_body_helper_accepts_crlf_frontmatter_delimiters() {
+    let content = "---\r\nid: example\r\n---\r\n# Body\r\n";
+
+    assert_eq!(markdown_body(content), b"# Body\r\n");
+}
+
 #[cfg(unix)]
 #[test]
 fn failed_atomic_update_leaves_original_content() {
@@ -343,10 +350,20 @@ fn has_code(findings: &[ContentFinding], code: &str) -> bool {
 }
 
 fn markdown_body(content: &str) -> &[u8] {
-    let (_, body) = content
-        .split_once("\n---\n")
+    let rest = content
+        .strip_prefix("---")
+        .expect("markdown fixture starts with frontmatter delimiter");
+    let rest = rest
+        .strip_prefix('\n')
+        .or_else(|| rest.strip_prefix("\r\n"))
+        .unwrap_or(rest);
+    let (_, body) = rest
+        .split_once("\n---")
         .expect("markdown fixture has closing frontmatter delimiter");
-    body.as_bytes()
+    body.strip_prefix('\n')
+        .or_else(|| body.strip_prefix("\r\n"))
+        .unwrap_or(body)
+        .as_bytes()
 }
 
 #[derive(Debug, PartialEq, Eq)]

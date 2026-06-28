@@ -17,3 +17,4 @@
 {"file":"Cargo.toml","reason":"Post-review clippy proof passed: cargo clippy --workspace --all-targets --all-features -- -D warnings."}
 {"file":"xtask/src/main.rs","reason":"Post-review evidence and docs gates passed: cargo xtask evidence and cargo xtask docs."}
 {"file":"Cargo.toml","reason":"Post-review full workspace proof passed: cargo test --workspace --all-targets --all-features."}
+{"file":"tests/content_runtime_update.rs","reason":"Hosted Windows failure diagnosed as CRLF-only test helper issue; local fix proof passed: cargo fmt --check, cargo test --test content_runtime_update --quiet, cargo run --quiet -- check --format json ., cargo clippy --workspace --all-targets --all-features -- -D warnings, and git diff --check."}

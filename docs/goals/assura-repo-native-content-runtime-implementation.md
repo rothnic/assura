@@ -420,4 +420,19 @@ experiment, not the public model source.
   `cargo xtask docs`,
   `cargo test --workspace --all-targets --all-features`, and
   `git diff --check`.
-- PR publication remains pending.
+- Opened PR #99, `[codex] Add content runtime update operation`.
+
+### 2026-06-28 - Increment 4 Windows CI fix
+
+- Hosted Windows test suite found a test helper bug in
+  `tests/content_runtime_update.rs`: Markdown body comparison assumed LF
+  frontmatter delimiters while Windows checkout can provide CRLF fixture
+  bytes.
+- Fixed the helper to accept LF and CRLF delimiters and added a direct CRLF
+  regression.
+- Local proof after the fix passed:
+  `cargo fmt --check`,
+  `cargo test --test content_runtime_update --quiet`,
+  `cargo run --quiet -- check --format json .`,
+  `cargo clippy --workspace --all-targets --all-features -- -D warnings`, and
+  `git diff --check`.

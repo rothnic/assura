@@ -7,3 +7,4 @@
 {"file":"src/content_repository/mutation.rs","reason":"Implemented update_record with in-memory merge, identity checks, shape/reference validation, dry-run output, and atomic replacement writes."}
 {"file":"tests/content_runtime_update.rs","reason":"Added update proof coverage for Markdown body preservation, JSON update, dry-run, invalid shape/reference, missing record, identity rejection, and failed-write content preservation."}
 {"file":"tests/content_runtime_update.rs","reason":"Addressed review hardening by asserting exact deterministic dry-run bytes, repeat dry-run equality, and explicit path-mismatch rejection before writing."}
+{"file":"tests/content_runtime_update.rs","reason":"Fixed hosted Windows CRLF fixture handling in markdown body comparison and added a helper regression."}
