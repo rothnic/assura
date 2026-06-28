@@ -346,6 +346,55 @@ experiment, not the public model source.
   `git diff --check`.
 - Independent review and PR publication remain pending.
 
+### 2026-06-28 - Increment 9 merged and increment 10 started
+
+- PR #104, `[codex] Add content runtime index performance evidence`, merged
+  into `master` at `a29d178`.
+- Hosted CI passed, including documentation, evidence, Rustfmt, Clippy, code
+  coverage, performance report, release smoke, Linux/macOS/Windows tests,
+  Windows installer smoke, installable adoption smokes, GitGuardian, and scope
+  checks.
+- Archived increment 9 task
+  `.trellis/tasks/archive/2026-06/06-28-content-runtime-index-performance`.
+- Started increment 10 on branch `codex/content-runtime-docs-examples` with
+  task `.trellis/tasks/06-28-content-runtime-docs-examples`.
+- Increment 10 scope: user-facing docs, website examples, generated example
+  links, and fixture-backed proof for Markdown frontmatter, JSON, YAML, JSONL,
+  references, and safe writes.
+
+### 2026-06-28 - Increment 10 local implementation
+
+- Expanded `docs/content-runtime.md` with a fixture/example matrix, public
+  validation commands, Assura-owned agent create/update operation examples, and
+  a handoff checklist for an independent implementation agent.
+- Added `website/src/content/docs/examples/content-runtime.md`, which publishes
+  the portable content runtime example through the website docs and links the
+  checked repository proofs.
+- Updated `docs/content-runtime-inspection.md` to point implementers back to
+  the broader YAML, JSONL, create/update, and Markdown body preservation
+  checklist.
+- Extended `tests/content_runtime_dx_docs.rs` so documented website, fixture,
+  generated-artifact, write-test, and validation-command references stay real.
+- Focused validation passed:
+  `cargo fmt --check`,
+  `cargo test --test content_runtime_dx_docs --quiet`,
+  `cargo test --test content_runtime_validation --test content_runtime_adapters --test content_runtime_create --test content_runtime_update --test content_runtime_references --quiet`,
+  `cargo run --quiet -- check --format json .`,
+  `cargo xtask evidence`,
+  `cargo xtask docs`, and
+  `git diff --check`.
+- Independent review agent `McClintock` found one discoverability gap: the
+  website content-runtime page existed but was not linked from the explicit
+  Starlight examples sidebar.
+- Addressed the review finding by adding the `Content Runtime` sidebar entry in
+  `website/astro.config.mjs` and extending `tests/content_runtime_dx_docs.rs`
+  to assert the sidebar slug remains linked.
+- Focused validation after the review fix passed:
+  `cargo fmt --check`,
+  `cargo test --test content_runtime_dx_docs --quiet`,
+  `cargo xtask docs`, and
+  `git diff --check`.
+
 ### 2026-06-28 - Increment 6 merged and increment 7 started
 
 - PR #101, `[codex] Complete content reference graph validation`, merged into

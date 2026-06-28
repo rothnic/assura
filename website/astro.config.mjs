@@ -64,6 +64,7 @@ export default defineConfig({
 						{ label: 'CI/CD Integration', slug: 'examples/ci-cd-integration' },
 						{ label: 'Git Hooks Setup', slug: 'examples/git-hooks-setup' },
 						{ label: 'Multi-Agent Configuration', slug: 'examples/multi-agent-config' },
+						{ label: 'Content Runtime', slug: 'examples/content-runtime' },
 					],
 				},
 			],
