@@ -4,8 +4,8 @@ use super::compiled_config::CompiledStructureConfig;
 use super::compiled_fingerprint::SourceConfigFingerprint;
 use super::compiled_plan_artifact::PortableCompiledPlan;
 use crate::config::config::{
-    Config, DirectoryBundle, DirectoryNode, ExistsValidation, FileBundle, MarkdownBundle,
-    QualityConfig,
+    Config, ContentCollectionConfig, ContentModelConfig, ContentRelationConfig, DirectoryBundle,
+    DirectoryNode, ExistsValidation, FileBundle, MarkdownBundle, QualityConfig,
 };
 use crate::config::ls_compat::LsLintCompatibility;
 use crate::stable_hash::{stable_hash, stable_hash_const};
@@ -218,12 +218,16 @@ struct PortableConfig {
     ls: Option<LsLintCompatibility>,
     extensions: Option<PortableExtensionConfig>,
     quality: Option<QualityConfig>,
+    models: Option<ContentModelConfig>,
+    collections: HashMap<String, ContentCollectionConfig>,
+    relations: HashMap<String, ContentRelationConfig>,
     exclude: Vec<String>,
 }
 
 include!("compiled_artifact_extensions.rs");
 include!("compiled_artifact_module_topology.rs");
 include!("compiled_artifact_docs_lifecycle.rs");
+include!("compiled_artifact_bundles.rs");
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub(super) struct PortableDirectoryNode {
     files: Option<PortableFileBundle>,
@@ -265,22 +269,6 @@ pub(super) struct PortableDirectoryBundle {
     exists: Option<HashMap<String, String>>,
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub(super) struct PortableMarkdownBundle {
-    require_frontmatter: Option<bool>,
-    required_fields: Option<Vec<String>>,
-    max_heading_depth: Option<u8>,
-    check_links: Option<bool>,
-    required_sections: Option<Vec<String>>,
-    outline: Option<Vec<crate::config::config::MarkdownOutlineEntry>>,
-}
-
-#[derive(Clone, Debug, Deserialize, Serialize)]
-struct PortableExistsValidation {
-    files: Option<Vec<String>>,
-    directories: Option<Vec<String>>,
-}
-
 impl From<Config> for PortableConfig {
     fn from(config: Config) -> Self {
         Self {
@@ -297,6 +285,9 @@ impl From<Config> for PortableConfig {
             ls: config.ls,
             extensions: config.extensions.map(Into::into),
             quality: config.quality,
+            models: config.models,
+            collections: config.collections,
+            relations: config.relations,
             exclude: config.exclude,
         }
     }
@@ -318,6 +309,9 @@ impl From<PortableConfig> for Config {
             ls: config.ls,
             extensions: config.extensions.map(Into::into),
             quality: config.quality,
+            models: config.models,
+            collections: config.collections,
+            relations: config.relations,
             exclude: config.exclude,
         }
     }

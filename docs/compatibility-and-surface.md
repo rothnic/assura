@@ -83,6 +83,12 @@ assura check --format agent --agent codex .
 No release compatibility claim may depend on package feedback CLIs, per-agent
 command names, or one `--format` value per agent.
 
+## Rust Surface Compatibility
+
+| Surface | Status | Evidence |
+| --- | --- | --- |
+| `rust:content_repository` | Experimental | `tests/content_runtime_validation.rs` exercises the first repo-native content runtime validation slice. |
+
 ## Extension Compatibility
 
 Common repository relationships are authored in `structure` with single-brace

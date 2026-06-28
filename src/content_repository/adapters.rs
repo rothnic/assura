@@ -1,15 +1,16 @@
-//! File format adapters for the repo-native content repository prototype.
+//! File format adapters for repo-native content runtime validation.
 
 use super::model::{AdapterKind, CollectionSpec, ContentFinding, MarkdownHeading, RepoObject};
 use serde_json::{Map, Value};
-use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
+
+type ParseResult<T> = Result<T, Box<ContentFinding>>;
 
 pub(super) fn parse_object(
     collection: &CollectionSpec,
     rel_path: &Path,
     content: &str,
-) -> Result<RepoObject, ContentFinding> {
+) -> ParseResult<RepoObject> {
     let parsed = match collection.adapter {
         AdapterKind::MarkdownFrontmatter => parse_markdown_frontmatter(content, rel_path)?,
         AdapterKind::JsonRecord => parse_json_record(content, rel_path)?,
@@ -20,7 +21,7 @@ pub(super) fn parse_object(
         .get(&collection.id_field)
         .and_then(Value::as_str)
         .ok_or_else(|| {
-            ContentFinding::new(
+            Box::new(ContentFinding::new(
                 "missing_object_id",
                 Some(rel_path.to_path_buf()),
                 format!(
@@ -28,7 +29,7 @@ pub(super) fn parse_object(
                     rel_path.display(),
                     collection.id_field
                 ),
-            )
+            ))
         })?
         .to_string();
 
@@ -49,29 +50,26 @@ struct ParsedObjectData {
     headings: Vec<MarkdownHeading>,
 }
 
-fn parse_markdown_frontmatter(
-    content: &str,
-    rel_path: &Path,
-) -> Result<ParsedObjectData, ContentFinding> {
+fn parse_markdown_frontmatter(content: &str, rel_path: &Path) -> ParseResult<ParsedObjectData> {
     let Some((frontmatter, body)) = split_markdown_frontmatter(content) else {
-        return Err(ContentFinding::new(
+        return Err(Box::new(ContentFinding::new(
             "frontmatter_missing",
             Some(rel_path.to_path_buf()),
             format!(
                 "Markdown object '{}' is missing YAML frontmatter",
                 rel_path.display()
             ),
-        ));
+        )));
     };
     let yaml = serde_yaml::from_str::<serde_yaml::Value>(frontmatter).map_err(|error| {
-        ContentFinding::new(
+        Box::new(ContentFinding::new(
             "parse_error",
             Some(rel_path.to_path_buf()),
             format!(
                 "Invalid YAML frontmatter in '{}': {error}",
                 rel_path.display()
             ),
-        )
+        ))
     })?;
     let data = yaml_mapping_to_json_map(yaml, rel_path)?;
     Ok(ParsedObjectData {
@@ -81,20 +79,20 @@ fn parse_markdown_frontmatter(
     })
 }
 
-fn parse_json_record(content: &str, rel_path: &Path) -> Result<ParsedObjectData, ContentFinding> {
+fn parse_json_record(content: &str, rel_path: &Path) -> ParseResult<ParsedObjectData> {
     let value = serde_json::from_str::<Value>(content).map_err(|error| {
-        ContentFinding::new(
+        Box::new(ContentFinding::new(
             "parse_error",
             Some(rel_path.to_path_buf()),
             format!("Invalid JSON in '{}': {error}", rel_path.display()),
-        )
+        ))
     })?;
     let Value::Object(data) = value else {
-        return Err(ContentFinding::new(
+        return Err(Box::new(ContentFinding::new(
             "parse_error",
             Some(rel_path.to_path_buf()),
             format!("JSON record '{}' must be an object", rel_path.display()),
-        ));
+        )));
     };
     Ok(ParsedObjectData {
         data,
@@ -106,32 +104,32 @@ fn parse_json_record(content: &str, rel_path: &Path) -> Result<ParsedObjectData,
 fn yaml_mapping_to_json_map(
     value: serde_yaml::Value,
     rel_path: &Path,
-) -> Result<Map<String, Value>, ContentFinding> {
+) -> ParseResult<Map<String, Value>> {
     let serde_yaml::Value::Mapping(mapping) = value else {
-        return Err(ContentFinding::new(
+        return Err(Box::new(ContentFinding::new(
             "parse_error",
             Some(rel_path.to_path_buf()),
             format!(
                 "Frontmatter in '{}' must be a YAML object",
                 rel_path.display()
             ),
-        ));
+        )));
     };
 
     let mut data = Map::new();
     for (key, value) in mapping {
         let serde_yaml::Value::String(key) = key else {
-            return Err(ContentFinding::new(
+            return Err(Box::new(ContentFinding::new(
                 "parse_error",
                 Some(rel_path.to_path_buf()),
                 format!(
                     "Frontmatter in '{}' contains a non-string key",
                     rel_path.display()
                 ),
-            ));
+            )));
         };
         let value = serde_json::to_value(value).map_err(|error| {
-            ContentFinding::new(
+            Box::new(ContentFinding::new(
                 "parse_error",
                 Some(rel_path.to_path_buf()),
                 format!(
@@ -139,36 +137,11 @@ fn yaml_mapping_to_json_map(
                     key,
                     rel_path.display()
                 ),
-            )
+            ))
         })?;
         data.insert(key, value);
     }
     Ok(data)
-}
-
-pub(super) fn update_markdown_frontmatter(
-    content: &str,
-    field: &str,
-    value: Value,
-) -> Option<String> {
-    let (frontmatter, body) = split_markdown_frontmatter(content)?;
-    let yaml = serde_yaml::from_str::<serde_yaml::Value>(frontmatter).ok()?;
-    let mut data = yaml_mapping_to_json_map(yaml, Path::new("<memory>")).ok()?;
-    data.insert(field.to_string(), value);
-    let yaml = serde_yaml::to_string(&data).ok()?;
-    Some(format!("---\n{}---\n{}", yaml, body))
-}
-
-pub(super) fn update_json_record(
-    content: &str,
-    field: &str,
-    value: Value,
-) -> Result<String, String> {
-    let mut data = serde_json::from_str::<Map<String, Value>>(content)
-        .map_err(|error| format!("Invalid JSON record: {error}"))?;
-    data.insert(field.to_string(), value);
-    serde_json::to_string_pretty(&data)
-        .map_err(|error| format!("Failed to serialize JSON: {error}"))
 }
 
 fn split_markdown_frontmatter(content: &str) -> Option<(&str, &str)> {
@@ -232,21 +205,4 @@ fn is_fence_start(trimmed: &str) -> bool {
         return false;
     };
     trimmed.chars().take_while(|ch| *ch == marker).count() >= 3
-}
-
-pub(super) fn write_atomic(path: &Path, content: &str) -> std::io::Result<()> {
-    let temp_path = temp_path_for(path);
-    fs::write(&temp_path, content)?;
-    fs::rename(temp_path, path)
-}
-
-fn temp_path_for(path: &Path) -> PathBuf {
-    let mut temp_path = path.to_path_buf();
-    let extension = path
-        .extension()
-        .and_then(|extension| extension.to_str())
-        .map(|extension| format!("{extension}.tmp"))
-        .unwrap_or_else(|| "tmp".to_string());
-    temp_path.set_extension(extension);
-    temp_path
 }

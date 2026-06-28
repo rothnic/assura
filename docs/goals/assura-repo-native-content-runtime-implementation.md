@@ -235,3 +235,37 @@ TypeSpec, CUE, or a small Assura-owned profile may improve the model authoring
 story, but none should become a runtime dependency unless this goal is
 explicitly revised. Deeb should remain a possible internal cache/index
 experiment, not the public model source.
+
+## Progress Log
+
+### 2026-06-27 - Increment 0/1 kickoff
+
+- PR #95, `Research repo-native content object runtime`, was merged into
+  `master` and used as the reviewed base.
+- Created implementation branch
+  `codex/repo-native-content-runtime-implementation` from `origin/master`.
+- Archived prototype task
+  `.trellis/tasks/06-20-prototype-repo-native-content-object-model` and
+  created `.trellis/tasks/06-27-06-27-content-runtime-validation-slice` for the
+  first implementation PR.
+- First slice remains scoped to increments 0 and 1: runtime config, runtime
+  schema loading, Markdown frontmatter and JSON read adapters, stable IDs,
+  source metadata, and cross-collection reference validation.
+
+### 2026-06-27 - Increment 0/1 review and validation
+
+- Independent review agent `Kuhn` found no hard blockers, then identified
+  relation typo validation, unused relation optionality, missing-reference
+  object type metadata, and schema-artifact path bounds as pre-PR cleanup.
+- Addressed the review findings by rejecting malformed or unknown relation
+  config, keeping runtime schema artifacts project-relative, removing the
+  unused public `optional` relation knob, and adding object type metadata to
+  missing-reference diagnostics.
+- Validation passed:
+  `cargo fmt --check`,
+  `cargo test --test content_runtime_validation --quiet`,
+  `cargo test --workspace --all-targets --all-features`,
+  `cargo run --quiet -- check --format json .`,
+  `cargo xtask evidence`,
+  `cargo xtask docs`, and
+  `git diff --check`.

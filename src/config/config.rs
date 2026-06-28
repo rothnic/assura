@@ -12,6 +12,7 @@ use std::collections::HashMap;
 use validator::Validate;
 
 mod bundles;
+mod content;
 mod extensions;
 mod quality;
 #[cfg(feature = "yaml-config")]
@@ -27,6 +28,7 @@ pub use bundles::{
     DirectoryBundle, ExistsValidation, FileBundle, MarkdownBundle, MarkdownOutlineEntry,
     MarkdownOutlineNode, ResolvedFileBundle,
 };
+pub use content::{ContentCollectionConfig, ContentModelConfig, ContentRelationConfig};
 pub use extensions::{
     CommandSurfaceCommand, CommandSurfaceContract, CommandSurfaceFlag, CustomConstraintConfig,
     DocsLifecycleClaimPatternConfig, DocsLifecycleConfig, ExtensionConfig, ManifestSemanticsConfig,
@@ -70,6 +72,18 @@ pub struct Config {
     /// High-level quality gate policy for changed-file planning.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub quality: Option<QualityConfig>,
+
+    /// Optional repo-native content runtime model artifact.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub models: Option<ContentModelConfig>,
+
+    /// Optional repo-native content collections keyed by local collection id.
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub collections: HashMap<String, ContentCollectionConfig>,
+
+    /// Optional repo-native content relations keyed as `collection.field`.
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub relations: HashMap<String, ContentRelationConfig>,
 
     /// Paths to exclude from validation
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -145,6 +159,9 @@ impl Config {
             ls: None,
             extensions: None,
             quality: None,
+            models: None,
+            collections: HashMap::new(),
+            relations: HashMap::new(),
             exclude: Vec::new(),
         }
     }
@@ -176,6 +193,32 @@ impl Config {
     /// Add high-level quality gate policy.
     pub fn with_quality(mut self, quality: QualityConfig) -> Self {
         self.quality = Some(quality);
+        self
+    }
+
+    /// Add a repo-native content runtime model artifact.
+    pub fn with_models(mut self, models: ContentModelConfig) -> Self {
+        self.models = Some(models);
+        self
+    }
+
+    /// Add a repo-native content collection.
+    pub fn with_collection(
+        mut self,
+        name: impl Into<String>,
+        collection: ContentCollectionConfig,
+    ) -> Self {
+        self.collections.insert(name.into(), collection);
+        self
+    }
+
+    /// Add a repo-native content relation.
+    pub fn with_relation(
+        mut self,
+        key: impl Into<String>,
+        relation: ContentRelationConfig,
+    ) -> Self {
+        self.relations.insert(key.into(), relation);
         self
     }
 

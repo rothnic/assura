@@ -1,9 +1,11 @@
-//! Validation helpers for the repo-native content repository prototype.
+//! Validation helpers for repo-native content runtime validation.
 
 use super::model::{
     CollectionSpec, ContentFinding, ObjectKey, ReferenceSpec, RepoEdge, RepoObject,
     RepositoryModel, RepositorySnapshot,
 };
+use jsonschema::Validator;
+use serde_json::Value;
 
 pub(super) fn validate_placement(
     model: &RepositoryModel,
@@ -33,6 +35,7 @@ pub(super) fn validate_placement(
 pub(super) fn validate_object_data(
     collection: &CollectionSpec,
     object: &RepoObject,
+    schema_validator: Option<&Validator>,
     findings: &mut Vec<ContentFinding>,
 ) {
     for field in &collection.fields {
@@ -57,6 +60,34 @@ pub(super) fn validate_object_data(
             None => {}
         }
     }
+
+    let Some(validator) = schema_validator else {
+        return;
+    };
+    let value = Value::Object(object.data.clone());
+    for error in validator.iter_errors(&value) {
+        let field = schema_error_field(&error);
+        let mut finding = ContentFinding::new(
+            "invalid_object_shape",
+            Some(object.rel_path.clone()),
+            format!(
+                "Object '{}:{}' of type '{}' does not match runtime schema '{}': {}",
+                object.collection,
+                object.id,
+                object.object_type,
+                collection
+                    .schema_class
+                    .as_deref()
+                    .unwrap_or(object.object_type.as_str()),
+                error
+            ),
+        )
+        .with_object_type(object.object_type.clone());
+        if let Some(field) = field {
+            finding = finding.with_field(field);
+        }
+        findings.push(finding);
+    }
 }
 
 pub(super) fn validate_references(
@@ -68,11 +99,11 @@ pub(super) fn validate_references(
             .objects
             .contains_key(&(edge.target_collection.clone(), edge.target_id.clone()))
         {
-            let source_path = snapshot
+            let source = snapshot
                 .objects
-                .get(&(edge.source.collection.clone(), edge.source.id.clone()))
-                .map(|object| object.rel_path.clone());
-            findings.push(ContentFinding::new(
+                .get(&(edge.source.collection.clone(), edge.source.id.clone()));
+            let source_path = source.map(|object| object.rel_path.clone());
+            let mut finding = ContentFinding::new(
                 "missing_reference",
                 source_path,
                 format!(
@@ -83,7 +114,13 @@ pub(super) fn validate_references(
                     edge.target_collection,
                     edge.target_id
                 ),
-            ));
+            )
+            .with_field(edge.field.clone())
+            .with_referenced_object(format!("{}:{}", edge.target_collection, edge.target_id));
+            if let Some(source) = source {
+                finding = finding.with_object_type(source.object_type.clone());
+            }
+            findings.push(finding);
         }
     }
 }
@@ -113,4 +150,31 @@ pub(super) fn invalid_reference_scalar(
             reference.field, object.collection, object.id
         ),
     )
+    .with_field(reference.field.clone())
+}
+
+fn schema_error_field(error: &jsonschema::ValidationError<'_>) -> Option<String> {
+    let path = error.instance_path.to_string();
+    let path = path.trim_start_matches('/');
+    if path.is_empty() {
+        required_field_from_message(&error.to_string())
+    } else {
+        path.split('/')
+            .next()
+            .map(|field| field.replace("~1", "/").replace("~0", "~"))
+    }
+}
+
+fn required_field_from_message(message: &str) -> Option<String> {
+    for quote in ['\'', '"', '`'] {
+        let mut parts = message.split(quote);
+        let _ = parts.next();
+        let Some(candidate) = parts.next() else {
+            continue;
+        };
+        if message.contains("required") && !candidate.trim().is_empty() {
+            return Some(candidate.to_string());
+        }
+    }
+    None
 }

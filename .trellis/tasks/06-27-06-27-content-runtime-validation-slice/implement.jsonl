@@ -1,0 +1,6 @@
+{"file":"docs/goals/assura-repo-native-content-runtime-implementation.md","reason":"Source goal for increments 0 and 1, scope boundaries, validation gates, and reviewer blocking criteria."}
+{"file":"docs/analysis/2026-06-27-repo-native-content-object-decision.md","reason":"Decision record for file-native runtime objects, optional authoring tools, and Deeb as non-canonical cache/index research."}
+{"file":"docs/analysis/2026-06-27-artifact-modeling-options-comparison.md","reason":"Prior comparison evidence for runtime schema shape, authoring options, and portability constraints."}
+{"file":".trellis/spec/assura/config-notation.md","reason":"Canonical Assura config notation and notation-change gates relevant to adding a content runtime block."}
+{"file":".trellis/spec/assura/structure-enforcement.md","reason":"Existing structure-first enforcement contract that content runtime validation must extend without weakening."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Runtime config, schema artifacts, adapters, and diagnostics cross several layers and need explicit contracts."}

@@ -1,0 +1,4 @@
+{"file":"docs/goals/assura-repo-native-content-runtime-implementation.md","reason":"Check the implementation and PR evidence against increment 0 and 1 proof/merge gates."}
+{"file":"docs/analysis/2026-06-27-artifact-modeling-options-review-record.md","reason":"Review record and residual prototype risks to confirm the runtime slice addresses or explicitly defers them."}
+{"file":".trellis/spec/assura/config-notation.md","reason":"Ensure the public config addition is consistent with existing notation principles and change gates."}
+{"file":".trellis/spec/assura/codex-agent-feedback.md","reason":"Confirm future agent-facing diagnostics remain aligned with the shared `assura check --format agent` direction."}

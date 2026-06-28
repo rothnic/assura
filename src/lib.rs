@@ -15,8 +15,9 @@ pub mod cli;
 pub mod config;
 #[cfg(feature = "full-cli")]
 pub mod constraints;
-#[cfg(all(test, feature = "full-cli"))]
-mod content_repository;
+#[cfg(feature = "full-cli")]
+#[doc(hidden)]
+pub mod content_repository;
 #[cfg(feature = "full-cli")]
 /// Experimental dependency-intelligence internals.
 ///

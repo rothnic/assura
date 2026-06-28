@@ -45,6 +45,7 @@ full-cli = [
     "dep:tracing-subscriber",
     "dep:validator",
     "dep:jwalk",
+    "dep:jsonschema",
     "json-output",
     "yaml-config",
 ]
@@ -83,14 +84,15 @@ frontmatter = { version = "0.4", optional = true }
 lazy_static = { version = "1.4", optional = true }
 validator = { version = "0.19", features = ["derive"], optional = true }
 jwalk = { version = "0.8.1", optional = true }
+# Runtime content-object validation compiles checked-in JSON Schema artifacts
+# into Rust validators; authoring tools remain build-time only.
+jsonschema = { version = "=0.26.2", optional = true }
 
 [dev-dependencies]
 tempfile = "3.0"
 criterion = { version = "0.5", features = ["html_reports"] }
 pretty_assertions = "1.0"
 mockall = "0.11"
-# Dev-only proof that Assura artifact runtime schemas work with a real Rust JSON Schema validator.
-jsonschema = "=0.26.2"
 
 [[bench]]
 name = "graph_benchmarks"
