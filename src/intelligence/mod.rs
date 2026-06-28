@@ -5,6 +5,7 @@ pub mod graph;
 pub mod node;
 pub mod persistence;
 pub mod query;
+pub mod store;
 
 pub use error::{GraphError, GraphResult};
 pub use facts::{
@@ -18,3 +19,4 @@ pub use graph::{GraphBuilder, GraphStats, IntelligenceGraph};
 pub use node::{DirectoryNode, Edge, FileNode, Node, NodeId, NodeMetadata, NodeType, Relationship};
 pub use persistence::{GraphPersistence, PersistenceFormat};
 pub use query::{GraphQuery, QueryResult};
+pub use store::{FactStoreStats, InMemoryFactStore};

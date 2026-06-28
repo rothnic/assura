@@ -116,6 +116,10 @@ harness = false
 name = "content_runtime"
 harness = false
 
+[[bench]]
+name = "project_intelligence"
+harness = false
+
 [profile.release]
 opt-level = 3
 lto = true

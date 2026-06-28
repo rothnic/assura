@@ -49,15 +49,17 @@ workloads.
 
 ## Acceptance Criteria
 
-- [ ] A checked decision record compares Grafeo and a lean fallback against the
-  same fixture and query set.
-- [ ] Benchmarks or benchmark-like tests measure cold load, warm query,
+- [x] A checked decision record screens Grafeo and lean embedded fallback
+  candidates against the same intended fixture/query set, records why external
+  candidates stop before loader implementation, and benchmarks the executable
+  Assura fallback against that fixture.
+- [x] Benchmarks or benchmark-like tests measure cold load, warm query,
   incremental replacement, traversal, path-scope query, text search, and memory.
-- [ ] The selected or deferred path states production readiness, experimental
+- [x] The selected or deferred path states production readiness, experimental
   gaps, and release recheck requirements.
-- [ ] Optional vector or semantic search remains non-authoritative for
+- [x] Optional vector or semantic search remains non-authoritative for
   validation correctness.
-- [ ] `cargo fmt --check`, `cargo test project_intelligence --quiet`,
+- [x] `cargo fmt --check`, `cargo test project_intelligence --quiet`,
   `cargo bench --bench project_intelligence -- --noplot`,
   `cargo run --quiet -- check --format json .`, and `git diff --check` pass or
   have explicit documented blockers.

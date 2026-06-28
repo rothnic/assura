@@ -2,7 +2,7 @@
 id: goal-assura-embedded-graph-search-store-spike
 type: goal
 title: Assura embedded graph search store spike
-status: planned
+status: completed
 created: 2026-06-28
 owners:
   - assura-maintainers
@@ -93,3 +93,11 @@ git diff --check
 Block if the spike selects a backend without benchmark evidence, requires a
 standalone service for normal use, stores canonical repository state outside
 the repo, or skips the lean fallback comparison.
+
+## Progress Log
+
+| Date | Update | Evidence |
+| --- | --- | --- |
+| 2026-06-28 | Started as the fifth Project Intelligence Runtime successor after the fact-model goal completed and archived. Created Trellis task `.trellis/tasks/06-28-embedded-graph-search-store-spike`, refreshed roadmap routing, and recorded current candidate-surface research for Grafeo, redb, SQLite/rusqlite, and Tantivy. | `.trellis/tasks/06-28-embedded-graph-search-store-spike/prd.md`; `.trellis/tasks/06-28-embedded-graph-search-store-spike/research/candidate-store-surfaces.md`; `.trellis/spec/assura/roadmap.md`; `python3 ./.trellis/scripts/task.py validate 06-28-embedded-graph-search-store-spike`; `cargo run --quiet -- check --format json .`. |
+| 2026-06-28 | Implemented and measured the executable Assura-owned in-memory fact-store fallback for graph/search query development. Current Grafeo, redb, and Tantivy releases exceed Assura's declared Rust 1.70 MSRV, so external embedded backend adoption is deferred while the in-memory fallback remains available for the next query/search CLI goal. | `src/intelligence/store.rs`; `tests/project_intelligence_store_spike_tests.rs`; `benches/project_intelligence.rs`; `docs/analysis/2026-06-28-project-intelligence-store-spike.md`; `cargo bench --bench project_intelligence -- --noplot`. |
+| 2026-06-28 | Closed review findings by making missing relationship targets generation-aware and index-backed, pinning the benchmark-shaped serialized footprint, clarifying that external candidates were screened at release gates instead of fixture-benchmarked, and completing independent review with no blockers. | `cargo fmt --check`; `cargo test --test project_intelligence_store_spike_tests --quiet`; `cargo test project_intelligence --quiet`; `cargo bench --bench project_intelligence -- --noplot`; `cargo run --quiet -- check --format json .`; `cargo clippy --workspace --all-targets --all-features -- -D warnings`; `cargo xtask docs`; `cargo xtask evidence`; `git diff --check`; review agent `019f1056-1fa3-75c2-8710-46b80e7a955f`. |
