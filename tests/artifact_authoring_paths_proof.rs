@@ -1,5 +1,6 @@
 use jsonschema::Validator;
 use serde_json::{json, Value};
+use sha2::{Digest, Sha256};
 use std::collections::HashSet;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -18,6 +19,118 @@ fn linkml_profile_and_typespec_decorators_share_runtime_contract() {
         "authoring paths should produce the same normalized runtime contract"
     );
     assert!(linkml["x-assura-source"] != typespec["x-assura-source"]);
+}
+
+#[test]
+fn selected_authoring_profile_points_to_checked_runtime_artifact() {
+    let manifest = load_compile_manifest();
+
+    assert_eq!(manifest["selected_profile"], "linkml_profile");
+    assert_eq!(manifest["fallback_profile"], "typespec_decorators");
+    assert_eq!(manifest["runtime"], "json_schema");
+    assert_eq!(manifest["normalizer"], "assura_content_runtime_profile_v1");
+    assert_eq!(manifest["normalizer_version"], 1);
+    assert_eq!(manifest["artifact_status"], "checked_normalized_snapshot");
+    assert_eq!(
+        manifest["compiler_command_status"],
+        "pending_assura_command"
+    );
+    assert_eq!(manifest["hash_normalization"], "crlf_to_lf");
+    assert_eq!(
+        manifest["runtime_hot_path_dependencies"]
+            .as_array()
+            .expect("dependency array")
+            .len(),
+        0,
+        "runtime validation must not require authoring tools"
+    );
+
+    let reproducibility = &manifest["reproducibility"];
+    assert_eq!(reproducibility["source_model"], manifest["source_model"]);
+    assert_eq!(
+        reproducibility["runtime_artifact"],
+        manifest["runtime_artifact"]
+    );
+    assert_file_sha256(
+        &generated_output_path(
+            reproducibility["source_model"]
+                .as_str()
+                .expect("source model"),
+        ),
+        reproducibility["source_sha256"]
+            .as_str()
+            .expect("source hash"),
+    );
+    assert_file_sha256(
+        &generated_output_path(
+            reproducibility["runtime_artifact"]
+                .as_str()
+                .expect("runtime artifact"),
+        ),
+        reproducibility["runtime_artifact_sha256"]
+            .as_str()
+            .expect("runtime artifact hash"),
+    );
+
+    let validation = &reproducibility["authoring_validation"];
+    assert!(validation["command"]
+        .as_str()
+        .expect("validation command")
+        .contains("linkml-validate"));
+    assert_file_sha256(
+        &generated_output_path(
+            validation["result_file"]
+                .as_str()
+                .expect("validation result file"),
+        ),
+        validation["result_sha256"]
+            .as_str()
+            .expect("validation result hash"),
+    );
+    let validation_result = fs::read_to_string(generated_output_path(
+        validation["result_file"]
+            .as_str()
+            .expect("validation result file"),
+    ))
+    .expect("validation result contents");
+    assert!(validation_result.contains(
+        validation["expected_result"]
+            .as_str()
+            .expect("expected validation result")
+    ));
+
+    assert!(manifest["deferred_profiles"]
+        .as_array()
+        .expect("deferred profiles")
+        .iter()
+        .any(|profile| profile["profile"] == "typespec_decorators"));
+    let rejected_profiles = manifest["rejected_for_runtime"]
+        .as_array()
+        .expect("rejected profiles");
+    assert!(rejected_profiles
+        .iter()
+        .any(|profile| profile["profile"] == "cue"));
+    assert!(rejected_profiles
+        .iter()
+        .any(|profile| profile["profile"] == "assura_dsl"));
+
+    let runtime_artifact = manifest["runtime_artifact"]
+        .as_str()
+        .expect("runtime artifact path");
+    let selected = load_schema_file(runtime_artifact);
+    assert_eq!(
+        runtime_contract_without_source(&selected),
+        runtime_contract_without_source(&load_schema("typespec_decorators")),
+        "selected checked artifact should validate the same runtime contract as the fallback"
+    );
+
+    let validators = RuntimeValidators::from_schema(&selected);
+    let records = load_fixture_records(fixture_root("fixtures/pass"));
+    validators.assert_valid("Goal", &records.goals[0]);
+    validators.assert_valid("Spec", &records.specs[0]);
+    validators.assert_valid("Task", &records.tasks[0]);
+    validators.assert_valid("Decision", &records.decisions[0]);
+    assert_relations(&records).expect("selected artifact references should resolve");
 }
 
 #[test]
@@ -263,6 +376,10 @@ fn schema_path(source: &str) -> PathBuf {
     fixture_root(&format!("generated_outputs/{source}.runtime.schema.json"))
 }
 
+fn generated_output_path(file_name: &str) -> PathBuf {
+    fixture_root(&format!("generated_outputs/{file_name}"))
+}
+
 fn operation_contract_path() -> PathBuf {
     fixture_root("contracts/agent_operations.schema.json")
 }
@@ -270,6 +387,31 @@ fn operation_contract_path() -> PathBuf {
 fn load_schema(source: &str) -> Value {
     serde_json::from_str(&fs::read_to_string(schema_path(source)).expect("schema file"))
         .expect("valid schema json")
+}
+
+fn load_schema_file(file_name: &str) -> Value {
+    serde_json::from_str(
+        &fs::read_to_string(generated_output_path(file_name)).expect("schema file"),
+    )
+    .expect("valid schema json")
+}
+
+fn load_compile_manifest() -> Value {
+    serde_json::from_str(
+        &fs::read_to_string(generated_output_path(
+            "selected_authoring_profile.compile.json",
+        ))
+        .expect("compile manifest file"),
+    )
+    .expect("valid compile manifest json")
+}
+
+fn assert_file_sha256(path: &Path, expected: &str) {
+    let contents = fs::read_to_string(path).expect("hashable text file");
+    let normalized = contents.replace("\r\n", "\n");
+    let mut hasher = Sha256::new();
+    hasher.update(normalized.as_bytes());
+    assert_eq!(format!("{:x}", hasher.finalize()), expected, "{path:?}");
 }
 
 fn load_operation_contract() -> Value {
