@@ -88,6 +88,76 @@ that relation.
 - Diagnostics carry source path, object type, field, and referenced object when
   that context is available.
 
+## Fixture And Example Matrix
+
+The checked fixture set is the executable example suite for this feature:
+
+| Use case | Fixture or proof |
+| --- | --- |
+| Markdown frontmatter plus JSON records | `tests/fixtures/content_runtime/valid` |
+| Invalid field value | `tests/fixtures/content_runtime/invalid_shape` |
+| Missing reference | `tests/fixtures/content_runtime/missing_reference` |
+| YAML records | `tests/fixtures/content_runtime/adapters/yaml/valid` |
+| JSONL records | `tests/fixtures/content_runtime/adapters/jsonl/valid` |
+| Required, optional, many, duplicate, ambiguous, and cyclic references | `tests/fixtures/content_runtime/references/` |
+| Typed create operation | `tests/content_runtime_create.rs` |
+| Typed update operation and Markdown body preservation | `tests/content_runtime_update.rs` |
+| YAML and JSONL deterministic writes | `tests/content_runtime_adapters.rs` |
+| Generated runtime schema artifact | `tests/fixtures/artifact_modeling_options/authoring_paths/generated_outputs/linkml_profile.runtime.schema.json` |
+
+Use these commands to verify the examples from the repository:
+
+```bash
+cargo run --quiet -- check --format json tests/fixtures/content_runtime/valid
+cargo run --quiet -- check --format json tests/fixtures/content_runtime/adapters/yaml/valid
+cargo run --quiet -- check --format json tests/fixtures/content_runtime/adapters/jsonl/valid
+cargo test --test content_runtime_create --quiet
+cargo test --test content_runtime_update --quiet
+cargo test --test content_runtime_adapters --quiet
+cargo test --test content_runtime_references --quiet
+```
+
+## Agent Operation Contract
+
+Agents should call Assura-owned operations instead of editing content files
+directly. The operation payload identifies the collection, stable object ID,
+target path when creating, data fields, and optional Markdown body:
+
+```json
+{
+  "operation": "create_record",
+  "collection": "goals",
+  "id": "goal-new",
+  "path": "docs/goals/goal_new.md",
+  "data": {
+    "title": "New portable goal",
+    "status": "planned",
+    "specs": ["spec-portable-structure"]
+  },
+  "body": "# New Portable Goal\n\nThis body remains Markdown.\n"
+}
+```
+
+Updates use the existing record identity and a field patch. Dry-run mode
+returns the proposed content without writing:
+
+```json
+{
+  "operation": "update_record",
+  "collection": "specs",
+  "id": "spec-portable-structure",
+  "changes": {
+    "status": "complete"
+  },
+  "dry_run": true
+}
+```
+
+Before writing, Assura validates collection path policy, schema shape,
+duplicate IDs, configured references, and write safety. Failed validation leaves
+the tree unchanged. Markdown updates preserve the existing body bytes when only
+frontmatter changes.
+
 ## Example Repo Objective
 
 An implementation agent can independently create a language-agnostic example
@@ -102,6 +172,18 @@ repo with:
 The example should prove that Assura can constrain project structure,
 Markdown/frontmatter shape, and cross-file references without depending on the
 language used by the project.
+
+Minimum handoff for another agent:
+
+1. Copy the config shape above into `.assura/config.yml`.
+2. Check in a JSON Schema-compatible runtime artifact under `schemas/`.
+3. Add one Markdown frontmatter goal and one JSON/YAML/JSONL spec with matching
+   IDs.
+4. Add one missing-reference record to prove diagnostics name source path,
+   object type, field, and referenced object.
+5. Exercise create and update through Assura operations, including a Markdown
+   frontmatter update that proves the body bytes stay unchanged.
+6. Document the normal validation command as `assura check --format json .`.
 
 For concrete inspection paths, see `docs/content-runtime-inspection.md`. It
 shows the same model as Markdown frontmatter, JSON, and checked runtime schema

@@ -214,3 +214,6 @@ An implementation agent building a real example repo should create:
 The example should prove that Assura constrains structure, Markdown
 frontmatter, JSON records, and cross-file references in a language-agnostic
 repo.
+
+For a broader implementation checklist, including YAML, JSONL, create/update
+writes, and Markdown body preservation, see `docs/content-runtime.md`.
