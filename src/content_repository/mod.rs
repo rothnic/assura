@@ -6,6 +6,7 @@
 mod adapters;
 mod model;
 mod mutation;
+mod operations;
 #[cfg(test)]
 mod tests;
 mod validation;
@@ -13,9 +14,12 @@ mod validation;
 use adapters::parse_object;
 use jsonschema::Validator;
 pub use model::{
-    AdapterKind, CollectionSpec, ContentFinding, CreateRecordRequest, CreateRecordResult,
-    FieldKind, FieldSpec, MarkdownHeading, ObjectKey, PlacementRule, ReferenceSpec,
-    RepositoryModel, RepositorySnapshot, RepositoryValidation,
+    AdapterKind, CollectionSpec, ContentFinding, FieldKind, FieldSpec, MarkdownHeading, ObjectKey,
+    PlacementRule, ReferenceSpec, RepositoryModel, RepositorySnapshot, RepositoryValidation,
+};
+pub use operations::{
+    CreateRecordRequest, CreateRecordResult, UpdateRecordDryRun, UpdateRecordRequest,
+    UpdateRecordResult,
 };
 use serde_json::json;
 use std::collections::HashMap;

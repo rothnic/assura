@@ -1,0 +1,20 @@
+{"file":"docs/goals/assura-repo-native-content-runtime-implementation.md","reason":"Verify increment 4 proof/merge gate and reviewer blocking criteria."}
+{"file":".trellis/tasks/06-28-content-runtime-update-operation/prd.md","reason":"Check implementation against task acceptance criteria and out-of-scope boundaries."}
+{"file":"tests/content_runtime_update.rs","reason":"Required proof target for update, dry-run, atomic write, and Markdown body preservation behavior."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Update operation crosses config, runtime model, adapter, validation, dry-run, and filesystem write boundaries."}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Reuse create/read validation and adapter logic rather than creating divergent mutation behavior."}
+{"file":"tests/content_runtime_update.rs","reason":"Local proof passed: cargo test --test content_runtime_update --quiet."}
+{"file":"tests/content_runtime_create.rs","reason":"Create regression proof passed: cargo test --test content_runtime_create --quiet."}
+{"file":"tests/content_runtime_validation.rs","reason":"Validation regression proof passed: cargo test --test content_runtime_validation --quiet."}
+{"file":"tests/content_runtime_check_cli.rs","reason":"CLI integration regression proof passed: cargo test --test content_runtime_check_cli --quiet."}
+{"file":".assura/config.yml","reason":"Repository structure proof passed: cargo run --quiet -- check --format json ."}
+{"file":"Cargo.toml","reason":"Clippy proof passed: cargo clippy --workspace --all-targets --all-features -- -D warnings."}
+{"file":"xtask/src/main.rs","reason":"Evidence and docs gates passed: cargo xtask evidence and cargo xtask docs."}
+{"file":"tests/content_runtime_update.rs","reason":"Independent review agent Poincare reported no blocking findings; medium dry-run determinism and low path-mismatch coverage suggestions were addressed."}
+{"file":"tests/content_runtime_update.rs","reason":"Review-hardened focused proof passed: cargo fmt --check and cargo test --test content_runtime_update --quiet with 9 tests."}
+{"file":"tests/content_runtime_create.rs","reason":"Post-review regression proof passed: cargo test --test content_runtime_create --test content_runtime_validation --test content_runtime_check_cli --quiet."}
+{"file":".assura/config.yml","reason":"Post-review repository proof passed: cargo run --quiet -- check --format json ."}
+{"file":"Cargo.toml","reason":"Post-review clippy proof passed: cargo clippy --workspace --all-targets --all-features -- -D warnings."}
+{"file":"xtask/src/main.rs","reason":"Post-review evidence and docs gates passed: cargo xtask evidence and cargo xtask docs."}
+{"file":"Cargo.toml","reason":"Post-review full workspace proof passed: cargo test --workspace --all-targets --all-features."}
+{"file":"tests/content_runtime_update.rs","reason":"Hosted Windows failure diagnosed as CRLF-only test helper issue; local fix proof passed: cargo fmt --check, cargo test --test content_runtime_update --quiet, cargo run --quiet -- check --format json ., cargo clippy --workspace --all-targets --all-features -- -D warnings, and git diff --check."}
