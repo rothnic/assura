@@ -436,3 +436,18 @@ experiment, not the public model source.
   `cargo run --quiet -- check --format json .`,
   `cargo clippy --workspace --all-targets --all-features -- -D warnings`, and
   `git diff --check`.
+
+### 2026-06-28 - Increment 4 merged
+
+- PR #99, `[codex] Add content runtime update operation`, merged into
+  `master` at `b64b385`.
+- Hosted CI passed after the CRLF helper fix, including docs, evidence,
+  Rustfmt, Clippy, Linux/macOS/Windows tests, release smoke, Windows installer
+  smoke, installable adoption smokes, performance report, code coverage, and
+  security scope checks.
+- Archived increment 4 task
+  `.trellis/tasks/archive/2026-06/06-28-content-runtime-update-operation`.
+- Started increment 5 on branch `codex/content-runtime-storage-adapters` with
+  task `.trellis/tasks/06-27-06-28-content-runtime-storage-adapters`.
+- Increment 5 scope: YAML and JSONL adapters with deterministic read, create,
+  update, validation failure, and malformed-input coverage.
