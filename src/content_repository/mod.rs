@@ -1,8 +1,7 @@
-//! Experimental repo-native content repository prototype.
+//! Repo-native content runtime validation.
 //!
-//! The prototype treats files as typed repository objects while keeping the
-//! files themselves as canonical state. It intentionally starts with a small
-//! file-native baseline before comparing heavier storage/index backends.
+//! The runtime treats files as typed repository objects while keeping the files
+//! themselves as canonical state.
 
 mod adapters;
 mod model;
@@ -10,12 +9,13 @@ mod model;
 mod tests;
 mod validation;
 
-use adapters::{parse_object, update_json_record, update_markdown_frontmatter, write_atomic};
+use adapters::parse_object;
+use jsonschema::Validator;
 pub use model::{
     AdapterKind, CollectionSpec, ContentFinding, FieldKind, FieldSpec, MarkdownHeading, ObjectKey,
     PlacementRule, ReferenceSpec, RepositoryModel, RepositorySnapshot, RepositoryValidation,
 };
-use serde_json::Value;
+use serde_json::json;
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
@@ -25,14 +25,28 @@ use validation::{
 };
 
 /// File-native content repository runner.
-pub struct ContentRepository<'a> {
-    model: &'a RepositoryModel,
+pub struct ContentRepository {
+    model: RepositoryModel,
+    schema_validators: HashMap<String, Validator>,
 }
 
-impl<'a> ContentRepository<'a> {
-    /// Create a repository runner for a model.
-    pub fn new(model: &'a RepositoryModel) -> Self {
-        Self { model }
+impl ContentRepository {
+    /// Create a repository runner with compiled runtime schema validators.
+    pub fn try_new(model: RepositoryModel) -> Result<Self, Vec<ContentFinding>> {
+        let schema_validators = compile_schema_validators(&model)?;
+        Ok(Self {
+            model,
+            schema_validators,
+        })
+    }
+
+    /// Create a repository runner from parsed Assura configuration.
+    pub fn from_config(
+        project_root: &Path,
+        config: &crate::config::config::Config,
+    ) -> Result<Self, Vec<ContentFinding>> {
+        let model = RepositoryModel::from_config(project_root, config)?;
+        Self::try_new(model)
     }
 
     /// Load and validate all configured collections under `root`.
@@ -48,119 +62,6 @@ impl<'a> ContentRepository<'a> {
         validate_references(&snapshot, &mut findings);
 
         RepositoryValidation { snapshot, findings }
-    }
-
-    /// Update one structured field and write it back through the object's
-    /// adapter. The updated file is reloaded and field-validated before the
-    /// write is considered successful.
-    pub fn update_field(
-        &self,
-        root: &Path,
-        key: &ObjectKey,
-        field: &str,
-        value: Value,
-    ) -> Result<(), ContentFinding> {
-        let collection = self
-            .model
-            .collections
-            .iter()
-            .find(|collection| collection.name == key.collection)
-            .ok_or_else(|| {
-                ContentFinding::new(
-                    "unknown_collection",
-                    None,
-                    format!("Collection '{}' is not defined", key.collection),
-                )
-            })?;
-
-        let validation = self.validate(root);
-        if let Some(finding) = validation
-            .findings
-            .iter()
-            .find(|finding| finding.code == "parse_error")
-        {
-            return Err(finding.clone());
-        }
-
-        let object = validation
-            .snapshot
-            .objects
-            .get(&(key.collection.clone(), key.id.clone()))
-            .ok_or_else(|| {
-                ContentFinding::new(
-                    "unknown_object",
-                    None,
-                    format!("Object '{}:{}' was not found", key.collection, key.id),
-                )
-            })?;
-
-        let absolute = root.join(&object.rel_path);
-        let content = fs::read_to_string(&absolute).map_err(|error| {
-            ContentFinding::new(
-                "read_error",
-                Some(object.rel_path.clone()),
-                format!("Failed to read '{}': {error}", object.rel_path.display()),
-            )
-        })?;
-
-        let updated = match collection.adapter {
-            AdapterKind::MarkdownFrontmatter => {
-                update_markdown_frontmatter(&content, field, value.clone()).ok_or_else(|| {
-                    ContentFinding::new(
-                        "frontmatter_missing",
-                        Some(object.rel_path.clone()),
-                        format!(
-                            "Markdown object '{}:{}' has no YAML frontmatter",
-                            key.collection, key.id
-                        ),
-                    )
-                })?
-            }
-            AdapterKind::JsonRecord => {
-                update_json_record(&content, field, value.clone()).map_err(|message| {
-                    ContentFinding::new("parse_error", Some(object.rel_path.clone()), message)
-                })?
-            }
-        };
-
-        let reloaded = parse_object(collection, &object.rel_path, &updated)?;
-        if reloaded.id != key.id {
-            return Err(ContentFinding::new(
-                "object_id_changed",
-                Some(object.rel_path.clone()),
-                format!(
-                    "Update would change object id from '{}' to '{}'",
-                    key.id, reloaded.id
-                ),
-            ));
-        }
-
-        let mut candidate = validation.snapshot.clone();
-        candidate
-            .objects
-            .insert((key.collection.clone(), key.id.clone()), reloaded);
-        candidate.edges.clear();
-
-        let mut findings = Vec::new();
-        let candidate_object = candidate
-            .objects
-            .get(&(key.collection.clone(), key.id.clone()))
-            .expect("candidate object was just inserted");
-        validate_placement(self.model, candidate_object, &mut findings);
-        validate_object_data(collection, candidate_object, &mut findings);
-        self.collect_edges(&mut candidate, &mut findings);
-        validate_references(&candidate, &mut findings);
-        if let Some(finding) = findings.into_iter().next() {
-            return Err(finding);
-        }
-
-        write_atomic(&absolute, &updated).map_err(|error| {
-            ContentFinding::new(
-                "write_error",
-                Some(object.rel_path.clone()),
-                format!("Failed to write '{}': {error}", object.rel_path.display()),
-            )
-        })
     }
 
     fn load_collection(
@@ -213,8 +114,13 @@ impl<'a> ContentRepository<'a> {
 
             match parse_object(collection, rel_path, &content) {
                 Ok(object) => {
-                    validate_placement(self.model, &object, findings);
-                    validate_object_data(collection, &object, findings);
+                    validate_placement(&self.model, &object, findings);
+                    validate_object_data(
+                        collection,
+                        &object,
+                        schema_validator_for(collection, &self.schema_validators),
+                        findings,
+                    );
 
                     let key = (object.collection.clone(), object.id.clone());
                     if snapshot.objects.insert(key.clone(), object).is_some() {
@@ -228,7 +134,7 @@ impl<'a> ContentRepository<'a> {
                         ));
                     }
                 }
-                Err(finding) => findings.push(finding),
+                Err(finding) => findings.push(*finding),
             }
         }
     }
@@ -251,14 +157,17 @@ impl<'a> ContentRepository<'a> {
                 };
                 if reference.many {
                     let Some(items) = value.as_array() else {
-                        findings.push(ContentFinding::new(
-                            "invalid_reference_field",
-                            Some(object.rel_path.clone()),
-                            format!(
-                                "Reference field '{}' on '{}:{}' must be an array",
-                                reference.field, object.collection, object.id
-                            ),
-                        ));
+                        findings.push(
+                            ContentFinding::new(
+                                "invalid_reference_field",
+                                Some(object.rel_path.clone()),
+                                format!(
+                                    "Reference field '{}' on '{}:{}' must be an array",
+                                    reference.field, object.collection, object.id
+                                ),
+                            )
+                            .with_field(reference.field.clone()),
+                        );
                         continue;
                     };
                     for item in items {
@@ -290,4 +199,64 @@ fn normalize_slashes(value: &str) -> String {
 
 fn normalize_slashes_path(path: &Path) -> String {
     normalize_slashes(&path.to_string_lossy())
+}
+
+fn compile_schema_validators(
+    model: &RepositoryModel,
+) -> Result<HashMap<String, Validator>, Vec<ContentFinding>> {
+    let Some(schema) = model.schema_artifact.as_ref() else {
+        return Ok(HashMap::new());
+    };
+
+    let mut validators = HashMap::new();
+    let mut findings = Vec::new();
+    for collection in &model.collections {
+        let Some(class_name) = collection.schema_class.as_ref() else {
+            continue;
+        };
+        if validators.contains_key(class_name) {
+            continue;
+        }
+        let compiled_schema = json!({
+            "$schema": schema["$schema"].clone(),
+            "$defs": schema["$defs"].clone(),
+            "$ref": format!("#/$defs/{class_name}")
+        });
+        match jsonschema::validator_for(&compiled_schema) {
+            Ok(validator) => {
+                validators.insert(class_name.clone(), validator);
+            }
+            Err(error) => findings.push(
+                ContentFinding::new(
+                    "content_schema_compile_error",
+                    model.schema_artifact_path.clone(),
+                    format!(
+                        "Failed to compile runtime schema class '{class_name}' from '{}': {error}",
+                        model
+                            .schema_artifact_path
+                            .as_ref()
+                            .map(|path| path.display().to_string())
+                            .unwrap_or_else(|| "<memory>".to_string())
+                    ),
+                )
+                .with_object_type(class_name.clone()),
+            ),
+        }
+    }
+
+    if findings.is_empty() {
+        Ok(validators)
+    } else {
+        Err(findings)
+    }
+}
+
+fn schema_validator_for<'a>(
+    collection: &CollectionSpec,
+    validators: &'a HashMap<String, Validator>,
+) -> Option<&'a Validator> {
+    collection
+        .schema_class
+        .as_ref()
+        .and_then(|class_name| validators.get(class_name))
 }

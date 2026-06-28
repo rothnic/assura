@@ -1,0 +1,12 @@
+structure:
+  ./:
+    required: false
+
+collections:
+  goals:
+    class: Goal
+    path: docs/goals/*.md
+    adapter: markdown_frontmatter
+    data: frontmatter
+    body: markdown
+    id: id

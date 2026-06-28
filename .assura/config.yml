@@ -237,6 +237,14 @@ extensions:
             - src/config
           public_exports:
             - config
+        - family: content_repository
+          status: experimental
+          owner: assura-maintainers
+          purpose: experimental repo-native content runtime internals
+          roots:
+            - src/content_repository
+          public_exports:
+            - content_repository
         - family: constraints
           status: experimental
           owner: assura-maintainers
@@ -414,6 +422,8 @@ extensions:
           status: supported
         - surface: "rust:config"
           status: supported
+        - surface: "rust:content_repository"
+          status: experimental
         - surface: "rust:constraints"
           status: experimental
         - surface: "rust:intelligence"
@@ -1276,3 +1286,4 @@ exclude:
   - "**/package-lock.json"
   - "tests/fixtures/ls-lint/**"
   - "tests/fixtures/real-project-agentic-feedback/**"
+  - "tests/fixtures/content_runtime/**"
