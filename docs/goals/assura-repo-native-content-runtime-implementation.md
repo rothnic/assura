@@ -397,6 +397,50 @@ experiment, not the public model source.
 - Opened PR #105, `[codex] Publish content runtime docs examples`, for
   increment 10: `https://github.com/rothnic/assura/pull/105`.
 
+### 2026-06-28 - Increment 10 merged and increment 11 started
+
+- PR #105, `[codex] Publish content runtime docs examples`, merged into
+  `master` at `b721a17`.
+- Hosted CI passed, including documentation, evidence, Rustfmt, Clippy, code
+  coverage, performance report, release smoke, Linux/macOS/Windows tests,
+  Windows installer smoke, installable adoption smokes, GitGuardian, and scope
+  checks.
+- Archived increment 10 task
+  `.trellis/tasks/archive/2026-06/06-28-content-runtime-docs-examples`.
+- Started increment 11 on branch `codex/content-runtime-release-readiness`
+  with task `.trellis/tasks/06-28-content-runtime-release-readiness`.
+- Increment 11 scope: final release-readiness audit, cross-platform/CI
+  evidence, diagnostics and adoption guidance, and independent review against
+  the full goal.
+
+### 2026-06-28 - Increment 11 local audit
+
+- Added
+  `docs/analysis/2026-06-28-content-runtime-release-readiness-audit.md`,
+  mapping every increment, completion-definition bullet, and program DoD item
+  to current evidence or pending final-PR proof.
+- Expanded `docs/content-runtime.md` with an existing-repo adoption path and
+  the diagnostic codes users should expect when hardening a content-runtime
+  model.
+- Extended `tests/content_runtime_dx_docs.rs` to pin the adoption section and
+  key diagnostic-code documentation.
+- Focused validation passed:
+  `cargo fmt --check`,
+  `cargo test --test content_runtime_dx_docs --quiet`,
+  `cargo test --test content_runtime_validation --test content_runtime_check_cli --test content_runtime_create --test content_runtime_update --test content_runtime_adapters --test content_runtime_references --test content_runtime_dx_docs --test artifact_authoring_paths_proof --quiet`,
+  `cargo run --quiet -- check --format json .`,
+  `cargo xtask evidence`,
+  `cargo xtask docs`, and
+  `git diff --check`.
+- Independent review agent `Feynman` found one release-readiness documentation
+  bug: the adoption guide named the cycle diagnostic
+  `content_runtime:reference_cycle`, but the runtime and reference tests use
+  `content_runtime:cyclic_reference`.
+- Addressed the review finding by updating `docs/content-runtime.md` and the
+  docs regression test to use `content_runtime:cyclic_reference`.
+- `Feynman` found no remaining unsupported requirement or audit overclaim after
+  that fix.
+
 ### 2026-06-28 - Increment 6 merged and increment 7 started
 
 - PR #101, `[codex] Complete content reference graph validation`, merged into

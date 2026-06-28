@@ -1,0 +1,8 @@
+{"file":"docs/goals/assura-repo-native-content-runtime-implementation.md","reason":"Review final completion audit and every explicit goal requirement"}
+{"file":"docs/content-runtime.md","reason":"Check release-ready user and agent adoption guidance"}
+{"file":"docs/content-runtime-inspection.md","reason":"Check cross-language DX and example-repo handoff guidance"}
+{"file":"docs/analysis/2026-06-28-content-runtime-authoring-decision.md","reason":"Check authoring-tool boundary remains accurate"}
+{"file":"docs/analysis/2026-06-28-content-runtime-index-performance.md","reason":"Check performance claims and cache/index boundary"}
+{"file":".trellis/spec/assura/index.md","reason":"Check project docs and source-of-truth constraints"}
+{"file":".trellis/spec/assura/config-notation.md","reason":"Check portable config guidance remains aligned"}
+{"file":".trellis/spec/guides/index.md","reason":"Shared thinking guide index for final review"}

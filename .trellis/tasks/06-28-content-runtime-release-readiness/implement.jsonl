@@ -1,0 +1,8 @@
+{"file":"docs/goals/assura-repo-native-content-runtime-implementation.md","reason":"Final increment scope, completion definition, program DoD, and reviewer criteria"}
+{"file":"docs/content-runtime.md","reason":"Primary user-facing adoption and agent operation guidance"}
+{"file":"docs/content-runtime-inspection.md","reason":"Cross-language inspection and example-repo handoff guidance"}
+{"file":"docs/analysis/2026-06-28-content-runtime-authoring-decision.md","reason":"Authoring profile and runtime dependency boundary"}
+{"file":"docs/analysis/2026-06-28-content-runtime-index-performance.md","reason":"Performance and index/cache release evidence"}
+{"file":".trellis/spec/assura/index.md","reason":"Assura source-of-truth and docs governance"}
+{"file":".trellis/spec/assura/config-notation.md","reason":"Portable config and docs notation constraints"}
+{"file":".trellis/spec/guides/index.md","reason":"Required shared thinking guide index"}

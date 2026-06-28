@@ -185,6 +185,33 @@ Minimum handoff for another agent:
    frontmatter update that proves the body bytes stay unchanged.
 6. Document the normal validation command as `assura check --format json .`.
 
+## Adoption Path
+
+For an existing repo, adopt the content runtime incrementally:
+
+1. Start with one small collection and one schema definition, such as
+   Markdown-frontmatter goals linked to JSON specs.
+2. Add `models.validation_artifact`, `collections`, and `relations` to
+   `.assura/config.yml`.
+3. Run `assura check --format json .` and fix shape/reference diagnostics until
+   the initial collection is clean.
+4. Add create/update operation tests around the agent workflow before allowing
+   agents to write records.
+5. Add YAML or JSONL collections only after the simpler Markdown/JSON path is
+   stable.
+
+Useful release-readiness diagnostics include:
+
+- `content_runtime:invalid_object_shape` for field shape failures;
+- `content_runtime:missing_reference` and
+  `content_runtime:missing_reference_field` for relation failures;
+- `content_runtime:duplicate_object_id` when a collection has conflicting IDs;
+- `content_runtime:ambiguous_reference` when a relation can point at multiple
+  target collections;
+- `content_runtime:cyclic_reference` for configured acyclic relations;
+- `content_runtime:invalid_object_path` and write-specific codes for bounded
+  agent mutations.
+
 For concrete inspection paths, see `docs/content-runtime-inspection.md`. It
 shows the same model as Markdown frontmatter, JSON, and checked runtime schema
 form, with TypeScript, Python, and Rust inspection guidance.
