@@ -230,8 +230,6 @@ directories:
 ```yaml
 markdown:
   require_frontmatter: true
-  required_fields:
-    - title
   max_heading_depth: 3
   required_sections:
     - Summary
@@ -245,12 +243,15 @@ markdown:
 
 | Field | Behavior |
 | --- | --- |
-| `require_frontmatter` | Requires YAML frontmatter in direct child Markdown files. |
-| `required_fields` | Requires fields inside YAML frontmatter. |
+| `require_frontmatter` | Requires YAML frontmatter in direct child Markdown files as a generic document-style rule. |
 | `max_heading_depth` | Fails when a Markdown heading is deeper than the configured level. |
 | `required_sections` | Requires headings with the configured text. |
 | `outline` | Validates ordered nested headings without requiring users to maintain heading depth numbers. Use `?? ` for optional headings and object form such as `title: "?? Debug Mode"` when a required heading starts with literal question marks. |
 | `check_links` | Accepted by the config type but not enforced by current `assura check`. |
+
+Use `models`, `collections`, and `relations` for typed Markdown frontmatter
+fields. `markdown.required_fields` is rejected in Assura-authored config so
+frontmatter field ownership stays in one content model path.
 
 ## Relationships
 

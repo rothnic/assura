@@ -263,10 +263,7 @@ pub(super) fn merge_markdown_bundle(
         (None, Some(child)) => Some(Arc::new(child.clone())),
         (Some(parent), Some(child)) => Some(Arc::new(MarkdownBundle {
             require_frontmatter: child.require_frontmatter.or(parent.require_frontmatter),
-            required_fields: child
-                .required_fields
-                .clone()
-                .or_else(|| parent.required_fields.clone()),
+            required_fields: None,
             max_heading_depth: child.max_heading_depth.or(parent.max_heading_depth),
             check_links: child.check_links.or(parent.check_links),
             required_sections: child

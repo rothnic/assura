@@ -1,0 +1,26 @@
+structure:
+  ./:
+    required: false
+
+models:
+  source: schemas/content-runtime.linkml.yaml
+  validation_artifact: schemas/content_runtime.schema.json
+
+collections:
+  goals:
+    class: Goal
+    path: docs/goals/*.md
+    adapter: markdown_frontmatter
+    data: frontmatter
+    body: markdown
+    id: id
+  specs:
+    class: Spec
+    path: specs/*.json
+    adapter: json_record
+    id: id
+
+relations:
+  goals.specs:
+    target: specs
+    many: true

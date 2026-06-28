@@ -103,7 +103,6 @@ fn check_policy_diagnostics_include_corrective_context() {
         "directory_naming",
         "exists_count",
         "markdown_frontmatter",
-        "markdown_frontmatter_field",
         "markdown_required_section",
     ] {
         assert!(
@@ -254,8 +253,6 @@ structure:
             "*.md": kebab-case
         markdown:
           require_frontmatter: true
-          required_fields:
-            - title
           max_heading_depth: 2
           required_sections:
             - Summary

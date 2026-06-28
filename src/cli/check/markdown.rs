@@ -44,48 +44,6 @@ impl StructureChecker {
                 "medium",
             );
         }
-
-        if let Some(required_fields) = &markdown.required_fields {
-            match frontmatter {
-                Some(frontmatter) => match serde_yaml::from_str::<serde_yaml::Value>(frontmatter) {
-                    Ok(value) => {
-                        for field in required_fields {
-                            if value.get(field).is_none() {
-                                push_missing_frontmatter_field(self, report, rel, field);
-                            }
-                        }
-                    }
-                    Err(error) => {
-                        self.push_violation(
-                            report,
-                            rel.to_path_buf(),
-                            "markdown_frontmatter_parse",
-                            format!(
-                                "Markdown file '{}' has invalid frontmatter: {}",
-                                display_rel(rel),
-                                error
-                            ),
-                            "medium",
-                        );
-                    }
-                },
-                None => {
-                    for field in required_fields {
-                        self.push_violation(
-                            report,
-                            rel.to_path_buf(),
-                            "markdown_frontmatter_field",
-                            format!(
-                                "Markdown file '{}' cannot satisfy required field '{}' without frontmatter",
-                                display_rel(rel),
-                                field
-                            ),
-                            "medium",
-                        );
-                    }
-                }
-            }
-        }
     }
 
     fn validate_markdown_heading_depth(
@@ -212,23 +170,4 @@ fn is_fence_start(trimmed: &str) -> bool {
     };
 
     trimmed.chars().take_while(|ch| *ch == marker).count() >= 3
-}
-
-fn push_missing_frontmatter_field(
-    checker: &StructureChecker,
-    report: &mut StructureCheckReport,
-    rel: &Path,
-    field: &str,
-) {
-    checker.push_violation(
-        report,
-        rel.to_path_buf(),
-        "markdown_frontmatter_field",
-        format!(
-            "Markdown file '{}' is missing frontmatter field '{}'",
-            display_rel(rel),
-            field
-        ),
-        "medium",
-    );
 }

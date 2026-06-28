@@ -94,6 +94,26 @@ fn reports_missing_references_with_source_field_and_target() {
     ));
 }
 
+#[test]
+fn reports_missing_markdown_frontmatter_fields_through_content_model() {
+    let validation = validate_fixture("missing_model_frontmatter_field");
+    let finding = validation
+        .findings
+        .iter()
+        .find(|finding| {
+            finding.code == "invalid_object_shape"
+                && finding.object_type.as_deref() == Some("Goal")
+                && finding.field.as_deref() == Some("title")
+        })
+        .expect("missing required frontmatter field is reported by content model");
+
+    assert_eq!(
+        finding.path.as_deref(),
+        Some(Path::new("docs/goals/goal_portable_structure.md"))
+    );
+    assert!(finding.message.contains("does not match runtime schema"));
+}
+
 fn validate_fixture(name: &str) -> RepositoryValidation {
     let root = PathBuf::from(FIXTURE_ROOT).join(name);
     let config =

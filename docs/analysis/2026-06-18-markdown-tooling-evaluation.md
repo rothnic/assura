@@ -21,10 +21,11 @@ configurable enough for project-structure checks.
 
 ## Current Repo Baseline
 
-Assura already has in-tree Markdown checks for frontmatter presence, required
-frontmatter fields, heading depth, and required sections. The implementation is
-purpose-built and lightweight, but it does not replace a Markdown linter or
-general link checker.
+Assura already has in-tree Markdown checks for frontmatter presence, heading
+depth, required sections, and model-aware outline validation. Typed
+frontmatter fields belong to content runtime models and collections, not
+generic Markdown rules. The implementation is purpose-built and lightweight,
+but it does not replace a Markdown linter or general link checker.
 
 `Cargo.toml` currently lists optional Markdown-related dependencies:
 

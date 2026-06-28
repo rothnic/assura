@@ -29,20 +29,18 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 15 | Docs Lifecycle Rule | Completed | PR #78 merged; archive PR #79 merged |
 | 16 | Docs Lifecycle Coverage | Completed | PR #83 merged; archive/sync PR #84 merged |
 | 17 | Support Matrix Surface Expansion | Completed | PR #88 merged; archive/sync PR #89 merged |
-| 18 | Project Intelligence Runtime | Planned | Master goal `docs/goals/assura-project-intelligence-runtime-program.md` defines the ordered goal program |
+| 18 | Project Intelligence Runtime | Active | Current task `.trellis/tasks/06-28-06-28-content-model-source-of-truth` executes the first successor goal |
 
 ## Active Roadmap Iteration
 
-No roadmap iteration is currently in execution, but Project Intelligence
-Runtime is the planned next iteration candidate.
+Project Intelligence Runtime is in execution.
 
 Current owning task:
-None. The next task should be created for
+`.trellis/tasks/06-28-06-28-content-model-source-of-truth`, executing
 `docs/goals/assura-content-model-source-of-truth.md`.
 
 Current branch:
-None for execution. The planning branch is
-`codex/project-intelligence-goal-program`.
+`codex/content-model-source-of-truth`.
 
 Most recent completed major roadmap work: Support Matrix Surface Expansion.
 Policy Depth Iteration 02 goals 09 through 13 are complete and archived,
@@ -65,19 +63,19 @@ one `--format <agent>-hook` value per agent. Treat older roadmap/task wording in
 that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
 Planned next roadmap candidate:
-Project Intelligence Runtime. Start with
-`docs/goals/assura-project-intelligence-runtime-program.md`, then execute its
-successor goals in order unless a refreshed dependency decision records a
-better sequence.
+Continue Project Intelligence Runtime. Start from
+`docs/goals/assura-project-intelligence-runtime-program.md`, complete the
+active content-model source-of-truth goal, then execute successor goals in order
+unless a refreshed dependency decision records a better sequence.
 
 ## Recommended Next Action
 
-Run the workflow gate and target-state audit, then create the first Trellis
-task for `docs/goals/assura-content-model-source-of-truth.md`. Do not reopen
-the completed support-matrix expansion or Windows CI Restore unless a new
-concrete docs, manifest, package, binary, support status, or hosted CI drift
-case is named with executable evidence. The product roadmap remains open until
-a separate product decision declares it complete.
+Run the workflow gate and continue
+`.trellis/tasks/06-28-06-28-content-model-source-of-truth`. Do not reopen the
+completed support-matrix expansion or Windows CI Restore unless a new concrete
+docs, manifest, package, binary, support status, or hosted CI drift case is
+named with executable evidence. The product roadmap remains open until a
+separate product decision declares it complete.
 
 ## Roadmap Rules
 

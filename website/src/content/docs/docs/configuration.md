@@ -90,11 +90,15 @@ Supported direct child directory fields include:
 Supported markdown fields include:
 
 - `require_frontmatter`
-- `required_fields`
 - `max_heading_depth`
 - `check_links`
 - `required_sections`
 - `outline`
+
+Use `require_frontmatter` only for generic Markdown files that must contain a
+frontmatter block. Typed frontmatter fields belong to content runtime `models`,
+`collections`, and `relations`; `markdown.required_fields` is rejected so the
+same field policy is not declared twice.
 
 `outline` uses nested YAML lists to describe required heading order. Prefix a
 heading with `?? ` to make it optional, and use object form when a required

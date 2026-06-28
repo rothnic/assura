@@ -12,7 +12,11 @@ pub struct MarkdownBundle {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub require_frontmatter: Option<bool>,
 
-    /// Required frontmatter fields.
+    /// Legacy typed frontmatter field requirement.
+    ///
+    /// Assura-authored config rejects this field during semantic validation.
+    /// Keep it deserializable so users get a migration diagnostic pointing to
+    /// content runtime models and collections.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub required_fields: Option<Vec<String>>,
 
@@ -122,7 +126,9 @@ impl MarkdownBundle {
         self
     }
 
-    /// Set required frontmatter fields.
+    /// Set legacy typed frontmatter fields.
+    ///
+    /// Configs using this value are rejected during semantic validation.
     pub fn with_required_fields(mut self, fields: Vec<String>) -> Self {
         self.required_fields = Some(fields);
         self

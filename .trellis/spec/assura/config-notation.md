@@ -237,6 +237,95 @@ Rules:
 - Optional parents may be absent. If an optional parent is present, its
   required children are checked within that section.
 
+## Markdown Frontmatter Field Ownership
+
+### 1. Scope / Trigger
+
+- Trigger: Assura-authored config distinguishes generic Markdown document
+  style from typed content records.
+- Applies to `structure.<scope>.markdown` bundles loaded from
+  `.assura/config.yml`.
+
+### 2. Signatures
+
+- Supported generic Markdown presence field:
+  `markdown.require_frontmatter: bool`.
+- Unsupported legacy typed-field field:
+  `markdown.required_fields: string[]`.
+- Typed frontmatter fields use top-level `models`, `collections`, and
+  `relations` instead.
+
+### 3. Contracts
+
+- `markdown.require_frontmatter: true` only requires a YAML frontmatter block
+  to be present in matching Markdown files.
+- `markdown.required_fields` is rejected during config semantic validation with
+  guidance to content runtime models and collections.
+- Structure Markdown validation must not emit `markdown_frontmatter_field` for
+  typed fields.
+- Markdown heading depth, required sections, and `markdown.outline` remain
+  Assura-owned Markdown structure behavior.
+
+### 4. Validation & Error Matrix
+
+| Condition | Expected behavior |
+| --- | --- |
+| Markdown file lacks frontmatter and `require_frontmatter: true` | `markdown_frontmatter` violation |
+| Config contains `markdown.required_fields` | Config error naming `models` and `collections` |
+| Markdown frontmatter record lacks a model-required field | `content_runtime:invalid_object_shape` or model-field finding |
+| Markdown headings do not satisfy `outline` | `markdown_outline` violation |
+
+### 5. Good/Base/Bad Cases
+
+- Good: a `Goal` Markdown collection defines required `title` in the runtime
+  model schema and validates through `collections.goals`.
+- Base: an ordinary Markdown style policy uses `require_frontmatter: true`
+  without typed field checks.
+- Bad: a structure Markdown bundle declares `required_fields: [title]` and
+  duplicates the content model.
+
+### 6. Tests Required
+
+- CLI regression proving `markdown.required_fields` is rejected with model and
+  collection guidance.
+- Content runtime regression proving a missing model-required Markdown
+  frontmatter field is reported through modeled collection validation.
+- Markdown regression proving generic `require_frontmatter` still reports
+  missing frontmatter.
+- Outline/heading tests proving Markdown structure behavior remains unchanged.
+
+### 7. Wrong vs Correct
+
+#### Wrong
+
+```yaml
+structure:
+  docs/:
+    markdown:
+      require_frontmatter: true
+      required_fields:
+        - title
+```
+
+#### Correct
+
+```yaml
+structure:
+  docs/:
+    markdown:
+      require_frontmatter: true
+
+models:
+  validation_artifact: schemas/content_runtime.schema.json
+
+collections:
+  goals:
+    class: Goal
+    path: docs/goals/*.md
+    adapter: markdown_frontmatter
+    data: frontmatter
+```
+
 Examples:
 
 ```yaml

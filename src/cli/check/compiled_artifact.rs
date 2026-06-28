@@ -431,7 +431,6 @@ impl From<MarkdownBundle> for PortableMarkdownBundle {
     fn from(bundle: MarkdownBundle) -> Self {
         Self {
             require_frontmatter: bundle.require_frontmatter,
-            required_fields: bundle.required_fields,
             max_heading_depth: bundle.max_heading_depth,
             check_links: bundle.check_links,
             required_sections: bundle.required_sections,
@@ -444,7 +443,7 @@ impl From<PortableMarkdownBundle> for MarkdownBundle {
     fn from(bundle: PortableMarkdownBundle) -> Self {
         Self {
             require_frontmatter: bundle.require_frontmatter,
-            required_fields: bundle.required_fields,
+            required_fields: None,
             max_heading_depth: bundle.max_heading_depth,
             check_links: bundle.check_links,
             required_sections: bundle.required_sections,

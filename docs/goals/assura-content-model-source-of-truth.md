@@ -101,3 +101,10 @@ git diff --check
 Block if typed required fields can still be validated through both Markdown
 rules and content runtime models, if docs continue teaching the old path, or if
 the change removes heading hierarchy validation by accident.
+
+## Progress Log
+
+| Date | Update | Evidence |
+| --- | --- | --- |
+| 2026-06-28 | Started as the first Project Intelligence Runtime successor goal after PR #107 merged. Created Trellis task `.trellis/tasks/06-28-06-28-content-model-source-of-truth`, archived stale content-runtime release-readiness task state, and selected direct rejection of `markdown.required_fields` while keeping `markdown.require_frontmatter` as a generic Markdown presence rule. | `python3 ./.trellis/scripts/workflow_gate.py --platform codex`; `git switch -c codex/content-model-source-of-truth origin/master`; `python3 ./.trellis/scripts/task.py current --source`; `docs/goals/assura-project-intelligence-runtime-program.md`. |
+| 2026-06-28 | Implemented the content-model ownership slice: structure Markdown no longer validates typed frontmatter fields, config validation rejects `markdown.required_fields` with model/collection guidance, docs no longer list it as supported, content runtime tests prove missing required Markdown fields through model validation, and independent review's stale-analysis finding was addressed. | `cargo fmt --check`; `cargo test markdown --quiet`; `cargo test --test content_runtime_validation --quiet`; `cargo test --test markdown_config_deprecation_tests --quiet`; `cargo test --test cli_check_tests --quiet`; `cargo test --test policy_language_completeness_tests --quiet`; `cargo test --test content_runtime_check_cli --quiet`; `cargo test compiled_artifact --quiet`; `cargo clippy --workspace --all-targets --all-features -- -D warnings`; `cargo test --workspace --all-targets --all-features --quiet`; `cargo run --quiet -- check --format json .`; `cargo xtask evidence`; `cargo xtask docs`; `git diff --check`; review agent `019f0f27-9499-7d62-9da7-d429ebd24bbf`. |

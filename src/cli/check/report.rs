@@ -121,8 +121,8 @@ fn corrective_context_for_rule(rule: &str) -> &'static str {
         "exists_count" => {
             "Adjust direct child files/directories until the count matches the configured exists range, or update the range in .assura/config.yml."
         }
-        "markdown_frontmatter" | "markdown_frontmatter_field" | "markdown_frontmatter_parse" => {
-            "Add valid YAML frontmatter with the required fields, or relax markdown.require_frontmatter/required_fields for this scope."
+        "markdown_frontmatter" => {
+            "Add YAML frontmatter, or relax markdown.require_frontmatter for this scope. Use content runtime models and collections for typed frontmatter fields."
         }
         "markdown_heading_depth" => {
             "Promote deep headings or increase markdown.max_heading_depth when the deeper outline is intentional."

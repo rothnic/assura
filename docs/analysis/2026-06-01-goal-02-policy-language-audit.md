@@ -54,7 +54,7 @@ language useful for realistic repositories without overclaiming LS-Lint parity.
 | `directories.allow_extra` | Rejects undeclared direct dirs. | Policy matrix valid fixture | `scratch/` in policy diagnostics test | Prevent new root scopes without review. |
 | `directories.exists` | Direct directory count checks. | `package-core` count in policy matrix | Missing package count in policy diagnostics test | Enforce bounded workspace layout. |
 | `markdown.require_frontmatter` | Markdown requires YAML frontmatter. | `docs/decision.md` in policy matrix | Invalid docs fixture in policy diagnostics test | Keep docs queryable and typed. |
-| `markdown.required_fields` | Frontmatter must contain fields. | `title` in policy matrix | Missing title in policy diagnostics test | Enforce docs metadata. |
+| `markdown.required_fields` | Superseded. Typed frontmatter fields now belong to content runtime models and collections. | Historical Goal 02 policy matrix only | Content runtime model tests cover required typed fields | Avoid duplicate docs metadata policy surfaces. |
 | `markdown.max_heading_depth` | Limits heading depth. | Existing heading-depth CLI test | Existing heading-depth CLI test | Keep docs structure shallow. |
 | `markdown.required_sections` | Requires heading text. | `Summary` in policy matrix | Missing section in policy diagnostics test | Make review docs complete. |
 | `exists.files` / `exists.directories` | Legacy required path lists. | `Cargo.toml` and `src` in policy matrix | Existing required path tests | Backward-compatible exact existence checks. |
@@ -92,9 +92,10 @@ The focused regression is
 `check_policy_diagnostics_include_corrective_context`, which exercises missing
 required files, unexpected and forbidden direct files, file naming drift,
 unexpected and forbidden direct directories, direct child directory naming drift,
-direct count failures, missing Markdown frontmatter, missing frontmatter fields,
-and missing required sections. The migrated `.dir` diagnostic boundary is
-covered by
+direct count failures, missing generic Markdown frontmatter, and missing
+required sections. Typed frontmatter field requirements are now covered by
+content runtime model validation instead of structure Markdown diagnostics. The
+migrated `.dir` diagnostic boundary is covered by
 `converted_lslint_dir_rule_diagnostic_mentions_self_directory_context`.
 
 ## Goal 02 Evidence Commands
