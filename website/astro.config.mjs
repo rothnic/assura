@@ -8,7 +8,7 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			title: 'Assura',
-			description: 'Dependency-aware file system validation engine',
+			description: 'Structure-first repository validation and project intelligence',
 			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/rothnic/assura' }],
 			plugins: [
 				catppuccin({
@@ -41,7 +41,7 @@ export default defineConfig({
 					items: [
 						{ label: 'Structure Validation', slug: 'product/structure-validation' },
 						{ label: 'Markdown Validation', slug: 'product/markdown-validation' },
-						{ label: 'Content Models', slug: 'product/content-models' },
+						{ label: 'Content Runtime And Models', slug: 'product/content-models' },
 						{ label: 'Query And Search', slug: 'product/query-search' },
 						{ label: 'Code Intelligence', slug: 'product/code-intelligence' },
 						{ label: 'Agent And Editor Surfaces', slug: 'product/agent-editor-surfaces' },

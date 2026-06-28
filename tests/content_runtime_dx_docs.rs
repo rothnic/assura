@@ -106,6 +106,7 @@ fn content_runtime_user_docs_cover_examples_writes_and_website_page() {
         "label: 'Product Layers'",
         "slug: 'product/structure-validation'",
         "slug: 'product/markdown-validation'",
+        "Content Runtime And Models",
         "slug: 'product/content-models'",
         "slug: 'product/query-search'",
         "slug: 'product/code-intelligence'",
@@ -117,7 +118,8 @@ fn content_runtime_user_docs_cover_examples_writes_and_website_page() {
         );
     }
     for required in [
-        "Content models make ordinary repository files addressable as typed objects",
+        "The content runtime makes ordinary repository files addressable as typed",
+        "objects. Content models define those objects",
         "markdown_frontmatter",
         "JSON/YAML/JSONL adapters",
         "Agent create/update operations",

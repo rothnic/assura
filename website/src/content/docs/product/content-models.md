@@ -1,11 +1,11 @@
 ---
-title: Content Models
+title: Content Runtime And Models
 description: Modeled repository collections over Markdown frontmatter, JSON, YAML, and JSONL files.
 ---
 
-Content models make ordinary repository files addressable as typed objects.
-They build on structure and Markdown validation while keeping the files as the
-source of truth.
+The content runtime makes ordinary repository files addressable as typed
+objects. Content models define those objects, and the runtime validates them
+while keeping the files as the source of truth.
 
 ## Status
 
