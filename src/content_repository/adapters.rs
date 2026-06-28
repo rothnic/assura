@@ -11,37 +11,37 @@ pub(super) fn parse_object(
     rel_path: &Path,
     content: &str,
 ) -> ParseResult<RepoObject> {
+    let mut objects = parse_objects(collection, rel_path, content)?;
+    if objects.len() != 1 {
+        return Err(Box::new(ContentFinding::new(
+            "parse_error",
+            Some(rel_path.to_path_buf()),
+            format!(
+                "Adapter for '{}' produced {} records where one was expected",
+                rel_path.display(),
+                objects.len()
+            ),
+        )));
+    }
+    Ok(objects.remove(0))
+}
+
+pub(super) fn parse_objects(
+    collection: &CollectionSpec,
+    rel_path: &Path,
+    content: &str,
+) -> ParseResult<Vec<RepoObject>> {
     let parsed = match collection.adapter {
-        AdapterKind::MarkdownFrontmatter => parse_markdown_frontmatter(content, rel_path)?,
-        AdapterKind::JsonRecord => parse_json_record(content, rel_path)?,
+        AdapterKind::MarkdownFrontmatter => vec![parse_markdown_frontmatter(content, rel_path)?],
+        AdapterKind::JsonRecord => vec![parse_json_record(content, rel_path)?],
+        AdapterKind::YamlRecord => vec![parse_yaml_record(content, rel_path)?],
+        AdapterKind::JsonlRecord => parse_jsonl_records(content, rel_path)?,
     };
 
-    let id = parsed
-        .data
-        .get(&collection.id_field)
-        .and_then(Value::as_str)
-        .ok_or_else(|| {
-            Box::new(ContentFinding::new(
-                "missing_object_id",
-                Some(rel_path.to_path_buf()),
-                format!(
-                    "Object in '{}' is missing string id field '{}'",
-                    rel_path.display(),
-                    collection.id_field
-                ),
-            ))
-        })?
-        .to_string();
-
-    Ok(RepoObject {
-        collection: collection.name.clone(),
-        object_type: collection.object_type.clone(),
-        id,
-        rel_path: rel_path.to_path_buf(),
-        data: parsed.data,
-        body: parsed.body,
-        headings: parsed.headings,
-    })
+    parsed
+        .into_iter()
+        .map(|parsed| repo_object_from_data(collection, rel_path, parsed))
+        .collect()
 }
 
 pub(super) fn serialize_record(
@@ -53,7 +53,25 @@ pub(super) fn serialize_record(
     match collection.adapter {
         AdapterKind::MarkdownFrontmatter => serialize_markdown_frontmatter(rel_path, data, body),
         AdapterKind::JsonRecord => serialize_json_record(rel_path, data),
+        AdapterKind::YamlRecord => serialize_yaml_record(rel_path, data),
+        AdapterKind::JsonlRecord => serialize_jsonl_record(rel_path, data),
     }
+}
+
+pub(super) fn serialize_jsonl_records(
+    collection: &CollectionSpec,
+    rel_path: &Path,
+    records: Vec<Map<String, Value>>,
+) -> Result<String, Box<ContentFinding>> {
+    let mut records = records;
+    records.sort_by(|left, right| {
+        record_id(collection, rel_path, left).cmp(&record_id(collection, rel_path, right))
+    });
+    let mut content = String::new();
+    for record in records {
+        content.push_str(&serialize_jsonl_record(rel_path, &record)?);
+    }
+    Ok(content)
 }
 
 struct ParsedObjectData {
@@ -83,11 +101,27 @@ fn parse_markdown_frontmatter(content: &str, rel_path: &Path) -> ParseResult<Par
             ),
         ))
     })?;
-    let data = yaml_mapping_to_json_map(yaml, rel_path)?;
+    let data = yaml_mapping_to_json_map(yaml, rel_path, "Frontmatter")?;
     Ok(ParsedObjectData {
         data,
         body: Some(body.to_string()),
         headings: markdown_headings(body),
+    })
+}
+
+fn parse_yaml_record(content: &str, rel_path: &Path) -> ParseResult<ParsedObjectData> {
+    let yaml = serde_yaml::from_str::<serde_yaml::Value>(content).map_err(|error| {
+        Box::new(ContentFinding::new(
+            "parse_error",
+            Some(rel_path.to_path_buf()),
+            format!("Invalid YAML in '{}': {error}", rel_path.display()),
+        ))
+    })?;
+    let data = yaml_mapping_to_json_map(yaml, rel_path, "YAML record")?;
+    Ok(ParsedObjectData {
+        data,
+        body: None,
+        headings: Vec::new(),
     })
 }
 
@@ -111,6 +145,43 @@ fn parse_json_record(content: &str, rel_path: &Path) -> ParseResult<ParsedObject
         body: None,
         headings: Vec::new(),
     })
+}
+
+fn parse_jsonl_records(content: &str, rel_path: &Path) -> ParseResult<Vec<ParsedObjectData>> {
+    let mut records = Vec::new();
+    for (line_index, line) in content.lines().enumerate() {
+        if line.trim().is_empty() {
+            continue;
+        }
+        let value = serde_json::from_str::<Value>(line).map_err(|error| {
+            Box::new(ContentFinding::new(
+                "parse_error",
+                Some(rel_path.to_path_buf()),
+                format!(
+                    "Invalid JSONL in '{}' at line {}: {error}",
+                    rel_path.display(),
+                    line_index + 1
+                ),
+            ))
+        })?;
+        let Value::Object(data) = value else {
+            return Err(Box::new(ContentFinding::new(
+                "parse_error",
+                Some(rel_path.to_path_buf()),
+                format!(
+                    "JSONL record '{}' line {} must be an object",
+                    rel_path.display(),
+                    line_index + 1
+                ),
+            )));
+        };
+        records.push(ParsedObjectData {
+            data,
+            body: None,
+            headings: Vec::new(),
+        });
+    }
+    Ok(records)
 }
 
 fn serialize_markdown_frontmatter(
@@ -159,18 +230,64 @@ fn serialize_json_record(
         })
 }
 
+fn serialize_yaml_record(
+    rel_path: &Path,
+    data: &Map<String, Value>,
+) -> Result<String, Box<ContentFinding>> {
+    serde_yaml::to_string(data)
+        .map(|mut content| {
+            content = content
+                .strip_prefix("---\n")
+                .unwrap_or(content.as_str())
+                .to_string();
+            if !content.ends_with('\n') {
+                content.push('\n');
+            }
+            content
+        })
+        .map_err(|error| {
+            Box::new(ContentFinding::new(
+                "serialize_error",
+                Some(rel_path.to_path_buf()),
+                format!(
+                    "Failed to serialize YAML record for '{}': {error}",
+                    rel_path.display()
+                ),
+            ))
+        })
+}
+
+fn serialize_jsonl_record(
+    rel_path: &Path,
+    data: &Map<String, Value>,
+) -> Result<String, Box<ContentFinding>> {
+    serde_json::to_string(&Value::Object(data.clone()))
+        .map(|mut content| {
+            content.push('\n');
+            content
+        })
+        .map_err(|error| {
+            Box::new(ContentFinding::new(
+                "serialize_error",
+                Some(rel_path.to_path_buf()),
+                format!(
+                    "Failed to serialize JSONL record for '{}': {error}",
+                    rel_path.display()
+                ),
+            ))
+        })
+}
+
 fn yaml_mapping_to_json_map(
     value: serde_yaml::Value,
     rel_path: &Path,
+    label: &str,
 ) -> ParseResult<Map<String, Value>> {
     let serde_yaml::Value::Mapping(mapping) = value else {
         return Err(Box::new(ContentFinding::new(
             "parse_error",
             Some(rel_path.to_path_buf()),
-            format!(
-                "Frontmatter in '{}' must be a YAML object",
-                rel_path.display()
-            ),
+            format!("{label} in '{}' must be a YAML object", rel_path.display()),
         )));
     };
 
@@ -181,7 +298,7 @@ fn yaml_mapping_to_json_map(
                 "parse_error",
                 Some(rel_path.to_path_buf()),
                 format!(
-                    "Frontmatter in '{}' contains a non-string key",
+                    "{label} in '{}' contains a non-string key",
                     rel_path.display()
                 ),
             )));
@@ -191,7 +308,7 @@ fn yaml_mapping_to_json_map(
                 "parse_error",
                 Some(rel_path.to_path_buf()),
                 format!(
-                    "Frontmatter field '{}' in '{}' cannot be represented as JSON: {error}",
+                    "{label} field '{}' in '{}' cannot be represented as JSON: {error}",
                     key,
                     rel_path.display()
                 ),
@@ -200,6 +317,48 @@ fn yaml_mapping_to_json_map(
         data.insert(key, value);
     }
     Ok(data)
+}
+
+fn repo_object_from_data(
+    collection: &CollectionSpec,
+    rel_path: &Path,
+    parsed: ParsedObjectData,
+) -> ParseResult<RepoObject> {
+    let id = parsed
+        .data
+        .get(&collection.id_field)
+        .and_then(Value::as_str)
+        .ok_or_else(|| missing_id_finding(collection, rel_path))?
+        .to_string();
+
+    Ok(RepoObject {
+        collection: collection.name.clone(),
+        object_type: collection.object_type.clone(),
+        id,
+        rel_path: rel_path.to_path_buf(),
+        data: parsed.data,
+        body: parsed.body,
+        headings: parsed.headings,
+    })
+}
+
+fn record_id(collection: &CollectionSpec, rel_path: &Path, data: &Map<String, Value>) -> String {
+    match data.get(&collection.id_field).and_then(Value::as_str) {
+        Some(id) => id.to_string(),
+        None => rel_path.to_string_lossy().to_string(),
+    }
+}
+
+fn missing_id_finding(collection: &CollectionSpec, rel_path: &Path) -> Box<ContentFinding> {
+    Box::new(ContentFinding::new(
+        "missing_object_id",
+        Some(rel_path.to_path_buf()),
+        format!(
+            "Object in '{}' is missing string id field '{}'",
+            rel_path.display(),
+            collection.id_field
+        ),
+    ))
 }
 
 fn split_markdown_frontmatter(content: &str) -> Option<(&str, &str)> {

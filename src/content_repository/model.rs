@@ -10,6 +10,8 @@ use std::path::{Component, Path, PathBuf};
 pub enum AdapterKind {
     MarkdownFrontmatter,
     JsonRecord,
+    YamlRecord,
+    JsonlRecord,
 }
 
 impl AdapterKind {
@@ -17,10 +19,16 @@ impl AdapterKind {
         match value {
             "markdown_frontmatter" => Ok(Self::MarkdownFrontmatter),
             "json_record" => Ok(Self::JsonRecord),
+            "yaml_record" => Ok(Self::YamlRecord),
+            "jsonl_record" => Ok(Self::JsonlRecord),
             _ => Err(format!(
-                "Unsupported content adapter '{value}'. Supported adapters are markdown_frontmatter and json_record"
+                "Unsupported content adapter '{value}'. Supported adapters are markdown_frontmatter, json_record, yaml_record, and jsonl_record"
             )),
         }
+    }
+
+    pub(super) fn is_multi_record(self) -> bool {
+        matches!(self, Self::JsonlRecord)
     }
 }
 

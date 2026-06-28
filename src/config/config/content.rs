@@ -23,7 +23,8 @@ pub struct ContentCollectionConfig {
     pub class_name: String,
     /// Glob path relative to the project root.
     pub path: String,
-    /// File adapter, currently `markdown_frontmatter` or `json_record`.
+    /// File adapter: `markdown_frontmatter`, `json_record`, `yaml_record`, or
+    /// `jsonl_record`.
     pub adapter: String,
     /// Optional data source hint for adapter-specific docs and future writes.
     #[serde(skip_serializing_if = "Option::is_none")]

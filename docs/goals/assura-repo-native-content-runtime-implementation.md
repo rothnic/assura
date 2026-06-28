@@ -451,3 +451,39 @@ experiment, not the public model source.
   task `.trellis/tasks/06-27-06-28-content-runtime-storage-adapters`.
 - Increment 5 scope: YAML and JSONL adapters with deterministic read, create,
   update, validation failure, and malformed-input coverage.
+
+### 2026-06-28 - Increment 5 implementation started
+
+- Refreshed the active Trellis task and specs, then started the storage-adapter
+  implementation on branch `codex/content-runtime-storage-adapters`.
+- Planned adapter handling so `yaml_record` remains a one-record-per-file
+  adapter while `jsonl_record` can load multiple logical objects from one
+  source file and rewrite that file deterministically for create/update without
+  dropping unrelated records.
+- Required proof remains `tests/content_runtime_adapters.rs` plus fixtures under
+  `tests/fixtures/content_runtime/adapters/{yaml,jsonl}/`.
+
+### 2026-06-28 - Increment 5 local implementation and validation
+
+- Added `yaml_record` and `jsonl_record` adapter support to the production
+  content runtime, including multi-object JSONL discovery and JSONL
+  create/update rewriting that preserves unrelated logical records.
+- Added focused adapter fixtures under
+  `tests/fixtures/content_runtime/adapters/{yaml,jsonl}/` for valid,
+  invalid-shape, and malformed-input cases.
+- Added `tests/content_runtime_adapters.rs` covering read validation, CLI
+  diagnostics, create, update, deterministic YAML/JSONL output, dry-run JSONL
+  previews, and unchanged-tree failure behavior.
+- Documented adapter differences and formatting limits in
+  `docs/content-runtime.md`.
+- Validation passed:
+  `cargo fmt --check`,
+  `cargo test --test content_runtime_adapters --quiet`,
+  `cargo test --test content_runtime_update --quiet`,
+  `cargo test --test content_runtime_create --test content_runtime_validation --test content_runtime_check_cli --quiet`,
+  `cargo run --quiet -- check --format json .`,
+  `cargo clippy --workspace --all-targets --all-features -- -D warnings`,
+  `cargo test --workspace --all-targets --all-features`,
+  `cargo xtask evidence`,
+  `cargo xtask docs`, and
+  `git diff --check`.

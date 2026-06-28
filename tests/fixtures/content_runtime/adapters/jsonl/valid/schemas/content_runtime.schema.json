@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://assura.dev/examples/content-runtime-adapters-jsonl.schema.json",
+  "$defs": {
+    "Goal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "status", "specs"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "status": { "type": "string", "enum": ["planned", "active", "complete"] },
+        "specs": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "Spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "status"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "status": { "type": "string", "enum": ["draft", "active", "complete"] }
+      }
+    }
+  }
+}

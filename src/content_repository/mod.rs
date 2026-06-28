@@ -4,6 +4,7 @@
 //! themselves as canonical state.
 
 mod adapters;
+mod io;
 mod model;
 mod mutation;
 mod operations;
@@ -11,7 +12,7 @@ mod operations;
 mod tests;
 mod validation;
 
-use adapters::parse_object;
+use adapters::parse_objects;
 use jsonschema::Validator;
 pub use model::{
     AdapterKind, CollectionSpec, ContentFinding, FieldKind, FieldSpec, MarkdownHeading, ObjectKey,
@@ -118,26 +119,28 @@ impl ContentRepository {
                 }
             };
 
-            match parse_object(collection, rel_path, &content) {
-                Ok(object) => {
-                    validate_placement(&self.model, &object, findings);
-                    validate_object_data(
-                        collection,
-                        &object,
-                        schema_validator_for(collection, &self.schema_validators),
-                        findings,
-                    );
+            match parse_objects(collection, rel_path, &content) {
+                Ok(objects) => {
+                    for object in objects {
+                        validate_placement(&self.model, &object, findings);
+                        validate_object_data(
+                            collection,
+                            &object,
+                            schema_validator_for(collection, &self.schema_validators),
+                            findings,
+                        );
 
-                    let key = (object.collection.clone(), object.id.clone());
-                    if snapshot.objects.insert(key.clone(), object).is_some() {
-                        findings.push(ContentFinding::new(
-                            "duplicate_object_id",
-                            Some(rel_path.to_path_buf()),
-                            format!(
-                                "Collection '{}' contains duplicate object id '{}'",
-                                key.0, key.1
-                            ),
-                        ));
+                        let key = (object.collection.clone(), object.id.clone());
+                        if snapshot.objects.insert(key.clone(), object).is_some() {
+                            findings.push(ContentFinding::new(
+                                "duplicate_object_id",
+                                Some(rel_path.to_path_buf()),
+                                format!(
+                                    "Collection '{}' contains duplicate object id '{}'",
+                                    key.0, key.1
+                                ),
+                            ));
+                        }
                     }
                 }
                 Err(finding) => findings.push(*finding),
