@@ -269,6 +269,12 @@ experiment, not the public model source.
   `cargo xtask evidence`,
   `cargo xtask docs`, and
   `git diff --check`.
+- Hosted CI initially failed on a newer Clippy `useless_conversion` lint for a
+  redundant `.into_iter()` in the single-walk index loop; removed the redundant
+  call and revalidated with `cargo clippy --workspace --all-targets
+  --all-features -- -D warnings`,
+  `cargo test content_repository::tests::reports_collection_pattern_errors_in_collection_order --lib --quiet`,
+  `cargo run --quiet -- check --format json .`, and `git diff --check`.
 
 ### 2026-06-27 - Increment 0/1 merged
 

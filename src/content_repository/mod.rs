@@ -62,7 +62,7 @@ impl ContentRepository {
         let mut findings = Vec::new();
         let matched_files = self.match_collection_files(root);
 
-        for (collection, matches) in self.model.collections.iter().zip(matched_files.into_iter()) {
+        for (collection, matches) in self.model.collections.iter().zip(matched_files) {
             if let Some(finding) = matches.pattern_error {
                 findings.push(finding);
                 continue;
