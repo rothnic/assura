@@ -16,7 +16,7 @@
   "base_branch": "master",
   "worktree_path": null,
   "commit": null,
-  "pr_url": null,
+  "pr_url": "https://github.com/rothnic/assura/pull/105",
   "subtasks": [],
   "children": [],
   "parent": null,

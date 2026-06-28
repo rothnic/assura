@@ -394,6 +394,8 @@ experiment, not the public model source.
   `cargo test --test content_runtime_dx_docs --quiet`,
   `cargo xtask docs`, and
   `git diff --check`.
+- Opened PR #105, `[codex] Publish content runtime docs examples`, for
+  increment 10: `https://github.com/rothnic/assura/pull/105`.
 
 ### 2026-06-28 - Increment 6 merged and increment 7 started
 
