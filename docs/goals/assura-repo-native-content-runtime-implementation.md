@@ -373,3 +373,51 @@ experiment, not the public model source.
   `.trellis/tasks/archive/2026-06/06-27-06-27-content-runtime-create-operation`.
 - Started increment 4 on branch `codex/content-runtime-update-operation` with
   task `.trellis/tasks/06-28-content-runtime-update-operation`.
+
+### 2026-06-28 - Increment 4 local implementation and validation
+
+- Added typed update operation contracts for update requests, update results,
+  and deterministic dry-run previews.
+- Implemented `ContentRepository::update_record` for field-level updates of
+  existing records with identity-change rejection, schema validation,
+  reference validation, dry-run output, and atomic target replacement.
+- Kept Markdown body bytes from the parsed existing record when frontmatter is
+  updated, and kept JSON update output deterministic.
+- Added `tests/content_runtime_update.rs` covering Markdown body preservation,
+  JSON update, dry-run unchanged tree, invalid shape, invalid reference,
+  missing record, identity-change rejection, and failed-write content
+  preservation.
+- Validation passed:
+  `cargo fmt --check`,
+  `cargo test --test content_runtime_update --quiet`,
+  `cargo test --test content_runtime_create --quiet`,
+  `cargo test --test content_runtime_validation --quiet`,
+  `cargo test --test content_runtime_check_cli --quiet`,
+  `cargo run --quiet -- check --format json .`,
+  `cargo clippy --workspace --all-targets --all-features -- -D warnings`,
+  `cargo xtask evidence`,
+  `cargo xtask docs`, and
+  `git diff --check`.
+- Independent review and PR publication remain pending.
+
+### 2026-06-28 - Increment 4 review hardening
+
+- Independent review agent `Poincare` found no blocking issues for the update
+  operation slice.
+- Addressed review hardening by making dry-run preview coverage assert exact
+  deterministic bytes and repeat-call equality, and by adding explicit
+  `content_update_path_mismatch` coverage with unchanged-tree proof.
+- Kept the readonly-parent failed-write coverage as sufficient for the current
+  update slice; stronger post-temp replacement failure injection can wait for
+  a broader filesystem safety slice if needed.
+- Validation after review hardening passed:
+  `cargo fmt --check`,
+  `cargo test --test content_runtime_update --quiet`,
+  `cargo test --test content_runtime_create --test content_runtime_validation --test content_runtime_check_cli --quiet`,
+  `cargo run --quiet -- check --format json .`,
+  `cargo clippy --workspace --all-targets --all-features -- -D warnings`,
+  `cargo xtask evidence`,
+  `cargo xtask docs`,
+  `cargo test --workspace --all-targets --all-features`, and
+  `git diff --check`.
+- PR publication remains pending.

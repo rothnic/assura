@@ -3,3 +3,7 @@
 {"file":"src/content_repository/mutation.rs","reason":"Create operation implementation is the nearest local pattern for validation-first mutation and write finalization."}
 {"file":"src/content_repository/adapters.rs","reason":"Update operation must reuse adapter parse/serialization boundaries and preserve Markdown body bytes."}
 {"file":"src/content_repository/validation.rs","reason":"Shape and reference validation helpers must remain shared between read, create, and update paths."}
+{"file":"src/content_repository/operations.rs","reason":"Added typed public operation contracts for create/update request, result, and dry-run preview payloads."}
+{"file":"src/content_repository/mutation.rs","reason":"Implemented update_record with in-memory merge, identity checks, shape/reference validation, dry-run output, and atomic replacement writes."}
+{"file":"tests/content_runtime_update.rs","reason":"Added update proof coverage for Markdown body preservation, JSON update, dry-run, invalid shape/reference, missing record, identity rejection, and failed-write content preservation."}
+{"file":"tests/content_runtime_update.rs","reason":"Addressed review hardening by asserting exact deterministic dry-run bytes, repeat dry-run equality, and explicit path-mismatch rejection before writing."}
