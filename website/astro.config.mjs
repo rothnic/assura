@@ -37,6 +37,17 @@ export default defineConfig({
 					],
 				},
 				{
+					label: 'Product Layers',
+					items: [
+						{ label: 'Structure Validation', slug: 'product/structure-validation' },
+						{ label: 'Markdown Validation', slug: 'product/markdown-validation' },
+						{ label: 'Content Models', slug: 'product/content-models' },
+						{ label: 'Query And Search', slug: 'product/query-search' },
+						{ label: 'Code Intelligence', slug: 'product/code-intelligence' },
+						{ label: 'Agent And Editor Surfaces', slug: 'product/agent-editor-surfaces' },
+					],
+				},
+				{
 					label: 'Guides',
 					items: [
 						{ label: 'Configuration', slug: 'docs/configuration' },
