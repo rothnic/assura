@@ -3,7 +3,7 @@
   "name": "project-intelligence-fact-model",
   "title": "Project Intelligence Fact Model",
   "description": "Execute docs/goals/assura-project-intelligence-fact-model.md as the fourth Project Intelligence Runtime successor goal.",
-  "status": "planning",
+  "status": "in_progress",
   "dev_type": null,
   "scope": "Normalized project intelligence facts, deterministic IDs, source and derived fact separation, fixture ingestion, diagnostics, safe fixes, relation edges, and optional code-symbol placeholders",
   "package": null,
