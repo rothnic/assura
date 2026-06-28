@@ -29,19 +29,18 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 15 | Docs Lifecycle Rule | Completed | PR #78 merged; archive PR #79 merged |
 | 16 | Docs Lifecycle Coverage | Completed | PR #83 merged; archive/sync PR #84 merged |
 | 17 | Support Matrix Surface Expansion | Completed | PR #88 merged; archive/sync PR #89 merged |
-| 18 | Project Intelligence Runtime | Active | Next successor is `docs/goals/assura-embedded-graph-search-store-spike.md` |
+| 18 | Project Intelligence Runtime | Active | Current task `.trellis/tasks/06-28-embedded-graph-search-store-spike` prepares successor 5 |
 
 ## Active Roadmap Iteration
 
 Project Intelligence Runtime is in execution.
 
 Current owning task:
-No active Trellis task. Create the next task for
+`.trellis/tasks/06-28-embedded-graph-search-store-spike`, preparing
 `docs/goals/assura-embedded-graph-search-store-spike.md`.
 
 Current branch:
-`codex/project-intelligence-fact-model` contains the completed fact-model
-successor and archive bookkeeping.
+`codex/embedded-graph-search-store-spike`.
 
 Most recent completed Project Intelligence successor:
 `docs/goals/assura-project-intelligence-fact-model.md`, completed locally on
@@ -81,16 +80,19 @@ that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
 Planned next roadmap candidate:
 Continue Project Intelligence Runtime. Start from
-`docs/goals/assura-project-intelligence-runtime-program.md`, create a Trellis
-task for `docs/goals/assura-embedded-graph-search-store-spike.md`, then execute
+`docs/goals/assura-project-intelligence-runtime-program.md`, continue
+`.trellis/tasks/06-28-embedded-graph-search-store-spike`, then execute
 successor goals in order unless a refreshed dependency decision records a
 better sequence.
 
 ## Recommended Next Action
 
 Run the workflow gate and continue
-Project Intelligence Runtime by starting
-`docs/goals/assura-embedded-graph-search-store-spike.md`. Do not reopen the
+Project Intelligence Runtime by continuing
+`.trellis/tasks/06-28-embedded-graph-search-store-spike`. Implement the
+benchmark spike from the current PRD and
+`research/candidate-store-surfaces.md`, starting with a shared fact fixture and
+candidate harness before selecting or rejecting a backend. Do not reopen the
 completed Fact Model, Documentation IA, Markdown validation/fixing,
 content-model source-of-truth, support-matrix expansion, or Windows CI Restore
 work unless a new concrete docs, manifest, package, binary, support status, or
