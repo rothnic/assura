@@ -1,0 +1,6 @@
+{"file":"docs/goals/assura-repo-native-content-runtime-implementation.md","reason":"Defines increment 2 scope, proof gates, review criteria, and remaining program objective."}
+{"file":".trellis/tasks/06-27-content-runtime-check-reporting-integration/prd.md","reason":"Active task scope and acceptance criteria for the CLI reporting integration slice."}
+{"file":".trellis/spec/assura/index.md","reason":"Assura canonical sources and constraints for check/reporting work."}
+{"file":".trellis/spec/assura/codex-agent-feedback.md","reason":"Agent-format output contract that content diagnostics must preserve."}
+{"file":".trellis/spec/assura/structure-enforcement.md","reason":"Structure violation reporting expectations and direct-content contracts."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Cross-layer checklist for config-to-runtime-to-report diagnostic flow."}

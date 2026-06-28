@@ -1,0 +1,5 @@
+{"file":"docs/goals/assura-repo-native-content-runtime-implementation.md","reason":"Review against increment 2 proof gates and ensure later increments are not claimed complete."}
+{"file":".trellis/tasks/06-27-content-runtime-check-reporting-integration/prd.md","reason":"Validate implementation against task-specific acceptance criteria."}
+{"file":".trellis/spec/assura/codex-agent-feedback.md","reason":"Check agent-format diagnostics for stable machine-readable behavior."}
+{"file":".trellis/spec/assura/structure-enforcement.md","reason":"Check violation shape and source-path context against reporting conventions."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Review config/runtime/report boundaries for dropped metadata or duplicated logic."}
