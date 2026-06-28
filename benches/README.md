@@ -110,6 +110,22 @@ Run the main structure-check profile with:
 cargo bench --bench profiling structure_check -- --noplot
 ```
 
+## Content Runtime Profiling
+
+`benches/content_runtime.rs` measures repo-native content runtime validation
+against a comparable no-content-runtime `assura check` baseline.
+
+Run it with:
+
+```bash
+cargo bench --bench content_runtime -- --noplot
+```
+
+The benchmark records direct warm repository validation, repository
+construction plus validation, full `assura check` without content runtime, and
+full `assura check` with content runtime enabled on the same generated file
+tree.
+
 ## Legacy Context
 
 Other benchmark files remain useful for internal engine and graph comparison,
