@@ -1,6 +1,0 @@
-{"file": ".trellis/spec/assura/index.md", "reason": "Project roadmap, source-of-truth, workflow, and Assura-specific constraints for the Project Intelligence Runtime successor."}
-{"file": ".trellis/spec/backend/index.md", "reason": "Backend implementation routing for Rust modules, benchmarks, and validation code."}
-{"file": ".trellis/spec/guides/index.md", "reason": "Guide routing for code reuse and cross-layer data-flow checks before implementing graph/search storage."}
-{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Avoid duplicating benchmark, fact ingestion, and query helper logic while building store prototypes."}
-{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "The spike crosses fact model, storage prototype, query/search, benchmarks, and decision docs."}
-{"file": ".trellis/tasks/06-28-embedded-graph-search-store-spike/research/candidate-store-surfaces.md", "reason": "Current upstream/API research for Grafeo, redb, SQLite/rusqlite, and Tantivy candidate prototypes."}
