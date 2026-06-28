@@ -42,6 +42,11 @@ collections:
     path: decisions/*.jsonl
     adapter: jsonl_record
     id: id
+  events:
+    class: Event
+    path: events/*.jsonl
+    adapter: jsonl_record
+    id: id
 
 relations:
   goals.specs:
@@ -97,6 +102,10 @@ repo with:
 The example should prove that Assura can constrain project structure,
 Markdown/frontmatter shape, and cross-file references without depending on the
 language used by the project.
+
+For concrete inspection paths, see `docs/content-runtime-inspection.md`. It
+shows the same model as Markdown frontmatter, JSON, and checked runtime schema
+form, with TypeScript, Python, and Rust inspection guidance.
 
 ## Current Limits
 

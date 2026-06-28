@@ -399,6 +399,65 @@ experiment, not the public model source.
   `cargo xtask docs`, and
   `git diff --check`.
 
+### 2026-06-28 - Increment 7 merged and increment 8 started
+
+- PR #102, `[codex] Decide content runtime authoring path`, merged into
+  `master` at `a401c2c`.
+- Hosted CI passed after one Windows-only hardening fix: authoring manifest
+  hashes are now computed after CRLF-to-LF normalization so checked text
+  fixtures verify consistently across Linux, macOS, and Windows.
+- Archived increment 7 task
+  `.trellis/tasks/archive/2026-06/06-28-06-28-content-runtime-authoring-decision`.
+- Started increment 8 on branch `codex/content-runtime-dx-inspection` with task
+  `.trellis/tasks/06-28-content-runtime-dx-inspection`.
+- Increment 8 scope: inspectable schema artifacts and examples for
+  TypeScript, Python, and Rust users, including validation commands that use
+  existing Assura surfaces and do not require authoring tools.
+
+### 2026-06-28 - Increment 8 local implementation
+
+- Added `docs/content-runtime-inspection.md` with the same model shown as
+  Markdown frontmatter, JSON, and checked runtime schema form.
+- The inspection guide points TypeScript, Python, and Rust users at the same
+  checked JSON Schema-compatible runtime artifact, `$defs`, `x-assura`
+  collections, and `x-assura` relations without requiring authoring tools or
+  Assura Rust internals.
+- Added validation commands using the installed public Assura surface:
+  `assura check --format json tests/fixtures/content_runtime/valid` and
+  `assura check --format json tests/fixtures/content_runtime/missing_reference`;
+  kept equivalent Cargo commands as maintainer-only repository checks and
+  `cargo test --test artifact_authoring_paths_proof --quiet` as
+  repository-only proof.
+- Added `tests/content_runtime_dx_docs.rs` to prove the guide references real
+  checked artifacts, includes TypeScript/Python/Rust inspection paths, exposes
+  shape/collection/relation metadata, and validates the documented runtime
+  fixture without authoring tools.
+- Addressed independent review feedback by keeping normal validation commands
+  on the public `assura check` surface, adding a `$defs.Goal` schema excerpt,
+  and making the `docs/content-runtime.md` `events.*` relation example declare
+  its source collection.
+- Focused validation passed:
+  `cargo fmt --check`,
+  `cargo test --test content_runtime_dx_docs --quiet`,
+  `cargo test --test artifact_authoring_paths_proof --quiet`,
+  `cargo test --test content_runtime_validation --quiet`,
+  `cargo run --quiet -- check --format json .`, and
+  `git diff --check`.
+- Independent review agent `Aquinas` re-checked the prior validation-command
+  blocker and related non-blocking findings, and reported no remaining
+  blockers.
+- PR-boundary validation passed:
+  `cargo fmt --check`,
+  `cargo test --test content_runtime_dx_docs --quiet`,
+  `cargo test --test artifact_authoring_paths_proof --quiet`,
+  `cargo test --test content_runtime_validation --quiet`,
+  `cargo run --quiet -- check --format json .`,
+  `cargo clippy --workspace --all-targets --all-features -- -D warnings`,
+  `cargo test --workspace --all-targets --all-features`,
+  `cargo xtask evidence`,
+  `cargo xtask docs`, and
+  `git diff --check`.
+
 ### 2026-06-28 - Increment 6 review hardening
 
 - Independent review agent `Banach` initially found two blockers: duplicate-ID
