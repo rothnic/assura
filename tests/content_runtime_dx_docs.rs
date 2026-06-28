@@ -65,6 +65,12 @@ fn content_runtime_user_docs_cover_examples_writes_and_website_page() {
         "cargo test --test content_runtime_references --quiet",
         "assura check --format json .",
         "Markdown updates preserve the existing body bytes",
+        "Adoption Path",
+        "content_runtime:invalid_object_shape",
+        "content_runtime:missing_reference",
+        "content_runtime:duplicate_object_id",
+        "content_runtime:ambiguous_reference",
+        "content_runtime:cyclic_reference",
     ] {
         assert!(
             guide.contains(required),
