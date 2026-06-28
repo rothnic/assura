@@ -487,3 +487,18 @@ experiment, not the public model source.
   `cargo xtask evidence`,
   `cargo xtask docs`, and
   `git diff --check`.
+
+### 2026-06-28 - Increment 5 merged
+
+- Independent review agent `Kierkegaard` found no blockers for the YAML/JSONL
+  adapter slice and flagged one low-severity stale docs sentence, which was
+  fixed before merge.
+- PR #100, `[codex] Add YAML and JSONL content adapters`, merged into
+  `master` at `bae5501`.
+- Hosted CI passed, including documentation, evidence, Rustfmt, Clippy,
+  Linux/macOS/Windows tests, release smoke, Windows installer smoke,
+  installable adoption smokes, performance report, code coverage, and security
+  scope checks.
+- Increment 6 starts next: reference graph completeness for required,
+  optional, many, cross-collection, duplicate/ambiguous reference diagnostics,
+  and cycle/error reporting where relevant.

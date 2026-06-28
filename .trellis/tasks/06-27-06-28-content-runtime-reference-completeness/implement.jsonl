@@ -1,0 +1,5 @@
+{"file": "docs/goals/assura-repo-native-content-runtime-implementation.md", "reason": "Source goal for increment 6 scope, proof gate, and reviewer blocking criteria."}
+{"file": ".trellis/tasks/06-27-06-28-content-runtime-reference-completeness/prd.md", "reason": "Task-specific reference completeness requirements and validation commands."}
+{"file": ".trellis/spec/assura/index.md", "reason": "Project spec routing and current Assura direction."}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Reference work spans config, model, parsing, validation, CLI diagnostics, and tests."}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Reuse existing content runtime relation, validation, and diagnostic patterns."}
