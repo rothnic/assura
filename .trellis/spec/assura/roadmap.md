@@ -29,26 +29,30 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 15 | Docs Lifecycle Rule | Completed | PR #78 merged; archive PR #79 merged |
 | 16 | Docs Lifecycle Coverage | Completed | PR #83 merged; archive/sync PR #84 merged |
 | 17 | Support Matrix Surface Expansion | Completed | PR #88 merged; archive/sync PR #89 merged |
-| 18 | Project Intelligence Runtime | Active | Current task `.trellis/tasks/06-28-embedded-graph-search-store-spike` prepares successor 5 |
+| 18 | Project Intelligence Runtime | Active | Current task `.trellis/tasks/06-28-06-28-content-query-and-search-cli` prepares successor 6 |
 
 ## Active Roadmap Iteration
 
 Project Intelligence Runtime is in execution.
 
 Current owning task:
-`.trellis/tasks/06-28-embedded-graph-search-store-spike`, preparing
-`docs/goals/assura-embedded-graph-search-store-spike.md`.
+`.trellis/tasks/06-28-06-28-content-query-and-search-cli`, preparing
+`docs/goals/assura-content-query-and-search-cli.md`.
 
 Current branch:
-`codex/embedded-graph-search-store-spike`.
+`codex/content-query-and-search-cli`.
 
 Most recent completed Project Intelligence successor:
+`docs/goals/assura-embedded-graph-search-store-spike.md`, completed locally on
+branch `codex/embedded-graph-search-store-spike` with independent review and
+archived Trellis task
+`.trellis/tasks/archive/2026-06/06-28-embedded-graph-search-store-spike`.
+
+Earlier Project Intelligence successors completed in this program:
 `docs/goals/assura-project-intelligence-fact-model.md`, completed locally on
 branch `codex/project-intelligence-fact-model` with independent review and
 archived Trellis task
 `.trellis/tasks/archive/2026-06/06-28-project-intelligence-fact-model`.
-
-Earlier Project Intelligence successors completed in this program:
 `docs/goals/assura-documentation-ia-project-intelligence.md`, completed locally
 on branch `codex/documentation-ia-project-intelligence` with independent review
 and archived Trellis task
@@ -81,7 +85,7 @@ that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 Planned next roadmap candidate:
 Continue Project Intelligence Runtime. Start from
 `docs/goals/assura-project-intelligence-runtime-program.md`, continue
-`.trellis/tasks/06-28-embedded-graph-search-store-spike`, then execute
+`.trellis/tasks/06-28-06-28-content-query-and-search-cli`, then execute
 successor goals in order unless a refreshed dependency decision records a
 better sequence.
 
@@ -89,15 +93,16 @@ better sequence.
 
 Run the workflow gate and continue
 Project Intelligence Runtime by continuing
-`.trellis/tasks/06-28-embedded-graph-search-store-spike`. Implement the
-benchmark spike from the current PRD and
-`research/candidate-store-surfaces.md`, starting with a shared fact fixture and
-candidate harness before selecting or rejecting a backend. Do not reopen the
-completed Fact Model, Documentation IA, Markdown validation/fixing,
-content-model source-of-truth, support-matrix expansion, or Windows CI Restore
-work unless a new concrete docs, manifest, package, binary, support status, or
-hosted CI drift case is named with executable evidence. The product roadmap
-remains open until a separate product decision declares it complete.
+`.trellis/tasks/06-28-06-28-content-query-and-search-cli`. Implement the
+content query/search CLI from the current PRD by reusing the project
+intelligence fact ingestion path and `InMemoryFactStore`; do not add semantic
+search, provider-backed code intelligence, or ad hoc file-scraping query
+paths in this slice. Do not reopen the completed Embedded Graph Search Store
+Spike, Fact Model, Documentation IA, Markdown validation/fixing, content-model
+source-of-truth, support-matrix expansion, or Windows CI Restore work unless a
+new concrete docs, manifest, package, binary, support status, or hosted CI
+drift case is named with executable evidence. The product roadmap remains open
+until a separate product decision declares it complete.
 
 ## Roadmap Rules
 

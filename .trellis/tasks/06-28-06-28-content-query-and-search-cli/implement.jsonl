@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/assura/index.md", "reason": "Assura product direction, source-of-truth map, and workflow constraints for project intelligence work."}
+{"file": ".trellis/spec/guides/index.md", "reason": "Shared Trellis thinking guide index for code reuse and cross-layer checks."}
+{"file": "docs/goals/assura-project-intelligence-runtime-program.md", "reason": "Master successor ordering and program definition of done."}
+{"file": "docs/goals/assura-content-query-and-search-cli.md", "reason": "Target successor goal, scope, definition of done, validation commands, and reviewer criteria."}
+{"file": "docs/analysis/2026-06-28-project-intelligence-store-spike.md", "reason": "Completed store-spike decision and in-memory fallback benchmark evidence for this query CLI slice."}
