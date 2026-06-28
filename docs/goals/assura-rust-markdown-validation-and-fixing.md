@@ -24,8 +24,9 @@ modeled frontmatter, nested heading hierarchy, diagnostics, and safe fixes.
 
 ## Current Gap
 
-Assura has custom Markdown checks for frontmatter presence, required fields,
-heading depth, required sections, and nested outline validation. It does not
+Assura has custom Markdown checks for generic frontmatter presence, heading
+depth, required sections, and nested outline validation. Typed frontmatter
+fields now belong to content runtime models and collections. Assura does not
 yet integrate a maintained Rust Markdown linter/fixer for general Markdown
 formatting and lint rules.
 
@@ -117,3 +118,9 @@ commands in the decision artifact.
 Block if the implementation hand-rolls broad Markdown lint rules before
 evaluating maintained Rust tools, requires JavaScript, rewrites Markdown
 unsafely, or reintroduces duplicate typed frontmatter validation.
+
+## Progress Log
+
+| Date | Update | Evidence |
+| --- | --- | --- |
+| 2026-06-28 | Started as the second Project Intelligence Runtime successor goal after the content-model source-of-truth slice. Created Trellis task `.trellis/tasks/06-28-rust-markdown-validation-and-fixing`, refreshed roadmap routing to this task, and corrected stale goal wording so typed frontmatter fields stay model-owned. | `python3 ./.trellis/scripts/workflow_gate.py --platform codex`; `git status --short --branch`; `.trellis/tasks/06-28-rust-markdown-validation-and-fixing/prd.md`; `.trellis/spec/assura/roadmap.md`. |

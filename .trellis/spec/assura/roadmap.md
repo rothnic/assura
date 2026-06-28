@@ -29,18 +29,18 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 15 | Docs Lifecycle Rule | Completed | PR #78 merged; archive PR #79 merged |
 | 16 | Docs Lifecycle Coverage | Completed | PR #83 merged; archive/sync PR #84 merged |
 | 17 | Support Matrix Surface Expansion | Completed | PR #88 merged; archive/sync PR #89 merged |
-| 18 | Project Intelligence Runtime | Active | Current task `.trellis/tasks/06-28-06-28-content-model-source-of-truth` executes the first successor goal |
+| 18 | Project Intelligence Runtime | Active | Current task `.trellis/tasks/06-28-rust-markdown-validation-and-fixing` executes the second successor goal |
 
 ## Active Roadmap Iteration
 
 Project Intelligence Runtime is in execution.
 
 Current owning task:
-`.trellis/tasks/06-28-06-28-content-model-source-of-truth`, executing
-`docs/goals/assura-content-model-source-of-truth.md`.
+`.trellis/tasks/06-28-rust-markdown-validation-and-fixing`, executing
+`docs/goals/assura-rust-markdown-validation-and-fixing.md`.
 
 Current branch:
-`codex/content-model-source-of-truth`.
+`codex/rust-markdown-validation-and-fixing`.
 
 Most recent completed major roadmap work: Support Matrix Surface Expansion.
 Policy Depth Iteration 02 goals 09 through 13 are complete and archived,
@@ -64,14 +64,14 @@ that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
 Planned next roadmap candidate:
 Continue Project Intelligence Runtime. Start from
-`docs/goals/assura-project-intelligence-runtime-program.md`, complete the
-active content-model source-of-truth goal, then execute successor goals in order
-unless a refreshed dependency decision records a better sequence.
+`docs/goals/assura-project-intelligence-runtime-program.md`, continue the
+active Rust Markdown validation/fixing goal, then execute successor goals in
+order unless a refreshed dependency decision records a better sequence.
 
 ## Recommended Next Action
 
 Run the workflow gate and continue
-`.trellis/tasks/06-28-06-28-content-model-source-of-truth`. Do not reopen the
+`.trellis/tasks/06-28-rust-markdown-validation-and-fixing`. Do not reopen the
 completed support-matrix expansion or Windows CI Restore unless a new concrete
 docs, manifest, package, binary, support status, or hosted CI drift case is
 named with executable evidence. The product roadmap remains open until a

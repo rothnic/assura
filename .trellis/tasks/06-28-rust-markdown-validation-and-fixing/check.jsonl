@@ -1,0 +1,4 @@
+{"file": "docs/goals/assura-rust-markdown-validation-and-fixing.md", "reason": "Acceptance criteria and validation command checklist for this task."}
+{"file": "docs/analysis/2026-06-18-markdown-tooling-evaluation.md", "reason": "Decision evidence must be current, source-backed, and internally consistent."}
+{"file": ".trellis/spec/assura/config-notation.md", "reason": "Check that generic Markdown linting does not reintroduce duplicate typed frontmatter validation."}
+{"file": ".trellis/spec/assura/tooling-stabilization.md", "reason": "Verify scoped gates match changed surfaces and performance claims are evidence-backed."}

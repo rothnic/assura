@@ -1,0 +1,5 @@
+{"file": "docs/goals/assura-project-intelligence-runtime-program.md", "reason": "Master ordered successor-goal program and sequencing constraints."}
+{"file": "docs/goals/assura-rust-markdown-validation-and-fixing.md", "reason": "Current successor goal objective, scope, definition of done, and review criteria."}
+{"file": "docs/analysis/2026-06-18-markdown-tooling-evaluation.md", "reason": "Existing Markdown tooling baseline and prior candidate notes to refresh with current evidence."}
+{"file": ".trellis/spec/assura/config-notation.md", "reason": "Canonical Markdown/frontmatter ownership and config notation contracts."}
+{"file": ".trellis/spec/assura/tooling-stabilization.md", "reason": "Change-scoped validation policy, performance evidence expectations, and local gate selection."}
