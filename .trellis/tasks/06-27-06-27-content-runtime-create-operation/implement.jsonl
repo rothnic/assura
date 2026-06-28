@@ -4,3 +4,7 @@
 {"file":".trellis/spec/assura/structure-enforcement.md","reason":"Existing structure-first validation contract that create writes must not weaken."}
 {"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Create operation crosses config, runtime model, adapter, validation, and filesystem write boundaries."}
 {"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Reuse existing content repository model, adapter, and validation paths instead of duplicating shape/reference logic."}
+{"file":"src/content_repository/model.rs","reason":"Added typed CreateRecordRequest and CreateRecordResult payload/result contracts for the first public agent write operation."}
+{"file":"src/content_repository/mutation.rs","reason":"Implemented validation-first create_record flow for path policy, duplicate IDs, schema shape, references, and delayed filesystem write."}
+{"file":"src/content_repository/adapters.rs","reason":"Added deterministic serialization support for Markdown frontmatter and JSON records used by create_record."}
+{"file":"tests/content_runtime_create.rs","reason":"Added success and failure-regression coverage, including full tree snapshots before and after validation failures."}

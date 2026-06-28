@@ -44,6 +44,18 @@ pub(super) fn parse_object(
     })
 }
 
+pub(super) fn serialize_record(
+    collection: &CollectionSpec,
+    rel_path: &Path,
+    data: &Map<String, Value>,
+    body: Option<&str>,
+) -> Result<String, Box<ContentFinding>> {
+    match collection.adapter {
+        AdapterKind::MarkdownFrontmatter => serialize_markdown_frontmatter(rel_path, data, body),
+        AdapterKind::JsonRecord => serialize_json_record(rel_path, data),
+    }
+}
+
 struct ParsedObjectData {
     data: Map<String, Value>,
     body: Option<String>,
@@ -99,6 +111,52 @@ fn parse_json_record(content: &str, rel_path: &Path) -> ParseResult<ParsedObject
         body: None,
         headings: Vec::new(),
     })
+}
+
+fn serialize_markdown_frontmatter(
+    rel_path: &Path,
+    data: &Map<String, Value>,
+    body: Option<&str>,
+) -> Result<String, Box<ContentFinding>> {
+    let mut frontmatter = serde_yaml::to_string(data).map_err(|error| {
+        Box::new(ContentFinding::new(
+            "serialize_error",
+            Some(rel_path.to_path_buf()),
+            format!(
+                "Failed to serialize Markdown frontmatter for '{}': {error}",
+                rel_path.display()
+            ),
+        ))
+    })?;
+    frontmatter = frontmatter
+        .strip_prefix("---\n")
+        .unwrap_or(frontmatter.as_str())
+        .to_string();
+    if !frontmatter.ends_with('\n') {
+        frontmatter.push('\n');
+    }
+    Ok(format!("---\n{frontmatter}---\n{}", body.unwrap_or("")))
+}
+
+fn serialize_json_record(
+    rel_path: &Path,
+    data: &Map<String, Value>,
+) -> Result<String, Box<ContentFinding>> {
+    serde_json::to_string_pretty(&Value::Object(data.clone()))
+        .map(|mut content| {
+            content.push('\n');
+            content
+        })
+        .map_err(|error| {
+            Box::new(ContentFinding::new(
+                "serialize_error",
+                Some(rel_path.to_path_buf()),
+                format!(
+                    "Failed to serialize JSON record for '{}': {error}",
+                    rel_path.display()
+                ),
+            ))
+        })
 }
 
 fn yaml_mapping_to_json_map(

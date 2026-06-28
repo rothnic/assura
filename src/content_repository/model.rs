@@ -99,6 +99,31 @@ pub struct CollectionSpec {
     pub references: Vec<ReferenceSpec>,
 }
 
+/// Payload for creating one file-backed content object.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CreateRecordRequest {
+    /// Configured collection name to create within.
+    pub collection: String,
+    /// Stable object identifier. If the record data omits the collection ID
+    /// field, this value is inserted before validation.
+    pub id: String,
+    /// Project-relative destination path for the new record.
+    pub path: PathBuf,
+    /// Frontmatter or JSON object data to validate and write.
+    pub data: Map<String, Value>,
+    /// Markdown body for `markdown_frontmatter` records. Ignored for JSON.
+    pub body: Option<String>,
+}
+
+/// Result of a successful create operation.
+#[derive(Debug, Clone)]
+pub struct CreateRecordResult {
+    /// Project-relative path written by the operation.
+    pub path: PathBuf,
+    /// Repository validation after the new record is written.
+    pub validation: RepositoryValidation,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PlacementRule {
     pub directory: PathBuf,
