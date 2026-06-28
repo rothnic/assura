@@ -340,6 +340,24 @@ experiment, not the public model source.
   `git diff --check`.
 - Independent review and PR publication remain pending.
 
+### 2026-06-28 - Increment 6 merged and increment 7 started
+
+- PR #101, `[codex] Complete content reference graph validation`, merged into
+  `master` at `34f97f0`.
+- Hosted CI passed, including documentation, evidence, Rustfmt, Clippy,
+  Linux/macOS/Windows tests, release smoke, Windows installer smoke,
+  installable adoption smokes, performance report, code coverage, and security
+  scope checks.
+- Archived increment 6 task
+  `.trellis/tasks/archive/2026-06/06-27-06-28-content-runtime-reference-completeness`.
+- Started increment 7 on branch
+  `codex/content-runtime-authoring-decision` with task
+  `.trellis/tasks/06-28-06-28-content-runtime-authoring-decision`.
+- Increment 7 scope: authoring toolchain decision and compile path into
+  checked-in runtime schema artifacts, comparing LinkML, TypeSpec, CUE, and a
+  minimal Assura-owned profile without adding authoring tools to runtime
+  validation.
+
 ### 2026-06-28 - Increment 6 review hardening
 
 - Independent review agent `Banach` initially found two blockers: duplicate-ID

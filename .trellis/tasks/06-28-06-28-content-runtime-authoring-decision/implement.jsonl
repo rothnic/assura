@@ -1,0 +1,7 @@
+{"file": "docs/goals/assura-repo-native-content-runtime-implementation.md", "reason": "Source goal for increment 7 scope, proof gate, and authoring-tool runtime boundary."}
+{"file": "docs/analysis/2026-06-27-repo-native-content-object-decision.md", "reason": "Prior content-object architecture decision and runtime-authoring separation context."}
+{"file": "docs/analysis/2026-06-27-artifact-modeling-options-comparison.md", "reason": "Existing comparison baseline for LinkML, TypeSpec, CUE, and native profile options."}
+{"file": "tests/artifact_authoring_paths_proof.rs", "reason": "Existing proof fixture for generated/compiled artifacts validating the same runtime contract."}
+{"file": ".trellis/spec/assura/index.md", "reason": "Project spec routing and current Assura direction."}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Authoring decision spans docs, generated artifacts, runtime schema loading, and tests."}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Reuse existing artifact comparison and content-runtime proof patterns before adding new compiler paths."}
