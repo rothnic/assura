@@ -340,6 +340,30 @@ experiment, not the public model source.
   `git diff --check`.
 - Independent review and PR publication remain pending.
 
+### 2026-06-28 - Increment 6 review hardening
+
+- Independent review agent `Banach` initially found two blockers: duplicate-ID
+  diagnostics were missing `field=id`, and duplicate handling depended on
+  filesystem traversal order.
+- Addressed the blockers by sorting matched collection files by normalized
+  relative path before parsing, keeping the first deterministic object for a
+  duplicate ID, reporting the later duplicate path, and adding the configured
+  ID field to duplicate diagnostics.
+- Closed the optional-empty residual risk by adding coverage that optional
+  scalar references with empty string values are treated as absent and do not
+  create missing-target edges.
+- Focused validation after the fix passed:
+  `cargo fmt --check`,
+  `cargo test --test content_runtime_references --quiet`,
+  `cargo clippy --workspace --all-targets --all-features -- -D warnings`,
+  `cargo test --test content_runtime_validation --quiet`,
+  `cargo test --test content_runtime_adapters --quiet`,
+  `cargo test --test content_runtime_check_cli --quiet`,
+  `cargo run --quiet -- check --format json .`, and
+  `git diff --check`.
+- Review agent `Banach` re-checked the prior findings and reported no
+  remaining blockers.
+
 ### 2026-06-27 - Increment 3 review fixes
 
 - Independent review agent `Mencius` identified one blocker and one coverage
@@ -502,3 +526,47 @@ experiment, not the public model source.
 - Increment 6 starts next: reference graph completeness for required,
   optional, many, cross-collection, duplicate/ambiguous reference diagnostics,
   and cycle/error reporting where relevant.
+
+### 2026-06-28 - Increment 6 implementation started
+
+- Started increment 6 on branch
+  `codex/content-runtime-reference-completeness` with task
+  `.trellis/tasks/06-27-06-28-content-runtime-reference-completeness`.
+- Initial design keeps the existing `relations: collection.field` shape and
+  adds only relation-local controls for required/optional references,
+  multi-target or inferred-target resolution, and explicit acyclic checks.
+
+### 2026-06-28 - Increment 6 local implementation and validation
+
+- Added relation config support for required references, multi-target
+  references, inferred-target references, and explicitly acyclic references
+  while preserving the existing `relations: collection.field` shape.
+- Extended reference validation beyond field-shape checks to report missing
+  targets, missing required reference fields, duplicate object IDs without
+  overwriting the first record, ambiguous multi-target references, and
+  configured directed cycles.
+- Added cross-adapter fixtures under
+  `tests/fixtures/content_runtime/references/` covering Markdown frontmatter,
+  JSON, YAML, and JSONL records across valid, missing, duplicate, ambiguous,
+  and cycle cases.
+- Added `tests/content_runtime_references.rs` for valid links, optional/many
+  links, missing target and required-field diagnostics, duplicate-ID
+  retention, ambiguous references, acyclic cycle reporting, invalid relation
+  config, and CLI JSON diagnostic context.
+- Validation passed:
+  `cargo fmt --check`,
+  `cargo test --test content_runtime_references --quiet`,
+  `cargo test --test content_runtime_validation --quiet`,
+  `cargo test --test content_runtime_adapters --quiet`,
+  `cargo test --test content_runtime_check_cli --quiet`,
+  `cargo test --test content_runtime_create --quiet`,
+  `cargo test --test content_runtime_update --quiet`,
+  `cargo run --quiet -- check --format json tests/fixtures/content_runtime/references/ambiguous`,
+  `cargo run --quiet -- check --format json tests/fixtures/content_runtime/references/valid`,
+  `cargo run --quiet -- check --format json .`,
+  `cargo clippy --workspace --all-targets --all-features -- -D warnings`,
+  `cargo test --workspace --all-targets --all-features`,
+  `cargo xtask evidence`,
+  `cargo xtask docs`, and
+  `git diff --check`.
+- Independent review and PR publication remain pending.

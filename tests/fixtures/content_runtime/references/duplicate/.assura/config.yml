@@ -1,0 +1,48 @@
+structure:
+  ./:
+    required: false
+
+models:
+  source: schemas/content-runtime.linkml.yaml
+  validation_artifact: schemas/content_runtime.schema.json
+
+collections:
+  goals:
+    class: Goal
+    path: docs/goals/*.md
+    adapter: markdown_frontmatter
+    id: id
+  specs:
+    class: Spec
+    path: specs/*.json
+    adapter: json_record
+    id: id
+  decisions:
+    class: Decision
+    path: decisions/*.yml
+    adapter: yaml_record
+    id: id
+  events:
+    class: Event
+    path: events/*.jsonl
+    adapter: jsonl_record
+    id: id
+
+relations:
+  goals.specs:
+    target: specs
+    many: true
+    required: true
+  specs.decision:
+    target: decisions
+  decisions.events:
+    target: events
+    many: true
+    required: true
+  events.related:
+    targets:
+      - goals
+      - specs
+  events.parent:
+    target: events
+    acyclic: true

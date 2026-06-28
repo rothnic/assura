@@ -47,11 +47,23 @@ relations:
   goals.specs:
     target: specs
     many: true
+    required: true
+  events.related:
+    targets:
+      - goals
+      - specs
+  events.parent:
+    target: events
+    acyclic: true
 ```
 
 `models.validation_artifact` points to the runtime schema artifact. Collection
 entries bind object classes to paths, adapters, and stable ID fields. Relation
-keys use `collection.field` and point at a target collection.
+keys use `collection.field`. A relation may point at one `target`, a bounded
+set of `targets`, or omit both to infer the target collection from loaded
+objects. `required: true` reports absent or empty reference fields, `many: true`
+expects an array of target IDs, and `acyclic: true` rejects directed cycles for
+that relation.
 
 ## Runtime Contract
 
@@ -67,7 +79,7 @@ keys use `collection.field` and point at a target collection.
   original line order or whitespace.
 - Runtime validators are compiled in Rust from the checked-in schema artifact.
 - Reference validation resolves configured relation fields across loaded
-  collections.
+  collections, including required, optional, many, and multi-target relations.
 - Diagnostics carry source path, object type, field, and referenced object when
   that context is available.
 

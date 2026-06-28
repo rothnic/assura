@@ -95,10 +95,17 @@ pub(super) fn validate_references(
     findings: &mut Vec<ContentFinding>,
 ) {
     for edge in &snapshot.edges {
-        if !snapshot
-            .objects
-            .contains_key(&(edge.target_collection.clone(), edge.target_id.clone()))
-        {
+        let candidates = edge_candidate_collections(snapshot, edge);
+        let matches = candidates
+            .iter()
+            .filter(|collection| {
+                snapshot
+                    .objects
+                    .contains_key(&((*collection).clone(), edge.target_id.clone()))
+            })
+            .cloned()
+            .collect::<Vec<_>>();
+        if matches.is_empty() {
             let source = snapshot
                 .objects
                 .get(&(edge.source.collection.clone(), edge.source.id.clone()));
@@ -111,17 +118,61 @@ pub(super) fn validate_references(
                     edge.source.collection,
                     edge.source.id,
                     edge.field,
-                    edge.target_collection,
+                    target_collection_label(&candidates),
                     edge.target_id
                 ),
             )
             .with_field(edge.field.clone())
-            .with_referenced_object(format!("{}:{}", edge.target_collection, edge.target_id));
+            .with_referenced_object(format!(
+                "{}:{}",
+                target_collection_label(&candidates),
+                edge.target_id
+            ));
+            if let Some(source) = source {
+                finding = finding.with_object_type(source.object_type.clone());
+            }
+            findings.push(finding);
+        } else if matches.len() > 1 {
+            let source = snapshot
+                .objects
+                .get(&(edge.source.collection.clone(), edge.source.id.clone()));
+            let targets = matches
+                .iter()
+                .map(|collection| format!("{collection}:{}", edge.target_id))
+                .collect::<Vec<_>>()
+                .join(", ");
+            let mut finding = ContentFinding::new(
+                "ambiguous_reference",
+                source.map(|object| object.rel_path.clone()),
+                format!(
+                    "{}:{} field '{}' ambiguously references {}",
+                    edge.source.collection, edge.source.id, edge.field, targets
+                ),
+            )
+            .with_field(edge.field.clone())
+            .with_referenced_object(targets);
             if let Some(source) = source {
                 finding = finding.with_object_type(source.object_type.clone());
             }
             findings.push(finding);
         }
+    }
+    validate_acyclic_references(snapshot, findings);
+}
+
+fn edge_candidate_collections(snapshot: &RepositorySnapshot, edge: &RepoEdge) -> Vec<String> {
+    if edge.target_collections.is_empty() {
+        let mut collections = snapshot
+            .objects
+            .keys()
+            .map(|(collection, _)| collection.clone())
+            .collect::<std::collections::BTreeSet<_>>()
+            .into_iter()
+            .collect::<Vec<_>>();
+        collections.retain(|collection| collection != &edge.source.collection);
+        collections
+    } else {
+        edge.target_collections.clone()
     }
 }
 
@@ -133,9 +184,26 @@ pub(super) fn edge_from(
     RepoEdge {
         source: ObjectKey::new(object.collection.clone(), object.id.clone()),
         field: reference.field.clone(),
-        target_collection: reference.target_collection.clone(),
+        target_collections: reference.target_collections.clone(),
         target_id: target_id.to_string(),
+        acyclic: reference.acyclic,
     }
+}
+
+pub(super) fn missing_required_reference(
+    object: &RepoObject,
+    reference: &ReferenceSpec,
+) -> ContentFinding {
+    ContentFinding::new(
+        "missing_reference_field",
+        Some(object.rel_path.clone()),
+        format!(
+            "Required reference field '{}' on '{}:{}' is missing or empty",
+            reference.field, object.collection, object.id
+        ),
+    )
+    .with_object_type(object.object_type.clone())
+    .with_field(reference.field.clone())
 }
 
 pub(super) fn invalid_reference_scalar(
@@ -151,6 +219,72 @@ pub(super) fn invalid_reference_scalar(
         ),
     )
     .with_field(reference.field.clone())
+}
+
+fn target_collection_label(collections: &[String]) -> String {
+    if collections.is_empty() {
+        "*".to_string()
+    } else {
+        collections.join("|")
+    }
+}
+
+fn validate_acyclic_references(snapshot: &RepositorySnapshot, findings: &mut Vec<ContentFinding>) {
+    for edge in snapshot.edges.iter().filter(|edge| edge.acyclic) {
+        for target_collection in &edge.target_collections {
+            let target = ObjectKey::new(target_collection.clone(), edge.target_id.clone());
+            if path_exists(snapshot, &target, &edge.source, &mut Vec::new()) {
+                let source = snapshot
+                    .objects
+                    .get(&(edge.source.collection.clone(), edge.source.id.clone()));
+                let mut finding = ContentFinding::new(
+                    "cyclic_reference",
+                    source.map(|object| object.rel_path.clone()),
+                    format!(
+                        "{}:{} field '{}' creates a cycle through {}:{}",
+                        edge.source.collection,
+                        edge.source.id,
+                        edge.field,
+                        target.collection,
+                        target.id
+                    ),
+                )
+                .with_field(edge.field.clone())
+                .with_referenced_object(format!("{}:{}", target.collection, target.id));
+                if let Some(source) = source {
+                    finding = finding.with_object_type(source.object_type.clone());
+                }
+                findings.push(finding);
+            }
+        }
+    }
+}
+
+fn path_exists(
+    snapshot: &RepositorySnapshot,
+    current: &ObjectKey,
+    target: &ObjectKey,
+    visited: &mut Vec<ObjectKey>,
+) -> bool {
+    if current == target {
+        return true;
+    }
+    if visited.iter().any(|seen| seen == current) {
+        return false;
+    }
+    visited.push(current.clone());
+    let found = snapshot
+        .edges
+        .iter()
+        .filter(|edge| edge.acyclic && edge.source == *current)
+        .any(|edge| {
+            edge.target_collections.iter().any(|collection| {
+                let next = ObjectKey::new(collection.clone(), edge.target_id.clone());
+                path_exists(snapshot, &next, target, visited)
+            })
+        });
+    visited.pop();
+    found
 }
 
 fn schema_error_field(error: &jsonschema::ValidationError<'_>) -> Option<String> {
