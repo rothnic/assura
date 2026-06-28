@@ -300,3 +300,63 @@ experiment, not the public model source.
   `cargo xtask evidence`,
   `cargo xtask docs`, and
   `git diff --check`.
+
+### 2026-06-27 - Increment 2 merged
+
+- PR #97, `[codex] Report content runtime findings in check`, merged into
+  `master` at `0ffd5db`.
+- Hosted CI passed after a Windows-only test assertion fix for JSON path
+  separators; all Linux, macOS, Windows, docs, coverage, smoke, performance,
+  and evidence jobs were green before merge.
+- Started increment 3 on branch `codex/content-runtime-create-operation` with
+  task `.trellis/tasks/06-27-06-27-content-runtime-create-operation`.
+
+### 2026-06-27 - Increment 3 local implementation and validation
+
+- Added the first typed write operation, `ContentRepository::create_record`,
+  with a typed request/result contract for collection, object ID, destination
+  path, record data, and optional Markdown body.
+- The create flow validates project-relative path shape, collection path
+  policy, destination existence, duplicate object IDs, runtime schema shape,
+  and outgoing references before writing a record.
+- Added Markdown frontmatter and JSON serialization for create writes while
+  keeping YAML, JSONL, update, dry-run, and broader CLI mutation UX out of
+  scope for this increment.
+- Added `tests/content_runtime_create.rs` with successful Markdown create,
+  invalid shape, missing reference, duplicate ID, disallowed path, and full
+  tree snapshot assertions proving validation failures leave the fixture
+  unchanged.
+- Validation passed:
+  `python3 ./.trellis/scripts/workflow_gate.py --platform codex`,
+  `cargo fmt --check`,
+  `cargo test --test content_runtime_create --quiet`,
+  `cargo test --test content_runtime_validation --quiet`,
+  `cargo test --test content_runtime_check_cli --quiet`,
+  `cargo run --quiet -- check --format json .`,
+  `cargo clippy --workspace --all-targets --all-features -- -D warnings`,
+  `cargo test --workspace --all-targets --all-features`,
+  `cargo xtask evidence`,
+  `cargo xtask docs`, and
+  `git diff --check`.
+- Independent review and PR publication remain pending.
+
+### 2026-06-27 - Increment 3 review fixes
+
+- Independent review agent `Mencius` identified one blocker and one coverage
+  gap: final create publication used overwrite-capable `rename` after an
+  earlier destination-exists check, and JSON create success was not covered.
+- Addressed the blocker by publishing the validated temporary file with
+  no-clobber hard-link finalization so a destination created after validation
+  is not overwritten.
+- Added JSON success coverage and explicit existing-destination failure
+  coverage to `tests/content_runtime_create.rs`.
+- Validation after fixes passed:
+  `cargo fmt --check`,
+  `cargo test --test content_runtime_create --quiet`,
+  `cargo test --test content_runtime_validation --quiet`,
+  `cargo test --test content_runtime_check_cli --quiet`,
+  `cargo run --quiet -- check --format json .`,
+  `cargo clippy --workspace --all-targets --all-features -- -D warnings`, and
+  `cargo test --workspace --all-targets --all-features`.
+- Opened PR #98, `[codex] Add content runtime create operation`, for the
+  increment 3 slice.

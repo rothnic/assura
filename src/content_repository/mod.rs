@@ -5,6 +5,7 @@
 
 mod adapters;
 mod model;
+mod mutation;
 #[cfg(test)]
 mod tests;
 mod validation;
@@ -12,8 +13,9 @@ mod validation;
 use adapters::parse_object;
 use jsonschema::Validator;
 pub use model::{
-    AdapterKind, CollectionSpec, ContentFinding, FieldKind, FieldSpec, MarkdownHeading, ObjectKey,
-    PlacementRule, ReferenceSpec, RepositoryModel, RepositorySnapshot, RepositoryValidation,
+    AdapterKind, CollectionSpec, ContentFinding, CreateRecordRequest, CreateRecordResult,
+    FieldKind, FieldSpec, MarkdownHeading, ObjectKey, PlacementRule, ReferenceSpec,
+    RepositoryModel, RepositorySnapshot, RepositoryValidation,
 };
 use serde_json::json;
 use std::collections::HashMap;
@@ -151,38 +153,47 @@ impl ContentRepository {
             let Some(collection) = collections.get(object.collection.as_str()) else {
                 continue;
             };
-            for reference in &collection.references {
-                let Some(value) = object.data.get(&reference.field) else {
-                    continue;
-                };
-                if reference.many {
-                    let Some(items) = value.as_array() else {
-                        findings.push(
-                            ContentFinding::new(
-                                "invalid_reference_field",
-                                Some(object.rel_path.clone()),
-                                format!(
-                                    "Reference field '{}' on '{}:{}' must be an array",
-                                    reference.field, object.collection, object.id
-                                ),
-                            )
-                            .with_field(reference.field.clone()),
-                        );
-                        continue;
-                    };
-                    for item in items {
-                        if let Some(target_id) = item.as_str() {
-                            snapshot.edges.push(edge_from(object, reference, target_id));
-                        } else {
-                            findings.push(invalid_reference_scalar(object, reference));
-                        }
-                    }
-                } else if let Some(target_id) = value.as_str() {
-                    snapshot.edges.push(edge_from(object, reference, target_id));
+            collect_object_edges(collection, object, &mut snapshot.edges, findings);
+        }
+    }
+}
+
+pub(super) fn collect_object_edges(
+    collection: &CollectionSpec,
+    object: &model::RepoObject,
+    edges: &mut Vec<model::RepoEdge>,
+    findings: &mut Vec<ContentFinding>,
+) {
+    for reference in &collection.references {
+        let Some(value) = object.data.get(&reference.field) else {
+            continue;
+        };
+        if reference.many {
+            let Some(items) = value.as_array() else {
+                findings.push(
+                    ContentFinding::new(
+                        "invalid_reference_field",
+                        Some(object.rel_path.clone()),
+                        format!(
+                            "Reference field '{}' on '{}:{}' must be an array",
+                            reference.field, object.collection, object.id
+                        ),
+                    )
+                    .with_field(reference.field.clone()),
+                );
+                continue;
+            };
+            for item in items {
+                if let Some(target_id) = item.as_str() {
+                    edges.push(edge_from(object, reference, target_id));
                 } else {
                     findings.push(invalid_reference_scalar(object, reference));
                 }
             }
+        } else if let Some(target_id) = value.as_str() {
+            edges.push(edge_from(object, reference, target_id));
+        } else {
+            findings.push(invalid_reference_scalar(object, reference));
         }
     }
 }
@@ -193,11 +204,11 @@ fn is_ignored_dir(path: &Path) -> bool {
         .is_some_and(|name| matches!(name, ".git" | "target" | "node_modules"))
 }
 
-fn normalize_slashes(value: &str) -> String {
+pub(super) fn normalize_slashes(value: &str) -> String {
     value.replace('\\', "/")
 }
 
-fn normalize_slashes_path(path: &Path) -> String {
+pub(super) fn normalize_slashes_path(path: &Path) -> String {
     normalize_slashes(&path.to_string_lossy())
 }
 
@@ -251,7 +262,7 @@ fn compile_schema_validators(
     }
 }
 
-fn schema_validator_for<'a>(
+pub(super) fn schema_validator_for<'a>(
     collection: &CollectionSpec,
     validators: &'a HashMap<String, Validator>,
 ) -> Option<&'a Validator> {

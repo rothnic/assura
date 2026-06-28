@@ -1,0 +1,13 @@
+{"file":"docs/goals/assura-repo-native-content-runtime-implementation.md","reason":"Verify increment 3 proof/merge gate and reviewer blocking criteria."}
+{"file":".trellis/tasks/06-27-06-27-content-runtime-create-operation/prd.md","reason":"Check implementation against the task acceptance criteria and out-of-scope boundaries."}
+{"file":".trellis/spec/assura/config-notation.md","reason":"Confirm public operation inputs remain portable and independent of Rust-specific authoring."}
+{"file":".trellis/spec/assura/structure-enforcement.md","reason":"Confirm writes respect existing path and structure policy assumptions."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Review failure atomicity and validation-before-write behavior across layers."}
+{"file":"tests/content_runtime_create.rs","reason":"Local proof passed: cargo test --test content_runtime_create --quiet."}
+{"file":"tests/content_runtime_validation.rs","reason":"Regression proof passed: cargo test --test content_runtime_validation --quiet."}
+{"file":"tests/content_runtime_check_cli.rs","reason":"CLI integration regression proof passed: cargo test --test content_runtime_check_cli --quiet."}
+{"file":".assura/config.yml","reason":"Repository structure proof passed: cargo run --quiet -- check --format json ."}
+{"file":"Cargo.toml","reason":"Workspace proof passed: cargo clippy --workspace --all-targets --all-features -- -D warnings and cargo test --workspace --all-targets --all-features."}
+{"file":"xtask/src/main.rs","reason":"Evidence and docs gates passed: cargo xtask evidence and cargo xtask docs."}
+{"file":"src/content_repository/mutation.rs","reason":"Review agent Mencius found create finalization could clobber a concurrent destination; fixed by publishing temp files with no-clobber hard_link finalization."}
+{"file":"tests/content_runtime_create.rs","reason":"Review agent Mencius requested JSON create success and destination-exists coverage; added both and reran cargo test --test content_runtime_create --quiet."}
