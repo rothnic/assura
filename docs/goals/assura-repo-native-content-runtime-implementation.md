@@ -360,3 +360,16 @@ experiment, not the public model source.
   `cargo test --workspace --all-targets --all-features`.
 - Opened PR #98, `[codex] Add content runtime create operation`, for the
   increment 3 slice.
+
+### 2026-06-28 - Increment 3 merged and increment 4 started
+
+- PR #98, `[codex] Add content runtime create operation`, merged into `master`
+  at `9b5b106`.
+- Hosted CI passed before merge, including docs, evidence, Rustfmt, Clippy,
+  Linux/macOS/Windows tests, release smoke, Windows installer smoke,
+  installable adoption smokes, performance report, code coverage, and security
+  scope checks.
+- Archived increment 3 task
+  `.trellis/tasks/archive/2026-06/06-27-06-27-content-runtime-create-operation`.
+- Started increment 4 on branch `codex/content-runtime-update-operation` with
+  task `.trellis/tasks/06-28-content-runtime-update-operation`.

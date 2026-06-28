@@ -1,0 +1,5 @@
+{"file":"docs/goals/assura-repo-native-content-runtime-implementation.md","reason":"Verify increment 4 proof/merge gate and reviewer blocking criteria."}
+{"file":".trellis/tasks/06-28-content-runtime-update-operation/prd.md","reason":"Check implementation against task acceptance criteria and out-of-scope boundaries."}
+{"file":"tests/content_runtime_update.rs","reason":"Required proof target for update, dry-run, atomic write, and Markdown body preservation behavior."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Update operation crosses config, runtime model, adapter, validation, dry-run, and filesystem write boundaries."}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Reuse create/read validation and adapter logic rather than creating divergent mutation behavior."}
