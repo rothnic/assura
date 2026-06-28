@@ -1,0 +1,6 @@
+{"file":"docs/goals/assura-repo-native-content-runtime-implementation.md","reason":"Source goal for increment 3 scope, proof gate, and reviewer blocking criteria."}
+{"file":".trellis/tasks/06-27-06-27-content-runtime-create-operation/prd.md","reason":"Task-specific create-operation requirements and validation commands."}
+{"file":".trellis/spec/assura/config-notation.md","reason":"Canonical config notation and path policy constraints for content collection placement."}
+{"file":".trellis/spec/assura/structure-enforcement.md","reason":"Existing structure-first validation contract that create writes must not weaken."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Create operation crosses config, runtime model, adapter, validation, and filesystem write boundaries."}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Reuse existing content repository model, adapter, and validation paths instead of duplicating shape/reference logic."}
