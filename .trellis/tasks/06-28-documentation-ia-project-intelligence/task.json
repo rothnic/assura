@@ -3,7 +3,7 @@
   "name": "documentation-ia-project-intelligence",
   "title": "Documentation IA Project Intelligence",
   "description": "Execute docs/goals/assura-documentation-ia-project-intelligence.md as the third Project Intelligence Runtime successor goal.",
-  "status": "planning",
+  "status": "in_progress",
   "dev_type": null,
   "scope": "Website documentation IA for layered validation, Markdown, content models, query/search, code intelligence status, and agent/editor surfaces",
   "package": null,
