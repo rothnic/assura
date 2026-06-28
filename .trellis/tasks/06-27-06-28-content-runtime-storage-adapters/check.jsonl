@@ -1,0 +1,7 @@
+{"file":"docs/goals/assura-repo-native-content-runtime-implementation.md","reason":"Verify increment 5 proof/merge gate and reviewer blocking criteria."}
+{"file":".trellis/tasks/06-27-06-28-content-runtime-storage-adapters/prd.md","reason":"Check implementation against task acceptance criteria and out-of-scope boundaries."}
+{"file":"tests/fixtures/content_runtime/adapters/yaml","reason":"Required fixture family for YAML read/write/validation/malformed-input behavior."}
+{"file":"tests/fixtures/content_runtime/adapters/jsonl","reason":"Required fixture family for JSONL read/write/validation/malformed-input behavior."}
+{"file":"tests/content_runtime_adapters.rs","reason":"Expected focused proof target for YAML and JSONL adapter behavior."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Review cross-layer adapter contracts before final verification."}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Review adapter/mutation reuse before final verification."}

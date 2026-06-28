@@ -1,0 +1,6 @@
+{"file":"docs/goals/assura-repo-native-content-runtime-implementation.md","reason":"Source goal for increment 5 scope, proof gate, and reviewer blocking criteria."}
+{"file":".trellis/tasks/06-27-06-28-content-runtime-storage-adapters/prd.md","reason":"Task-specific YAML/JSONL adapter requirements and validation commands."}
+{"file":".trellis/spec/assura/index.md","reason":"Project spec routing and current Assura direction."}
+{"file":".trellis/spec/assura/config-notation.md","reason":"Config notation constraints for adding adapter declarations without broad notation churn."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Adapter work crosses config, model, parsing, validation, mutation, and filesystem write boundaries."}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Implementation should reuse existing Markdown/JSON adapter and mutation patterns rather than diverging."}

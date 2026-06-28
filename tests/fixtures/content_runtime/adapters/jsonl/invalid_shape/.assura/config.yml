@@ -1,0 +1,24 @@
+structure:
+  ./:
+    required: false
+
+models:
+  source: schemas/content-runtime.linkml.yaml
+  validation_artifact: schemas/content_runtime.schema.json
+
+collections:
+  goals:
+    class: Goal
+    path: goals/*.jsonl
+    adapter: jsonl_record
+    id: id
+  specs:
+    class: Spec
+    path: specs/*.jsonl
+    adapter: jsonl_record
+    id: id
+
+relations:
+  goals.specs:
+    target: specs
+    many: true

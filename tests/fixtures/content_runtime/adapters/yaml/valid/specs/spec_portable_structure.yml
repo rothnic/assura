@@ -1,0 +1,4 @@
+# Adapter writes normalize YAML and do not preserve comments.
+id: spec-portable-structure
+title: Portable structure and frontmatter
+status: draft
