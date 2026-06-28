@@ -1,0 +1,9 @@
+{"file": "docs/goals/assura-repo-native-content-runtime-implementation.md", "reason": "Increment 9 scope, proof gate, and reviewer blocking criteria"}
+{"file": "docs/content-runtime.md", "reason": "Current user-facing runtime contract and performance/index limits"}
+{"file": "docs/content-runtime-inspection.md", "reason": "Current DX example model and checked runtime artifact references"}
+{"file": "benches/README.md", "reason": "Performance evidence command conventions and tracked data workflow"}
+{"file": "benches/history/README.md", "reason": "Checked benchmark history update expectations"}
+{"file": ".trellis/spec/assura/index.md", "reason": "Assura canonical sources and validation constraints"}
+{"file": ".trellis/spec/guides/index.md", "reason": "Shared thinking guide routing"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Cross-layer validation and evidence boundary checklist"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Search-before-new-abstraction guidance for index/cache work"}
