@@ -1,0 +1,8 @@
+{"file":"docs/goals/assura-repo-native-content-runtime-implementation.md","reason":"Increment 10 scope, proof gates, and reviewer criteria"}
+{"file":"docs/content-runtime.md","reason":"Primary user-facing content runtime guide to extend"}
+{"file":"docs/content-runtime-inspection.md","reason":"Existing DX inspection guide and cross-language example baseline"}
+{"file":"docs/analysis/2026-06-28-content-runtime-authoring-decision.md","reason":"Selected authoring profile and runtime artifact boundary"}
+{"file":"docs/analysis/2026-06-28-content-runtime-index-performance.md","reason":"Performance/index decision to link from docs"}
+{"file":".trellis/spec/assura/index.md","reason":"Assura product and docs source-of-truth guidance"}
+{"file":".trellis/spec/assura/config-notation.md","reason":"User-facing config notation constraints"}
+{"file":".trellis/spec/guides/index.md","reason":"Required shared thinking guide index"}
