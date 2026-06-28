@@ -399,6 +399,21 @@ experiment, not the public model source.
   `cargo xtask docs`, and
   `git diff --check`.
 
+### 2026-06-28 - Increment 7 merged and increment 8 started
+
+- PR #102, `[codex] Decide content runtime authoring path`, merged into
+  `master` at `a401c2c`.
+- Hosted CI passed after one Windows-only hardening fix: authoring manifest
+  hashes are now computed after CRLF-to-LF normalization so checked text
+  fixtures verify consistently across Linux, macOS, and Windows.
+- Archived increment 7 task
+  `.trellis/tasks/archive/2026-06/06-28-06-28-content-runtime-authoring-decision`.
+- Started increment 8 on branch `codex/content-runtime-dx-inspection` with task
+  `.trellis/tasks/06-28-content-runtime-dx-inspection`.
+- Increment 8 scope: inspectable schema artifacts and examples for
+  TypeScript, Python, and Rust users, including validation commands that use
+  existing Assura surfaces and do not require authoring tools.
+
 ### 2026-06-28 - Increment 6 review hardening
 
 - Independent review agent `Banach` initially found two blockers: duplicate-ID
