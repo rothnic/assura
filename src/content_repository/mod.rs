@@ -16,7 +16,8 @@ use adapters::parse_objects;
 use jsonschema::Validator;
 pub use model::{
     AdapterKind, CollectionSpec, ContentFinding, FieldKind, FieldSpec, MarkdownHeading, ObjectKey,
-    PlacementRule, ReferenceSpec, RepositoryModel, RepositorySnapshot, RepositoryValidation,
+    PlacementRule, ReferenceSpec, RepoEdge, RepoObject, RepositoryModel, RepositorySnapshot,
+    RepositoryValidation,
 };
 pub use operations::{
     CreateRecordRequest, CreateRecordResult, UpdateRecordDryRun, UpdateRecordRequest,

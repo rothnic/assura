@@ -50,8 +50,12 @@ pub use constraints::{
 
 #[cfg(feature = "full-cli")]
 pub use intelligence::{
-    GraphBuilder, GraphError, GraphPersistence, GraphQuery, GraphResult, IntelligenceGraph, Node,
-    NodeId, NodeMetadata, NodeType, Relationship,
+    model_instance_id, CodeSymbol, Diagnostic, EdgeId, EmbeddingRecord, FactGeneration, FactId,
+    FactIngestor, FactOrigin, FactSet, FieldDefinition, GraphBuilder, GraphError, GraphPersistence,
+    GraphQuery, GraphResult, IntelligenceGraph, MarkdownDocument as ProjectMarkdownDocument,
+    MarkdownSection, ModelDefinition, ModelInstance, Node, NodeId, NodeMetadata, NodeType,
+    PathScope, ProjectEdge, ProjectFact, Relationship, RelationshipDefinition, RelationshipEdge,
+    Resource, SafeFix, SearchChunk, SourceLocation, SymbolRef,
 };
 
 #[cfg(feature = "full-cli")]

@@ -2,7 +2,7 @@
 id: goal-assura-project-intelligence-fact-model
 type: goal
 title: Assura project intelligence fact model
-status: planned
+status: completed
 created: 2026-06-28
 owners:
   - assura-maintainers
@@ -98,3 +98,10 @@ git diff --check
 Block if the fact model is tied to one database, if IDs are unstable without a
 documented reason, if code intelligence is mandatory, or if diagnostics cannot
 be attached back to source files and fields.
+
+## Progress Log
+
+| Date | Update | Evidence |
+| --- | --- | --- |
+| 2026-06-28 | Started as the fourth Project Intelligence Runtime successor goal after Documentation IA completed local review. Created and activated Trellis task `.trellis/tasks/06-28-project-intelligence-fact-model`, refreshed roadmap routing to this task, and added the PRD/context files needed before implementation. | `python3 ./.trellis/scripts/workflow_gate.py --platform codex`; `.trellis/tasks/06-28-project-intelligence-fact-model/prd.md`; `.trellis/spec/assura/roadmap.md`; `cargo run --quiet -- check --format json .`; `git diff --check`. |
+| 2026-06-28 | Implemented the storage-independent project intelligence fact contract with deterministic fact and edge IDs, generation replacement, content-runtime model/resource/Markdown/instance/relation ingestion, diagnostics, safe fixes, search chunks, and unresolved symbol references. Independent review found diagnostic targeting and safe-fix proof gaps; follow-up fixes now target model instances only when unambiguous, fall back to resources for multi-record ambiguity, assert safe-fix diagnostic/location linkage, prove IDs are stable across generation labels, preserve same fact/edge IDs across different generations, keep model definitions distinct by collection/class binding, expose inferred relation candidate collections, and leave ambiguous multi-target relation edges unresolved. | Review agents `019f0fb7-1933-7c20-b422-23899f9a1566` and `019f0ff1-b758-70c2-b8d6-cf2ea5b4db2f`; `cargo fmt --check`; `cargo test --test project_intelligence_fact_model_tests --quiet`; `cargo test project_intelligence --quiet`; `cargo test --test content_runtime_validation --quiet`; `cargo run --quiet -- check --format json .`; `cargo xtask docs`; `cargo xtask evidence`; `cargo clippy --workspace --all-targets --all-features -- -D warnings`; `git diff --check`. |
