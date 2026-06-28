@@ -14,6 +14,8 @@ mod compiled_config;
 mod compiled_fingerprint;
 mod compiled_plan_artifact;
 mod configured_structure;
+#[cfg(feature = "full-cli")]
+mod content_runtime;
 mod custom_constraints;
 mod direct_contents;
 mod docs_lifecycle;
@@ -359,7 +361,14 @@ impl StructureChecker {
             return Ok(report);
         }
 
-        if self.try_check_lslint_fast(&checked_path, &mut report, timings)? {
+        #[cfg(feature = "full-cli")]
+        let has_content_runtime_config = self.has_content_runtime_config();
+        #[cfg(not(feature = "full-cli"))]
+        let has_content_runtime_config = false;
+
+        if !has_content_runtime_config
+            && self.try_check_lslint_fast(&checked_path, &mut report, timings)?
+        {
             report.success = report.violations.is_empty();
             return Ok(report);
         }
@@ -379,6 +388,13 @@ impl StructureChecker {
 
         if !self.fail_fast || report.violations.is_empty() {
             self.validate_custom_constraints(&checked_path, &mut report)?;
+        }
+
+        #[cfg(feature = "full-cli")]
+        if target_mode == CheckTargetMode::Recursive
+            && (!self.fail_fast || report.violations.is_empty())
+        {
+            self.validate_content_runtime(&mut report);
         }
 
         let sort_started = Instant::now();

@@ -269,3 +269,34 @@ experiment, not the public model source.
   `cargo xtask evidence`,
   `cargo xtask docs`, and
   `git diff --check`.
+
+### 2026-06-27 - Increment 0/1 merged
+
+- PR #96, `[codex] Add content runtime validation slice`, merged into
+  `master` at `af4d379`.
+- Hosted CI passed after two pre-merge fixes: boxed adapter parse findings to
+  satisfy Clippy and normalized test-only newline assertions for Windows.
+- Started increment 2 on branch `codex/content-runtime-check-integration` with
+  task `.trellis/tasks/06-27-content-runtime-check-reporting-integration`.
+
+### 2026-06-27 - Increment 2 local validation
+
+- Wired repo-native content runtime findings into `assura check` through the
+  existing `StructureViolation` report model and `content_runtime:` rule
+  prefix.
+- Added CLI coverage proving JSON, text, YAML, and Codex agent output preserve
+  content source path, object type, field, and referenced object context.
+- Kept explicit `--ls-lint-target-semantics` compatibility mode structure-only
+  and covered that boundary with a regression test.
+- Validation passed:
+  `cargo fmt --check`,
+  `cargo test --test content_runtime_check_cli --quiet`,
+  `cargo test --test content_runtime_validation --quiet`,
+  `cargo run --quiet -- check --format json tests/fixtures/content_runtime/missing_reference`,
+  `cargo run --quiet -- check --format agent --agent codex tests/fixtures/content_runtime/missing_reference`,
+  `cargo run --quiet -- check --format json .`,
+  `cargo clippy --workspace --all-targets --all-features -- -D warnings`,
+  `cargo test --workspace --all-targets --all-features`,
+  `cargo xtask evidence`,
+  `cargo xtask docs`, and
+  `git diff --check`.

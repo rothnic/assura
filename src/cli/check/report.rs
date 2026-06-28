@@ -65,6 +65,9 @@ impl StructureViolation {
 }
 
 fn corrective_context_for_rule(rule: &str) -> &'static str {
+    if rule.starts_with("content_runtime:") {
+        return "Update the configured content model, runtime schema artifact, content file, or relation so repo-native object validation passes.";
+    }
     if rule.starts_with("custom:") {
         return "Fix the configured custom constraint target, or update extensions.custom_constraints in .assura/config.yml when the project policy changed.";
     }

@@ -368,6 +368,13 @@ fn summarize_check_feedback(
 }
 
 fn guidance_for_rule(rule: &str) -> Vec<&'static str> {
+    if rule.starts_with("content_runtime:") {
+        return vec![
+            "Inspect the reported object source path and content model relation before editing data.",
+            "Fix the referenced object, field value, runtime schema artifact, or collection config so the repo-native object graph is valid.",
+        ];
+    }
+
     match rule {
         "file_naming" => vec![
             "Rename the file to match the configured file naming convention for its directory.",
