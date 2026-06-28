@@ -1,0 +1,8 @@
+{"file": "docs/goals/assura-repo-native-content-runtime-implementation.md", "reason": "Source goal for increment 8 scope, proof gate, merge gate, and runtime dependency boundary."}
+{"file": "docs/analysis/2026-06-28-content-runtime-authoring-decision.md", "reason": "Selected authoring profile, runtime boundary, and checked artifact path from increment 7."}
+{"file": "docs/content-runtime.md", "reason": "Existing user-facing content runtime documentation to extend or link from."}
+{"file": "tests/fixtures/artifact_modeling_options/authoring_paths/generated_outputs/selected_authoring_profile.compile.json", "reason": "Checked compile manifest and runtime artifact routing for examples."}
+{"file": "tests/artifact_authoring_paths_proof.rs", "reason": "Proof coverage for checked runtime artifact inspection and authoring-path equivalence."}
+{"file": "tests/content_runtime_validation.rs", "reason": "Runtime validation fixture coverage and command examples for existing Assura validation behavior."}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "DX slice spans docs, fixtures, examples, and validation commands."}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Reuse existing fixtures and docs patterns before adding new example surfaces."}

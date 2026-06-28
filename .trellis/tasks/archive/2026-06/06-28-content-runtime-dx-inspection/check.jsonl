@@ -1,0 +1,6 @@
+{"file": "docs/goals/assura-repo-native-content-runtime-implementation.md", "reason": "Verify increment 8 proof/merge gate and non-goal boundaries."}
+{"file": ".trellis/tasks/06-28-content-runtime-dx-inspection/prd.md", "reason": "Task-specific DX inspection requirements and validation commands."}
+{"file": "docs/analysis/2026-06-28-content-runtime-authoring-decision.md", "reason": "Confirm docs do not contradict the selected authoring/runtime boundary."}
+{"file": "docs/content-runtime.md", "reason": "Check user-facing docs explain inspection without requiring Rust internals or authoring tools."}
+{"file": "tests/artifact_authoring_paths_proof.rs", "reason": "Regression coverage for checked runtime artifact shape and no runtime subprocess dependency."}
+{"file": "tests/content_runtime_validation.rs", "reason": "Regression coverage that runtime validation remains Rust-native and schema-artifact based."}
