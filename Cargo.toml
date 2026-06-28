@@ -112,6 +112,10 @@ harness = false
 name = "profiling"
 harness = false
 
+[[bench]]
+name = "content_runtime"
+harness = false
+
 [profile.release]
 opt-level = 3
 lto = true

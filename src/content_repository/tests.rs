@@ -104,6 +104,31 @@ fn reports_field_validation_errors() {
     assert!(codes.contains(&"invalid_field_type"));
 }
 
+#[test]
+fn reports_collection_pattern_errors_in_collection_order() {
+    let fixture = FixtureRepo::new();
+    fixture.write(
+        "docs/goals/goal-1.md",
+        "---\nid: goal-1\nstatus: active\n---\n# Goal One\n",
+    );
+
+    let validation = ContentRepository::try_new(RepositoryModel {
+        collections: vec![goals_collection(), invalid_pattern_collection()],
+        placements: vec![PlacementRule::recursive("docs/goals", ["goal"])],
+        schema_artifact_path: None,
+        schema_artifact: None,
+    })
+    .expect("model compiles")
+    .validate(fixture.path());
+    let codes = validation
+        .findings
+        .iter()
+        .map(|finding| finding.code)
+        .collect::<Vec<_>>();
+
+    assert_eq!(codes, vec!["missing_field", "invalid_pattern"]);
+}
+
 fn model() -> RepositoryModel {
     RepositoryModel {
         collections: vec![goals_collection(), specs_collection()],
@@ -153,6 +178,19 @@ fn specs_collection() -> CollectionSpec {
                 FieldKind::Enum(vec!["draft".to_string(), "active".to_string()]),
             ),
         ],
+        references: Vec::new(),
+    }
+}
+
+fn invalid_pattern_collection() -> CollectionSpec {
+    CollectionSpec {
+        name: "invalid".to_string(),
+        object_type: "invalid".to_string(),
+        schema_class: None,
+        path_pattern: "[".to_string(),
+        adapter: AdapterKind::JsonRecord,
+        id_field: "id".to_string(),
+        fields: Vec::new(),
         references: Vec::new(),
     }
 }

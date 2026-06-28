@@ -475,6 +475,61 @@ experiment, not the public model source.
   cache/index decision with Deeb compared or rejected if it remains a
   candidate.
 
+### 2026-06-28 - Increment 9 local implementation
+
+- Replaced per-collection content runtime project walks with an internal
+  single-walk file index that groups matched files by collection while keeping
+  deterministic per-collection path ordering.
+- Added `benches/content_runtime.rs` to measure direct warm runtime validation,
+  repository construction plus validation, full `assura check` without content
+  runtime, and full `assura check` with content runtime on the same generated
+  file tree.
+- Recorded the cache/index decision in
+  `docs/analysis/2026-06-28-content-runtime-index-performance.md`: keep the
+  internal ephemeral file index, reject Deeb/SQLite as a normal-validation
+  dependency for this release slice, and reconsider only for future persistent
+  editor/session or repeated-query workloads.
+- Local benchmark evidence from
+  `cargo bench --bench content_runtime -- --noplot`: warm repository
+  validation median 21.370 ms, in-process cold repository validation median
+  21.756 ms, full `assura check` no-content baseline median 1.232 ms, and full
+  `assura check` with content runtime median 21.826 ms for 240 goals, 240
+  specs, and 240 unrelated notes.
+- Refreshed tracked release performance data with
+  `target/release/assura performance-report --output benches/history/current.json --history benches/history/ls-lint-comparison-history.jsonl --website-dir website/public/data/performance --iterations 5`;
+  current cold headline verdict remains `not-complete`, while warm
+  persistent-session verdict remains `complete`.
+- Independent review agent `Leibniz` initially found one blocker and one
+  medium ordering risk: cold/tracked performance evidence was incomplete and
+  invalid collection pattern findings could move ahead of earlier collection
+  data findings.
+- Addressed the findings by making cold in-process benchmark rows explicit,
+  refreshing tracked performance data, storing pattern errors per collection,
+  and adding
+  `content_repository::tests::reports_collection_pattern_errors_in_collection_order`.
+- `Leibniz` re-checked the prior findings and reported no remaining blocker or
+  medium finding.
+- Focused validation passed:
+  `cargo fmt --check`,
+  `cargo test content_repository::tests::reports_collection_pattern_errors_in_collection_order --lib --quiet`,
+  `cargo test --test content_runtime_validation --test content_runtime_references --test content_runtime_adapters --test content_runtime_create --test content_runtime_update --test content_runtime_check_cli --test content_runtime_dx_docs --quiet`,
+  `cargo test --test performance_report_contract_tests --quiet`,
+  `cargo test --bench content_runtime --no-run`,
+  `cargo run --quiet -- check --format json .`,
+  `cargo xtask evidence`,
+  `cargo xtask docs`, and
+  `git diff --check`.
+- PR-boundary validation passed:
+  `cargo fmt --check`,
+  `cargo clippy --workspace --all-targets --all-features -- -D warnings`,
+  `cargo test --workspace --all-targets --all-features`,
+  `cargo bench --bench content_runtime -- --noplot`,
+  `target/release/assura performance-report --output benches/history/current.json --history benches/history/ls-lint-comparison-history.jsonl --website-dir website/public/data/performance --iterations 5`,
+  `cargo run --quiet -- check --format json .`,
+  `cargo xtask evidence`,
+  `cargo xtask docs`, and
+  `git diff --check`.
+
 ### 2026-06-28 - Increment 6 review hardening
 
 - Independent review agent `Banach` initially found two blockers: duplicate-ID

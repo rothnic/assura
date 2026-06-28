@@ -25,7 +25,7 @@ pub use operations::{
 use serde_json::json;
 use std::collections::{btree_map::Entry, HashMap};
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use validation::{
     edge_from, invalid_reference_scalar, missing_required_reference, validate_object_data,
     validate_placement, validate_references,
@@ -60,9 +60,14 @@ impl ContentRepository {
     pub fn validate(&self, root: &Path) -> RepositoryValidation {
         let mut snapshot = RepositorySnapshot::default();
         let mut findings = Vec::new();
+        let matched_files = self.match_collection_files(root);
 
-        for collection in &self.model.collections {
-            self.load_collection(root, collection, &mut snapshot, &mut findings);
+        for (collection, matches) in self.model.collections.iter().zip(matched_files.into_iter()) {
+            if let Some(finding) = matches.pattern_error {
+                findings.push(finding);
+                continue;
+            }
+            self.load_collection_files(collection, &matches.files, &mut snapshot, &mut findings);
         }
 
         self.collect_edges(&mut snapshot, &mut findings);
@@ -71,29 +76,35 @@ impl ContentRepository {
         RepositoryValidation { snapshot, findings }
     }
 
-    fn load_collection(
-        &self,
-        root: &Path,
-        collection: &CollectionSpec,
-        snapshot: &mut RepositorySnapshot,
-        findings: &mut Vec<ContentFinding>,
-    ) {
-        let pattern = match glob::Pattern::new(&normalize_slashes(&collection.path_pattern)) {
-            Ok(pattern) => pattern,
-            Err(error) => {
-                findings.push(ContentFinding::new(
-                    "invalid_pattern",
-                    None,
-                    format!(
-                        "Collection '{}' has invalid path pattern '{}': {error}",
-                        collection.name, collection.path_pattern
-                    ),
-                ));
-                return;
-            }
-        };
+    fn match_collection_files(&self, root: &Path) -> Vec<CollectionFileMatches> {
+        let mut matches = self
+            .model
+            .collections
+            .iter()
+            .map(|_| CollectionFileMatches::default())
+            .collect::<Vec<_>>();
+        let mut patterns = Vec::new();
 
-        let mut matched_entries = Vec::new();
+        for (index, collection) in self.model.collections.iter().enumerate() {
+            match glob::Pattern::new(&normalize_slashes(&collection.path_pattern)) {
+                Ok(pattern) => patterns.push((index, pattern)),
+                Err(error) => {
+                    matches[index].pattern_error = Some(ContentFinding::new(
+                        "invalid_pattern",
+                        None,
+                        format!(
+                            "Collection '{}' has invalid path pattern '{}': {error}",
+                            collection.name, collection.path_pattern
+                        ),
+                    ));
+                }
+            }
+        }
+
+        if patterns.is_empty() {
+            return matches;
+        }
+
         for entry in walkdir::WalkDir::new(root)
             .into_iter()
             .filter_entry(|entry| !is_ignored_dir(entry.path()))
@@ -104,27 +115,47 @@ impl ContentRepository {
                 continue;
             };
             let rel_key = normalize_slashes_path(rel_path);
-            if !pattern.matches(&rel_key) {
-                continue;
+            for (index, pattern) in &patterns {
+                if pattern.matches(&rel_key) {
+                    matches[*index].files.push(MatchedContentFile {
+                        rel_key: rel_key.clone(),
+                        rel_path: rel_path.to_path_buf(),
+                        absolute_path: entry.path().to_path_buf(),
+                    });
+                }
             }
-            matched_entries.push((rel_key, rel_path.to_path_buf(), entry.path().to_path_buf()));
         }
-        matched_entries.sort_by(|left, right| left.0.cmp(&right.0));
 
-        for (_, rel_path, absolute_path) in matched_entries {
-            let content = match fs::read_to_string(&absolute_path) {
+        for collection_matches in &mut matches {
+            collection_matches
+                .files
+                .sort_by(|left, right| left.rel_key.cmp(&right.rel_key));
+        }
+
+        matches
+    }
+
+    fn load_collection_files(
+        &self,
+        collection: &CollectionSpec,
+        files: &[MatchedContentFile],
+        snapshot: &mut RepositorySnapshot,
+        findings: &mut Vec<ContentFinding>,
+    ) {
+        for file in files {
+            let content = match fs::read_to_string(&file.absolute_path) {
                 Ok(content) => content,
                 Err(error) => {
                     findings.push(ContentFinding::new(
                         "read_error",
-                        Some(rel_path.clone()),
-                        format!("Failed to read '{}': {error}", rel_path.display()),
+                        Some(file.rel_path.clone()),
+                        format!("Failed to read '{}': {error}", file.rel_path.display()),
                     ));
                     continue;
                 }
             };
 
-            match parse_objects(collection, &rel_path, &content) {
+            match parse_objects(collection, &file.rel_path, &content) {
                 Ok(objects) => {
                     for object in objects {
                         validate_placement(&self.model, &object, findings);
@@ -141,7 +172,7 @@ impl ContentRepository {
                                 findings.push(
                                     ContentFinding::new(
                                         "duplicate_object_id",
-                                        Some(rel_path.to_path_buf()),
+                                        Some(file.rel_path.clone()),
                                         format!(
                                             "Collection '{}' contains duplicate object id '{}'",
                                             entry.key().0,
@@ -178,6 +209,18 @@ impl ContentRepository {
             collect_object_edges(collection, object, &mut snapshot.edges, findings);
         }
     }
+}
+
+struct MatchedContentFile {
+    rel_key: String,
+    rel_path: PathBuf,
+    absolute_path: PathBuf,
+}
+
+#[derive(Default)]
+struct CollectionFileMatches {
+    files: Vec<MatchedContentFile>,
+    pattern_error: Option<ContentFinding>,
 }
 
 pub(super) fn collect_object_edges(

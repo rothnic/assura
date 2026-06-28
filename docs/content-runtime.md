@@ -115,3 +115,8 @@ profile first, TypeSpec fallback, checked JSON Schema-compatible runtime
 artifacts in the validation hot path. Indexing, performance hardening, and
 release-readiness docs are tracked in
 `docs/goals/assura-repo-native-content-runtime-implementation.md`.
+
+The first index/performance decision is recorded in
+`docs/analysis/2026-06-28-content-runtime-index-performance.md`: Assura uses an
+internal single-walk file index for collection matching and does not add Deeb
+or another persistent cache dependency for normal validation.
