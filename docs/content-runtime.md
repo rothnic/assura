@@ -13,8 +13,9 @@ against a JSON Schema-compatible runtime artifact.
 This surface is intentionally portable. A project does not need Rust, a server,
 LinkML, TypeSpec, Deeb, SQLite, Node, Python, Go, or CUE at validation time.
 Authoring tools may generate the runtime schema artifact, but the runtime
-validation path consumes checked-in files. `assura check` report integration is
-tracked as the next increment.
+validation path consumes checked-in files. `assura check` reports content
+runtime diagnostics with source path, object type, field, and referenced object
+context when available.
 
 ## Config Shape
 
