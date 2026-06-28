@@ -1,1 +1,5 @@
-{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file":"docs/goals/assura-project-intelligence-fact-model.md","reason":"Verify every definition-of-done item and reviewer blocking criterion is satisfied."}
+{"file":"docs/goals/assura-project-intelligence-runtime-program.md","reason":"Confirm the fourth successor goal advances the master program without skipping later goals."}
+{"file":"docs/content-runtime.md","reason":"Check fact-model docs align with current content runtime source-of-truth behavior."}
+{"file":"docs/content-runtime-inspection.md","reason":"Check inspection and debug vocabulary remains consistent with new fact terminology."}
+{"file":".trellis/spec/assura/roadmap.md","reason":"Verify roadmap routing points at the active task and records recent completed successors."}

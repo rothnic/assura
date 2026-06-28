@@ -29,24 +29,30 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 15 | Docs Lifecycle Rule | Completed | PR #78 merged; archive PR #79 merged |
 | 16 | Docs Lifecycle Coverage | Completed | PR #83 merged; archive/sync PR #84 merged |
 | 17 | Support Matrix Surface Expansion | Completed | PR #88 merged; archive/sync PR #89 merged |
-| 18 | Project Intelligence Runtime | Active | Current task `.trellis/tasks/06-28-documentation-ia-project-intelligence` executes the third successor goal |
+| 18 | Project Intelligence Runtime | Active | Current task `.trellis/tasks/06-28-project-intelligence-fact-model` executes the fourth successor goal |
 
 ## Active Roadmap Iteration
 
 Project Intelligence Runtime is in execution.
 
 Current owning task:
-`.trellis/tasks/06-28-documentation-ia-project-intelligence`, executing
-`docs/goals/assura-documentation-ia-project-intelligence.md`.
+`.trellis/tasks/06-28-project-intelligence-fact-model`, executing
+`docs/goals/assura-project-intelligence-fact-model.md`.
 
 Current branch:
-`codex/documentation-ia-project-intelligence`.
+`codex/project-intelligence-fact-model`.
 
 Most recent completed Project Intelligence successor:
-`docs/goals/assura-rust-markdown-validation-and-fixing.md`, completed locally on
-branch `codex/rust-markdown-validation-and-fixing` with independent review and
-archived Trellis task
-`.trellis/tasks/archive/2026-06/06-28-rust-markdown-validation-and-fixing`.
+`docs/goals/assura-documentation-ia-project-intelligence.md`, completed locally
+on branch `codex/documentation-ia-project-intelligence` with independent review
+and archived Trellis task
+`.trellis/tasks/archive/2026-06/06-28-documentation-ia-project-intelligence`.
+
+Earlier Project Intelligence successors completed in this program:
+`docs/goals/assura-content-model-source-of-truth.md` completed on branch
+`codex/content-model-source-of-truth`;
+`docs/goals/assura-rust-markdown-validation-and-fixing.md` completed on branch
+`codex/rust-markdown-validation-and-fixing`.
 
 Most recent completed major roadmap work: Support Matrix Surface Expansion.
 Policy Depth Iteration 02 goals 09 through 13 are complete and archived,
@@ -71,18 +77,18 @@ that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 Planned next roadmap candidate:
 Continue Project Intelligence Runtime. Start from
 `docs/goals/assura-project-intelligence-runtime-program.md`, continue the
-active Documentation IA Project Intelligence goal, then execute successor goals
-in order unless a refreshed dependency decision records a better sequence.
+active Project Intelligence Fact Model goal, then execute successor goals in
+order unless a refreshed dependency decision records a better sequence.
 
 ## Recommended Next Action
 
 Run the workflow gate and continue
-`.trellis/tasks/06-28-documentation-ia-project-intelligence`. Do not reopen the
-completed Markdown validation/fixing, content-model source-of-truth,
-support-matrix expansion, or Windows CI Restore work unless a new concrete docs,
-manifest, package, binary, support status, or hosted CI drift case is named with
-executable evidence. The product roadmap remains open until a separate product
-decision declares it complete.
+`.trellis/tasks/06-28-project-intelligence-fact-model`. Do not reopen the
+completed Documentation IA, Markdown validation/fixing, content-model
+source-of-truth, support-matrix expansion, or Windows CI Restore work unless a
+new concrete docs, manifest, package, binary, support status, or hosted CI
+drift case is named with executable evidence. The product roadmap remains open
+until a separate product decision declares it complete.
 
 ## Roadmap Rules
 

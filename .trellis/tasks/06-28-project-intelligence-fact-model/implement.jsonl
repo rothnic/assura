@@ -1,1 +1,7 @@
-{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file":"docs/goals/assura-project-intelligence-runtime-program.md","reason":"Master ordered successor-goal program and fact-model dependency boundaries."}
+{"file":"docs/goals/assura-project-intelligence-fact-model.md","reason":"Current successor goal objective, scope, definition of done, and reviewer blocking criteria."}
+{"file":"docs/content-runtime.md","reason":"Current content runtime concepts, adapters, validation behavior, and source-of-truth model language."}
+{"file":"docs/content-runtime-inspection.md","reason":"Existing inspection/debug vocabulary for content runtime records and relations."}
+{"file":"docs/analysis/2026-06-27-repo-native-content-object-decision.md","reason":"Prior decision record for repo-native content objects and source-file ownership."}
+{"file":"docs/analysis/2026-06-28-content-runtime-authoring-decision.md","reason":"Recent authoring/profile decision context for model artifacts and operations."}
+{"file":".trellis/spec/assura/roadmap.md","reason":"Current roadmap routing and successor-goal status for Project Intelligence Runtime."}

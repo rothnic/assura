@@ -2,7 +2,7 @@
 id: goal-assura-rust-markdown-validation-and-fixing
 type: goal
 title: Assura Rust Markdown validation and fixing
-status: planned
+status: completed
 created: 2026-06-28
 owners:
   - assura-maintainers
