@@ -78,6 +78,68 @@ assura content agent-query diagnostics . --format json
 Replace the starter goal, spec, and ADR with project-specific goals, specs,
 ADRs, packages, or release artifacts once the first query works.
 
+## Hand Off A Context Pack
+
+Use a context pack when an agent or editor needs one bounded packet for an
+editing task. It combines diagnostics, missing relations, optional keyword
+search, safe-fix preview metadata, and object context when an instance is
+named:
+
+```bash
+assura content context-pack tests/fixtures/project_intelligence_real_repo/beacon_crm/invalid --text checkout --limit 5 --format json
+```
+
+The response uses `assura.project-intelligence.context-pack.v1`, reports
+`bounds.limit`, lists omitted fields such as object context when no
+`--collection` and `--id` are provided, and includes the same missing owner and
+missing ADR diagnostics that lower-level commands expose.
+
+For object-oriented work, include the modeled object:
+
+```bash
+assura content context-pack . --collection assura_goals --id goal-assura-project-intelligence-usability-program --text "Project Intelligence Usability" --limit 5 --format json
+```
+
+Use lower-level commands such as `assura content search`, `assura content
+expand`, and `assura content missing-relations` when inspecting one capability.
+Use `assura content context-pack` when preparing a bounded handoff for an
+agent, editor integration, or reviewer.
+
+## Agent Editing Handoff
+
+Task: repair the Beacon CRM checkout epic so project-intelligence validation can
+trust its owner and decision references.
+
+Context command:
+
+```bash
+assura content context-pack tests/fixtures/project_intelligence_real_repo/beacon_crm/invalid --collection epics --id epic-checkout --text checkout --limit 5 --format json
+```
+
+Inspect these response fields before editing:
+
+- `diagnostics`: identify `content_runtime:invalid_object_shape` and
+  `content_runtime:missing_reference`.
+- `instance.data`: confirm the modeled epic fields and current relation IDs.
+- `instance.sections`: find the Markdown section that describes the epic.
+- `related.related`: inspect any resolved ADR or package records.
+- `missing_relations`: identify the unresolved target instance ID.
+- `safe_fixes`: confirm no automatic write is proposed for this semantic
+  relation repair.
+
+Edit constraints: do not change `.assura/config.yml`, do not invent a remote
+provider, and do not apply safe fixes automatically. Fix the source records or
+the broken reference, then verify with:
+
+```bash
+assura check --format json tests/fixtures/project_intelligence_real_repo/beacon_crm/valid
+assura content context-pack tests/fixtures/project_intelligence_real_repo/beacon_crm/valid --collection epics --id epic-checkout --text checkout --limit 5 --format json
+```
+
+Expected evidence: validation succeeds, `missing_relations` is empty, and the
+context pack still includes the `epic-checkout` model instance plus related ADR
+and package records.
+
 ## Run The Demo
 
 From the Assura repository, use the checked fixtures as a small project with a
@@ -225,11 +287,12 @@ from applied changes:
 1. Start with `assura init --project-intelligence` for a working starter.
 2. Replace the starter records with the project knowledge agents need.
 3. Run `assura check --format json .` until the model is clean.
-4. Use `assura content search`, `assura content missing-relations`, and
+4. Use `assura content context-pack` for a bounded agent or editor handoff.
+5. Use `assura content search`, `assura content missing-relations`, and
    `assura content expand` for human inspection.
-5. Use `assura content agent-context` and `assura content agent-query` for
+6. Use `assura content agent-context` and `assura content agent-query` for
    automation.
-6. Use `assura fix markdown --dry-run --format json` before accepting safe
+7. Use `assura fix markdown --dry-run --format json` before accepting safe
    Markdown repairs.
 
 This path is local, source-control friendly, and does not require a daemon,

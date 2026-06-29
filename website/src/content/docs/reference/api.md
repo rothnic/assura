@@ -23,6 +23,7 @@ constraints are not stable public surfaces in this release.
 | `assura status [path]` | Print discovered config and rule summary |
 | `assura init [path]` | Create a starter `.assura/config.yml` |
 | `assura migrate [.ls-lint.yml ...]` | Convert LS-Lint 2.3 rule config |
+| `assura content ...` | Query project-intelligence facts and context |
 | `assura info [path]` | Print text configuration details |
 | `assura watch [path]` | Run one check as a current watch wrapper |
 
@@ -48,6 +49,17 @@ Supported status formats are `text`, `json`, and `yaml`.
 | `--min-severity low|medium|high|critical` | Hide lower-severity feedback items without changing what is checked |
 | `--max-issues <count>` | Cap displayed feedback items without changing what is checked |
 | `--agent generic|codex` | Select a delivery adapter for `--format agent`; Codex wraps feedback for `UserPromptSubmit` |
+
+## Content Query Surface
+
+| Command | Purpose |
+| --- | --- |
+| `assura content agent-context` | Summarize project-intelligence capabilities |
+| `assura content agent-query` | Wrap one query in the shared agent envelope |
+| `assura content context-pack` | Build one bounded project-intelligence handoff packet |
+| `assura content search` | Search modeled content facts |
+| `assura content expand` | Expand graph context around one modeled object |
+| `assura content missing-relations` | Report unresolved modeled relations |
 
 ## Check JSON Shape
 

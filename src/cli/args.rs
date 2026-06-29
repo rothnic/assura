@@ -264,9 +264,7 @@ pub enum FixCommands {
 pub enum ContentCommands {
     #[command(about = "Report shared project-intelligence agent context")]
     AgentContext {
-        #[arg(help = "Project root directory (defaults to current directory)")]
         path: Option<PathBuf>,
-
         #[arg(short, long, value_enum, default_value = "text")]
         format: OutputFormat,
     },
@@ -275,140 +273,113 @@ pub enum ContentCommands {
     AgentQuery {
         #[arg(value_enum, help = "Shared project-intelligence capability to query")]
         query: AgentQueryArg,
-        #[arg(help = "Project root directory (defaults to current directory)")]
         path: Option<PathBuf>,
-        #[arg(long, help = "Content collection for instance-scoped queries")]
+        #[arg(long)]
         collection: Option<String>,
-        #[arg(long, help = "Instance ID for instance-scoped queries")]
+        #[arg(long)]
         id: Option<String>,
-        #[arg(long, help = "Text for keyword or semantic candidate queries")]
+        #[arg(long)]
         text: Option<String>,
-        #[arg(long, help = "Code symbol text for reverse symbol-reference queries")]
+        #[arg(long)]
         symbol: Option<String>,
         #[arg(long, default_value_t = 20)]
         limit: usize,
-        #[arg(long, help = "Enable the built-in local semantic embedding baseline")]
+        #[arg(long)]
         enable_local: bool,
+        #[arg(short, long, value_enum, default_value = "text")]
+        format: OutputFormat,
+    },
+
+    #[command(about = "Build one bounded project-intelligence context pack")]
+    ContextPack {
+        path: Option<PathBuf>,
+        #[arg(long)]
+        collection: Option<String>,
+        #[arg(long)]
+        id: Option<String>,
+        #[arg(long)]
+        text: Option<String>,
+        #[arg(long, default_value_t = 20)]
+        limit: usize,
         #[arg(short, long, value_enum, default_value = "text")]
         format: OutputFormat,
     },
 
     #[command(about = "List modeled content collections")]
     Collections {
-        #[arg(help = "Project root directory (defaults to current directory)")]
         path: Option<PathBuf>,
-
         #[arg(short, long, value_enum, default_value = "text")]
         format: OutputFormat,
     },
 
     #[command(about = "List instances in one modeled collection")]
     Instances {
-        #[arg(help = "Content collection name")]
         collection: String,
-
-        #[arg(help = "Project root directory (defaults to current directory)")]
         path: Option<PathBuf>,
-
         #[arg(short, long, value_enum, default_value = "text")]
         format: OutputFormat,
     },
 
     #[command(about = "Show one modeled content instance")]
     Show {
-        #[arg(help = "Content collection name")]
         collection: String,
-
-        #[arg(help = "Instance ID inside the collection")]
         id: String,
-
-        #[arg(help = "Project root directory (defaults to current directory)")]
         path: Option<PathBuf>,
-
         #[arg(short, long, value_enum, default_value = "text")]
         format: OutputFormat,
     },
 
     #[command(about = "Search modeled content facts by keyword")]
     Search {
-        #[arg(help = "Keyword query")]
         query: String,
-
-        #[arg(help = "Project root directory (defaults to current directory)")]
         path: Option<PathBuf>,
-
         #[arg(short, long, value_enum, default_value = "text")]
         format: OutputFormat,
     },
 
     #[command(about = "Search modeled content facts by optional local semantic candidates")]
     SemanticSearch {
-        #[arg(help = "Semantic query text")]
         query: String,
-
-        #[arg(help = "Project root directory (defaults to current directory)")]
         path: Option<PathBuf>,
-
         #[arg(long, default_value_t = 10)]
         limit: usize,
-
-        #[arg(long, help = "Enable the built-in local semantic embedding baseline")]
+        #[arg(long)]
         enable_local: bool,
-
         #[arg(short, long, value_enum, default_value = "text")]
         format: OutputFormat,
     },
 
     #[command(about = "Report code symbols referenced by a modeled content instance")]
     Symbols {
-        #[arg(help = "Collection name")]
         collection: String,
-
-        #[arg(help = "Instance ID")]
         id: String,
-
-        #[arg(help = "Project root directory (defaults to current directory)")]
         path: Option<PathBuf>,
-
         #[arg(short, long, value_enum, default_value = "text")]
         format: OutputFormat,
     },
 
     #[command(about = "Report modeled content instances related to a code symbol")]
     SymbolRefs {
-        #[arg(help = "Symbol text, such as Config or crate::config::Config")]
         symbol: String,
-
-        #[arg(help = "Project root directory (defaults to current directory)")]
         path: Option<PathBuf>,
-
         #[arg(short, long, value_enum, default_value = "text")]
         format: OutputFormat,
     },
 
     #[command(about = "Report relationship edges with missing targets")]
     MissingRelations {
-        #[arg(help = "Project root directory (defaults to current directory)")]
         path: Option<PathBuf>,
-
         #[arg(short, long, value_enum, default_value = "text")]
         format: OutputFormat,
     },
 
     #[command(about = "Expand bounded graph context around one content instance")]
     Expand {
-        #[arg(help = "Content collection name")]
         collection: String,
-
-        #[arg(help = "Instance ID inside the collection")]
         id: String,
-
-        #[arg(help = "Project root directory (defaults to current directory)")]
         path: Option<PathBuf>,
-
         #[arg(long, default_value_t = 20)]
         limit: usize,
-
         #[arg(short, long, value_enum, default_value = "text")]
         format: OutputFormat,
     },

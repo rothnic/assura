@@ -2,7 +2,7 @@
 id: goal-assura-project-intelligence-context-pack
 type: goal
 title: Assura project intelligence context pack
-status: planned
+status: completed
 created: 2026-06-29
 owners:
   - assura-maintainers
@@ -63,7 +63,7 @@ and what safe fixes are available.
 
 ```bash
 cargo fmt --check
-cargo test project_intelligence_context_pack --quiet
+cargo test --test project_intelligence_context_pack --quiet
 cargo test content_query_cli --quiet
 cargo run --quiet -- check --format json .
 cargo xtask docs
@@ -83,3 +83,22 @@ git diff --check
 
 Block if the context pack hides lower-level evidence, emits unbounded output,
 reimplements validation/query behavior separately, or performs writes.
+
+## Progress Log
+
+- 2026-06-29: Completed implementation on task
+  `.trellis/tasks/06-29-project-intelligence-context-pack`. Added
+  `assura content context-pack` with schema
+  `assura.project-intelligence.context-pack.v1`, diagnostic-oriented and
+  object-oriented modes, explicit bounds/truncation/omission metadata, and
+  composition over existing diagnostics, show, expand, search,
+  missing-relations, and safe-fix query contracts. Regression coverage in
+  `tests/project_intelligence_context_pack.rs` proves Beacon CRM invalid
+  context and Assura goal object context agree with lower-level commands.
+  Website docs now show a complete context-pack handoff.
+- 2026-06-29: Addressed review findings from agent
+  `019f13a9-1ead-79e1-9261-5ce3913059bd` by reporting
+  `related.related` truncation in `bounds.truncated` and by expanding the
+  website demo with a concrete agent editing handoff that names the task,
+  context command, fields to inspect, edit constraints, verification commands,
+  and expected evidence.

@@ -3,6 +3,7 @@
 mod agent_query;
 mod code_symbols;
 mod context;
+mod context_pack;
 mod facts;
 mod output;
 mod semantic;
@@ -10,6 +11,7 @@ mod semantic;
 use self::agent_query::{agent_query, AgentQueryRequest};
 use self::code_symbols::{symbol_refs, symbols_for_instance};
 use self::context::{ContentQueryError, QueryContext};
+use self::context_pack::{context_pack, ContextPackRequest};
 use self::facts::{
     document_path, fact_by_id, fact_kind, fact_path, instance_summary, model_definitions,
     path_scope_for_collection, resources_by_id, sections_for_path,
@@ -77,6 +79,24 @@ fn run_content_command(
             )?,
             format,
         ),
+        ContentCommands::ContextPack {
+            collection,
+            id,
+            text,
+            limit,
+            ..
+        } => render(
+            context_pack(
+                &context,
+                ContextPackRequest {
+                    collection: collection.as_ref(),
+                    id: id.as_ref(),
+                    text: text.as_ref(),
+                    limit,
+                },
+            )?,
+            format,
+        ),
         ContentCommands::Collections { .. } => render(collections(&context), format),
         ContentCommands::Instances { collection, .. } => {
             render(instances(&context, &collection), format)
@@ -114,6 +134,7 @@ fn command_format(command: &ContentCommands) -> OutputFormat {
     match command {
         ContentCommands::AgentContext { format, .. }
         | ContentCommands::AgentQuery { format, .. }
+        | ContentCommands::ContextPack { format, .. }
         | ContentCommands::Collections { format, .. }
         | ContentCommands::Instances { format, .. }
         | ContentCommands::Show { format, .. }

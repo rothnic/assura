@@ -178,3 +178,10 @@ without real-repo proof and release hardening.
   broken-state example diagnostics, website/API docs, focused integration
   coverage, and command-surface policy updates. The immediate next goal is
   `docs/goals/assura-project-intelligence-context-pack.md`.
+- 2026-06-29: Completed
+  `docs/goals/assura-project-intelligence-context-pack.md` locally on task
+  `.trellis/tasks/06-29-project-intelligence-context-pack`. Added
+  `assura content context-pack` as a bounded, read-only handoff packet for
+  diagnostics, related modeled records, Markdown sections, missing relation
+  status, keyword search, and safe-fix preview metadata. The immediate next
+  goal is `docs/goals/assura-project-intelligence-persistent-session.md`.

@@ -23,6 +23,51 @@ pub(super) struct AgentQueryRequestOutput {
 }
 
 #[derive(Debug, Serialize)]
+pub(super) struct ContextPackOutput {
+    pub(super) schema: &'static str,
+    pub(super) request: ContextPackRequestOutput,
+    pub(super) bounds: ContextPackBoundsOutput,
+    pub(super) diagnostics: Vec<DiagnosticOutput>,
+    pub(super) instance: Option<InstanceOutput>,
+    pub(super) related: Option<ExpandOutput>,
+    pub(super) search: Option<SearchOutput>,
+    pub(super) missing_relations: Vec<RelationOutput>,
+    pub(super) safe_fixes: Vec<SafeFixOutput>,
+}
+
+#[derive(Debug, Serialize)]
+pub(super) struct ContextPackRequestOutput {
+    pub(super) mode: &'static str,
+    pub(super) cli: &'static str,
+    pub(super) project_root: PathBuf,
+    pub(super) config_path: PathBuf,
+    pub(super) collection: Option<String>,
+    pub(super) id: Option<String>,
+    pub(super) text: Option<String>,
+    pub(super) limit: usize,
+}
+
+#[derive(Debug, Serialize)]
+pub(super) struct ContextPackBoundsOutput {
+    pub(super) limit: usize,
+    pub(super) truncated: Vec<ContextPackTruncationOutput>,
+    pub(super) omissions: Vec<ContextPackOmissionOutput>,
+}
+
+#[derive(Debug, Serialize)]
+pub(super) struct ContextPackTruncationOutput {
+    pub(super) field: &'static str,
+    pub(super) original_count: usize,
+    pub(super) returned_count: usize,
+}
+
+#[derive(Debug, Serialize)]
+pub(super) struct ContextPackOmissionOutput {
+    pub(super) field: &'static str,
+    pub(super) reason: &'static str,
+}
+
+#[derive(Debug, Serialize)]
 pub(super) struct CollectionsOutput {
     pub(super) project_root: PathBuf,
     pub(super) config_path: PathBuf,
@@ -226,6 +271,36 @@ impl TextRender for AgentQueryOutput {
             "Agent query: {} via {}",
             self.request.capability, self.request.cli
         )
+    }
+}
+
+impl TextRender for ContextPackOutput {
+    fn render_text(&self) -> String {
+        let mut lines = vec![format!("Context pack: {}", self.request.mode)];
+        lines.push(format!(
+            "diagnostics: {}; missing relations: {}; safe fixes: {}",
+            self.diagnostics.len(),
+            self.missing_relations.len(),
+            self.safe_fixes.len()
+        ));
+        if let Some(instance) = &self.instance {
+            lines.push(format!(
+                "instance: {}:{} ({})",
+                instance.collection,
+                instance.id,
+                instance.path.display()
+            ));
+        }
+        if let Some(search) = &self.search {
+            lines.push(format!("search matches: {}", search.matches.len()));
+        }
+        if !self.bounds.omissions.is_empty() {
+            lines.push(format!("omissions: {}", self.bounds.omissions.len()));
+        }
+        if !self.bounds.truncated.is_empty() {
+            lines.push(format!("truncated: {}", self.bounds.truncated.len()));
+        }
+        lines.join("\n")
     }
 }
 

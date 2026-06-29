@@ -78,6 +78,7 @@ fn command_path(command: &ContentCommands) -> Option<PathBuf> {
     match command {
         ContentCommands::AgentContext { path, .. }
         | ContentCommands::AgentQuery { path, .. }
+        | ContentCommands::ContextPack { path, .. }
         | ContentCommands::Collections { path, .. }
         | ContentCommands::Instances { path, .. }
         | ContentCommands::Show { path, .. }
@@ -120,6 +121,7 @@ impl SemanticCommand for ContentCommands {
                         | AgentQueryArg::CodeSymbolRefs,
                     ..
                 }
+                | ContentCommands::ContextPack { .. }
                 | ContentCommands::Symbols { .. }
                 | ContentCommands::SymbolRefs { .. }
                 | ContentCommands::Expand { .. }

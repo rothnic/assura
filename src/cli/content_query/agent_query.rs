@@ -110,7 +110,7 @@ fn agent_query_cli(query: QueryArg) -> &'static str {
     }
 }
 
-fn diagnostics(context: &QueryContext) -> DiagnosticsOutput {
+pub(super) fn diagnostics(context: &QueryContext) -> DiagnosticsOutput {
     let diagnostics = context
         .store
         .facts()
@@ -124,7 +124,7 @@ fn diagnostics(context: &QueryContext) -> DiagnosticsOutput {
     DiagnosticsOutput { diagnostics }
 }
 
-fn safe_fixes(context: &QueryContext) -> SafeFixesOutput {
+pub(super) fn safe_fixes(context: &QueryContext) -> SafeFixesOutput {
     let safe_fixes = context
         .store
         .facts()
