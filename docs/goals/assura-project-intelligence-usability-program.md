@@ -138,3 +138,13 @@ without real-repo proof and release hardening.
   remains open until real-repo proof, persistent sessions, editor/agent
   transports, safe-fix workflow, and release hardening are implemented and
   audited.
+- 2026-06-29: Continued with
+  `docs/goals/assura-project-intelligence-real-repo-proof.md` on task
+  `.trellis/tasks/06-29-project-intelligence-real-repo-proof`. Added the
+  Beacon CRM non-Assura fixture package plus tests and analysis evidence for
+  valid checks, invalid diagnostics, content search, graph expansion,
+  missing-relations, agent-query envelopes, and materialized safe-fix preview.
+  Review blockers were fixed by adding Assura-local goal content modeling and
+  tightening diagnostics assertions. This completes the real-repo proof
+  successor; the program remains open for persistent sessions, editor/agent
+  transports, safe-fix workflow, and release hardening.

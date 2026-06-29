@@ -203,3 +203,35 @@ from applied changes:
 
 This path is local, source-control friendly, and does not require a daemon,
 hosted service, remote embedding provider, or editor plugin.
+
+## Realistic Repo Proof
+
+The visual demo above uses a small content-runtime fixture so the data is easy
+to inspect. The same workflow is also checked against the Assura repository and
+a more realistic TypeScript-style workspace.
+
+The Assura repo models its own goal docs as project-intelligence facts:
+
+```bash
+assura content search "Project Intelligence Usability" . --format json
+```
+
+The result includes
+`goal-assura-project-intelligence-usability-program` from
+`docs/goals/assura-project-intelligence-usability-program.md`.
+
+```bash
+assura check --format json tests/fixtures/project_intelligence_real_repo/beacon_crm/valid
+assura content search "checkout onboarding" tests/fixtures/project_intelligence_real_repo/beacon_crm/valid --format json
+assura content missing-relations tests/fixtures/project_intelligence_real_repo/beacon_crm/invalid --format json
+assura content agent-query diagnostics tests/fixtures/project_intelligence_real_repo/beacon_crm/invalid --format json
+```
+
+The Beacon CRM fixture models a non-Assura repo with `apps/web`, `packages/ui`,
+an epic, an ADR, and a package intelligence record. The invalid state proves
+missing field and missing relation diagnostics, while the regression test
+materializes Markdown trailing-whitespace drift in a temporary copy for
+safe-fix preview.
+
+See `docs/analysis/2026-06-29-project-intelligence-real-repo-proof.md` and
+`tests/project_intelligence_real_repo_proof.rs` for the exact evidence.

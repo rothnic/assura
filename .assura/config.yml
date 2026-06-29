@@ -529,6 +529,19 @@ extensions:
       target: ".assura/command-surface.yml"
       severity: high
 
+models:
+  source: .assura/project-intelligence-goals.linkml.yaml
+  validation_artifact: .assura/project-intelligence-goals.schema.json
+
+collections:
+  assura_goals:
+    class: AssuraGoal
+    path: docs/goals/*.md
+    adapter: markdown_frontmatter
+    data: frontmatter
+    body: markdown
+    id: id
+
 # Root directory - only standard project files allowed
 # Special documents (AGENTS.md, CONSTITUTION.md) allowed in SCREAMING_SNAKE_CASE
 # All other root files must be standard project files
@@ -847,6 +860,7 @@ structure:
             - "config.new.yml"
             - "config.yml"
             - "config.yml.v1"
+            - "project-intelligence-goals.schema.json"
           allow_extra: false
         directories:
           allowed_names:
@@ -1320,3 +1334,4 @@ exclude:
   - "tests/fixtures/ls-lint/**"
   - "tests/fixtures/real-project-agentic-feedback/**"
   - "tests/fixtures/content_runtime/**"
+  - "tests/fixtures/project_intelligence_real_repo/**"

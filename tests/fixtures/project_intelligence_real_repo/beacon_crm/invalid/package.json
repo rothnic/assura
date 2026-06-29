@@ -1,0 +1,8 @@
+{
+  "name": "beacon-crm",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
+}

@@ -2,7 +2,7 @@
 id: goal-assura-project-intelligence-real-repo-proof
 type: goal
 title: Assura project intelligence real repo proof
-status: planned
+status: completed
 created: 2026-06-29
 owners:
   - assura-maintainers
@@ -61,7 +61,7 @@ drift.
 
 ```bash
 cargo fmt --check
-cargo test real_project --quiet
+cargo test --test project_intelligence_real_repo_proof --quiet
 cargo test --test content_query_cli --quiet
 cargo run --quiet -- check --format json .
 cargo xtask evidence
@@ -82,3 +82,30 @@ git diff --check
 Block if the proof only exercises Assura itself, relies on untracked local
 state, needs network access in the default test path, or records screenshots or
 manual claims where deterministic command evidence is available.
+
+## Progress Log
+
+- 2026-06-29: Started implementation on task
+  `.trellis/tasks/06-29-project-intelligence-real-repo-proof`. Added the
+  deterministic non-Assura Beacon CRM fixture under
+  `tests/fixtures/project_intelligence_real_repo/beacon_crm`, with valid and
+  invalid states for typed epics, ADR decisions, package intelligence records,
+  missing owner field drift, missing decision-reference drift, and materialized
+  Markdown safe-fix preview. Added
+  `tests/project_intelligence_real_repo_proof.rs` and
+  `docs/analysis/2026-06-29-project-intelligence-real-repo-proof.md`.
+- 2026-06-29: Completed after focused review agent
+  `019f1372-0287-7d50-a801-34014fb75a9c`. Review found that the first pass
+  proved only Beacon CRM and that the diagnostics regression did not lock the
+  missing-owner claim. Fixed both by adding an Assura-local `assura_goals`
+  content collection over `docs/goals/*.md`, adding an Assura search/expand
+  regression, documenting the Assura-plus-Beacon evidence, and asserting the
+  missing-owner diagnostic and severity in
+  `tests/project_intelligence_real_repo_proof.rs`. Final validation passed:
+  `cargo fmt --check`, `git diff --check`,
+  `cargo test --test project_intelligence_real_repo_proof --quiet`,
+  `cargo test --test content_query_cli --quiet`,
+  `cargo test --test content_runtime_dx_docs --quiet`,
+  Beacon valid/invalid CLI probes, Assura goal search,
+  `cargo run --quiet -- check --format json .`, `cargo xtask docs`, and
+  `cargo xtask evidence`.

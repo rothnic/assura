@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://assura.dev/examples/beacon-crm.project-intelligence.schema.json",
+  "$defs": {
+    "Epic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "status", "owner", "decision_refs", "package_refs"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "status": { "type": "string", "enum": ["planned", "active", "done"] },
+        "owner": { "type": "string", "minLength": 1 },
+        "decision_refs": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "package_refs": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "Decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "status"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "status": { "type": "string", "enum": ["proposed", "accepted", "superseded"] }
+      }
+    },
+    "Package": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "path", "decision_ref"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "path": { "type": "string", "minLength": 1 },
+        "decision_ref": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

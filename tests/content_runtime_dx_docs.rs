@@ -181,6 +181,9 @@ fn project_intelligence_demo_is_discoverable_and_covers_adoption_commands() {
         "assura content agent-context",
         "assura.safe-fix.markdown.v1",
         "files_would_change",
+        "goal-assura-project-intelligence-usability-program",
+        "tests/fixtures/project_intelligence_real_repo/beacon_crm/valid",
+        "docs/analysis/2026-06-29-project-intelligence-real-repo-proof.md",
         "does not require a daemon",
     ] {
         assert!(

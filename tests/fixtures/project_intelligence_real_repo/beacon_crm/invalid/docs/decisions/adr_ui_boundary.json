@@ -1,0 +1,5 @@
+{
+  "id": "adr-ui-boundary",
+  "title": "Keep shared UI behavior in @beacon/ui",
+  "status": "accepted"
+}

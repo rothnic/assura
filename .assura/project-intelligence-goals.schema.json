@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://assura.dev/project-intelligence-goals.schema.json",
+  "$defs": {
+    "AssuraGoal": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["id", "title", "status"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "type": { "type": "string", "enum": ["goal", "roadmap_iteration"] },
+        "title": { "type": "string", "minLength": 1 },
+        "status": {
+          "type": "string",
+          "enum": ["planned", "completed"]
+        },
+        "created": { "type": "string", "minLength": 1 },
+        "owners": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1
+        },
+        "related": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1
+        }
+      }
+    }
+  }
+}
