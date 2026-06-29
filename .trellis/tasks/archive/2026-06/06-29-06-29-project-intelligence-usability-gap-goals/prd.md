@@ -21,7 +21,7 @@ successor set.
 - [x] Add or refresh goal docs so remaining work is ordered and executable.
 - [x] Update the usability program and roadmap to point to the next goal.
 - [x] Run docs/planning validation.
-- [ ] Archive this Trellis task after commit.
+- [x] Archive this Trellis task after commit.
 
 ## Non-Goals
 
