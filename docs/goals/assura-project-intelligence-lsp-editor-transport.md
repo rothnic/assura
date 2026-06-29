@@ -2,7 +2,7 @@
 id: goal-assura-project-intelligence-lsp-editor-transport
 type: goal
 title: Assura project intelligence LSP editor transport
-status: planned
+status: completed
 created: 2026-06-29
 owners:
   - assura-maintainers

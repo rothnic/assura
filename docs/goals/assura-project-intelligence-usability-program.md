@@ -244,3 +244,14 @@ without real-repo proof and release hardening.
   delegates to existing content-query contracts and does not implement or
   require MCP or remote access. The immediate next goal is
   `docs/goals/assura-project-intelligence-lsp-editor-transport.md`.
+- 2026-06-29: Completed
+  `docs/goals/assura-project-intelligence-lsp-editor-transport.md` locally on
+  task `.trellis/tasks/06-29-project-intelligence-lsp-editor-transport`.
+  Added `assura editor session` as a supported local JSON-line editor protocol
+  with LSP-shaped diagnostics, context-pack, and safe-fix code-action preview
+  methods over shared content-query contracts. Independent review fixed
+  absolute `file://` URI handling and strengthened parity tests against
+  content diagnostics, context packs, safe-fix previews, and dry-run audit IDs.
+  Full LSP server framing, editor marketplace packaging, MCP, and remote access
+  remain out of scope. The immediate next goal is
+  `docs/goals/assura-project-intelligence-release-hardening.md`.

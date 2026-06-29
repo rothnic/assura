@@ -30,22 +30,22 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 16 | Docs Lifecycle Coverage | Completed | PR #83 merged; archive/sync PR #84 merged |
 | 17 | Support Matrix Surface Expansion | Completed | PR #88 merged; archive/sync PR #89 merged |
 | 18 | Project Intelligence Runtime | Completed | All nine successors and final completion audit completed locally |
-| 19 | Project Intelligence Usability | Active | Adoption blueprint, real-repo proof, onboarding template, context pack, persistent session, safe-fix workflow, `.assura/` directory organization, and agent CLI surface completed locally; LSP editor transport is next |
+| 19 | Project Intelligence Usability | Active | Adoption blueprint, real-repo proof, onboarding template, context pack, persistent session, safe-fix workflow, `.assura/` directory organization, agent CLI surface, and LSP editor transport completed locally; release hardening is next |
 
 ## Active Roadmap Iteration
 
 Project Intelligence Usability is active.
 
 Most recent owning task:
-`.trellis/tasks/06-29-project-intelligence-agent-cli-surface`,
+`.trellis/tasks/archive/2026-06/06-29-project-intelligence-lsp-editor-transport`,
 completing
-`docs/goals/assura-project-intelligence-agent-cli-surface.md`.
+`docs/goals/assura-project-intelligence-lsp-editor-transport.md`.
 
 Current branch:
 `codex/project-intelligence-agent-surfaces`.
 
 Current recommended goal:
-`docs/goals/assura-project-intelligence-lsp-editor-transport.md`.
+`docs/goals/assura-project-intelligence-release-hardening.md`.
 
 Current program:
 `docs/goals/assura-project-intelligence-usability-program.md`.
@@ -54,8 +54,9 @@ Project Intelligence Runtime is complete and should remain closed unless a new
 concrete drift case is named with evidence.
 
 Most recent completed Project Intelligence successor:
-`docs/goals/assura-project-intelligence-agent-surfaces.md`, completed locally
-on branch `codex/project-intelligence-agent-surfaces` with independent review.
+`docs/goals/assura-project-intelligence-lsp-editor-transport.md`, completed
+locally on branch `codex/project-intelligence-agent-surfaces` with independent
+review.
 
 Earlier Project Intelligence successors completed in this program:
 `docs/goals/assura-code-symbol-enrichment.md`, completed locally on branch
@@ -108,20 +109,20 @@ that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
 Planned next roadmap candidate:
 Continue Project Intelligence Usability with
-`docs/goals/assura-project-intelligence-lsp-editor-transport.md`. Adoption
+`docs/goals/assura-project-intelligence-release-hardening.md`. Adoption
 blueprint, real-repo proof, onboarding template, context pack, persistent
-session, safe-fix workflow, `.assura/` directory organization, and agent CLI
-surface are completed locally; remaining successors are LSP editor transport
-and release hardening.
+session, safe-fix workflow, `.assura/` directory organization, agent CLI
+surface, and LSP editor transport are completed locally; the remaining
+successor is release hardening.
 
 ## Recommended Next Action
 
 Run the workflow gate, then validate and start
-`docs/goals/assura-project-intelligence-lsp-editor-transport.md`. Do
+`docs/goals/assura-project-intelligence-release-hardening.md`. Do
 not reopen the completed Project Intelligence Runtime successors, Project
 Intelligence Usability adoption blueprint, real-repo proof, onboarding
 template, context pack, persistent session, safe-fix workflow, or `.assura/`
-directory organization, agent CLI surface,
+directory organization, agent CLI surface, LSP editor transport,
 support-matrix expansion, or Windows CI Restore work unless a new concrete
 docs, manifest, package, binary, support status, or hosted CI drift case is
 named with executable evidence. The broader product roadmap remains open until
