@@ -296,23 +296,23 @@ impl SessionResponse {
 }
 
 #[derive(Debug, Serialize)]
-struct SessionReloadOutput {
-    state: &'static str,
-    reason: &'static str,
-    project_root: Option<PathBuf>,
-    config_path: Option<PathBuf>,
+pub(super) struct SessionReloadOutput {
+    pub(super) state: &'static str,
+    pub(super) reason: &'static str,
+    pub(super) project_root: Option<PathBuf>,
+    pub(super) config_path: Option<PathBuf>,
 }
 
 impl SessionReloadOutput {
-    fn initial(context: &QueryContext) -> Self {
+    pub(super) fn initial(context: &QueryContext) -> Self {
         Self::from_context("initial_load", "session context loaded", context)
     }
 
-    fn reused(context: &QueryContext) -> Self {
+    pub(super) fn reused(context: &QueryContext) -> Self {
         Self::from_context("reused", "project fingerprint unchanged", context)
     }
 
-    fn reloaded(context: &QueryContext) -> Self {
+    pub(super) fn reloaded(context: &QueryContext) -> Self {
         Self::from_context(
             "reloaded",
             "project fingerprint changed; context rebuilt",
@@ -320,7 +320,7 @@ impl SessionReloadOutput {
         )
     }
 
-    fn failed() -> Self {
+    pub(super) fn failed() -> Self {
         Self {
             state: "reload_failed",
             reason: "project fingerprint changed but context could not be rebuilt",
@@ -329,7 +329,7 @@ impl SessionReloadOutput {
         }
     }
 
-    fn not_checked() -> Self {
+    pub(super) fn not_checked() -> Self {
         Self {
             state: "not_checked",
             reason: "request did not parse",
@@ -355,12 +355,12 @@ struct SessionErrorOutput {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-struct ProjectFingerprint {
+pub(super) struct ProjectFingerprint {
     entries: BTreeMap<PathBuf, FileFingerprint>,
 }
 
 impl ProjectFingerprint {
-    fn capture(root: &Path) -> Result<Self, ContentQueryError> {
+    pub(super) fn capture(root: &Path) -> Result<Self, ContentQueryError> {
         let mut entries = BTreeMap::new();
         for entry in WalkDir::new(root)
             .follow_links(false)

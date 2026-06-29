@@ -25,6 +25,7 @@ This policy applies to Assura pre-1.0 releases.
 | `assura fix markdown --dry-run --format json` | Experimental safe-fix preview contract | Dry-run output must report proposed bounded writes without modifying files. |
 | `assura fix markdown --apply --format json` | Experimental safe-fix apply/audit contract | Apply output must report changed paths, applied fix IDs, skipped fixes, and VCS-first rollback guidance. |
 | `assura agent` | Supported local agent project-intelligence surface | JSON-default commands for context, diagnostics, context packs, search/show/expand, missing relations, safe-fix previews, and local sessions must delegate to the shared content-query contracts. MCP or remote access is not required. |
+| `assura editor session` | Supported local editor project-intelligence surface | JSON-line request/response loop with LSP-shaped diagnostics, context, and code-action preview methods. It must reuse shared content-query contracts, reload conservatively, avoid implicit writes, and must not require MCP, remote access, or a hosted language server. |
 | `assura content` query commands | Supported first project-intelligence query surface | JSON output for generic agent context, context packs, agent-query envelopes, collection, relation, keyword, semantic-candidate, code-symbol, bounded graph, and JSON-line session queries must remain deterministic enough for agent use. Semantic scores and baseline code-symbol evidence are candidate context only and do not decide validation correctness. |
 | `.assura/models/**` model artifact layout | Supported project-intelligence layout policy | Model artifacts stored under `.assura/` must live under `.assura/models/**`; projects may still keep artifacts outside `.assura/` when that better fits their repository. |
 | `assura content session` | Supported local project-intelligence session | JSON-line request/response loop for repeated local agent/editor queries. It reloads conservatively when project files change and does not apply fixes or require a hosted daemon. |
@@ -50,6 +51,8 @@ Do not document these as supported:
 - shell-executed validation plugins;
 - hosted telemetry or dashboards;
 - required MCP or remote agent transports for local project-intelligence usage;
+- full LSP server framing or editor marketplace packages as current supported
+  editor behavior;
 - automatic repair;
 - dependency graph validation as a current release feature.
 - required code-intelligence providers for normal validation.

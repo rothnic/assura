@@ -34,6 +34,9 @@ The current pre-1.0 command surface supports these public commands:
 - `assura agent` for local coding-agent project-intelligence commands with
   JSON defaults for context, diagnostics, context packs, search/show/expand,
   missing relations, safe-fix previews, and local sessions.
+- `assura editor session` for a local JSON-line editor protocol with
+  LSP-shaped diagnostics, context, code-action preview requests, and
+  conservative reload metadata.
 - `assura content` query commands for deterministic local collection,
   relation, keyword, optional semantic-candidate, optional code-symbol, and
   bounded graph queries over modeled project facts.
@@ -124,7 +127,13 @@ for that asset repair.
   modeled fields and optional provider evidence. The built-in Rust token
   baseline can resolve rough local declarations; missing providers preserve
   unresolved refs instead of failing validation.
-- Daemon APIs, LSP, and MCP are not part of this content-query surface.
+- `assura editor session` exposes the current editor integration surface with
+  `textDocument/diagnostics`, `textDocument/context`, and
+  `textDocument/codeAction` JSON-line methods. It is local, does not require
+  MCP or remote access, and does not claim full LSP server framing or editor
+  marketplace packaging.
+- Daemon APIs, full LSP server packaging, and MCP are not part of this
+  content-query surface.
 - Runtime schema or source model artifacts stored under `.assura/` must live
   under `.assura/models/**`; artifacts outside `.assura/`, such as `schemas/**`,
   remain valid project-relative paths.

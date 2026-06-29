@@ -275,6 +275,28 @@ commands:
       --quiet: {}
       --help:
         aliases: ["-h"]
+  - name: "assura editor"
+    allow_positionals: false
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+  - name: "assura editor session"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
   - name: "assura content"
     allow_positionals: false
     flags:

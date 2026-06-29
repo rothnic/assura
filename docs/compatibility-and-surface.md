@@ -50,6 +50,8 @@ publishes and verifies a `.sha256` file next to every archive.
 | `assura agent expand` | Supported local agent graph expansion | Agent-surface CLI tests compare output with `assura content expand`. |
 | `assura agent safe-fixes` | Supported local agent safe-fix preview | Agent-surface CLI tests compare output with `assura content agent-query safe-fixes`. |
 | `assura agent session` | Supported local agent session alias | Agent-surface CLI tests prove the alias emits the same JSON-line session envelope as `assura content session`. |
+| `assura editor` | Supported local editor project-intelligence surface | Editor-surface CLI tests prove help output and local session availability. |
+| `assura editor session` | Supported local editor session | Editor-surface CLI tests prove LSP-shaped diagnostics, context, safe-fix code-action previews, invalid-method errors, and conservative reload metadata. |
 | `assura content` | Supported first project-intelligence query surface | Content query CLI fixture tests and product docs. |
 | `assura content agent-context` | Supported generic agent context | Agent-context CLI fixture tests; wrappers must reuse this contract instead of creating per-agent query commands. |
 | `assura content agent-query` | Supported generic agent query envelope | Agent-query CLI fixture tests prove diagnostics, graph, search, semantic, and code-symbol queries reuse one wrapper schema. |

@@ -19,6 +19,10 @@ pub mod config;
 #[cfg(feature = "full-cli")]
 pub mod content_query;
 #[cfg(feature = "full-cli")]
+mod editor;
+#[cfg(feature = "full-cli")]
+mod editor_args;
+#[cfg(feature = "full-cli")]
 pub mod full_entry;
 #[cfg(feature = "full-cli")]
 pub mod hooks;
@@ -68,6 +72,10 @@ pub use config::CliConfig;
 pub use config::ConfigDiscovery;
 #[cfg(feature = "full-cli")]
 pub use content_query::content_command;
+#[cfg(feature = "full-cli")]
+pub use editor::editor_command;
+#[cfg(feature = "full-cli")]
+pub use editor_args::EditorCommands;
 #[cfg(feature = "full-cli")]
 pub use hooks::{GitHooksManager, HookType};
 #[cfg(feature = "full-cli")]

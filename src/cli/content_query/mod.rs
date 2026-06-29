@@ -4,6 +4,8 @@ mod agent_query;
 mod code_symbols;
 mod context;
 mod context_pack;
+mod editor;
+mod editor_protocol;
 mod facts;
 mod output;
 mod semantic;
@@ -13,6 +15,7 @@ use self::agent_query::{agent_query, AgentQueryRequest};
 use self::code_symbols::{symbol_refs, symbols_for_instance};
 use self::context::{ContentQueryError, QueryContext};
 use self::context_pack::{context_pack, ContextPackRequest};
+pub(crate) use self::editor::editor_session_command;
 use self::facts::{
     document_path, fact_by_id, fact_kind, fact_path, instance_summary, model_definitions,
     path_scope_for_collection, resources_by_id, sections_for_path,

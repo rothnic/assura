@@ -29,6 +29,7 @@ the same CLI options as humans and hooks; there is no separate agent mode.
 | Agent feedback package | Wrapper code that cannot call the Rust CLI directly | Report parsing and feedback rendering | Library return value or JSON | The wrapper |
 | Codex prompt hook | Optional Codex `UserPromptSubmit` command | `assura check --format agent --agent codex` | Codex `hookSpecificOutput.additionalContext` | Hook configuration |
 | Project-intelligence agent CLI | Local coding agent with shell access | `assura agent ...` | JSON diagnostics, context packs, graph/search, relation checks, and safe-fix previews | The caller |
+| Project-intelligence editor session | Local editor wrapper | `assura editor session` | LSP-shaped JSON-line diagnostics, context, and code-action previews | The wrapper |
 | Future tool/editor hook | Future agent integration | Scoped check plus feedback rendering | Tool result, next agent message, or status line | Hook configuration |
 | Project-intelligence session | Local agent/editor wrapper | `assura content session` | JSON-line context/query responses | The wrapper |
 | Warm checker session | Future structure-check integration | Prepared structure checker or hot daemon | Low-latency check result for changed paths | Integration policy |
@@ -116,6 +117,25 @@ assura agent safe-fixes .
 These commands default to JSON and reuse the same content-query and safe-fix
 preview contracts as `assura content ...`.
 
+For editor wrappers, use the local editor session:
+
+```bash
+assura editor session .
+```
+
+It accepts LSP-shaped JSON-line methods:
+
+```json
+{"request_id":"diag-1","method":"textDocument/diagnostics","params":{"textDocument":{"uri":"docs/goals/goal_portable_structure.md"}}}
+{"request_id":"ctx-1","method":"textDocument/context","params":{"uri":"docs/goals/goal_portable_structure.md","text":"portable","limit":5}}
+{"request_id":"fix-1","method":"textDocument/codeAction","params":{"uri":"docs/goals/goal_portable_structure.md"}}
+```
+
+Editor responses use `assura.project-intelligence.editor.response.v1` and
+include the same conservative reload states as `assura content session`.
+`textDocument/codeAction` returns preview actions only; wrappers must require an
+explicit `assura fix markdown --apply --format json` step before writing.
+
 Send one request per line:
 
 ```json
@@ -170,4 +190,6 @@ step, while still giving the agent fresh feedback after edits.
 | Codex post-tool/editor hook | Not yet | A future hook should append a status line or bounded feedback after relevant tool calls. |
 | Other agents with shell access | Yes | They can call `assura agent ...` for project-intelligence context and `assura check --format agent` for structure feedback. |
 | Project-intelligence session | Yes | Local wrappers can keep `assura content session` open for repeated context/query requests. |
+| Project-intelligence editor session | Yes | Local editor wrappers can keep `assura editor session` open for LSP-shaped diagnostics, context, and code-action previews. |
+| Full LSP/editor marketplace package | Not yet | A future package should wrap the local editor session or shared content-query contracts. |
 | Editor/daemon structure-check integration | Not yet as public UX | Should reuse prepared checks or hot daemon state for repeated changed-path feedback. |

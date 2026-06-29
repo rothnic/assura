@@ -32,9 +32,10 @@ content, or safe-fix code actions.
 
 ## Scope
 
-- Select and implement the first editor transport slice, with LSP diagnostics
-  and code actions as the default candidate unless revalidation identifies a
-  better fit.
+- Select and implement the first editor transport slice as a local
+  LSP-shaped JSON-line editor session. Full LSP server framing and editor
+  plugin packaging are deferred to a later packaging goal.
+- Expose LSP-style diagnostics and code actions through the local session.
 - Map file diagnostics to existing Assura validation and Markdown/content
   diagnostic contracts.
 - Expose project-intelligence context for the file or modeled object under
@@ -49,6 +50,7 @@ content, or safe-fix code actions.
 
 - No editor marketplace package.
 - No hosted language server.
+- No full LSP `Content-Length` framed server in this goal.
 - No transport-specific validation behavior.
 - No semantic content generation.
 - No automatic repair without explicit approval.
@@ -70,8 +72,7 @@ content, or safe-fix code actions.
 
 ```bash
 cargo fmt --check
-cargo test lsp --quiet
-cargo test editor --quiet
+cargo test -p assura --test editor_surface_cli --quiet
 cargo test --test project_intelligence_context_pack --quiet
 cargo run --quiet -- check --format json .
 cargo xtask docs
@@ -93,3 +94,29 @@ git diff --check
 Block if the editor transport forks validation logic, relies on watcher events
 as the only freshness signal, applies repairs implicitly, requires a hosted
 service, or claims support for editor packaging that was not implemented.
+
+## Progress Log
+
+- 2026-06-29: Revalidated after the CLI-first agent surface completed. The
+  first editor slice will be a local `assura editor session` JSON-line protocol
+  with LSP-shaped methods and responses. This keeps the implementation local
+  and testable without claiming full LSP server framing, marketplace packaging,
+  or a hosted language server.
+- 2026-06-29: Implemented `assura editor session` as a local JSON-line protocol
+  with `textDocument/diagnostics`, `textDocument/context`, and
+  `textDocument/codeAction` methods over the shared content-query facts,
+  context-pack output, safe-fix audit metadata, and conservative session
+  fingerprint reload behavior. Updated support matrices, release notes, API
+  docs, agent/editor surface docs, and the project-intelligence demo. Focused
+  validation passed: `cargo fmt --check`,
+  `cargo test -p assura --test editor_surface_cli --quiet`,
+  `cargo test --test project_intelligence_context_pack --quiet`,
+  `cargo test -p assura --test cli_command_surface_tests --quiet`,
+  `cargo run --quiet -- check --format json .`, `cargo xtask docs`,
+  `cargo xtask evidence`, and `git diff --check`.
+- 2026-06-29: Independent review agent
+  `019f148d-2646-7921-a827-195512b082d9` found and fixed absolute
+  `file://` URI matching for relative session roots and strengthened tests to
+  prove parity with content diagnostics, context packs, safe-fix preview
+  output, dry-run audit IDs, and no implicit LSP `command` or `edit` writes.
+  Re-ran the validation chain after review; all commands passed.

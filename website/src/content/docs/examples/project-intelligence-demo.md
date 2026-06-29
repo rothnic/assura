@@ -134,6 +134,54 @@ Supported request types include `agent-context`, `collections`, `context-pack`,
 Invalid requests return the same response envelope with `ok: false` and an
 error code such as `request_failed`.
 
+## Show Diagnostics In An Editor
+
+Use an editor session when a local editor wrapper wants LSP-shaped diagnostics,
+object context, and safe-fix code-action previews over the same project facts:
+
+```bash
+assura editor session tests/fixtures/content_runtime/missing_reference
+```
+
+Send one request per line:
+
+```json
+{"request_id":"diag-1","method":"textDocument/diagnostics","params":{"textDocument":{"uri":"docs/goals/goal_portable_structure.md"}}}
+{"request_id":"ctx-1","method":"textDocument/context","params":{"uri":"docs/goals/goal_portable_structure.md","text":"portable","limit":5}}
+{"request_id":"fix-1","method":"textDocument/codeAction","params":{"uri":"docs/goals/goal_portable_structure.md"}}
+```
+
+The diagnostic response uses
+`assura.project-intelligence.editor.response.v1` and returns LSP-shaped ranges,
+severity, source, code, message, and diagnostic data:
+
+```json
+{
+  "schema": "assura.project-intelligence.editor.response.v1",
+  "method": "textDocument/diagnostics",
+  "reload": {
+    "state": "initial_load"
+  },
+  "ok": true,
+  "result": {
+    "diagnostics": [
+      {
+        "source": "assura",
+        "code": "content_runtime:missing_reference",
+        "severity": 1,
+        "data": {
+          "path": "docs/goals/goal_portable_structure.md"
+        }
+      }
+    ]
+  }
+}
+```
+
+`textDocument/codeAction` returns preview actions only. Applying a repair still
+requires an explicit `assura fix markdown --apply --format json` command, so an
+editor wrapper can keep user approval in control.
+
 ## Agent Editing Handoff
 
 Task: repair the Beacon CRM checkout epic so project-intelligence validation can
@@ -370,16 +418,18 @@ assura agent safe-fixes tests/fixtures/project_intelligence_real_repo/beacon_crm
 4. Use `assura agent context-pack` for a bounded agent or editor handoff.
 5. Use `assura agent context-pack`, `assura agent diagnostics`, and
    `assura agent safe-fixes` for local coding-agent handoffs.
-6. Use `assura content search`, `assura content missing-relations`, and
+6. Use `assura editor session` when building a local editor wrapper for
+   diagnostics, context, and safe-fix code-action previews.
+7. Use `assura content search`, `assura content missing-relations`, and
    `assura content expand` for human inspection.
-7. Use `assura content agent-context` and `assura content agent-query` when
+8. Use `assura content agent-context` and `assura content agent-query` when
    building lower-level wrappers that need the raw content contracts.
-8. Use `assura fix markdown --dry-run --format json` to preview safe Markdown
+9. Use `assura fix markdown --dry-run --format json` to preview safe Markdown
    repairs, then `assura fix markdown --apply --format json` after accepting
    the planned IDs.
 
 This path is local, source-control friendly, and does not require a daemon,
-hosted service, remote embedding provider, or editor plugin.
+hosted service, remote embedding provider, MCP server, or editor plugin.
 
 ## Realistic Repo Proof
 

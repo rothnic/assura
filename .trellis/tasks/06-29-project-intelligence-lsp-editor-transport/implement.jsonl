@@ -1,0 +1,12 @@
+{"file": "docs/goals/assura-project-intelligence-usability-program.md", "reason": "Program-level scope and remaining editor/release deliverables."}
+{"file": "docs/goals/assura-project-intelligence-lsp-editor-transport.md", "reason": "Target editor transport goal and proof gates."}
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "Current Project Intelligence Usability routing and next-goal state."}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Reuse existing context-pack/session contracts rather than duplicating validation logic."}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Feature crosses CLI protocol, JSON output, docs, and tests."}
+{"file": "src/cli/editor_args.rs", "reason": "Added top-level `assura editor session` CLI arguments."}
+{"file": "src/cli/editor.rs", "reason": "Added editor command dispatch into the content-query editor session."}
+{"file": "src/cli/content_query/editor.rs", "reason": "Implemented local JSON-line editor session orchestration over shared project-intelligence facts."}
+{"file": "src/cli/content_query/editor_protocol.rs", "reason": "Added editor response envelope, document path resolution, and LSP-shaped diagnostic serialization helpers."}
+{"file": "tests/editor_surface_cli.rs", "reason": "Added protocol tests for help, diagnostics, context, code actions, invalid methods, and reload metadata."}
+{"file": "website/src/content/docs/examples/project-intelligence-demo.md", "reason": "Added visual documentation-site example for editor-session usage."}
+{"file": "docs/support-policy.md", "reason": "Classified `assura editor session` as a supported local editor surface without MCP or remote requirements."}

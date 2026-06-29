@@ -1,0 +1,33 @@
+{
+  "id": "project-intelligence-lsp-editor-transport",
+  "name": "project-intelligence-lsp-editor-transport",
+  "title": "Project Intelligence LSP Editor Transport",
+  "description": "Expose Project Intelligence to editor workflows through a local LSP-shaped JSON-line editor session over shared CLI/query contracts.",
+  "status": "in_progress",
+  "dev_type": "feature",
+  "scope": "cli, docs, tests",
+  "package": "assura",
+  "priority": "P2",
+  "creator": "nroth",
+  "assignee": "nroth",
+  "createdAt": "2026-06-29",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "codex/project-intelligence-agent-surfaces",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "docs/goals/assura-project-intelligence-usability-program.md",
+    "docs/goals/assura-project-intelligence-lsp-editor-transport.md",
+    ".trellis/spec/assura/roadmap.md",
+    "website/src/content/docs/product/agent-editor-surfaces.md"
+  ],
+  "notes": "Implement the first local editor protocol slice without editor marketplace packaging or hosted language server scope.",
+  "meta": {
+    "program_goal": "docs/goals/assura-project-intelligence-usability-program.md"
+  }
+}

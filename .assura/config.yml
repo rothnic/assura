@@ -426,6 +426,10 @@ extensions:
           status: supported
         - surface: "command:assura agent session"
           status: supported
+        - surface: "command:assura editor"
+          status: supported
+        - surface: "command:assura editor session"
+          status: supported
         - surface: "command:assura content"
           status: supported
         - surface: "command:assura content agent-context"

@@ -13,7 +13,8 @@ constraints are not stable public surfaces in this release.
 > **Current scope**
 >
 > Build automation against `assura check`, `assura status`, `assura agent`,
-> `assura content`, and the JSON/YAML report fields documented here.
+> `assura editor`, `assura content`, and the JSON/YAML report fields
+> documented here.
 
 ## Command Surface
 
@@ -24,6 +25,7 @@ constraints are not stable public surfaces in this release.
 | `assura init [path]` | Create a starter `.assura/config.yml` |
 | `assura migrate [.ls-lint.yml ...]` | Convert LS-Lint 2.3 rule config |
 | `assura agent ...` | Run local project-intelligence commands for coding agents |
+| `assura editor ...` | Run local project-intelligence commands for editor integrations |
 | `assura content ...` | Query project-intelligence facts and context |
 | `assura info [path]` | Print text configuration details |
 | `assura watch [path]` | Run one check as a current watch wrapper |
@@ -80,6 +82,54 @@ assura agent safe-fixes tests/fixtures/project_intelligence_real_repo/beacon_crm
 
 MCP is not required for local agent usage. If an MCP adapter is added later, it
 should wrap these same CLI/library contracts.
+
+## Editor Surface
+
+`assura editor session [path]` is the supported local editor protocol. It reads
+one JSON request per stdin line and emits one
+`assura.project-intelligence.editor.response.v1` JSON response per stdout line.
+The protocol is LSP-shaped for wrapper simplicity, but it is not a full
+`Content-Length` framed language server and does not include editor marketplace
+packaging.
+
+| Method | Purpose |
+| --- | --- |
+| `textDocument/diagnostics` | Return LSP-shaped diagnostics for a file URI or path |
+| `textDocument/context` | Return a bounded project-intelligence context pack for the file or explicit object |
+| `textDocument/codeAction` | Return safe-fix preview code actions without writing files |
+
+Example requests:
+
+```json
+{"request_id":"diag-1","method":"textDocument/diagnostics","params":{"textDocument":{"uri":"docs/goals/goal_portable_structure.md"}}}
+{"request_id":"ctx-1","method":"textDocument/context","params":{"uri":"docs/goals/goal_portable_structure.md","text":"portable","limit":5}}
+{"request_id":"fix-1","method":"textDocument/codeAction","params":{"uri":"docs/goals/goal_portable_structure.md"}}
+```
+
+Every response has this envelope:
+
+```json
+{
+  "schema": "assura.project-intelligence.editor.response.v1",
+  "sequence": 1,
+  "request_id": "diag-1",
+  "method": "textDocument/diagnostics",
+  "reload": {
+    "state": "initial_load",
+    "reason": "session context loaded",
+    "project_root": ".",
+    "config_path": "./.assura/config.yml"
+  },
+  "ok": true,
+  "result": {},
+  "error": null
+}
+```
+
+`reload.state` is `initial_load`, `reused`, `reloaded`, `reload_failed`, or
+`not_checked`. Code-action responses include an `apply_command` string, but
+wrappers must still require explicit user approval before running
+`assura fix markdown --apply --format json`.
 
 ## Content Query Surface
 
