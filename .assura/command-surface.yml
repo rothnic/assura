@@ -71,6 +71,7 @@ commands:
       --quiet: {}
       --help:
         aliases: ["-h"]
+      --project-intelligence: {}
       --force: {}
       --no-git-hooks: {}
   - name: "assura watch"

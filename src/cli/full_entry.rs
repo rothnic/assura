@@ -87,9 +87,10 @@ async fn run_full_cli(cli: Cli) -> ExitCode {
         Commands::Status { path, format } => status_command(path, config_path, format).await,
         Commands::Init {
             path,
+            project_intelligence,
             force,
             no_git_hooks,
-        } => init_command(path, force, no_git_hooks).await,
+        } => init_command(path, force, no_git_hooks, project_intelligence).await,
         Commands::Watch {
             path,
             debounce,

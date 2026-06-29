@@ -29,6 +29,14 @@ constraints are not stable public surfaces in this release.
 Supported check formats are `text`, `json`, `yaml`, `advice`, and `status`.
 Supported status formats are `text`, `json`, and `yaml`.
 
+## Init Options
+
+| Option | Purpose |
+| --- | --- |
+| `--project-intelligence` | Create starter project-intelligence schema, collections, modeled records, and a broken-state example |
+| `--force` | Overwrite an existing starter config and starter files |
+| `--no-git-hooks` | Skip the optional hook setup message |
+
 ## Check Options
 
 | Option | Purpose |

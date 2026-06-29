@@ -171,3 +171,10 @@ without real-repo proof and release hardening.
   `docs/goals/assura-project-intelligence-context-pack.md`,
   persistent session, safe-fix workflow, editor/agent transports, and release
   hardening. The immediate next goal is onboarding template.
+- 2026-06-29: Completed
+  `docs/goals/assura-project-intelligence-onboarding-template.md` locally on
+  task `.trellis/tasks/06-29-project-intelligence-onboarding-template`. Added
+  `assura init --project-intelligence`, deterministic starter schema/records,
+  broken-state example diagnostics, website/API docs, focused integration
+  coverage, and command-surface policy updates. The immediate next goal is
+  `docs/goals/assura-project-intelligence-context-pack.md`.

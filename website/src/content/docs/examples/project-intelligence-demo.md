@@ -47,6 +47,37 @@ humans query the same local facts through the CLI.
   </div>
 </section>
 
+## Start From A Template
+
+For a fresh repo, create the starter content model, collections, and example
+records in one command:
+
+```bash
+assura init --project-intelligence --no-git-hooks .
+```
+
+The starter writes `.assura/config.yml`,
+`schemas/project-intelligence-starter.schema.json`, a modeled goal, a spec, an
+ADR, and a broken-state example under `docs/examples/`.
+
+```bash
+assura check --format json .
+assura content search "Adopt Project Intelligence" . --format json
+assura content expand goals goal-project-intelligence-starter . --format json
+```
+
+To see relation diagnostics, copy the broken example into the modeled goal
+collection:
+
+```bash
+cp docs/examples/project-intelligence-broken-goal.md docs/goals/goal_project_intelligence_missing_context.md
+assura content missing-relations . --format json
+assura content agent-query diagnostics . --format json
+```
+
+Replace the starter goal, spec, and ADR with project-specific goals, specs,
+ADRs, packages, or release artifacts once the first query works.
+
 ## Run The Demo
 
 From the Assura repository, use the checked fixtures as a small project with a
@@ -191,8 +222,8 @@ from applied changes:
 
 ## Adoption Path
 
-1. Start with `assura init` and a structure policy.
-2. Add typed collections for the project knowledge agents need.
+1. Start with `assura init --project-intelligence` for a working starter.
+2. Replace the starter records with the project knowledge agents need.
 3. Run `assura check --format json .` until the model is clean.
 4. Use `assura content search`, `assura content missing-relations`, and
    `assura content expand` for human inspection.

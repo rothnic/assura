@@ -173,6 +173,12 @@ fn project_intelligence_demo_is_discoverable_and_covers_adoption_commands() {
     for required in [
         "pi-demo-flow",
         "pi-demo-board",
+        "assura init --project-intelligence --no-git-hooks .",
+        "schemas/project-intelligence-starter.schema.json",
+        "assura content search \"Adopt Project Intelligence\" . --format json",
+        "assura content expand goals goal-project-intelligence-starter . --format json",
+        "docs/examples/project-intelligence-broken-goal.md",
+        "assura content missing-relations . --format json",
         "assura check --format json tests/fixtures/content_runtime/valid",
         "assura content search \"Portable Structure\" tests/fixtures/content_runtime/valid --format json",
         "assura content expand goals goal-portable-structure tests/fixtures/content_runtime/valid --format json",

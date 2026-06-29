@@ -2,7 +2,7 @@
 id: goal-assura-project-intelligence-onboarding-template
 type: goal
 title: Assura project intelligence onboarding template
-status: planned
+status: completed
 created: 2026-06-29
 owners:
   - assura-maintainers
@@ -61,7 +61,7 @@ That is too much friction for a user trying to decide whether Assura is useful.
 
 ```bash
 cargo fmt --check
-cargo test project_intelligence_onboarding --quiet
+cargo test --test project_intelligence_onboarding --quiet
 cargo run --quiet -- check --format json .
 cargo xtask docs
 cargo xtask evidence
@@ -82,3 +82,22 @@ git diff --check
 Block if the path still requires users to invent the first schema by hand, if
 the starter relies on untracked local files, if command evidence is missing, or
 if docs advertise unsupported automation.
+
+## Progress Log
+
+- 2026-06-29: Started implementation on task
+  `.trellis/tasks/06-29-project-intelligence-onboarding-template`. Added the
+  `assura init --project-intelligence` starter profile, deterministic
+  repo-local schema/goal/spec/ADR/example files, focused onboarding
+  regressions, and website/API documentation. Initial focused validation
+  passed: `cargo fmt --check`,
+  `cargo test --test project_intelligence_onboarding --quiet`,
+  `cargo test --test content_runtime_dx_docs --quiet`, and
+  `cargo test --test cli_command_surface_tests init --quiet`. Review is in
+  progress under agent `019f1391-779f-76e0-bf23-f6c6ebff7de7`.
+- 2026-06-29: Addressed review findings from agent
+  `019f1391-779f-76e0-bf23-f6c6ebff7de7` by adding
+  `--project-intelligence` to `.assura/command-surface.yml`, moving starter
+  materialization back under `src/cli/init_support.rs` so edited CLI files
+  stay under the 500-line policy, and updating roadmap routing to
+  `docs/goals/assura-project-intelligence-context-pack.md`.

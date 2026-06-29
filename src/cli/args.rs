@@ -85,6 +85,9 @@ pub enum Commands {
         #[arg(help = "Project root directory (defaults to current directory)")]
         path: Option<PathBuf>,
 
+        #[arg(long, help = "Create project-intelligence starter files")]
+        project_intelligence: bool,
+
         #[arg(long)]
         force: bool,
 

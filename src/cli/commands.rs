@@ -7,7 +7,7 @@ use crate::cli::check::{
     run_markdown_fix, run_structure_check_with_target_mode, CheckError, CheckTargetMode,
 };
 use crate::cli::check_report::format_structure_report;
-use crate::cli::init_support::{resolve_project_root, starter_config};
+use crate::cli::init_support::{materialize_starter, StarterInitError};
 use crate::cli::MarkdownFixRuleArg;
 use crate::cli::{CheckCommandOptions, ConfigDiscovery, ExitCode};
 use crate::config::config::{Config, DirectoryNode};
@@ -112,44 +112,25 @@ pub async fn status_command(
 }
 
 /// Initialize a new Assura configuration
-pub async fn init_command(path: Option<PathBuf>, force: bool, no_git_hooks: bool) -> ExitCode {
-    let project_root = match resolve_project_root(path) {
-        Ok(path) => path,
+pub async fn init_command(
+    path: Option<PathBuf>,
+    force: bool,
+    no_git_hooks: bool,
+    project_intelligence: bool,
+) -> ExitCode {
+    let created = match materialize_starter(path, force, project_intelligence) {
+        Ok(created) => created,
         Err(error) => {
-            eprintln!("Error: {}", error);
-            return ExitCode::RuntimeError;
+            eprintln!("Error: {}", error.message());
+            return match error {
+                StarterInitError::Configuration(_) => ExitCode::ConfigurationError,
+                StarterInitError::Runtime(_) => ExitCode::RuntimeError,
+            };
         }
     };
-
-    let assura_dir = project_root.join(".assura");
-    let config_path = assura_dir.join("config.yml");
-    if config_path.exists() && !force {
-        eprintln!(
-            "Error: {} already exists. Use --force to overwrite.",
-            config_path.display()
-        );
-        return ExitCode::ConfigurationError;
+    for path in created {
+        println!("Created {}", path.display());
     }
-
-    if let Err(error) = std::fs::create_dir_all(&assura_dir) {
-        eprintln!(
-            "Error: failed to create {}: {}",
-            assura_dir.display(),
-            error
-        );
-        return ExitCode::RuntimeError;
-    }
-
-    if let Err(error) = std::fs::write(&config_path, starter_config()) {
-        eprintln!(
-            "Error: failed to write {}: {}",
-            config_path.display(),
-            error
-        );
-        return ExitCode::RuntimeError;
-    }
-
-    println!("Created {}", config_path.display());
     if no_git_hooks {
         println!("Skipped git hook setup because --no-git-hooks was provided.");
     } else {
