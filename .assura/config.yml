@@ -402,6 +402,8 @@ extensions:
           status: supported
         - surface: "command:assura fix markdown"
           status: experimental
+        - surface: "command:assura fix markdown --dry-run --format json"
+          status: experimental
         - surface: "command:assura content"
           status: supported
         - surface: "command:assura content agent-context"

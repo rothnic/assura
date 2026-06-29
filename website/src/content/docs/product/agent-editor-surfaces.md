@@ -31,3 +31,12 @@ assura content agent-context . --format json
 This reports the shared
 `assura.project-intelligence.agent-context.v1` schema and available diagnostics,
 safe-fix, graph/search, semantic-candidate, and code-symbol capabilities.
+
+Safe-fix wrappers can preview bounded writes before applying them:
+
+```bash
+assura fix markdown --rule trailing-spaces --dry-run --format json .
+```
+
+The dry-run report uses `assura.safe-fix.markdown.v1` and counts proposed files
+and line fixes without writing.

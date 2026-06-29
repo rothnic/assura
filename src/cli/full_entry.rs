@@ -97,9 +97,12 @@ async fn run_full_cli(cli: Cli) -> ExitCode {
         } => watch_command(path, config_path, debounce, no_git).await,
         Commands::Migrate { input, output } => migrate_command(input, output).await,
         Commands::Fix { command } => match command {
-            FixCommands::Markdown { path, rule } => {
-                fix_markdown_command(path, config_path, rule).await
-            }
+            FixCommands::Markdown {
+                path,
+                rule,
+                dry_run,
+                format,
+            } => fix_markdown_command(path, config_path, rule, dry_run, format).await,
         },
         Commands::Content { command } => content_command(command, config_path).await,
         Commands::Info { path } => info_command(path, config_path).await,

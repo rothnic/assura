@@ -29,6 +29,8 @@ The current pre-1.0 command surface supports these public commands:
   `.assura/config.yml`.
 - `assura performance-report` for checked Assura versus LS-Lint performance
   evidence.
+- `assura fix markdown --dry-run --format json` for safe-fix preview output
+  before applying deterministic Markdown trailing-space fixes.
 - `assura content` query commands for deterministic local collection,
   relation, keyword, optional semantic-candidate, optional code-symbol, and
   bounded graph queries over modeled project facts.
@@ -107,6 +109,14 @@ for that asset repair.
   baseline can resolve rough local declarations; missing providers preserve
   unresolved refs instead of failing validation.
 - Daemon APIs, LSP, and MCP are not part of this content-query surface.
+
+### Safe Fixes
+
+- `assura fix markdown --rule trailing-spaces --dry-run --format json` emits
+  `assura.safe-fix.markdown.v1` and reports proposed files and line fixes
+  without writing.
+- Omitting `--dry-run` applies the bounded Markdown trailing-space fix and
+  reports written files and applied fixes.
 
 ### Custom Constraints
 

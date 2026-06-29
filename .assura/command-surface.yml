@@ -116,6 +116,11 @@ commands:
       --rule:
         takes_value: true
         values: ["trailing-spaces"]
+      --dry-run: {}
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status"]
   - name: "assura content"
     allow_positionals: false
     flags:

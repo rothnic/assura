@@ -98,3 +98,14 @@ docs still mark daemon/editor, LSP, and MCP surfaces as planned.
   `cargo run --quiet -- check --format json .`, `cargo fmt --check`,
   `git diff --check`, `cargo xtask docs`, `cargo xtask evidence`, and
   `cargo check --workspace --all-targets --quiet`.
+- 2026-06-28: Added safe-fix dry-run/write contract slice. `assura fix markdown`
+  now supports `--dry-run` and `--format json|yaml|text`; JSON reports use
+  `assura.safe-fix.markdown.v1`, preview proposed file/line fixes without
+  writing, and keep normal write summaries for applied fixes. The exact
+  safe-fix dry-run surface is registered in the public support matrix.
+  Validation passed: `cargo test --test markdown_lint_fix_tests --quiet`,
+  `cargo test --test content_query_cli --quiet`, `cargo fmt --check`,
+  `git diff --check`, `cargo run --quiet -- check --format json .`,
+  `cargo run --quiet -- check --format agent --agent codex .`,
+  `cargo check --workspace --all-targets --quiet`, `cargo xtask docs`, and
+  `cargo xtask evidence`.

@@ -247,6 +247,12 @@ pub enum FixCommands {
 
         #[arg(long, value_enum, default_value = "trailing-spaces")]
         rule: MarkdownFixRuleArg,
+
+        #[arg(long, help = "Preview safe fixes without writing files")]
+        dry_run: bool,
+
+        #[arg(short, long, value_enum, default_value = "text")]
+        format: OutputFormat,
     },
 }
 
@@ -410,6 +416,14 @@ pub enum AgentTarget {
 #[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]
 pub enum MarkdownFixRuleArg {
     TrailingSpaces,
+}
+
+impl From<MarkdownFixRuleArg> for crate::cli::check::MarkdownFixRule {
+    fn from(value: MarkdownFixRuleArg) -> Self {
+        match value {
+            MarkdownFixRuleArg::TrailingSpaces => Self::TrailingSpaces,
+        }
+    }
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]

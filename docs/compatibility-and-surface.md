@@ -38,6 +38,7 @@ publishes and verifies a `.sha256` file next to every archive.
 | `assura hooks` | Supported for local git hooks | CLI help and local hook behavior. |
 | `assura quality plan` | Supported for local quality planning | `.assura/config.yml`, `docs/validation.md`, and changed-check scripts. |
 | `assura performance-report` | Supported evidence command | Performance report CI job and checked report data. |
+| `assura fix markdown --dry-run --format json` | Experimental safe-fix contract | Markdown safe-fix CLI tests prove preview output does not write files. |
 | `assura content` | Supported first project-intelligence query surface | Content query CLI fixture tests and product docs. |
 | `assura content agent-context` | Supported generic agent context | Agent-context CLI fixture tests; wrappers must reuse this contract instead of creating per-agent query commands. |
 | `assura content collections` | Supported | Content query CLI fixture tests. |

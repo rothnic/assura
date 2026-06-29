@@ -97,6 +97,64 @@ fn fix_markdown_removes_blank_line_trailing_spaces_and_preserves_frontmatter() {
 }
 
 #[test]
+fn fix_markdown_dry_run_reports_safe_fix_without_writing() {
+    let project = write_project(
+        "          lint_trailing_spaces: true\n",
+        "---\ntitle: Note\n---\n   \n# Note\n\nBody\n",
+    );
+    let before = fs::read_to_string(project.path().join("docs/note.md")).unwrap();
+
+    let output = Command::new(assura_bin())
+        .arg("fix")
+        .arg("markdown")
+        .arg(project.path())
+        .arg("--dry-run")
+        .arg("--format")
+        .arg("json")
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(0));
+    let json: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(json["schema"], "assura.safe-fix.markdown.v1");
+    assert_eq!(json["dry_run"], true);
+    assert_eq!(json["files_checked"], 1);
+    assert_eq!(json["files_changed"], 0);
+    assert_eq!(json["fixes_applied"], 0);
+    assert_eq!(json["files_would_change"], 1);
+    assert_eq!(json["fixes_would_apply"], 1);
+
+    let after = fs::read_to_string(project.path().join("docs/note.md")).unwrap();
+    assert_eq!(after, before);
+}
+
+#[test]
+fn fix_markdown_json_reports_bounded_write_summary() {
+    let project = write_project(
+        "          lint_trailing_spaces: true\n",
+        "---\ntitle: Note\n---\n   \n# Note\n",
+    );
+
+    let output = Command::new(assura_bin())
+        .arg("fix")
+        .arg("markdown")
+        .arg(project.path())
+        .arg("--format")
+        .arg("json")
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(0));
+    let json: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(json["dry_run"], false);
+    assert_eq!(json["files_checked"], 1);
+    assert_eq!(json["files_changed"], 1);
+    assert_eq!(json["fixes_applied"], 1);
+    assert_eq!(json["files_would_change"], 1);
+    assert_eq!(json["fixes_would_apply"], 1);
+}
+
+#[test]
 fn fix_markdown_reports_noop_for_clean_configured_markdown() {
     let project = write_project(
         "          lint_trailing_spaces: true\n",

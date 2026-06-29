@@ -5,7 +5,6 @@
 use crate::cli::args::{AgentTarget, CheckOutputFormat, OutputFormat};
 use crate::cli::check::{
     run_markdown_fix, run_structure_check_with_target_mode, CheckError, CheckTargetMode,
-    MarkdownFixRule,
 };
 use crate::cli::check_report::format_structure_report;
 use crate::cli::init_support::{resolve_project_root, starter_config};
@@ -207,22 +206,42 @@ pub async fn fix_markdown_command(
     path: Option<PathBuf>,
     config: Option<PathBuf>,
     rule: MarkdownFixRuleArg,
+    dry_run: bool,
+    format: OutputFormat,
 ) -> ExitCode {
-    let rule = match rule {
-        MarkdownFixRuleArg::TrailingSpaces => MarkdownFixRule::TrailingSpaces,
-    };
+    let rule = rule.into();
 
-    match run_markdown_fix(path, config, rule) {
+    match run_markdown_fix(path, config, rule, dry_run) {
         Ok(report) => {
-            println!(
-                "Checked {} Markdown file(s); changed {} file(s); applied {} fix(es).",
-                report.files_checked, report.files_changed, report.fixes_applied
-            );
+            println!("{}", format_markdown_fix_report(&report, format));
             ExitCode::Success
         }
         Err(error) => {
             eprintln!("Error: {}", error);
             exit_code_for_check_error(&error)
+        }
+    }
+}
+
+fn format_markdown_fix_report(
+    report: &crate::cli::check::MarkdownFixReport,
+    format: OutputFormat,
+) -> String {
+    match format {
+        OutputFormat::Json => serde_json::to_string_pretty(report).unwrap_or_default(),
+        OutputFormat::Yaml => serde_yaml::to_string(report).unwrap_or_default(),
+        OutputFormat::Text | OutputFormat::Advice | OutputFormat::Status => {
+            if report.dry_run {
+                format!(
+                    "Checked {} Markdown file(s); would change {} file(s); would apply {} fix(es).",
+                    report.files_checked, report.files_would_change, report.fixes_would_apply
+                )
+            } else {
+                format!(
+                    "Checked {} Markdown file(s); changed {} file(s); applied {} fix(es).",
+                    report.files_checked, report.files_changed, report.fixes_applied
+                )
+            }
         }
     }
 }

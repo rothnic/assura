@@ -22,6 +22,7 @@ This policy applies to Assura pre-1.0 releases.
 | `assura hooks` for local git hooks | Supported local workflow | Hooks must be opt-in and local to a checkout. |
 | `assura quality plan` | Supported local workflow | Quality-scope planning must stay config-backed and deterministic. |
 | `assura performance-report` | Supported evidence command | Claims must cite checked benchmark or CI artifacts. |
+| `assura fix markdown --dry-run --format json` | Experimental safe-fix contract | Dry-run output must report proposed bounded writes without modifying files. |
 | `assura content` query commands | Supported first project-intelligence query surface | JSON output for generic agent context, collection, relation, keyword, semantic-candidate, code-symbol, and bounded graph queries must remain deterministic enough for agent use. Semantic scores and baseline code-symbol evidence are candidate context only and do not decide validation correctness. |
 | `assura info` | Experimental diagnostic | Text output can change before a documented automation contract exists. |
 | `extensions.custom_constraints` | Experimental first-party | Specialized constraint execution only. Common repository relationships should use `structure` captures, `exists:1`, `needs`, and `provides`. Breaking changes are allowed before 1.0 with release-note disclosure. |

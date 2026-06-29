@@ -3,6 +3,7 @@
 use super::markdown::fix_blank_line_trailing_spaces;
 use super::{discover_project, CheckError, CompiledStructureConfig, StructureChecker};
 use crate::config::loader::ConfigLoader;
+use serde::Serialize;
 use std::path::{Path, PathBuf};
 
 /// Markdown fix rule supported by the first safe-fix slice.
@@ -13,18 +14,26 @@ pub enum MarkdownFixRule {
 }
 
 /// Summary of a Markdown fix run.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct MarkdownFixReport {
+    /// Stable report schema for agent/editor wrappers.
+    pub schema: &'static str,
     /// Project root used for config discovery.
     pub project_root: PathBuf,
     /// Path checked by the user.
     pub checked_path: PathBuf,
+    /// Whether this run only planned changes without writing files.
+    pub dry_run: bool,
     /// Configured Markdown files considered for this fix rule.
     pub files_checked: usize,
     /// Files written with at least one fix.
     pub files_changed: usize,
     /// Individual line fixes applied.
     pub fixes_applied: usize,
+    /// Files that would change if the same run wrote changes.
+    pub files_would_change: usize,
+    /// Individual line fixes that would apply if the same run wrote changes.
+    pub fixes_would_apply: usize,
 }
 
 /// Apply a safe Markdown fix for configured Markdown scopes.
@@ -32,6 +41,7 @@ pub fn run_markdown_fix(
     path: Option<PathBuf>,
     config_path: Option<PathBuf>,
     rule: MarkdownFixRule,
+    dry_run: bool,
 ) -> Result<MarkdownFixReport, CheckError> {
     let checked_path = match path {
         Some(path) => {
@@ -54,14 +64,18 @@ pub fn run_markdown_fix(
     let compiled = CompiledStructureConfig::new_for_check(config, false);
     let mut checker = StructureChecker::from_compiled_owned(project_root.clone(), compiled, false);
     let mut report = MarkdownFixReport {
+        schema: "assura.safe-fix.markdown.v1",
         project_root,
         checked_path: checked_path.clone(),
+        dry_run,
         files_checked: 0,
         files_changed: 0,
         fixes_applied: 0,
+        files_would_change: 0,
+        fixes_would_apply: 0,
     };
 
-    checker.fix_markdown_path(&checked_path, rule, &mut report)?;
+    checker.fix_markdown_path(&checked_path, rule, dry_run, &mut report)?;
     Ok(report)
 }
 
@@ -70,10 +84,11 @@ impl StructureChecker {
         &mut self,
         checked_path: &Path,
         rule: MarkdownFixRule,
+        dry_run: bool,
         report: &mut MarkdownFixReport,
     ) -> Result<(), CheckError> {
         if checked_path.is_file() {
-            self.fix_markdown_file(checked_path, rule, report)?;
+            self.fix_markdown_file(checked_path, rule, dry_run, report)?;
             return Ok(());
         }
 
@@ -93,7 +108,7 @@ impl StructureChecker {
         for entry in walker {
             let entry = entry?;
             if entry.file_type().is_file() {
-                self.fix_markdown_file(entry.path(), rule, report)?;
+                self.fix_markdown_file(entry.path(), rule, dry_run, report)?;
             }
         }
 
@@ -104,6 +119,7 @@ impl StructureChecker {
         &mut self,
         path: &Path,
         rule: MarkdownFixRule,
+        dry_run: bool,
         report: &mut MarkdownFixReport,
     ) -> Result<(), CheckError> {
         if path.extension().and_then(|ext| ext.to_str()) != Some("md") {
@@ -131,9 +147,13 @@ impl StructureChecker {
                 let content = std::fs::read_to_string(path)?;
                 let (fixed, fixes) = fix_blank_line_trailing_spaces(&content);
                 if fixes > 0 {
-                    std::fs::write(path, fixed)?;
-                    report.files_changed += 1;
-                    report.fixes_applied += fixes;
+                    report.files_would_change += 1;
+                    report.fixes_would_apply += fixes;
+                    if !dry_run {
+                        std::fs::write(path, fixed)?;
+                        report.files_changed += 1;
+                        report.fixes_applied += fixes;
+                    }
                 }
             }
         }

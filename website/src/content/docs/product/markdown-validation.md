@@ -13,7 +13,7 @@ shape while typed frontmatter fields stay in content models.
 | `markdown.require_frontmatter` | Shipped | Generic Markdown presence rule. |
 | `markdown.outline` | Shipped | Assura-owned heading hierarchy with required and optional nested headings. |
 | `markdown.lint_trailing_spaces` | Experimental | Rust-native lint for blank Markdown lines containing spaces or tabs. |
-| `assura fix markdown` | Experimental | Safe fix command for deterministic blank-line trailing whitespace. |
+| `assura fix markdown` | Experimental | Safe fix command for deterministic blank-line trailing whitespace with dry-run JSON. |
 | Typed frontmatter fields | Shipped | Content runtime `models` and `collections`, not generic Markdown rules. |
 | Broad markdownlint-compatible rules | Planned | Revisit when Assura has a compatible dependency or external-binary contract. |
 | Link checking | Planned | Needs offline/network policy and normalized diagnostics before support. |
@@ -26,6 +26,7 @@ hard breaks, frontmatter fields, or body prose.
 
 ```bash
 assura fix markdown --rule trailing-spaces .
+assura fix markdown --rule trailing-spaces --dry-run --format json .
 ```
 
 See [Configuration](/docs/configuration/) for Markdown fields and
