@@ -101,3 +101,7 @@ Repository proof lives in:
 
 The full guide is in `docs/content-runtime.md`, with cross-language inspection
 notes in `docs/content-runtime-inspection.md`.
+
+For a visual walkthrough that connects modeled content to search, graph context,
+agent envelopes, and safe-fix previews, see
+[Project Intelligence Demo](/examples/project-intelligence-demo/).

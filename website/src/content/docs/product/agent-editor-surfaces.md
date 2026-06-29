@@ -51,3 +51,7 @@ assura fix markdown --rule trailing-spaces --dry-run --format json .
 
 The dry-run report uses `assura.safe-fix.markdown.v1` and counts proposed files
 and line fixes without writing.
+
+For an end-to-end example that starts with repository files and ends with an
+agent-query diagnostic, see
+[Project Intelligence Demo](/examples/project-intelligence-demo/).

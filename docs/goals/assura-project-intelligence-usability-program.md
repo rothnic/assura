@@ -127,3 +127,14 @@ Block if the plan claims unsupported surfaces as supported, requires a remote
 service for core functionality, introduces per-agent command families, treats
 semantic search as validation truth, or marks the usability program complete
 without real-repo proof and release hardening.
+
+## Progress Log
+
+- 2026-06-29: Began execution with the first successor,
+  `docs/goals/assura-project-intelligence-adoption-blueprint.md`, on task
+  `.trellis/tasks/06-29-project-intelligence-usability-execution`. Initial
+  progress adds a visual documentation demo and reproducible command examples
+  for the current local project-intelligence surfaces. The broader program
+  remains open until real-repo proof, persistent sessions, editor/agent
+  transports, safe-fix workflow, and release hardening are implemented and
+  audited.

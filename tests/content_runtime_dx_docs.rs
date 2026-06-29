@@ -8,6 +8,8 @@ const GUIDE: &str = "docs/content-runtime-inspection.md";
 const RUNTIME_GUIDE: &str = "docs/content-runtime.md";
 const WEBSITE_CONFIG: &str = "website/astro.config.mjs";
 const WEBSITE_EXAMPLE: &str = "website/src/content/docs/examples/content-runtime.md";
+const WEBSITE_PROJECT_INTELLIGENCE_DEMO: &str =
+    "website/src/content/docs/examples/project-intelligence-demo.md";
 const WEBSITE_CONTENT_MODELS: &str = "website/src/content/docs/product/content-models.md";
 const CONTENT_RUNTIME_FIXTURE: &str = "tests/fixtures/content_runtime/valid";
 const AUTHORING_ROOT: &str = "tests/fixtures/artifact_modeling_options/authoring_paths";
@@ -149,6 +151,53 @@ fn content_runtime_user_docs_cover_examples_writes_and_website_page() {
         "tests/fixtures/artifact_modeling_options/authoring_paths/generated_outputs/linkml_profile.runtime.schema.json",
     ] {
         assert!(Path::new(path).exists(), "documented path should exist: {path}");
+    }
+}
+
+#[test]
+fn project_intelligence_demo_is_discoverable_and_covers_adoption_commands() {
+    let website_config = fs::read_to_string(WEBSITE_CONFIG).expect("website config");
+    let demo =
+        fs::read_to_string(WEBSITE_PROJECT_INTELLIGENCE_DEMO).expect("project intelligence demo");
+    let content_runtime = fs::read_to_string(WEBSITE_EXAMPLE).expect("content runtime example");
+
+    assert!(
+        website_config.contains("slug: 'examples/project-intelligence-demo'"),
+        "website sidebar should link the project intelligence demo"
+    );
+    assert!(
+        content_runtime.contains("/examples/project-intelligence-demo/"),
+        "content runtime example should link the project intelligence demo"
+    );
+
+    for required in [
+        "pi-demo-flow",
+        "pi-demo-board",
+        "assura check --format json tests/fixtures/content_runtime/valid",
+        "assura content search \"Portable Structure\" tests/fixtures/content_runtime/valid --format json",
+        "assura content expand goals goal-portable-structure tests/fixtures/content_runtime/valid --format json",
+        "assura content missing-relations tests/fixtures/content_runtime/missing_reference --format json",
+        "assura content agent-query diagnostics tests/fixtures/content_runtime/missing_reference --format json",
+        "assura content agent-context",
+        "assura.safe-fix.markdown.v1",
+        "files_would_change",
+        "does not require a daemon",
+    ] {
+        assert!(
+            demo.contains(required),
+            "project intelligence demo should contain {required}"
+        );
+    }
+
+    for path in [
+        WEBSITE_PROJECT_INTELLIGENCE_DEMO,
+        "tests/fixtures/content_runtime/valid/.assura/config.yml",
+        "tests/fixtures/content_runtime/missing_reference/.assura/config.yml",
+    ] {
+        assert!(
+            Path::new(path).exists(),
+            "documented path should exist: {path}"
+        );
     }
 }
 

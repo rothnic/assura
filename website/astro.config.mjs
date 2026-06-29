@@ -76,6 +76,7 @@ export default defineConfig({
 						{ label: 'Git Hooks Setup', slug: 'examples/git-hooks-setup' },
 						{ label: 'Multi-Agent Configuration', slug: 'examples/multi-agent-config' },
 						{ label: 'Content Runtime', slug: 'examples/content-runtime' },
+						{ label: 'Project Intelligence Demo', slug: 'examples/project-intelligence-demo' },
 					],
 				},
 			],

@@ -58,6 +58,10 @@ Code-symbol queries are also optional enrichment. The built-in Rust token
 baseline can resolve rough local declarations, and missing providers preserve
 unresolved refs instead of failing validation.
 
+See [Project Intelligence Demo](/examples/project-intelligence-demo/) for a
+visual walkthrough that connects modeled content, search, graph expansion,
+missing-relation diagnostics, and agent-query envelopes.
+
 ## Boundaries
 
 The current query layer is local and deterministic. It does not provide remote

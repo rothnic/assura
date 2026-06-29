@@ -83,3 +83,13 @@ git diff --check
 Block if a new user still has to infer the setup path from scattered docs, if
 examples use unsupported commands, if the workflow requires remote services, or
 if project-intelligence adoption breaks the existing structure-first init path.
+
+## Progress Log
+
+- 2026-06-29: Started the adoption-blueprint execution slice on task
+  `.trellis/tasks/06-29-project-intelligence-usability-execution`. Added a
+  docs-site Project Intelligence Demo that visually connects repository files,
+  Assura facts, query surfaces, agent-query envelopes, and safe-fix previews
+  using the existing `tests/fixtures/content_runtime` proof fixtures. The slice
+  intentionally does not claim daemon, LSP, MCP, persistent-session, or
+  safe-fix apply support.
