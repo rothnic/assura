@@ -404,6 +404,8 @@ extensions:
           status: experimental
         - surface: "command:assura content"
           status: supported
+        - surface: "command:assura content agent-context"
+          status: supported
         - surface: "command:assura content collections"
           status: supported
         - surface: "command:assura content instances"

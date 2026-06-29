@@ -20,8 +20,8 @@ use self::output::{
 use self::semantic::semantic_search;
 use super::{ContentCommands, ExitCode, OutputFormat};
 use crate::intelligence::{
-    model_instance_id, Diagnostic, FactId, ProjectEdge, ProjectFact, RelationshipEdge, Resource,
-    SearchChunk,
+    model_instance_id, project_intelligence_agent_context, Diagnostic, FactId, ProjectEdge,
+    ProjectFact, RelationshipEdge, Resource, SearchChunk,
 };
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::PathBuf;
@@ -47,6 +47,10 @@ fn run_content_command(
     let format = command_format(&command);
     let context = QueryContext::load(&command, config)?;
     match command {
+        ContentCommands::AgentContext { .. } => render(
+            project_intelligence_agent_context(context.store.facts()),
+            format,
+        ),
         ContentCommands::Collections { .. } => render(collections(&context), format),
         ContentCommands::Instances { collection, .. } => {
             render(instances(&context, &collection), format)
@@ -82,7 +86,8 @@ fn run_content_command(
 
 fn command_format(command: &ContentCommands) -> OutputFormat {
     match command {
-        ContentCommands::Collections { format, .. }
+        ContentCommands::AgentContext { format, .. }
+        | ContentCommands::Collections { format, .. }
         | ContentCommands::Instances { format, .. }
         | ContentCommands::Show { format, .. }
         | ContentCommands::Search { format, .. }

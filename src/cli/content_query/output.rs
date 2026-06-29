@@ -2,6 +2,7 @@
 
 use super::context::ContentQueryError;
 use crate::cli::OutputFormat;
+use crate::intelligence::ProjectIntelligenceAgentContext;
 use serde::Serialize;
 use serde_json::{Map, Value};
 use std::path::PathBuf;
@@ -188,6 +189,30 @@ impl TextRender for CollectionsOutput {
             lines.push(format!(
                 "{} ({}) - {} instance(s)",
                 collection.collection, collection.object_type, collection.instances
+            ));
+        }
+        lines.join("\n")
+    }
+}
+
+impl TextRender for ProjectIntelligenceAgentContext {
+    fn render_text(&self) -> String {
+        let mut lines = vec![format!(
+            "Project intelligence agent context: {}",
+            self.schema
+        )];
+        lines.push(format!(
+            "models: {}; diagnostics: {}; safe fixes: {}; relationships: {}; symbol refs: {}",
+            self.summary.model_instances,
+            self.summary.diagnostics,
+            self.summary.safe_fixes,
+            self.summary.relationship_edges,
+            self.summary.symbol_refs
+        ));
+        for capability in &self.capabilities {
+            lines.push(format!(
+                "{} [{}] - {}",
+                capability.name, capability.status, capability.cli
             ));
         }
         lines.join("\n")

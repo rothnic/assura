@@ -1,4 +1,5 @@
 //! Dependency graph intelligence modules and public re-exports.
+pub mod agent_surface;
 pub mod error;
 pub mod facts;
 pub mod graph;
@@ -8,6 +9,10 @@ pub mod query;
 pub mod semantic;
 pub mod store;
 
+pub use agent_surface::{
+    project_intelligence_agent_context, AgentSurfaceCapability, AgentSurfaceSummary,
+    ProjectIntelligenceAgentContext,
+};
 pub use error::{GraphError, GraphResult};
 pub use facts::{
     model_instance_id, resource_id, CodeProviderEvidence, CodeSymbol, Diagnostic, EdgeId,

@@ -87,3 +87,14 @@ docs still mark daemon/editor, LSP, and MCP surfaces as planned.
   semantic, code-symbol, diagnostics, safe-fix, and agent feedback foundations,
   but no shared project-intelligence agent surface contract for agents/editors
   to request those capabilities through one documented API.
+- 2026-06-28: Added first shared project-intelligence agent context slice:
+  `assura content agent-context` emits
+  `assura.project-intelligence.agent-context.v1` from reusable
+  `intelligence::agent_surface` contract structs. The summary covers current
+  model instances, diagnostics, safe fixes, graph relationship edges, search
+  chunks, semantic embedding records, and code-symbol refs. This is a generic
+  wrapper contract, not a per-agent command family. Validation passed:
+  `cargo test --test content_query_cli --quiet`,
+  `cargo run --quiet -- check --format json .`, `cargo fmt --check`,
+  `git diff --check`, `cargo xtask docs`, `cargo xtask evidence`, and
+  `cargo check --workspace --all-targets --quiet`.

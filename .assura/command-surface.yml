@@ -127,6 +127,21 @@ commands:
       --quiet: {}
       --help:
         aliases: ["-h"]
+  - name: "assura content agent-context"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status"]
   - name: "assura content collections"
     allow_positionals: true
     flags:

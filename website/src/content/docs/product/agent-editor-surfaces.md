@@ -13,6 +13,7 @@ surfaces should call the same contracts rather than invent parallel validation.
 | --- | --- | --- |
 | `assura check --format agent` | Experimental | Stable JSON shape for wrappers and agent integrations. |
 | `assura check --format agent --agent codex` | Experimental | Optional Codex `UserPromptSubmit` delivery adapter. |
+| `assura content agent-context` | Supported | Generic project-intelligence capability schema for wrappers; not agent-specific. |
 | Git hook feedback | Experimental | Hooks can call the CLI and render bounded status or advice. |
 | Daemon/editor session | Planned | Future surfaces should reuse prepared checks or a hot local session. |
 | LSP and MCP surfaces | Planned | Future surfaces should share diagnostics, safe fixes, graph queries, and search contracts. |
@@ -20,3 +21,13 @@ surfaces should call the same contracts rather than invent parallel validation.
 
 See [Agent Feedback Delivery](/reference/agent-feedback/) for current CLI output
 formats and future integration direction.
+
+Generic project-intelligence wrappers should start with:
+
+```bash
+assura content agent-context . --format json
+```
+
+This reports the shared
+`assura.project-intelligence.agent-context.v1` schema and available diagnostics,
+safe-fix, graph/search, semantic-candidate, and code-symbol capabilities.

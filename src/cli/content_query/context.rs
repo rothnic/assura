@@ -75,7 +75,8 @@ impl QueryContext {
 
 fn command_path(command: &ContentCommands) -> Option<PathBuf> {
     match command {
-        ContentCommands::Collections { path, .. }
+        ContentCommands::AgentContext { path, .. }
+        | ContentCommands::Collections { path, .. }
         | ContentCommands::Instances { path, .. }
         | ContentCommands::Show { path, .. }
         | ContentCommands::Search { path, .. }
@@ -106,7 +107,8 @@ impl SemanticCommand for ContentCommands {
     fn code_symbols_enabled(&self) -> bool {
         matches!(
             self,
-            ContentCommands::Symbols { .. }
+            ContentCommands::AgentContext { .. }
+                | ContentCommands::Symbols { .. }
                 | ContentCommands::SymbolRefs { .. }
                 | ContentCommands::Expand { .. }
         )

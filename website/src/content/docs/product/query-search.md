@@ -26,6 +26,7 @@ Use JSON output for agent integrations:
 
 ```bash
 assura content collections tests/fixtures/content_runtime/valid --format json
+assura content agent-context tests/fixtures/content_runtime/code_symbols --format json
 assura content instances goals tests/fixtures/content_runtime/valid --format json
 assura content show goals goal-portable-structure tests/fixtures/content_runtime/valid --format json
 assura content search "Portable Structure" tests/fixtures/content_runtime/valid --format json

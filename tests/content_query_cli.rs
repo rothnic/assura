@@ -251,3 +251,30 @@ fn content_query_reports_code_symbols_in_both_directions() {
     );
     assert_eq!(unresolved_refs["references"][0]["resolved"], false);
 }
+
+#[test]
+fn content_query_reports_generic_agent_context() {
+    let context = json_output(run_content(&[
+        "agent-context",
+        "tests/fixtures/content_runtime/code_symbols",
+        "--format",
+        "json",
+    ]));
+
+    assert_eq!(
+        context["schema"],
+        "assura.project-intelligence.agent-context.v1"
+    );
+    assert_eq!(context["summary"]["model_instances"], 1);
+    assert_eq!(context["summary"]["symbol_refs"], 2);
+    assert_eq!(context["summary"]["resolved_symbol_refs"], 1);
+    let capabilities = context["capabilities"]
+        .as_array()
+        .expect("capabilities array");
+    assert!(capabilities.iter().any(|item| {
+        item["name"] == "diagnostics" && item["cli"] == "assura check --format agent"
+    }));
+    assert!(capabilities
+        .iter()
+        .any(|item| { item["name"] == "code_symbols" && item["cli"] == "assura content symbols" }));
+}

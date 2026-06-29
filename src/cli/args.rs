@@ -252,6 +252,15 @@ pub enum FixCommands {
 
 #[derive(Subcommand, Debug)]
 pub enum ContentCommands {
+    #[command(about = "Report shared project-intelligence agent context")]
+    AgentContext {
+        #[arg(help = "Project root directory (defaults to current directory)")]
+        path: Option<PathBuf>,
+
+        #[arg(short, long, value_enum, default_value = "text")]
+        format: OutputFormat,
+    },
+
     #[command(about = "List modeled content collections")]
     Collections {
         #[arg(help = "Project root directory (defaults to current directory)")]
