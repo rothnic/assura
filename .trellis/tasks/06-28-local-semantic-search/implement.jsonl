@@ -4,3 +4,4 @@
 {"file": "docs/goals/assura-local-semantic-search.md", "reason": "Target successor goal, scope, definition of done, validation commands, and reviewer criteria."}
 {"file": "docs/goals/assura-content-query-and-search-cli.md", "reason": "Completed query CLI dependency and boundaries for keyword versus semantic search."}
 {"file": "docs/analysis/2026-06-28-project-intelligence-store-spike.md", "reason": "Store-spike constraints and evidence for graph/search backend choices."}
+{"completed": "2026-06-28", "summary": "Added local semantic-search foundation with deterministic hash embeddings, embedding records, and store-level candidate lookup.", "files": ["src/intelligence/semantic.rs", "src/intelligence/store.rs", "src/intelligence/facts/types.rs", "src/intelligence/facts/ingest.rs", "tests/semantic_search_tests.rs", "docs/analysis/2026-06-28-local-semantic-search-baseline.md"]}

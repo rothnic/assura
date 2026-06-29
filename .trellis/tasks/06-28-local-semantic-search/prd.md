@@ -84,3 +84,21 @@ invalidation, and docs still mark local semantic search as planned.
   `assura content search` unaffected.
 - R5: Confirm no remote provider, code-symbol provider, daemon, LSP, or MCP
   scope creep lands in this successor.
+
+## Progress Evidence
+
+- 2026-06-28: Added internal semantic foundation:
+  `local-hash-embedding-v1`, deterministic text hashes, embedding record
+  provider/dimension metadata, explicit embedding ingestion, and store-level
+  cosine candidate lookup. This does not change `assura check` or keyword
+  search behavior.
+- 2026-06-28: Recorded provider baseline and limitations in
+  `docs/analysis/2026-06-28-local-semantic-search-baseline.md`.
+- 2026-06-28 validation passed:
+  `cargo fmt --check`;
+  `cargo test --test semantic_search_tests --quiet`;
+  `cargo test semantic_search --quiet`;
+  `cargo test project_intelligence --quiet`;
+  `cargo clippy --workspace --all-targets --all-features -- -D warnings`;
+  `cargo run --quiet -- check --format json .`;
+  `git diff --check`.

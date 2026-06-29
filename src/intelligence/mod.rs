@@ -5,6 +5,7 @@ pub mod graph;
 pub mod node;
 pub mod persistence;
 pub mod query;
+pub mod semantic;
 pub mod store;
 
 pub use error::{GraphError, GraphResult};
@@ -19,4 +20,8 @@ pub use graph::{GraphBuilder, GraphStats, IntelligenceGraph};
 pub use node::{DirectoryNode, Edge, FileNode, Node, NodeId, NodeMetadata, NodeType, Relationship};
 pub use persistence::{GraphPersistence, PersistenceFormat};
 pub use query::{GraphQuery, QueryResult};
+pub use semantic::{
+    cosine_similarity, local_hash_embedding, local_hash_embedding_record, semantic_text_hash,
+    LOCAL_HASH_EMBEDDING_DIMENSIONS, LOCAL_HASH_EMBEDDING_PROVIDER,
+};
 pub use store::{FactStoreStats, InMemoryFactStore};

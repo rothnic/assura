@@ -5,8 +5,10 @@
 //! local traversal and query workloads.
 
 use super::facts::{
-    EdgeId, FactId, FactSet, PathScope, ProjectEdge, ProjectFact, RelationshipEdge, SearchChunk,
+    EdgeId, EmbeddingRecord, FactId, FactSet, PathScope, ProjectEdge, ProjectFact,
+    RelationshipEdge, SearchChunk,
 };
+use super::semantic::cosine_similarity;
 use glob::Pattern;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
@@ -21,6 +23,7 @@ pub struct InMemoryFactStore {
     edges_by_source: BTreeMap<FactId, Vec<usize>>,
     missing_relationship_edges: Vec<usize>,
     search_chunks: Vec<SearchChunk>,
+    embedding_records: Vec<EmbeddingRecord>,
     path_scopes: Vec<PathScope>,
 }
 
@@ -119,6 +122,45 @@ impl InMemoryFactStore {
             .collect()
     }
 
+    /// Return embedding-backed candidate chunks for a query vector.
+    pub fn semantic_search(
+        &self,
+        query_vector: &[f32],
+        provider: &str,
+        limit: usize,
+    ) -> Vec<SemanticSearchHit<'_>> {
+        if limit == 0 || query_vector.is_empty() {
+            return Vec::new();
+        }
+
+        let mut hits = self
+            .embedding_records
+            .iter()
+            .filter(|record| {
+                record.provider == provider
+                    && record.dimensions == query_vector.len()
+                    && record.vector.len() == query_vector.len()
+            })
+            .filter_map(|record| {
+                let chunk = self.search_chunk_by_id(&record.chunk_id)?;
+                let score = cosine_similarity(query_vector, &record.vector);
+                Some(SemanticSearchHit {
+                    chunk,
+                    embedding: record,
+                    score,
+                })
+            })
+            .collect::<Vec<_>>();
+        hits.sort_by(|left, right| {
+            right
+                .score
+                .total_cmp(&left.score)
+                .then_with(|| left.chunk.id.cmp(&right.chunk.id))
+        });
+        hits.truncate(limit);
+        hits
+    }
+
     /// Return measured index sizes for comparison and decision records.
     pub fn stats(&self) -> FactStoreStats {
         FactStoreStats {
@@ -128,6 +170,7 @@ impl InMemoryFactStore {
             indexed_edge_ids: self.edges_by_id.len(),
             source_index_entries: self.edges_by_source.len(),
             search_chunk_count: self.search_chunks.len(),
+            embedding_record_count: self.embedding_records.len(),
             path_scope_count: self.path_scopes.len(),
             serialized_bytes: serde_json::to_vec(&self.facts)
                 .map(|bytes| bytes.len())
@@ -141,6 +184,7 @@ impl InMemoryFactStore {
         self.edges_by_source.clear();
         self.missing_relationship_edges.clear();
         self.search_chunks.clear();
+        self.embedding_records.clear();
         self.path_scopes.clear();
 
         for (index, fact) in self.facts.facts.iter().enumerate() {
@@ -150,6 +194,7 @@ impl InMemoryFactStore {
                 .push(index);
             match fact {
                 ProjectFact::SearchChunk(chunk) => self.search_chunks.push(chunk.clone()),
+                ProjectFact::EmbeddingRecord(record) => self.embedding_records.push(record.clone()),
                 ProjectFact::PathScope(scope) => self.path_scopes.push(scope.clone()),
                 _ => {}
             }
@@ -198,6 +243,21 @@ impl InMemoryFactStore {
             None => true,
         }
     }
+
+    fn search_chunk_by_id(&self, id: &FactId) -> Option<&SearchChunk> {
+        self.search_chunks.iter().find(|chunk| &chunk.id == id)
+    }
+}
+
+/// Semantic-search candidate returned by the in-memory fact store.
+#[derive(Debug, Clone, Copy)]
+pub struct SemanticSearchHit<'a> {
+    /// Source text chunk matched by the embedding record.
+    pub chunk: &'a SearchChunk,
+    /// Embedding metadata used for candidate retrieval.
+    pub embedding: &'a EmbeddingRecord,
+    /// Cosine similarity score; it is candidate ranking, not validation truth.
+    pub score: f32,
 }
 
 /// Measured size and index cardinality for a loaded fact store.
@@ -215,6 +275,8 @@ pub struct FactStoreStats {
     pub source_index_entries: usize,
     /// Number of searchable text chunks indexed.
     pub search_chunk_count: usize,
+    /// Number of embedding records indexed.
+    pub embedding_record_count: usize,
     /// Number of path scopes indexed.
     pub path_scope_count: usize,
     /// Serialized byte footprint of the retained fact set.

@@ -327,6 +327,10 @@ pub struct EmbeddingRecord {
     pub chunk_id: FactId,
     /// Embedding provider or model identifier.
     pub provider: String,
+    /// Stable hash of the source chunk text that produced this vector.
+    pub text_hash: String,
+    /// Number of vector dimensions expected for this provider output.
+    pub dimensions: usize,
     /// Embedding vector when available.
     pub vector: Vec<f32>,
 }

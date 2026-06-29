@@ -7,6 +7,7 @@ use crate::cli::StructureCheckReport;
 use crate::content_repository::{
     CollectionSpec, ContentFinding, RepositoryModel, RepositoryValidation,
 };
+use crate::intelligence::semantic::{local_hash_embedding_record, LOCAL_HASH_EMBEDDING_PROVIDER};
 use serde_json::Value;
 use std::collections::BTreeSet;
 use std::path::Path;
@@ -255,9 +256,32 @@ impl FactIngestor {
         }));
     }
 
+    /// Add a precomputed search chunk to this generation.
+    pub fn add_search_chunk(&mut self, chunk: SearchChunk) {
+        self.facts.upsert_fact(ProjectFact::SearchChunk(chunk));
+    }
+
     /// Finish ingestion and return the fact set.
     pub fn finish(self) -> FactSet {
         self.facts
+    }
+
+    /// Add local deterministic embedding records for all current search chunks.
+    pub fn ingest_local_semantic_embeddings(&mut self) {
+        let chunks = self
+            .facts
+            .facts
+            .iter()
+            .filter_map(|fact| match fact {
+                ProjectFact::SearchChunk(chunk) => Some(chunk.clone()),
+                _ => None,
+            })
+            .collect::<Vec<_>>();
+        for chunk in chunks {
+            let record = local_hash_embedding_record(&chunk);
+            debug_assert_eq!(record.provider, LOCAL_HASH_EMBEDDING_PROVIDER);
+            self.facts.upsert_fact(ProjectFact::EmbeddingRecord(record));
+        }
     }
 
     fn ingest_collection_model(&mut self, collection: &CollectionSpec, schema: Option<&Value>) {

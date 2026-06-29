@@ -50,13 +50,14 @@ pub use constraints::{
 
 #[cfg(feature = "full-cli")]
 pub use intelligence::{
-    model_instance_id, CodeSymbol, Diagnostic, EdgeId, EmbeddingRecord, FactGeneration, FactId,
+    cosine_similarity, local_hash_embedding, local_hash_embedding_record, model_instance_id,
+    semantic_text_hash, CodeSymbol, Diagnostic, EdgeId, EmbeddingRecord, FactGeneration, FactId,
     FactIngestor, FactOrigin, FactSet, FactStoreStats, FieldDefinition, GraphBuilder, GraphError,
     GraphPersistence, GraphQuery, GraphResult, InMemoryFactStore, IntelligenceGraph,
     MarkdownDocument as ProjectMarkdownDocument, MarkdownSection, ModelDefinition, ModelInstance,
     Node, NodeId, NodeMetadata, NodeType, PathScope, ProjectEdge, ProjectFact, Relationship,
     RelationshipDefinition, RelationshipEdge, Resource, SafeFix, SearchChunk, SourceLocation,
-    SymbolRef,
+    SymbolRef, LOCAL_HASH_EMBEDDING_DIMENSIONS, LOCAL_HASH_EMBEDDING_PROVIDER,
 };
 
 #[cfg(feature = "full-cli")]

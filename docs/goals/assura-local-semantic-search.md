@@ -99,3 +99,8 @@ changes validation truth, lacks invalidation, or cannot be disabled.
   search, graph expansion, and public `assura content` commands, but still lacks
   a semantic chunk contract, local embedding provider/index decision, semantic
   query output, and changed-chunk invalidation behavior.
+- 2026-06-28: Added first semantic-search foundation slice:
+  `local-hash-embedding-v1`, deterministic text hashes, embedding records with
+  provider/dimension metadata, store-level vector candidate lookup, and
+  regression tests. This remains internal and disabled unless embeddings are
+  explicitly ingested; public semantic CLI output is still pending.
