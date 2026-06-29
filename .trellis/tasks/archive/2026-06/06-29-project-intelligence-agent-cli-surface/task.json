@@ -1,0 +1,34 @@
+{
+  "id": "project-intelligence-agent-cli-surface",
+  "name": "project-intelligence-agent-cli-surface",
+  "title": "Project Intelligence Agent CLI Surface",
+  "description": "Expose Project Intelligence as a stable local agent CLI surface, with MCP treated only as a possible future adapter over the same contracts.",
+  "status": "completed",
+  "dev_type": "feature",
+  "scope": "cli, docs, tests",
+  "package": "assura",
+  "priority": "P2",
+  "creator": "nroth",
+  "assignee": "nroth",
+  "createdAt": "2026-06-29",
+  "completedAt": "2026-06-29",
+  "branch": null,
+  "base_branch": "codex/project-intelligence-agent-surfaces",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "docs/goals/assura-project-intelligence-usability-program.md",
+    "docs/goals/assura-project-intelligence-agent-cli-surface.md",
+    ".trellis/spec/assura/roadmap.md",
+    ".trellis/spec/assura/codex-agent-feedback.md"
+  ],
+  "notes": "User clarified on 2026-06-29 that the preferred agent interface is CLI-first. MCP should not be the primary deliverable for this slice and remote access is out of scope.",
+  "meta": {
+    "program_goal": "docs/goals/assura-project-intelligence-usability-program.md",
+    "supersedes_goal_shape": "docs/goals/assura-project-intelligence-agent-cli-surface.md"
+  }
+}
