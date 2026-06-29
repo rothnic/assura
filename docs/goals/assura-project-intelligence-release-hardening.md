@@ -8,6 +8,11 @@ owners:
   - assura-maintainers
 related:
   - docs/goals/assura-project-intelligence-usability-program.md
+  - docs/goals/assura-project-intelligence-onboarding-template.md
+  - docs/goals/assura-project-intelligence-context-pack.md
+  - docs/goals/assura-project-intelligence-persistent-session.md
+  - docs/goals/assura-project-intelligence-safe-fix-workflow.md
+  - docs/goals/assura-project-intelligence-editor-agent-transports.md
   - docs/support-policy.md
   - website/src/content/docs/reference/release-readiness.md
   - docs/analysis/evidence-and-review-policy.md
@@ -23,14 +28,16 @@ status, schema compatibility expectations, docs, evidence, and reviewer gates.
 ## Current Gap
 
 The runtime is complete locally and the usability goals define adoption,
-real-repo proof, persistent sessions, transports, and safe-fix workflow. Before
-that can be advertised as usable, release surfaces need to agree on what is
-supported, experimental, roadmap-only, or unsupported.
+real-repo proof, onboarding templates, context packs, persistent sessions,
+safe-fix workflow, and transports. Before that can be advertised as usable,
+release surfaces need to agree on what is supported, experimental,
+roadmap-only, or unsupported.
 
 ## Scope
 
 - Add release-readiness rows for project-intelligence commands, schemas, and
   transports.
+- Include onboarding template and context-pack schemas in the support matrix.
 - Add compatibility snapshot tests or golden examples for stable JSON schemas.
 - Update support policy, website reference docs, and command-surface matrices.
 - Produce release notes that call out experimental vs supported surfaces.

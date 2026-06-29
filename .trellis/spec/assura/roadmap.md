@@ -30,21 +30,21 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 16 | Docs Lifecycle Coverage | Completed | PR #83 merged; archive/sync PR #84 merged |
 | 17 | Support Matrix Surface Expansion | Completed | PR #88 merged; archive/sync PR #89 merged |
 | 18 | Project Intelligence Runtime | Completed | All nine successors and final completion audit completed locally |
-| 19 | Project Intelligence Usability | Active | Adoption blueprint and real-repo proof completed locally; persistent session is next |
+| 19 | Project Intelligence Usability | Active | Adoption blueprint and real-repo proof completed locally; onboarding template is next |
 
 ## Active Roadmap Iteration
 
 Project Intelligence Usability is active.
 
 Most recent owning task:
-`.trellis/tasks/06-29-project-intelligence-real-repo-proof`, completing
-`docs/goals/assura-project-intelligence-real-repo-proof.md`.
+`.trellis/tasks/06-29-06-29-project-intelligence-usability-gap-goals`,
+evaluating remaining usability gaps and refreshing the successor goal set.
 
 Current branch:
 `codex/project-intelligence-agent-surfaces`.
 
 Current recommended goal:
-`docs/goals/assura-project-intelligence-persistent-session.md`.
+`docs/goals/assura-project-intelligence-onboarding-template.md`.
 
 Current program:
 `docs/goals/assura-project-intelligence-usability-program.md`.
@@ -107,15 +107,15 @@ that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
 Planned next roadmap candidate:
 Continue Project Intelligence Usability with
-`docs/goals/assura-project-intelligence-persistent-session.md`. Adoption
+`docs/goals/assura-project-intelligence-onboarding-template.md`. Adoption
 blueprint and real-repo proof are completed locally; remaining successors are
-persistent sessions, editor/agent transports, safe-fix workflow, and release
-hardening.
+onboarding template, context pack, persistent session, safe-fix workflow,
+editor/agent transports, and release hardening.
 
 ## Recommended Next Action
 
 Run the workflow gate, then validate and start
-`docs/goals/assura-project-intelligence-persistent-session.md`. Do not reopen
+`docs/goals/assura-project-intelligence-onboarding-template.md`. Do not reopen
 the completed Project Intelligence Runtime successors, Project Intelligence
 Usability adoption blueprint or real-repo proof, support-matrix expansion, or
 Windows CI Restore work unless a new concrete docs, manifest, package, binary,

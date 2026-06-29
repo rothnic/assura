@@ -8,7 +8,9 @@ owners:
   - assura-maintainers
 related:
   - docs/goals/assura-project-intelligence-usability-program.md
+  - docs/goals/assura-project-intelligence-context-pack.md
   - docs/goals/assura-project-intelligence-persistent-session.md
+  - docs/goals/assura-project-intelligence-safe-fix-workflow.md
   - .trellis/spec/assura/codex-agent-feedback.md
   - website/src/content/docs/product/agent-editor-surfaces.md
 ---
@@ -24,15 +26,17 @@ transports that reuse the shared project-intelligence contracts.
 ## Current Gap
 
 The CLI has generic agent envelopes, and docs classify daemon/editor sessions,
-LSP, and MCP as planned. Usability requires at least one real editor or agent
-transport that proves the shared contracts are not just command-line wrappers.
+LSP, and MCP as planned. After context-pack, persistent-session, and safe-fix
+workflow goals define the shared contracts, usability requires at least one
+real editor or agent transport that proves those contracts are not just
+command-line wrappers.
 
 ## Scope
 
 - Select the first supported transport slice, with LSP diagnostics/code actions
   and MCP tools as the likely pair.
 - Map transport requests to the same core APIs used by `assura check`,
-  `assura content agent-query`, and safe-fix dry-runs.
+  context packs, `assura content agent-query`, and safe-fix workflows.
 - Reuse the persistent-session goal's state management when available.
 - Document request/response schemas and support levels.
 - Add transport integration tests that do not require a specific editor UI.
@@ -51,7 +55,9 @@ transport that proves the shared contracts are not just command-line wrappers.
 
 - At least one editor transport and one agent transport expose diagnostics and
   project-intelligence queries through shared contracts.
-- Safe-fix previews are exposed without applying changes automatically.
+- Safe-fix previews are exposed without applying changes automatically, and
+  apply behavior is available only if the safe-fix workflow goal has completed
+  explicit opt-in support.
 - Tests prove CLI, editor, and agent transports agree on representative
   diagnostics/query output.
 - Docs tell users when to use CLI, hook, editor, MCP, or Codex delivery.

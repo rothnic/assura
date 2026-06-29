@@ -10,9 +10,11 @@ related:
   - docs/goals/assura-project-intelligence-runtime-program.md
   - docs/goals/assura-project-intelligence-adoption-blueprint.md
   - docs/goals/assura-project-intelligence-real-repo-proof.md
+  - docs/goals/assura-project-intelligence-onboarding-template.md
+  - docs/goals/assura-project-intelligence-context-pack.md
   - docs/goals/assura-project-intelligence-persistent-session.md
-  - docs/goals/assura-project-intelligence-editor-agent-transports.md
   - docs/goals/assura-project-intelligence-safe-fix-workflow.md
+  - docs/goals/assura-project-intelligence-editor-agent-transports.md
   - docs/goals/assura-project-intelligence-release-hardening.md
 ---
 
@@ -35,9 +37,11 @@ operable, and trustworthy in realistic workflows.
 Live repo evidence shows these remaining usability gaps:
 
 - project-intelligence setup is possible through config and docs, but there is
-  no guided first-run path from a normal repo to a first useful query;
-- runtime proof is mostly fixtures and Assura-local evidence, not a curated
-  real-repo adoption package;
+  no starter template or guided first-run path from a normal repo to a first
+  useful query;
+- project-intelligence facts are queryable, but useful editing context still
+  requires callers to stitch together check, search, expand,
+  missing-relations, agent-query, and safe-fix preview commands;
 - repeated agent/editor workflows still pay cold CLI costs unless lower-level
   prepared checks are wired into a public session surface;
 - daemon/editor, LSP, and MCP surfaces are planned, not supported product
@@ -58,15 +62,21 @@ decision with evidence.
 2. [Project Intelligence Real Repo Proof](./assura-project-intelligence-real-repo-proof.md)
    proves the blueprint on Assura plus at least one realistic non-Assura repo
    fixture or pinned project package.
-3. [Project Intelligence Persistent Session](./assura-project-intelligence-persistent-session.md)
+3. [Project Intelligence Onboarding Template](./assura-project-intelligence-onboarding-template.md)
+   makes first-run setup reproducible without hand-authoring the initial
+   schema, collections, sample records, and commands.
+4. [Project Intelligence Context Pack](./assura-project-intelligence-context-pack.md)
+   provides one bounded context contract for diagnostics, graph/search context,
+   relations, and safe-fix preview metadata.
+5. [Project Intelligence Persistent Session](./assura-project-intelligence-persistent-session.md)
    promotes a measured warm session or watch-backed workflow for repeated
    checks and project-intelligence queries.
-4. [Project Intelligence Editor And Agent Transports](./assura-project-intelligence-editor-agent-transports.md)
+6. [Project Intelligence Safe Fix Workflow](./assura-project-intelligence-safe-fix-workflow.md)
+   turns safe-fix dry-runs into a complete bounded repair workflow.
+7. [Project Intelligence Editor And Agent Transports](./assura-project-intelligence-editor-agent-transports.md)
    adds concrete editor and agent transports over the shared contracts without
    forking behavior.
-5. [Project Intelligence Safe Fix Workflow](./assura-project-intelligence-safe-fix-workflow.md)
-   turns safe-fix dry-runs into a complete bounded repair workflow.
-6. [Project Intelligence Release Hardening](./assura-project-intelligence-release-hardening.md)
+8. [Project Intelligence Release Hardening](./assura-project-intelligence-release-hardening.md)
    locks schemas, docs, support status, compatibility notes, and release
    evidence for the usable product slice.
 
@@ -74,8 +84,13 @@ decision with evidence.
 
 - A new user can follow one documented path from install/init to first useful
   content query and agent envelope.
+- A starter template or first-run profile creates a working
+  project-intelligence model without hand-authored boilerplate.
 - At least one realistic non-Assura project package proves the adoption path
   without relying on untracked local state.
+- A bounded context-pack workflow gives agents and humans one task-focused
+  packet with diagnostics, related facts, relation status, and safe-fix
+  preview metadata.
 - Repeated local workflows have a measured warm-session path with explicit
   invalidation rules and fallback to full checks.
 - Editor and agent integrations call the same validation/query/safe-fix
@@ -148,3 +163,11 @@ without real-repo proof and release hardening.
   tightening diagnostics assertions. This completes the real-repo proof
   successor; the program remains open for persistent sessions, editor/agent
   transports, safe-fix workflow, and release hardening.
+- 2026-06-29: Re-evaluated the remaining usability gap after the adoption
+  demo and real-repo proof. Added
+  `docs/analysis/2026-06-29-project-intelligence-usability-gap-evaluation.md`
+  and split the next work into a tighter ordered set:
+  `docs/goals/assura-project-intelligence-onboarding-template.md`,
+  `docs/goals/assura-project-intelligence-context-pack.md`,
+  persistent session, safe-fix workflow, editor/agent transports, and release
+  hardening. The immediate next goal is onboarding template.

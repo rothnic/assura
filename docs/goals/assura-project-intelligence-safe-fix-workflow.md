@@ -8,6 +8,7 @@ owners:
   - assura-maintainers
 related:
   - docs/goals/assura-project-intelligence-usability-program.md
+  - docs/goals/assura-project-intelligence-context-pack.md
   - docs/goals/assura-rust-markdown-validation-and-fixing.md
   - docs/goals/assura-project-intelligence-editor-agent-transports.md
 ---
@@ -23,7 +24,8 @@ from.
 ## Current Gap
 
 `assura fix markdown --dry-run --format json` returns a versioned dry-run
-contract. That is useful but not enough for everyday use: agents need a stable
+contract, and the context-pack goal should expose preview metadata without
+writes. That is useful but not enough for everyday use: agents need a stable
 plan, users need confidence before writes, and integrations need audit output
 after applying changes.
 
@@ -52,6 +54,8 @@ after applying changes.
 - Tests cover no-op, dry-run, apply, partial skip, invalid path, and dirty
   non-target file behavior.
 - Agent/editor surfaces can request previews without writes.
+- Context-pack and transport surfaces can correlate previewed fixes with
+  applied/audited fixes.
 - Docs and support policy clearly classify safe-fix apply behavior.
 
 ## Validation Commands

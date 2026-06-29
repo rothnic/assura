@@ -8,6 +8,8 @@ owners:
   - assura-maintainers
 related:
   - docs/goals/assura-project-intelligence-usability-program.md
+  - docs/goals/assura-project-intelligence-onboarding-template.md
+  - docs/goals/assura-project-intelligence-context-pack.md
   - docs/goals/assura-project-intelligence-real-repo-proof.md
   - website/src/content/docs/reference/agent-feedback.md
   - docs/analysis/2026-05-15-incremental-cache-aware-checking-strategy.md
@@ -24,16 +26,19 @@ normal editing.
 ## Current Gap
 
 Lower-level prepared-check and hot-session concepts exist, but public
-project-intelligence commands are cold CLI invocations. `assura watch` is still
-experimental, and docs say future editor or agent integrations should reuse
-prepared checks or a hot daemon state.
+project-intelligence commands are cold CLI invocations. After onboarding and
+context-pack work, repeated checks should reuse the same content model,
+validation, graph/search, and safe-fix preview state instead of rebuilding it
+for every editor or agent request. `assura watch` is still experimental, and
+docs say future editor or agent integrations should reuse prepared checks or a
+hot daemon state.
 
 ## Scope
 
 - Decide whether the first usable surface is watch hardening, an explicit
   session command, a daemon, or an internal API promoted for wrappers.
-- Reuse prepared validation, content model loading, graph facts, and search
-  state when safe.
+- Reuse prepared validation, content model loading, graph facts, search state,
+  context-pack assembly, and safe-fix preview inputs when safe.
 - Define config and filesystem invalidation rules.
 - Provide changed-path or changed-content behavior with fallback to full checks.
 - Measure cold CLI, warm session, changed-path, and dirty-project rows.
