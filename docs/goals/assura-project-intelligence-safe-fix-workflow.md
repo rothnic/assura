@@ -10,7 +10,8 @@ related:
   - docs/goals/assura-project-intelligence-usability-program.md
   - docs/goals/assura-project-intelligence-context-pack.md
   - docs/goals/assura-rust-markdown-validation-and-fixing.md
-  - docs/goals/assura-project-intelligence-editor-agent-transports.md
+  - docs/goals/assura-project-intelligence-mcp-agent-transport.md
+  - docs/goals/assura-project-intelligence-lsp-editor-transport.md
 ---
 
 # Assura Project Intelligence Safe Fix Workflow
@@ -24,7 +25,7 @@ from.
 ## Current Gap
 
 `assura fix markdown --dry-run --format json` returns a versioned dry-run
-contract, and the context-pack goal should expose preview metadata without
+contract, and `assura content context-pack` exposes preview metadata without
 writes. That is useful but not enough for everyday use: agents need a stable
 plan, users need confidence before writes, and integrations need audit output
 after applying changes.

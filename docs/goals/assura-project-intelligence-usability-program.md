@@ -14,7 +14,8 @@ related:
   - docs/goals/assura-project-intelligence-context-pack.md
   - docs/goals/assura-project-intelligence-persistent-session.md
   - docs/goals/assura-project-intelligence-safe-fix-workflow.md
-  - docs/goals/assura-project-intelligence-editor-agent-transports.md
+  - docs/goals/assura-project-intelligence-mcp-agent-transport.md
+  - docs/goals/assura-project-intelligence-lsp-editor-transport.md
   - docs/goals/assura-project-intelligence-release-hardening.md
 ---
 
@@ -34,22 +35,18 @@ operable, and trustworthy in realistic workflows.
 
 ## Current Gap
 
-Live repo evidence shows these remaining usability gaps:
+Live repo evidence shows that setup and task handoff are now covered by the
+completed onboarding-template and context-pack goals. The remaining usability
+gaps are:
 
-- project-intelligence setup is possible through config and docs, but there is
-  no starter template or guided first-run path from a normal repo to a first
-  useful query;
-- project-intelligence facts are queryable, but useful editing context still
-  requires callers to stitch together check, search, expand,
-  missing-relations, agent-query, and safe-fix preview commands;
 - repeated agent/editor workflows still pay cold CLI costs unless lower-level
   prepared checks are wired into a public session surface;
-- daemon/editor, LSP, and MCP surfaces are planned, not supported product
-  contracts;
-- safe fixes have a dry-run schema, but not a complete preview, apply,
-  rollback, and audit workflow;
-- release docs and support matrices do not yet treat project-intelligence
-  usability as a promoted release slice.
+- safe fixes have preview metadata, but not a complete apply, rollback, and
+  audit workflow;
+- MCP-style agent tools and LSP-style editor behavior are planned, not
+  supported product contracts;
+- release docs and support matrices do not yet treat the completed and
+  remaining project-intelligence usability slice as a promoted release surface.
 
 ## Execution Sequence
 
@@ -73,10 +70,13 @@ decision with evidence.
    checks and project-intelligence queries.
 6. [Project Intelligence Safe Fix Workflow](./assura-project-intelligence-safe-fix-workflow.md)
    turns safe-fix dry-runs into a complete bounded repair workflow.
-7. [Project Intelligence Editor And Agent Transports](./assura-project-intelligence-editor-agent-transports.md)
-   adds concrete editor and agent transports over the shared contracts without
-   forking behavior.
-8. [Project Intelligence Release Hardening](./assura-project-intelligence-release-hardening.md)
+7. [Project Intelligence MCP Agent Transport](./assura-project-intelligence-mcp-agent-transport.md)
+   adds local agent tools over the shared context, query, diagnostics, and
+   safe-fix preview contracts.
+8. [Project Intelligence LSP Editor Transport](./assura-project-intelligence-lsp-editor-transport.md)
+   adds local editor diagnostics, context, and code-action behavior over the
+   same contracts.
+9. [Project Intelligence Release Hardening](./assura-project-intelligence-release-hardening.md)
    locks schemas, docs, support status, compatibility notes, and release
    evidence for the usable product slice.
 
@@ -93,8 +93,8 @@ decision with evidence.
   preview metadata.
 - Repeated local workflows have a measured warm-session path with explicit
   invalidation rules and fallback to full checks.
-- Editor and agent integrations call the same validation/query/safe-fix
-  contracts as the CLI.
+- Agent and editor integrations call the same validation/query/safe-fix
+  contracts as the CLI through independently validated transport goals.
 - Safe fixes support preview, bounded apply, machine-readable audit output, and
   a clear no-automatic-repair policy.
 - Project-intelligence schemas and support levels are documented in release
@@ -185,3 +185,10 @@ without real-repo proof and release hardening.
   diagnostics, related modeled records, Markdown sections, missing relation
   status, keyword search, and safe-fix preview metadata. The immediate next
   goal is `docs/goals/assura-project-intelligence-persistent-session.md`.
+- 2026-06-29: Re-evaluated the remaining usability gap after onboarding and
+  context-pack completion on task
+  `.trellis/tasks/06-29-project-intelligence-usability-remaining-goals`.
+  Confirmed the remaining work is persistent warm reuse, safe-fix apply/audit,
+  MCP agent transport, LSP editor transport, and release hardening. Superseded
+  the broader combined editor/agent transport goal with two narrower transport
+  goals.

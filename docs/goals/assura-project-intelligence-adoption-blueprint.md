@@ -2,7 +2,7 @@
 id: goal-assura-project-intelligence-adoption-blueprint
 type: goal
 title: Assura project intelligence adoption blueprint
-status: planned
+status: completed
 created: 2026-06-29
 owners:
   - assura-maintainers
@@ -93,3 +93,9 @@ if project-intelligence adoption breaks the existing structure-first init path.
   using the existing `tests/fixtures/content_runtime` proof fixtures. The slice
   intentionally does not claim daemon, LSP, MCP, persistent-session, or
   safe-fix apply support.
+- 2026-06-29: Revalidated during the remaining-usability planning refresh.
+  Later local successors added the Beacon CRM real-repo proof,
+  `assura init --project-intelligence`, and `assura content context-pack`, so
+  this blueprint is complete as the first documented product path. Remaining
+  usability work is tracked in the persistent-session, safe-fix, MCP-agent,
+  LSP-editor, and release-hardening goals.

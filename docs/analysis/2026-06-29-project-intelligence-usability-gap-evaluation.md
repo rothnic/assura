@@ -10,48 +10,66 @@ status: active
 - `docs/goals/assura-project-intelligence-usability-program.md`
 - `docs/goals/assura-project-intelligence-adoption-blueprint.md`
 - `docs/goals/assura-project-intelligence-real-repo-proof.md`
+- `docs/goals/assura-project-intelligence-onboarding-template.md`
+- `docs/goals/assura-project-intelligence-context-pack.md`
+- `docs/goals/assura-project-intelligence-persistent-session.md`
+- `docs/goals/assura-project-intelligence-safe-fix-workflow.md`
 - `docs/analysis/2026-06-29-project-intelligence-real-repo-proof.md`
 - `website/src/content/docs/examples/project-intelligence-demo.md`
 - `.trellis/spec/assura/roadmap.md`
 
 ## Outcome Assessment
 
-The latest updates meet the intended proof bar for the current slice: project
-intelligence now has a visual documentation demo, Assura-local goal modeling,
-and a deterministic non-Assura Beacon CRM fixture. The proof covers valid and
-invalid checks, search, graph expansion, missing relations, agent-query
-diagnostics, and safe-fix previews without network access.
+The latest updates meet the intended proof bar for the completed usability
+slices. Project intelligence now has a visual documentation demo, Assura-local
+goal modeling, a deterministic non-Assura Beacon CRM fixture, a first-run
+`assura init --project-intelligence` starter, and a bounded
+`assura content context-pack` handoff.
 
-That makes the runtime credible, but not yet broadly usable. The remaining
-work is productization: reducing hand setup, providing one useful context
-bundle instead of a sequence of commands, keeping repeated checks warm, wiring
-transports over shared contracts, making safe fixes apply safely, and locking
-release/support expectations.
+We know this because the completed goal logs and roadmap point to concrete
+artifacts: the demo page shows starter setup, graph/search, agent envelopes,
+context-pack handoff, and safe-fix previews; the Beacon CRM fixture proves valid
+and invalid states; the onboarding goal added starter-generation regressions;
+and the context-pack goal added focused tests for diagnostic and object
+handoff modes, including truncation evidence.
+
+That makes the runtime credible and the first handoff usable, but not yet
+broadly usable as an everyday product. The remaining work is now narrower:
+keeping repeated checks warm, applying safe fixes with audit and recovery,
+exposing the same contracts through concrete agent and editor transports, and
+locking release/support expectations.
 
 ## Remaining Gaps
 
 | Gap | Evidence | User Impact | Next Goal |
 | --- | --- | --- | --- |
-| First-run setup is still hand-authored | The demo says to add typed collections and models, but there is no starter project-intelligence template or guided init profile. | New users must infer config, schema, and collection structure before the first useful query. | `docs/goals/assura-project-intelligence-onboarding-template.md` |
-| Useful context requires command choreography | The demo asks users to run check, search, missing-relations, expand, agent-context, and agent-query separately. | Agents and maintainers need custom wrappers to gather one editing context. | `docs/goals/assura-project-intelligence-context-pack.md` |
-| Repeated editing loops are cold | Public project-intelligence commands are one-shot CLI calls, while warm session evidence is still internal/performance-oriented. | Editor and agent loops pay avoidable startup/model load costs or depend on internal binaries. | `docs/goals/assura-project-intelligence-persistent-session.md` |
-| Safe-fix support stops at dry-run | The current safe-fix contract reports proposed Markdown repairs but does not own apply, audit, or rollback behavior. | Users can preview but cannot safely complete an accepted repair workflow through Assura. | `docs/goals/assura-project-intelligence-safe-fix-workflow.md` |
-| Editor and agent transports are planned only | Docs classify daemon/editor/LSP/MCP surfaces as future work. | Integrations can call CLI contracts but cannot depend on a supported transport. | `docs/goals/assura-project-intelligence-editor-agent-transports.md` |
+| Repeated editing loops are still cold from the public surface | Public project-intelligence commands are one-shot CLI calls, while warm session evidence is still internal/performance-oriented. | Editor and agent loops pay avoidable startup/model load costs or depend on internal binaries. | `docs/goals/assura-project-intelligence-persistent-session.md` |
+| Safe-fix support stops at preview | The current safe-fix contract and context pack expose proposed Markdown repairs, but do not own apply, audit, or rollback behavior. | Users can understand a repair but cannot safely complete an accepted repair workflow through Assura. | `docs/goals/assura-project-intelligence-safe-fix-workflow.md` |
+| Agent transport is not a supported product contract | Agents can shell out to CLI/context-pack commands, but there is no supported MCP-style tool surface over the same contracts. | Agent integrations still need bespoke wrappers and cannot rely on stable tool names or schemas. | `docs/goals/assura-project-intelligence-mcp-agent-transport.md` |
+| Editor transport is not a supported product contract | Docs classify daemon/editor sessions and LSP behavior as future work. | Maintainers cannot get diagnostics, context, or safe-fix previews in an editor without custom glue. | `docs/goals/assura-project-intelligence-lsp-editor-transport.md` |
 | Release status is not consolidated | Runtime, docs, fixtures, support policy, and release readiness do not yet agree on the promoted usability slice. | Users cannot tell which schemas and surfaces are supported, experimental, or roadmap-only. | `docs/goals/assura-project-intelligence-release-hardening.md` |
 
 ## Ordered Goal Set
 
-1. Onboarding template: create a reproducible first-run starter path from a
-   normal repo to a clean project-intelligence model.
-2. Context pack: provide one bounded command or contract that gathers the
-   diagnostic, graph, search, and safe-fix preview context an agent needs.
-3. Persistent session: productize the warm local reuse path for repeated
-   project-intelligence checks and queries.
-4. Safe-fix workflow: extend dry-run into explicit apply, audit, and recovery.
-5. Editor and agent transports: expose the shared contracts through concrete
-   editor and agent integration surfaces.
-6. Release hardening: lock schemas, support status, docs, and final evidence.
+Completed prerequisites:
 
-This replaces the older four-bucket ordering. Persistent sessions remain
-important, but they are not the next missing user-facing piece; setup and
-context assembly block adoption first.
+1. Adoption blueprint: documented the first product path and visual demo.
+2. Real-repo proof: proved the path on Assura plus the Beacon CRM package.
+3. Onboarding template: added `assura init --project-intelligence`.
+4. Context pack: added `assura content context-pack`.
+
+Remaining executable goals:
+
+1. Persistent session: productize the warm local reuse path for repeated
+   project-intelligence checks and queries.
+2. Safe-fix workflow: extend preview into explicit apply, audit, and recovery.
+3. MCP agent transport: expose diagnostics, context packs, queries, and safe-fix
+   previews through supported local agent tools.
+4. LSP editor transport: expose diagnostics, project-intelligence context, and
+   safe-fix code actions through a supported local editor protocol.
+5. Release hardening: lock schemas, support status, docs, and final evidence.
+
+This replaces the older transport bundle with two smaller transport goals. MCP
+agent transport can prove tool contracts first; LSP editor transport can then
+prove editor diagnostics and code actions without mixing agent-tool concerns
+into the same review gate.

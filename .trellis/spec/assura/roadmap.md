@@ -30,14 +30,15 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 16 | Docs Lifecycle Coverage | Completed | PR #83 merged; archive/sync PR #84 merged |
 | 17 | Support Matrix Surface Expansion | Completed | PR #88 merged; archive/sync PR #89 merged |
 | 18 | Project Intelligence Runtime | Completed | All nine successors and final completion audit completed locally |
-| 19 | Project Intelligence Usability | Active | Adoption blueprint, real-repo proof, onboarding template, and context pack completed locally; persistent session is next |
+| 19 | Project Intelligence Usability | Active | Adoption blueprint, real-repo proof, onboarding template, and context pack completed locally; remaining goal set refreshed; persistent session is next |
 
 ## Active Roadmap Iteration
 
 Project Intelligence Usability is active.
 
 Most recent owning task:
-`.trellis/tasks/06-29-project-intelligence-context-pack`, completing
+`.trellis/tasks/06-29-project-intelligence-usability-remaining-goals`,
+refreshing the remaining usability goal set after
 `docs/goals/assura-project-intelligence-context-pack.md`.
 
 Current branch:
@@ -109,8 +110,8 @@ Planned next roadmap candidate:
 Continue Project Intelligence Usability with
 `docs/goals/assura-project-intelligence-persistent-session.md`. Adoption
 blueprint, real-repo proof, onboarding template, and context pack are completed
-locally; remaining successors are persistent session, safe-fix workflow,
-editor/agent transports, and release hardening.
+locally; remaining successors are persistent session, safe-fix workflow, MCP
+agent transport, LSP editor transport, and release hardening.
 
 ## Recommended Next Action
 

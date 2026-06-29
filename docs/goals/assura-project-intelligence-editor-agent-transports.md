@@ -11,11 +11,23 @@ related:
   - docs/goals/assura-project-intelligence-context-pack.md
   - docs/goals/assura-project-intelligence-persistent-session.md
   - docs/goals/assura-project-intelligence-safe-fix-workflow.md
+  - docs/goals/assura-project-intelligence-mcp-agent-transport.md
+  - docs/goals/assura-project-intelligence-lsp-editor-transport.md
   - .trellis/spec/assura/codex-agent-feedback.md
   - website/src/content/docs/product/agent-editor-surfaces.md
 ---
 
 # Assura Project Intelligence Editor And Agent Transports
+
+## Status
+
+Superseded by two narrower executable goals:
+
+- [Project Intelligence MCP Agent Transport](./assura-project-intelligence-mcp-agent-transport.md)
+- [Project Intelligence LSP Editor Transport](./assura-project-intelligence-lsp-editor-transport.md)
+
+This document remains as the original umbrella framing, but agents should not
+execute it directly.
 
 ## Objective
 

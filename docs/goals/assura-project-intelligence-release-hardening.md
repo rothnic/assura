@@ -12,7 +12,8 @@ related:
   - docs/goals/assura-project-intelligence-context-pack.md
   - docs/goals/assura-project-intelligence-persistent-session.md
   - docs/goals/assura-project-intelligence-safe-fix-workflow.md
-  - docs/goals/assura-project-intelligence-editor-agent-transports.md
+  - docs/goals/assura-project-intelligence-mcp-agent-transport.md
+  - docs/goals/assura-project-intelligence-lsp-editor-transport.md
   - docs/support-policy.md
   - website/src/content/docs/reference/release-readiness.md
   - docs/analysis/evidence-and-review-policy.md
@@ -29,9 +30,9 @@ status, schema compatibility expectations, docs, evidence, and reviewer gates.
 
 The runtime is complete locally and the usability goals define adoption,
 real-repo proof, onboarding templates, context packs, persistent sessions,
-safe-fix workflow, and transports. Before that can be advertised as usable,
-release surfaces need to agree on what is supported, experimental,
-roadmap-only, or unsupported.
+safe-fix workflow, MCP agent transport, and LSP editor transport. Before that
+can be advertised as usable, release surfaces need to agree on what is
+supported, experimental, roadmap-only, or unsupported.
 
 ## Scope
 
