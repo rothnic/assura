@@ -91,3 +91,14 @@ git diff --check
 Block if normal validation requires CKB, LIP, LSP, SCIP, or another provider;
 if unresolved symbols disappear; if provider results lack provenance; or if
 code intelligence starts defining the content model.
+
+## Progress Log
+
+- 2026-06-28: Revalidated as `valid` after completing and archiving local
+  semantic search. Live repo already has `CodeSymbol`, `SymbolRef`,
+  `ProjectEdge::SymbolRef`, `FactIngestor::add_symbol_ref`, store symbol-edge
+  indexing, and tests for manually added unresolved symbol refs. The goal still
+  needs modeled-field symbol extraction, provider evidence metadata, at least
+  one local baseline resolution/import path, public symbol query output, and
+  docs that distinguish unresolved, baseline-resolved, and provider-resolved
+  evidence.
