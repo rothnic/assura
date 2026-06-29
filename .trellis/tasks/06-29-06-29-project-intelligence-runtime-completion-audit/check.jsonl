@@ -1,0 +1,4 @@
+{"file":"docs/goals/assura-project-intelligence-runtime-program.md","reason":"Review the audit against the full master program scope and definition of done."}
+{"file":".trellis/spec/assura/roadmap.md","reason":"Check that routing and completion status match the audit outcome."}
+{"file":"docs/support-policy.md","reason":"Verify supported command and automation surface claims used by the program audit."}
+{"file":"docs/compatibility-and-surface.md","reason":"Verify public command/API compatibility claims used by the program audit."}
