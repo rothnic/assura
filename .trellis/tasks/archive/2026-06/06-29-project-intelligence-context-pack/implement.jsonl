@@ -1,0 +1,5 @@
+{"file": "docs/goals/assura-project-intelligence-context-pack.md", "reason": "Target goal and completion criteria"}
+{"file": "docs/goals/assura-project-intelligence-usability-program.md", "reason": "Parent program and execution order"}
+{"file": "docs/analysis/2026-06-29-project-intelligence-usability-gap-evaluation.md", "reason": "Why context-pack follows onboarding"}
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "Roadmap routing and active epic status"}
+{"file": ".trellis/spec/assura/codex-agent-feedback.md", "reason": "Shared agent contract constraints and no per-agent command families"}
