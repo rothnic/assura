@@ -7,7 +7,7 @@ mod facts;
 mod output;
 mod semantic;
 
-use self::agent_query::agent_query;
+use self::agent_query::{agent_query, AgentQueryRequest};
 use self::code_symbols::{symbol_refs, symbols_for_instance};
 use self::context::{ContentQueryError, QueryContext};
 use self::facts::{
@@ -65,13 +65,15 @@ fn run_content_command(
         } => render(
             agent_query(
                 &context,
-                query,
-                collection.as_ref(),
-                id.as_ref(),
-                text.as_ref(),
-                symbol.as_ref(),
-                limit,
-                enable_local,
+                AgentQueryRequest {
+                    query,
+                    collection: collection.as_ref(),
+                    id: id.as_ref(),
+                    text: text.as_ref(),
+                    symbol: symbol.as_ref(),
+                    limit,
+                    enable_local,
+                },
             )?,
             format,
         ),

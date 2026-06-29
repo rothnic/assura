@@ -14,42 +14,36 @@ const AGENT_QUERY_SCHEMA: &str = "assura.project-intelligence.agent-query.v1";
 
 pub(super) fn agent_query(
     context: &QueryContext,
-    query: QueryArg,
-    collection: Option<&String>,
-    id: Option<&String>,
-    text: Option<&String>,
-    symbol: Option<&String>,
-    limit: usize,
-    enable_local: bool,
+    request: AgentQueryRequest<'_>,
 ) -> Result<AgentQueryOutput, ContentQueryError> {
-    let response = match query {
+    let response = match request.query {
         QueryArg::Diagnostics => to_response(diagnostics(context))?,
         QueryArg::SafeFixes => to_response(safe_fixes(context))?,
         QueryArg::GraphExpand => {
-            let collection = required_arg(collection, "collection", query)?;
-            let id = required_arg(id, "id", query)?;
-            to_response(expand(context, collection, id, limit)?)?
+            let collection = required_arg(request.collection, "collection", request.query)?;
+            let id = required_arg(request.id, "id", request.query)?;
+            to_response(expand(context, collection, id, request.limit)?)?
         }
         QueryArg::KeywordSearch => {
-            let text = required_arg(text, "text", query)?;
+            let text = required_arg(request.text, "text", request.query)?;
             to_response(search(context, text))?
         }
         QueryArg::SemanticCandidates => {
-            let text = required_arg(text, "text", query)?;
+            let text = required_arg(request.text, "text", request.query)?;
             to_response(super::semantic::semantic_search(
                 context,
                 text,
-                limit,
-                enable_local,
+                request.limit,
+                request.enable_local,
             ))?
         }
         QueryArg::CodeSymbols => {
-            let collection = required_arg(collection, "collection", query)?;
-            let id = required_arg(id, "id", query)?;
+            let collection = required_arg(request.collection, "collection", request.query)?;
+            let id = required_arg(request.id, "id", request.query)?;
             to_response(symbols_for_instance(context, collection, id)?)?
         }
         QueryArg::CodeSymbolRefs => {
-            let symbol = required_arg(symbol, "symbol", query)?;
+            let symbol = required_arg(request.symbol, "symbol", request.query)?;
             to_response(symbol_refs(context, symbol))?
         }
         QueryArg::MissingRelations => to_response(missing_relations(context))?,
@@ -58,13 +52,23 @@ pub(super) fn agent_query(
     Ok(AgentQueryOutput {
         schema: AGENT_QUERY_SCHEMA,
         request: AgentQueryRequestOutput {
-            capability: agent_query_capability(query),
-            cli: agent_query_cli(query),
+            capability: agent_query_capability(request.query),
+            cli: agent_query_cli(request.query),
             project_root: context.project_root.clone(),
             config_path: context.config_path.clone(),
         },
         response,
     })
+}
+
+pub(super) struct AgentQueryRequest<'a> {
+    pub(super) query: QueryArg,
+    pub(super) collection: Option<&'a String>,
+    pub(super) id: Option<&'a String>,
+    pub(super) text: Option<&'a String>,
+    pub(super) symbol: Option<&'a String>,
+    pub(super) limit: usize,
+    pub(super) enable_local: bool,
 }
 
 fn required_arg<'a>(
