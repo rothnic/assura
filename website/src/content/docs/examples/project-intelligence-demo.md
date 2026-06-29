@@ -105,6 +105,33 @@ expand`, and `assura content missing-relations` when inspecting one capability.
 Use `assura content context-pack` when preparing a bounded handoff for an
 agent, editor integration, or reviewer.
 
+## Keep Context Warm
+
+Use a content session when an agent or editor wrapper needs repeated
+project-intelligence queries without restarting the CLI process:
+
+```bash
+assura content session .
+```
+
+Then send JSON-line requests on stdin:
+
+```json
+{"request_id":"ctx-1","type":"context-pack","collection":"assura_goals","id":"goal-assura-project-intelligence-usability-program","text":"Project Intelligence Usability","limit":5}
+```
+
+The session emits one JSON response per line with schema
+`assura.project-intelligence.session.response.v1`. Each response reports
+`reload.state` as `initial_load`, `reused`, or `reloaded`, so wrappers can tell
+whether the process reused the loaded project facts or rebuilt them after a
+config/content change. This is a local disposable session, not hosted
+infrastructure and not `assura watch`.
+
+Supported request types include `agent-context`, `collections`, `context-pack`,
+`diagnostics`, `expand`, `missing-relations`, `safe-fixes`, and `search`.
+Invalid requests return the same response envelope with `ok: false` and an
+error code such as `request_failed`.
+
 ## Agent Editing Handoff
 
 Task: repair the Beacon CRM checkout epic so project-intelligence validation can

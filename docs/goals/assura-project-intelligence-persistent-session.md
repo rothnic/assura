@@ -2,7 +2,7 @@
 id: goal-assura-project-intelligence-persistent-session
 type: goal
 title: Assura project intelligence persistent session
-status: planned
+status: completed
 created: 2026-06-29
 owners:
   - assura-maintainers
@@ -68,11 +68,16 @@ hot daemon state.
 
 ```bash
 cargo fmt --check
-cargo test watch --quiet
-cargo test prepared_check --quiet
+cargo test --test project_intelligence_session --quiet
+cargo test --test project_intelligence_context_pack --quiet
+cargo test --test content_query_cli --quiet
+cargo test --test content_runtime_dx_docs project_intelligence_demo_is_discoverable_and_covers_adoption_commands --quiet
+cargo bench --bench project_intelligence -- --sample-size 10 session_reuse
 cargo test project_intelligence_store --quiet
 cargo bench --bench project_intelligence
 cargo run --quiet -- check --format json .
+cargo xtask docs
+cargo xtask evidence
 git diff --check
 ```
 
@@ -89,3 +94,34 @@ git diff --check
 Block if cached or session results can mask changed config/content, if watcher
 events are treated as the only correctness signal, if performance evidence is
 missing, or if the goal promotes a daemon before the reuse benefit is measured.
+
+## Progress Log
+
+- 2026-06-29: Completed locally on task
+  `.trellis/tasks/06-29-project-intelligence-persistent-session`. Added
+  `assura content session`, a local JSON-line request/response loop that keeps
+  one project-intelligence context loaded for repeated diagnostics,
+  context-pack, collection, search, graph expansion, missing-relations, and
+  safe-fix preview requests. Each response uses
+  `assura.project-intelligence.session.response.v1` and reports reload state
+  as `initial_load`, `reused`, `reloaded`, `reload_failed`, or `not_checked`.
+  The session scans a conservative project fingerprint before every request
+  and reloads before answering when project files change, so correctness does
+  not depend on watcher events. `assura watch` remains experimental.
+- 2026-06-29: Focused proof added in
+  `tests/project_intelligence_session.rs` for repeated context reuse, invalid
+  request recovery, reload after modeled frontmatter changes, and reload before
+  the first response when files change after startup. Live smoke verified two
+  requests through `cargo run --quiet -- content session .`: diagnostics
+  returned `initial_load`; a context-pack request returned `reused`. Benchmark
+  evidence from
+  `cargo bench --bench project_intelligence -- --sample-size 10 session_reuse`
+  compared cold fact loading to warm reusable fact-store query operations on
+  the Assura repo and Beacon CRM fixture. The public JSON-line parsing,
+  serialization, reload, and error envelope are covered by integration tests
+  and live smoke rather than the Criterion microbenchmark.
+- 2026-06-29: Independent review found two blocking correctness risks: changed
+  files could be missed before the first request, and same-length writes could
+  evade timestamp/length fingerprints. Both were fixed by checking freshness
+  before the first response and hashing file contents in the project
+  fingerprint.

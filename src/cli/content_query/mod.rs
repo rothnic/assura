@@ -7,6 +7,7 @@ mod context_pack;
 mod facts;
 mod output;
 mod semantic;
+mod session;
 
 use self::agent_query::{agent_query, AgentQueryRequest};
 use self::code_symbols::{symbol_refs, symbols_for_instance};
@@ -22,6 +23,7 @@ use self::output::{
     SearchOutput,
 };
 use self::semantic::semantic_search;
+use self::session::content_session_command;
 use super::{ContentCommands, ExitCode, OutputFormat};
 use crate::intelligence::{
     model_instance_id, project_intelligence_agent_context, Diagnostic, FactId, ProjectEdge,
@@ -32,6 +34,10 @@ use std::path::PathBuf;
 
 /// Run a fact-backed content query command.
 pub async fn content_command(command: ContentCommands, config: Option<PathBuf>) -> ExitCode {
+    if let ContentCommands::Session { path } = command {
+        return content_session_command(path, config);
+    }
+
     match run_content_command(command, config) {
         Ok(rendered) => {
             println!("{rendered}");
@@ -55,6 +61,7 @@ fn run_content_command(
             project_intelligence_agent_context(context.store.facts()),
             format,
         ),
+        ContentCommands::Session { .. } => unreachable!("session is handled before rendering"),
         ContentCommands::AgentQuery {
             query,
             collection,
@@ -144,6 +151,7 @@ fn command_format(command: &ContentCommands) -> OutputFormat {
         | ContentCommands::SymbolRefs { format, .. }
         | ContentCommands::MissingRelations { format, .. }
         | ContentCommands::Expand { format, .. } => *format,
+        ContentCommands::Session { .. } => OutputFormat::Json,
     }
 }
 

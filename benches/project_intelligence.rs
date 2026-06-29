@@ -1,7 +1,9 @@
+use assura::config::loader::ConfigLoader;
+use assura::content_repository::{ContentRepository, RepositoryModel};
 use assura::intelligence::{
-    model_instance_id, resource_id, EdgeId, FactGeneration, FactId, FactOrigin, FactSet,
-    InMemoryFactStore, ModelInstance, PathScope, ProjectEdge, ProjectFact, RelationshipEdge,
-    Resource, SearchChunk,
+    model_instance_id, resource_id, EdgeId, FactGeneration, FactId, FactIngestor, FactOrigin,
+    FactSet, InMemoryFactStore, ModelInstance, PathScope, ProjectEdge, ProjectFact,
+    RelationshipEdge, Resource, SearchChunk,
 };
 use criterion::{black_box, criterion_group, criterion_main, Criterion, Throughput};
 use serde_json::Map;
@@ -53,6 +55,56 @@ fn project_intelligence_benchmarks(c: &mut Criterion) {
     });
 
     group.finish();
+
+    project_intelligence_session_benchmarks(c);
+}
+
+fn project_intelligence_session_benchmarks(c: &mut Criterion) {
+    let cases = [
+        (
+            "assura_repo",
+            Path::new("."),
+            "Project Intelligence Usability",
+        ),
+        (
+            "beacon_crm",
+            Path::new("tests/fixtures/project_intelligence_real_repo/beacon_crm/invalid"),
+            "checkout",
+        ),
+    ];
+
+    let mut group = c.benchmark_group("project_intelligence/session_reuse");
+    group.sample_size(10);
+    group.warm_up_time(Duration::from_millis(250));
+
+    for (name, root, query) in cases {
+        group.bench_function(format!("{name}/cold_fact_load"), |b| {
+            b.iter(|| black_box(load_project_intelligence_store(root)))
+        });
+
+        let store = load_project_intelligence_store(root);
+        group.bench_function(format!("{name}/warm_keyword_search"), |b| {
+            b.iter(|| black_box(store.keyword_search(query).len()))
+        });
+        group.bench_function(format!("{name}/warm_missing_relations"), |b| {
+            b.iter(|| black_box(store.missing_relationship_targets().len()))
+        });
+    }
+
+    group.finish();
+}
+
+fn load_project_intelligence_store(root: &Path) -> InMemoryFactStore {
+    let config_path = root.join(".assura/config.yml");
+    let config = ConfigLoader::load(&config_path).expect("benchmark config loads");
+    let model = RepositoryModel::from_config(root, &config).expect("benchmark model loads");
+    let repository = ContentRepository::try_new(model.clone()).expect("benchmark repository loads");
+    let validation = repository.validate(root);
+
+    let mut ingestor = FactIngestor::new("project-intelligence-session-bench");
+    ingestor.ingest_repository_model(&model);
+    ingestor.ingest_repository_validation(&validation);
+    InMemoryFactStore::load(ingestor.finish())
 }
 
 struct SpikeFixture {

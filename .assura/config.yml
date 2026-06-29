@@ -412,6 +412,8 @@ extensions:
           status: supported
         - surface: "command:assura content context-pack"
           status: supported
+        - surface: "command:assura content session"
+          status: supported
         - surface: "command:assura content collections"
           status: supported
         - surface: "command:assura content instances"

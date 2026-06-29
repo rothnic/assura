@@ -43,6 +43,7 @@ publishes and verifies a `.sha256` file next to every archive.
 | `assura content agent-context` | Supported generic agent context | Agent-context CLI fixture tests; wrappers must reuse this contract instead of creating per-agent query commands. |
 | `assura content agent-query` | Supported generic agent query envelope | Agent-query CLI fixture tests prove diagnostics, graph, search, semantic, and code-symbol queries reuse one wrapper schema. |
 | `assura content context-pack` | Supported bounded project-intelligence context bundle | Context-pack tests prove diagnostics, graph/search context, relation status, and safe-fix preview metadata compose without writes. |
+| `assura content session` | Supported local project-intelligence session | Session tests prove repeated JSON-line requests reuse context and reload conservatively after modeled content changes. |
 | `assura content collections` | Supported | Content query CLI fixture tests. |
 | `assura content instances` | Supported | Content query CLI fixture tests. |
 | `assura content show` | Supported | Content query CLI fixture tests. |

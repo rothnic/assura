@@ -305,6 +305,9 @@ pub enum ContentCommands {
         format: OutputFormat,
     },
 
+    #[command(about = "Run a persistent JSON-line project-intelligence query session")]
+    Session { path: Option<PathBuf> },
+
     #[command(about = "List modeled content collections")]
     Collections {
         path: Option<PathBuf>,

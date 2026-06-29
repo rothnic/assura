@@ -26,6 +26,20 @@ impl QueryContext {
                 ContentQueryError::runtime(format!("failed to read current directory: {error}"))
             })?,
         };
+        Self::load_for_path(
+            path,
+            config,
+            command.semantic_enabled(),
+            command.code_symbols_enabled(),
+        )
+    }
+
+    pub(super) fn load_for_path(
+        path: PathBuf,
+        config: Option<PathBuf>,
+        semantic_enabled: bool,
+        code_symbols_enabled: bool,
+    ) -> Result<Self, ContentQueryError> {
         let config_path = match config {
             Some(path) => path,
             None => crate::cli::ConfigDiscovery::find_config_path(&path).ok_or_else(|| {
@@ -54,14 +68,14 @@ impl QueryContext {
 
         let mut ingestor = FactIngestor::new("content-query");
         ingestor.ingest_repository_model(&model);
-        if command.code_symbols_enabled() {
+        if code_symbols_enabled {
             ingestor.ingest_local_rust_code_symbols(&project_root);
         }
         ingestor.ingest_repository_validation(&validation);
-        if command.code_symbols_enabled() {
+        if code_symbols_enabled {
             ingestor.ingest_content_code_symbol_refs(&model, &validation);
         }
-        if command.semantic_enabled() {
+        if semantic_enabled {
             ingestor.ingest_local_semantic_embeddings();
         }
         let store = InMemoryFactStore::load(ingestor.finish());
@@ -79,6 +93,7 @@ fn command_path(command: &ContentCommands) -> Option<PathBuf> {
         ContentCommands::AgentContext { path, .. }
         | ContentCommands::AgentQuery { path, .. }
         | ContentCommands::ContextPack { path, .. }
+        | ContentCommands::Session { path, .. }
         | ContentCommands::Collections { path, .. }
         | ContentCommands::Instances { path, .. }
         | ContentCommands::Show { path, .. }
@@ -122,6 +137,7 @@ impl SemanticCommand for ContentCommands {
                     ..
                 }
                 | ContentCommands::ContextPack { .. }
+                | ContentCommands::Session { .. }
                 | ContentCommands::Symbols { .. }
                 | ContentCommands::SymbolRefs { .. }
                 | ContentCommands::Expand { .. }

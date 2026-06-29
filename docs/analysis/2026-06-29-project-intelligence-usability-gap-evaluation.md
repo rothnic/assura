@@ -33,17 +33,16 @@ and invalid states; the onboarding goal added starter-generation regressions;
 and the context-pack goal added focused tests for diagnostic and object
 handoff modes, including truncation evidence.
 
-That makes the runtime credible and the first handoff usable, but not yet
-broadly usable as an everyday product. The remaining work is now narrower:
-keeping repeated checks warm, applying safe fixes with audit and recovery,
-exposing the same contracts through concrete agent and editor transports, and
-locking release/support expectations.
+That makes the runtime credible and the first handoff/session loop usable, but
+not yet broadly usable as an everyday product. The remaining work is now
+narrower: applying safe fixes with audit and recovery, exposing the same
+contracts through concrete agent and editor transports, and locking
+release/support expectations.
 
 ## Remaining Gaps
 
 | Gap | Evidence | User Impact | Next Goal |
 | --- | --- | --- | --- |
-| Repeated editing loops are still cold from the public surface | Public project-intelligence commands are one-shot CLI calls, while warm session evidence is still internal/performance-oriented. | Editor and agent loops pay avoidable startup/model load costs or depend on internal binaries. | `docs/goals/assura-project-intelligence-persistent-session.md` |
 | Safe-fix support stops at preview | The current safe-fix contract and context pack expose proposed Markdown repairs, but do not own apply, audit, or rollback behavior. | Users can understand a repair but cannot safely complete an accepted repair workflow through Assura. | `docs/goals/assura-project-intelligence-safe-fix-workflow.md` |
 | Agent transport is not a supported product contract | Agents can shell out to CLI/context-pack commands, but there is no supported MCP-style tool surface over the same contracts. | Agent integrations still need bespoke wrappers and cannot rely on stable tool names or schemas. | `docs/goals/assura-project-intelligence-mcp-agent-transport.md` |
 | Editor transport is not a supported product contract | Docs classify daemon/editor sessions and LSP behavior as future work. | Maintainers cannot get diagnostics, context, or safe-fix previews in an editor without custom glue. | `docs/goals/assura-project-intelligence-lsp-editor-transport.md` |
@@ -57,17 +56,16 @@ Completed prerequisites:
 2. Real-repo proof: proved the path on Assura plus the Beacon CRM package.
 3. Onboarding template: added `assura init --project-intelligence`.
 4. Context pack: added `assura content context-pack`.
+5. Persistent session: added `assura content session`.
 
 Remaining executable goals:
 
-1. Persistent session: productize the warm local reuse path for repeated
-   project-intelligence checks and queries.
-2. Safe-fix workflow: extend preview into explicit apply, audit, and recovery.
-3. MCP agent transport: expose diagnostics, context packs, queries, and safe-fix
+1. Safe-fix workflow: extend preview into explicit apply, audit, and recovery.
+2. MCP agent transport: expose diagnostics, context packs, queries, and safe-fix
    previews through supported local agent tools.
-4. LSP editor transport: expose diagnostics, project-intelligence context, and
+3. LSP editor transport: expose diagnostics, project-intelligence context, and
    safe-fix code actions through a supported local editor protocol.
-5. Release hardening: lock schemas, support status, docs, and final evidence.
+4. Release hardening: lock schemas, support status, docs, and final evidence.
 
 This replaces the older transport bundle with two smaller transport goals. MCP
 agent transport can prove tool contracts first; LSP editor transport can then

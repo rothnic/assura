@@ -34,6 +34,9 @@ The current pre-1.0 command surface supports these public commands:
 - `assura content` query commands for deterministic local collection,
   relation, keyword, optional semantic-candidate, optional code-symbol, and
   bounded graph queries over modeled project facts.
+- `assura content session` for a local JSON-line project-intelligence session
+  that can answer repeated diagnostics, context-pack, graph, search, relation,
+  and safe-fix preview requests without restarting the CLI process.
 
 `assura info` and `assura watch` remain present in the CLI, but the release
 support policy treats `assura info` as an experimental diagnostic and

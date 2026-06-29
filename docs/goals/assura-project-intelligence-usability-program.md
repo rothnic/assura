@@ -192,3 +192,11 @@ without real-repo proof and release hardening.
   MCP agent transport, LSP editor transport, and release hardening. Superseded
   the broader combined editor/agent transport goal with two narrower transport
   goals.
+- 2026-06-29: Completed
+  `docs/goals/assura-project-intelligence-persistent-session.md` locally on
+  task `.trellis/tasks/06-29-project-intelligence-persistent-session`. Added
+  `assura content session` as a local JSON-line session for repeated
+  project-intelligence diagnostics, context packs, graph/search queries,
+  missing relations, and safe-fix previews, with conservative reload metadata
+  and benchmark evidence. The immediate next goal is
+  `docs/goals/assura-project-intelligence-safe-fix-workflow.md`.

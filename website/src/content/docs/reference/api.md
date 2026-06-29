@@ -57,9 +57,63 @@ Supported status formats are `text`, `json`, and `yaml`.
 | `assura content agent-context` | Summarize project-intelligence capabilities |
 | `assura content agent-query` | Wrap one query in the shared agent envelope |
 | `assura content context-pack` | Build one bounded project-intelligence handoff packet |
+| `assura content session` | Run a persistent JSON-line local query session |
 | `assura content search` | Search modeled content facts |
 | `assura content expand` | Expand graph context around one modeled object |
 | `assura content missing-relations` | Report unresolved modeled relations |
+
+`assura content session [path]` reads one JSON request per stdin line and emits
+one `assura.project-intelligence.session.response.v1` JSON response per stdout
+line. Use it when an agent, editor wrapper, or local integration needs repeated
+diagnostics, context-pack, graph, search, relation, or safe-fix preview queries
+without restarting the CLI process. The session reloads conservatively when the
+project fingerprint changes; `assura watch` remains experimental.
+
+Session request fields:
+
+| Field | Required | Purpose |
+| --- | --- | --- |
+| `type` | Yes | One of `agent-context`, `collections`, `context-pack`, `diagnostics`, `expand`, `missing-relations`, `safe-fixes`, or `search` |
+| `request_id` | No | Caller-provided correlation string returned unchanged |
+| `collection` | For `context-pack` object mode and `expand` | Modeled collection name |
+| `id` | For `context-pack` object mode and `expand` | Modeled object id inside the collection |
+| `text` | For `context-pack` search context and `search` | Keyword query text |
+| `limit` | No | Bound for context-pack and graph expansion results; defaults to `20` |
+
+Every response has this envelope:
+
+```json
+{
+  "schema": "assura.project-intelligence.session.response.v1",
+  "sequence": 1,
+  "request_id": "ctx-1",
+  "request_type": "context-pack",
+  "reload": {
+    "state": "initial_load",
+    "reason": "session context loaded",
+    "project_root": ".",
+    "config_path": "./.assura/config.yml"
+  },
+  "ok": true,
+  "response": {},
+  "error": null
+}
+```
+
+`reload.state` is `initial_load`, `reused`, `reloaded`, `reload_failed`, or
+`not_checked`. Failed requests keep the same envelope with `ok: false`,
+`response: null`, and an error object:
+
+```json
+{
+  "code": "request_failed",
+  "message": "expand request requires `id`"
+}
+```
+
+`invalid_request` means the JSON line did not parse, `request_failed` means the
+request parsed but failed validation or execution, and `reload_failed` means
+the project changed but the rebuilt context could not be loaded.
 
 ## Check JSON Shape
 

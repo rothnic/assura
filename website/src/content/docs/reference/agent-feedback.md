@@ -29,7 +29,8 @@ the same CLI options as humans and hooks; there is no separate agent mode.
 | Agent feedback package | Wrapper code that cannot call the Rust CLI directly | Report parsing and feedback rendering | Library return value or JSON | The wrapper |
 | Codex prompt hook | Optional Codex `UserPromptSubmit` command | `assura check --format agent --agent codex` | Codex `hookSpecificOutput.additionalContext` | Hook configuration |
 | Future tool/editor hook | Future agent integration | Scoped check plus feedback rendering | Tool result, next agent message, or status line | Hook configuration |
-| Warm checker session | Future editor/agent integration | Prepared structure checker or hot daemon | Low-latency check result for changed paths | Integration policy |
+| Project-intelligence session | Local agent/editor wrapper | `assura content session` | JSON-line context/query responses | The wrapper |
+| Warm checker session | Future structure-check integration | Prepared structure checker or hot daemon | Low-latency check result for changed paths | Integration policy |
 
 The primary DX is `assura check`. The package is a lower-level bridge for
 wrappers that already have an Assura JSON report or cannot shell out to the Rust
@@ -93,9 +94,32 @@ assura check --format agent --agent codex . --warn --min-severity medium --max-i
 
 ## Warm Sessions And Index Reuse
 
-The current public `assura check` and Git hook paths do not keep a daemon or
-update an agent-facing index. They run when a caller invokes Assura or Git fires
-an installed hook.
+The current public `assura check` and Git hook paths do not keep a daemon. They
+run when a caller invokes Assura or Git fires an installed hook.
+
+For repeated project-intelligence queries, use a local JSON-line session:
+
+```bash
+assura content session .
+```
+
+Send one request per line:
+
+```json
+{"request_id":"ctx-1","type":"context-pack","collection":"assura_goals","id":"goal-assura-project-intelligence-usability-program","text":"Project Intelligence Usability","limit":5}
+```
+
+Each response uses `assura.project-intelligence.session.response.v1` and reports
+whether the loaded context was `initial_load`, `reused`, or `reloaded`. The
+session checks a conservative project fingerprint before every request, so it
+does not rely on watcher delivery for correctness. It is still local and
+disposable: stop the process to discard state.
+
+Supported request `type` values are `agent-context`, `collections`,
+`context-pack`, `diagnostics`, `expand`, `missing-relations`, `safe-fixes`, and
+`search`. Failed requests return the same response envelope with `ok: false`,
+`response: null`, and an `error.code` such as `invalid_request`,
+`request_failed`, or `reload_failed`.
 
 Assura does have lower-level support intended for future editor and agent
 integrations:
@@ -127,4 +151,5 @@ step, while still giving the agent fresh feedback after edits.
 | Codex `UserPromptSubmit` hook | Yes | A hook runs `assura check --format agent --agent codex` before Codex processes a prompt. |
 | Codex post-tool/editor hook | Not yet | A future hook should append a status line or bounded feedback after relevant tool calls. |
 | Other agents with shell access | Partially | They can call `assura check --format advice`, `--format status`, or `--format agent` manually or through a wrapper. |
-| Editor/daemon integration | Not yet as public UX | Should reuse prepared checks or hot daemon state for repeated changed-path feedback. |
+| Project-intelligence session | Yes | Local wrappers can keep `assura content session` open for repeated context/query requests. |
+| Editor/daemon structure-check integration | Not yet as public UX | Should reuse prepared checks or hot daemon state for repeated changed-path feedback. |
