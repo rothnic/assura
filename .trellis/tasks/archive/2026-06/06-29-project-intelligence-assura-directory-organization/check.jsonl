@@ -1,0 +1,4 @@
+{"file":".trellis/spec/assura/index.md","reason":"Check implementation against Assura structure-first validation constraints"}
+{"file":".trellis/spec/assura/roadmap.md","reason":"Confirm completion updates next-goal routing without reopening completed work"}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Review for unnecessary duplicate checks or parallel policy paths"}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Review docs, generated starter files, runtime diagnostics, and self-check alignment"}
