@@ -19,8 +19,9 @@ configuration:
   artifacts.
 - `Resource`, `MarkdownDocument`, `MarkdownSection`, and `ModelInstance` come
   from repository files loaded by content runtime adapters.
-- `CodeSymbol` is optional and can be imported later from a native or provider
-  source; core validation does not require it.
+- `CodeSymbol` and `CodeProviderEvidence` are optional code-intelligence facts
+  from a native baseline or provider source. Core validation does not require
+  code intelligence.
 
 ## Derived Facts
 
@@ -32,9 +33,23 @@ Derived facts are computed from source facts or validation output:
   findings with the most precise resource, field, line, and column Assura has.
 - `SafeFix` records deterministic repair operations such as the Markdown
   blank-line trailing-whitespace fix.
-- `SearchChunk`, `EmbeddingRecord`, and `SymbolRef` prepare later search,
-  semantic, and code-intelligence layers without making those providers
-  required.
+- `SearchChunk`, `EmbeddingRecord`, and `SymbolRef` prepare search, semantic,
+  and code-intelligence layers without making those providers required.
+  `SymbolRef` can remain unresolved when a provider is missing or ambiguous.
+
+## Code Symbol Evidence
+
+Modeled collections can declare code-symbol reference fields in
+`.assura/config.yml` using `code_symbols` entries keyed as `collection.field`.
+The field value becomes a `SymbolRef` edge from the model instance. When the
+configured provider has exactly one local match, the edge records a resolved
+`target_id`; otherwise the unresolved edge remains queryable.
+
+The built-in `rust-token-baseline-v1` provider is a no-dependency declaration
+scan for rough local Rust context. Its `CodeSymbol` facts carry
+`provider = "rust-token-baseline-v1"` and `evidence = "baseline"`, plus a
+source location when available. Richer providers can add imported facts later,
+but normal `assura check` and content validation must work without them.
 
 ## Replacement Semantics
 

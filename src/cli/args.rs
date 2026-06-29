@@ -318,6 +318,33 @@ pub enum ContentCommands {
         format: OutputFormat,
     },
 
+    #[command(about = "Report code symbols referenced by a modeled content instance")]
+    Symbols {
+        #[arg(help = "Collection name")]
+        collection: String,
+
+        #[arg(help = "Instance ID")]
+        id: String,
+
+        #[arg(help = "Project root directory (defaults to current directory)")]
+        path: Option<PathBuf>,
+
+        #[arg(short, long, value_enum, default_value = "text")]
+        format: OutputFormat,
+    },
+
+    #[command(about = "Report modeled content instances related to a code symbol")]
+    SymbolRefs {
+        #[arg(help = "Symbol text, such as Config or crate::config::Config")]
+        symbol: String,
+
+        #[arg(help = "Project root directory (defaults to current directory)")]
+        path: Option<PathBuf>,
+
+        #[arg(short, long, value_enum, default_value = "text")]
+        format: OutputFormat,
+    },
+
     #[command(about = "Report relationship edges with missing targets")]
     MissingRelations {
         #[arg(help = "Project root directory (defaults to current directory)")]

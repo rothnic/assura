@@ -94,6 +94,37 @@ pub(super) struct SemanticSearchMatchOutput {
 }
 
 #[derive(Debug, Serialize)]
+pub(super) struct SymbolsOutput {
+    pub(super) collection: String,
+    pub(super) id: String,
+    pub(super) source_id: String,
+    pub(super) symbols: Vec<SymbolRefOutput>,
+}
+
+#[derive(Debug, Serialize)]
+pub(super) struct SymbolRefsOutput {
+    pub(super) symbol: String,
+    pub(super) references: Vec<SymbolRefOutput>,
+}
+
+#[derive(Debug, Serialize)]
+pub(super) struct SymbolRefOutput {
+    pub(super) source_id: String,
+    pub(super) source_kind: String,
+    pub(super) collection: Option<String>,
+    pub(super) instance_id: Option<String>,
+    pub(super) source_path: Option<PathBuf>,
+    pub(super) field: Option<String>,
+    pub(super) symbol: String,
+    pub(super) provider: Option<String>,
+    pub(super) resolved: bool,
+    pub(super) target_id: Option<String>,
+    pub(super) target_symbol: Option<String>,
+    pub(super) target_path: Option<PathBuf>,
+    pub(super) evidence: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
 pub(super) struct SearchMatchOutput {
     pub(super) source_id: String,
     pub(super) source_kind: String,
@@ -232,6 +263,60 @@ impl TextRender for SemanticSearchOutput {
                 .as_deref()
                 .unwrap_or(item.source_id.as_str());
             lines.push(format!("{:.3} {} - {}", item.score, label, item.text));
+        }
+        lines.join("\n")
+    }
+}
+
+impl TextRender for SymbolsOutput {
+    fn render_text(&self) -> String {
+        let mut lines = vec![format!(
+            "Code symbols for {}:{} ({})",
+            self.collection,
+            self.id,
+            self.symbols.len()
+        )];
+        for item in &self.symbols {
+            lines.push(format!(
+                "{} {}{}",
+                if item.resolved {
+                    "resolved"
+                } else {
+                    "unresolved"
+                },
+                item.symbol,
+                item.provider
+                    .as_deref()
+                    .map(|provider| format!(" [{provider}]"))
+                    .unwrap_or_default()
+            ));
+        }
+        lines.join("\n")
+    }
+}
+
+impl TextRender for SymbolRefsOutput {
+    fn render_text(&self) -> String {
+        let mut lines = vec![format!(
+            "Code symbol references for {}: {}",
+            self.symbol,
+            self.references.len()
+        )];
+        for item in &self.references {
+            let source = item
+                .instance_id
+                .as_deref()
+                .unwrap_or(item.source_id.as_str());
+            lines.push(format!(
+                "{} {} -> {}",
+                if item.resolved {
+                    "resolved"
+                } else {
+                    "unresolved"
+                },
+                source,
+                item.symbol
+            ));
         }
         lines.join("\n")
     }

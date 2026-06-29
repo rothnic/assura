@@ -28,7 +28,9 @@ pub use bundles::{
     DirectoryBundle, ExistsValidation, FileBundle, MarkdownBundle, MarkdownOutlineEntry,
     MarkdownOutlineNode, ResolvedFileBundle,
 };
-pub use content::{ContentCollectionConfig, ContentModelConfig, ContentRelationConfig};
+pub use content::{
+    ContentCodeSymbolConfig, ContentCollectionConfig, ContentModelConfig, ContentRelationConfig,
+};
 pub use extensions::{
     CommandSurfaceCommand, CommandSurfaceContract, CommandSurfaceFlag, CustomConstraintConfig,
     DocsLifecycleClaimPatternConfig, DocsLifecycleConfig, ExtensionConfig, ManifestSemanticsConfig,
@@ -84,6 +86,10 @@ pub struct Config {
     /// Optional repo-native content relations keyed as `collection.field`.
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub relations: HashMap<String, ContentRelationConfig>,
+
+    /// Optional code-symbol reference fields keyed as `collection.field`.
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub code_symbols: HashMap<String, ContentCodeSymbolConfig>,
 
     /// Paths to exclude from validation
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -162,6 +168,7 @@ impl Config {
             models: None,
             collections: HashMap::new(),
             relations: HashMap::new(),
+            code_symbols: HashMap::new(),
             exclude: Vec::new(),
         }
     }
@@ -219,6 +226,16 @@ impl Config {
         relation: ContentRelationConfig,
     ) -> Self {
         self.relations.insert(key.into(), relation);
+        self
+    }
+
+    /// Add a repo-native content code-symbol reference field.
+    pub fn with_code_symbol(
+        mut self,
+        key: impl Into<String>,
+        symbol: ContentCodeSymbolConfig,
+    ) -> Self {
+        self.code_symbols.insert(key.into(), symbol);
         self
     }
 

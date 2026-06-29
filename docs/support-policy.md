@@ -22,7 +22,7 @@ This policy applies to Assura pre-1.0 releases.
 | `assura hooks` for local git hooks | Supported local workflow | Hooks must be opt-in and local to a checkout. |
 | `assura quality plan` | Supported local workflow | Quality-scope planning must stay config-backed and deterministic. |
 | `assura performance-report` | Supported evidence command | Claims must cite checked benchmark or CI artifacts. |
-| `assura content` query commands | Supported first project-intelligence query surface | JSON output for collection, relation, keyword, semantic-candidate, and bounded graph queries must remain deterministic enough for agent use. Semantic scores are candidate context only and do not decide validation correctness. |
+| `assura content` query commands | Supported first project-intelligence query surface | JSON output for collection, relation, keyword, semantic-candidate, code-symbol, and bounded graph queries must remain deterministic enough for agent use. Semantic scores and baseline code-symbol evidence are candidate context only and do not decide validation correctness. |
 | `assura info` | Experimental diagnostic | Text output can change before a documented automation contract exists. |
 | `extensions.custom_constraints` | Experimental first-party | Specialized constraint execution only. Common repository relationships should use `structure` captures, `exists:1`, `needs`, and `provides`. Breaking changes are allowed before 1.0 with release-note disclosure. |
 | `extensions.support_matrices` | Experimental first-party | Public command/API classification checks for repository policy. Rows must use `supported`, `experimental`, `internal`, `roadmap`, or `unsupported`. Breaking changes are allowed before 1.0 with release-note disclosure. |
@@ -46,6 +46,7 @@ Do not document these as supported:
 - hosted telemetry or dashboards;
 - automatic repair;
 - dependency graph validation as a current release feature.
+- required code-intelligence providers for normal validation.
 
 ## Issue Triage
 

@@ -30,8 +30,8 @@ The current pre-1.0 command surface supports these public commands:
 - `assura performance-report` for checked Assura versus LS-Lint performance
   evidence.
 - `assura content` query commands for deterministic local collection,
-  relation, keyword, optional semantic-candidate, and bounded graph queries over
-  modeled project facts.
+  relation, keyword, optional semantic-candidate, optional code-symbol, and
+  bounded graph queries over modeled project facts.
 
 `assura info` and `assura watch` remain present in the CLI, but the release
 support policy treats `assura info` as an experimental diagnostic and
@@ -92,13 +92,17 @@ for that asset repair.
 ### Project Intelligence Queries
 
 - `assura content collections`, `instances`, `show`, `search`,
-  `semantic-search`, `missing-relations`, and `expand` query modeled content
-  facts through the local project-intelligence fact model.
+  `semantic-search`, `symbols`, `symbol-refs`, `missing-relations`, and
+  `expand` query modeled content facts through the local project-intelligence
+  fact model.
 - Keyword search is deterministic local text matching over indexed chunks.
 - `assura content semantic-search` is opt-in through `--enable-local` and uses
   local candidate retrieval. Scores do not decide validation correctness.
-- Code-provider enrichment, daemon APIs, LSP, and MCP are not part of this
-  content-query surface.
+- `assura content symbols` and `assura content symbol-refs` use configured
+  modeled fields and optional provider evidence. The built-in Rust token
+  baseline can resolve rough local declarations; missing providers preserve
+  unresolved refs instead of failing validation.
+- Daemon APIs, LSP, and MCP are not part of this content-query surface.
 
 ### Custom Constraints
 

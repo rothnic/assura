@@ -1,3 +1,4 @@
+use super::code_symbols::SymbolRef;
 use super::ingest_helpers::{
     adapter_name, column_from_message, line_from_message, schema_fields, searchable_object_text,
 };
@@ -15,8 +16,8 @@ use std::path::Path;
 /// Builder that projects current Assura runtime outputs into facts.
 #[derive(Debug, Clone)]
 pub struct FactIngestor {
-    generation: FactGeneration,
-    facts: FactSet,
+    pub(super) generation: FactGeneration,
+    pub(super) facts: FactSet,
 }
 
 impl FactIngestor {
@@ -236,13 +237,26 @@ impl FactIngestor {
         provider: Option<String>,
         target_id: Option<FactId>,
     ) {
+        self.add_symbol_ref_with_field(source_id, symbol, None, provider, target_id);
+    }
+
+    /// Add an unresolved or resolved field-backed reference to a code symbol.
+    pub fn add_symbol_ref_with_field(
+        &mut self,
+        source_id: FactId,
+        symbol: impl Into<String>,
+        field: Option<String>,
+        provider: Option<String>,
+        target_id: Option<FactId>,
+    ) {
         let symbol = symbol.into();
         self.facts.upsert_edge(ProjectEdge::SymbolRef(SymbolRef {
             id: EdgeId::from_parts(
                 "symbol_ref",
                 &format!(
-                    "{}:{}:{}",
+                    "{}:{}:{}:{}",
                     source_id,
+                    field.as_deref().unwrap_or("-"),
                     provider.as_deref().unwrap_or("-"),
                     symbol
                 ),
@@ -251,6 +265,7 @@ impl FactIngestor {
             origin: FactOrigin::Derived,
             source_id,
             symbol,
+            field,
             target_id,
             provider,
         }));

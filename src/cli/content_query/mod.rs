@@ -1,10 +1,12 @@
 //! Fact-backed content query command implementation.
 
+mod code_symbols;
 mod context;
 mod facts;
 mod output;
 mod semantic;
 
+use self::code_symbols::{symbol_refs, symbols_for_instance};
 use self::context::{ContentQueryError, QueryContext};
 use self::facts::{
     document_path, fact_by_id, fact_kind, fact_path, instance_summary, model_definitions,
@@ -62,6 +64,12 @@ fn run_content_command(
             semantic_search(&context, &query, limit, enable_local),
             format,
         ),
+        ContentCommands::Symbols { collection, id, .. } => {
+            render(symbols_for_instance(&context, &collection, &id)?, format)
+        }
+        ContentCommands::SymbolRefs { symbol, .. } => {
+            render(symbol_refs(&context, &symbol), format)
+        }
         ContentCommands::MissingRelations { .. } => render(missing_relations(&context), format),
         ContentCommands::Expand {
             collection,
@@ -79,6 +87,8 @@ fn command_format(command: &ContentCommands) -> OutputFormat {
         | ContentCommands::Show { format, .. }
         | ContentCommands::Search { format, .. }
         | ContentCommands::SemanticSearch { format, .. }
+        | ContentCommands::Symbols { format, .. }
+        | ContentCommands::SymbolRefs { format, .. }
         | ContentCommands::MissingRelations { format, .. }
         | ContentCommands::Expand { format, .. } => *format,
     }

@@ -193,6 +193,7 @@ fn add_symbol_ref(facts: &mut FactSet, generation: &FactGeneration, goal_id: &st
         origin: FactOrigin::Derived,
         source_id,
         symbol: format!("crate::runtime::Goal{index:04}"),
+        field: Some("implementation".to_string()),
         target_id: None,
         provider: None,
     }));

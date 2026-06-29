@@ -1,0 +1,7 @@
+{
+  "id": "component-config",
+  "title": "Configuration component",
+  "status": "active",
+  "implementation": "crate::sample::Config",
+  "external_symbol": "external::Runtime"
+}

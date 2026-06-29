@@ -1,5 +1,6 @@
 //! Data model for repo-native content runtime validation.
 
+use super::code_symbols::code_symbols_by_collection;
 use crate::config::config::Config;
 use serde_json::{Map, Value};
 use std::collections::{BTreeMap, HashSet};
@@ -100,6 +101,13 @@ impl ReferenceSpec {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CodeSymbolSpec {
+    pub field: String,
+    pub provider: Option<String>,
+    pub many: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CollectionSpec {
     pub name: String,
     pub object_type: String,
@@ -109,6 +117,7 @@ pub struct CollectionSpec {
     pub id_field: String,
     pub fields: Vec<FieldSpec>,
     pub references: Vec<ReferenceSpec>,
+    pub code_symbols: Vec<CodeSymbolSpec>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -175,6 +184,7 @@ impl RepositoryModel {
 
         let mut collections = Vec::new();
         let references = references_by_collection(config, &mut findings);
+        let code_symbols = code_symbols_by_collection(config, &mut findings);
         let mut collection_names = config.collections.keys().cloned().collect::<Vec<_>>();
         collection_names.sort();
         for name in collection_names {
@@ -199,6 +209,7 @@ impl RepositoryModel {
                 id_field: collection.id.clone(),
                 fields: Vec::new(),
                 references: references.get(&name).cloned().unwrap_or_default(),
+                code_symbols: code_symbols.get(&name).cloned().unwrap_or_default(),
             });
         }
 

@@ -4,6 +4,7 @@
 //! themselves as canonical state.
 
 mod adapters;
+mod code_symbols;
 mod io;
 mod model;
 mod mutation;
@@ -15,9 +16,9 @@ mod validation;
 use adapters::parse_objects;
 use jsonschema::Validator;
 pub use model::{
-    AdapterKind, CollectionSpec, ContentFinding, FieldKind, FieldSpec, MarkdownHeading, ObjectKey,
-    PlacementRule, ReferenceSpec, RepoEdge, RepoObject, RepositoryModel, RepositorySnapshot,
-    RepositoryValidation,
+    AdapterKind, CodeSymbolSpec, CollectionSpec, ContentFinding, FieldKind, FieldSpec,
+    MarkdownHeading, ObjectKey, PlacementRule, ReferenceSpec, RepoEdge, RepoObject,
+    RepositoryModel, RepositorySnapshot, RepositoryValidation,
 };
 pub use operations::{
     CreateRecordRequest, CreateRecordResult, UpdateRecordDryRun, UpdateRecordRequest,

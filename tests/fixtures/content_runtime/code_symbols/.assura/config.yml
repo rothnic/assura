@@ -1,0 +1,20 @@
+structure:
+  ./:
+    required: false
+
+models:
+  source: schemas/content-runtime.linkml.yaml
+  validation_artifact: schemas/content_runtime.schema.json
+
+collections:
+  components:
+    class: Component
+    path: components/*.json
+    adapter: json_record
+    id: id
+
+code_symbols:
+  components.implementation:
+    provider: rust-token-baseline-v1
+  components.external_symbol:
+    provider: external-index-v1

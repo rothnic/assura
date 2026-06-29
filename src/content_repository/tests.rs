@@ -159,6 +159,7 @@ fn goals_collection() -> CollectionSpec {
             FieldSpec::optional("specs", FieldKind::StringArray),
         ],
         references: vec![ReferenceSpec::many("specs", "specs")],
+        code_symbols: Vec::new(),
     }
 }
 
@@ -179,6 +180,7 @@ fn specs_collection() -> CollectionSpec {
             ),
         ],
         references: Vec::new(),
+        code_symbols: Vec::new(),
     }
 }
 
@@ -192,6 +194,7 @@ fn invalid_pattern_collection() -> CollectionSpec {
         id_field: "id".to_string(),
         fields: Vec::new(),
         references: Vec::new(),
+        code_symbols: Vec::new(),
     }
 }
 

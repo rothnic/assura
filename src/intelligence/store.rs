@@ -5,8 +5,8 @@
 //! local traversal and query workloads.
 
 use super::facts::{
-    EdgeId, EmbeddingRecord, FactId, FactSet, PathScope, ProjectEdge, ProjectFact,
-    RelationshipEdge, SearchChunk,
+    CodeSymbol, EdgeId, EmbeddingRecord, FactId, FactSet, PathScope, ProjectEdge, ProjectFact,
+    RelationshipEdge, SearchChunk, SymbolRef,
 };
 use super::semantic::{cosine_similarity, semantic_text_hash};
 use glob::Pattern;
@@ -24,6 +24,8 @@ pub struct InMemoryFactStore {
     missing_relationship_edges: Vec<usize>,
     search_chunks: Vec<SearchChunk>,
     embedding_records: Vec<EmbeddingRecord>,
+    code_symbols: Vec<CodeSymbol>,
+    symbol_refs: Vec<SymbolRef>,
     path_scopes: Vec<PathScope>,
 }
 
@@ -101,6 +103,16 @@ impl InMemoryFactStore {
                     .unwrap_or(false)
             })
             .collect()
+    }
+
+    /// Return all code-symbol facts in stable store order.
+    pub fn code_symbols(&self) -> Vec<&CodeSymbol> {
+        self.code_symbols.iter().collect()
+    }
+
+    /// Return all code-symbol reference edges in stable store order.
+    pub fn symbol_refs(&self) -> Vec<&SymbolRef> {
+        self.symbol_refs.iter().collect()
     }
 
     /// Return search chunks that contain all query terms case-insensitively.
@@ -191,6 +203,8 @@ impl InMemoryFactStore {
         self.missing_relationship_edges.clear();
         self.search_chunks.clear();
         self.embedding_records.clear();
+        self.code_symbols.clear();
+        self.symbol_refs.clear();
         self.path_scopes.clear();
 
         for (index, fact) in self.facts.facts.iter().enumerate() {
@@ -201,6 +215,7 @@ impl InMemoryFactStore {
             match fact {
                 ProjectFact::SearchChunk(chunk) => self.search_chunks.push(chunk.clone()),
                 ProjectFact::EmbeddingRecord(record) => self.embedding_records.push(record.clone()),
+                ProjectFact::CodeSymbol(symbol) => self.code_symbols.push(symbol.clone()),
                 ProjectFact::PathScope(scope) => self.path_scopes.push(scope.clone()),
                 _ => {}
             }
@@ -226,6 +241,7 @@ impl InMemoryFactStore {
                         .entry(edge.source_id.clone())
                         .or_default()
                         .push(index);
+                    self.symbol_refs.push(edge.clone());
                 }
             }
         }

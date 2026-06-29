@@ -53,7 +53,13 @@ impl QueryContext {
 
         let mut ingestor = FactIngestor::new("content-query");
         ingestor.ingest_repository_model(&model);
+        if command.code_symbols_enabled() {
+            ingestor.ingest_local_rust_code_symbols(&project_root);
+        }
         ingestor.ingest_repository_validation(&validation);
+        if command.code_symbols_enabled() {
+            ingestor.ingest_content_code_symbol_refs(&model, &validation);
+        }
         if command.semantic_enabled() {
             ingestor.ingest_local_semantic_embeddings();
         }
@@ -74,6 +80,8 @@ fn command_path(command: &ContentCommands) -> Option<PathBuf> {
         | ContentCommands::Show { path, .. }
         | ContentCommands::Search { path, .. }
         | ContentCommands::SemanticSearch { path, .. }
+        | ContentCommands::Symbols { path, .. }
+        | ContentCommands::SymbolRefs { path, .. }
         | ContentCommands::MissingRelations { path, .. }
         | ContentCommands::Expand { path, .. } => path.clone(),
     }
@@ -81,6 +89,7 @@ fn command_path(command: &ContentCommands) -> Option<PathBuf> {
 
 trait SemanticCommand {
     fn semantic_enabled(&self) -> bool;
+    fn code_symbols_enabled(&self) -> bool;
 }
 
 impl SemanticCommand for ContentCommands {
@@ -91,6 +100,15 @@ impl SemanticCommand for ContentCommands {
                 enable_local: true,
                 ..
             }
+        )
+    }
+
+    fn code_symbols_enabled(&self) -> bool {
+        matches!(
+            self,
+            ContentCommands::Symbols { .. }
+                | ContentCommands::SymbolRefs { .. }
+                | ContentCommands::Expand { .. }
         )
     }
 }

@@ -34,19 +34,19 @@ symbol-to-model or model-to-symbol query output.
 
 ## Acceptance Criteria
 
-- [ ] Code-symbol fact metadata captures symbol identity, source location or
+- [x] Code-symbol fact metadata captures symbol identity, source location or
   span when available, provider name, and evidence quality/provenance.
-- [ ] Modeled collection instances can produce unresolved symbol refs from
+- [x] Modeled collection instances can produce unresolved symbol refs from
   configured fields without changing validation truth.
-- [ ] A fixture repository proves one local baseline path can resolve at least
+- [x] A fixture repository proves one local baseline path can resolve at least
   one symbol reference to a `CodeSymbol` fact.
-- [ ] Missing or unavailable providers leave explicit unresolved refs rather
+- [x] Missing or unavailable providers leave explicit unresolved refs rather
   than failing normal validation.
-- [ ] A CLI/query surface shows symbols referenced by a model instance and
+- [x] A CLI/query surface shows symbols referenced by a model instance and
   model instances related to a symbol.
-- [ ] Docs explain optional provider boundaries and distinguish unresolved,
+- [x] Docs explain optional provider boundaries and distinguish unresolved,
   baseline-resolved, and provider-resolved evidence.
-- [ ] `cargo fmt --check`, `cargo test code_symbol --quiet`,
+- [x] `cargo fmt --check`, `cargo test code_symbol --quiet`,
   `cargo test project_intelligence --quiet`,
   `cargo run --quiet -- check --format json .`, and `git diff --check` pass or
   have explicit documented blockers.
@@ -92,3 +92,18 @@ symbol-to-model or model-to-symbol query output.
   manual `FactIngestor::add_symbol_ref`, store symbol-edge indexing, and
   unresolved-symbol tests, but lacks modeled-field extraction, provider
   evidence, local baseline resolution/import, and public code-symbol queries.
+- 2026-06-28: Implemented optional code-symbol enrichment. `code_symbols`
+  config entries derive model-instance `SymbolRef` edges; unresolved provider
+  refs remain queryable; `rust-token-baseline-v1` resolves local Rust
+  declarations without external services; provider evidence is exposed through
+  facts and query output. Added `assura content symbols` and
+  `assura content symbol-refs`, command-surface/support-matrix rows, docs, and
+  fixture coverage. Independent reviewer found duplicate-symbol and
+  duplicate-field collapse blockers; both were fixed with regression tests.
+- 2026-06-28: Validation passed: `cargo fmt --check`,
+  `cargo test code_symbol --quiet`, `cargo test --test content_query_cli --quiet`,
+  `cargo test project_intelligence --quiet`,
+  `cargo run --quiet -- check --format json .`, `cargo xtask evidence`,
+  `cargo xtask docs`,
+  `cargo clippy --workspace --all-targets --all-features -- -D warnings`, and
+  `git diff --check`.

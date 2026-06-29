@@ -1,3 +1,4 @@
+use super::code_symbols::{CodeProviderEvidence, CodeSymbol, SymbolRef};
 use crate::stable_hash::stable_hash;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
@@ -335,21 +336,6 @@ pub struct EmbeddingRecord {
     pub vector: Vec<f32>,
 }
 
-/// Code symbol fact, optionally imported from a future provider.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct CodeSymbol {
-    /// Stable fact ID.
-    pub id: FactId,
-    /// Generation that produced this fact.
-    pub generation: FactGeneration,
-    /// Source or derived marker.
-    pub origin: FactOrigin,
-    /// Provider-specific symbol identifier.
-    pub symbol: String,
-    /// Source location when known.
-    pub location: Option<SourceLocation>,
-}
-
 /// Derived relation edge between content runtime model instances.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RelationshipEdge {
@@ -369,25 +355,6 @@ pub struct RelationshipEdge {
     pub target_collections: Vec<String>,
     /// Target object ID from source data.
     pub target_instance_id: String,
-}
-
-/// Optional edge from a source fact to a code symbol.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct SymbolRef {
-    /// Stable edge ID.
-    pub id: EdgeId,
-    /// Generation that produced this edge.
-    pub generation: FactGeneration,
-    /// Source or derived marker.
-    pub origin: FactOrigin,
-    /// Source fact that mentioned the symbol.
-    pub source_id: FactId,
-    /// Symbol text or provider ID.
-    pub symbol: String,
-    /// Resolved code symbol fact ID when available.
-    pub target_id: Option<FactId>,
-    /// Provider name when known.
-    pub provider: Option<String>,
 }
 
 /// Node-like project intelligence fact.
@@ -420,6 +387,8 @@ pub enum ProjectFact {
     EmbeddingRecord(EmbeddingRecord),
     /// Optional code symbol.
     CodeSymbol(CodeSymbol),
+    /// Code-symbol provider provenance.
+    CodeProviderEvidence(CodeProviderEvidence),
 }
 
 impl ProjectFact {
@@ -439,6 +408,7 @@ impl ProjectFact {
             Self::SearchChunk(fact) => &fact.id,
             Self::EmbeddingRecord(fact) => &fact.id,
             Self::CodeSymbol(fact) => &fact.id,
+            Self::CodeProviderEvidence(fact) => &fact.id,
         }
     }
 
@@ -458,6 +428,7 @@ impl ProjectFact {
             Self::SearchChunk(fact) => &fact.generation,
             Self::EmbeddingRecord(fact) => &fact.generation,
             Self::CodeSymbol(fact) => &fact.generation,
+            Self::CodeProviderEvidence(fact) => &fact.generation,
         }
     }
 }

@@ -190,3 +190,64 @@ fn content_query_semantic_search_is_opt_in_and_returns_context() {
         .expect("matches array")
         .is_empty());
 }
+
+#[test]
+fn content_query_reports_code_symbols_in_both_directions() {
+    let symbols = json_output(run_content(&[
+        "symbols",
+        "components",
+        "component-config",
+        "tests/fixtures/content_runtime/code_symbols",
+        "--format",
+        "json",
+    ]));
+
+    assert_eq!(symbols["collection"], "components");
+    assert_eq!(symbols["id"], "component-config");
+    let symbol_refs = symbols["symbols"].as_array().expect("symbols array");
+    assert_eq!(symbol_refs.len(), 2);
+    assert!(symbol_refs.iter().any(|item| {
+        item["field"] == "implementation"
+            && item["symbol"] == "crate::sample::Config"
+            && item["provider"] == "rust-token-baseline-v1"
+            && item["resolved"] == true
+            && item["target_symbol"] == "Config"
+            && item["target_path"] == "src/sample.rs"
+            && item["evidence"] == "baseline"
+    }));
+    assert!(symbol_refs.iter().any(|item| {
+        item["field"] == "external_symbol"
+            && item["symbol"] == "external::Runtime"
+            && item["provider"] == "external-index-v1"
+            && item["resolved"] == false
+            && item["target_id"].is_null()
+    }));
+
+    let full_refs = json_output(run_content(&[
+        "symbol-refs",
+        "crate::sample::Config",
+        "tests/fixtures/content_runtime/code_symbols",
+        "--format",
+        "json",
+    ]));
+    assert_eq!(full_refs["symbol"], "crate::sample::Config");
+    assert_eq!(full_refs["references"][0]["collection"], "components");
+    assert_eq!(
+        full_refs["references"][0]["instance_id"],
+        "component-config"
+    );
+    assert_eq!(full_refs["references"][0]["resolved"], true);
+
+    let unresolved_refs = json_output(run_content(&[
+        "symbol-refs",
+        "Runtime",
+        "tests/fixtures/content_runtime/code_symbols",
+        "--format",
+        "json",
+    ]));
+    assert_eq!(
+        unresolved_refs["references"][0]["symbol"],
+        "external::Runtime"
+    );
+    assert_eq!(unresolved_refs["references"][0]["resolved"], false);
+}

@@ -103,5 +103,6 @@ fn fact_kind(fact: &ProjectFact) -> &'static str {
         ProjectFact::SearchChunk(_) => "SearchChunk",
         ProjectFact::EmbeddingRecord(_) => "EmbeddingRecord",
         ProjectFact::CodeSymbol(_) => "CodeSymbol",
+        ProjectFact::CodeProviderEvidence(_) => "CodeProviderEvidence",
     }
 }

@@ -60,6 +60,7 @@ fn project_intelligence_keeps_model_definitions_distinct_by_collection() {
                 id_field: "id".to_string(),
                 fields: Vec::new(),
                 references: Vec::new(),
+                code_symbols: Vec::new(),
             },
             CollectionSpec {
                 name: "archived_goals".to_string(),
@@ -70,6 +71,7 @@ fn project_intelligence_keeps_model_definitions_distinct_by_collection() {
                 id_field: "id".to_string(),
                 fields: Vec::new(),
                 references: Vec::new(),
+                code_symbols: Vec::new(),
             },
         ],
         placements: Vec::new(),
@@ -468,6 +470,7 @@ fn symbol_ref_edge(generation: &str) -> ProjectEdge {
         origin: FactOrigin::Derived,
         source_id,
         symbol: "crate::config::Config".to_string(),
+        field: Some("implementation".to_string()),
         target_id: None,
         provider: None,
     })

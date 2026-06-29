@@ -78,7 +78,7 @@ fn project_intelligence_store_reports_benchmark_fixture_footprint() {
     assert_eq!(stats.fact_count, 1_683);
     assert_eq!(stats.edge_count, 480);
     assert_eq!(stats.search_chunk_count, 240);
-    assert_eq!(stats.serialized_bytes, 496_203);
+    assert_eq!(stats.serialized_bytes, 502_203);
 }
 
 fn fixture_facts(generation: &str, goals: usize) -> FactSet {
@@ -135,6 +135,7 @@ fn fixture_facts(generation: &str, goals: usize) -> FactSet {
             origin: FactOrigin::Derived,
             source_id: model_instance_id("goals", &goal_id),
             symbol: format!("crate::runtime::Goal{index:04}"),
+            field: Some("implementation".to_string()),
             target_id: None,
             provider: None,
         }));
