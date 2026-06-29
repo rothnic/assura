@@ -69,6 +69,11 @@ diagnostics, context-pack, graph, search, relation, or safe-fix preview queries
 without restarting the CLI process. The session reloads conservatively when the
 project fingerprint changes; `assura watch` remains experimental.
 
+Safe-fix previews returned by `safe-fixes` include an `audit_id` that matches
+`assura fix markdown --dry-run --format json` `fixes[].id`. Apply still happens
+through `assura fix markdown --apply --format json`, and integrations must not
+write repairs implicitly.
+
 Session request fields:
 
 | Field | Required | Purpose |

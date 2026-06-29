@@ -134,7 +134,7 @@ fn corrective_context_for_rule(rule: &str) -> &'static str {
             "Add or reorder headings to match markdown.outline, or update the configured outline when the documented structure changed."
         }
         "markdown_trailing_spaces" => {
-            "Run `assura fix markdown` to remove safe blank-line trailing spaces, or disable markdown.lint_trailing_spaces for this scope."
+            "Run `assura fix markdown --dry-run` to preview safe blank-line trailing-space fixes, then rerun with `--apply` to write them, or disable markdown.lint_trailing_spaces for this scope."
         }
         "extension" => {
             "Rename the file to an allowed extension or update files.extensions for this scope."

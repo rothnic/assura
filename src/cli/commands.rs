@@ -188,14 +188,25 @@ pub async fn fix_markdown_command(
     config: Option<PathBuf>,
     rule: MarkdownFixRuleArg,
     dry_run: bool,
+    apply: bool,
     format: OutputFormat,
 ) -> ExitCode {
+    if dry_run && apply {
+        eprintln!("Error: --dry-run and --apply cannot be used together");
+        return ExitCode::RuntimeError;
+    }
+
     let rule = rule.into();
+    let dry_run = !apply;
 
     match run_markdown_fix(path, config, rule, dry_run) {
         Ok(report) => {
             println!("{}", format_markdown_fix_report(&report, format));
-            ExitCode::Success
+            if report.failures.is_empty() {
+                ExitCode::Success
+            } else {
+                ExitCode::RuntimeError
+            }
         }
         Err(error) => {
             eprintln!("Error: {}", error);
@@ -214,13 +225,16 @@ fn format_markdown_fix_report(
         OutputFormat::Text | OutputFormat::Advice | OutputFormat::Status => {
             if report.dry_run {
                 format!(
-                    "Checked {} Markdown file(s); would change {} file(s); would apply {} fix(es).",
+                    "Checked {} Markdown file(s); would change {} file(s); would apply {} fix(es). Run again with --apply to write these fixes.",
                     report.files_checked, report.files_would_change, report.fixes_would_apply
                 )
             } else {
                 format!(
-                    "Checked {} Markdown file(s); changed {} file(s); applied {} fix(es).",
-                    report.files_checked, report.files_changed, report.fixes_applied
+                    "Checked {} Markdown file(s); changed {} file(s); applied {} fix(es); failed {} file(s).",
+                    report.files_checked,
+                    report.files_changed,
+                    report.fixes_applied,
+                    report.failures.len()
                 )
             }
         }

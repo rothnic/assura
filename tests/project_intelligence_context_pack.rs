@@ -1,4 +1,6 @@
 use serde_json::Value;
+use std::fs;
+use std::path::Path;
 use std::process::{Command, Output};
 
 const BEACON_INVALID: &str = "tests/fixtures/project_intelligence_real_repo/beacon_crm/invalid";
@@ -23,6 +25,20 @@ fn json_from_success(output: Output) -> Value {
         String::from_utf8_lossy(&output.stderr)
     );
     serde_json::from_slice(&output.stdout).expect("command emits JSON")
+}
+
+fn copy_dir(source: &Path, destination: &Path) {
+    fs::create_dir_all(destination).expect("create destination");
+    for entry in fs::read_dir(source).expect("read source dir") {
+        let entry = entry.expect("dir entry");
+        let source_path = entry.path();
+        let destination_path = destination.join(entry.file_name());
+        if source_path.is_dir() {
+            copy_dir(&source_path, &destination_path);
+        } else {
+            fs::copy(&source_path, &destination_path).expect("copy file");
+        }
+    }
 }
 
 #[test]
@@ -97,6 +113,42 @@ fn context_pack_wraps_beacon_diagnostics_relations_search_and_safe_fixes() {
         pack["missing_relations"][0]["target_instance_id"],
         lower_missing["missing_relations"][0]["target_instance_id"]
     );
+}
+
+#[test]
+fn context_pack_safe_fixes_include_cli_audit_id() {
+    let temp = tempfile::tempdir().expect("tempdir");
+    copy_dir(Path::new(BEACON_INVALID), temp.path());
+    let epic_path = temp.path().join("docs/epics/epic_checkout.md");
+    let drifted = fs::read_to_string(&epic_path)
+        .expect("epic markdown")
+        .replace("# Checkout Onboarding\n\n", "# Checkout Onboarding\n   \n");
+    fs::write(&epic_path, drifted).expect("write deterministic markdown drift");
+
+    let dry_run = json_from_success(run_assura(&[
+        "fix",
+        "markdown",
+        temp.path().to_str().expect("temp path"),
+        "--dry-run",
+        "--format",
+        "json",
+    ]));
+    let dry_run_id = dry_run["fixes"][0]["id"].as_str().expect("fix id");
+
+    let pack = json_from_success(run_assura(&[
+        "content",
+        "context-pack",
+        temp.path().to_str().expect("temp path"),
+        "--text",
+        "checkout",
+        "--limit",
+        "5",
+        "--format",
+        "json",
+    ]));
+    let safe_fix = &pack["safe_fixes"][0];
+    assert_eq!(safe_fix["path"], "docs/epics/epic_checkout.md");
+    assert_eq!(safe_fix["audit_id"], dry_run_id);
 }
 
 #[test]

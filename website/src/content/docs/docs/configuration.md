@@ -102,8 +102,9 @@ frontmatter block. Typed frontmatter fields belong to content runtime `models`,
 same field policy is not declared twice.
 
 Set `lint_trailing_spaces: true` to report blank Markdown lines that contain
-spaces or tabs. `assura fix markdown` removes this safe whitespace class for
-configured Markdown scopes.
+spaces or tabs. `assura fix markdown --dry-run` previews this safe whitespace
+class, and `assura fix markdown --apply` removes it for configured Markdown
+scopes.
 
 `outline` uses nested YAML lists to describe required heading order. Prefix a
 heading with `?? ` to make it optional, and use object form when a required

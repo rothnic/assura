@@ -285,27 +285,74 @@ The envelope identifies the schema, requested capability, and diagnostic:
 }
 ```
 
-## Preview Safe Fixes
+## Preview And Apply Safe Fixes
 
 Safe-fix previews are separate from validation. They report bounded writes
-without changing files:
+without changing files, and apply requires an explicit `--apply`:
 
 ```bash
 assura fix markdown --rule trailing-spaces --dry-run --format json .
+assura fix markdown --rule trailing-spaces --apply --format json .
 ```
 
 For a Markdown file with configured blank-line trailing whitespace, the report
-uses the `assura.safe-fix.markdown.v1` schema and separates proposed changes
-from applied changes:
+uses the `assura.safe-fix.markdown.v1` schema for both preview and apply. The
+preview records stable fix IDs without writing:
 
 ```json
 {
   "schema": "assura.safe-fix.markdown.v1",
+  "mode": "dry_run",
   "dry_run": true,
   "files_changed": 0,
   "fixes_applied": 0,
   "files_would_change": 1,
-  "fixes_would_apply": 1
+  "fixes_would_apply": 1,
+  "fixes": [
+    {
+      "id": "markdown.safe_fix.8d4c9b0d3d55c2a1",
+      "path": "docs/epics/epic_checkout.md",
+      "operation": "remove_blank_line_trailing_spaces",
+      "status": "planned",
+      "line": 18,
+      "column": 1
+    }
+  ]
+}
+```
+
+The apply audit uses the same IDs and adds changed-path evidence plus recovery
+guidance:
+
+```json
+{
+  "schema": "assura.safe-fix.markdown.v1",
+  "mode": "apply",
+  "dry_run": false,
+  "changed_paths": ["docs/epics/epic_checkout.md"],
+  "applied_fix_ids": ["markdown.safe_fix.8d4c9b0d3d55c2a1"],
+  "skipped_fixes": [],
+  "rollback": {
+    "backup_created": false,
+    "guidance": "Use version control to inspect or revert applied safe fixes."
+  }
+}
+```
+
+Agents can correlate context-pack or session previews with the CLI audit by
+matching `safe_fixes[].audit_id` to `fixes[].id`:
+
+```json
+{
+  "safe_fixes": [
+    {
+      "id": "safe_fix:0d2e6b4d4f7c9230",
+      "audit_id": "markdown.safe_fix.8d4c9b0d3d55c2a1",
+      "operation": "remove_blank_line_trailing_spaces",
+      "path": "docs/epics/epic_checkout.md",
+      "line": 18
+    }
+  ]
 }
 ```
 
@@ -319,8 +366,9 @@ from applied changes:
    `assura content expand` for human inspection.
 6. Use `assura content agent-context` and `assura content agent-query` for
    automation.
-7. Use `assura fix markdown --dry-run --format json` before accepting safe
-   Markdown repairs.
+7. Use `assura fix markdown --dry-run --format json` to preview safe Markdown
+   repairs, then `assura fix markdown --apply --format json` after accepting
+   the planned IDs.
 
 This path is local, source-control friendly, and does not require a daemon,
 hosted service, remote embedding provider, or editor plugin.

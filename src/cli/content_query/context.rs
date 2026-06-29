@@ -1,6 +1,7 @@
 //! Content query context loading and error handling.
 
 use super::ContentCommands;
+use crate::cli::check::{run_structure_check, StructureCheckReport};
 use crate::cli::AgentQueryArg;
 use crate::cli::ExitCode;
 use crate::config::loader::ConfigLoader;
@@ -72,6 +73,14 @@ impl QueryContext {
             ingestor.ingest_local_rust_code_symbols(&project_root);
         }
         ingestor.ingest_repository_validation(&validation);
+        let structure_report =
+            run_structure_check(Some(project_root.clone()), Some(config_path.clone()), false)
+                .map_err(|error| {
+                    ContentQueryError::runtime(format!(
+                        "failed to collect safe-fix structure diagnostics: {error}"
+                    ))
+                })?;
+        ingest_safe_fix_structure_report(&mut ingestor, structure_report);
         if code_symbols_enabled {
             ingestor.ingest_content_code_symbol_refs(&model, &validation);
         }
@@ -85,6 +94,15 @@ impl QueryContext {
             config_path,
             store,
         })
+    }
+}
+
+fn ingest_safe_fix_structure_report(ingestor: &mut FactIngestor, mut report: StructureCheckReport) {
+    report
+        .violations
+        .retain(|violation| violation.rule == "markdown_trailing_spaces");
+    if !report.violations.is_empty() {
+        ingestor.ingest_check_report(&report);
     }
 }
 

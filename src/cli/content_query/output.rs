@@ -138,6 +138,7 @@ pub(super) struct SafeFixesOutput {
 #[derive(Debug, Serialize)]
 pub(super) struct SafeFixOutput {
     pub(super) id: String,
+    pub(super) audit_id: Option<String>,
     pub(super) diagnostic_id: String,
     pub(super) target_id: Option<String>,
     pub(super) operation: String,

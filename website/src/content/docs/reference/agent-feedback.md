@@ -121,6 +121,11 @@ Supported request `type` values are `agent-context`, `collections`,
 `response: null`, and an `error.code` such as `invalid_request`,
 `request_failed`, or `reload_failed`.
 
+Safe-fix preview responses include both the project-intelligence fact `id` and
+the CLI audit `audit_id`. Wrappers should match `audit_id` to
+`assura fix markdown --dry-run --format json` `fixes[].id`, then require an
+explicit `assura fix markdown --apply --format json` step before writing.
+
 Assura does have lower-level support intended for future editor and agent
 integrations:
 

@@ -214,6 +214,47 @@ fn content_session_reloads_before_first_response_if_files_changed_after_startup(
     session.finish();
 }
 
+#[test]
+fn content_session_safe_fixes_include_cli_audit_id() {
+    let temp = tempfile::tempdir().expect("tempdir");
+    copy_dir(Path::new(BEACON_INVALID), temp.path());
+    let epic_path = temp.path().join("docs/epics/epic_checkout.md");
+    let drifted = fs::read_to_string(&epic_path)
+        .expect("epic markdown")
+        .replace("# Checkout Onboarding\n\n", "# Checkout Onboarding\n   \n");
+    fs::write(&epic_path, drifted).expect("write deterministic markdown drift");
+
+    let dry_run = Command::new(assura_bin())
+        .arg("fix")
+        .arg("markdown")
+        .arg(temp.path())
+        .arg("--dry-run")
+        .arg("--format")
+        .arg("json")
+        .output()
+        .expect("dry-run command runs");
+    assert!(
+        dry_run.status.success(),
+        "stderr:\n{}",
+        String::from_utf8_lossy(&dry_run.stderr)
+    );
+    let dry_run_json: Value = serde_json::from_slice(&dry_run.stdout).expect("dry-run JSON");
+    let dry_run_id = dry_run_json["fixes"][0]["id"].as_str().expect("fix id");
+
+    let mut session = SessionProcess::start(temp.path());
+    let response = session.request(serde_json::json!({
+        "request_id": "safe-fixes",
+        "type": "safe-fixes"
+    }));
+    assert_eq!(response["ok"], true);
+    assert_eq!(response["reload"]["state"], "initial_load");
+    let safe_fix = &response["response"]["safe_fixes"][0];
+    assert_eq!(safe_fix["path"], "docs/epics/epic_checkout.md");
+    assert_eq!(safe_fix["audit_id"], dry_run_id);
+
+    session.finish();
+}
+
 fn copy_dir(source: &Path, destination: &Path) {
     fs::create_dir_all(destination).expect("create destination");
     for entry in fs::read_dir(source).expect("read source dir") {

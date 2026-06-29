@@ -30,21 +30,21 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 16 | Docs Lifecycle Coverage | Completed | PR #83 merged; archive/sync PR #84 merged |
 | 17 | Support Matrix Surface Expansion | Completed | PR #88 merged; archive/sync PR #89 merged |
 | 18 | Project Intelligence Runtime | Completed | All nine successors and final completion audit completed locally |
-| 19 | Project Intelligence Usability | Active | Adoption blueprint, real-repo proof, onboarding template, context pack, and persistent session completed locally; safe-fix workflow is next |
+| 19 | Project Intelligence Usability | Active | Adoption blueprint, real-repo proof, onboarding template, context pack, persistent session, and safe-fix workflow completed locally; `.assura/` directory organization is next |
 
 ## Active Roadmap Iteration
 
 Project Intelligence Usability is active.
 
 Most recent owning task:
-`.trellis/tasks/06-29-project-intelligence-persistent-session`, completing
-`docs/goals/assura-project-intelligence-persistent-session.md`.
+`.trellis/tasks/06-29-06-29-project-intelligence-safe-fix-workflow`,
+completing `docs/goals/assura-project-intelligence-safe-fix-workflow.md`.
 
 Current branch:
 `codex/project-intelligence-agent-surfaces`.
 
 Current recommended goal:
-`docs/goals/assura-project-intelligence-safe-fix-workflow.md`.
+`docs/goals/assura-project-intelligence-assura-directory-organization.md`.
 
 Current program:
 `docs/goals/assura-project-intelligence-usability-program.md`.
@@ -107,21 +107,23 @@ that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
 Planned next roadmap candidate:
 Continue Project Intelligence Usability with
-`docs/goals/assura-project-intelligence-safe-fix-workflow.md`. Adoption
-blueprint, real-repo proof, onboarding template, context pack, and persistent
-session are completed locally; remaining successors are safe-fix workflow, MCP
-agent transport, LSP editor transport, and release hardening.
+`docs/goals/assura-project-intelligence-assura-directory-organization.md`.
+Adoption blueprint, real-repo proof, onboarding template, context pack,
+persistent session, and safe-fix workflow are completed locally; remaining
+successors are `.assura/` directory organization, MCP agent transport, LSP
+editor transport, and release hardening.
 
 ## Recommended Next Action
 
 Run the workflow gate, then validate and start
-`docs/goals/assura-project-intelligence-safe-fix-workflow.md`. Do not reopen
-the completed Project Intelligence Runtime successors, Project Intelligence
-Usability adoption blueprint, real-repo proof, onboarding template, context
-pack, or persistent session, support-matrix expansion, or Windows CI Restore
-work unless a new concrete docs, manifest, package, binary, support status, or
-hosted CI drift case is named with executable evidence. The broader product
-roadmap remains open until a separate product decision declares it complete.
+`docs/goals/assura-project-intelligence-assura-directory-organization.md`. Do
+not reopen the completed Project Intelligence Runtime successors, Project
+Intelligence Usability adoption blueprint, real-repo proof, onboarding
+template, context pack, persistent session, or safe-fix workflow,
+support-matrix expansion, or Windows CI Restore work unless a new concrete
+docs, manifest, package, binary, support status, or hosted CI drift case is
+named with executable evidence. The broader product roadmap remains open until
+a separate product decision declares it complete.
 
 ## Roadmap Rules
 

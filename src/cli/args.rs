@@ -244,7 +244,7 @@ pub enum HookCommands {
 
 #[derive(Subcommand, Debug)]
 pub enum FixCommands {
-    #[command(about = "Apply safe Markdown fixes for configured Markdown scopes")]
+    #[command(about = "Preview or apply safe Markdown fixes for configured Markdown scopes")]
     Markdown {
         #[arg(help = "Path to fix (defaults to current directory)")]
         path: Option<PathBuf>,
@@ -254,6 +254,9 @@ pub enum FixCommands {
 
         #[arg(long, help = "Preview safe fixes without writing files")]
         dry_run: bool,
+
+        #[arg(long, help = "Apply accepted safe fixes")]
+        apply: bool,
 
         #[arg(short, long, value_enum, default_value = "text")]
         format: OutputFormat,

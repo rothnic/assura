@@ -191,6 +191,29 @@ fn beacon_crm_materialized_markdown_drift_previews_safe_fix_without_writing() {
     assert_eq!(fix_json["fixes_applied"], 0);
     assert_eq!(fix_json["files_would_change"], 1);
     assert_eq!(fix_json["fixes_would_apply"], 1);
+    assert_eq!(fix_json["fixes"][0]["status"], "planned");
+    assert_eq!(
+        fix_json["fixes"][0]["operation"],
+        "remove_blank_line_trailing_spaces"
+    );
+    assert!(fix_json["fixes"][0]["id"]
+        .as_str()
+        .expect("fix id")
+        .starts_with("markdown.safe_fix."));
+
+    let safe_fixes = run(&[
+        "content",
+        "agent-query",
+        "safe-fixes",
+        project.path().to_str().expect("utf-8 temp path"),
+        "--format",
+        "json",
+    ]);
+    assert_success(&safe_fixes);
+    let safe_fixes_json = json_output(&safe_fixes);
+    let preview = &safe_fixes_json["response"]["safe_fixes"][0];
+    assert_eq!(preview["path"], "docs/epics/epic_checkout.md");
+    assert_eq!(preview["audit_id"], fix_json["fixes"][0]["id"]);
 
     let after = fs::read_to_string(&epic_path).expect("epic markdown after dry-run");
     assert_eq!(after, drifted, "dry-run must not write the markdown file");

@@ -118,6 +118,7 @@ commands:
         takes_value: true
         values: ["trailing-spaces"]
       --dry-run: {}
+      --apply: {}
       --format:
         aliases: ["-f"]
         takes_value: true

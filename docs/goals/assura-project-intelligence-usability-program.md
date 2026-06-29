@@ -14,6 +14,7 @@ related:
   - docs/goals/assura-project-intelligence-context-pack.md
   - docs/goals/assura-project-intelligence-persistent-session.md
   - docs/goals/assura-project-intelligence-safe-fix-workflow.md
+  - docs/goals/assura-project-intelligence-assura-directory-organization.md
   - docs/goals/assura-project-intelligence-mcp-agent-transport.md
   - docs/goals/assura-project-intelligence-lsp-editor-transport.md
   - docs/goals/assura-project-intelligence-release-hardening.md
@@ -43,6 +44,9 @@ gaps are:
   prepared checks are wired into a public session surface;
 - safe fixes have preview metadata, but not a complete apply, rollback, and
   audit workflow;
+- `.assura/` project-intelligence artifacts can still drift into root-level
+  files as model/schema/config options grow, making the project folder harder
+  to scan and harder for generated starters to keep tidy;
 - MCP-style agent tools and LSP-style editor behavior are planned, not
   supported product contracts;
 - release docs and support matrices do not yet treat the completed and
@@ -70,13 +74,16 @@ decision with evidence.
    checks and project-intelligence queries.
 6. [Project Intelligence Safe Fix Workflow](./assura-project-intelligence-safe-fix-workflow.md)
    turns safe-fix dry-runs into a complete bounded repair workflow.
-7. [Project Intelligence MCP Agent Transport](./assura-project-intelligence-mcp-agent-transport.md)
+7. [Project Intelligence Assura Directory Organization](./assura-project-intelligence-assura-directory-organization.md)
+   keeps `.assura/` scalable by moving model artifacts under one organized
+   model directory with optional hierarchy.
+8. [Project Intelligence MCP Agent Transport](./assura-project-intelligence-mcp-agent-transport.md)
    adds local agent tools over the shared context, query, diagnostics, and
    safe-fix preview contracts.
-8. [Project Intelligence LSP Editor Transport](./assura-project-intelligence-lsp-editor-transport.md)
+9. [Project Intelligence LSP Editor Transport](./assura-project-intelligence-lsp-editor-transport.md)
    adds local editor diagnostics, context, and code-action behavior over the
    same contracts.
-9. [Project Intelligence Release Hardening](./assura-project-intelligence-release-hardening.md)
+10. [Project Intelligence Release Hardening](./assura-project-intelligence-release-hardening.md)
    locks schemas, docs, support status, compatibility notes, and release
    evidence for the usable product slice.
 
@@ -97,6 +104,9 @@ decision with evidence.
   contracts as the CLI through independently validated transport goals.
 - Safe fixes support preview, bounded apply, machine-readable audit output, and
   a clear no-automatic-repair policy.
+- `.assura/` keeps well-known root files bounded and stores project-intelligence
+  model artifacts under a documented model directory, with user-defined
+  hierarchy allowed inside that directory.
 - Project-intelligence schemas and support levels are documented in release
   and support surfaces.
 - Every goal has independent review evidence and current validation commands.
@@ -200,3 +210,13 @@ without real-repo proof and release hardening.
   missing relations, and safe-fix previews, with conservative reload metadata
   and benchmark evidence. The immediate next goal is
   `docs/goals/assura-project-intelligence-safe-fix-workflow.md`.
+- 2026-06-29: Completed
+  `docs/goals/assura-project-intelligence-safe-fix-workflow.md` locally on
+  task `.trellis/tasks/06-29-06-29-project-intelligence-safe-fix-workflow`.
+  Safe fixes now preview by default, require `--apply` before writing, emit
+  machine-readable per-file/per-fix audit output, report partial write
+  failures in the same JSON report, and expose `audit_id` correlation through
+  content-query, context-pack, and session safe-fix previews. The next usability
+  gap is `.assura/` organization: root-level project-intelligence model/schema
+  artifacts should move under a shared model directory before MCP/LSP
+  transports promote the starter layout further.

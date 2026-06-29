@@ -122,8 +122,11 @@ for that asset repair.
 - `assura fix markdown --rule trailing-spaces --dry-run --format json` emits
   `assura.safe-fix.markdown.v1` and reports proposed files and line fixes
   without writing.
-- Omitting `--dry-run` applies the bounded Markdown trailing-space fix and
-  reports written files and applied fixes.
+- `assura fix markdown --rule trailing-spaces --apply --format json` applies
+  the bounded Markdown trailing-space fix and reports changed paths, applied
+  fix IDs, skipped fixes, and rollback guidance.
+- Omitting both `--dry-run` and `--apply` previews fixes without writing;
+  every write path requires `--apply`.
 
 ### Custom Constraints
 
