@@ -1,4 +1,0 @@
-{"file": ".trellis/spec/assura/index.md", "reason": "Quality and self-check expectations for Assura code and docs changes."}
-{"file": ".trellis/spec/assura/tooling-stabilization.md", "reason": "Change-scoped validation policy for Rust, CLI, docs, and Trellis edits."}
-{"file": "docs/goals/assura-code-symbol-enrichment.md", "reason": "Acceptance criteria, validation commands, and reviewer blocking criteria to verify before completion."}
-{"file": "docs/goals/assura-project-intelligence-runtime-program.md", "reason": "Program-level provider optionality and code-intelligence definition of done."}
