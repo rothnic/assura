@@ -1,6 +1,0 @@
-{"file": ".trellis/spec/assura/index.md", "reason": "Quality and self-enforcement expectations for Assura code and docs changes."}
-{"file": ".trellis/spec/guides/index.md", "reason": "Review triggers for reuse and cross-layer data flow."}
-{"file": "docs/goals/assura-content-query-and-search-cli.md", "reason": "Acceptance, validation commands, and reviewer blocking criteria to verify before completion."}
-{"file": "docs/analysis/2026-06-28-project-intelligence-store-spike.md", "reason": "Store-spike constraints and residual risks that the query CLI must respect."}
-{"review_agent": "019f10a5-8ca4-7a03-8cfb-55f8b10ca563", "finding": "Website examples used root path with fixture IDs.", "resolution": "Updated examples to checked content runtime fixture paths.", "remaining_blockers": 0}
-{"validation": "passed", "date": "2026-06-28", "commands": ["cargo fmt --check", "cargo test --test content_query_cli --quiet", "cargo test content_query --quiet", "cargo test project_intelligence --quiet", "cargo clippy --workspace --all-targets --all-features -- -D warnings", "cargo run --quiet -- check --format json .", "cargo xtask docs", "cargo xtask evidence", "git diff --check"]}

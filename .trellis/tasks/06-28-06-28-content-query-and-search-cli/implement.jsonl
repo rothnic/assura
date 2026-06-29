@@ -1,7 +1,0 @@
-{"file": ".trellis/spec/assura/index.md", "reason": "Assura product direction, source-of-truth map, and workflow constraints for project intelligence work."}
-{"file": ".trellis/spec/guides/index.md", "reason": "Shared Trellis thinking guide index for code reuse and cross-layer checks."}
-{"file": "docs/goals/assura-project-intelligence-runtime-program.md", "reason": "Master successor ordering and program definition of done."}
-{"file": "docs/goals/assura-content-query-and-search-cli.md", "reason": "Target successor goal, scope, definition of done, validation commands, and reviewer criteria."}
-{"file": "docs/analysis/2026-06-28-project-intelligence-store-spike.md", "reason": "Completed store-spike decision and in-memory fallback benchmark evidence for this query CLI slice."}
-{"completed": "2026-06-28", "summary": "Implemented fact-backed assura content query CLI commands and diagnostic search chunks.", "files": ["src/cli/args.rs", "src/cli/full_entry.rs", "src/cli/mod.rs", "src/cli/content_query/mod.rs", "src/cli/content_query/context.rs", "src/cli/content_query/facts.rs", "src/cli/content_query/output.rs", "src/intelligence/facts/ingest.rs", "src/intelligence/facts/ingest_helpers.rs", "tests/content_query_cli.rs", "website/src/content/docs/product/query-search.md"]}
-{"completed": "2026-06-28", "summary": "Registered assura content public command surfaces in checked support policy artifacts.", "files": [".assura/command-surface.yml", ".assura/config.yml", "docs/compatibility-and-surface.md", "docs/support-policy.md", "docs/release-notes.md"]}
