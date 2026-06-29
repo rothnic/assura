@@ -10,7 +10,7 @@ status: active
 The live Assura repository now participates in the proof through an
 `assura_goals` collection in `.assura/config.yml`. It models checked
 `docs/goals/*.md` frontmatter through
-`.assura/project-intelligence-goals.schema.json`.
+`.assura/models/goals/project-intelligence-goals.schema.json`.
 
 Command:
 

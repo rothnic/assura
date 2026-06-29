@@ -9,6 +9,7 @@ mod io;
 mod model;
 mod mutation;
 mod operations;
+mod path_policy;
 #[cfg(test)]
 mod tests;
 mod validation;

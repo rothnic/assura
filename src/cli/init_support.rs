@@ -166,7 +166,6 @@ structure:
     package.json: exists:0-1
     docs/: exists:0-1
     specs/: exists:0-1
-    schemas/: exists:1
     src/: exists:0-1
     tests/: exists:0-1
     .rs: snake_case
@@ -183,8 +182,7 @@ structure:
     .rs: snake_case
 
 models:
-  source: schemas/project-intelligence-starter.linkml.yaml
-  validation_artifact: schemas/project-intelligence-starter.schema.json
+  validation_artifact: .assura/models/project-intelligence/starter.schema.json
 
 collections:
   goals:
@@ -226,7 +224,7 @@ exclude:
 
 const PROJECT_INTELLIGENCE_STARTER_FILES: &[StarterFile] = &[
     StarterFile {
-        path: "schemas/project-intelligence-starter.schema.json",
+        path: ".assura/models/project-intelligence/starter.schema.json",
         contents: r#"{
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://assura.dev/starters/project-intelligence.schema.json",

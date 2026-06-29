@@ -1,11 +1,12 @@
 //! Data model for repo-native content runtime validation.
 
 use super::code_symbols::code_symbols_by_collection;
+use super::path_policy::{normalize_rel_path, project_relative_model_artifact_path};
 use crate::config::config::Config;
 use serde_json::{Map, Value};
 use std::collections::{BTreeMap, HashSet};
 use std::fs;
-use std::path::{Component, Path, PathBuf};
+use std::path::{Path, PathBuf};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AdapterKind {
@@ -171,13 +172,25 @@ impl RepositoryModel {
             ));
         }
         let schema_artifact_path = config.models.as_ref().and_then(|models| {
-            project_relative_path(
+            project_relative_model_artifact_path(
                 &models.validation_artifact,
                 "models.validation_artifact",
                 "content_schema_path_escape",
                 &mut findings,
             )
         });
+        if let Some(source) = config
+            .models
+            .as_ref()
+            .and_then(|models| models.source.as_ref())
+        {
+            project_relative_model_artifact_path(
+                source,
+                "models.source",
+                "content_model_source_path_escape",
+                &mut findings,
+            );
+        }
         let schema_artifact = schema_artifact_path
             .as_ref()
             .and_then(|path| load_schema_artifact(project_root, path, &mut findings));
@@ -462,36 +475,4 @@ fn literal_pattern_prefix(pattern: &str) -> PathBuf {
         .unwrap_or("")
         .trim_end_matches('/');
     normalize_rel_path(Path::new(prefix).to_path_buf())
-}
-
-fn normalize_rel_path(path: PathBuf) -> PathBuf {
-    if path.as_os_str().is_empty() {
-        PathBuf::from(".")
-    } else {
-        path
-    }
-}
-
-fn project_relative_path(
-    value: &str,
-    field: &str,
-    code: &'static str,
-    findings: &mut Vec<ContentFinding>,
-) -> Option<PathBuf> {
-    let path = Path::new(value);
-    let invalid = value.trim().is_empty()
-        || path.is_absolute()
-        || path
-            .components()
-            .any(|component| matches!(component, Component::ParentDir | Component::Prefix(_)));
-    if invalid {
-        findings.push(ContentFinding::new(
-            code,
-            None,
-            format!("{field} must be a non-empty project-relative path"),
-        ));
-        None
-    } else {
-        Some(normalize_rel_path(path.to_path_buf()))
-    }
 }

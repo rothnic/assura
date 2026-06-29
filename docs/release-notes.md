@@ -37,6 +37,8 @@ The current pre-1.0 command surface supports these public commands:
 - `assura content session` for a local JSON-line project-intelligence session
   that can answer repeated diagnostics, context-pack, graph, search, relation,
   and safe-fix preview requests without restarting the CLI process.
+- `.assura/models/**` as the supported project-intelligence layout for model
+  artifacts stored under `.assura/`.
 
 `assura info` and `assura watch` remain present in the CLI, but the release
 support policy treats `assura info` as an experimental diagnostic and
@@ -116,6 +118,9 @@ for that asset repair.
   baseline can resolve rough local declarations; missing providers preserve
   unresolved refs instead of failing validation.
 - Daemon APIs, LSP, and MCP are not part of this content-query surface.
+- Runtime schema or source model artifacts stored under `.assura/` must live
+  under `.assura/models/**`; artifacts outside `.assura/`, such as `schemas/**`,
+  remain valid project-relative paths.
 
 ### Safe Fixes
 

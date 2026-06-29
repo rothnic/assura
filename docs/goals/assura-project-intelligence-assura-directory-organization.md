@@ -2,7 +2,7 @@
 id: goal-assura-project-intelligence-assura-directory-organization
 type: goal
 title: Assura project intelligence Assura directory organization
-status: planned
+status: completed
 created: 2026-06-29
 owners:
   - assura-maintainers
@@ -98,3 +98,22 @@ Block if project-intelligence model/schema artifacts can still be promoted in
 the `.assura/` root, if the rule prevents reasonable hierarchy under the model
 directory, if the starter and docs diverge, or if the implementation weakens
 existing project-intelligence validation.
+
+## Progress Log
+
+- 2026-06-29: Completed locally on task
+  `.trellis/tasks/06-29-project-intelligence-assura-directory-organization`.
+  Added content-runtime path policy that rejects `models.source` and
+  `models.validation_artifact` under `.assura/` unless the artifact is under
+  `.assura/models/**`, while preserving project-relative paths outside
+  `.assura/` such as `schemas/**`. Moved Assura's own runtime schema to
+  `.assura/models/goals/project-intelligence-goals.schema.json`, updated
+  `assura init --project-intelligence` to generate
+  `.assura/models/project-intelligence/starter.schema.json`, and updated the
+  docs/demo/support surfaces to show the organized layout.
+- 2026-06-29: Independent review found that `./.assura/...` paths bypassed the
+  policy because current-directory path components were not normalized before
+  the `.assura/` check. Fixed by normalizing `Component::CurDir` out of
+  project-relative paths and added regressions for dot-prefixed
+  `models.validation_artifact`, dot-prefixed `models.source`, and the CLI
+  `assura check --format json` diagnostic.

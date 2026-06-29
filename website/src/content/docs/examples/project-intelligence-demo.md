@@ -57,8 +57,11 @@ assura init --project-intelligence --no-git-hooks .
 ```
 
 The starter writes `.assura/config.yml`,
-`schemas/project-intelligence-starter.schema.json`, a modeled goal, a spec, an
-ADR, and a broken-state example under `docs/examples/`.
+`.assura/models/project-intelligence/starter.schema.json`, a modeled goal, a
+spec, an ADR, and a broken-state example under `docs/examples/`. Model
+artifacts stored under `.assura/` stay grouped under `.assura/models/**`, and
+you can add domain-specific hierarchy inside that directory as the project
+grows.
 
 ```bash
 assura check --format json .

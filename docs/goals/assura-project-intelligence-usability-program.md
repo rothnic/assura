@@ -44,9 +44,6 @@ gaps are:
   prepared checks are wired into a public session surface;
 - safe fixes have preview metadata, but not a complete apply, rollback, and
   audit workflow;
-- `.assura/` project-intelligence artifacts can still drift into root-level
-  files as model/schema/config options grow, making the project folder harder
-  to scan and harder for generated starters to keep tidy;
 - MCP-style agent tools and LSP-style editor behavior are planned, not
   supported product contracts;
 - release docs and support matrices do not yet treat the completed and
@@ -220,3 +217,14 @@ without real-repo proof and release hardening.
   gap is `.assura/` organization: root-level project-intelligence model/schema
   artifacts should move under a shared model directory before MCP/LSP
   transports promote the starter layout further.
+- 2026-06-29: Completed
+  `docs/goals/assura-project-intelligence-assura-directory-organization.md`
+  locally on task
+  `.trellis/tasks/06-29-project-intelligence-assura-directory-organization`.
+  Model artifacts under `.assura/` must now live below `.assura/models/**`;
+  Assura's own project-intelligence schema moved to `.assura/models/goals/`;
+  the onboarding starter writes
+  `.assura/models/project-intelligence/starter.schema.json`; docs, support
+  policy, release notes, and website examples show the organized layout. The
+  immediate next goal is
+  `docs/goals/assura-project-intelligence-mcp-agent-transport.md`.

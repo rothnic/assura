@@ -21,8 +21,8 @@ context when available.
 
 ```yaml
 models:
-  source: schemas/project.linkml.yaml
-  validation_artifact: schemas/project.runtime.schema.json
+  source: .assura/models/project/source.linkml.yaml
+  validation_artifact: .assura/models/project/runtime.schema.json
 
 collections:
   goals:
@@ -62,13 +62,16 @@ relations:
     acyclic: true
 ```
 
-`models.validation_artifact` points to the runtime schema artifact. Collection
-entries bind object classes to paths, adapters, and stable ID fields. Relation
-keys use `collection.field`. A relation may point at one `target`, a bounded
-set of `targets`, or omit both to infer the target collection from loaded
-objects. `required: true` reports absent or empty reference fields, `many: true`
-expects an array of target IDs, and `acyclic: true` rejects directed cycles for
-that relation.
+`models.validation_artifact` points to the runtime schema artifact. If
+`models.source` or `models.validation_artifact` points inside `.assura/`, the
+artifact must live under `.assura/models/**`; projects may still keep artifacts
+outside `.assura/`, such as `schemas/**`, when that better fits their layout.
+Collection entries bind object classes to paths, adapters, and stable ID
+fields. Relation keys use `collection.field`. A relation may point at one
+`target`, a bounded set of `targets`, or omit both to infer the target
+collection from loaded objects. `required: true` reports absent or empty
+reference fields, `many: true` expects an array of target IDs, and
+`acyclic: true` rejects directed cycles for that relation.
 
 ## Runtime Contract
 
@@ -164,7 +167,8 @@ An implementation agent can independently create a language-agnostic example
 repo with:
 
 - `.assura/config.yml` defining `models`, `collections`, and `relations`;
-- `schemas/project.runtime.schema.json` with `Goal` and `Spec` definitions;
+- `.assura/models/project/runtime.schema.json` with `Goal` and `Spec`
+  definitions;
 - `docs/goals/*.md` files using YAML frontmatter plus Markdown bodies;
 - `specs/*.json`, `*.yml`, or `*.jsonl` files for structured records;
 - one valid case, one invalid field-value case, and one missing-reference case.
@@ -176,7 +180,8 @@ language used by the project.
 Minimum handoff for another agent:
 
 1. Copy the config shape above into `.assura/config.yml`.
-2. Check in a JSON Schema-compatible runtime artifact under `schemas/`.
+2. Check in a JSON Schema-compatible runtime artifact. If it lives under
+   `.assura/`, put it under `.assura/models/**`.
 3. Add one Markdown frontmatter goal and one JSON/YAML/JSONL spec with matching
    IDs.
 4. Add one missing-reference record to prove diagnostics name source path,

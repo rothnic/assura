@@ -218,6 +218,47 @@ fn check_reports_content_model_construction_errors() {
 }
 
 #[test]
+fn check_reports_assura_root_model_artifact_layout_error() {
+    let project = TempDir::new().unwrap();
+    fs::create_dir_all(project.path().join(".assura")).unwrap();
+    let config = fs::read_to_string(format!("{FIXTURE_ROOT}/valid/.assura/config.yml"))
+        .unwrap()
+        .replace(
+            "schemas/content_runtime.schema.json",
+            "./.assura/content_runtime.schema.json",
+        );
+    fs::write(project.path().join(".assura/config.yml"), config).unwrap();
+
+    let output = check_path(project.path().to_str().unwrap(), &["--format", "json"]);
+
+    assert_eq!(
+        output.status.code(),
+        Some(1),
+        "stdout:\n{}\nstderr:\n{}",
+        stdout(&output),
+        stderr(&output)
+    );
+    let report: Value = serde_json::from_slice(&output.stdout).unwrap();
+    let violation = report["violations"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|violation| {
+            violation["rule"] == "content_runtime:content_model_artifact_outside_models_dir"
+        })
+        .expect("model artifact layout violation is emitted");
+
+    assert_eq!(
+        json_path(&violation["path"]),
+        ".assura/content_runtime.schema.json"
+    );
+    assert!(violation["message"]
+        .as_str()
+        .unwrap()
+        .contains(".assura/models/**"));
+}
+
+#[test]
 fn markdown_lint_coexists_with_model_owned_frontmatter_validation() {
     let project = copy_missing_model_frontmatter_fixture_with_markdown_lint();
     let output = check_path(project.path().to_str().unwrap(), &["--format", "json"]);

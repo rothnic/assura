@@ -21,8 +21,8 @@ while keeping the files as the source of truth.
 
 ```yaml
 models:
-  source: schemas/project.linkml.yaml
-  validation_artifact: schemas/project.runtime.schema.json
+  source: .assura/models/project/source.linkml.yaml
+  validation_artifact: .assura/models/project/runtime.schema.json
 
 collections:
   goals:
@@ -36,3 +36,7 @@ collections:
 
 The complete guide is in [Repo-Native Content Runtime](/examples/content-runtime/)
 and the deeper repository document is `docs/content-runtime.md`.
+
+When model artifacts live under `.assura/`, keep them under
+`.assura/models/**`. Files outside `.assura/`, such as `schemas/**`, are still
+valid project paths, but `.assura/` itself keeps a bounded root.

@@ -1,0 +1,4 @@
+{"file":".trellis/spec/assura/index.md","reason":"Assura product constraints, canonical sources, and structure-first validation direction"}
+{"file":".trellis/spec/assura/roadmap.md","reason":"Current Project Intelligence Usability routing and next-goal sequence"}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Avoid duplicating validation logic while adding model artifact policy"}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Keep config, runtime validation, starter generation, docs, and tests aligned"}

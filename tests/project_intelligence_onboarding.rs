@@ -51,7 +51,7 @@ fn project_intelligence_onboarding_starter_generates_valid_project() {
     assert!(config.contains("docs/goals/*.md"));
     assert!(project
         .path()
-        .join("schemas/project-intelligence-starter.schema.json")
+        .join(".assura/models/project-intelligence/starter.schema.json")
         .is_file());
     assert!(project
         .path()
@@ -169,11 +169,11 @@ fn project_intelligence_onboarding_starter_proves_broken_state_diagnostics() {
 #[test]
 fn project_intelligence_onboarding_starter_refuses_to_overwrite_files_without_force() {
     let project = TempDir::new().unwrap();
-    fs::create_dir_all(project.path().join("schemas")).unwrap();
+    fs::create_dir_all(project.path().join(".assura/models/project-intelligence")).unwrap();
     fs::write(
         project
             .path()
-            .join("schemas/project-intelligence-starter.schema.json"),
+            .join(".assura/models/project-intelligence/starter.schema.json"),
         "{}\n",
     )
     .unwrap();

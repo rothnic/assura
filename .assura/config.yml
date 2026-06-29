@@ -536,8 +536,7 @@ extensions:
       severity: high
 
 models:
-  source: .assura/project-intelligence-goals.linkml.yaml
-  validation_artifact: .assura/project-intelligence-goals.schema.json
+  validation_artifact: .assura/models/goals/project-intelligence-goals.schema.json
 
 collections:
   assura_goals:
@@ -866,16 +865,23 @@ structure:
             - "config.new.yml"
             - "config.yml"
             - "config.yml.v1"
-            - "project-intelligence-goals.schema.json"
           allow_extra: false
         directories:
           allowed_names:
             - "hooks"
+            - "models"
           allow_extra: false
         children:
           hooks/:
             files:
               naming: "kebab-case"
+          models/:
+            files:
+              naming: "kebab-case"
+              allow_extra: true
+            directories:
+              naming: "kebab-case"
+              allow_extra: true
 
       .cargo/:
         files:
