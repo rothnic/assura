@@ -1,4 +1,0 @@
-{"file":".trellis/spec/assura/codex-agent-feedback.md","reason":"Review must confirm stable shared agent feedback API and reject per-agent command drift."}
-{"file":"docs/goals/assura-project-intelligence-agent-surfaces.md","reason":"Review against goal acceptance criteria and blocking conditions."}
-{"file":"docs/support-policy.md","reason":"Check supported versus experimental surface claims."}
-{"file":"docs/compatibility-and-surface.md","reason":"Check public command/API compatibility claims stay current."}
