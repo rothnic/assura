@@ -2,7 +2,7 @@
 id: goal-assura-content-model-source-of-truth
 type: goal
 title: Assura content model source of truth
-status: planned
+status: completed
 created: 2026-06-28
 owners:
   - assura-maintainers

@@ -29,15 +29,15 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 15 | Docs Lifecycle Rule | Completed | PR #78 merged; archive PR #79 merged |
 | 16 | Docs Lifecycle Coverage | Completed | PR #83 merged; archive/sync PR #84 merged |
 | 17 | Support Matrix Surface Expansion | Completed | PR #88 merged; archive/sync PR #89 merged |
-| 18 | Project Intelligence Runtime | Active | Successor 9 completed locally; final program completion audit remains |
+| 18 | Project Intelligence Runtime | Completed | All nine successors and final completion audit completed locally |
 
 ## Active Roadmap Iteration
 
-Project Intelligence Runtime is in final completion audit.
+Project Intelligence Runtime is complete.
 
 Most recent owning task:
-`.trellis/tasks/06-28-06-29-project-intelligence-agent-surfaces`, completing
-`docs/goals/assura-project-intelligence-agent-surfaces.md`.
+`.trellis/tasks/06-29-06-29-project-intelligence-runtime-completion-audit`,
+completing `docs/goals/assura-project-intelligence-runtime-program.md`.
 
 Current branch:
 `codex/project-intelligence-agent-surfaces`.
@@ -96,23 +96,15 @@ one `--format <agent>-hook` value per agent. Treat older roadmap/task wording in
 that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
 Planned next roadmap candidate:
-Complete a final Project Intelligence Runtime audit against
-`docs/goals/assura-project-intelligence-runtime-program.md`, proving each
-successor goal and every program definition-of-done item from live repo
-evidence before marking the master program complete.
+No active Project Intelligence Runtime successor remains. Choose the next
+roadmap iteration from a fresh product decision or live drift case.
 
 ## Recommended Next Action
 
-Run the workflow gate and continue
-Project Intelligence Runtime by creating or starting a final audit task for
-`docs/goals/assura-project-intelligence-runtime-program.md`. Prove each
-successor and every program definition-of-done item from current repo evidence
-before marking the master program complete. Do not reopen the completed Agent
-Surfaces, Code Symbol Enrichment, Local Semantic Search, Content Query CLI,
-Embedded Graph Search Store Spike, Fact Model, Documentation IA, Markdown
-validation/fixing, content-model source-of-truth, support-matrix expansion, or
-Windows CI Restore work unless a new concrete docs, manifest, package, binary,
-support status, or hosted CI drift case is named with executable evidence. The
+Run the workflow gate before selecting new work. Do not reopen the completed
+Project Intelligence Runtime successors, support-matrix expansion, or Windows
+CI Restore work unless a new concrete docs, manifest, package, binary, support
+status, or hosted CI drift case is named with executable evidence. The broader
 product roadmap remains open until a separate product decision declares it
 complete.
 
