@@ -1,6 +1,0 @@
-{"file": "docs/goals/assura-project-intelligence-usability-program.md", "reason": "Program-level scope and remaining usability deliverables."}
-{"file": "docs/goals/assura-project-intelligence-agent-cli-surface.md", "reason": "Original transport goal to reshape into CLI-first agent surface with MCP optional."}
-{"file": ".trellis/spec/assura/roadmap.md", "reason": "Current roadmap routing and active Project Intelligence Usability status."}
-{"file": ".trellis/spec/assura/codex-agent-feedback.md", "reason": "Stable agent feedback direction lock; avoid one-off per-agent feedback entrypoints."}
-{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Reuse existing content-query contracts instead of duplicating CLI behavior."}
-{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Map CLI output contracts through tests and docs site examples."}
