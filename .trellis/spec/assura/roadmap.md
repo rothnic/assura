@@ -37,7 +37,7 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 Project Intelligence Usability is complete locally.
 
 Most recent owning task:
-`.trellis/tasks/06-29-project-intelligence-release-hardening`,
+`.trellis/tasks/archive/2026-06/06-29-project-intelligence-release-hardening`,
 completing
 `docs/goals/assura-project-intelligence-release-hardening.md`.
 
