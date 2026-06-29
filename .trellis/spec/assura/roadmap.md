@@ -29,26 +29,28 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 15 | Docs Lifecycle Rule | Completed | PR #78 merged; archive PR #79 merged |
 | 16 | Docs Lifecycle Coverage | Completed | PR #83 merged; archive/sync PR #84 merged |
 | 17 | Support Matrix Surface Expansion | Completed | PR #88 merged; archive/sync PR #89 merged |
-| 18 | Project Intelligence Runtime | Active | Current task `.trellis/tasks/06-28-06-29-project-intelligence-agent-surfaces` prepares successor 9 |
+| 18 | Project Intelligence Runtime | Active | Successor 9 completed locally; final program completion audit remains |
 
 ## Active Roadmap Iteration
 
-Project Intelligence Runtime is in execution.
+Project Intelligence Runtime is in final completion audit.
 
-Current owning task:
-`.trellis/tasks/06-28-06-29-project-intelligence-agent-surfaces`, preparing
+Most recent owning task:
+`.trellis/tasks/06-28-06-29-project-intelligence-agent-surfaces`, completing
 `docs/goals/assura-project-intelligence-agent-surfaces.md`.
 
 Current branch:
 `codex/project-intelligence-agent-surfaces`.
 
 Most recent completed Project Intelligence successor:
+`docs/goals/assura-project-intelligence-agent-surfaces.md`, completed locally
+on branch `codex/project-intelligence-agent-surfaces` with independent review.
+
+Earlier Project Intelligence successors completed in this program:
 `docs/goals/assura-code-symbol-enrichment.md`, completed locally on branch
 `codex/code-symbol-enrichment` with independent review and archived Trellis
 task
 `.trellis/tasks/archive/2026-06/06-28-06-28-code-symbol-enrichment`.
-
-Earlier Project Intelligence successors completed in this program:
 `docs/goals/assura-local-semantic-search.md`, completed locally on branch
 `codex/local-semantic-search` with independent review and archived Trellis task
 `.trellis/tasks/archive/2026-06/06-28-local-semantic-search`.
@@ -94,27 +96,25 @@ one `--format <agent>-hook` value per agent. Treat older roadmap/task wording in
 that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
 Planned next roadmap candidate:
-Continue Project Intelligence Runtime. Start from
-`docs/goals/assura-project-intelligence-runtime-program.md`, continue
-`.trellis/tasks/06-28-06-29-project-intelligence-agent-surfaces`, then execute
-successor goals in order unless a refreshed dependency decision records a
-better sequence.
+Complete a final Project Intelligence Runtime audit against
+`docs/goals/assura-project-intelligence-runtime-program.md`, proving each
+successor goal and every program definition-of-done item from live repo
+evidence before marking the master program complete.
 
 ## Recommended Next Action
 
 Run the workflow gate and continue
-Project Intelligence Runtime by continuing
-`.trellis/tasks/06-28-06-29-project-intelligence-agent-surfaces`. Revalidate
-and execute `docs/goals/assura-project-intelligence-agent-surfaces.md` by
-defining shared diagnostics, safe-fix, graph/search, semantic, and code-symbol
-agent contracts without reviving per-agent command families or requiring a
-daemon/LSP/MCP surface for normal validation. Do not reopen the completed Code
-Symbol Enrichment, Local Semantic Search, Content Query CLI, Embedded Graph
-Search Store Spike, Fact Model, Documentation IA, Markdown validation/fixing,
-content-model source-of-truth, support-matrix expansion, or Windows CI Restore
-work unless a new concrete docs, manifest, package, binary, support status, or
-hosted CI drift case is named with executable evidence. The product roadmap
-remains open until a separate product decision declares it complete.
+Project Intelligence Runtime by creating or starting a final audit task for
+`docs/goals/assura-project-intelligence-runtime-program.md`. Prove each
+successor and every program definition-of-done item from current repo evidence
+before marking the master program complete. Do not reopen the completed Agent
+Surfaces, Code Symbol Enrichment, Local Semantic Search, Content Query CLI,
+Embedded Graph Search Store Spike, Fact Model, Documentation IA, Markdown
+validation/fixing, content-model source-of-truth, support-matrix expansion, or
+Windows CI Restore work unless a new concrete docs, manifest, package, binary,
+support status, or hosted CI drift case is named with executable evidence. The
+product roadmap remains open until a separate product decision declares it
+complete.
 
 ## Roadmap Rules
 

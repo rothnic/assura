@@ -2,7 +2,7 @@
 id: goal-assura-project-intelligence-agent-surfaces
 type: goal
 title: Assura project intelligence agent surfaces
-status: planned
+status: completed
 created: 2026-06-28
 owners:
   - assura-maintainers
@@ -92,3 +92,19 @@ measured reason.
   is a shared project-intelligence agent surface contract for diagnostics,
   safe fixes, graph/search/semantic/code-symbol queries, and future daemon/LSP
   or MCP wrappers without reviving per-agent command families.
+- 2026-06-29: Completed the shared agent/editor surface slice on branch
+  `codex/project-intelligence-agent-surfaces`. The current implementation adds
+  `assura content agent-context` with
+  `assura.project-intelligence.agent-context.v1`, `assura content agent-query`
+  with `assura.project-intelligence.agent-query.v1`, and
+  `assura fix markdown --dry-run --format json` with
+  `assura.safe-fix.markdown.v1`. Independent review agent
+  `019f11ef-0d70-7a52-816d-e08a5a59c336` found one website support-status
+  mismatch; it was fixed so the stable agent format and Codex adapter align
+  with support policy. Validation passed: `cargo test --test content_query_cli
+  --quiet`, `cargo test --test markdown_lint_fix_tests --quiet`,
+  `cargo test agent_surface --quiet`, `cargo fmt --check`, `git diff --check`,
+  `cargo run --quiet -- check --format json .`,
+  `cargo run --quiet -- check --format agent --agent codex .`,
+  `cargo check --workspace --all-targets --quiet`, `cargo xtask docs`, and
+  `cargo xtask evidence`.
