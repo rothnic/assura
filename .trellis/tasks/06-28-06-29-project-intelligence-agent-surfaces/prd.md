@@ -37,17 +37,17 @@ docs still mark daemon/editor, LSP, and MCP surfaces as planned.
 
 ## Acceptance Criteria
 
-- [ ] A shared agent/query contract exists for diagnostics, safe fixes, graph
+- [x] A shared agent/query contract exists for diagnostics, safe fixes, graph
   queries, search, semantic candidates, and code-symbol relationships.
-- [ ] CLI-facing agent/query output reuses that contract instead of introducing
+- [x] CLI-facing agent/query output reuses that contract instead of introducing
   a parallel per-agent command family.
-- [ ] Contract tests cover deterministic JSON shape, safe-fix dry-run/write
+- [x] Contract tests cover deterministic JSON shape, safe-fix dry-run/write
   boundaries, and project-intelligence query cases.
-- [ ] Docs explain the supported CLI/agent path and the future daemon/LSP/MCP
+- [x] Docs explain the supported CLI/agent path and the future daemon/LSP/MCP
   wrapper boundary without promising unsupported infrastructure.
-- [ ] Existing `assura check --format agent --agent codex` behavior remains
+- [x] Existing `assura check --format agent --agent codex` behavior remains
   valid and tested.
-- [ ] Validation commands pass or any blocker is documented with exact output.
+- [x] Validation commands pass or any blocker is documented with exact output.
 
 ## Out Of Scope
 
@@ -120,3 +120,8 @@ docs still mark daemon/editor, LSP, and MCP surfaces as planned.
   `cargo run --quiet -- check --format agent --agent codex .`,
   `cargo check --workspace --all-targets --quiet`, `cargo xtask docs`, and
   `cargo xtask evidence`.
+- 2026-06-29: Independent review agent `019f11ef-0d70-7a52-816d-e08a5a59c336`
+  found one docs-alignment blocker: website agent/editor docs still marked the
+  stable agent format and Codex delivery adapter as experimental while support
+  policy and compatibility docs classify them as supported. Updated the website
+  status table to `Supported` and `Supported adapter`.

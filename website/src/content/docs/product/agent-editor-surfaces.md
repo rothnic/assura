@@ -11,8 +11,8 @@ surfaces should call the same contracts rather than invent parallel validation.
 
 | Capability | Status | Notes |
 | --- | --- | --- |
-| `assura check --format agent` | Experimental | Stable JSON shape for wrappers and agent integrations. |
-| `assura check --format agent --agent codex` | Experimental | Optional Codex `UserPromptSubmit` delivery adapter. |
+| `assura check --format agent` | Supported | Stable JSON shape for wrappers and agent integrations. |
+| `assura check --format agent --agent codex` | Supported adapter | Optional Codex `UserPromptSubmit` delivery adapter. |
 | `assura content agent-context` | Supported | Generic project-intelligence capability schema for wrappers; not agent-specific. |
 | `assura content agent-query` | Supported | Generic request/response envelope over diagnostics, graph/search, semantic candidates, and code-symbol queries. |
 | Git hook feedback | Experimental | Hooks can call the CLI and render bounded status or advice. |
