@@ -2,7 +2,7 @@
 id: goal-assura-project-intelligence-usability-program
 type: goal
 title: Assura project intelligence usability program
-status: planned
+status: completed
 created: 2026-06-29
 owners:
   - assura-maintainers
@@ -255,3 +255,11 @@ without real-repo proof and release hardening.
   Full LSP server framing, editor marketplace packaging, MCP, and remote access
   remain out of scope. The immediate next goal is
   `docs/goals/assura-project-intelligence-release-hardening.md`.
+- 2026-06-29: Completed
+  `docs/goals/assura-project-intelligence-release-hardening.md` locally on task
+  `.trellis/tasks/06-29-project-intelligence-release-hardening`. Release
+  readiness docs, support policy, compatibility notes, release notes,
+  command-surface target-state rows, checked schema examples, final audit, and
+  clean-source performance provenance now agree on the supported local Project
+  Intelligence surface. MCP and remote access remain optional future adapter
+  work, not requirements for local agent usability.

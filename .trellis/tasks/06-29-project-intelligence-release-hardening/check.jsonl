@@ -16,3 +16,7 @@
 {"command": "cargo xtask docs", "result": "passed", "coverage": "Website build produced 37 pages including release-readiness and project-intelligence demo."}
 {"command": "cargo xtask evidence", "result": "passed"}
 {"command": "git diff --check", "result": "passed"}
+{"command": "target/release/assura performance-report --output benches/history/current.json --history benches/history/ls-lint-comparison-history.jsonl --website-dir website/public/data/performance --iterations 5", "result": "passed", "coverage": "Regenerated tracked current performance evidence from clean source commit 7be0ddd430ddaefb5c456b02f7ec7487d414ff9c with source_worktree_dirty false."}
+{"command": "cargo xtask target-state", "result": "passed", "coverage": "Target-state passed after support-matrix additions and clean-source performance artifact refresh."}
+{"command": "cargo fmt --check && cargo test --test project_intelligence_release_hardening --quiet && cargo run --quiet -- check --format json . && cargo xtask target-state && cargo xtask docs && cargo xtask evidence && git diff --check", "result": "passed", "coverage": "Current tree quick release-hardening, self-check, target-state, docs, evidence, and whitespace gates passed after status/performance updates."}
+{"command": "cargo test --workspace --all-targets --all-features --quiet && cargo clippy --workspace --all-targets --all-features -- -D warnings", "result": "passed", "coverage": "Current tree full workspace tests and all-feature clippy passed after status/performance updates."}

@@ -74,6 +74,7 @@ cargo test -p assura --test agent_surface_cli --quiet
 cargo test --test project_intelligence_context_pack --quiet
 cargo test --test project_intelligence_session --quiet
 cargo run --quiet -- check --format json .
+cargo xtask target-state
 cargo xtask docs
 cargo xtask evidence
 git diff --check

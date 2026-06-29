@@ -2,7 +2,7 @@
 id: goal-assura-project-intelligence-release-hardening
 type: goal
 title: Assura project intelligence release hardening
-status: planned
+status: completed
 created: 2026-06-29
 owners:
   - assura-maintainers
@@ -72,6 +72,7 @@ cargo fmt --check
 cargo test --workspace --all-targets --all-features --quiet
 cargo clippy --workspace --all-targets --all-features -- -D warnings
 cargo run --quiet -- check --format json .
+cargo xtask target-state
 cargo xtask evidence
 cargo xtask docs
 git diff --check
@@ -123,3 +124,17 @@ language.
   coverage, missing safe-fix apply language, and null active-task branch
   metadata. Fixed the support-matrix rows, release-note framing,
   schema-example test coverage, safe-fix apply docs, and task branch metadata.
+- 2026-06-29: Regenerated checked performance evidence from clean source commit
+  `7be0ddd430ddaefb5c456b02f7ec7487d414ff9c` using the standard
+  `target/release/assura performance-report --output benches/history/current.json --history benches/history/ls-lint-comparison-history.jsonl --website-dir website/public/data/performance --iterations 5`
+  command. Both tracked current reports now record
+  `source_worktree_dirty: false` on branch
+  `codex/project-intelligence-agent-surfaces`; `cargo xtask target-state`
+  passed after the refresh.
+- 2026-06-29: Final current-state validation passed after status and
+  performance-evidence updates: `cargo fmt --check`,
+  `cargo test --test project_intelligence_release_hardening --quiet`,
+  `cargo test --workspace --all-targets --all-features --quiet`,
+  `cargo clippy --workspace --all-targets --all-features -- -D warnings`,
+  `cargo run --quiet -- check --format json .`, `cargo xtask target-state`,
+  `cargo xtask docs`, `cargo xtask evidence`, and `git diff --check`.
