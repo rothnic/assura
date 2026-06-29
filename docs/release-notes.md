@@ -94,13 +94,17 @@ for that asset repair.
 ### Project Intelligence Queries
 
 - `assura content agent-context`, `collections`, `instances`, `show`,
-  `search`, `semantic-search`, `symbols`, `symbol-refs`, `missing-relations`,
-  and `expand` query modeled content facts through the local
-  project-intelligence fact model.
+  `agent-query`, `search`, `semantic-search`, `symbols`, `symbol-refs`,
+  `missing-relations`, and `expand` query modeled content facts through the
+  local project-intelligence fact model.
 - `assura content agent-context` emits the shared generic
   `assura.project-intelligence.agent-context.v1` schema for wrappers that need
   to discover diagnostics, safe-fix, graph/search, semantic, and code-symbol
   capabilities without creating per-agent command families.
+- `assura content agent-query <capability> --format json` emits
+  `assura.project-intelligence.agent-query.v1`, a shared request/response
+  envelope for diagnostics, graph expansion, keyword search, semantic
+  candidates, code-symbol relationships, and safe-fix fact summaries.
 - Keyword search is deterministic local text matching over indexed chunks.
 - `assura content semantic-search` is opt-in through `--enable-local` and uses
   local candidate retrieval. Scores do not decide validation correctness.

@@ -1,4 +1,5 @@
 //! Command-line argument definitions for the Assura CLI.
+use super::agent_query_args::AgentQueryArg;
 use clap::{Parser, Subcommand, ValueEnum};
 use std::path::PathBuf;
 
@@ -263,6 +264,28 @@ pub enum ContentCommands {
         #[arg(help = "Project root directory (defaults to current directory)")]
         path: Option<PathBuf>,
 
+        #[arg(short, long, value_enum, default_value = "text")]
+        format: OutputFormat,
+    },
+
+    #[command(about = "Run one project-intelligence query through the shared agent envelope")]
+    AgentQuery {
+        #[arg(value_enum, help = "Shared project-intelligence capability to query")]
+        query: AgentQueryArg,
+        #[arg(help = "Project root directory (defaults to current directory)")]
+        path: Option<PathBuf>,
+        #[arg(long, help = "Content collection for instance-scoped queries")]
+        collection: Option<String>,
+        #[arg(long, help = "Instance ID for instance-scoped queries")]
+        id: Option<String>,
+        #[arg(long, help = "Text for keyword or semantic candidate queries")]
+        text: Option<String>,
+        #[arg(long, help = "Code symbol text for reverse symbol-reference queries")]
+        symbol: Option<String>,
+        #[arg(long, default_value_t = 20)]
+        limit: usize,
+        #[arg(long, help = "Enable the built-in local semantic embedding baseline")]
+        enable_local: bool,
         #[arg(short, long, value_enum, default_value = "text")]
         format: OutputFormat,
     },

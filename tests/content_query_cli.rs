@@ -274,7 +274,97 @@ fn content_query_reports_generic_agent_context() {
     assert!(capabilities.iter().any(|item| {
         item["name"] == "diagnostics" && item["cli"] == "assura check --format agent"
     }));
+    assert!(capabilities.iter().any(|item| {
+        item["name"] == "agent_queries" && item["cli"] == "assura content agent-query"
+    }));
     assert!(capabilities
         .iter()
         .any(|item| { item["name"] == "code_symbols" && item["cli"] == "assura content symbols" }));
+}
+
+#[test]
+fn content_query_agent_query_wraps_shared_contracts() {
+    let diagnostics = json_output(run_content(&[
+        "agent-query",
+        "diagnostics",
+        "tests/fixtures/content_runtime/missing_reference",
+        "--format",
+        "json",
+    ]));
+    assert_eq!(
+        diagnostics["schema"],
+        "assura.project-intelligence.agent-query.v1"
+    );
+    assert_eq!(diagnostics["request"]["capability"], "diagnostics");
+    assert_eq!(
+        diagnostics["response"]["diagnostics"][0]["rule"],
+        "content_runtime:missing_reference"
+    );
+
+    let keyword = json_output(run_content(&[
+        "agent-query",
+        "keyword-search",
+        "tests/fixtures/content_runtime/valid",
+        "--text",
+        "Portable",
+        "--format",
+        "json",
+    ]));
+    assert_eq!(keyword["request"]["capability"], "keyword_search");
+    assert!(keyword["response"]["matches"]
+        .as_array()
+        .expect("matches array")
+        .iter()
+        .any(|item| item["source_kind"] == "model_instance"));
+
+    let graph = json_output(run_content(&[
+        "agent-query",
+        "graph-expand",
+        "tests/fixtures/content_runtime/valid",
+        "--collection",
+        "goals",
+        "--id",
+        "goal-portable-structure",
+        "--format",
+        "json",
+    ]));
+    assert_eq!(graph["request"]["capability"], "graph_queries");
+    assert_eq!(
+        graph["response"]["related"][0]["relationship"],
+        "outgoing_relation"
+    );
+
+    let semantic = json_output(run_content(&[
+        "agent-query",
+        "semantic-candidates",
+        "tests/fixtures/content_runtime/valid",
+        "--text",
+        "goal-portable-structure",
+        "--enable-local",
+        "--limit",
+        "2",
+        "--format",
+        "json",
+    ]));
+    assert_eq!(semantic["request"]["capability"], "semantic_candidates");
+    assert_eq!(semantic["response"]["enabled"], true);
+    assert_eq!(semantic["response"]["provider"], "local-hash-embedding-v1");
+
+    let symbols = json_output(run_content(&[
+        "agent-query",
+        "code-symbols",
+        "tests/fixtures/content_runtime/code_symbols",
+        "--collection",
+        "components",
+        "--id",
+        "component-config",
+        "--format",
+        "json",
+    ]));
+    assert_eq!(symbols["request"]["capability"], "code_symbols");
+    assert!(symbols["response"]["symbols"]
+        .as_array()
+        .expect("symbols array")
+        .iter()
+        .any(|item| item["resolved"] == true));
 }

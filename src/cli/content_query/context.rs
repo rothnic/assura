@@ -1,6 +1,7 @@
 //! Content query context loading and error handling.
 
 use super::ContentCommands;
+use crate::cli::AgentQueryArg;
 use crate::cli::ExitCode;
 use crate::config::loader::ConfigLoader;
 use crate::content_repository::{ContentFinding, ContentRepository, RepositoryModel};
@@ -76,6 +77,7 @@ impl QueryContext {
 fn command_path(command: &ContentCommands) -> Option<PathBuf> {
     match command {
         ContentCommands::AgentContext { path, .. }
+        | ContentCommands::AgentQuery { path, .. }
         | ContentCommands::Collections { path, .. }
         | ContentCommands::Instances { path, .. }
         | ContentCommands::Show { path, .. }
@@ -100,6 +102,10 @@ impl SemanticCommand for ContentCommands {
             ContentCommands::SemanticSearch {
                 enable_local: true,
                 ..
+            } | ContentCommands::AgentQuery {
+                query: AgentQueryArg::SemanticCandidates,
+                enable_local: true,
+                ..
             }
         )
     }
@@ -108,6 +114,12 @@ impl SemanticCommand for ContentCommands {
         matches!(
             self,
             ContentCommands::AgentContext { .. }
+                | ContentCommands::AgentQuery {
+                    query: AgentQueryArg::GraphExpand
+                        | AgentQueryArg::CodeSymbols
+                        | AgentQueryArg::CodeSymbolRefs,
+                    ..
+                }
                 | ContentCommands::Symbols { .. }
                 | ContentCommands::SymbolRefs { .. }
                 | ContentCommands::Expand { .. }

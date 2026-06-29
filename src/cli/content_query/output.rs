@@ -8,6 +8,21 @@ use serde_json::{Map, Value};
 use std::path::PathBuf;
 
 #[derive(Debug, Serialize)]
+pub(super) struct AgentQueryOutput {
+    pub(super) schema: &'static str,
+    pub(super) request: AgentQueryRequestOutput,
+    pub(super) response: Value,
+}
+
+#[derive(Debug, Serialize)]
+pub(super) struct AgentQueryRequestOutput {
+    pub(super) capability: &'static str,
+    pub(super) cli: &'static str,
+    pub(super) project_root: PathBuf,
+    pub(super) config_path: PathBuf,
+}
+
+#[derive(Debug, Serialize)]
 pub(super) struct CollectionsOutput {
     pub(super) project_root: PathBuf,
     pub(super) config_path: PathBuf,
@@ -63,6 +78,29 @@ pub(super) struct RelationOutput {
 #[derive(Debug, Serialize)]
 pub(super) struct MissingRelationsOutput {
     pub(super) missing_relations: Vec<RelationOutput>,
+}
+
+#[derive(Debug, Serialize)]
+pub(super) struct DiagnosticsOutput {
+    pub(super) diagnostics: Vec<DiagnosticOutput>,
+}
+
+#[derive(Debug, Serialize)]
+pub(super) struct SafeFixesOutput {
+    pub(super) safe_fixes: Vec<SafeFixOutput>,
+}
+
+#[derive(Debug, Serialize)]
+pub(super) struct SafeFixOutput {
+    pub(super) id: String,
+    pub(super) diagnostic_id: String,
+    pub(super) target_id: Option<String>,
+    pub(super) operation: String,
+    pub(super) summary: String,
+    pub(super) path: Option<PathBuf>,
+    pub(super) line: Option<usize>,
+    pub(super) column: Option<usize>,
+    pub(super) field: Option<String>,
 }
 
 #[derive(Debug, Serialize)]
@@ -182,6 +220,15 @@ pub(super) trait TextRender {
     fn render_text(&self) -> String;
 }
 
+impl TextRender for AgentQueryOutput {
+    fn render_text(&self) -> String {
+        format!(
+            "Agent query: {} via {}",
+            self.request.capability, self.request.cli
+        )
+    }
+}
+
 impl TextRender for CollectionsOutput {
     fn render_text(&self) -> String {
         let mut lines = vec!["Content collections".to_string()];
@@ -256,6 +303,18 @@ impl TextRender for MissingRelationsOutput {
             ));
         }
         lines.join("\n")
+    }
+}
+
+impl TextRender for DiagnosticsOutput {
+    fn render_text(&self) -> String {
+        format!("Diagnostics: {}", self.diagnostics.len())
+    }
+}
+
+impl TextRender for SafeFixesOutput {
+    fn render_text(&self) -> String {
+        format!("Safe fixes: {}", self.safe_fixes.len())
     }
 }
 

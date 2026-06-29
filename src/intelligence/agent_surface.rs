@@ -72,6 +72,12 @@ pub fn project_intelligence_agent_context(facts: &FactSet) -> ProjectIntelligenc
                 "Safe fixes are deterministic and bounded to explicit operations.",
             ),
             capability(
+                "agent_queries",
+                "supported",
+                "assura content agent-query",
+                "Agent-query envelopes wrap shared diagnostics, graph, search, semantic, code-symbol, and safe-fix result contracts.",
+            ),
+            capability(
                 "graph_queries",
                 "supported",
                 "assura content expand",

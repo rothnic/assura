@@ -109,3 +109,14 @@ docs still mark daemon/editor, LSP, and MCP surfaces as planned.
   `cargo run --quiet -- check --format agent --agent codex .`,
   `cargo check --workspace --all-targets --quiet`, `cargo xtask docs`, and
   `cargo xtask evidence`.
+- 2026-06-29: Added the shared agent-query envelope slice. `assura content
+  agent-query <capability> --format json` emits
+  `assura.project-intelligence.agent-query.v1` and wraps existing diagnostics,
+  graph expansion, keyword search, semantic candidate, code-symbol, missing
+  relation, and safe-fix fact outputs without introducing per-agent command
+  families. Validation passed: `cargo test --test content_query_cli --quiet`,
+  `cargo test agent_surface --quiet`, `cargo fmt --check`, `git diff --check`,
+  `cargo run --quiet -- check --format json .`,
+  `cargo run --quiet -- check --format agent --agent codex .`,
+  `cargo check --workspace --all-targets --quiet`, `cargo xtask docs`, and
+  `cargo xtask evidence`.

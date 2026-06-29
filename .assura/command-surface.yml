@@ -147,6 +147,32 @@ commands:
         aliases: ["-f"]
         takes_value: true
         values: ["text", "json", "yaml", "advice", "status"]
+  - name: "assura content agent-query"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --collection:
+        takes_value: true
+      --id:
+        takes_value: true
+      --text:
+        takes_value: true
+      --symbol:
+        takes_value: true
+      --limit:
+        takes_value: true
+      --enable-local: {}
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status"]
   - name: "assura content collections"
     allow_positionals: true
     flags:

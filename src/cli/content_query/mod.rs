@@ -1,11 +1,13 @@
 //! Fact-backed content query command implementation.
 
+mod agent_query;
 mod code_symbols;
 mod context;
 mod facts;
 mod output;
 mod semantic;
 
+use self::agent_query::agent_query;
 use self::code_symbols::{symbol_refs, symbols_for_instance};
 use self::context::{ContentQueryError, QueryContext};
 use self::facts::{
@@ -51,6 +53,28 @@ fn run_content_command(
             project_intelligence_agent_context(context.store.facts()),
             format,
         ),
+        ContentCommands::AgentQuery {
+            query,
+            collection,
+            id,
+            text,
+            symbol,
+            limit,
+            enable_local,
+            ..
+        } => render(
+            agent_query(
+                &context,
+                query,
+                collection.as_ref(),
+                id.as_ref(),
+                text.as_ref(),
+                symbol.as_ref(),
+                limit,
+                enable_local,
+            )?,
+            format,
+        ),
         ContentCommands::Collections { .. } => render(collections(&context), format),
         ContentCommands::Instances { collection, .. } => {
             render(instances(&context, &collection), format)
@@ -87,6 +111,7 @@ fn run_content_command(
 fn command_format(command: &ContentCommands) -> OutputFormat {
     match command {
         ContentCommands::AgentContext { format, .. }
+        | ContentCommands::AgentQuery { format, .. }
         | ContentCommands::Collections { format, .. }
         | ContentCommands::Instances { format, .. }
         | ContentCommands::Show { format, .. }
