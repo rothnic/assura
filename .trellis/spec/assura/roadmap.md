@@ -30,17 +30,27 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 16 | Docs Lifecycle Coverage | Completed | PR #83 merged; archive/sync PR #84 merged |
 | 17 | Support Matrix Surface Expansion | Completed | PR #88 merged; archive/sync PR #89 merged |
 | 18 | Project Intelligence Runtime | Completed | All nine successors and final completion audit completed locally |
+| 19 | Project Intelligence Usability | Active | New post-runtime goal set created locally; start with the adoption blueprint |
 
 ## Active Roadmap Iteration
 
-Project Intelligence Runtime is complete.
+Project Intelligence Usability is active.
 
 Most recent owning task:
-`.trellis/tasks/06-29-06-29-project-intelligence-runtime-completion-audit`,
-completing `docs/goals/assura-project-intelligence-runtime-program.md`.
+`.trellis/tasks/06-29-project-intelligence-usability-goals`, creating the
+post-runtime usability goal set.
 
 Current branch:
 `codex/project-intelligence-agent-surfaces`.
+
+Current recommended goal:
+`docs/goals/assura-project-intelligence-adoption-blueprint.md`.
+
+Current program:
+`docs/goals/assura-project-intelligence-usability-program.md`.
+
+Project Intelligence Runtime is complete and should remain closed unless a new
+concrete drift case is named with evidence.
 
 Most recent completed Project Intelligence successor:
 `docs/goals/assura-project-intelligence-agent-surfaces.md`, completed locally
@@ -96,17 +106,21 @@ one `--format <agent>-hook` value per agent. Treat older roadmap/task wording in
 that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
 Planned next roadmap candidate:
-No active Project Intelligence Runtime successor remains. Choose the next
-roadmap iteration from a fresh product decision or live drift case.
+Execute Project Intelligence Usability, starting with
+`docs/goals/assura-project-intelligence-adoption-blueprint.md`. The iteration
+turns the completed runtime foundation into a usable product workflow through
+adoption, real-repo proof, persistent sessions, editor/agent transports,
+safe-fix workflow, and release hardening.
 
 ## Recommended Next Action
 
-Run the workflow gate before selecting new work. Do not reopen the completed
-Project Intelligence Runtime successors, support-matrix expansion, or Windows
-CI Restore work unless a new concrete docs, manifest, package, binary, support
-status, or hosted CI drift case is named with executable evidence. The broader
-product roadmap remains open until a separate product decision declares it
-complete.
+Run the workflow gate, then validate and start
+`docs/goals/assura-project-intelligence-adoption-blueprint.md`. Do not reopen
+the completed Project Intelligence Runtime successors, support-matrix
+expansion, or Windows CI Restore work unless a new concrete docs, manifest,
+package, binary, support status, or hosted CI drift case is named with
+executable evidence. The broader product roadmap remains open until a separate
+product decision declares it complete.
 
 ## Roadmap Rules
 
