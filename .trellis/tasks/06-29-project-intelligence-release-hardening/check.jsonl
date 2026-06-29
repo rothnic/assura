@@ -1,0 +1,18 @@
+{"file": "docs/goals/assura-project-intelligence-usability-program.md", "reason": "Final audit must map every program definition-of-done item to current evidence."}
+{"file": "docs/goals/assura-project-intelligence-release-hardening.md", "reason": "Validation commands and reviewer blocking criteria for this successor."}
+{"file": "docs/support-policy.md", "reason": "Check support status consistency against compatibility, release notes, and website docs."}
+{"file": "docs/compatibility-and-surface.md", "reason": "Check public command and schema evidence rows."}
+{"file": "website/src/content/docs/reference/release-readiness.md", "reason": "Check website release-readiness claims after updates."}
+{"command": "cargo fmt --check", "result": "passed"}
+{"command": "cargo test --test project_intelligence_release_hardening --quiet", "result": "passed", "coverage": "4 tests covering live schema names, editor diagnostic example shape, release-readiness docs, support/compatibility consistency, and final-audit presence."}
+{"command": "cargo test -p assura --test agent_surface_cli --quiet", "result": "passed"}
+{"command": "cargo test -p assura --test editor_surface_cli --quiet", "result": "passed"}
+{"command": "cargo test --test project_intelligence_context_pack --quiet", "result": "passed"}
+{"command": "cargo test --test project_intelligence_session --quiet", "result": "passed"}
+{"command": "cargo test --test content_runtime_dx_docs project_intelligence_demo_is_discoverable_and_covers_adoption_commands --quiet", "result": "passed_after_demo_fix"}
+{"command": "cargo test --workspace --all-targets --all-features --quiet", "result": "passed", "coverage": "Full workspace tests, integration tests, doc/no-test targets, and benchmark harness targets passed."}
+{"command": "cargo clippy --workspace --all-targets --all-features -- -D warnings", "result": "passed"}
+{"command": "cargo run --quiet -- check --format json .", "result": "passed", "coverage": "Assura self-check reported success with 1163 files, 281 dirs, and no violations."}
+{"command": "cargo xtask docs", "result": "passed", "coverage": "Website build produced 37 pages including release-readiness and project-intelligence demo."}
+{"command": "cargo xtask evidence", "result": "passed"}
+{"command": "git diff --check", "result": "passed"}

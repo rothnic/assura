@@ -88,6 +88,7 @@ editing task. It combines diagnostics, missing relations, optional keyword
 search, safe-fix preview metadata, and object context when an instance is named:
 
 ```bash
+assura content context-pack tests/fixtures/project_intelligence_real_repo/beacon_crm/invalid --text checkout --limit 5 --format json
 assura agent context-pack tests/fixtures/project_intelligence_real_repo/beacon_crm/invalid --text checkout --limit 5
 ```
 
@@ -99,6 +100,7 @@ missing ADR diagnostics that lower-level commands expose.
 For object-oriented work, include the modeled object:
 
 ```bash
+assura content context-pack . --collection assura_goals --id goal-assura-project-intelligence-usability-program --text "Project Intelligence Usability" --limit 5 --format json
 assura agent context-pack . --collection assura_goals --id goal-assura-project-intelligence-usability-program --text "Project Intelligence Usability" --limit 5
 ```
 
@@ -311,6 +313,7 @@ The missing target stays machine-readable:
 Agents can request the same diagnostic through the local agent CLI:
 
 ```bash
+assura content agent-query diagnostics tests/fixtures/content_runtime/missing_reference --format json
 assura agent diagnostics tests/fixtures/content_runtime/missing_reference
 ```
 

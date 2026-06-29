@@ -69,6 +69,13 @@ publishes and verifies a `.sha256` file next to every archive.
 | `assura info` | Experimental diagnostic | CLI exists, but text output is not an automation contract. |
 | `assura watch` | Experimental | CLI exists, but release-grade watch behavior is not claimed. |
 
+## Project Intelligence Layout Compatibility
+
+`.assura/models/**` is the supported project-intelligence model artifact layout
+for model files stored under `.assura/`. Content runtime validation tests and
+Assura self-check prove that root-level `.assura/` model artifacts are rejected
+while project-relative `schemas/**` artifacts remain valid.
+
 ## LS-Lint Compatibility
 
 Assura supports migration for complete LS-Lint 2.3 config semantics documented

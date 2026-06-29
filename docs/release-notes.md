@@ -3,10 +3,12 @@ title: Assura v0.1.0 Release Notes
 status: active
 ---
 
-# Assura v0.1.0 Release Notes
+# Assura v0.1.0 Current Branch Release Notes
 
-These notes describe the current pre-1.0 public command surface on this branch.
-Assura publishes installable archives from
+These notes describe the current pre-1.0 public command surface on this branch
+for the next release-candidate build. They are not a claim that the already
+published May 24, 2026 `v0.1.0` archives contain later Project Intelligence
+work. Assura publishes installable archives from
 [`.github/workflows/release.yml`](../.github/workflows/release.yml) when a
 maintainer pushes an intentional `v*` tag after the release checklist in
 [`docs/release-candidate-checklist.md`](./release-candidate-checklist.md)
@@ -31,6 +33,8 @@ The current pre-1.0 command surface supports these public commands:
   evidence.
 - `assura fix markdown --dry-run --format json` for safe-fix preview output
   before applying deterministic Markdown trailing-space fixes.
+- `assura fix markdown --apply --format json` for explicitly accepted
+  Markdown safe-fix apply/audit output.
 - `assura agent` for local coding-agent project-intelligence commands with
   JSON defaults for context, diagnostics, context packs, search/show/expand,
   missing relations, safe-fix previews, and local sessions.
@@ -71,10 +75,13 @@ The release workflow verifies those checksums before upload, and
 `cargo xtask release-live` checks that public checksum URLs are reachable
 after a tag is published.
 
-The original `v0.1.0` archives were published on 2026-05-24. On 2026-06-10,
-maintainers uploaded the missing `.sha256` sidecar files generated from those
-published archives. No release binary was rebuilt and no new version was cut
-for that asset repair.
+The original `v0.1.0` archives were published on 2026-05-24 and do not contain
+the later June 2026 Project Intelligence usability surfaces described in this
+branch's current release-candidate notes. On 2026-06-10, maintainers uploaded
+the missing `.sha256` sidecar files generated from those published archives. No
+release binary was rebuilt and no new version was cut for that asset repair.
+A future tag or release-candidate archive must be built before these current
+branch surfaces are advertised as installable release artifacts.
 
 ## Current Feature Surface
 

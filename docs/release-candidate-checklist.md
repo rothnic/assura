@@ -11,9 +11,13 @@ release until a newer release process replaces it.
 ## Release Scope
 
 - Public CLI surface: `assura check`, `init`, `status`, `migrate`, `hooks`,
-  `quality plan`, and `performance-report`.
+  `quality plan`, `performance-report`, `agent`, `content`, and
+  `editor session`.
 - Stable agent feedback surface: `assura check --format agent`.
 - Codex adapter: `assura check --format agent --agent codex`.
+- Project Intelligence local surfaces: `assura init --project-intelligence`,
+  `assura content context-pack`, `assura content session`, `assura agent ...`,
+  `assura editor session`, and `.assura/models/**` model artifacts.
 - Relationship notation: `structure` captures, `exists:1`, `needs`, and
   `provides`.
 - Experimental extension surface: first-party specialized
@@ -33,6 +37,7 @@ release until a newer release process replaces it.
 | Fast gate | `cargo xtask fast` | Any local fast gate failure. |
 | Docs | `cargo xtask docs` | Website build fails or docs links break. |
 | Release smoke | `cargo xtask release-smoke` | Local archive install or first-run smoke fails. |
+| Project Intelligence smoke | `cargo test --test project_intelligence_release_hardening --quiet` | Supported local Project Intelligence schemas, docs, or starter workflow drift. |
 | Checksums | `cargo xtask release-smoke` and release workflow checksum steps | Archive checksum generation or verification fails. |
 | Evidence | `cargo xtask evidence` | Goal status, review evidence, or stale command-surface checks fail. |
 | Whitespace | `git diff --check` | Whitespace errors. |

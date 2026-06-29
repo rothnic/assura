@@ -30,9 +30,10 @@ status, schema compatibility expectations, docs, evidence, and reviewer gates.
 
 The runtime is complete locally and the usability goals define adoption,
 real-repo proof, onboarding templates, context packs, persistent sessions,
-safe-fix workflow, agent CLI surface, and LSP editor transport. Before that
-can be advertised as usable, release surfaces need to agree on what is
-supported, experimental, roadmap-only, or unsupported.
+safe-fix workflow, `.assura/` directory organization, agent CLI surface, and
+LSP-shaped local editor session. Before that can be advertised as usable,
+release surfaces need to agree on what is supported, experimental,
+roadmap-only, or unsupported.
 
 ## Scope
 
@@ -92,3 +93,33 @@ Block if docs advertise unsupported surfaces, if stable schema examples are not
 checked against live output, if install evidence is missing, or if release notes
 hide breaking or experimental behavior behind generic project-intelligence
 language.
+
+## Progress Log
+
+- 2026-06-29: Started on task
+  `.trellis/tasks/06-29-project-intelligence-release-hardening` after local
+  completion of the `.assura/` organization, agent CLI, and editor session
+  successors. Initial audit found `website/src/content/docs/reference/release-readiness.md`
+  and `docs/release-candidate-checklist.md` lagged behind the supported
+  project-intelligence surfaces. Added release-hardening task requirements,
+  release-readiness documentation for project-intelligence commands/schemas,
+  a checked final-audit artifact, and a new
+  `tests/project_intelligence_release_hardening.rs` smoke/schema coverage
+  target.
+- 2026-06-29: Release-hardening implementation passed validation. The new
+  release-hardening test caught and fixed a missing `.assura/models/**`
+  compatibility classification and release-readiness wording for full LSP
+  server boundaries. A full workspace validation then passed:
+  `cargo fmt --check`,
+  `cargo test --workspace --all-targets --all-features --quiet`,
+  `cargo clippy --workspace --all-targets --all-features -- -D warnings`,
+  `cargo run --quiet -- check --format json .`, `cargo xtask docs`,
+  `cargo xtask evidence`, and `git diff --check`.
+- 2026-06-29: Independent release-hardening review agent
+  `019f14e9-a9b3-73e0-86ab-5ac72ec14d3d` found five release-readiness gaps:
+  target-state support-matrix coverage for new project-intelligence commands,
+  release notes that blurred current-branch Project Intelligence work with the
+  already-published May 24, 2026 `v0.1.0` archives, weak docs/schema golden
+  coverage, missing safe-fix apply language, and null active-task branch
+  metadata. Fixed the support-matrix rows, release-note framing,
+  schema-example test coverage, safe-fix apply docs, and task branch metadata.
