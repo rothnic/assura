@@ -56,8 +56,8 @@ pub use intelligence::{
     GraphPersistence, GraphQuery, GraphResult, InMemoryFactStore, IntelligenceGraph,
     MarkdownDocument as ProjectMarkdownDocument, MarkdownSection, ModelDefinition, ModelInstance,
     Node, NodeId, NodeMetadata, NodeType, PathScope, ProjectEdge, ProjectFact, Relationship,
-    RelationshipDefinition, RelationshipEdge, Resource, SafeFix, SearchChunk, SourceLocation,
-    SymbolRef, LOCAL_HASH_EMBEDDING_DIMENSIONS, LOCAL_HASH_EMBEDDING_PROVIDER,
+    RelationshipDefinition, RelationshipEdge, Resource, SafeFix, SearchChunk, SemanticSearchHit,
+    SourceLocation, SymbolRef, LOCAL_HASH_EMBEDDING_DIMENSIONS, LOCAL_HASH_EMBEDDING_PROVIDER,
 };
 
 #[cfg(feature = "full-cli")]

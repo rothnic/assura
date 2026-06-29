@@ -42,7 +42,8 @@ publishes and verifies a `.sha256` file next to every archive.
 | `assura content collections` | Supported | Content query CLI fixture tests. |
 | `assura content instances` | Supported | Content query CLI fixture tests. |
 | `assura content show` | Supported | Content query CLI fixture tests. |
-| `assura content search` | Supported keyword search | Content query CLI fixture tests; semantic/vector search remains out of scope. |
+| `assura content search` | Supported keyword search | Content query CLI fixture tests; semantic candidate retrieval uses the separate `semantic-search` command. |
+| `assura content semantic-search` | Supported optional local candidate search | Semantic search fixture tests; candidates do not decide validation correctness. |
 | `assura content missing-relations` | Supported relation query | Content query CLI fixture tests. |
 | `assura content expand` | Supported bounded graph expansion | Content query CLI fixture tests. |
 | `assura info` | Experimental diagnostic | CLI exists, but text output is not an automation contract. |

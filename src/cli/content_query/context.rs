@@ -54,6 +54,9 @@ impl QueryContext {
         let mut ingestor = FactIngestor::new("content-query");
         ingestor.ingest_repository_model(&model);
         ingestor.ingest_repository_validation(&validation);
+        if command.semantic_enabled() {
+            ingestor.ingest_local_semantic_embeddings();
+        }
         let store = InMemoryFactStore::load(ingestor.finish());
 
         Ok(Self {
@@ -70,8 +73,25 @@ fn command_path(command: &ContentCommands) -> Option<PathBuf> {
         | ContentCommands::Instances { path, .. }
         | ContentCommands::Show { path, .. }
         | ContentCommands::Search { path, .. }
+        | ContentCommands::SemanticSearch { path, .. }
         | ContentCommands::MissingRelations { path, .. }
         | ContentCommands::Expand { path, .. } => path.clone(),
+    }
+}
+
+trait SemanticCommand {
+    fn semantic_enabled(&self) -> bool;
+}
+
+impl SemanticCommand for ContentCommands {
+    fn semantic_enabled(&self) -> bool {
+        matches!(
+            self,
+            ContentCommands::SemanticSearch {
+                enable_local: true,
+                ..
+            }
+        )
     }
 }
 

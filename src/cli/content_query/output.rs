@@ -71,6 +71,29 @@ pub(super) struct SearchOutput {
 }
 
 #[derive(Debug, Serialize)]
+pub(super) struct SemanticSearchOutput {
+    pub(super) query: String,
+    pub(super) enabled: bool,
+    pub(super) provider: Option<String>,
+    pub(super) message: Option<String>,
+    pub(super) matches: Vec<SemanticSearchMatchOutput>,
+}
+
+#[derive(Debug, Serialize)]
+pub(super) struct SemanticSearchMatchOutput {
+    pub(super) source_id: String,
+    pub(super) source_kind: String,
+    pub(super) score: f32,
+    pub(super) collection: Option<String>,
+    pub(super) instance_id: Option<String>,
+    pub(super) path: Option<PathBuf>,
+    pub(super) text_hash: String,
+    pub(super) text: String,
+    pub(super) related: Vec<RelatedFactOutput>,
+    pub(super) diagnostics: Vec<DiagnosticOutput>,
+}
+
+#[derive(Debug, Serialize)]
 pub(super) struct SearchMatchOutput {
     pub(super) source_id: String,
     pub(super) source_kind: String,
@@ -189,6 +212,26 @@ impl TextRender for SearchOutput {
                 .as_deref()
                 .unwrap_or(item.source_id.as_str());
             lines.push(format!("{} - {}", label, item.text));
+        }
+        lines.join("\n")
+    }
+}
+
+impl TextRender for SemanticSearchOutput {
+    fn render_text(&self) -> String {
+        if !self.enabled {
+            return self
+                .message
+                .clone()
+                .unwrap_or_else(|| "Semantic search disabled".to_string());
+        }
+        let mut lines = vec![format!("Semantic candidates: {}", self.matches.len())];
+        for item in &self.matches {
+            let label = item
+                .instance_id
+                .as_deref()
+                .unwrap_or(item.source_id.as_str());
+            lines.push(format!("{:.3} {} - {}", item.score, label, item.text));
         }
         lines.join("\n")
     }

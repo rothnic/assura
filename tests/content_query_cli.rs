@@ -130,3 +130,63 @@ fn content_query_searches_and_reports_missing_relations() {
         .iter()
         .any(|item| item["source_kind"] == "diagnostic"));
 }
+
+#[test]
+fn content_query_semantic_search_is_opt_in_and_returns_context() {
+    let disabled = json_output(run_content(&[
+        "semantic-search",
+        "goal-portable-structure",
+        "tests/fixtures/content_runtime/valid",
+        "--format",
+        "json",
+    ]));
+    assert_eq!(disabled["query"], "goal-portable-structure");
+    assert_eq!(disabled["enabled"], false);
+    assert!(disabled["provider"].is_null());
+    assert!(disabled["message"]
+        .as_str()
+        .expect("disabled message")
+        .contains("--enable-local"));
+    assert!(disabled["matches"]
+        .as_array()
+        .expect("matches array")
+        .is_empty());
+
+    let enabled = json_output(run_content(&[
+        "semantic-search",
+        "goal-portable-structure",
+        "tests/fixtures/content_runtime/valid",
+        "--enable-local",
+        "--limit",
+        "3",
+        "--format",
+        "json",
+    ]));
+
+    assert_eq!(enabled["enabled"], true);
+    assert_eq!(enabled["provider"], "local-hash-embedding-v1");
+    let first = &enabled["matches"][0];
+    assert_eq!(first["source_kind"], "model_instance");
+    assert_eq!(first["collection"], "goals");
+    assert_eq!(first["instance_id"], "goal-portable-structure");
+    assert!(first["score"].as_f64().expect("score") > 0.0);
+    assert_eq!(first["text_hash"].as_str().expect("text hash").len(), 16);
+    assert_eq!(first["related"][0]["relationship"], "outgoing_relation");
+    assert_eq!(
+        first["related"][0]["path"],
+        "specs/spec_portable_structure.json"
+    );
+
+    let no_signal = json_output(run_content(&[
+        "semantic-search",
+        "zzzzzzzzzzzz",
+        "tests/fixtures/content_runtime/valid",
+        "--enable-local",
+        "--format",
+        "json",
+    ]));
+    assert!(no_signal["matches"]
+        .as_array()
+        .expect("matches array")
+        .is_empty());
+}

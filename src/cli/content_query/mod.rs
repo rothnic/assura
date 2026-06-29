@@ -3,6 +3,7 @@
 mod context;
 mod facts;
 mod output;
+mod semantic;
 
 use self::context::{ContentQueryError, QueryContext};
 use self::facts::{
@@ -14,6 +15,7 @@ use self::output::{
     InstancesOutput, MissingRelationsOutput, RelatedFactOutput, RelationOutput, SearchMatchOutput,
     SearchOutput,
 };
+use self::semantic::semantic_search;
 use super::{ContentCommands, ExitCode, OutputFormat};
 use crate::intelligence::{
     model_instance_id, Diagnostic, FactId, ProjectEdge, ProjectFact, RelationshipEdge, Resource,
@@ -51,6 +53,15 @@ fn run_content_command(
             render(show_instance(&context, &collection, &id)?, format)
         }
         ContentCommands::Search { query, .. } => render(search(&context, &query), format),
+        ContentCommands::SemanticSearch {
+            query,
+            limit,
+            enable_local,
+            ..
+        } => render(
+            semantic_search(&context, &query, limit, enable_local),
+            format,
+        ),
         ContentCommands::MissingRelations { .. } => render(missing_relations(&context), format),
         ContentCommands::Expand {
             collection,
@@ -67,6 +78,7 @@ fn command_format(command: &ContentCommands) -> OutputFormat {
         | ContentCommands::Instances { format, .. }
         | ContentCommands::Show { format, .. }
         | ContentCommands::Search { format, .. }
+        | ContentCommands::SemanticSearch { format, .. }
         | ContentCommands::MissingRelations { format, .. }
         | ContentCommands::Expand { format, .. } => *format,
     }

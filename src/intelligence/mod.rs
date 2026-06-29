@@ -24,4 +24,4 @@ pub use semantic::{
     cosine_similarity, local_hash_embedding, local_hash_embedding_record, semantic_text_hash,
     LOCAL_HASH_EMBEDDING_DIMENSIONS, LOCAL_HASH_EMBEDDING_PROVIDER,
 };
-pub use store::{FactStoreStats, InMemoryFactStore};
+pub use store::{FactStoreStats, InMemoryFactStore, SemanticSearchHit};

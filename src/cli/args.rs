@@ -300,6 +300,24 @@ pub enum ContentCommands {
         format: OutputFormat,
     },
 
+    #[command(about = "Search modeled content facts by optional local semantic candidates")]
+    SemanticSearch {
+        #[arg(help = "Semantic query text")]
+        query: String,
+
+        #[arg(help = "Project root directory (defaults to current directory)")]
+        path: Option<PathBuf>,
+
+        #[arg(long, default_value_t = 10)]
+        limit: usize,
+
+        #[arg(long, help = "Enable the built-in local semantic embedding baseline")]
+        enable_local: bool,
+
+        #[arg(short, long, value_enum, default_value = "text")]
+        format: OutputFormat,
+    },
+
     #[command(about = "Report relationship edges with missing targets")]
     MissingRelations {
         #[arg(help = "Project root directory (defaults to current directory)")]

@@ -2,7 +2,7 @@
 id: goal-assura-local-semantic-search
 type: goal
 title: Assura local semantic search
-status: planned
+status: completed
 created: 2026-06-28
 owners:
   - assura-maintainers
@@ -104,3 +104,25 @@ changes validation truth, lacks invalidation, or cannot be disabled.
   provider/dimension metadata, store-level vector candidate lookup, and
   regression tests. This remains internal and disabled unless embeddings are
   explicitly ingested; public semantic CLI output is still pending.
+- 2026-06-28: Added public `assura content semantic-search` output behind
+  explicit `--enable-local`, with disabled-by-default JSON/text behavior,
+  candidate scores, related graph context, diagnostics where available,
+  command-surface/support docs, and fixture coverage. Store lookup now ignores
+  stale embedding records whose text hash no longer matches the current chunk
+  and drops zero-score candidates so `matches` only carries positive local
+  candidate evidence. Review and final validation are pending before marking
+  this successor complete.
+- 2026-06-28: Independent review found a cross-generation stale-embedding gap
+  and release-note wording drift. Fixed semantic lookup to pair embedding
+  records with same-generation chunks, constrained semantic CLI enrichment to
+  same-generation facts/edges/diagnostics, clarified docs wording, and expanded
+  regression coverage for cross-generation records plus disabled/no-signal CLI
+  JSON behavior.
+- 2026-06-28: Marked complete after post-review validation passed:
+  `cargo fmt --check`, `cargo test --test semantic_search_tests --quiet`,
+  `cargo test --test content_query_cli --quiet`,
+  `cargo test semantic_search --quiet`,
+  `cargo test project_intelligence --quiet`,
+  `cargo clippy --workspace --all-targets --all-features -- -D warnings`,
+  `cargo run --quiet -- check --format json .`, `cargo xtask evidence`,
+  `cargo xtask docs`, and `git diff --check`.

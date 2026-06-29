@@ -412,6 +412,8 @@ extensions:
           status: supported
         - surface: "command:assura content search"
           status: supported
+        - surface: "command:assura content semantic-search"
+          status: supported
         - surface: "command:assura content missing-relations"
           status: supported
         - surface: "command:assura content expand"

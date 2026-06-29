@@ -36,19 +36,19 @@ invalidation, and docs still mark local semantic search as planned.
 
 ## Acceptance Criteria
 
-- [ ] Semantic chunk IDs, source facts, source locations, text hashes, provider
+- [x] Semantic chunk IDs, source facts, source locations, text hashes, provider
   metadata, and embedding records are deterministic and structurally tested.
-- [ ] A local provider/index decision record compares low-resource options by
+- [x] A local provider/index decision record compares low-resource options by
   size, speed, portability, licensing, and update behavior.
-- [ ] Semantic search is opt-in; disabled or unavailable semantic search does
+- [x] Semantic search is opt-in; disabled or unavailable semantic search does
   not change `assura check` behavior or keyword search behavior.
-- [ ] A CLI/query surface returns semantic candidate facts with scores,
+- [x] A CLI/query surface returns semantic candidate facts with scores,
   graph-expanded related context, and validation state.
-- [ ] Changed chunk text is re-embedded or invalidated by stable hash or
+- [x] Changed chunk text is re-embedded or invalidated by stable hash or
   generation evidence.
-- [ ] Docs explain that semantic results are candidate context, not validation
+- [x] Docs explain that semantic results are candidate context, not validation
   truth.
-- [ ] `cargo fmt --check`, `cargo test semantic_search --quiet`,
+- [x] `cargo fmt --check`, `cargo test semantic_search --quiet`,
   `cargo run --quiet -- check --format json .`, and `git diff --check` pass or
   have explicit documented blockers.
 
@@ -94,6 +94,15 @@ invalidation, and docs still mark local semantic search as planned.
   search behavior.
 - 2026-06-28: Recorded provider baseline and limitations in
   `docs/analysis/2026-06-28-local-semantic-search-baseline.md`.
+- 2026-06-28: Added public `assura content semantic-search` with
+  disabled-by-default behavior, `--enable-local` local hash embeddings,
+  positive-score semantic candidates, related graph context, and diagnostics
+  where available. Command-surface, support-policy, release-note, and website
+  docs now describe the supported optional semantic-candidate surface.
+- 2026-06-28: Tightened invalidation and candidate quality: store lookup skips
+  embedding records whose `text_hash` no longer matches the current chunk text
+  and drops zero-score candidates. Regression coverage now proves stale
+  embeddings are ignored and no-signal queries return no candidates.
 - 2026-06-28 validation passed:
   `cargo fmt --check`;
   `cargo test --test semantic_search_tests --quiet`;
@@ -101,4 +110,34 @@ invalidation, and docs still mark local semantic search as planned.
   `cargo test project_intelligence --quiet`;
   `cargo clippy --workspace --all-targets --all-features -- -D warnings`;
   `cargo run --quiet -- check --format json .`;
+  `git diff --check`.
+- 2026-06-28 validation passed after public semantic CLI and review fixes:
+  `cargo fmt --check`;
+  `cargo test --test semantic_search_tests --quiet`;
+  `cargo test --test content_query_cli --quiet`;
+  `cargo test semantic_search --quiet`;
+  `cargo test project_intelligence --quiet`;
+  `cargo clippy --workspace --all-targets --all-features -- -D warnings`;
+  `cargo run --quiet -- check --format json .`;
+  `cargo xtask evidence`;
+  `cargo xtask docs`;
+  `git diff --check`.
+- 2026-06-28 independent review completed by subagent `Halley`
+  (`019f10ff-a3f2-7e62-937a-0ce25b4bcc56`). Findings: cross-generation stale
+  semantic lookup could pair an embedding with the wrong same-ID chunk; release
+  and compatibility docs overclaimed/blurred the semantic-search surface; CLI
+  JSON coverage could be broader. Resolution: semantic lookup and CLI
+  enrichment are now generation-aware, release/compatibility wording is
+  clarified, and focused tests cover cross-generation embedding records plus
+  disabled and no-signal CLI JSON behavior.
+- 2026-06-28 post-review validation passed:
+  `cargo fmt --check`;
+  `cargo test --test semantic_search_tests --quiet`;
+  `cargo test --test content_query_cli --quiet`;
+  `cargo test semantic_search --quiet`;
+  `cargo test project_intelligence --quiet`;
+  `cargo clippy --workspace --all-targets --all-features -- -D warnings`;
+  `cargo run --quiet -- check --format json .`;
+  `cargo xtask evidence`;
+  `cargo xtask docs`;
   `git diff --check`.

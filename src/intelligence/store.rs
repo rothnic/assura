@@ -8,7 +8,7 @@ use super::facts::{
     EdgeId, EmbeddingRecord, FactId, FactSet, PathScope, ProjectEdge, ProjectFact,
     RelationshipEdge, SearchChunk,
 };
-use super::semantic::cosine_similarity;
+use super::semantic::{cosine_similarity, semantic_text_hash};
 use glob::Pattern;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
@@ -142,8 +142,14 @@ impl InMemoryFactStore {
                     && record.vector.len() == query_vector.len()
             })
             .filter_map(|record| {
-                let chunk = self.search_chunk_by_id(&record.chunk_id)?;
+                let chunk = self.search_chunk_for_record(record)?;
+                if record.text_hash != semantic_text_hash(&chunk.text) {
+                    return None;
+                }
                 let score = cosine_similarity(query_vector, &record.vector);
+                if score <= 0.0 {
+                    return None;
+                }
                 Some(SemanticSearchHit {
                     chunk,
                     embedding: record,
@@ -244,8 +250,10 @@ impl InMemoryFactStore {
         }
     }
 
-    fn search_chunk_by_id(&self, id: &FactId) -> Option<&SearchChunk> {
-        self.search_chunks.iter().find(|chunk| &chunk.id == id)
+    fn search_chunk_for_record(&self, record: &EmbeddingRecord) -> Option<&SearchChunk> {
+        self.search_chunks.iter().find(|chunk| {
+            chunk.id == record.chunk_id && chunk.generation.id == record.generation.id
+        })
     }
 }
 
