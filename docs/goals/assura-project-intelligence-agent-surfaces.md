@@ -82,3 +82,13 @@ git diff --check
 Block if implementation forks CLI/LSP/MCP behavior, revives per-agent command
 families, requires hosted infrastructure, or adds persistent mode without a
 measured reason.
+
+## Progress Log
+
+- 2026-06-28: Revalidated as `valid` after completing and archiving code-symbol
+  enrichment. Live repo now has content/query/search, local semantic search,
+  code-symbol enrichment, diagnostics, safe-fix, and stable
+  `assura check --format agent --agent codex` foundations. The remaining gap
+  is a shared project-intelligence agent surface contract for diagnostics,
+  safe fixes, graph/search/semantic/code-symbol queries, and future daemon/LSP
+  or MCP wrappers without reviving per-agent command families.
