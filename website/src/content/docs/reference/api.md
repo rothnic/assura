@@ -12,8 +12,8 @@ constraints are not stable public surfaces in this release.
 
 > **Current scope**
 >
-> Build automation against `assura check`, `assura status`, and the JSON/YAML
-> report fields documented here.
+> Build automation against `assura check`, `assura status`, `assura agent`,
+> `assura content`, and the JSON/YAML report fields documented here.
 
 ## Command Surface
 
@@ -23,6 +23,7 @@ constraints are not stable public surfaces in this release.
 | `assura status [path]` | Print discovered config and rule summary |
 | `assura init [path]` | Create a starter `.assura/config.yml` |
 | `assura migrate [.ls-lint.yml ...]` | Convert LS-Lint 2.3 rule config |
+| `assura agent ...` | Run local project-intelligence commands for coding agents |
 | `assura content ...` | Query project-intelligence facts and context |
 | `assura info [path]` | Print text configuration details |
 | `assura watch [path]` | Run one check as a current watch wrapper |
@@ -49,6 +50,36 @@ Supported status formats are `text`, `json`, and `yaml`.
 | `--min-severity low|medium|high|critical` | Hide lower-severity feedback items without changing what is checked |
 | `--max-issues <count>` | Cap displayed feedback items without changing what is checked |
 | `--agent generic|codex` | Select a delivery adapter for `--format agent`; Codex wraps feedback for `UserPromptSubmit` |
+
+## Agent Surface
+
+`assura agent` is the supported local project-intelligence command group for
+coding agents. It defaults to JSON output and delegates to the same contracts as
+the lower-level content-query commands.
+
+| Command | Purpose |
+| --- | --- |
+| `assura agent context` | Summarize project-intelligence capabilities |
+| `assura agent diagnostics` | Return diagnostics through the shared agent envelope |
+| `assura agent context-pack` | Build one bounded project-intelligence handoff packet |
+| `assura agent search` | Search modeled content facts |
+| `assura agent show` | Show one modeled content instance |
+| `assura agent expand` | Expand graph context around one modeled object |
+| `assura agent missing-relations` | Report unresolved modeled relations |
+| `assura agent safe-fixes` | Preview safe fixes through the shared agent envelope |
+| `assura agent session` | Run a persistent JSON-line local query session |
+
+Examples:
+
+```bash
+assura agent context .
+assura agent diagnostics tests/fixtures/content_runtime/missing_reference
+assura agent context-pack . --collection assura_goals --id goal-assura-project-intelligence-usability-program --text "Project Intelligence Usability" --limit 5
+assura agent safe-fixes tests/fixtures/project_intelligence_real_repo/beacon_crm/invalid
+```
+
+MCP is not required for local agent usage. If an MCP adapter is added later, it
+should wrap these same CLI/library contracts.
 
 ## Content Query Surface
 

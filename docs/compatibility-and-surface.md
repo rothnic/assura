@@ -40,6 +40,16 @@ publishes and verifies a `.sha256` file next to every archive.
 | `assura performance-report` | Supported evidence command | Performance report CI job and checked report data. |
 | `assura fix markdown --dry-run --format json` | Experimental safe-fix preview contract | Markdown safe-fix CLI tests prove preview output does not write files. |
 | `assura fix markdown --apply --format json` | Experimental safe-fix apply/audit contract | Markdown safe-fix CLI tests prove apply output reports changed paths, applied fix IDs, skipped fixes, and idempotent reruns. |
+| `assura agent` | Supported local agent project-intelligence surface | Agent-surface CLI tests prove JSON-default commands delegate to existing content-query contracts. |
+| `assura agent context` | Supported local agent context | Agent-surface CLI tests compare output with `assura content agent-context`. |
+| `assura agent diagnostics` | Supported local agent diagnostics | Agent-surface CLI tests compare output with `assura content agent-query diagnostics`. |
+| `assura agent context-pack` | Supported local agent handoff packet | Agent-surface CLI tests compare output with `assura content context-pack`. |
+| `assura agent show` | Supported local agent content inspection | Agent-surface CLI tests compare output with `assura content show`. |
+| `assura agent search` | Supported local agent keyword search | Agent-surface CLI tests compare output with `assura content search`. |
+| `assura agent missing-relations` | Supported local agent relation query | Agent-surface CLI tests compare output with `assura content missing-relations`. |
+| `assura agent expand` | Supported local agent graph expansion | Agent-surface CLI tests compare output with `assura content expand`. |
+| `assura agent safe-fixes` | Supported local agent safe-fix preview | Agent-surface CLI tests compare output with `assura content agent-query safe-fixes`. |
+| `assura agent session` | Supported local agent session alias | Agent-surface CLI tests prove the alias emits the same JSON-line session envelope as `assura content session`. |
 | `assura content` | Supported first project-intelligence query surface | Content query CLI fixture tests and product docs. |
 | `assura content agent-context` | Supported generic agent context | Agent-context CLI fixture tests; wrappers must reuse this contract instead of creating per-agent query commands. |
 | `assura content agent-query` | Supported generic agent query envelope | Agent-query CLI fixture tests prove diagnostics, graph, search, semantic, and code-symbol queries reuse one wrapper schema. |

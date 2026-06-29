@@ -97,5 +97,5 @@ if project-intelligence adoption breaks the existing structure-first init path.
   Later local successors added the Beacon CRM real-repo proof,
   `assura init --project-intelligence`, and `assura content context-pack`, so
   this blueprint is complete as the first documented product path. Remaining
-  usability work is tracked in the persistent-session, safe-fix, MCP-agent,
+  usability work is tracked in the persistent-session, safe-fix, agent CLI,
   LSP-editor, and release-hardening goals.

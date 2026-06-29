@@ -54,8 +54,8 @@ every model-adjacent artifact.
   diagnostic and documented manual move.
 - No ban on user hierarchy inside the model directory.
 - No broad redesign of the project-intelligence content model language.
-- No transport protocol work; MCP and LSP goals consume the organized layout
-  after this goal proves it.
+- No transport protocol work; later local agent/editor surfaces consume the
+  organized layout after this goal proves it.
 
 ## Definition Of Done
 

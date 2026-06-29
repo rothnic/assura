@@ -22,7 +22,7 @@ humans query the same local facts through the CLI.
   </div>
   <div class="pi-demo-step">
     <strong>4. Assist</strong>
-    <span>Agent envelopes and safe-fix previews reuse the same facts.</span>
+    <span><code>assura agent</code> packages the same facts for local agents.</span>
   </div>
 </section>
 
@@ -40,10 +40,10 @@ humans query the same local facts through the CLI.
     <p>Broken references become diagnostics.</p>
   </div>
   <div class="pi-demo-lane">
-    <h2>Usable Surfaces</h2>
-    <p><code>assura content search</code></p>
-    <p><code>assura content expand</code></p>
-    <p><code>assura content agent-query</code></p>
+    <h2>Agent Surface</h2>
+    <p><code>assura agent context-pack</code></p>
+    <p><code>assura agent diagnostics</code></p>
+    <p><code>assura agent safe-fixes</code></p>
   </div>
 </section>
 
@@ -83,13 +83,12 @@ ADRs, packages, or release artifacts once the first query works.
 
 ## Hand Off A Context Pack
 
-Use a context pack when an agent or editor needs one bounded packet for an
+Use the agent CLI when a local coding agent needs one bounded packet for an
 editing task. It combines diagnostics, missing relations, optional keyword
-search, safe-fix preview metadata, and object context when an instance is
-named:
+search, safe-fix preview metadata, and object context when an instance is named:
 
 ```bash
-assura content context-pack tests/fixtures/project_intelligence_real_repo/beacon_crm/invalid --text checkout --limit 5 --format json
+assura agent context-pack tests/fixtures/project_intelligence_real_repo/beacon_crm/invalid --text checkout --limit 5
 ```
 
 The response uses `assura.project-intelligence.context-pack.v1`, reports
@@ -100,13 +99,13 @@ missing ADR diagnostics that lower-level commands expose.
 For object-oriented work, include the modeled object:
 
 ```bash
-assura content context-pack . --collection assura_goals --id goal-assura-project-intelligence-usability-program --text "Project Intelligence Usability" --limit 5 --format json
+assura agent context-pack . --collection assura_goals --id goal-assura-project-intelligence-usability-program --text "Project Intelligence Usability" --limit 5
 ```
 
 Use lower-level commands such as `assura content search`, `assura content
 expand`, and `assura content missing-relations` when inspecting one capability.
-Use `assura content context-pack` when preparing a bounded handoff for an
-agent, editor integration, or reviewer.
+Use `assura agent context-pack` when preparing a bounded handoff for an agent,
+editor integration, or reviewer.
 
 ## Keep Context Warm
 
@@ -143,7 +142,7 @@ trust its owner and decision references.
 Context command:
 
 ```bash
-assura content context-pack tests/fixtures/project_intelligence_real_repo/beacon_crm/invalid --collection epics --id epic-checkout --text checkout --limit 5 --format json
+assura agent context-pack tests/fixtures/project_intelligence_real_repo/beacon_crm/invalid --collection epics --id epic-checkout --text checkout --limit 5
 ```
 
 Inspect these response fields before editing:
@@ -163,7 +162,7 @@ the broken reference, then verify with:
 
 ```bash
 assura check --format json tests/fixtures/project_intelligence_real_repo/beacon_crm/valid
-assura content context-pack tests/fixtures/project_intelligence_real_repo/beacon_crm/valid --collection epics --id epic-checkout --text checkout --limit 5 --format json
+assura agent context-pack tests/fixtures/project_intelligence_real_repo/beacon_crm/valid --collection epics --id epic-checkout --text checkout --limit 5
 ```
 
 Expected evidence: validation succeeds, `missing_relations` is empty, and the
@@ -261,10 +260,10 @@ The missing target stays machine-readable:
 
 ## Hand Context To An Agent
 
-Agents can request the same diagnostic through the shared query envelope:
+Agents can request the same diagnostic through the local agent CLI:
 
 ```bash
-assura content agent-query diagnostics tests/fixtures/content_runtime/missing_reference --format json
+assura agent diagnostics tests/fixtures/content_runtime/missing_reference
 ```
 
 The envelope identifies the schema, requested capability, and diagnostic:
@@ -345,6 +344,10 @@ guidance:
 Agents can correlate context-pack or session previews with the CLI audit by
 matching `safe_fixes[].audit_id` to `fixes[].id`:
 
+```bash
+assura agent safe-fixes tests/fixtures/project_intelligence_real_repo/beacon_crm/invalid
+```
+
 ```json
 {
   "safe_fixes": [
@@ -364,12 +367,14 @@ matching `safe_fixes[].audit_id` to `fixes[].id`:
 1. Start with `assura init --project-intelligence` for a working starter.
 2. Replace the starter records with the project knowledge agents need.
 3. Run `assura check --format json .` until the model is clean.
-4. Use `assura content context-pack` for a bounded agent or editor handoff.
-5. Use `assura content search`, `assura content missing-relations`, and
+4. Use `assura agent context-pack` for a bounded agent or editor handoff.
+5. Use `assura agent context-pack`, `assura agent diagnostics`, and
+   `assura agent safe-fixes` for local coding-agent handoffs.
+6. Use `assura content search`, `assura content missing-relations`, and
    `assura content expand` for human inspection.
-6. Use `assura content agent-context` and `assura content agent-query` for
-   automation.
-7. Use `assura fix markdown --dry-run --format json` to preview safe Markdown
+7. Use `assura content agent-context` and `assura content agent-query` when
+   building lower-level wrappers that need the raw content contracts.
+8. Use `assura fix markdown --dry-run --format json` to preview safe Markdown
    repairs, then `assura fix markdown --apply --format json` after accepting
    the planned IDs.
 
@@ -396,7 +401,7 @@ The result includes
 assura check --format json tests/fixtures/project_intelligence_real_repo/beacon_crm/valid
 assura content search "checkout onboarding" tests/fixtures/project_intelligence_real_repo/beacon_crm/valid --format json
 assura content missing-relations tests/fixtures/project_intelligence_real_repo/beacon_crm/invalid --format json
-assura content agent-query diagnostics tests/fixtures/project_intelligence_real_repo/beacon_crm/invalid --format json
+assura agent diagnostics tests/fixtures/project_intelligence_real_repo/beacon_crm/invalid
 ```
 
 The Beacon CRM fixture models a non-Assura repo with `apps/web`, `packages/ui`,

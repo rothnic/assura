@@ -1,4 +1,5 @@
 //! Command-line argument definitions for the Assura CLI.
+use super::agent_args::AgentCommands;
 use super::agent_query_args::AgentQueryArg;
 use clap::{Parser, Subcommand, ValueEnum};
 use std::path::PathBuf;
@@ -120,6 +121,12 @@ pub enum Commands {
     Fix {
         #[command(subcommand)]
         command: FixCommands,
+    },
+
+    #[command(about = "Run local project-intelligence commands for coding agents")]
+    Agent {
+        #[command(subcommand)]
+        command: AgentCommands,
     },
 
     #[command(about = "Query modeled content and project intelligence facts")]

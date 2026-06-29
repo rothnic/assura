@@ -44,7 +44,7 @@ release/support expectations.
 | Gap | Evidence | User Impact | Next Goal |
 | --- | --- | --- | --- |
 | Safe-fix support stops at preview | The current safe-fix contract and context pack expose proposed Markdown repairs, but do not own apply, audit, or rollback behavior. | Users can understand a repair but cannot safely complete an accepted repair workflow through Assura. | `docs/goals/assura-project-intelligence-safe-fix-workflow.md` |
-| Agent transport is not a supported product contract | Agents can shell out to CLI/context-pack commands, but there is no supported MCP-style tool surface over the same contracts. | Agent integrations still need bespoke wrappers and cannot rely on stable tool names or schemas. | `docs/goals/assura-project-intelligence-mcp-agent-transport.md` |
+| Agent CLI surface is not a supported product contract | Agents can shell out to lower-level CLI/context-pack commands, but there is no focused local agent command group over the same contracts. | Agent integrations still need bespoke wrappers and cannot rely on stable agent-facing command names. | `docs/goals/assura-project-intelligence-agent-cli-surface.md` |
 | Editor transport is not a supported product contract | Docs classify daemon/editor sessions and LSP behavior as future work. | Maintainers cannot get diagnostics, context, or safe-fix previews in an editor without custom glue. | `docs/goals/assura-project-intelligence-lsp-editor-transport.md` |
 | Release status is not consolidated | Runtime, docs, fixtures, support policy, and release readiness do not yet agree on the promoted usability slice. | Users cannot tell which schemas and surfaces are supported, experimental, or roadmap-only. | `docs/goals/assura-project-intelligence-release-hardening.md` |
 

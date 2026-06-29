@@ -28,6 +28,7 @@ the same CLI options as humans and hooks; there is no separate agent mode.
 | Git hooks | Git | Installed hook scripts | Git hook stdout/stderr | The hook script |
 | Agent feedback package | Wrapper code that cannot call the Rust CLI directly | Report parsing and feedback rendering | Library return value or JSON | The wrapper |
 | Codex prompt hook | Optional Codex `UserPromptSubmit` command | `assura check --format agent --agent codex` | Codex `hookSpecificOutput.additionalContext` | Hook configuration |
+| Project-intelligence agent CLI | Local coding agent with shell access | `assura agent ...` | JSON diagnostics, context packs, graph/search, relation checks, and safe-fix previews | The caller |
 | Future tool/editor hook | Future agent integration | Scoped check plus feedback rendering | Tool result, next agent message, or status line | Hook configuration |
 | Project-intelligence session | Local agent/editor wrapper | `assura content session` | JSON-line context/query responses | The wrapper |
 | Warm checker session | Future structure-check integration | Prepared structure checker or hot daemon | Low-latency check result for changed paths | Integration policy |
@@ -103,6 +104,18 @@ For repeated project-intelligence queries, use a local JSON-line session:
 assura content session .
 ```
 
+For one-shot project-intelligence handoffs, use the local agent command group:
+
+```bash
+assura agent context .
+assura agent diagnostics .
+assura agent context-pack . --collection assura_goals --id goal-assura-project-intelligence-usability-program --text "Project Intelligence Usability" --limit 5
+assura agent safe-fixes .
+```
+
+These commands default to JSON and reuse the same content-query and safe-fix
+preview contracts as `assura content ...`.
+
 Send one request per line:
 
 ```json
@@ -155,6 +168,6 @@ step, while still giving the agent fresh feedback after edits.
 | Codex package library | Lower-level only | Wrapper code can use library helpers when it already has JSON. |
 | Codex `UserPromptSubmit` hook | Yes | A hook runs `assura check --format agent --agent codex` before Codex processes a prompt. |
 | Codex post-tool/editor hook | Not yet | A future hook should append a status line or bounded feedback after relevant tool calls. |
-| Other agents with shell access | Partially | They can call `assura check --format advice`, `--format status`, or `--format agent` manually or through a wrapper. |
+| Other agents with shell access | Yes | They can call `assura agent ...` for project-intelligence context and `assura check --format agent` for structure feedback. |
 | Project-intelligence session | Yes | Local wrappers can keep `assura content session` open for repeated context/query requests. |
 | Editor/daemon structure-check integration | Not yet as public UX | Should reuse prepared checks or hot daemon state for repeated changed-path feedback. |

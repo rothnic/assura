@@ -30,22 +30,22 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 16 | Docs Lifecycle Coverage | Completed | PR #83 merged; archive/sync PR #84 merged |
 | 17 | Support Matrix Surface Expansion | Completed | PR #88 merged; archive/sync PR #89 merged |
 | 18 | Project Intelligence Runtime | Completed | All nine successors and final completion audit completed locally |
-| 19 | Project Intelligence Usability | Active | Adoption blueprint, real-repo proof, onboarding template, context pack, persistent session, safe-fix workflow, and `.assura/` directory organization completed locally; MCP agent transport is next |
+| 19 | Project Intelligence Usability | Active | Adoption blueprint, real-repo proof, onboarding template, context pack, persistent session, safe-fix workflow, `.assura/` directory organization, and agent CLI surface completed locally; LSP editor transport is next |
 
 ## Active Roadmap Iteration
 
 Project Intelligence Usability is active.
 
 Most recent owning task:
-`.trellis/tasks/06-29-project-intelligence-assura-directory-organization`,
+`.trellis/tasks/06-29-project-intelligence-agent-cli-surface`,
 completing
-`docs/goals/assura-project-intelligence-assura-directory-organization.md`.
+`docs/goals/assura-project-intelligence-agent-cli-surface.md`.
 
 Current branch:
 `codex/project-intelligence-agent-surfaces`.
 
 Current recommended goal:
-`docs/goals/assura-project-intelligence-mcp-agent-transport.md`.
+`docs/goals/assura-project-intelligence-lsp-editor-transport.md`.
 
 Current program:
 `docs/goals/assura-project-intelligence-usability-program.md`.
@@ -108,20 +108,20 @@ that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
 Planned next roadmap candidate:
 Continue Project Intelligence Usability with
-`docs/goals/assura-project-intelligence-mcp-agent-transport.md`. Adoption
+`docs/goals/assura-project-intelligence-lsp-editor-transport.md`. Adoption
 blueprint, real-repo proof, onboarding template, context pack, persistent
-session, safe-fix workflow, and `.assura/` directory organization are completed
-locally; remaining successors are MCP agent transport, LSP editor transport,
+session, safe-fix workflow, `.assura/` directory organization, and agent CLI
+surface are completed locally; remaining successors are LSP editor transport
 and release hardening.
 
 ## Recommended Next Action
 
 Run the workflow gate, then validate and start
-`docs/goals/assura-project-intelligence-mcp-agent-transport.md`. Do
+`docs/goals/assura-project-intelligence-lsp-editor-transport.md`. Do
 not reopen the completed Project Intelligence Runtime successors, Project
 Intelligence Usability adoption blueprint, real-repo proof, onboarding
 template, context pack, persistent session, safe-fix workflow, or `.assura/`
-directory organization,
+directory organization, agent CLI surface,
 support-matrix expansion, or Windows CI Restore work unless a new concrete
 docs, manifest, package, binary, support status, or hosted CI drift case is
 named with executable evidence. The broader product roadmap remains open until

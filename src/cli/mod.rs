@@ -1,5 +1,9 @@
 //! Command-line interface modules and public CLI re-exports.
 #[cfg(feature = "full-cli")]
+mod agent;
+#[cfg(feature = "full-cli")]
+mod agent_args;
+#[cfg(feature = "full-cli")]
 mod agent_query_args;
 #[cfg(feature = "full-cli")]
 pub mod args;
@@ -27,6 +31,10 @@ pub mod performance_report;
 #[cfg(feature = "full-cli")]
 pub mod quality;
 
+#[cfg(feature = "full-cli")]
+pub use agent::agent_command;
+#[cfg(feature = "full-cli")]
+pub use agent_args::AgentCommands;
 #[cfg(feature = "full-cli")]
 pub use agent_query_args::AgentQueryArg;
 #[cfg(feature = "full-cli")]

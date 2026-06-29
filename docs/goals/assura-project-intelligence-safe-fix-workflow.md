@@ -10,7 +10,7 @@ related:
   - docs/goals/assura-project-intelligence-usability-program.md
   - docs/goals/assura-project-intelligence-context-pack.md
   - docs/goals/assura-rust-markdown-validation-and-fixing.md
-  - docs/goals/assura-project-intelligence-mcp-agent-transport.md
+  - docs/goals/assura-project-intelligence-agent-cli-surface.md
   - docs/goals/assura-project-intelligence-lsp-editor-transport.md
 ---
 
@@ -33,7 +33,7 @@ after applying changes.
 ## Scope
 
 - Define a common safe-fix plan schema shared by CLI, agent envelopes, and
-  future editor/MCP wrappers.
+  future agent CLI, editor, or optional protocol wrappers.
 - Support bounded apply for accepted fix classes with explicit opt-in.
 - Include before/after counts, changed paths, applied fix IDs, skipped fixes,
   and failure reasons in machine-readable output.

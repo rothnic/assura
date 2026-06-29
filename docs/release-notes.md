@@ -31,6 +31,9 @@ The current pre-1.0 command surface supports these public commands:
   evidence.
 - `assura fix markdown --dry-run --format json` for safe-fix preview output
   before applying deterministic Markdown trailing-space fixes.
+- `assura agent` for local coding-agent project-intelligence commands with
+  JSON defaults for context, diagnostics, context packs, search/show/expand,
+  missing relations, safe-fix previews, and local sessions.
 - `assura content` query commands for deterministic local collection,
   relation, keyword, optional semantic-candidate, optional code-symbol, and
   bounded graph queries over modeled project facts.
@@ -93,11 +96,15 @@ for that asset repair.
 - The stable agent feedback surface is `assura check --format agent`.
 - Codex delivery is an adapter on that shared surface:
   `assura check --format agent --agent codex`.
-- There are no package feedback CLIs, per-agent CLI entrypoints, or per-agent
-  `--format` values in this release.
+- There are no package feedback CLIs, per-agent host-specific CLI entrypoints,
+  or per-agent `--format` values in this release.
 
 ### Project Intelligence Queries
 
+- `assura agent context`, `diagnostics`, `context-pack`, `show`, `search`,
+  `missing-relations`, `expand`, `safe-fixes`, and `session` provide the
+  supported local coding-agent entrypoint. They reuse the same content-query
+  contracts and do not require MCP, remote access, or a daemon.
 - `assura content agent-context`, `collections`, `instances`, `show`,
   `agent-query`, `search`, `semantic-search`, `symbols`, `symbol-refs`,
   `missing-relations`, and `expand` query modeled content facts through the

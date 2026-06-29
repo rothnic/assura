@@ -11,7 +11,7 @@ related:
   - docs/goals/assura-project-intelligence-context-pack.md
   - docs/goals/assura-project-intelligence-persistent-session.md
   - docs/goals/assura-project-intelligence-safe-fix-workflow.md
-  - docs/goals/assura-project-intelligence-mcp-agent-transport.md
+  - docs/goals/assura-project-intelligence-agent-cli-surface.md
   - website/src/content/docs/product/agent-editor-surfaces.md
 ---
 
@@ -63,8 +63,8 @@ content, or safe-fix code actions.
   the safe-fix workflow's explicit opt-in contract.
 - Tests prove editor protocol output agrees with CLI/context-pack output on
   representative Assura and Beacon CRM examples.
-- Docs tell users how the editor transport relates to CLI, hooks, MCP, and
-  Codex agent feedback.
+- Docs tell users how the editor transport relates to CLI, hooks, optional MCP
+  adapters, and Codex agent feedback.
 
 ## Validation Commands
 

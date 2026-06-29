@@ -15,7 +15,7 @@ related:
   - docs/goals/assura-project-intelligence-persistent-session.md
   - docs/goals/assura-project-intelligence-safe-fix-workflow.md
   - docs/goals/assura-project-intelligence-assura-directory-organization.md
-  - docs/goals/assura-project-intelligence-mcp-agent-transport.md
+  - docs/goals/assura-project-intelligence-agent-cli-surface.md
   - docs/goals/assura-project-intelligence-lsp-editor-transport.md
   - docs/goals/assura-project-intelligence-release-hardening.md
 ---
@@ -44,8 +44,7 @@ gaps are:
   prepared checks are wired into a public session surface;
 - safe fixes have preview metadata, but not a complete apply, rollback, and
   audit workflow;
-- MCP-style agent tools and LSP-style editor behavior are planned, not
-  supported product contracts;
+- LSP-style editor behavior is planned, not a supported product contract;
 - release docs and support matrices do not yet treat the completed and
   remaining project-intelligence usability slice as a promoted release surface.
 
@@ -74,9 +73,10 @@ decision with evidence.
 7. [Project Intelligence Assura Directory Organization](./assura-project-intelligence-assura-directory-organization.md)
    keeps `.assura/` scalable by moving model artifacts under one organized
    model directory with optional hierarchy.
-8. [Project Intelligence MCP Agent Transport](./assura-project-intelligence-mcp-agent-transport.md)
-   adds local agent tools over the shared context, query, diagnostics, and
-   safe-fix preview contracts.
+8. [Project Intelligence Agent CLI Surface](./assura-project-intelligence-agent-cli-surface.md)
+   adds local agent commands over the shared context, query, diagnostics, and
+   safe-fix preview contracts. MCP remains an optional future adapter over
+   those contracts, not a prerequisite for this program slice.
 9. [Project Intelligence LSP Editor Transport](./assura-project-intelligence-lsp-editor-transport.md)
    adds local editor diagnostics, context, and code-action behavior over the
    same contracts.
@@ -98,7 +98,7 @@ decision with evidence.
 - Repeated local workflows have a measured warm-session path with explicit
   invalidation rules and fallback to full checks.
 - Agent and editor integrations call the same validation/query/safe-fix
-  contracts as the CLI through independently validated transport goals.
+  contracts as the CLI through independently validated local surfaces.
 - Safe fixes support preview, bounded apply, machine-readable audit output, and
   a clear no-automatic-repair policy.
 - `.assura/` keeps well-known root files bounded and stores project-intelligence
@@ -137,7 +137,8 @@ must include each completed successor's validation chain.
 - R1: Confirm the program addresses usability gaps rather than reopening the
   completed runtime foundation.
 - R2: Confirm the sequence does not promote daemon, LSP, MCP, watch, or
-  safe-fix apply behavior before tests and docs exist.
+  safe-fix apply behavior before tests and docs exist, and does not require
+  MCP for local agent usability.
 - R3: Confirm every goal is executable independently and has a clear exit
   condition.
 - R4: Confirm no goal requires hosted infrastructure or external providers for
@@ -196,9 +197,9 @@ without real-repo proof and release hardening.
   context-pack completion on task
   `.trellis/tasks/06-29-project-intelligence-usability-remaining-goals`.
   Confirmed the remaining work is persistent warm reuse, safe-fix apply/audit,
-  MCP agent transport, LSP editor transport, and release hardening. Superseded
-  the broader combined editor/agent transport goal with two narrower transport
-  goals.
+  agent CLI surface, LSP editor transport, and release hardening. Superseded
+  the broader combined editor/agent transport goal with narrower local
+  surfaces.
 - 2026-06-29: Completed
   `docs/goals/assura-project-intelligence-persistent-session.md` locally on
   task `.trellis/tasks/06-29-project-intelligence-persistent-session`. Added
@@ -215,8 +216,8 @@ without real-repo proof and release hardening.
   failures in the same JSON report, and expose `audit_id` correlation through
   content-query, context-pack, and session safe-fix previews. The next usability
   gap is `.assura/` organization: root-level project-intelligence model/schema
-  artifacts should move under a shared model directory before MCP/LSP
-  transports promote the starter layout further.
+  artifacts should move under a shared model directory before local
+  agent/editor surfaces promote the starter layout further.
 - 2026-06-29: Completed
   `docs/goals/assura-project-intelligence-assura-directory-organization.md`
   locally on task
@@ -227,4 +228,19 @@ without real-repo proof and release hardening.
   `.assura/models/project-intelligence/starter.schema.json`; docs, support
   policy, release notes, and website examples show the organized layout. The
   immediate next goal is
-  `docs/goals/assura-project-intelligence-mcp-agent-transport.md`.
+  `docs/goals/assura-project-intelligence-agent-cli-surface.md`.
+- 2026-06-29: Revalidated the former MCP transport successor after user
+  feedback on task
+  `.trellis/tasks/06-29-project-intelligence-agent-cli-surface`. The next
+  usability step is now CLI-first: add a local `assura agent ...` surface over
+  existing project-intelligence contracts. MCP is explicitly optional future
+  adapter work, with no remote access requirement for this program slice.
+- 2026-06-29: Completed
+  `docs/goals/assura-project-intelligence-agent-cli-surface.md` locally on task
+  `.trellis/tasks/06-29-project-intelligence-agent-cli-surface`. Added
+  `assura agent` as a supported local project-intelligence command group with
+  JSON-default context, diagnostics, context-pack, search/show/expand,
+  missing-relations, safe-fix preview, and session commands. The surface
+  delegates to existing content-query contracts and does not implement or
+  require MCP or remote access. The immediate next goal is
+  `docs/goals/assura-project-intelligence-lsp-editor-transport.md`.
