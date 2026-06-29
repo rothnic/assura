@@ -1,0 +1,35 @@
+{
+  "id": "project-intelligence-release-hardening",
+  "name": "project-intelligence-release-hardening",
+  "title": "Project Intelligence Release Hardening",
+  "description": "Lock Project Intelligence usability support status, schema examples, release readiness docs, and final program audit evidence.",
+  "status": "completed",
+  "dev_type": "feature",
+  "scope": "docs, tests, release evidence",
+  "package": "assura",
+  "priority": "P2",
+  "creator": "nroth",
+  "assignee": "nroth",
+  "createdAt": "2026-06-29",
+  "completedAt": "2026-06-29",
+  "branch": "codex/project-intelligence-agent-surfaces",
+  "base_branch": "codex/project-intelligence-agent-surfaces",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "docs/goals/assura-project-intelligence-usability-program.md",
+    "docs/goals/assura-project-intelligence-release-hardening.md",
+    "docs/support-policy.md",
+    "docs/compatibility-and-surface.md",
+    "docs/release-notes.md",
+    "website/src/content/docs/reference/release-readiness.md"
+  ],
+  "notes": "Final successor for Project Intelligence Usability. Do not reopen completed runtime, onboarding, session, safe-fix, .assura organization, agent CLI, or editor session goals unless release evidence contradicts them.",
+  "meta": {
+    "program_goal": "docs/goals/assura-project-intelligence-usability-program.md"
+  }
+}
