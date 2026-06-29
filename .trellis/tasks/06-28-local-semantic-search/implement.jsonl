@@ -1,0 +1,6 @@
+{"file": ".trellis/spec/assura/index.md", "reason": "Assura source-of-truth map, self-enforcement policy, and project-intelligence direction."}
+{"file": ".trellis/spec/guides/index.md", "reason": "Reusable implementation guidance for cross-layer data flow and verification."}
+{"file": "docs/goals/assura-project-intelligence-runtime-program.md", "reason": "Master successor ordering and program definition of done."}
+{"file": "docs/goals/assura-local-semantic-search.md", "reason": "Target successor goal, scope, definition of done, validation commands, and reviewer criteria."}
+{"file": "docs/goals/assura-content-query-and-search-cli.md", "reason": "Completed query CLI dependency and boundaries for keyword versus semantic search."}
+{"file": "docs/analysis/2026-06-28-project-intelligence-store-spike.md", "reason": "Store-spike constraints and evidence for graph/search backend choices."}

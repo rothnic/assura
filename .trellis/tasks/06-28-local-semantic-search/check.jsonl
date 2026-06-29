@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/assura/index.md", "reason": "Quality and self-check expectations for Assura code and docs changes."}
+{"file": ".trellis/spec/guides/index.md", "reason": "Review triggers for reuse and cross-layer data flow."}
+{"file": "docs/goals/assura-local-semantic-search.md", "reason": "Acceptance criteria, validation commands, and reviewer blocking criteria to verify before completion."}
+{"file": "docs/goals/assura-content-query-and-search-cli.md", "reason": "Confirms semantic/vector search was intentionally excluded from the completed query CLI slice."}

@@ -91,3 +91,11 @@ selected.
 
 Block if semantic search requires a remote service for normal operation,
 changes validation truth, lacks invalidation, or cannot be disabled.
+
+## Progress Log
+
+- 2026-06-28: Revalidated as `valid` after completing content-query successor.
+  Live repo has `SearchChunk`, `EmbeddingRecord`, `InMemoryFactStore`, keyword
+  search, graph expansion, and public `assura content` commands, but still lacks
+  a semantic chunk contract, local embedding provider/index decision, semantic
+  query output, and changed-chunk invalidation behavior.
