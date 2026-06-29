@@ -1,4 +1,0 @@
-{"file": "docs/goals/assura-project-intelligence-context-pack.md", "reason": "Goal evidence and validation command updates"}
-{"file": "website/src/content/docs/examples/project-intelligence-demo.md", "reason": "Website context-pack handoff documentation"}
-{"file": "tests/project_intelligence_context_pack.rs", "reason": "Context-pack regression coverage"}
-{"file": "tests/content_runtime_dx_docs.rs", "reason": "Docs command/reference regression"}
