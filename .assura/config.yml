@@ -402,6 +402,20 @@ extensions:
           status: supported
         - surface: "command:assura fix markdown"
           status: experimental
+        - surface: "command:assura content"
+          status: supported
+        - surface: "command:assura content collections"
+          status: supported
+        - surface: "command:assura content instances"
+          status: supported
+        - surface: "command:assura content show"
+          status: supported
+        - surface: "command:assura content search"
+          status: supported
+        - surface: "command:assura content missing-relations"
+          status: supported
+        - surface: "command:assura content expand"
+          status: supported
         - surface: "command:assura info"
           status: experimental
         - surface: "command:assura performance-report"
@@ -1105,10 +1119,15 @@ structure:
             directories:
               allowed_names:
                 - "check"
+                - "content_query"
                 - "performance_report"
               allow_extra: false
             children:
               check/:
+                files:
+                  naming: "snake_case"
+                  max_lines: 500
+              content_query/:
                 files:
                   naming: "snake_case"
                   max_lines: 500

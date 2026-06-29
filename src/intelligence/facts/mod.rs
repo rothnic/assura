@@ -4,6 +4,7 @@
 //! daemon, LSP, and MCP layers can consume without choosing a database.
 
 mod ingest;
+mod ingest_helpers;
 mod set;
 mod types;
 

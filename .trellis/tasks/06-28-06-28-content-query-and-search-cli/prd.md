@@ -40,22 +40,55 @@ intelligence queries.
 
 ## Acceptance Criteria
 
-- [ ] A CLI command can list modeled collections and collection instances from
+- [x] A CLI command can list modeled collections and collection instances from
   the fact model.
-- [ ] A CLI command can show one instance with deterministic JSON containing
+- [x] A CLI command can show one instance with deterministic JSON containing
   source path, model type, outgoing relations, incoming relations, diagnostics,
   and related sections where present.
-- [ ] A relation query can report unresolved or missing relationship targets
+- [x] A relation query can report unresolved or missing relationship targets
   from `InMemoryFactStore::missing_relationship_targets()`.
-- [ ] Keyword search returns deterministic matches with enough context for an
+- [x] Keyword search returns deterministic matches with enough context for an
   agent to decide which fact or resource to inspect next.
-- [ ] Graph expansion is bounded, deterministic, and covered by structural JSON
+- [x] Graph expansion is bounded, deterministic, and covered by structural JSON
   tests.
-- [ ] Text output remains concise and does not become the only stable agent
+- [x] Text output remains concise and does not become the only stable agent
   contract.
-- [ ] `cargo fmt --check`, `cargo test content_query --quiet`, a focused CLI
+- [x] `cargo fmt --check`, `cargo test content_query --quiet`, a focused CLI
   command fixture test, `cargo run --quiet -- check --format json .`, and
   `git diff --check` pass or have explicit documented blockers.
+
+## Completion Evidence
+
+- Implemented `assura content collections|instances|show|search|missing-relations|expand`.
+- Query execution uses `RepositoryModel`, `ContentRepository`, `FactIngestor`,
+  and `InMemoryFactStore`; no query command performs ad hoc repository file
+  scans.
+- Structural CLI tests in `tests/content_query_cli.rs` cover JSON outputs for
+  collection/instance listing, instance show, graph expansion, keyword search,
+  missing relations, and diagnostic search.
+- Website examples in `website/src/content/docs/product/query-search.md` target
+  the checked content runtime fixtures after independent review caught stale
+  root-path examples.
+- Public surface policy now classifies `assura content` subcommands in
+  `.assura/command-surface.yml`, `.assura/config.yml`,
+  `docs/compatibility-and-surface.md`, `docs/support-policy.md`, and
+  `docs/release-notes.md`.
+- Review agent `019f10a5-8ca4-7a03-8cfb-55f8b10ca563` found no remaining
+  blockers after the docs example fix.
+
+Validation passed on 2026-06-28:
+
+```bash
+cargo fmt --check
+cargo test --test content_query_cli --quiet
+cargo test content_query --quiet
+cargo test project_intelligence --quiet
+cargo clippy --workspace --all-targets --all-features -- -D warnings
+cargo run --quiet -- check --format json .
+cargo xtask docs
+cargo xtask evidence
+git diff --check
+```
 
 ## Out Of Scope
 

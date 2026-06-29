@@ -38,6 +38,13 @@ publishes and verifies a `.sha256` file next to every archive.
 | `assura hooks` | Supported for local git hooks | CLI help and local hook behavior. |
 | `assura quality plan` | Supported for local quality planning | `.assura/config.yml`, `docs/validation.md`, and changed-check scripts. |
 | `assura performance-report` | Supported evidence command | Performance report CI job and checked report data. |
+| `assura content` | Supported first project-intelligence query surface | Content query CLI fixture tests and product docs. |
+| `assura content collections` | Supported | Content query CLI fixture tests. |
+| `assura content instances` | Supported | Content query CLI fixture tests. |
+| `assura content show` | Supported | Content query CLI fixture tests. |
+| `assura content search` | Supported keyword search | Content query CLI fixture tests; semantic/vector search remains out of scope. |
+| `assura content missing-relations` | Supported relation query | Content query CLI fixture tests. |
+| `assura content expand` | Supported bounded graph expansion | Content query CLI fixture tests. |
 | `assura info` | Experimental diagnostic | CLI exists, but text output is not an automation contract. |
 | `assura watch` | Experimental | CLI exists, but release-grade watch behavior is not claimed. |
 

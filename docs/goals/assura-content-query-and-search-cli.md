@@ -2,7 +2,7 @@
 id: goal-assura-content-query-and-search-cli
 type: goal
 title: Assura content query and search CLI
-status: planned
+status: completed
 created: 2026-06-28
 owners:
   - assura-maintainers
@@ -88,3 +88,33 @@ Add command-specific CLI fixture checks as commands are introduced.
 Block if commands scrape files outside the fact ingestion path, if output is
 not stable for agents, if graph expansion is unbounded, or if this goal
 implements vector search before keyword search works.
+
+## Progress Log
+
+- 2026-06-28: Implemented `assura content` commands for collection listing,
+  instance listing, instance show, keyword search, missing relations, and
+  bounded graph expansion. The command path builds facts through
+  `RepositoryModel`, `ContentRepository`, `FactIngestor`, and
+  `InMemoryFactStore`.
+- 2026-06-28: Added diagnostic search chunks for content runtime and structure
+  diagnostics so keyword search can return diagnostic matches without semantic
+  search or vector ranking.
+- 2026-06-28: Added structural CLI fixture tests covering collections,
+  instances, show, expand, search, missing relations, and diagnostic search.
+- 2026-06-28: Independent review agent `019f10a5-8ca4-7a03-8cfb-55f8b10ca563`
+  found one blocker: website examples used `.` with fixture IDs that do not
+  exist in the root config. Updated docs to use copy/pasteable content runtime
+  fixture paths; reviewer found no other blockers.
+- 2026-06-28: Registered `assura content` and its first-slice subcommands in
+  the checked command-surface contract, support matrix, support policy,
+  compatibility matrix, and release notes.
+- 2026-06-28: Validation passed:
+  `cargo fmt --check`;
+  `cargo test --test content_query_cli --quiet`;
+  `cargo test content_query --quiet`;
+  `cargo test project_intelligence --quiet`;
+  `cargo clippy --workspace --all-targets --all-features -- -D warnings`;
+  `cargo run --quiet -- check --format json .`;
+  `cargo xtask docs`;
+  `cargo xtask evidence`;
+  `git diff --check`.

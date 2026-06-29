@@ -118,6 +118,12 @@ pub enum Commands {
         command: FixCommands,
     },
 
+    #[command(about = "Query modeled content and project intelligence facts")]
+    Content {
+        #[command(subcommand)]
+        command: ContentCommands,
+    },
+
     #[command(about = "Show Assura configuration information")]
     Info {
         #[arg(help = "Assura configuration path (defaults to discovered config)")]
@@ -241,6 +247,84 @@ pub enum FixCommands {
 
         #[arg(long, value_enum, default_value = "trailing-spaces")]
         rule: MarkdownFixRuleArg,
+    },
+}
+
+#[derive(Subcommand, Debug)]
+pub enum ContentCommands {
+    #[command(about = "List modeled content collections")]
+    Collections {
+        #[arg(help = "Project root directory (defaults to current directory)")]
+        path: Option<PathBuf>,
+
+        #[arg(short, long, value_enum, default_value = "text")]
+        format: OutputFormat,
+    },
+
+    #[command(about = "List instances in one modeled collection")]
+    Instances {
+        #[arg(help = "Content collection name")]
+        collection: String,
+
+        #[arg(help = "Project root directory (defaults to current directory)")]
+        path: Option<PathBuf>,
+
+        #[arg(short, long, value_enum, default_value = "text")]
+        format: OutputFormat,
+    },
+
+    #[command(about = "Show one modeled content instance")]
+    Show {
+        #[arg(help = "Content collection name")]
+        collection: String,
+
+        #[arg(help = "Instance ID inside the collection")]
+        id: String,
+
+        #[arg(help = "Project root directory (defaults to current directory)")]
+        path: Option<PathBuf>,
+
+        #[arg(short, long, value_enum, default_value = "text")]
+        format: OutputFormat,
+    },
+
+    #[command(about = "Search modeled content facts by keyword")]
+    Search {
+        #[arg(help = "Keyword query")]
+        query: String,
+
+        #[arg(help = "Project root directory (defaults to current directory)")]
+        path: Option<PathBuf>,
+
+        #[arg(short, long, value_enum, default_value = "text")]
+        format: OutputFormat,
+    },
+
+    #[command(about = "Report relationship edges with missing targets")]
+    MissingRelations {
+        #[arg(help = "Project root directory (defaults to current directory)")]
+        path: Option<PathBuf>,
+
+        #[arg(short, long, value_enum, default_value = "text")]
+        format: OutputFormat,
+    },
+
+    #[command(about = "Expand bounded graph context around one content instance")]
+    Expand {
+        #[arg(help = "Content collection name")]
+        collection: String,
+
+        #[arg(help = "Instance ID inside the collection")]
+        id: String,
+
+        #[arg(help = "Project root directory (defaults to current directory)")]
+        path: Option<PathBuf>,
+
+        #[arg(long, default_value_t = 20)]
+        limit: usize,
+
+        #[arg(short, long, value_enum, default_value = "text")]
+        format: OutputFormat,
     },
 }
 

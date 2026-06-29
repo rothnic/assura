@@ -1,10 +1,13 @@
+use super::ingest_helpers::{
+    adapter_name, column_from_message, line_from_message, schema_fields, searchable_object_text,
+};
 use super::set::{model_definition_id, model_instance_id, normalize_path, resource_id, FactSet};
 use super::types::*;
 use crate::cli::StructureCheckReport;
 use crate::content_repository::{
-    AdapterKind, CollectionSpec, ContentFinding, RepositoryModel, RepositoryValidation,
+    CollectionSpec, ContentFinding, RepositoryModel, RepositoryValidation,
 };
-use serde_json::{Map, Value};
+use serde_json::Value;
 use std::collections::BTreeSet;
 use std::path::Path;
 
@@ -148,20 +151,21 @@ impl FactIngestor {
             if let (Some(loc), Some(field)) = (&mut location, finding.field.as_ref()) {
                 loc.field = Some(field.clone());
             }
-            self.facts.upsert_fact(ProjectFact::Diagnostic(Diagnostic {
-                id: FactId::from_parts(
-                    "diagnostic",
-                    &format!(
-                        "content:{}:{}:{}",
-                        finding.code,
-                        finding
-                            .path
-                            .as_deref()
-                            .map(normalize_path)
-                            .unwrap_or_else(|| "-".to_string()),
-                        finding.message
-                    ),
+            let diagnostic_id = FactId::from_parts(
+                "diagnostic",
+                &format!(
+                    "content:{}:{}:{}",
+                    finding.code,
+                    finding
+                        .path
+                        .as_deref()
+                        .map(normalize_path)
+                        .unwrap_or_else(|| "-".to_string()),
+                    finding.message
                 ),
+            );
+            self.facts.upsert_fact(ProjectFact::Diagnostic(Diagnostic {
+                id: diagnostic_id.clone(),
                 generation: self.generation.clone(),
                 origin: FactOrigin::Derived,
                 rule: format!("content_runtime:{}", finding.code),
@@ -170,6 +174,7 @@ impl FactIngestor {
                 target_id,
                 location,
             }));
+            self.upsert_diagnostic_search_chunk(diagnostic_id, finding.message.clone());
         }
     }
 
@@ -201,6 +206,7 @@ impl FactIngestor {
                 target_id: Some(target_id.clone()),
                 location: Some(location),
             }));
+            self.upsert_diagnostic_search_chunk(diagnostic_id.clone(), violation.message.clone());
 
             if violation.rule == "markdown_trailing_spaces" {
                 self.facts.upsert_fact(ProjectFact::SafeFix(SafeFix {
@@ -312,6 +318,17 @@ impl FactIngestor {
             ));
         }
     }
+
+    fn upsert_diagnostic_search_chunk(&mut self, diagnostic_id: FactId, text: String) {
+        self.facts
+            .upsert_fact(ProjectFact::SearchChunk(SearchChunk {
+                id: FactId::from_parts("search_chunk", &format!("diagnostic:{diagnostic_id}")),
+                generation: self.generation.clone(),
+                origin: FactOrigin::Derived,
+                source_id: diagnostic_id,
+                text,
+            }));
+    }
 }
 
 fn finding_target_id(
@@ -397,100 +414,4 @@ fn relationship_candidate_collections(
     } else {
         edge.target_collections.clone()
     }
-}
-
-fn schema_fields(
-    collection: &CollectionSpec,
-    schema: Option<&Value>,
-) -> Vec<(String, String, bool)> {
-    let class_name = collection
-        .schema_class
-        .as_deref()
-        .unwrap_or(collection.object_type.as_str());
-    let required = schema
-        .and_then(|schema| schema.pointer(&format!("/$defs/{class_name}/required")))
-        .and_then(Value::as_array)
-        .map(|items| {
-            items
-                .iter()
-                .filter_map(Value::as_str)
-                .map(ToOwned::to_owned)
-                .collect::<BTreeSet<_>>()
-        })
-        .unwrap_or_default();
-    let mut fields = schema
-        .and_then(|schema| schema.pointer(&format!("/$defs/{class_name}/properties")))
-        .and_then(Value::as_object)
-        .map(|properties| {
-            properties
-                .iter()
-                .map(|(name, value)| {
-                    (
-                        name.clone(),
-                        schema_property_kind(value),
-                        required.contains(name),
-                    )
-                })
-                .collect::<Vec<_>>()
-        })
-        .unwrap_or_default();
-
-    if !fields
-        .iter()
-        .any(|(name, _, _)| name == &collection.id_field)
-    {
-        fields.push((collection.id_field.clone(), "string".to_string(), true));
-    }
-    fields.sort_by(|left, right| left.0.cmp(&right.0));
-    fields
-}
-
-fn schema_property_kind(value: &Value) -> String {
-    match value.get("type").and_then(Value::as_str) {
-        Some("array") => value
-            .get("items")
-            .and_then(|items| items.get("type"))
-            .and_then(Value::as_str)
-            .map(|item| format!("array<{item}>"))
-            .unwrap_or_else(|| "array".to_string()),
-        Some(kind) => kind.to_string(),
-        None if value.get("enum").is_some() => "enum".to_string(),
-        None => "unknown".to_string(),
-    }
-}
-
-fn adapter_name(adapter: AdapterKind) -> &'static str {
-    match adapter {
-        AdapterKind::MarkdownFrontmatter => "markdown_frontmatter",
-        AdapterKind::JsonRecord => "json_record",
-        AdapterKind::YamlRecord => "yaml_record",
-        AdapterKind::JsonlRecord => "jsonl_record",
-    }
-}
-
-fn searchable_object_text(data: &Map<String, Value>) -> String {
-    let mut parts = Vec::new();
-    for (key, value) in data {
-        if let Some(text) = value.as_str() {
-            parts.push(format!("{key}: {text}"));
-        }
-    }
-    parts.join("\n")
-}
-
-fn line_from_message(message: &str) -> Option<usize> {
-    number_after_marker(message, "line ")
-}
-
-fn column_from_message(message: &str) -> Option<usize> {
-    number_after_marker(message, "column ")
-}
-
-fn number_after_marker(message: &str, marker: &str) -> Option<usize> {
-    let start = message.find(marker)? + marker.len();
-    let digits = message[start..]
-        .chars()
-        .take_while(|ch| ch.is_ascii_digit())
-        .collect::<String>();
-    digits.parse().ok()
 }

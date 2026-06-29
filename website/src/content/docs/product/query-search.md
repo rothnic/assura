@@ -1,24 +1,50 @@
 ---
 title: Query And Search
-description: Planned query, graph expansion, keyword search, and semantic search layers.
+description: Content query, relation, graph expansion, keyword search, and semantic search layers.
 ---
 
-Query and search are planned layers of the Project Intelligence Runtime. They
-depend on the fact model and embedded graph/search storage goals, so the docs
-must treat them as roadmap work until those goals land.
+Query and search are Project Intelligence Runtime layers built on modeled
+content collections, normalized facts, and local in-memory graph/search indexes.
+The first supported command group is `assura content`, which exposes
+deterministic collection, relation, keyword, and bounded graph queries for
+agents and humans.
 
 ## Status
 
 | Capability | Status | Notes |
 | --- | --- | --- |
-| Collection queries | Planned | Will expose modeled collection records from the content runtime. |
-| Relation queries | Planned | Will traverse content-model relation edges and missing-target diagnostics. |
-| Keyword search | Planned | Will search indexed document, section, instance, and diagnostic text. |
-| Graph expansion | Planned | Will expand from a resource or model instance into related facts. |
+| Collection queries | Supported | Lists modeled collections and instances from content runtime facts. |
+| Relation queries | Supported | Traverses relation edges and reports missing targets. |
+| Keyword search | Supported | Searches indexed model-instance, Markdown-section, and diagnostic chunks. |
+| Graph expansion | Supported | Expands from a model instance into bounded related facts. |
 | Local semantic search | Planned | Optional candidate retrieval only; it will not decide validation correctness. |
 
-## Current Path
+## Commands
 
-Today, use `assura check --format json .` for validation facts and content
-runtime diagnostics. Query and search commands will be documented here after the
-fact model, embedded store, and CLI goals add their supported surfaces.
+Use JSON output for agent integrations:
+
+```bash
+assura content collections tests/fixtures/content_runtime/valid --format json
+assura content instances goals tests/fixtures/content_runtime/valid --format json
+assura content show goals goal-portable-structure tests/fixtures/content_runtime/valid --format json
+assura content search "Portable Structure" tests/fixtures/content_runtime/valid --format json
+assura content missing-relations tests/fixtures/content_runtime/missing_reference --format json
+assura content expand goals goal-portable-structure tests/fixtures/content_runtime/valid --format json
+```
+
+Use text output for quick terminal inspection:
+
+```bash
+assura content collections tests/fixtures/content_runtime/valid
+assura content search "Portable Structure" tests/fixtures/content_runtime/valid
+```
+
+These commands build facts through the content runtime and project-intelligence
+fact ingestor. They do not make search results validation truth; `assura check`
+remains the validation command.
+
+## Boundaries
+
+The current query layer is local and deterministic. It does not provide vector
+search, semantic ranking, code-provider enrichment, LSP, MCP, daemon, or
+long-running editor APIs yet.

@@ -5,9 +5,9 @@ use std::ffi::OsString;
 use tracing::{error, info};
 
 use super::{
-    check_command, fix_markdown_command, info_command, init_command, migrate_command,
-    performance_report_command, quality_plan_command, status_command, watch_command,
-    CheckCommandOptions, Cli, Commands, ExitCode, FixCommands, HookCommands,
+    check_command, content_command, fix_markdown_command, info_command, init_command,
+    migrate_command, performance_report_command, quality_plan_command, status_command,
+    watch_command, CheckCommandOptions, Cli, Commands, ExitCode, FixCommands, HookCommands,
     PerformanceReportCommandOptions, QualityCommands,
 };
 
@@ -101,6 +101,7 @@ async fn run_full_cli(cli: Cli) -> ExitCode {
                 fix_markdown_command(path, config_path, rule).await
             }
         },
+        Commands::Content { command } => content_command(command, config_path).await,
         Commands::Info { path } => info_command(path, config_path).await,
         Commands::PerformanceReport {
             output,

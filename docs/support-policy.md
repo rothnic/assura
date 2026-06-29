@@ -22,6 +22,7 @@ This policy applies to Assura pre-1.0 releases.
 | `assura hooks` for local git hooks | Supported local workflow | Hooks must be opt-in and local to a checkout. |
 | `assura quality plan` | Supported local workflow | Quality-scope planning must stay config-backed and deterministic. |
 | `assura performance-report` | Supported evidence command | Claims must cite checked benchmark or CI artifacts. |
+| `assura content` query commands | Supported first project-intelligence query surface | JSON output for collection, relation, keyword, and bounded graph queries must remain deterministic enough for agent use. Semantic/vector search is not part of this surface. |
 | `assura info` | Experimental diagnostic | Text output can change before a documented automation contract exists. |
 | `extensions.custom_constraints` | Experimental first-party | Specialized constraint execution only. Common repository relationships should use `structure` captures, `exists:1`, `needs`, and `provides`. Breaking changes are allowed before 1.0 with release-note disclosure. |
 | `extensions.support_matrices` | Experimental first-party | Public command/API classification checks for repository policy. Rows must use `supported`, `experimental`, `internal`, `roadmap`, or `unsupported`. Breaking changes are allowed before 1.0 with release-note disclosure. |
