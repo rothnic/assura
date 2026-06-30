@@ -3,3 +3,9 @@
 {"command":"cargo xtask docs","reason":"Confirm docs site builds with the latest Project Intelligence pages."}
 {"command":"cargo xtask evidence","reason":"Confirm repo evidence gates pass before publishing."}
 {"command":"git diff --check","reason":"Confirm no whitespace errors before publishing."}
+{"command":"python3 ./.trellis/scripts/workflow_gate.py --platform codex","result":"passed","coverage":"Workflow gate ready on branch codex/project-intelligence-agent-surfaces with active publish task."}
+{"command":"cargo run --quiet -- check --format json .","result":"passed","coverage":"Assura self-check passed with 1167 files, 282 dirs, and no violations."}
+{"command":"cargo xtask docs","result":"passed","coverage":"Website build passed with 37 pages including /examples/project-intelligence-demo/index.html."}
+{"command":"cargo xtask evidence","result":"passed","coverage":"Review evidence policy checks passed."}
+{"command":"git diff --check","result":"passed"}
+{"command":"cargo xtask target-state","result":"passed","coverage":"Target-state passed after active task metadata was corrected."}
