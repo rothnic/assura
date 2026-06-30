@@ -32,7 +32,7 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 18 | Project Intelligence Runtime | Completed | All nine successors and final completion audit completed locally |
 | 19 | Project Intelligence Usability | Completed | Adoption blueprint, real-repo proof, onboarding template, context pack, persistent session, safe-fix workflow, `.assura/` directory organization, agent CLI surface, LSP editor transport, release hardening, and final usability audit completed locally |
 | 20 | Project Intelligence Simple Usability | Completed | PR #109 merged and deployed; task archived under `.trellis/tasks/archive/2026-06/` |
-| 21 | Markdown Reference Intelligence | Active | New follow-up from live docs review: fast Markdown linting, required heading fixes, GitHub-renderable internal links, whole-repo code/comment reference graph, broken code/file targets, configurable severity, and suppressions |
+| 21 | Markdown Reference Intelligence | Active | Parent program for fast Markdown linting, repository reference graph, daemon readiness, daemon management CLI, VS Code integration, agent daemon awareness, incremental pre-1.0 releases, public roadmap artifact, and future Zed/JetBrains editor follow-ups |
 
 ## Active Roadmap Iteration
 
@@ -45,7 +45,7 @@ Current branch:
 `codex/markdown-lint-link-reference-goal`.
 
 Current recommended goal:
-`docs/goals/assura-markdown-lint-link-reference-engine.md`.
+`docs/goals/assura-markdown-reference-intelligence-program.md`.
 
 Triggering evidence:
 After the Project Intelligence docs follow-up merged and deployed, live review
@@ -56,6 +56,11 @@ relative internal links, discovers code/comment references to docs, detects
 broken file/code/heading/line references, supports configurable warning levels,
 allows reasoned suppressions, and can later power context-efficient daemon or
 warm-session feedback from the same reference graph.
+
+The parent program tracks the required child goals for the reference engine,
+daemon readiness, daemon management CLI, VS Code integration, agent daemon
+awareness, incremental pre-1.0 releases, public website roadmap, and later
+Zed/JetBrains integrations.
 
 Most recent completed iteration:
 Project Intelligence Simple Usability completed in PR #109. It added
@@ -140,8 +145,9 @@ one `--format <agent>-hook` value per agent. Treat older roadmap/task wording in
 that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
 Planned next roadmap candidate:
-Complete the Markdown Reference Intelligence planning slice, then implement the
-first fast local Markdown lint/repository-reference validation slice from
+Complete the Markdown Reference Intelligence parent-program planning slice,
+then implement the first fast local Markdown lint/repository-reference
+validation slice from
 `docs/goals/assura-markdown-lint-link-reference-engine.md`. Keep CLI-first
 local workflows as the default product path; MCP or hosted adapters are
 optional later surfaces over the same contracts.
@@ -150,15 +156,16 @@ optional later surfaces over the same contracts.
 
 Run the workflow gate, then continue
 `.trellis/tasks/06-30-markdown-lint-link-reference-engine`. The immediate path
-is to land the explicit Markdown lint/repository-reference goal and then start
-the first implementation slice against its proof gates. Do not reopen completed
-Project Intelligence Runtime or lower-level Usability successors unless new
-evidence names a narrower drift case.
+is to land the parent program and child goals, then start the first
+implementation slice against the reference-engine proof gates. Do not reopen
+completed Project Intelligence Runtime or lower-level Usability successors
+unless new evidence names a narrower drift case.
 
 ## Roadmap Rules
 
 - Use this roadmap in every non-trivial workflow status snapshot.
-- Keep epic names at 3-5 words where practical.
+- Keep public roadmap item labels at 2-4 words.
+- Keep internal epic names short enough to scan.
 - Put detailed implementation work in Trellis tasks, not in this roadmap.
 - If a new roadmap iteration or epic is needed, add it here and identify the
   first Trellis task that owns it.

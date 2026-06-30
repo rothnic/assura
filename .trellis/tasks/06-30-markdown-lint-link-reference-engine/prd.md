@@ -22,6 +22,15 @@ slice.
   too. Whole-repo checks should catch that, and warm session/watch/future
   daemon paths should use discovered source-to-target edges for quick,
   context-efficient affected-reference feedback.
+- The user wants a parent goal that references the major sub-goals for daemon
+  readiness, daemon management CLI, VS Code integration, agent awareness, and
+  later Zed/JetBrains integrations.
+- The latest public GitHub release is `v0.1.0` from 2026-05-24. The user wants
+  meaningful progress to produce incremental pre-1.0 versions and GitHub
+  release artifacts instead of accumulating only on `master`.
+- The user wants a concise public website roadmap driven by a repo artifact,
+  with roadmap item labels limited to two to four words and optional links to
+  deeper details.
 - The existing Rust Markdown tooling evaluation says broad linter integration
   needs evidence and must respect Assura's local/offline/MSRV constraints.
 
@@ -40,6 +49,7 @@ slice.
 
 - Archive the completed Project Intelligence Simple Usability task.
 - Add a new goal for Markdown lint and repository reference validation.
+- Add a parent program goal and child-goal set for daemon/editor/agent work.
 - Update the roadmap so the active iteration points at the new markdown goal.
 - Make the goal explicit about:
   - broad lint coverage beyond trailing spaces;
@@ -53,11 +63,27 @@ slice.
     invalidation in warm session, watch, or future daemon workflows;
   - configurable per-rule severity;
   - reasoned suppressions.
+- Make the parent goal explicit that:
+  - CLI daemon commands are the shared control plane;
+  - VS Code is the first editor integration;
+  - Zed and JetBrains are future integrations;
+  - agents should detect daemon health, receive bounded context, and know
+    start/restart/doctor/fallback commands.
+- Add an incremental release-train child goal covering version bumps, release
+  notes, tags, GitHub release assets, and live release verification.
+- Add a public-roadmap child goal covering a repo-backed website roadmap,
+  two-to-four-word labels, detail links, and drift validation.
 
 ## Acceptance Criteria
 
 - [x] Previous Project Intelligence Simple Usability task is archived.
 - [x] New Trellis task owns the markdown/repository-reference follow-up.
+- [x] Parent program goal lists the major daemon, editor, CLI, and agent
+      sub-goals.
+- [x] Parent program includes incremental release/versioning as a major
+      sub-goal.
+- [x] Parent program includes a public website roadmap artifact as a major
+      sub-goal.
 - [x] Goal doc includes objective, current gap, scope, non-goals, definition
       of done, validation commands, review tasks, and blocker criteria.
 - [x] Roadmap identifies the previous iteration as completed and the markdown
@@ -75,6 +101,12 @@ slice.
 
 - Previous completed goal:
   [assura-rust-markdown-validation-and-fixing.md](../../../docs/goals/assura-rust-markdown-validation-and-fixing.md)
+- Parent program:
+  [assura-markdown-reference-intelligence-program.md](../../../docs/goals/assura-markdown-reference-intelligence-program.md)
+- Release train:
+  [assura-incremental-release-train.md](../../../docs/goals/assura-incremental-release-train.md)
+- Public roadmap:
+  [assura-public-roadmap-artifact.md](../../../docs/goals/assura-public-roadmap-artifact.md)
 - Markdown tooling analysis:
   [2026-06-18-markdown-tooling-evaluation.md](../../../docs/analysis/2026-06-18-markdown-tooling-evaluation.md)
 - Config notation:
