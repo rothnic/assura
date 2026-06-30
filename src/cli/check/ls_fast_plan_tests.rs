@@ -33,6 +33,33 @@ fn fast_file_naming_prefers_longest_suffix_match() {
 }
 
 #[test]
+fn fast_file_naming_uses_exact_extension_segments() {
+    let effective = EffectiveRules {
+        files: Some(Arc::new(FileBundle {
+            naming_patterns: Some(HashMap::from([
+                ("*.ts".to_string(), "snake_case".to_string()),
+                ("*.kind-01.ts".to_string(), "kebab-case".to_string()),
+            ])),
+            ..FileBundle::default()
+        })),
+        ..EffectiveRules::default()
+    };
+
+    let rules = FastRules::new(effective);
+    let file_naming = rules.file_naming.as_ref().unwrap();
+
+    let kind_match = file_naming
+        .naming_for("feature-01.kind-01.ts", &HashMap::new())
+        .unwrap();
+    assert_eq!(kind_match.naming.label(), "kebab-case");
+
+    let plain_match = file_naming
+        .naming_for("feature_01.ts", &HashMap::new())
+        .unwrap();
+    assert_eq!(plain_match.naming.label(), "snake_case");
+}
+
+#[test]
 fn fast_plan_allows_direct_file_and_directory_policies() {
     let mut config = Config::new();
     config.structure.insert(
