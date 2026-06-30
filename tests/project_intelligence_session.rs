@@ -12,6 +12,17 @@ fn assura_bin() -> &'static str {
     env!("CARGO_BIN_EXE_assura")
 }
 
+fn add_trailing_spaces_after_heading(markdown: &str) -> String {
+    let newline = if markdown.contains("\r\n") {
+        "\r\n"
+    } else {
+        "\n"
+    };
+    let marker = format!("# Checkout Onboarding{newline}{newline}");
+    let replacement = format!("# Checkout Onboarding{newline}   {newline}");
+    markdown.replace(&marker, &replacement)
+}
+
 struct SessionProcess {
     child: Child,
     stdin: ChildStdin,
@@ -219,9 +230,12 @@ fn content_session_safe_fixes_include_cli_audit_id() {
     let temp = tempfile::tempdir().expect("tempdir");
     copy_dir(Path::new(BEACON_INVALID), temp.path());
     let epic_path = temp.path().join("docs/epics/epic_checkout.md");
-    let drifted = fs::read_to_string(&epic_path)
-        .expect("epic markdown")
-        .replace("# Checkout Onboarding\n\n", "# Checkout Onboarding\n   \n");
+    let original = fs::read_to_string(&epic_path).expect("epic markdown");
+    let drifted = add_trailing_spaces_after_heading(&original);
+    assert_ne!(
+        drifted, original,
+        "fixture mutation should add trailing spaces"
+    );
     fs::write(&epic_path, drifted).expect("write deterministic markdown drift");
 
     let dry_run = Command::new(assura_bin())
