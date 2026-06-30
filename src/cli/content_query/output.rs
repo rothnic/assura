@@ -224,6 +224,7 @@ pub(super) struct SymbolRefOutput {
 pub(super) struct SearchMatchOutput {
     pub(super) source_id: String,
     pub(super) source_kind: String,
+    pub(super) score: f32,
     pub(super) collection: Option<String>,
     pub(super) instance_id: Option<String>,
     #[serde(serialize_with = "serialize_optional_path")]

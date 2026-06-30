@@ -1,0 +1,3 @@
+{"file":".trellis/spec/assura/roadmap.md","reason":"Verify the new follow-up task is the active routing source and does not reopen completed successors incorrectly."}
+{"file":".trellis/spec/assura/structure-enforcement.md","reason":"Assura self-check must remain clean after adding goal docs and task files."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Check CLI JSON/text output and docs examples stay aligned."}

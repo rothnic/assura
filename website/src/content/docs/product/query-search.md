@@ -15,7 +15,7 @@ agents and humans.
 | --- | --- | --- |
 | Collection queries | Supported | Lists modeled collections and instances from content runtime facts. |
 | Relation queries | Supported | Traverses relation edges and reports missing targets. |
-| Keyword search | Supported | Searches indexed model-instance, Markdown-section, and diagnostic chunks. |
+| Keyword search | Supported | Searches indexed model-instance, Markdown-section, and diagnostic chunks with deterministic lexical scores. |
 | Graph expansion | Supported | Expands from a model instance into bounded related facts. |
 | Local semantic search | Supported | Optional local candidate retrieval only; it does not decide validation correctness. |
 | Code-symbol queries | Supported | Shows configured model-to-symbol refs and symbol-to-model refs; unresolved refs remain visible. |
@@ -50,9 +50,10 @@ These commands build facts through the content runtime and project-intelligence
 fact ingestor. They do not make search results validation truth; `assura check`
 remains the validation command.
 
-Semantic search is disabled unless `--enable-local` is present. The built-in
-local baseline returns candidate facts with scores, related context, and
-diagnostics; scores are ranking hints only.
+Keyword search scores are deterministic lexical ranking hints. Semantic search
+is disabled unless `--enable-local` is present. The built-in local baseline
+returns candidate facts with separate semantic scores, related context, and
+diagnostics; no score decides validation correctness.
 
 Code-symbol queries are also optional enrichment. The built-in Rust token
 baseline can resolve rough local declarations, and missing providers preserve

@@ -31,21 +31,36 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 17 | Support Matrix Surface Expansion | Completed | PR #88 merged; archive/sync PR #89 merged |
 | 18 | Project Intelligence Runtime | Completed | All nine successors and final completion audit completed locally |
 | 19 | Project Intelligence Usability | Completed | Adoption blueprint, real-repo proof, onboarding template, context pack, persistent session, safe-fix workflow, `.assura/` directory organization, agent CLI surface, LSP editor transport, release hardening, and final usability audit completed locally |
+| 20 | Project Intelligence Simple Usability | Active | New follow-up from live docs review: simple CLI, repo-wide code/content search, and content-model validation demo |
 
 ## Active Roadmap Iteration
 
-Project Intelligence Usability is complete locally.
+Project Intelligence Simple Usability is active.
+
+Owning task:
+`.trellis/tasks/06-30-project-intelligence-simple-repo-usability`.
+
+Current branch:
+`codex/project-intelligence-usability-followup`.
+
+Current recommended goal:
+`docs/goals/assura-project-intelligence-simple-cli.md`, with companion goal
+docs for repo-wide code/content search and content-model validation demos.
+
+Triggering evidence:
+After the Project Intelligence docs were deployed, live review found that the
+demo remains too meta, keyword search did not expose a score, graph expansion
+was not explained from a direct anchor, and the current command set still
+requires users to understand too many primitives before getting a useful
+repo-wide answer.
+
+Project Intelligence Usability is complete locally as the lower-level
+primitive and release-hardening slice.
 
 Most recent owning task:
 `.trellis/tasks/archive/2026-06/06-29-project-intelligence-release-hardening`,
 completing
 `docs/goals/assura-project-intelligence-release-hardening.md`.
-
-Current branch:
-`codex/project-intelligence-agent-surfaces`.
-
-Current recommended goal:
-No Project Intelligence Usability successor remains open.
 
 Current program:
 `docs/goals/assura-project-intelligence-usability-program.md`.
@@ -108,19 +123,19 @@ one `--format <agent>-hook` value per agent. Treat older roadmap/task wording in
 that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
 Planned next roadmap candidate:
-No Project Intelligence Usability successor remains open. Create a new roadmap
-candidate only when a concrete product decision or drift case names the next
-bounded goal with executable evidence.
+Complete the Simple Usability follow-up before creating another Project
+Intelligence successor. The follow-up should keep CLI-first local workflows as
+the default product path; MCP or hosted adapters are optional later surfaces
+over the same contracts.
 
 ## Recommended Next Action
 
-Run the workflow gate, then open a new bounded goal only if a concrete docs,
-manifest, package, binary, support status, hosted CI drift case, or next
-product decision is named with executable evidence. Do not reopen the completed
-Project Intelligence Runtime successors, Project Intelligence Usability
-successors, support-matrix expansion, or Windows CI Restore work without that
-evidence. The broader product roadmap remains open until a separate product
-decision declares it complete.
+Run the workflow gate, then continue
+`.trellis/tasks/06-30-project-intelligence-simple-repo-usability`. The
+immediate path is to land the docs/CLI score correction and keep the larger
+repo-wide search and validation-demo work in the new goal docs. Do not reopen
+completed Project Intelligence Runtime or lower-level Usability successors
+unless new evidence names a narrower drift case.
 
 ## Roadmap Rules
 

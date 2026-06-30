@@ -3,9 +3,18 @@ title: Project Intelligence Demo
 description: A visual walkthrough from modeled content to search, graph context, agent envelopes, and safe-fix previews.
 ---
 
-Assura project intelligence starts with ordinary repository files. A maintainer
-checks in typed content models, Markdown scopes, and relations, then agents and
-humans query the same local facts through the CLI.
+Assura project intelligence starts with ordinary repository files. A
+maintainer checks in typed content models, Markdown scopes, and relations, then
+uses the local CLI to answer four practical questions:
+
+- Is this content valid?
+- What matches this text?
+- What other content or code is related?
+- What safe Markdown fixes are available?
+
+This page shows the current commands directly. The lower-level commands are
+usable today, but the product still needs one simpler repo-wide command for
+searching code and content together.
 
 <section class="pi-demo-flow" aria-label="Project intelligence workflow">
   <div class="pi-demo-step">
@@ -14,15 +23,15 @@ humans query the same local facts through the CLI.
   </div>
   <div class="pi-demo-step">
     <strong>2. Validate</strong>
-    <span><code>assura check</code> proves typed fields and relations.</span>
+    <span><code>assura check</code> catches invalid frontmatter, records, and relations.</span>
   </div>
   <div class="pi-demo-step">
-    <strong>3. Query</strong>
-    <span>Search and graph expansion expose related project context.</span>
+    <strong>3. Search</strong>
+    <span><code>assura content search</code> returns scored local keyword matches.</span>
   </div>
   <div class="pi-demo-step">
-    <strong>4. Assist</strong>
-    <span><code>assura agent</code> packages the same facts for local agents.</span>
+    <strong>4. Expand</strong>
+    <span><code>assura content expand</code> follows modeled relations.</span>
   </div>
 </section>
 
@@ -37,15 +46,40 @@ humans query the same local facts through the CLI.
     <h2>Assura Facts</h2>
     <p><strong>goal-portable-structure</strong> references <strong>spec-portable-structure</strong>.</p>
     <p>Markdown headings become searchable sections.</p>
-    <p>Broken references become diagnostics.</p>
+    <p>Broken fields and references become diagnostics.</p>
   </div>
   <div class="pi-demo-lane">
-    <h2>Agent Surface</h2>
-    <p><code>assura agent context-pack</code></p>
-    <p><code>assura agent diagnostics</code></p>
-    <p><code>assura agent safe-fixes</code></p>
+    <h2>Simple Target</h2>
+    <p>One command should search code and content.</p>
+    <p>Results should explain score, source, and related context.</p>
+    <p>That is a follow-up goal, not a current claim.</p>
   </div>
 </section>
+
+## What Works Today
+
+| Need | Current command | Notes |
+| --- | --- | --- |
+| Validate modeled content and Markdown rules | `assura check --format json .` | Deterministic validation truth. |
+| Search modeled facts, Markdown sections, and diagnostics | `assura content search "text" .` | Local keyword score, not semantic truth. |
+| Get scored local semantic candidates | `assura content semantic-search "text" . --enable-local` | Optional local baseline, disabled by default. |
+| Follow related modeled objects | `assura content expand <collection> <id> .` | Follows configured relations and diagnostics. |
+| Connect modeled content to code symbols | `assura content symbols <collection> <id> .` and `assura content symbol-refs <symbol> .` | Uses modeled symbol references, not full repo search. |
+| Hand a bounded packet to an agent | `assura agent context-pack . --text "text"` | Local CLI wrapper over the same facts. |
+
+## What Is Still Missing
+
+The current commands do not yet provide one obvious repo-wide search command.
+They also do not search every code file by default. The next product slice
+should make this low ceremony:
+
+```bash
+assura find "checkout timeout"
+```
+
+Expected future behavior: return scored code and content matches, show why each
+match ranked, and let the user expand from content to code or code to content
+without choosing a collection or writing complex flags.
 
 ## Start From A Template
 
@@ -241,55 +275,125 @@ The valid project has no violations:
 
 ## Search Project Knowledge
 
-Search is deterministic and local. It indexes modeled instances and Markdown
-sections:
+Search is deterministic and local. It indexes modeled instances, Markdown
+sections, and diagnostics. Each result has a lexical score based on query term
+matches; this is a ranking signal, not proof that the content is correct.
 
 ```bash
 assura content search "Portable Structure" tests/fixtures/content_runtime/valid --format json
 ```
 
 The result includes the Markdown section, the spec instance, and the goal
-instance:
+instance. Text output shows the same scores:
+
+```text
+Search matches: 3
+3.000 goal-portable-structure - id: goal-portable-structure status: active title: Portable Structure Policy
+3.000 spec-portable-structure - id: spec-portable-structure status: active title: Portable structure and frontmatter
+2.000 markdown_section:11e59f57145df031 - Portable Structure Policy
+```
+
+JSON output is stable for agents:
 
 ```json
 {
   "query": "Portable Structure",
   "matches": [
     {
+      "source_id": "instance:4e78e4a53e9087e4",
+      "source_kind": "model_instance",
+      "score": 3.0,
+      "collection": "goals",
+      "instance_id": "goal-portable-structure",
+      "path": "docs/goals/goal_portable_structure.md"
+    },
+    {
+      "source_id": "instance:d2a61adf1fa7cae4",
+      "source_kind": "model_instance",
+      "score": 3.0,
+      "collection": "specs",
+      "instance_id": "spec-portable-structure",
+      "path": "specs/spec_portable_structure.json"
+    },
+    {
+      "source_id": "markdown_section:11e59f57145df031",
       "source_kind": "markdown_section",
+      "score": 2.0,
       "path": "docs/goals/goal_portable_structure.md",
       "text": "Portable Structure Policy"
-    },
-    {
-      "source_kind": "model_instance",
-      "collection": "specs",
-      "instance_id": "spec-portable-structure"
-    },
-    {
-      "source_kind": "model_instance",
-      "collection": "goals",
-      "instance_id": "goal-portable-structure"
     }
   ]
 }
 ```
 
+For scored local semantic candidates, use the separate opt-in command:
+
+```bash
+assura content semantic-search "portable structure policy" tests/fixtures/content_runtime/valid --enable-local --format json
+```
+
+Semantic candidate scores help choose context. Validation still comes from
+`assura check`, missing relations, and schema diagnostics.
+
 ## Expand Related Context
 
-Graph expansion starts from a modeled instance and returns related facts:
+Graph expansion starts from a modeled instance and follows facts Assura already
+knows: configured content relations, incoming relations, code-symbol edges, and
+diagnostics attached to that object. It does not run another search. It answers
+"I found this thing; what should I inspect next?"
 
 ```bash
 assura content expand goals goal-portable-structure tests/fixtures/content_runtime/valid --format json
 ```
 
-Use this when an agent needs the spec, Markdown section, and related diagnostics
-around one project object before editing.
+The valid fixture goal points to one spec, so expansion returns that related
+model instance:
+
+```json
+{
+  "root_id": "instance:4e78e4a53e9087e4",
+  "related": [
+    {
+      "id": "instance:d2a61adf1fa7cae4",
+      "kind": "model_instance",
+      "relationship": "outgoing_relation",
+      "path": "specs/spec_portable_structure.json"
+    }
+  ]
+}
+```
+
+Use this after search when an agent needs the spec, Markdown section,
+diagnostics, or code-symbol references around one project object before
+editing.
 
 ## Catch Broken Relations
+
+Assura also catches incomplete or invalid content when the source file no
+longer matches the intended content model. In the starter shape, Markdown
+frontmatter is the modeled object:
+
+```markdown
+---
+id: goal-portable-structure
+title: Portable structure policy
+status: planned
+specs:
+  - spec-portable-structure
+---
+
+# Portable Structure Policy
+```
+
+The runtime schema declares which fields are required and which values are
+valid. If a goal is missing a required frontmatter field, has the wrong field
+shape, or points to an object that does not exist, `assura check` reports a
+content-runtime diagnostic.
 
 The invalid fixture keeps the same goal but points it at a missing spec:
 
 ```bash
+assura check --format json tests/fixtures/content_runtime/missing_reference
 assura content missing-relations tests/fixtures/content_runtime/missing_reference --format json
 ```
 
@@ -307,6 +411,18 @@ The missing target stays machine-readable:
   ]
 }
 ```
+
+Search also includes diagnostics, so a user or agent can find invalid content
+without already knowing which file failed:
+
+```bash
+assura content search "missing-spec" tests/fixtures/content_runtime/missing_reference --format json
+```
+
+That returns a diagnostic match with the affected Markdown path and the
+content-runtime rule. This is the path for catching incomplete or stale content
+after the model changes: update the schema/config, run `assura check`, then use
+diagnostics, search, and expansion to find the records that no longer conform.
 
 ## Hand Context To An Agent
 
