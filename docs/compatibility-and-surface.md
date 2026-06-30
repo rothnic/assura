@@ -61,9 +61,9 @@ publishes and verifies a `.sha256` file next to every archive.
 | `assura content instances` | Supported | Content query CLI fixture tests. |
 | `assura content show` | Supported | Content query CLI fixture tests. |
 | `assura content search` | Supported scored keyword search | Content query CLI fixture tests prove deterministic lexical scores; semantic candidate retrieval uses the separate `semantic-search` command. |
-| `assura content semantic-search` | Supported optional local candidate search | Semantic search fixture tests; candidates do not decide validation correctness. |
-| `assura content symbols` | Supported optional code-symbol query | Code-symbol fixture tests; baseline evidence is candidate context and does not decide validation correctness. |
-| `assura content symbol-refs` | Supported optional code-symbol query | Code-symbol fixture tests; unresolved provider refs remain queryable. |
+| `assura content semantic-search` | Experimental optional local candidate search | Semantic search fixture tests; candidates do not decide validation correctness. |
+| `assura content symbols` | Experimental optional code-symbol query | Code-symbol fixture tests; baseline evidence is candidate context and does not decide validation correctness. |
+| `assura content symbol-refs` | Experimental optional code-symbol query | Code-symbol fixture tests; unresolved provider refs remain queryable. |
 | `assura content missing-relations` | Supported relation query | Content query CLI fixture tests. |
 | `assura content expand` | Supported bounded graph expansion | Content query CLI fixture tests. |
 | `assura info` | Experimental diagnostic | CLI exists, but text output is not an automation contract. |
@@ -75,6 +75,13 @@ publishes and verifies a `.sha256` file next to every archive.
 for model files stored under `.assura/`. Content runtime validation tests and
 Assura self-check prove that root-level `.assura/` model artifacts are rejected
 while project-relative `schemas/**` artifacts remain valid.
+
+The beta-supported content contract is the modeled collection path: content
+runtime validation, deterministic collection queries, keyword search, relation
+queries, bounded graph expansion, context packs, and local JSON-line sessions.
+Semantic search and code-symbol queries are candidate-enrichment surfaces. They
+can help an agent choose where to inspect next, but they are not validation
+truth and are not required for collection modeling or querying to work.
 
 ## LS-Lint Compatibility
 

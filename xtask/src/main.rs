@@ -2254,7 +2254,7 @@ const SUPPORT_MATRIX_ROWS: &[SupportMatrixRow] = &[
             "assura content expand",
         ],
         support_policy_markers: &[
-            "`assura content` query commands",
+            "`assura content` collection validation and query commands",
             "`assura content session`",
         ],
         compatibility_markers: &[
@@ -2698,6 +2698,7 @@ fn check_docs_release_performance(checks: &mut Checks) {
     let release_checklist_text = read("docs/release-candidate-checklist.md");
     let release_train_text = read("docs/release-train.md");
     let release_surfaces_text = read("docs/data/release-surfaces.json");
+    let code_intelligence_text = read("website/src/content/docs/product/code-intelligence.md");
     let release_readiness_text = read("website/src/content/docs/reference/release-readiness.md");
     let installation_text = read("website/src/content/docs/guides/installation.md");
     let performance_text = read("website/src/content/docs/reference/performance.mdx");
@@ -2816,6 +2817,18 @@ fn check_docs_release_performance(checks: &mut Checks) {
     checks.require(
         release_surfaces_text.contains("\"project-intelligence-local-surfaces\""),
         "docs/data/release-surfaces.json: missing Project Intelligence release surface",
+    );
+    checks.require(
+        release_surfaces_text.contains("\"content-collections-querying\""),
+        "docs/data/release-surfaces.json: missing content collections/querying release surface",
+    );
+    checks.require(
+        code_intelligence_text.contains("Experimental candidate enrichment"),
+        "website code-intelligence docs: code-symbol surfaces must be candidate enrichment",
+    );
+    checks.require(
+        !code_intelligence_text.contains("| Symbol queries | Supported |"),
+        "website code-intelligence docs: symbol queries must not be marked supported",
     );
 
     let Ok(bench_current) = serde_json::from_str::<Value>(&read("benches/history/current.json"))

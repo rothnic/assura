@@ -9,6 +9,13 @@
       "detail_path": "docs/release-notes.md"
     },
     {
+      "id": "content-collections-querying",
+      "label": "Content collections and querying",
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-beta-content-collections-querying.md"
+    },
+    {
       "id": "markdown-safe-fix-preview-apply",
       "label": "Markdown safe-fix preview/apply",
       "status": "experimental",

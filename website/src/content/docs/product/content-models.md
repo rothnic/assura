@@ -40,3 +40,8 @@ and the deeper repository document is `docs/content-runtime.md`.
 When model artifacts live under `.assura/`, keep them under
 `.assura/models/**`. Files outside `.assura/`, such as `schemas/**`, are still
 valid project paths, but `.assura/` itself keeps a bounded root.
+
+Typed frontmatter validation belongs to these content runtime models and
+collections. Markdown rules can require a frontmatter block or heading shape,
+but required typed fields, IDs, relations, and scoped object paths are validated
+through the model-backed collection contract.

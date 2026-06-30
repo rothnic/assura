@@ -2,7 +2,7 @@
 id: goal-assura-beta-content-collections-querying
 type: goal
 title: Assura beta content collections and querying
-status: planned
+status: completed
 created: 2026-06-30
 owners:
   - assura-maintainers
@@ -83,3 +83,9 @@ git diff --check
 Block if duplicate frontmatter validators reappear, semantic ranking decides
 validation correctness, model artifacts leak into `.assura/` root, or agents
 need unbounded context to use collection diagnostics.
+
+## Progress Log
+
+| Date | Update | Evidence |
+| --- | --- | --- |
+| 2026-06-30 | Completed the beta closure slice for content collections and querying by validating the completed content-runtime, query/search, context-pack, and session child goals against the current support docs and release manifest. Added a distinct unreleased `content-collections-querying` release surface and tightened docs so model-backed collection validation/querying is the supported contract while semantic and code-symbol outputs remain candidate enrichment, not validation truth. Independent review Hypatia found two blockers: the persistent-session startup proof was timing out and code-symbol docs still marked candidate queries supported. The session proof now uses a bounded non-flaky ready wait, the stale docs are corrected, and target-state guards the support split. | [assura-content-model-source-of-truth.md](./assura-content-model-source-of-truth.md); [assura-content-query-and-search-cli.md](./assura-content-query-and-search-cli.md); [assura-project-intelligence-context-pack.md](./assura-project-intelligence-context-pack.md); [assura-project-intelligence-persistent-session.md](./assura-project-intelligence-persistent-session.md); `docs/data/release-surfaces.json`; `docs/support-policy.md`; `docs/compatibility-and-surface.md`; `website/src/content/docs/product/content-models.md`; `website/src/content/docs/product/query-search.md`; `website/src/content/docs/product/code-intelligence.md`; `tests/project_intelligence_session.rs`; `cargo test --test project_intelligence_session --quiet`; `cargo xtask target-state`; independent review Hypatia. |

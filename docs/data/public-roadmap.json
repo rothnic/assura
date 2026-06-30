@@ -48,6 +48,12 @@
           "summary": "Stabilize rule IDs, severity, and remediation messages.",
           "detail_path": "docs/goals/assura-beta-structure-severity-contract.md",
           "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-beta-structure-severity-contract.md"
+        },
+        {
+          "label": "Collections Querying",
+          "summary": "Model frontmatter collections and produce bounded context packs.",
+          "detail_path": "docs/goals/assura-beta-content-collections-querying.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-beta-content-collections-querying.md"
         }
       ]
     },
@@ -67,12 +73,6 @@
       "status": "next",
       "title": "Next",
       "items": [
-        {
-          "label": "Collections Querying",
-          "summary": "Model frontmatter collections and produce bounded context packs.",
-          "detail_path": "docs/goals/assura-beta-content-collections-querying.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-beta-content-collections-querying.md"
-        },
         {
           "label": "Markdown Quality",
           "summary": "Expand Markdown linting, heading validation, suppressions, and safe fixes.",

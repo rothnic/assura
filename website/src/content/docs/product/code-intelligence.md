@@ -13,12 +13,13 @@ before any code-symbol provider is required.
 | --- | --- | --- |
 | Native baseline code facts | Supported | `rust-token-baseline-v1` scans rough Rust declarations without external services. |
 | Imported provider facts | Roadmap | Provider output may enrich the graph when available. |
-| Symbol edges from modeled instances | Supported | Configured content fields create resolved or unresolved symbol references. |
-| Symbol queries | Supported | `assura content symbols` and `assura content symbol-refs` expose model-to-symbol and symbol-to-model relationships. |
+| Symbol edges from modeled instances | Experimental candidate enrichment | Configured content fields create resolved or unresolved symbol references. |
+| Symbol queries | Experimental candidate enrichment | `assura content symbols` and `assura content symbol-refs` expose model-to-symbol and symbol-to-model relationships as inspection hints. |
 | Required standalone code service | Unsupported | Core validation must not require CKB, LIP, Codanna, CQS, Glean, SCIP, LSP, or hosted services. |
 
-Code intelligence should explain code context; it should not replace structure,
-Markdown, content-model, or relation validation.
+Code intelligence can explain code context; it does not replace structure,
+Markdown, content-model, or relation validation, and it is not required for the
+supported content collections/querying contract.
 
 ## Configuration
 

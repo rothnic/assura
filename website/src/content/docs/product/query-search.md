@@ -17,8 +17,8 @@ agents and humans.
 | Relation queries | Supported | Traverses relation edges and reports missing targets. |
 | Keyword search | Supported | Searches indexed model-instance, Markdown-section, and diagnostic chunks with deterministic lexical scores. |
 | Graph expansion | Supported | Expands from a model instance into bounded related facts. |
-| Local semantic search | Supported | Optional local candidate retrieval only; it does not decide validation correctness. |
-| Code-symbol queries | Supported | Shows configured model-to-symbol refs and symbol-to-model refs; unresolved refs remain visible. |
+| Local semantic search | Experimental candidate enrichment | Optional local candidate retrieval only; it does not decide validation correctness. |
+| Code-symbol queries | Experimental candidate enrichment | Shows configured model-to-symbol refs and symbol-to-model refs; unresolved refs remain visible. |
 
 ## Commands
 
@@ -65,6 +65,9 @@ missing-relation diagnostics, and agent-query envelopes.
 
 ## Boundaries
 
-The current query layer is local and deterministic. It does not provide remote
-embedding services, mandatory code-provider enrichment, LSP, MCP, daemon, or
-long-running editor APIs yet.
+The beta-supported query layer is local and deterministic for modeled
+collections, keyword search, relation queries, bounded graph expansion, context
+packs, and JSON-line sessions. Semantic and code-symbol outputs are candidate
+enrichment only. They do not provide validation truth, remote embedding
+services, mandatory code-provider enrichment, LSP, MCP, daemon, or long-running
+editor APIs.
