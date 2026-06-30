@@ -30,6 +30,12 @@
           "summary": "Block regressions when the checked Assura path is slower than native LS-Lint.",
           "detail_path": "docs/goals/assura-ls-lint-no-slower-performance-gate.md",
           "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-ls-lint-no-slower-performance-gate.md"
+        },
+        {
+          "label": "Release Train",
+          "summary": "Report release readiness from structured surface and GitHub release state.",
+          "detail_path": "docs/goals/assura-incremental-release-train.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-incremental-release-train.md"
         }
       ]
     },
@@ -48,12 +54,6 @@
           "summary": "Publish a concise roadmap from this repo-owned artifact.",
           "detail_path": "docs/goals/assura-public-roadmap-artifact.md",
           "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-public-roadmap-artifact.md"
-        },
-        {
-          "label": "Release Train",
-          "summary": "Define release readiness checks for incremental pre-1.0 artifacts.",
-          "detail_path": "docs/goals/assura-incremental-release-train.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-incremental-release-train.md"
         },
         {
           "label": "Structure Severity",

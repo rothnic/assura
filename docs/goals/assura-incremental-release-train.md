@@ -2,7 +2,7 @@
 id: goal-assura-incremental-release-train
 type: goal
 title: Assura incremental release train
-status: planned
+status: completed
 created: 2026-06-30
 owners:
   - assura-maintainers
@@ -127,4 +127,4 @@ of this pre-1.0 release train.
 
 | Date | Update | Evidence |
 | --- | --- | --- |
-| 2026-06-30 | Started the release-train slice with a repo-native release train doc, structured release-surface manifest, and `cargo xtask release-readiness --format json`. Current live release state remains `v0.1.0` from 2026-05-24, so the readiness command is expected to fail until a new pre-1.0 release is prepared. | `gh release list --limit 5`; `docs/release-train.md`; `docs/data/release-surfaces.json`; `xtask/src/main.rs`; `cargo xtask release-readiness --format json`. |
+| 2026-06-30 | Completed the release-train readiness slice with a repo-native release train doc, structured release-surface manifest, and `cargo xtask release-readiness --format json`. Current live release state remains `v0.1.0` from 2026-05-24, so the readiness command is expected to fail until a new pre-1.0 release is prepared. | `gh release list --limit 5`; `docs/release-train.md`; `docs/data/release-surfaces.json`; `xtask/src/main.rs`; `cargo xtask release-readiness --format json`; independent review. |
