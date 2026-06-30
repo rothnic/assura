@@ -26,10 +26,10 @@ LS-Lint. If any fixture is slower, the merge is blocked until the regression is
 attributed, fixed, or the fixture is explicitly removed from the headline set
 with reviewer approval.
 
-## Current Gap
+## Current State
 
 The checked `benches/history/current.json` currently reports cold
-`assura-cli` faster on 7 of 8 realistic-equivalent fixtures, with
+`assura-cli` faster on 8 of 8 realistic-equivalent fixtures, with
 `two_x_claim_verdict="not-complete"`. Warm session evidence is complete, but
 warm rows cannot substitute for the cold one-shot CLI gate. The old "CLI floor"
 explanation is not acceptable as a reason to merge slower fixture behavior
@@ -93,6 +93,7 @@ target/release/assura performance-report \
 jq -r '.claim_summary' benches/history/current.json
 jq -r '.results[] | select(.row_family=="assura-cli" or .row_family=="ls-lint-cli") | [.fixture_id,.row_family,.median_runtime_ms,.status] | @tsv' benches/history/current.json
 cargo xtask performance-no-slower
+cargo xtask target-state
 cargo run --quiet -- check --format json .
 cargo xtask docs
 cargo xtask evidence
@@ -112,6 +113,7 @@ than or equal to its paired native `ls-lint-cli` median. Use
 | 2026-06-30 | Added the concrete `cargo xtask performance-no-slower` gate command contract. The command reads an existing performance report and exits nonzero when any headline Assura row is slower than its paired native LS-Lint row or when a pair is missing, so the gate is cheap and does not regenerate benchmarks during ordinary validation. | `xtask/src/main.rs`; `cargo test -p xtask performance_no_slower`; expected current-data failure: `cargo xtask performance-no-slower`. |
 | 2026-06-30 | Attributed the checked `simple_library` miss to stale performance build instructions that measured a default-feature primary launcher instead of the release bundle's lightweight `assura` launcher. A release-style target report passed the no-slower gate with `simple_library` at 3.705 ms for `assura-cli` versus 4.703 ms for native LS-Lint. | `cargo build --release --bin assura --no-default-features --features json-output,yaml-config`; `cargo build --release --bin assura-full`; `cargo build --release -p assura-check-cli`; `target/release/assura performance-report --output target/performance/no-slower-light-launcher.json --history target/performance/no-slower-light-launcher.jsonl --website-dir target/performance/no-slower-light-launcher-website --iterations 3`; `cargo xtask performance-no-slower target/performance/no-slower-light-launcher.json`. |
 | 2026-06-30 | Fixed the remaining `rule_heavy_repo` miss by adding an exact LS-Lint extension-segment lookup for non-wildcard patterns such as `*.kind-17.ts`, while retaining the existing wildcard/glob fallback. The checked 5-iteration report now has Assura faster than native LS-Lint on all 8 realistic-equivalent fixtures; the stricter 2x claim remains incomplete and separate from the no-slower beta gate. | `src/cli/check/ls_fast_naming.rs`; `src/cli/check/ls_fast_plan_tests.rs`; `target/release/assura performance-report --output benches/history/current.json --history benches/history/ls-lint-comparison-history.jsonl --website-dir website/public/data/performance --iterations 5`; `cargo xtask performance-no-slower`; `jq '.claim_summary,.warm_claim_summary' benches/history/current.json`. |
+| 2026-06-30 | Wired the no-slower policy into merge/review enforcement. The scoped CI Performance Report job now runs the no-slower gate on its generated report, and `cargo xtask target-state` verifies checked `current.json` plus the CI workflow command so the gate cannot silently drift out of the repo policy. | `.github/workflows/ci.yml`; `xtask/src/main.rs`; `cargo xtask performance-no-slower`; `cargo xtask target-state`. |
 
 ## Review Tasks
 

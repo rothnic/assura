@@ -2582,6 +2582,38 @@ fn check_docs_release_performance(checks: &mut Checks) {
                 .is_some(),
         "performance current.json: missing cold or warm claim verdict",
     );
+    match performance_no_slower_failures(
+        &bench_current,
+        "realistic-equivalent",
+        "assura-cli",
+        "ls-lint-cli",
+    ) {
+        Ok(failures) => checks.require(
+            failures.is_empty(),
+            format!("performance current.json: no-slower gate failed: {failures:?}"),
+        ),
+        Err(error) => checks.add(format!(
+            "performance current.json: no-slower gate could not be evaluated: {error}"
+        )),
+    }
+    checks.require(
+        text_contains_ordered(
+            &ci_workflow,
+            &[
+                "performance:\n    name: Performance Report",
+                "- name: Generate comparison report",
+                "--output target/performance/ls-lint-comparison.json",
+                "--iterations 5",
+                "- name: Enforce no-slower gate",
+                "run: cargo xtask performance-no-slower target/performance/ls-lint-comparison.json",
+                "- name: Summarize performance",
+                "if: always()",
+                "- name: Upload performance artifact",
+                "if: always()",
+            ],
+        ),
+        ".github/workflows/ci.yml: Performance Report job must generate a 5-iteration report, enforce cargo xtask performance-no-slower on that report, and keep summary/artifact steps on failure",
+    );
 
     let current_cohort = bench_current
         .pointer("/claim_summary/fixture_cohort")
@@ -2716,6 +2748,17 @@ fn command_option_value<'a>(command_line: &'a str, option: &str) -> Option<&'a s
 
 fn text_contains_option_value(text: &str, option: &str, value: &str) -> bool {
     text.contains(&format!("{option} {value}")) || text.contains(&format!("{option}={value}"))
+}
+
+fn text_contains_ordered(text: &str, needles: &[&str]) -> bool {
+    let mut remaining = text;
+    for needle in needles {
+        let Some(index) = remaining.find(needle) else {
+            return false;
+        };
+        remaining = &remaining[index + needle.len()..];
+    }
+    true
 }
 
 struct ReleaseArtifact {

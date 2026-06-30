@@ -461,8 +461,11 @@ jobs:
         mkdir -p target/performance
         target/release/assura performance-report \
           --output target/performance/ls-lint-comparison.json \
-          --iterations 3
+          --iterations 5
+    - name: Enforce no-slower gate
+      run: cargo xtask performance-no-slower target/performance/ls-lint-comparison.json
     - name: Summarize performance
+      if: always()
       run: |
         python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
         import json
@@ -535,6 +538,7 @@ jobs:
             print(f"| `{fixture}` | " + " | ".join(values) + " |")
         PY
     - name: Upload performance artifact
+      if: always()
       uses: actions/upload-artifact@v4
       with:
         name: ls-lint-performance-report

@@ -124,6 +124,11 @@ evidence.
   if a required paired row is missing. Default inputs are
   `benches/history/current.json`, cohort `realistic-equivalent`, Assura row
   `assura-cli`, and LS-Lint row `ls-lint-cli`.
+- CI enforcement: the scoped `Performance Report` job must run
+  `cargo xtask performance-no-slower target/performance/ls-lint-comparison.json`
+  after generating its comparison report, and `cargo xtask target-state` must
+  fail if checked `benches/history/current.json` no longer satisfies the same
+  no-slower policy.
 - Native LS-Lint metadata is part of the no-slower gate: selected LS-Lint rows
   must use `tool_name=ls-lint-native-cli` and
   `ls_lint_execution_mode=native-binary-from-pinned-npm-package`.
