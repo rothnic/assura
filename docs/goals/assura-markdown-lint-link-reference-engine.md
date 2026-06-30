@@ -7,6 +7,7 @@ created: 2026-06-30
 owners:
   - assura-maintainers
 related:
+  - ./assura-markdown-reference-intelligence-program.md
   - ../analysis/2026-06-18-markdown-tooling-evaluation.md
   - ./assura-rust-markdown-validation-and-fixing.md
   - ../../.trellis/spec/assura/config-notation.md
@@ -43,6 +44,12 @@ provide a broad Markdown lint suite, GitHub-renderable internal reference
 enforcement, whole-repository reference discovery, broken file/code/heading
 target detection, missing-heading insertion, incremental affected-file
 feedback, per-rule severity control, or a reasoned suppression path.
+
+This goal is a child of
+[Assura Markdown Reference Intelligence Program](./assura-markdown-reference-intelligence-program.md).
+Daemon readiness, daemon CLI management, VS Code integration, and agent daemon
+awareness are tracked as separate child goals so this validation engine can
+land without prematurely claiming editor or daemon support.
 
 ## User Certainty Bar
 
