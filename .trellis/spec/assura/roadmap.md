@@ -31,23 +31,40 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 17 | Support Matrix Surface Expansion | Completed | PR #88 merged; archive/sync PR #89 merged |
 | 18 | Project Intelligence Runtime | Completed | All nine successors and final completion audit completed locally |
 | 19 | Project Intelligence Usability | Completed | Adoption blueprint, real-repo proof, onboarding template, context pack, persistent session, safe-fix workflow, `.assura/` directory organization, agent CLI surface, LSP editor transport, release hardening, and final usability audit completed locally |
-| 20 | Project Intelligence Simple Usability | Active | New follow-up from live docs review: simple CLI, repo-wide code/content search, and content-model validation demo |
+| 20 | Project Intelligence Simple Usability | Completed | PR #109 merged and deployed; task archived under `.trellis/tasks/archive/2026-06/` |
+| 21 | Markdown Reference Intelligence | Active | New follow-up from live docs review: fast Markdown linting, required heading fixes, GitHub-renderable internal links, whole-repo code/comment reference graph, broken code/file targets, configurable severity, and suppressions |
 
 ## Active Roadmap Iteration
 
-Project Intelligence Simple Usability is active.
+Markdown Reference Intelligence is active.
 
 Owning task:
-`.trellis/tasks/06-30-project-intelligence-simple-repo-usability`.
+`.trellis/tasks/06-30-markdown-lint-link-reference-engine`.
 
 Current branch:
-`codex/project-intelligence-usability-followup`.
+`codex/markdown-lint-link-reference-goal`.
 
 Current recommended goal:
-`docs/goals/assura-project-intelligence-simple-cli.md`, with companion goal
-docs for repo-wide code/content search and content-model validation demos.
+`docs/goals/assura-markdown-lint-link-reference-engine.md`.
 
 Triggering evidence:
+After the Project Intelligence docs follow-up merged and deployed, live review
+clarified a separate Markdown and repository-reference quality requirement:
+Assura should provide a hyper-fast local Markdown linter that validates
+required headings, optionally adds missing headings, enforces GitHub-renderable
+relative internal links, discovers code/comment references to docs, detects
+broken file/code/heading/line references, supports configurable warning levels,
+allows reasoned suppressions, and can later power context-efficient daemon or
+warm-session feedback from the same reference graph.
+
+Most recent completed iteration:
+Project Intelligence Simple Usability completed in PR #109. It added
+deterministic scores to `assura content search`, updated the Project
+Intelligence demo with concrete graph expansion and validation examples, and
+created companion goals for simple CLI, repo-wide code/content search, and
+content-model validation demos.
+
+Prior triggering evidence:
 After the Project Intelligence docs were deployed, live review found that the
 demo remains too meta, keyword search did not expose a score, graph expansion
 was not explained from a direct anchor, and the current command set still
@@ -123,19 +140,20 @@ one `--format <agent>-hook` value per agent. Treat older roadmap/task wording in
 that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
 Planned next roadmap candidate:
-Complete the Simple Usability follow-up before creating another Project
-Intelligence successor. The follow-up should keep CLI-first local workflows as
-the default product path; MCP or hosted adapters are optional later surfaces
-over the same contracts.
+Complete the Markdown Reference Intelligence planning slice, then implement the
+first fast local Markdown lint/repository-reference validation slice from
+`docs/goals/assura-markdown-lint-link-reference-engine.md`. Keep CLI-first
+local workflows as the default product path; MCP or hosted adapters are
+optional later surfaces over the same contracts.
 
 ## Recommended Next Action
 
 Run the workflow gate, then continue
-`.trellis/tasks/06-30-project-intelligence-simple-repo-usability`. The
-immediate path is to land the docs/CLI score correction and keep the larger
-repo-wide search and validation-demo work in the new goal docs. Do not reopen
-completed Project Intelligence Runtime or lower-level Usability successors
-unless new evidence names a narrower drift case.
+`.trellis/tasks/06-30-markdown-lint-link-reference-engine`. The immediate path
+is to land the explicit Markdown lint/repository-reference goal and then start
+the first implementation slice against its proof gates. Do not reopen completed
+Project Intelligence Runtime or lower-level Usability successors unless new
+evidence names a narrower drift case.
 
 ## Roadmap Rules
 

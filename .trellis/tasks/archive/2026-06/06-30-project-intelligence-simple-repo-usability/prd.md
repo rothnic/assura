@@ -52,16 +52,16 @@ intelligence.
 
 ## Acceptance Criteria
 
-- [ ] `assura content search ... --format json` returns a score for each
+- [x] `assura content search ... --format json` returns a score for each
       match and tests prove ordering/score presence.
-- [ ] Human text output includes the score without requiring JSON.
-- [ ] The demo page explains what `expand` does and shows representative
+- [x] Human text output includes the score without requiring JSON.
+- [x] The demo page explains what `expand` does and shows representative
       output.
-- [ ] The demo page distinguishes currently supported surfaces from the
+- [x] The demo page distinguishes currently supported surfaces from the
       follow-up product goals.
-- [ ] New goal docs define objective, scope, non-goals, validation commands,
+- [x] New goal docs define objective, scope, non-goals, validation commands,
       review tasks, and blocker criteria.
-- [ ] Roadmap points to the new usability follow-up instead of claiming no
+- [x] Roadmap points to the new usability follow-up instead of claiming no
       successor remains.
 
 ## Out Of Scope
@@ -92,3 +92,10 @@ intelligence.
 - `cargo run --quiet -- check --format json .` passes.
 - `cargo xtask docs` passes because the website docs change.
 - `git diff --check` passes.
+
+## Completion Note
+
+Completed in PR #109 and merged to `master` on 2026-06-30. The live docs were
+verified on `assura.dev` after merge. The remaining markdown lint and internal
+reference work is intentionally tracked by
+[assura-markdown-lint-link-reference-engine.md](../../../../../docs/goals/assura-markdown-lint-link-reference-engine.md).
