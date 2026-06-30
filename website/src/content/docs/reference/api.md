@@ -139,7 +139,7 @@ wrappers must still require explicit user approval before running
 | `assura content agent-query` | Wrap one query in the shared agent envelope |
 | `assura content context-pack` | Build one bounded project-intelligence handoff packet |
 | `assura content session` | Run a persistent JSON-line local query session |
-| `assura content search` | Search modeled content facts |
+| `assura content search` | Search modeled content facts with lexical scores |
 | `assura content expand` | Expand graph context around one modeled object |
 | `assura content missing-relations` | Report unresolved modeled relations |
 

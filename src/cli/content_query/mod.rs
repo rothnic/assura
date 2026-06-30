@@ -7,6 +7,7 @@ mod context_pack;
 mod editor;
 mod editor_protocol;
 mod facts;
+mod keyword;
 mod output;
 mod output_text;
 mod semantic;
@@ -18,20 +19,20 @@ use self::context::{ContentQueryError, QueryContext};
 use self::context_pack::{context_pack, ContextPackRequest};
 pub(crate) use self::editor::editor_session_command;
 use self::facts::{
-    document_path, fact_by_id, fact_kind, fact_path, instance_summary, model_definitions,
+    fact_by_id, fact_kind, fact_path, instance_summary, model_definitions,
     path_scope_for_collection, resources_by_id, sections_for_path,
 };
+use self::keyword::search;
 use self::output::{
     render, CollectionOutput, CollectionsOutput, DiagnosticOutput, ExpandOutput, InstanceOutput,
-    InstancesOutput, MissingRelationsOutput, RelatedFactOutput, RelationOutput, SearchMatchOutput,
-    SearchOutput,
+    InstancesOutput, MissingRelationsOutput, RelatedFactOutput, RelationOutput,
 };
 use self::semantic::semantic_search;
 use self::session::content_session_command;
 use super::{ContentCommands, ExitCode, OutputFormat};
 use crate::intelligence::{
     model_instance_id, project_intelligence_agent_context, Diagnostic, FactId, ProjectEdge,
-    ProjectFact, RelationshipEdge, Resource, SearchChunk,
+    ProjectFact, RelationshipEdge,
 };
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::PathBuf;
@@ -314,66 +315,6 @@ fn missing_relations(context: &QueryContext) -> MissingRelationsOutput {
         .map(|edge| relation_output(edge, &missing))
         .collect();
     MissingRelationsOutput { missing_relations }
-}
-
-fn search(context: &QueryContext, query: &str) -> SearchOutput {
-    let resources = resources_by_id(context.store.facts());
-    let matches = context
-        .store
-        .keyword_search(query)
-        .into_iter()
-        .map(|chunk| search_match(context, chunk, &resources))
-        .collect();
-    SearchOutput {
-        query: query.to_string(),
-        matches,
-    }
-}
-
-fn search_match(
-    context: &QueryContext,
-    chunk: &SearchChunk,
-    resources: &BTreeMap<FactId, Resource>,
-) -> SearchMatchOutput {
-    match fact_by_id(context, &chunk.source_id) {
-        Some(ProjectFact::ModelInstance(instance)) => SearchMatchOutput {
-            source_id: chunk.source_id.to_string(),
-            source_kind: "model_instance".to_string(),
-            collection: Some(instance.collection.clone()),
-            instance_id: Some(instance.instance_id.clone()),
-            path: resources
-                .get(&instance.resource_id)
-                .map(|resource| resource.path.clone()),
-            text: chunk.text.clone(),
-        },
-        Some(ProjectFact::MarkdownSection(section)) => SearchMatchOutput {
-            source_id: chunk.source_id.to_string(),
-            source_kind: "markdown_section".to_string(),
-            collection: None,
-            instance_id: None,
-            path: document_path(context, &section.document_id),
-            text: chunk.text.clone(),
-        },
-        Some(ProjectFact::Diagnostic(diagnostic)) => SearchMatchOutput {
-            source_id: chunk.source_id.to_string(),
-            source_kind: "diagnostic".to_string(),
-            collection: None,
-            instance_id: None,
-            path: diagnostic
-                .location
-                .as_ref()
-                .map(|location| location.path.clone()),
-            text: chunk.text.clone(),
-        },
-        _ => SearchMatchOutput {
-            source_id: chunk.source_id.to_string(),
-            source_kind: "unknown".to_string(),
-            collection: None,
-            instance_id: None,
-            path: None,
-            text: chunk.text.clone(),
-        },
-    }
 }
 
 fn expand(

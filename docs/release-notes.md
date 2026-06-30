@@ -127,7 +127,9 @@ branch surfaces are advertised as installable release artifacts.
   `assura.project-intelligence.agent-query.v1`, a shared request/response
   envelope for diagnostics, graph expansion, keyword search, semantic
   candidates, code-symbol relationships, and safe-fix fact summaries.
-- Keyword search is deterministic local text matching over indexed chunks.
+- Keyword search is deterministic local text matching over indexed chunks and
+  returns lexical scores for ranking. These scores do not decide validation
+  correctness.
 - `assura content semantic-search` is opt-in through `--enable-local` and uses
   local candidate retrieval. Scores do not decide validation correctness.
 - `assura content symbols` and `assura content symbol-refs` use configured

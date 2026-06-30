@@ -18,6 +18,9 @@ related:
   - docs/goals/assura-project-intelligence-agent-cli-surface.md
   - docs/goals/assura-project-intelligence-lsp-editor-transport.md
   - docs/goals/assura-project-intelligence-release-hardening.md
+  - docs/goals/assura-project-intelligence-simple-cli.md
+  - docs/goals/assura-project-intelligence-repo-wide-code-content-search.md
+  - docs/goals/assura-project-intelligence-content-model-validation-demo.md
 ---
 
 # Assura Project Intelligence Usability Program
@@ -28,25 +31,29 @@ Move the completed Project Intelligence Runtime from a proven local foundation
 to a usable product workflow that a maintainer, coding agent, or editor
 integration can adopt without knowing Assura internals.
 
-The runtime now has typed content models, Markdown validation and safe-fix
-contracts, graph/query/search facts, optional semantic candidates, optional
-code-symbol enrichment, and shared agent envelopes. The next product gap is not
-more raw capability; it is making those capabilities discoverable, fast,
-operable, and trustworthy in realistic workflows.
+The completed program added typed content models, Markdown validation and
+safe-fix contracts, graph/query/search facts, optional semantic candidates,
+optional code-symbol enrichment, and shared agent, session, and editor
+surfaces. The lower-level local usability slice is complete; the separate
+follow-up is to make the common path simpler and less primitive-facing.
 
 ## Current Gap
 
-Live repo evidence shows that setup and task handoff are now covered by the
-completed onboarding-template and context-pack goals. The remaining usability
-gaps are:
+Live repo evidence shows that the original usability gaps are now covered by
+completed successors: onboarding, real-repo proof, context packs, warm
+sessions, safe-fix apply/audit behavior, `.assura/` model organization, local
+agent commands, local editor diagnostics/code actions, and release hardening.
 
-- repeated agent/editor workflows still pay cold CLI costs unless lower-level
-  prepared checks are wired into a public session surface;
-- safe fixes have preview metadata, but not a complete apply, rollback, and
-  audit workflow;
-- LSP-style editor behavior is planned, not a supported product contract;
-- release docs and support matrices do not yet treat the completed and
-  remaining project-intelligence usability slice as a promoted release surface.
+The new gap discovered after publishing the docs is product clarity rather
+than primitive capability. The current commands work, but a new user still has
+to understand too many surfaces before getting a useful repo-wide answer. The
+follow-up goals linked in this document are intentionally outside the completed
+program's definition of done:
+
+- a simple CLI command for common project-intelligence search;
+- repo-wide code and content search with bidirectional traversal;
+- a direct content-model validation demo that shows frontmatter schema drift,
+  relation drift, and Markdown linting in one short workflow.
 
 ## Execution Sequence
 
@@ -218,6 +225,16 @@ without real-repo proof and release hardening.
   gap is `.assura/` organization: root-level project-intelligence model/schema
   artifacts should move under a shared model directory before local
   agent/editor surfaces promote the starter layout further.
+- 2026-06-30: After publishing the completed usability slice, reviewed the
+  live docs and CLI from a first-user perspective. The shipped primitives work,
+  but the guide is still too meta and the common path requires too much command
+  knowledge. Added the follow-up goal set:
+  `docs/goals/assura-project-intelligence-simple-cli.md`,
+  `docs/goals/assura-project-intelligence-repo-wide-code-content-search.md`,
+  and
+  `docs/goals/assura-project-intelligence-content-model-validation-demo.md`.
+  These goals keep the CLI as the primary local surface; MCP remains optional
+  future adaptation over stable local contracts, not the product path.
 - 2026-06-29: Completed
   `docs/goals/assura-project-intelligence-assura-directory-organization.md`
   locally on task

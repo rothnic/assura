@@ -95,6 +95,14 @@ fn content_query_searches_and_reports_missing_relations() {
     ]));
 
     let matches = search["matches"].as_array().expect("matches array");
+    assert!(matches
+        .iter()
+        .all(|item| item["score"].as_f64().expect("score") > 0.0));
+    assert!(matches.windows(2).all(|pair| {
+        let left = pair[0]["score"].as_f64().expect("left score");
+        let right = pair[1]["score"].as_f64().expect("right score");
+        left >= right
+    }));
     assert!(matches.iter().any(|item| {
         item["source_kind"] == "model_instance"
             && item["collection"] == "goals"
@@ -103,6 +111,14 @@ fn content_query_searches_and_reports_missing_relations() {
     assert!(matches
         .iter()
         .any(|item| item["source_kind"] == "markdown_section"));
+
+    let text_search = run_content(&["search", "Portable", "tests/fixtures/content_runtime/valid"]);
+    assert!(text_search.status.success());
+    let stdout = String::from_utf8_lossy(&text_search.stdout);
+    assert!(
+        stdout.contains("2.000"),
+        "text output should include lexical score, stdout:\n{stdout}"
+    );
 
     let missing = json_output(run_content(&[
         "missing-relations",

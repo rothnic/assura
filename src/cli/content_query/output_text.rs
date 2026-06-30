@@ -139,7 +139,12 @@ impl TextRender for SearchOutput {
                 .instance_id
                 .as_deref()
                 .unwrap_or(item.source_id.as_str());
-            lines.push(format!("{} - {}", label, item.text));
+            lines.push(format!(
+                "{:.3} {} - {}",
+                item.score,
+                label,
+                compact_text(&item.text)
+            ));
         }
         lines.join("\n")
     }
@@ -159,7 +164,12 @@ impl TextRender for SemanticSearchOutput {
                 .instance_id
                 .as_deref()
                 .unwrap_or(item.source_id.as_str());
-            lines.push(format!("{:.3} {} - {}", item.score, label, item.text));
+            lines.push(format!(
+                "{:.3} {} - {}",
+                item.score,
+                label,
+                compact_text(&item.text)
+            ));
         }
         lines.join("\n")
     }
@@ -227,4 +237,8 @@ impl TextRender for ExpandOutput {
         }
         lines.join("\n")
     }
+}
+
+fn compact_text(text: &str) -> String {
+    text.split_whitespace().collect::<Vec<_>>().join(" ")
 }
