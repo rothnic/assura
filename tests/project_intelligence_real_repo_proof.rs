@@ -37,6 +37,17 @@ fn assert_success(output: &Output) {
     );
 }
 
+fn add_trailing_spaces_after_heading(markdown: &str) -> String {
+    let newline = if markdown.contains("\r\n") {
+        "\r\n"
+    } else {
+        "\n"
+    };
+    let marker = format!("# Checkout Onboarding{newline}{newline}");
+    let replacement = format!("# Checkout Onboarding{newline}   {newline}");
+    markdown.replace(&marker, &replacement)
+}
+
 #[test]
 fn beacon_crm_valid_fixture_passes_check_and_project_intelligence_queries() {
     let check = run(&["check", "--format", "json", VALID_ROOT]);
@@ -171,7 +182,11 @@ fn beacon_crm_materialized_markdown_drift_previews_safe_fix_without_writing() {
     let project = copy_fixture_to_temp(INVALID_ROOT);
     let epic_path = project.path().join("docs/epics/epic_checkout.md");
     let before = fs::read_to_string(&epic_path).expect("epic markdown");
-    let drifted = before.replace("# Checkout Onboarding\n\n", "# Checkout Onboarding\n   \n");
+    let drifted = add_trailing_spaces_after_heading(&before);
+    assert_ne!(
+        drifted, before,
+        "fixture mutation should add trailing spaces"
+    );
     fs::write(&epic_path, &drifted).expect("write deterministic markdown drift");
 
     let fix = run(&[

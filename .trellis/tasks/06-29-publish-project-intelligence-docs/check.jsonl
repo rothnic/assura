@@ -57,3 +57,9 @@
 {"command":"cargo clippy --workspace --all-targets --all-features -- -D warnings","result":"passed","coverage":"Workspace clippy passed after portable safe-fix ID hashing."}
 {"command":"cargo run --quiet -- check --format json .","result":"passed","coverage":"Assura self-check passed after portable safe-fix ID hashing; 1168 files, 282 dirs, no violations."}
 {"command":"git diff --check","result":"passed","coverage":"Whitespace check passed after portable safe-fix ID hashing."}
+{"command":"gh api repos/rothnic/assura/actions/jobs/84219486829/logs","result":"failed","coverage":"Hosted Windows test exposed CRLF-sensitive markdown drift setup in the real-repo project intelligence proof fixture."}
+{"command":"cargo test -p assura --test project_intelligence_real_repo_proof","result":"passed","coverage":"Focused real-repo project intelligence proof suite passed after line-ending-neutral markdown drift setup."}
+{"command":"cargo fmt --check","result":"passed","coverage":"Formatting clean after real-repo proof fixture normalization."}
+{"command":"cargo clippy --workspace --all-targets --all-features -- -D warnings","result":"passed","coverage":"Workspace clippy passed after real-repo proof fixture normalization."}
+{"command":"cargo run --quiet -- check --format json .","result":"passed","coverage":"Assura self-check passed after real-repo proof fixture normalization; 1168 files, 282 dirs, no violations."}
+{"command":"git diff --check","result":"passed","coverage":"Whitespace check passed after real-repo proof fixture normalization."}
