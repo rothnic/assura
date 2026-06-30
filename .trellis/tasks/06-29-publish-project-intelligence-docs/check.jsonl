@@ -43,3 +43,10 @@
 {"command":"cargo clippy --workspace --all-targets --all-features -- -D warnings","result":"passed","coverage":"Workspace clippy passed after Windows file URI and editor fixture fixes."}
 {"command":"cargo run --quiet -- check --format json .","result":"passed","coverage":"Assura self-check passed after Windows file URI and editor fixture fixes; 1168 files, 282 dirs, no violations."}
 {"command":"git diff --check","result":"passed","coverage":"Whitespace check passed after Windows file URI and editor fixture fixes."}
+{"command":"gh api repos/rothnic/assura/actions/jobs/84216848447/logs","result":"failed","coverage":"Hosted Windows test exposed native backslash paths in markdown safe-fix JSON reports."}
+{"command":"cargo test -p assura --test markdown_lint_fix_tests","result":"passed","coverage":"Focused markdown safe-fix suite passed after portable path serializers were added to markdown fix reports."}
+{"command":"cargo fmt --check","result":"passed","coverage":"Formatting clean after markdown fix report path serializers."}
+{"command":"cargo test -p assura --test editor_surface_cli","result":"passed","coverage":"Editor surface regression suite passed after markdown fix report path serializers."}
+{"command":"cargo clippy --workspace --all-targets --all-features -- -D warnings","result":"passed","coverage":"Workspace clippy passed after markdown fix report path serializers."}
+{"command":"cargo run --quiet -- check --format json .","result":"passed","coverage":"Assura self-check passed after markdown fix report path serializers; 1168 files, 282 dirs, no violations."}
+{"command":"git diff --check","result":"passed","coverage":"Whitespace check passed after markdown fix report path serializers."}

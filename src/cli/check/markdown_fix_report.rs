@@ -1,8 +1,8 @@
 //! Machine-readable Markdown safe-fix report types.
 
 use super::markdown_fix::MarkdownFixRule;
-use serde::Serialize;
-use std::path::PathBuf;
+use serde::{Serialize, Serializer};
+use std::path::{Path, PathBuf};
 
 /// Summary of a Markdown fix run.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -10,8 +10,10 @@ pub struct MarkdownFixReport {
     /// Stable report schema for agent/editor wrappers.
     pub schema: &'static str,
     /// Project root used for config discovery.
+    #[serde(serialize_with = "serialize_path")]
     pub project_root: PathBuf,
     /// Path checked by the user.
+    #[serde(serialize_with = "serialize_path")]
     pub checked_path: PathBuf,
     /// Whether this run only planned changes without writing files.
     pub dry_run: bool,
@@ -34,6 +36,7 @@ pub struct MarkdownFixReport {
     /// Fixable trailing-space findings remaining in files after the run.
     pub fixes_after: usize,
     /// Relative paths written during an apply run.
+    #[serde(serialize_with = "serialize_paths")]
     pub changed_paths: Vec<PathBuf>,
     /// Stable fix IDs applied during an apply run.
     pub applied_fix_ids: Vec<String>,
@@ -79,6 +82,7 @@ impl From<MarkdownFixRule> for MarkdownFixRuleReport {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct MarkdownFixFileReport {
     /// Relative path from the project root.
+    #[serde(serialize_with = "serialize_path")]
     pub path: PathBuf,
     /// File-level outcome.
     pub status: MarkdownFixFileStatus,
@@ -114,6 +118,7 @@ pub struct MarkdownFixRecord {
     /// Stable fix ID for correlating previews, applies, and audits.
     pub id: String,
     /// Relative path from the project root.
+    #[serde(serialize_with = "serialize_path")]
     pub path: PathBuf,
     /// Safe operation name.
     pub operation: &'static str,
@@ -145,6 +150,7 @@ pub enum MarkdownFixStatus {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct MarkdownFixSkip {
     /// Relative path from the project root.
+    #[serde(serialize_with = "serialize_path")]
     pub path: PathBuf,
     /// Skipped operation name.
     pub operation: &'static str,
@@ -160,6 +166,7 @@ pub struct MarkdownFixSkip {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct MarkdownFixFailure {
     /// Relative path from the project root.
+    #[serde(serialize_with = "serialize_path")]
     pub path: PathBuf,
     /// Failed operation name.
     pub operation: &'static str,
@@ -176,4 +183,26 @@ pub struct MarkdownFixRollback {
     pub backup_created: bool,
     /// Preferred rollback workflow.
     pub guidance: &'static str,
+}
+
+fn serialize_path<S>(path: &Path, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    serializer.serialize_str(&portable_path(path))
+}
+
+fn serialize_paths<S>(paths: &[PathBuf], serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    paths
+        .iter()
+        .map(|path| portable_path(path))
+        .collect::<Vec<_>>()
+        .serialize(serializer)
+}
+
+fn portable_path(path: &Path) -> String {
+    path.to_string_lossy().replace('\\', "/")
 }
