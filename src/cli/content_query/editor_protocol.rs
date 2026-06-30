@@ -177,7 +177,7 @@ pub(super) fn lsp_diagnostic(diagnostic: &Diagnostic) -> Value {
         "message": diagnostic.message,
         "data": {
             "id": diagnostic.id.to_string(),
-            "path": location.path,
+            "path": portable_path(&location.path),
             "field": location.field,
             "target_id": diagnostic.target_id.as_ref().map(ToString::to_string)
         }
@@ -211,6 +211,10 @@ fn lsp_severity(severity: &str) -> u8 {
 
 pub(super) fn paths_match(left: &Path, right: &Path) -> bool {
     normalize_path_string(left) == normalize_path_string(right)
+}
+
+pub(super) fn portable_path(path: &Path) -> String {
+    normalize_path_string(path)
 }
 
 fn normalize_relative_path(path: &Path) -> PathBuf {

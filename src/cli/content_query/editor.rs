@@ -4,8 +4,8 @@ use super::agent_query::safe_fixes;
 use super::context::{ContentQueryError, QueryContext};
 use super::context_pack::{context_pack, ContextPackRequest};
 use super::editor_protocol::{
-    diagnostic_matches_path, document_target, lsp_diagnostic, paths_match, DocumentTarget,
-    EditorRequest, EditorRequestError, EditorResponse,
+    diagnostic_matches_path, document_target, lsp_diagnostic, paths_match, portable_path,
+    DocumentTarget, EditorRequest, EditorRequestError, EditorResponse,
 };
 use super::facts::resources_by_id;
 use super::session::{ProjectFingerprint, SessionReloadOutput};
@@ -197,7 +197,7 @@ impl EditorSession {
             .collect::<Vec<_>>();
         Ok(json!({
             "uri": target.uri,
-            "path": target.path,
+            "path": portable_path(&target.path),
             "diagnostics": diagnostics,
             "source": "assura"
         }))
@@ -250,7 +250,7 @@ impl EditorSession {
         )?;
         Ok(json!({
             "uri": target.uri,
-            "path": target.path,
+            "path": portable_path(&target.path),
             "context_pack": to_value(pack)?
         }))
     }
@@ -279,7 +279,7 @@ impl EditorSession {
                         "target_id": fix.target_id,
                         "operation": fix.operation,
                         "summary": fix.summary,
-                        "path": fix.path,
+                        "path": fix.path.as_deref().map(portable_path),
                         "line": fix.line,
                         "column": fix.column,
                         "field": fix.field,
@@ -290,7 +290,7 @@ impl EditorSession {
             .collect::<Vec<_>>();
         Ok(json!({
             "uri": target.uri,
-            "path": target.path,
+            "path": portable_path(&target.path),
             "code_actions": actions
         }))
     }
