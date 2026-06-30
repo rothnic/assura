@@ -75,6 +75,7 @@ fn format_structure_report_text(report: &StructureCheckReport) -> String {
             violation.rule,
             violation.message
         ));
+        let _ = writeln!(output, "  Blocking: {}", violation.blocking);
         let _ = writeln!(output, "  Fix: {}", violation.corrective_context);
     }
 

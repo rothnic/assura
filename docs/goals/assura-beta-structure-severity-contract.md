@@ -2,7 +2,7 @@
 id: goal-assura-beta-structure-severity-contract
 type: goal
 title: Assura beta structure severity contract
-status: planned
+status: completed
 created: 2026-06-30
 owners:
   - assura-maintainers
@@ -79,3 +79,9 @@ git diff --check
 Block if severity differs across output formats, agent nudges need to parse
 human prose, warning rules can suppress hard errors accidentally, or LS-Lint
 compatibility changes without regression evidence.
+
+## Progress Log
+
+| Date | Update | Evidence |
+| --- | --- | --- |
+| 2026-06-30 | Completed the beta structure severity contract. Findings now include normalized `severity`, `severity_label`, `blocking`, and corrective context across serialized and agent outputs; low severity is advisory while medium/high/critical remain blocking. Review found and this slice fixed a fail-fast gap where advisory findings could suppress later blocking validators. | `src/cli/check/report.rs`; `src/cli/check.rs`; `src/cli/check_report.rs`; `src/cli/check_feedback.rs`; `tests/cli_check_warn_tests.rs`; independent review Bohr; `cargo test --test cli_check_warn_tests --quiet`; `cargo run --quiet -- check --format json .`; `cargo run --quiet -- check --format agent --agent codex .`; `cargo xtask docs`; `cargo xtask evidence`; `cargo xtask target-state`; `git diff --check`. |

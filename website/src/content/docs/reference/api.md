@@ -222,9 +222,15 @@ Violation entries use this shape:
   "path": "/work/example/src/BadName.rs",
   "rule": "file_naming",
   "message": "File name 'BadName' does not match kebab-case",
-  "severity": "medium"
+  "severity": "medium",
+  "severity_label": "Medium",
+  "blocking": true,
+  "corrective_context": "Rename the file to match the effective naming rule, or update files.naming/naming_patterns when the policy is stale."
 }
 ```
+
+`low` findings are advisory and use `"blocking": false`. `medium`, `high`, and
+`critical` findings are blocking unless the caller explicitly passes `--warn`.
 
 ## Status JSON Shape
 

@@ -383,7 +383,7 @@ fn check_agent_format_emits_generic_feedback_json() {
     assert_eq!(json["schema"], "assura.agent-feedback.v1");
     assert_eq!(json["source"]["command"], "assura check --format agent");
     assert_eq!(json["feedback"][0]["status"], "pass");
-    assert_eq!(json["blocking"], true);
+    assert_eq!(json["blocking"], false);
 }
 
 #[test]

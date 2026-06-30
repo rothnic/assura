@@ -128,7 +128,7 @@ impl StructureChecker {
             let entry = entry?;
             self.validate_walk_path(&entry.path(), checked_path, report);
 
-            if self.fail_fast && !report.violations.is_empty() {
+            if self.fail_fast && report.has_blocking_violations() {
                 break;
             }
         }

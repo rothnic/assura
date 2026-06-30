@@ -100,7 +100,7 @@ pub fn run_structure_check_with_prechecked_fast_artifact(
         )));
     }
 
-    report.success = report.violations.is_empty();
+    report.refresh_success();
     Ok(report)
 }
 

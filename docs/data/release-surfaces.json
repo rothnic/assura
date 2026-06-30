@@ -23,6 +23,13 @@
       "detail_path": "docs/release-notes.md"
     },
     {
+      "id": "structure-severity-contract",
+      "label": "Structure severity contract",
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-beta-structure-severity-contract.md"
+    },
+    {
       "id": "ls-lint-migration",
       "label": "LS-Lint migration",
       "status": "supported",

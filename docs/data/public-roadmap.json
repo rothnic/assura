@@ -36,18 +36,6 @@
           "summary": "Report release readiness from structured surface and GitHub release state.",
           "detail_path": "docs/goals/assura-incremental-release-train.md",
           "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-incremental-release-train.md"
-        }
-      ]
-    },
-    {
-      "status": "now",
-      "title": "Now",
-      "items": [
-        {
-          "label": "Beta Capabilities",
-          "summary": "Drive the code-agnostic beta program through executable goal files.",
-          "detail_path": "docs/goals/assura-beta-code-agnostic-capabilities-program.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-beta-code-agnostic-capabilities-program.md"
         },
         {
           "label": "Public Roadmap",
@@ -60,6 +48,18 @@
           "summary": "Stabilize rule IDs, severity, and remediation messages.",
           "detail_path": "docs/goals/assura-beta-structure-severity-contract.md",
           "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-beta-structure-severity-contract.md"
+        }
+      ]
+    },
+    {
+      "status": "now",
+      "title": "Now",
+      "items": [
+        {
+          "label": "Beta Capabilities",
+          "summary": "Drive the code-agnostic beta program through executable goal files.",
+          "detail_path": "docs/goals/assura-beta-code-agnostic-capabilities-program.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-beta-code-agnostic-capabilities-program.md"
         }
       ]
     },

@@ -32,7 +32,7 @@ impl StructureChecker {
         self.validate_configured_structure(report);
         timings.configured_structure_ms = configured_started.elapsed().as_secs_f64() * 1000.0;
 
-        if self.fail_fast && !report.violations.is_empty() {
+        if self.fail_fast && report.has_blocking_violations() {
             return Ok(true);
         }
 
@@ -73,7 +73,7 @@ impl StructureChecker {
                     .unwrap_or("");
                 report.dirs_checked += 1;
                 self.validate_fast_directory(rel, name, parent_rules, self_rules, report);
-                if self.fail_fast && !report.violations.is_empty() {
+                if self.fail_fast && report.has_blocking_violations() {
                     return Ok(());
                 }
             }
@@ -135,7 +135,7 @@ impl StructureChecker {
                     child_rules,
                     report,
                 );
-                if self.fail_fast && !report.violations.is_empty() {
+                if self.fail_fast && report.has_blocking_violations() {
                     break;
                 }
                 self.walk_lslint_fast_dir(&path, &entry.rel, report, scopes)?;
@@ -153,7 +153,7 @@ impl StructureChecker {
                 }
             }
 
-            if self.fail_fast && !report.violations.is_empty() {
+            if self.fail_fast && report.has_blocking_violations() {
                 break;
             }
         }
@@ -190,7 +190,7 @@ impl StructureChecker {
                     child_rules,
                     report,
                 );
-                if self.fail_fast && !report.violations.is_empty() {
+                if self.fail_fast && report.has_blocking_violations() {
                     break;
                 }
                 self.walk_lslint_fast_dir(&path, &rel, report, scopes)?;
@@ -202,7 +202,7 @@ impl StructureChecker {
                 }
             }
 
-            if self.fail_fast && !report.violations.is_empty() {
+            if self.fail_fast && report.has_blocking_violations() {
                 break;
             }
         }

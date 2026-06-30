@@ -83,6 +83,14 @@ assura check --format agent --agent codex . --warn --min-severity medium --max-i
 | `--max-issues` | Caps displayed feedback items. |
 | `--warn` | Reports failures but exits successfully. |
 
+Structure feedback uses one shared severity contract across text, JSON, YAML,
+advice, status, agent, and Codex output. `low` findings are advisory and emit
+`"blocking": false`; `medium`, `high`, and `critical` findings emit
+`"blocking": true` and make `assura check` exit 1 unless `--warn` is present.
+Agent messages include `path`, `rule`, `severity`, `severity_label`,
+`blocking`, `problem`, and `corrective_context` so integrations do not need to
+parse human prose.
+
 ## When To Check
 
 | Moment | Recommended check | Why |
