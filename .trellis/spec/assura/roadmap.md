@@ -48,6 +48,9 @@ Current branch:
 Current recommended goal:
 `docs/goals/assura-beta-code-agnostic-capabilities-program.md`.
 
+Public roadmap artifact:
+`docs/data/public-roadmap.json`.
+
 Triggering evidence:
 After defining the Markdown Reference Intelligence parent program, live review
 clarified that the real target is a beta release across ten large epics:
@@ -57,11 +60,11 @@ linting and heading validation, code/doc reference validation, daemon mode,
 daemon management CLI, concise agent nudges for Codex/OpenCode/Claude/Pi
 agents, VS Code integration, and a hard LS-Lint no-slower performance gate.
 
-The current checked performance artifact shows cold `assura-cli` faster on 7
-of 8 realistic-equivalent fixtures, with the strict 2x claim not complete,
-while warm session evidence is complete. The beta performance gate must block
-any merge where a headline LS-Lint-equivalent fixture is slower than native
-LS-Lint.
+The current checked performance artifact shows cold `assura-cli` no slower
+than native LS-Lint on 8 of 8 realistic-equivalent fixtures, with the strict
+2x claim not complete, while warm session evidence remains complete. The beta
+performance gate blocks any merge where a headline LS-Lint-equivalent fixture
+is slower than native LS-Lint.
 
 Prior triggering evidence:
 After the Project Intelligence docs follow-up merged and deployed, live review

@@ -2,7 +2,7 @@
 id: goal-assura-public-roadmap-artifact
 type: goal
 title: Assura public roadmap artifact
-status: planned
+status: completed
 created: 2026-06-30
 owners:
   - assura-maintainers
@@ -41,26 +41,11 @@ to deeper goal docs.
 
 ## Proposed Artifact
 
-Create a structured artifact such as `.trellis/spec/assura/roadmap.public.yml`
-or `docs/data/roadmap.yml` with fields like:
-
-```yaml
-items:
-  - label: Reference Graph
-    status: done
-    detail: docs/goals/assura-markdown-lint-link-reference-engine.md
-  - label: Daemon CLI
-    status: now
-    detail: docs/goals/assura-daemon-management-cli.md
-  - label: VS Code
-    status: next
-    detail: docs/goals/assura-vscode-daemon-integration.md
-```
-
-The implementation should choose the final path based on the least duplication
-with `.trellis/spec/assura/roadmap.md`. The important contract is that the
-website and agent-facing roadmap pull from the same repo-maintained source or
-validated projection.
+Create `docs/data/public-roadmap.json` as the validated public projection of
+`.trellis/spec/assura/roadmap.md`. The website renders from this JSON artifact,
+and `cargo xtask target-state` keeps labels concise, detail paths live, website
+links mapped to content pages, and active public state aligned with the beta
+program.
 
 ## Scope
 
@@ -93,12 +78,11 @@ validated projection.
 
 ```bash
 cargo run --quiet -- check --format json .
+cargo xtask target-state
 cargo xtask docs
 cargo xtask evidence
 git diff --check
 ```
-
-Add the website/package test command once the roadmap renderer exists.
 
 ## Review Tasks
 
@@ -112,3 +96,9 @@ Add the website/package test command once the roadmap renderer exists.
 Block if the website roadmap is hand-copied, labels exceed four words, the
 page exposes dense internal task prose as the main roadmap, or links can drift
 without validation.
+
+## Progress Log
+
+| Date | Update | Evidence |
+| --- | --- | --- |
+| 2026-06-30 | Completed the public roadmap artifact slice with `docs/data/public-roadmap.json`, a Starlight roadmap page, sidebar routing, and target-state drift checks tied to the current recommended Trellis goal. | `docs/data/public-roadmap.json`; `website/src/content/docs/roadmap.mdx`; `website/src/components/public-roadmap.astro`; `cargo xtask target-state`; independent review. |

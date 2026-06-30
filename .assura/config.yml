@@ -1064,6 +1064,7 @@ structure:
           allowed_names:
             - "analysis"
             - "archive"
+            - "data"
             - "goals"
             - "proposals"
           allow_extra: false
@@ -1080,6 +1081,14 @@ structure:
               max_lines: 2000
             markdown:
               require_frontmatter: true
+          data/:
+            files:
+              naming: "kebab-case"
+              allowed_patterns:
+                - "*.json"
+              allow_extra: false
+            directories:
+              allow_extra: false
           goals/:
             files:
               naming: "kebab-case"

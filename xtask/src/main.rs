@@ -598,6 +598,7 @@ fn run_target_state() -> Result<()> {
     check_manifest_semantics(&mut checks);
     check_test_relationships(&mut checks);
     check_docs_release_performance(&mut checks);
+    check_public_roadmap(&mut checks);
     check_agent_workflow_state(&mut checks);
     check_goal_revalidation_route(&mut checks);
     check_root_tooling_boundary(&mut checks);
@@ -861,7 +862,13 @@ fn read(path: impl AsRef<Path>) -> String {
 }
 
 fn exists(path: impl AsRef<Path>) -> bool {
-    path.as_ref().exists()
+    let path = path.as_ref();
+    path.exists()
+        || (path.is_relative()
+            && Path::new(env!("CARGO_MANIFEST_DIR"))
+                .parent()
+                .map(|root| root.join(path).exists())
+                .unwrap_or(false))
 }
 
 fn rel(path: &Path) -> String {
@@ -2732,6 +2739,164 @@ fn check_docs_release_performance(checks: &mut Checks) {
     }
 }
 
+fn check_public_roadmap(checks: &mut Checks) {
+    let roadmap_path = "docs/data/public-roadmap.json";
+    let Ok(roadmap) = serde_json::from_str::<Value>(&read(roadmap_path)) else {
+        checks.add(format!("{roadmap_path}: invalid JSON"));
+        return;
+    };
+    checks.require(
+        roadmap.get("schema_version").and_then(Value::as_str) == Some("assura.public-roadmap.v1"),
+        format!("{roadmap_path}: unexpected schema_version"),
+    );
+    checks.require(
+        roadmap.get("source").and_then(Value::as_str) == Some(".trellis/spec/assura/roadmap.md"),
+        format!("{roadmap_path}: source must point at .trellis/spec/assura/roadmap.md"),
+    );
+
+    let Some(groups) = roadmap.get("groups").and_then(Value::as_array) else {
+        checks.add(format!("{roadmap_path}: groups must be an array"));
+        return;
+    };
+
+    let mut statuses = BTreeSet::new();
+    let mut labels = BTreeSet::new();
+    let internal_roadmap = read(".trellis/spec/assura/roadmap.md");
+    let current_recommended_goal =
+        backticked_value_after_marker(&internal_roadmap, "Current recommended goal:");
+    checks.require(
+        current_recommended_goal.is_some(),
+        ".trellis/spec/assura/roadmap.md must identify a current recommended goal",
+    );
+    let mut has_current_recommended_goal = false;
+
+    for group in groups {
+        let status = group
+            .get("status")
+            .and_then(Value::as_str)
+            .unwrap_or("<missing>");
+        statuses.insert(status.to_string());
+        checks.require(
+            matches!(status, "done" | "now" | "next"),
+            format!("{roadmap_path}: invalid group status {status:?}"),
+        );
+        checks.require(
+            group.get("title").and_then(Value::as_str).is_some(),
+            format!("{roadmap_path}: {status} group missing title"),
+        );
+
+        let Some(items) = group.get("items").and_then(Value::as_array) else {
+            checks.add(format!(
+                "{roadmap_path}: {status} group items must be an array"
+            ));
+            continue;
+        };
+        checks.require(
+            !items.is_empty(),
+            format!("{roadmap_path}: {status} group must include at least one item"),
+        );
+
+        for item in items {
+            let label = item
+                .get("label")
+                .and_then(Value::as_str)
+                .unwrap_or("<missing>");
+            let detail_path = item
+                .get("detail_path")
+                .and_then(Value::as_str)
+                .unwrap_or("<missing>");
+            let href = item
+                .get("href")
+                .and_then(Value::as_str)
+                .unwrap_or("<missing>");
+            let word_count = label_word_count(label);
+            checks.require(
+                (2..=4).contains(&word_count),
+                format!("{roadmap_path}: label {label:?} must be two to four words"),
+            );
+            checks.require(
+                labels.insert(label.to_string()),
+                format!("{roadmap_path}: duplicate label {label:?}"),
+            );
+            checks.require(
+                exists(detail_path),
+                format!("{roadmap_path}: detail_path {detail_path} does not exist"),
+            );
+            checks.require(
+                roadmap_href_matches_detail(href, detail_path),
+                format!("{roadmap_path}: href {href} does not map to detail_path {detail_path}"),
+            );
+            if status == "now" && current_recommended_goal == Some(detail_path) {
+                has_current_recommended_goal = true;
+            }
+        }
+    }
+
+    for expected in ["done", "now", "next"] {
+        checks.require(
+            statuses.contains(expected),
+            format!("{roadmap_path}: missing {expected} group"),
+        );
+    }
+    checks.require(
+        has_current_recommended_goal,
+        format!(
+            "{roadmap_path}: now group must include the current recommended goal from .trellis/spec/assura/roadmap.md"
+        ),
+    );
+
+    let public_page = read("website/src/content/docs/roadmap.mdx");
+    let public_component = read("website/src/components/public-roadmap.astro");
+    let astro_config = read("website/astro.config.mjs");
+    checks.require(
+        public_page.contains("PublicRoadmap"),
+        "website roadmap page must render the PublicRoadmap component",
+    );
+    checks.require(
+        public_component.contains("docs/data/public-roadmap.json"),
+        "public roadmap component must import docs/data/public-roadmap.json",
+    );
+    checks.require(
+        astro_config.contains("{ label: 'Roadmap', slug: 'roadmap' }"),
+        "website sidebar must include the public Roadmap page",
+    );
+    checks.require(
+        internal_roadmap.contains("docs/data/public-roadmap.json"),
+        ".trellis/spec/assura/roadmap.md must point to the public roadmap artifact",
+    );
+}
+
+fn label_word_count(label: &str) -> usize {
+    label.split_whitespace().count()
+}
+
+fn backticked_value_after_marker<'a>(text: &'a str, marker: &str) -> Option<&'a str> {
+    let after_marker = text.split_once(marker)?.1;
+    let after_open_tick = after_marker.split_once('`')?.1;
+    let (value, _) = after_open_tick.split_once('`')?;
+    if value.is_empty() {
+        return None;
+    }
+    Some(value)
+}
+
+fn roadmap_href_matches_detail(href: &str, detail_path: &str) -> bool {
+    const GITHUB_PREFIX: &str = "https://github.com/rothnic/assura/blob/master/";
+    if let Some(repo_path) = href.strip_prefix(GITHUB_PREFIX) {
+        return repo_path == detail_path && exists(repo_path);
+    }
+    if !href.starts_with('/') || href.contains("..") {
+        return false;
+    }
+    let slug = href.trim_matches('/');
+    if slug.is_empty() {
+        return false;
+    }
+    let md = format!("website/src/content/docs/{slug}.md");
+    let mdx = format!("website/src/content/docs/{slug}.mdx");
+    (detail_path == md && exists(&md)) || (detail_path == mdx && exists(&mdx))
+}
+
 fn command_option_value<'a>(command_line: &'a str, option: &str) -> Option<&'a str> {
     let equals_prefix = format!("{option}=");
     let mut tokens = command_line.split_whitespace();
@@ -3147,5 +3312,42 @@ mod tests {
                 }
             ]
         );
+    }
+
+    #[test]
+    fn roadmap_href_mapping_accepts_local_and_github_details() {
+        assert_eq!(label_word_count("Structure Validation"), 2);
+        assert_eq!(label_word_count("Content Collections Querying"), 3);
+        assert_eq!(
+            backticked_value_after_marker(
+                "Current recommended goal:\n`docs/goals/example.md`.\n",
+                "Current recommended goal:"
+            ),
+            Some("docs/goals/example.md")
+        );
+        assert_eq!(
+            backticked_value_after_marker(
+                "Current recommended goal:\nmissing\n",
+                "Current recommended goal:"
+            ),
+            None
+        );
+
+        assert!(roadmap_href_matches_detail(
+            "/product/structure-validation/",
+            "website/src/content/docs/product/structure-validation.md"
+        ));
+        assert!(roadmap_href_matches_detail(
+            "https://github.com/rothnic/assura/blob/master/docs/goals/assura-beta-code-agnostic-capabilities-program.md",
+            "docs/goals/assura-beta-code-agnostic-capabilities-program.md"
+        ));
+        assert!(!roadmap_href_matches_detail(
+            "/product/structure-validation/",
+            "docs/goals/assura-beta-code-agnostic-capabilities-program.md"
+        ));
+        assert!(!roadmap_href_matches_detail(
+            "https://example.com/docs/goals/assura-beta-code-agnostic-capabilities-program.md",
+            "docs/goals/assura-beta-code-agnostic-capabilities-program.md"
+        ));
     }
 }
