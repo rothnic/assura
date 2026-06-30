@@ -57,6 +57,17 @@ fn copy_dir(source: &Path, destination: &Path) {
     }
 }
 
+fn add_trailing_spaces_after_heading(markdown: &str) -> String {
+    let newline = if markdown.contains("\r\n") {
+        "\r\n"
+    } else {
+        "\n"
+    };
+    let marker = format!("# Checkout Onboarding{newline}{newline}");
+    let replacement = format!("# Checkout Onboarding{newline}   {newline}");
+    markdown.replace(&marker, &replacement)
+}
+
 struct EditorSession {
     child: Child,
     stdin: ChildStdin,
@@ -252,7 +263,11 @@ fn editor_surface_code_actions_preview_safe_fixes_without_writes() {
     copy_dir(Path::new(BEACON_INVALID), temp.path());
     let epic_path = temp.path().join("docs/epics/epic_checkout.md");
     let original = fs::read_to_string(&epic_path).expect("epic markdown");
-    let drifted = original.replace("# Checkout Onboarding\n\n", "# Checkout Onboarding\n   \n");
+    let drifted = add_trailing_spaces_after_heading(&original);
+    assert_ne!(
+        drifted, original,
+        "fixture mutation should add trailing spaces"
+    );
     fs::write(&epic_path, &drifted).expect("write deterministic markdown drift");
 
     let path = temp.path().to_str().expect("temp path");

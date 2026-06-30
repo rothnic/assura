@@ -37,3 +37,9 @@
 {"command":"cargo test -p assura --test editor_surface_cli","result":"passed","coverage":"Focused editor surface suite passed after portable editor response path serialization."}
 {"command":"cargo clippy --workspace --all-targets --all-features -- -D warnings","result":"passed","coverage":"Workspace clippy passed after editor protocol path fix."}
 {"command":"cargo run --quiet -- check --format json .","result":"passed","coverage":"Assura self-check passed after editor path fix; 1168 files, 282 dirs, no violations."}
+{"command":"gh api repos/rothnic/assura/actions/jobs/84215777061/logs","result":"failed","coverage":"Hosted Windows editor surface test exposed verbatim file URI normalization and CRLF-sensitive safe-fix fixture mutation gaps."}
+{"command":"cargo test -p assura --test editor_surface_cli","result":"passed","coverage":"Focused editor surface suite passed after normalizing Windows verbatim file URIs and making the safe-fix fixture mutation line-ending-neutral."}
+{"command":"cargo fmt --check","result":"passed","coverage":"Formatting clean after Windows file URI and editor fixture fixes."}
+{"command":"cargo clippy --workspace --all-targets --all-features -- -D warnings","result":"passed","coverage":"Workspace clippy passed after Windows file URI and editor fixture fixes."}
+{"command":"cargo run --quiet -- check --format json .","result":"passed","coverage":"Assura self-check passed after Windows file URI and editor fixture fixes; 1168 files, 282 dirs, no violations."}
+{"command":"git diff --check","result":"passed","coverage":"Whitespace check passed after Windows file URI and editor fixture fixes."}

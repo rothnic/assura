@@ -257,6 +257,18 @@ fn percent_decode(input: &str) -> String {
 }
 
 fn normalize_file_uri_path(path: String) -> String {
+    if cfg!(windows) {
+        for prefix in ["//?/", "/?/"] {
+            if let Some(stripped) = path.strip_prefix(prefix) {
+                if stripped.len() >= 2
+                    && stripped.as_bytes()[1] == b':'
+                    && stripped.as_bytes()[0].is_ascii_alphabetic()
+                {
+                    return stripped.to_string();
+                }
+            }
+        }
+    }
     if cfg!(windows) && path.len() >= 3 {
         let bytes = path.as_bytes();
         if bytes[0] == b'/' && bytes[2] == b':' && bytes[1].is_ascii_alphabetic() {
