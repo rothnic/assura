@@ -354,18 +354,26 @@ fn markdown_fix_id(rel: &Path, violation: super::markdown::MarkdownTrailingSpace
     let key = format!(
         "{}:{}:{}",
         operation_name(MarkdownFixRule::TrailingSpaces),
-        rel.display(),
+        portable_path(rel),
         violation.line_number
     );
     format!("markdown.safe_fix.{:016x}", stable_hash(key.as_bytes()))
 }
 
 fn skipped_fix_id(rel: &Path, rule: MarkdownFixRule, reason: &str) -> String {
-    let key = format!("skip:{}:{}:{reason}", operation_name(rule), rel.display());
+    let key = format!(
+        "skip:{}:{}:{reason}",
+        operation_name(rule),
+        portable_path(rel)
+    );
     format!(
         "markdown.safe_fix.skip.{:016x}",
         stable_hash(key.as_bytes())
     )
+}
+
+fn portable_path(path: &Path) -> String {
+    path.to_string_lossy().replace('\\', "/")
 }
 
 fn operation_name(rule: MarkdownFixRule) -> &'static str {

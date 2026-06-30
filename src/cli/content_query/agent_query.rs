@@ -10,6 +10,7 @@ use crate::cli::AgentQueryArg as QueryArg;
 use crate::intelligence::{ProjectFact, SafeFix};
 use crate::stable_hash::stable_hash;
 use serde::Serialize;
+use std::path::Path;
 
 const AGENT_QUERY_SCHEMA: &str = "assura.project-intelligence.agent-query.v1";
 
@@ -163,9 +164,18 @@ fn safe_fix_audit_id(fix: &SafeFix) -> Option<String> {
     if fix.operation != "remove_blank_line_trailing_spaces" {
         return None;
     }
-    let key = format!("{}:{}:{}", fix.operation, location.path.display(), line);
+    let key = format!(
+        "{}:{}:{}",
+        fix.operation,
+        portable_path(&location.path),
+        line
+    );
     Some(format!(
         "markdown.safe_fix.{:016x}",
         stable_hash(key.as_bytes())
     ))
+}
+
+fn portable_path(path: &Path) -> String {
+    path.to_string_lossy().replace('\\', "/")
 }

@@ -41,6 +41,17 @@ fn copy_dir(source: &Path, destination: &Path) {
     }
 }
 
+fn add_trailing_spaces_after_heading(markdown: &str) -> String {
+    let newline = if markdown.contains("\r\n") {
+        "\r\n"
+    } else {
+        "\n"
+    };
+    let marker = format!("# Checkout Onboarding{newline}{newline}");
+    let replacement = format!("# Checkout Onboarding{newline}   {newline}");
+    markdown.replace(&marker, &replacement)
+}
+
 #[test]
 fn context_pack_wraps_beacon_diagnostics_relations_search_and_safe_fixes() {
     let pack = json_from_success(run_assura(&[
@@ -120,9 +131,12 @@ fn context_pack_safe_fixes_include_cli_audit_id() {
     let temp = tempfile::tempdir().expect("tempdir");
     copy_dir(Path::new(BEACON_INVALID), temp.path());
     let epic_path = temp.path().join("docs/epics/epic_checkout.md");
-    let drifted = fs::read_to_string(&epic_path)
-        .expect("epic markdown")
-        .replace("# Checkout Onboarding\n\n", "# Checkout Onboarding\n   \n");
+    let original = fs::read_to_string(&epic_path).expect("epic markdown");
+    let drifted = add_trailing_spaces_after_heading(&original);
+    assert_ne!(
+        drifted, original,
+        "fixture mutation should add trailing spaces"
+    );
     fs::write(&epic_path, drifted).expect("write deterministic markdown drift");
 
     let dry_run = json_from_success(run_assura(&[

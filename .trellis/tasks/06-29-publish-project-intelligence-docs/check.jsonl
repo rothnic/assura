@@ -50,3 +50,10 @@
 {"command":"cargo clippy --workspace --all-targets --all-features -- -D warnings","result":"passed","coverage":"Workspace clippy passed after markdown fix report path serializers."}
 {"command":"cargo run --quiet -- check --format json .","result":"passed","coverage":"Assura self-check passed after markdown fix report path serializers; 1168 files, 282 dirs, no violations."}
 {"command":"git diff --check","result":"passed","coverage":"Whitespace check passed after markdown fix report path serializers."}
+{"command":"gh api repos/rothnic/assura/actions/jobs/84218105645/logs","result":"failed","coverage":"Hosted Windows test exposed CRLF-sensitive context-pack fixture setup and OS-dependent safe-fix audit ID hashing."}
+{"command":"cargo test -p assura --test project_intelligence_context_pack","result":"passed","coverage":"Focused context-pack suite passed after line-ending-neutral fixture mutation and portable safe-fix audit ID hashing."}
+{"command":"cargo test -p assura --test markdown_lint_fix_tests","result":"passed","coverage":"Focused markdown safe-fix suite passed after portable safe-fix and skipped-fix ID hashing."}
+{"command":"cargo fmt --check","result":"passed","coverage":"Formatting clean after portable safe-fix ID hashing."}
+{"command":"cargo clippy --workspace --all-targets --all-features -- -D warnings","result":"passed","coverage":"Workspace clippy passed after portable safe-fix ID hashing."}
+{"command":"cargo run --quiet -- check --format json .","result":"passed","coverage":"Assura self-check passed after portable safe-fix ID hashing; 1168 files, 282 dirs, no violations."}
+{"command":"git diff --check","result":"passed","coverage":"Whitespace check passed after portable safe-fix ID hashing."}
