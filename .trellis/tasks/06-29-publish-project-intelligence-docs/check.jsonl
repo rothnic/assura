@@ -26,3 +26,9 @@
 {"command":"cargo test -p assura --test content_runtime_check_cli","result":"passed","coverage":"Focused content runtime check CLI suite passed after portable check-report path serialization."}
 {"command":"cargo clippy --workspace --all-targets --all-features -- -D warnings","result":"passed","coverage":"Workspace clippy passed after structure-check report path serialization."}
 {"command":"cargo run --quiet -- check --format json .","result":"passed","coverage":"Assura self-check passed after structure-check report path fix; 1168 files, 282 dirs, no violations."}
+{"command":"gh run view 28421068574 --job 84214149621 --log","result":"failed","coverage":"Hosted Windows test showed the markdown-lint fixture setup was sensitive to CRLF line endings, so the injected test config/trailing-space line could be skipped."}
+{"command":"cargo test -p assura --test content_runtime_check_cli","result":"passed","coverage":"Focused content runtime check CLI suite passed after normalizing fixture strings in the test helper."}
+{"command":"cargo clippy --workspace --all-targets --all-features -- -D warnings","result":"passed","coverage":"Workspace clippy passed after fixture normalization."}
+{"command":"cargo fmt --check","result":"passed","coverage":"Formatting clean after fixture normalization."}
+{"command":"git diff --check","result":"passed","coverage":"Whitespace check passed after fixture normalization."}
+{"command":"cargo run --quiet -- check --format json .","result":"passed","coverage":"Assura self-check passed after fixture normalization; 1168 files, 282 dirs, no violations."}

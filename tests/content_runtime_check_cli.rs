@@ -61,15 +61,18 @@ fn copy_missing_model_frontmatter_fixture_with_markdown_lint() -> TempDir {
     )
     .unwrap();
 
-    let config = fs::read_to_string(format!("{source}/.assura/config.yml")).unwrap();
+    let config = fs::read_to_string(format!("{source}/.assura/config.yml"))
+        .unwrap()
+        .replace("\r\n", "\n");
     let config = config.replace(
         "structure:\n  ./:\n    required: false\n",
         "structure:\n  ./:\n    required: false\n    children:\n      docs/:\n        children:\n          goals/:\n            markdown:\n              lint_trailing_spaces: true\n",
     );
     fs::write(root.join(".assura/config.yml"), config).unwrap();
 
-    let markdown =
-        fs::read_to_string(format!("{source}/docs/goals/goal_portable_structure.md")).unwrap();
+    let markdown = fs::read_to_string(format!("{source}/docs/goals/goal_portable_structure.md"))
+        .unwrap()
+        .replace("\r\n", "\n");
     let markdown = markdown.replace(
         "---\n# Portable Structure Policy",
         "---\n   \n# Portable Structure Policy",
