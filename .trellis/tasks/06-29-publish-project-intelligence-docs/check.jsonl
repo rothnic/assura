@@ -9,3 +9,10 @@
 {"command":"cargo xtask evidence","result":"passed","coverage":"Review evidence policy checks passed."}
 {"command":"git diff --check","result":"passed"}
 {"command":"cargo xtask target-state","result":"passed","coverage":"Target-state passed after active task metadata was corrected."}
+{"command":"gh run view 28418862938 --job 84207615099 --log","result":"failed","coverage":"Hosted Windows test exposed native backslash path serialization in content-query JSON output."}
+{"command":"cargo fmt --check","result":"passed","coverage":"Formatting clean after portable content-query path serialization and output text split."}
+{"command":"cargo test -p assura --test content_query_cli","result":"passed","coverage":"Focused content-query CLI suite passed with portable path JSON assertions."}
+{"command":"cargo run --quiet -- check --format json .","result":"passed","coverage":"Assura self-check passed after splitting output text rendering; 1168 files, 282 dirs, no violations."}
+{"command":"cargo test -p assura --lib --tests","result":"passed","coverage":"Broader assura crate lib and integration tests passed locally after the Windows CI fix."}
+{"command":"git diff --check","result":"passed","coverage":"Whitespace check passed after CI fix."}
+{"command":"cargo xtask target-state","result":"passed","coverage":"Target-state audit passed after CI fix."}

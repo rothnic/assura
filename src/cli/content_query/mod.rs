@@ -8,6 +8,7 @@ mod editor;
 mod editor_protocol;
 mod facts;
 mod output;
+mod output_text;
 mod semantic;
 mod session;
 
