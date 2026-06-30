@@ -22,6 +22,9 @@ contracts, with VS Code diagnostics and daemon health visible in the editor.
 ## Scope
 
 - Use the shared daemon client or future daemon command JSON contracts.
+- Create the first VS Code extension package under
+  `integrations/editors/vscode/` unless implementation research records a
+  better repo-native package path before coding starts.
 - Report validation and reference findings through the VS Code Problems panel.
 - Show daemon health in the status bar.
 - Provide command-palette actions for start, stop, restart, doctor, and logs.
@@ -39,17 +42,17 @@ contracts, with VS Code diagnostics and daemon health visible in the editor.
 - Diagnostics update from daemon or one-shot fallback output.
 - A stopped or unhealthy daemon produces actionable editor guidance.
 - The extension reuses the same JSON/protocol contracts tested by CLI.
+- `integrations/editors/vscode/package.json` defines the test and build
+  commands used by this goal.
 
 ## Validation Commands
 
 ```bash
 cargo run --quiet -- check --format json .
-pnpm test
-pnpm run build
+cd integrations/editors/vscode && pnpm test
+cd integrations/editors/vscode && pnpm run build
 git diff --check
 ```
-
-Adjust Node commands to the extension package once the package location exists.
 
 ## Review Tasks
 

@@ -16,6 +16,7 @@ related:
   - ./assura-reference-daemon-readiness.md
   - ./assura-daemon-management-cli.md
   - ./assura-beta-agent-nudge-integrations.md
+  - ./assura-agent-daemon-awareness.md
   - ./assura-vscode-daemon-integration.md
   - ./assura-ls-lint-no-slower-performance-gate.md
   - ../../.trellis/spec/assura/roadmap.md
@@ -30,10 +31,10 @@ planning state to a beta release that provides code-agnostic repository quality
 capabilities with daemon-aware local workflows.
 
 This is the overarching goal to kick off when the next large chunk of work
-should proceed goal by goal. A future agent should start here, pick the first
-incomplete major iteration, execute only that iteration's referenced goal file
-or files to their proof gates, update this program, then continue to the next
-iteration.
+should proceed goal by goal. A future agent should start here, pick the next
+highest-leverage incomplete major iteration, execute only that iteration's
+referenced goal file or files to their proof gates, update this program, then
+continue to the next iteration.
 
 ## Beta Product Bar
 
@@ -71,8 +72,10 @@ language. The beta surface must include:
 
 ## Execution Rules
 
-- Execute epics in order unless a skipped epic is already complete or blocked
-  with a recorded reviewer-accepted reason.
+- The table order is the default dependency order, not a rigid queue. Reorder
+  epics when doing so avoids refactoring, keeps validation narrower, or
+  unblocks a prerequisite more efficiently.
+- Record the reason whenever work skips an earlier incomplete epic.
 - Each epic should land as one or more PRs scoped to its referenced goal files.
 - Complex implementation epics require independent review before PR creation.
 - After each epic, update this program's progress log with PRs, validation
@@ -84,6 +87,42 @@ language. The beta surface must include:
 - The LS-Lint no-slower gate applies to every PR that changes
   LS-Lint-equivalent structure validation, traversal, ignore handling, rule
   planning, performance reporting, or fixture classification.
+
+## Validation Cadence
+
+Avoid waiting on broad checks after every small edit. Use staged validation:
+
+- Planning/docs edits: run the workflow gate, `cargo run --quiet -- check
+  --format json .`, `cargo xtask docs`, `cargo xtask evidence`, and
+  `git diff --check` before commit or handoff.
+- Rust implementation edits: run `cargo fmt --check` and the narrowest relevant
+  test target while iterating. Run workspace tests, clippy, docs, evidence, and
+  self-check at epic or PR readiness.
+- Website edits: run the website build or `cargo xtask docs` when pages,
+  generated content, or public roadmap data changes. Do not rebuild the website
+  after unrelated Rust-only edits unless generated docs are touched.
+- Performance edits: use a target artifact and short iteration count while
+  diagnosing. Run the accepted 5-iteration checked report only for performance
+  gate readiness or when updating tracked benchmark history.
+- Daemon/editor/agent edits: prefer protocol-specific and changed-path tests
+  during iteration. Run broad integration tests before support status changes
+  or release claims.
+
+No beta epic is complete until its own proof gates pass and the master program
+records the evidence.
+
+## Completion Assessment Process
+
+Before marking this program or any major epic complete:
+
+1. Derive concrete requirements from this file and the referenced child goals.
+2. Inspect current files, command output, release state, PR state, and checked
+   artifacts instead of relying on intent or prior conversation.
+3. Run an independent reviewer agent over the relevant goal files and evidence.
+4. Address valid major reviewer findings or record why they are intentionally
+   deferred with a replacement path.
+5. Update the progress log with the reviewer, validation commands, and next
+   epic.
 
 ## Performance Gate Policy
 
@@ -103,11 +142,13 @@ headline LS-Lint-equivalent fixtures:
 Execute docs/goals/assura-beta-code-agnostic-capabilities-program.md as the
 master beta goal. Start with the workflow gate, git status, live roadmap,
 current PRs, release state, and current performance claim summary from
-benches/history/current.json. Then select the first incomplete epic from the
-Ten Major Iterations table, read its referenced goal file(s), execute only that
-epic to its proof gates with independent review for complex implementation,
-update the beta program progress log, and report the next epic and goal path.
-Do not skip the LS-Lint no-slower gate for any structure/performance change.
+benches/history/current.json. Then select the next highest-leverage incomplete
+epic from the Ten Major Iterations table, read its referenced goal file(s),
+execute only that epic to its proof gates with independent review for complex
+implementation, update the beta program progress log, and report the next epic
+and goal path. Use narrow checks while iterating and full gates at epic/PR
+readiness. Do not skip the LS-Lint no-slower gate for any
+structure/performance change.
 ```
 
 ## Definition Of Done
@@ -158,3 +199,4 @@ than native LS-Lint without blocking the merge.
 | Date | Update | Evidence |
 | --- | --- | --- |
 | 2026-06-30 | Created the beta master program with ten major iterations and a hard no-slower LS-Lint performance gate after review clarified the desired beta destination. | User request; [.trellis/spec/assura/roadmap.md](../../.trellis/spec/assura/roadmap.md); `jq '.claim_summary,.warm_claim_summary' benches/history/current.json`. |
+| 2026-06-30 | Started execution under the persistent beta goal. Current workflow gate is ready on branch `codex/markdown-reference-master-goal`; repo is clean; current checked performance summary shows cold `assura-cli` faster on 7 of 8 realistic-equivalent fixtures and warm session faster on 8 of 8. Added dependency-aware ordering, staged validation cadence, and explicit independent-review completion assessment. | `python3 ./.trellis/scripts/workflow_gate.py --platform codex`; `git status --short --branch`; `jq '{timestamp, claim_summary, warm_claim_summary, ls_lint_status}' benches/history/current.json`. |

@@ -16,21 +16,20 @@ related:
 
 ## Objective
 
-Validate repository-internal references across Markdown, source comments,
-docstrings, and simple string-like references so docs and code do not silently
-rot when files, headings, or line targets move.
+Validate repository-internal references across Markdown link facts, source
+comments, docstrings, and simple string-like references so docs and code do not
+silently rot when files, headings, or line targets move.
 
 ## Current Gap
 
-The Markdown reference engine goal includes this requirement, but the beta
-program needs a separately reviewable epic for the repository reference graph
-itself. Markdown linting can land first, but beta is not complete until
-code-to-doc and doc-to-code references are discoverable, validated, and useful
-for affected-file feedback.
+The Markdown lint/link goal now emits Markdown-source link facts, but does not
+own repository-wide inbound reference graph behavior. Beta is not complete
+until code-to-doc and doc-to-code references are discoverable, validated, and
+useful for affected-file feedback.
 
 ## Scope
 
-- Discover Markdown links to files, headings, and line ranges.
+- Consume Markdown link facts emitted by the Markdown lint/link goal.
 - Discover cheap repository-relative references from comments, doc comments,
   docstrings, and obvious string literals.
 - Validate target files, headings, line numbers, and line ranges.

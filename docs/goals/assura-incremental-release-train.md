@@ -54,6 +54,10 @@ not present in the `v0.1.0` archives.
 - Add a release-readiness check that compares the latest GitHub release tag,
   `Cargo.toml` version, release notes version, and unreleased user-facing
   changes.
+- The intended command is `cargo xtask release-readiness --format json`. It
+  should report latest GitHub release, local package version, release-note
+  version, unreleased supported/experimental surfaces, missing checklist items,
+  and a pass/fail release-readiness verdict.
 - Make release PRs include the release-candidate checklist and live release
   verification commands.
 - Require release artifacts for daemon/editor/agent milestones before docs
@@ -70,6 +74,9 @@ not present in the `v0.1.0` archives.
 
 - A release-train check reports whether the repo has unreleased user-facing
   changes since the latest GitHub release.
+- `cargo xtask release-readiness --format json` exists and exits nonzero when
+  release notes, package version, support policy, latest GitHub release, or
+  release checklist state are inconsistent.
 - Release PRs include a version bump, release notes, compatibility/support
   policy updates when needed, and the release-candidate checklist.
 - Tag publishing produces GitHub release archives and checksum sidecars through
@@ -83,6 +90,7 @@ not present in the `v0.1.0` archives.
 
 ```bash
 gh release list --limit 5
+cargo xtask release-readiness --format json
 cargo xtask release-smoke
 cargo xtask docs
 cargo xtask evidence
@@ -113,4 +121,3 @@ Block if a release PR leaves `Cargo.toml`, release notes, docs, and tag names
 out of sync; claims daemon/editor/agent features before artifacts include
 them; skips release artifact smoke tests; or tries to declare `1.0.0` as part
 of this pre-1.0 release train.
-

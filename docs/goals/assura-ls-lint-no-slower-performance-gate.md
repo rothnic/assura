@@ -91,13 +91,31 @@ target/release/assura performance-report \
   --iterations 5
 jq -r '.claim_summary' benches/history/current.json
 jq -r '.results[] | select(.row_family=="assura-cli" or .row_family=="ls-lint-cli") | [.fixture_id,.row_family,.median_runtime_ms,.status] | @tsv' benches/history/current.json
+jq -e '
+  [.results[]
+    | select(.fixture_cohort=="realistic-equivalent")
+    | select(.row_family=="assura-cli" or .row_family=="ls-lint-cli")
+    | {fixture_id,row_family,median_runtime_ms,status}] as $rows
+  | [$rows
+    | group_by(.fixture_id)[]
+    | {
+        fixture_id: .[0].fixture_id,
+        assura: (map(select(.row_family=="assura-cli"))[0].median_runtime_ms),
+        ls_lint: (map(select(.row_family=="ls-lint-cli"))[0].median_runtime_ms)
+      }
+    | select(.assura == null or .ls_lint == null or .assura > .ls_lint)
+    ] as $failures
+  | if ($failures | length) == 0 then true else $failures | halt_error(1) end
+' benches/history/current.json
 cargo run --quiet -- check --format json .
 cargo xtask docs
 cargo xtask evidence
 git diff --check
 ```
 
-Add the final CI gate command once implemented.
+This `jq -e` command is intentionally expected to fail until every headline
+realistic-equivalent fixture has an `assura-cli` median less than or equal to
+its paired native `ls-lint-cli` median.
 
 ## Review Tasks
 
