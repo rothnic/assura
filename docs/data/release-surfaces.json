@@ -1,0 +1,54 @@
+{
+  "schema_version": "assura.release-surfaces.v1",
+  "surfaces": [
+    {
+      "id": "project-intelligence-local-surfaces",
+      "label": "Project Intelligence local surfaces",
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "docs/release-notes.md"
+    },
+    {
+      "id": "markdown-safe-fix-preview-apply",
+      "label": "Markdown safe-fix preview/apply",
+      "status": "experimental",
+      "first_release": "unreleased",
+      "detail_path": "docs/release-notes.md"
+    },
+    {
+      "id": "structure-validation-cli",
+      "label": "Structure validation CLI",
+      "status": "supported",
+      "first_release": "v0.1.0",
+      "detail_path": "docs/release-notes.md"
+    },
+    {
+      "id": "ls-lint-migration",
+      "label": "LS-Lint migration",
+      "status": "supported",
+      "first_release": "v0.1.0",
+      "detail_path": "docs/release-notes.md"
+    },
+    {
+      "id": "daemon-mode",
+      "label": "Daemon mode",
+      "status": "roadmap",
+      "first_release": "future",
+      "detail_path": "docs/goals/assura-reference-daemon-readiness.md"
+    },
+    {
+      "id": "vscode-extension",
+      "label": "VS Code extension",
+      "status": "roadmap",
+      "first_release": "future",
+      "detail_path": "docs/goals/assura-vscode-daemon-integration.md"
+    },
+    {
+      "id": "agent-daemon-nudges",
+      "label": "Agent daemon nudges",
+      "status": "roadmap",
+      "first_release": "future",
+      "detail_path": "docs/goals/assura-beta-agent-nudge-integrations.md"
+    }
+  ]
+}

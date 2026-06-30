@@ -8,6 +8,7 @@ owners:
   - assura-maintainers
 related:
   - ./assura-markdown-reference-intelligence-program.md
+  - ../release-train.md
   - ../release-candidate-checklist.md
   - ../release-notes.md
   - ../github-setup.md
@@ -121,3 +122,9 @@ Block if a release PR leaves `Cargo.toml`, release notes, docs, and tag names
 out of sync; claims daemon/editor/agent features before artifacts include
 them; skips release artifact smoke tests; or tries to declare `1.0.0` as part
 of this pre-1.0 release train.
+
+## Progress Log
+
+| Date | Update | Evidence |
+| --- | --- | --- |
+| 2026-06-30 | Started the release-train slice with a repo-native release train doc, structured release-surface manifest, and `cargo xtask release-readiness --format json`. Current live release state remains `v0.1.0` from 2026-05-24, so the readiness command is expected to fail until a new pre-1.0 release is prepared. | `gh release list --limit 5`; `docs/release-train.md`; `docs/data/release-surfaces.json`; `xtask/src/main.rs`; `cargo xtask release-readiness --format json`. |

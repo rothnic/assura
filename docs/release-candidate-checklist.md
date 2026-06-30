@@ -36,6 +36,7 @@ release until a newer release process replaces it.
 | Self-check | `cargo run --quiet -- check --format json .` | Any Assura violation. |
 | Fast gate | `cargo xtask fast` | Any local fast gate failure. |
 | Docs | `cargo xtask docs` | Website build fails or docs links break. |
+| Release readiness | `cargo xtask release-readiness --format json` | Version, release notes, latest GitHub release, support policy, checklist, or unreleased public-surface state is inconsistent. |
 | Release smoke | `cargo xtask release-smoke` | Local archive install or first-run smoke fails. |
 | Project Intelligence smoke | `cargo test --test project_intelligence_release_hardening --quiet` | Supported local Project Intelligence schemas, docs, or starter workflow drift. |
 | Checksums | `cargo xtask release-smoke` and release workflow checksum steps | Archive checksum generation or verification fails. |
@@ -116,6 +117,7 @@ release assets, and their `.sha256` checksum files.
 A release-readiness PR is complete only when it links:
 
 - the release notes;
+- the release-train check;
 - this checklist;
 - the support policy;
 - the compatibility matrix;
