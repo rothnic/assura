@@ -1,0 +1,33 @@
+{
+  "id": "publish-project-intelligence-docs",
+  "name": "publish-project-intelligence-docs",
+  "title": "Publish latest Project Intelligence docs",
+  "description": "Push, review, and merge the completed Project Intelligence documentation branch so Cloudflare can deploy the latest docs.",
+  "status": "completed",
+  "dev_type": "release",
+  "scope": "publish and merge",
+  "package": "assura",
+  "priority": "P2",
+  "creator": "nroth",
+  "assignee": "nroth",
+  "createdAt": "2026-06-29",
+  "completedAt": "2026-06-30",
+  "branch": "codex/project-intelligence-agent-surfaces",
+  "base_branch": "master",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "docs/goals/assura-project-intelligence-usability-program.md",
+    "website/src/content/docs/examples/project-intelligence-demo.md",
+    ".trellis/spec/assura/roadmap.md"
+  ],
+  "notes": "User explicitly requested pushing, reviewing, and merging this branch if all checks pass so Cloudflare production can deploy the latest docs.",
+  "meta": {
+    "target_remote": "origin",
+    "target_repository": "rothnic/assura"
+  }
+}
