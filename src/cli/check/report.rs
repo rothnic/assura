@@ -1,8 +1,8 @@
 //! Report and error types for structure-first checks.
 
 use crate::cli::config::ConfigError;
-use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
+use serde::{Deserialize, Serialize, Serializer};
+use std::path::{Path, PathBuf};
 use thiserror::Error;
 
 /// Result of running a structure-first check.
@@ -11,10 +11,13 @@ pub struct StructureCheckReport {
     /// Whether the checked path passed all configured validations.
     pub success: bool,
     /// Project root used to resolve relative config paths.
+    #[serde(serialize_with = "serialize_path")]
     pub project_root: PathBuf,
     /// Configuration file used for validation.
+    #[serde(serialize_with = "serialize_path")]
     pub config_path: PathBuf,
     /// Path that was checked.
+    #[serde(serialize_with = "serialize_path")]
     pub checked_path: PathBuf,
     /// Number of files checked.
     pub files_checked: usize,
@@ -35,6 +38,7 @@ impl StructureCheckReport {
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct StructureViolation {
     /// Path associated with the violation.
+    #[serde(serialize_with = "serialize_path")]
     pub path: PathBuf,
     /// Rule that produced the violation.
     pub rule: String,
@@ -152,6 +156,13 @@ fn corrective_context_for_rule(rule: &str) -> &'static str {
             "Inspect the reported path and effective rule, then update the file tree or .assura/config.yml so they agree."
         }
     }
+}
+
+fn serialize_path<S>(path: &Path, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    serializer.serialize_str(&path.to_string_lossy().replace('\\', "/"))
 }
 
 /// Errors produced while preparing or running a structure check.

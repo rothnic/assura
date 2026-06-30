@@ -21,3 +21,8 @@
 {"command":"cargo clippy --workspace --all-targets --all-features -- -D warnings","result":"passed","coverage":"Workspace clippy passed locally after changing the serializer argument to &Path."}
 {"command":"cargo test -p assura --test content_query_cli","result":"passed","coverage":"Focused content-query CLI suite still passed after clippy fix."}
 {"command":"cargo run --quiet -- check --format json .","result":"passed","coverage":"Assura self-check passed after clippy fix; 1168 files, 282 dirs, no violations."}
+{"command":"gh run view 28420749326 --job 84213192895 --log","result":"failed","coverage":"Hosted Windows test exposed native backslash path serialization in structure-check report JSON for markdown trailing spaces."}
+{"command":"cargo fmt --check","result":"passed","coverage":"Formatting clean after structure-check report path serialization fix."}
+{"command":"cargo test -p assura --test content_runtime_check_cli","result":"passed","coverage":"Focused content runtime check CLI suite passed after portable check-report path serialization."}
+{"command":"cargo clippy --workspace --all-targets --all-features -- -D warnings","result":"passed","coverage":"Workspace clippy passed after structure-check report path serialization."}
+{"command":"cargo run --quiet -- check --format json .","result":"passed","coverage":"Assura self-check passed after structure-check report path fix; 1168 files, 282 dirs, no violations."}
