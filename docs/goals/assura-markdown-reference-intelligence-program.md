@@ -7,6 +7,7 @@ created: 2026-06-30
 owners:
   - assura-maintainers
 related:
+  - ./assura-beta-code-agnostic-capabilities-program.md
   - ./assura-markdown-lint-link-reference-engine.md
   - ./assura-reference-daemon-readiness.md
   - ./assura-daemon-management-cli.md
@@ -33,6 +34,10 @@ agent should be able to start from this file, pick the next incomplete child
 goal in order, execute that child goal to its own proof gates, update this
 program's progress log, and then continue to the next child goal without
 re-planning the full roadmap from scratch.
+
+This program is now a child workstream of
+[Assura Beta Code-Agnostic Capabilities Program](./assura-beta-code-agnostic-capabilities-program.md),
+which is the top-level beta execution goal.
 
 ## Current State
 
