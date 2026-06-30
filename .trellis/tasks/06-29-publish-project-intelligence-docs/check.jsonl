@@ -1,0 +1,5 @@
+{"command":"python3 ./.trellis/scripts/workflow_gate.py --platform codex","reason":"Confirm clean workflow state before publishing."}
+{"command":"cargo run --quiet -- check --format json .","reason":"Confirm Assura self-check remains clean before publishing."}
+{"command":"cargo xtask docs","reason":"Confirm docs site builds with the latest Project Intelligence pages."}
+{"command":"cargo xtask evidence","reason":"Confirm repo evidence gates pass before publishing."}
+{"command":"git diff --check","reason":"Confirm no whitespace errors before publishing."}
