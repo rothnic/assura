@@ -276,7 +276,7 @@ pub(super) fn render<T: Serialize + TextRender>(
     }
 }
 
-fn serialize_path<S>(path: &PathBuf, serializer: S) -> Result<S::Ok, S::Error>
+fn serialize_path<S>(path: &Path, serializer: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
 {
