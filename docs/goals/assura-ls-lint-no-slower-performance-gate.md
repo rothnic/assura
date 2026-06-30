@@ -66,8 +66,8 @@ shape, or an invalid comparison setup.
 
 ## Definition Of Done
 
-- The performance report has a machine-readable no-slower verdict for headline
-  LS-Lint-equivalent fixtures.
+- The checked performance report is covered by a machine-readable no-slower
+  gate command for headline LS-Lint-equivalent fixtures.
 - CI or release checks fail when any headline fixture is slower than native
   LS-Lint on the accepted cold CLI row family.
 - Current slower rows are fixed or removed from the headline set with written
@@ -91,31 +91,24 @@ target/release/assura performance-report \
   --iterations 5
 jq -r '.claim_summary' benches/history/current.json
 jq -r '.results[] | select(.row_family=="assura-cli" or .row_family=="ls-lint-cli") | [.fixture_id,.row_family,.median_runtime_ms,.status] | @tsv' benches/history/current.json
-jq -e '
-  [.results[]
-    | select(.fixture_cohort=="realistic-equivalent")
-    | select(.row_family=="assura-cli" or .row_family=="ls-lint-cli")
-    | {fixture_id,row_family,median_runtime_ms,status}] as $rows
-  | [$rows
-    | group_by(.fixture_id)[]
-    | {
-        fixture_id: .[0].fixture_id,
-        assura: (map(select(.row_family=="assura-cli"))[0].median_runtime_ms),
-        ls_lint: (map(select(.row_family=="ls-lint-cli"))[0].median_runtime_ms)
-      }
-    | select(.assura == null or .ls_lint == null or .assura > .ls_lint)
-    ] as $failures
-  | if ($failures | length) == 0 then true else $failures | halt_error(1) end
-' benches/history/current.json
+cargo xtask performance-no-slower
 cargo run --quiet -- check --format json .
 cargo xtask docs
 cargo xtask evidence
 git diff --check
 ```
 
-This `jq -e` command is intentionally expected to fail until every headline
-realistic-equivalent fixture has an `assura-cli` median less than or equal to
-its paired native `ls-lint-cli` median.
+`cargo xtask performance-no-slower` is intentionally expected to fail until
+every headline realistic-equivalent fixture has an `assura-cli` median less
+than or equal to its paired native `ls-lint-cli` median. Use
+`cargo xtask performance-no-slower <report.json> --cohort <name> --assura-row
+<row> --ls-lint-row <row>` for target artifacts during diagnosis.
+
+## Progress Log
+
+| Date | Update | Evidence |
+| --- | --- | --- |
+| 2026-06-30 | Added the concrete `cargo xtask performance-no-slower` gate command contract. The command reads an existing performance report and exits nonzero when any headline Assura row is slower than its paired native LS-Lint row or when a pair is missing, so the gate is cheap and does not regenerate benchmarks during ordinary validation. | `xtask/src/main.rs`; `cargo test -p xtask performance_no_slower`; expected current-data failure: `cargo xtask performance-no-slower`. |
 
 ## Review Tasks
 

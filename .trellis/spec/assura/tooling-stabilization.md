@@ -94,6 +94,8 @@ evidence.
 ### Signatures
 
 - `assura performance-report --output <path> [--history <path>]`
+- `cargo xtask performance-no-slower [report.json] [--cohort <name>]
+  [--assura-row <row>] [--ls-lint-row <row>]`
 - Criterion benchmark: `cargo bench --bench ls_lint_comparison -- --noplot`
 
 ### Contracts
@@ -112,6 +114,14 @@ evidence.
   Node wrapper in headline LS-Lint rows.
 - Evidence rows: include the LS-Lint tool name, execution mode, and binary path
   when the row measures LS-Lint.
+- No-slower gate: read an existing performance report and fail without running
+  benchmarks if any paired headline Assura row is slower than native LS-Lint or
+  if a required paired row is missing. Default inputs are
+  `benches/history/current.json`, cohort `realistic-equivalent`, Assura row
+  `assura-cli`, and LS-Lint row `ls-lint-cli`.
+- Native LS-Lint metadata is part of the no-slower gate: selected LS-Lint rows
+  must use `tool_name=ls-lint-native-cli` and
+  `ls_lint_execution_mode=native-binary-from-pinned-npm-package`.
 
 ### Validation & Error Matrix
 
@@ -120,6 +130,8 @@ evidence.
 | Package install fails | Emit skipped LS-Lint rows with the exact blocker. |
 | Native binary is missing for the current platform | Emit skipped LS-Lint rows; do not fall back to the Node wrapper silently. |
 | Website copy mentions a winner | Derive the winner from current generated data, not from prior run assumptions. |
+| Any headline fixture has Assura median runtime greater than native LS-Lint | `cargo xtask performance-no-slower` exits nonzero and prints the fixture ID. |
+| A headline fixture is missing either paired row | `cargo xtask performance-no-slower` exits nonzero and identifies the missing row. |
 
 ### Good / Base / Bad Cases
 
@@ -133,6 +145,7 @@ evidence.
 ### Tests Required
 
 - Unit coverage for native binary path selection and row metadata.
+- Unit coverage for the no-slower gate using small synthetic reports.
 - Website build after checked-in report data changes.
 - A regenerated report proving the checked-in JSON uses the native execution
   mode.

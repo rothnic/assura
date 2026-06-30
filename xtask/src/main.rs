@@ -38,6 +38,7 @@ fn run() -> Result<()> {
         "release-size" => run_release_size(),
         "release-smoke" => run_release_smoke(),
         "release-live" => run_release_live(),
+        "performance-no-slower" => run_performance_no_slower(&rest),
         "changed" => run_changed(&rest),
         "pr" => run_pr(),
         "full" => {
@@ -57,7 +58,7 @@ fn run() -> Result<()> {
 
 fn print_usage() {
     eprintln!(
-        "Usage: cargo xtask <fast|check|test|evidence|target-state|hygiene|docs|release-size|release-smoke|release-live|changed|pr|full>"
+        "Usage: cargo xtask <fast|check|test|evidence|target-state|hygiene|docs|release-size|release-smoke|release-live|performance-no-slower|changed|pr|full>"
     );
 }
 
@@ -602,6 +603,257 @@ fn run_target_state() -> Result<()> {
     check_root_tooling_boundary(&mut checks);
     check_lint_suppression_reasons(&mut checks);
     checks.finish("Target-state audit checks passed.")
+}
+
+#[derive(Debug)]
+struct PerformanceNoSlowerOptions {
+    report_path: String,
+    cohort: String,
+    assura_row: String,
+    ls_lint_row: String,
+}
+
+impl Default for PerformanceNoSlowerOptions {
+    fn default() -> Self {
+        Self {
+            report_path: "benches/history/current.json".to_string(),
+            cohort: "realistic-equivalent".to_string(),
+            assura_row: "assura-cli".to_string(),
+            ls_lint_row: "ls-lint-cli".to_string(),
+        }
+    }
+}
+
+#[derive(Debug, Default)]
+struct FixtureTiming {
+    assura: Option<RowTiming>,
+    ls_lint: Option<RowTiming>,
+}
+
+#[derive(Debug, PartialEq)]
+enum RowTiming {
+    Pass(f64),
+    Invalid(String),
+}
+
+#[derive(Debug, PartialEq)]
+enum NoSlowerFailure {
+    MissingAssura {
+        fixture_id: String,
+    },
+    MissingLsLint {
+        fixture_id: String,
+    },
+    InvalidAssura {
+        fixture_id: String,
+        reason: String,
+    },
+    InvalidLsLint {
+        fixture_id: String,
+        reason: String,
+    },
+    Slower {
+        fixture_id: String,
+        assura_ms: f64,
+        ls_lint_ms: f64,
+    },
+}
+
+fn run_performance_no_slower(args: &[String]) -> Result<()> {
+    let options = parse_performance_no_slower_options(args)?;
+    let report_text = fs::read_to_string(&options.report_path)?;
+    let report = serde_json::from_str::<Value>(&report_text)?;
+    let failures = performance_no_slower_failures(
+        &report,
+        &options.cohort,
+        &options.assura_row,
+        &options.ls_lint_row,
+    )?;
+
+    if failures.is_empty() {
+        println!(
+            "Performance no-slower gate passed for cohort {} ({} <= {}).",
+            options.cohort, options.assura_row, options.ls_lint_row
+        );
+        return Ok(());
+    }
+
+    eprintln!(
+        "Performance no-slower gate failed for cohort {} ({} must be <= {}).",
+        options.cohort, options.assura_row, options.ls_lint_row
+    );
+    for failure in failures {
+        match failure {
+            NoSlowerFailure::MissingAssura { fixture_id } => {
+                eprintln!("{fixture_id}: missing {}", options.assura_row);
+            }
+            NoSlowerFailure::MissingLsLint { fixture_id } => {
+                eprintln!("{fixture_id}: missing {}", options.ls_lint_row);
+            }
+            NoSlowerFailure::InvalidAssura { fixture_id, reason } => {
+                eprintln!("{fixture_id}: invalid {} row: {reason}", options.assura_row);
+            }
+            NoSlowerFailure::InvalidLsLint { fixture_id, reason } => {
+                eprintln!(
+                    "{fixture_id}: invalid {} row: {reason}",
+                    options.ls_lint_row
+                );
+            }
+            NoSlowerFailure::Slower {
+                fixture_id,
+                assura_ms,
+                ls_lint_ms,
+            } => {
+                eprintln!(
+                    "{fixture_id}: {} {assura_ms:.3} ms > {} {ls_lint_ms:.3} ms",
+                    options.assura_row, options.ls_lint_row
+                );
+            }
+        }
+    }
+    Err("performance no-slower gate failed".into())
+}
+
+fn parse_performance_no_slower_options(args: &[String]) -> Result<PerformanceNoSlowerOptions> {
+    let mut options = PerformanceNoSlowerOptions::default();
+    let mut index = 0;
+    while index < args.len() {
+        match args[index].as_str() {
+            "--cohort" => {
+                index += 1;
+                options.cohort = args
+                    .get(index)
+                    .ok_or("--cohort requires a value")?
+                    .to_string();
+            }
+            "--assura-row" => {
+                index += 1;
+                options.assura_row = args
+                    .get(index)
+                    .ok_or("--assura-row requires a value")?
+                    .to_string();
+            }
+            "--ls-lint-row" => {
+                index += 1;
+                options.ls_lint_row = args
+                    .get(index)
+                    .ok_or("--ls-lint-row requires a value")?
+                    .to_string();
+            }
+            "--help" | "-h" => {
+                return Err("Usage: cargo xtask performance-no-slower [report.json] [--cohort realistic-equivalent] [--assura-row assura-cli] [--ls-lint-row ls-lint-cli]".into());
+            }
+            value if value.starts_with("--") => {
+                return Err(format!("unknown performance-no-slower option: {value}").into());
+            }
+            value => {
+                options.report_path = value.to_string();
+            }
+        }
+        index += 1;
+    }
+    Ok(options)
+}
+
+fn performance_no_slower_failures(
+    report: &Value,
+    cohort: &str,
+    assura_row: &str,
+    ls_lint_row: &str,
+) -> Result<Vec<NoSlowerFailure>> {
+    let rows = report
+        .get("results")
+        .and_then(Value::as_array)
+        .ok_or("performance report missing results array")?;
+    let mut timings = BTreeMap::<String, FixtureTiming>::new();
+
+    for row in rows {
+        if row.get("fixture_cohort").and_then(Value::as_str) != Some(cohort) {
+            continue;
+        }
+        let fixture_id = row
+            .get("fixture_id")
+            .and_then(Value::as_str)
+            .ok_or("performance row missing fixture_id")?;
+        let timing = timings.entry(fixture_id.to_string()).or_default();
+
+        let Some(row_family) = row.get("row_family").and_then(Value::as_str) else {
+            continue;
+        };
+        if row_family == assura_row {
+            timing.assura = Some(timing_from_row(row));
+        } else if row_family == ls_lint_row {
+            timing.ls_lint = Some(native_ls_lint_timing_from_row(row));
+        }
+    }
+
+    if timings.is_empty() {
+        return Err(format!("performance report has no fixture rows for cohort {cohort}").into());
+    }
+
+    let mut failures = Vec::new();
+    for (fixture_id, timing) in timings {
+        match (timing.assura, timing.ls_lint) {
+            (None, _) => failures.push(NoSlowerFailure::MissingAssura { fixture_id }),
+            (_, None) => failures.push(NoSlowerFailure::MissingLsLint { fixture_id }),
+            (Some(RowTiming::Invalid(reason)), _) => {
+                failures.push(NoSlowerFailure::InvalidAssura { fixture_id, reason });
+            }
+            (_, Some(RowTiming::Invalid(reason))) => {
+                failures.push(NoSlowerFailure::InvalidLsLint { fixture_id, reason });
+            }
+            (Some(RowTiming::Pass(assura_ms)), Some(RowTiming::Pass(ls_lint_ms)))
+                if assura_ms > ls_lint_ms =>
+            {
+                failures.push(NoSlowerFailure::Slower {
+                    fixture_id,
+                    assura_ms,
+                    ls_lint_ms,
+                });
+            }
+            (Some(RowTiming::Pass(_)), Some(RowTiming::Pass(_))) => {}
+        }
+    }
+    Ok(failures)
+}
+
+fn timing_from_row(row: &Value) -> RowTiming {
+    if row.get("status").and_then(Value::as_str) != Some("pass") {
+        let status = row
+            .get("status")
+            .and_then(Value::as_str)
+            .unwrap_or("<missing>");
+        return RowTiming::Invalid(format!("status {status:?}"));
+    }
+    let Some(median_runtime_ms) = row.get("median_runtime_ms").and_then(Value::as_f64) else {
+        return RowTiming::Invalid("missing numeric median_runtime_ms".to_string());
+    };
+    RowTiming::Pass(median_runtime_ms)
+}
+
+fn native_ls_lint_timing_from_row(row: &Value) -> RowTiming {
+    if let RowTiming::Invalid(reason) = timing_from_row(row) {
+        return RowTiming::Invalid(reason);
+    }
+    if row.get("tool_name").and_then(Value::as_str) != Some("ls-lint-native-cli") {
+        let tool_name = row
+            .get("tool_name")
+            .and_then(Value::as_str)
+            .unwrap_or("<missing>");
+        return RowTiming::Invalid(format!("tool_name {tool_name:?} is not native LS-Lint"));
+    }
+    if row.get("ls_lint_execution_mode").and_then(Value::as_str)
+        != Some("native-binary-from-pinned-npm-package")
+    {
+        let mode = row
+            .get("ls_lint_execution_mode")
+            .and_then(Value::as_str)
+            .unwrap_or("<missing>");
+        return RowTiming::Invalid(format!(
+            "ls_lint_execution_mode {mode:?} is not native binary"
+        ));
+    }
+    timing_from_row(row)
 }
 
 fn read(path: impl AsRef<Path>) -> String {
@@ -2660,5 +2912,197 @@ fn check_lint_suppression_reasons(checks: &mut Checks) {
                 );
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn performance_no_slower_passes_when_assura_is_not_slower() {
+        let report = json!({
+            "results": [
+                {
+                    "fixture_cohort": "realistic-equivalent",
+                    "fixture_id": "faster",
+                    "row_family": "assura-cli",
+                    "status": "pass",
+                    "median_runtime_ms": 4.0
+                },
+                {
+                    "fixture_cohort": "realistic-equivalent",
+                    "fixture_id": "faster",
+                    "row_family": "ls-lint-cli",
+                    "tool_name": "ls-lint-native-cli",
+                    "ls_lint_execution_mode": "native-binary-from-pinned-npm-package",
+                    "status": "pass",
+                    "median_runtime_ms": 5.0
+                },
+                {
+                    "fixture_cohort": "realistic-equivalent",
+                    "fixture_id": "equal",
+                    "row_family": "assura-cli",
+                    "status": "pass",
+                    "median_runtime_ms": 6.0
+                },
+                {
+                    "fixture_cohort": "realistic-equivalent",
+                    "fixture_id": "equal",
+                    "row_family": "ls-lint-cli",
+                    "tool_name": "ls-lint-native-cli",
+                    "ls_lint_execution_mode": "native-binary-from-pinned-npm-package",
+                    "status": "pass",
+                    "median_runtime_ms": 6.0
+                }
+            ]
+        });
+
+        let failures = performance_no_slower_failures(
+            &report,
+            "realistic-equivalent",
+            "assura-cli",
+            "ls-lint-cli",
+        )
+        .expect("report is valid");
+
+        assert!(failures.is_empty());
+    }
+
+    #[test]
+    fn performance_no_slower_reports_slower_and_missing_pairs() {
+        let report = json!({
+            "results": [
+                {
+                    "fixture_cohort": "realistic-equivalent",
+                    "fixture_id": "slower",
+                    "row_family": "assura-cli",
+                    "status": "pass",
+                    "median_runtime_ms": 7.0
+                },
+                {
+                    "fixture_cohort": "realistic-equivalent",
+                    "fixture_id": "slower",
+                    "row_family": "ls-lint-cli",
+                    "tool_name": "ls-lint-native-cli",
+                    "ls_lint_execution_mode": "native-binary-from-pinned-npm-package",
+                    "status": "pass",
+                    "median_runtime_ms": 5.0
+                },
+                {
+                    "fixture_cohort": "realistic-equivalent",
+                    "fixture_id": "missing-ls-lint",
+                    "row_family": "assura-cli",
+                    "status": "pass",
+                    "median_runtime_ms": 1.0
+                },
+                {
+                    "fixture_cohort": "realistic-equivalent",
+                    "fixture_id": "missing-assura",
+                    "row_family": "ls-lint-cli",
+                    "tool_name": "ls-lint-native-cli",
+                    "ls_lint_execution_mode": "native-binary-from-pinned-npm-package",
+                    "status": "pass",
+                    "median_runtime_ms": 1.0
+                }
+            ]
+        });
+
+        let failures = performance_no_slower_failures(
+            &report,
+            "realistic-equivalent",
+            "assura-cli",
+            "ls-lint-cli",
+        )
+        .expect("report is valid");
+
+        assert_eq!(
+            failures,
+            vec![
+                NoSlowerFailure::MissingAssura {
+                    fixture_id: "missing-assura".to_string()
+                },
+                NoSlowerFailure::MissingLsLint {
+                    fixture_id: "missing-ls-lint".to_string()
+                },
+                NoSlowerFailure::Slower {
+                    fixture_id: "slower".to_string(),
+                    assura_ms: 7.0,
+                    ls_lint_ms: 5.0
+                }
+            ]
+        );
+    }
+
+    #[test]
+    fn performance_no_slower_rejects_non_native_or_non_passing_rows() {
+        let report = json!({
+            "results": [
+                {
+                    "fixture_cohort": "realistic-equivalent",
+                    "fixture_id": "non-native-ls-lint",
+                    "row_family": "assura-cli",
+                    "status": "pass",
+                    "median_runtime_ms": 1.0
+                },
+                {
+                    "fixture_cohort": "realistic-equivalent",
+                    "fixture_id": "non-native-ls-lint",
+                    "row_family": "ls-lint-cli",
+                    "tool_name": "node-wrapper",
+                    "ls_lint_execution_mode": "node-wrapper",
+                    "status": "pass",
+                    "median_runtime_ms": 2.0
+                },
+                {
+                    "fixture_cohort": "realistic-equivalent",
+                    "fixture_id": "skipped-assura",
+                    "row_family": "assura-cli",
+                    "status": "skipped"
+                },
+                {
+                    "fixture_cohort": "realistic-equivalent",
+                    "fixture_id": "skipped-assura",
+                    "row_family": "ls-lint-cli",
+                    "tool_name": "ls-lint-native-cli",
+                    "ls_lint_execution_mode": "native-binary-from-pinned-npm-package",
+                    "status": "pass",
+                    "median_runtime_ms": 1.0
+                },
+                {
+                    "fixture_cohort": "realistic-equivalent",
+                    "fixture_id": "no-target-rows",
+                    "row_family": "assura:phase:walk-and-validate",
+                    "status": "pass",
+                    "median_runtime_ms": 1.0
+                }
+            ]
+        });
+
+        let failures = performance_no_slower_failures(
+            &report,
+            "realistic-equivalent",
+            "assura-cli",
+            "ls-lint-cli",
+        )
+        .expect("report is valid");
+
+        assert_eq!(
+            failures,
+            vec![
+                NoSlowerFailure::MissingAssura {
+                    fixture_id: "no-target-rows".to_string()
+                },
+                NoSlowerFailure::InvalidLsLint {
+                    fixture_id: "non-native-ls-lint".to_string(),
+                    reason: "tool_name \"node-wrapper\" is not native LS-Lint".to_string()
+                },
+                NoSlowerFailure::InvalidAssura {
+                    fixture_id: "skipped-assura".to_string(),
+                    reason: "status \"skipped\"".to_string()
+                }
+            ]
+        );
     }
 }
