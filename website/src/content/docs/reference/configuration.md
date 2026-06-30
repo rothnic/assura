@@ -249,7 +249,7 @@ markdown:
 | `max_heading_depth` | Fails when a Markdown heading is deeper than the configured level. |
 | `required_sections` | Requires headings with the configured text. |
 | `outline` | Validates ordered nested headings without requiring users to maintain heading depth numbers. Use `?? ` for optional headings and object form such as `title: "?? Debug Mode"` when a required heading starts with literal question marks. |
-| `check_links` | Accepted by the config type but not enforced by current `assura check`. |
+| `check_links` | Validates local relative Markdown links to files, Markdown heading anchors, and GitHub-style line or line-range anchors such as `#L12` and `#L12-L34`. Remote URLs and same-file `#heading` links are ignored by this local check. |
 
 Use `models`, `collections`, and `relations` for typed Markdown frontmatter
 fields. `markdown.required_fields` is rejected in Assura-authored config so

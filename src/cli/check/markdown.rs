@@ -1,5 +1,6 @@
 //! Markdown-specific validators for structure-first checks.
 
+mod links;
 mod outline;
 
 use super::rules::{display_rel, parse_frontmatter};
@@ -24,6 +25,7 @@ impl StructureChecker {
         self.validate_markdown_required_sections(rel, markdown, content, report);
         validate_markdown_outline(self, rel, markdown, content, report);
         self.validate_markdown_trailing_spaces(rel, markdown, content, report);
+        self.validate_markdown_links(rel, markdown, content, report);
     }
 
     fn validate_markdown_frontmatter(

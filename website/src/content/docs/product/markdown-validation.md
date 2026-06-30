@@ -13,10 +13,11 @@ shape while typed frontmatter fields stay in content models.
 | `markdown.require_frontmatter` | Shipped | Generic Markdown presence rule. |
 | `markdown.outline` | Shipped | Assura-owned heading hierarchy with required and optional nested headings. |
 | `markdown.lint_trailing_spaces` | Experimental | Rust-native lint for blank Markdown lines containing spaces or tabs. |
+| `markdown.check_links` | Experimental | Local validation for relative file links, Markdown heading anchors, and GitHub-style line/range anchors. |
 | `assura fix markdown` | Experimental | Safe fix command for deterministic blank-line trailing whitespace with preview and explicit `--apply` audit JSON. |
 | Typed frontmatter fields | Shipped | Content runtime `models` and `collections`, not generic Markdown rules. |
 | Broad markdownlint-compatible rules | Planned | Revisit when Assura has a compatible dependency or external-binary contract. |
-| Link checking | Planned | Needs offline/network policy and normalized diagnostics before support. |
+| Remote link checking | Planned | Needs offline/network policy and normalized diagnostics before support. |
 
 ## Safe Fixes
 
@@ -32,6 +33,22 @@ assura fix markdown --rule trailing-spaces --apply --format json .
 The JSON report uses `assura.safe-fix.markdown.v1` for both preview and apply.
 Preview records planned fix IDs without writing. Apply records changed paths,
 applied fix IDs, skipped Markdown files, and VCS-first rollback guidance.
+
+## Local Link Checks
+
+`markdown.check_links: true` validates relative Markdown-authored links that
+point inside the repository:
+
+```markdown
+[Guide](guide.md)
+[Install](guide.md#install)
+[Code](../src/lib.rs#L12-L34)
+```
+
+The check is local and offline. It reports missing files, missing Markdown
+heading anchors, invalid line anchors, invalid line ranges, and root-absolute
+internal links that should be relative for GitHub rendering in branches, forks,
+and pull requests.
 
 See [Configuration](/docs/configuration/) for Markdown fields and
 [Content Models](/product/content-models/) for typed frontmatter validation.

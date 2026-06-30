@@ -66,6 +66,12 @@
           "summary": "Drive the code-agnostic beta program through executable goal files.",
           "detail_path": "docs/goals/assura-beta-code-agnostic-capabilities-program.md",
           "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-beta-code-agnostic-capabilities-program.md"
+        },
+        {
+          "label": "Markdown Quality",
+          "summary": "Expand Markdown linting, heading validation, suppressions, and safe fixes.",
+          "detail_path": "docs/goals/assura-markdown-lint-link-reference-engine.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-markdown-lint-link-reference-engine.md"
         }
       ]
     },
@@ -73,12 +79,6 @@
       "status": "next",
       "title": "Next",
       "items": [
-        {
-          "label": "Markdown Quality",
-          "summary": "Expand Markdown linting, heading validation, suppressions, and safe fixes.",
-          "detail_path": "docs/goals/assura-markdown-lint-link-reference-engine.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-markdown-lint-link-reference-engine.md"
-        },
         {
           "label": "Reference Graph",
           "summary": "Validate repository-internal links and source-to-doc references.",

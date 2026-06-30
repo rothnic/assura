@@ -106,6 +106,10 @@ spaces or tabs. `assura fix markdown --dry-run` previews this safe whitespace
 class, and `assura fix markdown --apply` removes it for configured Markdown
 scopes.
 
+Set `check_links: true` to validate local relative Markdown links to files,
+Markdown heading anchors, and GitHub-style line or line-range anchors such as
+`#L12` and `#L12-L34`.
+
 `outline` uses nested YAML lists to describe required heading order. Prefix a
 heading with `?? ` to make it optional, and use object form when a required
 heading starts with literal question marks:

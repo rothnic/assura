@@ -23,6 +23,13 @@
       "detail_path": "docs/release-notes.md"
     },
     {
+      "id": "markdown-local-link-checks",
+      "label": "Markdown local link checks",
+      "status": "experimental",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-markdown-lint-link-reference-engine.md"
+    },
+    {
       "id": "structure-validation-cli",
       "label": "Structure validation CLI",
       "status": "supported",

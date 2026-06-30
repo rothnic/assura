@@ -56,8 +56,14 @@ fn check_reports_configured_markdown_trailing_spaces() {
         .output()
         .unwrap();
 
-    assert_eq!(output.status.code(), Some(1));
+    assert!(
+        output.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
     let json: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(json["success"], true);
     let violations = json["violations"].as_array().unwrap();
     let finding = violations
         .iter()
@@ -65,6 +71,7 @@ fn check_reports_configured_markdown_trailing_spaces() {
         .expect("markdown trailing-space lint violation");
 
     assert_eq!(finding["path"], "docs/note.md");
+    assert_eq!(finding["blocking"], false);
     assert!(finding["message"].as_str().unwrap().contains("line 4"));
 }
 
