@@ -1,0 +1,52 @@
+structure:
+  ./:
+    required: false
+    children:
+      docs/:
+        required: false
+        children:
+          epics/:
+            markdown:
+              lint_trailing_spaces: true
+
+models:
+  source: schemas/project-intelligence.linkml.yaml
+  validation_artifact: schemas/project-intelligence.schema.json
+
+collections:
+  epics:
+    class: Epic
+    path: docs/epics/*.md
+    adapter: markdown_frontmatter
+    data: frontmatter
+    body: markdown
+    id: id
+  decisions:
+    class: Decision
+    path: docs/decisions/*.json
+    adapter: json_record
+    id: id
+  packages:
+    class: Package
+    path: packages/*/package.assura.json
+    adapter: json_record
+    id: id
+
+relations:
+  epics.decision_refs:
+    target: decisions
+    many: true
+    required: true
+  epics.package_refs:
+    target: packages
+    many: true
+    required: true
+  packages.decision_ref:
+    target: decisions
+    required: true
+
+exclude:
+  - node_modules/**
+  - dist/**
+  - coverage/**
+  - .next/**

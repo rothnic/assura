@@ -1,0 +1,7 @@
+{"file": "docs/goals/assura-project-intelligence-runtime-program.md", "reason": "Master ordered successor-goal program and sequencing constraints."}
+{"file": "docs/goals/assura-documentation-ia-project-intelligence.md", "reason": "Current successor goal objective, scope, definition of done, and review criteria."}
+{"file": "docs/goals/assura-rust-markdown-validation-and-fixing.md", "reason": "Recently completed predecessor goal that defines the Markdown docs split."}
+{"file": "docs/goals/assura-content-model-source-of-truth.md", "reason": "Completed predecessor goal that defines model-owned frontmatter fields."}
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "Active roadmap routing and status snapshot source."}
+{"file": ".trellis/spec/assura/config-notation.md", "reason": "Canonical notation and Markdown/frontmatter ownership contracts to document accurately."}
+{"file": ".trellis/spec/assura/tooling-stabilization.md", "reason": "Change-scoped docs validation and overclaim prevention policy."}

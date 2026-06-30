@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://assura.dev/examples/code-symbol-content-runtime.schema.json",
+  "$defs": {
+    "Component": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "status", "implementation", "external_symbol"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "status": { "type": "string", "enum": ["planned", "active", "complete"] },
+        "implementation": { "type": "string", "minLength": 1 },
+        "external_symbol": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

@@ -204,7 +204,8 @@ An implementation agent building a real example repo should create:
 
 - `.assura/config.yml` with `models.validation_artifact`, `collections`, and
   `relations`;
-- `schemas/project.runtime.schema.json` checked into the repo;
+- a runtime schema artifact checked into the repo, using `.assura/models/**`
+  when the artifact lives under `.assura/`;
 - `docs/goals/*.md` records with YAML frontmatter and Markdown bodies;
 - `specs/*.json` records that use the same IDs referenced from goals;
 - one passing case, one invalid-field case, and one missing-reference case;

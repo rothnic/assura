@@ -38,8 +38,43 @@ publishes and verifies a `.sha256` file next to every archive.
 | `assura hooks` | Supported for local git hooks | CLI help and local hook behavior. |
 | `assura quality plan` | Supported for local quality planning | `.assura/config.yml`, `docs/validation.md`, and changed-check scripts. |
 | `assura performance-report` | Supported evidence command | Performance report CI job and checked report data. |
+| `assura fix markdown --dry-run --format json` | Experimental safe-fix preview contract | Markdown safe-fix CLI tests prove preview output does not write files. |
+| `assura fix markdown --apply --format json` | Experimental safe-fix apply/audit contract | Markdown safe-fix CLI tests prove apply output reports changed paths, applied fix IDs, skipped fixes, and idempotent reruns. |
+| `assura agent` | Supported local agent project-intelligence surface | Agent-surface CLI tests prove JSON-default commands delegate to existing content-query contracts. |
+| `assura agent context` | Supported local agent context | Agent-surface CLI tests compare output with `assura content agent-context`. |
+| `assura agent diagnostics` | Supported local agent diagnostics | Agent-surface CLI tests compare output with `assura content agent-query diagnostics`. |
+| `assura agent context-pack` | Supported local agent handoff packet | Agent-surface CLI tests compare output with `assura content context-pack`. |
+| `assura agent show` | Supported local agent content inspection | Agent-surface CLI tests compare output with `assura content show`. |
+| `assura agent search` | Supported local agent keyword search | Agent-surface CLI tests compare output with `assura content search`. |
+| `assura agent missing-relations` | Supported local agent relation query | Agent-surface CLI tests compare output with `assura content missing-relations`. |
+| `assura agent expand` | Supported local agent graph expansion | Agent-surface CLI tests compare output with `assura content expand`. |
+| `assura agent safe-fixes` | Supported local agent safe-fix preview | Agent-surface CLI tests compare output with `assura content agent-query safe-fixes`. |
+| `assura agent session` | Supported local agent session alias | Agent-surface CLI tests prove the alias emits the same JSON-line session envelope as `assura content session`. |
+| `assura editor` | Supported local editor project-intelligence surface | Editor-surface CLI tests prove help output and local session availability. |
+| `assura editor session` | Supported local editor session | Editor-surface CLI tests prove LSP-shaped diagnostics, context, safe-fix code-action previews, invalid-method errors, and conservative reload metadata. |
+| `assura content` | Supported first project-intelligence query surface | Content query CLI fixture tests and product docs. |
+| `assura content agent-context` | Supported generic agent context | Agent-context CLI fixture tests; wrappers must reuse this contract instead of creating per-agent query commands. |
+| `assura content agent-query` | Supported generic agent query envelope | Agent-query CLI fixture tests prove diagnostics, graph, search, semantic, and code-symbol queries reuse one wrapper schema. |
+| `assura content context-pack` | Supported bounded project-intelligence context bundle | Context-pack tests prove diagnostics, graph/search context, relation status, and safe-fix preview metadata compose without writes. |
+| `assura content session` | Supported local project-intelligence session | Session tests prove repeated JSON-line requests reuse context and reload conservatively after modeled content changes. |
+| `assura content collections` | Supported | Content query CLI fixture tests. |
+| `assura content instances` | Supported | Content query CLI fixture tests. |
+| `assura content show` | Supported | Content query CLI fixture tests. |
+| `assura content search` | Supported keyword search | Content query CLI fixture tests; semantic candidate retrieval uses the separate `semantic-search` command. |
+| `assura content semantic-search` | Supported optional local candidate search | Semantic search fixture tests; candidates do not decide validation correctness. |
+| `assura content symbols` | Supported optional code-symbol query | Code-symbol fixture tests; baseline evidence is candidate context and does not decide validation correctness. |
+| `assura content symbol-refs` | Supported optional code-symbol query | Code-symbol fixture tests; unresolved provider refs remain queryable. |
+| `assura content missing-relations` | Supported relation query | Content query CLI fixture tests. |
+| `assura content expand` | Supported bounded graph expansion | Content query CLI fixture tests. |
 | `assura info` | Experimental diagnostic | CLI exists, but text output is not an automation contract. |
 | `assura watch` | Experimental | CLI exists, but release-grade watch behavior is not claimed. |
+
+## Project Intelligence Layout Compatibility
+
+`.assura/models/**` is the supported project-intelligence model artifact layout
+for model files stored under `.assura/`. Content runtime validation tests and
+Assura self-check prove that root-level `.assura/` model artifacts are rejected
+while project-relative `schemas/**` artifacts remain valid.
 
 ## LS-Lint Compatibility
 

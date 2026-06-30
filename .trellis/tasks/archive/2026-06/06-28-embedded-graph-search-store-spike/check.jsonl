@@ -1,0 +1,7 @@
+{"file": ".trellis/spec/assura/index.md", "reason": "Review roadmap alignment, validation expectations, and Assura project constraints."}
+{"file": ".trellis/spec/backend/index.md", "reason": "Review backend quality routing for Rust implementation and benchmark changes."}
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "Quality checklist for tests, lint, and review standards."}
+{"file": ".trellis/spec/guides/index.md", "reason": "Route review through reuse and cross-layer thinking guides."}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Check for duplicated prototype/query/benchmark logic."}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Check fact-to-store-to-query benchmark data flow and contract consistency."}
+{"file": ".trellis/tasks/06-28-embedded-graph-search-store-spike/research/candidate-store-surfaces.md", "reason": "Review candidate selection against current upstream/API evidence."}

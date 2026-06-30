@@ -71,6 +71,7 @@ commands:
       --quiet: {}
       --help:
         aliases: ["-h"]
+      --project-intelligence: {}
       --force: {}
       --no-git-hooks: {}
   - name: "assura watch"
@@ -102,6 +103,426 @@ commands:
       --output:
         aliases: ["-o"]
         takes_value: true
+  - name: "assura fix markdown"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --rule:
+        takes_value: true
+        values: ["trailing-spaces"]
+      --dry-run: {}
+      --apply: {}
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status"]
+  - name: "assura agent"
+    allow_positionals: false
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+  - name: "assura agent context"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status"]
+  - name: "assura agent diagnostics"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status"]
+  - name: "assura agent context-pack"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --collection:
+        takes_value: true
+      --id:
+        takes_value: true
+      --text:
+        takes_value: true
+      --limit:
+        takes_value: true
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status"]
+  - name: "assura agent show"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status"]
+  - name: "assura agent search"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status"]
+  - name: "assura agent missing-relations"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status"]
+  - name: "assura agent expand"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --limit:
+        takes_value: true
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status"]
+  - name: "assura agent safe-fixes"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status"]
+  - name: "assura agent session"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+  - name: "assura editor"
+    allow_positionals: false
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+  - name: "assura editor session"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+  - name: "assura content"
+    allow_positionals: false
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+  - name: "assura content agent-context"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status"]
+  - name: "assura content agent-query"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --collection:
+        takes_value: true
+      --id:
+        takes_value: true
+      --text:
+        takes_value: true
+      --symbol:
+        takes_value: true
+      --limit:
+        takes_value: true
+      --enable-local: {}
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status"]
+  - name: "assura content context-pack"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --collection:
+        takes_value: true
+      --id:
+        takes_value: true
+      --text:
+        takes_value: true
+      --limit:
+        takes_value: true
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status"]
+  - name: "assura content session"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+  - name: "assura content collections"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status"]
+  - name: "assura content instances"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status"]
+  - name: "assura content show"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status"]
+  - name: "assura content search"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status"]
+  - name: "assura content semantic-search"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --limit:
+        takes_value: true
+      --enable-local: {}
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status"]
+  - name: "assura content symbols"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status"]
+  - name: "assura content symbol-refs"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status"]
+  - name: "assura content missing-relations"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status"]
+  - name: "assura content expand"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --limit:
+        takes_value: true
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status"]
   - name: "assura info"
     allow_positionals: true
     flags:

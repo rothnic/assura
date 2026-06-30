@@ -29,20 +29,63 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 15 | Docs Lifecycle Rule | Completed | PR #78 merged; archive PR #79 merged |
 | 16 | Docs Lifecycle Coverage | Completed | PR #83 merged; archive/sync PR #84 merged |
 | 17 | Support Matrix Surface Expansion | Completed | PR #88 merged; archive/sync PR #89 merged |
-| 18 | Project Intelligence Runtime | Planned | Master goal `docs/goals/assura-project-intelligence-runtime-program.md` defines the ordered goal program |
+| 18 | Project Intelligence Runtime | Completed | All nine successors and final completion audit completed locally |
+| 19 | Project Intelligence Usability | Completed | Adoption blueprint, real-repo proof, onboarding template, context pack, persistent session, safe-fix workflow, `.assura/` directory organization, agent CLI surface, LSP editor transport, release hardening, and final usability audit completed locally |
 
 ## Active Roadmap Iteration
 
-No roadmap iteration is currently in execution, but Project Intelligence
-Runtime is the planned next iteration candidate.
+Project Intelligence Usability is complete locally.
 
-Current owning task:
-None. The next task should be created for
-`docs/goals/assura-content-model-source-of-truth.md`.
+Most recent owning task:
+`.trellis/tasks/archive/2026-06/06-29-project-intelligence-release-hardening`,
+completing
+`docs/goals/assura-project-intelligence-release-hardening.md`.
 
 Current branch:
-None for execution. The planning branch is
-`codex/project-intelligence-goal-program`.
+`codex/project-intelligence-agent-surfaces`.
+
+Current recommended goal:
+No Project Intelligence Usability successor remains open.
+
+Current program:
+`docs/goals/assura-project-intelligence-usability-program.md`.
+
+Project Intelligence Runtime is complete and should remain closed unless a new
+concrete drift case is named with evidence.
+
+Most recent completed Project Intelligence successor:
+`docs/goals/assura-project-intelligence-release-hardening.md`, completed
+locally on branch `codex/project-intelligence-agent-surfaces` with independent
+review and clean-source target-state evidence.
+
+Earlier Project Intelligence successors completed in this program:
+`docs/goals/assura-code-symbol-enrichment.md`, completed locally on branch
+`codex/code-symbol-enrichment` with independent review and archived Trellis
+task
+`.trellis/tasks/archive/2026-06/06-28-06-28-code-symbol-enrichment`.
+`docs/goals/assura-local-semantic-search.md`, completed locally on branch
+`codex/local-semantic-search` with independent review and archived Trellis task
+`.trellis/tasks/archive/2026-06/06-28-local-semantic-search`.
+`docs/goals/assura-content-query-and-search-cli.md`, completed locally on
+branch `codex/content-query-and-search-cli` with independent review and
+archived Trellis task
+`.trellis/tasks/archive/2026-06/06-28-06-28-content-query-and-search-cli`.
+`docs/goals/assura-embedded-graph-search-store-spike.md`, completed locally on
+branch `codex/embedded-graph-search-store-spike` with independent review and
+archived Trellis task
+`.trellis/tasks/archive/2026-06/06-28-embedded-graph-search-store-spike`.
+`docs/goals/assura-project-intelligence-fact-model.md`, completed locally on
+branch `codex/project-intelligence-fact-model` with independent review and
+archived Trellis task
+`.trellis/tasks/archive/2026-06/06-28-project-intelligence-fact-model`.
+`docs/goals/assura-documentation-ia-project-intelligence.md`, completed locally
+on branch `codex/documentation-ia-project-intelligence` with independent review
+and archived Trellis task
+`.trellis/tasks/archive/2026-06/06-28-documentation-ia-project-intelligence`.
+`docs/goals/assura-content-model-source-of-truth.md` completed on branch
+`codex/content-model-source-of-truth`;
+`docs/goals/assura-rust-markdown-validation-and-fixing.md` completed on branch
+`codex/rust-markdown-validation-and-fixing`.
 
 Most recent completed major roadmap work: Support Matrix Surface Expansion.
 Policy Depth Iteration 02 goals 09 through 13 are complete and archived,
@@ -65,19 +108,19 @@ one `--format <agent>-hook` value per agent. Treat older roadmap/task wording in
 that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
 Planned next roadmap candidate:
-Project Intelligence Runtime. Start with
-`docs/goals/assura-project-intelligence-runtime-program.md`, then execute its
-successor goals in order unless a refreshed dependency decision records a
-better sequence.
+No Project Intelligence Usability successor remains open. Create a new roadmap
+candidate only when a concrete product decision or drift case names the next
+bounded goal with executable evidence.
 
 ## Recommended Next Action
 
-Run the workflow gate and target-state audit, then create the first Trellis
-task for `docs/goals/assura-content-model-source-of-truth.md`. Do not reopen
-the completed support-matrix expansion or Windows CI Restore unless a new
-concrete docs, manifest, package, binary, support status, or hosted CI drift
-case is named with executable evidence. The product roadmap remains open until
-a separate product decision declares it complete.
+Run the workflow gate, then open a new bounded goal only if a concrete docs,
+manifest, package, binary, support status, hosted CI drift case, or next
+product decision is named with executable evidence. Do not reopen the completed
+Project Intelligence Runtime successors, Project Intelligence Usability
+successors, support-matrix expansion, or Windows CI Restore work without that
+evidence. The broader product roadmap remains open until a separate product
+decision declares it complete.
 
 ## Roadmap Rules
 

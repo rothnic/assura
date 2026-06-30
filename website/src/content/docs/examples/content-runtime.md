@@ -12,8 +12,8 @@ server, database, Rust build step, or authoring tool in the validation path.
 
 ```yaml
 models:
-  source: schemas/project.linkml.yaml
-  validation_artifact: schemas/project.runtime.schema.json
+  source: .assura/models/project/source.linkml.yaml
+  validation_artifact: .assura/models/project/runtime.schema.json
 
 collections:
   goals:
@@ -39,6 +39,10 @@ relations:
 The same runtime also supports `yaml_record` and `jsonl_record` adapters for
 structured collections. Relation diagnostics identify the source file, object
 type, field, and referenced object when available.
+
+If you store model artifacts under `.assura/`, place them below
+`.assura/models/**`. This keeps `.assura/config.yml`, hooks, and other
+well-known entrypoints from being mixed with generated schemas or source models.
 
 ## Store Normal Files
 
@@ -101,3 +105,7 @@ Repository proof lives in:
 
 The full guide is in `docs/content-runtime.md`, with cross-language inspection
 notes in `docs/content-runtime-inspection.md`.
+
+For a visual walkthrough that connects modeled content to search, graph context,
+agent envelopes, and safe-fix previews, see
+[Project Intelligence Demo](/examples/project-intelligence-demo/).

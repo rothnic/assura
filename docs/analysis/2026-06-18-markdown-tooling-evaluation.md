@@ -21,10 +21,11 @@ configurable enough for project-structure checks.
 
 ## Current Repo Baseline
 
-Assura already has in-tree Markdown checks for frontmatter presence, required
-frontmatter fields, heading depth, and required sections. The implementation is
-purpose-built and lightweight, but it does not replace a Markdown linter or
-general link checker.
+Assura already has in-tree Markdown checks for frontmatter presence, heading
+depth, required sections, and model-aware outline validation. Typed
+frontmatter fields belong to content runtime models and collections, not
+generic Markdown rules. The implementation is purpose-built and lightweight,
+but it does not replace a Markdown linter or general link checker.
 
 `Cargo.toml` currently lists optional Markdown-related dependencies:
 
@@ -100,3 +101,95 @@ existing heading-depth and required-section checks. If future support requires
 CommonMark/GFM edge cases beyond this scanner, the next decision should compare
 moving the check-only path to a parser/AST dependency against the measured
 binary-size and runtime cost.
+
+## 2026-06-28 Project Intelligence Decision
+
+The Rust Markdown validation/fixing successor goal refreshed current upstream
+state for `rumdl`, `mkdlint`, and `comrak` before implementation. Assura should
+not add the current releases of these crates as direct dependencies while
+`Cargo.toml` declares `rust-version = "1.70.0"`.
+
+| Candidate | Current evidence | Fit decision |
+| --- | --- | --- |
+| `rumdl 0.2.25` | `cargo info rumdl` reports `rust-version: 1.94.0`; local CLI probe on Rust 1.94.1 produced JSON diagnostics with line, column, severity, fixable flag, and byte-range fixes; `rumdl check --fix --fixable MD009` preserved YAML frontmatter and only removed trailing spaces. Upstream docs describe 76 lint rules, `rumdl check --fix`, JSON-capable CLI output, multiple Markdown flavors, and single-binary installation. | Best future broad markdownlint-compatible linter/formatter candidate, but not a direct dependency under the current MSRV. Safe only as a separately installed/bundled binary after Assura defines packaging and version policy. |
+| `mkdlint 0.11.9` | `cargo info mkdlint` reports `rust-version: 1.93`; docs.rs exposes sync/async library APIs, `LintError`, `FixInfo`, custom rules, and `apply_fixes`; CLI JSON probe reported markdownlint-style diagnostics and fix metadata. Local `--fix` with all non-MD009 rules disabled preserved YAML frontmatter and removed trailing spaces. | Best embeddable library shape among the candidates, but not MSRV-compatible. Revisit if Assura raises MSRV or if a compatible release exists. |
+| `comrak 0.52.0` | `cargo info comrak@0.52.0` reports `rust-version: 1.85`; docs.rs exposes CommonMark/GFM parsing, AST traversal, and CommonMark formatting. Local CLI probe with `--front-matter-delimiter '---' --to commonmark` preserved YAML frontmatter but formatted malformed Markdown rather than reporting actionable lint diagnostics. `comrak 0.49.0` is compatible with Rust 1.70, but it is a parser/formatter, not a linter. | Good parser/AST candidate when Assura needs CommonMark-precise analysis, but not a generic lint/fix provider. Do not use it alone to satisfy lint diagnostics. |
+
+Local probe fixture:
+
+```text
+---
+title: Probe
+---
+
+#Title
+
+
+Body with trailing spaces.
+
+## Child
+
+```
+
+Evidence commands that use Assura or Cargo's stable public surface:
+
+```bash
+cargo search rumdl --limit 5
+cargo search mkdlint --limit 5
+cargo search comrak --limit 5
+cargo info rumdl
+cargo info mkdlint
+cargo info comrak@0.52.0
+rustc --version
+```
+
+Local candidate probes also ran each downloaded crate's CLI against the fixture
+with its native JSON or CommonMark options; the exact third-party flags are
+intentionally not recorded as Assura command-surface examples.
+
+Implementation direction for this successor goal:
+
+- Add a narrow Assura-owned generic Markdown lint/fix slice for blank-line
+  trailing spaces. This is deliberately one deterministic rule, not a broad
+  linter reimplementation.
+- Report the diagnostic through `assura check` with a Markdown lint-specific rule
+  code and source line/column text in the message.
+- Add a safe fix command that applies only this deterministic blank-line
+  whitespace class initially; do not rewrite content-line hard breaks.
+- Keep `markdown.require_frontmatter`, heading depth, required sections, and
+  nested outline as Assura-owned structure behavior.
+- Keep typed frontmatter fields in content runtime models and collections.
+- Revisit `rumdl`/`mkdlint` integration when Assura either raises MSRV or
+  defines an external-binary packaging contract that does not depend on the
+  user's repo installing JavaScript or arbitrary commands.
+
+### First-Slice Overhead Evidence
+
+Release-mode timing used a temporary copy of this repository's `docs/` corpus
+with 139 Markdown files. Before timing, `assura fix markdown` cleaned the copied
+corpus so JSON diagnostic rendering would not dominate the lint-on run; the
+cleaning step changed 14 files and applied 503 blank-line whitespace fixes in
+the temporary copy only.
+
+The timing compared two otherwise identical configs:
+
+- `markdown.lint_trailing_spaces: false`
+- `markdown.lint_trailing_spaces: true`
+
+Both used `target/release/assura check --format json <fixture>`, measured with
+`hyperfine 1.20.0`, 5 warmups, and 30 runs.
+
+| Scenario | Mean | Median | Range | Interpretation |
+| --- | ---: | ---: | ---: | --- |
+| Markdown scope configured, trailing-space lint off | 10.1 ms ± 1.2 ms | 10.06 ms | 7.9-13.2 ms | Baseline configured Markdown traversal over copied docs. |
+| Markdown scope configured, trailing-space lint on | 12.8 ms ± 2.2 ms | 11.97 ms | 10.6-19.2 ms | Adds about 2.7 ms mean over 139 Markdown files. |
+
+Evidence command shape:
+
+```bash
+cargo build --release --quiet
+target/release/assura fix markdown "$bench_root/on"
+hyperfine --warmup 5 --runs 30 \
+  "target/release/assura check --format json $bench_root/off" \
+  "target/release/assura check --format json $bench_root/on"
+```

@@ -4,8 +4,9 @@ use super::compiled_config::CompiledStructureConfig;
 use super::compiled_fingerprint::SourceConfigFingerprint;
 use super::compiled_plan_artifact::PortableCompiledPlan;
 use crate::config::config::{
-    Config, ContentCollectionConfig, ContentModelConfig, ContentRelationConfig, DirectoryBundle,
-    DirectoryNode, ExistsValidation, FileBundle, MarkdownBundle, QualityConfig,
+    Config, ContentCodeSymbolConfig, ContentCollectionConfig, ContentModelConfig,
+    ContentRelationConfig, DirectoryBundle, DirectoryNode, ExistsValidation, FileBundle,
+    MarkdownBundle, QualityConfig,
 };
 use crate::config::ls_compat::LsLintCompatibility;
 use crate::stable_hash::{stable_hash, stable_hash_const};
@@ -221,6 +222,7 @@ struct PortableConfig {
     models: Option<ContentModelConfig>,
     collections: HashMap<String, ContentCollectionConfig>,
     relations: HashMap<String, ContentRelationConfig>,
+    code_symbols: HashMap<String, ContentCodeSymbolConfig>,
     exclude: Vec<String>,
 }
 
@@ -288,6 +290,7 @@ impl From<Config> for PortableConfig {
             models: config.models,
             collections: config.collections,
             relations: config.relations,
+            code_symbols: config.code_symbols,
             exclude: config.exclude,
         }
     }
@@ -312,6 +315,7 @@ impl From<PortableConfig> for Config {
             models: config.models,
             collections: config.collections,
             relations: config.relations,
+            code_symbols: config.code_symbols,
             exclude: config.exclude,
         }
     }
@@ -431,11 +435,11 @@ impl From<MarkdownBundle> for PortableMarkdownBundle {
     fn from(bundle: MarkdownBundle) -> Self {
         Self {
             require_frontmatter: bundle.require_frontmatter,
-            required_fields: bundle.required_fields,
             max_heading_depth: bundle.max_heading_depth,
             check_links: bundle.check_links,
             required_sections: bundle.required_sections,
             outline: bundle.outline,
+            lint_trailing_spaces: bundle.lint_trailing_spaces,
         }
     }
 }
@@ -444,11 +448,12 @@ impl From<PortableMarkdownBundle> for MarkdownBundle {
     fn from(bundle: PortableMarkdownBundle) -> Self {
         Self {
             require_frontmatter: bundle.require_frontmatter,
-            required_fields: bundle.required_fields,
+            required_fields: None,
             max_heading_depth: bundle.max_heading_depth,
             check_links: bundle.check_links,
             required_sections: bundle.required_sections,
             outline: bundle.outline,
+            lint_trailing_spaces: bundle.lint_trailing_spaces,
         }
     }
 }

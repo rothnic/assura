@@ -8,7 +8,7 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			title: 'Assura',
-			description: 'Dependency-aware file system validation engine',
+			description: 'Structure-first repository validation and project intelligence',
 			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/rothnic/assura' }],
 			plugins: [
 				catppuccin({
@@ -34,6 +34,17 @@ export default defineConfig({
 						{ label: 'Installation', slug: 'guides/installation' },
 						{ label: 'Adoption Walkthrough', slug: 'guides/adoption-walkthrough' },
 						{ label: 'LS-Lint Migration', slug: 'guides/ls-lint-migration' },
+					],
+				},
+				{
+					label: 'Product Layers',
+					items: [
+						{ label: 'Structure Validation', slug: 'product/structure-validation' },
+						{ label: 'Markdown Validation', slug: 'product/markdown-validation' },
+						{ label: 'Content Runtime And Models', slug: 'product/content-models' },
+						{ label: 'Query And Search', slug: 'product/query-search' },
+						{ label: 'Code Intelligence', slug: 'product/code-intelligence' },
+						{ label: 'Agent And Editor Surfaces', slug: 'product/agent-editor-surfaces' },
 					],
 				},
 				{
@@ -65,6 +76,7 @@ export default defineConfig({
 						{ label: 'Git Hooks Setup', slug: 'examples/git-hooks-setup' },
 						{ label: 'Multi-Agent Configuration', slug: 'examples/multi-agent-config' },
 						{ label: 'Content Runtime', slug: 'examples/content-runtime' },
+						{ label: 'Project Intelligence Demo', slug: 'examples/project-intelligence-demo' },
 					],
 				},
 			],

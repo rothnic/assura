@@ -2,7 +2,7 @@
 id: goal-assura-code-symbol-enrichment
 type: goal
 title: Assura code symbol enrichment
-status: planned
+status: completed
 created: 2026-06-28
 owners:
   - assura-maintainers
@@ -91,3 +91,28 @@ git diff --check
 Block if normal validation requires CKB, LIP, LSP, SCIP, or another provider;
 if unresolved symbols disappear; if provider results lack provenance; or if
 code intelligence starts defining the content model.
+
+## Progress Log
+
+- 2026-06-28: Revalidated as `valid` after completing and archiving local
+  semantic search. Live repo already has `CodeSymbol`, `SymbolRef`,
+  `ProjectEdge::SymbolRef`, `FactIngestor::add_symbol_ref`, store symbol-edge
+  indexing, and tests for manually added unresolved symbol refs. The goal still
+  needs modeled-field symbol extraction, provider evidence metadata, at least
+  one local baseline resolution/import path, public symbol query output, and
+  docs that distinguish unresolved, baseline-resolved, and provider-resolved
+  evidence.
+- 2026-06-28: Completed code-symbol enrichment successor. Added config-backed
+  `code_symbols` modeled fields, provider evidence facts, local
+  `rust-token-baseline-v1` declaration extraction, resolved and unresolved
+  `SymbolRef` ingestion, `assura content symbols`, and
+  `assura content symbol-refs`. Regression coverage proves duplicate local
+  declarations remain unresolved and duplicate configured fields keep distinct
+  edges. Independent review found those two blockers; both were fixed and
+  retested. Validation passed:
+  `cargo fmt --check`, `cargo test code_symbol --quiet`,
+  `cargo test --test content_query_cli --quiet`,
+  `cargo test project_intelligence --quiet`,
+  `cargo run --quiet -- check --format json .`, `cargo xtask evidence`,
+  `cargo xtask docs`, `cargo clippy --workspace --all-targets --all-features -- -D warnings`,
+  and `git diff --check`.

@@ -23,6 +23,7 @@ impl StructureChecker {
         self.validate_markdown_heading_depth(rel, markdown, content, report);
         self.validate_markdown_required_sections(rel, markdown, content, report);
         validate_markdown_outline(self, rel, markdown, content, report);
+        self.validate_markdown_trailing_spaces(rel, markdown, content, report);
     }
 
     fn validate_markdown_frontmatter(
@@ -43,48 +44,6 @@ impl StructureChecker {
                 ),
                 "medium",
             );
-        }
-
-        if let Some(required_fields) = &markdown.required_fields {
-            match frontmatter {
-                Some(frontmatter) => match serde_yaml::from_str::<serde_yaml::Value>(frontmatter) {
-                    Ok(value) => {
-                        for field in required_fields {
-                            if value.get(field).is_none() {
-                                push_missing_frontmatter_field(self, report, rel, field);
-                            }
-                        }
-                    }
-                    Err(error) => {
-                        self.push_violation(
-                            report,
-                            rel.to_path_buf(),
-                            "markdown_frontmatter_parse",
-                            format!(
-                                "Markdown file '{}' has invalid frontmatter: {}",
-                                display_rel(rel),
-                                error
-                            ),
-                            "medium",
-                        );
-                    }
-                },
-                None => {
-                    for field in required_fields {
-                        self.push_violation(
-                            report,
-                            rel.to_path_buf(),
-                            "markdown_frontmatter_field",
-                            format!(
-                                "Markdown file '{}' cannot satisfy required field '{}' without frontmatter",
-                                display_rel(rel),
-                                field
-                            ),
-                            "medium",
-                        );
-                    }
-                }
-            }
         }
     }
 
@@ -146,6 +105,79 @@ impl StructureChecker {
             }
         }
     }
+
+    fn validate_markdown_trailing_spaces(
+        &self,
+        rel: &Path,
+        markdown: &MarkdownBundle,
+        content: &str,
+        report: &mut StructureCheckReport,
+    ) {
+        if markdown.lint_trailing_spaces != Some(true) {
+            return;
+        }
+
+        for violation in blank_line_trailing_spaces(content) {
+            self.push_violation(
+                report,
+                rel.to_path_buf(),
+                "markdown_trailing_spaces",
+                format!(
+                    "Markdown file '{}' has {} trailing whitespace character(s) on blank line {}, column 1",
+                    display_rel(rel),
+                    violation.trailing_count,
+                    violation.line_number
+                ),
+                "low",
+            );
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(super) struct MarkdownTrailingSpaces {
+    pub(super) line_number: usize,
+    pub(super) trailing_count: usize,
+}
+
+pub(super) fn blank_line_trailing_spaces(content: &str) -> Vec<MarkdownTrailingSpaces> {
+    content
+        .lines()
+        .enumerate()
+        .filter_map(|(line_index, line)| {
+            let trailing_count = line.chars().filter(|ch| *ch == ' ' || *ch == '\t').count();
+            (trailing_count > 0 && line.chars().all(|ch| ch == ' ' || ch == '\t')).then_some(
+                MarkdownTrailingSpaces {
+                    line_number: line_index + 1,
+                    trailing_count,
+                },
+            )
+        })
+        .collect()
+}
+
+pub(super) fn fix_blank_line_trailing_spaces(content: &str) -> (String, usize) {
+    let mut output = String::with_capacity(content.len());
+    let mut fixes = 0;
+
+    for line in content.split_inclusive('\n') {
+        let (body, newline) = if let Some(body) = line.strip_suffix("\r\n") {
+            (body, "\r\n")
+        } else if let Some(body) = line.strip_suffix('\n') {
+            (body, "\n")
+        } else {
+            (line, "")
+        };
+
+        if !body.is_empty() && body.chars().all(|ch| ch == ' ' || ch == '\t') {
+            output.push_str(newline);
+            fixes += 1;
+        } else {
+            output.push_str(line);
+        }
+    }
+
+    (output, fixes)
 }
 
 pub(super) struct MarkdownHeading<'a> {
@@ -212,23 +244,4 @@ fn is_fence_start(trimmed: &str) -> bool {
     };
 
     trimmed.chars().take_while(|ch| *ch == marker).count() >= 3
-}
-
-fn push_missing_frontmatter_field(
-    checker: &StructureChecker,
-    report: &mut StructureCheckReport,
-    rel: &Path,
-    field: &str,
-) {
-    checker.push_violation(
-        report,
-        rel.to_path_buf(),
-        "markdown_frontmatter_field",
-        format!(
-            "Markdown file '{}' is missing frontmatter field '{}'",
-            display_rel(rel),
-            field
-        ),
-        "medium",
-    );
 }

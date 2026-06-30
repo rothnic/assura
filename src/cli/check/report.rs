@@ -1,8 +1,8 @@
 //! Report and error types for structure-first checks.
 
 use crate::cli::config::ConfigError;
-use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
+use serde::{Deserialize, Serialize, Serializer};
+use std::path::{Path, PathBuf};
 use thiserror::Error;
 
 /// Result of running a structure-first check.
@@ -11,10 +11,13 @@ pub struct StructureCheckReport {
     /// Whether the checked path passed all configured validations.
     pub success: bool,
     /// Project root used to resolve relative config paths.
+    #[serde(serialize_with = "serialize_path")]
     pub project_root: PathBuf,
     /// Configuration file used for validation.
+    #[serde(serialize_with = "serialize_path")]
     pub config_path: PathBuf,
     /// Path that was checked.
+    #[serde(serialize_with = "serialize_path")]
     pub checked_path: PathBuf,
     /// Number of files checked.
     pub files_checked: usize,
@@ -35,6 +38,7 @@ impl StructureCheckReport {
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct StructureViolation {
     /// Path associated with the violation.
+    #[serde(serialize_with = "serialize_path")]
     pub path: PathBuf,
     /// Rule that produced the violation.
     pub rule: String,
@@ -121,8 +125,8 @@ fn corrective_context_for_rule(rule: &str) -> &'static str {
         "exists_count" => {
             "Adjust direct child files/directories until the count matches the configured exists range, or update the range in .assura/config.yml."
         }
-        "markdown_frontmatter" | "markdown_frontmatter_field" | "markdown_frontmatter_parse" => {
-            "Add valid YAML frontmatter with the required fields, or relax markdown.require_frontmatter/required_fields for this scope."
+        "markdown_frontmatter" => {
+            "Add YAML frontmatter, or relax markdown.require_frontmatter for this scope. Use content runtime models and collections for typed frontmatter fields."
         }
         "markdown_heading_depth" => {
             "Promote deep headings or increase markdown.max_heading_depth when the deeper outline is intentional."
@@ -132,6 +136,9 @@ fn corrective_context_for_rule(rule: &str) -> &'static str {
         }
         "markdown_outline" => {
             "Add or reorder headings to match markdown.outline, or update the configured outline when the documented structure changed."
+        }
+        "markdown_trailing_spaces" => {
+            "Run `assura fix markdown --dry-run` to preview safe blank-line trailing-space fixes, then rerun with `--apply` to write them, or disable markdown.lint_trailing_spaces for this scope."
         }
         "extension" => {
             "Rename the file to an allowed extension or update files.extensions for this scope."
@@ -149,6 +156,13 @@ fn corrective_context_for_rule(rule: &str) -> &'static str {
             "Inspect the reported path and effective rule, then update the file tree or .assura/config.yml so they agree."
         }
     }
+}
+
+fn serialize_path<S>(path: &Path, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    serializer.serialize_str(&path.to_string_lossy().replace('\\', "/"))
 }
 
 /// Errors produced while preparing or running a structure check.

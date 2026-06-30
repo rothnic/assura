@@ -1,0 +1,7 @@
+{"file":".trellis/spec/assura/index.md","reason":"Assura source-of-truth, pre-1.0 replacement policy, and validation fixture expectations"}
+{"file":".trellis/spec/assura/config-notation.md","reason":"Canonical config notation and Markdown outline/frontmatter boundaries"}
+{"file":".trellis/spec/assura/structure-enforcement.md","reason":"Structure-first validation contracts and direct config behavior"}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Search-first guidance for removing duplicated frontmatter validation paths"}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Cross-layer boundary for config parsing, check runtime, content runtime, docs, and tests"}
+{"file":"docs/goals/assura-content-model-source-of-truth.md","reason":"Goal acceptance criteria and reviewer blocking criteria"}
+{"file":"docs/goals/assura-project-intelligence-runtime-program.md","reason":"Master program ordering and definition of done for the first successor goal"}

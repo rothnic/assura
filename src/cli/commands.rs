@@ -3,9 +3,12 @@
 //! Provides command-line interface for validation and migration.
 
 use crate::cli::args::{AgentTarget, CheckOutputFormat, OutputFormat};
-use crate::cli::check::{run_structure_check_with_target_mode, CheckError, CheckTargetMode};
+use crate::cli::check::{
+    run_markdown_fix, run_structure_check_with_target_mode, CheckError, CheckTargetMode,
+};
 use crate::cli::check_report::format_structure_report;
-use crate::cli::init_support::{resolve_project_root, starter_config};
+use crate::cli::init_support::{materialize_starter, StarterInitError};
+use crate::cli::MarkdownFixRuleArg;
 use crate::cli::{CheckCommandOptions, ConfigDiscovery, ExitCode};
 use crate::config::config::{Config, DirectoryNode};
 use crate::config::loader::ConfigLoader;
@@ -109,44 +112,25 @@ pub async fn status_command(
 }
 
 /// Initialize a new Assura configuration
-pub async fn init_command(path: Option<PathBuf>, force: bool, no_git_hooks: bool) -> ExitCode {
-    let project_root = match resolve_project_root(path) {
-        Ok(path) => path,
+pub async fn init_command(
+    path: Option<PathBuf>,
+    force: bool,
+    no_git_hooks: bool,
+    project_intelligence: bool,
+) -> ExitCode {
+    let created = match materialize_starter(path, force, project_intelligence) {
+        Ok(created) => created,
         Err(error) => {
-            eprintln!("Error: {}", error);
-            return ExitCode::RuntimeError;
+            eprintln!("Error: {}", error.message());
+            return match error {
+                StarterInitError::Configuration(_) => ExitCode::ConfigurationError,
+                StarterInitError::Runtime(_) => ExitCode::RuntimeError,
+            };
         }
     };
-
-    let assura_dir = project_root.join(".assura");
-    let config_path = assura_dir.join("config.yml");
-    if config_path.exists() && !force {
-        eprintln!(
-            "Error: {} already exists. Use --force to overwrite.",
-            config_path.display()
-        );
-        return ExitCode::ConfigurationError;
+    for path in created {
+        println!("Created {}", path.display());
     }
-
-    if let Err(error) = std::fs::create_dir_all(&assura_dir) {
-        eprintln!(
-            "Error: failed to create {}: {}",
-            assura_dir.display(),
-            error
-        );
-        return ExitCode::RuntimeError;
-    }
-
-    if let Err(error) = std::fs::write(&config_path, starter_config()) {
-        eprintln!(
-            "Error: failed to write {}: {}",
-            config_path.display(),
-            error
-        );
-        return ExitCode::RuntimeError;
-    }
-
-    println!("Created {}", config_path.display());
     if no_git_hooks {
         println!("Skipped git hook setup because --no-git-hooks was provided.");
     } else {
@@ -194,6 +178,65 @@ pub async fn migrate_command(input: Vec<PathBuf>, output: Option<PathBuf>) -> Ex
         Err(error) => {
             eprintln!("Error: {}", error);
             ExitCode::RuntimeError
+        }
+    }
+}
+
+/// Apply safe Markdown fixes.
+pub async fn fix_markdown_command(
+    path: Option<PathBuf>,
+    config: Option<PathBuf>,
+    rule: MarkdownFixRuleArg,
+    dry_run: bool,
+    apply: bool,
+    format: OutputFormat,
+) -> ExitCode {
+    if dry_run && apply {
+        eprintln!("Error: --dry-run and --apply cannot be used together");
+        return ExitCode::RuntimeError;
+    }
+
+    let rule = rule.into();
+    let dry_run = !apply;
+
+    match run_markdown_fix(path, config, rule, dry_run) {
+        Ok(report) => {
+            println!("{}", format_markdown_fix_report(&report, format));
+            if report.failures.is_empty() {
+                ExitCode::Success
+            } else {
+                ExitCode::RuntimeError
+            }
+        }
+        Err(error) => {
+            eprintln!("Error: {}", error);
+            exit_code_for_check_error(&error)
+        }
+    }
+}
+
+fn format_markdown_fix_report(
+    report: &crate::cli::check::MarkdownFixReport,
+    format: OutputFormat,
+) -> String {
+    match format {
+        OutputFormat::Json => serde_json::to_string_pretty(report).unwrap_or_default(),
+        OutputFormat::Yaml => serde_yaml::to_string(report).unwrap_or_default(),
+        OutputFormat::Text | OutputFormat::Advice | OutputFormat::Status => {
+            if report.dry_run {
+                format!(
+                    "Checked {} Markdown file(s); would change {} file(s); would apply {} fix(es). Run again with --apply to write these fixes.",
+                    report.files_checked, report.files_would_change, report.fixes_would_apply
+                )
+            } else {
+                format!(
+                    "Checked {} Markdown file(s); changed {} file(s); applied {} fix(es); failed {} file(s).",
+                    report.files_checked,
+                    report.files_changed,
+                    report.fixes_applied,
+                    report.failures.len()
+                )
+            }
         }
     }
 }

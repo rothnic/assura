@@ -1,7 +1,9 @@
 use assura::config::config::ContentRelationConfig;
 use assura::config::loader::ConfigLoader;
 use assura::content_repository::{ContentRepository, RepositoryValidation};
+use std::fs;
 use std::path::{Path, PathBuf};
+use tempfile::TempDir;
 
 const FIXTURE_ROOT: &str = "tests/fixtures/content_runtime";
 
@@ -94,6 +96,26 @@ fn reports_missing_references_with_source_field_and_target() {
     ));
 }
 
+#[test]
+fn reports_missing_markdown_frontmatter_fields_through_content_model() {
+    let validation = validate_fixture("missing_model_frontmatter_field");
+    let finding = validation
+        .findings
+        .iter()
+        .find(|finding| {
+            finding.code == "invalid_object_shape"
+                && finding.object_type.as_deref() == Some("Goal")
+                && finding.field.as_deref() == Some("title")
+        })
+        .expect("missing required frontmatter field is reported by content model");
+
+    assert_eq!(
+        finding.path.as_deref(),
+        Some(Path::new("docs/goals/goal_portable_structure.md"))
+    );
+    assert!(finding.message.contains("does not match runtime schema"));
+}
+
 fn validate_fixture(name: &str) -> RepositoryValidation {
     let root = PathBuf::from(FIXTURE_ROOT).join(name);
     let config =
@@ -142,6 +164,130 @@ fn rejects_runtime_schema_paths_outside_project() {
 }
 
 #[test]
+fn rejects_assura_root_model_artifacts() {
+    let root = PathBuf::from(FIXTURE_ROOT).join("valid");
+    let mut config =
+        ConfigLoader::load(&root.join(".assura/config.yml")).expect("fixture config loads");
+    config
+        .models
+        .as_mut()
+        .expect("fixture declares runtime model")
+        .validation_artifact = ".assura/content_runtime.schema.json".to_string();
+
+    let error = match ContentRepository::from_config(&root, &config) {
+        Ok(_) => panic!("root-level .assura model artifact should be rejected"),
+        Err(error) => error,
+    };
+    let finding = error
+        .iter()
+        .find(|finding| finding.code == "content_model_artifact_outside_models_dir")
+        .expect("layout finding is reported");
+    assert_eq!(
+        finding.path.as_deref(),
+        Some(Path::new(".assura/content_runtime.schema.json"))
+    );
+    assert!(finding.message.contains(".assura/models/**"));
+}
+
+#[test]
+fn rejects_dot_prefixed_assura_root_model_artifacts() {
+    let root = PathBuf::from(FIXTURE_ROOT).join("valid");
+    let mut config =
+        ConfigLoader::load(&root.join(".assura/config.yml")).expect("fixture config loads");
+    config
+        .models
+        .as_mut()
+        .expect("fixture declares runtime model")
+        .validation_artifact = "./.assura/content_runtime.schema.json".to_string();
+
+    let error = match ContentRepository::from_config(&root, &config) {
+        Ok(_) => panic!("dot-prefixed root-level .assura model artifact should be rejected"),
+        Err(error) => error,
+    };
+    let finding = error
+        .iter()
+        .find(|finding| finding.code == "content_model_artifact_outside_models_dir")
+        .expect("layout finding is reported");
+    assert_eq!(
+        finding.path.as_deref(),
+        Some(Path::new(".assura/content_runtime.schema.json"))
+    );
+}
+
+#[test]
+fn rejects_assura_root_model_source_artifacts() {
+    let root = PathBuf::from(FIXTURE_ROOT).join("valid");
+    let mut config =
+        ConfigLoader::load(&root.join(".assura/config.yml")).expect("fixture config loads");
+    config
+        .models
+        .as_mut()
+        .expect("fixture declares runtime model")
+        .source = Some(".assura/content_runtime.linkml.yaml".to_string());
+
+    let error = match ContentRepository::from_config(&root, &config) {
+        Ok(_) => panic!("root-level .assura model source should be rejected"),
+        Err(error) => error,
+    };
+    assert!(error
+        .iter()
+        .any(|finding| finding.code == "content_model_artifact_outside_models_dir"));
+}
+
+#[test]
+fn rejects_dot_prefixed_assura_root_model_source_artifacts() {
+    let root = PathBuf::from(FIXTURE_ROOT).join("valid");
+    let mut config =
+        ConfigLoader::load(&root.join(".assura/config.yml")).expect("fixture config loads");
+    config
+        .models
+        .as_mut()
+        .expect("fixture declares runtime model")
+        .source = Some("./.assura/content_runtime.linkml.yaml".to_string());
+
+    let error = match ContentRepository::from_config(&root, &config) {
+        Ok(_) => panic!("dot-prefixed root-level .assura model source should be rejected"),
+        Err(error) => error,
+    };
+    let finding = error
+        .iter()
+        .find(|finding| finding.code == "content_model_artifact_outside_models_dir")
+        .expect("layout finding is reported");
+    assert_eq!(
+        finding.path.as_deref(),
+        Some(Path::new(".assura/content_runtime.linkml.yaml"))
+    );
+}
+
+#[test]
+fn accepts_nested_assura_models_artifact_paths() {
+    let project = TempDir::new().expect("temp project");
+    copy_dir_all(&PathBuf::from(FIXTURE_ROOT).join("valid"), project.path())
+        .expect("fixture copy succeeds");
+    let model_dir = project.path().join(".assura/models/content-runtime/v1");
+    fs::create_dir_all(&model_dir).expect("model dir created");
+    fs::copy(
+        project.path().join("schemas/content_runtime.schema.json"),
+        model_dir.join("runtime.schema.json"),
+    )
+    .expect("schema copied");
+
+    let mut config =
+        ConfigLoader::load(&project.path().join(".assura/config.yml")).expect("config loads");
+    let models = config
+        .models
+        .as_mut()
+        .expect("fixture declares runtime model");
+    models.source = Some(".assura/models/content-runtime/source.linkml.yaml".to_string());
+    models.validation_artifact =
+        ".assura/models/content-runtime/v1/runtime.schema.json".to_string();
+
+    let repository = ContentRepository::from_config(project.path(), &config)
+        .expect("nested .assura/models artifact compiles");
+    assert_eq!(repository.validate(project.path()).findings, Vec::new());
+}
+
+#[test]
 fn rejects_malformed_or_unknown_relation_config() {
     let root = PathBuf::from(FIXTURE_ROOT).join("valid");
     let mut config =
@@ -177,4 +323,19 @@ fn rejects_malformed_or_unknown_relation_config() {
     assert!(error
         .iter()
         .any(|finding| finding.code == "unknown_content_relation_target"));
+}
+
+fn copy_dir_all(from: &Path, to: &Path) -> std::io::Result<()> {
+    fs::create_dir_all(to)?;
+    for entry in fs::read_dir(from)? {
+        let entry = entry?;
+        let file_type = entry.file_type()?;
+        let destination = to.join(entry.file_name());
+        if file_type.is_dir() {
+            copy_dir_all(&entry.path(), &destination)?;
+        } else {
+            fs::copy(entry.path(), destination)?;
+        }
+    }
+    Ok(())
 }

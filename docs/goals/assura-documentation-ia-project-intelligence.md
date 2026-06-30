@@ -2,7 +2,7 @@
 id: goal-assura-documentation-ia-project-intelligence
 type: goal
 title: Assura documentation IA project intelligence
-status: planned
+status: completed
 created: 2026-06-28
 owners:
   - assura-maintainers
@@ -98,3 +98,10 @@ by `cargo xtask docs` or record why the focused docs gate is sufficient.
 Block if content runtime remains buried as a single example, if docs claim
 unimplemented graph/search/code features are shipped, or if the IA hides the
 LS-Lint-like structure validation entry path.
+
+## Progress Log
+
+| Date | Update | Evidence |
+| --- | --- | --- |
+| 2026-06-28 | Started as the third Project Intelligence Runtime successor goal after the Rust Markdown validation/fixing successor completed local review. Created Trellis task `.trellis/tasks/06-28-documentation-ia-project-intelligence`, refreshed roadmap routing, and added first-class Product Layers docs for structure validation, Markdown validation, content runtime/models, query/search, code intelligence, and agent/editor surfaces. | `python3 ./.trellis/scripts/workflow_gate.py --platform codex`; `.trellis/tasks/06-28-documentation-ia-project-intelligence/prd.md`; `.trellis/spec/assura/roadmap.md`; `website/astro.config.mjs`; `cargo test --test content_runtime_dx_docs --quiet`; `cargo run --quiet -- check --format json .`; `cargo xtask docs`. |
+| 2026-06-28 | Completed local successor-goal review. Independent review found no blockers; follow-up polish made content runtime explicit in navigation and removed stale dependency-aware site copy before closing the goal. | Review agent `019f0f8b-9ccf-7fc3-941a-0693f7d05a23`; `cargo test --test content_runtime_dx_docs --quiet`; `cargo run --quiet -- check --format json .`; `cargo xtask docs`; `cargo xtask evidence`; `git diff --check`. |

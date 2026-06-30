@@ -5,7 +5,10 @@ description: Supported release surfaces, install artifacts, and pre-1.0 compatib
 
 Assura's pre-1.0 release surface is intentionally narrow. The supported path is
 an installable CLI that validates repository structure from `.assura/config.yml`
-and reports results through stable local formats.
+and reports results through stable local formats. Project Intelligence is also
+supported as a local, source-control-friendly workflow for modeled content,
+agent handoffs, editor wrappers, and safe-fix previews. It does not require MCP,
+remote access, hosted services, or editor marketplace packaging.
 
 ## Supported Commands
 
@@ -20,8 +23,57 @@ and reports results through stable local formats.
 | `assura status --format json` | Supported project/config summary. |
 | `assura migrate` | Supported LS-Lint migration for documented rules. |
 | `assura hooks` | Supported local git hook workflow. |
+| `assura quality plan` | Supported local quality-gate planning. |
 | `assura performance-report` | Supported evidence command. |
+| `assura fix markdown --dry-run --format json` | Experimental safe-fix preview contract. |
+| `assura fix markdown --apply --format json` | Experimental safe-fix apply/audit contract. |
+| `assura agent` | Supported local project-intelligence command group for coding agents. |
+| `assura content` | Supported local project-intelligence query surface. |
+| `assura content context-pack` | Supported bounded project-intelligence handoff packet. |
+| `assura content session` | Supported local JSON-line project-intelligence session. |
+| `assura editor session` | Supported local JSON-line editor protocol with LSP-shaped methods. |
+| `.assura/models/**` | Supported layout for project-intelligence model artifacts stored under `.assura/`. |
 | `assura watch` | Experimental until watch-mode tests and docs are added. |
+
+## Project Intelligence Schemas
+
+Stable pre-1.0 schema names used by supported local integrations are checked by
+integration tests and release-hardening evidence:
+
+| Schema | Produced By | Status |
+| --- | --- | --- |
+| `assura.project-intelligence.agent-context.v1` | `assura content agent-context` | Supported local wrapper discovery. |
+| `assura.project-intelligence.agent-query.v1` | `assura agent diagnostics`, `assura content agent-query` | Supported local agent query envelope. |
+| `assura.project-intelligence.context-pack.v1` | `assura agent context-pack`, `assura content context-pack` | Supported bounded handoff packet. |
+| `assura.project-intelligence.session.response.v1` | `assura content session`, `assura agent session` | Supported JSON-line session envelope. |
+| `assura.project-intelligence.editor.response.v1` | `assura editor session` | Supported local editor-session envelope. |
+| `assura.safe-fix.markdown.v1` | `assura fix markdown --dry-run --format json`, `--apply --format json` | Experimental safe-fix preview/apply audit contract. |
+
+These schemas can change before 1.0, but release notes must call out breaking
+changes to documented fields.
+
+## Project Intelligence Adoption
+
+The supported local adoption path is:
+
+```bash
+assura init --project-intelligence --no-git-hooks .
+assura check --format json .
+assura content search "Project Intelligence" . --format json
+assura agent context-pack . --collection goals --id goal-project-intelligence-starter --text "Project Intelligence" --limit 5
+assura editor session .
+```
+
+The starter writes model artifacts below `.assura/models/**` and keeps root
+`.assura/` files bounded to well-known entrypoints such as `config.yml` and
+command-surface contracts. Projects may still keep runtime schema artifacts
+outside `.assura/`, such as `schemas/**`, when that fits their repository
+layout.
+
+`assura editor session` is LSP-shaped but is not a full LSP server. Full LSP server
+framing, editor marketplace packages, hosted language servers, required MCP
+adapters, and remote Project Intelligence providers are roadmap-only or
+unsupported for this release surface.
 
 ## Install Artifacts
 
@@ -55,6 +107,29 @@ assura check --format agent --agent codex .
 
 Assura does not ship package feedback CLIs, per-agent command names, or
 per-agent `--format` values.
+
+Local coding agents should use `assura agent ...` for project-intelligence
+handoffs. Editors should use `assura editor session` or wrap lower-level
+`assura content ...` contracts. MCP may be added later as an optional adapter,
+but it is not part of the required local workflow.
+
+## Rollback And Repair
+
+Safe-fix apply commands are explicit and audit-oriented. Preview first:
+
+```bash
+assura fix markdown --dry-run --format json .
+```
+
+Apply only after accepting the planned fix IDs:
+
+```bash
+assura fix markdown --apply --format json .
+```
+
+Rollback is intentionally VCS-first: inspect the changed paths and use normal
+source-control rollback if the accepted edit is not desired. Assura does not
+perform automatic repair, background writes, or remote mutation.
 
 ## Custom Constraints
 

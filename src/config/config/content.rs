@@ -36,6 +36,18 @@ pub struct ContentCollectionConfig {
     pub id: String,
 }
 
+/// One code-symbol reference field declaration keyed as `collection.field`.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub struct ContentCodeSymbolConfig {
+    /// Optional local or imported provider name used to resolve the symbol.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub provider: Option<String>,
+    /// Whether this field stores multiple symbol references.
+    #[serde(default)]
+    pub many: bool,
+}
+
 /// One cross-collection content relation declaration.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]

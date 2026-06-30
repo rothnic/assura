@@ -1359,6 +1359,26 @@ const CLI_COMMAND_VARIANT_ROWS: &[CliCommandVariantRow] = &[
     },
     CliCommandVariantRow {
         enum_name: "Commands",
+        variant_name: "Fix",
+        command_surface_names: &["assura fix markdown"],
+    },
+    CliCommandVariantRow {
+        enum_name: "Commands",
+        variant_name: "Agent",
+        command_surface_names: &["assura agent"],
+    },
+    CliCommandVariantRow {
+        enum_name: "Commands",
+        variant_name: "Editor",
+        command_surface_names: &["assura editor"],
+    },
+    CliCommandVariantRow {
+        enum_name: "Commands",
+        variant_name: "Content",
+        command_surface_names: &["assura content"],
+    },
+    CliCommandVariantRow {
+        enum_name: "Commands",
         variant_name: "Info",
         command_surface_names: &["assura info"],
     },
@@ -1401,6 +1421,76 @@ const CLI_COMMAND_VARIANT_ROWS: &[CliCommandVariantRow] = &[
         enum_name: "QualityCommands",
         variant_name: "Plan",
         command_surface_names: &["assura quality plan"],
+    },
+    CliCommandVariantRow {
+        enum_name: "FixCommands",
+        variant_name: "Markdown",
+        command_surface_names: &["assura fix markdown"],
+    },
+    CliCommandVariantRow {
+        enum_name: "ContentCommands",
+        variant_name: "AgentContext",
+        command_surface_names: &["assura content agent-context"],
+    },
+    CliCommandVariantRow {
+        enum_name: "ContentCommands",
+        variant_name: "AgentQuery",
+        command_surface_names: &["assura content agent-query"],
+    },
+    CliCommandVariantRow {
+        enum_name: "ContentCommands",
+        variant_name: "ContextPack",
+        command_surface_names: &["assura content context-pack"],
+    },
+    CliCommandVariantRow {
+        enum_name: "ContentCommands",
+        variant_name: "Session",
+        command_surface_names: &["assura content session"],
+    },
+    CliCommandVariantRow {
+        enum_name: "ContentCommands",
+        variant_name: "Collections",
+        command_surface_names: &["assura content collections"],
+    },
+    CliCommandVariantRow {
+        enum_name: "ContentCommands",
+        variant_name: "Instances",
+        command_surface_names: &["assura content instances"],
+    },
+    CliCommandVariantRow {
+        enum_name: "ContentCommands",
+        variant_name: "Show",
+        command_surface_names: &["assura content show"],
+    },
+    CliCommandVariantRow {
+        enum_name: "ContentCommands",
+        variant_name: "Search",
+        command_surface_names: &["assura content search"],
+    },
+    CliCommandVariantRow {
+        enum_name: "ContentCommands",
+        variant_name: "SemanticSearch",
+        command_surface_names: &["assura content semantic-search"],
+    },
+    CliCommandVariantRow {
+        enum_name: "ContentCommands",
+        variant_name: "Symbols",
+        command_surface_names: &["assura content symbols"],
+    },
+    CliCommandVariantRow {
+        enum_name: "ContentCommands",
+        variant_name: "SymbolRefs",
+        command_surface_names: &["assura content symbol-refs"],
+    },
+    CliCommandVariantRow {
+        enum_name: "ContentCommands",
+        variant_name: "MissingRelations",
+        command_surface_names: &["assura content missing-relations"],
+    },
+    CliCommandVariantRow {
+        enum_name: "ContentCommands",
+        variant_name: "Expand",
+        command_surface_names: &["assura content expand"],
     },
 ];
 
@@ -1580,6 +1670,102 @@ const SUPPORT_MATRIX_ROWS: &[SupportMatrixRow] = &[
         test_markers: &[
             "tests/performance_report_contract_tests.rs",
             "two_x_claim_status",
+        ],
+        exception_markers: &[],
+    },
+    SupportMatrixRow {
+        surface: "assura fix markdown",
+        command_surface_names: &["assura fix markdown"],
+        support_policy_markers: &[
+            "`assura fix markdown --dry-run --format json`",
+            "`assura fix markdown --apply --format json`",
+        ],
+        compatibility_markers: &[
+            "| `assura fix markdown --dry-run --format json` | Experimental safe-fix preview contract |",
+            "| `assura fix markdown --apply --format json` | Experimental safe-fix apply/audit contract |",
+        ],
+        source_markers: &["FixCommands::Markdown", "fix_markdown_command"],
+        test_markers: &[
+            "tests/markdown_lint_fix_tests.rs",
+            "fix_markdown_dry_run_reports_safe_fix_without_writing",
+        ],
+        exception_markers: &[],
+    },
+    SupportMatrixRow {
+        surface: "assura agent",
+        command_surface_names: &[
+            "assura agent",
+            "assura agent context",
+            "assura agent diagnostics",
+            "assura agent context-pack",
+            "assura agent show",
+            "assura agent search",
+            "assura agent missing-relations",
+            "assura agent expand",
+            "assura agent safe-fixes",
+            "assura agent session",
+        ],
+        support_policy_markers: &["`assura agent`"],
+        compatibility_markers: &[
+            "| `assura agent` | Supported local agent project-intelligence surface |",
+            "| `assura agent session` | Supported local agent session alias |",
+        ],
+        source_markers: &["Commands::Agent", "AgentCommands::Context"],
+        test_markers: &[
+            "tests/agent_surface_cli.rs",
+            "agent_surface_defaults_to_json_and_reuses_content_contracts",
+            "agent_surface_session_alias_reuses_json_line_session_contract",
+        ],
+        exception_markers: &[],
+    },
+    SupportMatrixRow {
+        surface: "assura editor",
+        command_surface_names: &["assura editor", "assura editor session"],
+        support_policy_markers: &["`assura editor session`"],
+        compatibility_markers: &[
+            "| `assura editor` | Supported local editor project-intelligence surface |",
+            "| `assura editor session` | Supported local editor session |",
+        ],
+        source_markers: &["Commands::Editor", "EditorCommands::Session"],
+        test_markers: &[
+            "tests/editor_surface_cli.rs",
+            "editor_surface_returns_lsp_shaped_diagnostics_for_file",
+            "editor_surface_code_actions_preview_safe_fixes_without_writes",
+        ],
+        exception_markers: &[],
+    },
+    SupportMatrixRow {
+        surface: "assura content",
+        command_surface_names: &[
+            "assura content",
+            "assura content agent-context",
+            "assura content agent-query",
+            "assura content context-pack",
+            "assura content session",
+            "assura content collections",
+            "assura content instances",
+            "assura content show",
+            "assura content search",
+            "assura content semantic-search",
+            "assura content symbols",
+            "assura content symbol-refs",
+            "assura content missing-relations",
+            "assura content expand",
+        ],
+        support_policy_markers: &[
+            "`assura content` query commands",
+            "`assura content session`",
+        ],
+        compatibility_markers: &[
+            "| `assura content` | Supported first project-intelligence query surface |",
+            "| `assura content session` | Supported local project-intelligence session |",
+        ],
+        source_markers: &["Commands::Content", "ContentCommands::AgentContext"],
+        test_markers: &[
+            "tests/content_query_cli.rs",
+            "content_query_lists_collections_and_instances",
+            "tests/project_intelligence_session.rs",
+            "content_session_reuses_context_for_repeated_requests",
         ],
         exception_markers: &[],
     },

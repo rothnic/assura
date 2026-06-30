@@ -1,0 +1,6 @@
+{
+  "id": "pkg-ui",
+  "name": "@beacon/ui",
+  "path": "packages/ui",
+  "decision_ref": "adr-ui-boundary"
+}

@@ -400,6 +400,64 @@ extensions:
           status: experimental
         - surface: "command:assura migrate"
           status: supported
+        - surface: "command:assura fix markdown"
+          status: experimental
+        - surface: "command:assura fix markdown --dry-run --format json"
+          status: experimental
+        - surface: "command:assura fix markdown --apply --format json"
+          status: experimental
+        - surface: "command:assura agent"
+          status: supported
+        - surface: "command:assura agent context"
+          status: supported
+        - surface: "command:assura agent diagnostics"
+          status: supported
+        - surface: "command:assura agent context-pack"
+          status: supported
+        - surface: "command:assura agent show"
+          status: supported
+        - surface: "command:assura agent search"
+          status: supported
+        - surface: "command:assura agent missing-relations"
+          status: supported
+        - surface: "command:assura agent expand"
+          status: supported
+        - surface: "command:assura agent safe-fixes"
+          status: supported
+        - surface: "command:assura agent session"
+          status: supported
+        - surface: "command:assura editor"
+          status: supported
+        - surface: "command:assura editor session"
+          status: supported
+        - surface: "command:assura content"
+          status: supported
+        - surface: "command:assura content agent-context"
+          status: supported
+        - surface: "command:assura content agent-query"
+          status: supported
+        - surface: "command:assura content context-pack"
+          status: supported
+        - surface: "command:assura content session"
+          status: supported
+        - surface: "command:assura content collections"
+          status: supported
+        - surface: "command:assura content instances"
+          status: supported
+        - surface: "command:assura content show"
+          status: supported
+        - surface: "command:assura content search"
+          status: supported
+        - surface: "command:assura content semantic-search"
+          status: supported
+        - surface: "command:assura content symbols"
+          status: supported
+        - surface: "command:assura content symbol-refs"
+          status: supported
+        - surface: "command:assura content missing-relations"
+          status: supported
+        - surface: "command:assura content expand"
+          status: supported
         - surface: "command:assura info"
           status: experimental
         - surface: "command:assura performance-report"
@@ -500,6 +558,18 @@ extensions:
       source: ".agents/**/*.md"
       target: ".assura/command-surface.yml"
       severity: high
+
+models:
+  validation_artifact: .assura/models/goals/project-intelligence-goals.schema.json
+
+collections:
+  assura_goals:
+    class: AssuraGoal
+    path: docs/goals/*.md
+    adapter: markdown_frontmatter
+    data: frontmatter
+    body: markdown
+    id: id
 
 # Root directory - only standard project files allowed
 # Special documents (AGENTS.md, CONSTITUTION.md) allowed in SCREAMING_SNAKE_CASE
@@ -823,11 +893,19 @@ structure:
         directories:
           allowed_names:
             - "hooks"
+            - "models"
           allow_extra: false
         children:
           hooks/:
             files:
               naming: "kebab-case"
+          models/:
+            files:
+              naming: "kebab-case"
+              allow_extra: true
+            directories:
+              naming: "kebab-case"
+              allow_extra: true
 
       .cargo/:
         files:
@@ -1103,10 +1181,15 @@ structure:
             directories:
               allowed_names:
                 - "check"
+                - "content_query"
                 - "performance_report"
               allow_extra: false
             children:
               check/:
+                files:
+                  naming: "snake_case"
+                  max_lines: 500
+              content_query/:
                 files:
                   naming: "snake_case"
                   max_lines: 500
@@ -1287,3 +1370,4 @@ exclude:
   - "tests/fixtures/ls-lint/**"
   - "tests/fixtures/real-project-agentic-feedback/**"
   - "tests/fixtures/content_runtime/**"
+  - "tests/fixtures/project_intelligence_real_repo/**"

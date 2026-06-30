@@ -1,0 +1,20 @@
+{"file": "docs/goals/assura-project-intelligence-usability-program.md", "reason": "Completion audit source for broader usability program."}
+{"file": "docs/goals/assura-project-intelligence-lsp-editor-transport.md", "reason": "Definition of done and validation commands for this slice."}
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "Confirm routing advances after the editor slice completes."}
+{"command": "cargo fmt --check", "result": "passed"}
+{"command": "cargo test -p assura --test editor_surface_cli --quiet", "result": "passed", "coverage": "5 editor-surface integration tests covering help, diagnostics, context, safe-fix code actions, invalid method errors, and conservative reload metadata."}
+{"command": "cargo test --test project_intelligence_context_pack --quiet", "result": "passed"}
+{"command": "cargo test -p assura --test cli_command_surface_tests --quiet", "result": "passed"}
+{"command": "cargo run --quiet -- check --format json .", "result": "passed", "coverage": "Assura self-check reported success with 1157 files, 280 dirs, and no violations."}
+{"command": "cargo xtask docs", "result": "passed", "coverage": "Website build produced 37 pages including project-intelligence demo and editor-surface docs."}
+{"command": "cargo xtask evidence", "result": "passed"}
+{"command": "git diff --check", "result": "passed"}
+{"review_agent": "019f148d-2646-7921-a827-195512b082d9", "result": "passed_after_self_fixes", "findings": "Fixed absolute file URI matching against relative session roots and strengthened editor tests to prove parity with content diagnostics, context-pack, safe-fix preview output, dry-run audit IDs, and no command/edit writes."}
+{"command": "cargo fmt --check", "result": "passed_after_review"}
+{"command": "cargo test -p assura --test editor_surface_cli --quiet", "result": "passed_after_review"}
+{"command": "cargo test --test project_intelligence_context_pack --quiet", "result": "passed_after_review"}
+{"command": "cargo test -p assura --test cli_command_surface_tests --quiet", "result": "passed_after_review"}
+{"command": "cargo run --quiet -- check --format json .", "result": "passed_after_review", "coverage": "Assura self-check reported success with 1157 files, 280 dirs, and no violations."}
+{"command": "cargo xtask docs", "result": "passed_after_review", "coverage": "Website build produced 37 pages."}
+{"command": "cargo xtask evidence", "result": "passed_after_review"}
+{"command": "git diff --check", "result": "passed_after_review"}

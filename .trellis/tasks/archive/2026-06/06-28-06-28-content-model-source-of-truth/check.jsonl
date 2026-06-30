@@ -1,0 +1,6 @@
+{"file":".trellis/spec/assura/index.md","reason":"Check implementation against Assura source-of-truth and pre-1.0 cleanup policy"}
+{"file":".trellis/spec/assura/config-notation.md","reason":"Check docs and config examples preserve supported notation boundaries"}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Check duplicated typed-frontmatter validation paths were removed or rejected"}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Check config-to-runtime-to-docs data flow remains coherent"}
+{"file":"docs/goals/assura-content-model-source-of-truth.md","reason":"Check every goal definition-of-done and reviewer criterion"}
+{"file":"docs/goals/assura-project-intelligence-runtime-program.md","reason":"Check first successor goal still advances the master program"}

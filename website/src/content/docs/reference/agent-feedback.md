@@ -28,8 +28,11 @@ the same CLI options as humans and hooks; there is no separate agent mode.
 | Git hooks | Git | Installed hook scripts | Git hook stdout/stderr | The hook script |
 | Agent feedback package | Wrapper code that cannot call the Rust CLI directly | Report parsing and feedback rendering | Library return value or JSON | The wrapper |
 | Codex prompt hook | Optional Codex `UserPromptSubmit` command | `assura check --format agent --agent codex` | Codex `hookSpecificOutput.additionalContext` | Hook configuration |
+| Project-intelligence agent CLI | Local coding agent with shell access | `assura agent ...` | JSON diagnostics, context packs, graph/search, relation checks, and safe-fix previews | The caller |
+| Project-intelligence editor session | Local editor wrapper | `assura editor session` | LSP-shaped JSON-line diagnostics, context, and code-action previews | The wrapper |
 | Future tool/editor hook | Future agent integration | Scoped check plus feedback rendering | Tool result, next agent message, or status line | Hook configuration |
-| Warm checker session | Future editor/agent integration | Prepared structure checker or hot daemon | Low-latency check result for changed paths | Integration policy |
+| Project-intelligence session | Local agent/editor wrapper | `assura content session` | JSON-line context/query responses | The wrapper |
+| Warm checker session | Future structure-check integration | Prepared structure checker or hot daemon | Low-latency check result for changed paths | Integration policy |
 
 The primary DX is `assura check`. The package is a lower-level bridge for
 wrappers that already have an Assura JSON report or cannot shell out to the Rust
@@ -93,9 +96,68 @@ assura check --format agent --agent codex . --warn --min-severity medium --max-i
 
 ## Warm Sessions And Index Reuse
 
-The current public `assura check` and Git hook paths do not keep a daemon or
-update an agent-facing index. They run when a caller invokes Assura or Git fires
-an installed hook.
+The current public `assura check` and Git hook paths do not keep a daemon. They
+run when a caller invokes Assura or Git fires an installed hook.
+
+For repeated project-intelligence queries, use a local JSON-line session:
+
+```bash
+assura content session .
+```
+
+For one-shot project-intelligence handoffs, use the local agent command group:
+
+```bash
+assura agent context .
+assura agent diagnostics .
+assura agent context-pack . --collection assura_goals --id goal-assura-project-intelligence-usability-program --text "Project Intelligence Usability" --limit 5
+assura agent safe-fixes .
+```
+
+These commands default to JSON and reuse the same content-query and safe-fix
+preview contracts as `assura content ...`.
+
+For editor wrappers, use the local editor session:
+
+```bash
+assura editor session .
+```
+
+It accepts LSP-shaped JSON-line methods:
+
+```json
+{"request_id":"diag-1","method":"textDocument/diagnostics","params":{"textDocument":{"uri":"docs/goals/goal_portable_structure.md"}}}
+{"request_id":"ctx-1","method":"textDocument/context","params":{"uri":"docs/goals/goal_portable_structure.md","text":"portable","limit":5}}
+{"request_id":"fix-1","method":"textDocument/codeAction","params":{"uri":"docs/goals/goal_portable_structure.md"}}
+```
+
+Editor responses use `assura.project-intelligence.editor.response.v1` and
+include the same conservative reload states as `assura content session`.
+`textDocument/codeAction` returns preview actions only; wrappers must require an
+explicit `assura fix markdown --apply --format json` step before writing.
+
+Send one request per line:
+
+```json
+{"request_id":"ctx-1","type":"context-pack","collection":"assura_goals","id":"goal-assura-project-intelligence-usability-program","text":"Project Intelligence Usability","limit":5}
+```
+
+Each response uses `assura.project-intelligence.session.response.v1` and reports
+whether the loaded context was `initial_load`, `reused`, or `reloaded`. The
+session checks a conservative project fingerprint before every request, so it
+does not rely on watcher delivery for correctness. It is still local and
+disposable: stop the process to discard state.
+
+Supported request `type` values are `agent-context`, `collections`,
+`context-pack`, `diagnostics`, `expand`, `missing-relations`, `safe-fixes`, and
+`search`. Failed requests return the same response envelope with `ok: false`,
+`response: null`, and an `error.code` such as `invalid_request`,
+`request_failed`, or `reload_failed`.
+
+Safe-fix preview responses include both the project-intelligence fact `id` and
+the CLI audit `audit_id`. Wrappers should match `audit_id` to
+`assura fix markdown --dry-run --format json` `fixes[].id`, then require an
+explicit `assura fix markdown --apply --format json` step before writing.
 
 Assura does have lower-level support intended for future editor and agent
 integrations:
@@ -126,5 +188,8 @@ step, while still giving the agent fresh feedback after edits.
 | Codex package library | Lower-level only | Wrapper code can use library helpers when it already has JSON. |
 | Codex `UserPromptSubmit` hook | Yes | A hook runs `assura check --format agent --agent codex` before Codex processes a prompt. |
 | Codex post-tool/editor hook | Not yet | A future hook should append a status line or bounded feedback after relevant tool calls. |
-| Other agents with shell access | Partially | They can call `assura check --format advice`, `--format status`, or `--format agent` manually or through a wrapper. |
-| Editor/daemon integration | Not yet as public UX | Should reuse prepared checks or hot daemon state for repeated changed-path feedback. |
+| Other agents with shell access | Yes | They can call `assura agent ...` for project-intelligence context and `assura check --format agent` for structure feedback. |
+| Project-intelligence session | Yes | Local wrappers can keep `assura content session` open for repeated context/query requests. |
+| Project-intelligence editor session | Yes | Local editor wrappers can keep `assura editor session` open for LSP-shaped diagnostics, context, and code-action previews. |
+| Full LSP/editor marketplace package | Not yet | A future package should wrap the local editor session or shared content-query contracts. |
+| Editor/daemon structure-check integration | Not yet as public UX | Should reuse prepared checks or hot daemon state for repeated changed-path feedback. |

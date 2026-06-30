@@ -105,6 +105,12 @@ fn validate_directory_bundle(bundle: &DirectoryBundle, context: &str) -> Result<
 
 #[cfg(feature = "yaml-config")]
 fn validate_markdown_bundle(bundle: &MarkdownBundle, context: &str) -> Result<(), String> {
+    if bundle.required_fields.is_some() {
+        return Err(format!(
+            "{context}.required_fields: unsupported for typed frontmatter fields; define required fields with top-level models and collections instead. Keep markdown.require_frontmatter only for generic Markdown frontmatter presence."
+        ));
+    }
+
     if let Some(depth) = bundle.max_heading_depth {
         validate_range(
             usize::from(depth),

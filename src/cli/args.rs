@@ -1,4 +1,7 @@
 //! Command-line argument definitions for the Assura CLI.
+use super::agent_args::AgentCommands;
+use super::agent_query_args::AgentQueryArg;
+use super::editor_args::EditorCommands;
 use clap::{Parser, Subcommand, ValueEnum};
 use std::path::PathBuf;
 
@@ -84,6 +87,9 @@ pub enum Commands {
         #[arg(help = "Project root directory (defaults to current directory)")]
         path: Option<PathBuf>,
 
+        #[arg(long, help = "Create project-intelligence starter files")]
+        project_intelligence: bool,
+
         #[arg(long)]
         force: bool,
 
@@ -110,6 +116,30 @@ pub enum Commands {
 
         #[arg(short, long, help = "Output path for generated Assura config")]
         output: Option<PathBuf>,
+    },
+
+    #[command(about = "Apply safe deterministic fixes")]
+    Fix {
+        #[command(subcommand)]
+        command: FixCommands,
+    },
+
+    #[command(about = "Run local project-intelligence commands for coding agents")]
+    Agent {
+        #[command(subcommand)]
+        command: AgentCommands,
+    },
+
+    #[command(about = "Run local project-intelligence commands for editor integrations")]
+    Editor {
+        #[command(subcommand)]
+        command: EditorCommands,
+    },
+
+    #[command(about = "Query modeled content and project intelligence facts")]
+    Content {
+        #[command(subcommand)]
+        command: ContentCommands,
     },
 
     #[command(about = "Show Assura configuration information")]
@@ -226,6 +256,155 @@ pub enum HookCommands {
     },
 }
 
+#[derive(Subcommand, Debug)]
+pub enum FixCommands {
+    #[command(about = "Preview or apply safe Markdown fixes for configured Markdown scopes")]
+    Markdown {
+        #[arg(help = "Path to fix (defaults to current directory)")]
+        path: Option<PathBuf>,
+
+        #[arg(long, value_enum, default_value = "trailing-spaces")]
+        rule: MarkdownFixRuleArg,
+
+        #[arg(long, help = "Preview safe fixes without writing files")]
+        dry_run: bool,
+
+        #[arg(long, help = "Apply accepted safe fixes")]
+        apply: bool,
+
+        #[arg(short, long, value_enum, default_value = "text")]
+        format: OutputFormat,
+    },
+}
+
+#[derive(Subcommand, Debug)]
+pub enum ContentCommands {
+    #[command(about = "Report shared project-intelligence agent context")]
+    AgentContext {
+        path: Option<PathBuf>,
+        #[arg(short, long, value_enum, default_value = "text")]
+        format: OutputFormat,
+    },
+
+    #[command(about = "Run one project-intelligence query through the shared agent envelope")]
+    AgentQuery {
+        #[arg(value_enum, help = "Shared project-intelligence capability to query")]
+        query: AgentQueryArg,
+        path: Option<PathBuf>,
+        #[arg(long)]
+        collection: Option<String>,
+        #[arg(long)]
+        id: Option<String>,
+        #[arg(long)]
+        text: Option<String>,
+        #[arg(long)]
+        symbol: Option<String>,
+        #[arg(long, default_value_t = 20)]
+        limit: usize,
+        #[arg(long)]
+        enable_local: bool,
+        #[arg(short, long, value_enum, default_value = "text")]
+        format: OutputFormat,
+    },
+
+    #[command(about = "Build one bounded project-intelligence context pack")]
+    ContextPack {
+        path: Option<PathBuf>,
+        #[arg(long)]
+        collection: Option<String>,
+        #[arg(long)]
+        id: Option<String>,
+        #[arg(long)]
+        text: Option<String>,
+        #[arg(long, default_value_t = 20)]
+        limit: usize,
+        #[arg(short, long, value_enum, default_value = "text")]
+        format: OutputFormat,
+    },
+
+    #[command(about = "Run a persistent JSON-line project-intelligence query session")]
+    Session { path: Option<PathBuf> },
+
+    #[command(about = "List modeled content collections")]
+    Collections {
+        path: Option<PathBuf>,
+        #[arg(short, long, value_enum, default_value = "text")]
+        format: OutputFormat,
+    },
+
+    #[command(about = "List instances in one modeled collection")]
+    Instances {
+        collection: String,
+        path: Option<PathBuf>,
+        #[arg(short, long, value_enum, default_value = "text")]
+        format: OutputFormat,
+    },
+
+    #[command(about = "Show one modeled content instance")]
+    Show {
+        collection: String,
+        id: String,
+        path: Option<PathBuf>,
+        #[arg(short, long, value_enum, default_value = "text")]
+        format: OutputFormat,
+    },
+
+    #[command(about = "Search modeled content facts by keyword")]
+    Search {
+        query: String,
+        path: Option<PathBuf>,
+        #[arg(short, long, value_enum, default_value = "text")]
+        format: OutputFormat,
+    },
+
+    #[command(about = "Search modeled content facts by optional local semantic candidates")]
+    SemanticSearch {
+        query: String,
+        path: Option<PathBuf>,
+        #[arg(long, default_value_t = 10)]
+        limit: usize,
+        #[arg(long)]
+        enable_local: bool,
+        #[arg(short, long, value_enum, default_value = "text")]
+        format: OutputFormat,
+    },
+
+    #[command(about = "Report code symbols referenced by a modeled content instance")]
+    Symbols {
+        collection: String,
+        id: String,
+        path: Option<PathBuf>,
+        #[arg(short, long, value_enum, default_value = "text")]
+        format: OutputFormat,
+    },
+
+    #[command(about = "Report modeled content instances related to a code symbol")]
+    SymbolRefs {
+        symbol: String,
+        path: Option<PathBuf>,
+        #[arg(short, long, value_enum, default_value = "text")]
+        format: OutputFormat,
+    },
+
+    #[command(about = "Report relationship edges with missing targets")]
+    MissingRelations {
+        path: Option<PathBuf>,
+        #[arg(short, long, value_enum, default_value = "text")]
+        format: OutputFormat,
+    },
+
+    #[command(about = "Expand bounded graph context around one content instance")]
+    Expand {
+        collection: String,
+        id: String,
+        path: Option<PathBuf>,
+        #[arg(long, default_value_t = 20)]
+        limit: usize,
+        #[arg(short, long, value_enum, default_value = "text")]
+        format: OutputFormat,
+    },
+}
+
 #[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]
 pub enum OutputFormat {
     Text,
@@ -249,6 +428,19 @@ pub enum CheckOutputFormat {
 pub enum AgentTarget {
     Generic,
     Codex,
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]
+pub enum MarkdownFixRuleArg {
+    TrailingSpaces,
+}
+
+impl From<MarkdownFixRuleArg> for crate::cli::check::MarkdownFixRule {
+    fn from(value: MarkdownFixRuleArg) -> Self {
+        match value {
+            MarkdownFixRuleArg::TrailingSpaces => Self::TrailingSpaces,
+        }
+    }
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]

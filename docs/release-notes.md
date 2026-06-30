@@ -3,10 +3,12 @@ title: Assura v0.1.0 Release Notes
 status: active
 ---
 
-# Assura v0.1.0 Release Notes
+# Assura v0.1.0 Current Branch Release Notes
 
-These notes describe the current pre-1.0 public release surface for `v0.1.0`.
-Assura publishes installable archives from
+These notes describe the current pre-1.0 public command surface on this branch
+for the next release-candidate build. They are not a claim that the already
+published May 24, 2026 `v0.1.0` archives contain later Project Intelligence
+work. Assura publishes installable archives from
 [`.github/workflows/release.yml`](../.github/workflows/release.yml) when a
 maintainer pushes an intentional `v*` tag after the release checklist in
 [`docs/release-candidate-checklist.md`](./release-candidate-checklist.md)
@@ -14,7 +16,7 @@ passes.
 
 ## Supported Commands
 
-The v0.1.0 release supports these public commands:
+The current pre-1.0 command surface supports these public commands:
 
 - `assura check` for structure-first repository validation.
 - `assura check --format json`, `--format yaml`, `--format advice`,
@@ -29,6 +31,24 @@ The v0.1.0 release supports these public commands:
   `.assura/config.yml`.
 - `assura performance-report` for checked Assura versus LS-Lint performance
   evidence.
+- `assura fix markdown --dry-run --format json` for safe-fix preview output
+  before applying deterministic Markdown trailing-space fixes.
+- `assura fix markdown --apply --format json` for explicitly accepted
+  Markdown safe-fix apply/audit output.
+- `assura agent` for local coding-agent project-intelligence commands with
+  JSON defaults for context, diagnostics, context packs, search/show/expand,
+  missing relations, safe-fix previews, and local sessions.
+- `assura editor session` for a local JSON-line editor protocol with
+  LSP-shaped diagnostics, context, code-action preview requests, and
+  conservative reload metadata.
+- `assura content` query commands for deterministic local collection,
+  relation, keyword, optional semantic-candidate, optional code-symbol, and
+  bounded graph queries over modeled project facts.
+- `assura content session` for a local JSON-line project-intelligence session
+  that can answer repeated diagnostics, context-pack, graph, search, relation,
+  and safe-fix preview requests without restarting the CLI process.
+- `.assura/models/**` as the supported project-intelligence layout for model
+  artifacts stored under `.assura/`.
 
 `assura info` and `assura watch` remain present in the CLI, but the release
 support policy treats `assura info` as an experimental diagnostic and
@@ -55,10 +75,13 @@ The release workflow verifies those checksums before upload, and
 `cargo xtask release-live` checks that public checksum URLs are reachable
 after a tag is published.
 
-The original `v0.1.0` archives were published on 2026-05-24. On 2026-06-10,
-maintainers uploaded the missing `.sha256` sidecar files generated from those
-published archives. No release binary was rebuilt and no new version was cut
-for that asset repair.
+The original `v0.1.0` archives were published on 2026-05-24 and do not contain
+the later June 2026 Project Intelligence usability surfaces described in this
+branch's current release-candidate notes. On 2026-06-10, maintainers uploaded
+the missing `.sha256` sidecar files generated from those published archives. No
+release binary was rebuilt and no new version was cut for that asset repair.
+A future tag or release-candidate archive must be built before these current
+branch surfaces are advertised as installable release artifacts.
 
 ## Current Feature Surface
 
@@ -83,8 +106,55 @@ for that asset repair.
 - The stable agent feedback surface is `assura check --format agent`.
 - Codex delivery is an adapter on that shared surface:
   `assura check --format agent --agent codex`.
-- There are no package feedback CLIs, per-agent CLI entrypoints, or per-agent
-  `--format` values in this release.
+- There are no package feedback CLIs, per-agent host-specific CLI entrypoints,
+  or per-agent `--format` values in this release.
+
+### Project Intelligence Queries
+
+- `assura agent context`, `diagnostics`, `context-pack`, `show`, `search`,
+  `missing-relations`, `expand`, `safe-fixes`, and `session` provide the
+  supported local coding-agent entrypoint. They reuse the same content-query
+  contracts and do not require MCP, remote access, or a daemon.
+- `assura content agent-context`, `collections`, `instances`, `show`,
+  `agent-query`, `search`, `semantic-search`, `symbols`, `symbol-refs`,
+  `missing-relations`, and `expand` query modeled content facts through the
+  local project-intelligence fact model.
+- `assura content agent-context` emits the shared generic
+  `assura.project-intelligence.agent-context.v1` schema for wrappers that need
+  to discover diagnostics, safe-fix, graph/search, semantic, and code-symbol
+  capabilities without creating per-agent command families.
+- `assura content agent-query <capability> --format json` emits
+  `assura.project-intelligence.agent-query.v1`, a shared request/response
+  envelope for diagnostics, graph expansion, keyword search, semantic
+  candidates, code-symbol relationships, and safe-fix fact summaries.
+- Keyword search is deterministic local text matching over indexed chunks.
+- `assura content semantic-search` is opt-in through `--enable-local` and uses
+  local candidate retrieval. Scores do not decide validation correctness.
+- `assura content symbols` and `assura content symbol-refs` use configured
+  modeled fields and optional provider evidence. The built-in Rust token
+  baseline can resolve rough local declarations; missing providers preserve
+  unresolved refs instead of failing validation.
+- `assura editor session` exposes the current editor integration surface with
+  `textDocument/diagnostics`, `textDocument/context`, and
+  `textDocument/codeAction` JSON-line methods. It is local, does not require
+  MCP or remote access, and does not claim full LSP server framing or editor
+  marketplace packaging.
+- Daemon APIs, full LSP server packaging, and MCP are not part of this
+  content-query surface.
+- Runtime schema or source model artifacts stored under `.assura/` must live
+  under `.assura/models/**`; artifacts outside `.assura/`, such as `schemas/**`,
+  remain valid project-relative paths.
+
+### Safe Fixes
+
+- `assura fix markdown --rule trailing-spaces --dry-run --format json` emits
+  `assura.safe-fix.markdown.v1` and reports proposed files and line fixes
+  without writing.
+- `assura fix markdown --rule trailing-spaces --apply --format json` applies
+  the bounded Markdown trailing-space fix and reports changed paths, applied
+  fix IDs, skipped fixes, and rollback guidance.
+- Omitting both `--dry-run` and `--apply` previews fixes without writing;
+  every write path requires `--apply`.
 
 ### Custom Constraints
 

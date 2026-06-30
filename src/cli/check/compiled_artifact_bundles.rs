@@ -7,8 +7,6 @@ use crate::config::config::MarkdownOutlineEntry;
 pub(super) struct PortableMarkdownBundle {
     /// Whether Markdown frontmatter is required.
     pub(super) require_frontmatter: Option<bool>,
-    /// Required YAML frontmatter fields.
-    pub(super) required_fields: Option<Vec<String>>,
     /// Maximum allowed Markdown heading depth.
     pub(super) max_heading_depth: Option<u8>,
     /// Whether Markdown links are checked.
@@ -17,6 +15,8 @@ pub(super) struct PortableMarkdownBundle {
     pub(super) required_sections: Option<Vec<String>>,
     /// Structured Markdown outline policy.
     pub(super) outline: Option<Vec<MarkdownOutlineEntry>>,
+    /// Whether to lint blank-line trailing spaces.
+    pub(super) lint_trailing_spaces: Option<bool>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]

@@ -108,6 +108,7 @@ fn treats_optional_empty_scalar_references_as_absent() {
                 required: false,
                 acyclic: false,
             }],
+            code_symbols: Vec::new(),
         }],
         placements: vec![PlacementRule::recursive("events", ["Event"])],
         schema_artifact_path: None,

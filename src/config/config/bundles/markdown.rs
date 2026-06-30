@@ -12,7 +12,11 @@ pub struct MarkdownBundle {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub require_frontmatter: Option<bool>,
 
-    /// Required frontmatter fields.
+    /// Legacy typed frontmatter field requirement.
+    ///
+    /// Assura-authored config rejects this field during semantic validation.
+    /// Keep it deserializable so users get a migration diagnostic pointing to
+    /// content runtime models and collections.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub required_fields: Option<Vec<String>>,
 
@@ -32,6 +36,10 @@ pub struct MarkdownBundle {
     /// Ordered Markdown heading outline.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub outline: Option<Vec<MarkdownOutlineEntry>>,
+
+    /// Whether to report blank Markdown lines that contain trailing spaces or tabs.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub lint_trailing_spaces: Option<bool>,
 }
 
 /// Markdown outline entry accepted by config shorthand and object notation.
@@ -113,6 +121,7 @@ impl MarkdownBundle {
             check_links: None,
             required_sections: None,
             outline: None,
+            lint_trailing_spaces: None,
         }
     }
 
@@ -122,7 +131,9 @@ impl MarkdownBundle {
         self
     }
 
-    /// Set required frontmatter fields.
+    /// Set legacy typed frontmatter fields.
+    ///
+    /// Configs using this value are rejected during semantic validation.
     pub fn with_required_fields(mut self, fields: Vec<String>) -> Self {
         self.required_fields = Some(fields);
         self
@@ -149,6 +160,12 @@ impl MarkdownBundle {
     /// Set required outline.
     pub fn with_outline(mut self, outline: Vec<MarkdownOutlineEntry>) -> Self {
         self.outline = Some(outline);
+        self
+    }
+
+    /// Set blank-line trailing whitespace linting.
+    pub fn with_lint_trailing_spaces(mut self, lint: bool) -> Self {
+        self.lint_trailing_spaces = Some(lint);
         self
     }
 
