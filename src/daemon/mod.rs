@@ -305,12 +305,7 @@ impl LocalDaemonCore {
     }
 
     fn fallback_command(&self) -> String {
-        fallback_command(
-            &self.context.project_root,
-            self.requested_config
-                .as_ref()
-                .map(|_| self.context.config_path.as_path()),
-        )
+        fallback_command(&self.requested_path, self.requested_config.as_deref())
     }
 }
 

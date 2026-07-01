@@ -24,9 +24,13 @@ fn daemon_core_reports_running_health_and_one_shot_fallback() {
     assert!(health
         .fallback_command
         .contains("assura check --format json"));
-    assert!(health
-        .fallback_command
-        .contains(&project.path().display().to_string()));
+    assert!(
+        health
+            .fallback_command
+            .contains(project.path().file_name().unwrap().to_str().unwrap()),
+        "{}",
+        health.fallback_command
+    );
 
     let structure = daemon
         .check_changed_path(project.path().join("docs/note.md"))
@@ -45,12 +49,9 @@ fn daemon_core_fallback_preserves_explicit_config_path() {
     let fallback = daemon.health().fallback_command;
 
     assert!(fallback.contains("--config"), "{fallback}");
+    assert!(fallback.contains(".assura/custom.yml"), "{fallback}");
     assert!(
-        fallback.contains(&config_path.display().to_string()),
-        "{fallback}"
-    );
-    assert!(
-        fallback.contains(&project.path().display().to_string()),
+        fallback.contains(project.path().file_name().unwrap().to_str().unwrap()),
         "{fallback}"
     );
 }
@@ -191,7 +192,7 @@ fn daemon_core_changed_source_refreshes_mutated_source_and_matches_cli() {
     let daemon_paths = source
         .references
         .iter()
-        .map(|reference| reference.target_path.display().to_string())
+        .map(|reference| portable_path(&reference.target_path))
         .collect::<Vec<_>>();
 
     assert_eq!(source.health.state, DaemonHealthState::Running);
@@ -371,4 +372,8 @@ fn cli_reference_target_paths(value: &Value) -> Vec<String> {
                 .to_string()
         })
         .collect()
+}
+
+fn portable_path(path: &Path) -> String {
+    path.to_string_lossy().replace('\\', "/")
 }

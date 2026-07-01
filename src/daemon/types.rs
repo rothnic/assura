@@ -255,10 +255,10 @@ pub(super) fn fallback_command(project_root: &Path, config_path: Option<&Path>) 
 }
 
 fn shell_quote_path(path: &Path) -> String {
-    let value = path.display().to_string();
+    let value = command_path(path);
     if value
         .chars()
-        .all(|ch| ch.is_ascii_alphanumeric() || matches!(ch, '/' | '.' | '_' | '-'))
+        .all(|ch| ch.is_ascii_alphanumeric() || matches!(ch, '/' | ':' | '.' | '_' | '-'))
     {
         value
     } else {
@@ -288,4 +288,15 @@ where
 
 fn normalized_path(path: &Path) -> String {
     path.to_string_lossy().replace('\\', "/")
+}
+
+fn command_path(path: &Path) -> String {
+    let value = normalized_path(path);
+    if let Some(rest) = value.strip_prefix("//?/UNC/") {
+        format!("//{rest}")
+    } else if let Some(rest) = value.strip_prefix("//?/") {
+        rest.to_string()
+    } else {
+        value
+    }
 }
