@@ -45,7 +45,7 @@
     },
     {
       "id": "repository-reference-facts",
-      "label": "Repository reference facts",
+      "label": "Repository reference facts and checks",
       "status": "experimental",
       "first_release": "unreleased",
       "detail_path": "docs/goals/assura-code-doc-reference-validation.md"

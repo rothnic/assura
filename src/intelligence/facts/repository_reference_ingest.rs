@@ -69,19 +69,19 @@ impl FactIngestor {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-struct SourceReference {
-    raw: String,
-    line_number: usize,
-    column_number: usize,
-    target_path: PathBuf,
-    target_anchor: Option<String>,
-    target_line_start: Option<usize>,
-    target_line_end: Option<usize>,
-    kind: &'static str,
-    confidence: &'static str,
+pub(crate) struct SourceReference {
+    pub(crate) raw: String,
+    pub(crate) line_number: usize,
+    pub(crate) column_number: usize,
+    pub(crate) target_path: PathBuf,
+    pub(crate) target_anchor: Option<String>,
+    pub(crate) target_line_start: Option<usize>,
+    pub(crate) target_line_end: Option<usize>,
+    pub(crate) kind: &'static str,
+    pub(crate) confidence: &'static str,
 }
 
-fn source_references(source_rel: &Path, content: &str) -> Vec<SourceReference> {
+pub(crate) fn source_references(source_rel: &Path, content: &str) -> Vec<SourceReference> {
     let mut references = Vec::new();
     let mut block_comment = false;
     let mut docstring = false;

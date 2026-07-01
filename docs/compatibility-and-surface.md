@@ -75,6 +75,7 @@ publishes and verifies a `.sha256` file next to every archive.
 | Surface | Status | Evidence |
 | --- | --- | --- |
 | `config:markdown.lint_common` | Experimental | Common-lint CLI tests prove stable findings for heading increments, heading marker spacing, duplicate headings, multiple blank lines, suppressions, and severity overrides. |
+| `config:extensions.repository_references` | Experimental | Repository-reference check tests prove opt-in source/comment/docstring diagnostics for missing targets, missing Markdown anchors, and invalid line anchors. |
 | `project-intelligence:repository-reference-facts` | Experimental | Repository-reference graph tests prove Markdown, source-comment, docstring, and string-literal path candidates become bounded `RepositoryReference` edges with confidence labels. |
 
 ## Project Intelligence Layout Compatibility
@@ -178,6 +179,8 @@ extensions:
         - surface: "rust:intelligence"
           status: internal
         - surface: "config:markdown.lint_common"
+          status: experimental
+        - surface: "config:extensions.repository_references"
           status: experimental
         - surface: "package:assura"
           status: supported

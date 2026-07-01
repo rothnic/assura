@@ -466,6 +466,8 @@ extensions:
           status: supported
         - surface: "config:markdown.lint_common"
           status: experimental
+        - surface: "config:extensions.repository_references"
+          status: experimental
         - surface: "command:assura quality plan"
           status: supported
         - surface: "command:assura hooks"

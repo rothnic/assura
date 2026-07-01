@@ -47,6 +47,7 @@ mod prepared;
 mod profiling;
 mod release_contract;
 mod report;
+mod repository_references;
 mod rule_plan;
 mod rules;
 mod scope_patterns;
@@ -377,6 +378,7 @@ impl StructureChecker {
         let has_content_runtime_config = false;
 
         if !has_content_runtime_config
+            && !self.has_repository_reference_diagnostics_config()
             && self.try_check_lslint_fast(&checked_path, &mut report, timings)?
         {
             report.refresh_success();

@@ -16,6 +16,7 @@ mod types;
 pub use code_symbols::{CodeProviderEvidence, CodeSymbol, SymbolRef};
 pub use ingest::FactIngestor;
 pub use markdown_links::MarkdownLink;
+pub(crate) use repository_reference_ingest::{source_references, SourceReference};
 pub use repository_references::RepositoryReferenceEdge;
 pub use set::{model_definition_id, model_instance_id, resource_id, FactSet};
 pub use types::{

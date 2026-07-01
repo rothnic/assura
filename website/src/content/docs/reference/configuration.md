@@ -270,6 +270,26 @@ Use a reasoned suppression comment for intentional exceptions:
 Suppressions must name a supported Markdown rule ID and include a non-empty
 reason. Invalid suppressions are reported as `markdown_suppression`.
 
+## Repository References
+
+Opt into experimental source/comment/docstring reference diagnostics with
+`extensions.repository_references`:
+
+```yaml
+extensions:
+  repository_references:
+    - id: source_refs
+      paths:
+        - "src/**"
+      severity: high
+```
+
+Assura scans supported source and config file types under matching paths for
+local file references. It reports locally provable missing targets, missing
+Markdown heading anchors, and invalid line anchors as `repository_reference_*`
+rules. Ambiguous lower-confidence references remain available as graph context
+through `assura content references`.
+
 ## Relationships
 
 Captured paths can express relationships without leaving the project tree. A

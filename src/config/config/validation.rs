@@ -1,5 +1,3 @@
-//! Validators shared by structure-first config bundles.
-
 #[cfg(feature = "yaml-config")]
 use super::{
     Config, CustomConstraintConfig, DirectoryBundle, DirectoryNode, ExtensionConfig, FileBundle,
@@ -11,7 +9,6 @@ use glob::Pattern;
 use std::collections::HashSet;
 #[cfg(feature = "yaml-config")]
 use std::path::{Component, Path};
-
 #[cfg(feature = "yaml-config")]
 mod docs_lifecycles;
 #[cfg(feature = "yaml-config")]
@@ -23,10 +20,11 @@ mod quality;
 #[cfg(feature = "yaml-config")]
 mod release_contracts;
 #[cfg(feature = "yaml-config")]
+mod repository_references;
+#[cfg(feature = "yaml-config")]
 mod support_matrices;
 #[cfg(feature = "yaml-config")]
 mod test_relationships;
-
 /// Validate structure-first config semantics without the full validator stack.
 #[cfg(feature = "yaml-config")]
 pub(crate) fn validate_config_semantics(config: &Config) -> Result<(), String> {
@@ -199,6 +197,7 @@ fn validate_extension_config(config: &ExtensionConfig) -> Result<(), String> {
             ));
         }
     }
+    repository_references::validate_repository_reference_configs(&config.repository_references)?;
     let mut relationship_ids = HashSet::new();
     for relationship in &config.relationships {
         validate_relationship_constraint(relationship)?;
@@ -213,7 +212,7 @@ fn validate_extension_config(config: &ExtensionConfig) -> Result<(), String> {
 }
 
 #[cfg(feature = "yaml-config")]
-fn validate_identifier(value: &str, context: &str) -> Result<(), String> {
+pub(super) fn validate_identifier(value: &str, context: &str) -> Result<(), String> {
     if value.trim().is_empty() {
         return Err(format!("{context}: id must not be empty"));
     }
@@ -314,7 +313,7 @@ fn validate_relationship_constraint(
 }
 
 #[cfg(feature = "yaml-config")]
-fn validate_relative_pattern(value: &str, context: &str) -> Result<(), String> {
+pub(super) fn validate_relative_pattern(value: &str, context: &str) -> Result<(), String> {
     validate_relative_path_text(value, context)?;
     Pattern::new(value).map_err(|error| format!("{context}: invalid glob pattern: {error}"))?;
     Ok(())
@@ -343,7 +342,7 @@ fn validate_relative_path_text(value: &str, context: &str) -> Result<(), String>
     Ok(())
 }
 
-fn validate_severity(value: &str) -> Result<(), String> {
+pub(super) fn validate_severity(value: &str) -> Result<(), String> {
     match value {
         "critical" | "high" | "medium" | "low" => Ok(()),
         _ => Err("expected one of critical, high, medium, or low".to_string()),

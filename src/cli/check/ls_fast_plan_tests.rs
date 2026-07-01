@@ -5,7 +5,9 @@ use super::ls_fast_plan::{
     collect_fast_regex_patterns, compile_lslint_fast_scopes, fast_rules_for_dir, FastRules,
 };
 use super::rules::EffectiveRules;
-use crate::config::config::{Config, DirectoryBundle, DirectoryNode, FileBundle};
+use crate::config::config::{
+    Config, DirectoryBundle, DirectoryNode, ExtensionConfig, FileBundle, RepositoryReferenceConfig,
+};
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -85,6 +87,31 @@ fn fast_plan_allows_direct_file_and_directory_policies() {
 
     let scopes = compile_lslint_fast_scopes(&config).unwrap();
     assert_eq!(scopes.len(), 1);
+}
+
+#[test]
+fn fast_plan_rejects_repository_reference_diagnostics() {
+    let mut config = Config::new();
+    config.structure.insert(
+        "./".to_string(),
+        DirectoryNode {
+            files: Some(FileBundle {
+                allowed_names: Some(vec!["README.md".to_string()]),
+                ..FileBundle::default()
+            }),
+            ..DirectoryNode::default()
+        },
+    );
+    config.extensions = Some(ExtensionConfig {
+        repository_references: vec![RepositoryReferenceConfig {
+            id: "source_refs".to_string(),
+            paths: vec!["src/**".to_string()],
+            severity: Some("high".to_string()),
+        }],
+        ..ExtensionConfig::default()
+    });
+
+    assert!(compile_lslint_fast_scopes(&config).is_none());
 }
 
 #[test]

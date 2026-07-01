@@ -1,5 +1,8 @@
 //! Experimental extension configuration.
 
+mod repository_references;
+
+pub use repository_references::RepositoryReferenceConfig;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -10,32 +13,28 @@ pub struct ExtensionConfig {
     /// First-party custom constraints executed by `assura check`.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub custom_constraints: Vec<CustomConstraintConfig>,
-
     /// Configured release artifact contracts executed by `assura check`.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub release_contracts: Vec<ReleaseContractConfig>,
-
     /// Configured public surface support matrices executed by `assura check`.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub support_matrices: Vec<SupportMatrixConfig>,
-
     /// Configured Cargo manifest semantic policies executed by `assura check`.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub manifest_semantics: Vec<ManifestSemanticsConfig>,
-
     /// Configured source/test relationship policies executed by `assura check`.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub test_relationships: Vec<TestRelationshipConfig>,
-
     /// Configured Rust module topology policies executed by `assura check`.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub module_topologies: Vec<ModuleTopologyConfig>,
-
     /// Configured docs lifecycle and stale-claim policies executed by
     /// `assura check`.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub docs_lifecycles: Vec<DocsLifecycleConfig>,
-
+    /// Configured repository-reference diagnostics executed by `assura check`.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub repository_references: Vec<RepositoryReferenceConfig>,
     /// Internal relationship constraints normalized from structure notation.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub relationships: Vec<RelationshipConstraintConfig>,

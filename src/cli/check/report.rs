@@ -255,6 +255,15 @@ fn corrective_context_for_rule(rule: &str) -> &'static str {
         "markdown_link_line_anchor" => {
             "Update the GitHub-style line or line-range anchor so it points at existing target lines."
         }
+        "repository_reference_target" => {
+            "Create the referenced file, fix the local path in the comment/string/docstring, or remove the stale reference."
+        }
+        "repository_reference_anchor" => {
+            "Update the referenced Markdown heading anchor or rename the target heading so the local reference points at an existing section."
+        }
+        "repository_reference_line_anchor" => {
+            "Update the referenced line or line range so it points at existing target lines."
+        }
         "extension" => {
             "Rename the file to an allowed extension or update files.extensions for this scope."
         }
