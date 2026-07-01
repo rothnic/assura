@@ -107,6 +107,13 @@ branch surfaces are advertised as installable release artifacts.
 - Broad third-party markdownlint-compatible coverage remains future work until
   Assura has an MSRV-compatible dependency or external-binary contract.
 
+### Agent Nudges
+
+- `assura agent nudge` is an experimental shared event-aware payload for local
+  Codex, OpenCode, Claude, and Pi wrappers. It reports compact daemon health,
+  changed-path findings, affected-reference context, and performance-gate
+  reminders without adding per-agent validation commands.
+
 ### LS-Lint Migration
 
 - Supported LS-Lint 2.3 naming and ignore patterns migrate through

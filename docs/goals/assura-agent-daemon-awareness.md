@@ -71,3 +71,9 @@ git diff --check
 Block if the integration requires MCP for local use, creates one daemon command
 per agent, injects unbounded context, or gives agents no deterministic fallback
 when the daemon is down.
+
+## Progress Log
+
+| Date | Update | Evidence |
+| --- | --- | --- |
+| 2026-07-01 | Added daemon-aware agent nudge output through the shared `assura agent nudge` command. Nudges include compact daemon health, status/doctor/fallback commands, changed-path daemon checks when paths are supplied, and deterministic fallback output for unavailable projects without requiring MCP or a per-agent daemon command family. | `src/cli/agent_nudge.rs`; `tests/agent_surface_cli.rs`; `cargo test --test agent_surface_cli --quiet`; `cargo test --test daemon_cli_tests --quiet`; `cargo run --quiet -- check --format agent --agent codex .`. |

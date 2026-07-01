@@ -40,7 +40,7 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 Beta Code-Agnostic Capabilities is active.
 
 Owning task:
-`.trellis/tasks/07-01-07-01-agent-nudge-integrations`.
+`.trellis/tasks/07-01-agent-nudge-integrations`.
 
 Current branch:
 `codex/markdown-reference-master-goal`.

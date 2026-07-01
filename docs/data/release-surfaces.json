@@ -102,8 +102,8 @@
     {
       "id": "agent-daemon-nudges",
       "label": "Agent daemon nudges",
-      "status": "roadmap",
-      "first_release": "future",
+      "status": "experimental",
+      "first_release": "next",
       "detail_path": "docs/goals/assura-beta-agent-nudge-integrations.md"
     }
   ]

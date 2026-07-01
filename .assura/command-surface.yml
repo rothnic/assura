@@ -264,6 +264,36 @@ commands:
         aliases: ["-f"]
         takes_value: true
         values: ["text", "json", "yaml", "advice", "status"]
+  - name: "assura agent nudge"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --event:
+        takes_value: true
+        values: ["session-start", "before-tool", "after-tool"]
+      --changed:
+        takes_value: true
+      --agent:
+        takes_value: true
+        values: ["generic", "codex", "opencode", "claude", "pi"]
+      --min-severity:
+        takes_value: true
+        values: ["low", "medium", "high", "critical"]
+      --max-issues:
+        takes_value: true
+      --reference-limit:
+        takes_value: true
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status"]
   - name: "assura agent session"
     allow_positionals: true
     flags:

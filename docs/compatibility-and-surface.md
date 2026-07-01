@@ -49,6 +49,7 @@ publishes and verifies a `.sha256` file next to every archive.
 | `assura agent missing-relations` | Supported local agent relation query | Agent-surface CLI tests compare output with `assura content missing-relations`. |
 | `assura agent expand` | Supported local agent graph expansion | Agent-surface CLI tests compare output with `assura content expand`. |
 | `assura agent safe-fixes` | Supported local agent safe-fix preview | Agent-surface CLI tests compare output with `assura content agent-query safe-fixes`. |
+| `assura agent nudge` | Experimental local agent nudge payload | Agent-surface CLI tests prove bounded event-aware JSON for session start, before/after tool events, daemon fallback, and performance-gate path hints without per-agent validation commands. |
 | `assura agent session` | Supported local agent session alias | Agent-surface CLI tests prove the alias emits the same JSON-line session envelope as `assura content session`. |
 | `assura editor` | Supported local editor project-intelligence surface | Editor-surface CLI tests prove help output and local session availability. |
 | `assura editor session` | Supported local editor session | Editor-surface CLI tests prove LSP-shaped diagnostics, context, safe-fix code-action previews, invalid-method errors, and conservative reload metadata. |
@@ -137,6 +138,15 @@ Codex delivery is opt-in:
 ```bash
 assura check --format agent --agent codex .
 ```
+
+Event-aware wrappers can use one shared nudge payload:
+
+```bash
+assura agent nudge --event after-tool --changed docs/guide.md --agent codex .
+```
+
+`--agent codex|opencode|claude|pi` labels the host integration path only; the
+payload still reuses shared Assura check and daemon contracts.
 
 No release compatibility claim may depend on package feedback CLIs, per-agent
 command names, or one `--format` value per agent.
