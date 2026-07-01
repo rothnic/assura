@@ -19,6 +19,12 @@ pub mod constraints;
 #[doc(hidden)]
 pub mod content_repository;
 #[cfg(feature = "full-cli")]
+/// Experimental daemon-ready state contracts shared by local integrations.
+///
+/// These APIs are internal pre-1.0 building blocks until daemon support is
+/// promoted in the release surface matrix.
+pub mod daemon;
+#[cfg(feature = "full-cli")]
 /// Experimental dependency-intelligence internals.
 ///
 /// This is not a supported dependency graph validation release surface.

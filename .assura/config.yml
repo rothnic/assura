@@ -253,6 +253,14 @@ extensions:
             - src/constraints
           public_exports:
             - constraints
+        - family: daemon
+          status: experimental
+          owner: assura-maintainers
+          purpose: experimental daemon-ready local state contracts
+          roots:
+            - src/daemon
+          public_exports:
+            - daemon
         - family: intelligence
           status: internal
           owner: assura-maintainers
@@ -489,6 +497,8 @@ extensions:
         - surface: "rust:content_repository"
           status: experimental
         - surface: "rust:constraints"
+          status: experimental
+        - surface: "rust:daemon"
           status: experimental
         - surface: "rust:intelligence"
           status: internal
@@ -1182,6 +1192,7 @@ structure:
             - "config"
             - "content_repository"
             - "constraints"
+            - "daemon"
             - "intelligence"
             - "ls_compat"
             - "markdown"
@@ -1235,6 +1246,12 @@ structure:
                 - "severity"
                 - "trigger"
               allow_extra: false
+
+          daemon/:
+            files:
+              naming: "snake_case"
+              max_lines: 500
+              require_docs: true
           
           intelligence/:
             files:

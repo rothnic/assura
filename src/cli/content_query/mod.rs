@@ -2,7 +2,7 @@
 
 mod agent_query;
 mod code_symbols;
-mod context;
+pub(crate) mod context;
 mod context_pack;
 mod editor;
 mod editor_protocol;

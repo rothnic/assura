@@ -15,10 +15,10 @@ const SOURCE_REFERENCE_FILE_LIMIT: usize = 512;
 const SOURCE_REFERENCE_FILE_SIZE_LIMIT: u64 = 512 * 1024;
 
 #[derive(Debug)]
-pub(super) struct QueryContext {
-    pub(super) project_root: PathBuf,
-    pub(super) config_path: PathBuf,
-    pub(super) store: InMemoryFactStore,
+pub(crate) struct QueryContext {
+    pub(crate) project_root: PathBuf,
+    pub(crate) config_path: PathBuf,
+    pub(crate) store: InMemoryFactStore,
 }
 
 impl QueryContext {
@@ -41,27 +41,46 @@ impl QueryContext {
         )
     }
 
-    pub(super) fn load_for_path(
+    pub(crate) fn load_for_path(
         path: PathBuf,
         config: Option<PathBuf>,
         semantic_enabled: bool,
         code_symbols_enabled: bool,
         references_enabled: bool,
     ) -> Result<Self, ContentQueryError> {
-        let config_path = match config {
-            Some(path) => path,
-            None => crate::cli::ConfigDiscovery::find_config_path(&path).ok_or_else(|| {
-                ContentQueryError::no_config(format!(
-                    "no .assura/config.yml found for {}",
-                    path.display()
-                ))
-            })?,
+        let (config_path, project_root) = match config {
+            Some(config_path) => {
+                let config_path = config_path.canonicalize().map_err(|error| {
+                    ContentQueryError::runtime(format!(
+                        "failed to resolve config path {}: {error}",
+                        config_path.display()
+                    ))
+                })?;
+                let checked_path = path.canonicalize().map_err(|error| {
+                    ContentQueryError::runtime(format!(
+                        "failed to resolve project path {}: {error}",
+                        path.display()
+                    ))
+                })?;
+                let project_root = project_root_for_explicit_config(&checked_path, &config_path)?;
+                (config_path, project_root)
+            }
+            None => {
+                let config_path =
+                    crate::cli::ConfigDiscovery::find_config_path(&path).ok_or_else(|| {
+                        ContentQueryError::no_config(format!(
+                            "no .assura/config.yml found for {}",
+                            path.display()
+                        ))
+                    })?;
+                let project_root = config_path
+                    .parent()
+                    .and_then(std::path::Path::parent)
+                    .map(std::path::Path::to_path_buf)
+                    .unwrap_or_else(|| path.clone());
+                (config_path, project_root)
+            }
         };
-        let project_root = config_path
-            .parent()
-            .and_then(std::path::Path::parent)
-            .map(std::path::Path::to_path_buf)
-            .unwrap_or_else(|| path.clone());
         let config = ConfigLoader::load(&config_path).map_err(|error| {
             ContentQueryError::configuration(format!(
                 "failed to load {}: {error}",
@@ -106,6 +125,36 @@ impl QueryContext {
             store,
         })
     }
+}
+
+fn project_root_for_explicit_config(
+    checked_path: &Path,
+    config_path: &Path,
+) -> Result<PathBuf, ContentQueryError> {
+    let assura_dir = config_path.parent().ok_or_else(|| {
+        ContentQueryError::configuration(format!(
+            "invalid Assura config location {}",
+            config_path.display()
+        ))
+    })?;
+    let project_root = if assura_dir.file_name().and_then(|name| name.to_str()) == Some(".assura") {
+        assura_dir.parent().ok_or_else(|| {
+            ContentQueryError::configuration(format!(
+                "invalid Assura config location {}",
+                config_path.display()
+            ))
+        })?
+    } else if checked_path.is_file() {
+        checked_path.parent().unwrap_or(checked_path)
+    } else {
+        checked_path
+    };
+    project_root.canonicalize().map_err(|error| {
+        ContentQueryError::runtime(format!(
+            "failed to resolve project root {}: {error}",
+            project_root.display()
+        ))
+    })
 }
 
 fn ingest_markdown_reference_facts(ingestor: &mut FactIngestor, project_root: &Path) {
@@ -338,9 +387,9 @@ fn format_content_findings(findings: Vec<ContentFinding>) -> ContentQueryError {
 }
 
 #[derive(Debug)]
-pub(super) struct ContentQueryError {
-    pub(super) message: String,
-    pub(super) exit_code: ExitCode,
+pub(crate) struct ContentQueryError {
+    pub(crate) message: String,
+    pub(crate) exit_code: ExitCode,
 }
 
 impl ContentQueryError {
