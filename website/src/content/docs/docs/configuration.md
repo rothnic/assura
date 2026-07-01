@@ -110,13 +110,14 @@ Set `check_links: true` to validate local relative Markdown links to files,
 Markdown heading anchors, and GitHub-style line or line-range anchors such as
 `#L12` and `#L12-L34`.
 
-Use `rule_severity` to override supported Markdown rule severity by rule ID:
+Use `rules.<rule_id>.severity` to override supported Markdown rule severity:
 
 ```yaml
 markdown:
   check_links: true
-  rule_severity:
-    markdown_link_target: low
+  rules:
+    markdown_link_target:
+      severity: low
 ```
 
 Use `<!-- assura-ignore <markdown_rule>: <reason> -->` inside a Markdown file

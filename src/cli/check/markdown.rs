@@ -189,9 +189,10 @@ pub(super) fn markdown_severity<'a>(
     default: &'a str,
 ) -> &'a str {
     markdown
-        .rule_severity
+        .rules
         .as_ref()
-        .and_then(|overrides| overrides.get(rule))
+        .and_then(|rules| rules.get(rule))
+        .and_then(|config| config.severity.as_ref())
         .map(String::as_str)
         .unwrap_or(default)
 }

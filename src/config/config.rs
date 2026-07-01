@@ -23,10 +23,10 @@ pub use crate::config::inheritance::{ResolvedRule, RuleResolver};
 #[cfg(feature = "yaml-config")]
 pub use crate::config::loader::ConfigLoader;
 pub use crate::config::ls_compat::LsLintCompatibility;
-pub(crate) use bundles::MarkdownOutlineView;
+pub(crate) use bundles::{merge_markdown_rule_configs, MarkdownOutlineView};
 pub use bundles::{
     DirectoryBundle, ExistsValidation, FileBundle, MarkdownBundle, MarkdownOutlineEntry,
-    MarkdownOutlineNode, ResolvedFileBundle,
+    MarkdownOutlineNode, MarkdownRuleConfig, ResolvedFileBundle,
 };
 pub use content::{
     ContentCodeSymbolConfig, ContentCollectionConfig, ContentModelConfig, ContentRelationConfig,

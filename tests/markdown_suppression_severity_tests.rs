@@ -60,9 +60,9 @@ fn check_json(project: &TempDir) -> (std::process::ExitStatus, serde_json::Value
 }
 
 #[test]
-fn markdown_rule_severity_can_make_link_findings_advisory() {
+fn markdown_rule_config_severity_can_make_link_findings_advisory() {
     let project = write_project(
-        "          check_links: true\n          rule_severity:\n            markdown_link_target: low\n",
+        "          check_links: true\n          rules:\n            markdown_link_target:\n              severity: low\n",
         "# Note\n\nSee [missing](missing.md).\n",
     );
 
@@ -77,7 +77,7 @@ fn markdown_rule_severity_can_make_link_findings_advisory() {
 }
 
 #[test]
-fn markdown_rule_severity_merges_parent_and_child_maps() {
+fn markdown_rule_config_severity_merges_parent_and_child_maps() {
     let project = write_project_config(
         r#"
 structure:
@@ -85,13 +85,16 @@ structure:
     extra: true
     markdown:
       check_links: true
-      rule_severity:
-        markdown_link_target: low
+      rules:
+        markdown_link_target:
+          severity: low
     children:
       docs/:
         markdown:
-          rule_severity:
-            markdown_heading_depth: high
+          rules:
+            markdown_link_target: {}
+            markdown_heading_depth:
+              severity: high
 exclude:
   - target/**
 "#,
@@ -207,9 +210,9 @@ fn markdown_assura_ignore_ignores_prose_and_fenced_examples() {
 }
 
 #[test]
-fn markdown_rule_severity_rejects_unknown_rule_ids() {
+fn markdown_rule_config_rejects_unknown_rule_ids() {
     let project = write_project(
-        "          rule_severity:\n            markdown_future_rule: low\n",
+        "          rules:\n            markdown_future_rule:\n              severity: low\n",
         "# Note\n",
     );
 
@@ -225,6 +228,29 @@ fn markdown_rule_severity_rejects_unknown_rule_ids() {
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(
         stderr.contains("expected a supported markdown_* rule id"),
+        "stderr:\n{stderr}"
+    );
+}
+
+#[test]
+fn markdown_rule_config_rejects_unknown_nested_fields() {
+    let project = write_project(
+        "          rules:\n            markdown_link_target:\n              severty: low\n",
+        "# Note\n",
+    );
+
+    let output = Command::new(assura_bin())
+        .arg("check")
+        .arg(project.path())
+        .arg("--format")
+        .arg("json")
+        .output()
+        .unwrap();
+
+    assert!(!output.status.success());
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("unknown field") && stderr.contains("severty"),
         "stderr:\n{stderr}"
     );
 }

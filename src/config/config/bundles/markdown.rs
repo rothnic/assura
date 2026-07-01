@@ -41,9 +41,50 @@ pub struct MarkdownBundle {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub lint_trailing_spaces: Option<bool>,
 
-    /// Per-rule severity overrides for Markdown findings.
+    /// Per-rule configuration for Markdown findings.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub rule_severity: Option<HashMap<String, String>>,
+    pub rules: Option<HashMap<String, MarkdownRuleConfig>>,
+}
+
+/// Configuration for one Markdown rule.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+#[serde(rename_all = "snake_case")]
+pub struct MarkdownRuleConfig {
+    /// Optional severity override for this rule.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub severity: Option<String>,
+}
+
+impl MarkdownRuleConfig {
+    /// Merge a child rule object over an inherited parent rule object.
+    pub(crate) fn merged_with(&self, child: &Self) -> Self {
+        Self {
+            severity: child.severity.clone().or_else(|| self.severity.clone()),
+        }
+    }
+}
+
+pub(crate) fn merge_markdown_rule_configs(
+    parent: Option<&HashMap<String, MarkdownRuleConfig>>,
+    child: Option<&HashMap<String, MarkdownRuleConfig>>,
+) -> Option<HashMap<String, MarkdownRuleConfig>> {
+    match (parent, child) {
+        (None, None) => None,
+        (Some(parent), None) => Some(parent.clone()),
+        (None, Some(child)) => Some(child.clone()),
+        (Some(parent), Some(child)) => {
+            let mut merged = parent.clone();
+            for (rule, child_config) in child {
+                let config = merged.get(rule).map_or_else(
+                    || child_config.clone(),
+                    |parent| parent.merged_with(child_config),
+                );
+                merged.insert(rule.clone(), config);
+            }
+            Some(merged)
+        }
+    }
 }
 
 /// Markdown outline entry accepted by config shorthand and object notation.
@@ -126,7 +167,7 @@ impl MarkdownBundle {
             required_sections: None,
             outline: None,
             lint_trailing_spaces: None,
-            rule_severity: None,
+            rules: None,
         }
     }
 
@@ -174,9 +215,9 @@ impl MarkdownBundle {
         self
     }
 
-    /// Set per-rule severity overrides.
-    pub fn with_rule_severity(mut self, rule_severity: HashMap<String, String>) -> Self {
-        self.rule_severity = Some(rule_severity);
+    /// Set per-rule Markdown configuration.
+    pub fn with_rules(mut self, rules: HashMap<String, MarkdownRuleConfig>) -> Self {
+        self.rules = Some(rules);
         self
     }
 
@@ -187,15 +228,17 @@ impl MarkdownBundle {
         Ok(())
     }
 
-    pub(crate) fn validate_rule_severity_semantics(&self, context: &str) -> Result<(), String> {
-        let Some(rule_severity) = &self.rule_severity else {
+    pub(crate) fn validate_rule_config_semantics(&self, context: &str) -> Result<(), String> {
+        let Some(rules) = &self.rules else {
             return Ok(());
         };
-        for (rule, severity) in rule_severity {
+        for (rule, config) in rules {
             validate_markdown_rule_id(rule)
-                .map_err(|error| format!("{context}.rule_severity.{rule}: {error}"))?;
-            validate_markdown_severity(severity)
-                .map_err(|error| format!("{context}.rule_severity.{rule}: {error}"))?;
+                .map_err(|error| format!("{context}.rules.{rule}: {error}"))?;
+            if let Some(severity) = &config.severity {
+                validate_markdown_severity(severity)
+                    .map_err(|error| format!("{context}.rules.{rule}.severity: {error}"))?;
+            }
         }
         Ok(())
     }

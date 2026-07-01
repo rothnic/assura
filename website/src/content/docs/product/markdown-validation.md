@@ -13,8 +13,8 @@ shape while typed frontmatter fields stay in content models.
 | `markdown.require_frontmatter` | Shipped | Generic Markdown presence rule. |
 | `markdown.outline` | Shipped | Assura-owned heading hierarchy with required and optional nested headings. |
 | `markdown.lint_trailing_spaces` | Experimental | Rust-native lint for blank Markdown lines containing spaces or tabs. |
-| `markdown.check_links` | Experimental | Local validation for relative file links, Markdown heading anchors, and GitHub-style line/range anchors. |
-| `markdown.rule_severity` | Experimental | Per-rule severity overrides for supported Markdown findings. |
+| `markdown.check_links` | Experimental | Local validation for relative file links, unrendered local references, Markdown heading anchors, and GitHub-style line/range anchors. |
+| `markdown.rules.<rule_id>.severity` | Experimental | Per-rule severity overrides for supported Markdown findings. |
 | `assura-ignore` comments | Experimental | Reasoned suppressions for supported Markdown rule IDs. |
 | `assura fix markdown` | Experimental | Safe fix command for deterministic blank-line trailing whitespace with preview and explicit `--apply` audit JSON. |
 | Typed frontmatter fields | Shipped | Content runtime `models` and `collections`, not generic Markdown rules. |
@@ -50,7 +50,9 @@ point inside the repository:
 The check is local and offline. It reports missing files, missing Markdown
 heading anchors, invalid line anchors, invalid line ranges, and root-absolute
 internal links that should be relative for GitHub rendering in branches, forks,
-and pull requests.
+and pull requests. It also reports existing local file references in prose or
+inline code that should be rendered as Markdown links, such as
+`../src/lib.rs:1-2`.
 
 ## Severity And Suppression
 
@@ -59,8 +61,9 @@ Markdown scopes can lower or raise supported rule severities:
 ```yaml
 markdown:
   check_links: true
-  rule_severity:
-    markdown_link_target: low
+  rules:
+    markdown_link_target:
+      severity: low
 ```
 
 Use `<!-- assura-ignore <markdown_rule>: <reason> -->` for intentional local

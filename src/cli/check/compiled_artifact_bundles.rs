@@ -1,6 +1,6 @@
 // Portable bundle types for compiled structure config artifacts.
 
-use crate::config::config::MarkdownOutlineEntry;
+use crate::config::config::{MarkdownOutlineEntry, MarkdownRuleConfig};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 /// Portable Markdown rule bundle inside compiled config artifacts.
@@ -17,8 +17,8 @@ pub(super) struct PortableMarkdownBundle {
     pub(super) outline: Option<Vec<MarkdownOutlineEntry>>,
     /// Whether to lint blank-line trailing spaces.
     pub(super) lint_trailing_spaces: Option<bool>,
-    /// Per-rule severity overrides for Markdown findings.
-    pub(super) rule_severity: Option<std::collections::HashMap<String, String>>,
+    /// Per-rule configuration for Markdown findings.
+    pub(super) rules: Option<std::collections::HashMap<String, MarkdownRuleConfig>>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]

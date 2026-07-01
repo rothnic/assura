@@ -2,7 +2,8 @@
 
 use super::scope_patterns::{path_has_scope_magic, CompiledScopePattern};
 use crate::config::config::{
-    split_naming_conventions, DirectoryBundle, DirectoryNode, FileBundle, MarkdownBundle,
+    merge_markdown_rule_configs, split_naming_conventions, DirectoryBundle, DirectoryNode,
+    FileBundle, MarkdownBundle,
 };
 use glob::Pattern;
 use regex_lite::Regex;
@@ -272,27 +273,8 @@ pub(super) fn merge_markdown_bundle(
                 .or_else(|| parent.required_sections.clone()),
             outline: child.outline.clone().or_else(|| parent.outline.clone()),
             lint_trailing_spaces: child.lint_trailing_spaces.or(parent.lint_trailing_spaces),
-            rule_severity: merge_markdown_rule_severity(
-                parent.rule_severity.as_ref(),
-                child.rule_severity.as_ref(),
-            ),
+            rules: merge_markdown_rule_configs(parent.rules.as_ref(), child.rules.as_ref()),
         })),
-    }
-}
-
-fn merge_markdown_rule_severity(
-    parent: Option<&HashMap<String, String>>,
-    child: Option<&HashMap<String, String>>,
-) -> Option<HashMap<String, String>> {
-    match (parent, child) {
-        (None, None) => None,
-        (Some(parent), None) => Some(parent.clone()),
-        (None, Some(child)) => Some(child.clone()),
-        (Some(parent), Some(child)) => {
-            let mut merged = parent.clone();
-            merged.extend(child.clone());
-            Some(merged)
-        }
     }
 }
 

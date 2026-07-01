@@ -118,6 +118,46 @@ fn markdown_link_check_ignores_inline_code_examples_and_images() {
 }
 
 #[test]
+fn markdown_link_check_reports_unrendered_local_references() {
+    let project =
+        write_project("# Note\n\nSee ../src/lib.rs:1-2 and `../src/lib.rs12:34` in prose.\n");
+
+    let (status, json) = check_json(&project);
+
+    assert_eq!(status.code(), Some(1), "report: {json:#}");
+    let violations = json["violations"].as_array().unwrap();
+    let format_violations = violations
+        .iter()
+        .filter(|violation| violation["rule"] == "markdown_link_format")
+        .collect::<Vec<_>>();
+    assert_eq!(format_violations.len(), 2, "report: {json:#}");
+    assert!(format_violations
+        .iter()
+        .any(|violation| violation["message"]
+            .as_str()
+            .unwrap()
+            .contains("../src/lib.rs:1-2")));
+    assert!(format_violations
+        .iter()
+        .any(|violation| violation["message"]
+            .as_str()
+            .unwrap()
+            .contains("../src/lib.rs12:34")));
+}
+
+#[test]
+fn markdown_link_check_does_not_report_rendered_links_frontmatter_or_fences_as_bare_references() {
+    let project = write_project(
+        "---\nrelated: ../src/lib.rs:1-2\n---\n# Note\n\nSee [code](../src/lib.rs#L1-L2).\n\n![diagram](../src/lib.rs)\n\n```markdown\n../src/lib.rs:1-2\n```\n",
+    );
+
+    let (status, json) = check_json(&project);
+
+    assert!(status.success(), "report: {json:#}");
+    assert_eq!(json["violations"].as_array().unwrap().len(), 0);
+}
+
+#[test]
 fn markdown_link_check_uses_rendered_heading_text_for_anchor_slugs() {
     let project = write_project(
         "# Note\n\nSee [install](target.md#install-steps) and [code](target.md#api-name).\n",

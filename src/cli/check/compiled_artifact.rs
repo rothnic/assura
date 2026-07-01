@@ -445,7 +445,7 @@ impl From<MarkdownBundle> for PortableMarkdownBundle {
             required_sections: bundle.required_sections,
             outline: bundle.outline,
             lint_trailing_spaces: bundle.lint_trailing_spaces,
-            rule_severity: bundle.rule_severity,
+            rules: bundle.rules,
         }
     }
 }
@@ -460,7 +460,7 @@ impl From<PortableMarkdownBundle> for MarkdownBundle {
             required_sections: bundle.required_sections,
             outline: bundle.outline,
             lint_trailing_spaces: bundle.lint_trailing_spaces,
-            rule_severity: bundle.rule_severity,
+            rules: bundle.rules,
         }
     }
 }

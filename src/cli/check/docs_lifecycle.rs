@@ -3,7 +3,7 @@
 use super::rules::{display_rel, is_excluded_rel_with};
 use super::{CheckError, StructureCheckReport, StructureChecker, StructureViolation};
 use crate::config::config::DocsLifecycleConfig;
-use crate::markdown::links::{markdown_links, parse_markdown_link_target};
+use crate::markdown_links::{markdown_links, parse_markdown_link_target};
 use glob::Pattern;
 use std::collections::HashSet;
 use std::fs;

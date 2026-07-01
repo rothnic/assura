@@ -4,7 +4,7 @@ use std::process::Command;
 use assura::cli::CompiledStructureConfigArtifact;
 
 #[test]
-fn compiled_config_cli_preserves_markdown_rule_severity() {
+fn compiled_config_cli_preserves_markdown_rule_config_severity() {
     let temp = tempfile::tempdir().unwrap();
     let project = temp.path().join("compiled-markdown-severity-project");
     let compiled_config = temp.path().join("markdown-check-config.bin");
@@ -19,8 +19,9 @@ structure:
       docs/:
         markdown:
           check_links: true
-          rule_severity:
-            markdown_link_target: low
+          rules:
+            markdown_link_target:
+              severity: low
 exclude:
   - ".assura/**"
 "#,

@@ -4,8 +4,9 @@ use super::{markdown_headings, markdown_severity, suppression::MarkdownSuppressi
 use crate::cli::check::rules::display_rel;
 use crate::cli::check::{StructureCheckReport, StructureChecker};
 use crate::config::config::MarkdownBundle;
-use crate::markdown::links::{
-    is_markdown_file, markdown_links, parse_line_anchor, parse_markdown_link_target,
+use crate::markdown_links::{
+    is_markdown_file, markdown_bare_references, markdown_links, parse_line_anchor,
+    parse_markdown_link_target,
 };
 use std::collections::{HashMap, HashSet};
 use std::path::Path;
@@ -112,6 +113,38 @@ impl StructureChecker {
                     }
                 }
             }
+        }
+
+        self.validate_markdown_bare_references(rel, markdown, content, suppressions, report);
+    }
+
+    fn validate_markdown_bare_references(
+        &self,
+        rel: &Path,
+        markdown: &MarkdownBundle,
+        content: &str,
+        suppressions: &mut MarkdownSuppressions,
+        report: &mut StructureCheckReport,
+    ) {
+        let rule = "markdown_link_format";
+        for reference in markdown_bare_references(rel, &self.project_root, content) {
+            if suppressions.suppresses(rule, reference.line_number) {
+                continue;
+            }
+            self.push_violation(
+                report,
+                rel.to_path_buf(),
+                rule,
+                format!(
+                    "Markdown file '{}' has unrendered local reference '{}' to '{}' on line {}, column {}; use a relative Markdown link",
+                    display_rel(rel),
+                    reference.text,
+                    display_rel(&reference.target_path),
+                    reference.line_number,
+                    reference.column_number
+                ),
+                markdown_severity(markdown, rule, "medium"),
+            );
         }
     }
 }

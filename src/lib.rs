@@ -27,6 +27,9 @@ pub mod intelligence;
 mod ls_compat;
 #[cfg(feature = "full-cli")]
 pub mod markdown;
+#[cfg(any(feature = "full-cli", feature = "yaml-config"))]
+#[path = "markdown/links.rs"]
+pub(crate) mod markdown_links;
 #[cfg(feature = "full-cli")]
 /// Experimental maturity internals.
 ///
