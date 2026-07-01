@@ -1,0 +1,6 @@
+{"file":"docs/release-train.md","reason":"Check release-readiness semantics and release PR contract."}
+{"file":"docs/support-policy.md","reason":"Check support-level classifications after release metadata changes."}
+{"file":"docs/compatibility-and-surface.md","reason":"Check public compatibility matrix and experimental surface wording."}
+{"file":"website/src/content/docs/reference/release-readiness.md","reason":"Check website release-readiness docs stay aligned with command behavior."}
+{"file":"docs/release-notes.md","reason":"Check release notes avoid claiming already-published v0.1.0 artifacts contain new beta surfaces."}
+{"file":"docs/goals/assura-beta-code-agnostic-capabilities-program.md","reason":"Check master beta goal progress and remaining blocker wording."}
