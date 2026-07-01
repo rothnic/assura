@@ -247,7 +247,7 @@ fn markdown_bare_references_in_line(
         })
         .filter_map(|(start, _, raw)| {
             let candidate = normalize_reference_token(raw)?;
-            let target_text = reference_target_path(&candidate)?;
+            let target_text = reference_target_path(candidate)?;
             let target = parse_markdown_link_target(source_rel, target_text)?;
             project_root
                 .join(&target.path)

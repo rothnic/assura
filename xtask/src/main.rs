@@ -509,9 +509,7 @@ fn release_tag_like(value: &str) -> bool {
 }
 
 fn release_tag_tuple(value: &str) -> Option<(u64, u64, u64)> {
-    let Some(version) = value.strip_prefix('v') else {
-        return None;
-    };
+    let version = value.strip_prefix('v')?;
     let mut parts = version.split('.');
     let major = parts.next()?.parse().ok()?;
     let minor = parts.next()?.parse().ok()?;

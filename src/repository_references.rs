@@ -157,9 +157,9 @@ fn parse_source_reference_target(
     })
 }
 
-fn split_reference_target(
-    candidate: &str,
-) -> Option<(&str, Option<String>, Option<(usize, usize)>)> {
+type SplitReferenceTarget<'a> = (&'a str, Option<String>, Option<(usize, usize)>);
+
+fn split_reference_target(candidate: &str) -> Option<SplitReferenceTarget<'_>> {
     let (candidate, anchor) = candidate
         .split_once('#')
         .map_or((candidate, None), |(path, anchor)| {

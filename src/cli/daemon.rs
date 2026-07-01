@@ -379,7 +379,7 @@ fn render_error(
                 DaemonErrorOutput {
                     schema: "assura.daemon.error.v1",
                     error: "daemon state is stale",
-                    health,
+                    health: *health,
                 },
                 format,
             )?,

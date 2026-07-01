@@ -32,7 +32,7 @@ pub enum DaemonCoreError {
     Io(std::io::Error),
     /// Cached state is stale and must be refreshed before success can be
     /// trusted.
-    Stale(DaemonHealth),
+    Stale(Box<DaemonHealth>),
 }
 
 impl std::fmt::Display for DaemonCoreError {
@@ -255,7 +255,7 @@ impl LocalDaemonCore {
     fn stale_config(&mut self, reason: impl Into<String>) -> Result<(), DaemonCoreError> {
         self.state = DaemonHealthState::Stale;
         self.reason = reason.into();
-        Err(DaemonCoreError::Stale(self.health()))
+        Err(DaemonCoreError::Stale(Box::new(self.health())))
     }
 
     fn mark_degraded_if_project_changed(&mut self) -> Result<(), DaemonCoreError> {

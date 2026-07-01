@@ -174,11 +174,9 @@ fn github_heading_slug(text: &str) -> String {
         if ch.is_ascii_alphanumeric() || ch == '_' {
             slug.push(ch);
             previous_dash = false;
-        } else if ch.is_whitespace() || ch == '-' {
-            if !previous_dash && !slug.is_empty() {
-                slug.push('-');
-                previous_dash = true;
-            }
+        } else if (ch.is_whitespace() || ch == '-') && !previous_dash && !slug.is_empty() {
+            slug.push('-');
+            previous_dash = true;
         }
     }
     slug.trim_matches('-').to_string()
