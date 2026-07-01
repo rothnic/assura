@@ -74,6 +74,7 @@ publishes and verifies a `.sha256` file next to every archive.
 | Surface | Status | Evidence |
 | --- | --- | --- |
 | `config:markdown.lint_common` | Experimental | Common-lint CLI tests prove stable findings for heading increments, heading marker spacing, duplicate headings, multiple blank lines, suppressions, and severity overrides. |
+| `project-intelligence:repository-reference-facts` | Experimental | Repository-reference graph tests prove Markdown, source-comment, docstring, and string-literal path candidates become bounded `RepositoryReference` edges with confidence labels. |
 
 ## Project Intelligence Layout Compatibility
 

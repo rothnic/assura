@@ -11,6 +11,9 @@ use crate::markdown_links::is_markdown_file;
 use std::fs;
 use std::path::{Path, PathBuf};
 
+const SOURCE_REFERENCE_FILE_LIMIT: usize = 512;
+const SOURCE_REFERENCE_FILE_SIZE_LIMIT: u64 = 512 * 1024;
+
 #[derive(Debug)]
 pub(super) struct QueryContext {
     pub(super) project_root: PathBuf,
@@ -34,6 +37,7 @@ impl QueryContext {
             config,
             command.semantic_enabled(),
             command.code_symbols_enabled(),
+            command.references_enabled(),
         )
     }
 
@@ -42,6 +46,7 @@ impl QueryContext {
         config: Option<PathBuf>,
         semantic_enabled: bool,
         code_symbols_enabled: bool,
+        references_enabled: bool,
     ) -> Result<Self, ContentQueryError> {
         let config_path = match config {
             Some(path) => path,
@@ -72,6 +77,9 @@ impl QueryContext {
         let mut ingestor = FactIngestor::new("content-query");
         ingestor.ingest_repository_model(&model);
         ingest_markdown_reference_facts(&mut ingestor, &project_root);
+        if references_enabled {
+            ingest_source_reference_facts(&mut ingestor, &project_root);
+        }
         if code_symbols_enabled {
             ingestor.ingest_local_rust_code_symbols(&project_root);
         }
@@ -112,9 +120,37 @@ fn ingest_markdown_reference_facts(ingestor: &mut FactIngestor, project_root: &P
     }
 }
 
+fn ingest_source_reference_facts(ingestor: &mut FactIngestor, project_root: &Path) {
+    for path in source_reference_files(project_root)
+        .into_iter()
+        .take(SOURCE_REFERENCE_FILE_LIMIT)
+    {
+        let Ok(metadata) = fs::metadata(&path) else {
+            continue;
+        };
+        if metadata.len() > SOURCE_REFERENCE_FILE_SIZE_LIMIT {
+            continue;
+        }
+        let Ok(content) = fs::read_to_string(&path) else {
+            continue;
+        };
+        let Ok(rel_path) = path.strip_prefix(project_root) else {
+            continue;
+        };
+        ingestor.ingest_source_references(project_root, rel_path, &content);
+    }
+}
+
 fn markdown_reference_files(project_root: &Path) -> Vec<PathBuf> {
     let mut files = Vec::new();
     collect_markdown_reference_files(project_root, project_root, &mut files);
+    files.sort();
+    files
+}
+
+fn source_reference_files(project_root: &Path) -> Vec<PathBuf> {
+    let mut files = Vec::new();
+    collect_source_reference_files(project_root, project_root, &mut files);
     files.sort();
     files
 }
@@ -142,6 +178,29 @@ fn collect_markdown_reference_files(root: &Path, dir: &Path, files: &mut Vec<Pat
     }
 }
 
+fn collect_source_reference_files(root: &Path, dir: &Path, files: &mut Vec<PathBuf>) {
+    let Ok(entries) = fs::read_dir(dir) else {
+        return;
+    };
+    for entry in entries.flatten() {
+        let Ok(file_type) = entry.file_type() else {
+            continue;
+        };
+        let path = entry.path();
+        let Ok(rel_path) = path.strip_prefix(root) else {
+            continue;
+        };
+        if ignored_reference_scan_path(rel_path) {
+            continue;
+        }
+        if file_type.is_dir() {
+            collect_source_reference_files(root, &path, files);
+        } else if file_type.is_file() && is_source_reference_file(&path) {
+            files.push(path);
+        }
+    }
+}
+
 fn ignored_reference_scan_path(path: &Path) -> bool {
     path.components().any(|component| {
         let value = component.as_os_str().to_string_lossy();
@@ -150,6 +209,40 @@ fn ignored_reference_scan_path(path: &Path) -> bool {
             ".git" | "target" | "node_modules" | "dist" | "coverage"
         )
     })
+}
+
+fn is_source_reference_file(path: &Path) -> bool {
+    let Some(extension) = path.extension().and_then(|extension| extension.to_str()) else {
+        return false;
+    };
+    matches!(
+        extension.to_ascii_lowercase().as_str(),
+        "rs" | "py"
+            | "js"
+            | "jsx"
+            | "ts"
+            | "tsx"
+            | "go"
+            | "java"
+            | "kt"
+            | "swift"
+            | "c"
+            | "h"
+            | "hpp"
+            | "cpp"
+            | "cs"
+            | "rb"
+            | "php"
+            | "sh"
+            | "bash"
+            | "zsh"
+            | "fish"
+            | "toml"
+            | "yaml"
+            | "yml"
+            | "json"
+            | "jsonl"
+    )
 }
 
 fn ingest_safe_fix_structure_report(ingestor: &mut FactIngestor, mut report: StructureCheckReport) {
@@ -182,6 +275,7 @@ fn command_path(command: &ContentCommands) -> Option<PathBuf> {
 trait SemanticCommand {
     fn semantic_enabled(&self) -> bool;
     fn code_symbols_enabled(&self) -> bool;
+    fn references_enabled(&self) -> bool;
 }
 
 impl SemanticCommand for ContentCommands {
@@ -213,6 +307,20 @@ impl SemanticCommand for ContentCommands {
                 | ContentCommands::Session { .. }
                 | ContentCommands::Symbols { .. }
                 | ContentCommands::SymbolRefs { .. }
+                | ContentCommands::Expand { .. }
+        )
+    }
+
+    fn references_enabled(&self) -> bool {
+        matches!(
+            self,
+            ContentCommands::AgentContext { .. }
+                | ContentCommands::AgentQuery {
+                    query: AgentQueryArg::GraphExpand,
+                    ..
+                }
+                | ContentCommands::ContextPack { .. }
+                | ContentCommands::Session { .. }
                 | ContentCommands::Expand { .. }
         )
     }

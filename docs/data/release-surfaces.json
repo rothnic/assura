@@ -44,6 +44,13 @@
       "detail_path": "docs/goals/assura-markdown-lint-link-reference-engine.md"
     },
     {
+      "id": "repository-reference-facts",
+      "label": "Repository reference facts",
+      "status": "experimental",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-code-doc-reference-validation.md"
+    },
+    {
       "id": "structure-validation-cli",
       "label": "Structure validation CLI",
       "status": "supported",

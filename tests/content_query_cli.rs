@@ -282,7 +282,7 @@ fn content_query_reports_generic_agent_context() {
         "assura.project-intelligence.agent-context.v1"
     );
     assert_eq!(context["summary"]["model_instances"], 1);
-    assert_eq!(context["summary"]["repository_reference_edges"], 1);
+    assert_eq!(context["summary"]["repository_reference_edges"], 2);
     assert_eq!(
         context["summary"]["unresolved_repository_reference_edges"],
         0
@@ -301,6 +301,20 @@ fn content_query_reports_generic_agent_context() {
     assert!(capabilities
         .iter()
         .any(|item| { item["name"] == "code_symbols" && item["cli"] == "assura content symbols" }));
+
+    let diagnostics = json_output(run_content(&[
+        "agent-query",
+        "diagnostics",
+        "tests/fixtures/content_runtime/code_symbols",
+        "--format",
+        "json",
+    ]));
+    let diagnostic_items = diagnostics["response"]["diagnostics"]
+        .as_array()
+        .expect("diagnostics array");
+    assert!(!diagnostic_items
+        .iter()
+        .any(|item| item["rule"] == "repository_reference_target"));
 }
 
 #[test]

@@ -8,6 +8,7 @@ mod ingest;
 mod ingest_helpers;
 mod markdown_link_ingest;
 mod markdown_links;
+mod repository_reference_ingest;
 mod repository_references;
 mod set;
 mod types;

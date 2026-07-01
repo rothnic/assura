@@ -1,3 +1,4 @@
+// Fixture data lives in components/component_config.json.
 pub struct Config {
     pub name: String,
 }

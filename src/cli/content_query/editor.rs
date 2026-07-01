@@ -84,7 +84,7 @@ struct EditorSession {
 
 impl EditorSession {
     fn load(path: PathBuf, config: Option<PathBuf>) -> Result<Self, ContentQueryError> {
-        let context = QueryContext::load_for_path(path.clone(), config.clone(), false, true)?;
+        let context = QueryContext::load_for_path(path.clone(), config.clone(), false, true, true)?;
         let fingerprint = ProjectFingerprint::capture(&context.project_root)?;
         Ok(Self {
             path,
@@ -151,8 +151,13 @@ impl EditorSession {
             if latest == self.fingerprint {
                 return Ok(SessionReloadOutput::initial(&self.context));
             }
-            self.context =
-                QueryContext::load_for_path(self.path.clone(), self.config.clone(), false, true)?;
+            self.context = QueryContext::load_for_path(
+                self.path.clone(),
+                self.config.clone(),
+                false,
+                true,
+                true,
+            )?;
             self.fingerprint = ProjectFingerprint::capture(&self.context.project_root)?;
             return Ok(SessionReloadOutput::reloaded(&self.context));
         }
@@ -161,7 +166,7 @@ impl EditorSession {
         }
 
         self.context =
-            QueryContext::load_for_path(self.path.clone(), self.config.clone(), false, true)?;
+            QueryContext::load_for_path(self.path.clone(), self.config.clone(), false, true, true)?;
         self.fingerprint = ProjectFingerprint::capture(&self.context.project_root)?;
         Ok(SessionReloadOutput::reloaded(&self.context))
     }
