@@ -33,20 +33,23 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 19 | Project Intelligence Usability | Completed | Adoption blueprint, real-repo proof, onboarding template, context pack, persistent session, safe-fix workflow, `.assura/` directory organization, agent CLI surface, LSP editor transport, release hardening, and final usability audit completed locally |
 | 20 | Project Intelligence Simple Usability | Completed | PR #109 merged and deployed; task archived under `.trellis/tasks/archive/2026-06/` |
 | 21 | Markdown Reference Intelligence | Active | Child program under the beta workstream for fast Markdown linting, repository reference graph, daemon readiness, daemon management CLI, VS Code integration, agent daemon awareness, incremental pre-1.0 releases, public roadmap artifact, and future Zed/JetBrains editor follow-ups |
-| 22 | Beta Code-Agnostic Capabilities | Active | Master beta program covering roadmap/release train, structure severity, content collections, Markdown quality, reference graph, daemon core, daemon CLI, agent nudges, VS Code, and the LS-Lint no-slower performance gate |
+| 22 | Beta Code-Agnostic Capabilities | Completed | PR #112 merged; `v0.2.0` tag and GitHub release published with live release evidence |
 
 ## Active Roadmap Iteration
 
-Beta Code-Agnostic Capabilities is active.
+Beta Code-Agnostic Capabilities is complete as of release `v0.2.0`.
 
 Owning task:
-`.trellis/tasks/07-01-agent-nudge-integrations`.
+`.trellis/tasks/07-01-07-01-beta-v0-2-0-release-evidence` until archived.
 
 Current branch:
-`codex/markdown-reference-master-goal`.
+`codex/beta-release-evidence-final`.
 
 Current recommended goal:
-`docs/goals/assura-beta-agent-nudge-integrations.md`.
+`docs/goals/assura-beta-code-agnostic-capabilities-program.md`.
+
+No incomplete beta epic remains. The next roadmap item should be a new
+post-beta product decision or a narrowly scoped follow-up goal.
 
 Public roadmap artifact:
 `docs/data/public-roadmap.json`.
@@ -173,14 +176,10 @@ are optional later surfaces over the same contracts.
 
 ## Recommended Next Action
 
-Run the workflow gate, then continue
-`.trellis/tasks/07-01-07-01-agent-nudge-integrations`. The immediate path is
-to execute `docs/goals/assura-beta-agent-nudge-integrations.md` with
-`docs/goals/assura-agent-daemon-awareness.md` as Epic 8 of the beta program.
-Build concise Codex, OpenCode, Claude, and Pi agent nudge contracts over the
-shared Assura agent-feedback and daemon CLI surfaces. Do not reopen completed
-Daemon CLI, Daemon Core, or Reference Graph work unless new evidence names a
-narrower drift case.
+Archive `.trellis/tasks/07-01-07-01-beta-v0-2-0-release-evidence` after the
+final release evidence commit lands. Then select the next post-beta roadmap
+decision from live product needs; do not reopen completed beta epics unless new
+evidence names a narrower drift case.
 
 ## Roadmap Rules
 

@@ -78,6 +78,18 @@
           "summary": "Share start, stop, status, doctor, logs, and fallback commands.",
           "detail_path": "docs/goals/assura-daemon-management-cli.md",
           "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-daemon-management-cli.md"
+        },
+        {
+          "label": "Agent Nudges",
+          "summary": "Send bounded event-aware nudges to Codex, OpenCode, Claude, and Pi agents.",
+          "detail_path": "docs/goals/assura-beta-agent-nudge-integrations.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-beta-agent-nudge-integrations.md"
+        },
+        {
+          "label": "VS Code",
+          "summary": "Use the shared daemon/client contract for editor diagnostics and commands.",
+          "detail_path": "docs/goals/assura-vscode-daemon-integration.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-vscode-daemon-integration.md"
         }
       ]
     },
@@ -90,12 +102,6 @@
           "summary": "Drive the code-agnostic beta program through executable goal files.",
           "detail_path": "docs/goals/assura-beta-code-agnostic-capabilities-program.md",
           "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-beta-code-agnostic-capabilities-program.md"
-        },
-        {
-          "label": "Agent Nudges",
-          "summary": "Send bounded event-aware nudges to Codex, OpenCode, Claude, and Pi agents.",
-          "detail_path": "docs/goals/assura-beta-agent-nudge-integrations.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-beta-agent-nudge-integrations.md"
         }
       ]
     },
@@ -104,10 +110,10 @@
       "title": "Next",
       "items": [
         {
-          "label": "VS Code",
-          "summary": "Use the shared daemon/client contract for editor diagnostics and commands.",
-          "detail_path": "docs/goals/assura-vscode-daemon-integration.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-vscode-daemon-integration.md"
+          "label": "Post-Beta Roadmap",
+          "summary": "Define the next product iteration after the beta release.",
+          "detail_path": ".trellis/spec/assura/roadmap.md",
+          "href": "https://github.com/rothnic/assura/blob/master/.trellis/spec/assura/roadmap.md"
         }
       ]
     }
