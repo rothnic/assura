@@ -40,7 +40,7 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 Beta Code-Agnostic Capabilities is complete as of release `v0.2.0`.
 
 Owning task:
-`.trellis/tasks/07-01-07-01-beta-v0-2-0-release-evidence` until archived.
+`.trellis/tasks/archive/2026-07/07-01-07-01-beta-v0-2-0-release-evidence`.
 
 Current branch:
 `codex/beta-release-evidence-final`.
@@ -176,10 +176,8 @@ are optional later surfaces over the same contracts.
 
 ## Recommended Next Action
 
-Archive `.trellis/tasks/07-01-07-01-beta-v0-2-0-release-evidence` after the
-final release evidence commit lands. Then select the next post-beta roadmap
-decision from live product needs; do not reopen completed beta epics unless new
-evidence names a narrower drift case.
+Select the next post-beta roadmap decision from live product needs; do not
+reopen completed beta epics unless new evidence names a narrower drift case.
 
 ## Roadmap Rules
 
