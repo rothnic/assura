@@ -12,7 +12,7 @@ use super::semantic::{cosine_similarity, semantic_text_hash};
 use glob::Pattern;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 /// Local in-memory indexes over normalized project intelligence facts.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
@@ -21,6 +21,7 @@ pub struct InMemoryFactStore {
     facts_by_id: BTreeMap<FactId, Vec<usize>>,
     edges_by_id: BTreeMap<EdgeId, Vec<usize>>,
     edges_by_source: BTreeMap<FactId, Vec<usize>>,
+    repository_references_by_source_path: BTreeMap<PathBuf, Vec<usize>>,
     repository_references_by_target: BTreeMap<FactId, Vec<usize>>,
     missing_relationship_edges: Vec<usize>,
     search_chunks: Vec<SearchChunk>,
@@ -97,6 +98,22 @@ impl InMemoryFactStore {
     pub fn repository_references_to(&self, target_id: &FactId) -> Vec<&RepositoryReferenceEdge> {
         self.repository_references_by_target
             .get(target_id)
+            .into_iter()
+            .flat_map(|indexes| indexes.iter())
+            .filter_map(|index| match &self.facts.edges[*index] {
+                ProjectEdge::RepositoryReference(edge) => Some(edge),
+                _ => None,
+            })
+            .collect()
+    }
+
+    /// Return repository-reference edges from the requested source path.
+    pub fn repository_references_from_path(
+        &self,
+        source_path: impl AsRef<Path>,
+    ) -> Vec<&RepositoryReferenceEdge> {
+        self.repository_references_by_source_path
+            .get(source_path.as_ref())
             .into_iter()
             .flat_map(|indexes| indexes.iter())
             .filter_map(|index| match &self.facts.edges[*index] {
@@ -215,6 +232,7 @@ impl InMemoryFactStore {
         self.facts_by_id.clear();
         self.edges_by_id.clear();
         self.edges_by_source.clear();
+        self.repository_references_by_source_path.clear();
         self.repository_references_by_target.clear();
         self.missing_relationship_edges.clear();
         self.search_chunks.clear();
@@ -255,6 +273,10 @@ impl InMemoryFactStore {
                 ProjectEdge::RepositoryReference(edge) => {
                     self.edges_by_source
                         .entry(edge.source_id.clone())
+                        .or_default()
+                        .push(index);
+                    self.repository_references_by_source_path
+                        .entry(edge.source_path.clone())
                         .or_default()
                         .push(index);
                     if let Some(target_id) = &edge.target_id {

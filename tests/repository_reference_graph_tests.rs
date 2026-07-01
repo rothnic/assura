@@ -71,6 +71,28 @@ fn fact_store_indexes_inbound_repository_references_by_target() {
 }
 
 #[test]
+fn fact_store_explains_changed_source_outbound_references() {
+    let project = reference_project();
+    let source_rel = Path::new("docs/note.md");
+    let content = fs::read_to_string(project.path().join(source_rel)).unwrap();
+
+    let mut ingestor = FactIngestor::new("refs-1");
+    ingestor.ingest_markdown_links(project.path(), source_rel, &content);
+    let store = InMemoryFactStore::load(ingestor.finish());
+
+    let outbound = store
+        .repository_references_from_path("docs/note.md")
+        .into_iter()
+        .map(|edge| edge.target_path.clone())
+        .collect::<Vec<_>>();
+
+    assert_eq!(outbound.len(), 3);
+    assert!(outbound.contains(&PathBuf::from("docs/guide.md")));
+    assert!(outbound.contains(&PathBuf::from("src/lib.rs")));
+    assert!(outbound.contains(&PathBuf::from("docs/missing.md")));
+}
+
+#[test]
 fn source_comments_and_strings_create_repository_reference_edges() {
     let project = reference_project();
     let source_rel = Path::new("src/lib.rs");

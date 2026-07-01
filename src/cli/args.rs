@@ -377,7 +377,6 @@ pub enum ContentCommands {
         #[arg(short, long, value_enum, default_value = "text")]
         format: OutputFormat,
     },
-
     #[command(about = "Report modeled content instances related to a code symbol")]
     SymbolRefs {
         symbol: String,
@@ -385,14 +384,24 @@ pub enum ContentCommands {
         #[arg(short, long, value_enum, default_value = "text")]
         format: OutputFormat,
     },
-
     #[command(about = "Report relationship edges with missing targets")]
     MissingRelations {
         path: Option<PathBuf>,
         #[arg(short, long, value_enum, default_value = "text")]
         format: OutputFormat,
     },
-
+    #[command(about = "Report repository references by changed source or target path")]
+    References {
+        path: Option<PathBuf>,
+        #[arg(long)]
+        source: Option<PathBuf>,
+        #[arg(long)]
+        target: Option<PathBuf>,
+        #[arg(long, default_value_t = 20)]
+        limit: usize,
+        #[arg(short, long, value_enum, default_value = "text")]
+        format: OutputFormat,
+    },
     #[command(about = "Expand bounded graph context around one content instance")]
     Expand {
         collection: String,
@@ -404,7 +413,6 @@ pub enum ContentCommands {
         format: OutputFormat,
     },
 }
-
 #[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]
 pub enum OutputFormat {
     Text,

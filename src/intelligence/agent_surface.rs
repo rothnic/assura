@@ -84,8 +84,8 @@ pub fn project_intelligence_agent_context(facts: &FactSet) -> ProjectIntelligenc
             capability(
                 "graph_queries",
                 "supported",
-                "assura content expand",
-                "Graph context comes from local project-intelligence facts.",
+                "assura content expand; assura content references",
+                "Graph context and repository references come from local project-intelligence facts.",
             ),
             capability(
                 "keyword_search",

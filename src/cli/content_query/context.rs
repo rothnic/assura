@@ -268,6 +268,7 @@ fn command_path(command: &ContentCommands) -> Option<PathBuf> {
         | ContentCommands::Symbols { path, .. }
         | ContentCommands::SymbolRefs { path, .. }
         | ContentCommands::MissingRelations { path, .. }
+        | ContentCommands::References { path, .. }
         | ContentCommands::Expand { path, .. } => path.clone(),
     }
 }
@@ -321,6 +322,7 @@ impl SemanticCommand for ContentCommands {
                 }
                 | ContentCommands::ContextPack { .. }
                 | ContentCommands::Session { .. }
+                | ContentCommands::References { .. }
                 | ContentCommands::Expand { .. }
         )
     }

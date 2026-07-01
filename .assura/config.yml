@@ -456,6 +456,8 @@ extensions:
           status: supported
         - surface: "command:assura content missing-relations"
           status: supported
+        - surface: "command:assura content references"
+          status: experimental
         - surface: "command:assura content expand"
           status: supported
         - surface: "command:assura info"

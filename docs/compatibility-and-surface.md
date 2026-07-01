@@ -66,6 +66,7 @@ publishes and verifies a `.sha256` file next to every archive.
 | `assura content symbol-refs` | Experimental optional code-symbol query | Code-symbol fixture tests; unresolved provider refs remain queryable. |
 | `assura content missing-relations` | Supported relation query | Content query CLI fixture tests. |
 | `assura content expand` | Supported bounded graph expansion | Content query CLI fixture tests. |
+| `assura content references` | Experimental repository-reference graph query | Content query CLI tests prove bounded inbound references by target path and outbound references by source path. |
 | `assura info` | Experimental diagnostic | CLI exists, but text output is not an automation contract. |
 | `assura watch` | Experimental | CLI exists, but release-grade watch behavior is not claimed. |
 

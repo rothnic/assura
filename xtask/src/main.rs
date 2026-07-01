@@ -1990,6 +1990,11 @@ const CLI_COMMAND_VARIANT_ROWS: &[CliCommandVariantRow] = &[
     },
     CliCommandVariantRow {
         enum_name: "ContentCommands",
+        variant_name: "References",
+        command_surface_names: &["assura content references"],
+    },
+    CliCommandVariantRow {
+        enum_name: "ContentCommands",
         variant_name: "Expand",
         command_surface_names: &["assura content expand"],
     },
@@ -2251,6 +2256,7 @@ const SUPPORT_MATRIX_ROWS: &[SupportMatrixRow] = &[
             "assura content symbols",
             "assura content symbol-refs",
             "assura content missing-relations",
+            "assura content references",
             "assura content expand",
         ],
         support_policy_markers: &[

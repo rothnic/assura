@@ -120,6 +120,54 @@ impl TextRender for MissingRelationsOutput {
     }
 }
 
+impl TextRender for RepositoryReferencesOutput {
+    fn render_text(&self) -> String {
+        let mut lines = vec![format!(
+            "Repository references: {} {} ({})",
+            self.mode,
+            self.path.display(),
+            self.references.len()
+        )];
+        for reference in &self.references {
+            lines.push(format!(
+                "source={}:{}:{} target={} anchor={} lines={} exists={} rule={} kind={} confidence={}",
+                reference.source_path.display(),
+                optional_usize(reference.source_line),
+                optional_usize(reference.source_column),
+                reference.target_path.display(),
+                optional_string(reference.target_anchor.as_deref()),
+                target_lines(reference.target_line_start, reference.target_line_end),
+                reference.target_exists,
+                reference.rule,
+                reference.reference_kind,
+                reference.confidence,
+            ));
+        }
+        lines.join("\n")
+    }
+}
+
+fn optional_usize(value: Option<usize>) -> String {
+    value
+        .map(|value| value.to_string())
+        .unwrap_or_else(|| "-".to_string())
+}
+
+fn optional_string(value: Option<&str>) -> String {
+    value
+        .map(ToString::to_string)
+        .unwrap_or_else(|| "-".to_string())
+}
+
+fn target_lines(start: Option<usize>, end: Option<usize>) -> String {
+    match (start, end) {
+        (Some(start), Some(end)) => format!("{start}-{end}"),
+        (Some(start), None) => start.to_string(),
+        (None, Some(end)) => format!("-{end}"),
+        (None, None) => "-".to_string(),
+    }
+}
+
 impl TextRender for DiagnosticsOutput {
     fn render_text(&self) -> String {
         format!("Diagnostics: {}", self.diagnostics.len())

@@ -35,6 +35,7 @@ assura content symbols components component-config tests/fixtures/content_runtim
 assura content symbol-refs crate::sample::Config tests/fixtures/content_runtime/code_symbols --format json
 assura content missing-relations tests/fixtures/content_runtime/missing_reference --format json
 assura content expand goals goal-portable-structure tests/fixtures/content_runtime/valid --format json
+assura content references tests/fixtures/content_runtime/code_symbols --target src/sample.rs --format json
 ```
 
 Use text output for quick terminal inspection:

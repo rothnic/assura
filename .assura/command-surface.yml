@@ -506,6 +506,27 @@ commands:
         aliases: ["-f"]
         takes_value: true
         values: ["text", "json", "yaml", "advice", "status"]
+  - name: "assura content references"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --source:
+        takes_value: true
+      --target:
+        takes_value: true
+      --limit:
+        takes_value: true
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status"]
   - name: "assura content expand"
     allow_positionals: true
     flags:

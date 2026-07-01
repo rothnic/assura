@@ -142,6 +142,7 @@ wrappers must still require explicit user approval before running
 | `assura content search` | Search modeled content facts with lexical scores |
 | `assura content expand` | Expand graph context around one modeled object |
 | `assura content missing-relations` | Report unresolved modeled relations |
+| `assura content references` | Report inbound repository references by target path or outbound references by source path |
 
 `assura content session [path]` reads one JSON request per stdin line and emits
 one `assura.project-intelligence.session.response.v1` JSON response per stdout
