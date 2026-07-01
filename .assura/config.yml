@@ -1147,6 +1147,7 @@ structure:
         directories:
           allowed_names:
             - "agents"
+            - "editors"
           allow_extra: false
         children:
           agents/:
@@ -1202,6 +1203,49 @@ structure:
                   tests/:
                     files:
                       naming: "kebab-case"
+          editors/:
+            files:
+              naming: "kebab-case"
+              allowed_names:
+                - "README.md"
+              allow_extra: false
+            directories:
+              allowed_names:
+                - "vscode"
+              allow_extra: false
+            children:
+              vscode/:
+                files:
+                  naming: "kebab-case"
+                  allowed_names:
+                    - "README.md"
+                    - "package.json"
+                  allow_extra: false
+                directories:
+                  allowed_names:
+                    - "scripts"
+                    - "src"
+                    - "tests"
+                  allow_extra: false
+                children:
+                  scripts/:
+                    files:
+                      naming: "kebab-case"
+                      allowed_patterns:
+                        - "*.js"
+                      allow_extra: false
+                  src/:
+                    files:
+                      naming: "kebab-case"
+                      allowed_patterns:
+                        - "*.js"
+                      allow_extra: false
+                  tests/:
+                    files:
+                      naming: "kebab-case"
+                      allowed_patterns:
+                        - "*.js"
+                      allow_extra: false
       
       src/:
         files:

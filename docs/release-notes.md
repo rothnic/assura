@@ -55,6 +55,10 @@ support policy treats `assura info` as an experimental diagnostic and
 long-running watch behavior as experimental until dedicated goals add
 release-grade tests and docs.
 
+The `integrations/editors/vscode` package is an experimental local VS Code
+adapter over the shared Assura CLI JSON contracts. It is not a marketplace
+release, does not start a hosted service, and does not apply fixes implicitly.
+
 ## Installable Archives
 
 Release automation builds these archives:

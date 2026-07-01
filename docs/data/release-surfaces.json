@@ -95,8 +95,8 @@
     {
       "id": "vscode-extension",
       "label": "VS Code extension",
-      "status": "roadmap",
-      "first_release": "future",
+      "status": "experimental",
+      "first_release": "next",
       "detail_path": "docs/goals/assura-vscode-daemon-integration.md"
     },
     {

@@ -78,6 +78,12 @@ publishes and verifies a `.sha256` file next to every archive.
 | `assura info` | Experimental diagnostic | CLI exists, but text output is not an automation contract. |
 | `assura watch` | Experimental | CLI exists, but release-grade watch behavior is not claimed. |
 
+## Editor Adapter Compatibility
+
+| Surface | Status | Evidence |
+| --- | --- | --- |
+| `integrations/editors/vscode` | Experimental VS Code adapter | Package tests prove daemon command construction, one-shot check fallback, safe-fix preview-only command construction, status summaries, and diagnostic mapping over shared Assura CLI JSON contracts. |
+
 ## Config Compatibility
 
 | Surface | Status | Evidence |

@@ -65,3 +65,9 @@ git diff --check
 Block if the extension hides daemon failure, applies fixes implicitly, bypasses
 shared CLI/client contracts, or claims support for Zed/JetBrains before those
 follow-up goals exist.
+
+## Progress Log
+
+| Date | Update | Evidence |
+| --- | --- | --- |
+| 2026-07-01 | Started Epic 9 with the first experimental VS Code extension package under `integrations/editors/vscode/`. The package contributes diagnostics, daemon status/lifecycle/doctor/logs, and safe-fix preview commands over shared Assura CLI JSON contracts; support docs classify it as experimental and not marketplace-ready. Independent review Leibniz found a high-risk non-zero JSON handling gap, which was fixed by parsing stdout JSON before rejecting process errors and adding regression tests for blocking diagnostics/remediation payloads. | `integrations/editors/vscode/package.json`; `integrations/editors/vscode/src/assura-client.js`; `integrations/editors/vscode/src/extension.js`; `integrations/editors/vscode/tests/assura-client.test.js`; `.assura/config.yml`; `docs/support-policy.md`; `docs/compatibility-and-surface.md`; `docs/data/release-surfaces.json`; `docs/release-notes.md`; independent review Leibniz; `pnpm test`; `pnpm run build`; `cargo run --quiet -- check --format json .`; `cargo xtask target-state`; `cargo xtask evidence`; `cargo xtask docs`; `git diff --check`. |
