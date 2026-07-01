@@ -325,6 +325,48 @@ fn agent_nudge_session_start_is_compact_and_cache_stable() {
 }
 
 #[test]
+fn agent_nudge_accepts_beta_agent_labels_and_events_without_private_validation_paths() {
+    let project = nudge_fixture();
+    let path = project.path().to_str().expect("fixture path");
+
+    for agent in ["codex", "opencode", "claude", "pi"] {
+        for event in ["session-start", "before-tool", "after-tool"] {
+            let mut args = vec!["nudge", path, "--event", event, "--agent", agent];
+            if event != "session-start" {
+                args.extend_from_slice(&["--changed", "src/BadName.rs"]);
+            }
+            let nudge = agent_json(&args);
+
+            assert_eq!(nudge["schema"], "assura.agent-nudge.v1");
+            assert_eq!(nudge["target_agent"], agent);
+            assert_eq!(
+                nudge["event"],
+                match event {
+                    "session-start" => "session_start",
+                    "before-tool" => "before_tool",
+                    "after-tool" => "after_tool",
+                    _ => unreachable!(),
+                }
+            );
+            assert_eq!(nudge["cache_policy"]["stable_by_default"], true);
+
+            let suggested_command = nudge["summary"]["suggested_command"]
+                .as_str()
+                .expect("suggested command");
+            assert!(suggested_command.contains("assura check --format agent"));
+            if agent == "codex" {
+                assert!(suggested_command.contains("--agent codex"));
+            } else {
+                assert!(
+                    !suggested_command.contains("--agent "),
+                    "{agent} should label the nudge payload without creating a private check adapter"
+                );
+            }
+        }
+    }
+}
+
+#[test]
 fn agent_nudge_after_tool_reports_bounded_changed_path_findings() {
     let project = nudge_fixture();
     let path = project.path().to_str().expect("fixture path");

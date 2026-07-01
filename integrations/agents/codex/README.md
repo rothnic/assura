@@ -143,6 +143,33 @@ If a project already has `UserPromptSubmit` hooks, append the command to the
 existing hook list instead of replacing the file. This package intentionally
 does not edit `.codex/hooks.json` for you.
 
+## Event-Aware Nudges
+
+Codex wrappers that can observe tool events should use the shared nudge payload
+instead of injecting a full project check on every turn:
+
+```bash
+assura agent nudge --event session-start --agent codex .
+assura agent nudge --event before-tool --agent codex --changed docs/guide.md .
+assura agent nudge --event after-tool --agent codex --changed docs/guide.md .
+```
+
+`session-start` output is cache-stable by default and should be injected only
+when `summary.should_inject` is true. Before/after tool nudges should pass only
+paths relevant to the current operation and should keep `--max-issues` small.
+When a nudge asks for detail, run the stable Codex delivery command:
+
+```bash
+assura check --format agent --agent codex . --warn --min-severity medium --max-issues 5
+```
+
+For daemon recovery, prefer machine-readable diagnostics:
+
+```bash
+assura daemon status --format json .
+assura daemon doctor --format json .
+```
+
 ## Measurement Model
 
 Use `compareEvaluationRuns` to compare:
