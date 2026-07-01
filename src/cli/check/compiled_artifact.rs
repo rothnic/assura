@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-const COMPILED_CONFIG_SCHEMA_VERSION: u32 = 17;
+const COMPILED_CONFIG_SCHEMA_VERSION: u32 = 18;
 const ASSURA_VERSION_HASH: u64 = stable_hash_const(env!("CARGO_PKG_VERSION").as_bytes());
 
 /// Portable artifact containing a parsed Assura structure config.
@@ -445,6 +445,7 @@ impl From<MarkdownBundle> for PortableMarkdownBundle {
             required_sections: bundle.required_sections,
             outline: bundle.outline,
             lint_trailing_spaces: bundle.lint_trailing_spaces,
+            lint_common: bundle.lint_common,
             rules: bundle.rules,
         }
     }
@@ -460,6 +461,7 @@ impl From<PortableMarkdownBundle> for MarkdownBundle {
             required_sections: bundle.required_sections,
             outline: bundle.outline,
             lint_trailing_spaces: bundle.lint_trailing_spaces,
+            lint_common: bundle.lint_common,
             rules: bundle.rules,
         }
     }

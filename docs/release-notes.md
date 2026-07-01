@@ -93,6 +93,20 @@ branch surfaces are advertised as installable release artifacts.
 - Exclusion patterns for generated directories and local build output.
 - Text, JSON, YAML, and agent output formats.
 
+### Markdown Validation
+
+- `markdown.lint_common` is an experimental Rust-native common lint bundle for
+  skipped heading levels, malformed heading marker spacing, duplicate headings,
+  and multiple consecutive blank lines.
+- `markdown.check_links` is experimental local validation for relative
+  Markdown file links, heading anchors, line anchors, and unrendered local file
+  references.
+- Markdown lint findings use stable `markdown_*` rule IDs and can use
+  `markdown.rules.<rule_id>.severity` plus reasoned `assura-ignore`
+  suppressions.
+- Broad third-party markdownlint-compatible coverage remains future work until
+  Assura has an MSRV-compatible dependency or external-binary contract.
+
 ### LS-Lint Migration
 
 - Supported LS-Lint 2.3 naming and ignore patterns migrate through

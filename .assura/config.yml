@@ -462,6 +462,8 @@ extensions:
           status: experimental
         - surface: "command:assura performance-report"
           status: supported
+        - surface: "config:markdown.lint_common"
+          status: experimental
         - surface: "command:assura quality plan"
           status: supported
         - surface: "command:assura hooks"

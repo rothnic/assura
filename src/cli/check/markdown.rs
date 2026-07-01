@@ -1,5 +1,6 @@
 //! Markdown-specific validators for structure-first checks.
 
+mod common_lint;
 mod links;
 mod outline;
 pub(super) mod suppression;
@@ -7,6 +8,7 @@ pub(super) mod suppression;
 use super::rules::{display_rel, parse_frontmatter};
 use super::{StructureCheckReport, StructureChecker};
 use crate::config::config::MarkdownBundle;
+use common_lint::validate_markdown_common_lints;
 use outline::validate_markdown_outline;
 use std::collections::HashSet;
 use std::path::Path;
@@ -29,6 +31,7 @@ impl StructureChecker {
         self.validate_markdown_required_sections(rel, markdown, content, &mut suppressions, report);
         validate_markdown_outline(self, rel, markdown, content, &mut suppressions, report);
         self.validate_markdown_trailing_spaces(rel, markdown, content, &mut suppressions, report);
+        validate_markdown_common_lints(self, rel, markdown, content, &mut suppressions, report);
         self.validate_markdown_links(rel, markdown, content, &mut suppressions, report);
     }
 
@@ -251,10 +254,29 @@ pub(super) struct MarkdownHeading<'a> {
 
 pub(super) fn markdown_headings(content: &str) -> Vec<MarkdownHeading<'_>> {
     let mut headings = Vec::new();
+    let mut in_frontmatter = false;
+    let mut frontmatter_checked = false;
     let mut in_fence = false;
 
     for (line_index, line) in content.lines().enumerate() {
         let trimmed = line.trim_start();
+        if line_index == 0 && matches!(trimmed.trim(), "---" | "+++") {
+            in_frontmatter = true;
+            frontmatter_checked = true;
+            continue;
+        }
+
+        if in_frontmatter {
+            if matches!(trimmed.trim(), "---" | "+++") {
+                in_frontmatter = false;
+            }
+            continue;
+        }
+
+        if !frontmatter_checked {
+            frontmatter_checked = true;
+        }
+
         if is_fence_start(trimmed) {
             in_fence = !in_fence;
             continue;

@@ -69,6 +69,12 @@ publishes and verifies a `.sha256` file next to every archive.
 | `assura info` | Experimental diagnostic | CLI exists, but text output is not an automation contract. |
 | `assura watch` | Experimental | CLI exists, but release-grade watch behavior is not claimed. |
 
+## Config Compatibility
+
+| Surface | Status | Evidence |
+| --- | --- | --- |
+| `config:markdown.lint_common` | Experimental | Common-lint CLI tests prove stable findings for heading increments, heading marker spacing, duplicate headings, multiple blank lines, suppressions, and severity overrides. |
+
 ## Project Intelligence Layout Compatibility
 
 `.assura/models/**` is the supported project-intelligence model artifact layout
@@ -169,6 +175,8 @@ extensions:
           status: supported
         - surface: "rust:intelligence"
           status: internal
+        - surface: "config:markdown.lint_common"
+          status: experimental
         - surface: "package:assura"
           status: supported
         - surface: "binary:assura"

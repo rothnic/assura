@@ -41,6 +41,10 @@ pub struct MarkdownBundle {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub lint_trailing_spaces: Option<bool>,
 
+    /// Whether to run common Rust-native Markdown lint checks.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub lint_common: Option<bool>,
+
     /// Per-rule configuration for Markdown findings.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub rules: Option<HashMap<String, MarkdownRuleConfig>>,
@@ -167,6 +171,7 @@ impl MarkdownBundle {
             required_sections: None,
             outline: None,
             lint_trailing_spaces: None,
+            lint_common: None,
             rules: None,
         }
     }
@@ -212,6 +217,12 @@ impl MarkdownBundle {
     /// Set blank-line trailing whitespace linting.
     pub fn with_lint_trailing_spaces(mut self, lint: bool) -> Self {
         self.lint_trailing_spaces = Some(lint);
+        self
+    }
+
+    /// Set common Markdown linting.
+    pub fn with_lint_common(mut self, lint: bool) -> Self {
+        self.lint_common = Some(lint);
         self
     }
 
@@ -330,6 +341,10 @@ fn validate_markdown_rule_id(value: &str) -> Result<(), String> {
         | "markdown_required_section"
         | "markdown_outline"
         | "markdown_trailing_spaces"
+        | "markdown_heading_increment"
+        | "markdown_heading_marker_spacing"
+        | "markdown_duplicate_heading"
+        | "markdown_multiple_blank_lines"
         | "markdown_link_format"
         | "markdown_link_target"
         | "markdown_link_heading_anchor"

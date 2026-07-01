@@ -228,6 +228,18 @@ fn corrective_context_for_rule(rule: &str) -> &'static str {
         "markdown_trailing_spaces" => {
             "Run `assura fix markdown --dry-run` to preview safe blank-line trailing-space fixes, then rerun with `--apply` to write them, or disable markdown.lint_trailing_spaces for this scope."
         }
+        "markdown_heading_increment" => {
+            "Promote intermediate headings or demote the skipped heading so heading levels increase one level at a time."
+        }
+        "markdown_heading_marker_spacing" => {
+            "Use exactly one space between the heading marker and heading text, such as `## Heading`."
+        }
+        "markdown_duplicate_heading" => {
+            "Rename one repeated heading so Markdown anchors remain stable and unambiguous."
+        }
+        "markdown_multiple_blank_lines" => {
+            "Collapse consecutive blank lines to a single blank line."
+        }
         "markdown_suppression" => {
             "Use `<!-- assura-ignore <markdown_rule>: <reason> -->` with a supported Markdown rule ID and a non-empty reason."
         }

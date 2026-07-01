@@ -19,8 +19,11 @@ structure:
       docs/:
         markdown:
           check_links: true
+          lint_common: true
           rules:
             markdown_link_target:
+              severity: low
+            markdown_multiple_blank_lines:
               severity: low
 exclude:
   - ".assura/**"
@@ -29,7 +32,7 @@ exclude:
     .unwrap();
     fs::write(
         project.join("docs/note.md"),
-        "# Note\n\n[Missing](missing.md)\n",
+        "# Note\n\n\n[Missing](missing.md)\n",
     )
     .unwrap();
 
@@ -50,7 +53,6 @@ exclude:
     let check = Command::new(env!("CARGO_BIN_EXE_assura-check-compiled"))
         .arg("--compiled-config")
         .arg(&compiled_config)
-        .arg("--quiet")
         .arg(&project)
         .output()
         .unwrap();
@@ -59,6 +61,11 @@ exclude:
         "stdout:\n{}\nstderr:\n{}",
         String::from_utf8_lossy(&check.stdout),
         String::from_utf8_lossy(&check.stderr)
+    );
+    let stdout = String::from_utf8_lossy(&check.stdout);
+    assert!(
+        stdout.contains("markdown_multiple_blank_lines"),
+        "stdout:\n{stdout}"
     );
 }
 

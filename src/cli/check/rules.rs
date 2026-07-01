@@ -273,6 +273,7 @@ pub(super) fn merge_markdown_bundle(
                 .or_else(|| parent.required_sections.clone()),
             outline: child.outline.clone().or_else(|| parent.outline.clone()),
             lint_trailing_spaces: child.lint_trailing_spaces.or(parent.lint_trailing_spaces),
+            lint_common: child.lint_common.or(parent.lint_common),
             rules: merge_markdown_rule_configs(parent.rules.as_ref(), child.rules.as_ref()),
         })),
     }

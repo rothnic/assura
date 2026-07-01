@@ -193,3 +193,20 @@ hyperfine --warmup 5 --runs 30 \
   "target/release/assura check --format json $bench_root/off" \
   "target/release/assura check --format json $bench_root/on"
 ```
+
+## 2026-07-01 Common Lint Slice
+
+Assura added an opt-in `markdown.lint_common` bundle as a bounded Rust-native
+step toward the Markdown Quality goal. The bundle intentionally covers only
+low-risk structural lint checks that fit the existing lightweight scanner:
+
+- `markdown_heading_increment`
+- `markdown_heading_marker_spacing`
+- `markdown_duplicate_heading`
+- `markdown_multiple_blank_lines`
+
+These rules share the existing Markdown severity and reasoned suppression
+contract. They do not claim full markdownlint compatibility and do not replace
+the future `rumdl` or `mkdlint` decision. Before this Markdown epic can close,
+Assura still needs release-mode timing evidence for the current Markdown corpus
+with common lints enabled.

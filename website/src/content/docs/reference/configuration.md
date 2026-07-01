@@ -231,6 +231,7 @@ directories:
 markdown:
   require_frontmatter: true
   lint_trailing_spaces: true
+  lint_common: true
   max_heading_depth: 3
   required_sections:
     - Summary
@@ -249,6 +250,7 @@ markdown:
 | --- | --- |
 | `require_frontmatter` | Requires YAML frontmatter in direct child Markdown files as a generic document-style rule. |
 | `lint_trailing_spaces` | Reports blank Markdown lines that contain spaces or tabs. `assura fix markdown --dry-run --format json` previews this safe whitespace class; `assura fix markdown --apply --format json` writes only this bounded fix class. |
+| `lint_common` | Reports common Rust-native Markdown lint findings for skipped heading levels, malformed heading marker spacing, duplicate headings, and multiple consecutive blank lines. |
 | `max_heading_depth` | Fails when a Markdown heading is deeper than the configured level. |
 | `required_sections` | Requires headings with the configured text. `assura fix markdown --rule required-sections --dry-run --format json` previews deterministic missing-heading insertions; `--apply` appends those headings for configured Markdown scopes. |
 | `outline` | Validates ordered nested headings without requiring users to maintain heading depth numbers. Use `?? ` for optional headings and object form such as `title: "?? Debug Mode"` when a required heading starts with literal question marks. |
