@@ -3,8 +3,8 @@
 use super::rules::display_rel;
 use super::{StructureCheckReport, StructureChecker};
 use crate::config::config::RepositoryReferenceConfig;
-use crate::intelligence::facts::{source_references, SourceReference};
 use crate::markdown_links::is_markdown_file;
+use crate::repository_references::{source_references, SourceReference};
 use glob::Pattern;
 use std::collections::{HashMap, HashSet};
 use std::path::Path;

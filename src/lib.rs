@@ -41,6 +41,7 @@ pub(crate) mod markdown_links;
 ///
 /// This is not a supported maturity detection release surface.
 pub mod maturity;
+pub(crate) mod repository_references;
 #[cfg(feature = "full-cli")]
 /// Internal validation engine APIs used by CLI and compatibility tests. These
 /// exports do not carry a pre-1.0 compatibility guarantee.
