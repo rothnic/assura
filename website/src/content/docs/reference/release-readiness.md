@@ -30,6 +30,7 @@ remote access, hosted services, or editor marketplace packaging.
 | `assura agent` | Supported local project-intelligence command group for coding agents. |
 | `assura content` | Supported local project-intelligence query surface. |
 | `assura content context-pack` | Supported bounded project-intelligence handoff packet. |
+| `assura content references` | Supported repository-reference graph query. |
 | `assura content session` | Supported local JSON-line project-intelligence session. |
 | `assura editor session` | Supported local JSON-line editor protocol with LSP-shaped methods. |
 | `.assura/models/**` | Supported layout for project-intelligence model artifacts stored under `.assura/`. |
@@ -44,7 +45,7 @@ integration tests and release-hardening evidence:
 | --- | --- | --- |
 | `assura.project-intelligence.agent-context.v1` | `assura content agent-context` | Supported local wrapper discovery. |
 | `assura.project-intelligence.agent-query.v1` | `assura agent diagnostics`, `assura content agent-query` | Supported local agent query envelope. |
-| `assura.project-intelligence.context-pack.v1` | `assura agent context-pack`, `assura content context-pack` | Supported bounded handoff packet. |
+| `assura.project-intelligence.context-pack.v1` | `assura agent context-pack`, `assura content context-pack` | Supported bounded handoff packet with diagnostics, search, graph, repository-reference, relation, and safe-fix preview context. |
 | `assura.project-intelligence.session.response.v1` | `assura content session`, `assura agent session` | Supported JSON-line session envelope. |
 | `assura.project-intelligence.editor.response.v1` | `assura editor session` | Supported local editor-session envelope. |
 | `assura.safe-fix.markdown.v1` | `assura fix markdown --dry-run --format json`, `--apply --format json` | Experimental safe-fix preview/apply audit contract. |

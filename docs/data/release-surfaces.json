@@ -45,7 +45,14 @@
     },
     {
       "id": "repository-reference-facts",
-      "label": "Repository reference facts and checks",
+      "label": "Repository reference facts and queries",
+      "status": "supported",
+      "first_release": "v0.2.0",
+      "detail_path": "docs/goals/assura-supported-document-graph.md"
+    },
+    {
+      "id": "repository-reference-checks",
+      "label": "Repository reference checks",
       "status": "experimental",
       "first_release": "v0.2.0",
       "detail_path": "docs/goals/assura-code-doc-reference-validation.md"

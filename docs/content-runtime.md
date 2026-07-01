@@ -91,6 +91,44 @@ reference fields, `many: true` expects an array of target IDs, and
 - Diagnostics carry source path, object type, field, and referenced object when
   that context is available.
 
+## Supported Document Graph Contract
+
+The supported document graph is the local, deterministic layer built from
+checked repository files. It combines:
+
+- modeled content instances from `collections`;
+- configured relation edges from `relations`;
+- Markdown section facts and keyword-search chunks;
+- validation diagnostics from structure, Markdown, and content runtime checks;
+- safe-fix preview facts where Assura can propose deterministic local edits;
+- repository-reference edges from Markdown links, comments, docstrings, and
+  simple string-literal path references.
+
+The supported query path is:
+
+```bash
+assura check --format json .
+assura content collections . --format json
+assura content show <collection> <id> . --format json
+assura content search "query text" . --format json
+assura content missing-relations . --format json
+assura content references . --target docs/guide.md --format json
+assura content references . --source docs/guide.md --format json
+assura content expand <collection> <id> . --format json
+assura content context-pack . --collection <collection> --id <id> --text "query text" --limit 5 --format json
+```
+
+`assura content references` answers affected-reference questions in both
+directions: inbound references to a target path before moving or deleting it,
+and outbound references from a changed source path. Object-mode context packs
+include bounded `repository_references.inbound` and
+`repository_references.outbound` arrays for the modeled object's path so agents
+can read direct doc/code reference context without running a second query.
+
+Semantic search and code-symbol queries remain optional candidate enrichment.
+They can add useful inspection hints, but they do not decide validation truth
+and are not required for the supported document graph workflow.
+
 ## Fixture And Example Matrix
 
 The checked fixture set is the executable example suite for this feature:
@@ -107,6 +145,8 @@ The checked fixture set is the executable example suite for this feature:
 | Typed update operation and Markdown body preservation | `tests/content_runtime_update.rs` |
 | YAML and JSONL deterministic writes | `tests/content_runtime_adapters.rs` |
 | Generated runtime schema artifact | `tests/fixtures/artifact_modeling_options/authoring_paths/generated_outputs/linkml_profile.runtime.schema.json` |
+| Repository-reference graph facts | `tests/repository_reference_graph_tests.rs` |
+| Bounded context packs with repository-reference context | `tests/project_intelligence_context_pack.rs` |
 
 Use these commands to verify the examples from the repository:
 
@@ -118,6 +158,8 @@ cargo test --test content_runtime_create --quiet
 cargo test --test content_runtime_update --quiet
 cargo test --test content_runtime_adapters --quiet
 cargo test --test content_runtime_references --quiet
+cargo test --test repository_reference_graph_tests --quiet
+cargo test --test project_intelligence_context_pack --quiet
 ```
 
 ## Agent Operation Contract

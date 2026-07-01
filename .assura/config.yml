@@ -459,15 +459,15 @@ extensions:
         - surface: "command:assura content search"
           status: supported
         - surface: "command:assura content semantic-search"
-          status: supported
+          status: experimental
         - surface: "command:assura content symbols"
-          status: supported
+          status: experimental
         - surface: "command:assura content symbol-refs"
-          status: supported
+          status: experimental
         - surface: "command:assura content missing-relations"
           status: supported
         - surface: "command:assura content references"
-          status: experimental
+          status: supported
         - surface: "command:assura content expand"
           status: supported
         - surface: "command:assura daemon"

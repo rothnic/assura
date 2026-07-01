@@ -31,6 +31,7 @@ pub(super) struct ContextPackOutput {
     pub(super) diagnostics: Vec<DiagnosticOutput>,
     pub(super) instance: Option<InstanceOutput>,
     pub(super) related: Option<ExpandOutput>,
+    pub(super) repository_references: Option<RepositoryReferenceContextOutput>,
     pub(super) search: Option<SearchOutput>,
     pub(super) missing_relations: Vec<RelationOutput>,
     pub(super) safe_fixes: Vec<SafeFixOutput>,
@@ -157,6 +158,14 @@ pub(super) struct RepositoryReferenceOutput {
     pub(super) reference_kind: String,
     pub(super) rule: String,
     pub(super) confidence: String,
+}
+
+#[derive(Debug, Serialize)]
+pub(super) struct RepositoryReferenceContextOutput {
+    #[serde(serialize_with = "serialize_path")]
+    pub(super) path: PathBuf,
+    pub(super) inbound: Vec<RepositoryReferenceOutput>,
+    pub(super) outbound: Vec<RepositoryReferenceOutput>,
 }
 
 #[derive(Debug, Serialize)]

@@ -41,10 +41,10 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 Post-Beta Capabilities is active after release `v0.2.0`.
 
 Owning task:
-`.trellis/tasks/07-01-self-config-doc-variance-hardening`.
+`.trellis/tasks/07-01-supported-document-graph`.
 
 Current branch:
-`codex/self-config-doc-variance-hardening`.
+`codex/supported-document-graph`.
 
 Current recommended goal:
 `docs/goals/assura-post-beta-capabilities-program.md`.
@@ -77,8 +77,8 @@ that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 ## Recommended Next Action
 
 Execute `docs/goals/assura-post-beta-capabilities-program.md` goal by goal.
-Start with self-config and documentation variance hardening, then supported
-document graph, unless live evidence justifies a recorded reorder.
+Continue with supported document graph after the merged self-config hardening
+slice, unless live evidence justifies a recorded reorder.
 
 ## Roadmap Rules
 

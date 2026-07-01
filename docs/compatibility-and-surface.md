@@ -56,7 +56,7 @@ publishes and verifies a `.sha256` file next to every archive.
 | `assura content` | Supported first project-intelligence query surface | Content query CLI fixture tests and product docs. |
 | `assura content agent-context` | Supported generic agent context | Agent-context CLI fixture tests; wrappers must reuse this contract instead of creating per-agent query commands. |
 | `assura content agent-query` | Supported generic agent query envelope | Agent-query CLI fixture tests prove diagnostics, graph, search, semantic, and code-symbol queries reuse one wrapper schema. |
-| `assura content context-pack` | Supported bounded project-intelligence context bundle | Context-pack tests prove diagnostics, graph/search context, relation status, and safe-fix preview metadata compose without writes. |
+| `assura content context-pack` | Supported bounded project-intelligence context bundle | Context-pack tests prove diagnostics, graph/search context, repository-reference context, relation status, and safe-fix preview metadata compose without writes. |
 | `assura content session` | Supported local project-intelligence session | Session tests prove repeated JSON-line requests reuse context and reload conservatively after modeled content changes. |
 | `assura content collections` | Supported | Content query CLI fixture tests. |
 | `assura content instances` | Supported | Content query CLI fixture tests. |
@@ -67,7 +67,7 @@ publishes and verifies a `.sha256` file next to every archive.
 | `assura content symbol-refs` | Experimental optional code-symbol query | Code-symbol fixture tests; unresolved provider refs remain queryable. |
 | `assura content missing-relations` | Supported relation query | Content query CLI fixture tests. |
 | `assura content expand` | Supported bounded graph expansion | Content query CLI fixture tests. |
-| `assura content references` | Experimental repository-reference graph query | Content query CLI tests prove bounded inbound references by target path and outbound references by source path. |
+| `assura content references` | Supported repository-reference graph query | Content query CLI tests prove bounded inbound references by target path and outbound references by source path. |
 | `assura daemon` | Experimental local daemon management preview | Daemon CLI tests prove JSON status, start, stop, restart, doctor, logs, health, changed-path, and reference-context contracts over local daemon-ready state and project-local runtime metadata. |
 | `assura daemon status` | Experimental local daemon status preview | Daemon CLI tests prove JSON health, protocol, process metadata, and management command hints. |
 | `assura daemon start` | Experimental local daemon lifecycle preview | Daemon CLI tests prove idempotent JSON runtime metadata start behavior. |
@@ -90,7 +90,7 @@ publishes and verifies a `.sha256` file next to every archive.
 | --- | --- | --- |
 | `config:markdown.lint_common` | Experimental | Common-lint CLI tests prove stable findings for heading increments, heading marker spacing, duplicate headings, multiple blank lines, suppressions, and severity overrides. |
 | `config:extensions.repository_references` | Experimental | Repository-reference check tests prove opt-in source/comment/docstring diagnostics for missing targets, missing Markdown anchors, and invalid line anchors. |
-| `project-intelligence:repository-reference-facts` | Experimental | Repository-reference graph tests prove Markdown, source-comment, docstring, and string-literal path candidates become bounded `RepositoryReference` edges with confidence labels. |
+| `project-intelligence:repository-reference-facts` | Supported | Repository-reference graph tests prove Markdown, source-comment, docstring, and string-literal path candidates become bounded `RepositoryReference` edges with confidence labels. Object-mode context-pack tests prove those edges are available as bounded inbound/outbound document-graph context. |
 
 ## Project Intelligence Layout Compatibility
 
@@ -101,10 +101,11 @@ while project-relative `schemas/**` artifacts remain valid.
 
 The beta-supported content contract is the modeled collection path: content
 runtime validation, deterministic collection queries, keyword search, relation
-queries, bounded graph expansion, context packs, and local JSON-line sessions.
-Semantic search and code-symbol queries are candidate-enrichment surfaces. They
-can help an agent choose where to inspect next, but they are not validation
-truth and are not required for collection modeling or querying to work.
+queries, repository-reference queries, bounded graph expansion, context packs,
+and local JSON-line sessions. Semantic search and code-symbol queries are
+candidate-enrichment surfaces. They can help an agent choose where to inspect
+next, but they are not validation truth and are not required for collection
+modeling or querying to work.
 
 ## LS-Lint Compatibility
 

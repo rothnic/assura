@@ -47,7 +47,7 @@ pub(super) fn repository_references(
     }
 }
 
-fn reference_output(edge: &RepositoryReferenceEdge) -> RepositoryReferenceOutput {
+pub(super) fn reference_output(edge: &RepositoryReferenceEdge) -> RepositoryReferenceOutput {
     RepositoryReferenceOutput {
         id: edge.id.to_string(),
         source_path: edge.source_path.clone(),

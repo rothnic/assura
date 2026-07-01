@@ -141,9 +141,10 @@ branch surfaces are advertised as installable release artifacts.
   supported local coding-agent entrypoint. They reuse the same content-query
   contracts and do not require MCP, remote access, or a daemon.
 - `assura content agent-context`, `collections`, `instances`, `show`,
-  `agent-query`, `search`, `missing-relations`, and `expand` provide the
-  supported modeled collection, keyword, relation, and bounded graph query
-  surface over the local project-intelligence fact model.
+  `agent-query`, `context-pack`, `search`, `missing-relations`, `references`,
+  and `expand` provide the supported modeled collection, keyword, relation,
+  repository-reference, bounded context-pack, and bounded graph query surface
+  over the local project-intelligence fact model.
 - `assura content agent-context` emits the shared generic
   `assura.project-intelligence.agent-context.v1` schema for wrappers that need
   to discover diagnostics, safe-fix, graph/search, semantic, and code-symbol
@@ -152,6 +153,12 @@ branch surfaces are advertised as installable release artifacts.
   `assura.project-intelligence.agent-query.v1`, a shared request/response
   envelope for diagnostics, graph expansion, keyword search, semantic
   candidates, code-symbol relationships, and safe-fix fact summaries.
+- `assura content references --target <path> --format json` reports inbound
+  repository references before moving or deleting a path, and
+  `--source <path>` reports outbound references from a changed source path.
+- Object-mode `assura content context-pack --collection <name> --id <id>
+  --format json` includes bounded `repository_references.inbound` and
+  `repository_references.outbound` arrays for the modeled object's path.
 - Keyword search is deterministic local text matching over indexed chunks and
   returns lexical scores for ranking. These scores do not decide validation
   correctness.
