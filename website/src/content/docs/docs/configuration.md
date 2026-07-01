@@ -110,6 +110,19 @@ Set `check_links: true` to validate local relative Markdown links to files,
 Markdown heading anchors, and GitHub-style line or line-range anchors such as
 `#L12` and `#L12-L34`.
 
+Use `rule_severity` to override supported Markdown rule severity by rule ID:
+
+```yaml
+markdown:
+  check_links: true
+  rule_severity:
+    markdown_link_target: low
+```
+
+Use `<!-- assura-ignore <markdown_rule>: <reason> -->` inside a Markdown file
+for intentional exceptions. Suppressions without a supported rule ID and
+non-empty reason are reported as `markdown_suppression`.
+
 `outline` uses nested YAML lists to describe required heading order. Prefix a
 heading with `?? ` to make it optional, and use object form when a required
 heading starts with literal question marks:

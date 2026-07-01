@@ -1,6 +1,8 @@
 //! Markdown-authored local link validation.
 
-use super::{is_fence_start, markdown_headings};
+use super::{
+    is_fence_start, markdown_headings, markdown_severity, suppression::MarkdownSuppressions,
+};
 use crate::cli::check::rules::display_rel;
 use crate::cli::check::{StructureCheckReport, StructureChecker};
 use crate::config::config::MarkdownBundle;
@@ -13,6 +15,7 @@ impl StructureChecker {
         rel: &Path,
         markdown: &MarkdownBundle,
         content: &str,
+        suppressions: &mut MarkdownSuppressions,
         report: &mut StructureCheckReport,
     ) {
         if markdown.check_links != Some(true) {
@@ -21,33 +24,41 @@ impl StructureChecker {
 
         for link in markdown_links(content) {
             let Some(target) = parse_markdown_link_target(rel, &link.target) else {
+                let rule = "markdown_link_format";
+                if suppressions.suppresses(rule, link.line_number) {
+                    continue;
+                }
                 self.push_violation(
                     report,
                     rel.to_path_buf(),
-                    "markdown_link_format",
+                    rule,
                     format!(
                         "Markdown file '{}' has non-relative internal link '{}' on line {}; use a relative Markdown link",
                         display_rel(rel),
                         link.target,
                         link.line_number
                     ),
-                    "medium",
+                    markdown_severity(markdown, rule, "medium"),
                 );
                 continue;
             };
             let target_path = self.project_root.join(&target.path);
             if !target_path.is_file() {
+                let rule = "markdown_link_target";
+                if suppressions.suppresses(rule, link.line_number) {
+                    continue;
+                }
                 self.push_violation(
                     report,
                     rel.to_path_buf(),
-                    "markdown_link_target",
+                    rule,
                     format!(
                         "Markdown file '{}' links to missing local target '{}' on line {}",
                         display_rel(rel),
                         display_rel(&target.path),
                         link.line_number
                     ),
-                    "medium",
+                    markdown_severity(markdown, rule, "medium"),
                 );
                 continue;
             }
@@ -58,10 +69,14 @@ impl StructureChecker {
                 if let Some((start, end)) = parse_line_anchor(anchor) {
                     let line_count = target_content.lines().count();
                     if start == 0 || start > line_count || end < start || end > line_count {
+                        let rule = "markdown_link_line_anchor";
+                        if suppressions.suppresses(rule, link.line_number) {
+                            continue;
+                        }
                         self.push_violation(
                             report,
                             rel.to_path_buf(),
-                            "markdown_link_line_anchor",
+                            rule,
                             format!(
                                 "Markdown file '{}' links to invalid line anchor '#{}' in '{}' on line {}; target has {} line(s)",
                                 display_rel(rel),
@@ -70,16 +85,20 @@ impl StructureChecker {
                                 link.line_number,
                                 line_count
                             ),
-                            "medium",
+                            markdown_severity(markdown, rule, "medium"),
                         );
                     }
                 } else if is_markdown_file(&target.path) {
                     let slugs = github_heading_slugs(&target_content);
                     if !slugs.contains(anchor) {
+                        let rule = "markdown_link_heading_anchor";
+                        if suppressions.suppresses(rule, link.line_number) {
+                            continue;
+                        }
                         self.push_violation(
                             report,
                             rel.to_path_buf(),
-                            "markdown_link_heading_anchor",
+                            rule,
                             format!(
                                 "Markdown file '{}' links to missing heading anchor '#{}' in '{}' on line {}",
                                 display_rel(rel),
@@ -87,7 +106,7 @@ impl StructureChecker {
                                 display_rel(&target.path),
                                 link.line_number
                             ),
-                            "medium",
+                            markdown_severity(markdown, rule, "medium"),
                         );
                     }
                 }

@@ -240,6 +240,8 @@ markdown:
     - Quick Start:
         - Installation
         - ?? Configuration
+  rule_severity:
+    markdown_link_target: low
 ```
 
 | Field | Behavior |
@@ -250,10 +252,20 @@ markdown:
 | `required_sections` | Requires headings with the configured text. |
 | `outline` | Validates ordered nested headings without requiring users to maintain heading depth numbers. Use `?? ` for optional headings and object form such as `title: "?? Debug Mode"` when a required heading starts with literal question marks. |
 | `check_links` | Validates local relative Markdown links to files, Markdown heading anchors, and GitHub-style line or line-range anchors such as `#L12` and `#L12-L34`. Remote URLs and same-file `#heading` links are ignored by this local check. |
+| `rule_severity` | Maps supported `markdown_*` rule IDs to `low`, `medium`, `high`, or `critical`. `low` findings are advisory; the other severities are blocking. |
 
 Use `models`, `collections`, and `relations` for typed Markdown frontmatter
 fields. `markdown.required_fields` is rejected in Assura-authored config so
 frontmatter field ownership stays in one content model path.
+
+Use a reasoned suppression comment for intentional exceptions:
+
+```markdown
+<!-- assura-ignore markdown_link_target: generated fixture points at future docs -->
+```
+
+Suppressions must name a supported Markdown rule ID and include a non-empty
+reason. Invalid suppressions are reported as `markdown_suppression`.
 
 ## Relationships
 

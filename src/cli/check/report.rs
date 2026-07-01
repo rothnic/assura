@@ -228,6 +228,9 @@ fn corrective_context_for_rule(rule: &str) -> &'static str {
         "markdown_trailing_spaces" => {
             "Run `assura fix markdown --dry-run` to preview safe blank-line trailing-space fixes, then rerun with `--apply` to write them, or disable markdown.lint_trailing_spaces for this scope."
         }
+        "markdown_suppression" => {
+            "Use `<!-- assura-ignore <markdown_rule>: <reason> -->` with a supported Markdown rule ID and a non-empty reason."
+        }
         "markdown_link_format" => {
             "Rewrite the reference as a relative Markdown link so GitHub can render it in branches, forks, and pull requests."
         }

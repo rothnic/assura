@@ -30,6 +30,13 @@
       "detail_path": "docs/goals/assura-markdown-lint-link-reference-engine.md"
     },
     {
+      "id": "markdown-rule-severity-suppression",
+      "label": "Markdown rule severity and suppressions",
+      "status": "experimental",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-markdown-lint-link-reference-engine.md"
+    },
+    {
       "id": "structure-validation-cli",
       "label": "Structure validation CLI",
       "status": "supported",

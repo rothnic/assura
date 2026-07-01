@@ -14,6 +14,8 @@ shape while typed frontmatter fields stay in content models.
 | `markdown.outline` | Shipped | Assura-owned heading hierarchy with required and optional nested headings. |
 | `markdown.lint_trailing_spaces` | Experimental | Rust-native lint for blank Markdown lines containing spaces or tabs. |
 | `markdown.check_links` | Experimental | Local validation for relative file links, Markdown heading anchors, and GitHub-style line/range anchors. |
+| `markdown.rule_severity` | Experimental | Per-rule severity overrides for supported Markdown findings. |
+| `assura-ignore` comments | Experimental | Reasoned suppressions for supported Markdown rule IDs. |
 | `assura fix markdown` | Experimental | Safe fix command for deterministic blank-line trailing whitespace with preview and explicit `--apply` audit JSON. |
 | Typed frontmatter fields | Shipped | Content runtime `models` and `collections`, not generic Markdown rules. |
 | Broad markdownlint-compatible rules | Planned | Revisit when Assura has a compatible dependency or external-binary contract. |
@@ -49,6 +51,21 @@ The check is local and offline. It reports missing files, missing Markdown
 heading anchors, invalid line anchors, invalid line ranges, and root-absolute
 internal links that should be relative for GitHub rendering in branches, forks,
 and pull requests.
+
+## Severity And Suppression
+
+Markdown scopes can lower or raise supported rule severities:
+
+```yaml
+markdown:
+  check_links: true
+  rule_severity:
+    markdown_link_target: low
+```
+
+Use `<!-- assura-ignore <markdown_rule>: <reason> -->` for intentional local
+exceptions. The rule ID must be supported and the reason must be non-empty;
+otherwise Assura reports `markdown_suppression`.
 
 See [Configuration](/docs/configuration/) for Markdown fields and
 [Content Models](/product/content-models/) for typed frontmatter validation.

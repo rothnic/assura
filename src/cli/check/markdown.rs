@@ -2,6 +2,7 @@
 
 mod links;
 mod outline;
+pub(super) mod suppression;
 
 use super::rules::{display_rel, parse_frontmatter};
 use super::{StructureCheckReport, StructureChecker};
@@ -9,6 +10,7 @@ use crate::config::config::MarkdownBundle;
 use outline::validate_markdown_outline;
 use std::collections::HashSet;
 use std::path::Path;
+use suppression::MarkdownSuppressions;
 
 impl StructureChecker {
     pub(super) fn validate_markdown(
@@ -19,13 +21,37 @@ impl StructureChecker {
         report: &mut StructureCheckReport,
     ) {
         let frontmatter = parse_frontmatter(content);
+        let mut suppressions = MarkdownSuppressions::parse(content);
 
-        self.validate_markdown_frontmatter(rel, markdown, frontmatter, report);
-        self.validate_markdown_heading_depth(rel, markdown, content, report);
-        self.validate_markdown_required_sections(rel, markdown, content, report);
-        validate_markdown_outline(self, rel, markdown, content, report);
-        self.validate_markdown_trailing_spaces(rel, markdown, content, report);
-        self.validate_markdown_links(rel, markdown, content, report);
+        self.validate_markdown_suppression_comments(rel, &suppressions, report);
+        self.validate_markdown_frontmatter(rel, markdown, frontmatter, &mut suppressions, report);
+        self.validate_markdown_heading_depth(rel, markdown, content, &mut suppressions, report);
+        self.validate_markdown_required_sections(rel, markdown, content, &mut suppressions, report);
+        validate_markdown_outline(self, rel, markdown, content, &mut suppressions, report);
+        self.validate_markdown_trailing_spaces(rel, markdown, content, &mut suppressions, report);
+        self.validate_markdown_links(rel, markdown, content, &mut suppressions, report);
+    }
+
+    fn validate_markdown_suppression_comments(
+        &self,
+        rel: &Path,
+        suppressions: &MarkdownSuppressions,
+        report: &mut StructureCheckReport,
+    ) {
+        for invalid in suppressions.invalid() {
+            self.push_violation(
+                report,
+                rel.to_path_buf(),
+                "markdown_suppression",
+                format!(
+                    "Markdown file '{}' has invalid assura-ignore suppression on line {}: {}",
+                    display_rel(rel),
+                    invalid.line_number,
+                    invalid.reason
+                ),
+                "medium",
+            );
+        }
     }
 
     fn validate_markdown_frontmatter(
@@ -33,18 +59,23 @@ impl StructureChecker {
         rel: &Path,
         markdown: &MarkdownBundle,
         frontmatter: Option<&str>,
+        suppressions: &mut MarkdownSuppressions,
         report: &mut StructureCheckReport,
     ) {
-        if markdown.require_frontmatter == Some(true) && frontmatter.is_none() {
+        let rule = "markdown_frontmatter";
+        if markdown.require_frontmatter == Some(true)
+            && frontmatter.is_none()
+            && !suppressions.suppresses(rule, 1)
+        {
             self.push_violation(
                 report,
                 rel.to_path_buf(),
-                "markdown_frontmatter",
+                rule,
                 format!(
                     "Markdown file '{}' is missing YAML frontmatter",
                     display_rel(rel)
                 ),
-                "medium",
+                markdown_severity(markdown, rule, "medium"),
             );
         }
     }
@@ -54,22 +85,27 @@ impl StructureChecker {
         rel: &Path,
         markdown: &MarkdownBundle,
         content: &str,
+        suppressions: &mut MarkdownSuppressions,
         report: &mut StructureCheckReport,
     ) {
+        let rule = "markdown_heading_depth";
         if let Some(max_depth) = markdown.max_heading_depth {
             for heading in markdown_headings(content) {
                 if heading.depth > usize::from(max_depth) {
+                    if suppressions.suppresses(rule, heading.line_number) {
+                        continue;
+                    }
                     self.push_violation(
                         report,
                         rel.to_path_buf(),
-                        "markdown_heading_depth",
+                        rule,
                         format!(
                             "Markdown file '{}' has heading depth {}, exceeding limit {}",
                             display_rel(rel),
                             heading.depth,
                             max_depth
                         ),
-                        "medium",
+                        markdown_severity(markdown, rule, "medium"),
                     );
                     break;
                 }
@@ -82,9 +118,12 @@ impl StructureChecker {
         rel: &Path,
         markdown: &MarkdownBundle,
         content: &str,
+        suppressions: &mut MarkdownSuppressions,
         report: &mut StructureCheckReport,
     ) {
+        let rule = "markdown_required_section";
         if let Some(required_sections) = &markdown.required_sections {
+            let finding_line = content.lines().count().saturating_add(1);
             let mut headings = HashSet::new();
             for heading in markdown_headings(content) {
                 headings.insert(heading.text);
@@ -92,16 +131,19 @@ impl StructureChecker {
 
             for section in required_sections {
                 if !headings.contains(section.as_str()) {
+                    if suppressions.suppresses(rule, finding_line) {
+                        continue;
+                    }
                     self.push_violation(
                         report,
                         rel.to_path_buf(),
-                        "markdown_required_section",
+                        rule,
                         format!(
                             "Markdown file '{}' is missing required section '{}'",
                             display_rel(rel),
                             section
                         ),
-                        "medium",
+                        markdown_severity(markdown, rule, "medium"),
                     );
                 }
             }
@@ -113,27 +155,45 @@ impl StructureChecker {
         rel: &Path,
         markdown: &MarkdownBundle,
         content: &str,
+        suppressions: &mut MarkdownSuppressions,
         report: &mut StructureCheckReport,
     ) {
         if markdown.lint_trailing_spaces != Some(true) {
             return;
         }
+        let rule = "markdown_trailing_spaces";
 
         for violation in blank_line_trailing_spaces(content) {
+            if suppressions.suppresses(rule, violation.line_number) {
+                continue;
+            }
             self.push_violation(
                 report,
                 rel.to_path_buf(),
-                "markdown_trailing_spaces",
+                rule,
                 format!(
                     "Markdown file '{}' has {} trailing whitespace character(s) on blank line {}, column 1",
                     display_rel(rel),
                     violation.trailing_count,
                     violation.line_number
                 ),
-                "low",
+                markdown_severity(markdown, rule, "low"),
             );
         }
     }
+}
+
+pub(super) fn markdown_severity<'a>(
+    markdown: &'a MarkdownBundle,
+    rule: &str,
+    default: &'a str,
+) -> &'a str {
+    markdown
+        .rule_severity
+        .as_ref()
+        .and_then(|overrides| overrides.get(rule))
+        .map(String::as_str)
+        .unwrap_or(default)
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

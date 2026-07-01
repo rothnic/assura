@@ -17,6 +17,8 @@ pub(super) struct PortableMarkdownBundle {
     pub(super) outline: Option<Vec<MarkdownOutlineEntry>>,
     /// Whether to lint blank-line trailing spaces.
     pub(super) lint_trailing_spaces: Option<bool>,
+    /// Per-rule severity overrides for Markdown findings.
+    pub(super) rule_severity: Option<std::collections::HashMap<String, String>>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]

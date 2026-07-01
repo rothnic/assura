@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 #[cfg(feature = "full-cli")]
 use validator::Validate;
 
@@ -40,6 +40,10 @@ pub struct MarkdownBundle {
     /// Whether to report blank Markdown lines that contain trailing spaces or tabs.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub lint_trailing_spaces: Option<bool>,
+
+    /// Per-rule severity overrides for Markdown findings.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rule_severity: Option<HashMap<String, String>>,
 }
 
 /// Markdown outline entry accepted by config shorthand and object notation.
@@ -122,6 +126,7 @@ impl MarkdownBundle {
             required_sections: None,
             outline: None,
             lint_trailing_spaces: None,
+            rule_severity: None,
         }
     }
 
@@ -169,9 +174,28 @@ impl MarkdownBundle {
         self
     }
 
+    /// Set per-rule severity overrides.
+    pub fn with_rule_severity(mut self, rule_severity: HashMap<String, String>) -> Self {
+        self.rule_severity = Some(rule_severity);
+        self
+    }
+
     pub(crate) fn validate_outline_semantics(&self, context: &str) -> Result<(), String> {
         if let Some(outline) = &self.outline {
             validate_outline_entries(outline, &format!("{context}.outline"))?;
+        }
+        Ok(())
+    }
+
+    pub(crate) fn validate_rule_severity_semantics(&self, context: &str) -> Result<(), String> {
+        let Some(rule_severity) = &self.rule_severity else {
+            return Ok(());
+        };
+        for (rule, severity) in rule_severity {
+            validate_markdown_rule_id(rule)
+                .map_err(|error| format!("{context}.rule_severity.{rule}: {error}"))?;
+            validate_markdown_severity(severity)
+                .map_err(|error| format!("{context}.rule_severity.{rule}: {error}"))?;
         }
         Ok(())
     }
@@ -224,4 +248,26 @@ fn validate_outline_entries(entries: &[MarkdownOutlineEntry], context: &str) -> 
         validate_outline_entries(view.children, &format!("{entry_context}.children"))?;
     }
     Ok(())
+}
+
+fn validate_markdown_rule_id(value: &str) -> Result<(), String> {
+    match value {
+        "markdown_frontmatter"
+        | "markdown_heading_depth"
+        | "markdown_required_section"
+        | "markdown_outline"
+        | "markdown_trailing_spaces"
+        | "markdown_link_format"
+        | "markdown_link_target"
+        | "markdown_link_heading_anchor"
+        | "markdown_link_line_anchor" => Ok(()),
+        _ => Err("expected a supported markdown_* rule id".to_string()),
+    }
+}
+
+fn validate_markdown_severity(value: &str) -> Result<(), String> {
+    match value {
+        "critical" | "high" | "medium" | "low" => Ok(()),
+        _ => Err("expected one of critical, high, medium, or low".to_string()),
+    }
 }

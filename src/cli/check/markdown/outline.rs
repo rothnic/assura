@@ -2,7 +2,9 @@
 
 use super::super::rules::display_rel;
 use super::super::{StructureCheckReport, StructureChecker};
-use super::{markdown_headings, MarkdownHeading};
+use super::{
+    markdown_headings, markdown_severity, suppression::MarkdownSuppressions, MarkdownHeading,
+};
 use crate::config::config::{MarkdownBundle, MarkdownOutlineEntry, MarkdownOutlineView};
 use regex_lite::Regex;
 use std::path::Path;
@@ -12,20 +14,29 @@ pub(super) fn validate_markdown_outline(
     rel: &Path,
     markdown: &MarkdownBundle,
     content: &str,
+    suppressions: &mut MarkdownSuppressions,
     report: &mut StructureCheckReport,
 ) {
     let Some(outline) = markdown.outline.as_deref() else {
         return;
     };
+    let rule = "markdown_outline";
+    let finding_line = content.lines().count().saturating_add(1);
 
     let headings = markdown_headings(content);
     if let Err(message) = validate_heading_levels(&headings) {
-        push_outline_violation(checker, report, rel, &message);
+        if suppressions.suppresses(rule, finding_line) {
+            return;
+        }
+        push_outline_violation(checker, report, rel, markdown, &message);
         return;
     }
 
     if let Err(message) = validate_outline(outline, &headings) {
-        push_outline_violation(checker, report, rel, &message);
+        if suppressions.suppresses(rule, finding_line) {
+            return;
+        }
+        push_outline_violation(checker, report, rel, markdown, &message);
     }
 }
 
@@ -289,16 +300,18 @@ fn push_outline_violation(
     checker: &StructureChecker,
     report: &mut StructureCheckReport,
     rel: &Path,
+    markdown: &MarkdownBundle,
     detail: &str,
 ) {
+    let rule = "markdown_outline";
     checker.push_violation(
         report,
         rel.to_path_buf(),
-        "markdown_outline",
+        rule,
         format!(
             "Markdown file '{}' failed outline validation: {detail}",
             display_rel(rel)
         ),
-        "medium",
+        markdown_severity(markdown, rule, "medium"),
     );
 }

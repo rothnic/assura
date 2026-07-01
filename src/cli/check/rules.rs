@@ -272,7 +272,27 @@ pub(super) fn merge_markdown_bundle(
                 .or_else(|| parent.required_sections.clone()),
             outline: child.outline.clone().or_else(|| parent.outline.clone()),
             lint_trailing_spaces: child.lint_trailing_spaces.or(parent.lint_trailing_spaces),
+            rule_severity: merge_markdown_rule_severity(
+                parent.rule_severity.as_ref(),
+                child.rule_severity.as_ref(),
+            ),
         })),
+    }
+}
+
+fn merge_markdown_rule_severity(
+    parent: Option<&HashMap<String, String>>,
+    child: Option<&HashMap<String, String>>,
+) -> Option<HashMap<String, String>> {
+    match (parent, child) {
+        (None, None) => None,
+        (Some(parent), None) => Some(parent.clone()),
+        (None, Some(child)) => Some(child.clone()),
+        (Some(parent), Some(child)) => {
+            let mut merged = parent.clone();
+            merged.extend(child.clone());
+            Some(merged)
+        }
     }
 }
 
@@ -444,7 +464,6 @@ mod tests {
     #[test]
     fn prefix_exclusions_match_without_glob_pattern() {
         let patterns = vec![CompiledExclusion::new("dist/**")];
-
         assert!(is_excluded_rel_with(&patterns, Path::new("dist")));
         assert!(is_excluded_rel_with(&patterns, Path::new("dist/app.js")));
         assert!(!is_excluded_rel_with(
@@ -457,7 +476,6 @@ mod tests {
     #[test]
     fn non_prefix_exclusions_still_use_glob_matching() {
         let patterns = vec![CompiledExclusion::new("**/*.tmp")];
-
         assert!(is_excluded_rel_with(&patterns, Path::new("src/cache.tmp")));
         assert!(!is_excluded_rel_with(&patterns, Path::new("src/cache.ts")));
     }
@@ -465,7 +483,6 @@ mod tests {
     #[test]
     fn wildcard_prefix_exclusions_fall_back_to_glob_matching() {
         let patterns = vec![CompiledExclusion::new("build-*/**")];
-
         assert!(is_excluded_rel_with(
             &patterns,
             Path::new("build-app/cache.bin")
