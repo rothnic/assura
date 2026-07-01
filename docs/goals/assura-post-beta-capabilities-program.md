@@ -28,6 +28,10 @@ Drive the next large Assura iteration after `v0.2.0` by resolving the known
 post-beta gaps without reopening the completed beta release. This is the parent
 goal to kick off when the next multi-goal execution cycle should proceed.
 
+This program is still beta-track work. Completion should produce a versioned
+beta increment with stronger supported capabilities; it does not promote Assura
+beyond beta.
+
 ## Program Bar
 
 Post-beta readiness means Assura moves from beta-capable local workflows to
@@ -52,6 +56,8 @@ extended without ambiguity. The program must cover:
 - a clear extension API decision that separates first-party config extensions
   from any future public plugin API;
 - final support and release hardening before any post-beta support claim.
+- a versioned beta increment that honestly describes the new functionality
+  without implying post-beta/GA status.
 
 ## North-Star Use Case
 
@@ -89,7 +95,10 @@ local workflow:
    when the daemon is unavailable.
 8. Apply Markdown fixes through the fastest practical Rust markdownlint-
    compatible engine, with deterministic safe-fix behavior and no Node runtime
-   requirement in the supported path.
+   requirement in the supported path. When self-dogfooding exposes consistent
+   Markdown formatting drift that the selected engine cannot safely fix, Assura
+   should provide small custom fix utilities with focused tests instead of
+   forcing agents to patch the same prose-shape issues manually.
 9. Trust CI to fail if any accepted LS-Lint-equivalent fixture is slower than
    native LS-Lint, with enough attribution to know whether process startup,
    config loading, walking, glob matching, rule evaluation, reporting, or
@@ -102,6 +111,73 @@ fixture or repo package that demonstrates the whole workflow with intentional
 valid and invalid cases. It must prove that a user can discover, validate,
 query, repair, and keep warm a repository knowledge graph without switching
 between unrelated tools or relying on undocumented behavior.
+
+## Final Verification Use Case Package
+
+Create and keep one support-grade verification package for this program. The
+package should be concrete enough that a reviewer can run it and decide whether
+the major increment produced the intended user outcome, not only whether child
+tasks were completed.
+
+The fixture user is a maintainer of a Rust CLI with a documentation system
+similar to Assura's own repository:
+
+- `docs/goals/` stores active and archived product goals with typed
+  frontmatter, owners, status, related ADRs, and expected evidence links.
+- `docs/analysis/` stores design notes, performance reports, and research
+  records that must point back to goals or roadmap entries.
+- `docs/reference/` or generated API docs expose stable anchors that goals and
+  analysis pages may cite.
+- source files and tests include references back to docs, and docs include
+  references to source paths, symbols, fixtures, and benchmark rows.
+- `.assura/config.yml` defines repository shape, coarse file policy,
+  collections, severities, suppressions, agent nudge policy, daemon behavior,
+  Markdown lint/fix scope, and performance fixture gates.
+
+The package must include both valid content and intentional failures:
+
+- a misplaced root or generated file that structure validation catches before
+  deeper linting;
+- a stale allowlist or overly broad exception that should be rejected;
+- a Markdown file with coarse file-policy drift, markdownlint-style drift,
+  heading problems, broken links, and a safe-fixable formatting issue;
+- a content record with invalid frontmatter, missing required fields, invalid
+  relations, and collection-specific severity mapping;
+- a moved document or renamed code path that leaves stale doc/code references;
+- a daemon stale-state case where the daemon must refuse or mark old results
+  stale after config or file changes;
+- an agent workflow where Codex, OpenCode, Claude, and Pi receive concise
+  Assura nudges only when the pending tool call or recent event makes them
+  useful;
+- a VS Code workflow where diagnostics, commands, safe-fix previews, and daemon
+  doctor output match the CLI/daemon truth;
+- accepted LS-Lint-equivalent performance rows that must be faster than
+  LS-Lint or fail the merge gate with actionable attribution.
+
+The end-to-end verification path should prove this user story:
+
+1. A maintainer clones the fixture and runs `assura init` or config refinement.
+2. `assura check` reports findings in staged order: structure, coarse file
+   policy, Markdown internals, content model, references, then optional
+   language or extension checks.
+3. `assura fix markdown --dry-run` previews only deterministic safe fixes, and
+   `--apply` repairs the supported subset without changing semantic content.
+4. `assura content` can validate collections and answer search/query questions
+   about goals, ADRs, code paths, headings, relations, and affected context.
+5. `assura daemon` serves warm state over IPC, detects stale inputs, and returns
+   the same findings and content answers as the one-shot CLI when fresh.
+6. Agent hooks request concise guidance before or after relevant tool events,
+   and the response is small enough to preserve context and cache behavior.
+7. VS Code surfaces the same diagnostics and fix previews over shared
+   contracts, with one-shot fallback when the daemon is unavailable.
+8. CI fails the fixture if supported behavior regresses, accepted LS-Lint rows
+   are slower, docs overclaim support, or the public support matrix disagrees
+   with the implemented contracts.
+
+This package is the final acceptance lens for every child goal. A child goal
+can ship only if it either advances this scenario directly or records why that
+part of the scenario is explicitly deferred and how the parent still reaches a
+versioned beta increment.
 
 ## Major Iterations
 
@@ -149,6 +225,8 @@ between unrelated tools or relying on undocumented behavior.
   valid and invalid repository examples, expected CLI/editor/agent behavior,
   daemon stale-state behavior, safe-fix preview/apply evidence, and performance
   gate evidence.
+- A versioned beta increment is planned or released with docs that accurately
+  describe the new supported and experimental surfaces.
 - CI blocks any accepted LS-Lint-equivalent fixture that is slower than native
   LS-Lint.
 - Independent completion review finds no blocker or high-risk gap.
@@ -215,4 +293,6 @@ readiness.
 
 | Date | Update | Evidence |
 | --- | --- | --- |
-| 2026-07-01 | Created the post-beta parent program after the beta completion audit identified remaining gaps in self-config dogfooding, fully supported document graph, true daemon mode, performance floor attribution, installed agent integrations, markdownlint-compatible Rust lint/fix, VS Code support, extension API clarity, LS-Lint reassessment, and release hardening. | User request; [Assura beta code-agnostic capabilities program](./assura-beta-code-agnostic-capabilities-program.md); `.trellis/spec/assura/roadmap.md`; `.trellis/tasks/07-01-post-beta-followup-roadmap-goals/research/markdown-linter-options.md`. |
+| 2026-07-01 | Created the post-beta parent program after the beta completion audit identified remaining gaps in self-config dogfooding, fully supported document graph, true daemon mode, performance floor attribution, installed agent integrations, markdownlint-compatible Rust lint/fix, VS Code support, extension API clarity, LS-Lint reassessment, and release hardening. | User request; [Assura beta code-agnostic capabilities program](./assura-beta-code-agnostic-capabilities-program.md); `.trellis/spec/assura/roadmap.md`; `.trellis/tasks/archive/2026-07/07-01-post-beta-followup-roadmap-goals/research/markdown-linter-options.md`. |
+| 2026-07-01 | Started execution after PR #113 was merged into `master` as `be4e33e`. The first child goal is self-config and documentation variance hardening because it dogfoods Assura's own coarse structure rules before deeper Markdown/content/reference work. Also clarified that this parent remains beta-track work and should produce a versioned beta increment, not a post-beta/GA claim. | [Self config and documentation variance hardening](./assura-self-config-doc-variance-hardening.md); `.trellis/tasks/07-01-self-config-doc-variance-hardening/prd.md`; `gh pr view 113 --json state,mergedAt,mergeCommit,url`; `git switch -c codex/self-config-doc-variance-hardening origin/master`; `cargo run --quiet -- check --format json .`. |
+| 2026-07-01 | Completed the first child goal locally and prepared it for review/PR integration. The slice refined self-config, removed stale live config snapshots, fixed active-doc trailing-space drift, added the final verification use-case package, updated active roadmap routing, and resolved independent-review findings about stale references. | [Self config and documentation variance hardening](./assura-self-config-doc-variance-hardening.md); `.assura/config.yml`; `.trellis/spec/assura/roadmap.md`; `cargo xtask target-state`; `cargo xtask docs`; `cargo xtask evidence`; review agent `019f1fdd-a0b1-7ec0-bb84-8edf7333561b`. |

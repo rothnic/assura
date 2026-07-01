@@ -924,9 +924,7 @@ structure:
           naming: "kebab-case"
           allowed_names:
             - "command-surface.yml"
-            - "config.new.yml"
             - "config.yml"
-            - "config.yml.v1"
           allow_extra: false
         directories:
           allowed_names:
@@ -1098,6 +1096,7 @@ structure:
           max_lines: 500
         markdown:
           require_frontmatter: true
+          lint_trailing_spaces: true
         directories:
           allowed_names:
             - "analysis"
@@ -1113,12 +1112,14 @@ structure:
               max_lines: 1000
             markdown:
               require_frontmatter: true
+              lint_trailing_spaces: true
           archive/:
             files:
               naming: "kebab-case"
               max_lines: 2000
             markdown:
               require_frontmatter: true
+              lint_trailing_spaces: false
           data/:
             files:
               naming: "kebab-case"
@@ -1133,12 +1134,14 @@ structure:
               max_lines: 1000
             markdown:
               require_frontmatter: true
+              lint_trailing_spaces: true
           proposals/:
             files:
               naming: "kebab-case"
               max_lines: 1000
             markdown:
               require_frontmatter: true
+              lint_trailing_spaces: true
 
       integrations/:
         files:

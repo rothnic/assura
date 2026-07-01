@@ -183,7 +183,7 @@ WalkDir::new(path).into_iter().for_each(|entry| {
 
 All performance claims must be validated against:
 - **Small projects**: 50-100 files
-- **Medium projects**: 500-1,000 files  
+- **Medium projects**: 500-1,000 files
 - **Large projects**: 5,000-10,000 files
 - **Realistic file types**: Not just .txt files
 

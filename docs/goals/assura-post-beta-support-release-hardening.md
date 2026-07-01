@@ -21,6 +21,9 @@ Close the post-beta program with release-grade support classifications,
 compatibility notes, target-state checks, documentation, and evidence for all
 newly supported code-agnostic capabilities.
 
+This remains a beta-track hardening goal. It should prepare a versioned beta
+increment and must not claim GA or post-beta status.
+
 ## Current Gap
 
 The next program spans daemon process support, document graph support,
@@ -40,6 +43,8 @@ their support levels before any beta or post-beta release claim is made.
 - Confirm all child-goal validation evidence is current.
 - Prepare release readiness notes and a rollback/support plan for daemon,
   agent, VS Code, document graph, Markdown, and performance surfaces.
+- Define the version number for the beta increment and ensure release notes
+  describe the increment without implying Assura has exited beta.
 
 ## Non-Goals
 
@@ -54,6 +59,8 @@ their support levels before any beta or post-beta release claim is made.
 - Target-state checks prevent the most likely unsupported claims.
 - All child goals have completion evidence or explicit deferral notes.
 - Release readiness commands pass on a clean branch.
+- A beta version increment is documented with accurate supported,
+  experimental, internal, planned, and unsupported surface wording.
 - Independent review confirms no public overclaim or missing support caveat.
 
 ## Validation Commands
@@ -78,6 +85,6 @@ git diff --check
 ## Reviewer Blocking Criteria
 
 Block if public docs claim unsupported daemon, editor, agent, graph, Markdown,
-or extension behavior; if release evidence is stale; if target-state permits a
-known overclaim; or if a child goal is marked complete without independent
-review.
+extension, or non-beta behavior; if release evidence is stale; if target-state
+permits a known overclaim; or if a child goal is marked complete without
+independent review.

@@ -49,7 +49,7 @@ rules:
   .js: camelCase
   .jsx: PascalCase
   .dir: kebab-case
-  
+
   # Root-level coordination docs (required files)
   README.md:
     exists: true
@@ -57,66 +57,66 @@ rules:
   AGENTS.md:
     exists: true
     message: "Add AGENTS.md for agent guidance"
-  
+
   # Root file whitelist (only these allowed)
   .md:
     naming: kebab-case
     allow: [README.md, AGENTS.md, CHANGELOG.md]
     deny_message: "Move markdown files to docs/"
-  
+
   # Directory-specific rules
   src/:
     # Override for all .ts in src/
     .ts: camelCase
     .tsx: PascalCase
-    
+
     # More specific nested paths
     components/:
       # Override for components
       .tsx: PascalCase
       .ts: PascalCase
-      
+
       # Directive: files must exist
       require:
         files: []
         message: "Components directory structure"
-    
+
     hooks/:
       # Different convention for hooks
       .ts: camelCase
-      
+
       # Directive: max file size
       max_lines: 400
-    
+
     utils/:
       .ts: camelCase
       max_lines: 400
-    
+
     generated/:
       # Relaxed rules for generated code
       .ts:
         naming: [camelCase, PascalCase, snake_case]
         max_lines: 2000
-  
+
   # Package structure enforcement
   packages/*:
     # Wildcard matches any subdirectory
     .dir: kebab-case
-    
+
     # Required files in every package
     require:
       files: [AGENTS.md, README.md, package.json]
       dirs: [src, tests]
       message: "Packages must have documentation and standard structure"
-    
+
     # Package source code
     src/:
       .ts: camelCase
       .tsx: PascalCase
-      
+
       components/:
         .tsx: PascalCase
-  
+
   # Documentation
   docs/:
     .md:
@@ -124,7 +124,7 @@ rules:
       allow: [README.md, AGENTS.md, CHANGELOG.md]
       max_lines: 500
       require_frontmatter: true
-    
+
     templates/:
       .md:
         max_lines: 2000
@@ -135,11 +135,11 @@ groups:
   ts-standard:
     naming: camelCase
     max_lines: 400
-  
+
   ts-component:
     naming: PascalCase
     max_lines: 400
-  
+
   ts-test:
     naming: snake_case
     max_lines: 600
@@ -219,7 +219,7 @@ rules:
 rules:
   packages/*:
     max_lines: 400         # Applies to all files in packages/*
-    
+
     src/:
       # Inherits max_lines: 400 from parent
       .ts: camelCase
@@ -291,7 +291,7 @@ groups:
   ts-defaults:
     naming: camelCase
     max_lines: 400
-  
+
   ts-components:
     naming: PascalCase
     max_lines: 400
@@ -300,7 +300,7 @@ groups:
 rules:
   src/utils/:
     use: ts-defaults        # Applies all rules from group
-  
+
   src/components/:
     use: ts-components
 ```
@@ -321,51 +321,51 @@ rules:
   .tsx: PascalCase
   .test.ts: snake_case
   .test.tsx: snake_case
-  
+
   # Root requirements
   README.md:
     exists: true
   AGENTS.md:
     exists: true
-  
+
   # Root markdown whitelist
   .md:
     naming: kebab-case
     allow: [README.md, AGENTS.md, CHANGELOG.md, LICENSE.md]
-  
+
   # Source code
   src/:
     components/:
       .tsx: PascalCase
       max_lines: 400
-      
+
     hooks/:
       .ts: camelCase
       max_lines: 400
-      
+
     utils/:
       .ts: camelCase
       max_lines: 400
-  
+
   # Package structure
   packages/*:
     require:
       files: [AGENTS.md, README.md, package.json]
       dirs: [src]
-    
+
     src/:
       .ts: camelCase
-      
+
       components/:
         .tsx: PascalCase
-  
+
   # Documentation
   docs/:
     .md:
       naming: kebab-case
       max_lines: 500
       require_frontmatter: true
-    
+
     templates/:
       .md:
         max_lines: 2000

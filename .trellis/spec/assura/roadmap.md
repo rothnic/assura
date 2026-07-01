@@ -41,10 +41,10 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 Post-Beta Capabilities is active after release `v0.2.0`.
 
 Owning task:
-`.trellis/tasks/07-01-post-beta-followup-roadmap-goals`.
+`.trellis/tasks/07-01-self-config-doc-variance-hardening`.
 
 Current branch:
-`codex/post-beta-followup-roadmap-goals`.
+`codex/self-config-doc-variance-hardening`.
 
 Current recommended goal:
 `docs/goals/assura-post-beta-capabilities-program.md`.

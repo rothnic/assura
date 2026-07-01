@@ -31,12 +31,12 @@ project:
 gitignore:
   # Enable reading .gitignore files (default: true)
   enabled: true
-  
+
   # Additional patterns to ignore beyond .gitignore
   additional:
     - "*.tmp"
     - ".assura/execution-state.json"
-  
+
   # Patterns to NOT ignore even if in .gitignore
   exceptions:
     - "*.lock"  # Still validate lock files
@@ -58,7 +58,7 @@ structure:
       naming: snake_case
     # Override global gitignore setting for this directory
     respect_gitignore: false  # Check even ignored files
-  
+
   generated/:
     files:
       naming: kebab-case
@@ -183,7 +183,7 @@ structure:
     files:
       naming: snake_case
       max_lines: 500
-  
+
   dist/:
     # Even though dist/ is gitignored, we want to check built files
     respect_gitignore: false

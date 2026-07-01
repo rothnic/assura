@@ -9,7 +9,7 @@ owners:
 related:
   - ./assura-post-beta-capabilities-program.md
   - ./assura-markdown-lint-link-reference-engine.md
-  - ../../.trellis/tasks/07-01-post-beta-followup-roadmap-goals/research/markdown-linter-options.md
+  - ../../.trellis/tasks/archive/2026-07/07-01-post-beta-followup-roadmap-goals/research/markdown-linter-options.md
 ---
 
 # Assura Markdownlint-Compatible Rust Engine
@@ -50,6 +50,10 @@ Node `markdownlint-cli2` before adopting.
   gate or precede deeper Markdown linting in user-facing output and docs.
 - Evaluate `rumdl` as an embedded library or subprocess adapter, including
   MSRV, license, binary size, dependency, API stability, and performance.
+- Identify common Markdown formatting drift found while dogfooding Assura's
+  own docs. If the selected markdownlint-compatible engine cannot safely fix a
+  repeatable class of drift, implement a narrowly scoped Assura-owned fixer
+  utility with explicit tests instead of leaving agents to repair it manually.
 - Add benchmark fixtures for small docs, large docs, many-file repos, generated
   docs, frontmatter-heavy docs, and link-heavy docs.
 - Integrate chosen lint/fix results into Assura finding IDs, severity overrides,
@@ -75,6 +79,9 @@ Node `markdownlint-cli2` before adopting.
   coarse file policy to deeper Markdown checks.
 - Fixes are deterministic, idempotent, and preserve frontmatter and line endings
   where required.
+- Common Assura-owned fixer utilities, if added, have dedicated valid/invalid
+  fixtures and are documented as opinionated defaults that users can configure
+  or disable.
 - Performance evidence shows the chosen Rust path is no slower than current
   Assura Markdown checks for accepted fixtures and materially faster than
   `markdownlint-cli2` on representative repos.
@@ -99,6 +106,8 @@ git diff --check
 
 Block if the goal skips `rumdl` evaluation, adopts a linter without local
 markdownlint compatibility fixtures, regresses Assura reference checks, applies
-unsafe fixes, or lacks benchmark evidence against current Assura, selected Rust
-candidates, and `markdownlint-cli2`. Also block if docs or output imply
-Markdown linting sits above structure validation.
+unsafe fixes, lacks benchmark evidence against current Assura, selected Rust
+candidates, and `markdownlint-cli2`, or leaves repeatedly observed self-dogfood
+Markdown drift without either a selected-engine fix or a tracked Assura-owned
+fixer test. Also block if docs or output imply Markdown linting sits above
+structure validation.

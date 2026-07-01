@@ -2,7 +2,7 @@
 id: goal-assura-self-config-doc-variance-hardening
 type: goal
 title: Assura self config and documentation variance hardening
-status: planned
+status: completed
 created: 2026-07-01
 owners:
   - assura-maintainers
@@ -41,6 +41,21 @@ reference, or language-specific validation runs.
 - Fix documentation or structure drift found by the revised configuration.
 - Record any intentional variance with bounded suppressions or support docs,
   not silent broad exceptions.
+
+## Contribution To Parent Use Case
+
+This child goal establishes the first layer of the parent verification package.
+The final fixture should be able to prove that Assura checks repository shape,
+root hygiene, generated/runtime boundaries, directory placement, line limits,
+and coarse Markdown scope before deeper Markdown, content-model, reference, or
+language-specific diagnostics run.
+
+For Assura's own repository, this means stale config snapshots, root clutter,
+overly broad allowlists, generated/runtime outputs, and repeatable coarse
+Markdown drift must either be caught, fixed, or intentionally bounded. The work
+should leave concrete evidence that deeper document-graph and Markdown-engine
+goals are building on a clean structure layer instead of compensating for
+unclear repository policy.
 
 ## Non-Goals
 
@@ -85,3 +100,11 @@ Block if the config hides drift through broad allowlists, if validation order
 documentation implies Markdown linting sits above structure, if generated files
 or daemon runtime state can pollute the supported repository shape, or if the
 goal changes many docs without linking the changes to an Assura rule.
+
+## Progress Log
+
+| Date | Update | Evidence |
+| --- | --- | --- |
+| 2026-07-01 | Revalidated this goal as the first child of the post-beta capabilities parent after PR #113 merged. Started from a clean self-check, removed stale live `.assura` config snapshots from the allowed root shape, enabled active-docs trailing-space linting, applied the existing safe Markdown fixer to active docs, and preserved archives outside the first enforcement scope. | `cargo run --quiet -- check --format json .`; `cargo run --quiet -- fix markdown --rule trailing-spaces --apply --format json .`; `.assura/config.yml`; `docs/proposals/gitignore-integration.md`; `docs/unified-tree-design.md`. |
+| 2026-07-01 | Completed the focused validation gate for this slice. Self-check remained clean, active-doc Markdown safe-fix dry-run reported zero remaining fixes, Trellis context validated, docs and evidence gates passed, and the focused Markdown fixer/lint tests passed. | `cargo run --quiet -- check --format json .`; `cargo run --quiet -- fix markdown --rule trailing-spaces --dry-run --format json .`; `python3 ./.trellis/scripts/task.py validate 07-01-self-config-doc-variance-hardening`; `git diff --check`; `cargo xtask target-state`; `cargo xtask docs`; `cargo xtask evidence`; `cargo test --test markdown_lint_fix_tests --quiet`; `cargo test --test markdown_common_lint_tests --quiet`. |
+| 2026-07-01 | Independent review found no config hierarchy blocker, but flagged stale references to the archived planning task and removed legacy config snapshot. Updated roadmap routing to the current task/branch, moved historical research references to the archived task path, and rewrote active analysis notes so they do not imply the removed snapshot is a live file. | Review agent `019f1fdd-a0b1-7ec0-bb84-8edf7333561b`; `.trellis/spec/assura/roadmap.md`; [Markdownlint-compatible Rust engine](./assura-markdownlint-compatible-rust-engine.md); [Post-beta capabilities program](./assura-post-beta-capabilities-program.md); `docs/analysis/2026-05-09-project-assessment-and-alignment.md`; `rg -n "07-01-post-beta-followup-roadmap-goals|codex/post-beta-followup-roadmap-goals|config\\.new\\.yml|config\\.yml\\.v1" .assura docs .trellis/spec .trellis/tasks/07-01-self-config-doc-variance-hardening`. |
