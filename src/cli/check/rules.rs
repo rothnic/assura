@@ -21,6 +21,7 @@ pub(super) struct EffectiveRules {
 
 #[derive(Debug, Clone)]
 pub(super) struct CompiledExclusion {
+    exact: Option<PathBuf>,
     prefix: Option<PathBuf>,
     scope_pattern: Option<CompiledScopePattern>,
     pattern: Option<Pattern>,
@@ -29,18 +30,25 @@ pub(super) struct CompiledExclusion {
 impl CompiledExclusion {
     pub(super) fn new(pattern: &str) -> Self {
         let prefix = literal_descendant_prefix(pattern);
-        let scope_pattern = (prefix.is_none() && path_has_scope_magic(Path::new(pattern)))
-            .then(|| CompiledScopePattern::from_str(pattern));
-        let compiled_pattern = if prefix.is_some() {
+        let exact = (prefix.is_none() && !has_glob_magic(pattern)).then(|| PathBuf::from(pattern));
+        let scope_pattern =
+            (prefix.is_none() && exact.is_none() && path_has_scope_magic(Path::new(pattern)))
+                .then(|| CompiledScopePattern::from_str(pattern));
+        let compiled_pattern = if prefix.is_some() || exact.is_some() {
             None
         } else {
             Pattern::new(pattern).ok()
         };
         Self {
+            exact,
             prefix,
             scope_pattern,
             pattern: compiled_pattern,
         }
+    }
+
+    fn matches_exact(&self, rel: &Path) -> bool {
+        self.exact.as_ref().is_some_and(|exact| rel == exact)
     }
 
     fn matches_prefix(&self, rel: &Path) -> bool {
@@ -72,7 +80,11 @@ impl CompiledExclusion {
 
 fn literal_descendant_prefix(pattern: &str) -> Option<PathBuf> {
     let prefix = pattern.strip_suffix("/**")?;
-    (!prefix.contains(['*', '?', '[', ']'])).then(|| PathBuf::from(prefix))
+    (!has_glob_magic(prefix)).then(|| PathBuf::from(prefix))
+}
+
+fn has_glob_magic(pattern: &str) -> bool {
+    pattern.contains(['*', '?', '[', ']', '{', '}'])
 }
 
 pub(super) fn collect_configured_dirs(
@@ -151,7 +163,10 @@ pub(super) fn is_excluded_rel_with(patterns: &[CompiledExclusion], rel: &Path) -
         return false;
     }
 
-    if patterns.iter().any(|pattern| pattern.matches_prefix(rel)) {
+    if patterns
+        .iter()
+        .any(|pattern| pattern.matches_exact(rel) || pattern.matches_prefix(rel))
+    {
         return true;
     }
 
@@ -437,46 +452,4 @@ pub(super) fn strip_direct_content_policy(mut rules: EffectiveRules) -> Effectiv
     }
 
     rules
-}
-
-#[cfg(test)]
-mod tests {
-    use super::{is_excluded_rel_with, CompiledExclusion};
-    use std::path::Path;
-
-    #[test]
-    fn prefix_exclusions_match_without_glob_pattern() {
-        let patterns = vec![CompiledExclusion::new("dist/**")];
-        assert!(is_excluded_rel_with(&patterns, Path::new("dist")));
-        assert!(is_excluded_rel_with(&patterns, Path::new("dist/app.js")));
-        assert!(!is_excluded_rel_with(
-            &patterns,
-            Path::new("src/dist/app.js")
-        ));
-        assert!(!is_excluded_rel_with(&patterns, Path::new("dist-file.js")));
-    }
-
-    #[test]
-    fn non_prefix_exclusions_still_use_glob_matching() {
-        let patterns = vec![CompiledExclusion::new("**/*.tmp")];
-        assert!(is_excluded_rel_with(&patterns, Path::new("src/cache.tmp")));
-        assert!(!is_excluded_rel_with(&patterns, Path::new("src/cache.ts")));
-    }
-
-    #[test]
-    fn wildcard_prefix_exclusions_fall_back_to_glob_matching() {
-        let patterns = vec![CompiledExclusion::new("build-*/**")];
-        assert!(is_excluded_rel_with(
-            &patterns,
-            Path::new("build-app/cache.bin")
-        ));
-        assert!(is_excluded_rel_with(
-            &patterns,
-            Path::new("build-web/nested/cache.bin")
-        ));
-        assert!(!is_excluded_rel_with(
-            &patterns,
-            Path::new("src/build-app/cache.bin")
-        ));
-    }
 }

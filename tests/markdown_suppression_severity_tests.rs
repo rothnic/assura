@@ -254,3 +254,26 @@ fn markdown_rule_config_rejects_unknown_nested_fields() {
         "stderr:\n{stderr}"
     );
 }
+
+#[test]
+fn markdown_rejects_stale_rule_severity_map() {
+    let project = write_project(
+        "          check_links: true\n          rule_severity:\n            markdown_link_target: low\n",
+        "# Note\n\nSee [missing](missing.md).\n",
+    );
+
+    let output = Command::new(assura_bin())
+        .arg("check")
+        .arg(project.path())
+        .arg("--format")
+        .arg("json")
+        .output()
+        .unwrap();
+
+    assert!(!output.status.success());
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("unknown field") && stderr.contains("rule_severity"),
+        "stderr:\n{stderr}"
+    );
+}

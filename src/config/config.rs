@@ -100,6 +100,7 @@ pub struct Config {
 /// A node in the structure hierarchy
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "full-cli", derive(Validate))]
+#[serde(deny_unknown_fields)]
 #[serde(rename_all = "snake_case")]
 pub struct DirectoryNode {
     /// File validation rules for this node

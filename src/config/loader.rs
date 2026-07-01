@@ -28,11 +28,20 @@ impl ConfigLoader {
 
     /// Parse config from YAML string
     pub fn parse(content: &str) -> ConfigResult<Config> {
-        let value: serde_yaml::Value =
-            serde_yaml::from_str(content).map_err(|error| ConfigError::Yaml(error.to_string()))?;
-        let value = normalize_structure_config_value(value).map_err(ConfigError::Invalid)?;
+        if let Ok(config) = Self::parse_canonical(content) {
+            return Ok(config);
+        }
+        Self::parse_normalized(content)
+    }
+
+    /// Parse and semantically validate config from a YAML string.
+    pub fn parse_validated(content: &str) -> ConfigResult<Config> {
+        Self::parse(content)
+    }
+
+    fn parse_canonical(content: &str) -> ConfigResult<Config> {
         let config: Config =
-            serde_yaml::from_value(value).map_err(|error| ConfigError::Yaml(error.to_string()))?;
+            serde_yaml::from_str(content).map_err(|error| ConfigError::Yaml(error.to_string()))?;
         validate_config_semantics(&config).map_err(ConfigError::Invalid)?;
         #[cfg(feature = "full-cli")]
         config
@@ -41,8 +50,7 @@ impl ConfigLoader {
         Ok(config)
     }
 
-    /// Parse and semantically validate config from a YAML string.
-    pub fn parse_validated(content: &str) -> ConfigResult<Config> {
+    fn parse_normalized(content: &str) -> ConfigResult<Config> {
         let value: serde_yaml::Value =
             serde_yaml::from_str(content).map_err(|error| ConfigError::Yaml(error.to_string()))?;
         let value = normalize_structure_config_value(value).map_err(ConfigError::Invalid)?;

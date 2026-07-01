@@ -50,6 +50,8 @@ mod report;
 mod repository_references;
 mod rule_plan;
 mod rules;
+#[cfg(test)]
+mod rules_tests;
 mod scope_patterns;
 mod support_matrix;
 mod support_matrix_docs;

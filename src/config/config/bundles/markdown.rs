@@ -6,6 +6,7 @@ use validator::Validate;
 /// Bundle of markdown validations for a directory node.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "full-cli", derive(Validate))]
+#[serde(deny_unknown_fields)]
 #[serde(rename_all = "snake_case")]
 pub struct MarkdownBundle {
     /// Whether frontmatter is required.

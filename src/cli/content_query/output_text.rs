@@ -2,6 +2,7 @@
 
 use super::output::*;
 use crate::intelligence::ProjectIntelligenceAgentContext;
+use std::path::Path;
 
 impl TextRender for AgentQueryOutput {
     fn render_text(&self) -> String {
@@ -125,16 +126,16 @@ impl TextRender for RepositoryReferencesOutput {
         let mut lines = vec![format!(
             "Repository references: {} {} ({})",
             self.mode,
-            self.path.display(),
+            display_path(&self.path),
             self.references.len()
         )];
         for reference in &self.references {
             lines.push(format!(
                 "source={}:{}:{} target={} anchor={} lines={} exists={} rule={} kind={} confidence={}",
-                reference.source_path.display(),
+                display_path(&reference.source_path),
                 optional_usize(reference.source_line),
                 optional_usize(reference.source_column),
-                reference.target_path.display(),
+                display_path(&reference.target_path),
                 optional_string(reference.target_anchor.as_deref()),
                 target_lines(reference.target_line_start, reference.target_line_end),
                 reference.target_exists,
@@ -145,6 +146,10 @@ impl TextRender for RepositoryReferencesOutput {
         }
         lines.join("\n")
     }
+}
+
+fn display_path(path: &Path) -> String {
+    path.to_string_lossy().replace('\\', "/")
 }
 
 fn optional_usize(value: Option<usize>) -> String {
