@@ -1668,7 +1668,12 @@ fn check_audit_artifact(checks: &mut Checks) {
 fn check_command_surface_support(checks: &mut Checks) {
     let support_text = read("docs/support-policy.md");
     let compatibility_text = read("docs/compatibility-and-surface.md");
-    let args_text = read("src/cli/args.rs");
+    let args_text = [
+        read("src/cli/args.rs"),
+        read("src/cli/content_args.rs"),
+        read("src/cli/daemon.rs"),
+    ]
+    .join("\n");
     check_cli_command_inventory(checks, &args_text);
     check_public_support_claim_consistency(checks);
 
@@ -1880,6 +1885,11 @@ const CLI_COMMAND_VARIANT_ROWS: &[CliCommandVariantRow] = &[
     },
     CliCommandVariantRow {
         enum_name: "Commands",
+        variant_name: "Daemon",
+        command_surface_names: &["assura daemon"],
+    },
+    CliCommandVariantRow {
+        enum_name: "Commands",
         variant_name: "Info",
         command_surface_names: &["assura info"],
     },
@@ -1997,6 +2007,21 @@ const CLI_COMMAND_VARIANT_ROWS: &[CliCommandVariantRow] = &[
         enum_name: "ContentCommands",
         variant_name: "Expand",
         command_surface_names: &["assura content expand"],
+    },
+    CliCommandVariantRow {
+        enum_name: "DaemonCommands",
+        variant_name: "Health",
+        command_surface_names: &["assura daemon health"],
+    },
+    CliCommandVariantRow {
+        enum_name: "DaemonCommands",
+        variant_name: "CheckPath",
+        command_surface_names: &["assura daemon check-path"],
+    },
+    CliCommandVariantRow {
+        enum_name: "DaemonCommands",
+        variant_name: "References",
+        command_surface_names: &["assura daemon references"],
     },
 ];
 
@@ -2273,6 +2298,28 @@ const SUPPORT_MATRIX_ROWS: &[SupportMatrixRow] = &[
             "content_query_lists_collections_and_instances",
             "tests/project_intelligence_session.rs",
             "content_session_reuses_context_for_repeated_requests",
+        ],
+        exception_markers: &[],
+    },
+    SupportMatrixRow {
+        surface: "assura daemon",
+        command_surface_names: &[
+            "assura daemon",
+            "assura daemon health",
+            "assura daemon check-path",
+            "assura daemon references",
+        ],
+        support_policy_markers: &[],
+        compatibility_markers: &[],
+        source_markers: &[
+            "Commands::Daemon",
+            "DaemonCommands::Health",
+            "daemon_command",
+        ],
+        test_markers: &[
+            "tests/daemon_cli_tests.rs",
+            "daemon_health_json_exposes_running_state_and_fallback",
+            "daemon_references_source_json_matches_content_references",
         ],
         exception_markers: &[],
     },

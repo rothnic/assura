@@ -51,6 +51,13 @@
       "detail_path": "docs/goals/assura-code-doc-reference-validation.md"
     },
     {
+      "id": "daemon-core-probe",
+      "label": "Daemon core probe commands",
+      "status": "experimental",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-reference-daemon-readiness.md"
+    },
+    {
       "id": "structure-validation-cli",
       "label": "Structure validation CLI",
       "status": "supported",

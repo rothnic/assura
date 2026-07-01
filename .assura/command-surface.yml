@@ -544,6 +544,74 @@ commands:
         aliases: ["-f"]
         takes_value: true
         values: ["text", "json", "yaml", "advice", "status"]
+  - name: "assura daemon"
+    allow_positionals: false
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+  - name: "assura daemon health"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status"]
+  - name: "assura daemon check-path"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --changed:
+        takes_value: true
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status"]
+  - name: "assura daemon references"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --source:
+        takes_value: true
+      --target:
+        takes_value: true
+      --moved-target:
+        takes_value: true
+      --new-target:
+        takes_value: true
+      --limit:
+        takes_value: true
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status"]
   - name: "assura info"
     allow_positionals: true
     flags:

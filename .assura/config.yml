@@ -468,6 +468,14 @@ extensions:
           status: experimental
         - surface: "command:assura content expand"
           status: supported
+        - surface: "command:assura daemon"
+          status: experimental
+        - surface: "command:assura daemon health"
+          status: experimental
+        - surface: "command:assura daemon check-path"
+          status: experimental
+        - surface: "command:assura daemon references"
+          status: experimental
         - surface: "command:assura info"
           status: experimental
         - surface: "command:assura performance-report"
