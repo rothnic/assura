@@ -3,8 +3,11 @@ title: Markdown Validation
 description: Generic Markdown linting, safe fixes, and Assura-owned document hierarchy checks.
 ---
 
-Markdown validation sits above structure validation. It handles generic document
-shape while typed frontmatter fields stay in content models.
+Markdown validation is a deeper content layer in Assura's staged quality
+hierarchy. Assura should identify structure and coarse file-level policy issues
+first, then inspect Markdown syntax, headings, links, suppressions, and safe
+fixes for files in configured Markdown scopes. Typed frontmatter fields stay in
+content models.
 
 ## Responsibility Split
 

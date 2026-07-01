@@ -90,6 +90,12 @@
           "summary": "Use the shared daemon/client contract for editor diagnostics and commands.",
           "detail_path": "docs/goals/assura-vscode-daemon-integration.md",
           "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-vscode-daemon-integration.md"
+        },
+        {
+          "label": "Beta Capabilities",
+          "summary": "Released the code-agnostic beta program as v0.2.0.",
+          "detail_path": "docs/goals/assura-beta-code-agnostic-capabilities-program.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-beta-code-agnostic-capabilities-program.md"
         }
       ]
     },
@@ -98,10 +104,10 @@
       "title": "Now",
       "items": [
         {
-          "label": "Beta Capabilities",
-          "summary": "Drive the code-agnostic beta program through executable goal files.",
-          "detail_path": "docs/goals/assura-beta-code-agnostic-capabilities-program.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-beta-code-agnostic-capabilities-program.md"
+          "label": "Post-Beta Capabilities",
+          "summary": "Make Assura support-grade for self-validation, document graph workflows, daemon mode, agent/editor integrations, Markdown linting, and performance gates.",
+          "detail_path": "docs/goals/assura-post-beta-capabilities-program.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-post-beta-capabilities-program.md"
         }
       ]
     },
@@ -110,10 +116,64 @@
       "title": "Next",
       "items": [
         {
-          "label": "Post-Beta Roadmap",
-          "summary": "Define the next product iteration after the beta release.",
-          "detail_path": ".trellis/spec/assura/roadmap.md",
-          "href": "https://github.com/rothnic/assura/blob/master/.trellis/spec/assura/roadmap.md"
+          "label": "Self Config",
+          "summary": "Refine Assura's own config and resolve docs or structure variance.",
+          "detail_path": "docs/goals/assura-self-config-doc-variance-hardening.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-self-config-doc-variance-hardening.md"
+        },
+        {
+          "label": "Document Graph",
+          "summary": "Support content validation, search, query, graph expansion, and affected-reference context.",
+          "detail_path": "docs/goals/assura-supported-document-graph.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-supported-document-graph.md"
+        },
+        {
+          "label": "Daemon Server",
+          "summary": "Provide a true long-running local daemon with stale-state safety.",
+          "detail_path": "docs/goals/assura-true-daemon-mode.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-true-daemon-mode.md"
+        },
+        {
+          "label": "Markdown Engine",
+          "summary": "Adopt or prove the fastest Rust markdownlint-compatible lint/fix path.",
+          "detail_path": "docs/goals/assura-markdownlint-compatible-rust-engine.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-markdownlint-compatible-rust-engine.md"
+        },
+        {
+          "label": "Performance Floor",
+          "summary": "Fail any accepted LS-Lint-equivalent fixture where Assura is slower.",
+          "detail_path": "docs/goals/assura-performance-floor-and-fixture-gate.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-performance-floor-and-fixture-gate.md"
+        },
+        {
+          "label": "Agent Installers",
+          "summary": "Install, update, remove, and doctor Codex, OpenCode, Claude, and Pi hooks.",
+          "detail_path": "docs/goals/assura-agent-integration-lifecycle.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-agent-integration-lifecycle.md"
+        },
+        {
+          "label": "VS Code Support",
+          "summary": "Promote the VS Code integration through shared daemon and CLI contracts.",
+          "detail_path": "docs/goals/assura-vscode-supported-extension.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-vscode-supported-extension.md"
+        },
+        {
+          "label": "Extension APIs",
+          "summary": "Clarify first-party extensions, internal Rust APIs, and deferred plugin surfaces.",
+          "detail_path": "docs/goals/assura-extension-api-clarification.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-extension-api-clarification.md"
+        },
+        {
+          "label": "LS-Lint Parity",
+          "summary": "Reassess row-by-row LS-Lint performance and explain any CLI-floor cost.",
+          "detail_path": "docs/goals/assura-ls-lint-performance-reassessment.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-ls-lint-performance-reassessment.md"
+        },
+        {
+          "label": "Release Hardening",
+          "summary": "Align support docs, compatibility notes, target-state checks, and release evidence.",
+          "detail_path": "docs/goals/assura-post-beta-support-release-hardening.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-post-beta-support-release-hardening.md"
         }
       ]
     }
