@@ -17,9 +17,13 @@ impl TextRender for ContextPackOutput {
     fn render_text(&self) -> String {
         let mut lines = vec![format!("Context pack: {}", self.request.mode)];
         lines.push(format!(
-            "diagnostics: {}; missing relations: {}; safe fixes: {}",
+            "diagnostics: {}; missing relations: {}; repository refs: {}; safe fixes: {}",
             self.diagnostics.len(),
             self.missing_relations.len(),
+            self.repository_references
+                .as_ref()
+                .map(|references| references.inbound.len() + references.outbound.len())
+                .unwrap_or_default(),
             self.safe_fixes.len()
         ));
         if let Some(instance) = &self.instance {

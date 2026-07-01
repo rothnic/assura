@@ -10,6 +10,7 @@ uses the local CLI to answer four practical questions:
 - Is this content valid?
 - What matches this text?
 - What other content or code is related?
+- What docs or code reference this path?
 - What safe Markdown fixes are available?
 
 This page shows the current commands directly. The lower-level commands are
@@ -31,7 +32,7 @@ searching code and content together.
   </div>
   <div class="pi-demo-step">
     <strong>4. Expand</strong>
-    <span><code>assura content expand</code> follows modeled relations.</span>
+    <span><code>assura content expand</code> and <code>references</code> follow local graph edges.</span>
   </div>
 </section>
 
@@ -64,8 +65,9 @@ searching code and content together.
 | Search modeled facts, Markdown sections, and diagnostics | `assura content search "text" .` | Local keyword score, not semantic truth. |
 | Get scored local semantic candidates | `assura content semantic-search "text" . --enable-local` | Optional local baseline, disabled by default. |
 | Follow related modeled objects | `assura content expand <collection> <id> .` | Follows configured relations and diagnostics. |
+| Find affected references | `assura content references . --target <path>` or `--source <path>` | Uses local repository-reference graph edges. |
 | Connect modeled content to code symbols | `assura content symbols <collection> <id> .` and `assura content symbol-refs <symbol> .` | Uses modeled symbol references, not full repo search. |
-| Hand a bounded packet to an agent | `assura agent context-pack . --text "text"` | Local CLI wrapper over the same facts. |
+| Hand a bounded packet to an agent | `assura agent context-pack . --collection <collection> --id <id> --text "text"` | Includes diagnostics, graph/search context, repository references, relation status, and safe-fix previews. |
 
 ## What Is Still Missing
 

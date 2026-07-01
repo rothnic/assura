@@ -77,6 +77,11 @@ fn context_pack_wraps_beacon_diagnostics_relations_search_and_safe_fixes() {
         .expect("omissions array")
         .iter()
         .any(|item| item["field"] == "instance"));
+    assert!(pack["bounds"]["omissions"]
+        .as_array()
+        .expect("omissions array")
+        .iter()
+        .any(|item| item["field"] == "repository_references"));
 
     let diagnostics = pack["diagnostics"].as_array().expect("diagnostics");
     assert!(diagnostics
@@ -124,6 +129,91 @@ fn context_pack_wraps_beacon_diagnostics_relations_search_and_safe_fixes() {
         pack["missing_relations"][0]["target_instance_id"],
         lower_missing["missing_relations"][0]["target_instance_id"]
     );
+}
+
+#[test]
+fn context_pack_wraps_repository_references_for_object_context() {
+    let pack = json_from_success(run_assura(&[
+        "content",
+        "context-pack",
+        "tests/fixtures/content_runtime/code_symbols",
+        "--collection",
+        "components",
+        "--id",
+        "component-config",
+        "--limit",
+        "5",
+        "--format",
+        "json",
+    ]));
+
+    assert_eq!(pack["request"]["mode"], "object");
+    assert_eq!(
+        pack["repository_references"]["path"],
+        "components/component_config.json"
+    );
+
+    let inbound = pack["repository_references"]["inbound"]
+        .as_array()
+        .expect("inbound references");
+    assert_eq!(inbound.len(), 1);
+    assert_eq!(inbound[0]["source_path"], "src/sample.rs");
+    assert_eq!(
+        inbound[0]["target_path"],
+        "components/component_config.json"
+    );
+    assert_eq!(inbound[0]["reference_kind"], "comment_reference");
+    assert_eq!(inbound[0]["target_exists"], true);
+
+    let outbound = pack["repository_references"]["outbound"]
+        .as_array()
+        .expect("outbound references");
+    assert_eq!(outbound.len(), 0);
+
+    let lower_refs = json_from_success(run_assura(&[
+        "content",
+        "references",
+        "tests/fixtures/content_runtime/code_symbols",
+        "--target",
+        "components/component_config.json",
+        "--format",
+        "json",
+    ]));
+    assert_eq!(inbound[0]["id"], lower_refs["references"][0]["id"]);
+}
+
+#[test]
+fn context_pack_reports_repository_reference_truncation() {
+    let pack = json_from_success(run_assura(&[
+        "content",
+        "context-pack",
+        "tests/fixtures/content_runtime/code_symbols",
+        "--collection",
+        "components",
+        "--id",
+        "component-config",
+        "--limit",
+        "0",
+        "--format",
+        "json",
+    ]));
+
+    assert_eq!(
+        pack["repository_references"]["inbound"]
+            .as_array()
+            .expect("inbound refs")
+            .len(),
+        0
+    );
+    assert!(pack["bounds"]["truncated"]
+        .as_array()
+        .expect("truncated")
+        .iter()
+        .any(|item| {
+            item["field"] == "repository_references.inbound"
+                && item["original_count"] == 1
+                && item["returned_count"] == 0
+        }));
 }
 
 #[test]

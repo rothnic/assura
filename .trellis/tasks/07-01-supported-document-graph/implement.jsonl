@@ -1,0 +1,8 @@
+{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file": "docs/goals/assura-supported-document-graph.md", "reason": "child goal and proof gates"}
+{"file": "docs/compatibility-and-surface.md", "reason": "support matrix updates for document graph surfaces"}
+{"file": "docs/goals/assura-post-beta-capabilities-program.md", "reason": "parent north-star and final verification package"}
+{"file": "docs/support-policy.md", "reason": "support policy classification for graph/reference behavior"}
+{"file": "src/cli/content_query/context_pack.rs", "reason": "context-pack assembly needs repository-reference graph context"}
+{"file": "src/cli/content_query/references.rs", "reason": "existing repository reference query helper"}
+{"file": "src/cli/content_query/output.rs", "reason": "shared JSON output contract for context packs and references"}

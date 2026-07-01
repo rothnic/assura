@@ -4,9 +4,11 @@ use super::agent_query::{diagnostics, safe_fixes};
 use super::context::{ContentQueryError, QueryContext};
 use super::output::{
     ContextPackBoundsOutput, ContextPackOmissionOutput, ContextPackOutput,
-    ContextPackRequestOutput, ContextPackTruncationOutput,
+    ContextPackRequestOutput, ContextPackTruncationOutput, RepositoryReferenceContextOutput,
 };
+use super::references::reference_output;
 use super::{expand, missing_relations, search, show_instance};
+use crate::intelligence::resource_id;
 
 const CONTEXT_PACK_SCHEMA: &str = "assura.project-intelligence.context-pack.v1";
 
@@ -76,6 +78,9 @@ pub(super) fn context_pack(
         }
     };
 
+    let repository_references =
+        repository_reference_context(context, instance.as_ref(), &mut bounds);
+
     let search = match request.text {
         Some(text) => {
             let mut search = search(context, text);
@@ -104,9 +109,48 @@ pub(super) fn context_pack(
         diagnostics,
         instance,
         related,
+        repository_references,
         search,
         missing_relations,
         safe_fixes,
+    })
+}
+
+fn repository_reference_context(
+    context: &QueryContext,
+    instance: Option<&super::output::InstanceOutput>,
+    bounds: &mut BoundsBuilder,
+) -> Option<RepositoryReferenceContextOutput> {
+    let Some(instance) = instance else {
+        bounds.omit(
+            "repository_references",
+            "provide --collection and --id for repository-reference context",
+        );
+        return None;
+    };
+
+    let path = instance.path.clone();
+    let target_id = resource_id(&path);
+    let mut inbound = context
+        .store
+        .repository_references_to(&target_id)
+        .into_iter()
+        .map(reference_output)
+        .collect::<Vec<_>>();
+    bounds.truncate("repository_references.inbound", &mut inbound);
+
+    let mut outbound = context
+        .store
+        .repository_references_from_path(&path)
+        .into_iter()
+        .map(reference_output)
+        .collect::<Vec<_>>();
+    bounds.truncate("repository_references.outbound", &mut outbound);
+
+    Some(RepositoryReferenceContextOutput {
+        path,
+        inbound,
+        outbound,
     })
 }
 

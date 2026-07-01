@@ -144,6 +144,12 @@ wrappers must still require explicit user approval before running
 | `assura content missing-relations` | Report unresolved modeled relations |
 | `assura content references` | Report inbound repository references by target path or outbound references by source path |
 
+Object-mode context-pack JSON includes `repository_references.path`,
+`repository_references.inbound`, and `repository_references.outbound` for the
+modeled object's repository path. Those arrays use the same edge shape as
+`assura content references`, including source position, target path, anchor or
+line range, existence, rule, kind, and confidence.
+
 `assura content session [path]` reads one JSON request per stdin line and emits
 one `assura.project-intelligence.session.response.v1` JSON response per stdout
 line. Use it when an agent, editor wrapper, or local integration needs repeated
