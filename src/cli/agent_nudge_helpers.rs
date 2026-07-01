@@ -144,7 +144,7 @@ pub(super) fn quote_path(path: &Path) -> String {
 }
 
 pub(super) fn path_string(path: &Path) -> String {
-    path.to_string_lossy().into_owned()
+    path.to_string_lossy().replace('\\', "/")
 }
 
 fn severity_rank(severity: &str) -> Option<u8> {
