@@ -67,6 +67,9 @@ publishes and verifies a `.sha256` file next to every archive.
 | `assura content missing-relations` | Supported relation query | Content query CLI fixture tests. |
 | `assura content expand` | Supported bounded graph expansion | Content query CLI fixture tests. |
 | `assura content references` | Experimental repository-reference graph query | Content query CLI tests prove bounded inbound references by target path and outbound references by source path. |
+| `assura daemon` | Experimental local daemon management preview | Daemon CLI tests prove JSON status, doctor, health, changed-path, and reference-context contracts over local daemon-ready state. |
+| `assura daemon status` | Experimental local daemon status preview | Daemon CLI tests prove JSON health, protocol, process metadata, and management command hints. |
+| `assura daemon doctor` | Experimental local daemon doctor preview | Daemon CLI tests prove JSON diagnostics and remediation commands for loaded and unavailable project state. |
 | `assura info` | Experimental diagnostic | CLI exists, but text output is not an automation contract. |
 | `assura watch` | Experimental | CLI exists, but release-grade watch behavior is not claimed. |
 

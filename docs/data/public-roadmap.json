@@ -66,6 +66,12 @@
           "summary": "Validate repository-internal links and source-to-doc references.",
           "detail_path": "docs/goals/assura-code-doc-reference-validation.md",
           "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-code-doc-reference-validation.md"
+        },
+        {
+          "label": "Daemon Core",
+          "summary": "Provide warm affected-path feedback that matches one-shot truth.",
+          "detail_path": "docs/goals/assura-reference-daemon-readiness.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-reference-daemon-readiness.md"
         }
       ]
     },
@@ -80,10 +86,10 @@
           "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-beta-code-agnostic-capabilities-program.md"
         },
         {
-          "label": "Daemon Core",
-          "summary": "Provide warm affected-path feedback that matches one-shot truth.",
-          "detail_path": "docs/goals/assura-reference-daemon-readiness.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-reference-daemon-readiness.md"
+          "label": "Daemon CLI",
+          "summary": "Share start, stop, status, doctor, logs, and fallback commands.",
+          "detail_path": "docs/goals/assura-daemon-management-cli.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-daemon-management-cli.md"
         }
       ]
     },
@@ -91,12 +97,6 @@
       "status": "next",
       "title": "Next",
       "items": [
-        {
-          "label": "Daemon CLI",
-          "summary": "Share start, stop, status, doctor, logs, and fallback commands.",
-          "detail_path": "docs/goals/assura-daemon-management-cli.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-daemon-management-cli.md"
-        },
         {
           "label": "Agent Nudges",
           "summary": "Send bounded event-aware nudges to Codex, OpenCode, Claude, and Pi agents.",

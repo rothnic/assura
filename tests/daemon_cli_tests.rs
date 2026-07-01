@@ -5,6 +5,82 @@ use std::process::Command;
 use tempfile::TempDir;
 
 #[test]
+fn daemon_status_json_reports_management_contract() {
+    let project = daemon_project();
+
+    let json = assura_json(
+        &project,
+        &["daemon", "status", project.path_str(), "--format", "json"],
+    );
+
+    assert_eq!(json["schema"], "assura.daemon.status.v1");
+    assert_eq!(json["protocol_version"], "assura.daemon.v1");
+    assert_eq!(json["health"]["state"], "running");
+    assert_eq!(json["process"]["running"], false);
+    assert_eq!(json["process"]["mode"], "local_probe");
+    assert!(json["management"]["doctor"]
+        .as_str()
+        .unwrap()
+        .contains("assura daemon doctor --format json"));
+    assert_eq!(json["management"]["start"], Value::Null);
+}
+
+#[test]
+fn daemon_doctor_json_reports_actionable_checks() {
+    let project = daemon_project();
+
+    let json = assura_json(
+        &project,
+        &["daemon", "doctor", project.path_str(), "--format", "json"],
+    );
+
+    assert_eq!(json["schema"], "assura.daemon.doctor.v1");
+    assert_eq!(json["health"]["state"], "running");
+    assert!(json["checks"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|check| { check["id"] == "project_state" && check["status"] == "ok" }));
+    assert!(json["checks"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|check| { check["id"] == "managed_process" && check["status"] == "warning" }));
+}
+
+#[test]
+fn daemon_doctor_json_reports_unavailable_project_with_remediation() {
+    let project = TempDir::new().unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_assura"))
+        .args([
+            "daemon",
+            "doctor",
+            project.path().to_str().unwrap(),
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(3));
+    let json: Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(json["schema"], "assura.daemon.doctor.v1");
+    assert_eq!(json["health"]["state"], "unavailable");
+    let project_state = json["checks"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|check| check["id"] == "project_state")
+        .unwrap();
+    assert_eq!(project_state["status"], "error");
+    assert!(project_state["remediation_command"]
+        .as_str()
+        .unwrap()
+        .contains("assura"));
+}
+
+#[test]
 fn daemon_health_json_exposes_running_state_and_fallback() {
     let project = daemon_project();
 
@@ -79,6 +155,40 @@ fn daemon_references_source_json_matches_content_references() {
     assert_eq!(daemon["mode"], "source");
     assert_eq!(daemon["health"]["state"], "running");
     assert_eq!(target_paths(&daemon), target_paths(&content));
+}
+
+#[test]
+fn daemon_references_target_json_matches_content_references() {
+    let project = daemon_project();
+
+    let daemon = assura_json(
+        &project,
+        &[
+            "daemon",
+            "references",
+            project.path_str(),
+            "--target",
+            "docs/guide.md",
+            "--format",
+            "json",
+        ],
+    );
+    let content = assura_json(
+        &project,
+        &[
+            "content",
+            "references",
+            project.path_str(),
+            "--target",
+            "docs/guide.md",
+            "--format",
+            "json",
+        ],
+    );
+
+    assert_eq!(daemon["mode"], "target");
+    assert_eq!(daemon["health"]["state"], "running");
+    assert_eq!(source_paths(&daemon), source_paths(&content));
 }
 
 #[test]
@@ -201,6 +311,15 @@ fn target_paths(value: &Value) -> Vec<String> {
         .unwrap()
         .iter()
         .map(|reference| reference["target_path"].as_str().unwrap().to_string())
+        .collect()
+}
+
+fn source_paths(value: &Value) -> Vec<String> {
+    value["references"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|reference| reference["source_path"].as_str().unwrap().to_string())
         .collect()
 }
 

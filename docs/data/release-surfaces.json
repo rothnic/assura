@@ -58,6 +58,13 @@
       "detail_path": "docs/goals/assura-reference-daemon-readiness.md"
     },
     {
+      "id": "daemon-management-cli-preview",
+      "label": "Daemon management CLI preview",
+      "status": "experimental",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-daemon-management-cli.md"
+    },
+    {
       "id": "structure-validation-cli",
       "label": "Structure validation CLI",
       "status": "supported",

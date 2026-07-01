@@ -21,6 +21,8 @@ expanding into richer dependency and documentation constraints.
   `.trellis/spec/assura/config-notation.md`
 - Codex agent feedback contract:
   `.trellis/spec/assura/codex-agent-feedback.md`
+- Daemon management CLI contract:
+  `.trellis/spec/assura/daemon-management-cli.md`
 - Tooling and CI stabilization: `.trellis/spec/assura/tooling-stabilization.md`
 - CLI entrypoint: `src/main.rs`
 - Public check implementation: `src/cli/check.rs` and `src/cli/commands.rs`

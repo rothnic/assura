@@ -75,3 +75,9 @@ Block if the CLI omits health details needed by agents, exposes editor-only
 daemon behavior, or requires users to inspect unstructured logs before a
 machine-readable doctor result exists. Also block if command-surface docs or
 support policy are not updated with the new public command family.
+
+## Progress Log
+
+| Date | Update | Evidence |
+| --- | --- | --- |
+| 2026-07-01 | Started Epic 7 with a management-preview slice for `assura daemon status` and `assura daemon doctor`. The commands expose JSON-first health, protocol, process placeholder, management hints, and doctor remediation over `LocalDaemonCore` without claiming full start/stop/restart/logs lifecycle support yet. Added the carried-forward target-side `daemon references` parity proof. Independent review Pauli found no blocker or high-risk findings; idempotent start/stop/restart/logs lifecycle commands remain open. | `src/cli/daemon.rs`; `src/cli/daemon_management.rs`; `src/cli/daemon_text.rs`; `tests/daemon_cli_tests.rs`; `.assura/command-surface.yml`; `.assura/config.yml`; `docs/compatibility-and-surface.md`; `docs/support-policy.md`; `docs/release-notes.md`; `xtask/src/main.rs`; `cargo fmt --check`; `cargo test --test daemon_cli_tests --quiet`; `cargo run --quiet -- check --format json .`; `cargo xtask target-state`; `cargo xtask evidence`; `cargo xtask docs`; `cargo check --workspace --all-targets --quiet`; `git diff --check`; independent review Pauli. |

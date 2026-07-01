@@ -1,5 +1,10 @@
 //! CLI probes for daemon-ready local project state.
 
+#[path = "daemon_management.rs"]
+mod management;
+#[path = "daemon_text.rs"]
+mod text;
+
 use super::{ExitCode, OutputFormat};
 use crate::cli::check::StructureCheckReport;
 use crate::daemon::{
@@ -7,12 +12,33 @@ use crate::daemon::{
     LocalDaemonCore,
 };
 use clap::Subcommand;
+use management::{daemon_doctor_output, daemon_status_output, health_for_path};
 use serde::Serialize;
 use std::path::PathBuf;
 
 /// Daemon-ready probe commands.
 #[derive(Subcommand, Debug)]
 pub enum DaemonCommands {
+    /// Report daemon management status for a project.
+    Status {
+        /// Project root directory (defaults to current directory).
+        path: Option<PathBuf>,
+
+        /// Output format.
+        #[arg(short, long, value_enum, default_value = "json")]
+        format: OutputFormat,
+    },
+
+    /// Report daemon management diagnostics and remediation commands.
+    Doctor {
+        /// Project root directory (defaults to current directory).
+        path: Option<PathBuf>,
+
+        /// Output format.
+        #[arg(short, long, value_enum, default_value = "json")]
+        format: OutputFormat,
+    },
+
     /// Report daemon-ready health metadata for a project.
     Health {
         /// Project root directory (defaults to current directory).
@@ -109,6 +135,26 @@ fn run_daemon_command(
         ),
         _ => None,
     };
+    match &command {
+        DaemonCommands::Status { .. } => {
+            let (health, _) = health_for_path(path, config);
+            return render_success(daemon_status_output(health), format);
+        }
+        DaemonCommands::Doctor { .. } => {
+            let (health, loaded) = health_for_path(path, config);
+            let output = daemon_doctor_output(health, loaded);
+            return render_success_with_exit(
+                output,
+                format,
+                if loaded {
+                    ExitCode::Success
+                } else {
+                    ExitCode::RuntimeError
+                },
+            );
+        }
+        _ => {}
+    }
     let mut core = match LocalDaemonCore::load(path, config) {
         Ok(core) => core,
         Err(error) => return render_load_error(error, format, &command),
@@ -145,13 +191,18 @@ fn run_daemon_command(
                 ),
             }
         }
+        DaemonCommands::Status { .. } | DaemonCommands::Doctor { .. } => {
+            unreachable!("management preview commands return before daemon core load")
+        }
     }
 }
 
 impl DaemonCommands {
     fn format(&self) -> OutputFormat {
         match self {
-            Self::Health { format, .. }
+            Self::Status { format, .. }
+            | Self::Doctor { format, .. }
+            | Self::Health { format, .. }
             | Self::CheckPath { format, .. }
             | Self::References { format, .. } => *format,
         }
@@ -159,7 +210,9 @@ impl DaemonCommands {
 
     fn path(&self) -> PathBuf {
         let path = match self {
-            Self::Health { path, .. }
+            Self::Status { path, .. }
+            | Self::Doctor { path, .. }
+            | Self::Health { path, .. }
             | Self::CheckPath { path, .. }
             | Self::References { path, .. } => path.clone(),
         };
@@ -234,9 +287,20 @@ fn render_success<T>(
 where
     T: Serialize + DaemonTextRender,
 {
+    render_success_with_exit(value, format, ExitCode::Success)
+}
+
+fn render_success_with_exit<T>(
+    value: T,
+    format: OutputFormat,
+    exit_code: ExitCode,
+) -> Result<DaemonCommandOutcome, DaemonCommandError>
+where
+    T: Serialize + DaemonTextRender,
+{
     Ok(DaemonCommandOutcome {
         rendered: render(value, format)?,
-        exit_code: ExitCode::Success,
+        exit_code,
     })
 }
 
@@ -350,121 +414,4 @@ struct DaemonErrorOutput {
 
 trait DaemonTextRender {
     fn render_text(&self) -> String;
-}
-
-impl DaemonTextRender for DaemonHealth {
-    fn render_text(&self) -> String {
-        format!(
-            "Daemon health: {:?}\nreason={}\ngeneration={}\nproject_root={}\nconfig_path={}\nstatus_file={}\nlog_file={}\nfallback={}",
-            self.state,
-            self.reason,
-            self.generation,
-            self.project_root.display(),
-            self.config_path.display(),
-            self.runtime_paths.status_file.display(),
-            self.runtime_paths.log_file.display(),
-            self.fallback_command,
-        )
-    }
-}
-
-impl DaemonTextRender for DaemonCheckPathOutput {
-    fn render_text(&self) -> String {
-        format!(
-            "{}\nchanged_path_success={}\nviolations={}",
-            self.health.render_text(),
-            self.report.success,
-            self.report.violations.len()
-        )
-    }
-}
-
-impl DaemonTextRender for DaemonAffectedReferences {
-    fn render_text(&self) -> String {
-        let mut lines = vec![format!(
-            "Daemon references: {} {} ({}/{}, truncated={})",
-            self.mode,
-            self.path.display(),
-            self.bounds.returned,
-            self.bounds.limit,
-            self.bounds.truncated
-        )];
-        lines.push(format!(
-            "health={:?} reason={}",
-            self.health.state, self.health.reason
-        ));
-        for reference in &self.references {
-            lines.push(format!(
-                "source={}:{}:{} target={} anchor={} lines={} exists={} rule={} kind={} confidence={}",
-                reference.source_path.display(),
-                optional_usize(reference.source_line),
-                optional_usize(reference.source_column),
-                reference.target_path.display(),
-                optional_string(reference.target_anchor.as_deref()),
-                target_lines(reference.target_line_start, reference.target_line_end),
-                reference.target_exists,
-                reference.rule,
-                reference.reference_kind,
-                reference.confidence,
-            ));
-        }
-        lines.join("\n")
-    }
-}
-
-impl DaemonTextRender for DaemonMovedTargetReferences {
-    fn render_text(&self) -> String {
-        let mut lines = vec![format!(
-            "Daemon moved-target references: {} -> {} ({}/{}, truncated={})",
-            self.previous_path.display(),
-            self.new_path.display(),
-            self.bounds.returned,
-            self.bounds.limit,
-            self.bounds.truncated
-        )];
-        lines.push(format!(
-            "health={:?} reason={}",
-            self.health.state, self.health.reason
-        ));
-        for reference in &self.references {
-            lines.push(format!(
-                "source={}:{}:{} target={} anchor={} lines={} exists={} rule={} kind={} confidence={}",
-                reference.source_path.display(),
-                optional_usize(reference.source_line),
-                optional_usize(reference.source_column),
-                reference.target_path.display(),
-                optional_string(reference.target_anchor.as_deref()),
-                target_lines(reference.target_line_start, reference.target_line_end),
-                reference.target_exists,
-                reference.rule,
-                reference.reference_kind,
-                reference.confidence,
-            ));
-        }
-        lines.join("\n")
-    }
-}
-
-impl DaemonTextRender for DaemonErrorOutput {
-    fn render_text(&self) -> String {
-        format!("{}\nerror={}", self.health.render_text(), self.error)
-    }
-}
-
-fn optional_usize(value: Option<usize>) -> String {
-    value
-        .map(|value| value.to_string())
-        .unwrap_or_else(|| "-".to_string())
-}
-
-fn optional_string(value: Option<&str>) -> &str {
-    value.unwrap_or("-")
-}
-
-fn target_lines(start: Option<usize>, end: Option<usize>) -> String {
-    match (start, end) {
-        (Some(start), Some(end)) if start != end => format!("{start}-{end}"),
-        (Some(start), _) => start.to_string(),
-        _ => "-".to_string(),
-    }
 }

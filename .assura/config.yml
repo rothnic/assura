@@ -470,6 +470,10 @@ extensions:
           status: supported
         - surface: "command:assura daemon"
           status: experimental
+        - surface: "command:assura daemon status"
+          status: experimental
+        - surface: "command:assura daemon doctor"
+          status: experimental
         - surface: "command:assura daemon health"
           status: experimental
         - surface: "command:assura daemon check-path"

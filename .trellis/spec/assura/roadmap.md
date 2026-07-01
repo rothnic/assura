@@ -40,13 +40,13 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 Beta Code-Agnostic Capabilities is active.
 
 Owning task:
-`.trellis/tasks/07-01-07-01-reference-daemon-readiness`.
+`.trellis/tasks/07-01-07-01-daemon-management-cli`.
 
 Current branch:
 `codex/markdown-reference-master-goal`.
 
 Current recommended goal:
-`docs/goals/assura-reference-daemon-readiness.md`.
+`docs/goals/assura-daemon-management-cli.md`.
 
 Public roadmap artifact:
 `docs/data/public-roadmap.json`.
@@ -174,13 +174,12 @@ are optional later surfaces over the same contracts.
 ## Recommended Next Action
 
 Run the workflow gate, then continue
-`.trellis/tasks/07-01-07-01-reference-daemon-readiness`. The immediate path is
-to execute `docs/goals/assura-reference-daemon-readiness.md` as Epic 6 of the
-beta program. Continue from the shared daemon-ready core contract toward a
-local daemon/session layer whose health, freshness, affected-path feedback, and
-one-shot fallback metadata can be reused by the later daemon CLI, agent nudge,
-and VS Code epics. Do not reopen completed Reference Graph work unless new
-evidence names a narrower drift case.
+`.trellis/tasks/07-01-07-01-daemon-management-cli`. The immediate path is to
+execute `docs/goals/assura-daemon-management-cli.md` as Epic 7 of the beta
+program. Continue from the JSON-first `status` and `doctor` management-preview
+slice toward idempotent `start`, `stop`, `restart`, and `logs` lifecycle
+commands over the same daemon/client contract. Do not reopen completed Daemon
+Core or Reference Graph work unless new evidence names a narrower drift case.
 
 ## Roadmap Rules
 
