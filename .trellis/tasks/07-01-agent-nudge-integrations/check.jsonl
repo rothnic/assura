@@ -1,0 +1,4 @@
+{"file":".trellis/spec/assura/codex-agent-feedback.md","reason":"Verify shared agent feedback contract and per-agent CLI exclusions"}
+{"file":".trellis/spec/assura/daemon-management-cli.md","reason":"Verify daemon-aware nudge fallback and status contracts"}
+{"file":".trellis/spec/assura/roadmap.md","reason":"Verify Epic 8 routing and public roadmap consistency"}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Review bounded payload flow across adapters"}

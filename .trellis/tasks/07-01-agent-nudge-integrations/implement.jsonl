@@ -1,0 +1,5 @@
+{"file":".trellis/spec/assura/codex-agent-feedback.md","reason":"Stable shared agent feedback contract and no per-agent CLI rule"}
+{"file":".trellis/spec/assura/daemon-management-cli.md","reason":"Daemon status/doctor/lifecycle JSON contracts for daemon-aware nudges"}
+{"file":".trellis/spec/assura/roadmap.md","reason":"Current beta epic routing and next-goal context"}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Nudge payload crosses CLI, docs, hooks, and agent adapters"}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Avoid duplicating validation logic per agent"}
