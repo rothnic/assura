@@ -5,7 +5,7 @@ status: active
 
 # Release Candidate Checklist
 
-Use this checklist for the v0.1.0 release candidate and any later pre-1.0
+Use this checklist for the v0.2.0 release candidate and any later pre-1.0
 release until a newer release process replaces it.
 
 ## Release Scope
@@ -74,8 +74,8 @@ maintainer-owned exception recorded in the PR.
 3. Create an annotated tag:
 
    ```bash
-   git tag -a v0.1.0 -m "Release v0.1.0"
-   git push origin v0.1.0
+   git tag -a v0.2.0 -m "Release v0.2.0"
+   git push origin v0.2.0
    ```
 
 4. Wait for `.github/workflows/release.yml` to publish release assets.
@@ -96,7 +96,7 @@ Run the live public URL gate after the release exists:
 
 ```bash
 cargo xtask release-live
-ASSURA_VERSION=v0.1.0 cargo xtask release-live
+ASSURA_VERSION=v0.2.0 cargo xtask release-live
 ```
 
 The live gate verifies unauthenticated access to the install scripts, all

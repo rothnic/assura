@@ -290,13 +290,32 @@ fn run_release_readiness(args: &[String]) -> Result<()> {
 
 fn release_readiness_report() -> Value {
     let local_version = toml_string_value(&read("Cargo.toml"), "version").unwrap_or_default();
-    let local_tag = format!("v{local_version}");
     let release_notes_text = read("docs/release-notes.md");
     let release_notes_version = release_notes_version(&release_notes_text).unwrap_or_default();
-    let support_policy_text = read("docs/support-policy.md");
-    let release_checklist_text = read("docs/release-candidate-checklist.md");
-    let compatibility_text = read("docs/compatibility-and-surface.md");
+    release_readiness_report_from_inputs(
+        &local_version,
+        &release_notes_version,
+        &read("docs/support-policy.md"),
+        &read("docs/release-candidate-checklist.md"),
+        &read("docs/compatibility-and-surface.md"),
+        release_surfaces_report(
+            "docs/data/release-surfaces.json",
+            Some(&format!("v{local_version}")),
+        ),
+        latest_github_release(),
+    )
+}
 
+fn release_readiness_report_from_inputs(
+    local_version: &str,
+    release_notes_version: &str,
+    support_policy_text: &str,
+    release_checklist_text: &str,
+    compatibility_text: &str,
+    release_surfaces: Value,
+    latest_release: Value,
+) -> Value {
+    let local_tag = format!("v{local_version}");
     let mut reasons = Vec::new();
     let mut missing_checklist_items = Vec::new();
     for required in [
@@ -327,7 +346,6 @@ fn release_readiness_report() -> Value {
         reasons.push("compatibility matrix is missing release surface source of truth".to_string());
     }
 
-    let release_surfaces = release_surfaces_report("docs/data/release-surfaces.json");
     let unreleased_user_facing_changes = release_surfaces
         .get("unreleased_user_facing_changes")
         .cloned()
@@ -337,7 +355,6 @@ fn release_readiness_report() -> Value {
             "release surface manifest could not be checked: {error}"
         ));
     }
-    let latest_release = latest_github_release();
     if let Some(error) = latest_release.get("error").and_then(Value::as_str) {
         reasons.push(format!(
             "latest GitHub release could not be checked: {error}"
@@ -405,7 +422,7 @@ fn release_notes_version(text: &str) -> Option<String> {
     Some(version)
 }
 
-fn release_surfaces_report(path: &str) -> Value {
+fn release_surfaces_report(path: &str, current_tag: Option<&str>) -> Value {
     let text = read(path);
     let Ok(manifest) = serde_json::from_str::<Value>(&text) else {
         return serde_json::json!({ "error": format!("{path}: invalid JSON") });
@@ -449,6 +466,19 @@ fn release_surfaces_report(path: &str) -> Value {
         if first_release.is_empty() {
             errors.push(format!("{id}: missing first_release"));
         }
+        if matches!(status, "supported" | "experimental") && first_release != "unreleased" {
+            if !release_tag_like(first_release) {
+                errors.push(format!(
+                    "{id}: supported or experimental surface has invalid first_release {first_release:?}"
+                ));
+            } else if let Some(current_tag) = current_tag {
+                if release_tag_tuple(first_release) > release_tag_tuple(current_tag) {
+                    errors.push(format!(
+                        "{id}: first_release {first_release:?} is after local release tag {current_tag:?}"
+                    ));
+                }
+            }
+        }
         if !detail_path.is_empty() && !exists(detail_path) {
             errors.push(format!("{id}: detail_path {detail_path} does not exist"));
         }
@@ -472,6 +502,21 @@ fn release_surfaces_report(path: &str) -> Value {
         report["error"] = serde_json::json!(errors.join("; "));
     }
     report
+}
+
+fn release_tag_like(value: &str) -> bool {
+    release_tag_tuple(value).is_some()
+}
+
+fn release_tag_tuple(value: &str) -> Option<(u64, u64, u64)> {
+    let Some(version) = value.strip_prefix('v') else {
+        return None;
+    };
+    let mut parts = version.split('.');
+    let major = parts.next()?.parse().ok()?;
+    let minor = parts.next()?.parse().ok()?;
+    let patch = parts.next()?.parse().ok()?;
+    parts.next().is_none().then_some((major, minor, patch))
 }
 
 fn run_release_bundle() -> Result<PathBuf> {
@@ -2908,7 +2953,10 @@ fn check_docs_release_performance(checks: &mut Checks) {
             && release_readiness_text.contains("docs/data/release-surfaces.json"),
         "release train docs must point to the release surfaces manifest",
     );
-    match release_surfaces_report("docs/data/release-surfaces.json") {
+    match release_surfaces_report(
+        "docs/data/release-surfaces.json",
+        Some(&format!("v{version}")),
+    ) {
         report if report.get("error").is_some() => checks.add(format!(
             "docs/data/release-surfaces.json: {}",
             report
@@ -2916,14 +2964,20 @@ fn check_docs_release_performance(checks: &mut Checks) {
                 .and_then(Value::as_str)
                 .unwrap_or("invalid")
         )),
-        report => checks.require(
-            report
+        report => {
+            let has_unreleased_surfaces = report
                 .get("unreleased_user_facing_changes")
                 .and_then(Value::as_array)
                 .map(|changes| !changes.is_empty())
-                == Some(true),
-            "docs/data/release-surfaces.json: expected current unreleased user-facing surfaces",
-        ),
+                == Some(true);
+            let release_candidate_manifest_ready = release_surfaces_text
+                .contains(&format!("\"first_release\": \"v{version}\""))
+                && !release_surfaces_text.contains("\"first_release\": \"next\"");
+            checks.require(
+                has_unreleased_surfaces || release_candidate_manifest_ready,
+                "docs/data/release-surfaces.json: expected unreleased surfaces or concrete current-version release surfaces",
+            );
+        }
     }
     checks.require(
         release_surfaces_text.contains("\"project-intelligence-local-surfaces\""),
@@ -3774,7 +3828,7 @@ mod tests {
         );
         assert_eq!(release_notes_version("# No version here"), None);
 
-        let report = release_surfaces_report("docs/data/release-surfaces.json");
+        let report = release_surfaces_report("docs/data/release-surfaces.json", Some("v0.2.0"));
         assert_eq!(
             report.get("schema_version").and_then(Value::as_str),
             Some("assura.release-surfaces.v1")
@@ -3783,30 +3837,152 @@ mod tests {
             .get("unreleased_user_facing_changes")
             .and_then(Value::as_array)
             .expect("unreleased surfaces array");
-        assert!(unreleased
-            .iter()
-            .any(|surface| surface.get("id").and_then(Value::as_str)
-                == Some("project-intelligence-local-surfaces")));
+        if !unreleased.is_empty() {
+            assert!(unreleased
+                .iter()
+                .any(|surface| surface.get("id").and_then(Value::as_str)
+                    == Some("project-intelligence-local-surfaces")));
+        } else {
+            let surfaces = serde_json::from_str::<Value>(&read("docs/data/release-surfaces.json"))
+                .expect("release surfaces json");
+            assert!(surfaces
+                .get("surfaces")
+                .and_then(Value::as_array)
+                .into_iter()
+                .flatten()
+                .any(|surface| surface.get("id").and_then(Value::as_str)
+                    == Some("project-intelligence-local-surfaces")
+                    && surface.get("first_release").and_then(Value::as_str) == Some("v0.2.0")));
+        }
     }
 
     #[test]
-    fn release_readiness_report_has_current_failure_contract() {
-        let report = release_readiness_report();
+    fn release_readiness_report_passes_for_next_release_candidate() {
+        let report = release_readiness_report_from_inputs(
+            "0.2.0",
+            "0.2.0",
+            "A release PR cannot close if",
+            release_checklist_fixture(),
+            "Compatibility And Public Surface",
+            serde_json::json!({
+                "schema_version": "assura.release-surfaces.v1",
+                "path": "docs/data/release-surfaces.json",
+                "surface_count": 2,
+                "unreleased_user_facing_changes": []
+            }),
+            serde_json::json!({ "tagName": "v0.1.0" }),
+        );
         assert_eq!(
             report.get("schema_version").and_then(Value::as_str),
             Some("assura.release-readiness.v1")
         );
-        assert_eq!(report.get("ready").and_then(Value::as_bool), Some(false));
-        assert_eq!(report.get("verdict").and_then(Value::as_str), Some("fail"));
-        assert!(report
-            .get("unreleased_user_facing_changes")
-            .and_then(Value::as_array)
-            .map(|changes| !changes.is_empty())
-            .unwrap_or(false));
+        assert_eq!(report.get("ready").and_then(Value::as_bool), Some(true));
+        assert_eq!(report.get("verdict").and_then(Value::as_str), Some("pass"));
         assert!(report
             .get("reasons")
             .and_then(Value::as_array)
-            .map(|reasons| !reasons.is_empty())
-            .unwrap_or(false));
+            .is_some_and(|reasons| reasons.is_empty()));
+    }
+
+    #[test]
+    fn release_readiness_report_fails_when_latest_tag_has_unreleased_surfaces() {
+        let report = release_readiness_report_from_inputs(
+            "0.2.0",
+            "0.2.0",
+            "A release PR cannot close if",
+            release_checklist_fixture(),
+            "Compatibility And Public Surface",
+            serde_json::json!({
+                "schema_version": "assura.release-surfaces.v1",
+                "path": "docs/data/release-surfaces.json",
+                "surface_count": 1,
+                "unreleased_user_facing_changes": [{
+                    "id": "project-intelligence-local-surfaces",
+                    "status": "supported",
+                    "first_release": "unreleased",
+                    "detail_path": "docs/release-notes.md"
+                }]
+            }),
+            serde_json::json!({ "tagName": "v0.2.0" }),
+        );
+        assert_eq!(report.get("ready").and_then(Value::as_bool), Some(false));
+        assert_eq!(report.get("verdict").and_then(Value::as_str), Some("fail"));
+        assert!(report
+            .get("reasons")
+            .and_then(Value::as_array)
+            .is_some_and(|reasons| reasons.iter().any(|reason| reason
+                .as_str()
+                .is_some_and(|reason| reason.contains("already the latest GitHub release")))));
+    }
+
+    #[test]
+    fn release_surfaces_report_rejects_placeholder_supported_releases() {
+        let path = env::temp_dir().join(format!(
+            "assura-release-surfaces-invalid-{}.json",
+            std::process::id()
+        ));
+        fs::write(
+            &path,
+            r#"{
+              "schema_version": "assura.release-surfaces.v1",
+              "surfaces": [
+                {
+                  "id": "daemon-management-cli-preview",
+                  "status": "experimental",
+                  "first_release": "future",
+                  "detail_path": "docs/release-notes.md"
+                }
+              ]
+            }"#,
+        )
+        .expect("write release surface fixture");
+        let report =
+            release_surfaces_report(path.to_str().expect("utf-8 temp path"), Some("v0.2.0"));
+        let error = report
+            .get("error")
+            .and_then(Value::as_str)
+            .expect("surface validation error");
+        assert!(error.contains("invalid first_release"));
+        let _ = fs::remove_file(path);
+    }
+
+    #[test]
+    fn release_surfaces_report_rejects_later_supported_release() {
+        let path = env::temp_dir().join(format!(
+            "assura-release-surfaces-later-{}.json",
+            std::process::id()
+        ));
+        fs::write(
+            &path,
+            r#"{
+              "schema_version": "assura.release-surfaces.v1",
+              "surfaces": [
+                {
+                  "id": "future-supported-surface",
+                  "status": "supported",
+                  "first_release": "v0.3.0",
+                  "detail_path": "docs/release-notes.md"
+                }
+              ]
+            }"#,
+        )
+        .expect("write release surface fixture");
+        let report =
+            release_surfaces_report(path.to_str().expect("utf-8 temp path"), Some("v0.2.0"));
+        let error = report
+            .get("error")
+            .and_then(Value::as_str)
+            .expect("surface validation error");
+        assert!(error.contains("after local release tag"));
+        let _ = fs::remove_file(path);
+    }
+
+    fn release_checklist_fixture() -> &'static str {
+        "cargo fmt --all -- --check\n\
+         cargo test --all-targets --quiet\n\
+         cargo clippy --all-targets --all-features -- -D warnings\n\
+         cargo xtask release-readiness --format json\n\
+         cargo xtask release-smoke\n\
+         cargo xtask release-live"
     }
 }

@@ -75,7 +75,7 @@ unauthenticated URLs used by new users:
 
 ```bash
 cargo xtask release-live
-ASSURA_VERSION=v0.1.0 cargo xtask release-live
+ASSURA_VERSION=v0.2.0 cargo xtask release-live
 ```
 
 `target/` is Cargo's build cache and can be many gigabytes after local test,

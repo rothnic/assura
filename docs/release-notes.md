@@ -1,14 +1,14 @@
 ---
-title: Assura v0.1.0 Release Notes
+title: Assura v0.2.0 Release Notes
 status: active
 ---
 
-# Assura v0.1.0 Current Branch Release Notes
+# Assura v0.2.0 Release Notes
 
-These notes describe the current pre-1.0 public command surface on this branch
-for the next release-candidate build. They are not a claim that the already
+These notes describe the current pre-1.0 public command surface for the
+`v0.2.0` release-candidate build. They are not a claim that the already
 published May 24, 2026 `v0.1.0` archives contain later Project Intelligence
-work. Assura publishes installable archives from
+or beta roadmap work. Assura publishes installable archives from
 [`.github/workflows/release.yml`](../.github/workflows/release.yml) when a
 maintainer pushes an intentional `v*` tag after the release checklist in
 [`docs/release-candidate-checklist.md`](./release-candidate-checklist.md)
@@ -201,7 +201,7 @@ branch surfaces are advertised as installable release artifacts.
 - Custom constraints execute through `assura check` and report normal
   `StructureViolation` records with `custom:<id>` rule names.
 - Remote plugin loading, marketplaces, shell-executed plugins, and third-party
-  Rust/TypeScript plugin APIs are not part of v0.1.0.
+  Rust/TypeScript plugin APIs are not part of v0.2.0.
 
 ## Removed Or Superseded Surfaces
 
@@ -246,11 +246,10 @@ After publishing a tag, maintainers must also run:
 
 ```bash
 cargo xtask release-live
-ASSURA_VERSION=v0.1.0 cargo xtask release-live
+ASSURA_VERSION=v0.2.0 cargo xtask release-live
 ```
 
 ## Next
 
-Iteration 01 closes with release readiness. The next planned roadmap iteration
-is
-[`Assura Roadmap Iteration 02: Policy Depth And Ecosystem`](./goals/assura-roadmap-iteration-02-policy-depth-and-ecosystem.md).
+After `v0.2.0` is tagged and verified, the beta program can record release
+artifact evidence and move remaining follow-up work into post-beta hardening.
