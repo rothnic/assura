@@ -3,7 +3,9 @@
 use super::{lifecycle::runtime_status_for_health, DaemonTextRender};
 use crate::daemon::{DaemonHealth, LocalDaemonCore};
 use serde::Serialize;
+use std::fs;
 use std::path::PathBuf;
+use std::process::Command;
 
 const DAEMON_PROTOCOL_VERSION: &str = "assura.daemon.v1";
 
@@ -25,6 +27,7 @@ pub(super) fn daemon_status_output(health: DaemonHealth) -> DaemonStatusOutput {
     DaemonStatusOutput {
         schema: "assura.daemon.status.v1",
         protocol_version: DAEMON_PROTOCOL_VERSION,
+        project: DaemonProjectStatus::for_health(&health),
         process: DaemonProcessStatus {
             state: runtime.state,
             running: runtime.running,
@@ -84,8 +87,28 @@ pub(super) struct DaemonStatusOutput {
     schema: &'static str,
     protocol_version: &'static str,
     health: DaemonHealth,
+    project: DaemonProjectStatus,
     process: DaemonProcessStatus,
     management: DaemonManagementCommands,
+}
+
+#[derive(Debug, Serialize)]
+struct DaemonProjectStatus {
+    project_root: PathBuf,
+    config_path: PathBuf,
+    config_fingerprint: Option<String>,
+    dirty_paths: Vec<String>,
+}
+
+impl DaemonProjectStatus {
+    fn for_health(health: &DaemonHealth) -> Self {
+        Self {
+            project_root: health.project_root.clone(),
+            config_path: health.config_path.clone(),
+            config_fingerprint: config_fingerprint(&health.config_path),
+            dirty_paths: dirty_paths(&health.project_root),
+        }
+    }
 }
 
 #[derive(Debug, Serialize)]
@@ -123,6 +146,37 @@ impl DaemonManagementCommands {
             fallback: health.fallback_command.clone(),
         }
     }
+}
+
+fn config_fingerprint(path: &PathBuf) -> Option<String> {
+    let content = fs::read(path).ok()?;
+    Some(format!(
+        "{:016x}",
+        crate::stable_hash::stable_hash(&content)
+    ))
+}
+
+fn dirty_paths(project_root: &PathBuf) -> Vec<String> {
+    let Ok(output) = Command::new("git")
+        .arg("-C")
+        .arg(project_root)
+        .arg("status")
+        .arg("--porcelain")
+        .arg("--untracked-files=all")
+        .output()
+    else {
+        return Vec::new();
+    };
+    if !output.status.success() {
+        return Vec::new();
+    }
+    String::from_utf8_lossy(&output.stdout)
+        .lines()
+        .filter_map(|line| line.get(3..))
+        .map(str::trim)
+        .filter(|path| !path.is_empty())
+        .map(ToString::to_string)
+        .collect()
 }
 
 #[derive(Debug, Serialize)]

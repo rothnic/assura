@@ -16,6 +16,13 @@ fn daemon_status_json_reports_management_contract() {
     assert_eq!(json["schema"], "assura.daemon.status.v1");
     assert_eq!(json["protocol_version"], "assura.daemon.v1");
     assert_eq!(json["health"]["state"], "running");
+    assert!(
+        json["project"]["config_fingerprint"]
+            .as_str()
+            .unwrap()
+            .len()
+            >= 16
+    );
     assert_eq!(json["process"]["running"], false);
     assert_eq!(json["process"]["state"], "not_started");
     assert_eq!(json["process"]["mode"], "local_probe");
@@ -27,6 +34,26 @@ fn daemon_status_json_reports_management_contract() {
         .as_str()
         .unwrap()
         .contains("assura daemon start --format json"));
+}
+
+#[test]
+fn daemon_status_json_reports_git_dirty_paths() {
+    let project = daemon_project();
+    git(&project, &["init"]);
+    git(&project, &["add", "."]);
+    git(&project, &["commit", "-m", "init"]);
+    fs::write(project.path().join("docs/new-note.md"), "# New\n").unwrap();
+
+    let json = assura_json(
+        &project,
+        &["daemon", "status", project.path_str(), "--format", "json"],
+    );
+
+    assert!(json["project"]["dirty_paths"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|path| path == "docs/new-note.md"));
 }
 
 #[test]
@@ -525,4 +552,24 @@ impl DaemonProject {
     fn path_str(&self) -> &str {
         self.project.path().to_str().unwrap()
     }
+}
+
+fn git(project: &DaemonProject, args: &[&str]) {
+    let output = Command::new("git")
+        .arg("-C")
+        .arg(project.path())
+        .args(args)
+        .env("GIT_AUTHOR_NAME", "Assura Test")
+        .env("GIT_AUTHOR_EMAIL", "assura@example.test")
+        .env("GIT_COMMITTER_NAME", "Assura Test")
+        .env("GIT_COMMITTER_EMAIL", "assura@example.test")
+        .output()
+        .unwrap();
+    assert!(
+        output.status.success(),
+        "git {:?}\nstdout:\n{}\nstderr:\n{}",
+        args,
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
 }

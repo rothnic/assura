@@ -31,7 +31,11 @@ humans, editors, hooks, and agents.
 ### 3. Contracts
 
 - `status` emits schema `assura.daemon.status.v1` with
-  `protocol_version`, `health`, `process`, and `management` fields.
+  `protocol_version`, `health`, `project`, `process`, and `management`
+  fields.
+- `status.project` includes `project_root`, `config_path`,
+  `config_fingerprint`, and git `dirty_paths`. Non-git projects return an
+  empty dirty path list.
 - `doctor` emits schema `assura.daemon.doctor.v1` with
   `protocol_version`, `health`, and `checks`.
 - `start`, `stop`, and `restart` emit schema
@@ -53,6 +57,8 @@ humans, editors, hooks, and agents.
 | Condition | Behavior |
 | --- | --- |
 | Project loads | `status` and `doctor` return JSON with `health.state = "running"`. |
+| `status` runs in a git repository with local changes | Return changed or untracked paths in `project.dirty_paths`. |
+| `status` can read config | Return a stable hex `project.config_fingerprint`. |
 | Project cannot load | `status` returns JSON health with `state = "unavailable"`; `doctor` returns JSON diagnostics and exits with runtime error. |
 | `start` runs twice | First call returns `changed = true`; repeated call returns `changed = false` with runtime `state = "started"`. |
 | `stop` runs twice | First call after start returns `changed = true`; repeated call returns `changed = false` with runtime `state = "stopped"`. |
@@ -69,7 +75,8 @@ humans, editors, hooks, and agents.
 - Good: repeated `daemon start --format json` and
   `daemon stop --format json` calls are idempotent.
 - Base: `daemon status --format json` on a valid project reports protocol,
-  process placeholder metadata, management hints, and health.
+  project metadata, config fingerprint, dirty paths, process metadata,
+  management hints, and health.
 - Bad: `daemon start --format json` claims `process.running = true` before a
   real long-running process or socket server exists.
 
@@ -77,6 +84,7 @@ humans, editors, hooks, and agents.
 
 - CLI tests for status schema, protocol version, health, process metadata, and
   lifecycle command hints.
+- CLI tests for status config fingerprint and git dirty paths.
 - CLI tests for idempotent start/stop, restart, runtime status files, and
   bounded logs.
 - CLI tests for doctor success and unavailable-project remediation.

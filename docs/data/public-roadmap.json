@@ -72,6 +72,12 @@
           "summary": "Provide warm affected-path feedback that matches one-shot truth.",
           "detail_path": "docs/goals/assura-reference-daemon-readiness.md",
           "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-reference-daemon-readiness.md"
+        },
+        {
+          "label": "Daemon CLI",
+          "summary": "Share start, stop, status, doctor, logs, and fallback commands.",
+          "detail_path": "docs/goals/assura-daemon-management-cli.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-daemon-management-cli.md"
         }
       ]
     },
@@ -86,10 +92,10 @@
           "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-beta-code-agnostic-capabilities-program.md"
         },
         {
-          "label": "Daemon CLI",
-          "summary": "Share start, stop, status, doctor, logs, and fallback commands.",
-          "detail_path": "docs/goals/assura-daemon-management-cli.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-daemon-management-cli.md"
+          "label": "Agent Nudges",
+          "summary": "Send bounded event-aware nudges to Codex, OpenCode, Claude, and Pi agents.",
+          "detail_path": "docs/goals/assura-beta-agent-nudge-integrations.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-beta-agent-nudge-integrations.md"
         }
       ]
     },
@@ -97,12 +103,6 @@
       "status": "next",
       "title": "Next",
       "items": [
-        {
-          "label": "Agent Nudges",
-          "summary": "Send bounded event-aware nudges to Codex, OpenCode, Claude, and Pi agents.",
-          "detail_path": "docs/goals/assura-beta-agent-nudge-integrations.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-beta-agent-nudge-integrations.md"
-        },
         {
           "label": "VS Code",
           "summary": "Use the shared daemon/client contract for editor diagnostics and commands.",
