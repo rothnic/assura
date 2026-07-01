@@ -65,7 +65,7 @@ completion summary.
 - [x] `cargo run --quiet -- check --format json .`, `cargo xtask docs`,
       `cargo xtask evidence`, `cargo xtask target-state`, and `git diff --check`
       pass.
-- [ ] A PR is opened against `master`.
+- [x] A PR is opened against `master`: <https://github.com/rothnic/assura/pull/113>.
 
 ## Review Evidence
 
