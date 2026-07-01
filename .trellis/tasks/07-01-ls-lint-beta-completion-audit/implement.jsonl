@@ -1,0 +1,6 @@
+{"file":"docs/goals/assura-ls-lint-no-slower-performance-gate.md","reason":"Child goal to verify and potentially close from live no-slower evidence."}
+{"file":"docs/goals/assura-beta-code-agnostic-capabilities-program.md","reason":"Master program whose final audit and completion/blocker status must be updated."}
+{"file":"benches/history/current.json","reason":"Checked performance source for cold and warm LS-Lint comparison claims."}
+{"file":"website/public/data/performance/current.json","reason":"Public performance data must stay aligned with checked benchmark evidence."}
+{"file":"docs/data/release-surfaces.json","reason":"Release surface classifications are part of the beta completion audit."}
+{"file":".agents/skills/assura-performance-reporting/SKILL.md","reason":"Performance evidence workflow and LS-Lint comparison caveats."}

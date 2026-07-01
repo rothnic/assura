@@ -1,0 +1,32 @@
+{
+  "id": "ls-lint-beta-completion-audit",
+  "name": "ls-lint-beta-completion-audit",
+  "title": "LS-Lint gate and beta completion audit",
+  "description": "Verify the LS-Lint no-slower gate against current checked performance artifacts, close the child goal if live evidence still passes, and run a beta completion audit across the master program.",
+  "status": "in_progress",
+  "dev_type": "docs-validation",
+  "scope": "docs/goals,benches/history,website/public/data/performance,xtask,release-readiness",
+  "package": null,
+  "priority": "P2",
+  "creator": "nroth",
+  "assignee": "nroth",
+  "createdAt": "2026-07-01",
+  "completedAt": null,
+  "branch": "codex/markdown-reference-master-goal",
+  "base_branch": "codex/markdown-reference-master-goal",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "docs/goals/assura-ls-lint-no-slower-performance-gate.md",
+    "docs/goals/assura-beta-code-agnostic-capabilities-program.md",
+    "benches/history/current.json",
+    "website/public/data/performance/current.json",
+    "docs/data/release-surfaces.json"
+  ],
+  "notes": "Final beta-program audit task. Do not mark the master program complete unless release tag/artifact evidence exists or the blocker is explicitly recorded.",
+  "meta": {}
+}

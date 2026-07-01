@@ -1,0 +1,6 @@
+{"file":"docs/goals/assura-ls-lint-no-slower-performance-gate.md","reason":"Confirm child-goal definition of done and reviewer blocking criteria are satisfied."}
+{"file":"docs/goals/assura-beta-code-agnostic-capabilities-program.md","reason":"Confirm all ten epics have evidence or an explicit blocker before completion claims."}
+{"file":"docs/release-train.md","reason":"Check release train status for beta artifact requirements."}
+{"file":"docs/support-policy.md","reason":"Check supported, experimental, future, and unsupported surface classifications."}
+{"file":"docs/compatibility-and-surface.md","reason":"Check compatibility language for daemon/editor/agent surfaces."}
+{"file":"docs/release-notes.md","reason":"Check release-note claims against supported and experimental surfaces."}
