@@ -24,6 +24,7 @@ export default defineConfig({
 					items: [
 						{ label: 'Introduction', slug: 'introduction' },
 						{ label: 'Why Assura?', slug: 'why-assura' },
+						{ label: 'Roadmap', slug: 'roadmap' },
 					],
 				},
 				{

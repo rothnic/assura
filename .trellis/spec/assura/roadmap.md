@@ -32,22 +32,41 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 18 | Project Intelligence Runtime | Completed | All nine successors and final completion audit completed locally |
 | 19 | Project Intelligence Usability | Completed | Adoption blueprint, real-repo proof, onboarding template, context pack, persistent session, safe-fix workflow, `.assura/` directory organization, agent CLI surface, LSP editor transport, release hardening, and final usability audit completed locally |
 | 20 | Project Intelligence Simple Usability | Completed | PR #109 merged and deployed; task archived under `.trellis/tasks/archive/2026-06/` |
-| 21 | Markdown Reference Intelligence | Active | Parent program for fast Markdown linting, repository reference graph, daemon readiness, daemon management CLI, VS Code integration, agent daemon awareness, incremental pre-1.0 releases, public roadmap artifact, and future Zed/JetBrains editor follow-ups |
+| 21 | Markdown Reference Intelligence | Active | Child program under the beta workstream for fast Markdown linting, repository reference graph, daemon readiness, daemon management CLI, VS Code integration, agent daemon awareness, incremental pre-1.0 releases, public roadmap artifact, and future Zed/JetBrains editor follow-ups |
+| 22 | Beta Code-Agnostic Capabilities | Active | Master beta program covering roadmap/release train, structure severity, content collections, Markdown quality, reference graph, daemon core, daemon CLI, agent nudges, VS Code, and the LS-Lint no-slower performance gate |
 
 ## Active Roadmap Iteration
 
-Markdown Reference Intelligence is active.
+Beta Code-Agnostic Capabilities is active.
 
 Owning task:
-`.trellis/tasks/06-30-markdown-lint-link-reference-engine`.
+`.trellis/tasks/07-01-agent-nudge-integrations`.
 
 Current branch:
-`codex/markdown-lint-link-reference-goal`.
+`codex/markdown-reference-master-goal`.
 
 Current recommended goal:
-`docs/goals/assura-markdown-reference-intelligence-program.md`.
+`docs/goals/assura-beta-agent-nudge-integrations.md`.
+
+Public roadmap artifact:
+`docs/data/public-roadmap.json`.
 
 Triggering evidence:
+After defining the Markdown Reference Intelligence parent program, live review
+clarified that the real target is a beta release across ten large epics:
+public roadmap and release train, structure validation severity messaging,
+frontmatter and collection modeling/querying, high-performance Markdown
+linting and heading validation, code/doc reference validation, daemon mode,
+daemon management CLI, concise agent nudges for Codex/OpenCode/Claude/Pi
+agents, VS Code integration, and a hard LS-Lint no-slower performance gate.
+
+The current checked performance artifact shows cold `assura-cli` no slower
+than native LS-Lint on 8 of 8 realistic-equivalent fixtures, with the strict
+2x claim not complete, while warm session evidence remains complete. The beta
+performance gate blocks any merge where a headline LS-Lint-equivalent fixture
+is slower than native LS-Lint.
+
+Prior triggering evidence:
 After the Project Intelligence docs follow-up merged and deployed, live review
 clarified a separate Markdown and repository-reference quality requirement:
 Assura should provide a hyper-fast local Markdown linter that validates
@@ -57,7 +76,8 @@ broken file/code/heading/line references, supports configurable warning levels,
 allows reasoned suppressions, and can later power context-efficient daemon or
 warm-session feedback from the same reference graph.
 
-The parent program tracks the required child goals for the reference engine,
+The beta program tracks the required child goals. The Markdown Reference
+Intelligence program remains a child workstream for the reference engine,
 daemon readiness, daemon management CLI, VS Code integration, agent daemon
 awareness, incremental pre-1.0 releases, public website roadmap, and later
 Zed/JetBrains integrations.
@@ -145,21 +165,22 @@ one `--format <agent>-hook` value per agent. Treat older roadmap/task wording in
 that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
 Planned next roadmap candidate:
-Complete the Markdown Reference Intelligence parent-program planning slice,
-then implement the first fast local Markdown lint/repository-reference
-validation slice from
-`docs/goals/assura-markdown-lint-link-reference-engine.md`. Keep CLI-first
-local workflows as the default product path; MCP or hosted adapters are
-optional later surfaces over the same contracts.
+Execute the beta program one epic at a time from
+`docs/goals/assura-beta-code-agnostic-capabilities-program.md`. The first
+incomplete epic is the public roadmap and release-train source of truth. Keep
+CLI-first local workflows as the default product path; MCP or hosted adapters
+are optional later surfaces over the same contracts.
 
 ## Recommended Next Action
 
 Run the workflow gate, then continue
-`.trellis/tasks/06-30-markdown-lint-link-reference-engine`. The immediate path
-is to land the parent program and child goals, then start the first
-implementation slice against the reference-engine proof gates. Do not reopen
-completed Project Intelligence Runtime or lower-level Usability successors
-unless new evidence names a narrower drift case.
+`.trellis/tasks/07-01-07-01-agent-nudge-integrations`. The immediate path is
+to execute `docs/goals/assura-beta-agent-nudge-integrations.md` with
+`docs/goals/assura-agent-daemon-awareness.md` as Epic 8 of the beta program.
+Build concise Codex, OpenCode, Claude, and Pi agent nudge contracts over the
+shared Assura agent-feedback and daemon CLI surfaces. Do not reopen completed
+Daemon CLI, Daemon Core, or Reference Graph work unless new evidence names a
+narrower drift case.
 
 ## Roadmap Rules
 

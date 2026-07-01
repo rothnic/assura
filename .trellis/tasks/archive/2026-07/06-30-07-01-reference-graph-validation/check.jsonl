@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/assura/index.md", "reason": "Check implementation against current Assura project constraints and public-surface rules."}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Review cross-layer reference fact contracts and caller expectations."}
+{"file": "docs/goals/assura-code-doc-reference-validation.md", "reason": "Check completion against Epic 5 proof gates and blocker criteria."}
+{"file": "docs/project-intelligence-facts.md", "reason": "Verify new reference facts or edges fit the existing Project Intelligence contract."}

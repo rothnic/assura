@@ -19,6 +19,12 @@ pub mod constraints;
 #[doc(hidden)]
 pub mod content_repository;
 #[cfg(feature = "full-cli")]
+/// Experimental daemon-ready state contracts shared by local integrations.
+///
+/// These APIs are internal pre-1.0 building blocks until daemon support is
+/// promoted in the release surface matrix.
+pub mod daemon;
+#[cfg(feature = "full-cli")]
 /// Experimental dependency-intelligence internals.
 ///
 /// This is not a supported dependency graph validation release surface.
@@ -27,11 +33,15 @@ pub mod intelligence;
 mod ls_compat;
 #[cfg(feature = "full-cli")]
 pub mod markdown;
+#[cfg(any(feature = "full-cli", feature = "yaml-config"))]
+#[path = "markdown/links.rs"]
+pub(crate) mod markdown_links;
 #[cfg(feature = "full-cli")]
 /// Experimental maturity internals.
 ///
 /// This is not a supported maturity detection release surface.
 pub mod maturity;
+pub(crate) mod repository_references;
 #[cfg(feature = "full-cli")]
 /// Internal validation engine APIs used by CLI and compatibility tests. These
 /// exports do not carry a pre-1.0 compatibility guarantee.
@@ -55,11 +65,11 @@ pub use intelligence::{
     AgentSurfaceSummary, CodeProviderEvidence, CodeSymbol, Diagnostic, EdgeId, EmbeddingRecord,
     FactGeneration, FactId, FactIngestor, FactOrigin, FactSet, FactStoreStats, FieldDefinition,
     GraphBuilder, GraphError, GraphPersistence, GraphQuery, GraphResult, InMemoryFactStore,
-    IntelligenceGraph, MarkdownDocument as ProjectMarkdownDocument, MarkdownSection,
+    IntelligenceGraph, MarkdownDocument as ProjectMarkdownDocument, MarkdownLink, MarkdownSection,
     ModelDefinition, ModelInstance, Node, NodeId, NodeMetadata, NodeType, PathScope, ProjectEdge,
     ProjectFact, ProjectIntelligenceAgentContext, Relationship, RelationshipDefinition,
-    RelationshipEdge, Resource, SafeFix, SearchChunk, SemanticSearchHit, SourceLocation, SymbolRef,
-    LOCAL_HASH_EMBEDDING_DIMENSIONS, LOCAL_HASH_EMBEDDING_PROVIDER,
+    RelationshipEdge, RepositoryReferenceEdge, Resource, SafeFix, SearchChunk, SemanticSearchHit,
+    SourceLocation, SymbolRef, LOCAL_HASH_EMBEDDING_DIMENSIONS, LOCAL_HASH_EMBEDDING_PROVIDER,
 };
 
 #[cfg(feature = "full-cli")]

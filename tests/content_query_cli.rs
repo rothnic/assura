@@ -282,6 +282,11 @@ fn content_query_reports_generic_agent_context() {
         "assura.project-intelligence.agent-context.v1"
     );
     assert_eq!(context["summary"]["model_instances"], 1);
+    assert_eq!(context["summary"]["repository_reference_edges"], 2);
+    assert_eq!(
+        context["summary"]["unresolved_repository_reference_edges"],
+        0
+    );
     assert_eq!(context["summary"]["symbol_refs"], 2);
     assert_eq!(context["summary"]["resolved_symbol_refs"], 1);
     let capabilities = context["capabilities"]
@@ -296,6 +301,113 @@ fn content_query_reports_generic_agent_context() {
     assert!(capabilities
         .iter()
         .any(|item| { item["name"] == "code_symbols" && item["cli"] == "assura content symbols" }));
+
+    let diagnostics = json_output(run_content(&[
+        "agent-query",
+        "diagnostics",
+        "tests/fixtures/content_runtime/code_symbols",
+        "--format",
+        "json",
+    ]));
+    let diagnostic_items = diagnostics["response"]["diagnostics"]
+        .as_array()
+        .expect("diagnostics array");
+    assert!(!diagnostic_items
+        .iter()
+        .any(|item| item["rule"] == "repository_reference_target"));
+}
+
+#[test]
+fn content_query_reports_repository_reference_context() {
+    let target_refs = json_output(run_content(&[
+        "references",
+        "tests/fixtures/content_runtime/code_symbols",
+        "--target",
+        "src/sample.rs",
+        "--format",
+        "json",
+    ]));
+    assert_eq!(target_refs["mode"], "target");
+    assert_eq!(target_refs["path"], "src/sample.rs");
+    let inbound = target_refs["references"]
+        .as_array()
+        .expect("references array");
+    assert_eq!(inbound.len(), 1);
+    assert_eq!(inbound[0]["source_path"], "README.md");
+    assert!(inbound[0]["source_line"].is_number());
+    assert!(inbound[0]["source_column"].is_number());
+    assert_eq!(inbound[0]["target_path"], "src/sample.rs");
+    assert_eq!(inbound[0]["target_exists"], true);
+    assert_eq!(inbound[0]["reference_kind"], "markdown_link");
+    assert_eq!(inbound[0]["rule"], "markdown_link_target");
+    assert_eq!(inbound[0]["confidence"], "exact");
+
+    let source_refs = json_output(run_content(&[
+        "references",
+        "tests/fixtures/content_runtime/code_symbols",
+        "--source",
+        "src/sample.rs",
+        "--format",
+        "json",
+    ]));
+    assert_eq!(source_refs["mode"], "source");
+    let outbound = source_refs["references"]
+        .as_array()
+        .expect("references array");
+    assert_eq!(outbound.len(), 1);
+    assert_eq!(outbound[0]["source_path"], "src/sample.rs");
+    assert_eq!(
+        outbound[0]["target_path"],
+        "components/component_config.json"
+    );
+    assert_eq!(outbound[0]["reference_kind"], "comment_reference");
+    assert_eq!(outbound[0]["rule"], "repository_reference_target");
+    assert_eq!(outbound[0]["target_exists"], true);
+    assert_eq!(outbound[0]["confidence"], "medium");
+
+    let text_refs = run_content(&[
+        "references",
+        "tests/fixtures/content_runtime/code_symbols",
+        "--target",
+        "src/sample.rs",
+    ]);
+    assert!(text_refs.status.success());
+    let text = String::from_utf8_lossy(&text_refs.stdout);
+    assert!(text.contains("source=README.md:"), "{text}");
+    assert!(text.contains("target=src/sample.rs"), "{text}");
+    assert!(text.contains("anchor=-"), "{text}");
+    assert!(text.contains("lines=-"), "{text}");
+    assert!(text.contains("exists=true"), "{text}");
+    assert!(text.contains("rule=markdown_link_target"), "{text}");
+    assert!(text.contains("kind=markdown_link"), "{text}");
+    assert!(text.contains("confidence=exact"), "{text}");
+}
+
+#[test]
+fn content_query_references_requires_exactly_one_direction() {
+    let no_direction = run_content(&[
+        "references",
+        "tests/fixtures/content_runtime/code_symbols",
+        "--format",
+        "json",
+    ]);
+    assert!(!no_direction.status.success());
+    assert!(String::from_utf8_lossy(&no_direction.stderr)
+        .contains("references requires exactly one of --source or --target"));
+
+    let both_directions = run_content(&[
+        "references",
+        "tests/fixtures/content_runtime/code_symbols",
+        "--source",
+        "README.md",
+        "--target",
+        "src/sample.rs",
+        "--format",
+        "json",
+    ]);
+    assert!(!both_directions.status.success());
+    assert!(String::from_utf8_lossy(&both_directions.stderr)
+        .contains("references requires exactly one of --source or --target"));
 }
 
 #[test]

@@ -44,6 +44,10 @@ pub struct AgentSurfaceSummary {
     pub relationship_edges: usize,
     /// Relationship edges without a resolved target.
     pub unresolved_relationship_edges: usize,
+    /// Repository-internal reference edges.
+    pub repository_reference_edges: usize,
+    /// Repository-internal reference edges without a resolved target path.
+    pub unresolved_repository_reference_edges: usize,
     /// Search chunks available for keyword or semantic retrieval.
     pub search_chunks: usize,
     /// Optional embedding records.
@@ -80,8 +84,8 @@ pub fn project_intelligence_agent_context(facts: &FactSet) -> ProjectIntelligenc
             capability(
                 "graph_queries",
                 "supported",
-                "assura content expand",
-                "Graph context comes from local project-intelligence facts.",
+                "assura content expand; assura content references",
+                "Graph context and repository references come from local project-intelligence facts.",
             ),
             capability(
                 "keyword_search",
@@ -127,6 +131,8 @@ fn summarize_agent_surface(facts: &FactSet) -> AgentSurfaceSummary {
         safe_fixes: 0,
         relationship_edges: 0,
         unresolved_relationship_edges: 0,
+        repository_reference_edges: 0,
+        unresolved_repository_reference_edges: 0,
         search_chunks: 0,
         embedding_records: 0,
         symbol_refs: 0,
@@ -149,6 +155,12 @@ fn summarize_agent_surface(facts: &FactSet) -> AgentSurfaceSummary {
                 summary.relationship_edges += 1;
                 if edge.target_id.is_none() {
                     summary.unresolved_relationship_edges += 1;
+                }
+            }
+            ProjectEdge::RepositoryReference(edge) => {
+                summary.repository_reference_edges += 1;
+                if edge.target_id.is_none() {
+                    summary.unresolved_repository_reference_edges += 1;
                 }
             }
             ProjectEdge::SymbolRef(edge) => {

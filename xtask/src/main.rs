@@ -38,6 +38,8 @@ fn run() -> Result<()> {
         "release-size" => run_release_size(),
         "release-smoke" => run_release_smoke(),
         "release-live" => run_release_live(),
+        "release-readiness" => run_release_readiness(&rest),
+        "performance-no-slower" => run_performance_no_slower(&rest),
         "changed" => run_changed(&rest),
         "pr" => run_pr(),
         "full" => {
@@ -57,7 +59,7 @@ fn run() -> Result<()> {
 
 fn print_usage() {
     eprintln!(
-        "Usage: cargo xtask <fast|check|test|evidence|target-state|hygiene|docs|release-size|release-smoke|release-live|changed|pr|full>"
+        "Usage: cargo xtask <fast|check|test|evidence|target-state|hygiene|docs|release-size|release-smoke|release-live|release-readiness|performance-no-slower|changed|pr|full>"
     );
 }
 
@@ -240,6 +242,279 @@ fn run_release_live() -> Result<()> {
         }
     }
     Ok(())
+}
+
+fn run_release_readiness(args: &[String]) -> Result<()> {
+    let mut format = "text";
+    let mut index = 0;
+    while index < args.len() {
+        match args[index].as_str() {
+            "--format" => {
+                let Some(value) = args.get(index + 1) else {
+                    return Err("missing value for --format".into());
+                };
+                format = value;
+                index += 2;
+            }
+            other => return Err(format!("unknown release-readiness option: {other}").into()),
+        }
+    }
+    if !matches!(format, "json" | "text") {
+        return Err(format!("unsupported release-readiness format: {format}").into());
+    }
+
+    let report = release_readiness_report();
+    if format == "json" {
+        println!("{}", serde_json::to_string_pretty(&report)?);
+    } else {
+        let verdict = report
+            .get("verdict")
+            .and_then(Value::as_str)
+            .unwrap_or("unknown");
+        println!("Release readiness: {verdict}");
+        if let Some(reasons) = report.get("reasons").and_then(Value::as_array) {
+            for reason in reasons {
+                if let Some(reason) = reason.as_str() {
+                    println!("- {reason}");
+                }
+            }
+        }
+    }
+
+    if report.get("ready").and_then(Value::as_bool) == Some(true) {
+        Ok(())
+    } else {
+        Err("release readiness failed".into())
+    }
+}
+
+fn release_readiness_report() -> Value {
+    let local_version = toml_string_value(&read("Cargo.toml"), "version").unwrap_or_default();
+    let release_notes_text = read("docs/release-notes.md");
+    let release_notes_version = release_notes_version(&release_notes_text).unwrap_or_default();
+    release_readiness_report_from_inputs(
+        &local_version,
+        &release_notes_version,
+        &read("docs/support-policy.md"),
+        &read("docs/release-candidate-checklist.md"),
+        &read("docs/compatibility-and-surface.md"),
+        release_surfaces_report(
+            "docs/data/release-surfaces.json",
+            Some(&format!("v{local_version}")),
+        ),
+        latest_github_release(),
+    )
+}
+
+fn release_readiness_report_from_inputs(
+    local_version: &str,
+    release_notes_version: &str,
+    support_policy_text: &str,
+    release_checklist_text: &str,
+    compatibility_text: &str,
+    release_surfaces: Value,
+    latest_release: Value,
+) -> Value {
+    let local_tag = format!("v{local_version}");
+    let mut reasons = Vec::new();
+    let mut missing_checklist_items = Vec::new();
+    for required in [
+        "cargo fmt --all -- --check",
+        "cargo test --all-targets --quiet",
+        "cargo clippy --all-targets --all-features -- -D warnings",
+        "cargo xtask release-readiness --format json",
+        "cargo xtask release-smoke",
+        "cargo xtask release-live",
+    ] {
+        if !release_checklist_text.contains(required) {
+            missing_checklist_items.push(required.to_string());
+        }
+    }
+    if !missing_checklist_items.is_empty() {
+        reasons.push("release checklist is missing required gates".to_string());
+    }
+
+    if release_notes_version != local_version {
+        reasons.push(format!(
+            "release notes version {release_notes_version:?} does not match Cargo.toml version {local_version:?}"
+        ));
+    }
+    if !support_policy_text.contains("A release PR cannot close if") {
+        reasons.push("support policy is missing release PR blocking criteria".to_string());
+    }
+    if !compatibility_text.contains("Compatibility And Public Surface") {
+        reasons.push("compatibility matrix is missing release surface source of truth".to_string());
+    }
+
+    let unreleased_user_facing_changes = release_surfaces
+        .get("unreleased_user_facing_changes")
+        .cloned()
+        .unwrap_or_else(|| serde_json::json!([]));
+    if let Some(error) = release_surfaces.get("error").and_then(Value::as_str) {
+        reasons.push(format!(
+            "release surface manifest could not be checked: {error}"
+        ));
+    }
+    if let Some(error) = latest_release.get("error").and_then(Value::as_str) {
+        reasons.push(format!(
+            "latest GitHub release could not be checked: {error}"
+        ));
+    }
+    let latest_tag = latest_release
+        .get("tagName")
+        .and_then(Value::as_str)
+        .unwrap_or_default();
+    if latest_tag == local_tag
+        && unreleased_user_facing_changes
+            .as_array()
+            .map(|changes| !changes.is_empty())
+            .unwrap_or(false)
+    {
+        reasons.push(format!(
+            "{local_tag} is already the latest GitHub release but current branch release notes describe unreleased user-facing changes"
+        ));
+    }
+
+    let ready = reasons.is_empty();
+    serde_json::json!({
+        "schema_version": "assura.release-readiness.v1",
+        "latest_github_release": latest_release,
+        "local_package_version": local_version,
+        "local_tag": local_tag,
+        "release_notes_version": release_notes_version,
+        "unreleased_user_facing_changes": unreleased_user_facing_changes,
+        "release_surfaces": release_surfaces,
+        "missing_checklist_items": missing_checklist_items,
+        "ready": ready,
+        "verdict": if ready { "pass" } else { "fail" },
+        "reasons": reasons,
+    })
+}
+
+fn latest_github_release() -> Value {
+    match Command::new("gh")
+        .args([
+            "release",
+            "view",
+            "--json",
+            "tagName,publishedAt,name,isDraft,isPrerelease,url",
+        ])
+        .output()
+    {
+        Ok(output) if output.status.success() => serde_json::from_slice::<Value>(&output.stdout)
+            .unwrap_or_else(|error| serde_json::json!({ "error": error.to_string() })),
+        Ok(output) => serde_json::json!({
+            "error": String::from_utf8_lossy(&output.stderr).trim().to_string()
+        }),
+        Err(error) => serde_json::json!({ "error": error.to_string() }),
+    }
+}
+
+fn release_notes_version(text: &str) -> Option<String> {
+    let after_marker = text.split_once("Assura v")?.1;
+    let version = after_marker
+        .chars()
+        .take_while(|ch| ch.is_ascii_digit() || *ch == '.')
+        .collect::<String>();
+    if version.is_empty() {
+        return None;
+    }
+    Some(version)
+}
+
+fn release_surfaces_report(path: &str, current_tag: Option<&str>) -> Value {
+    let text = read(path);
+    let Ok(manifest) = serde_json::from_str::<Value>(&text) else {
+        return serde_json::json!({ "error": format!("{path}: invalid JSON") });
+    };
+    if manifest.get("schema_version").and_then(Value::as_str) != Some("assura.release-surfaces.v1")
+    {
+        return serde_json::json!({ "error": format!("{path}: unexpected schema_version") });
+    }
+    let Some(surfaces) = manifest.get("surfaces").and_then(Value::as_array) else {
+        return serde_json::json!({ "error": format!("{path}: surfaces must be an array") });
+    };
+
+    let mut errors = Vec::new();
+    let mut unreleased = Vec::new();
+    for surface in surfaces {
+        let id = surface
+            .get("id")
+            .and_then(Value::as_str)
+            .unwrap_or_default();
+        let status = surface
+            .get("status")
+            .and_then(Value::as_str)
+            .unwrap_or_default();
+        let first_release = surface
+            .get("first_release")
+            .and_then(Value::as_str)
+            .unwrap_or_default();
+        let detail_path = surface
+            .get("detail_path")
+            .and_then(Value::as_str)
+            .unwrap_or_default();
+        if id.is_empty() {
+            errors.push("surface missing id".to_string());
+        }
+        if !matches!(
+            status,
+            "supported" | "experimental" | "internal" | "roadmap" | "unsupported"
+        ) {
+            errors.push(format!("{id}: invalid status {status:?}"));
+        }
+        if first_release.is_empty() {
+            errors.push(format!("{id}: missing first_release"));
+        }
+        if matches!(status, "supported" | "experimental") && first_release != "unreleased" {
+            if !release_tag_like(first_release) {
+                errors.push(format!(
+                    "{id}: supported or experimental surface has invalid first_release {first_release:?}"
+                ));
+            } else if let Some(current_tag) = current_tag {
+                if release_tag_tuple(first_release) > release_tag_tuple(current_tag) {
+                    errors.push(format!(
+                        "{id}: first_release {first_release:?} is after local release tag {current_tag:?}"
+                    ));
+                }
+            }
+        }
+        if !detail_path.is_empty() && !exists(detail_path) {
+            errors.push(format!("{id}: detail_path {detail_path} does not exist"));
+        }
+        if matches!(status, "supported" | "experimental") && first_release == "unreleased" {
+            unreleased.push(serde_json::json!({
+                "id": id,
+                "status": status,
+                "first_release": first_release,
+                "detail_path": detail_path,
+            }));
+        }
+    }
+
+    let mut report = serde_json::json!({
+        "schema_version": "assura.release-surfaces.v1",
+        "path": path,
+        "surface_count": surfaces.len(),
+        "unreleased_user_facing_changes": unreleased,
+    });
+    if !errors.is_empty() {
+        report["error"] = serde_json::json!(errors.join("; "));
+    }
+    report
+}
+
+fn release_tag_like(value: &str) -> bool {
+    release_tag_tuple(value).is_some()
+}
+
+fn release_tag_tuple(value: &str) -> Option<(u64, u64, u64)> {
+    let version = value.strip_prefix('v')?;
+    let mut parts = version.split('.');
+    let major = parts.next()?.parse().ok()?;
+    let minor = parts.next()?.parse().ok()?;
+    let patch = parts.next()?.parse().ok()?;
+    parts.next().is_none().then_some((major, minor, patch))
 }
 
 fn run_release_bundle() -> Result<PathBuf> {
@@ -597,6 +872,7 @@ fn run_target_state() -> Result<()> {
     check_manifest_semantics(&mut checks);
     check_test_relationships(&mut checks);
     check_docs_release_performance(&mut checks);
+    check_public_roadmap(&mut checks);
     check_agent_workflow_state(&mut checks);
     check_goal_revalidation_route(&mut checks);
     check_root_tooling_boundary(&mut checks);
@@ -604,12 +880,279 @@ fn run_target_state() -> Result<()> {
     checks.finish("Target-state audit checks passed.")
 }
 
+#[derive(Debug)]
+struct PerformanceNoSlowerOptions {
+    report_path: String,
+    cohort: String,
+    assura_row: String,
+    ls_lint_row: String,
+}
+
+impl Default for PerformanceNoSlowerOptions {
+    fn default() -> Self {
+        Self {
+            report_path: "benches/history/current.json".to_string(),
+            cohort: "realistic-equivalent".to_string(),
+            assura_row: "assura-cli".to_string(),
+            ls_lint_row: "ls-lint-cli".to_string(),
+        }
+    }
+}
+
+#[derive(Debug, Default)]
+struct FixtureTiming {
+    assura: Option<RowTiming>,
+    ls_lint: Option<RowTiming>,
+}
+
+#[derive(Debug, PartialEq)]
+enum RowTiming {
+    Pass(f64),
+    Invalid(String),
+}
+
+#[derive(Debug, PartialEq)]
+enum NoSlowerFailure {
+    MissingAssura {
+        fixture_id: String,
+    },
+    MissingLsLint {
+        fixture_id: String,
+    },
+    InvalidAssura {
+        fixture_id: String,
+        reason: String,
+    },
+    InvalidLsLint {
+        fixture_id: String,
+        reason: String,
+    },
+    Slower {
+        fixture_id: String,
+        assura_ms: f64,
+        ls_lint_ms: f64,
+    },
+}
+
+fn run_performance_no_slower(args: &[String]) -> Result<()> {
+    let options = parse_performance_no_slower_options(args)?;
+    let report_text = fs::read_to_string(&options.report_path)?;
+    let report = serde_json::from_str::<Value>(&report_text)?;
+    let failures = performance_no_slower_failures(
+        &report,
+        &options.cohort,
+        &options.assura_row,
+        &options.ls_lint_row,
+    )?;
+
+    if failures.is_empty() {
+        println!(
+            "Performance no-slower gate passed for cohort {} ({} <= {}).",
+            options.cohort, options.assura_row, options.ls_lint_row
+        );
+        return Ok(());
+    }
+
+    eprintln!(
+        "Performance no-slower gate failed for cohort {} ({} must be <= {}).",
+        options.cohort, options.assura_row, options.ls_lint_row
+    );
+    for failure in failures {
+        match failure {
+            NoSlowerFailure::MissingAssura { fixture_id } => {
+                eprintln!("{fixture_id}: missing {}", options.assura_row);
+            }
+            NoSlowerFailure::MissingLsLint { fixture_id } => {
+                eprintln!("{fixture_id}: missing {}", options.ls_lint_row);
+            }
+            NoSlowerFailure::InvalidAssura { fixture_id, reason } => {
+                eprintln!("{fixture_id}: invalid {} row: {reason}", options.assura_row);
+            }
+            NoSlowerFailure::InvalidLsLint { fixture_id, reason } => {
+                eprintln!(
+                    "{fixture_id}: invalid {} row: {reason}",
+                    options.ls_lint_row
+                );
+            }
+            NoSlowerFailure::Slower {
+                fixture_id,
+                assura_ms,
+                ls_lint_ms,
+            } => {
+                eprintln!(
+                    "{fixture_id}: {} {assura_ms:.3} ms > {} {ls_lint_ms:.3} ms",
+                    options.assura_row, options.ls_lint_row
+                );
+            }
+        }
+    }
+    Err("performance no-slower gate failed".into())
+}
+
+fn parse_performance_no_slower_options(args: &[String]) -> Result<PerformanceNoSlowerOptions> {
+    let mut options = PerformanceNoSlowerOptions::default();
+    let mut index = 0;
+    while index < args.len() {
+        match args[index].as_str() {
+            "--cohort" => {
+                index += 1;
+                options.cohort = args
+                    .get(index)
+                    .ok_or("--cohort requires a value")?
+                    .to_string();
+            }
+            "--assura-row" => {
+                index += 1;
+                options.assura_row = args
+                    .get(index)
+                    .ok_or("--assura-row requires a value")?
+                    .to_string();
+            }
+            "--ls-lint-row" => {
+                index += 1;
+                options.ls_lint_row = args
+                    .get(index)
+                    .ok_or("--ls-lint-row requires a value")?
+                    .to_string();
+            }
+            "--help" | "-h" => {
+                return Err("Usage: cargo xtask performance-no-slower [report.json] [--cohort realistic-equivalent] [--assura-row assura-cli] [--ls-lint-row ls-lint-cli]".into());
+            }
+            value if value.starts_with("--") => {
+                return Err(format!("unknown performance-no-slower option: {value}").into());
+            }
+            value => {
+                options.report_path = value.to_string();
+            }
+        }
+        index += 1;
+    }
+    Ok(options)
+}
+
+fn performance_no_slower_failures(
+    report: &Value,
+    cohort: &str,
+    assura_row: &str,
+    ls_lint_row: &str,
+) -> Result<Vec<NoSlowerFailure>> {
+    let rows = report
+        .get("results")
+        .and_then(Value::as_array)
+        .ok_or("performance report missing results array")?;
+    let mut timings = BTreeMap::<String, FixtureTiming>::new();
+
+    for row in rows {
+        if row.get("fixture_cohort").and_then(Value::as_str) != Some(cohort) {
+            continue;
+        }
+        let fixture_id = row
+            .get("fixture_id")
+            .and_then(Value::as_str)
+            .ok_or("performance row missing fixture_id")?;
+        let timing = timings.entry(fixture_id.to_string()).or_default();
+
+        let Some(row_family) = row.get("row_family").and_then(Value::as_str) else {
+            continue;
+        };
+        if row_family == assura_row {
+            timing.assura = Some(timing_from_row(row));
+        } else if row_family == ls_lint_row {
+            timing.ls_lint = Some(native_ls_lint_timing_from_row(row));
+        }
+    }
+
+    if timings.is_empty() {
+        return Err(format!("performance report has no fixture rows for cohort {cohort}").into());
+    }
+
+    let mut failures = Vec::new();
+    for (fixture_id, timing) in timings {
+        match (timing.assura, timing.ls_lint) {
+            (None, _) => failures.push(NoSlowerFailure::MissingAssura { fixture_id }),
+            (_, None) => failures.push(NoSlowerFailure::MissingLsLint { fixture_id }),
+            (Some(RowTiming::Invalid(reason)), _) => {
+                failures.push(NoSlowerFailure::InvalidAssura { fixture_id, reason });
+            }
+            (_, Some(RowTiming::Invalid(reason))) => {
+                failures.push(NoSlowerFailure::InvalidLsLint { fixture_id, reason });
+            }
+            (Some(RowTiming::Pass(assura_ms)), Some(RowTiming::Pass(ls_lint_ms)))
+                if assura_ms > ls_lint_ms =>
+            {
+                failures.push(NoSlowerFailure::Slower {
+                    fixture_id,
+                    assura_ms,
+                    ls_lint_ms,
+                });
+            }
+            (Some(RowTiming::Pass(_)), Some(RowTiming::Pass(_))) => {}
+        }
+    }
+    Ok(failures)
+}
+
+fn timing_from_row(row: &Value) -> RowTiming {
+    if row.get("status").and_then(Value::as_str) != Some("pass") {
+        let status = row
+            .get("status")
+            .and_then(Value::as_str)
+            .unwrap_or("<missing>");
+        return RowTiming::Invalid(format!("status {status:?}"));
+    }
+    let Some(median_runtime_ms) = row.get("median_runtime_ms").and_then(Value::as_f64) else {
+        return RowTiming::Invalid("missing numeric median_runtime_ms".to_string());
+    };
+    RowTiming::Pass(median_runtime_ms)
+}
+
+fn native_ls_lint_timing_from_row(row: &Value) -> RowTiming {
+    if let RowTiming::Invalid(reason) = timing_from_row(row) {
+        return RowTiming::Invalid(reason);
+    }
+    if row.get("tool_name").and_then(Value::as_str) != Some("ls-lint-native-cli") {
+        let tool_name = row
+            .get("tool_name")
+            .and_then(Value::as_str)
+            .unwrap_or("<missing>");
+        return RowTiming::Invalid(format!("tool_name {tool_name:?} is not native LS-Lint"));
+    }
+    if row.get("ls_lint_execution_mode").and_then(Value::as_str)
+        != Some("native-binary-from-pinned-npm-package")
+    {
+        let mode = row
+            .get("ls_lint_execution_mode")
+            .and_then(Value::as_str)
+            .unwrap_or("<missing>");
+        return RowTiming::Invalid(format!(
+            "ls_lint_execution_mode {mode:?} is not native binary"
+        ));
+    }
+    timing_from_row(row)
+}
+
 fn read(path: impl AsRef<Path>) -> String {
-    fs::read_to_string(path).unwrap_or_default()
+    let path = path.as_ref();
+    fs::read_to_string(path)
+        .or_else(|error| {
+            if path.is_relative() {
+                if let Some(root) = Path::new(env!("CARGO_MANIFEST_DIR")).parent() {
+                    return fs::read_to_string(root.join(path));
+                }
+            }
+            Err(error)
+        })
+        .unwrap_or_default()
 }
 
 fn exists(path: impl AsRef<Path>) -> bool {
-    path.as_ref().exists()
+    let path = path.as_ref();
+    path.exists()
+        || (path.is_relative()
+            && Path::new(env!("CARGO_MANIFEST_DIR"))
+                .parent()
+                .map(|root| root.join(path).exists())
+                .unwrap_or(false))
 }
 
 fn rel(path: &Path) -> String {
@@ -858,6 +1401,7 @@ fn check_evidence_policy(checks: &mut Checks) {
         "docs/support-policy.md",
         "docs/compatibility-and-surface.md",
         "docs/project-memories.md",
+        "docs/release-train.md",
         pr_template,
         "docs/analysis/review-record-template.md",
         "docs/analysis/evidence-and-review-policy.md",
@@ -1167,7 +1711,12 @@ fn check_audit_artifact(checks: &mut Checks) {
 fn check_command_surface_support(checks: &mut Checks) {
     let support_text = read("docs/support-policy.md");
     let compatibility_text = read("docs/compatibility-and-surface.md");
-    let args_text = read("src/cli/args.rs");
+    let args_text = [
+        read("src/cli/args.rs"),
+        read("src/cli/content_args.rs"),
+        read("src/cli/daemon.rs"),
+    ]
+    .join("\n");
     check_cli_command_inventory(checks, &args_text);
     check_public_support_claim_consistency(checks);
 
@@ -1379,6 +1928,11 @@ const CLI_COMMAND_VARIANT_ROWS: &[CliCommandVariantRow] = &[
     },
     CliCommandVariantRow {
         enum_name: "Commands",
+        variant_name: "Daemon",
+        command_surface_names: &["assura daemon"],
+    },
+    CliCommandVariantRow {
+        enum_name: "Commands",
         variant_name: "Info",
         command_surface_names: &["assura info"],
     },
@@ -1489,8 +2043,58 @@ const CLI_COMMAND_VARIANT_ROWS: &[CliCommandVariantRow] = &[
     },
     CliCommandVariantRow {
         enum_name: "ContentCommands",
+        variant_name: "References",
+        command_surface_names: &["assura content references"],
+    },
+    CliCommandVariantRow {
+        enum_name: "ContentCommands",
         variant_name: "Expand",
         command_surface_names: &["assura content expand"],
+    },
+    CliCommandVariantRow {
+        enum_name: "DaemonCommands",
+        variant_name: "Status",
+        command_surface_names: &["assura daemon status"],
+    },
+    CliCommandVariantRow {
+        enum_name: "DaemonCommands",
+        variant_name: "Start",
+        command_surface_names: &["assura daemon start"],
+    },
+    CliCommandVariantRow {
+        enum_name: "DaemonCommands",
+        variant_name: "Stop",
+        command_surface_names: &["assura daemon stop"],
+    },
+    CliCommandVariantRow {
+        enum_name: "DaemonCommands",
+        variant_name: "Restart",
+        command_surface_names: &["assura daemon restart"],
+    },
+    CliCommandVariantRow {
+        enum_name: "DaemonCommands",
+        variant_name: "Doctor",
+        command_surface_names: &["assura daemon doctor"],
+    },
+    CliCommandVariantRow {
+        enum_name: "DaemonCommands",
+        variant_name: "Logs",
+        command_surface_names: &["assura daemon logs"],
+    },
+    CliCommandVariantRow {
+        enum_name: "DaemonCommands",
+        variant_name: "Health",
+        command_surface_names: &["assura daemon health"],
+    },
+    CliCommandVariantRow {
+        enum_name: "DaemonCommands",
+        variant_name: "CheckPath",
+        command_surface_names: &["assura daemon check-path"],
+    },
+    CliCommandVariantRow {
+        enum_name: "DaemonCommands",
+        variant_name: "References",
+        command_surface_names: &["assura daemon references"],
     },
 ];
 
@@ -1703,17 +2307,20 @@ const SUPPORT_MATRIX_ROWS: &[SupportMatrixRow] = &[
             "assura agent missing-relations",
             "assura agent expand",
             "assura agent safe-fixes",
+            "assura agent nudge",
             "assura agent session",
         ],
         support_policy_markers: &["`assura agent`"],
         compatibility_markers: &[
             "| `assura agent` | Supported local agent project-intelligence surface |",
+            "| `assura agent nudge` | Experimental local agent nudge payload |",
             "| `assura agent session` | Supported local agent session alias |",
         ],
-        source_markers: &["Commands::Agent", "AgentCommands::Context"],
+        source_markers: &["Commands::Agent", "AgentCommands::Context", "AgentCommands::Nudge"],
         test_markers: &[
             "tests/agent_surface_cli.rs",
             "agent_surface_defaults_to_json_and_reuses_content_contracts",
+            "agent_nudge_after_tool_reports_bounded_changed_path_findings",
             "agent_surface_session_alias_reuses_json_line_session_contract",
         ],
         exception_markers: &[],
@@ -1750,10 +2357,11 @@ const SUPPORT_MATRIX_ROWS: &[SupportMatrixRow] = &[
             "assura content symbols",
             "assura content symbol-refs",
             "assura content missing-relations",
+            "assura content references",
             "assura content expand",
         ],
         support_policy_markers: &[
-            "`assura content` query commands",
+            "`assura content` collection validation and query commands",
             "`assura content session`",
         ],
         compatibility_markers: &[
@@ -1766,6 +2374,53 @@ const SUPPORT_MATRIX_ROWS: &[SupportMatrixRow] = &[
             "content_query_lists_collections_and_instances",
             "tests/project_intelligence_session.rs",
             "content_session_reuses_context_for_repeated_requests",
+        ],
+        exception_markers: &[],
+    },
+    SupportMatrixRow {
+        surface: "assura daemon",
+        command_surface_names: &[
+            "assura daemon",
+            "assura daemon status",
+            "assura daemon start",
+            "assura daemon stop",
+            "assura daemon restart",
+            "assura daemon doctor",
+            "assura daemon logs",
+            "assura daemon health",
+            "assura daemon check-path",
+            "assura daemon references",
+        ],
+        support_policy_markers: &["| `assura daemon` | Experimental local daemon management preview |"],
+        compatibility_markers: &[
+            "| `assura daemon` | Experimental local daemon management preview |",
+            "| `assura daemon status` | Experimental local daemon status preview |",
+            "| `assura daemon start` | Experimental local daemon lifecycle preview |",
+            "| `assura daemon stop` | Experimental local daemon lifecycle preview |",
+            "| `assura daemon restart` | Experimental local daemon lifecycle preview |",
+            "| `assura daemon doctor` | Experimental local daemon doctor preview |",
+            "| `assura daemon logs` | Experimental local daemon logs preview |",
+        ],
+        source_markers: &[
+            "Commands::Daemon",
+            "DaemonCommands::Status",
+            "DaemonCommands::Start",
+            "DaemonCommands::Stop",
+            "DaemonCommands::Restart",
+            "DaemonCommands::Doctor",
+            "DaemonCommands::Logs",
+            "DaemonCommands::Health",
+            "daemon_command",
+        ],
+        test_markers: &[
+            "tests/daemon_cli_tests.rs",
+            "daemon_status_json_reports_management_contract",
+            "daemon_start_stop_json_are_idempotent_and_status_reflects_runtime",
+            "daemon_restart_and_logs_json_use_runtime_area",
+            "daemon_doctor_json_reports_actionable_checks",
+            "daemon_health_json_exposes_running_state_and_fallback",
+            "daemon_references_source_json_matches_content_references",
+            "daemon_references_target_json_matches_content_references",
         ],
         exception_markers: &[],
     },
@@ -2195,6 +2850,9 @@ fn check_docs_release_performance(checks: &mut Checks) {
     let release_text = read("docs/release-notes.md");
     let compatibility_text = read("docs/compatibility-and-surface.md");
     let release_checklist_text = read("docs/release-candidate-checklist.md");
+    let release_train_text = read("docs/release-train.md");
+    let release_surfaces_text = read("docs/data/release-surfaces.json");
+    let code_intelligence_text = read("website/src/content/docs/product/code-intelligence.md");
     let release_readiness_text = read("website/src/content/docs/reference/release-readiness.md");
     let installation_text = read("website/src/content/docs/guides/installation.md");
     let performance_text = read("website/src/content/docs/reference/performance.mdx");
@@ -2267,6 +2925,74 @@ fn check_docs_release_performance(checks: &mut Checks) {
             && compatibility_text.contains(".sha256"),
         "release docs must describe checksum sidecars for every archive",
     );
+    for (path, text) in [
+        ("docs/release-train.md", &release_train_text),
+        (
+            "docs/release-candidate-checklist.md",
+            &release_checklist_text,
+        ),
+        (
+            "website/src/content/docs/reference/release-readiness.md",
+            &release_readiness_text,
+        ),
+    ] {
+        checks.require(
+            text.contains("cargo xtask release-readiness --format json"),
+            format!("{path}: missing release-readiness command"),
+        );
+    }
+    checks.require(
+        release_train_text.contains("assura.release-readiness.v1")
+            && release_readiness_text.contains("assura.release-readiness.v1"),
+        "release train docs must name the release-readiness JSON schema",
+    );
+    checks.require(
+        release_train_text.contains("docs/data/release-surfaces.json")
+            && release_readiness_text.contains("docs/data/release-surfaces.json"),
+        "release train docs must point to the release surfaces manifest",
+    );
+    match release_surfaces_report(
+        "docs/data/release-surfaces.json",
+        Some(&format!("v{version}")),
+    ) {
+        report if report.get("error").is_some() => checks.add(format!(
+            "docs/data/release-surfaces.json: {}",
+            report
+                .get("error")
+                .and_then(Value::as_str)
+                .unwrap_or("invalid")
+        )),
+        report => {
+            let has_unreleased_surfaces = report
+                .get("unreleased_user_facing_changes")
+                .and_then(Value::as_array)
+                .map(|changes| !changes.is_empty())
+                == Some(true);
+            let release_candidate_manifest_ready = release_surfaces_text
+                .contains(&format!("\"first_release\": \"v{version}\""))
+                && !release_surfaces_text.contains("\"first_release\": \"next\"");
+            checks.require(
+                has_unreleased_surfaces || release_candidate_manifest_ready,
+                "docs/data/release-surfaces.json: expected unreleased surfaces or concrete current-version release surfaces",
+            );
+        }
+    }
+    checks.require(
+        release_surfaces_text.contains("\"project-intelligence-local-surfaces\""),
+        "docs/data/release-surfaces.json: missing Project Intelligence release surface",
+    );
+    checks.require(
+        release_surfaces_text.contains("\"content-collections-querying\""),
+        "docs/data/release-surfaces.json: missing content collections/querying release surface",
+    );
+    checks.require(
+        code_intelligence_text.contains("Experimental candidate enrichment"),
+        "website code-intelligence docs: code-symbol surfaces must be candidate enrichment",
+    );
+    checks.require(
+        !code_intelligence_text.contains("| Symbol queries | Supported |"),
+        "website code-intelligence docs: symbol queries must not be marked supported",
+    );
 
     let Ok(bench_current) = serde_json::from_str::<Value>(&read("benches/history/current.json"))
     else {
@@ -2329,6 +3055,38 @@ fn check_docs_release_performance(checks: &mut Checks) {
                 .pointer("/warm_claim_summary/two_x_claim_verdict")
                 .is_some(),
         "performance current.json: missing cold or warm claim verdict",
+    );
+    match performance_no_slower_failures(
+        &bench_current,
+        "realistic-equivalent",
+        "assura-cli",
+        "ls-lint-cli",
+    ) {
+        Ok(failures) => checks.require(
+            failures.is_empty(),
+            format!("performance current.json: no-slower gate failed: {failures:?}"),
+        ),
+        Err(error) => checks.add(format!(
+            "performance current.json: no-slower gate could not be evaluated: {error}"
+        )),
+    }
+    checks.require(
+        text_contains_ordered(
+            &ci_workflow,
+            &[
+                "performance:\n    name: Performance Report",
+                "- name: Generate comparison report",
+                "--output target/performance/ls-lint-comparison.json",
+                "--iterations 5",
+                "- name: Enforce no-slower gate",
+                "run: cargo xtask performance-no-slower target/performance/ls-lint-comparison.json",
+                "- name: Summarize performance",
+                "if: always()",
+                "- name: Upload performance artifact",
+                "if: always()",
+            ],
+        ),
+        ".github/workflows/ci.yml: Performance Report job must generate a 5-iteration report, enforce cargo xtask performance-no-slower on that report, and keep summary/artifact steps on failure",
     );
 
     let current_cohort = bench_current
@@ -2448,6 +3206,164 @@ fn check_docs_release_performance(checks: &mut Checks) {
     }
 }
 
+fn check_public_roadmap(checks: &mut Checks) {
+    let roadmap_path = "docs/data/public-roadmap.json";
+    let Ok(roadmap) = serde_json::from_str::<Value>(&read(roadmap_path)) else {
+        checks.add(format!("{roadmap_path}: invalid JSON"));
+        return;
+    };
+    checks.require(
+        roadmap.get("schema_version").and_then(Value::as_str) == Some("assura.public-roadmap.v1"),
+        format!("{roadmap_path}: unexpected schema_version"),
+    );
+    checks.require(
+        roadmap.get("source").and_then(Value::as_str) == Some(".trellis/spec/assura/roadmap.md"),
+        format!("{roadmap_path}: source must point at .trellis/spec/assura/roadmap.md"),
+    );
+
+    let Some(groups) = roadmap.get("groups").and_then(Value::as_array) else {
+        checks.add(format!("{roadmap_path}: groups must be an array"));
+        return;
+    };
+
+    let mut statuses = BTreeSet::new();
+    let mut labels = BTreeSet::new();
+    let internal_roadmap = read(".trellis/spec/assura/roadmap.md");
+    let current_recommended_goal =
+        backticked_value_after_marker(&internal_roadmap, "Current recommended goal:");
+    checks.require(
+        current_recommended_goal.is_some(),
+        ".trellis/spec/assura/roadmap.md must identify a current recommended goal",
+    );
+    let mut has_current_recommended_goal = false;
+
+    for group in groups {
+        let status = group
+            .get("status")
+            .and_then(Value::as_str)
+            .unwrap_or("<missing>");
+        statuses.insert(status.to_string());
+        checks.require(
+            matches!(status, "done" | "now" | "next"),
+            format!("{roadmap_path}: invalid group status {status:?}"),
+        );
+        checks.require(
+            group.get("title").and_then(Value::as_str).is_some(),
+            format!("{roadmap_path}: {status} group missing title"),
+        );
+
+        let Some(items) = group.get("items").and_then(Value::as_array) else {
+            checks.add(format!(
+                "{roadmap_path}: {status} group items must be an array"
+            ));
+            continue;
+        };
+        checks.require(
+            !items.is_empty(),
+            format!("{roadmap_path}: {status} group must include at least one item"),
+        );
+
+        for item in items {
+            let label = item
+                .get("label")
+                .and_then(Value::as_str)
+                .unwrap_or("<missing>");
+            let detail_path = item
+                .get("detail_path")
+                .and_then(Value::as_str)
+                .unwrap_or("<missing>");
+            let href = item
+                .get("href")
+                .and_then(Value::as_str)
+                .unwrap_or("<missing>");
+            let word_count = label_word_count(label);
+            checks.require(
+                (2..=4).contains(&word_count),
+                format!("{roadmap_path}: label {label:?} must be two to four words"),
+            );
+            checks.require(
+                labels.insert(label.to_string()),
+                format!("{roadmap_path}: duplicate label {label:?}"),
+            );
+            checks.require(
+                exists(detail_path),
+                format!("{roadmap_path}: detail_path {detail_path} does not exist"),
+            );
+            checks.require(
+                roadmap_href_matches_detail(href, detail_path),
+                format!("{roadmap_path}: href {href} does not map to detail_path {detail_path}"),
+            );
+            if status == "now" && current_recommended_goal == Some(detail_path) {
+                has_current_recommended_goal = true;
+            }
+        }
+    }
+
+    for expected in ["done", "now", "next"] {
+        checks.require(
+            statuses.contains(expected),
+            format!("{roadmap_path}: missing {expected} group"),
+        );
+    }
+    checks.require(
+        has_current_recommended_goal,
+        format!(
+            "{roadmap_path}: now group must include the current recommended goal from .trellis/spec/assura/roadmap.md"
+        ),
+    );
+
+    let public_page = read("website/src/content/docs/roadmap.mdx");
+    let public_component = read("website/src/components/public-roadmap.astro");
+    let astro_config = read("website/astro.config.mjs");
+    checks.require(
+        public_page.contains("PublicRoadmap"),
+        "website roadmap page must render the PublicRoadmap component",
+    );
+    checks.require(
+        public_component.contains("docs/data/public-roadmap.json"),
+        "public roadmap component must import docs/data/public-roadmap.json",
+    );
+    checks.require(
+        astro_config.contains("{ label: 'Roadmap', slug: 'roadmap' }"),
+        "website sidebar must include the public Roadmap page",
+    );
+    checks.require(
+        internal_roadmap.contains("docs/data/public-roadmap.json"),
+        ".trellis/spec/assura/roadmap.md must point to the public roadmap artifact",
+    );
+}
+
+fn label_word_count(label: &str) -> usize {
+    label.split_whitespace().count()
+}
+
+fn backticked_value_after_marker<'a>(text: &'a str, marker: &str) -> Option<&'a str> {
+    let after_marker = text.split_once(marker)?.1;
+    let after_open_tick = after_marker.split_once('`')?.1;
+    let (value, _) = after_open_tick.split_once('`')?;
+    if value.is_empty() {
+        return None;
+    }
+    Some(value)
+}
+
+fn roadmap_href_matches_detail(href: &str, detail_path: &str) -> bool {
+    const GITHUB_PREFIX: &str = "https://github.com/rothnic/assura/blob/master/";
+    if let Some(repo_path) = href.strip_prefix(GITHUB_PREFIX) {
+        return repo_path == detail_path && exists(repo_path);
+    }
+    if !href.starts_with('/') || href.contains("..") {
+        return false;
+    }
+    let slug = href.trim_matches('/');
+    if slug.is_empty() {
+        return false;
+    }
+    let md = format!("website/src/content/docs/{slug}.md");
+    let mdx = format!("website/src/content/docs/{slug}.mdx");
+    (detail_path == md && exists(&md)) || (detail_path == mdx && exists(&mdx))
+}
+
 fn command_option_value<'a>(command_line: &'a str, option: &str) -> Option<&'a str> {
     let equals_prefix = format!("{option}=");
     let mut tokens = command_line.split_whitespace();
@@ -2464,6 +3380,17 @@ fn command_option_value<'a>(command_line: &'a str, option: &str) -> Option<&'a s
 
 fn text_contains_option_value(text: &str, option: &str, value: &str) -> bool {
     text.contains(&format!("{option} {value}")) || text.contains(&format!("{option}={value}"))
+}
+
+fn text_contains_ordered(text: &str, needles: &[&str]) -> bool {
+    let mut remaining = text;
+    for needle in needles {
+        let Some(index) = remaining.find(needle) else {
+            return false;
+        };
+        remaining = &remaining[index + needle.len()..];
+    }
+    true
 }
 
 struct ReleaseArtifact {
@@ -2660,5 +3587,400 @@ fn check_lint_suppression_reasons(checks: &mut Checks) {
                 );
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn performance_no_slower_passes_when_assura_is_not_slower() {
+        let report = json!({
+            "results": [
+                {
+                    "fixture_cohort": "realistic-equivalent",
+                    "fixture_id": "faster",
+                    "row_family": "assura-cli",
+                    "status": "pass",
+                    "median_runtime_ms": 4.0
+                },
+                {
+                    "fixture_cohort": "realistic-equivalent",
+                    "fixture_id": "faster",
+                    "row_family": "ls-lint-cli",
+                    "tool_name": "ls-lint-native-cli",
+                    "ls_lint_execution_mode": "native-binary-from-pinned-npm-package",
+                    "status": "pass",
+                    "median_runtime_ms": 5.0
+                },
+                {
+                    "fixture_cohort": "realistic-equivalent",
+                    "fixture_id": "equal",
+                    "row_family": "assura-cli",
+                    "status": "pass",
+                    "median_runtime_ms": 6.0
+                },
+                {
+                    "fixture_cohort": "realistic-equivalent",
+                    "fixture_id": "equal",
+                    "row_family": "ls-lint-cli",
+                    "tool_name": "ls-lint-native-cli",
+                    "ls_lint_execution_mode": "native-binary-from-pinned-npm-package",
+                    "status": "pass",
+                    "median_runtime_ms": 6.0
+                }
+            ]
+        });
+
+        let failures = performance_no_slower_failures(
+            &report,
+            "realistic-equivalent",
+            "assura-cli",
+            "ls-lint-cli",
+        )
+        .expect("report is valid");
+
+        assert!(failures.is_empty());
+    }
+
+    #[test]
+    fn performance_no_slower_reports_slower_and_missing_pairs() {
+        let report = json!({
+            "results": [
+                {
+                    "fixture_cohort": "realistic-equivalent",
+                    "fixture_id": "slower",
+                    "row_family": "assura-cli",
+                    "status": "pass",
+                    "median_runtime_ms": 7.0
+                },
+                {
+                    "fixture_cohort": "realistic-equivalent",
+                    "fixture_id": "slower",
+                    "row_family": "ls-lint-cli",
+                    "tool_name": "ls-lint-native-cli",
+                    "ls_lint_execution_mode": "native-binary-from-pinned-npm-package",
+                    "status": "pass",
+                    "median_runtime_ms": 5.0
+                },
+                {
+                    "fixture_cohort": "realistic-equivalent",
+                    "fixture_id": "missing-ls-lint",
+                    "row_family": "assura-cli",
+                    "status": "pass",
+                    "median_runtime_ms": 1.0
+                },
+                {
+                    "fixture_cohort": "realistic-equivalent",
+                    "fixture_id": "missing-assura",
+                    "row_family": "ls-lint-cli",
+                    "tool_name": "ls-lint-native-cli",
+                    "ls_lint_execution_mode": "native-binary-from-pinned-npm-package",
+                    "status": "pass",
+                    "median_runtime_ms": 1.0
+                }
+            ]
+        });
+
+        let failures = performance_no_slower_failures(
+            &report,
+            "realistic-equivalent",
+            "assura-cli",
+            "ls-lint-cli",
+        )
+        .expect("report is valid");
+
+        assert_eq!(
+            failures,
+            vec![
+                NoSlowerFailure::MissingAssura {
+                    fixture_id: "missing-assura".to_string()
+                },
+                NoSlowerFailure::MissingLsLint {
+                    fixture_id: "missing-ls-lint".to_string()
+                },
+                NoSlowerFailure::Slower {
+                    fixture_id: "slower".to_string(),
+                    assura_ms: 7.0,
+                    ls_lint_ms: 5.0
+                }
+            ]
+        );
+    }
+
+    #[test]
+    fn performance_no_slower_rejects_non_native_or_non_passing_rows() {
+        let report = json!({
+            "results": [
+                {
+                    "fixture_cohort": "realistic-equivalent",
+                    "fixture_id": "non-native-ls-lint",
+                    "row_family": "assura-cli",
+                    "status": "pass",
+                    "median_runtime_ms": 1.0
+                },
+                {
+                    "fixture_cohort": "realistic-equivalent",
+                    "fixture_id": "non-native-ls-lint",
+                    "row_family": "ls-lint-cli",
+                    "tool_name": "node-wrapper",
+                    "ls_lint_execution_mode": "node-wrapper",
+                    "status": "pass",
+                    "median_runtime_ms": 2.0
+                },
+                {
+                    "fixture_cohort": "realistic-equivalent",
+                    "fixture_id": "skipped-assura",
+                    "row_family": "assura-cli",
+                    "status": "skipped"
+                },
+                {
+                    "fixture_cohort": "realistic-equivalent",
+                    "fixture_id": "skipped-assura",
+                    "row_family": "ls-lint-cli",
+                    "tool_name": "ls-lint-native-cli",
+                    "ls_lint_execution_mode": "native-binary-from-pinned-npm-package",
+                    "status": "pass",
+                    "median_runtime_ms": 1.0
+                },
+                {
+                    "fixture_cohort": "realistic-equivalent",
+                    "fixture_id": "no-target-rows",
+                    "row_family": "assura:phase:walk-and-validate",
+                    "status": "pass",
+                    "median_runtime_ms": 1.0
+                }
+            ]
+        });
+
+        let failures = performance_no_slower_failures(
+            &report,
+            "realistic-equivalent",
+            "assura-cli",
+            "ls-lint-cli",
+        )
+        .expect("report is valid");
+
+        assert_eq!(
+            failures,
+            vec![
+                NoSlowerFailure::MissingAssura {
+                    fixture_id: "no-target-rows".to_string()
+                },
+                NoSlowerFailure::InvalidLsLint {
+                    fixture_id: "non-native-ls-lint".to_string(),
+                    reason: "tool_name \"node-wrapper\" is not native LS-Lint".to_string()
+                },
+                NoSlowerFailure::InvalidAssura {
+                    fixture_id: "skipped-assura".to_string(),
+                    reason: "status \"skipped\"".to_string()
+                }
+            ]
+        );
+    }
+
+    #[test]
+    fn roadmap_href_mapping_accepts_local_and_github_details() {
+        assert_eq!(label_word_count("Structure Validation"), 2);
+        assert_eq!(label_word_count("Content Collections Querying"), 3);
+        assert_eq!(
+            backticked_value_after_marker(
+                "Current recommended goal:\n`docs/goals/example.md`.\n",
+                "Current recommended goal:"
+            ),
+            Some("docs/goals/example.md")
+        );
+        assert_eq!(
+            backticked_value_after_marker(
+                "Current recommended goal:\nmissing\n",
+                "Current recommended goal:"
+            ),
+            None
+        );
+
+        assert!(roadmap_href_matches_detail(
+            "/product/structure-validation/",
+            "website/src/content/docs/product/structure-validation.md"
+        ));
+        assert!(roadmap_href_matches_detail(
+            "https://github.com/rothnic/assura/blob/master/docs/goals/assura-beta-code-agnostic-capabilities-program.md",
+            "docs/goals/assura-beta-code-agnostic-capabilities-program.md"
+        ));
+        assert!(!roadmap_href_matches_detail(
+            "/product/structure-validation/",
+            "docs/goals/assura-beta-code-agnostic-capabilities-program.md"
+        ));
+        assert!(!roadmap_href_matches_detail(
+            "https://example.com/docs/goals/assura-beta-code-agnostic-capabilities-program.md",
+            "docs/goals/assura-beta-code-agnostic-capabilities-program.md"
+        ));
+    }
+
+    #[test]
+    fn release_readiness_helpers_extract_version_and_surface_report() {
+        assert_eq!(
+            release_notes_version("# Assura v0.2.0 Current Branch Release Notes"),
+            Some("0.2.0".to_string())
+        );
+        assert_eq!(release_notes_version("# No version here"), None);
+
+        let report = release_surfaces_report("docs/data/release-surfaces.json", Some("v0.2.0"));
+        assert_eq!(
+            report.get("schema_version").and_then(Value::as_str),
+            Some("assura.release-surfaces.v1")
+        );
+        let unreleased = report
+            .get("unreleased_user_facing_changes")
+            .and_then(Value::as_array)
+            .expect("unreleased surfaces array");
+        if !unreleased.is_empty() {
+            assert!(unreleased
+                .iter()
+                .any(|surface| surface.get("id").and_then(Value::as_str)
+                    == Some("project-intelligence-local-surfaces")));
+        } else {
+            let surfaces = serde_json::from_str::<Value>(&read("docs/data/release-surfaces.json"))
+                .expect("release surfaces json");
+            assert!(surfaces
+                .get("surfaces")
+                .and_then(Value::as_array)
+                .into_iter()
+                .flatten()
+                .any(|surface| surface.get("id").and_then(Value::as_str)
+                    == Some("project-intelligence-local-surfaces")
+                    && surface.get("first_release").and_then(Value::as_str) == Some("v0.2.0")));
+        }
+    }
+
+    #[test]
+    fn release_readiness_report_passes_for_next_release_candidate() {
+        let report = release_readiness_report_from_inputs(
+            "0.2.0",
+            "0.2.0",
+            "A release PR cannot close if",
+            release_checklist_fixture(),
+            "Compatibility And Public Surface",
+            serde_json::json!({
+                "schema_version": "assura.release-surfaces.v1",
+                "path": "docs/data/release-surfaces.json",
+                "surface_count": 2,
+                "unreleased_user_facing_changes": []
+            }),
+            serde_json::json!({ "tagName": "v0.1.0" }),
+        );
+        assert_eq!(
+            report.get("schema_version").and_then(Value::as_str),
+            Some("assura.release-readiness.v1")
+        );
+        assert_eq!(report.get("ready").and_then(Value::as_bool), Some(true));
+        assert_eq!(report.get("verdict").and_then(Value::as_str), Some("pass"));
+        assert!(report
+            .get("reasons")
+            .and_then(Value::as_array)
+            .is_some_and(|reasons| reasons.is_empty()));
+    }
+
+    #[test]
+    fn release_readiness_report_fails_when_latest_tag_has_unreleased_surfaces() {
+        let report = release_readiness_report_from_inputs(
+            "0.2.0",
+            "0.2.0",
+            "A release PR cannot close if",
+            release_checklist_fixture(),
+            "Compatibility And Public Surface",
+            serde_json::json!({
+                "schema_version": "assura.release-surfaces.v1",
+                "path": "docs/data/release-surfaces.json",
+                "surface_count": 1,
+                "unreleased_user_facing_changes": [{
+                    "id": "project-intelligence-local-surfaces",
+                    "status": "supported",
+                    "first_release": "unreleased",
+                    "detail_path": "docs/release-notes.md"
+                }]
+            }),
+            serde_json::json!({ "tagName": "v0.2.0" }),
+        );
+        assert_eq!(report.get("ready").and_then(Value::as_bool), Some(false));
+        assert_eq!(report.get("verdict").and_then(Value::as_str), Some("fail"));
+        assert!(report
+            .get("reasons")
+            .and_then(Value::as_array)
+            .is_some_and(|reasons| reasons.iter().any(|reason| reason
+                .as_str()
+                .is_some_and(|reason| reason.contains("already the latest GitHub release")))));
+    }
+
+    #[test]
+    fn release_surfaces_report_rejects_placeholder_supported_releases() {
+        let path = env::temp_dir().join(format!(
+            "assura-release-surfaces-invalid-{}.json",
+            std::process::id()
+        ));
+        fs::write(
+            &path,
+            r#"{
+              "schema_version": "assura.release-surfaces.v1",
+              "surfaces": [
+                {
+                  "id": "daemon-management-cli-preview",
+                  "status": "experimental",
+                  "first_release": "future",
+                  "detail_path": "docs/release-notes.md"
+                }
+              ]
+            }"#,
+        )
+        .expect("write release surface fixture");
+        let report =
+            release_surfaces_report(path.to_str().expect("utf-8 temp path"), Some("v0.2.0"));
+        let error = report
+            .get("error")
+            .and_then(Value::as_str)
+            .expect("surface validation error");
+        assert!(error.contains("invalid first_release"));
+        let _ = fs::remove_file(path);
+    }
+
+    #[test]
+    fn release_surfaces_report_rejects_later_supported_release() {
+        let path = env::temp_dir().join(format!(
+            "assura-release-surfaces-later-{}.json",
+            std::process::id()
+        ));
+        fs::write(
+            &path,
+            r#"{
+              "schema_version": "assura.release-surfaces.v1",
+              "surfaces": [
+                {
+                  "id": "future-supported-surface",
+                  "status": "supported",
+                  "first_release": "v0.3.0",
+                  "detail_path": "docs/release-notes.md"
+                }
+              ]
+            }"#,
+        )
+        .expect("write release surface fixture");
+        let report =
+            release_surfaces_report(path.to_str().expect("utf-8 temp path"), Some("v0.2.0"));
+        let error = report
+            .get("error")
+            .and_then(Value::as_str)
+            .expect("surface validation error");
+        assert!(error.contains("after local release tag"));
+        let _ = fs::remove_file(path);
+    }
+
+    fn release_checklist_fixture() -> &'static str {
+        "cargo fmt --all -- --check\n\
+         cargo test --all-targets --quiet\n\
+         cargo clippy --all-targets --all-features -- -D warnings\n\
+         cargo xtask release-readiness --format json\n\
+         cargo xtask release-smoke\n\
+         cargo xtask release-live"
     }
 }

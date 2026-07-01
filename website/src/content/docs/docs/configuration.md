@@ -95,6 +95,8 @@ Supported markdown fields include:
 - `required_sections`
 - `outline`
 - `lint_trailing_spaces`
+- `lint_common`
+- `rules`
 
 Use `require_frontmatter` only for generic Markdown files that must contain a
 frontmatter block. Typed frontmatter fields belong to content runtime `models`,
@@ -105,6 +107,33 @@ Set `lint_trailing_spaces: true` to report blank Markdown lines that contain
 spaces or tabs. `assura fix markdown --dry-run` previews this safe whitespace
 class, and `assura fix markdown --apply` removes it for configured Markdown
 scopes.
+
+Set `lint_common: true` to report the current Rust-native common lint bundle:
+skipped heading levels, malformed heading marker spacing, duplicate heading
+text, and multiple consecutive blank lines.
+
+Set `required_sections` to require specific headings. `assura fix markdown
+--rule required-sections --dry-run` previews deterministic missing-heading
+insertions, and `--apply` appends the missing headings for configured Markdown
+scopes.
+
+Set `check_links: true` to validate local relative Markdown links to files,
+Markdown heading anchors, and GitHub-style line or line-range anchors such as
+`#L12` and `#L12-L34`.
+
+Use `rules.<rule_id>.severity` to override supported Markdown rule severity:
+
+```yaml
+markdown:
+  check_links: true
+  rules:
+    markdown_link_target:
+      severity: low
+```
+
+Use `<!-- assura-ignore <markdown_rule>: <reason> -->` inside a Markdown file
+for intentional exceptions. Suppressions without a supported rule ID and
+non-empty reason are reported as `markdown_suppression`.
 
 `outline` uses nested YAML lists to describe required heading order. Prefix a
 heading with `?? ` to make it optional, and use object form when a required

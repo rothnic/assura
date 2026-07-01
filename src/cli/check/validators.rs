@@ -5,6 +5,7 @@ use super::patterns::{
     best_lslint_suffix_match, is_lslint_extension_pattern, lslint_file_stem,
     matches_any_compiled_pattern, matches_single_compiled_pattern,
 };
+use super::repository_references::{is_source_reference_file, SOURCE_REFERENCE_FILE_SIZE_LIMIT};
 use super::rules::{
     count_satisfies, display_rel, file_matches_any_extension, parse_size, severity_for_bundle,
     severity_for_directory_bundle,
@@ -186,28 +187,37 @@ impl StructureChecker {
                 || (files.require_docs == Some(true)
                     && path.extension().and_then(|ext| ext.to_str()) == Some("rs"))
         });
-        let content = if needs_file_content || needs_markdown {
-            match fs::read_to_string(path) {
-                Ok(content) => Some(content),
-                Err(error) => {
-                    let severity = rules
-                        .files
-                        .as_ref()
-                        .map(|files| severity_for_bundle(files))
-                        .unwrap_or_else(|| "medium".to_string());
-                    self.push_violation(
-                        report,
-                        rel.clone(),
-                        "read_file",
-                        format!("Could not read '{}': {}", display_rel(&rel), error),
-                        severity,
-                    );
-                    None
+        let repository_reference_severity = self
+            .repository_reference_severity_for_path(&rel)
+            .filter(|_| is_source_reference_file(path))
+            .filter(|_| {
+                fs::metadata(path)
+                    .map(|metadata| metadata.len() <= SOURCE_REFERENCE_FILE_SIZE_LIMIT)
+                    .unwrap_or(false)
+            });
+        let content =
+            if needs_file_content || needs_markdown || repository_reference_severity.is_some() {
+                match fs::read_to_string(path) {
+                    Ok(content) => Some(content),
+                    Err(error) => {
+                        let severity = rules
+                            .files
+                            .as_ref()
+                            .map(|files| severity_for_bundle(files))
+                            .unwrap_or_else(|| "medium".to_string());
+                        self.push_violation(
+                            report,
+                            rel.clone(),
+                            "read_file",
+                            format!("Could not read '{}': {}", display_rel(&rel), error),
+                            severity,
+                        );
+                        None
+                    }
                 }
-            }
-        } else {
-            None
-        };
+            } else {
+                None
+            };
 
         if let Some(files) = rules.files {
             self.validate_file_bundle(path, &rel, &files, content.as_deref(), report);
@@ -218,6 +228,11 @@ impl StructureChecker {
             if let (Some(markdown), Some(content)) = (rules.markdown, content.as_deref()) {
                 self.validate_markdown(&rel, &markdown, content, report);
             }
+        }
+
+        if let (Some(severity), Some(content)) = (repository_reference_severity, content.as_deref())
+        {
+            self.validate_repository_references(&rel, content, &severity, report);
         }
     }
 

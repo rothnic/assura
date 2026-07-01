@@ -2,7 +2,7 @@
 id: goal-assura-daemon-management-cli
 type: goal
 title: Assura daemon management CLI
-status: planned
+status: completed
 created: 2026-06-30
 owners:
   - assura-maintainers
@@ -75,3 +75,12 @@ Block if the CLI omits health details needed by agents, exposes editor-only
 daemon behavior, or requires users to inspect unstructured logs before a
 machine-readable doctor result exists. Also block if command-surface docs or
 support policy are not updated with the new public command family.
+
+## Progress Log
+
+| Date | Update | Evidence |
+| --- | --- | --- |
+| 2026-07-01 | Started Epic 7 with a management-preview slice for `assura daemon status` and `assura daemon doctor`. The commands expose JSON-first health, protocol, process placeholder, management hints, and doctor remediation over `LocalDaemonCore` without claiming full start/stop/restart/logs lifecycle support yet. Added the carried-forward target-side `daemon references` parity proof. Independent review Pauli found no blocker or high-risk findings; idempotent start/stop/restart/logs lifecycle commands remain open. | `src/cli/daemon.rs`; `src/cli/daemon_management.rs`; `src/cli/daemon_text.rs`; `tests/daemon_cli_tests.rs`; `.assura/command-surface.yml`; `.assura/config.yml`; `docs/compatibility-and-surface.md`; `docs/support-policy.md`; `docs/release-notes.md`; `xtask/src/main.rs`; `cargo fmt --check`; `cargo test --test daemon_cli_tests --quiet`; `cargo run --quiet -- check --format json .`; `cargo xtask target-state`; `cargo xtask evidence`; `cargo xtask docs`; `cargo check --workspace --all-targets --quiet`; `git diff --check`; independent review Pauli. |
+| 2026-07-01 | Continued Epic 7 with idempotent runtime-metadata lifecycle commands. `daemon start`, `stop`, and `restart` now manage `.assura/daemon/status.json`, `daemon logs` returns bounded `.assura/daemon/daemon.log` lines, and `daemon status` reflects the runtime metadata while keeping `process.running = false` until a real long-running socket/process server exists. Independent review Averroes found no blocker or high-risk findings; suggested hardening added unavailable stop/logs, repeated restart, and log truncation coverage. | `src/cli/daemon.rs`; `src/cli/daemon_lifecycle.rs`; `src/cli/daemon_management.rs`; `tests/daemon_cli_tests.rs`; `.assura/command-surface.yml`; `.assura/config.yml`; `.trellis/spec/assura/daemon-management-cli.md`; `docs/compatibility-and-surface.md`; `docs/support-policy.md`; `docs/release-notes.md`; `xtask/src/main.rs`; `cargo fmt --check`; `cargo test --test daemon_cli_tests --quiet`; `cargo run --quiet -- check --format json .`; `cargo xtask target-state`; `cargo xtask evidence`; `cargo xtask docs`; `cargo check --workspace --all-targets --quiet`; `git diff --check`; independent review Averroes. |
+| 2026-07-01 | Filled the remaining status-contract gap before closure review. `daemon status --format json` now includes project metadata with a stable config fingerprint and git dirty paths so the CLI returns every machine-readable field named in this goal's scope. | `src/cli/daemon_management.rs`; `tests/daemon_cli_tests.rs`; `.trellis/spec/assura/daemon-management-cli.md`; `cargo test --test daemon_cli_tests --quiet`. |
+| 2026-07-01 | Completed Epic 7, Daemon CLI. Independent closure review Gibbs found no blockers and explicitly did not require a real long-running socket/process server for this epic because the implementation and docs consistently frame the current surface as an experimental local daemon management/runtime-metadata preview. Future hardening should make lifecycle metadata write failures exit non-zero or include direct remediation. Next default epic is Agent Nudges via [assura-beta-agent-nudge-integrations.md](./assura-beta-agent-nudge-integrations.md) and [assura-agent-daemon-awareness.md](./assura-agent-daemon-awareness.md). | `cargo fmt --check`; `cargo test --test daemon_cli_tests --quiet`; `cargo run --quiet -- check --format json .`; `cargo xtask target-state`; `cargo xtask evidence`; `cargo xtask docs`; `cargo check --workspace --all-targets --quiet`; `git diff --check`; independent closure review Gibbs. |

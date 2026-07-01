@@ -43,6 +43,8 @@ struct FeedbackMessage {
     path: String,
     rule: String,
     severity: String,
+    severity_label: String,
+    blocking: bool,
     problem: String,
     corrective_context: String,
     guidance: Vec<&'static str>,
@@ -109,9 +111,9 @@ pub fn create_check_feedback(
         })
         .collect::<Vec<_>>();
     filtered.sort_by(|left, right| {
-        severity_rank(&right.severity)
-            .unwrap_or(0)
-            .cmp(&severity_rank(&left.severity).unwrap_or(0))
+        right
+            .severity_rank()
+            .cmp(&left.severity_rank())
             .then_with(|| left.path.cmp(&right.path))
             .then_with(|| left.rule.cmp(&right.rule))
             .then_with(|| left.message.cmp(&right.message))
@@ -135,7 +137,7 @@ pub fn create_check_feedback(
     );
     let suppressed_violation_count = report.violations.len().saturating_sub(shown.len());
 
-    if report.success {
+    if report.violations.is_empty() {
         return CheckFeedback {
             status: "pass",
             summary: format!(
@@ -162,6 +164,8 @@ pub fn create_check_feedback(
             path: path_to_string(&violation.path),
             rule: violation.rule.clone(),
             severity: violation.severity.clone(),
+            severity_label: violation.severity_label.clone(),
+            blocking: violation.blocking,
             problem: violation.message.clone(),
             corrective_context: violation.corrective_context.clone(),
             guidance: guidance_for_rule(&violation.rule),
@@ -170,7 +174,7 @@ pub fn create_check_feedback(
         .collect::<Vec<_>>();
 
     CheckFeedback {
-        status: "fail",
+        status: if report.success { "advisory" } else { "fail" },
         summary: summarize_check_feedback(
             report,
             messages.len(),
@@ -214,6 +218,7 @@ pub fn render_agent_feedback<'a>(
         .into_iter()
         .map(|report| create_check_feedback(report, options))
         .collect::<Vec<_>>();
+    let blocking = !options.warn && feedback.iter().any(|item| item.status == "fail");
 
     serde_json::to_string(&AgentFeedbackOutput {
         schema: "assura.agent-feedback.v1",
@@ -224,7 +229,7 @@ pub fn render_agent_feedback<'a>(
             minimum_severity: options.minimum_severity.clone(),
             max_issues: options.max_issues,
         },
-        blocking: !options.warn,
+        blocking,
         feedback,
     })
     .unwrap_or_default()
@@ -239,6 +244,7 @@ pub fn render_codex_agent_feedback<'a>(
         .into_iter()
         .map(|report| create_check_feedback(report, options))
         .collect::<Vec<_>>();
+    let blocking = !options.warn && feedback.iter().any(|item| item.status == "fail");
     let mut lines = vec![
         "<assura-feedback>".to_string(),
         "Hook event: UserPromptSubmit".to_string(),
@@ -255,8 +261,10 @@ pub fn render_codex_agent_feedback<'a>(
             "Blocking: {}",
             if options.warn {
                 "no (--warn)"
-            } else {
+            } else if blocking {
                 "yes (validation failures exit 1)"
+            } else {
+                "no (no blocking violations)"
             }
         ),
         String::new(),
@@ -325,6 +333,7 @@ fn render_text(feedback: &CheckFeedback) -> String {
             "- {} [{}:{}]",
             message.path, message.rule, message.severity
         );
+        let _ = writeln!(output, "  Blocking: {}", message.blocking);
         output.push_str(&format!("  Problem: {}\n", message.problem));
         let _ = writeln!(output, "  Fix: {}", message.corrective_context);
         for guidance in &message.guidance {
@@ -357,6 +366,8 @@ fn summarize_check_feedback(
     };
     let exit_behavior = if options.warn {
         "This command is running with --warn, so validation failures are reported without a failing exit code."
+    } else if report.success {
+        "This command exits 0 because no blocking violations were found; low severity findings are advisory."
     } else {
         "This command exits 1 for validation failures; use --warn for advisory reporting."
     };

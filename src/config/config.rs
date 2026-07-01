@@ -23,10 +23,10 @@ pub use crate::config::inheritance::{ResolvedRule, RuleResolver};
 #[cfg(feature = "yaml-config")]
 pub use crate::config::loader::ConfigLoader;
 pub use crate::config::ls_compat::LsLintCompatibility;
-pub(crate) use bundles::MarkdownOutlineView;
+pub(crate) use bundles::{merge_markdown_rule_configs, MarkdownOutlineView};
 pub use bundles::{
     DirectoryBundle, ExistsValidation, FileBundle, MarkdownBundle, MarkdownOutlineEntry,
-    MarkdownOutlineNode, ResolvedFileBundle,
+    MarkdownOutlineNode, MarkdownRuleConfig, ResolvedFileBundle,
 };
 pub use content::{
     ContentCodeSymbolConfig, ContentCollectionConfig, ContentModelConfig, ContentRelationConfig,
@@ -36,9 +36,10 @@ pub use extensions::{
     DocsLifecycleClaimPatternConfig, DocsLifecycleConfig, ExtensionConfig, ManifestSemanticsConfig,
     ManifestSemanticsManifestConfig, ModuleTopologyConfig, ModuleTopologyModuleConfig,
     RelationshipConstraintConfig, RelationshipProviderConfig, ReleaseArtifactConfig,
-    ReleaseContractConfig, SupportMatrixConfig, SupportMatrixDocsClaimSourceConfig,
-    SupportMatrixEntryConfig, TestRelationshipConfig, TestRelationshipFixtureFamilyConfig,
-    TestRelationshipIgnoredTestConfig, TestRelationshipSourceConfig,
+    ReleaseContractConfig, RepositoryReferenceConfig, SupportMatrixConfig,
+    SupportMatrixDocsClaimSourceConfig, SupportMatrixEntryConfig, TestRelationshipConfig,
+    TestRelationshipFixtureFamilyConfig, TestRelationshipIgnoredTestConfig,
+    TestRelationshipSourceConfig,
 };
 pub use quality::{QualityConfig, QualityScopeConfig};
 #[cfg(feature = "yaml-config")]
@@ -99,6 +100,7 @@ pub struct Config {
 /// A node in the structure hierarchy
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "full-cli", derive(Validate))]
+#[serde(deny_unknown_fields)]
 #[serde(rename_all = "snake_case")]
 pub struct DirectoryNode {
     /// File validation rules for this node

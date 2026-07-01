@@ -2,12 +2,13 @@
 id: goal-assura-incremental-release-train
 type: goal
 title: Assura incremental release train
-status: planned
+status: completed
 created: 2026-06-30
 owners:
   - assura-maintainers
 related:
   - ./assura-markdown-reference-intelligence-program.md
+  - ../release-train.md
   - ../release-candidate-checklist.md
   - ../release-notes.md
   - ../github-setup.md
@@ -54,6 +55,10 @@ not present in the `v0.1.0` archives.
 - Add a release-readiness check that compares the latest GitHub release tag,
   `Cargo.toml` version, release notes version, and unreleased user-facing
   changes.
+- The intended command is `cargo xtask release-readiness --format json`. It
+  should report latest GitHub release, local package version, release-note
+  version, unreleased supported/experimental surfaces, missing checklist items,
+  and a pass/fail release-readiness verdict.
 - Make release PRs include the release-candidate checklist and live release
   verification commands.
 - Require release artifacts for daemon/editor/agent milestones before docs
@@ -70,6 +75,9 @@ not present in the `v0.1.0` archives.
 
 - A release-train check reports whether the repo has unreleased user-facing
   changes since the latest GitHub release.
+- `cargo xtask release-readiness --format json` exists and exits nonzero when
+  release notes, package version, support policy, latest GitHub release, or
+  release checklist state are inconsistent.
 - Release PRs include a version bump, release notes, compatibility/support
   policy updates when needed, and the release-candidate checklist.
 - Tag publishing produces GitHub release archives and checksum sidecars through
@@ -83,6 +91,7 @@ not present in the `v0.1.0` archives.
 
 ```bash
 gh release list --limit 5
+cargo xtask release-readiness --format json
 cargo xtask release-smoke
 cargo xtask docs
 cargo xtask evidence
@@ -114,3 +123,9 @@ out of sync; claims daemon/editor/agent features before artifacts include
 them; skips release artifact smoke tests; or tries to declare `1.0.0` as part
 of this pre-1.0 release train.
 
+## Progress Log
+
+| Date | Update | Evidence |
+| --- | --- | --- |
+| 2026-06-30 | Completed the release-train readiness slice with a repo-native release train doc, structured release-surface manifest, and `cargo xtask release-readiness --format json`. Current live release state remains `v0.1.0` from 2026-05-24, so the readiness command is expected to fail until a new pre-1.0 release is prepared. | `gh release list --limit 5`; `docs/release-train.md`; `docs/data/release-surfaces.json`; `xtask/src/main.rs`; `cargo xtask release-readiness --format json`; independent review. |
+| 2026-07-01 | Prepared the next minor pre-1.0 release candidate as `v0.2.0` for the completed beta roadmap surfaces. Release-readiness now passes locally, release smoke installs an archive reporting version `0.2.0`, and release-surface validation rejects supported/experimental surfaces assigned to placeholders or tags after the local release tag. Publishing remains a separate tag/artifact step. | `Cargo.toml`; `docs/release-notes.md`; `docs/data/release-surfaces.json`; `xtask/src/main.rs`; `cargo xtask release-readiness --format json`; `cargo xtask release-smoke`; `cargo test -p xtask release_readiness --quiet`; independent review Gauss. |

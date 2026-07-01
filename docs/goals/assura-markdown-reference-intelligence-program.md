@@ -7,6 +7,7 @@ created: 2026-06-30
 owners:
   - assura-maintainers
 related:
+  - ./assura-beta-code-agnostic-capabilities-program.md
   - ./assura-markdown-lint-link-reference-engine.md
   - ./assura-reference-daemon-readiness.md
   - ./assura-daemon-management-cli.md
@@ -28,6 +29,16 @@ workflows. The program keeps the CLI and local protocol as the source of truth
 so VS Code, future editors, hooks, and agent plugins use the same behavior
 instead of each inventing its own scanner or daemon lifecycle.
 
+This is the master execution goal for the current large chunk of work. A future
+agent should be able to start from this file, pick the next incomplete child
+goal in order, execute that child goal to its own proof gates, update this
+program's progress log, and then continue to the next child goal without
+re-planning the full roadmap from scratch.
+
+This program is now a child workstream of
+[Assura Beta Code-Agnostic Capabilities Program](./assura-beta-code-agnostic-capabilities-program.md),
+which is the top-level beta execution goal.
+
 ## Current State
 
 Assura already supports local structure checks, JSON/agent output, project
@@ -48,6 +59,8 @@ them as installable behavior.
 
 ## Program Principles
 
+- Goal by goal: execute one child goal at a time, using each child file's
+  definition of done, validation commands, review tasks, and blocking criteria.
 - CLI first: every daemon lifecycle and health operation must be available
   through a future JSON-capable daemon command family.
 - Shared core: CLI, VS Code, and agent/plugin integrations must call the same
@@ -72,15 +85,90 @@ them as installable behavior.
 
 | Order | Sub-goal | Purpose | Status |
 | --- | --- | --- | --- |
-| 1 | [Markdown lint and repository reference engine](./assura-markdown-lint-link-reference-engine.md) | Validate Markdown, internal links, code/comment references, and inbound/outbound reference graph edges. | Planned |
-| 2 | [Reference daemon readiness](./assura-reference-daemon-readiness.md) | Make the daemon/session layer reliable enough for repeated checks, file events, stale-cache detection, and bounded affected-reference feedback. | Planned |
-| 3 | [Daemon management CLI](./assura-daemon-management-cli.md) | Provide daemon lifecycle/status/doctor/log commands as the shared control plane for humans, editors, and agents. | Planned |
-| 4 | [VS Code daemon integration](./assura-vscode-daemon-integration.md) | Build the first editor integration over the shared CLI/client contracts, reporting diagnostics and daemon health in VS Code. | Planned |
-| 5 | [Agent daemon awareness](./assura-agent-daemon-awareness.md) | Define how agents detect daemon health, recover when it is down, and receive bounded context through tools, hooks, or context injection. | Planned |
-| 6 | [Incremental release train](./assura-incremental-release-train.md) | Ensure meaningful pre-1.0 slices produce version bumps, release notes, tags, and GitHub release artifacts. | Planned |
-| 7 | [Public roadmap artifact](./assura-public-roadmap-artifact.md) | Render a concise Done/Now/Next website roadmap from the same repo-owned roadmap source. | Planned |
+| 1 | [Public roadmap artifact](./assura-public-roadmap-artifact.md) | Render a concise Done/Now/Next website roadmap from the same repo-owned roadmap source. | Planned |
+| 2 | [Markdown lint and repository reference engine](./assura-markdown-lint-link-reference-engine.md) | Validate Markdown, internal links, code/comment references, and inbound/outbound reference graph edges. | Planned |
+| 3 | [Incremental release train](./assura-incremental-release-train.md) | Ensure meaningful pre-1.0 slices produce version bumps, release notes, tags, and GitHub release artifacts. | Planned |
+| 4 | [Reference daemon readiness](./assura-reference-daemon-readiness.md) | Make the daemon/session layer reliable enough for repeated checks, file events, stale-cache detection, and bounded affected-reference feedback. | Planned |
+| 5 | [Daemon management CLI](./assura-daemon-management-cli.md) | Provide daemon lifecycle/status/doctor/log commands as the shared control plane for humans, editors, and agents. | Planned |
+| 6 | [VS Code daemon integration](./assura-vscode-daemon-integration.md) | Build the first editor integration over the shared CLI/client contracts, reporting diagnostics and daemon health in VS Code. | Planned |
+| 7 | [Agent daemon awareness](./assura-agent-daemon-awareness.md) | Define how agents detect daemon health, recover when it is down, and receive bounded context through tools, hooks, or context injection. | Planned |
 | 8 | Future Zed integration | Reuse the daemon CLI/client protocol after VS Code proves the editor contract. | Future |
 | 9 | Future JetBrains integration | Reuse the daemon CLI/client protocol after VS Code proves the editor contract. | Future |
+
+## Execution Sequence
+
+Use this sequence when kicking off the large chunk of work. Do not skip forward
+unless the skipped child goal is already achieved, explicitly superseded, or
+blocked with a recorded reason.
+
+1. Execute
+   [Public roadmap artifact](./assura-public-roadmap-artifact.md). Exit when
+   the website roadmap is generated from a repo-owned artifact, public labels
+   are two to four words, links validate, and the internal roadmap points to or
+   consumes the same source.
+2. Execute
+   [Markdown lint and repository reference engine](./assura-markdown-lint-link-reference-engine.md).
+   Exit when one-shot `assura check` can report Markdown lint, internal link,
+   heading, line/range, code/comment reference, severity, suppression, and
+   deterministic safe-fix findings with reference-graph evidence.
+3. Execute
+   [Incremental release train](./assura-incremental-release-train.md) for the
+   roadmap and reference-engine slices. Exit when the newly supported or
+   experimental user-facing behavior has version, release-note, tag, artifact,
+   and live GitHub release evidence, or when the child goal records a narrower
+   release policy that reviewers accept.
+4. Execute
+   [Reference daemon readiness](./assura-reference-daemon-readiness.md). Exit
+   when repeated local checks, file-event invalidation, stale-cache detection,
+   and bounded affected-reference feedback are reliable enough for wrappers to
+   depend on them without claiming editor support yet.
+5. Execute
+   [Daemon management CLI](./assura-daemon-management-cli.md). Exit when humans,
+   editors, and agents have JSON-capable lifecycle, status, doctor, log, and
+   fallback commands over the same local daemon contract.
+6. Execute the release-train child goal again if daemon behavior becomes
+   user-facing or documented as supported or experimental.
+7. Execute
+   [VS Code daemon integration](./assura-vscode-daemon-integration.md). Exit
+   when the first editor integration uses the shared daemon/client contracts
+   for diagnostics, status, and lifecycle commands without a separate scanner.
+8. Execute
+   [Agent daemon awareness](./assura-agent-daemon-awareness.md). Exit when
+   agents can cheaply detect daemon health, get bounded affected context,
+   recover or fall back deterministically, and avoid broad context injection.
+9. Re-run the release-train child goal for any editor or agent surface that is
+   advertised outside source-only development.
+
+## Program Operating Rules
+
+- Start every session by running the workflow gate and checking the live
+  roadmap, this program file, child goal status, current PRs, and release
+  state.
+- If a child goal was produced in an older context, revalidate it with the
+  current roadmap/spec state before implementation.
+- Keep each implementation PR scoped to one child goal unless a release,
+  validation, or source-of-truth update is inseparable from that child.
+- Complex implementation child goals require independent review before PR
+  publication.
+- After completing a child goal, update this program's progress log with the
+  PR, review artifact, validation commands, and the next child goal.
+- Do not mark this program complete until every required child goal is
+  completed or explicitly deferred with a reviewer-accepted reason and a
+  replacement goal.
+
+## Kickoff Prompt
+
+Use this prompt to start the program from a fresh session:
+
+```text
+Execute docs/goals/assura-markdown-reference-intelligence-program.md as the
+master goal. Start by running the workflow gate, checking the live roadmap,
+child goal statuses, current PR/release state, and repo cleanliness. Then pick
+the first incomplete child goal from the Execution Sequence, execute only that
+child goal to its own proof gates with independent review if implementation is
+complex, update the master program progress log, and report the next child goal
+path.
+```
 
 ## Recommended Architecture
 
@@ -132,10 +220,14 @@ only when the agent needs them.
 - Each sub-goal has objective, scope, non-goals, validation commands, review
   tasks, and blocking criteria.
 - The roadmap names this parent program as the current recommended goal.
+- This program gives agents a deterministic child-goal execution order and a
+  copy/paste kickoff prompt.
 - A release-train child goal defines how incremental versions and GitHub
   releases should be produced before 1.0.
 - A public-roadmap child goal defines the concise website roadmap artifact and
   validation rules.
+- Every required child goal is completed, or explicitly deferred with a
+  recorded replacement path and reviewer-accepted reason.
 - Existing support policy is not contradicted: daemon, watch, marketplace
   editor packages, MCP, and remote services remain future or experimental until
   their own goals prove support.
@@ -172,3 +264,9 @@ daemon management, promotes VS Code before daemon lifecycle contracts exist,
 claims `assura watch` is supported, or fails to give agents a deterministic
 daemon-health and recovery path, or omits incremental release/versioning work
 from the program, or allows the website roadmap to drift from repo state.
+
+## Progress Log
+
+| Date | Update | Evidence |
+| --- | --- | --- |
+| 2026-06-30 | Converted the parent program into the master execution goal for the large Markdown Reference Intelligence work chunk. The program now starts with the public roadmap artifact, then proceeds through Markdown lint/reference validation, release train, daemon readiness, daemon CLI, VS Code, and agent daemon awareness one child goal at a time. | User request; [.trellis/spec/assura/roadmap.md](../../.trellis/spec/assura/roadmap.md); child goals linked above. |

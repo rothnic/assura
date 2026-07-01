@@ -1,14 +1,14 @@
 ---
-title: Assura v0.1.0 Release Notes
+title: Assura v0.2.0 Release Notes
 status: active
 ---
 
-# Assura v0.1.0 Current Branch Release Notes
+# Assura v0.2.0 Release Notes
 
-These notes describe the current pre-1.0 public command surface on this branch
-for the next release-candidate build. They are not a claim that the already
+These notes describe the current pre-1.0 public command surface for the
+`v0.2.0` release-candidate build. They are not a claim that the already
 published May 24, 2026 `v0.1.0` archives contain later Project Intelligence
-work. Assura publishes installable archives from
+or beta roadmap work. Assura publishes installable archives from
 [`.github/workflows/release.yml`](../.github/workflows/release.yml) when a
 maintainer pushes an intentional `v*` tag after the release checklist in
 [`docs/release-candidate-checklist.md`](./release-candidate-checklist.md)
@@ -55,6 +55,10 @@ support policy treats `assura info` as an experimental diagnostic and
 long-running watch behavior as experimental until dedicated goals add
 release-grade tests and docs.
 
+The `integrations/editors/vscode` package is an experimental local VS Code
+adapter over the shared Assura CLI JSON contracts. It is not a marketplace
+release, does not start a hosted service, and does not apply fixes implicitly.
+
 ## Installable Archives
 
 Release automation builds these archives:
@@ -93,6 +97,27 @@ branch surfaces are advertised as installable release artifacts.
 - Exclusion patterns for generated directories and local build output.
 - Text, JSON, YAML, and agent output formats.
 
+### Markdown Validation
+
+- `markdown.lint_common` is an experimental Rust-native common lint bundle for
+  skipped heading levels, malformed heading marker spacing, duplicate headings,
+  and multiple consecutive blank lines.
+- `markdown.check_links` is experimental local validation for relative
+  Markdown file links, heading anchors, line anchors, and unrendered local file
+  references.
+- Markdown lint findings use stable `markdown_*` rule IDs and can use
+  `markdown.rules.<rule_id>.severity` plus reasoned `assura-ignore`
+  suppressions.
+- Broad third-party markdownlint-compatible coverage remains future work until
+  Assura has an MSRV-compatible dependency or external-binary contract.
+
+### Agent Nudges
+
+- `assura agent nudge` is an experimental shared event-aware payload for local
+  Codex, OpenCode, Claude, and Pi wrappers. It reports compact daemon health,
+  changed-path findings, affected-reference context, and performance-gate
+  reminders without adding per-agent validation commands.
+
 ### LS-Lint Migration
 
 - Supported LS-Lint 2.3 naming and ignore patterns migrate through
@@ -116,9 +141,9 @@ branch surfaces are advertised as installable release artifacts.
   supported local coding-agent entrypoint. They reuse the same content-query
   contracts and do not require MCP, remote access, or a daemon.
 - `assura content agent-context`, `collections`, `instances`, `show`,
-  `agent-query`, `search`, `semantic-search`, `symbols`, `symbol-refs`,
-  `missing-relations`, and `expand` query modeled content facts through the
-  local project-intelligence fact model.
+  `agent-query`, `search`, `missing-relations`, and `expand` provide the
+  supported modeled collection, keyword, relation, and bounded graph query
+  surface over the local project-intelligence fact model.
 - `assura content agent-context` emits the shared generic
   `assura.project-intelligence.agent-context.v1` schema for wrappers that need
   to discover diagnostics, safe-fix, graph/search, semantic, and code-symbol
@@ -130,18 +155,25 @@ branch surfaces are advertised as installable release artifacts.
 - Keyword search is deterministic local text matching over indexed chunks and
   returns lexical scores for ranking. These scores do not decide validation
   correctness.
-- `assura content semantic-search` is opt-in through `--enable-local` and uses
-  local candidate retrieval. Scores do not decide validation correctness.
-- `assura content symbols` and `assura content symbol-refs` use configured
-  modeled fields and optional provider evidence. The built-in Rust token
-  baseline can resolve rough local declarations; missing providers preserve
-  unresolved refs instead of failing validation.
+- `assura content semantic-search` is experimental, opt-in through
+  `--enable-local`, and uses local candidate retrieval. Scores do not decide
+  validation correctness.
+- `assura content symbols` and `assura content symbol-refs` are experimental
+  candidate-enrichment commands over configured modeled fields and optional
+  provider evidence. The built-in Rust token baseline can resolve rough local
+  declarations; missing providers preserve unresolved refs instead of failing
+  validation.
 - `assura editor session` exposes the current editor integration surface with
   `textDocument/diagnostics`, `textDocument/context`, and
   `textDocument/codeAction` JSON-line methods. It is local, does not require
   MCP or remote access, and does not claim full LSP server framing or editor
   marketplace packaging.
-- Daemon APIs, full LSP server packaging, and MCP are not part of this
+- `assura daemon status`, `start`, `stop`, `restart`, `doctor`, and `logs`
+  are experimental local daemon management-preview commands. They expose
+  daemon-ready health, protocol, runtime metadata, bounded log output, and
+  actionable remediation over the shared local state contract; a long-running
+  socket/process daemon remains roadmap until implemented and tested.
+- Full LSP server packaging and MCP are not part of this
   content-query surface.
 - Runtime schema or source model artifacts stored under `.assura/` must live
   under `.assura/models/**`; artifacts outside `.assura/`, such as `schemas/**`,
@@ -155,6 +187,10 @@ branch surfaces are advertised as installable release artifacts.
 - `assura fix markdown --rule trailing-spaces --apply --format json` applies
   the bounded Markdown trailing-space fix and reports changed paths, applied
   fix IDs, skipped fixes, and rollback guidance.
+- `assura fix markdown --rule required-sections --dry-run --format json`
+  previews deterministic missing-heading insertions for configured
+  `markdown.required_sections`; `--apply` appends those headings and reports
+  the same safe-fix audit fields.
 - Omitting both `--dry-run` and `--apply` previews fixes without writing;
   every write path requires `--apply`.
 
@@ -165,7 +201,7 @@ branch surfaces are advertised as installable release artifacts.
 - Custom constraints execute through `assura check` and report normal
   `StructureViolation` records with `custom:<id>` rule names.
 - Remote plugin loading, marketplaces, shell-executed plugins, and third-party
-  Rust/TypeScript plugin APIs are not part of v0.1.0.
+  Rust/TypeScript plugin APIs are not part of v0.2.0.
 
 ## Removed Or Superseded Surfaces
 
@@ -210,11 +246,10 @@ After publishing a tag, maintainers must also run:
 
 ```bash
 cargo xtask release-live
-ASSURA_VERSION=v0.1.0 cargo xtask release-live
+ASSURA_VERSION=v0.2.0 cargo xtask release-live
 ```
 
 ## Next
 
-Iteration 01 closes with release readiness. The next planned roadmap iteration
-is
-[`Assura Roadmap Iteration 02: Policy Depth And Ecosystem`](./goals/assura-roadmap-iteration-02-policy-depth-and-ecosystem.md).
+After `v0.2.0` is tagged and verified, the beta program can record release
+artifact evidence and move remaining follow-up work into post-beta hardening.

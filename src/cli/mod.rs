@@ -4,6 +4,8 @@ mod agent;
 #[cfg(feature = "full-cli")]
 mod agent_args;
 #[cfg(feature = "full-cli")]
+mod agent_nudge;
+#[cfg(feature = "full-cli")]
 mod agent_query_args;
 #[cfg(feature = "full-cli")]
 pub mod args;
@@ -17,7 +19,11 @@ mod command_options;
 pub mod commands;
 pub mod config;
 #[cfg(feature = "full-cli")]
+mod content_args;
+#[cfg(feature = "full-cli")]
 pub mod content_query;
+#[cfg(feature = "full-cli")]
+pub mod daemon;
 #[cfg(feature = "full-cli")]
 mod editor;
 #[cfg(feature = "full-cli")]
@@ -40,12 +46,14 @@ pub use agent::agent_command;
 #[cfg(feature = "full-cli")]
 pub use agent_args::AgentCommands;
 #[cfg(feature = "full-cli")]
+pub use agent_args::{AgentNudgeEvent, AgentNudgeTarget};
+#[cfg(feature = "full-cli")]
 pub use agent_query_args::AgentQueryArg;
 #[cfg(feature = "full-cli")]
 pub use args::{
-    AgentTarget, CheckOutputFormat, Cli, Commands, ContentCommands, ExitCode, FixCommands,
-    HookCommands, MarkdownFixRuleArg, OutputFormat, PerformanceReportFormat, QualityCommands,
-    QualityPhase, QualityPlanFormat,
+    AgentTarget, CheckOutputFormat, Cli, Commands, ExitCode, FixCommands, HookCommands,
+    MarkdownFixRuleArg, OutputFormat, PerformanceReportFormat, QualityCommands, QualityPhase,
+    QualityPlanFormat,
 };
 #[cfg(all(feature = "yaml-config", feature = "json-output"))]
 pub use check::run_structure_check_cached;
@@ -71,7 +79,11 @@ pub use commands::{
 pub use config::CliConfig;
 pub use config::ConfigDiscovery;
 #[cfg(feature = "full-cli")]
+pub use content_args::ContentCommands;
+#[cfg(feature = "full-cli")]
 pub use content_query::content_command;
+#[cfg(feature = "full-cli")]
+pub use daemon::{daemon_command, DaemonCommands};
 #[cfg(feature = "full-cli")]
 pub use editor::editor_command;
 #[cfg(feature = "full-cli")]

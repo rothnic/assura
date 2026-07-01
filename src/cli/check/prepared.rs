@@ -118,7 +118,7 @@ impl PreparedStructureCheck {
         report
             .violations
             .sort_by(|left, right| left.path.cmp(&right.path).then(left.rule.cmp(&right.rule)));
-        report.success = report.violations.is_empty();
+        report.refresh_success();
         Ok(report)
     }
 

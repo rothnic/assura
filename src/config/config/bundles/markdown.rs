@@ -1,11 +1,12 @@
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 #[cfg(feature = "full-cli")]
 use validator::Validate;
 
 /// Bundle of markdown validations for a directory node.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "full-cli", derive(Validate))]
+#[serde(deny_unknown_fields)]
 #[serde(rename_all = "snake_case")]
 pub struct MarkdownBundle {
     /// Whether frontmatter is required.
@@ -40,6 +41,55 @@ pub struct MarkdownBundle {
     /// Whether to report blank Markdown lines that contain trailing spaces or tabs.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub lint_trailing_spaces: Option<bool>,
+
+    /// Whether to run common Rust-native Markdown lint checks.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub lint_common: Option<bool>,
+
+    /// Per-rule configuration for Markdown findings.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rules: Option<HashMap<String, MarkdownRuleConfig>>,
+}
+
+/// Configuration for one Markdown rule.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+#[serde(rename_all = "snake_case")]
+pub struct MarkdownRuleConfig {
+    /// Optional severity override for this rule.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub severity: Option<String>,
+}
+
+impl MarkdownRuleConfig {
+    /// Merge a child rule object over an inherited parent rule object.
+    pub(crate) fn merged_with(&self, child: &Self) -> Self {
+        Self {
+            severity: child.severity.clone().or_else(|| self.severity.clone()),
+        }
+    }
+}
+
+pub(crate) fn merge_markdown_rule_configs(
+    parent: Option<&HashMap<String, MarkdownRuleConfig>>,
+    child: Option<&HashMap<String, MarkdownRuleConfig>>,
+) -> Option<HashMap<String, MarkdownRuleConfig>> {
+    match (parent, child) {
+        (None, None) => None,
+        (Some(parent), None) => Some(parent.clone()),
+        (None, Some(child)) => Some(child.clone()),
+        (Some(parent), Some(child)) => {
+            let mut merged = parent.clone();
+            for (rule, child_config) in child {
+                let config = merged.get(rule).map_or_else(
+                    || child_config.clone(),
+                    |parent| parent.merged_with(child_config),
+                );
+                merged.insert(rule.clone(), config);
+            }
+            Some(merged)
+        }
+    }
 }
 
 /// Markdown outline entry accepted by config shorthand and object notation.
@@ -122,6 +172,8 @@ impl MarkdownBundle {
             required_sections: None,
             outline: None,
             lint_trailing_spaces: None,
+            lint_common: None,
+            rules: None,
         }
     }
 
@@ -169,9 +221,66 @@ impl MarkdownBundle {
         self
     }
 
+    /// Set common Markdown linting.
+    pub fn with_lint_common(mut self, lint: bool) -> Self {
+        self.lint_common = Some(lint);
+        self
+    }
+
+    /// Set per-rule Markdown configuration.
+    pub fn with_rules(mut self, rules: HashMap<String, MarkdownRuleConfig>) -> Self {
+        self.rules = Some(rules);
+        self
+    }
+
     pub(crate) fn validate_outline_semantics(&self, context: &str) -> Result<(), String> {
         if let Some(outline) = &self.outline {
             validate_outline_entries(outline, &format!("{context}.outline"))?;
+        }
+        Ok(())
+    }
+
+    pub(crate) fn validate_required_sections_semantics(&self, context: &str) -> Result<(), String> {
+        let Some(required_sections) = &self.required_sections else {
+            return Ok(());
+        };
+        let mut seen = std::collections::HashSet::new();
+        for (index, section) in required_sections.iter().enumerate() {
+            if section.trim().is_empty() {
+                return Err(format!(
+                    "{context}.required_sections[{index}]: heading text cannot be empty"
+                ));
+            }
+            if section.trim() != section || section.contains('\n') || section.contains('\r') {
+                return Err(format!(
+                    "{context}.required_sections[{index}]: heading text must be a single trimmed line"
+                ));
+            }
+            if section.starts_with('#') || section.ends_with('#') {
+                return Err(format!(
+                    "{context}.required_sections[{index}]: heading text must not include Markdown heading markers"
+                ));
+            }
+            if !seen.insert(section.as_str()) {
+                return Err(format!(
+                    "{context}.required_sections[{index}]: duplicate heading text '{section}'"
+                ));
+            }
+        }
+        Ok(())
+    }
+
+    pub(crate) fn validate_rule_config_semantics(&self, context: &str) -> Result<(), String> {
+        let Some(rules) = &self.rules else {
+            return Ok(());
+        };
+        for (rule, config) in rules {
+            validate_markdown_rule_id(rule)
+                .map_err(|error| format!("{context}.rules.{rule}: {error}"))?;
+            if let Some(severity) = &config.severity {
+                validate_markdown_severity(severity)
+                    .map_err(|error| format!("{context}.rules.{rule}.severity: {error}"))?;
+            }
         }
         Ok(())
     }
@@ -224,4 +333,30 @@ fn validate_outline_entries(entries: &[MarkdownOutlineEntry], context: &str) -> 
         validate_outline_entries(view.children, &format!("{entry_context}.children"))?;
     }
     Ok(())
+}
+
+fn validate_markdown_rule_id(value: &str) -> Result<(), String> {
+    match value {
+        "markdown_frontmatter"
+        | "markdown_heading_depth"
+        | "markdown_required_section"
+        | "markdown_outline"
+        | "markdown_trailing_spaces"
+        | "markdown_heading_increment"
+        | "markdown_heading_marker_spacing"
+        | "markdown_duplicate_heading"
+        | "markdown_multiple_blank_lines"
+        | "markdown_link_format"
+        | "markdown_link_target"
+        | "markdown_link_heading_anchor"
+        | "markdown_link_line_anchor" => Ok(()),
+        _ => Err("expected a supported markdown_* rule id".to_string()),
+    }
+}
+
+fn validate_markdown_severity(value: &str) -> Result<(), String> {
+    match value {
+        "critical" | "high" | "medium" | "low" => Ok(()),
+        _ => Err("expected one of critical, high, medium, or low".to_string()),
+    }
 }

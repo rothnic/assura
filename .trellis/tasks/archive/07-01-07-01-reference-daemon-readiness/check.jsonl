@@ -1,0 +1,4 @@
+{"file":"docs/goals/assura-reference-daemon-readiness.md","reason":"Review daemon readiness definition of done and blocking criteria."}
+{"file":"docs/goals/assura-daemon-management-cli.md","reason":"Adjacent CLI control-plane constraints for health/status fields."}
+{"file":"docs/goals/assura-vscode-daemon-integration.md","reason":"Future editor contract that daemon core must not preclude."}
+{"file":"docs/goals/assura-beta-agent-nudge-integrations.md","reason":"Future agent-nudge contract that daemon core must support without per-agent validation."}

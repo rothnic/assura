@@ -10,9 +10,14 @@ Assura provides a comprehensive set of validation rules that can be configured t
 Each rule has a severity level that determines how violations are treated:
 
 - **Critical**: Validation fails, must be fixed
-- **High**: Serious issues, strongly recommended to fix
-- **Medium**: Potential problems, should be reviewed
-- **Low**: Minor suggestions
+- **High**: Validation fails, serious issue
+- **Medium**: Validation fails, default blocking issue
+- **Low**: Advisory finding, reported without failing the check
+
+All report formats use the same structure severity contract. Violations include
+`severity`, `severity_label`, `blocking`, `rule`, `message`, and
+`corrective_context` fields. `low` sets `blocking: false`; `medium`, `high`,
+and `critical` set `blocking: true`.
 
 ## Built-in Rules
 

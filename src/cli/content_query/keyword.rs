@@ -80,6 +80,15 @@ fn search_match(
             path: document_path(context, &section.document_id),
             text: chunk.text.clone(),
         },
+        Some(ProjectFact::MarkdownLink(link)) => SearchMatchOutput {
+            source_id: chunk.source_id.to_string(),
+            source_kind: "markdown_link".to_string(),
+            score,
+            collection: None,
+            instance_id: None,
+            path: Some(link.source_path.clone()),
+            text: chunk.text.clone(),
+        },
         Some(ProjectFact::Diagnostic(diagnostic)) => SearchMatchOutput {
             source_id: chunk.source_id.to_string(),
             source_kind: "diagnostic".to_string(),

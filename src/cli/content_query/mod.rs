@@ -2,7 +2,7 @@
 
 mod agent_query;
 mod code_symbols;
-mod context;
+pub(crate) mod context;
 mod context_pack;
 mod editor;
 mod editor_protocol;
@@ -10,6 +10,7 @@ mod facts;
 mod keyword;
 mod output;
 mod output_text;
+mod references;
 mod semantic;
 mod session;
 
@@ -27,6 +28,7 @@ use self::output::{
     render, CollectionOutput, CollectionsOutput, DiagnosticOutput, ExpandOutput, InstanceOutput,
     InstancesOutput, MissingRelationsOutput, RelatedFactOutput, RelationOutput,
 };
+use self::references::repository_references;
 use self::semantic::semantic_search;
 use self::session::content_session_command;
 use super::{ContentCommands, ExitCode, OutputFormat};
@@ -133,6 +135,15 @@ fn run_content_command(
             render(symbol_refs(&context, &symbol), format)
         }
         ContentCommands::MissingRelations { .. } => render(missing_relations(&context), format),
+        ContentCommands::References {
+            source,
+            target,
+            limit,
+            ..
+        } => render(
+            repository_references(&context, source.as_ref(), target.as_ref(), limit)?,
+            format,
+        ),
         ContentCommands::Expand {
             collection,
             id,
@@ -155,6 +166,7 @@ fn command_format(command: &ContentCommands) -> OutputFormat {
         | ContentCommands::Symbols { format, .. }
         | ContentCommands::SymbolRefs { format, .. }
         | ContentCommands::MissingRelations { format, .. }
+        | ContentCommands::References { format, .. }
         | ContentCommands::Expand { format, .. } => *format,
         ContentCommands::Session { .. } => OutputFormat::Json,
     }
@@ -336,6 +348,17 @@ fn expand(
             ProjectEdge::Relationship(edge) => {
                 if let Some(target_id) = &edge.target_id {
                     push_related(context, &mut related, target_id, "outgoing_relation", limit);
+                }
+            }
+            ProjectEdge::RepositoryReference(edge) => {
+                if let Some(target_id) = &edge.target_id {
+                    push_related(
+                        context,
+                        &mut related,
+                        target_id,
+                        "repository_reference",
+                        limit,
+                    );
                 }
             }
             ProjectEdge::SymbolRef(edge) => {

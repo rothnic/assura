@@ -199,7 +199,7 @@ fn content_session_reloads_before_first_response_if_files_changed_after_startup(
     let ready_file = temp.path().join("session-ready.txt");
 
     let mut session = SessionProcess::start_with_ready_file(temp.path(), Some(&ready_file));
-    wait_for_ready_file(&ready_file);
+    wait_for_ready_file(&mut session, &ready_file);
 
     let content = fs::read_to_string(&goal_path).expect("read goal").replace(
         "title: Portable Structure Policy",
@@ -283,13 +283,23 @@ fn copy_dir(source: &Path, destination: &Path) {
     }
 }
 
-fn wait_for_ready_file(path: &Path) {
+fn wait_for_ready_file(session: &mut SessionProcess, path: &Path) {
     let start = Instant::now();
-    while start.elapsed() < Duration::from_secs(5) {
+    while start.elapsed() < Duration::from_secs(180) {
         if path.exists() {
             return;
         }
-        std::thread::sleep(Duration::from_millis(25));
+        if let Some(status) = session
+            .child
+            .try_wait()
+            .expect("check content session process")
+        {
+            panic!(
+                "session exited before writing ready file {}: {status}",
+                path.display()
+            );
+        }
+        std::thread::sleep(Duration::from_millis(100));
     }
     panic!("session did not write ready file: {}", path.display());
 }

@@ -186,7 +186,7 @@ files:
 | `max_size` | Fails when a direct file exceeds a size such as `100KB` or `2MB`. |
 | `require_docs` | For Rust files, requires `//!` or `///` rustdoc text. |
 | `extensions` | Allows only the listed extensions when extension validation is configured. Multi-part extensions such as `tar.gz` are supported. |
-| `severity` | Severity assigned to violations from this file bundle. |
+| `severity` | Severity assigned to violations from this file bundle. `low` is advisory; `medium`, `high`, and `critical` are blocking. |
 | `required` | Exact direct files that must exist. |
 | `allowed_names` | Exact direct file names allowed by a closed-world policy. |
 | `allowed_patterns` | Direct file glob patterns allowed by a closed-world policy. |
@@ -217,7 +217,7 @@ directories:
 | Field | Behavior |
 | --- | --- |
 | `naming` | Naming convention for direct child directories. |
-| `severity` | Severity assigned to violations from this directory bundle. |
+| `severity` | Severity assigned to violations from this directory bundle. `low` is advisory; `medium`, `high`, and `critical` are blocking. |
 | `required` | Exact direct child directories that must exist. |
 | `allowed_names` | Exact direct child directory names allowed by a closed-world policy. |
 | `allowed_patterns` | Direct child directory glob patterns allowed by a closed-world policy. |
@@ -231,6 +231,7 @@ directories:
 markdown:
   require_frontmatter: true
   lint_trailing_spaces: true
+  lint_common: true
   max_heading_depth: 3
   required_sections:
     - Summary
@@ -240,20 +241,54 @@ markdown:
     - Quick Start:
         - Installation
         - ?? Configuration
+  rules:
+    markdown_link_target:
+      severity: low
 ```
 
 | Field | Behavior |
 | --- | --- |
 | `require_frontmatter` | Requires YAML frontmatter in direct child Markdown files as a generic document-style rule. |
 | `lint_trailing_spaces` | Reports blank Markdown lines that contain spaces or tabs. `assura fix markdown --dry-run --format json` previews this safe whitespace class; `assura fix markdown --apply --format json` writes only this bounded fix class. |
+| `lint_common` | Reports common Rust-native Markdown lint findings for skipped heading levels, malformed heading marker spacing, duplicate headings, and multiple consecutive blank lines. |
 | `max_heading_depth` | Fails when a Markdown heading is deeper than the configured level. |
-| `required_sections` | Requires headings with the configured text. |
+| `required_sections` | Requires headings with the configured text. `assura fix markdown --rule required-sections --dry-run --format json` previews deterministic missing-heading insertions; `--apply` appends those headings for configured Markdown scopes. |
 | `outline` | Validates ordered nested headings without requiring users to maintain heading depth numbers. Use `?? ` for optional headings and object form such as `title: "?? Debug Mode"` when a required heading starts with literal question marks. |
-| `check_links` | Accepted by the config type but not enforced by current `assura check`. |
+| `check_links` | Validates local relative Markdown links to files, Markdown heading anchors, and GitHub-style line or line-range anchors such as `#L12` and `#L12-L34`. It also reports existing local file references in prose or inline code that should be rendered as Markdown links. Remote URLs and same-file `#heading` links are ignored by this local check. |
+| `rules` | Maps supported `markdown_*` rule IDs to per-rule options. `severity` accepts `low`, `medium`, `high`, or `critical`; `low` findings are advisory and the other severities are blocking. |
 
 Use `models`, `collections`, and `relations` for typed Markdown frontmatter
 fields. `markdown.required_fields` is rejected in Assura-authored config so
 frontmatter field ownership stays in one content model path.
+
+Use a reasoned suppression comment for intentional exceptions:
+
+```markdown
+<!-- assura-ignore markdown_link_target: generated fixture points at future docs -->
+```
+
+Suppressions must name a supported Markdown rule ID and include a non-empty
+reason. Invalid suppressions are reported as `markdown_suppression`.
+
+## Repository References
+
+Opt into experimental source/comment/docstring reference diagnostics with
+`extensions.repository_references`:
+
+```yaml
+extensions:
+  repository_references:
+    - id: source_refs
+      paths:
+        - "src/**"
+      severity: high
+```
+
+Assura scans supported source and config file types under matching paths for
+local file references. It reports locally provable missing targets, missing
+Markdown heading anchors, and invalid line anchors as `repository_reference_*`
+rules. Ambiguous lower-confidence references remain available as graph context
+through `assura content references`.
 
 ## Relationships
 
@@ -326,7 +361,7 @@ exclude:
 ```
 
 Given `draft-plan.md`, `scratch.txt`, and `tmp-cache/`, JSON output includes
-stable path, rule, severity, message, and corrective context fields:
+stable path, rule, severity, blocking, message, and corrective context fields:
 
 ```json
 {
@@ -334,6 +369,8 @@ stable path, rule, severity, message, and corrective context fields:
   "rule": "forbidden_file",
   "message": "File 'draft-plan.md' is forbidden by policy",
   "severity": "high",
+  "severity_label": "High",
+  "blocking": true,
   "corrective_context": "Remove or rename the file, or narrow files.forbidden_patterns if this file should be allowed."
 }
 ```
@@ -372,5 +409,7 @@ assura check --format agent --agent codex . --warn
 
 The JSON report contains `success`, `project_root`, `config_path`,
 `checked_path`, `files_checked`, `dirs_checked`, and `violations`.
-Each violation contains `path`, `rule`, `message`, `severity`, and
-`corrective_context`.
+Each violation contains `path`, `rule`, `message`, `severity`,
+`severity_label`, `blocking`, and `corrective_context`. The `success` field is
+false only when at least one violation has `"blocking": true`; low-severity
+findings remain visible while allowing an exit code of 0.

@@ -10,6 +10,7 @@ use std::collections::HashMap;
 #[derive(Clone)]
 pub(super) struct FastFileNaming {
     suffix_patterns: Vec<(String, FastNaming)>,
+    exact_suffix_patterns: HashMap<String, (String, FastNaming)>,
     glob_patterns: Vec<FastPatternNaming>,
     default: Option<FastNaming>,
 }
@@ -117,8 +118,16 @@ impl FastFileNaming {
                 .cmp(&left.0.len())
                 .then_with(|| left.0.cmp(&right.0))
         });
+        let exact_suffix_patterns = suffix_patterns
+            .iter()
+            .filter_map(|(pattern, naming)| {
+                exact_lslint_extension_key(pattern)
+                    .map(|key| (key, (pattern.clone(), naming.clone())))
+            })
+            .collect();
         Self {
             suffix_patterns,
+            exact_suffix_patterns,
             glob_patterns: glob_patterns
                 .into_iter()
                 .map(|(pattern, naming)| FastPatternNaming::new(pattern, naming))
@@ -146,7 +155,14 @@ impl FastFileNaming {
         filename: &str,
         glob_patterns: &HashMap<String, Pattern>,
     ) -> Option<FastFileNamingMatch<'a>> {
-        let suffix_match = best_lslint_suffix_pair(&self.suffix_patterns, filename);
+        let exact_suffix_key = lslint_exact_filename_key(filename);
+        let suffix_match = exact_suffix_key
+            .and_then(|key| {
+                self.exact_suffix_patterns
+                    .get(key)
+                    .map(|(pattern, naming)| (pattern.as_str(), naming))
+            })
+            .or_else(|| best_lslint_suffix_pair(&self.suffix_patterns, filename));
         let glob_match = self
             .glob_patterns
             .iter()
@@ -180,6 +196,27 @@ impl FastFileNaming {
             }),
         }
     }
+}
+
+fn exact_lslint_extension_key(pattern: &str) -> Option<String> {
+    let suffix = pattern.strip_prefix("*.")?;
+    let mut segments = suffix.split('.').peekable();
+    segments.peek()?;
+    let mut key = String::new();
+    for segment in segments {
+        if segment.is_empty() || segment == "*" || segment.contains('*') {
+            return None;
+        }
+        if !key.is_empty() {
+            key.push('.');
+        }
+        key.push_str(segment);
+    }
+    Some(key)
+}
+
+fn lslint_exact_filename_key(filename: &str) -> Option<&str> {
+    filename.split_once('.').map(|(_, suffix)| suffix)
 }
 
 impl FastPatternNaming {

@@ -133,6 +133,7 @@ fn normalize_docs_claim_surface(cell: &str, surface_kind: DocsClaimSurfaceKind) 
         || surface.starts_with("rust:")
         || surface.starts_with("package:")
         || surface.starts_with("binary:")
+        || surface.starts_with("config:")
     {
         return Some(surface);
     }
@@ -156,4 +157,26 @@ fn strip_markdown_inline(cell: &str) -> String {
         .trim_matches('*')
         .trim()
         .to_string()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{docs_claim_surfaces, DocsClaimSurface};
+
+    #[test]
+    fn docs_claim_surfaces_reads_config_surface_rows() {
+        let content = r#"
+| Surface | Status | Evidence |
+| --- | --- | --- |
+| `config:markdown.lint_common` | Experimental | fixture |
+"#;
+
+        assert_eq!(
+            docs_claim_surfaces(content),
+            vec![DocsClaimSurface {
+                surface: "config:markdown.lint_common".to_string(),
+                status: "experimental".to_string(),
+            }]
+        );
+    }
 }

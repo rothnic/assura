@@ -2,7 +2,7 @@
 id: goal-assura-agent-daemon-awareness
 type: goal
 title: Assura agent daemon awareness
-status: planned
+status: completed
 created: 2026-06-30
 owners:
   - assura-maintainers
@@ -71,3 +71,11 @@ git diff --check
 Block if the integration requires MCP for local use, creates one daemon command
 per agent, injects unbounded context, or gives agents no deterministic fallback
 when the daemon is down.
+
+## Progress Log
+
+| Date | Update | Evidence |
+| --- | --- | --- |
+| 2026-07-01 | Added daemon-aware agent nudge output through the shared `assura agent nudge` command. Nudges include compact daemon health, status/doctor/fallback commands, changed-path daemon checks when paths are supplied, and deterministic fallback output for unavailable projects without requiring MCP or a per-agent daemon command family. | `src/cli/agent_nudge.rs`; `tests/agent_surface_cli.rs`; `cargo test --test agent_surface_cli --quiet`; `cargo test --test daemon_cli_tests --quiet`; `cargo run --quiet -- check --format agent --agent codex .`. |
+| 2026-07-01 | Documented daemon recovery recipes for Codex, OpenCode, Claude, and Pi wrappers. Local agent integrations now point at `assura daemon status --format json`, `assura daemon doctor --format json`, and shared `assura check --format agent` fallback commands instead of injecting full daemon state or creating per-agent daemon commands. | `integrations/agents/README.md`; `integrations/agents/codex/README.md`; `integrations/agents/opencode/README.md`; `website/src/content/docs/reference/agent-feedback.md`; `tests/agent_surface_cli.rs`. |
+| 2026-07-01 | Completed daemon-awareness coverage for Epic 8. Closure review accepted the bounded daemon-health and fallback approach; wrappers now have exact status, doctor, and generic agent-check recovery commands without MCP, remote services, or per-agent daemon command families. | Independent closure review Faraday; `cargo test --test agent_surface_cli --quiet`; `cargo run --quiet -- check --format json .`; `cargo xtask target-state`; `cargo xtask evidence`; `cargo xtask docs`; `git diff --check`. |

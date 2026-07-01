@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-const COMPILED_CONFIG_SCHEMA_VERSION: u32 = 16;
+const COMPILED_CONFIG_SCHEMA_VERSION: u32 = 18;
 const ASSURA_VERSION_HASH: u64 = stable_hash_const(env!("CARGO_PKG_VERSION").as_bytes());
 
 /// Portable artifact containing a parsed Assura structure config.
@@ -42,6 +42,11 @@ pub struct CompiledStructureConfigArtifact {
 }
 
 impl CompiledStructureConfigArtifact {
+    /// Current binary artifact schema version.
+    pub fn current_schema_version() -> u32 {
+        COMPILED_CONFIG_SCHEMA_VERSION
+    }
+
     /// Create an artifact for the current Assura binary version.
     pub fn new(config: Config) -> Self {
         let plan = PortableCompiledPlan::from_config(&config);
@@ -195,7 +200,7 @@ fn infer_project_root(config_path: &Path) -> std::io::Result<PathBuf> {
     Ok(config_dir.to_path_buf())
 }
 
-fn path_to_portable(path: PathBuf) -> String {
+pub(super) fn path_to_portable(path: PathBuf) -> String {
     let portable = path.to_string_lossy().replace('\\', "/");
     portable
         .strip_prefix("//?/")
@@ -440,6 +445,8 @@ impl From<MarkdownBundle> for PortableMarkdownBundle {
             required_sections: bundle.required_sections,
             outline: bundle.outline,
             lint_trailing_spaces: bundle.lint_trailing_spaces,
+            lint_common: bundle.lint_common,
+            rules: bundle.rules,
         }
     }
 }
@@ -454,6 +461,8 @@ impl From<PortableMarkdownBundle> for MarkdownBundle {
             required_sections: bundle.required_sections,
             outline: bundle.outline,
             lint_trailing_spaces: bundle.lint_trailing_spaces,
+            lint_common: bundle.lint_common,
+            rules: bundle.rules,
         }
     }
 }
@@ -466,34 +475,11 @@ impl From<ExistsValidation> for PortableExistsValidation {
         }
     }
 }
-
 impl From<PortableExistsValidation> for ExistsValidation {
     fn from(exists: PortableExistsValidation) -> Self {
         Self {
             files: exists.files,
             directories: exists.directories,
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::path_to_portable;
-    use std::path::PathBuf;
-
-    #[test]
-    fn path_to_portable_preserves_unix_absolute_paths() {
-        assert_eq!(
-            path_to_portable(PathBuf::from("/tmp/assura/config.yaml")),
-            "/tmp/assura/config.yaml"
-        );
-    }
-
-    #[test]
-    fn path_to_portable_normalizes_windows_separators() {
-        assert_eq!(
-            path_to_portable(PathBuf::from(r"C:\Users\nick\assura\config.yaml")),
-            "C:/Users/nick/assura/config.yaml"
-        );
     }
 }

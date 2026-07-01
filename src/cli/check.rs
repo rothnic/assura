@@ -37,6 +37,8 @@ mod markdown;
 mod markdown_fix;
 #[cfg(feature = "yaml-config")]
 mod markdown_fix_report;
+#[cfg(feature = "yaml-config")]
+mod markdown_required_sections_fix;
 mod module_topology;
 mod patterns;
 #[cfg(feature = "yaml-config")]
@@ -45,8 +47,11 @@ mod prepared;
 mod profiling;
 mod release_contract;
 mod report;
+mod repository_references;
 mod rule_plan;
 mod rules;
+#[cfg(test)]
+mod rules_tests;
 mod scope_patterns;
 mod support_matrix;
 mod support_matrix_docs;
@@ -351,7 +356,7 @@ impl StructureChecker {
                         left.path.cmp(&right.path).then(left.rule.cmp(&right.rule))
                     });
                     timings.report_sort_ms = sort_started.elapsed().as_secs_f64() * 1000.0;
-                    report.success = report.violations.is_empty();
+                    report.refresh_success();
                     return Ok(report);
                 }
             }
@@ -365,7 +370,7 @@ impl StructureChecker {
                 .violations
                 .sort_by(|left, right| left.path.cmp(&right.path).then(left.rule.cmp(&right.rule)));
             timings.report_sort_ms = sort_started.elapsed().as_secs_f64() * 1000.0;
-            report.success = report.violations.is_empty();
+            report.refresh_success();
             return Ok(report);
         }
 
@@ -375,9 +380,10 @@ impl StructureChecker {
         let has_content_runtime_config = false;
 
         if !has_content_runtime_config
+            && !self.has_repository_reference_diagnostics_config()
             && self.try_check_lslint_fast(&checked_path, &mut report, timings)?
         {
-            report.success = report.violations.is_empty();
+            report.refresh_success();
             return Ok(report);
         }
 
@@ -385,8 +391,8 @@ impl StructureChecker {
         self.validate_configured_structure(&mut report);
         timings.configured_structure_ms = configured_started.elapsed().as_secs_f64() * 1000.0;
 
-        if self.fail_fast && !report.violations.is_empty() {
-            report.success = false;
+        if self.fail_fast && report.has_blocking_violations() {
+            report.refresh_success();
             return Ok(report);
         }
 
@@ -394,13 +400,13 @@ impl StructureChecker {
         self.walk_and_validate(&checked_path, &mut report)?;
         timings.walk_and_validate_ms = walk_started.elapsed().as_secs_f64() * 1000.0;
 
-        if !self.fail_fast || report.violations.is_empty() {
+        if !self.fail_fast || !report.has_blocking_violations() {
             self.validate_custom_constraints(&checked_path, &mut report)?;
         }
 
         #[cfg(feature = "full-cli")]
         if target_mode == CheckTargetMode::Recursive
-            && (!self.fail_fast || report.violations.is_empty())
+            && (!self.fail_fast || !report.has_blocking_violations())
         {
             self.validate_content_runtime(&mut report);
         }
@@ -410,7 +416,7 @@ impl StructureChecker {
             .violations
             .sort_by(|left, right| left.path.cmp(&right.path).then(left.rule.cmp(&right.rule)));
         timings.report_sort_ms = sort_started.elapsed().as_secs_f64() * 1000.0;
-        report.success = report.violations.is_empty();
+        report.refresh_success();
         Ok(report)
     }
 

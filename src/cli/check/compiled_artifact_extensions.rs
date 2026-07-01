@@ -2,9 +2,10 @@ use crate::config::config::{
     CustomConstraintConfig, DocsLifecycleClaimPatternConfig, DocsLifecycleConfig, ExtensionConfig,
     ManifestSemanticsConfig, ManifestSemanticsManifestConfig, ModuleTopologyConfig,
     RelationshipConstraintConfig, RelationshipProviderConfig, ReleaseArtifactConfig,
-    ReleaseContractConfig, SupportMatrixConfig, SupportMatrixEntryConfig,
-    SupportMatrixDocsClaimSourceConfig, TestRelationshipConfig, TestRelationshipFixtureFamilyConfig,
-    TestRelationshipIgnoredTestConfig, TestRelationshipSourceConfig,
+    ReleaseContractConfig, RepositoryReferenceConfig, SupportMatrixConfig,
+    SupportMatrixEntryConfig, SupportMatrixDocsClaimSourceConfig, TestRelationshipConfig,
+    TestRelationshipFixtureFamilyConfig, TestRelationshipIgnoredTestConfig,
+    TestRelationshipSourceConfig,
 };
 
 /// Binary-safe extension config stored inside compiled artifacts.
@@ -17,6 +18,7 @@ struct PortableExtensionConfig {
     test_relationships: Vec<PortableTestRelationshipConfig>,
     module_topologies: Vec<PortableModuleTopologyConfig>,
     docs_lifecycles: Vec<PortableDocsLifecycleConfig>,
+    repository_references: Vec<RepositoryReferenceConfig>,
     relationships: Vec<PortableRelationshipConstraintConfig>,
 }
 
@@ -154,6 +156,7 @@ impl From<ExtensionConfig> for PortableExtensionConfig {
             test_relationships: config.test_relationships.into_iter().map(Into::into).collect(),
             module_topologies: config.module_topologies.into_iter().map(Into::into).collect(),
             docs_lifecycles: config.docs_lifecycles.into_iter().map(Into::into).collect(),
+            repository_references: config.repository_references,
             relationships: config.relationships.into_iter().map(Into::into).collect(),
         }
     }
@@ -185,6 +188,7 @@ impl From<PortableExtensionConfig> for ExtensionConfig {
             test_relationships: config.test_relationships.into_iter().map(Into::into).collect(),
             module_topologies: config.module_topologies.into_iter().map(Into::into).collect(),
             docs_lifecycles: config.docs_lifecycles.into_iter().map(Into::into).collect(),
+            repository_references: config.repository_references,
             relationships: config.relationships.into_iter().map(Into::into).collect(),
         }
     }

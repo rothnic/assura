@@ -117,7 +117,7 @@ extensions:
         - path: Cargo.toml
           package: assura
           role: public
-          version: "0.1.0"
+          version: "0.2.0"
           rust_version: "1.70.0"
           license: "MIT OR Apache-2.0"
           publish: public
@@ -135,7 +135,7 @@ extensions:
         - path: crates/assura-check-cli/Cargo.toml
           package: assura-check-cli
           role: internal
-          version: "0.1.0"
+          version: "0.2.0"
           rust_version: "1.70.0"
           license: "MIT OR Apache-2.0"
           publish: internal
@@ -155,7 +155,7 @@ extensions:
         - path: crates/assura-stable-hash/Cargo.toml
           package: assura-stable-hash
           role: internal
-          version: "0.1.0"
+          version: "0.2.0"
           rust_version: "1.70.0"
           license: "MIT OR Apache-2.0"
           publish: internal
@@ -165,7 +165,7 @@ extensions:
         - path: xtask/Cargo.toml
           package: xtask
           role: internal
-          version: "0.1.0"
+          version: "0.2.0"
           rust_version: "1.70.0"
           license: "MIT OR Apache-2.0"
           publish: internal
@@ -253,6 +253,14 @@ extensions:
             - src/constraints
           public_exports:
             - constraints
+        - family: daemon
+          status: experimental
+          owner: assura-maintainers
+          purpose: experimental daemon-ready local state contracts
+          roots:
+            - src/daemon
+          public_exports:
+            - daemon
         - family: intelligence
           status: internal
           owner: assura-maintainers
@@ -424,6 +432,8 @@ extensions:
           status: supported
         - surface: "command:assura agent safe-fixes"
           status: supported
+        - surface: "command:assura agent nudge"
+          status: experimental
         - surface: "command:assura agent session"
           status: supported
         - surface: "command:assura editor"
@@ -456,12 +466,38 @@ extensions:
           status: supported
         - surface: "command:assura content missing-relations"
           status: supported
+        - surface: "command:assura content references"
+          status: experimental
         - surface: "command:assura content expand"
           status: supported
+        - surface: "command:assura daemon"
+          status: experimental
+        - surface: "command:assura daemon status"
+          status: experimental
+        - surface: "command:assura daemon start"
+          status: experimental
+        - surface: "command:assura daemon stop"
+          status: experimental
+        - surface: "command:assura daemon restart"
+          status: experimental
+        - surface: "command:assura daemon doctor"
+          status: experimental
+        - surface: "command:assura daemon logs"
+          status: experimental
+        - surface: "command:assura daemon health"
+          status: experimental
+        - surface: "command:assura daemon check-path"
+          status: experimental
+        - surface: "command:assura daemon references"
+          status: experimental
         - surface: "command:assura info"
           status: experimental
         - surface: "command:assura performance-report"
           status: supported
+        - surface: "config:markdown.lint_common"
+          status: experimental
+        - surface: "config:extensions.repository_references"
+          status: experimental
         - surface: "command:assura quality plan"
           status: supported
         - surface: "command:assura hooks"
@@ -483,6 +519,8 @@ extensions:
         - surface: "rust:content_repository"
           status: experimental
         - surface: "rust:constraints"
+          status: experimental
+        - surface: "rust:daemon"
           status: experimental
         - surface: "rust:intelligence"
           status: internal
@@ -1064,6 +1102,7 @@ structure:
           allowed_names:
             - "analysis"
             - "archive"
+            - "data"
             - "goals"
             - "proposals"
           allow_extra: false
@@ -1080,6 +1119,14 @@ structure:
               max_lines: 2000
             markdown:
               require_frontmatter: true
+          data/:
+            files:
+              naming: "kebab-case"
+              allowed_patterns:
+                - "*.json"
+              allow_extra: false
+            directories:
+              allow_extra: false
           goals/:
             files:
               naming: "kebab-case"
@@ -1100,6 +1147,7 @@ structure:
         directories:
           allowed_names:
             - "agents"
+            - "editors"
           allow_extra: false
         children:
           agents/:
@@ -1155,6 +1203,49 @@ structure:
                   tests/:
                     files:
                       naming: "kebab-case"
+          editors/:
+            files:
+              naming: "kebab-case"
+              allowed_names:
+                - "README.md"
+              allow_extra: false
+            directories:
+              allowed_names:
+                - "vscode"
+              allow_extra: false
+            children:
+              vscode/:
+                files:
+                  naming: "kebab-case"
+                  allowed_names:
+                    - "README.md"
+                    - "package.json"
+                  allow_extra: false
+                directories:
+                  allowed_names:
+                    - "scripts"
+                    - "src"
+                    - "tests"
+                  allow_extra: false
+                children:
+                  scripts/:
+                    files:
+                      naming: "kebab-case"
+                      allowed_patterns:
+                        - "*.js"
+                      allow_extra: false
+                  src/:
+                    files:
+                      naming: "kebab-case"
+                      allowed_patterns:
+                        - "*.js"
+                      allow_extra: false
+                  tests/:
+                    files:
+                      naming: "kebab-case"
+                      allowed_patterns:
+                        - "*.js"
+                      allow_extra: false
       
       src/:
         files:
@@ -1167,6 +1258,7 @@ structure:
             - "config"
             - "content_repository"
             - "constraints"
+            - "daemon"
             - "intelligence"
             - "ls_compat"
             - "markdown"
@@ -1220,6 +1312,12 @@ structure:
                 - "severity"
                 - "trigger"
               allow_extra: false
+
+          daemon/:
+            files:
+              naming: "snake_case"
+              max_lines: 500
+              require_docs: true
           
           intelligence/:
             files:

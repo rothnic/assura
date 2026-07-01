@@ -3,6 +3,7 @@
 use super::rules::{display_rel, is_excluded_rel_with};
 use super::{CheckError, StructureCheckReport, StructureChecker, StructureViolation};
 use crate::config::config::DocsLifecycleConfig;
+use crate::markdown_links::{markdown_links, parse_markdown_link_target};
 use glob::Pattern;
 use std::collections::HashSet;
 use std::fs;
@@ -281,58 +282,14 @@ fn frontmatter_status(content: &str) -> Option<String> {
 
 fn markdown_link_targets(source_rel: &Path, content: &str) -> Vec<PathBuf> {
     let mut targets = Vec::new();
-    let mut rest = content;
-    while let Some(start) = rest.find("](") {
-        rest = &rest[start + 2..];
-        let Some(end) = rest.find(')') else {
-            break;
-        };
-        let raw = rest[..end].split_whitespace().next().unwrap_or_default();
-        rest = &rest[end + 1..];
-        if raw.is_empty()
-            || raw.starts_with('#')
-            || raw.contains("://")
-            || raw.starts_with("mailto:")
-        {
-            continue;
-        }
-        let raw = raw.split('#').next().unwrap_or(raw);
-        if raw.is_empty() {
-            continue;
-        }
-        if let Some(normalized) = normalize_link_target(source_rel, raw) {
-            targets.push(normalized);
+    for link in markdown_links(content) {
+        if let Some(target) = parse_markdown_link_target(source_rel, &link.target) {
+            targets.push(target.path);
         }
     }
     targets.sort();
     targets.dedup();
     targets
-}
-
-fn normalize_link_target(source_rel: &Path, raw: &str) -> Option<PathBuf> {
-    let mut base = source_rel
-        .parent()
-        .unwrap_or_else(|| Path::new(""))
-        .to_path_buf();
-    base.push(raw);
-    normalize_relative_path(&base)
-}
-
-fn normalize_relative_path(path: &Path) -> Option<PathBuf> {
-    let mut normalized = PathBuf::new();
-    for component in path.components() {
-        match component {
-            Component::CurDir => {}
-            Component::Normal(part) => normalized.push(part),
-            Component::ParentDir => {
-                if !normalized.pop() {
-                    return None;
-                }
-            }
-            Component::RootDir | Component::Prefix(_) => return None,
-        }
-    }
-    Some(normalized)
 }
 
 fn text_matches_claim_pattern(content: &str, pattern: &str) -> bool {

@@ -1,0 +1,110 @@
+{
+  "schema_version": "assura.release-surfaces.v1",
+  "surfaces": [
+    {
+      "id": "project-intelligence-local-surfaces",
+      "label": "Project Intelligence local surfaces",
+      "status": "supported",
+      "first_release": "v0.2.0",
+      "detail_path": "docs/release-notes.md"
+    },
+    {
+      "id": "content-collections-querying",
+      "label": "Content collections and querying",
+      "status": "supported",
+      "first_release": "v0.2.0",
+      "detail_path": "docs/goals/assura-beta-content-collections-querying.md"
+    },
+    {
+      "id": "markdown-safe-fix-preview-apply",
+      "label": "Markdown safe-fix preview/apply",
+      "status": "experimental",
+      "first_release": "v0.2.0",
+      "detail_path": "docs/release-notes.md"
+    },
+    {
+      "id": "markdown-common-lints",
+      "label": "Markdown common lint bundle",
+      "status": "experimental",
+      "first_release": "v0.2.0",
+      "detail_path": "docs/goals/assura-markdown-lint-link-reference-engine.md"
+    },
+    {
+      "id": "markdown-local-link-checks",
+      "label": "Markdown local link checks",
+      "status": "experimental",
+      "first_release": "v0.2.0",
+      "detail_path": "docs/goals/assura-markdown-lint-link-reference-engine.md"
+    },
+    {
+      "id": "markdown-rule-severity-suppression",
+      "label": "Markdown rule severity and suppressions",
+      "status": "experimental",
+      "first_release": "v0.2.0",
+      "detail_path": "docs/goals/assura-markdown-lint-link-reference-engine.md"
+    },
+    {
+      "id": "repository-reference-facts",
+      "label": "Repository reference facts and checks",
+      "status": "experimental",
+      "first_release": "v0.2.0",
+      "detail_path": "docs/goals/assura-code-doc-reference-validation.md"
+    },
+    {
+      "id": "daemon-core-probe",
+      "label": "Daemon core probe commands",
+      "status": "experimental",
+      "first_release": "v0.2.0",
+      "detail_path": "docs/goals/assura-reference-daemon-readiness.md"
+    },
+    {
+      "id": "daemon-management-cli-preview",
+      "label": "Daemon management CLI preview",
+      "status": "experimental",
+      "first_release": "v0.2.0",
+      "detail_path": "docs/goals/assura-daemon-management-cli.md"
+    },
+    {
+      "id": "structure-validation-cli",
+      "label": "Structure validation CLI",
+      "status": "supported",
+      "first_release": "v0.1.0",
+      "detail_path": "docs/release-notes.md"
+    },
+    {
+      "id": "structure-severity-contract",
+      "label": "Structure severity contract",
+      "status": "supported",
+      "first_release": "v0.2.0",
+      "detail_path": "docs/goals/assura-beta-structure-severity-contract.md"
+    },
+    {
+      "id": "ls-lint-migration",
+      "label": "LS-Lint migration",
+      "status": "supported",
+      "first_release": "v0.1.0",
+      "detail_path": "docs/release-notes.md"
+    },
+    {
+      "id": "daemon-mode",
+      "label": "Daemon mode",
+      "status": "roadmap",
+      "first_release": "future",
+      "detail_path": "docs/goals/assura-reference-daemon-readiness.md"
+    },
+    {
+      "id": "vscode-extension",
+      "label": "VS Code extension",
+      "status": "experimental",
+      "first_release": "v0.2.0",
+      "detail_path": "docs/goals/assura-vscode-daemon-integration.md"
+    },
+    {
+      "id": "agent-daemon-nudges",
+      "label": "Agent daemon nudges",
+      "status": "experimental",
+      "first_release": "v0.2.0",
+      "detail_path": "docs/goals/assura-beta-agent-nudge-integrations.md"
+    }
+  ]
+}

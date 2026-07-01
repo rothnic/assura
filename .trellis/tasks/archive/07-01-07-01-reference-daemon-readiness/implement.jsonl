@@ -1,0 +1,4 @@
+{"file":"docs/goals/assura-reference-daemon-readiness.md","reason":"Primary Epic 6 goal and proof gates."}
+{"file":"docs/goals/assura-beta-code-agnostic-capabilities-program.md","reason":"Master beta roadmap ordering and validation cadence."}
+{"file":".trellis/spec/assura/roadmap.md","reason":"Durable roadmap/spec context for public beta lanes."}
+{"file":"docs/goals/assura-code-doc-reference-validation.md","reason":"Completed Reference Graph capabilities that daemon feedback must reuse."}

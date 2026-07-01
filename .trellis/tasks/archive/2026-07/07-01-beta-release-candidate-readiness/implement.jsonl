@@ -1,0 +1,9 @@
+{"file":"docs/goals/assura-beta-code-agnostic-capabilities-program.md","reason":"Master beta goal and remaining release artifact blocker."}
+{"file":"docs/goals/assura-incremental-release-train.md","reason":"Release version policy and release-readiness goal."}
+{"file":"docs/release-notes.md","reason":"Release-notes version and current release surface narrative."}
+{"file":"docs/release-candidate-checklist.md","reason":"Pre-tag and post-tag release contract."}
+{"file":"docs/data/release-surfaces.json","reason":"Structured public surface status and first-release manifest."}
+{"file":"Cargo.toml","reason":"Root package version used by release-readiness."}
+{"file":"crates/assura-check-cli/Cargo.toml","reason":"Internal check package version should move with the release bundle."}
+{"file":"xtask/Cargo.toml","reason":"Repository-local maintenance task package version should stay aligned."}
+{"file":"xtask/src/main.rs","reason":"Release-readiness and target-state policy code."}

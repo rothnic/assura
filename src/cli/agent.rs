@@ -1,11 +1,42 @@
 //! Local agent-facing project-intelligence command dispatch.
 
+use super::agent_nudge::{agent_nudge_command, AgentNudgeOptions};
 use super::{AgentCommands, ContentCommands, ExitCode};
 use std::path::PathBuf;
 
 /// Run local project-intelligence commands for coding agents.
 pub async fn agent_command(command: AgentCommands, config: Option<PathBuf>) -> ExitCode {
-    crate::cli::content_query::content_command(agent_to_content_command(command), config).await
+    match command {
+        AgentCommands::Nudge {
+            path,
+            event,
+            changed_paths,
+            agent,
+            min_severity,
+            max_issues,
+            reference_limit,
+            format,
+        } => {
+            agent_nudge_command(
+                AgentNudgeOptions {
+                    path,
+                    event,
+                    changed_paths,
+                    agent,
+                    min_severity,
+                    max_issues,
+                    reference_limit,
+                    format,
+                },
+                config,
+            )
+            .await
+        }
+        other => {
+            crate::cli::content_query::content_command(agent_to_content_command(other), config)
+                .await
+        }
+    }
 }
 
 fn agent_to_content_command(command: AgentCommands) -> ContentCommands {
@@ -85,5 +116,8 @@ fn agent_to_content_command(command: AgentCommands) -> ContentCommands {
             format,
         },
         AgentCommands::Session { path } => ContentCommands::Session { path },
+        AgentCommands::Nudge { .. } => {
+            unreachable!("agent nudge is handled before content routing")
+        }
     }
 }

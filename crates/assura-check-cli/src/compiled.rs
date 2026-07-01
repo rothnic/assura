@@ -141,6 +141,13 @@ fn run_with_artifact_bytes(
     require_source_config_path_match: bool,
     quiet: bool,
 ) -> Result<bool, CheckError> {
+    if let Ok((schema_version, _)) = postcard::take_from_bytes::<u32>(&bytes) {
+        if schema_version != CompiledStructureConfigArtifact::current_schema_version() {
+            return Err(CheckError::Config(ConfigError::Invalid(
+                "compiled config was produced by an incompatible Assura version".to_string(),
+            )));
+        }
+    }
     let artifact: CompiledStructureConfigArtifact =
         postcard::from_bytes(&bytes).map_err(|error| {
             CheckError::Config(ConfigError::Invalid(format!(

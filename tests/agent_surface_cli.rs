@@ -3,6 +3,7 @@ use std::fs;
 use std::io::{BufRead, BufReader, Write};
 use std::path::Path;
 use std::process::{Child, ChildStdin, Command, Output, Stdio};
+use tempfile::TempDir;
 
 fn assura_bin() -> &'static str {
     env!("CARGO_BIN_EXE_assura")
@@ -35,6 +36,37 @@ fn content_json(args: &[&str]) -> Value {
     let mut command = vec!["content"];
     command.extend_from_slice(args);
     json_output(run_assura(&command))
+}
+
+fn nudge_fixture() -> TempDir {
+    let project = tempfile::tempdir().expect("temp project");
+    fs::create_dir_all(project.path().join(".assura")).expect("create config dir");
+    fs::create_dir_all(project.path().join("src")).expect("create src");
+    fs::write(
+        project.path().join(".assura/config.yml"),
+        r#"
+structure:
+  ./:
+    extra: true
+    children:
+      src/:
+        files:
+          naming: kebab-case
+          extensions: ["rs"]
+exclude:
+  - target/**
+"#,
+    )
+    .expect("write config");
+    fs::write(project.path().join("src/BadName.rs"), "fn main() {}\n").expect("write bad file");
+    fs::write(project.path().join("src/AnotherBad.rs"), "fn helper() {}\n")
+        .expect("write second bad file");
+    fs::write(
+        project.path().join("src/BadName.js"),
+        "console.log('bad');\n",
+    )
+    .expect("write multi-violation file");
+    project
 }
 
 fn copy_dir(source: &Path, destination: &Path) {
@@ -107,6 +139,7 @@ fn agent_surface_help_exposes_local_project_intelligence_commands() {
     assert!(stdout.contains("context-pack"));
     assert!(stdout.contains("safe-fixes"));
     assert!(stdout.contains("missing-relations"));
+    assert!(stdout.contains("nudge"));
 }
 
 #[test]
@@ -258,6 +291,197 @@ fn agent_surface_wraps_diagnostics_graph_relations_and_safe_fixes() {
         safe_fixes["response"]["safe_fixes"][0]["audit_id"],
         dry_run["fixes"][0]["id"]
     );
+}
+
+#[test]
+fn agent_nudge_session_start_is_compact_and_cache_stable() {
+    let project = nudge_fixture();
+    let path = project.path().to_str().expect("fixture path");
+
+    let nudge = agent_json(&[
+        "nudge",
+        path,
+        "--event",
+        "session-start",
+        "--agent",
+        "claude",
+    ]);
+
+    assert_eq!(nudge["schema"], "assura.agent-nudge.v1");
+    assert_eq!(nudge["target_agent"], "claude");
+    assert_eq!(nudge["event"], "session_start");
+    assert_eq!(nudge["cache_policy"]["stable_by_default"], true);
+    assert_eq!(
+        nudge["cache_policy"]["volatile_fields"],
+        serde_json::json!([])
+    );
+    assert_eq!(nudge["summary"]["should_inject"], false);
+    assert_eq!(nudge["summary"]["nudge_count"], 0);
+    assert_eq!(nudge["daemon"]["state"], "running");
+    assert!(nudge["summary"]["suggested_command"]
+        .as_str()
+        .expect("suggested command")
+        .contains("assura check --format agent --warn"));
+}
+
+#[test]
+fn agent_nudge_accepts_beta_agent_labels_and_events_without_private_validation_paths() {
+    let project = nudge_fixture();
+    let path = project.path().to_str().expect("fixture path");
+
+    for agent in ["codex", "opencode", "claude", "pi"] {
+        for event in ["session-start", "before-tool", "after-tool"] {
+            let mut args = vec!["nudge", path, "--event", event, "--agent", agent];
+            if event != "session-start" {
+                args.extend_from_slice(&["--changed", "src/BadName.rs"]);
+            }
+            let nudge = agent_json(&args);
+
+            assert_eq!(nudge["schema"], "assura.agent-nudge.v1");
+            assert_eq!(nudge["target_agent"], agent);
+            assert_eq!(
+                nudge["event"],
+                match event {
+                    "session-start" => "session_start",
+                    "before-tool" => "before_tool",
+                    "after-tool" => "after_tool",
+                    _ => unreachable!(),
+                }
+            );
+            assert_eq!(nudge["cache_policy"]["stable_by_default"], true);
+
+            let suggested_command = nudge["summary"]["suggested_command"]
+                .as_str()
+                .expect("suggested command");
+            assert!(suggested_command.contains("assura check --format agent"));
+            if agent == "codex" {
+                assert!(suggested_command.contains("--agent codex"));
+            } else {
+                assert!(
+                    !suggested_command.contains("--agent "),
+                    "{agent} should label the nudge payload without creating a private check adapter"
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn agent_nudge_after_tool_reports_bounded_changed_path_findings() {
+    let project = nudge_fixture();
+    let path = project.path().to_str().expect("fixture path");
+
+    let nudge = agent_json(&[
+        "nudge",
+        path,
+        "--event",
+        "after-tool",
+        "--changed",
+        "src/BadName.rs",
+        "--changed",
+        "src/cli/check/rules.rs",
+        "--agent",
+        "codex",
+        "--max-issues",
+        "1",
+    ]);
+
+    assert_eq!(nudge["schema"], "assura.agent-nudge.v1");
+    assert_eq!(nudge["target_agent"], "codex");
+    assert_eq!(nudge["event"], "after_tool");
+    assert_eq!(nudge["summary"]["should_inject"], true);
+    assert_eq!(nudge["summary"]["nudge_count"], 1);
+    assert_eq!(nudge["summary"]["affected_rules"][0], "file_naming");
+    assert_eq!(nudge["summary"]["omitted_count"], 1);
+    assert_eq!(nudge["reference_contexts"].as_array().unwrap().len(), 0);
+    assert_eq!(nudge["changed_path_checks"].as_array().unwrap().len(), 1);
+    assert_eq!(nudge["changed_path_checks"][0]["path"], "src/BadName.rs");
+    assert_eq!(nudge["nudges"][0]["category"], "structure");
+    assert_eq!(nudge["nudges"][0]["rule"], "file_naming");
+    assert_eq!(nudge["nudges"][0]["severity"], "medium");
+    assert!(nudge["nudges"][0]["suggested_command"]
+        .as_str()
+        .expect("suggested command")
+        .contains("--agent codex"));
+    assert!(nudge["summary"]["suggested_command"]
+        .as_str()
+        .expect("suggested command")
+        .contains("--agent codex"));
+}
+
+#[test]
+fn agent_nudge_omitted_count_includes_findings_hidden_by_max_issues() {
+    let project = nudge_fixture();
+    let path = project.path().to_str().expect("fixture path");
+
+    let nudge = agent_json(&[
+        "nudge",
+        path,
+        "--event",
+        "after-tool",
+        "--changed",
+        "src/BadName.js",
+        "--max-issues",
+        "1",
+    ]);
+
+    assert_eq!(nudge["summary"]["nudge_count"], 1);
+    assert_eq!(nudge["summary"]["omitted_count"], 1);
+    assert_eq!(nudge["nudges"].as_array().unwrap().len(), 1);
+}
+
+#[test]
+fn agent_nudge_reports_daemon_fallback_for_unavailable_project() {
+    let project = tempfile::tempdir().expect("temp project");
+    let path = project.path().to_str().expect("fixture path");
+
+    let nudge = agent_json(&[
+        "nudge",
+        path,
+        "--event",
+        "before-tool",
+        "--agent",
+        "opencode",
+    ]);
+
+    assert_eq!(nudge["schema"], "assura.agent-nudge.v1");
+    assert_eq!(nudge["target_agent"], "opencode");
+    assert_eq!(nudge["daemon"]["state"], "unavailable");
+    assert_eq!(nudge["summary"]["should_inject"], true);
+    assert_eq!(nudge["nudges"][0]["category"], "daemon");
+    assert_eq!(nudge["nudges"][0]["rule"], "daemon_health");
+    assert!(nudge["daemon"]["fallback_command"]
+        .as_str()
+        .expect("fallback command")
+        .contains("assura check --format agent"));
+    assert!(nudge["nudges"][0]["suggested_command"]
+        .as_str()
+        .expect("suggested command")
+        .contains("assura check --format agent"));
+}
+
+#[test]
+fn agent_nudge_marks_performance_gate_relevant_paths() {
+    let project = nudge_fixture();
+    let path = project.path().to_str().expect("fixture path");
+
+    let nudge = agent_json(&[
+        "nudge",
+        path,
+        "--event",
+        "after-tool",
+        "--changed",
+        "src/cli/check/rules.rs",
+        "--agent",
+        "pi",
+    ]);
+
+    assert_eq!(nudge["target_agent"], "pi");
+    assert!(nudge["nudges"]
+        .as_array()
+        .expect("nudges")
+        .iter()
+        .any(|item| item["rule"] == "performance_no_slower"));
 }
 
 #[test]

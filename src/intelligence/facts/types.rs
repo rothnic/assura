@@ -1,4 +1,6 @@
 use super::code_symbols::{CodeProviderEvidence, CodeSymbol, SymbolRef};
+use super::markdown_links::MarkdownLink;
+use super::repository_references::RepositoryReferenceEdge;
 use crate::stable_hash::stable_hash;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
@@ -375,6 +377,8 @@ pub enum ProjectFact {
     MarkdownDocument(MarkdownDocument),
     /// Markdown heading section.
     MarkdownSection(MarkdownSection),
+    /// Markdown-authored local link.
+    MarkdownLink(MarkdownLink),
     /// Typed content runtime instance.
     ModelInstance(ModelInstance),
     /// Validation diagnostic.
@@ -402,6 +406,7 @@ impl ProjectFact {
             Self::Resource(fact) => &fact.id,
             Self::MarkdownDocument(fact) => &fact.id,
             Self::MarkdownSection(fact) => &fact.id,
+            Self::MarkdownLink(fact) => &fact.id,
             Self::ModelInstance(fact) => &fact.id,
             Self::Diagnostic(fact) => &fact.id,
             Self::SafeFix(fact) => &fact.id,
@@ -422,6 +427,7 @@ impl ProjectFact {
             Self::Resource(fact) => &fact.generation,
             Self::MarkdownDocument(fact) => &fact.generation,
             Self::MarkdownSection(fact) => &fact.generation,
+            Self::MarkdownLink(fact) => &fact.generation,
             Self::ModelInstance(fact) => &fact.generation,
             Self::Diagnostic(fact) => &fact.generation,
             Self::SafeFix(fact) => &fact.generation,
@@ -439,6 +445,8 @@ impl ProjectFact {
 pub enum ProjectEdge {
     /// Content runtime relationship between model instances.
     Relationship(RelationshipEdge),
+    /// Repository-internal source-to-target reference.
+    RepositoryReference(RepositoryReferenceEdge),
     /// Optional reference from any fact to a code symbol.
     SymbolRef(SymbolRef),
 }
@@ -448,6 +456,7 @@ impl ProjectEdge {
     pub fn id(&self) -> &EdgeId {
         match self {
             Self::Relationship(edge) => &edge.id,
+            Self::RepositoryReference(edge) => &edge.id,
             Self::SymbolRef(edge) => &edge.id,
         }
     }
@@ -456,6 +465,7 @@ impl ProjectEdge {
     pub fn generation(&self) -> &FactGeneration {
         match self {
             Self::Relationship(edge) => &edge.generation,
+            Self::RepositoryReference(edge) => &edge.generation,
             Self::SymbolRef(edge) => &edge.generation,
         }
     }

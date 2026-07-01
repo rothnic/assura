@@ -1,0 +1,44 @@
+---
+import roadmap from '../../../docs/data/public-roadmap.json';
+
+type RoadmapItem = {
+  label: string;
+  summary: string;
+  detail_path: string;
+  href: string;
+};
+
+type RoadmapGroup = {
+  status: 'done' | 'now' | 'next';
+  title: string;
+  items: RoadmapItem[];
+};
+
+const groups = roadmap.groups as RoadmapGroup[];
+const statusLabels: Record<RoadmapGroup['status'], string> = {
+  done: 'Available',
+  now: 'Active',
+  next: 'Planned',
+};
+---
+
+<div class="roadmap-artifact">
+  {
+    groups.map((group) => (
+      <section class={`roadmap-lane roadmap-lane-${group.status}`} aria-labelledby={`roadmap-${group.status}`}>
+        <div class="roadmap-lane-heading">
+          <h2 id={`roadmap-${group.status}`}>{group.title}</h2>
+          <span>{statusLabels[group.status]}</span>
+        </div>
+        <ol class="roadmap-items">
+          {group.items.map((item) => (
+            <li>
+              <a href={item.href}>{item.label}</a>
+              <p>{item.summary}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+    ))
+  }
+</div>

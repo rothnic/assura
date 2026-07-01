@@ -32,6 +32,16 @@ impl StructureCheckReport {
     pub fn violation_count(&self) -> usize {
         self.violations.len()
     }
+
+    /// Whether any validation violation should fail the check.
+    pub fn has_blocking_violations(&self) -> bool {
+        self.violations.iter().any(StructureViolation::is_blocking)
+    }
+
+    /// Refresh the success flag from the shared severity contract.
+    pub fn refresh_success(&mut self) {
+        self.success = !self.has_blocking_violations();
+    }
 }
 
 /// A single structure validation violation.
@@ -46,6 +56,10 @@ pub struct StructureViolation {
     pub message: String,
     /// Violation severity.
     pub severity: String,
+    /// Stable display label for the severity.
+    pub severity_label: String,
+    /// Whether this violation should make the check fail.
+    pub blocking: bool,
     /// Stable corrective context for fixing the violation or policy.
     pub corrective_context: String,
 }
@@ -58,13 +72,87 @@ impl StructureViolation {
         severity: impl Into<String>,
     ) -> Self {
         let rule = rule.into();
+        let severity_value = severity.into();
+        let severity = FindingSeverity::parse_or_default(&severity_value);
         Self {
             path,
             corrective_context: corrective_context_for_rule(&rule).to_string(),
             rule,
             message: message.into(),
-            severity: severity.into(),
+            severity: severity.as_str().to_string(),
+            severity_label: severity.label().to_string(),
+            blocking: severity.is_blocking(),
         }
+    }
+
+    /// Whether this violation should make the check fail.
+    pub fn is_blocking(&self) -> bool {
+        self.blocking
+    }
+
+    /// Numeric rank for deterministic prioritization.
+    pub fn severity_rank(&self) -> u8 {
+        FindingSeverity::parse_or_default(&self.severity).rank()
+    }
+}
+
+/// Stable beta severity contract for structure findings.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FindingSeverity {
+    /// Advisory finding that should be shown but should not fail the check.
+    Low,
+    /// Default blocking finding.
+    Medium,
+    /// High-priority blocking finding.
+    High,
+    /// Critical blocking finding.
+    Critical,
+}
+
+impl FindingSeverity {
+    /// Parse a configured severity, defaulting unknown values to `medium`.
+    pub fn parse_or_default(value: &str) -> Self {
+        match value.to_ascii_lowercase().as_str() {
+            "low" => Self::Low,
+            "high" => Self::High,
+            "critical" => Self::Critical,
+            _ => Self::Medium,
+        }
+    }
+
+    /// Stable lowercase identifier.
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Low => "low",
+            Self::Medium => "medium",
+            Self::High => "high",
+            Self::Critical => "critical",
+        }
+    }
+
+    /// Stable display label.
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::Low => "Low",
+            Self::Medium => "Medium",
+            Self::High => "High",
+            Self::Critical => "Critical",
+        }
+    }
+
+    /// Stable ordering for prioritization.
+    pub fn rank(self) -> u8 {
+        match self {
+            Self::Low => 1,
+            Self::Medium => 2,
+            Self::High => 3,
+            Self::Critical => 4,
+        }
+    }
+
+    /// Whether this severity should fail `assura check`.
+    pub fn is_blocking(self) -> bool {
+        !matches!(self, Self::Low)
     }
 }
 
@@ -139,6 +227,42 @@ fn corrective_context_for_rule(rule: &str) -> &'static str {
         }
         "markdown_trailing_spaces" => {
             "Run `assura fix markdown --dry-run` to preview safe blank-line trailing-space fixes, then rerun with `--apply` to write them, or disable markdown.lint_trailing_spaces for this scope."
+        }
+        "markdown_heading_increment" => {
+            "Promote intermediate headings or demote the skipped heading so heading levels increase one level at a time."
+        }
+        "markdown_heading_marker_spacing" => {
+            "Use exactly one space between the heading marker and heading text, such as `## Heading`."
+        }
+        "markdown_duplicate_heading" => {
+            "Rename one repeated heading so Markdown anchors remain stable and unambiguous."
+        }
+        "markdown_multiple_blank_lines" => {
+            "Collapse consecutive blank lines to a single blank line."
+        }
+        "markdown_suppression" => {
+            "Use `<!-- assura-ignore <markdown_rule>: <reason> -->` with a supported Markdown rule ID and a non-empty reason."
+        }
+        "markdown_link_format" => {
+            "Rewrite the reference as a relative Markdown link so GitHub can render it in branches, forks, and pull requests."
+        }
+        "markdown_link_target" => {
+            "Create the linked file, fix the relative path, or remove the stale Markdown link."
+        }
+        "markdown_link_heading_anchor" => {
+            "Update the heading slug in the Markdown link or rename the target heading so the GitHub-rendered anchor exists."
+        }
+        "markdown_link_line_anchor" => {
+            "Update the GitHub-style line or line-range anchor so it points at existing target lines."
+        }
+        "repository_reference_target" => {
+            "Create the referenced file, fix the local path in the comment/string/docstring, or remove the stale reference."
+        }
+        "repository_reference_anchor" => {
+            "Update the referenced Markdown heading anchor or rename the target heading so the local reference points at an existing section."
+        }
+        "repository_reference_line_anchor" => {
+            "Update the referenced line or line range so it points at existing target lines."
         }
         "extension" => {
             "Rename the file to an allowed extension or update files.extensions for this scope."

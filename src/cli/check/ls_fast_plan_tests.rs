@@ -5,7 +5,9 @@ use super::ls_fast_plan::{
     collect_fast_regex_patterns, compile_lslint_fast_scopes, fast_rules_for_dir, FastRules,
 };
 use super::rules::EffectiveRules;
-use crate::config::config::{Config, DirectoryBundle, DirectoryNode, FileBundle};
+use crate::config::config::{
+    Config, DirectoryBundle, DirectoryNode, ExtensionConfig, FileBundle, RepositoryReferenceConfig,
+};
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -30,6 +32,33 @@ fn fast_file_naming_prefers_longest_suffix_match() {
         .unwrap();
 
     assert_eq!(naming.naming.label(), "kebab-case");
+}
+
+#[test]
+fn fast_file_naming_uses_exact_extension_segments() {
+    let effective = EffectiveRules {
+        files: Some(Arc::new(FileBundle {
+            naming_patterns: Some(HashMap::from([
+                ("*.ts".to_string(), "snake_case".to_string()),
+                ("*.kind-01.ts".to_string(), "kebab-case".to_string()),
+            ])),
+            ..FileBundle::default()
+        })),
+        ..EffectiveRules::default()
+    };
+
+    let rules = FastRules::new(effective);
+    let file_naming = rules.file_naming.as_ref().unwrap();
+
+    let kind_match = file_naming
+        .naming_for("feature-01.kind-01.ts", &HashMap::new())
+        .unwrap();
+    assert_eq!(kind_match.naming.label(), "kebab-case");
+
+    let plain_match = file_naming
+        .naming_for("feature_01.ts", &HashMap::new())
+        .unwrap();
+    assert_eq!(plain_match.naming.label(), "snake_case");
 }
 
 #[test]
@@ -58,6 +87,31 @@ fn fast_plan_allows_direct_file_and_directory_policies() {
 
     let scopes = compile_lslint_fast_scopes(&config).unwrap();
     assert_eq!(scopes.len(), 1);
+}
+
+#[test]
+fn fast_plan_rejects_repository_reference_diagnostics() {
+    let mut config = Config::new();
+    config.structure.insert(
+        "./".to_string(),
+        DirectoryNode {
+            files: Some(FileBundle {
+                allowed_names: Some(vec!["README.md".to_string()]),
+                ..FileBundle::default()
+            }),
+            ..DirectoryNode::default()
+        },
+    );
+    config.extensions = Some(ExtensionConfig {
+        repository_references: vec![RepositoryReferenceConfig {
+            id: "source_refs".to_string(),
+            paths: vec!["src/**".to_string()],
+            severity: Some("high".to_string()),
+        }],
+        ..ExtensionConfig::default()
+    });
+
+    assert!(compile_lslint_fast_scopes(&config).is_none());
 }
 
 #[test]

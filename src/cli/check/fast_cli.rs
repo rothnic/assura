@@ -63,13 +63,7 @@ where
     };
 
     match run(options) {
-        Ok(success) => {
-            if success {
-                0
-            } else {
-                1
-            }
-        }
+        Ok(success) => i32::from(!success),
         Err(error) => {
             eprintln!("Error: {error}");
             exit_code_for_check_error(&error)
@@ -411,13 +405,14 @@ fn format_batch_text_report(reports: &[StructureCheckReport]) -> String {
         for violation in &report.violations {
             let _ = write!(
                 output,
-                "{}: {} [{}:{}] {}\n  Fix: {}\n",
+                "{}: {} [{}:{}] {}\n  Fix: {}\n  Blocking: {}\n",
                 report.checked_path.display(),
                 violation.path.display(),
                 violation.severity,
                 violation.rule,
                 violation.message,
                 violation.corrective_context,
+                violation.blocking,
             );
         }
     }
@@ -450,12 +445,13 @@ fn format_text_report(report: &StructureCheckReport) -> String {
     for violation in &report.violations {
         let _ = write!(
             output,
-            "{} [{}:{}] {}\n  Fix: {}\n",
+            "{} [{}:{}] {}\n  Fix: {}\n  Blocking: {}\n",
             violation.path.display(),
             violation.severity,
             violation.rule,
             violation.message,
             violation.corrective_context,
+            violation.blocking,
         );
     }
     output

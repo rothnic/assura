@@ -2,6 +2,7 @@
 
 use super::output::*;
 use crate::intelligence::ProjectIntelligenceAgentContext;
+use std::path::Path;
 
 impl TextRender for AgentQueryOutput {
     fn render_text(&self) -> String {
@@ -62,11 +63,12 @@ impl TextRender for ProjectIntelligenceAgentContext {
             self.schema
         )];
         lines.push(format!(
-            "models: {}; diagnostics: {}; safe fixes: {}; relationships: {}; symbol refs: {}",
+            "models: {}; diagnostics: {}; safe fixes: {}; relationships: {}; repository refs: {}; symbol refs: {}",
             self.summary.model_instances,
             self.summary.diagnostics,
             self.summary.safe_fixes,
             self.summary.relationship_edges,
+            self.summary.repository_reference_edges,
             self.summary.symbol_refs
         ));
         for capability in &self.capabilities {
@@ -116,6 +118,58 @@ impl TextRender for MissingRelationsOutput {
             ));
         }
         lines.join("\n")
+    }
+}
+
+impl TextRender for RepositoryReferencesOutput {
+    fn render_text(&self) -> String {
+        let mut lines = vec![format!(
+            "Repository references: {} {} ({})",
+            self.mode,
+            display_path(&self.path),
+            self.references.len()
+        )];
+        for reference in &self.references {
+            lines.push(format!(
+                "source={}:{}:{} target={} anchor={} lines={} exists={} rule={} kind={} confidence={}",
+                display_path(&reference.source_path),
+                optional_usize(reference.source_line),
+                optional_usize(reference.source_column),
+                display_path(&reference.target_path),
+                optional_string(reference.target_anchor.as_deref()),
+                target_lines(reference.target_line_start, reference.target_line_end),
+                reference.target_exists,
+                reference.rule,
+                reference.reference_kind,
+                reference.confidence,
+            ));
+        }
+        lines.join("\n")
+    }
+}
+
+fn display_path(path: &Path) -> String {
+    path.to_string_lossy().replace('\\', "/")
+}
+
+fn optional_usize(value: Option<usize>) -> String {
+    value
+        .map(|value| value.to_string())
+        .unwrap_or_else(|| "-".to_string())
+}
+
+fn optional_string(value: Option<&str>) -> String {
+    value
+        .map(ToString::to_string)
+        .unwrap_or_else(|| "-".to_string())
+}
+
+fn target_lines(start: Option<usize>, end: Option<usize>) -> String {
+    match (start, end) {
+        (Some(start), Some(end)) => format!("{start}-{end}"),
+        (Some(start), None) => start.to_string(),
+        (None, Some(end)) => format!("-{end}"),
+        (None, None) => "-".to_string(),
     }
 }
 

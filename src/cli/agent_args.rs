@@ -1,7 +1,7 @@
 //! Agent-facing project-intelligence command arguments.
 
 use super::args::OutputFormat;
-use clap::Subcommand;
+use clap::{Subcommand, ValueEnum};
 use std::path::PathBuf;
 
 #[derive(Subcommand, Debug)]
@@ -77,6 +77,56 @@ pub enum AgentCommands {
         format: OutputFormat,
     },
 
+    #[command(about = "Emit bounded event-aware nudges for local coding agents")]
+    Nudge {
+        path: Option<PathBuf>,
+        #[arg(long, value_enum, default_value = "session-start")]
+        event: AgentNudgeEvent,
+        #[arg(long = "changed", help = "Changed path relevant to this agent event")]
+        changed_paths: Vec<PathBuf>,
+        #[arg(long, value_enum, default_value = "generic")]
+        agent: AgentNudgeTarget,
+        #[arg(
+            long,
+            value_parser = ["low", "medium", "high", "critical"],
+            default_value = "medium",
+            help = "Only include finding nudges for this severity or higher"
+        )]
+        min_severity: String,
+        #[arg(long, default_value_t = 5)]
+        max_issues: usize,
+        #[arg(long, default_value_t = 20)]
+        reference_limit: usize,
+        #[arg(short, long, value_enum, default_value = "json")]
+        format: OutputFormat,
+    },
+
     #[command(about = "Run a persistent JSON-line project-intelligence query session")]
     Session { path: Option<PathBuf> },
+}
+
+/// Local agent event that can receive a bounded Assura nudge.
+#[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]
+pub enum AgentNudgeEvent {
+    /// Compact session-start health summary.
+    SessionStart,
+    /// Before a likely file-inspection or file-editing tool call.
+    BeforeTool,
+    /// After a tool call changed or inspected relevant files.
+    AfterTool,
+}
+
+/// Agent host label for documentation and hook routing.
+#[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]
+pub enum AgentNudgeTarget {
+    /// Vendor-neutral JSON/text nudge.
+    Generic,
+    /// Codex hook or tool wrapper.
+    Codex,
+    /// OpenCode plugin or hook wrapper.
+    Opencode,
+    /// Claude Code hook wrapper.
+    Claude,
+    /// Pi agent hook wrapper.
+    Pi,
 }

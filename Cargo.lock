@@ -89,7 +89,7 @@ checksum = "7f202df86484c868dbad7eaa557ef785d5c66295e41b460ef922eca0723b842c"
 
 [[package]]
 name = "assura"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "assura-stable-hash",
@@ -126,7 +126,7 @@ dependencies = [
 
 [[package]]
 name = "assura-check-cli"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "assura",
  "assura-stable-hash",
@@ -140,7 +140,7 @@ dependencies = [
 
 [[package]]
 name = "assura-stable-hash"
-version = "0.1.0"
+version = "0.2.0"
 
 [[package]]
 name = "atomic-waker"
@@ -2832,7 +2832,7 @@ checksum = "1ffae5123b2d3fc086436f8834ae3ab053a283cfac8fe0a0b8eaae044768a4c4"
 
 [[package]]
 name = "xtask"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "serde_json",
 ]

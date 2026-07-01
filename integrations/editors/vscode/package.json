@@ -1,0 +1,83 @@
+{
+  "name": "assura-vscode",
+  "displayName": "Assura",
+  "description": "Experimental VS Code adapter over Assura's local daemon and validation CLI contracts.",
+  "version": "0.0.0",
+  "private": true,
+  "publisher": "assura",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Linters",
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:assura.refreshDiagnostics",
+    "onCommand:assura.daemonStatus",
+    "onCommand:assura.daemonStart",
+    "onCommand:assura.daemonStop",
+    "onCommand:assura.daemonRestart",
+    "onCommand:assura.daemonDoctor",
+    "onCommand:assura.daemonLogs",
+    "onCommand:assura.safeFixPreview"
+  ],
+  "main": "./src/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "assura.refreshDiagnostics",
+        "title": "Assura: Refresh Diagnostics"
+      },
+      {
+        "command": "assura.daemonStatus",
+        "title": "Assura: Daemon Status"
+      },
+      {
+        "command": "assura.daemonStart",
+        "title": "Assura: Start Daemon"
+      },
+      {
+        "command": "assura.daemonStop",
+        "title": "Assura: Stop Daemon"
+      },
+      {
+        "command": "assura.daemonRestart",
+        "title": "Assura: Restart Daemon"
+      },
+      {
+        "command": "assura.daemonDoctor",
+        "title": "Assura: Daemon Doctor"
+      },
+      {
+        "command": "assura.daemonLogs",
+        "title": "Assura: Daemon Logs"
+      },
+      {
+        "command": "assura.safeFixPreview",
+        "title": "Assura: Preview Safe Fixes"
+      }
+    ],
+    "configuration": {
+      "title": "Assura",
+      "properties": {
+        "assura.path": {
+          "type": "string",
+          "default": "assura",
+          "description": "Path to the Assura CLI binary."
+        },
+        "assura.maxDiagnostics": {
+          "type": "number",
+          "default": 100,
+          "minimum": 1,
+          "description": "Maximum Assura diagnostics to publish to VS Code."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "node scripts/build-smoke.js",
+    "test": "node --test tests/*.test.js"
+  }
+}

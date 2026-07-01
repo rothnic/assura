@@ -540,3 +540,71 @@ th {
     grid-template-columns: 1fr;
   }
 }
+
+.roadmap-artifact {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.roadmap-lane {
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 0.5rem;
+  background: var(--sl-color-bg-nav);
+}
+
+.roadmap-lane-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.roadmap-lane-heading h2 {
+  margin: 0;
+  color: var(--sl-color-white);
+  font-size: 1.05rem;
+  line-height: 1.25;
+}
+
+.roadmap-lane-heading span {
+  flex: none;
+  color: var(--sl-color-gray-2);
+  font-size: 0.78rem;
+  line-height: 1.2;
+}
+
+.roadmap-items {
+  display: grid;
+  gap: 0.85rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.roadmap-items li {
+  min-width: 0;
+}
+
+.roadmap-items a {
+  color: var(--assura-accent);
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.roadmap-items p {
+  margin: 0.25rem 0 0;
+  color: var(--sl-color-gray-2);
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 58rem) {
+  .roadmap-artifact {
+    grid-template-columns: 1fr;
+  }
+}

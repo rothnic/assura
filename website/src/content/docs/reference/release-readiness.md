@@ -148,9 +148,26 @@ Before 1.0, configuration fields and experimental surfaces can change. Release
 notes must call out breaking changes, removed experimental surfaces, and the
 validation evidence behind compatibility claims.
 
+## Readiness Check
+
+Release PRs run:
+
+```bash
+cargo xtask release-readiness --format json
+```
+
+The command emits `assura.release-readiness.v1` with the latest GitHub release,
+local package version, release-notes version, unreleased public-surface entries
+from `docs/data/release-surfaces.json`, missing checklist gates, and a pass/fail
+verdict. It exits nonzero when the current branch describes installable
+surfaces that have not been cut into a new pre-1.0 release. Automation should
+parse JSON from stdout and treat stderr as diagnostics.
+
 Maintainer-facing details live in the repository:
 
 - [Release notes](https://github.com/rothnic/assura/blob/master/docs/release-notes.md)
+- [Release train](https://github.com/rothnic/assura/blob/master/docs/release-train.md)
+- [Release surfaces](https://github.com/rothnic/assura/blob/master/docs/data/release-surfaces.json)
 - [Release candidate checklist](https://github.com/rothnic/assura/blob/master/docs/release-candidate-checklist.md)
 - [Support policy](https://github.com/rothnic/assura/blob/master/docs/support-policy.md)
 - [Compatibility matrix](https://github.com/rothnic/assura/blob/master/docs/compatibility-and-surface.md)

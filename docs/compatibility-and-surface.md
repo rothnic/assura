@@ -49,6 +49,7 @@ publishes and verifies a `.sha256` file next to every archive.
 | `assura agent missing-relations` | Supported local agent relation query | Agent-surface CLI tests compare output with `assura content missing-relations`. |
 | `assura agent expand` | Supported local agent graph expansion | Agent-surface CLI tests compare output with `assura content expand`. |
 | `assura agent safe-fixes` | Supported local agent safe-fix preview | Agent-surface CLI tests compare output with `assura content agent-query safe-fixes`. |
+| `assura agent nudge` | Experimental local agent nudge payload | Agent-surface CLI tests prove bounded event-aware JSON for session start, before/after tool events, daemon fallback, and performance-gate path hints without per-agent validation commands. |
 | `assura agent session` | Supported local agent session alias | Agent-surface CLI tests prove the alias emits the same JSON-line session envelope as `assura content session`. |
 | `assura editor` | Supported local editor project-intelligence surface | Editor-surface CLI tests prove help output and local session availability. |
 | `assura editor session` | Supported local editor session | Editor-surface CLI tests prove LSP-shaped diagnostics, context, safe-fix code-action previews, invalid-method errors, and conservative reload metadata. |
@@ -61,13 +62,35 @@ publishes and verifies a `.sha256` file next to every archive.
 | `assura content instances` | Supported | Content query CLI fixture tests. |
 | `assura content show` | Supported | Content query CLI fixture tests. |
 | `assura content search` | Supported scored keyword search | Content query CLI fixture tests prove deterministic lexical scores; semantic candidate retrieval uses the separate `semantic-search` command. |
-| `assura content semantic-search` | Supported optional local candidate search | Semantic search fixture tests; candidates do not decide validation correctness. |
-| `assura content symbols` | Supported optional code-symbol query | Code-symbol fixture tests; baseline evidence is candidate context and does not decide validation correctness. |
-| `assura content symbol-refs` | Supported optional code-symbol query | Code-symbol fixture tests; unresolved provider refs remain queryable. |
+| `assura content semantic-search` | Experimental optional local candidate search | Semantic search fixture tests; candidates do not decide validation correctness. |
+| `assura content symbols` | Experimental optional code-symbol query | Code-symbol fixture tests; baseline evidence is candidate context and does not decide validation correctness. |
+| `assura content symbol-refs` | Experimental optional code-symbol query | Code-symbol fixture tests; unresolved provider refs remain queryable. |
 | `assura content missing-relations` | Supported relation query | Content query CLI fixture tests. |
 | `assura content expand` | Supported bounded graph expansion | Content query CLI fixture tests. |
+| `assura content references` | Experimental repository-reference graph query | Content query CLI tests prove bounded inbound references by target path and outbound references by source path. |
+| `assura daemon` | Experimental local daemon management preview | Daemon CLI tests prove JSON status, start, stop, restart, doctor, logs, health, changed-path, and reference-context contracts over local daemon-ready state and project-local runtime metadata. |
+| `assura daemon status` | Experimental local daemon status preview | Daemon CLI tests prove JSON health, protocol, process metadata, and management command hints. |
+| `assura daemon start` | Experimental local daemon lifecycle preview | Daemon CLI tests prove idempotent JSON runtime metadata start behavior. |
+| `assura daemon stop` | Experimental local daemon lifecycle preview | Daemon CLI tests prove idempotent JSON runtime metadata stop behavior. |
+| `assura daemon restart` | Experimental local daemon lifecycle preview | Daemon CLI tests prove JSON restart behavior and runtime log updates. |
+| `assura daemon doctor` | Experimental local daemon doctor preview | Daemon CLI tests prove JSON diagnostics and remediation commands for loaded and unavailable project state. |
+| `assura daemon logs` | Experimental local daemon logs preview | Daemon CLI tests prove bounded JSON log output from `.assura/daemon/daemon.log`. |
 | `assura info` | Experimental diagnostic | CLI exists, but text output is not an automation contract. |
 | `assura watch` | Experimental | CLI exists, but release-grade watch behavior is not claimed. |
+
+## Editor Adapter Compatibility
+
+| Surface | Status | Evidence |
+| --- | --- | --- |
+| `integrations/editors/vscode` | Experimental VS Code adapter | Package tests prove daemon command construction, one-shot check fallback, safe-fix preview-only command construction, status summaries, and diagnostic mapping over shared Assura CLI JSON contracts. |
+
+## Config Compatibility
+
+| Surface | Status | Evidence |
+| --- | --- | --- |
+| `config:markdown.lint_common` | Experimental | Common-lint CLI tests prove stable findings for heading increments, heading marker spacing, duplicate headings, multiple blank lines, suppressions, and severity overrides. |
+| `config:extensions.repository_references` | Experimental | Repository-reference check tests prove opt-in source/comment/docstring diagnostics for missing targets, missing Markdown anchors, and invalid line anchors. |
+| `project-intelligence:repository-reference-facts` | Experimental | Repository-reference graph tests prove Markdown, source-comment, docstring, and string-literal path candidates become bounded `RepositoryReference` edges with confidence labels. |
 
 ## Project Intelligence Layout Compatibility
 
@@ -75,6 +98,13 @@ publishes and verifies a `.sha256` file next to every archive.
 for model files stored under `.assura/`. Content runtime validation tests and
 Assura self-check prove that root-level `.assura/` model artifacts are rejected
 while project-relative `schemas/**` artifacts remain valid.
+
+The beta-supported content contract is the modeled collection path: content
+runtime validation, deterministic collection queries, keyword search, relation
+queries, bounded graph expansion, context packs, and local JSON-line sessions.
+Semantic search and code-symbol queries are candidate-enrichment surfaces. They
+can help an agent choose where to inspect next, but they are not validation
+truth and are not required for collection modeling or querying to work.
 
 ## LS-Lint Compatibility
 
@@ -114,6 +144,15 @@ Codex delivery is opt-in:
 ```bash
 assura check --format agent --agent codex .
 ```
+
+Event-aware wrappers can use one shared nudge payload:
+
+```bash
+assura agent nudge --event after-tool --changed docs/guide.md --agent codex .
+```
+
+`--agent codex|opencode|claude|pi` labels the host integration path only; the
+payload still reuses shared Assura check and daemon contracts.
 
 No release compatibility claim may depend on package feedback CLIs, per-agent
 command names, or one `--format` value per agent.
@@ -162,6 +201,10 @@ extensions:
           status: supported
         - surface: "rust:intelligence"
           status: internal
+        - surface: "config:markdown.lint_common"
+          status: experimental
+        - surface: "config:extensions.repository_references"
+          status: experimental
         - surface: "package:assura"
           status: supported
         - surface: "binary:assura"

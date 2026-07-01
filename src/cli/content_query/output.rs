@@ -133,6 +133,33 @@ pub(super) struct MissingRelationsOutput {
 }
 
 #[derive(Debug, Serialize)]
+pub(super) struct RepositoryReferencesOutput {
+    pub(super) mode: &'static str,
+    #[serde(serialize_with = "serialize_path")]
+    pub(super) path: PathBuf,
+    pub(super) references: Vec<RepositoryReferenceOutput>,
+}
+
+#[derive(Debug, Serialize)]
+pub(super) struct RepositoryReferenceOutput {
+    pub(super) id: String,
+    #[serde(serialize_with = "serialize_path")]
+    pub(super) source_path: PathBuf,
+    pub(super) source_line: Option<usize>,
+    pub(super) source_column: Option<usize>,
+    pub(super) target_id: Option<String>,
+    #[serde(serialize_with = "serialize_path")]
+    pub(super) target_path: PathBuf,
+    pub(super) target_anchor: Option<String>,
+    pub(super) target_line_start: Option<usize>,
+    pub(super) target_line_end: Option<usize>,
+    pub(super) target_exists: bool,
+    pub(super) reference_kind: String,
+    pub(super) rule: String,
+    pub(super) confidence: String,
+}
+
+#[derive(Debug, Serialize)]
 pub(super) struct DiagnosticsOutput {
     pub(super) diagnostics: Vec<DiagnosticOutput>,
 }

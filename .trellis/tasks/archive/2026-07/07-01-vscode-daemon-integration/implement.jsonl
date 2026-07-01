@@ -1,0 +1,5 @@
+{"file":"docs/goals/assura-vscode-daemon-integration.md","reason":"Primary Epic 9 goal and proof gates."}
+{"file":"docs/goals/assura-beta-code-agnostic-capabilities-program.md","reason":"Master beta ordering, validation cadence, and completion rules."}
+{"file":".trellis/spec/assura/daemon-management-cli.md","reason":"Shared daemon command and JSON contract the extension must reuse."}
+{"file":".trellis/spec/assura/codex-agent-feedback.md","reason":"Shared agent/check feedback boundary and no per-agent surface constraint."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Editor integration crosses CLI, JSON protocol, diagnostics, and package layers."}

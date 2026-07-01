@@ -43,6 +43,7 @@ fn project_intelligence_ingests_content_runtime_facts_deterministically() {
                 && edge.target_id.is_some()
                 && edge.target_instance_id == "spec-portable-structure"
         }
+        ProjectEdge::RepositoryReference(_) => false,
         ProjectEdge::SymbolRef(_) => false,
     }));
 }
@@ -115,6 +116,8 @@ fn project_intelligence_ingests_diagnostics_and_safe_fixes() {
             rule: "markdown_trailing_spaces".to_string(),
             message: "Markdown file 'docs/note.md' has 3 trailing whitespace character(s) on blank line 4, column 1".to_string(),
             severity: "low".to_string(),
+            severity_label: "Low".to_string(),
+            blocking: false,
             corrective_context: "Run `assura fix markdown`.".to_string(),
         }],
     };

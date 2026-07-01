@@ -13,7 +13,8 @@ LS-Lint comparison changes.
 Run a target artifact first before touching tracked history:
 
 ```bash
-cargo build --release -p assura --bins
+cargo build --release --bin assura --no-default-features --features json-output,yaml-config
+cargo build --release --bin assura-full
 cargo build --release -p assura-check-cli
 target/release/assura performance-report \
   --output target/performance/<name>.json \
@@ -84,7 +85,8 @@ improvement.
 After the target artifact is valid, update tracked report data:
 
 ```bash
-cargo build --release -p assura --bins
+cargo build --release --bin assura --no-default-features --features json-output,yaml-config
+cargo build --release --bin assura-full
 cargo build --release -p assura-check-cli
 target/release/assura performance-report \
   --output benches/history/current.json \
@@ -113,25 +115,27 @@ If `pnpm build` fails because dependencies are missing, run `pnpm install` in
   rejected experiments include `opt-level=z`, minimal quiet binaries, raw Unix
   entrypoints, quiet-only parser fast paths, default builds without JSON/cache,
   automatic compiled-plan caches, count integration, lazy relative path
-  stringification, lazy file-stem computation, dot-suffix lookup maps,
+  stringification, lazy file-stem computation, broad dot-suffix lookup maps,
   versioned status marker files, and single-read status-file parsing.
 - Do not treat batch, compiled-config, hot daemon, dirty-project, status-file,
-  or in-process rows as completion evidence for the cold `assura-check-cli`
+  or in-process rows as completion evidence for the cold `assura-cli`
   headline claim unless the goal explicitly changes execution model. These rows
-  are useful diagnostics and scoped product modes; the public universal 2x gate
-  is currently driven by `claim_summary.assura_row_family="assura-check-cli"`.
+  are useful diagnostics and scoped product modes; the public one-shot gate is
+  currently driven by `claim_summary.assura_row_family="assura-cli"`.
 - The current compiled-config runtime is already separated from YAML in the
   release artifact. Verify with `strings target/release/assura-check-compiled
   | rg "serde_yaml|unsafe-libyaml|serde_json|notify"` before proposing another
   crate split or parser swap.
-- `rule_heavy_repo` is the main non-floor cold miss in the latest smoke, but a
-  dot-suffix lookup map for the many extension-specific rules was already
-  measured and rejected. Reopen that path only with a clearly different design
-  and before/after evidence.
-- Build `assura` and `assura-check-cli` in separate release invocations before
-  producing check-only evidence. A single workspace `cargo build --release --bins`
-  can unify default features and accidentally link `git2`/OpenSSL into
-  `assura-check`.
+- `rule_heavy_repo` was the main non-floor cold miss in earlier smoke runs.
+  A narrow exact LS-Lint extension-segment lookup for non-wildcard patterns
+  landed with no-slower evidence; reopen adjacent matching changes only with a
+  clearly different design and before/after evidence.
+- Build the primary `assura` launcher with `--no-default-features --features
+  json-output,yaml-config`, then build `assura-full` and `assura-check-cli` in
+  separate release invocations before producing performance evidence. A single
+  `cargo build --release -p assura --bins` can link full CLI dependencies into
+  the primary launcher and make `assura check` evidence slower than the release
+  bundle.
 - When changing `src/cli/performance_report/**`, build the full Assura release
   binary set before running `target/release/assura performance-report`.
   `performance-report` dispatches through the full companion binary, so
@@ -163,14 +167,15 @@ If `pnpm build` fails because dependencies are missing, run `pnpm install` in
   Linux static-CRT evidence; this is the current checked-in cold 2x completion
   scope. Do not mix it with default dynamic local macOS rows.
 - Keep `claim_summary` and `warm_claim_summary` separate in PR and website
-  language. `claim_summary` is the cold `assura-check-cli` release-artifact
-  gate; `warm_claim_summary` is the persistent editor-session gate.
+  language. `claim_summary` is the cold release-artifact `assura check` gate;
+  `warm_claim_summary` is the persistent editor-session gate.
 - Website history should copy the intended full history when a history file is
   provided.
 - Keep production traversal choices separate from traversal-only evidence rows:
   raw parallel `jwalk` can win traversal while full validation may still prefer
   deterministic serial validation.
-- Keep user-facing docs focused on `assura-check-cli` versus `ls-lint-cli`
-  rows and the top-level `claim_summary` verdict. Put traversal, phase, hot
-  daemon, status-file, and strategy tradeoffs on technical implementation pages
-  unless they directly change the public product comparison.
+- Keep user-facing docs focused on release-style `assura check` versus
+  `ls-lint-cli` rows and the top-level `claim_summary` verdict. Put
+  `assura-check-cli`, traversal, phase, hot daemon, status-file, and strategy
+  tradeoffs on technical implementation pages unless they directly change the
+  public product comparison.

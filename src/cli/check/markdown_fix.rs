@@ -5,16 +5,22 @@ use super::markdown_fix_report::{
     MarkdownFixFailure, MarkdownFixFileReport, MarkdownFixFileStatus, MarkdownFixMode,
     MarkdownFixRecord, MarkdownFixReport, MarkdownFixRollback, MarkdownFixSkip, MarkdownFixStatus,
 };
+use super::markdown_required_sections_fix::{
+    fix_missing_required_sections, required_section_fix_id, required_section_fix_record,
+    REQUIRED_SECTION_OPERATION,
+};
 use super::{discover_project, CheckError, CompiledStructureConfig, StructureChecker};
 use crate::config::loader::ConfigLoader;
 use crate::stable_hash::stable_hash;
 use std::path::{Path, PathBuf};
 
-/// Markdown fix rule supported by the first safe-fix slice.
+/// Markdown fix rule supported by the safe-fix workflow.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MarkdownFixRule {
     /// Remove spaces and tabs from otherwise blank Markdown lines.
     TrailingSpaces,
+    /// Append missing headings declared by `markdown.required_sections`.
+    RequiredSections,
 }
 
 /// Apply a safe Markdown fix for configured Markdown scopes.
@@ -281,6 +287,96 @@ impl StructureChecker {
                     });
                 }
             }
+            MarkdownFixRule::RequiredSections => {
+                let Some(required_sections) = markdown.required_sections.as_deref() else {
+                    return Ok(());
+                };
+
+                report.files_checked += 1;
+                let content = match std::fs::read_to_string(path) {
+                    Ok(content) => content,
+                    Err(error) => {
+                        report.failures.push(MarkdownFixFailure {
+                            path: rel,
+                            operation: operation_name(rule),
+                            fix_ids: Vec::new(),
+                            reason: error.to_string(),
+                        });
+                        return Ok(());
+                    }
+                };
+                let (fixed, fixes) = fix_missing_required_sections(&content, required_sections);
+                let fix_ids = fixes
+                    .iter()
+                    .map(|fix| required_section_fix_id(&rel, fix))
+                    .collect::<Vec<_>>();
+                report.fixes_before += fixes.len();
+
+                if fixes.is_empty() {
+                    report.files.push(MarkdownFixFileReport {
+                        path: rel,
+                        status: MarkdownFixFileStatus::Unchanged,
+                        fixes_before: 0,
+                        fixes_after: 0,
+                        fixes_planned: 0,
+                        fixes_applied: 0,
+                        fix_ids,
+                    });
+                } else if dry_run {
+                    report.files_would_change += 1;
+                    report.fixes_would_apply += fixes.len();
+                    report.fixes_after += fixes.len();
+                    report.files.push(MarkdownFixFileReport {
+                        path: rel.clone(),
+                        status: MarkdownFixFileStatus::Planned,
+                        fixes_before: fixes.len(),
+                        fixes_after: fixes.len(),
+                        fixes_planned: fixes.len(),
+                        fixes_applied: 0,
+                        fix_ids,
+                    });
+                    report.fixes.extend(fixes.iter().map(|fix| {
+                        required_section_fix_record(&rel, fix, MarkdownFixStatus::Planned)
+                    }));
+                } else if let Err(error) = std::fs::write(path, fixed) {
+                    report.fixes_after += fixes.len();
+                    report.failures.push(MarkdownFixFailure {
+                        path: rel.clone(),
+                        operation: operation_name(rule),
+                        fix_ids: fix_ids.clone(),
+                        reason: error.to_string(),
+                    });
+                    report.files.push(MarkdownFixFileReport {
+                        path: rel.clone(),
+                        status: MarkdownFixFileStatus::Failed,
+                        fixes_before: fixes.len(),
+                        fixes_after: fixes.len(),
+                        fixes_planned: fixes.len(),
+                        fixes_applied: 0,
+                        fix_ids,
+                    });
+                    report.fixes.extend(fixes.iter().map(|fix| {
+                        required_section_fix_record(&rel, fix, MarkdownFixStatus::Failed)
+                    }));
+                } else {
+                    report.files_changed += 1;
+                    report.fixes_applied += fixes.len();
+                    report.changed_paths.push(rel.clone());
+                    report.applied_fix_ids.extend(fix_ids.clone());
+                    report.files.push(MarkdownFixFileReport {
+                        path: rel.clone(),
+                        status: MarkdownFixFileStatus::Changed,
+                        fixes_before: fixes.len(),
+                        fixes_after: 0,
+                        fixes_planned: fixes.len(),
+                        fixes_applied: fixes.len(),
+                        fix_ids,
+                    });
+                    report.fixes.extend(fixes.iter().map(|fix| {
+                        required_section_fix_record(&rel, fix, MarkdownFixStatus::Applied)
+                    }));
+                }
+            }
         }
 
         Ok(())
@@ -295,6 +391,9 @@ impl StructureChecker {
         message: &'static str,
         report: &mut MarkdownFixReport,
     ) -> Result<(), CheckError> {
+        if rule != MarkdownFixRule::TrailingSpaces {
+            return Ok(());
+        }
         match std::fs::read_to_string(path) {
             Ok(content) => {
                 if !blank_line_trailing_spaces(&content).is_empty() {
@@ -347,6 +446,7 @@ fn markdown_fix_record(
             MarkdownFixStatus::Planned | MarkdownFixStatus::Failed => violation.trailing_count,
             MarkdownFixStatus::Applied => 0,
         },
+        inserted_text: None,
     }
 }
 
@@ -379,5 +479,6 @@ fn portable_path(path: &Path) -> String {
 fn operation_name(rule: MarkdownFixRule) -> &'static str {
     match rule {
         MarkdownFixRule::TrailingSpaces => "remove_blank_line_trailing_spaces",
+        MarkdownFixRule::RequiredSections => REQUIRED_SECTION_OPERATION,
     }
 }

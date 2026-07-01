@@ -17,6 +17,7 @@ the same CLI options as humans and hooks; there is no separate agent mode.
 | Compact status | `--format status` | Git hooks, tool results, final status lines |
 | Structured agent feedback | `--format agent` | Agents and wrappers that want stable JSON |
 | Codex prompt hook JSON | `--format agent --agent codex` | Optional Codex `UserPromptSubmit` hooks |
+| Event-aware nudge JSON | `assura agent nudge` | Codex, OpenCode, Claude, and Pi wrappers around relevant events |
 | Display limits | `--min-severity` and `--max-issues` | Any noisy workflow |
 | Advisory exit | `--warn` | Workflows that should report without blocking |
 
@@ -28,6 +29,7 @@ the same CLI options as humans and hooks; there is no separate agent mode.
 | Git hooks | Git | Installed hook scripts | Git hook stdout/stderr | The hook script |
 | Agent feedback package | Wrapper code that cannot call the Rust CLI directly | Report parsing and feedback rendering | Library return value or JSON | The wrapper |
 | Codex prompt hook | Optional Codex `UserPromptSubmit` command | `assura check --format agent --agent codex` | Codex `hookSpecificOutput.additionalContext` | Hook configuration |
+| Event-aware nudge | Local agent hook or wrapper | `assura agent nudge --event ... --agent <agent>` | Bounded `assura.agent-nudge.v1` JSON | The wrapper |
 | Project-intelligence agent CLI | Local coding agent with shell access | `assura agent ...` | JSON diagnostics, context packs, graph/search, relation checks, and safe-fix previews | The caller |
 | Project-intelligence editor session | Local editor wrapper | `assura editor session` | LSP-shaped JSON-line diagnostics, context, and code-action previews | The wrapper |
 | Future tool/editor hook | Future agent integration | Scoped check plus feedback rendering | Tool result, next agent message, or status line | Hook configuration |
@@ -83,6 +85,43 @@ assura check --format agent --agent codex . --warn --min-severity medium --max-i
 | `--max-issues` | Caps displayed feedback items. |
 | `--warn` | Reports failures but exits successfully. |
 
+Structure feedback uses one shared severity contract across text, JSON, YAML,
+advice, status, agent, and Codex output. `low` findings are advisory and emit
+`"blocking": false`; `medium`, `high`, and `critical` findings emit
+`"blocking": true` and make `assura check` exit 1 unless `--warn` is present.
+Agent messages include `path`, `rule`, `severity`, `severity_label`,
+`blocking`, `problem`, and `corrective_context` so integrations do not need to
+parse human prose.
+
+## Event-Aware Nudges
+
+Use `assura agent nudge` when a wrapper can observe session or tool events and
+needs a concise decision about whether Assura context should be injected:
+
+```bash
+assura agent nudge --event session-start --agent codex .
+assura agent nudge --event before-tool --agent opencode --changed docs/guide.md .
+assura agent nudge --event after-tool --agent claude --changed docs/guide.md .
+assura agent nudge --event after-tool --agent pi --changed src/cli/check/rules.rs .
+```
+
+The command emits `assura.agent-nudge.v1` JSON by default. Its `target_agent`
+field labels the host wrapper; it does not select a private validation engine.
+`codex` may use the supported Codex delivery wrapper for deeper check output,
+while `opencode`, `claude`, and `pi` should fetch generic
+`assura check --format agent --warn` output when detail is needed.
+
+| Event | Expected use | Cache and context policy |
+| --- | --- | --- |
+| `session-start` | Compact daemon health and project readiness. | Inject only when `summary.should_inject` is true. |
+| `before-tool` | Path-aware edit, move, delete, or targeted read operations likely to influence edits. | Pass only paths relevant to the pending tool call. |
+| `after-tool` | Changed files produced new findings or affected references. | Keep `--max-issues` small and defer full reports to explicit commands. |
+
+Daemon-aware nudges include exact follow-up commands such as
+`assura daemon status --format json .`, `assura daemon doctor --format json .`,
+and the appropriate `assura check --format agent` fallback. Wrappers should use
+those commands for detail instead of injecting daemon state into every event.
+
 ## When To Check
 
 | Moment | Recommended check | Why |
@@ -90,7 +129,7 @@ assura check --format agent --agent codex . --warn --min-severity medium --max-i
 | Before a commit | Git pre-commit hook | Catch drift before local history changes. |
 | Before a push | Git pre-push hook | Catch drift before PR/CI feedback. |
 | Before Codex processes a user prompt | Optional Codex `UserPromptSubmit` hook | Inject bounded Assura context into Codex when the user has opted in. |
-| After an agent edits files | Future tool hook or editor integration | Give the agent immediate repair guidance after changed files are known. |
+| Before or after path-aware agent tool calls | `assura agent nudge --event before-tool|after-tool --changed <path>` | Give the agent immediate, bounded guidance only when changed paths matter. |
 | Before a user-facing agent response | Reuse the latest report or run a final scoped check | Avoid telling the user work is done while structure drift remains. |
 | After config or checkout changes | Full project check | Rebuild assumptions after policy or tree shape changes. |
 
@@ -187,7 +226,10 @@ step, while still giving the agent fresh feedback after edits.
 | --- | --- | --- |
 | Codex package library | Lower-level only | Wrapper code can use library helpers when it already has JSON. |
 | Codex `UserPromptSubmit` hook | Yes | A hook runs `assura check --format agent --agent codex` before Codex processes a prompt. |
-| Codex post-tool/editor hook | Not yet | A future hook should append a status line or bounded feedback after relevant tool calls. |
+| Codex event nudges | Experimental | A hook or wrapper calls `assura agent nudge --agent codex` around relevant session and tool events. |
+| OpenCode event nudges | Experimental | A thin plugin or hook calls `assura agent nudge --agent opencode` and generic `assura check --format agent --warn` for detail. |
+| Claude event nudges | Experimental | A local command hook or wrapper calls `assura agent nudge --agent claude` around path-aware tool events. |
+| Pi event nudges | Experimental | A local extension or hook wrapper calls `assura agent nudge --agent pi`, including performance-gate nudges for structure hot paths. |
 | Other agents with shell access | Yes | They can call `assura agent ...` for project-intelligence context and `assura check --format agent` for structure feedback. |
 | Project-intelligence session | Yes | Local wrappers can keep `assura content session` open for repeated context/query requests. |
 | Project-intelligence editor session | Yes | Local editor wrappers can keep `assura editor session` open for LSP-shaped diagnostics, context, and code-action previews. |
