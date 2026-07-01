@@ -1,8 +1,8 @@
 # Assura Project - Complete Context Document
 
-**Generated:** 2026-04-06  
-**Source:** 10 OpenCode sessions (4,409 parts extracted)  
-**Sessions Analyzed:** ses_2c097bd63ffeUpDp42nNp1rNsI through ses_2f51b2656ffeBpl44EdJ2xv77N  
+**Generated:** 2026-04-06
+**Source:** 10 OpenCode sessions (4,409 parts extracted)
+**Sessions Analyzed:** ses_2c097bd63ffeUpDp42nNp1rNsI through ses_2f51b2656ffeBpl44EdJ2xv77N
 **Session Date Range:** March 20-30, 2026
 
 ---
@@ -87,7 +87,7 @@ policy:
   src/components/:
     ${name}.tsx:           # Source files at their location
       - @react-component
-      
+
     ${name}.test.tsx:      # Test files at their location (visible!)
       - @test
 ```
@@ -140,7 +140,7 @@ For cases where test location varies by project:
 rules:
   react-component:
     require_test: "${name}.test.tsx"  # Variable pattern
-    
+
 policy:
   src/components/:
     apply: [@react-component]

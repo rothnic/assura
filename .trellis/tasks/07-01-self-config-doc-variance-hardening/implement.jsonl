@@ -1,0 +1,6 @@
+{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file": "docs/goals/assura-self-config-doc-variance-hardening.md", "reason": "Child goal and proof gates"}
+{"file": "docs/goals/assura-post-beta-capabilities-program.md", "reason": "Parent program progress and ordering"}
+{"file": ".trellis/spec/assura/structure-enforcement.md", "reason": "Structure-first config contract"}
+{"file": ".trellis/spec/assura/config-notation.md", "reason": "Config notation and markdown hierarchy"}
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "Roadmap routing"}

@@ -83,7 +83,7 @@ Recommended product narrative for now:
 | Directory validation path | Product describes project-wide validation. | There is no CLI traversal path in `check`; TODO remains. | `src/cli/commands.rs:72-75`; `docs/archive/actual-state-audit.md`. | Critical: core value proposition missing from CLI. |
 | `exists` constraint | Specs and LS-Lint docs describe required/forbidden file counts. | AST validator always passes `exists`. | `src/validation/constraints.rs:59-62`; `docs/archive/implementation-gaps.md:72-85`. | High: required files can be missing without failure. |
 | Pairing/cross-directory tests | Specs describe pairing by shared variables. | Pairing is standalone, not integrated; some tests ignored. | `src/validation/pairing.rs`; cargo test ignored pairing tests. | High: documented test/doc pairing enforcement not reliable. |
-| Config formats | Docs describe V1, V2, AST/rules-policy, and structure-first variants. | Two incompatible parser families exist; active self-config is structure format; AST parser serves other internals/tests. | `.assura/config.yml`; `.assura/config.new.yml`; `docs/archive/actual-state-audit.md:26-41`. | High: users and implementers cannot tell which format is canonical. |
+| Config formats | Docs describe V1, V2, AST/rules-policy, and structure-first variants. | Two incompatible parser families exist; active self-config is structure format; AST parser serves other internals/tests. | `.assura/config.yml`; removed legacy rules/policy snapshot; `docs/archive/actual-state-audit.md:26-41`. | High: users and implementers cannot tell which format is canonical. |
 | Formatting standard | AGENTS and CI require `cargo fmt --check`. | Formatting check fails. | `.github/workflows/ci.yml:33-43`; command result. | Medium: CI would fail or local quality bar is aspirational. |
 | Clippy standard | AGENTS and CI require no warnings. | Clippy with `-D warnings` fails heavily. | `.github/workflows/ci.yml:45-65`; command result. | Medium: CI would fail; warning debt hides real issues. |
 | Tests | Docs say broad tests pass. | Rust tests do pass, with warnings and ignored pairing tests. | `cargo test --all-targets`. | Low: useful coverage exists, but it does not cover CLI user truth. |
@@ -105,7 +105,7 @@ The project has too many competing configuration stories:
 
 - README uses `version: "2.0"` with `structure:`.
 - `.assura/config.yml` uses the structure-first self-validation format.
-- `.assura/config.new.yml` uses `rules:` and `policy:`.
+- A removed legacy self-config snapshot used `rules:` and `policy:`.
 - `docs/archive/configuration-spec.md` describes an AST/rules-policy syntax with direct file keys, `apply`, `exists`, `group`, `message`, and cross-directory pairing.
 - Website docs include V1-style `rules:` arrays and V2-style `structure:`.
 
@@ -179,7 +179,7 @@ Both contain useful pieces. The immediate decision should not be "support both";
 | `docs/archive/configuration-spec.md` | Speculative target spec | Contains desired features not implemented, including cross-directory pairing/group behavior. | Keep as proposal/spec, not user guide. |
 | `docs/config-v2.md` and `docs/migration-guide.md` | Partially stale user docs | Describe commands and migration paths not exposed by CLI. | Downgrade to design drafts until CLI supports them. |
 | `.assura/config.yml` | Current self-config candidate | Structure-first config exists, but `assura check` cannot enforce it. | Keep as intended self-validation config; do not claim active self-validation until CLI works. |
-| `.assura/config.new.yml` | Experimental competing config | Rules/policy format competes with structure-first config. | Keep only if AST path is selected; otherwise archive or convert. |
+| Legacy rules/policy self-config snapshot | Experimental competing config | Rules/policy format competes with structure-first config. | Removed from the live `.assura/` root after structure-first self-config became canonical. |
 | `integrations/agents/opencode/implementation-summary.md` | Unverified completion note | Claims 84 tests passing, but local environment lacks `bun`. | Mark unverified or add CI proof. |
 | `openspec/`, `.github/skills/`, `.github/prompts/`, `specs-bak/` | Historical/planning infrastructure | Not referenced by main docs; can confuse current process. | Document as internal planning/archive, or remove if not active. |
 
