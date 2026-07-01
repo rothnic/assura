@@ -4,10 +4,14 @@ const vscode = require("vscode");
 const {
   checkArgs,
   daemonArgs,
+  daemonCheckPathArgs,
   daemonSummary,
   diagnosticEntries,
+  editorDiagnosticsRequest,
   runAssuraJson,
+  runEditorSessionRequest,
   safeFixPreviewArgs,
+  workspaceRelativeFilePath,
   workspacePathFromFolders,
 } = require("./assura-client");
 
@@ -27,11 +31,21 @@ function diagnosticRange() {
   return new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 1));
 }
 
+function toVsCodeRange(range) {
+  if (!range?.start || !range?.end) {
+    return diagnosticRange();
+  }
+  return new vscode.Range(
+    new vscode.Position(range.start.line ?? 0, range.start.character ?? 0),
+    new vscode.Position(range.end.line ?? 0, range.end.character ?? 1),
+  );
+}
+
 function toVsCodeDiagnostics(entries) {
   const grouped = new Map();
   for (const entry of entries) {
     const diagnostic = new vscode.Diagnostic(
-      diagnosticRange(),
+      toVsCodeRange(entry.range),
       entry.message,
       entry.severity,
     );
@@ -55,6 +69,56 @@ async function showJsonDocument(title, payload) {
   return title;
 }
 
+async function refreshDocumentDiagnostics(document, collection) {
+  const root = workspacePath();
+  if (!root || document?.uri?.scheme !== "file" || !document.uri.fsPath) {
+    return;
+  }
+
+  const changedPath = workspaceRelativeFilePath(root, document.uri.fsPath);
+  if (!changedPath) {
+    return;
+  }
+
+  const daemonPayload = await runAssuraJson(
+    assuraPath(),
+    daemonCheckPathArgs(root, changedPath),
+    root,
+  );
+  const editorPayload = await runEditorSessionRequest(
+    assuraPath(),
+    root,
+    editorDiagnosticsRequest(changedPath),
+  );
+  const entries = [
+    ...diagnosticEntries(daemonPayload, {
+      workspacePath: root,
+      changedPath,
+      maxDiagnostics: maxDiagnostics(),
+    }),
+    ...diagnosticEntries(editorPayload, {
+      workspacePath: root,
+      changedPath,
+      maxDiagnostics: maxDiagnostics(),
+    }),
+  ];
+
+  collection.set(
+    document.uri,
+    entries.map((entry) => {
+      const diagnostic = new vscode.Diagnostic(
+        toVsCodeRange(entry.range),
+        entry.message,
+        entry.severity,
+      );
+      diagnostic.source = entry.source;
+      diagnostic.code = entry.code;
+      diagnostic.data = entry.data;
+      return diagnostic;
+    }),
+  );
+}
+
 async function refreshDiagnostics(collection) {
   const root = workspacePath();
   if (!root) {
@@ -71,6 +135,10 @@ async function refreshDiagnostics(collection) {
     }),
   )) {
     collection.set(vscode.Uri.file(filePath), diagnostics);
+  }
+
+  if (vscode.window.activeTextEditor) {
+    await refreshDocumentDiagnostics(vscode.window.activeTextEditor.document, collection);
   }
 }
 
@@ -147,6 +215,23 @@ function activate(context) {
       runDaemonAction("logs", statusBar),
     ),
     vscode.commands.registerCommand("assura.safeFixPreview", previewSafeFixes),
+    vscode.workspace.onDidSaveTextDocument((document) =>
+      refreshDocumentDiagnostics(document, diagnostics).catch((error) => {
+        vscode.window.showWarningMessage(
+          `Assura document diagnostics failed: ${error.message}`,
+        );
+      }),
+    ),
+    vscode.window.onDidChangeActiveTextEditor((editor) => {
+      if (!editor) {
+        return;
+      }
+      refreshDocumentDiagnostics(editor.document, diagnostics).catch((error) => {
+        vscode.window.showWarningMessage(
+          `Assura document diagnostics failed: ${error.message}`,
+        );
+      });
+    }),
   );
 
   runDaemonAction("status", statusBar).catch((error) => {
