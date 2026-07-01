@@ -1,7 +1,11 @@
 //! CLI probes for daemon-ready local project state.
 
+#[path = "daemon_lifecycle.rs"]
+mod lifecycle;
 #[path = "daemon_management.rs"]
 mod management;
+#[path = "daemon_references.rs"]
+mod references;
 #[path = "daemon_text.rs"]
 mod text;
 
@@ -12,7 +16,11 @@ use crate::daemon::{
     LocalDaemonCore,
 };
 use clap::Subcommand;
+use lifecycle::{
+    daemon_logs_output, daemon_restart_output, daemon_start_output, daemon_stop_output,
+};
 use management::{daemon_doctor_output, daemon_status_output, health_for_path};
+use references::{reference_request, DaemonReferenceRequest};
 use serde::Serialize;
 use std::path::PathBuf;
 
@@ -29,10 +37,54 @@ pub enum DaemonCommands {
         format: OutputFormat,
     },
 
+    /// Start local daemon runtime metadata for a project.
+    Start {
+        /// Project root directory (defaults to current directory).
+        path: Option<PathBuf>,
+
+        /// Output format.
+        #[arg(short, long, value_enum, default_value = "json")]
+        format: OutputFormat,
+    },
+
+    /// Stop local daemon runtime metadata for a project.
+    Stop {
+        /// Project root directory (defaults to current directory).
+        path: Option<PathBuf>,
+
+        /// Output format.
+        #[arg(short, long, value_enum, default_value = "json")]
+        format: OutputFormat,
+    },
+
+    /// Restart local daemon runtime metadata for a project.
+    Restart {
+        /// Project root directory (defaults to current directory).
+        path: Option<PathBuf>,
+
+        /// Output format.
+        #[arg(short, long, value_enum, default_value = "json")]
+        format: OutputFormat,
+    },
+
     /// Report daemon management diagnostics and remediation commands.
     Doctor {
         /// Project root directory (defaults to current directory).
         path: Option<PathBuf>,
+
+        /// Output format.
+        #[arg(short, long, value_enum, default_value = "json")]
+        format: OutputFormat,
+    },
+
+    /// Show daemon runtime log lines for a project.
+    Logs {
+        /// Project root directory (defaults to current directory).
+        path: Option<PathBuf>,
+
+        /// Maximum log lines to return from the end of the file.
+        #[arg(long, default_value_t = 100)]
+        tail: usize,
 
         /// Output format.
         #[arg(short, long, value_enum, default_value = "json")]
@@ -140,6 +192,39 @@ fn run_daemon_command(
             let (health, _) = health_for_path(path, config);
             return render_success(daemon_status_output(health), format);
         }
+        DaemonCommands::Start { .. } => {
+            let (health, loaded) = health_for_path(path, config);
+            let exit_code = if loaded {
+                ExitCode::Success
+            } else {
+                ExitCode::RuntimeError
+            };
+            return render_success_with_exit(
+                daemon_start_output(health, loaded),
+                format,
+                exit_code,
+            );
+        }
+        DaemonCommands::Stop { .. } => {
+            let (health, _) = health_for_path(path, config);
+            return render_success(daemon_stop_output(health), format);
+        }
+        DaemonCommands::Restart { .. } => {
+            let (health, loaded) = health_for_path(path, config);
+            let exit_code = if loaded {
+                ExitCode::Success
+            } else {
+                ExitCode::RuntimeError
+            };
+            if loaded {
+                let _ = daemon_stop_output(health.clone());
+            }
+            return render_success_with_exit(
+                daemon_restart_output(health, loaded),
+                format,
+                exit_code,
+            );
+        }
         DaemonCommands::Doctor { .. } => {
             let (health, loaded) = health_for_path(path, config);
             let output = daemon_doctor_output(health, loaded);
@@ -152,6 +237,10 @@ fn run_daemon_command(
                     ExitCode::RuntimeError
                 },
             );
+        }
+        DaemonCommands::Logs { tail, .. } => {
+            let (health, _) = health_for_path(path, config);
+            return render_success(daemon_logs_output(health, *tail), format);
         }
         _ => {}
     }
@@ -191,7 +280,12 @@ fn run_daemon_command(
                 ),
             }
         }
-        DaemonCommands::Status { .. } | DaemonCommands::Doctor { .. } => {
+        DaemonCommands::Status { .. }
+        | DaemonCommands::Start { .. }
+        | DaemonCommands::Stop { .. }
+        | DaemonCommands::Restart { .. }
+        | DaemonCommands::Doctor { .. }
+        | DaemonCommands::Logs { .. } => {
             unreachable!("management preview commands return before daemon core load")
         }
     }
@@ -201,7 +295,11 @@ impl DaemonCommands {
     fn format(&self) -> OutputFormat {
         match self {
             Self::Status { format, .. }
+            | Self::Start { format, .. }
+            | Self::Stop { format, .. }
+            | Self::Restart { format, .. }
             | Self::Doctor { format, .. }
+            | Self::Logs { format, .. }
             | Self::Health { format, .. }
             | Self::CheckPath { format, .. }
             | Self::References { format, .. } => *format,
@@ -211,51 +309,17 @@ impl DaemonCommands {
     fn path(&self) -> PathBuf {
         let path = match self {
             Self::Status { path, .. }
+            | Self::Start { path, .. }
+            | Self::Stop { path, .. }
+            | Self::Restart { path, .. }
             | Self::Doctor { path, .. }
+            | Self::Logs { path, .. }
             | Self::Health { path, .. }
             | Self::CheckPath { path, .. }
             | Self::References { path, .. } => path.clone(),
         };
         path.unwrap_or_else(|| PathBuf::from("."))
     }
-}
-
-enum DaemonReferenceRequest {
-    Source(PathBuf),
-    Target(PathBuf),
-    MovedTarget {
-        previous_path: PathBuf,
-        new_path: PathBuf,
-    },
-}
-
-fn reference_request(
-    source: Option<PathBuf>,
-    target: Option<PathBuf>,
-    moved_target: Option<PathBuf>,
-    new_target: Option<PathBuf>,
-) -> Result<DaemonReferenceRequest, String> {
-    let selected = source.is_some() as u8 + target.is_some() as u8 + moved_target.is_some() as u8;
-    if selected != 1 {
-        return Err(
-            "daemon references requires exactly one of --source, --target, or --moved-target"
-                .to_string(),
-        );
-    }
-    if let Some(path) = source {
-        return Ok(DaemonReferenceRequest::Source(path));
-    }
-    if let Some(path) = target {
-        return Ok(DaemonReferenceRequest::Target(path));
-    }
-    let previous_path = moved_target.expect("moved_target selected");
-    let Some(new_path) = new_target else {
-        return Err("--moved-target requires --new-target".to_string());
-    };
-    Ok(DaemonReferenceRequest::MovedTarget {
-        previous_path,
-        new_path,
-    })
 }
 
 fn render_reference(

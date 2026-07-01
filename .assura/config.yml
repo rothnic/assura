@@ -472,7 +472,15 @@ extensions:
           status: experimental
         - surface: "command:assura daemon status"
           status: experimental
+        - surface: "command:assura daemon start"
+          status: experimental
+        - surface: "command:assura daemon stop"
+          status: experimental
+        - surface: "command:assura daemon restart"
+          status: experimental
         - surface: "command:assura daemon doctor"
+          status: experimental
+        - surface: "command:assura daemon logs"
           status: experimental
         - surface: "command:assura daemon health"
           status: experimental

@@ -1,6 +1,6 @@
 //! Management-preview output contracts for `assura daemon`.
 
-use super::DaemonTextRender;
+use super::{lifecycle::runtime_status_for_health, DaemonTextRender};
 use crate::daemon::{DaemonHealth, LocalDaemonCore};
 use serde::Serialize;
 use std::path::PathBuf;
@@ -21,15 +21,18 @@ pub(super) fn health_for_path(path: PathBuf, config: Option<PathBuf>) -> (Daemon
 }
 
 pub(super) fn daemon_status_output(health: DaemonHealth) -> DaemonStatusOutput {
+    let runtime = runtime_status_for_health(&health);
     DaemonStatusOutput {
         schema: "assura.daemon.status.v1",
         protocol_version: DAEMON_PROTOCOL_VERSION,
         process: DaemonProcessStatus {
-            running: false,
-            pid: None,
-            socket_path: None,
-            mode: "local_probe",
-            message: "managed daemon process is not started by this preview surface",
+            state: runtime.state,
+            running: runtime.running,
+            pid: runtime.pid,
+            socket_path: runtime.socket_path,
+            mode: runtime.mode,
+            message: runtime.message,
+            updated_at_unix: runtime.updated_at_unix,
         },
         management: DaemonManagementCommands::for_health(&health),
         health,
@@ -87,11 +90,13 @@ pub(super) struct DaemonStatusOutput {
 
 #[derive(Debug, Serialize)]
 struct DaemonProcessStatus {
+    state: String,
     running: bool,
     pid: Option<u32>,
     socket_path: Option<PathBuf>,
-    mode: &'static str,
-    message: &'static str,
+    mode: String,
+    message: String,
+    updated_at_unix: Option<u64>,
 }
 
 #[derive(Debug, Serialize)]
@@ -111,10 +116,10 @@ impl DaemonManagementCommands {
         Self {
             status: format!("assura daemon status --format json {root}"),
             doctor: format!("assura daemon doctor --format json {root}"),
-            start: None,
-            stop: None,
-            restart: None,
-            logs: None,
+            start: Some(format!("assura daemon start --format json {root}")),
+            stop: Some(format!("assura daemon stop --format json {root}")),
+            restart: Some(format!("assura daemon restart --format json {root}")),
+            logs: Some(format!("assura daemon logs --format json {root}")),
             fallback: health.fallback_command.clone(),
         }
     }

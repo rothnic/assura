@@ -570,6 +570,51 @@ commands:
         aliases: ["-f"]
         takes_value: true
         values: ["text", "json", "yaml", "advice", "status"]
+  - name: "assura daemon start"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status"]
+  - name: "assura daemon stop"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status"]
+  - name: "assura daemon restart"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status"]
   - name: "assura daemon doctor"
     allow_positionals: true
     flags:
@@ -581,6 +626,23 @@ commands:
       --quiet: {}
       --help:
         aliases: ["-h"]
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status"]
+  - name: "assura daemon logs"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --tail:
+        takes_value: true
       --format:
         aliases: ["-f"]
         takes_value: true

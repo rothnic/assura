@@ -157,12 +157,11 @@ branch surfaces are advertised as installable release artifacts.
   `textDocument/codeAction` JSON-line methods. It is local, does not require
   MCP or remote access, and does not claim full LSP server framing or editor
   marketplace packaging.
-- `assura daemon status --format json` and
-  `assura daemon doctor --format json` are experimental local daemon
-  management-preview commands. They expose daemon-ready health, protocol,
-  process placeholder metadata, and actionable remediation over the shared
-  local state contract; full start/stop/restart/logs process lifecycle support
-  remains roadmap until implemented and tested.
+- `assura daemon status`, `start`, `stop`, `restart`, `doctor`, and `logs`
+  are experimental local daemon management-preview commands. They expose
+  daemon-ready health, protocol, runtime metadata, bounded log output, and
+  actionable remediation over the shared local state contract; a long-running
+  socket/process daemon remains roadmap until implemented and tested.
 - Full LSP server packaging and MCP are not part of this
   content-query surface.
 - Runtime schema or source model artifacts stored under `.assura/` must live

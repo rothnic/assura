@@ -17,12 +17,130 @@ fn daemon_status_json_reports_management_contract() {
     assert_eq!(json["protocol_version"], "assura.daemon.v1");
     assert_eq!(json["health"]["state"], "running");
     assert_eq!(json["process"]["running"], false);
+    assert_eq!(json["process"]["state"], "not_started");
     assert_eq!(json["process"]["mode"], "local_probe");
     assert!(json["management"]["doctor"]
         .as_str()
         .unwrap()
         .contains("assura daemon doctor --format json"));
-    assert_eq!(json["management"]["start"], Value::Null);
+    assert!(json["management"]["start"]
+        .as_str()
+        .unwrap()
+        .contains("assura daemon start --format json"));
+}
+
+#[test]
+fn daemon_start_stop_json_are_idempotent_and_status_reflects_runtime() {
+    let project = daemon_project();
+
+    let start = assura_json(
+        &project,
+        &["daemon", "start", project.path_str(), "--format", "json"],
+    );
+    assert_eq!(start["schema"], "assura.daemon.lifecycle.v1");
+    assert_eq!(start["action"], "start");
+    assert_eq!(start["changed"], true);
+    assert_eq!(start["runtime"]["state"], "started");
+    assert!(project.path().join(".assura/daemon/status.json").is_file());
+
+    let repeat_start = assura_json(
+        &project,
+        &["daemon", "start", project.path_str(), "--format", "json"],
+    );
+    assert_eq!(repeat_start["action"], "start");
+    assert_eq!(repeat_start["changed"], false);
+    assert_eq!(repeat_start["runtime"]["state"], "started");
+
+    let status = assura_json(
+        &project,
+        &["daemon", "status", project.path_str(), "--format", "json"],
+    );
+    assert_eq!(status["process"]["state"], "started");
+    assert_eq!(status["process"]["mode"], "managed_runtime_metadata");
+    assert_eq!(status["process"]["running"], false);
+
+    let stop = assura_json(
+        &project,
+        &["daemon", "stop", project.path_str(), "--format", "json"],
+    );
+    assert_eq!(stop["action"], "stop");
+    assert_eq!(stop["changed"], true);
+    assert_eq!(stop["runtime"]["state"], "stopped");
+
+    let repeat_stop = assura_json(
+        &project,
+        &["daemon", "stop", project.path_str(), "--format", "json"],
+    );
+    assert_eq!(repeat_stop["changed"], false);
+    assert_eq!(repeat_stop["runtime"]["state"], "stopped");
+}
+
+#[test]
+fn daemon_restart_and_logs_json_use_runtime_area() {
+    let project = daemon_project();
+
+    let start = assura_json(
+        &project,
+        &["daemon", "start", project.path_str(), "--format", "json"],
+    );
+    assert_eq!(start["runtime"]["state"], "started");
+
+    let restart = assura_json(
+        &project,
+        &["daemon", "restart", project.path_str(), "--format", "json"],
+    );
+    assert_eq!(restart["action"], "restart");
+    assert_eq!(restart["changed"], true);
+    assert_eq!(restart["runtime"]["state"], "started");
+
+    let repeat_restart = assura_json(
+        &project,
+        &["daemon", "restart", project.path_str(), "--format", "json"],
+    );
+    assert_eq!(repeat_restart["action"], "restart");
+    assert_eq!(repeat_restart["changed"], true);
+    assert_eq!(repeat_restart["runtime"]["state"], "started");
+
+    let logs = assura_json(
+        &project,
+        &[
+            "daemon",
+            "logs",
+            project.path_str(),
+            "--tail",
+            "10",
+            "--format",
+            "json",
+        ],
+    );
+    assert_eq!(logs["schema"], "assura.daemon.logs.v1");
+    assert!(logs["log_file"]
+        .as_str()
+        .unwrap()
+        .ends_with(".assura/daemon/daemon.log"));
+    assert_eq!(logs["tail"], 10);
+    assert_eq!(logs["returned_lines"], 5);
+    assert_eq!(logs["truncated"], false);
+    assert!(logs["lines"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|line| line.as_str().unwrap().contains("action=restart")));
+
+    let truncated = assura_json(
+        &project,
+        &[
+            "daemon",
+            "logs",
+            project.path_str(),
+            "--tail",
+            "2",
+            "--format",
+            "json",
+        ],
+    );
+    assert_eq!(truncated["returned_lines"], 2);
+    assert_eq!(truncated["truncated"], true);
 }
 
 #[test]
@@ -78,6 +196,44 @@ fn daemon_doctor_json_reports_unavailable_project_with_remediation() {
         .as_str()
         .unwrap()
         .contains("assura"));
+}
+
+#[test]
+fn daemon_stop_and_logs_are_safe_when_project_is_unavailable() {
+    let project = TempDir::new().unwrap();
+
+    let stop_output = Command::new(env!("CARGO_BIN_EXE_assura"))
+        .args([
+            "daemon",
+            "stop",
+            project.path().to_str().unwrap(),
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+    assert!(stop_output.status.success());
+    let stop: Value = serde_json::from_slice(&stop_output.stdout).unwrap();
+    assert_eq!(stop["schema"], "assura.daemon.lifecycle.v1");
+    assert_eq!(stop["health"]["state"], "unavailable");
+    assert_eq!(stop["changed"], false);
+    assert_eq!(stop["runtime"]["state"], "stopped");
+
+    let logs_output = Command::new(env!("CARGO_BIN_EXE_assura"))
+        .args([
+            "daemon",
+            "logs",
+            project.path().to_str().unwrap(),
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+    assert!(logs_output.status.success());
+    let logs: Value = serde_json::from_slice(&logs_output.stdout).unwrap();
+    assert_eq!(logs["schema"], "assura.daemon.logs.v1");
+    assert_eq!(logs["health"]["state"], "unavailable");
+    assert_eq!(logs["total_lines"], 1);
 }
 
 #[test]
