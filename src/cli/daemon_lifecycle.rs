@@ -1,7 +1,7 @@
 //! Lifecycle metadata management for `assura daemon`.
 
 use super::DaemonTextRender;
-use crate::daemon::DaemonHealth;
+use crate::daemon::{serialize_optional_path, serialize_path, DaemonHealth};
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -120,6 +120,7 @@ pub(super) struct DaemonRuntimeStatus {
     pub(super) state: String,
     pub(super) running: bool,
     pub(super) pid: Option<u32>,
+    #[serde(serialize_with = "serialize_optional_path")]
     pub(super) socket_path: Option<PathBuf>,
     pub(super) mode: String,
     pub(super) message: String,
@@ -187,6 +188,7 @@ pub(super) struct DaemonLogsOutput {
     schema: &'static str,
     protocol_version: &'static str,
     health: DaemonHealth,
+    #[serde(serialize_with = "serialize_path")]
     log_file: PathBuf,
     tail: usize,
     total_lines: usize,
@@ -202,6 +204,7 @@ struct RuntimeStatus {
     state: String,
     running: bool,
     pid: Option<u32>,
+    #[serde(serialize_with = "serialize_optional_path")]
     socket_path: Option<PathBuf>,
     mode: String,
     message: String,

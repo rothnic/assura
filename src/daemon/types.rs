@@ -1,7 +1,7 @@
 //! Serializable daemon health and changed-path response contracts.
 
 use crate::intelligence::RepositoryReferenceEdge;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, Serializer};
 use std::path::{Path, PathBuf};
 
 /// Daemon/session health state exposed to local clients.
@@ -26,10 +26,13 @@ pub enum DaemonHealthState {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct DaemonRuntimePaths {
     /// Directory for daemon runtime metadata.
+    #[serde(serialize_with = "serialize_path")]
     pub status_dir: PathBuf,
     /// JSON status file path for lightweight clients.
+    #[serde(serialize_with = "serialize_path")]
     pub status_file: PathBuf,
     /// Log file path for runtime diagnostics.
+    #[serde(serialize_with = "serialize_path")]
     pub log_file: PathBuf,
 }
 
@@ -52,8 +55,10 @@ pub struct DaemonHealth {
     /// Human-readable reason for the current state.
     pub reason: String,
     /// Project root for this daemon/session state.
+    #[serde(serialize_with = "serialize_path")]
     pub project_root: PathBuf,
     /// Configuration file that controls this state.
+    #[serde(serialize_with = "serialize_path")]
     pub config_path: PathBuf,
     /// Monotonic in-process generation for rebuilt project state.
     pub generation: u64,
@@ -148,6 +153,7 @@ pub struct DaemonRepositoryReference {
     /// Stable edge ID.
     pub id: String,
     /// Repository-relative source path.
+    #[serde(serialize_with = "serialize_path")]
     pub source_path: PathBuf,
     /// One-based source line when known.
     pub source_line: Option<usize>,
@@ -156,6 +162,7 @@ pub struct DaemonRepositoryReference {
     /// Target resource ID when resolved.
     pub target_id: Option<String>,
     /// Repository-relative target path.
+    #[serde(serialize_with = "serialize_path")]
     pub target_path: PathBuf,
     /// Optional Markdown heading anchor without the leading `#`.
     pub target_anchor: Option<String>,
@@ -199,6 +206,7 @@ pub struct DaemonAffectedReferences {
     /// `source` for outbound references or `target` for inbound references.
     pub mode: &'static str,
     /// Repository-relative path requested by the caller.
+    #[serde(serialize_with = "serialize_path")]
     pub path: PathBuf,
     /// Current daemon/session health after freshness checks.
     pub health: DaemonHealth,
@@ -212,8 +220,10 @@ pub struct DaemonAffectedReferences {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct DaemonMovedTargetReferences {
     /// Previous repository-relative target path.
+    #[serde(serialize_with = "serialize_path")]
     pub previous_path: PathBuf,
     /// New repository-relative target path.
+    #[serde(serialize_with = "serialize_path")]
     pub new_path: PathBuf,
     /// Current daemon/session health after freshness checks.
     pub health: DaemonHealth,
@@ -254,4 +264,28 @@ fn shell_quote_path(path: &Path) -> String {
     } else {
         format!("'{}'", value.replace('\'', "'\\''"))
     }
+}
+
+pub(crate) fn serialize_path<S>(path: &Path, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    serializer.serialize_str(&normalized_path(path))
+}
+
+pub(crate) fn serialize_optional_path<S>(
+    path: &Option<PathBuf>,
+    serializer: S,
+) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    match path {
+        Some(path) => serializer.serialize_some(&normalized_path(path)),
+        None => serializer.serialize_none(),
+    }
+}
+
+fn normalized_path(path: &Path) -> String {
+    path.to_string_lossy().replace('\\', "/")
 }

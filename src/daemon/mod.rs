@@ -16,6 +16,7 @@ mod types;
 
 use fingerprint::ProjectFingerprint;
 use types::{fallback_command, response_bounds};
+pub(crate) use types::{serialize_optional_path, serialize_path};
 pub use types::{
     DaemonAffectedReferences, DaemonHealth, DaemonHealthState, DaemonMovedTargetReferences,
     DaemonRepositoryReference, DaemonResponseBounds, DaemonRuntimePaths,

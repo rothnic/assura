@@ -1,7 +1,7 @@
 //! Management-preview output contracts for `assura daemon`.
 
 use super::{lifecycle::runtime_status_for_health, DaemonTextRender};
-use crate::daemon::{DaemonHealth, LocalDaemonCore};
+use crate::daemon::{serialize_optional_path, serialize_path, DaemonHealth, LocalDaemonCore};
 use serde::Serialize;
 use std::fs;
 use std::path::PathBuf;
@@ -94,7 +94,9 @@ pub(super) struct DaemonStatusOutput {
 
 #[derive(Debug, Serialize)]
 struct DaemonProjectStatus {
+    #[serde(serialize_with = "serialize_path")]
     project_root: PathBuf,
+    #[serde(serialize_with = "serialize_path")]
     config_path: PathBuf,
     config_fingerprint: Option<String>,
     dirty_paths: Vec<String>,
@@ -116,6 +118,7 @@ struct DaemonProcessStatus {
     state: String,
     running: bool,
     pid: Option<u32>,
+    #[serde(serialize_with = "serialize_optional_path")]
     socket_path: Option<PathBuf>,
     mode: String,
     message: String,
