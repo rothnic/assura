@@ -1,0 +1,5 @@
+{"file":"docs/goals/assura-vscode-daemon-integration.md","reason":"Review against Epic 9 definition of done and blocking criteria."}
+{"file":".trellis/spec/assura/daemon-management-cli.md","reason":"Check VS Code command usage against supported daemon JSON contracts."}
+{"file":"docs/support-policy.md","reason":"Ensure editor support status and limitations are not overclaimed."}
+{"file":"docs/compatibility-and-surface.md","reason":"Ensure new editor surface is classified consistently."}
+{"file":".assura/config.yml","reason":"Verify new integration paths are registered in structure validation."}
