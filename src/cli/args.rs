@@ -433,12 +433,14 @@ pub enum AgentTarget {
 #[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]
 pub enum MarkdownFixRuleArg {
     TrailingSpaces,
+    RequiredSections,
 }
 
 impl From<MarkdownFixRuleArg> for crate::cli::check::MarkdownFixRule {
     fn from(value: MarkdownFixRuleArg) -> Self {
         match value {
             MarkdownFixRuleArg::TrailingSpaces => Self::TrailingSpaces,
+            MarkdownFixRuleArg::RequiredSections => Self::RequiredSections,
         }
     }
 }

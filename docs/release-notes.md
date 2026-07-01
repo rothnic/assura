@@ -157,6 +157,10 @@ branch surfaces are advertised as installable release artifacts.
 - `assura fix markdown --rule trailing-spaces --apply --format json` applies
   the bounded Markdown trailing-space fix and reports changed paths, applied
   fix IDs, skipped fixes, and rollback guidance.
+- `assura fix markdown --rule required-sections --dry-run --format json`
+  previews deterministic missing-heading insertions for configured
+  `markdown.required_sections`; `--apply` appends those headings and reports
+  the same safe-fix audit fields.
 - Omitting both `--dry-run` and `--apply` previews fixes without writing;
   every write path requires `--apply`.
 

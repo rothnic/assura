@@ -25,15 +25,15 @@ pub struct MarkdownFixReport {
     pub files_checked: usize,
     /// Files written with at least one fix.
     pub files_changed: usize,
-    /// Individual line fixes applied.
+    /// Individual fixes applied.
     pub fixes_applied: usize,
     /// Files that would change if the same run wrote changes.
     pub files_would_change: usize,
-    /// Individual line fixes that would apply if the same run wrote changes.
+    /// Individual fixes that would apply if the same run wrote changes.
     pub fixes_would_apply: usize,
-    /// Fixable trailing-space findings before the run.
+    /// Fixable findings before the run.
     pub fixes_before: usize,
-    /// Fixable trailing-space findings remaining in files after the run.
+    /// Fixable findings remaining in files after the run.
     pub fixes_after: usize,
     /// Relative paths written during an apply run.
     #[serde(serialize_with = "serialize_paths")]
@@ -68,12 +68,15 @@ pub enum MarkdownFixMode {
 pub enum MarkdownFixRuleReport {
     /// Remove spaces and tabs from otherwise blank Markdown lines.
     TrailingSpaces,
+    /// Append configured required Markdown section headings.
+    RequiredSections,
 }
 
 impl From<MarkdownFixRule> for MarkdownFixRuleReport {
     fn from(value: MarkdownFixRule) -> Self {
         match value {
             MarkdownFixRule::TrailingSpaces => Self::TrailingSpaces,
+            MarkdownFixRule::RequiredSections => Self::RequiredSections,
         }
     }
 }
@@ -112,7 +115,7 @@ pub enum MarkdownFixFileStatus {
     Unchanged,
 }
 
-/// Per-line Markdown safe-fix plan or audit record.
+/// Per-fix Markdown safe-fix plan or audit record.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct MarkdownFixRecord {
     /// Stable fix ID for correlating previews, applies, and audits.
@@ -128,10 +131,13 @@ pub struct MarkdownFixRecord {
     pub line: usize,
     /// One-based column number.
     pub column: usize,
-    /// Trailing whitespace characters before the fix.
+    /// Trailing whitespace characters before the fix, or zero for non-whitespace fixes.
     pub before_trailing_whitespace: usize,
-    /// Trailing whitespace characters after the run.
+    /// Trailing whitespace characters after the run, or zero for non-whitespace fixes.
     pub after_trailing_whitespace: usize,
+    /// Text planned or written by this fix when the operation inserts content.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub inserted_text: Option<String>,
 }
 
 /// Per-fix Markdown safe-fix status.

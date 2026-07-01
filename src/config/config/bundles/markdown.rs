@@ -228,6 +228,36 @@ impl MarkdownBundle {
         Ok(())
     }
 
+    pub(crate) fn validate_required_sections_semantics(&self, context: &str) -> Result<(), String> {
+        let Some(required_sections) = &self.required_sections else {
+            return Ok(());
+        };
+        let mut seen = std::collections::HashSet::new();
+        for (index, section) in required_sections.iter().enumerate() {
+            if section.trim().is_empty() {
+                return Err(format!(
+                    "{context}.required_sections[{index}]: heading text cannot be empty"
+                ));
+            }
+            if section.trim() != section || section.contains('\n') || section.contains('\r') {
+                return Err(format!(
+                    "{context}.required_sections[{index}]: heading text must be a single trimmed line"
+                ));
+            }
+            if section.starts_with('#') || section.ends_with('#') {
+                return Err(format!(
+                    "{context}.required_sections[{index}]: heading text must not include Markdown heading markers"
+                ));
+            }
+            if !seen.insert(section.as_str()) {
+                return Err(format!(
+                    "{context}.required_sections[{index}]: duplicate heading text '{section}'"
+                ));
+            }
+        }
+        Ok(())
+    }
+
     pub(crate) fn validate_rule_config_semantics(&self, context: &str) -> Result<(), String> {
         let Some(rules) = &self.rules else {
             return Ok(());

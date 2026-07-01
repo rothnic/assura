@@ -106,6 +106,11 @@ spaces or tabs. `assura fix markdown --dry-run` previews this safe whitespace
 class, and `assura fix markdown --apply` removes it for configured Markdown
 scopes.
 
+Set `required_sections` to require specific headings. `assura fix markdown
+--rule required-sections --dry-run` previews deterministic missing-heading
+insertions, and `--apply` appends the missing headings for configured Markdown
+scopes.
+
 Set `check_links: true` to validate local relative Markdown links to files,
 Markdown heading anchors, and GitHub-style line or line-range anchors such as
 `#L12` and `#L12-L34`.

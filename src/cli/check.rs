@@ -37,6 +37,8 @@ mod markdown;
 mod markdown_fix;
 #[cfg(feature = "yaml-config")]
 mod markdown_fix_report;
+#[cfg(feature = "yaml-config")]
+mod markdown_required_sections_fix;
 mod module_topology;
 mod patterns;
 #[cfg(feature = "yaml-config")]

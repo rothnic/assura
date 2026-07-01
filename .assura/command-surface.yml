@@ -116,7 +116,7 @@ commands:
         aliases: ["-h"]
       --rule:
         takes_value: true
-        values: ["trailing-spaces"]
+        values: ["trailing-spaces", "required-sections"]
       --dry-run: {}
       --apply: {}
       --format:
