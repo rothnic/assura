@@ -1,4 +1,5 @@
 use super::code_symbols::{CodeProviderEvidence, CodeSymbol, SymbolRef};
+use super::markdown_links::MarkdownLink;
 use crate::stable_hash::stable_hash;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
@@ -375,6 +376,8 @@ pub enum ProjectFact {
     MarkdownDocument(MarkdownDocument),
     /// Markdown heading section.
     MarkdownSection(MarkdownSection),
+    /// Markdown-authored local link.
+    MarkdownLink(MarkdownLink),
     /// Typed content runtime instance.
     ModelInstance(ModelInstance),
     /// Validation diagnostic.
@@ -402,6 +405,7 @@ impl ProjectFact {
             Self::Resource(fact) => &fact.id,
             Self::MarkdownDocument(fact) => &fact.id,
             Self::MarkdownSection(fact) => &fact.id,
+            Self::MarkdownLink(fact) => &fact.id,
             Self::ModelInstance(fact) => &fact.id,
             Self::Diagnostic(fact) => &fact.id,
             Self::SafeFix(fact) => &fact.id,
@@ -422,6 +426,7 @@ impl ProjectFact {
             Self::Resource(fact) => &fact.generation,
             Self::MarkdownDocument(fact) => &fact.generation,
             Self::MarkdownSection(fact) => &fact.generation,
+            Self::MarkdownLink(fact) => &fact.generation,
             Self::ModelInstance(fact) => &fact.generation,
             Self::Diagnostic(fact) => &fact.generation,
             Self::SafeFix(fact) => &fact.generation,

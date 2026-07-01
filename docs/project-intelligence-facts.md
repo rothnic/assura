@@ -17,8 +17,9 @@ configuration:
 - `ModelDefinition`, `FieldDefinition`, `RelationshipDefinition`, and
   `PathScope` come from content runtime configuration and runtime schema
   artifacts.
-- `Resource`, `MarkdownDocument`, `MarkdownSection`, and `ModelInstance` come
-  from repository files loaded by content runtime adapters.
+- `Resource`, `MarkdownDocument`, `MarkdownSection`, `MarkdownLink`, and
+  `ModelInstance` come from repository files or Markdown documents loaded by
+  Assura ingestion paths.
 - `CodeSymbol` and `CodeProviderEvidence` are optional code-intelligence facts
   from a native baseline or provider source. Core validation does not require
   code intelligence.
@@ -36,6 +37,12 @@ Derived facts are computed from source facts or validation output:
 - `SearchChunk`, `EmbeddingRecord`, and `SymbolRef` prepare search, semantic,
   and code-intelligence layers without making those providers required.
   `SymbolRef` can remain unresolved when a provider is missing or ambiguous.
+
+`MarkdownLink` records source path, line, column, raw target, normalized
+repository-relative target path, optional heading or line anchor details,
+target existence at ingest time, and the related `markdown_link_*` validation
+rule ID. This gives the later reference graph a stable outbound-edge source
+without re-parsing Markdown independently.
 
 ## Code Symbol Evidence
 

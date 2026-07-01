@@ -9,6 +9,7 @@
 pub mod error;
 pub mod frontmatter;
 pub mod headings;
+pub mod links;
 pub mod parser;
 pub mod schema;
 pub mod template;

@@ -6,11 +6,14 @@
 mod code_symbols;
 mod ingest;
 mod ingest_helpers;
+mod markdown_link_ingest;
+mod markdown_links;
 mod set;
 mod types;
 
 pub use code_symbols::{CodeProviderEvidence, CodeSymbol, SymbolRef};
 pub use ingest::FactIngestor;
+pub use markdown_links::MarkdownLink;
 pub use set::{model_definition_id, model_instance_id, resource_id, FactSet};
 pub use types::{
     Diagnostic, EdgeId, EmbeddingRecord, FactGeneration, FactId, FactOrigin, FieldDefinition,

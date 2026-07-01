@@ -130,6 +130,7 @@ pub(super) fn fact_path(context: &QueryContext, fact: &ProjectFact) -> Option<Pa
             .map(|resource| resource.path.clone()),
         ProjectFact::MarkdownDocument(document) => Some(document.path.clone()),
         ProjectFact::MarkdownSection(section) => document_path(context, &section.document_id),
+        ProjectFact::MarkdownLink(link) => Some(link.source_path.clone()),
         ProjectFact::Diagnostic(diagnostic) => diagnostic
             .location
             .as_ref()
@@ -147,6 +148,7 @@ pub(super) fn fact_kind(fact: &ProjectFact) -> &'static str {
         ProjectFact::Resource(_) => "resource",
         ProjectFact::MarkdownDocument(_) => "markdown_document",
         ProjectFact::MarkdownSection(_) => "markdown_section",
+        ProjectFact::MarkdownLink(_) => "markdown_link",
         ProjectFact::ModelInstance(_) => "model_instance",
         ProjectFact::Diagnostic(_) => "diagnostic",
         ProjectFact::SafeFix(_) => "safe_fix",

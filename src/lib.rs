@@ -55,7 +55,7 @@ pub use intelligence::{
     AgentSurfaceSummary, CodeProviderEvidence, CodeSymbol, Diagnostic, EdgeId, EmbeddingRecord,
     FactGeneration, FactId, FactIngestor, FactOrigin, FactSet, FactStoreStats, FieldDefinition,
     GraphBuilder, GraphError, GraphPersistence, GraphQuery, GraphResult, InMemoryFactStore,
-    IntelligenceGraph, MarkdownDocument as ProjectMarkdownDocument, MarkdownSection,
+    IntelligenceGraph, MarkdownDocument as ProjectMarkdownDocument, MarkdownLink, MarkdownSection,
     ModelDefinition, ModelInstance, Node, NodeId, NodeMetadata, NodeType, PathScope, ProjectEdge,
     ProjectFact, ProjectIntelligenceAgentContext, Relationship, RelationshipDefinition,
     RelationshipEdge, Resource, SafeFix, SearchChunk, SemanticSearchHit, SourceLocation, SymbolRef,

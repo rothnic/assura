@@ -229,6 +229,7 @@ fn semantic_fact_path(
                 }
             })
         }
+        ProjectFact::MarkdownLink(link) => Some(link.source_path.clone()),
         ProjectFact::Diagnostic(diagnostic) => diagnostic
             .location
             .as_ref()

@@ -97,6 +97,7 @@ fn fact_kind(fact: &ProjectFact) -> &'static str {
         ProjectFact::Resource(_) => "Resource",
         ProjectFact::MarkdownDocument(_) => "MarkdownDocument",
         ProjectFact::MarkdownSection(_) => "MarkdownSection",
+        ProjectFact::MarkdownLink(_) => "MarkdownLink",
         ProjectFact::ModelInstance(_) => "ModelInstance",
         ProjectFact::Diagnostic(_) => "Diagnostic",
         ProjectFact::SafeFix(_) => "SafeFix",
