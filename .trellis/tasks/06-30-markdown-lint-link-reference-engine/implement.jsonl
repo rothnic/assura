@@ -1,5 +1,0 @@
-{"file": ".trellis/spec/assura/index.md", "reason": "Canonical Assura sources and current direction."}
-{"file": ".trellis/spec/assura/config-notation.md", "reason": "Markdown outline notation, frontmatter ownership, and code-to-doc relation direction."}
-{"file": ".trellis/spec/assura/roadmap.md", "reason": "Active iteration routing and next action."}
-{"file": "docs/analysis/2026-06-18-markdown-tooling-evaluation.md", "reason": "Prior Markdown tooling evidence and current partial implementation boundary."}
-{"file": "docs/goals/assura-rust-markdown-validation-and-fixing.md", "reason": "Completed Markdown validation and safe-fix baseline this goal extends."}

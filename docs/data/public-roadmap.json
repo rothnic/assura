@@ -1,6 +1,6 @@
 {
   "schema_version": "assura.public-roadmap.v1",
-  "updated": "2026-06-30",
+  "updated": "2026-07-01",
   "source": ".trellis/spec/assura/roadmap.md",
   "groups": [
     {
@@ -54,6 +54,12 @@
           "summary": "Model frontmatter collections and produce bounded context packs.",
           "detail_path": "docs/goals/assura-beta-content-collections-querying.md",
           "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-beta-content-collections-querying.md"
+        },
+        {
+          "label": "Markdown Quality",
+          "summary": "Validate Markdown links, headings, suppressions, safe fixes, and common lint checks.",
+          "detail_path": "docs/goals/assura-markdown-lint-link-reference-engine.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-markdown-lint-link-reference-engine.md"
         }
       ]
     },
@@ -68,10 +74,10 @@
           "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-beta-code-agnostic-capabilities-program.md"
         },
         {
-          "label": "Markdown Quality",
-          "summary": "Expand Markdown linting, heading validation, suppressions, and safe fixes.",
-          "detail_path": "docs/goals/assura-markdown-lint-link-reference-engine.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-markdown-lint-link-reference-engine.md"
+          "label": "Reference Graph",
+          "summary": "Validate repository-internal links and source-to-doc references.",
+          "detail_path": "docs/goals/assura-code-doc-reference-validation.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-code-doc-reference-validation.md"
         }
       ]
     },
@@ -79,12 +85,6 @@
       "status": "next",
       "title": "Next",
       "items": [
-        {
-          "label": "Reference Graph",
-          "summary": "Validate repository-internal links and source-to-doc references.",
-          "detail_path": "docs/goals/assura-code-doc-reference-validation.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-code-doc-reference-validation.md"
-        },
         {
           "label": "Daemon Core",
           "summary": "Provide warm affected-path feedback that matches one-shot truth.",

@@ -40,13 +40,13 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 Beta Code-Agnostic Capabilities is active.
 
 Owning task:
-`.trellis/tasks/06-30-markdown-lint-link-reference-engine`.
+`.trellis/tasks/06-30-07-01-reference-graph-validation`.
 
 Current branch:
 `codex/markdown-reference-master-goal`.
 
 Current recommended goal:
-`docs/goals/assura-beta-code-agnostic-capabilities-program.md`.
+`docs/goals/assura-code-doc-reference-validation.md`.
 
 Public roadmap artifact:
 `docs/data/public-roadmap.json`.
@@ -174,12 +174,13 @@ are optional later surfaces over the same contracts.
 ## Recommended Next Action
 
 Run the workflow gate, then continue
-`.trellis/tasks/06-30-markdown-lint-link-reference-engine`. The immediate path
-is to execute the beta master goal in
-`docs/goals/assura-beta-code-agnostic-capabilities-program.md`, starting with
-the first incomplete epic in its Ten Major Iterations table. Do not reopen
-completed Project Intelligence Runtime or lower-level Usability successors
-unless new evidence names a narrower drift case.
+`.trellis/tasks/06-30-07-01-reference-graph-validation`. The immediate path is
+to execute
+`docs/goals/assura-code-doc-reference-validation.md` as Epic 5 of the beta
+program. Start with conservative repository-reference facts and affected-set
+proof that reuse Markdown link facts and Project Intelligence contracts. Do not
+reopen completed Markdown Quality work unless new evidence names a narrower
+drift case.
 
 ## Roadmap Rules
 

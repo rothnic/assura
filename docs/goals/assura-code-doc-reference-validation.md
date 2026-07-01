@@ -27,6 +27,21 @@ own repository-wide inbound reference graph behavior. Beta is not complete
 until code-to-doc and doc-to-code references are discoverable, validated, and
 useful for affected-file feedback.
 
+## User Certainty Bar
+
+A user should be able to ask Assura why a doc, code file, heading, or line
+target is still referenced before moving or deleting it. The answer should be
+local, deterministic, and bounded enough for agents and daemon sessions:
+
+- show which files contain recognizable references to the target;
+- show the source span and target path or anchor for each edge;
+- distinguish Markdown-authored links from lower-confidence comment or string
+  references;
+- report broken repository-internal references without requiring an LSP or
+  remote service;
+- keep ambiguous references visible as context instead of silently rewriting
+  them.
+
 ## Scope
 
 - Consume Markdown link facts emitted by the Markdown lint/link goal.
@@ -80,3 +95,9 @@ git diff --check
 Block if code/comment references can rot silently, inbound edges are missing,
 diagnostics lack source/target spans, remote services become required, or
 ambiguous references are rewritten without explicit user action.
+
+## Progress Log
+
+| Date | Update | Evidence |
+| --- | --- | --- |
+| 2026-07-01 | Revalidated this goal after completing Markdown Quality. The goal remains valid: Markdown-authored links now produce stable `MarkdownLink` facts, while repository-wide inbound edges, code/comment/docstring reference discovery, changed-target affected sets, and bounded reference context remain incomplete. | [assura-markdown-lint-link-reference-engine.md](./assura-markdown-lint-link-reference-engine.md); [project-intelligence-facts.md](../project-intelligence-facts.md); `git status --short --branch`; `python3 ./.trellis/scripts/workflow_gate.py --platform codex`. |

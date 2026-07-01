@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/assura/index.md", "reason": "Canonical Assura project constraints and current roadmap direction for implementation."}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Reference graph work should extend existing fact and validation paths rather than duplicating parsers."}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Reference facts flow across validation, Project Intelligence, future daemon, and agent contexts."}
+{"file": "docs/goals/assura-code-doc-reference-validation.md", "reason": "Primary Epic 5 objective, scope, definition of done, and reviewer criteria."}
+{"file": "docs/project-intelligence-facts.md", "reason": "Durable fact contract, including existing MarkdownLink behavior and replacement semantics."}
