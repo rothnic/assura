@@ -60,6 +60,12 @@
           "summary": "Validate Markdown links, headings, suppressions, safe fixes, and common lint checks.",
           "detail_path": "docs/goals/assura-markdown-lint-link-reference-engine.md",
           "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-markdown-lint-link-reference-engine.md"
+        },
+        {
+          "label": "Reference Graph",
+          "summary": "Validate repository-internal links and source-to-doc references.",
+          "detail_path": "docs/goals/assura-code-doc-reference-validation.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-code-doc-reference-validation.md"
         }
       ]
     },
@@ -74,10 +80,10 @@
           "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-beta-code-agnostic-capabilities-program.md"
         },
         {
-          "label": "Reference Graph",
-          "summary": "Validate repository-internal links and source-to-doc references.",
-          "detail_path": "docs/goals/assura-code-doc-reference-validation.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-code-doc-reference-validation.md"
+          "label": "Daemon Core",
+          "summary": "Provide warm affected-path feedback that matches one-shot truth.",
+          "detail_path": "docs/goals/assura-reference-daemon-readiness.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-reference-daemon-readiness.md"
         }
       ]
     },
@@ -85,12 +91,6 @@
       "status": "next",
       "title": "Next",
       "items": [
-        {
-          "label": "Daemon Core",
-          "summary": "Provide warm affected-path feedback that matches one-shot truth.",
-          "detail_path": "docs/goals/assura-reference-daemon-readiness.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-reference-daemon-readiness.md"
-        },
         {
           "label": "Daemon CLI",
           "summary": "Share start, stop, status, doctor, logs, and fallback commands.",
