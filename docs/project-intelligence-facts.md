@@ -44,6 +44,13 @@ target existence at ingest time, and the related `markdown_link_*` validation
 rule ID. This gives the later reference graph a stable outbound-edge source
 without re-parsing Markdown independently.
 
+`RepositoryReference` edges derive inbound and outbound repository-reference
+context from source facts such as `MarkdownLink`. They carry source path/span,
+target path, optional target anchor or line range, target existence, related
+rule ID, reference kind, and confidence. Resolved edges point at `Resource`
+facts for target paths so callers can ask which sources still refer to a file
+before moving or deleting it.
+
 ## Code Symbol Evidence
 
 Modeled collections can declare code-symbol reference fields in

@@ -338,6 +338,17 @@ fn expand(
                     push_related(context, &mut related, target_id, "outgoing_relation", limit);
                 }
             }
+            ProjectEdge::RepositoryReference(edge) => {
+                if let Some(target_id) = &edge.target_id {
+                    push_related(
+                        context,
+                        &mut related,
+                        target_id,
+                        "repository_reference",
+                        limit,
+                    );
+                }
+            }
             ProjectEdge::SymbolRef(edge) => {
                 related.push(RelatedFactOutput {
                     id: edge.id.to_string(),

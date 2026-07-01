@@ -7,7 +7,9 @@ use crate::cli::ExitCode;
 use crate::config::loader::ConfigLoader;
 use crate::content_repository::{ContentFinding, ContentRepository, RepositoryModel};
 use crate::intelligence::{FactIngestor, InMemoryFactStore};
-use std::path::PathBuf;
+use crate::markdown_links::is_markdown_file;
+use std::fs;
+use std::path::{Path, PathBuf};
 
 #[derive(Debug)]
 pub(super) struct QueryContext {
@@ -69,6 +71,7 @@ impl QueryContext {
 
         let mut ingestor = FactIngestor::new("content-query");
         ingestor.ingest_repository_model(&model);
+        ingest_markdown_reference_facts(&mut ingestor, &project_root);
         if code_symbols_enabled {
             ingestor.ingest_local_rust_code_symbols(&project_root);
         }
@@ -95,6 +98,58 @@ impl QueryContext {
             store,
         })
     }
+}
+
+fn ingest_markdown_reference_facts(ingestor: &mut FactIngestor, project_root: &Path) {
+    for path in markdown_reference_files(project_root) {
+        let Ok(content) = fs::read_to_string(&path) else {
+            continue;
+        };
+        let Ok(rel_path) = path.strip_prefix(project_root) else {
+            continue;
+        };
+        ingestor.ingest_markdown_links(project_root, rel_path, &content);
+    }
+}
+
+fn markdown_reference_files(project_root: &Path) -> Vec<PathBuf> {
+    let mut files = Vec::new();
+    collect_markdown_reference_files(project_root, project_root, &mut files);
+    files.sort();
+    files
+}
+
+fn collect_markdown_reference_files(root: &Path, dir: &Path, files: &mut Vec<PathBuf>) {
+    let Ok(entries) = fs::read_dir(dir) else {
+        return;
+    };
+    for entry in entries.flatten() {
+        let Ok(file_type) = entry.file_type() else {
+            continue;
+        };
+        let path = entry.path();
+        let Ok(rel_path) = path.strip_prefix(root) else {
+            continue;
+        };
+        if ignored_reference_scan_path(rel_path) {
+            continue;
+        }
+        if file_type.is_dir() {
+            collect_markdown_reference_files(root, &path, files);
+        } else if file_type.is_file() && is_markdown_file(&path) {
+            files.push(path);
+        }
+    }
+}
+
+fn ignored_reference_scan_path(path: &Path) -> bool {
+    path.components().any(|component| {
+        let value = component.as_os_str().to_string_lossy();
+        matches!(
+            value.as_ref(),
+            ".git" | "target" | "node_modules" | "dist" | "coverage"
+        )
+    })
 }
 
 fn ingest_safe_fix_structure_report(ingestor: &mut FactIngestor, mut report: StructureCheckReport) {

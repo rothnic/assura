@@ -43,6 +43,7 @@ fn project_intelligence_ingests_content_runtime_facts_deterministically() {
                 && edge.target_id.is_some()
                 && edge.target_instance_id == "spec-portable-structure"
         }
+        ProjectEdge::RepositoryReference(_) => false,
         ProjectEdge::SymbolRef(_) => false,
     }));
 }

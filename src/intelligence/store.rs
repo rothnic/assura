@@ -6,7 +6,7 @@
 
 use super::facts::{
     CodeSymbol, EdgeId, EmbeddingRecord, FactId, FactSet, PathScope, ProjectEdge, ProjectFact,
-    RelationshipEdge, SearchChunk, SymbolRef,
+    RelationshipEdge, RepositoryReferenceEdge, SearchChunk, SymbolRef,
 };
 use super::semantic::{cosine_similarity, semantic_text_hash};
 use glob::Pattern;
@@ -21,6 +21,7 @@ pub struct InMemoryFactStore {
     facts_by_id: BTreeMap<FactId, Vec<usize>>,
     edges_by_id: BTreeMap<EdgeId, Vec<usize>>,
     edges_by_source: BTreeMap<FactId, Vec<usize>>,
+    repository_references_by_target: BTreeMap<FactId, Vec<usize>>,
     missing_relationship_edges: Vec<usize>,
     search_chunks: Vec<SearchChunk>,
     embedding_records: Vec<EmbeddingRecord>,
@@ -87,6 +88,19 @@ impl InMemoryFactStore {
             .iter()
             .filter_map(|index| match &self.facts.edges[*index] {
                 ProjectEdge::Relationship(edge) => Some(edge),
+                _ => None,
+            })
+            .collect()
+    }
+
+    /// Return repository-reference edges that target the requested fact.
+    pub fn repository_references_to(&self, target_id: &FactId) -> Vec<&RepositoryReferenceEdge> {
+        self.repository_references_by_target
+            .get(target_id)
+            .into_iter()
+            .flat_map(|indexes| indexes.iter())
+            .filter_map(|index| match &self.facts.edges[*index] {
+                ProjectEdge::RepositoryReference(edge) => Some(edge),
                 _ => None,
             })
             .collect()
@@ -187,6 +201,7 @@ impl InMemoryFactStore {
             indexed_fact_ids: self.facts_by_id.len(),
             indexed_edge_ids: self.edges_by_id.len(),
             source_index_entries: self.edges_by_source.len(),
+            repository_reference_target_count: self.repository_references_by_target.len(),
             search_chunk_count: self.search_chunks.len(),
             embedding_record_count: self.embedding_records.len(),
             path_scope_count: self.path_scopes.len(),
@@ -200,6 +215,7 @@ impl InMemoryFactStore {
         self.facts_by_id.clear();
         self.edges_by_id.clear();
         self.edges_by_source.clear();
+        self.repository_references_by_target.clear();
         self.missing_relationship_edges.clear();
         self.search_chunks.clear();
         self.embedding_records.clear();
@@ -234,6 +250,18 @@ impl InMemoryFactStore {
                         .push(index);
                     if self.relationship_target_missing(edge) {
                         self.missing_relationship_edges.push(index);
+                    }
+                }
+                ProjectEdge::RepositoryReference(edge) => {
+                    self.edges_by_source
+                        .entry(edge.source_id.clone())
+                        .or_default()
+                        .push(index);
+                    if let Some(target_id) = &edge.target_id {
+                        self.repository_references_by_target
+                            .entry(target_id.clone())
+                            .or_default()
+                            .push(index);
                     }
                 }
                 ProjectEdge::SymbolRef(edge) => {
@@ -297,6 +325,8 @@ pub struct FactStoreStats {
     pub indexed_edge_ids: usize,
     /// Number of source IDs with outbound edges.
     pub source_index_entries: usize,
+    /// Number of target IDs with inbound repository-reference edges.
+    pub repository_reference_target_count: usize,
     /// Number of searchable text chunks indexed.
     pub search_chunk_count: usize,
     /// Number of embedding records indexed.

@@ -62,11 +62,12 @@ impl TextRender for ProjectIntelligenceAgentContext {
             self.schema
         )];
         lines.push(format!(
-            "models: {}; diagnostics: {}; safe fixes: {}; relationships: {}; symbol refs: {}",
+            "models: {}; diagnostics: {}; safe fixes: {}; relationships: {}; repository refs: {}; symbol refs: {}",
             self.summary.model_instances,
             self.summary.diagnostics,
             self.summary.safe_fixes,
             self.summary.relationship_edges,
+            self.summary.repository_reference_edges,
             self.summary.symbol_refs
         ));
         for capability in &self.capabilities {

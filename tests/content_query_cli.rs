@@ -282,6 +282,11 @@ fn content_query_reports_generic_agent_context() {
         "assura.project-intelligence.agent-context.v1"
     );
     assert_eq!(context["summary"]["model_instances"], 1);
+    assert_eq!(context["summary"]["repository_reference_edges"], 1);
+    assert_eq!(
+        context["summary"]["unresolved_repository_reference_edges"],
+        0
+    );
     assert_eq!(context["summary"]["symbol_refs"], 2);
     assert_eq!(context["summary"]["resolved_symbol_refs"], 1);
     let capabilities = context["capabilities"]

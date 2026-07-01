@@ -1,7 +1,10 @@
 use super::ingest::FactIngestor;
 use super::markdown_links::MarkdownLink as MarkdownLinkFact;
+use super::repository_references::RepositoryReferenceEdge;
 use super::set::{normalize_path, resource_id};
-use super::types::{FactId, FactOrigin, MarkdownDocument, ProjectFact, Resource};
+use super::types::{
+    EdgeId, FactId, FactOrigin, MarkdownDocument, ProjectEdge, ProjectFact, Resource,
+};
 use crate::markdown::links::{
     is_markdown_file, markdown_links, parse_line_anchor, parse_markdown_link_target,
 };
@@ -26,9 +29,7 @@ impl FactIngestor {
                 continue;
             };
             let target_exists = project_root.join(&target.path).is_file();
-            if target_exists {
-                self.upsert_markdown_link_resource(&target.path);
-            }
+            let target_id = target_exists.then(|| self.upsert_markdown_link_resource(&target.path));
             let (target_line_start, target_line_end) = target
                 .anchor
                 .as_deref()
@@ -36,19 +37,20 @@ impl FactIngestor {
                 .map(|(start, end)| (Some(start), Some(end)))
                 .unwrap_or((None, None));
             let rule = markdown_link_rule(&target.path, target.anchor.as_deref(), target_exists);
+            let target_path = target.path;
+            let target_anchor = target.anchor;
 
+            let link_key = format!(
+                "{}:{}:{}:{}",
+                normalize_path(source_rel),
+                link.line_number,
+                link.column_number,
+                link.target
+            );
+            let link_id = FactId::from_parts("markdown_link", &link_key);
             self.facts
                 .upsert_fact(ProjectFact::MarkdownLink(MarkdownLinkFact {
-                    id: FactId::from_parts(
-                        "markdown_link",
-                        &format!(
-                            "{}:{}:{}:{}",
-                            normalize_path(source_rel),
-                            link.line_number,
-                            link.column_number,
-                            link.target
-                        ),
-                    ),
+                    id: link_id.clone(),
                     generation: self.generation.clone(),
                     origin: FactOrigin::Derived,
                     document_id: document_id.clone(),
@@ -56,12 +58,31 @@ impl FactIngestor {
                     source_line: link.line_number,
                     source_column: link.column_number,
                     raw_target: link.target,
-                    target_path: target.path,
-                    target_anchor: target.anchor,
+                    target_path: target_path.clone(),
+                    target_anchor: target_anchor.clone(),
                     target_line_start,
                     target_line_end,
                     target_exists,
+                    rule: rule.clone(),
+                }));
+            self.facts
+                .upsert_edge(ProjectEdge::RepositoryReference(RepositoryReferenceEdge {
+                    id: EdgeId::from_parts("repository_reference", &link_key),
+                    generation: self.generation.clone(),
+                    origin: FactOrigin::Derived,
+                    source_id: link_id,
+                    target_id,
+                    source_path: source_rel.to_path_buf(),
+                    source_line: Some(link.line_number),
+                    source_column: Some(link.column_number),
+                    target_path,
+                    target_anchor,
+                    target_line_start,
+                    target_line_end,
+                    target_exists,
+                    reference_kind: "markdown_link".to_string(),
                     rule,
+                    confidence: "exact".to_string(),
                 }));
         }
     }

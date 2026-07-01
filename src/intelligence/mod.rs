@@ -18,8 +18,8 @@ pub use facts::{
     model_instance_id, resource_id, CodeProviderEvidence, CodeSymbol, Diagnostic, EdgeId,
     EmbeddingRecord, FactGeneration, FactId, FactIngestor, FactOrigin, FactSet, FieldDefinition,
     MarkdownDocument, MarkdownLink, MarkdownSection, ModelDefinition, ModelInstance, PathScope,
-    ProjectEdge, ProjectFact, RelationshipDefinition, RelationshipEdge, Resource, SafeFix,
-    SearchChunk, SourceLocation, SymbolRef,
+    ProjectEdge, ProjectFact, RelationshipDefinition, RelationshipEdge, RepositoryReferenceEdge,
+    Resource, SafeFix, SearchChunk, SourceLocation, SymbolRef,
 };
 pub use graph::{GraphBuilder, GraphStats, IntelligenceGraph};
 pub use node::{DirectoryNode, Edge, FileNode, Node, NodeId, NodeMetadata, NodeType, Relationship};
