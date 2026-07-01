@@ -207,6 +207,31 @@ low-risk structural lint checks that fit the existing lightweight scanner:
 
 These rules share the existing Markdown severity and reasoned suppression
 contract. They do not claim full markdownlint compatibility and do not replace
-the future `rumdl` or `mkdlint` decision. Before this Markdown epic can close,
-Assura still needs release-mode timing evidence for the current Markdown corpus
-with common lints enabled.
+the future `rumdl` or `mkdlint` decision. The timing below records the current
+release-mode overhead for the copied docs corpus with common lints enabled.
+
+### Common-Lint Timing Evidence
+
+Release-mode timing used a temporary copy of this repository's `docs/` corpus
+with 175 Markdown files. The off fixture configured `markdown.lint_common:
+false`; the on fixture configured `markdown.lint_common: true`. The enabled
+fixture reported 25 findings in the copied corpus, so the timing includes
+diagnostic collection and JSON rendering for 16 duplicate-heading findings, 8
+heading-marker-spacing findings, and 1 multiple-blank-line finding.
+
+Both commands used `target/release/assura check --format json <fixture>`,
+measured with `hyperfine 1.20.0`, 5 warmups, and 30 runs.
+
+| Scenario | Mean | Range | Interpretation |
+| --- | ---: | ---: | --- |
+| Markdown scope configured, common lint off | 14.0 ms ± 1.7 ms | 11.6-18.6 ms | Baseline configured Markdown traversal over copied docs. |
+| Markdown scope configured, common lint on | 23.2 ms ± 1.5 ms | 21.0-28.0 ms | Adds about 9.2 ms mean while reporting 25 findings over the copied corpus. |
+
+Evidence command shape:
+
+```bash
+cargo build --release --quiet
+hyperfine --warmup 5 --runs 30 --ignore-failure \
+  "target/release/assura check --format json $bench_root/off" \
+  "target/release/assura check --format json $bench_root/on"
+```
