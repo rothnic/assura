@@ -39,7 +39,8 @@ Use narrow checks while iterating:
 
 ```bash
 cargo fmt --check
-cargo test daemon --quiet
+cargo test --test daemon_core_tests --quiet
+cargo test --test daemon_cli_tests --quiet
 cargo test --test repository_reference_graph_tests --quiet
 cargo run --quiet -- check --format json .
 git diff --check
@@ -58,3 +59,9 @@ Complex implementation slices require independent review. Ask reviewers to
 focus on daemon state freshness, parity with one-shot truth, bounded affected
 context, explicit degradation, and whether editor/agent callers can consume the
 result without new per-agent contracts.
+
+## Completion
+
+Completed on 2026-07-01 by commit `2486172`. Closure review found no blockers
+or high-risk gaps. The next task should execute Epic 7:
+`docs/goals/assura-daemon-management-cli.md`.
