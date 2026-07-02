@@ -101,10 +101,10 @@
     },
     {
       "id": "vscode-extension",
-      "label": "VS Code extension",
-      "status": "experimental",
-      "first_release": "v0.2.0",
-      "detail_path": "docs/goals/assura-vscode-daemon-integration.md"
+      "label": "VS Code beta local package",
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-vscode-supported-extension.md"
     },
     {
       "id": "agent-daemon-nudges",

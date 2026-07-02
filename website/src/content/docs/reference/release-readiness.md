@@ -7,8 +7,9 @@ Assura's pre-1.0 release surface is intentionally narrow. The supported path is
 an installable CLI that validates repository structure from `.assura/config.yml`
 and reports results through stable local formats. Project Intelligence is also
 supported as a local, source-control-friendly workflow for modeled content,
-agent handoffs, editor wrappers, and safe-fix previews. It does not require MCP,
-remote access, hosted services, or editor marketplace packaging.
+agent handoffs, editor wrappers, a beta local VS Code package, and safe-fix
+previews. It does not require MCP, remote access, hosted services, or editor
+marketplace publication.
 
 ## Supported Commands
 
@@ -33,6 +34,7 @@ remote access, hosted services, or editor marketplace packaging.
 | `assura content references` | Supported repository-reference graph query. |
 | `assura content session` | Supported local JSON-line project-intelligence session. |
 | `assura editor session` | Supported local JSON-line editor protocol with LSP-shaped methods. |
+| `integrations/editors/vscode` | Supported beta local VS Code package over shared Assura CLI, daemon, and editor-session contracts. |
 | `.assura/models/**` | Supported layout for project-intelligence model artifacts stored under `.assura/`. |
 | `assura watch` | Experimental until watch-mode tests and docs are added. |
 
@@ -71,8 +73,10 @@ command-surface contracts. Projects may still keep runtime schema artifacts
 outside `.assura/`, such as `schemas/**`, when that fits their repository
 layout.
 
-`assura editor session` is LSP-shaped but is not a full LSP server. Full LSP server
-framing and editor marketplace packages are roadmap-only; hosted language
+`assura editor session` is LSP-shaped but is not a full LSP server.
+`integrations/editors/vscode` is the supported beta local VS Code package and
+uses the same shared CLI, daemon, and editor-session contracts. Full LSP server
+framing and editor marketplace publication are roadmap-only; hosted language
 servers are unsupported, and required MCP adapters or remote Project
 Intelligence providers are unsupported roadmap-only surfaces for this release.
 

@@ -1,6 +1,9 @@
 "use strict";
 
 const assert = require("node:assert/strict");
+const { existsSync, readFileSync, rmSync } = require("node:fs");
+const { join } = require("node:path");
+const { spawnSync } = require("node:child_process");
 const test = require("node:test");
 const {
   checkArgs,
@@ -18,6 +21,8 @@ const {
   workspaceRelativeFilePath,
   workspacePathFromFolders,
 } = require("../src/assura-client");
+
+const packageRoot = join(__dirname, "..");
 
 test("daemon commands use shared JSON contracts", () => {
   assert.deepEqual(daemonArgs("status", "/repo"), [
@@ -95,6 +100,45 @@ test("diagnostic commands use one-shot fallback and safe-fix preview only", () =
     "json",
   ]);
   assert(!safeFixPreviewArgs("/repo").includes("--apply"));
+});
+
+test("package metadata declares supported beta local surface", () => {
+  const manifest = JSON.parse(
+    readFileSync(join(packageRoot, "package.json"), "utf8"),
+  );
+
+  assert.equal(manifest.private, true);
+  assert.equal(manifest.version, "0.3.0-beta.0");
+  assert.equal(manifest.assura.support, "supported-beta-local");
+  assert.equal(manifest.assura.marketplace, false);
+  assert(manifest.assura.contracts.includes("assura check --format json"));
+  assert(manifest.assura.contracts.includes("assura editor session"));
+  assert(manifest.scripts.doctor);
+  assert(manifest.scripts.package);
+});
+
+test("doctor and package smoke commands are executable", () => {
+  const distDir = join(packageRoot, "dist");
+  rmSync(distDir, { recursive: true, force: true });
+
+  const doctor = spawnSync(process.execPath, ["scripts/doctor.js"], {
+    cwd: packageRoot,
+    encoding: "utf8",
+  });
+  assert.equal(doctor.status, 0, doctor.stderr || doctor.stdout);
+
+  const packaged = spawnSync(process.execPath, ["scripts/package-smoke.js"], {
+    cwd: packageRoot,
+    encoding: "utf8",
+  });
+  assert.equal(packaged.status, 0, packaged.stderr || packaged.stdout);
+
+  const packageManifest = join(distDir, "assura-vscode-package-manifest.json");
+  assert.equal(existsSync(packageManifest), true);
+  const payload = JSON.parse(readFileSync(packageManifest, "utf8"));
+  assert.equal(payload.schema, "assura.vscode.local-package.v1");
+  assert.equal(payload.marketplace, false);
+  assert(payload.files.includes("src/extension.js"));
 });
 
 test("non-zero Assura exits still return valid JSON payloads", () => {
@@ -191,6 +235,36 @@ test("structure report violations become bounded diagnostic entries", () => {
   assert.equal(diagnostics[0].code, "file_naming");
   assert.equal(diagnostics[0].severity, 0);
   assert.equal(diagnostics[0].source, "assura");
+});
+
+test("changed-document fallback diagnostics stay scoped to the changed path", () => {
+  const diagnostics = diagnosticEntries(
+    {
+      violations: [
+        {
+          path: "docs/other.md",
+          rule: "markdown_line_length",
+          severity: "low",
+          message: "Other file issue",
+        },
+        {
+          path: "docs/guide.md",
+          rule: "markdown_link_target",
+          severity: "low",
+          message: "Guide issue",
+        },
+      ],
+    },
+    {
+      workspacePath: "/repo",
+      changedPath: "docs/guide.md",
+      maxDiagnostics: 10,
+    },
+  );
+
+  assert.equal(diagnostics.length, 1);
+  assert.equal(diagnostics[0].path, "docs/guide.md");
+  assert.equal(diagnostics[0].code, "markdown_link_target");
 });
 
 test("workspace-relative paths are portable for daemon changed-path checks", () => {

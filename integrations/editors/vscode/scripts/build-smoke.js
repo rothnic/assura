@@ -25,6 +25,20 @@ for (const command of requiredCommands) {
   }
 }
 
+if (manifest.assura?.support !== "supported-beta-local") {
+  throw new Error("manifest must declare assura.support=supported-beta-local");
+}
+
+if (manifest.assura?.marketplace !== false) {
+  throw new Error("manifest must keep marketplace publication deferred");
+}
+
+for (const script of ["test", "build", "doctor", "package"]) {
+  if (!manifest.scripts?.[script]) {
+    throw new Error(`missing package script: ${script}`);
+  }
+}
+
 for (const file of ["src/assura-client.js", "src/extension.js"]) {
   const result = spawnSync(process.execPath, ["--check", file], {
     encoding: "utf8",

@@ -1,0 +1,5 @@
+{"file":"docs/goals/assura-vscode-supported-extension.md","reason":"review against stated DoD and blocking criteria"}
+{"file":"docs/goals/assura-vscode-daemon-integration.md","reason":"prior experimental VS Code integration evidence and known completed baseline"}
+{"file":"docs/support-policy.md","reason":"confirm support status does not overclaim marketplace or GA readiness"}
+{"file":"docs/compatibility-and-surface.md","reason":"confirm compatibility matrix matches implemented extension surface"}
+{"file":"docs/goals/assura-post-beta-capabilities-program.md","reason":"confirm child slice advances parent final use-case criteria"}
