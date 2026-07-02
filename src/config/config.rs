@@ -26,7 +26,7 @@ pub use crate::config::ls_compat::LsLintCompatibility;
 pub(crate) use bundles::{merge_markdown_rule_configs, MarkdownOutlineView};
 pub use bundles::{
     DirectoryBundle, ExistsValidation, FileBundle, MarkdownBundle, MarkdownOutlineEntry,
-    MarkdownOutlineNode, MarkdownRuleConfig, ResolvedFileBundle,
+    MarkdownOutlineNode, MarkdownRuleConfig, MarkdownlintCandidateConfig, ResolvedFileBundle,
 };
 pub use content::{
     ContentCodeSymbolConfig, ContentCollectionConfig, ContentModelConfig, ContentRelationConfig,

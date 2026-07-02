@@ -248,6 +248,9 @@ fn corrective_context_for_rule(rule: &str) -> &'static str {
         "markdown_frontmatter" => {
             "Add YAML frontmatter, or relax markdown.require_frontmatter for this scope. Use content runtime models and collections for typed frontmatter fields."
         }
+        "markdown_engine" => {
+            "Install or configure the optional Markdown candidate engine, or disable markdown.markdownlint_candidate for this scope."
+        }
         "markdown_heading_depth" => {
             "Promote deep headings or increase markdown.max_heading_depth when the deeper outline is intentional."
         }

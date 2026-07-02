@@ -141,7 +141,9 @@ safe-fix preview/apply, suppression/severity mapping, and performance evidence.
 ```bash
 cargo fmt --check
 cargo check -p xtask --quiet
+cargo test -p assura --lib rumdl_adapter --quiet
 cargo test --test markdown_engine_candidate_fixture_tests --quiet
+cargo test --test markdown_rumdl_adapter_tests --quiet
 cargo test --test markdown_link_reference_tests --quiet
 cargo test --test markdown_suppression_severity_tests --quiet
 cargo test --test markdown_required_section_fix_tests --quiet
@@ -189,3 +191,10 @@ structure validation.
   1.70 MSRV for now, prototype `rumdl` as an optional subprocess adapter, and
   defer any direct dependency or MSRV increase until adapter behavior and
   performance are proved.
+- 2026-07-02: Added the first optional `rumdl` subprocess adapter proof. The
+  adapter is explicitly opt-in through `markdown.markdownlint_candidate`, maps
+  supported `rumdl` diagnostics back to stable Assura `markdown_*` rule IDs,
+  reports adapter failures as `markdown_engine`, respects reasoned
+  suppressions and rule-owned severity, and runs candidates against an
+  isolated temporary Markdown copy so `assura check` cannot mutate source
+  files.

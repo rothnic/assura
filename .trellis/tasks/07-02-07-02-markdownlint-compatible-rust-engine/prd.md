@@ -115,7 +115,9 @@ verification package.
 ```bash
 cargo fmt --check
 cargo check -p xtask --quiet
+cargo test -p assura --lib rumdl_adapter --quiet
 cargo test --test markdown_engine_candidate_fixture_tests --quiet
+cargo test --test markdown_rumdl_adapter_tests --quiet
 cargo test --test markdown_link_reference_tests --quiet
 cargo test --test markdown_suppression_severity_tests --quiet
 cargo test --test markdown_required_section_fix_tests --quiet

@@ -446,6 +446,7 @@ impl From<MarkdownBundle> for PortableMarkdownBundle {
             outline: bundle.outline,
             lint_trailing_spaces: bundle.lint_trailing_spaces,
             lint_common: bundle.lint_common,
+            markdownlint_candidate: bundle.markdownlint_candidate,
             rules: bundle.rules,
         }
     }
@@ -462,6 +463,7 @@ impl From<PortableMarkdownBundle> for MarkdownBundle {
             outline: bundle.outline,
             lint_trailing_spaces: bundle.lint_trailing_spaces,
             lint_common: bundle.lint_common,
+            markdownlint_candidate: bundle.markdownlint_candidate,
             rules: bundle.rules,
         }
     }

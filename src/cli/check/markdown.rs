@@ -3,6 +3,8 @@
 mod common_lint;
 mod links;
 mod outline;
+#[cfg(feature = "json-output")]
+mod rumdl_adapter;
 pub(super) mod suppression;
 
 use super::rules::{display_rel, parse_frontmatter};
@@ -10,6 +12,8 @@ use super::{StructureCheckReport, StructureChecker};
 use crate::config::config::MarkdownBundle;
 use common_lint::validate_markdown_common_lints;
 use outline::validate_markdown_outline;
+#[cfg(feature = "json-output")]
+use rumdl_adapter::validate_rumdl_markdownlint_candidate;
 use std::collections::HashSet;
 use std::path::Path;
 use suppression::MarkdownSuppressions;
@@ -32,7 +36,43 @@ impl StructureChecker {
         validate_markdown_outline(self, rel, markdown, content, &mut suppressions, report);
         self.validate_markdown_trailing_spaces(rel, markdown, content, &mut suppressions, report);
         validate_markdown_common_lints(self, rel, markdown, content, &mut suppressions, report);
+        #[cfg(feature = "json-output")]
+        validate_rumdl_markdownlint_candidate(
+            self,
+            rel,
+            markdown,
+            content,
+            &mut suppressions,
+            report,
+        );
+        #[cfg(not(feature = "json-output"))]
+        self.validate_markdownlint_candidate_without_json(rel, markdown, report);
         self.validate_markdown_links(rel, markdown, content, &mut suppressions, report);
+    }
+
+    #[cfg(not(feature = "json-output"))]
+    fn validate_markdownlint_candidate_without_json(
+        &self,
+        rel: &Path,
+        markdown: &MarkdownBundle,
+        report: &mut StructureCheckReport,
+    ) {
+        let Some(candidate) = &markdown.markdownlint_candidate else {
+            return;
+        };
+        if candidate.enabled != Some(true) {
+            return;
+        }
+        self.push_violation(
+            report,
+            rel.to_path_buf(),
+            "markdown_engine",
+            format!(
+                "Markdown file '{}' enables markdownlint_candidate, but this Assura build cannot parse candidate JSON output",
+                display_rel(rel)
+            ),
+            markdown_severity(markdown, "markdown_engine", "medium"),
+        );
     }
 
     fn validate_markdown_suppression_comments(

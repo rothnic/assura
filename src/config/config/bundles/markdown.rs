@@ -46,9 +46,31 @@ pub struct MarkdownBundle {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub lint_common: Option<bool>,
 
+    /// Optional markdownlint-compatible candidate engine settings.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub markdownlint_candidate: Option<MarkdownlintCandidateConfig>,
+
     /// Per-rule configuration for Markdown findings.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub rules: Option<HashMap<String, MarkdownRuleConfig>>,
+}
+
+/// Configuration for an optional markdownlint-compatible candidate engine.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+#[serde(rename_all = "snake_case")]
+pub struct MarkdownlintCandidateConfig {
+    /// Whether to run the candidate engine for this Markdown scope.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub enabled: Option<bool>,
+
+    /// Candidate engine name. The first supported value is `rumdl`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub engine: Option<String>,
+
+    /// Optional binary path or command name for the candidate engine.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub binary: Option<String>,
 }
 
 /// Configuration for one Markdown rule.
@@ -173,6 +195,7 @@ impl MarkdownBundle {
             outline: None,
             lint_trailing_spaces: None,
             lint_common: None,
+            markdownlint_candidate: None,
             rules: None,
         }
     }
@@ -233,14 +256,44 @@ impl MarkdownBundle {
         self
     }
 
-    pub(crate) fn validate_outline_semantics(&self, context: &str) -> Result<(), String> {
+    pub(crate) fn validate_semantics(&self, context: &str) -> Result<(), String> {
+        self.validate_outline_semantics(context)?;
+        self.validate_markdownlint_candidate_semantics(context)?;
+        self.validate_required_sections_semantics(context)?;
+        self.validate_rule_config_semantics(context)?;
+        Ok(())
+    }
+
+    fn validate_outline_semantics(&self, context: &str) -> Result<(), String> {
         if let Some(outline) = &self.outline {
             validate_outline_entries(outline, &format!("{context}.outline"))?;
         }
         Ok(())
     }
 
-    pub(crate) fn validate_required_sections_semantics(&self, context: &str) -> Result<(), String> {
+    fn validate_markdownlint_candidate_semantics(&self, context: &str) -> Result<(), String> {
+        let Some(candidate) = &self.markdownlint_candidate else {
+            return Ok(());
+        };
+        let candidate_context = format!("{context}.markdownlint_candidate");
+        if let Some(engine) = &candidate.engine {
+            if engine != "rumdl" {
+                return Err(format!(
+                    "{candidate_context}.engine: expected supported candidate engine 'rumdl'"
+                ));
+            }
+        }
+        if let Some(binary) = &candidate.binary {
+            if binary.trim().is_empty() {
+                return Err(format!(
+                    "{candidate_context}.binary: candidate binary cannot be empty"
+                ));
+            }
+        }
+        Ok(())
+    }
+
+    fn validate_required_sections_semantics(&self, context: &str) -> Result<(), String> {
         let Some(required_sections) = &self.required_sections else {
             return Ok(());
         };
@@ -270,7 +323,7 @@ impl MarkdownBundle {
         Ok(())
     }
 
-    pub(crate) fn validate_rule_config_semantics(&self, context: &str) -> Result<(), String> {
+    fn validate_rule_config_semantics(&self, context: &str) -> Result<(), String> {
         let Some(rules) = &self.rules else {
             return Ok(());
         };
@@ -338,6 +391,7 @@ fn validate_outline_entries(entries: &[MarkdownOutlineEntry], context: &str) -> 
 fn validate_markdown_rule_id(value: &str) -> Result<(), String> {
     match value {
         "markdown_frontmatter"
+        | "markdown_engine"
         | "markdown_heading_depth"
         | "markdown_required_section"
         | "markdown_outline"
