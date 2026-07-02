@@ -17,6 +17,13 @@ Assura reports four kinds of evidence:
   `generated-fixtures-v2`
 - diagnostic stress cases: synthetic cases used for regression detection
 
+Every report row includes `fixture_acceptance`. Rows marked
+`accepted-ls-lint-equivalent` are part of the fixture-floor gate: the matching
+`assura-cli` row must be no slower than the native `ls-lint-cli` row for that
+fixture. Rows marked `diagnostic`, `experimental`, `retired`, or
+`assura-native-diagnostic` can explain behavior, but they do not prove the
+public no-slower claim.
+
 ## Current Checked Cohort
 
 The checked-in report rendered on the public performance page uses the
@@ -35,7 +42,8 @@ baseline can be refreshed without downloading third-party source trees:
 Refresh the current checked artifacts with:
 
 ```bash
-cargo build --release -p assura --bins
+cargo build --release --bin assura --no-default-features --features json-output,yaml-config
+cargo build --release --bin assura-full
 cargo build --release -p assura-check-cli
 target/release/assura performance-report \
   --output benches/history/current.json \
@@ -54,7 +62,8 @@ source, but they are only part of a checked report when the command includes
 Run them with:
 
 ```bash
-cargo build --release -p assura --bins
+cargo build --release --bin assura --no-default-features --features json-output,yaml-config
+cargo build --release --bin assura-full
 cargo build --release -p assura-check-cli
 target/release/assura performance-report \
   --include-external-fixtures \

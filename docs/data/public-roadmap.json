@@ -120,6 +120,12 @@
           "summary": "Selected the supported Rust Markdown lint/fix path for this beta increment.",
           "detail_path": "docs/goals/assura-markdownlint-compatible-rust-engine.md",
           "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-markdownlint-compatible-rust-engine.md"
+        },
+        {
+          "label": "Performance Floor",
+          "summary": "Fail accepted LS-Lint-equivalent fixture rows when Assura is slower.",
+          "detail_path": "docs/goals/assura-performance-floor-and-fixture-gate.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-performance-floor-and-fixture-gate.md"
         }
       ]
     },
@@ -139,12 +145,6 @@
       "status": "next",
       "title": "Next",
       "items": [
-        {
-          "label": "Performance Floor",
-          "summary": "Fail any accepted LS-Lint-equivalent fixture where Assura is slower.",
-          "detail_path": "docs/goals/assura-performance-floor-and-fixture-gate.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-performance-floor-and-fixture-gate.md"
-        },
         {
           "label": "Agent Installers",
           "summary": "Install, update, remove, and doctor Codex, OpenCode, Claude, and Pi hooks.",

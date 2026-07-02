@@ -1,6 +1,8 @@
 use std::collections::BTreeSet;
 
 const CURRENT_REPORT: &str = include_str!("../benches/history/current.json");
+const WEBSITE_CURRENT_REPORT: &str =
+    include_str!("../website/public/data/performance/current.json");
 const HISTORY_REPORT: &str = include_str!("../benches/history/ls-lint-comparison-history.jsonl");
 const WEBSITE_HISTORY_REPORT: &str =
     include_str!("../website/public/data/performance/ls-lint-comparison-history.jsonl");
@@ -16,9 +18,10 @@ fn current_report_claim_summary_matches_headline_rows() {
         .get("results")
         .and_then(serde_json::Value::as_array)
         .expect("current report includes result rows");
-    assert!(
-        report["source_worktree_dirty"].is_boolean(),
-        "current report records source worktree cleanliness"
+    assert_eq!(
+        report["source_worktree_dirty"].as_bool(),
+        Some(false),
+        "checked current report must be generated from a clean source worktree"
     );
     assert!(
         report["command_line"]
@@ -52,6 +55,31 @@ fn current_report_claim_summary_matches_headline_rows() {
         let row_family = row["row_family"]
             .as_str()
             .expect("current report row includes row_family");
+        let fixture_acceptance = row["fixture_acceptance"]
+            .as_str()
+            .expect("current report row includes fixture_acceptance");
+        assert!(
+            matches!(
+                fixture_acceptance,
+                "accepted-ls-lint-equivalent"
+                    | "diagnostic"
+                    | "experimental"
+                    | "retired"
+                    | "assura-native-diagnostic"
+            ),
+            "unexpected fixture_acceptance {fixture_acceptance:?}"
+        );
+        if row["native_ls_lint_parity"].as_bool() == Some(true)
+            && matches!(
+                row["fixture_cohort"].as_str(),
+                Some("realistic-equivalent" | "real-repo-headline")
+            )
+        {
+            assert_eq!(
+                fixture_acceptance, "accepted-ls-lint-equivalent",
+                "LS-Lint-equivalent fixture rows must be accepted for fixture-floor gates"
+            );
+        }
         assert_eq!(
             row["validation_execution_mode"].as_str(),
             Some(expected_execution_mode(row_family)),
@@ -60,6 +88,55 @@ fn current_report_claim_summary_matches_headline_rows() {
     }
 
     assert_summary_matches_rows(summary, rows, "assura-cli", "ls-lint-cli");
+}
+
+#[test]
+fn checked_current_reports_match_and_cover_accepted_fixture_targets() {
+    assert_eq!(
+        CURRENT_REPORT, WEBSITE_CURRENT_REPORT,
+        "website current performance data must match checked benchmark data"
+    );
+
+    let report: serde_json::Value =
+        serde_json::from_str(CURRENT_REPORT).expect("current performance report parses as JSON");
+    let rows = report
+        .get("results")
+        .and_then(serde_json::Value::as_array)
+        .expect("current report includes result rows");
+    let cohort = report
+        .pointer("/claim_summary/fixture_cohort")
+        .and_then(serde_json::Value::as_str)
+        .expect("current report records claim summary fixture cohort");
+
+    let accepted_fixtures = rows
+        .iter()
+        .filter(|row| row["fixture_cohort"] == cohort)
+        .filter(|row| row["fixture_acceptance"] == "accepted-ls-lint-equivalent")
+        .filter_map(|row| row["fixture_id"].as_str())
+        .collect::<BTreeSet<_>>();
+    assert!(
+        !accepted_fixtures.is_empty(),
+        "current report must include accepted fixture rows"
+    );
+
+    for fixture_id in accepted_fixtures {
+        let assura = find_headline_row(rows, cohort, fixture_id, "assura-cli")
+            .unwrap_or_else(|| panic!("{fixture_id}: missing accepted assura-cli row"));
+        let ls_lint = find_headline_row(rows, cohort, fixture_id, "ls-lint-cli")
+            .unwrap_or_else(|| panic!("{fixture_id}: missing accepted ls-lint-cli row"));
+        assert_eq!(
+            assura["fixture_acceptance"], "accepted-ls-lint-equivalent",
+            "{fixture_id}: assura-cli row must be accepted"
+        );
+        assert_eq!(
+            ls_lint["fixture_acceptance"], "accepted-ls-lint-equivalent",
+            "{fixture_id}: ls-lint-cli row must be accepted"
+        );
+        assert_eq!(
+            ls_lint["tool_name"], "ls-lint-native-cli",
+            "{fixture_id}: accepted LS-Lint row must use native LS-Lint"
+        );
+    }
 }
 
 #[test]

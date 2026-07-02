@@ -41,11 +41,11 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 Post-Beta Capabilities is active after release `v0.2.0`.
 
 Owning task:
-`.trellis/tasks/07-02-supported-document-graph-closure`.
+`.trellis/tasks/07-02-performance-floor-fixture-gate`.
 
 Current branch:
-`codex/document-graph-support-closure` for closing the supported document graph
-child goal and handing off to the performance floor child goal.
+`codex/performance-floor-fixture-gate` for closing the accepted fixture
+performance floor and handing off to the agent installer lifecycle child goal.
 
 Current recommended goal:
 `docs/goals/assura-post-beta-capabilities-program.md`.
@@ -82,10 +82,11 @@ that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
 Execute `docs/goals/assura-post-beta-capabilities-program.md` goal by goal.
 True daemon mode is complete in PR #117. The Markdown engine and supported
-document graph children are closed for this beta increment. Continue with
-`docs/goals/assura-performance-floor-and-fixture-gate.md` so accepted
-LS-Lint-equivalent fixture rows cannot pass on aggregate speed while hiding a
-slower accepted fixture.
+document graph children are closed for this beta increment, and the performance
+floor is closing in the current task. Continue with
+`docs/goals/assura-agent-integration-lifecycle.md` so Codex, OpenCode, Claude,
+and Pi integrations have install, update, remove, and doctor workflows over the
+shared nudge and daemon contracts.
 
 ## Roadmap Rules
 

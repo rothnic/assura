@@ -1,0 +1,8 @@
+{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file": "docs/goals/assura-performance-floor-and-fixture-gate.md", "reason": "child goal objective and proof gates"}
+{"file": "docs/goals/assura-post-beta-capabilities-program.md", "reason": "parent verification story and progress log"}
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "roadmap routing for post-beta child goals"}
+{"file": ".agents/skills/assura-performance-reporting/SKILL.md", "reason": "performance report workflow and release-binary evidence requirements"}
+{"file": "xtask/src/main.rs", "reason": "performance-no-slower and target-state implementation"}
+{"file": "src/cli/performance_report/rows.rs", "reason": "performance row schema and metadata"}
+{"file": "src/cli/performance_report/fixture_metadata.rs", "reason": "fixture cohort and parity classification"}

@@ -33,6 +33,21 @@ should expect one tool to be faster than the other.
 | `traversal:*` | Raw filesystem enumeration only | Traversal strategy attribution |
 | `strategy:*` | Full-check traversal strategy variants | Comparing implementation choices under validation load |
 
+## Fixture Acceptance
+
+`fixture_acceptance` is the machine-readable gate class for a fixture row:
+
+- `accepted-ls-lint-equivalent` rows are current no-slower gate inputs.
+- `diagnostic` rows are retained for attribution and regression detection.
+- `experimental` rows are not yet support-grade proof.
+- `retired` rows are kept only for historical review.
+- `assura-native-diagnostic` rows cover Assura-specific fixtures that do not
+  have a native LS-Lint equivalent.
+
+The fixture-floor gate operates on accepted LS-Lint-equivalent fixtures, not on
+aggregate runtime totals. A slower accepted fixture blocks the merge even when
+the cohort aggregate is faster.
+
 ## Traversal Decision
 
 The non-fail-fast default traversal path is `walkdir`. It gives deterministic
