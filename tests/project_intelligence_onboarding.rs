@@ -582,6 +582,14 @@ exclude:
         merged_config["structure"]["./"]["AGENTS.md"],
         serde_yaml::Value::String("exists:1".to_string())
     );
+    assert!(merged_config["rules"]
+        .as_mapping()
+        .expect("rules mapping")
+        .contains_key(serde_yaml::Value::String("@assura-skill-dir".to_string())));
+    assert_eq!(
+        merged_config["structure"][".agents/skills/"]["{skill}/"]["use"],
+        serde_yaml::Value::String("@assura-skill-dir".to_string())
+    );
     assert!(merged_config["exclude"]
         .as_sequence()
         .expect("exclude sequence")
