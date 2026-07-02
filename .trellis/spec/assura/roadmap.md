@@ -35,49 +35,69 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 21 | Markdown Reference Intelligence | Completed | Completed for beta in PR #112; post-beta Markdown, graph, daemon, agent, and editor hardening now routes through Post-Beta Capabilities |
 | 22 | Beta Code-Agnostic Capabilities | Completed | PR #112 merged; `v0.2.0` tag and GitHub release published with live release evidence |
 | 23 | Post-Beta Capabilities | Completed | `v0.3.0` beta increment published and live-verified with self-config hardening, supported document graph, true daemon mode, Markdown engine/safe fixes, performance floor, agent installers, VS Code support, extension API clarity, LS-Lint reassessment, and release hardening |
+| 24 | Performance Polish | Active | New planning task `.trellis/tasks/07-02-native-performance-roadmap-and-goal-text`; kickoff goal `docs/goals/assura-performance-polish-program.md` |
+| 25 | Agent-Ready Project Onboarding | Planned / P0 Adoption | Dogfood feedback backlog captured in `docs/goals/assura-agent-ready-project-onboarding-program.md`; highest general adoption priority for new agentic repos |
 
 ## Active Roadmap Iteration
 
-Post-Beta Capabilities completed as the `v0.3.0` beta increment after release
-`v0.2.0`.
+Performance Polish is the next roadmap iteration after the completed `v0.3.0`
+beta increment. It should turn Assura performance from a set of useful
+LS-Lint gates and local Criterion benches into a product-grade evidence system
+covering both LS-Lint-equivalent structure validation and Assura-native
+capabilities.
 
 Owning task:
-`.trellis/tasks/archive/2026-07/07-02-post-beta-program-finalization`.
+`.trellis/tasks/07-02-native-performance-roadmap-and-goal-text`.
 
 Current branch:
-`codex/post-beta-live-release-evidence` recorded the live `v0.3.0` release
-evidence, parent completion audit, and archived finalization task.
+`codex/post-beta-live-release-evidence`.
 
 Current recommended goal:
-No incomplete child goal remains in this iteration. Use
-`docs/goals/assura-post-beta-capabilities-program.md` as the completed
-`v0.3.0` beta-increment record and choose the next roadmap iteration from a new
-product decision. Completed support-hardening details remain in
-`docs/goals/assura-post-beta-support-release-hardening.md`.
+For performance-focused work:
+`docs/goals/assura-performance-polish-program.md`.
+
+For broad product adoption and new-project onboarding:
+`docs/goals/assura-agent-ready-project-onboarding-program.md`.
+
+Completed support-hardening details from the prior beta increment remain
+routed through `docs/goals/assura-post-beta-support-release-hardening.md`.
 
 Public roadmap artifact:
 `docs/data/public-roadmap.json`.
 
 Triggering evidence:
-After the beta release, live review identified the next large iteration:
-refine Assura's own config and docs variance, make document graph support
-fully supported for content validation/search/query, implement a true daemon
-process, adopt the fastest practical Rust markdownlint-compatible engine,
-enforce a no-slower-than-LS-Lint fixture floor, install Codex/OpenCode/Claude/Pi
-agent integrations, support the VS Code extension path, clarify extension API
-boundaries, reassess LS-Lint parity after the new surfaces land, and harden
-support/release evidence.
+After the `v0.3.0` beta increment, live review found that Assura has stronger
+capabilities than LS-Lint but does not yet have a single performance evidence
+system for those Assura-native surfaces. Existing LS-Lint no-slower gates cover
+accepted structure fixtures, and local benches cover parts of content runtime
+and project-intelligence querying, but CI and checked history do not yet
+enforce native capability performance for collection validation, document graph
+queries, context packs, daemon/session requests, Markdown/reference workflows,
+or the remaining cold CLI-floor opportunities.
+
+A separate new-project dogfood run exposed a broader adoption gap: Assura can
+make a configured policy pass while the repository still does not feel
+scaffolded, discoverable, queryable, or self-explaining to a coding agent. That
+backlog is not "more intelligence" in the abstract; the product milestone is
+to make Assura the default scaffold, doctor, and feedback loop for
+agent-ready repositories.
 
 North-star outcome:
-A documentation-heavy project can use one local Assura workflow to validate
-structure first, then Markdown, content models, repository references, graph
-queries, daemon-backed warm state, compact agent nudges, VS Code diagnostics,
-safe fixes, and performance gates without relying on unsupported services or
-private integration logic. The parent goal owns the detailed verification
-story: a maintainer renames architecture docs and moves code, then proves the
-CLI, daemon, agent hooks, editor, content graph, Markdown fixes, and LS-Lint
-performance gate all agree before merge. The detailed acceptance scenario lives
-in `docs/goals/assura-post-beta-capabilities-program.md#north-star-verification-scenario`.
+A documentation-heavy project can trust Assura performance at the same level as
+its correctness: accepted LS-Lint-equivalent fixtures cannot merge slower than
+native LS-Lint, native Assura content/graph/Markdown/daemon/editor-agent
+capabilities have tracked cold and warm budgets, and every performance miss is
+attributed to startup, config loading, walking, rule planning, validation,
+querying, serialization, IPC, or reporting before optimization work proceeds.
+The detailed kickoff criteria live in
+`docs/goals/assura-performance-polish-program.md`.
+
+The broad adoption north star is that a coding agent can enter a new project
+and reliably answer: what rules apply here, what guidance should I follow,
+which skills exist, what project facts are modeled, what references are
+broken, what is checked versus unchecked, what should I fix next, and whether
+the feedback is a nudge, warning, or merge gate. The detailed backlog lives in
+`docs/goals/assura-agent-ready-project-onboarding-program.md`.
 
 Direction lock, clarified on 2026-05-31: do not create or revive
 `assura-codex-feedback`, do not add one CLI entrypoint per agent, and do not add
@@ -86,11 +106,16 @@ that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
 ## Recommended Next Action
 
-Merge the live release evidence PR, then use a new product decision to choose
-the next roadmap iteration. The completed `v0.3.0` parent record is
-`docs/goals/assura-post-beta-capabilities-program.md`; its north-star
-verification story should remain the regression lens for future capability
-work.
+Kick off `docs/goals/assura-agent-ready-project-onboarding-program.md` when the
+next slice is about adoption, new-project setup, agent scaffolding,
+discoverability, or false green checks. Kick off
+`docs/goals/assura-performance-polish-program.md` when the next slice is about
+native performance evidence, no-slower gates, or CLI-floor optimization.
+
+Priority rule: the agent-ready onboarding P0/P1 backlog outranks lower-level
+CLI-floor optimization because it fixes the highest-leverage adoption failure:
+agents can currently make Assura green without knowing what was not configured,
+not modeled, not indexed, not referenced, or not enforced.
 
 ## Roadmap Rules
 
