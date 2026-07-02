@@ -3,3 +3,4 @@
 {"file": "tests/markdown_required_section_fix_tests.rs", "reason": "safe-fix determinism and idempotence baseline"}
 {"file": "tests/markdown_lint_fix_tests.rs", "reason": "Markdown fix command behavior baseline"}
 {"file": "tests/markdown_engine_candidate_fixture_tests.rs", "reason": "candidate fixture matrix, staged ordering, severity ownership, and safe-fix preview proof"}
+{"file": "tests/markdown_rumdl_adapter_tests.rs", "reason": "optional rumdl subprocess adapter opt-in, config validation, missing binary diagnostics, isolated-copy safety, and diagnostic mapping"}

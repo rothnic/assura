@@ -289,6 +289,10 @@ pub(super) fn merge_markdown_bundle(
             outline: child.outline.clone().or_else(|| parent.outline.clone()),
             lint_trailing_spaces: child.lint_trailing_spaces.or(parent.lint_trailing_spaces),
             lint_common: child.lint_common.or(parent.lint_common),
+            markdownlint_candidate: child
+                .markdownlint_candidate
+                .clone()
+                .or_else(|| parent.markdownlint_candidate.clone()),
             rules: merge_markdown_rule_configs(parent.rules.as_ref(), child.rules.as_ref()),
         })),
     }

@@ -10,7 +10,10 @@ use super::validation::{validate_naming_convention, validate_size_string};
 
 mod markdown;
 pub(crate) use markdown::{merge_markdown_rule_configs, MarkdownOutlineView};
-pub use markdown::{MarkdownBundle, MarkdownOutlineEntry, MarkdownOutlineNode, MarkdownRuleConfig};
+pub use markdown::{
+    MarkdownBundle, MarkdownOutlineEntry, MarkdownOutlineNode, MarkdownRuleConfig,
+    MarkdownlintCandidateConfig,
+};
 
 /// Bundle of all file validations for a directory node
 #[derive(Debug, Clone, Serialize, Deserialize)]

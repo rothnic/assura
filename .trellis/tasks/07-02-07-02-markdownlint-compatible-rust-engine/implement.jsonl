@@ -7,3 +7,5 @@
 {"file": "tests/fixtures/markdown_engine_candidates/matrix.json", "reason": "executable Markdown engine compatibility matrix and staged expectation contract"}
 {"file": "xtask/src/main.rs", "reason": "markdown-engine-probe command for optional candidate evidence collection"}
 {"file": "docs/analysis/2026-07-02-rumdl-adapter-decision.md", "reason": "MSRV-preserving subprocess adapter boundary and proof gates for the next rumdl slice"}
+{"file": "src/cli/check/markdown/rumdl_adapter.rs", "reason": "optional rumdl subprocess adapter, diagnostic mapping, suppression/severity behavior, and isolated-copy execution"}
+{"file": "tests/markdown_rumdl_adapter_tests.rs", "reason": "integration coverage for opt-in behavior, config validation, missing binary diagnostics, source immutability, and fake rumdl mapping"}

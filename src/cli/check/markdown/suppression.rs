@@ -142,6 +142,7 @@ fn is_supported_markdown_rule(rule: &str) -> bool {
     matches!(
         rule,
         "markdown_frontmatter"
+            | "markdown_engine"
             | "markdown_heading_depth"
             | "markdown_required_section"
             | "markdown_outline"

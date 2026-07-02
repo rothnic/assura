@@ -118,9 +118,7 @@ fn validate_markdown_bundle(bundle: &MarkdownBundle, context: &str) -> Result<()
         )?;
     }
 
-    bundle.validate_outline_semantics(context)?;
-    bundle.validate_required_sections_semantics(context)?;
-    bundle.validate_rule_config_semantics(context)?;
+    bundle.validate_semantics(context)?;
 
     Ok(())
 }
