@@ -164,10 +164,10 @@
           "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-post-beta-capabilities-program.md"
         },
         {
-          "label": "Release Hardening",
-          "summary": "Align support docs, compatibility notes, target-state checks, and release evidence.",
-          "detail_path": "docs/goals/assura-post-beta-support-release-hardening.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-post-beta-support-release-hardening.md"
+          "label": "Release Verification",
+          "summary": "Publish and live-verify the v0.3.0 beta increment without claiming GA.",
+          "detail_path": "docs/goals/assura-post-beta-capabilities-program.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-post-beta-capabilities-program.md"
         }
       ]
     },

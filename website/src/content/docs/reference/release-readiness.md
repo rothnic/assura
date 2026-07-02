@@ -11,6 +11,12 @@ agent handoffs, editor wrappers, a beta local VS Code package, and safe-fix
 previews. It does not require MCP, remote access, hosted services, or editor
 marketplace publication.
 
+This page describes the current `v0.3.0` beta-increment release-candidate
+surface in the repository. Until the `v0.3.0` tag is pushed, release automation
+publishes assets, and the live release gate passes for
+`ASSURA_VERSION=v0.3.0`, the latest installable public release remains
+`v0.2.0`.
+
 ## Supported Commands
 
 | Command | Status |

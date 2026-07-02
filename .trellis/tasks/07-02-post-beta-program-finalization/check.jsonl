@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "Check that roadmap routing no longer points at merged support-hardening work as active."}
+{"file": ".trellis/spec/assura/tooling-stabilization.md", "reason": "Check release-readiness, release-smoke, docs, evidence, and target-state gates against release expectations."}
+{"file": ".trellis/spec/assura/structure-enforcement.md", "reason": "Check Assura self-validation expectations for task archival, root hygiene, and generated artifacts."}
