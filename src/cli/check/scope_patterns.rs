@@ -65,6 +65,24 @@ pub(super) fn path_has_scope_magic(path: &Path) -> bool {
     path_to_string(path).contains(['*', '?', '{', '}'])
 }
 
+pub(super) fn path_scope_specificity(path: &Path) -> (usize, usize, usize, usize) {
+    let mut literal_segments = 0;
+    let mut literal_chars = 0;
+    for segment in path.iter().filter_map(|segment| segment.to_str()) {
+        if !segment.contains(['*', '?', '{', '}', '[', ']']) {
+            literal_segments += 1;
+        }
+        literal_chars += literal_constraint_chars(segment);
+    }
+
+    (
+        path.components().count(),
+        literal_segments,
+        literal_chars,
+        usize::from(!path_has_scope_magic(path)),
+    )
+}
+
 pub(super) fn path_matches_scope_pattern(pattern: &Path, target: &Path) -> bool {
     CompiledScopePattern::new(pattern).matches_path(target)
 }
@@ -74,18 +92,30 @@ pub(super) fn path_has_matching_scope_ancestor(pattern: &Path, target: &Path) ->
 }
 
 fn expand_braces(pattern: &str) -> Vec<String> {
-    let Some(open) = pattern.find('{') else {
-        return vec![pattern.to_string()];
-    };
-    let Some(close_offset) = pattern[open + 1..].find('}') else {
-        return vec![pattern.to_string()];
-    };
-    let close = open + 1 + close_offset;
+    let mut search_start = 0;
+    while let Some(open_offset) = pattern[search_start..].find('{') {
+        let open = search_start + open_offset;
+        let Some(close_offset) = pattern[open + 1..].find('}') else {
+            return vec![pattern.to_string()];
+        };
+        let close = open + 1 + close_offset;
+        let body = &pattern[open + 1..close];
+        if body.contains(',') {
+            return expand_comma_brace(pattern, open, close);
+        }
+        search_start = close + 1;
+    }
+
+    vec![pattern.to_string()]
+}
+
+fn expand_comma_brace(pattern: &str, open: usize, close: usize) -> Vec<String> {
     let prefix = &pattern[..open];
+    let body = &pattern[open + 1..close];
     let suffix = &pattern[close + 1..];
 
     let mut expanded = Vec::new();
-    for option in pattern[open + 1..close].split(',') {
+    for option in body.split(',') {
         for nested in expand_braces(&format!("{prefix}{option}{suffix}")) {
             expanded.push(nested);
         }
@@ -103,14 +133,60 @@ fn split_path_segments(path: &str) -> Vec<&str> {
         .collect()
 }
 
+fn literal_constraint_chars(segment: &str) -> usize {
+    let mut count = 0;
+    let mut in_capture = false;
+    let mut in_character_class = false;
+    for character in segment.chars() {
+        match character {
+            '{' if !in_character_class => in_capture = true,
+            '}' if in_capture && !in_character_class => in_capture = false,
+            '[' if !in_capture => in_character_class = true,
+            ']' if in_character_class && !in_capture => in_character_class = false,
+            '*' | '?' if !in_capture && !in_character_class => {}
+            _ if !in_capture && !in_character_class => count += 1,
+            _ => {}
+        }
+    }
+    count
+}
+
 fn compile_segment(segment: &str) -> CompiledPathSegment {
     if segment == "**" {
         return CompiledPathSegment::Recursive;
+    }
+    if segment.contains('{') || segment.contains('}') {
+        return compile_capture_segment(segment);
     }
     if !segment.contains(['*', '?', '[', ']']) {
         return CompiledPathSegment::Literal(segment.to_string());
     }
     Pattern::new(segment)
+        .map(CompiledPathSegment::Pattern)
+        .unwrap_or(CompiledPathSegment::Invalid)
+}
+
+fn compile_capture_segment(segment: &str) -> CompiledPathSegment {
+    let mut pattern = String::new();
+    let mut rest = segment;
+    loop {
+        let Some(open) = rest.find('{') else {
+            pattern.push_str(rest);
+            break;
+        };
+        pattern.push_str(&rest[..open]);
+        let Some(close_offset) = rest[open + 1..].find('}') else {
+            return CompiledPathSegment::Invalid;
+        };
+        let close = open + 1 + close_offset;
+        let name = &rest[open + 1..close];
+        if name.is_empty() || name.contains(',') {
+            return CompiledPathSegment::Invalid;
+        }
+        pattern.push('*');
+        rest = &rest[close + 1..];
+    }
+    Pattern::new(&pattern)
         .map(CompiledPathSegment::Pattern)
         .unwrap_or(CompiledPathSegment::Invalid)
 }
@@ -168,6 +244,58 @@ mod tests {
         assert!(path_has_matching_scope_ancestor(
             Path::new("src/**/c"),
             Path::new("src/a/b/c/packages")
+        ));
+    }
+
+    #[test]
+    fn scope_patterns_support_single_segment_captures() {
+        assert!(path_matches_scope_pattern(
+            Path::new(".agents/skills/{skill}"),
+            Path::new(".agents/skills/assura-project-maintenance")
+        ));
+        assert!(path_matches_scope_pattern(
+            Path::new("docs/{workspace}/packages"),
+            Path::new("docs/platform/packages")
+        ));
+        assert!(path_matches_scope_pattern(
+            Path::new("docs/{workspace}-notes"),
+            Path::new("docs/platform-notes")
+        ));
+        assert!(!path_matches_scope_pattern(
+            Path::new("docs/{workspace}/packages"),
+            Path::new("docs/platform/archive/packages")
+        ));
+    }
+
+    #[test]
+    fn scope_patterns_expand_brace_alternatives_after_captures() {
+        assert!(path_matches_scope_pattern(
+            Path::new(".agents/skills/{skill}/{references,scripts}"),
+            Path::new(".agents/skills/release-maintenance/references")
+        ));
+        assert!(path_matches_scope_pattern(
+            Path::new(".agents/skills/{skill}/{references,scripts}"),
+            Path::new(".agents/skills/release-maintenance/scripts")
+        ));
+        assert!(!path_matches_scope_pattern(
+            Path::new(".agents/skills/{skill}/{references,scripts}"),
+            Path::new(".agents/skills/release-maintenance/assets")
+        ));
+    }
+
+    #[test]
+    fn scope_patterns_expand_brace_alternatives_before_captures() {
+        assert!(path_matches_scope_pattern(
+            Path::new(".agents/{codex,opencode}/skills/{skill}"),
+            Path::new(".agents/codex/skills/release-maintenance")
+        ));
+        assert!(path_matches_scope_pattern(
+            Path::new(".agents/{codex,opencode}/skills/{skill}"),
+            Path::new(".agents/opencode/skills/release-maintenance")
+        ));
+        assert!(!path_matches_scope_pattern(
+            Path::new(".agents/{codex,opencode}/skills/{skill}"),
+            Path::new(".agents/claude/skills/release-maintenance")
         ));
     }
 }

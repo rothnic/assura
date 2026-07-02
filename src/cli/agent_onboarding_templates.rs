@@ -59,6 +59,15 @@ impl GeneratedFile {
 fn agent_ready_config() -> &'static str {
     r#"version: "2.0"
 
+rules:
+  "@assura-skill-dir":
+    SKILL.md: exists:1
+    agents/: exists:0-1
+    references/: exists:0-1
+    scripts/: exists:0-1
+    assets/: exists:0-1
+    extra: false
+
 structure:
   ./:
     extra: true
@@ -96,17 +105,8 @@ structure:
   .agents/skills/:
     required: true
     extra: true
-  .agents/skills/assura-project-maintenance/:
-    required: true
-    SKILL.md: exists:1
-    agents/: exists:1
-    references/: exists:1
-  .agents/skills/assura-project-maintenance/agents/:
-    required: true
-    openai.yaml: exists:1
-  .agents/skills/assura-project-maintenance/references/:
-    required: true
-    assura-onboarding.md: exists:1
+    "{skill}/":
+      use: "@assura-skill-dir"
   docs/:
     required: true
     process/: exists:1

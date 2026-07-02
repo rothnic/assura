@@ -238,6 +238,89 @@ structure:
 }
 
 #[test]
+fn nested_captured_directory_use_expands_tree_rule_fragments() {
+    let config = parse_config(
+        r#"
+rules:
+  "@assura-skill-dir":
+    SKILL.md: exists:1
+    agents/: exists:0-1
+    references/: exists:0-1
+    scripts/: exists:0-1
+    assets/: exists:0-1
+    extra: false
+structure:
+  .agents/skills/:
+    extra: true
+    "{skill}/":
+      use: "@assura-skill-dir"
+"#,
+    )
+    .unwrap();
+
+    let skills = config.structure.get(".agents/skills/").unwrap();
+    let skill = skills
+        .children
+        .as_ref()
+        .and_then(|children| children.get("{skill}"))
+        .expect("captured skill child");
+    assert_eq!(
+        skill
+            .files
+            .as_ref()
+            .and_then(|files| files.exists.as_ref())
+            .and_then(|exists| exists.get("SKILL.md")),
+        Some(&"1".to_string())
+    );
+    assert_eq!(
+        skill
+            .directories
+            .as_ref()
+            .and_then(|directories| directories.allowed_names.as_ref())
+            .map(Vec::as_slice),
+        Some(
+            &[
+                "agents".to_string(),
+                "references".to_string(),
+                "scripts".to_string(),
+                "assets".to_string()
+            ][..]
+        )
+    );
+}
+
+#[test]
+fn nested_literal_directory_use_expands_tree_rule_fragments() {
+    let config = parse_config(
+        r#"
+rules:
+  "@skill-dir":
+    SKILL.md: exists:1
+structure:
+  .agents/skills/:
+    demo/:
+      use: "@skill-dir"
+"#,
+    )
+    .unwrap();
+
+    let skills = config.structure.get(".agents/skills/").unwrap();
+    let skill = skills
+        .children
+        .as_ref()
+        .and_then(|children| children.get("demo"))
+        .expect("demo skill child");
+    assert_eq!(
+        skill
+            .files
+            .as_ref()
+            .and_then(|files| files.exists.as_ref())
+            .and_then(|exists| exists.get("SKILL.md")),
+        Some(&"1".to_string())
+    );
+}
+
+#[test]
 fn detailed_file_directive_merges_markdown_attributes_in_place() {
     let config = parse_config(
         r#"

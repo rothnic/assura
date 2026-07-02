@@ -68,3 +68,10 @@ git diff --check
 Block if users still need to enumerate every skill directory manually, if the
 preset overfits a language or domain, or if dynamic contracts make inheritance
 harder to explain.
+
+## Progress Log
+
+| Date | Update | Evidence |
+| --- | --- | --- |
+| 2026-07-02 | Implemented the first dynamic-contract slice for the generated `agent-project` baseline. The compact notation normalizer now treats exact children under captured directory scopes as direct children, the full rule plan consistently prefers deeper/more-specific scopes, and `assura agent onboard` generates one reusable `@assura-skill-dir` contract applied through `.agents/skills/{skill}/`. | `nested_captured_directory_use_expands_tree_rule_fragments`; `dynamic_directory_scopes_apply_normalized_captured_rule_fragments`; `agent_onboard_generated_config_validates_dynamic_directory_skill_contracts`; `cargo test --test project_intelligence_onboarding --quiet`. |
+| 2026-07-02 | Addressed independent review findings for mixed capture-plus-brace scopes and same-depth precedence. Scope matching now expands brace alternatives before or after captures, and both full and fast rule plans share deterministic specificity so literal or constrained pattern scopes beat broad captures. | `scope_patterns_expand_brace_alternatives_after_captures`; `scope_patterns_expand_brace_alternatives_before_captures`; `literal_scopes_override_captured_scopes_at_same_depth`; `constrained_patterns_override_long_capture_names_at_same_depth`; `fast_plan_literal_scopes_override_captured_scopes_at_same_depth`; `fast_plan_constrained_patterns_override_long_capture_names_at_same_depth`. |

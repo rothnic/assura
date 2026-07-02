@@ -257,6 +257,81 @@ fn agent_onboard_generates_broad_baseline_and_packet() {
 }
 
 #[test]
+fn agent_onboard_generated_config_validates_dynamic_directory_skill_contracts() {
+    let project = TempDir::new().unwrap();
+    json_from_success(run_assura(&[
+        "agent",
+        "onboard",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]));
+
+    let config = fs::read_to_string(project.path().join(".assura/config.yml")).unwrap();
+    assert!(config.contains("\"@assura-skill-dir\""));
+    assert!(config.contains("\"{skill}/\""));
+    assert!(!config.contains(".agents/skills/assura-project-maintenance/:"));
+
+    let second_skill = project.path().join(".agents/skills/release-maintenance");
+    fs::create_dir_all(second_skill.join("references")).unwrap();
+    fs::create_dir_all(second_skill.join("scripts")).unwrap();
+    fs::create_dir_all(second_skill.join("assets")).unwrap();
+    fs::write(second_skill.join("SKILL.md"), "# Release Maintenance\n").unwrap();
+    fs::write(second_skill.join("references/runbook.md"), "# Runbook\n").unwrap();
+    fs::write(second_skill.join("scripts/check.sh"), "#!/bin/sh\n").unwrap();
+    fs::write(second_skill.join("assets/template.txt"), "template\n").unwrap();
+
+    let valid_check = json_from_success(run_assura(&[
+        "check",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]));
+    assert_eq!(valid_check["success"], true);
+
+    let missing_skill = project.path().join(".agents/skills/missing-skill-md");
+    fs::create_dir_all(&missing_skill).unwrap();
+    let invalid_check = run_assura(&[
+        "check",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]);
+    assert_eq!(invalid_check.status.code(), Some(1));
+    let invalid_json: Value = serde_json::from_slice(&invalid_check.stdout).unwrap();
+    assert!(invalid_json["violations"]
+        .as_array()
+        .expect("violations")
+        .iter()
+        .any(|item| {
+            item["path"] == ".agents/skills/missing-skill-md"
+                && item["rule"] == "exists_count"
+                && item["message"]
+                    .as_str()
+                    .is_some_and(|message| message.contains("SKILL.md"))
+        }));
+
+    fs::write(missing_skill.join("SKILL.md"), "# Missing Fixed\n").unwrap();
+    fs::create_dir_all(missing_skill.join("tmp")).unwrap();
+    let invalid_child_check = run_assura(&[
+        "check",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]);
+    assert_eq!(invalid_child_check.status.code(), Some(1));
+    let invalid_child_json: Value = serde_json::from_slice(&invalid_child_check.stdout).unwrap();
+    assert!(invalid_child_json["violations"]
+        .as_array()
+        .expect("violations")
+        .iter()
+        .any(|item| {
+            item["path"] == ".agents/skills/missing-skill-md/tmp"
+                && item["rule"] == "unexpected_directory"
+        }));
+}
+
+#[test]
 fn agent_onboard_preserves_existing_user_authored_files() {
     let project = TempDir::new().unwrap();
     fs::write(project.path().join("AGENTS.md"), "# Existing Agent Notes\n").unwrap();
