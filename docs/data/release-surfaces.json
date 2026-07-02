@@ -96,22 +96,29 @@
       "id": "daemon-mode",
       "label": "Daemon mode",
       "status": "experimental",
-      "first_release": "unreleased",
+      "first_release": "v0.3.0",
       "detail_path": "docs/goals/assura-true-daemon-mode.md"
     },
     {
       "id": "vscode-extension",
       "label": "VS Code beta local package",
       "status": "supported",
-      "first_release": "unreleased",
+      "first_release": "v0.3.0",
       "detail_path": "docs/goals/assura-vscode-supported-extension.md"
     },
     {
       "id": "extension-api-boundaries",
       "label": "Extension API boundaries",
       "status": "supported",
-      "first_release": "unreleased",
+      "first_release": "v0.3.0",
       "detail_path": "docs/extension-api-boundaries.md"
+    },
+    {
+      "id": "agent-integration-lifecycle",
+      "label": "Agent integration lifecycle",
+      "status": "experimental",
+      "first_release": "v0.3.0",
+      "detail_path": "docs/goals/assura-agent-integration-lifecycle.md"
     },
     {
       "id": "agent-daemon-nudges",

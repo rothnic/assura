@@ -29,6 +29,7 @@ marketplace publication.
 | `assura fix markdown --dry-run --format json` | Experimental safe-fix preview contract. |
 | `assura fix markdown --apply --format json` | Experimental safe-fix apply/audit contract. |
 | `assura agent` | Supported local project-intelligence command group for coding agents. |
+| `assura agent integration` | Experimental local agent integration lifecycle for Codex, OpenCode, Claude, and Pi bundles. |
 | `assura content` | Supported local project-intelligence query surface. |
 | `assura content context-pack` | Supported bounded project-intelligence handoff packet. |
 | `assura content references` | Supported repository-reference graph query. |
@@ -117,6 +118,11 @@ Local coding agents should use `assura agent ...` for project-intelligence
 handoffs. Editors should use `assura editor session` or wrap lower-level
 `assura content ...` contracts. MCP may be added later as an optional adapter,
 but it is not part of the required local workflow.
+
+`assura agent integration` is an experimental local lifecycle surface. It
+generates reviewable integration bundles that call shared Assura commands; it
+does not silently mutate host-agent configuration or embed per-agent validation
+logic.
 
 ## Rollback And Repair
 

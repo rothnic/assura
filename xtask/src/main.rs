@@ -873,6 +873,7 @@ fn run_target_state() -> Result<()> {
     check_command_surface_support(&mut checks);
     check_extension_api_boundaries(&mut checks);
     check_document_graph_support_claims(&mut checks);
+    check_post_beta_release_hardening(&mut checks);
     check_manifest_semantics(&mut checks);
     check_test_relationships(&mut checks);
     check_docs_release_performance(&mut checks);
@@ -3252,6 +3253,95 @@ fn check_document_graph_support_claims(checks: &mut Checks) {
             }
         }
     }
+}
+
+fn check_post_beta_release_hardening(checks: &mut Checks) {
+    let release_notes = read("docs/release-notes.md");
+    let release_surfaces = read("docs/data/release-surfaces.json");
+    let support_goal = read("docs/goals/assura-post-beta-support-release-hardening.md");
+    let parent_goal = read("docs/goals/assura-post-beta-capabilities-program.md");
+    let roadmap = read(".trellis/spec/assura/roadmap.md");
+    let release_checklist = read("docs/release-candidate-checklist.md");
+    let release_readiness = read("website/src/content/docs/reference/release-readiness.md");
+
+    for marker in [
+        "Assura v0.3.0 Release Notes",
+        "beta-increment release-candidate build",
+        "still remains pre-1.0 beta software",
+    ] {
+        checks.require(
+            release_notes.contains(marker),
+            format!("docs/release-notes.md: missing v0.3.0 beta marker {marker:?}"),
+        );
+    }
+
+    for marker in [
+        "\"daemon-mode\"",
+        "\"vscode-extension\"",
+        "\"extension-api-boundaries\"",
+        "\"agent-integration-lifecycle\"",
+    ] {
+        checks.require(
+            release_surfaces.contains(marker),
+            format!("docs/data/release-surfaces.json: missing release surface {marker:?}"),
+        );
+    }
+    for marker in [
+        "\"id\": \"daemon-mode\",\n      \"label\": \"Daemon mode\",\n      \"status\": \"experimental\",\n      \"first_release\": \"v0.3.0\"",
+        "\"id\": \"vscode-extension\",\n      \"label\": \"VS Code beta local package\",\n      \"status\": \"supported\",\n      \"first_release\": \"v0.3.0\"",
+        "\"id\": \"extension-api-boundaries\",\n      \"label\": \"Extension API boundaries\",\n      \"status\": \"supported\",\n      \"first_release\": \"v0.3.0\"",
+        "\"id\": \"agent-integration-lifecycle\",\n      \"label\": \"Agent integration lifecycle\",\n      \"status\": \"experimental\",\n      \"first_release\": \"v0.3.0\"",
+    ] {
+        checks.require(
+            release_surfaces.contains(marker),
+            format!("docs/data/release-surfaces.json: missing v0.3.0 marker {marker:?}"),
+        );
+    }
+
+    for marker in [
+        "North-Star Verification Scenario",
+        "release-blocking reason",
+        "merge, block, or targeted-repair decision",
+    ] {
+        checks.require(
+            support_goal.contains(marker) || parent_goal.contains(marker),
+            format!("post-beta goals: missing north-star release-hardening marker {marker:?}"),
+        );
+    }
+
+    checks.require(
+        roadmap.contains("docs/goals/assura-post-beta-support-release-hardening.md"),
+        ".trellis/spec/assura/roadmap.md: support hardening is not routed",
+    );
+    for marker in [
+        "Experimental daemon surface",
+        "assura daemon status",
+        "assura daemon check-path",
+        "Experimental local agent integration lifecycle",
+        "assura agent integration",
+        "Codex, OpenCode, Claude, and Pi",
+        "Supported beta local editor package",
+        "integrations/editors/vscode",
+        "pnpm --dir integrations/editors/vscode test",
+        "pnpm --dir integrations/editors/vscode run build",
+        "pnpm --dir integrations/editors/vscode run doctor",
+        "pnpm --dir integrations/editors/vscode run package",
+        "Supported extension-boundary documentation",
+        "public third-party plugin APIs remain roadmap-only",
+        "cargo test --test daemon_cli_tests --quiet",
+        "cargo test --test agent_surface_cli --quiet",
+    ] {
+        checks.require(
+            release_checklist.contains(marker),
+            format!("docs/release-candidate-checklist.md: missing v0.3.0 surface gate {marker:?}"),
+        );
+    }
+    checks.require(
+        release_readiness.contains("pre-1.0")
+            && release_readiness.contains("integrations/editors/vscode")
+            && release_readiness.contains("Extension API Boundaries"),
+        "website release readiness page: missing beta support/readiness markers",
+    );
 }
 
 fn public_claim_files() -> Vec<String> {

@@ -117,7 +117,7 @@ extensions:
         - path: Cargo.toml
           package: assura
           role: public
-          version: "0.2.0"
+          version: "0.3.0"
           rust_version: "1.70.0"
           license: "MIT OR Apache-2.0"
           publish: public
@@ -135,7 +135,7 @@ extensions:
         - path: crates/assura-check-cli/Cargo.toml
           package: assura-check-cli
           role: internal
-          version: "0.2.0"
+          version: "0.3.0"
           rust_version: "1.70.0"
           license: "MIT OR Apache-2.0"
           publish: internal
@@ -155,7 +155,7 @@ extensions:
         - path: crates/assura-stable-hash/Cargo.toml
           package: assura-stable-hash
           role: internal
-          version: "0.2.0"
+          version: "0.3.0"
           rust_version: "1.70.0"
           license: "MIT OR Apache-2.0"
           publish: internal
@@ -165,7 +165,7 @@ extensions:
         - path: xtask/Cargo.toml
           package: xtask
           role: internal
-          version: "0.2.0"
+          version: "0.3.0"
           rust_version: "1.70.0"
           license: "MIT OR Apache-2.0"
           publish: internal

@@ -41,12 +41,11 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 Post-Beta Capabilities is active after release `v0.2.0`.
 
 Owning task:
-`.trellis/tasks/archive/2026-07/07-02-post-beta-primary-use-case-verification`.
+`.trellis/tasks/07-02-post-beta-support-release-hardening`.
 
 Current branch:
-`codex/ls-lint-performance-reassessment` has closed the LS-Lint performance
-reassessment child locally and is hardening the parent north-star verification
-scenario before PR integration.
+`codex/post-beta-support-release-hardening` is preparing the `v0.3.0` beta
+increment release-hardening branch.
 
 Current recommended goal:
 `docs/goals/assura-post-beta-support-release-hardening.md`.
@@ -88,11 +87,10 @@ document graph children are closed for this beta increment, the performance
 floor is closed, the agent installer lifecycle is closed,
 `docs/goals/assura-vscode-supported-extension.md` is closed, and extension API
 clarification is closed for this beta increment. LS-Lint performance
-reassessment is closed locally after refreshing checked performance evidence.
-The current branch is adding the final user-specific verification story that
-Support Hardening must prove. Continue to
-`docs/goals/assura-post-beta-support-release-hardening.md` after this branch is
-merged.
+reassessment is closed after refreshing checked performance evidence and PR
+#135 is merged. Execute `docs/goals/assura-post-beta-support-release-hardening.md`
+on the current branch, then merge the release-hardening PR before tagging
+`v0.3.0`.
 
 ## Roadmap Rules
 
