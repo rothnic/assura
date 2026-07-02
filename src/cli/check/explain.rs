@@ -473,6 +473,6 @@ fn path_display(path: &Path) -> String {
     if path.as_os_str().is_empty() {
         ".".to_string()
     } else {
-        path.display().to_string()
+        path.to_string_lossy().replace('\\', "/")
     }
 }
