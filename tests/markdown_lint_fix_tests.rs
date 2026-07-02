@@ -41,6 +41,13 @@ fn write_project_with_extra_markdown(config_markdown: &str, markdown: &str) -> T
     project
 }
 
+fn write_project_with_combined_markdown_fixes(markdown: &str) -> TempDir {
+    write_project(
+        "          lint_trailing_spaces: true\n          required_sections:\n            - Usage\n            - API\n",
+        markdown,
+    )
+}
+
 #[test]
 fn check_reports_configured_markdown_trailing_spaces() {
     let project = write_project(
@@ -136,7 +143,7 @@ fn fix_markdown_dry_run_reports_safe_fix_without_writing() {
     let json: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
     assert_eq!(json["schema"], "assura.safe-fix.markdown.v1");
     assert_eq!(json["mode"], "dry_run");
-    assert_eq!(json["rule"], "trailing-spaces");
+    assert_eq!(json["rule"], "all");
     assert_eq!(json["dry_run"], true);
     assert_eq!(json["files_checked"], 1);
     assert_eq!(json["files_changed"], 0);
@@ -226,6 +233,101 @@ fn fix_markdown_json_reports_bounded_write_summary() {
     assert_eq!(rerun_json["files_would_change"], 0);
     assert_eq!(rerun_json["fixes_would_apply"], 0);
     assert_eq!(rerun_json["files"][0]["status"], "unchanged");
+}
+
+#[test]
+fn fix_markdown_all_dry_run_reports_every_supported_safe_fix_without_writing() {
+    let project =
+        write_project_with_combined_markdown_fixes("---\ntitle: Note\n---\n   \n# Note\n\nBody\n");
+    let before = fs::read_to_string(project.path().join("docs/note.md")).unwrap();
+
+    let output = Command::new(assura_bin())
+        .arg("fix")
+        .arg("markdown")
+        .arg("--dry-run")
+        .arg("--format")
+        .arg("json")
+        .arg(project.path())
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(0));
+    let json: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(json["rule"], "all");
+    assert_eq!(json["mode"], "dry_run");
+    assert_eq!(json["files_checked"], 1);
+    assert_eq!(json["files_would_change"], 1);
+    assert_eq!(json["fixes_would_apply"], 3);
+    assert_eq!(json["fixes_applied"], 0);
+    let operations = json["fixes"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|fix| fix["operation"].as_str().unwrap())
+        .collect::<Vec<_>>();
+    assert_eq!(
+        operations,
+        vec![
+            "remove_blank_line_trailing_spaces",
+            "insert_required_section_heading",
+            "insert_required_section_heading"
+        ]
+    );
+
+    let after = fs::read_to_string(project.path().join("docs/note.md")).unwrap();
+    assert_eq!(after, before);
+}
+
+#[test]
+fn fix_markdown_all_applies_supported_safe_fixes_once_and_is_idempotent() {
+    let project =
+        write_project_with_combined_markdown_fixes("---\ntitle: Note\n---\n   \n# Note\n\nBody\n");
+
+    let output = Command::new(assura_bin())
+        .arg("fix")
+        .arg("markdown")
+        .arg("--apply")
+        .arg("--format")
+        .arg("json")
+        .arg(project.path())
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(0));
+    let json: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(json["rule"], "all");
+    assert_eq!(json["mode"], "apply");
+    assert_eq!(json["files_checked"], 1);
+    assert_eq!(json["files_changed"], 1);
+    assert_eq!(json["changed_paths"].as_array().unwrap().len(), 1);
+    assert_eq!(json["changed_paths"][0], "docs/note.md");
+    assert_eq!(json["fixes_would_apply"], 3);
+    assert_eq!(json["fixes_applied"], 3);
+    assert_eq!(json["applied_fix_ids"].as_array().unwrap().len(), 3);
+
+    let fixed = fs::read_to_string(project.path().join("docs/note.md")).unwrap();
+    assert_eq!(
+        fixed,
+        "---\ntitle: Note\n---\n\n# Note\n\nBody\n\n## Usage\n\n## API\n"
+    );
+
+    let rerun = Command::new(assura_bin())
+        .arg("fix")
+        .arg("markdown")
+        .arg("--apply")
+        .arg("--format")
+        .arg("json")
+        .arg(project.path())
+        .output()
+        .unwrap();
+
+    assert_eq!(rerun.status.code(), Some(0));
+    let rerun_json: serde_json::Value = serde_json::from_slice(&rerun.stdout).unwrap();
+    assert_eq!(rerun_json["rule"], "all");
+    assert_eq!(rerun_json["files_changed"], 0);
+    assert_eq!(rerun_json["fixes_applied"], 0);
+    assert_eq!(rerun_json["files_would_change"], 0);
+    assert_eq!(rerun_json["fixes_would_apply"], 0);
 }
 
 #[test]

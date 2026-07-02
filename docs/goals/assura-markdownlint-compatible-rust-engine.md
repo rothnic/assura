@@ -198,3 +198,9 @@ structure validation.
   suppressions and rule-owned severity, and runs candidates against an
   isolated temporary Markdown copy so `assura check` cannot mutate source
   files.
+- 2026-07-02: Started the safe-fix default hardening slice after PR #124
+  merged. `assura fix markdown` now defaults to all supported deterministic
+  Markdown safe-fix classes while preserving targeted `--rule trailing-spaces`
+  and `--rule required-sections` runs, so the parent verification workflow can
+  preview/apply the supported subset without requiring agents to know each
+  individual fixer.

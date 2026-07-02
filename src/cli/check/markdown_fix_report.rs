@@ -66,6 +66,8 @@ pub enum MarkdownFixMode {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum MarkdownFixRuleReport {
+    /// Run every supported deterministic Markdown safe-fix rule.
+    All,
     /// Remove spaces and tabs from otherwise blank Markdown lines.
     TrailingSpaces,
     /// Append configured required Markdown section headings.
@@ -75,6 +77,7 @@ pub enum MarkdownFixRuleReport {
 impl From<MarkdownFixRule> for MarkdownFixRuleReport {
     fn from(value: MarkdownFixRule) -> Self {
         match value {
+            MarkdownFixRule::All => Self::All,
             MarkdownFixRule::TrailingSpaces => Self::TrailingSpaces,
             MarkdownFixRule::RequiredSections => Self::RequiredSections,
         }

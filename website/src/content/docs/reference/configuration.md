@@ -249,10 +249,10 @@ markdown:
 | Field | Behavior |
 | --- | --- |
 | `require_frontmatter` | Requires YAML frontmatter in direct child Markdown files as a generic document-style rule. |
-| `lint_trailing_spaces` | Reports blank Markdown lines that contain spaces or tabs. `assura fix markdown --dry-run --format json` previews this safe whitespace class; `assura fix markdown --apply --format json` writes only this bounded fix class. |
+| `lint_trailing_spaces` | Reports blank Markdown lines that contain spaces or tabs. `assura fix markdown --dry-run --format json` includes this whitespace class by default; use `--rule trailing-spaces` to target only this bounded fix class. |
 | `lint_common` | Reports common Rust-native Markdown lint findings for skipped heading levels, malformed heading marker spacing, duplicate headings, and multiple consecutive blank lines. |
 | `max_heading_depth` | Fails when a Markdown heading is deeper than the configured level. |
-| `required_sections` | Requires headings with the configured text. `assura fix markdown --rule required-sections --dry-run --format json` previews deterministic missing-heading insertions; `--apply` appends those headings for configured Markdown scopes. |
+| `required_sections` | Requires headings with the configured text. `assura fix markdown --dry-run --format json` includes deterministic missing-heading insertions by default; use `--rule required-sections` to target only this fix class. |
 | `outline` | Validates ordered nested headings without requiring users to maintain heading depth numbers. Use `?? ` for optional headings and object form such as `title: "?? Debug Mode"` when a required heading starts with literal question marks. |
 | `check_links` | Validates local relative Markdown links to files, Markdown heading anchors, and GitHub-style line or line-range anchors such as `#L12` and `#L12-L34`. It also reports existing local file references in prose or inline code that should be rendered as Markdown links. Remote URLs and same-file `#heading` links are ignored by this local check. |
 | `rules` | Maps supported `markdown_*` rule IDs to per-rule options. `severity` accepts `low`, `medium`, `high`, or `critical`; `low` findings are advisory and the other severities are blocking. |

@@ -270,7 +270,7 @@ pub enum FixCommands {
         #[arg(help = "Path to fix (defaults to current directory)")]
         path: Option<PathBuf>,
 
-        #[arg(long, value_enum, default_value = "trailing-spaces")]
+        #[arg(long, value_enum, default_value = "all")]
         rule: MarkdownFixRuleArg,
 
         #[arg(long, help = "Preview safe fixes without writing files")]
@@ -311,6 +311,7 @@ pub enum AgentTarget {
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]
 pub enum MarkdownFixRuleArg {
+    All,
     TrailingSpaces,
     RequiredSections,
 }
@@ -318,6 +319,7 @@ pub enum MarkdownFixRuleArg {
 impl From<MarkdownFixRuleArg> for crate::cli::check::MarkdownFixRule {
     fn from(value: MarkdownFixRuleArg) -> Self {
         match value {
+            MarkdownFixRuleArg::All => Self::All,
             MarkdownFixRuleArg::TrailingSpaces => Self::TrailingSpaces,
             MarkdownFixRuleArg::RequiredSections => Self::RequiredSections,
         }

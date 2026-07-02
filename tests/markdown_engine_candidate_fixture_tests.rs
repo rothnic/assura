@@ -241,6 +241,8 @@ fn markdown_engine_candidate_fixture_safe_fix_previews_are_bounded() {
         "fix",
         "markdown",
         temp.path().to_str().expect("temp path is UTF-8"),
+        "--rule",
+        "trailing-spaces",
         "--dry-run",
         "--format",
         "json",

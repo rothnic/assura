@@ -44,7 +44,7 @@ Owning task:
 `.trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine`.
 
 Current branch:
-`codex/markdown-engine-candidate-evidence` for the active Markdown engine
+`codex/markdown-safe-fix-policy` for the active Markdown engine
 implementation branch.
 
 Current recommended goal:
@@ -68,7 +68,10 @@ A documentation-heavy project can use one local Assura workflow to validate
 structure first, then Markdown, content models, repository references, graph
 queries, daemon-backed warm state, compact agent nudges, VS Code diagnostics,
 safe fixes, and performance gates without relying on unsupported services or
-private integration logic.
+private integration logic. The parent goal owns the detailed verification
+story: a maintainer renames architecture docs and moves code, then proves the
+CLI, daemon, agent hooks, editor, content graph, Markdown fixes, and LS-Lint
+performance gate all agree before merge.
 
 Direction lock, clarified on 2026-05-31: do not create or revive
 `assura-codex-feedback`, do not add one CLI entrypoint per agent, and do not add

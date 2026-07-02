@@ -17,6 +17,8 @@ use std::path::{Path, PathBuf};
 /// Markdown fix rule supported by the safe-fix workflow.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MarkdownFixRule {
+    /// Run every supported deterministic Markdown safe-fix rule.
+    All,
     /// Remove spaces and tabs from otherwise blank Markdown lines.
     TrailingSpaces,
     /// Append missing headings declared by `markdown.required_sections`.
@@ -25,6 +27,18 @@ pub enum MarkdownFixRule {
 
 /// Apply a safe Markdown fix for configured Markdown scopes.
 pub fn run_markdown_fix(
+    path: Option<PathBuf>,
+    config_path: Option<PathBuf>,
+    rule: MarkdownFixRule,
+    dry_run: bool,
+) -> Result<MarkdownFixReport, CheckError> {
+    if rule == MarkdownFixRule::All {
+        return super::markdown_fix_all::run_all_markdown_fixes(path, config_path, dry_run);
+    }
+    run_single_markdown_fix(path, config_path, rule, dry_run)
+}
+
+pub(super) fn run_single_markdown_fix(
     path: Option<PathBuf>,
     config_path: Option<PathBuf>,
     rule: MarkdownFixRule,
@@ -170,6 +184,7 @@ impl StructureChecker {
         };
 
         match rule {
+            MarkdownFixRule::All => unreachable!("all markdown fixes are expanded before walking"),
             MarkdownFixRule::TrailingSpaces => {
                 if markdown.lint_trailing_spaces != Some(true) {
                     self.push_markdown_skip_if_fixable(
@@ -478,6 +493,7 @@ fn portable_path(path: &Path) -> String {
 
 fn operation_name(rule: MarkdownFixRule) -> &'static str {
     match rule {
+        MarkdownFixRule::All => "all_markdown_safe_fixes",
         MarkdownFixRule::TrailingSpaces => "remove_blank_line_trailing_spaces",
         MarkdownFixRule::RequiredSections => REQUIRED_SECTION_OPERATION,
     }
