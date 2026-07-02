@@ -5704,7 +5704,8 @@ mod tests {
         if !unreleased.is_empty() {
             assert!(unreleased
                 .iter()
-                .any(|surface| surface.get("id").and_then(Value::as_str) == Some("daemon-mode")));
+                .any(|surface| surface.get("id").and_then(Value::as_str)
+                    == Some("agent-ready-doctor-explain")));
             assert!(unreleased.iter().all(|surface| {
                 surface.get("id").and_then(Value::as_str)
                     != Some("project-intelligence-local-surfaces")
