@@ -53,6 +53,38 @@ linter/fixer path that is consistent with markdownlint.
 - If no candidate is adopted, produce a decision record with measured reasons
   and a fallback plan.
 
+## Final Output Verification Story
+
+This child goal should be judged against the parent program's final
+documentation-heavy Rust CLI fixture, not only a candidate linter benchmark.
+The reviewer should be able to picture and eventually run this workflow:
+
+1. A maintainer starts with a repository that has goals, ADRs, analysis notes,
+   generated references, release docs, and agent-written Markdown.
+2. The repository contains intentional drift: a misplaced generated file,
+   coarse line-policy violations, markdownlint-style formatting drift,
+   duplicated and skipped headings, stale anchors, invalid suppression comments,
+   and content-model frontmatter that later document-graph checks will own.
+3. `assura check` reports structure and coarse file policy before Markdown
+   internals. Markdown findings then map into stable Assura rule IDs with
+   rule-owned severity, suppression, and fix policy.
+4. `assura fix markdown --dry-run` previews only deterministic safe fixes,
+   including whether the selected Rust engine or an Assura-owned focused fixer
+   is responsible. `--apply` must be idempotent and preserve frontmatter, line
+   endings, and prose semantics.
+5. JSON, YAML, text, agent, daemon, editor, and later content-graph surfaces
+   reuse the same finding IDs and severity/suppression model so the user does
+   not see competing truths.
+6. Benchmark evidence separates cold CLI startup, config loading, file walking,
+   candidate engine lint/fix time, reporting overhead, warm daemon behavior,
+   and comparison rows for current Assura, selected Rust candidates, and
+   `markdownlint-cli2`.
+
+For this goal, the minimum useful increment is therefore not "run a linter on
+Markdown." It is executable evidence that the selected or rejected Rust engine
+can fit this staged Assura workflow without breaking the final parent
+verification package.
+
 ## Acceptance Criteria
 
 - [ ] Candidate research records version, license, MSRV, API shape, binary size,

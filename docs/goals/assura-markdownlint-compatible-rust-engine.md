@@ -172,3 +172,7 @@ structure validation.
   `cargo xtask markdown-engine-probe`, staged violation sorting, and tests that
   prove current Assura behavior against the fixture while external candidates
   remain optional until installed.
+- 2026-07-02: Tightened the active Trellis PRD so candidate evaluation must
+  prove the parent maintainer workflow: staged findings, rule-owned severity
+  and fix policy, deterministic safe fixes, shared CLI/daemon/editor/agent
+  diagnostics, and benchmark attribution.
