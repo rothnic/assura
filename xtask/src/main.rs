@@ -954,7 +954,7 @@ fn run_performance_no_slower(args: &[String]) -> Result<()> {
 
     if failures.is_empty() {
         println!(
-            "Performance no-slower gate passed for cohort {} ({} <= {}).",
+            "Performance no-slower gate passed for accepted fixtures in cohort {} ({} <= {}).",
             options.cohort, options.assura_row, options.ls_lint_row
         );
         return Ok(());
@@ -2155,6 +2155,7 @@ fn performance_no_slower_failures(
         .get("results")
         .and_then(Value::as_array)
         .ok_or("performance report missing results array")?;
+    let mut accepted_fixtures = BTreeSet::<String>::new();
     let mut timings = BTreeMap::<String, FixtureTiming>::new();
     let mut failures = Vec::new();
 
@@ -2167,15 +2168,11 @@ fn performance_no_slower_failures(
             .and_then(Value::as_str)
             .ok_or("performance row missing fixture_id")?;
 
-        let Some(row_family) = row.get("row_family").and_then(Value::as_str) else {
-            continue;
-        };
-        if row_family != assura_row && row_family != ls_lint_row {
-            continue;
-        }
         match accepted_fixture_row(row) {
             Ok(false) => continue,
-            Ok(true) => {}
+            Ok(true) => {
+                accepted_fixtures.insert(fixture_id.to_string());
+            }
             Err(reason) => {
                 failures.push(NoSlowerFailure::InvalidAcceptance {
                     fixture_id: fixture_id.to_string(),
@@ -2184,6 +2181,12 @@ fn performance_no_slower_failures(
                 continue;
             }
         }
+        let Some(row_family) = row.get("row_family").and_then(Value::as_str) else {
+            continue;
+        };
+        if row_family != assura_row && row_family != ls_lint_row {
+            continue;
+        }
         let timing = timings.entry(fixture_id.to_string()).or_default();
         if row_family == assura_row {
             timing.assura = Some(timing_from_row(row));
@@ -2191,13 +2194,24 @@ fn performance_no_slower_failures(
             timing.ls_lint = Some(native_ls_lint_timing_from_row(row));
         }
     }
+    for fixture_id in accepted_fixtures {
+        timings.entry(fixture_id).or_default();
+    }
 
     if timings.is_empty() && failures.is_empty() {
-        return Err(format!("performance report has no fixture rows for cohort {cohort}").into());
+        return Err(
+            format!("performance report has no accepted fixture rows for cohort {cohort}").into(),
+        );
     }
 
     for (fixture_id, timing) in timings {
         match (timing.assura, timing.ls_lint) {
+            (None, None) => {
+                failures.push(NoSlowerFailure::MissingAssura {
+                    fixture_id: fixture_id.clone(),
+                });
+                failures.push(NoSlowerFailure::MissingLsLint { fixture_id });
+            }
             (None, _) => failures.push(NoSlowerFailure::MissingAssura { fixture_id }),
             (_, None) => failures.push(NoSlowerFailure::MissingLsLint { fixture_id }),
             (Some(RowTiming::Invalid(reason)), _) => {
@@ -5048,6 +5062,7 @@ mod tests {
                 {
                     "fixture_cohort": "realistic-equivalent",
                     "fixture_id": "no-target-rows",
+                    "fixture_acceptance": "diagnostic",
                     "row_family": "assura:phase:walk-and-validate",
                     "status": "pass",
                     "median_runtime_ms": 1.0
@@ -5124,6 +5139,42 @@ mod tests {
                 fixture_id: "missing-acceptance".to_string(),
                 reason: "missing fixture_acceptance".to_string()
             }]
+        );
+    }
+
+    #[test]
+    fn performance_no_slower_requires_target_rows_for_accepted_fixtures() {
+        let report = json!({
+            "results": [
+                {
+                    "fixture_cohort": "realistic-equivalent",
+                    "fixture_id": "accepted-without-targets",
+                    "fixture_acceptance": "accepted-ls-lint-equivalent",
+                    "row_family": "assura:phase:walk-and-validate",
+                    "status": "pass",
+                    "median_runtime_ms": 1.0
+                }
+            ]
+        });
+
+        let failures = performance_no_slower_failures(
+            &report,
+            "realistic-equivalent",
+            "assura-cli",
+            "ls-lint-cli",
+        )
+        .expect("report is valid");
+
+        assert_eq!(
+            failures,
+            vec![
+                NoSlowerFailure::MissingAssura {
+                    fixture_id: "accepted-without-targets".to_string()
+                },
+                NoSlowerFailure::MissingLsLint {
+                    fixture_id: "accepted-without-targets".to_string()
+                }
+            ]
         );
     }
 

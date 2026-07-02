@@ -2,7 +2,7 @@
 id: goal-assura-performance-floor-and-fixture-gate
 type: goal
 title: Assura performance floor and fixture gate
-status: planned
+status: completed
 created: 2026-07-01
 owners:
   - assura-maintainers
@@ -65,6 +65,7 @@ slower, and "CLI floor" should drive remediation rather than excuse a miss.
 
 ```bash
 cargo build --release --bin assura --no-default-features --features json-output,yaml-config
+cargo build --release --bin assura-full
 cargo build --release -p assura-check-cli
 target/release/assura performance-report --output benches/history/current.json --history benches/history/ls-lint-comparison-history.jsonl --website-dir website/public/data/performance --iterations 5
 cargo xtask performance-no-slower
@@ -80,3 +81,9 @@ git diff --check
 Block if any accepted LS-Lint-equivalent fixture is slower than LS-Lint, if the
 gate can pass by aggregate-only math, if fixture removal lacks rationale, or if
 new performance claims are not backed by checked report JSON.
+
+## Progress Log
+
+| Date | Update | Evidence |
+| --- | --- | --- |
+| 2026-07-02 | Closed this child goal for the beta increment by adding explicit `fixture_acceptance` metadata to performance rows, making `cargo xtask performance-no-slower` enforce only accepted LS-Lint-equivalent fixture rows, and regenerating checked performance data from release binaries. All current `realistic-equivalent` accepted fixtures are no slower than native LS-Lint in the checked report. | `src/cli/performance_report/rows.rs`; `xtask/src/main.rs`; `tests/performance_report_contract_tests.rs`; `benches/history/current.json`; `website/public/data/performance/current.json`; `cargo build --release --bin assura --no-default-features --features json-output,yaml-config`; `cargo build --release --bin assura-full`; `cargo build --release -p assura-check-cli`; `target/release/assura performance-report --output benches/history/current.json --history benches/history/ls-lint-comparison-history.jsonl --website-dir website/public/data/performance --iterations 5`; `cargo xtask performance-no-slower`. |
