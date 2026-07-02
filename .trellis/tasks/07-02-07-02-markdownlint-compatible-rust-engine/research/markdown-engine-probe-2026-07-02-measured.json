@@ -1,0 +1,189 @@
+{
+  "candidates": [
+    {
+      "execution_mode": "target-debug-binary",
+      "exit_code": 1,
+      "name": "assura-current",
+      "rules": [
+        "markdown_duplicate_heading",
+        "markdown_heading_increment",
+        "markdown_heading_marker_spacing",
+        "markdown_link_format",
+        "markdown_link_heading_anchor",
+        "markdown_link_line_anchor",
+        "markdown_link_target",
+        "markdown_multiple_blank_lines",
+        "markdown_required_section",
+        "markdown_suppression",
+        "markdown_trailing_spaces",
+        "unexpected_file"
+      ],
+      "status": "ran_with_findings",
+      "stderr": "",
+      "stdout_bytes": 5392,
+      "timing": {
+        "errors": [],
+        "failed_runs": 0,
+        "iterations": 5,
+        "max_ms": 10.240691,
+        "median_ms": 8.803969,
+        "min_ms": 8.578173,
+        "p95_ms": 10.240691,
+        "samples_ms": [
+          8.578173,
+          8.651327,
+          8.803969,
+          9.778279000000001,
+          10.240691
+        ],
+        "successful_runs": 5
+      }
+    },
+    {
+      "available": true,
+      "binary": "rumdl",
+      "exit_code": 1,
+      "name": "rumdl",
+      "probe_fixture_root": "target/markdown-engine-probe/rumdl/invalid",
+      "probe_markdown_files": [
+        "target/markdown-engine-probe/rumdl/invalid/docs/guide.md",
+        "target/markdown-engine-probe/rumdl/invalid/docs/reference.md"
+      ],
+      "status": "ran_with_findings",
+      "stderr_bytes": 0,
+      "stderr_snippet": "",
+      "stdout_bytes": 3319,
+      "stdout_snippet": "[\n  {\n    \"file\": \"target/markdown-engine-probe/rumdl/invalid/docs/guide.md\",\n    \"line\": 5,\n    \"column\": 3,\n    \"rule\": \"MD025\",\n    \"message\": \"Multiple top-level headings (level 1) in the same document\",\n    \"severity\": \"error\",\n    \"fixable\": true,\n    \"fix\": {\n      \"range\": {\n        \"start\": 22,\n        \"end\": 29\n      },\n      \"replacement\": \"## Guide\"\n    }\n  },\n  {\n    \"file\": \"target/markdown-engine-probe/rumdl/invalid/docs/guide.md\",\n    \"line\": 6,\n    \"column\": 1,\n    \"rule\": \"MD009\",\n    \"message\": \"Empty line has trailing spaces\",\n    \"severity\": \"warning\",\n    \"fixable\": true,\n    \"fix\": {\n      \"range\": {\n        \"start\": 30,\n        \"end\": 33\n      },\n      \"replacement\": \"\"\n    }\n  },\n  {\n    \"file\": \"target/markdown-engine-probe/rumdl/invalid/docs/guide.md\",\n    \"line\": 8,\n    \"column\": 15,\n    \"rule\": \"MD057\",\n    \"message\": \"Relative link 'missing.md' does not exist\",\n    \"severity\": \"error\",\n    \"fixable\": false,\n    \"fix\": null\n  },\n  {\n    \"file\": \"target/markdown-engine-probe/rumdl/invalid/docs/guide.md\",\n    \"line\": 11,\n    \"column\": 2,\n    \"rule\": \"MD018\",\n    \"message\": \"No space after # in heading\",\n    \"severity\": \"warning\",\n    \"fixable\": true,\n    \"fix\": {\n      \"range\": {\n        \"start\": 219,\n        \"end\": 223\n      },\n      \"replacement\": \"# Bad\"\n    }\n  },\n  {\n    \"file\": \"target/markdown-engine-probe/rumdl/invalid/docs/guide.md\",\n    \"line\": 11,\n    \"column\": 2,\n    \"rule\": \"MD025\",\n    \"message\": \"Multiple top-level headings (level 1) in the same document\",\n    \"severity\": \"error\",\n    \"fixable\": true,\n    \"fix\": {\n      \"range\": {\n        \"start\": 219,\n        \"end\": 223\n      },\n      \"replacement\": \"## Bad\"\n    }\n  },\n  {\n    \"file\": \"target/markdown-engine-probe/rumdl/invalid/docs/guide.md\",\n    \"line\": 13,\n    \"column\": 1,\n    \"rule\": \"MD012\",\n    \"message\": \"Multiple consecutive blank lines between content\",\n    \"severity\": \"warning\",\n    \"fixable\": true,\n    \"fix\": {\n      \"range\": {\n        \"start\": 225,\n        \"end\": 226\n      },\n      \"replacement\": \"\"\n    }\n  },\n  {\n    \"file\": \"target/markdown-engine-probe/rumdl/invalid/docs/guide.md\",\n    \"line\": 14,\n    \"column\": 1,\n    \"rule\": \"MD001\",\n    \"message\": \"Expected heading level 2, but found heading level 3\",\n    \"severity\": \"error\",\n    \"fixable\": true,\n    \"fix\": {\n      \"range\": {\n        \"start\": 226,\n        \"end\": 234\n      },\n      \"replacement\": \"## Deep\"\n    }\n  },\n  {\n    \"file\": \"target/markdown-engine-probe/rumdl/invalid/docs/guide.md\",\n    \"line\": 18,\n    \"column\": 4,\n    \"rule\": \"MD024\",\n    \"message\": \"Duplicate heading: 'Usage'.\",\n    \"severity\": \"error\",\n    \"fixable\": false,\n    \"fix\": null\n  },\n  {\n    \"file\": \"target/markdown-engine-probe/rumdl/invalid/docs/guide.md\",\n    \"line\": 8,\n    \"column\": 28,\n    \"rule\": \"MD051\",\n    \"message\": \"Link fragment 'missing-anchor' not found in 'reference.md'\",\n    \"severity\": \"error\",\n    \"fixable\": false,\n    \"fix\": null\n  },\n  {\n    \"file\": \"target/markdown-engine-probe/rumdl/invalid/docs/reference.md\",\n    \"line\": 5,\n    \"column\": 3,\n    \"rule\": \"MD025\",\n    \"message\": \"Multiple top-level headings (level 1) in the same document\",\n    \"severity\": \"error\",\n    \"fixable\": true,\n    \"fix\": {\n      \"range\": {\n        \"start\": 26,\n        \"end\": 37\n      },\n      \"replacement\": \"## Reference\"\n    }\n  }\n]",
+      "timing": {
+        "errors": [],
+        "failed_runs": 0,
+        "iterations": 5,
+        "max_ms": 22.441862999999998,
+        "median_ms": 22.131545,
+        "min_ms": 20.793292,
+        "p95_ms": 22.441862999999998,
+        "samples_ms": [
+          20.793292,
+          21.279837999999998,
+          22.131545,
+          22.146986000000002,
+          22.441862999999998
+        ],
+        "successful_runs": 5
+      },
+      "version": "rumdl 0.2.27"
+    },
+    {
+      "available": true,
+      "binary": "mdlint",
+      "exit_code": 1,
+      "name": "mdlint",
+      "probe_fixture_root": "target/markdown-engine-probe/mdlint/invalid",
+      "probe_markdown_files": [
+        "target/markdown-engine-probe/mdlint/invalid/docs/guide.md",
+        "target/markdown-engine-probe/mdlint/invalid/docs/reference.md"
+      ],
+      "status": "ran_with_findings",
+      "stderr_bytes": 134,
+      "stderr_snippet": "Fixed: target/markdown-engine-probe/mdlint/invalid/docs/guide.md\nFixed: target/markdown-engine-probe/mdlint/invalid/docs/reference.md",
+      "stdout_bytes": 1560,
+      "stdout_snippet": "{\"files\":[{\"path\":\"target/markdown-engine-probe/mdlint/invalid/docs/guide.md\",\"violations\":[{\"line\":2,\"column\":1,\"rule\":\"MD003\",\"message\":\"Heading style should be Atx but found Setext\"},{\"line\":2,\"column\":1,\"rule\":\"MD022\",\"message\":\"Heading should be surrounded by blank lines (missing before)\",\"fixable\":true},{\"line\":2,\"column\":1,\"rule\":\"MD041\",\"message\":\"First line in file should be a level 1 heading\"},{\"line\":6,\"column\":1,\"rule\":\"MD009\",\"message\":\"Trailing spaces (3 spaces)\",\"fixable\":true},{\"line\":8,\"column\":1,\"rule\":\"MD051\",\"message\":\"Link fragment 'missing-anchor' does not match any heading\"},{\"line\":9,\"column\":1,\"rule\":\"MD051\",\"message\":\"Link fragment 'L99' does not match any heading\"},{\"line\":11,\"column\":2,\"rule\":\"MD018\",\"message\":\"No space after hash on atx style heading\",\"fixable\":true},{\"line\":13,\"column\":1,\"rule\":\"MD012\",\"message\":\"Multiple consecutive blank lines [Expected: 1; Actual: 2]\",\"fixable\":true},{\"line\":14,\"column\":1,\"rule\":\"MD001\",\"message\":\"Heading level skipped from h1 to h3\"},{\"line\":18,\"column\":1,\"rule\":\"MD024\",\"message\":\"Multiple headings with the same content: \\\"Usage\\\" (first at line 16)\"}]},{\"path\":\"target/markdown-engine-probe/mdlint/invalid/docs/reference.md\",\"violations\":[{\"line\":2,\"column\":1,\"rule\":\"MD003\",\"message\":\"Heading style should be Atx but found Setext\"},{\"line\":2,\"column\":1,\"rule\":\"MD022\",\"message\":\"Heading should be surrounded by blank lines (missing before)\",\"fixable\":true},{\"line\":2,\"column\":1,\"rule\":\"MD041\",\"message\":\"First line in file should be a level 1 heading\"}]}],\"total_errors\":13}",
+      "timing": {
+        "errors": [],
+        "failed_runs": 0,
+        "iterations": 5,
+        "max_ms": 9.542711,
+        "median_ms": 8.465822,
+        "min_ms": 8.316252,
+        "p95_ms": 9.542711,
+        "samples_ms": [
+          8.316252,
+          8.358891999999999,
+          8.465822,
+          8.551833,
+          9.542711
+        ],
+        "successful_runs": 5
+      },
+      "version": "mdlint 0.3.18"
+    },
+    {
+      "available": true,
+      "binary": "mado",
+      "exit_code": 1,
+      "name": "mado",
+      "probe_fixture_root": "target/markdown-engine-probe/mado/invalid",
+      "probe_markdown_files": [
+        "target/markdown-engine-probe/mado/invalid/docs/guide.md",
+        "target/markdown-engine-probe/mado/invalid/docs/reference.md"
+      ],
+      "status": "ran_with_findings",
+      "stderr_bytes": 0,
+      "stderr_snippet": "",
+      "stdout_bytes": 894,
+      "stdout_snippet": "target/markdown-engine-probe/mado/invalid/docs/guide.md:1:1 MD041/first-line-h1 First line in file should be a top level header\ntarget/markdown-engine-probe/mado/invalid/docs/guide.md:6:1 MD009/no-trailing-spaces Trailing spaces\ntarget/markdown-engine-probe/mado/invalid/docs/guide.md:11:1 MD018/no-missing-space-atx No space after hash on atx style header\ntarget/markdown-engine-probe/mado/invalid/docs/guide.md:13:1 MD012/no-multiple-blanks Multiple consecutive blank lines\ntarget/markdown-engine-probe/mado/invalid/docs/guide.md:14:1 MD001/header-increment Header levels should only increment by one level at a time\ntarget/markdown-engine-probe/mado/invalid/docs/guide.md:18:1 MD024/no-duplicate-header Multiple headers with the same content\ntarget/markdown-engine-probe/mado/invalid/docs/reference.md:1:1 MD041/first-line-h1 First line in file should be a top level header\n\nFound 7 errors.",
+      "timing": {
+        "errors": [],
+        "failed_runs": 0,
+        "iterations": 5,
+        "max_ms": 11.667409,
+        "median_ms": 10.719473,
+        "min_ms": 10.058532999999999,
+        "p95_ms": 11.667409,
+        "samples_ms": [
+          10.058532999999999,
+          10.314069,
+          10.719473,
+          10.75088,
+          11.667409
+        ],
+        "successful_runs": 5
+      },
+      "version": "mado 0.3.0"
+    },
+    {
+      "available": true,
+      "binary": "markdownlint-cli2",
+      "exit_code": 1,
+      "name": "markdownlint-cli2",
+      "probe_fixture_root": "target/markdown-engine-probe/markdownlint-cli2/invalid",
+      "probe_markdown_files": [
+        "target/markdown-engine-probe/markdownlint-cli2/invalid/docs/guide.md",
+        "target/markdown-engine-probe/markdownlint-cli2/invalid/docs/reference.md"
+      ],
+      "status": "ran_with_findings",
+      "stderr_bytes": 1186,
+      "stderr_snippet": "target/markdown-engine-probe/markdownlint-cli2/invalid/docs/guide.md:5 error MD025/single-title/single-h1 Multiple top-level headings in the same document [Context: \"Guide\"]\ntarget/markdown-engine-probe/markdownlint-cli2/invalid/docs/guide.md:6:1 error MD009/no-trailing-spaces Trailing spaces [Expected: 0 or 2; Actual: 3]\ntarget/markdown-engine-probe/markdownlint-cli2/invalid/docs/guide.md:11:1 error MD018/no-missing-space-atx No space after hash on atx style heading [Context: \"#Bad\"]\ntarget/markdown-engine-probe/markdownlint-cli2/invalid/docs/guide.md:13 error MD012/no-multiple-blanks Multiple consecutive blank lines [Expected: 1; Actual: 2]\ntarget/markdown-engine-probe/markdownlint-cli2/invalid/docs/guide.md:14 error MD001/heading-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\ntarget/markdown-engine-probe/markdownlint-cli2/invalid/docs/guide.md:18 error MD024/no-duplicate-heading Multiple headings with the same content [Context: \"Usage\"]\ntarget/markdown-engine-probe/markdownlint-cli2/invalid/docs/reference.md:5 error MD025/single-title/single-h1 Multiple top-level headings in the same document [Context: \"Reference\"]",
+      "stdout_bytes": 246,
+      "stdout_snippet": "markdownlint-cli2 v0.23.0 (markdownlint v0.41.0)\nFinding: --json target/markdown-engine-probe/markdownlint-cli2/invalid/docs/guide.md target/markdown-engine-probe/markdownlint-cli2/invalid/docs/reference.md\nLinting: 2 file(s)\nSummary: 7 error(s)",
+      "timing": {
+        "errors": [],
+        "failed_runs": 0,
+        "iterations": 5,
+        "max_ms": 413.41163,
+        "median_ms": 396.34073800000004,
+        "min_ms": 386.892355,
+        "p95_ms": 413.41163,
+        "samples_ms": [
+          386.892355,
+          387.42415800000003,
+          396.34073800000004,
+          406.036283,
+          413.41163
+        ],
+        "successful_runs": 5
+      },
+      "version": "markdownlint-cli2 v0.23.0 (markdownlint v0.41.0)\nFinding: --version\nLinting: 0 file(s)\nSummary: 0 error(s)"
+    }
+  ],
+  "fixture_root": "tests/fixtures/markdown_engine_candidates",
+  "iterations": 5,
+  "markdown_files": [
+    "tests/fixtures/markdown_engine_candidates/invalid/docs/guide.md",
+    "tests/fixtures/markdown_engine_candidates/invalid/docs/reference.md"
+  ],
+  "matrix": "tests/fixtures/markdown_engine_candidates/matrix.json",
+  "measure": true,
+  "run_external": true,
+  "schema": "assura.markdown-engine-probe.v1"
+}
