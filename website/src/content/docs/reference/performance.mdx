@@ -15,7 +15,9 @@ same repository checkout and equivalent LS-Lint-compatible ruleset. The
 benchmark row is named `assura-cli` because the measured command is the primary
 installable `assura` launcher, which routes supported one-shot `assura check`
 invocations through the lightweight checker before dispatching less common
-commands to `assura-full`. The LS-Lint binary is resolved from the pinned
+commands to `assura-full`. The timed command uses quiet successful validation
+so the comparison measures rule checking and traversal rather than JSON report
+serialization. The LS-Lint binary is resolved from the pinned
 `@ls-lint/ls-lint` package before timing so the measured loop does not include
 npm package resolution or the package's Node wrapper.
 
