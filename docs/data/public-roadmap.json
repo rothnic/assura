@@ -159,13 +159,13 @@
       "items": [
         {
           "label": "Post-Beta Capabilities",
-          "summary": "Make Assura support-grade through one maintainer verification story covering self-validation, document graph workflows, daemon mode, agent/editor integrations, Markdown linting, and LS-Lint performance gates.",
+          "summary": "Released the v0.3.0 beta increment with self-validation, document graph workflows, daemon mode, agent/editor integrations, Markdown linting, and LS-Lint performance gates.",
           "detail_path": "docs/goals/assura-post-beta-capabilities-program.md",
           "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-post-beta-capabilities-program.md"
         },
         {
           "label": "Release Verification",
-          "summary": "Publish and live-verify the v0.3.0 beta increment without claiming GA.",
+          "summary": "Published and live-verified the v0.3.0 beta increment without claiming GA.",
           "detail_path": "docs/goals/assura-post-beta-capabilities-program.md",
           "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-post-beta-capabilities-program.md"
         }
@@ -176,8 +176,8 @@
       "title": "Next",
       "items": [
         {
-          "label": "Beta Increment",
-          "summary": "Package the completed capability program as a versioned beta increment without claiming GA.",
+          "label": "Next Iteration",
+          "summary": "Choose the next roadmap iteration from a new product decision using the v0.3.0 verification story as regression context.",
           "detail_path": "docs/goals/assura-post-beta-capabilities-program.md",
           "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-post-beta-capabilities-program.md"
         }
