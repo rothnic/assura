@@ -6,8 +6,6 @@ use super::config::Config;
 use crate::cli::config::{ConfigError, ConfigResult};
 use crate::config::config::{normalize_structure_config_value, validate_config_semantics};
 use std::path::Path;
-#[cfg(feature = "full-cli")]
-use validator::Validate;
 
 /// Loader for structure configs
 #[derive(Debug)]
@@ -43,10 +41,6 @@ impl ConfigLoader {
         let config: Config =
             serde_yaml::from_str(content).map_err(|error| ConfigError::Yaml(error.to_string()))?;
         validate_config_semantics(&config).map_err(ConfigError::Invalid)?;
-        #[cfg(feature = "full-cli")]
-        config
-            .validate()
-            .map_err(|e| ConfigError::Invalid(format!("Configuration validation failed: {}", e)))?;
         Ok(config)
     }
 
@@ -57,10 +51,6 @@ impl ConfigLoader {
         let config: Config =
             serde_yaml::from_value(value).map_err(|error| ConfigError::Yaml(error.to_string()))?;
         validate_config_semantics(&config).map_err(ConfigError::Invalid)?;
-        #[cfg(feature = "full-cli")]
-        config
-            .validate()
-            .map_err(|e| ConfigError::Invalid(format!("Configuration validation failed: {}", e)))?;
         Ok(config)
     }
 
