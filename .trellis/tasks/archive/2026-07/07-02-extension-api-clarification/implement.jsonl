@@ -1,0 +1,9 @@
+{"file":"docs/goals/assura-extension-api-clarification.md","reason":"primary child goal with objective, scope, DoD, validation, and blockers"}
+{"file":"docs/goals/assura-post-beta-capabilities-program.md","reason":"parent beta-program north-star and progress log"}
+{"file":".trellis/spec/assura/roadmap.md","reason":"current roadmap routing and active child handoff"}
+{"file":".trellis/spec/assura/config-notation.md","reason":"source-of-truth config notation boundaries for first-party extensions policies"}
+{"file":"docs/support-policy.md","reason":"support classification source of truth for public and unsupported surfaces"}
+{"file":"docs/compatibility-and-surface.md","reason":"public compatibility matrix and existing extension compatibility section"}
+{"file":"website/src/content/docs/reference/api.md","reason":"public API reference where stable CLI/internal/plugin boundaries must be clear"}
+{"file":"website/src/content/docs/reference/configuration.md","reason":"public configuration reference for extensions.* policy documentation"}
+{"file":"xtask/src/main.rs","reason":"target-state and evidence guardrails for unsupported plugin/API claims"}
