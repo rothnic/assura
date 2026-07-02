@@ -26,7 +26,7 @@ use lifecycle::{
     daemon_logs_output, daemon_restart_output, daemon_start_output, daemon_stop_output,
 };
 use management::{daemon_doctor_output, daemon_status_output, health_for_path};
-use process::{request_check_path, serve_daemon};
+use process::{request_check_path, request_references, serve_daemon};
 use references::{reference_request, DaemonReferenceRequest};
 pub(crate) use render::DaemonTextRender;
 use render::{
@@ -272,6 +272,32 @@ fn run_daemon_command(
         }
         _ => {}
     }
+    if matches!(format, OutputFormat::Json | OutputFormat::Yaml) {
+        let runtime_health =
+            management::runtime_probe_health_for_path(path.clone(), config.clone());
+        if let Some(listen_addr) = lifecycle::runtime_listen_addr_for_health(&runtime_health) {
+            let response = match &command {
+                DaemonCommands::CheckPath { changed, .. } => {
+                    request_check_path(&listen_addr, changed)
+                }
+                DaemonCommands::References { limit, .. } => request_references(
+                    &listen_addr,
+                    reference_request
+                        .as_ref()
+                        .expect("references request prevalidated"),
+                    *limit,
+                ),
+                _ => Err("daemon command does not support runtime IPC".to_string()),
+            };
+            if let Ok(response) = response {
+                return render_raw_value(
+                    response.value,
+                    format,
+                    exit_code_from_i32(response.exit_code),
+                );
+            }
+        }
+    }
     let mut core = match LocalDaemonCore::load(path, config) {
         Ok(core) => core,
         Err(error) => return render_load_error(error, format, command.path()),
@@ -310,7 +336,8 @@ fn run_daemon_command(
             }
         }
         DaemonCommands::References { limit, .. } => {
-            match reference_request.expect("references request prevalidated") {
+            let request = reference_request.expect("references request prevalidated");
+            match request {
                 DaemonReferenceRequest::Source(path) => {
                     render_reference(core.changed_source_references(path, limit), format, &core)
                 }
@@ -378,7 +405,7 @@ fn render_reference(
     core: &LocalDaemonCore,
 ) -> Result<DaemonCommandOutcome, DaemonCommandError> {
     match result {
-        Ok(response) => render_success(response, format),
+        Ok(response) => render_success(DaemonReferenceOutput::affected(response), format),
         Err(error) => render_error(error, format, Some(core.health())),
     }
 }
@@ -389,8 +416,56 @@ fn render_moved_reference(
     core: &LocalDaemonCore,
 ) -> Result<DaemonCommandOutcome, DaemonCommandError> {
     match result {
-        Ok(response) => render_success(response, format),
+        Ok(response) => render_success(DaemonMovedReferenceOutput::new(response), format),
         Err(error) => render_error(error, format, Some(core.health())),
+    }
+}
+
+#[derive(Debug, Serialize)]
+struct DaemonReferenceOutput {
+    schema: &'static str,
+    protocol_version: &'static str,
+    #[serde(flatten)]
+    response: DaemonAffectedReferences,
+}
+
+impl DaemonReferenceOutput {
+    fn affected(response: DaemonAffectedReferences) -> Self {
+        Self {
+            schema: "assura.daemon.references.v1",
+            protocol_version: process::DAEMON_PROTOCOL_VERSION,
+            response,
+        }
+    }
+}
+
+impl DaemonTextRender for DaemonReferenceOutput {
+    fn render_text(&self) -> String {
+        self.response.render_text()
+    }
+}
+
+#[derive(Debug, Serialize)]
+struct DaemonMovedReferenceOutput {
+    schema: &'static str,
+    protocol_version: &'static str,
+    #[serde(flatten)]
+    response: DaemonMovedTargetReferences,
+}
+
+impl DaemonMovedReferenceOutput {
+    fn new(response: DaemonMovedTargetReferences) -> Self {
+        Self {
+            schema: "assura.daemon.references.v1",
+            protocol_version: process::DAEMON_PROTOCOL_VERSION,
+            response,
+        }
+    }
+}
+
+impl DaemonTextRender for DaemonMovedReferenceOutput {
+    fn render_text(&self) -> String {
+        self.response.render_text()
     }
 }
 

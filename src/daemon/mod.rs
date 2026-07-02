@@ -173,7 +173,9 @@ impl LocalDaemonCore {
         &mut self,
         path: PathBuf,
     ) -> Result<StructureCheckReport, DaemonCoreError> {
-        self.ensure_fresh()?;
+        self.ensure_config_fresh()?;
+        self.state = DaemonHealthState::Running;
+        self.reason = "project state is current for changed-path validation".to_string();
         Ok(self.prepared.check_changed_path(path)?)
     }
 
@@ -199,8 +201,8 @@ impl LocalDaemonCore {
         limit: usize,
     ) -> Result<DaemonAffectedReferences, DaemonCoreError> {
         self.ensure_config_fresh()?;
-        self.mark_degraded_if_project_changed()?;
         let rel_path = self.normalize_project_path(path);
+        self.ensure_target_feedback_fresh_or_degraded(&rel_path)?;
         let target_id = resource_id(&rel_path);
         let all_references = self.context.store.repository_references_to(&target_id);
         Ok(self.reference_response("target", rel_path, all_references, limit))
@@ -215,9 +217,9 @@ impl LocalDaemonCore {
         limit: usize,
     ) -> Result<DaemonMovedTargetReferences, DaemonCoreError> {
         self.ensure_config_fresh()?;
-        self.mark_degraded_if_project_changed()?;
         let previous_path = self.normalize_project_path(previous_path);
         let new_path = self.normalize_project_path(new_path);
+        self.ensure_target_feedback_fresh_or_degraded(&previous_path)?;
         let target_id = resource_id(&previous_path);
         let all_references = self.context.store.repository_references_to(&target_id);
         let bounds = response_bounds(all_references.len(), limit);
@@ -272,6 +274,20 @@ impl LocalDaemonCore {
         if latest == self.fingerprint {
             self.state = DaemonHealthState::Running;
             self.reason = "project state is current".to_string();
+        } else {
+            self.state = DaemonHealthState::Degraded;
+            self.reason =
+                "project changed; target feedback uses prior warm reference graph".to_string();
+        }
+        Ok(())
+    }
+
+    fn ensure_target_feedback_fresh_or_degraded(
+        &mut self,
+        rel_path: &Path,
+    ) -> Result<(), DaemonCoreError> {
+        if self.context.project_root.join(rel_path).exists() {
+            self.ensure_fresh()?;
         } else {
             self.state = DaemonHealthState::Degraded;
             self.reason =

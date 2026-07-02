@@ -1,5 +1,9 @@
 //! Managed local daemon process and IPC helpers.
 
+use super::references::{
+    DaemonMovedReferenceIpcOutput, DaemonReferenceIpcOutput, DaemonReferenceIpcRequest,
+    DaemonReferenceRequest,
+};
 use super::transport::{ClientStream, Listener};
 use crate::cli::check::StructureCheckReport;
 use crate::daemon::{DaemonCoreError, DaemonHealth, LocalDaemonCore};
@@ -25,22 +29,8 @@ pub(super) struct IpcResponse {
 }
 
 pub(super) fn default_listen_addr(project_root: &Path) -> String {
-    #[cfg(unix)]
-    {
-        format!(
-            "unix:{}",
-            project_root
-                .join(".assura")
-                .join("daemon")
-                .join("assura.sock")
-                .display()
-        )
-    }
-    #[cfg(not(unix))]
-    {
-        let _ = project_root;
-        "127.0.0.1:0".to_string()
-    }
+    let _ = project_root;
+    "127.0.0.1:0".to_string()
 }
 
 pub(super) fn spawn_daemon(
@@ -153,6 +143,26 @@ pub(super) fn request_check_path(listen_addr: &str, changed: &Path) -> Result<Ip
     Ok(IpcResponse { value, exit_code })
 }
 
+pub(super) fn request_references(
+    listen_addr: &str,
+    request: &DaemonReferenceRequest,
+    limit: usize,
+) -> Result<IpcResponse, String> {
+    let payload = DaemonReferenceIpcRequest::from_cli(request, limit);
+    let payload = serde_json::to_string(&payload)
+        .map_err(|error| format!("encode daemon references request: {error}"))?;
+    let response = send_request(listen_addr, format!("REFERENCES\t{payload}\n"))?;
+    let value: Value = serde_json::from_str(&response)
+        .map_err(|error| format!("parse daemon references: {error}"))?;
+    let exit_code = if value.get("schema").and_then(Value::as_str) == Some("assura.daemon.error.v1")
+    {
+        3
+    } else {
+        0
+    };
+    Ok(IpcResponse { value, exit_code })
+}
+
 pub(super) fn request_shutdown(listen_addr: &str) -> Result<(), String> {
     let _ = send_request(listen_addr, "SHUTDOWN\n".to_string())?;
     Ok(())
@@ -236,12 +246,76 @@ fn handle_request(core: &mut LocalDaemonCore, request: &str) -> String {
             Err(error) => render_json(&daemon_error(error, core.health())),
         };
     }
+    if let Some(payload) = request.strip_prefix("REFERENCES\t") {
+        return handle_references_request(core, payload);
+    }
     render_json(&DaemonErrorOutput {
         schema: "assura.daemon.error.v1",
         protocol_version: DAEMON_PROTOCOL_VERSION,
         error: "unsupported daemon request".to_string(),
         health: core.health(),
     })
+}
+
+fn handle_references_request(core: &mut LocalDaemonCore, payload: &str) -> String {
+    let request = match serde_json::from_str::<DaemonReferenceIpcRequest>(payload) {
+        Ok(request) => request,
+        Err(error) => {
+            return render_json(&DaemonErrorOutput {
+                schema: "assura.daemon.error.v1",
+                protocol_version: DAEMON_PROTOCOL_VERSION,
+                error: format!("parse daemon references request: {error}"),
+                health: core.health(),
+            });
+        }
+    };
+    match request.mode.as_str() {
+        "source" => {
+            match core.changed_source_references(PathBuf::from(request.path), request.limit) {
+                Ok(response) => render_json(&DaemonReferenceIpcOutput::affected(
+                    response,
+                    DAEMON_PROTOCOL_VERSION,
+                )),
+                Err(error) => render_json(&daemon_error(error, core.health())),
+            }
+        }
+        "target" => {
+            match core.changed_target_references(PathBuf::from(request.path), request.limit) {
+                Ok(response) => render_json(&DaemonReferenceIpcOutput::affected(
+                    response,
+                    DAEMON_PROTOCOL_VERSION,
+                )),
+                Err(error) => render_json(&daemon_error(error, core.health())),
+            }
+        }
+        "moved-target" => {
+            let Some(new_path) = request.new_path else {
+                return render_json(&DaemonErrorOutput {
+                    schema: "assura.daemon.error.v1",
+                    protocol_version: DAEMON_PROTOCOL_VERSION,
+                    error: "moved-target references request omitted new_path".to_string(),
+                    health: core.health(),
+                });
+            };
+            match core.moved_target_references(
+                PathBuf::from(request.path),
+                PathBuf::from(new_path),
+                request.limit,
+            ) {
+                Ok(response) => render_json(&DaemonMovedReferenceIpcOutput::new(
+                    response,
+                    DAEMON_PROTOCOL_VERSION,
+                )),
+                Err(error) => render_json(&daemon_error(error, core.health())),
+            }
+        }
+        _ => render_json(&DaemonErrorOutput {
+            schema: "assura.daemon.error.v1",
+            protocol_version: DAEMON_PROTOCOL_VERSION,
+            error: format!("unsupported daemon references mode '{}'", request.mode),
+            health: core.health(),
+        }),
+    }
 }
 
 fn daemon_error(error: DaemonCoreError, fallback_health: DaemonHealth) -> DaemonErrorOutput {

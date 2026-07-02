@@ -44,7 +44,7 @@ Owning task:
 `.trellis/tasks/07-01-07-01-true-daemon-mode`.
 
 Current branch:
-`codex/true-daemon-mode`.
+`codex/daemon-reference-ipc`.
 
 Current recommended goal:
 `docs/goals/assura-post-beta-capabilities-program.md`.
@@ -78,7 +78,8 @@ that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
 Execute `docs/goals/assura-post-beta-capabilities-program.md` goal by goal.
 Continue with true daemon mode after the merged supported document-graph slice,
-unless live evidence justifies a recorded reorder.
+specifically the reference-query IPC and warm-performance proof needed before
+moving to the Markdown engine.
 
 ## Roadmap Rules
 

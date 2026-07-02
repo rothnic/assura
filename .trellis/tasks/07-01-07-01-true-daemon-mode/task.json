@@ -12,7 +12,7 @@
   "assignee": "nroth",
   "createdAt": "2026-07-01",
   "completedAt": null,
-  "branch": "codex/true-daemon-mode",
+  "branch": "codex/daemon-reference-ipc",
   "base_branch": "master",
   "worktree_path": null,
   "commit": null,

@@ -179,6 +179,22 @@ can ship only if it either advances this scenario directly or records why that
 part of the scenario is explicitly deferred and how the parent still reaches a
 versioned beta increment.
 
+### Verification Artifact Contract
+
+The final package should be runnable as one documented verification story, not
+as a set of disconnected demos. It should include:
+
+| Artifact | Required proof |
+| --- | --- |
+| Fixture repository | A realistic Rust CLI/doc-system fixture with committed valid and invalid states, expected findings, and repair expectations. |
+| Config model | `.assura/config.yml` covers staged validation order, collections, severities, suppressions, daemon settings, agent nudges, Markdown checks, and LS-Lint fixture gates. |
+| CLI transcript | Recorded commands prove `init`, `check`, `content`, `daemon`, Markdown fix preview/apply, and performance-gate behavior. |
+| Daemon transcript | Fresh daemon results match one-shot truth, stale daemon state is rejected or marked stale, and warm changed-path/reference queries beat cold one-shot rows on accepted fixtures. |
+| Agent transcript | Codex, OpenCode, Claude, and Pi integrations receive bounded nudges only around relevant tool/event moments, with payload size recorded. |
+| Editor transcript | VS Code diagnostics, commands, safe-fix previews, and daemon doctor messages match the shared CLI/daemon contracts. |
+| Support matrix | Public docs classify every exercised surface as supported, experimental, internal, planned, or unsupported without overclaiming. |
+| CI gate | The package fails on intentionally broken structure, Markdown, content, reference, daemon, agent, editor, support-matrix, or LS-Lint performance regressions. |
+
 ## Major Iterations
 
 | Order | Epic | Primary goal file | Exit bar |
@@ -302,3 +318,5 @@ readiness.
 | 2026-07-01 | Processed independent review on the daemon slice and tightened the parent-program evidence. The slice now records that stale daemon config cannot be reported as fresh, stale PID metadata cannot kill an unrelated process, failed starts surface runtime errors, and daemon subprocess tests prove cleanup/replacement behavior. | Review agent `019f2030-a4ac-77f0-b5a4-df30ce68e50e`; [True daemon mode](./assura-true-daemon-mode.md); `src/cli/daemon_lifecycle.rs`; `src/cli/daemon_process.rs`; `tests/daemon_cli_tests.rs`; `cargo test --test daemon_cli_tests --quiet`; `cargo run --quiet -- check --format json .`; `cargo xtask target-state`. |
 | 2026-07-01 | Tightened the LS-Lint no-slower gate evidence during PR hardening. The headline `assura-cli` performance row now measures quiet successful validation, matching native LS-Lint's successful no-output behavior, while JSON report support remains covered by CLI/adoption tests. Local release evidence passes the strict no-slower gate after this change. | `src/cli/performance_report/assura_cli.rs`; `src/cli/performance_report/fixture_rows.rs`; `website/src/content/docs/reference/performance.mdx`; `website/src/content/docs/reference/performance-implementation.mdx`; `target/release/assura performance-report --output target/performance/pr116-local.json --iterations 5`; `cargo xtask performance-no-slower target/performance/pr116-local.json`. |
 | 2026-07-01 | Scoped CI coverage to library unit tests after the true-daemon subprocess integration tests made tarpaulin coverage too slow for merge readiness. The product behavior remains covered by normal integration, platform, installability, daemon, and performance jobs; coverage now avoids supervising managed daemon subprocess lifecycles. | `.github/workflows/ci.yml`; `tests/daemon_cli_tests.rs`; `cargo fmt --check`; `cargo xtask target-state`. |
+| 2026-07-01 | Continued true daemon mode after PR #116 merged as `dc36a95` because the child goal still required reference-query parity over daemon IPC before Markdown work builds on the daemon contract. The follow-up branch adds versioned IPC for `daemon references --source`, `--target`, and moved-target queries, including stale-config errors and one-shot fallback. | [True daemon mode](./assura-true-daemon-mode.md); `.trellis/tasks/07-01-07-01-true-daemon-mode/prd.md`; `.trellis/spec/assura/daemon-management-cli.md`; `src/cli/daemon_process.rs`; `tests/daemon_reference_cli_tests.rs`; `cargo test --test daemon_reference_cli_tests -- --test-threads=1`; `cargo test --test daemon_core_tests --quiet`. |
+| 2026-07-01 | Tightened the parent final-verification lens and completed the daemon child's warm-reference proof locally. The parent now requires one runnable use-case package with fixture, CLI, daemon, agent, editor, support-matrix, and CI-gate transcripts; the daemon slice proves warm changed-path/reference IPC is materially faster than cold one-shot rows on a 3000-file Markdown fixture, including the review-found stale-source refresh case. | [True daemon mode](./assura-true-daemon-mode.md); `.trellis/tasks/07-01-07-01-true-daemon-mode/prd.md`; `src/cli/daemon_process.rs`; `target/performance/daemon-reference-ipc-local.json`; `hyperfine --warmup 1 --runs 5 ...`; review agent `019f212e-4928-76a0-a351-694f3dd4c279`. |

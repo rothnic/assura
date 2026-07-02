@@ -54,9 +54,9 @@ humans, editors, hooks, and agents.
 - Lifecycle commands manage a project-local daemon process and log/status
   files. `start` launches the hidden `daemon serve` process; `stop` and
   `restart` terminate or replace it idempotently.
-- The initial IPC protocol is versioned as `assura.daemon.v1` and supports
-  health probes plus changed-path structure checks. Broader content/reference
-  serving remains outside this slice unless covered by separate tests.
+- The IPC protocol is versioned as `assura.daemon.v1` and supports health
+  probes, changed-path structure checks, and bounded repository-reference
+  context for `--source`, `--target`, and moved-target queries.
 
 ### 4. Validation & Error Matrix
 
@@ -72,6 +72,7 @@ humans, editors, hooks, and agents.
 | `logs --tail <n>` runs | Return at most the last `<n>` lines with line counts and truncation metadata. |
 | Managed daemon process exits unexpectedly | `status` returns `process.state = "crashed"` and `process.running = false`. |
 | `check-path` runs while the daemon is running | Return schema `assura.daemon.check_path.v1` with `protocol_version = "assura.daemon.v1"` from daemon IPC. |
+| `references` runs while the daemon is running | Return schema `assura.daemon.references.v1` with `protocol_version = "assura.daemon.v1"` from daemon IPC. |
 | References mode omits all selectors or selects more than one | Return configuration error before loading daemon state. |
 | Daemon state is stale | Return schema `assura.daemon.error.v1` with structured stale health in JSON/YAML modes. |
 
@@ -97,7 +98,8 @@ humans, editors, hooks, and agents.
 - CLI tests for status config fingerprint and git dirty paths.
 - CLI tests for idempotent start/stop, restart, runtime status files, and
   bounded logs.
-- CLI tests for IPC-backed changed-path checks and crashed-process status.
+- CLI tests for IPC-backed changed-path checks, reference queries, and
+  crashed-process status.
 - CLI tests for doctor success and unavailable-project remediation.
 - Parity tests showing `daemon references --source` and `--target` match the
   corresponding `content references` graph output.
@@ -135,7 +137,7 @@ humans, editors, hooks, and agents.
     "running": true,
     "mode": "managed_process",
     "pid": 12345,
-    "listen_addr": "unix:.assura/daemon/assura.sock"
+    "listen_addr": "127.0.0.1:58461"
   }
 }
 ```
