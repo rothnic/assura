@@ -1317,6 +1317,13 @@ fn probe_markdown_candidate(
                     markdown_files,
                     markdown_engine_probe_iterations(options),
                 );
+                candidate_report["fix_validation"] = validate_external_candidate_fix(
+                    root,
+                    fixture,
+                    candidate,
+                    binary,
+                    markdown_files,
+                );
             }
             candidate_report
         }
@@ -1351,6 +1358,29 @@ fn prepare_external_probe_fixture(
 
     let source_prefix = rel_from_root(root, &fixture.root);
     let probe_prefix = rel_from_root(root, &probe_invalid_root);
+    let probe_markdown_files = markdown_files
+        .iter()
+        .map(|file| file.replacen(&source_prefix, &probe_prefix, 1))
+        .collect::<Vec<_>>();
+    Ok((probe_prefix, probe_markdown_files))
+}
+
+fn prepare_external_probe_fixture_at(
+    root: &Path,
+    fixture: &MarkdownEngineProbeFixture,
+    destination: &Path,
+    markdown_files: &[String],
+) -> std::result::Result<(String, Vec<String>), String> {
+    match fs::remove_dir_all(destination) {
+        Ok(()) => {}
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+        Err(error) => return Err(format!("remove probe fixture: {error}")),
+    }
+    copy_dir_recursive(&fixture.root, destination)
+        .map_err(|error| format!("copy probe fixture: {error}"))?;
+
+    let source_prefix = rel_from_root(root, &fixture.root);
+    let probe_prefix = rel_from_root(root, destination);
     let probe_markdown_files = markdown_files
         .iter()
         .map(|file| file.replacen(&source_prefix, &probe_prefix, 1))
@@ -1707,6 +1737,288 @@ fn measure_external_candidate_fix(
     report["success_semantics"] =
         serde_json::json!("expected_exit_status_and_no_known_fix_failure_marker");
     report
+}
+
+fn validate_external_candidate_fix(
+    root: &Path,
+    fixture: &MarkdownEngineProbeFixture,
+    candidate: &MarkdownEngineCandidate,
+    binary: &str,
+    markdown_files: &[String],
+) -> Value {
+    if candidate.fix_args.is_none() {
+        return serde_json::json!({
+            "supported": false,
+            "reason": "candidate has no observed deterministic fix command for this probe"
+        });
+    }
+
+    let validation_root = root
+        .join("target/markdown-engine-probe")
+        .join(candidate.name)
+        .join(&fixture.name)
+        .join("fix-validation");
+    let (probe_fixture_root, probe_markdown_files) =
+        match prepare_external_probe_fixture_at(root, fixture, &validation_root, markdown_files) {
+            Ok(value) => value,
+            Err(error) => {
+                return serde_json::json!({
+                    "supported": true,
+                    "validation_passed": false,
+                    "error": error,
+                });
+            }
+        };
+
+    let before = match markdown_file_snapshots(root, &probe_markdown_files) {
+        Ok(value) => value,
+        Err(error) => {
+            return serde_json::json!({
+                "supported": true,
+                "validation_passed": false,
+                "probe_fixture_root": probe_fixture_root,
+                "error": error,
+            });
+        }
+    };
+
+    let first_fix = run_external_candidate_fix(binary, candidate, root, &probe_markdown_files);
+    let after_first = markdown_file_snapshots(root, &probe_markdown_files).unwrap_or_default();
+    let second_fix = run_external_candidate_fix(binary, candidate, root, &probe_markdown_files);
+    let after_second = markdown_file_snapshots(root, &probe_markdown_files).unwrap_or_default();
+    let post_fix_check =
+        run_external_candidate_check(binary, candidate, root, &probe_markdown_files);
+
+    let changed_files = changed_markdown_files(&before, &after_first);
+    let second_run_changed_files = changed_markdown_files(&after_first, &after_second);
+    let idempotent = second_run_changed_files.is_empty();
+    let frontmatter_preserved = markdown_frontmatter_preserved(&before, &after_first);
+    let line_endings_preserved = markdown_line_endings_preserved(&before, &after_first);
+    let fix_command_accepted = first_fix.accepted;
+    let validation_passed = fix_command_accepted
+        && idempotent
+        && frontmatter_preserved
+        && line_endings_preserved
+        && post_fix_check.accepted;
+
+    serde_json::json!({
+        "supported": true,
+        "evidence_scope": "candidate_fix_validation_on_isolated_copy",
+        "probe_fixture_root": probe_fixture_root,
+        "probe_markdown_files": probe_markdown_files,
+        "validation_passed": validation_passed,
+        "fix_command_accepted": fix_command_accepted,
+        "accepted_first_fix_command": fix_command_accepted,
+        "frontmatter_preserved": frontmatter_preserved,
+        "line_endings_preserved": line_endings_preserved,
+        "idempotent": idempotent,
+        "second_run_idempotent": idempotent,
+        "changed_files": changed_files,
+        "second_run_changed_files": second_run_changed_files,
+        "post_fix_check_status": markdown_probe_status(post_fix_check.exit_code),
+        "post_fix_check_accepted": post_fix_check.accepted,
+        "first_fix": first_fix.to_json(),
+        "post_fix_check": post_fix_check.to_json(),
+        "second_fix": second_fix.to_json(),
+    })
+}
+
+struct MarkdownCandidateCommandResult {
+    exit_code: Option<i32>,
+    accepted: bool,
+    stdout_bytes: usize,
+    stderr_bytes: usize,
+    stdout_snippet: String,
+    stderr_snippet: String,
+    error: Option<String>,
+}
+
+impl MarkdownCandidateCommandResult {
+    fn to_json(&self) -> Value {
+        serde_json::json!({
+            "exit_code": self.exit_code,
+            "accepted": self.accepted,
+            "stdout_bytes": self.stdout_bytes,
+            "stderr_bytes": self.stderr_bytes,
+            "stdout_snippet": self.stdout_snippet,
+            "stderr_snippet": self.stderr_snippet,
+            "error": self.error,
+        })
+    }
+}
+
+#[derive(Clone)]
+struct MarkdownFileSnapshot {
+    path: String,
+    content: String,
+    frontmatter: Option<String>,
+    line_endings: &'static str,
+}
+
+fn run_external_candidate_fix(
+    binary: &str,
+    candidate: &MarkdownEngineCandidate,
+    root: &Path,
+    markdown_files: &[String],
+) -> MarkdownCandidateCommandResult {
+    let Some(mut command) = external_candidate_fix_command(binary, candidate, root, markdown_files)
+    else {
+        return MarkdownCandidateCommandResult {
+            exit_code: None,
+            accepted: false,
+            stdout_bytes: 0,
+            stderr_bytes: 0,
+            stdout_snippet: String::new(),
+            stderr_snippet: String::new(),
+            error: Some("candidate has no fix command".to_string()),
+        };
+    };
+    match command.output() {
+        Ok(output) => MarkdownCandidateCommandResult {
+            exit_code: output.status.code(),
+            accepted: expected_markdown_fix_output(candidate, &output),
+            stdout_bytes: output.stdout.len(),
+            stderr_bytes: output.stderr.len(),
+            stdout_snippet: truncate_utf8(&output.stdout, 2000),
+            stderr_snippet: truncate_utf8(&output.stderr, 2000),
+            error: None,
+        },
+        Err(error) => MarkdownCandidateCommandResult {
+            exit_code: None,
+            accepted: false,
+            stdout_bytes: 0,
+            stderr_bytes: 0,
+            stdout_snippet: String::new(),
+            stderr_snippet: String::new(),
+            error: Some(error.to_string()),
+        },
+    }
+}
+
+fn run_external_candidate_check(
+    binary: &str,
+    candidate: &MarkdownEngineCandidate,
+    root: &Path,
+    markdown_files: &[String],
+) -> MarkdownCandidateCommandResult {
+    let mut command = external_candidate_command(binary, candidate, root, markdown_files);
+    match command.output() {
+        Ok(output) => MarkdownCandidateCommandResult {
+            exit_code: output.status.code(),
+            accepted: expected_markdown_probe_exit(output.status.code()),
+            stdout_bytes: output.stdout.len(),
+            stderr_bytes: output.stderr.len(),
+            stdout_snippet: truncate_utf8(&output.stdout, 2000),
+            stderr_snippet: truncate_utf8(&output.stderr, 2000),
+            error: None,
+        },
+        Err(error) => MarkdownCandidateCommandResult {
+            exit_code: None,
+            accepted: false,
+            stdout_bytes: 0,
+            stderr_bytes: 0,
+            stdout_snippet: String::new(),
+            stderr_snippet: String::new(),
+            error: Some(error.to_string()),
+        },
+    }
+}
+
+fn markdown_file_snapshots(
+    root: &Path,
+    markdown_files: &[String],
+) -> std::result::Result<Vec<MarkdownFileSnapshot>, String> {
+    let mut snapshots = Vec::new();
+    for file in markdown_files {
+        let path = root.join(file);
+        let content =
+            fs::read_to_string(&path).map_err(|error| format!("read markdown {file}: {error}"))?;
+        snapshots.push(MarkdownFileSnapshot {
+            path: file.clone(),
+            frontmatter: leading_frontmatter_block(&content),
+            line_endings: line_ending_style(&content),
+            content,
+        });
+    }
+    Ok(snapshots)
+}
+
+fn leading_frontmatter_block(content: &str) -> Option<String> {
+    if !(content.starts_with("---\n") || content.starts_with("---\r\n")) {
+        return None;
+    }
+    let newline = if content.starts_with("---\r\n") {
+        "\r\n"
+    } else {
+        "\n"
+    };
+    let start = 3 + newline.len();
+    let marker = format!("{newline}---{newline}");
+    let empty_frontmatter_marker = format!("---{newline}");
+    content
+        .get(start..)
+        .and_then(|rest| match rest.find(&marker) {
+            Some(index) => Some(start + index + marker.len()),
+            None if rest.starts_with(&empty_frontmatter_marker) => {
+                Some(start + empty_frontmatter_marker.len())
+            }
+            None => None,
+        })
+        .and_then(|end| content.get(..end).map(str::to_string))
+}
+
+fn line_ending_style(content: &str) -> &'static str {
+    let crlf = content.matches("\r\n").count();
+    let lf = content.matches('\n').count();
+    match (crlf, lf.saturating_sub(crlf)) {
+        (0, 0) => "none",
+        (0, _) => "lf",
+        (_, 0) => "crlf",
+        _ => "mixed",
+    }
+}
+
+fn changed_markdown_files(
+    before: &[MarkdownFileSnapshot],
+    after: &[MarkdownFileSnapshot],
+) -> Vec<String> {
+    before
+        .iter()
+        .filter(|before_file| {
+            match after
+                .iter()
+                .find(|after_file| after_file.path == before_file.path)
+            {
+                Some(after_file) => after_file.content != before_file.content,
+                None => true,
+            }
+        })
+        .map(|snapshot| snapshot.path.clone())
+        .collect()
+}
+
+fn markdown_frontmatter_preserved(
+    before: &[MarkdownFileSnapshot],
+    after: &[MarkdownFileSnapshot],
+) -> bool {
+    before.iter().all(|before_file| {
+        after
+            .iter()
+            .find(|after_file| after_file.path == before_file.path)
+            .is_some_and(|after_file| after_file.frontmatter == before_file.frontmatter)
+    })
+}
+
+fn markdown_line_endings_preserved(
+    before: &[MarkdownFileSnapshot],
+    after: &[MarkdownFileSnapshot],
+) -> bool {
+    before.iter().all(|before_file| {
+        after
+            .iter()
+            .find(|after_file| after_file.path == before_file.path)
+            .is_some_and(|after_file| after_file.line_endings == before_file.line_endings)
+    })
 }
 
 fn expected_markdown_fix_output(
@@ -4686,6 +4998,74 @@ mod tests {
         };
 
         assert!(!expected_markdown_fix_output(&candidate, &output));
+    }
+
+    #[test]
+    fn markdown_engine_fix_validation_helpers_track_preservation() {
+        let before = vec![MarkdownFileSnapshot {
+            path: "docs/note.md".to_string(),
+            content: "---\r\ntitle: Note\r\n---\r\n\r\n# Note\r\n".to_string(),
+            frontmatter: leading_frontmatter_block("---\r\ntitle: Note\r\n---\r\n\r\n# Note\r\n"),
+            line_endings: line_ending_style("---\r\ntitle: Note\r\n---\r\n\r\n# Note\r\n"),
+        }];
+        let after = vec![MarkdownFileSnapshot {
+            path: "docs/note.md".to_string(),
+            content: "---\r\ntitle: Note\r\n---\r\n\r\n# Note\r\nBody\r\n".to_string(),
+            frontmatter: leading_frontmatter_block(
+                "---\r\ntitle: Note\r\n---\r\n\r\n# Note\r\nBody\r\n",
+            ),
+            line_endings: line_ending_style("---\r\ntitle: Note\r\n---\r\n\r\n# Note\r\nBody\r\n"),
+        }];
+
+        assert_eq!(
+            before[0].frontmatter.as_deref(),
+            Some("---\r\ntitle: Note\r\n---\r\n")
+        );
+        assert_eq!(before[0].line_endings, "crlf");
+        assert_eq!(
+            changed_markdown_files(&before, &after),
+            vec!["docs/note.md".to_string()]
+        );
+        assert!(markdown_frontmatter_preserved(&before, &after));
+        assert!(markdown_line_endings_preserved(&before, &after));
+    }
+
+    #[test]
+    fn markdown_engine_fix_validation_helpers_detect_frontmatter_loss() {
+        let before = vec![MarkdownFileSnapshot {
+            path: "docs/note.md".to_string(),
+            content: "---\ntitle: Note\n---\n\n# Note\n".to_string(),
+            frontmatter: leading_frontmatter_block("---\ntitle: Note\n---\n\n# Note\n"),
+            line_endings: line_ending_style("---\ntitle: Note\n---\n\n# Note\n"),
+        }];
+        let after = vec![MarkdownFileSnapshot {
+            path: "docs/note.md".to_string(),
+            content: "title: Note\n---\n\n# Note\n".to_string(),
+            frontmatter: leading_frontmatter_block("title: Note\n---\n\n# Note\n"),
+            line_endings: line_ending_style("title: Note\n---\n\n# Note\n"),
+        }];
+
+        assert!(!markdown_frontmatter_preserved(&before, &after));
+        assert!(markdown_line_endings_preserved(&before, &after));
+    }
+
+    #[test]
+    fn markdown_engine_fix_validation_helpers_detect_empty_frontmatter_loss() {
+        let before = vec![MarkdownFileSnapshot {
+            path: "docs/note.md".to_string(),
+            content: "---\n---\n\n# Note\n".to_string(),
+            frontmatter: leading_frontmatter_block("---\n---\n\n# Note\n"),
+            line_endings: line_ending_style("---\n---\n\n# Note\n"),
+        }];
+        let after = vec![MarkdownFileSnapshot {
+            path: "docs/note.md".to_string(),
+            content: "# Note\n".to_string(),
+            frontmatter: leading_frontmatter_block("# Note\n"),
+            line_endings: line_ending_style("# Note\n"),
+        }];
+
+        assert_eq!(before[0].frontmatter.as_deref(), Some("---\n---\n"));
+        assert!(!markdown_frontmatter_preserved(&before, &after));
     }
 
     #[test]

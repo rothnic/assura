@@ -222,3 +222,12 @@ structure validation.
   still slower than current Assura checks, while `mdlint` remains the fastest
   Rust check candidate with unresolved mutation-safety risk and failed fix
   application on two representative profiles.
+- 2026-07-02: Started the fix-validation slice on branch
+  `codex/markdown-engine-fix-validation`. Representative reports now validate
+  external candidate fix output on isolated copies by checking accepted fix
+  command status, changed Markdown files, frontmatter preservation,
+  line-ending preservation, second-run idempotence, and post-fix check status.
+  `rumdl` passes those fix-validation checks across all four representative
+  profiles; `mdlint` still fails because it loses frontmatter on the invalid
+  profile and cannot apply overlapping fixes on `large-doc` and
+  `fixable-drift`.
