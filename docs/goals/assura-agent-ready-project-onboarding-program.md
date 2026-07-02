@@ -346,7 +346,7 @@ Deliver dynamic repeated-structure contracts for cases like:
 
 ```yaml
 structure:
-  .agents/skills/*/:
+  ".agents/skills/*/":
     extra: false
     required:
       - SKILL.md
