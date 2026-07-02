@@ -407,13 +407,7 @@ jobs:
       run: cargo install cargo-tarpaulin
     - name: Generate coverage
       run: >
-        cargo tarpaulin --verbose --all-features --workspace --timeout 120 --out xml --
-        --skip daemon_start_stop_json_are_idempotent_and_status_reflects_runtime
-        --skip daemon_restart_and_logs_json_use_runtime_area
-        --skip daemon_check_path_json_uses_running_ipc_process
-        --skip daemon_check_path_json_reports_stale_config_from_running_ipc_process
-        --skip daemon_stop_ignores_stale_metadata_for_unverified_pid
-        --skip daemon_status_reports_crashed_process_without_fresh_running_state
+        cargo tarpaulin --verbose --all-features --workspace --lib --timeout 120 --out xml
     - name: Summarize coverage
       run: |
         python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
