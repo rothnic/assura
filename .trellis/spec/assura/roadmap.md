@@ -41,10 +41,10 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 Post-Beta Capabilities is active after release `v0.2.0`.
 
 Owning task:
-`.trellis/tasks/07-01-07-01-true-daemon-mode`.
+`.trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine`.
 
 Current branch:
-`codex/daemon-reference-ipc`.
+`codex/daemon-completion-routing` for the daemon completion handoff.
 
 Current recommended goal:
 `docs/goals/assura-post-beta-capabilities-program.md`.
@@ -77,9 +77,12 @@ that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 ## Recommended Next Action
 
 Execute `docs/goals/assura-post-beta-capabilities-program.md` goal by goal.
-Continue with true daemon mode after the merged supported document-graph slice,
-specifically the reference-query IPC and warm-performance proof needed before
-moving to the Markdown engine.
+True daemon mode is complete in PR #117. Start
+`.trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine` from
+`origin/master`, set its branch to the new implementation branch, revalidate
+`docs/goals/assura-markdownlint-compatible-rust-engine.md`, then evaluate the
+fastest practical Rust markdownlint-compatible lint/fix path before changing
+Assura's Markdown engine.
 
 ## Roadmap Rules
 

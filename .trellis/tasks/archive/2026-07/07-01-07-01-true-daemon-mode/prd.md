@@ -1,6 +1,6 @@
 ---
 title: True daemon mode
-status: in_progress
+status: completed
 priority: P0
 ---
 
@@ -71,6 +71,14 @@ process and IPC endpoint without claiming the full parent goal is complete.
 - [x] Tests cover lifecycle, IPC health/check-path/references, stale config
       safety, crash detection, and fallback behavior.
 - [x] Public docs classify true daemon mode accurately for this slice.
+
+## Completion Evidence
+
+Completed in PR #117, merged on 2026-07-02 as commit
+`745455215d757e49fb4614a170e48f046cb829ad`. All GitHub checks passed,
+including Rustfmt, Check, Clippy, Code Coverage, Evidence Gates, Performance
+Report, Release Bundle Smoke, Linux/macOS/Windows test suites, installable
+adoption smokes, Windows Installer Smoke, documentation, and security scope.
 
 ## Validation
 
