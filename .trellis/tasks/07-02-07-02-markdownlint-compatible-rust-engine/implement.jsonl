@@ -1,0 +1,5 @@
+{"file": "docs/goals/assura-markdownlint-compatible-rust-engine.md", "reason": "child goal, scope, proof gates, and reviewer blocking criteria"}
+{"file": "docs/goals/assura-post-beta-capabilities-program.md", "reason": "parent north-star use case and staged validation contract"}
+{"file": ".trellis/tasks/archive/2026-07/07-01-post-beta-followup-roadmap-goals/research/markdown-linter-options.md", "reason": "local research pointer for candidate linter options"}
+{"file": "docs/analysis/2026-06-18-markdown-tooling-evaluation.md", "reason": "prior Assura Markdown tooling and performance evidence"}
+{"file": "docs/goals/assura-markdown-lint-link-reference-engine.md", "reason": "existing Markdown validation/fix behavior that must not regress"}

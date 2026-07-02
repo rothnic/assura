@@ -1,0 +1,4 @@
+{"file": "tests/markdown_link_reference_tests.rs", "reason": "Assura-specific Markdown link/reference graph regression coverage"}
+{"file": "tests/markdown_suppression_severity_tests.rs", "reason": "severity and suppression behavior that candidate integration must preserve"}
+{"file": "tests/markdown_required_section_fix_tests.rs", "reason": "safe-fix determinism and idempotence baseline"}
+{"file": "tests/markdown_lint_fix_tests.rs", "reason": "Markdown fix command behavior baseline"}
