@@ -871,6 +871,7 @@ fn run_target_state() -> Result<()> {
     let mut checks = Checks::default();
     check_audit_artifact(&mut checks);
     check_command_surface_support(&mut checks);
+    check_document_graph_support_claims(&mut checks);
     check_manifest_semantics(&mut checks);
     check_test_relationships(&mut checks);
     check_docs_release_performance(&mut checks);
@@ -2968,6 +2969,100 @@ fn check_public_support_claim_consistency(checks: &mut Checks) {
                         line_index + 1
                     ));
                 }
+            }
+        }
+    }
+}
+
+fn check_document_graph_support_claims(checks: &mut Checks) {
+    let support_text = read("docs/support-policy.md");
+    let compatibility_text = read("docs/compatibility-and-surface.md");
+    let content_runtime_text = read("docs/content-runtime.md");
+
+    for marker in [
+        "Repository reference facts and queries | Supported project-intelligence graph",
+        "`assura content` collection validation and query commands | Supported first project-intelligence query surface",
+        "`assura content semantic-search`, `symbols`, and `symbol-refs` | Experimental candidate enrichment",
+        "without requiring semantic search, code-symbol providers, a daemon, or a hosted service",
+    ] {
+        checks.require(
+            support_text.contains(marker),
+            format!("docs/support-policy.md: missing supported document graph marker {marker:?}"),
+        );
+    }
+    for marker in [
+        "| `assura content references` | Supported repository-reference graph query |",
+        "| `assura content semantic-search` | Experimental optional local candidate search |",
+        "| `project-intelligence:repository-reference-facts` | Supported |",
+        "Semantic search and code-symbol queries are",
+        "candidate-enrichment surfaces.",
+    ] {
+        checks.require(
+            compatibility_text.contains(marker),
+            format!(
+                "docs/compatibility-and-surface.md: missing supported document graph marker {marker:?}"
+            ),
+        );
+    }
+    for marker in [
+        "The supported document graph is the local, deterministic layer built from",
+        "repository-reference edges from Markdown links, comments, docstrings, and",
+        "Object-mode context packs",
+        "bounded `repository_references.inbound`",
+        "Semantic search and code-symbol queries remain optional candidate enrichment.",
+    ] {
+        checks.require(
+            content_runtime_text.contains(marker),
+            format!("docs/content-runtime.md: missing supported document graph marker {marker:?}"),
+        );
+    }
+
+    for path in public_claim_files() {
+        let text = read(&path);
+        for (line_index, line) in text.lines().enumerate() {
+            let lower = line.to_ascii_lowercase();
+            let mentions_candidate_enrichment = lower.contains("semantic search")
+                || lower.contains("semantic-search")
+                || lower.contains("code-symbol")
+                || lower.contains("symbol-refs");
+            let makes_validation_truth_claim = lower.contains("validation truth")
+                || lower.contains("decide validation")
+                || lower.contains("decides validation")
+                || lower.contains("required")
+                || lower.contains("requires")
+                || lower.contains("must use")
+                || lower.contains("must run");
+            let clearly_scoped = lower.contains("experimental")
+                || lower.contains("candidate")
+                || lower.contains("optional")
+                || lower.contains("not required")
+                || lower.contains("without requiring")
+                || lower.contains("do not decide validation")
+                || lower.contains("does not decide validation");
+            if mentions_candidate_enrichment && makes_validation_truth_claim && !clearly_scoped {
+                checks.add(format!(
+                    "{}:{}: semantic/code-symbol candidate enrichment must not be claimed as supported graph validation truth",
+                    path,
+                    line_index + 1
+                ));
+            }
+
+            let mentions_hosted_requirement = lower.contains("hosted")
+                && (lower.contains("required")
+                    || lower.contains("requires")
+                    || lower.contains("prerequisite"));
+            let clearly_local = lower.contains("not required")
+                || lower.contains("must not require")
+                || lower.contains("does not require")
+                || lower.contains("without requiring")
+                || lower.contains("no hosted")
+                || lower.contains("unsupported");
+            if mentions_hosted_requirement && !clearly_local {
+                checks.add(format!(
+                    "{}:{}: supported document graph must not require hosted services",
+                    path,
+                    line_index + 1
+                ));
             }
         }
     }

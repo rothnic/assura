@@ -1,6 +1,6 @@
 {
   "schema_version": "assura.public-roadmap.v1",
-  "updated": "2026-07-01",
+  "updated": "2026-07-02",
   "source": ".trellis/spec/assura/roadmap.md",
   "groups": [
     {
@@ -96,6 +96,30 @@
           "summary": "Released the code-agnostic beta program as v0.2.0.",
           "detail_path": "docs/goals/assura-beta-code-agnostic-capabilities-program.md",
           "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-beta-code-agnostic-capabilities-program.md"
+        },
+        {
+          "label": "Self Config",
+          "summary": "Refined Assura's own config and resolved docs or structure variance.",
+          "detail_path": "docs/goals/assura-self-config-doc-variance-hardening.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-self-config-doc-variance-hardening.md"
+        },
+        {
+          "label": "Document Graph",
+          "summary": "Support content validation, search, query, graph expansion, and affected-reference context.",
+          "detail_path": "docs/goals/assura-supported-document-graph.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-supported-document-graph.md"
+        },
+        {
+          "label": "Daemon Server",
+          "summary": "Provide a true long-running local daemon with stale-state safety.",
+          "detail_path": "docs/goals/assura-true-daemon-mode.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-true-daemon-mode.md"
+        },
+        {
+          "label": "Markdown Engine",
+          "summary": "Selected the supported Rust Markdown lint/fix path for this beta increment.",
+          "detail_path": "docs/goals/assura-markdownlint-compatible-rust-engine.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-markdownlint-compatible-rust-engine.md"
         }
       ]
     },
@@ -115,30 +139,6 @@
       "status": "next",
       "title": "Next",
       "items": [
-        {
-          "label": "Self Config",
-          "summary": "Refine Assura's own config and resolve docs or structure variance.",
-          "detail_path": "docs/goals/assura-self-config-doc-variance-hardening.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-self-config-doc-variance-hardening.md"
-        },
-        {
-          "label": "Document Graph",
-          "summary": "Support content validation, search, query, graph expansion, and affected-reference context.",
-          "detail_path": "docs/goals/assura-supported-document-graph.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-supported-document-graph.md"
-        },
-        {
-          "label": "Daemon Server",
-          "summary": "Provide a true long-running local daemon with stale-state safety.",
-          "detail_path": "docs/goals/assura-true-daemon-mode.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-true-daemon-mode.md"
-        },
-        {
-          "label": "Markdown Engine",
-          "summary": "Adopt or prove the fastest Rust markdownlint-compatible lint/fix path.",
-          "detail_path": "docs/goals/assura-markdownlint-compatible-rust-engine.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-markdownlint-compatible-rust-engine.md"
-        },
         {
           "label": "Performance Floor",
           "summary": "Fail any accepted LS-Lint-equivalent fixture where Assura is slower.",

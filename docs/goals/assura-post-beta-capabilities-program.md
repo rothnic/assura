@@ -226,6 +226,47 @@ what changed context should my agents read, is my daemon fresh, do editor and
 agent surfaces agree with the CLI, and is Assura at least as fast as LS-Lint on
 accepted structure fixtures?"
 
+### User-Specific Goal Criteria
+
+The user for this increment is an Assura maintainer running a real
+documentation-heavy Rust repository with AI agents in the loop. Their practical
+job is not "run every Assura command." Their job is to decide whether a branch
+that changed architecture docs, source layout, Markdown, frontmatter, and
+agent-written references is safe to merge.
+
+The final output of this parent goal must let that user complete this specific
+workflow without undocumented steps:
+
+1. Open the repository and immediately see whether coarse structure, root
+   hygiene, config scope, and file-level policy are healthy enough to justify
+   deeper checks.
+2. Understand every deeper finding in terms of a stable rule, severity,
+   suppression policy, affected file/heading/reference, and whether the issue
+   blocks merge or is advisory.
+3. Ask graph questions that match real maintenance decisions: what goals,
+   ADRs, analysis notes, generated references, source files, tests, headings,
+   benchmark rows, and release docs are affected by this rename or move?
+4. Preview and apply only safe Markdown fixes, then prove the remaining
+   Markdown issues need human or domain-specific edits rather than automatic
+   rewriting.
+5. Keep Assura warm through a daemon while editors and agents continue working,
+   and know when daemon state is fresh, stale, crashed, or falling back to
+   one-shot truth.
+6. Let Codex, OpenCode, Claude, and Pi receive brief Assura guidance at useful
+   event boundaries without spending large context on repeated validation
+   output or invalidating cache behavior unnecessarily.
+7. See VS Code diagnostics and commands that agree with CLI and daemon truth,
+   including safe-fix previews and daemon doctor output.
+8. Trust CI to reject the branch if supported behavior regresses, if public docs
+   overclaim support, if the support matrix disagrees with implementation, or
+   if any accepted LS-Lint-equivalent fixture is slower than native LS-Lint
+   without actionable attribution.
+
+Each child goal must name which of these user decisions it enables. Work that
+adds commands, docs, tests, or adapters but does not improve one of these
+decisions is not sufficient for this major increment unless the child goal
+explicitly records why the work is prerequisite infrastructure.
+
 The end-to-end verification path should prove this user story:
 
 1. A maintainer clones the fixture and runs `assura init` or config refinement.
@@ -401,3 +442,5 @@ readiness.
 | 2026-07-02 | Added the primary verification story for this major increment so every child goal can be judged against one maintainer journey: renamed architecture docs, moved code, staged diagnostics, deterministic Markdown fixes, content graph queries, stale-safe daemon IPC, compact agent nudges, VS Code parity, and an LS-Lint no-slower fixture gate. | [Primary verification story](#primary-verification-story); `.trellis/spec/assura/roadmap.md`; `docs/data/public-roadmap.json`. |
 | 2026-07-02 | Continued the Markdown Engine child with measured candidate evidence. The probe now supports opt-in timing and local evidence shows Rust candidates are materially faster than `markdownlint-cli2`, while `rumdl` is still slower than current Assura checks on the small fixture. This keeps the program aligned with the requirement to treat performance misses as defects or selection blockers instead of accepting broad speed claims. | `xtask/src/main.rs`; `.trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine/research/markdown-engine-candidate-evaluation.md`; `.trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine/research/markdown-engine-probe-2026-07-02-measured.json`. |
 | 2026-07-02 | Merged representative probe/fix-validation evidence through PR #128, then closed the Markdown Engine child decision for this beta increment. The supported default remains Assura's native Markdown validation and safe-fix path; `rumdl` stays as an opt-in markdownlint-compatible adapter because it is functionally strongest but still slower than current Assura checks; `mdlint` is rejected as a supported fixer because it loses frontmatter and fails overlapping fix cases. | PR #128; [Markdown engine selection](../analysis/2026-07-02-markdown-engine-selection.md); [Markdownlint-compatible Rust engine](./assura-markdownlint-compatible-rust-engine.md); `.trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine/research/markdown-engine-candidate-evaluation.md`. |
+| 2026-07-02 | Closed the Supported Document Graph child goal for this beta increment. The supported graph contract is now explicitly the local deterministic content/query workflow over content models, relation diagnostics, lexical search, bounded graph expansion, repository-reference queries, object-mode context packs, and local sessions; semantic search and code-symbol outputs remain optional candidate enrichment, guarded by target-state checks. The next child goal should be the performance floor and fixture gate. | [Supported document graph](./assura-supported-document-graph.md); [Supported document graph closure](../analysis/2026-07-02-supported-document-graph-closure.md); `.trellis/tasks/07-02-supported-document-graph-closure/prd.md`; `cargo xtask target-state`. |
+| 2026-07-02 | Strengthened the parent verification story with user-specific goal criteria. Future child goals must show which maintainer decision they enable in the final branch-safety workflow, so the program cannot drift into isolated task completion without proving the intended end-state outcome. | [User-specific goal criteria](#user-specific-goal-criteria); `.trellis/tasks/07-02-supported-document-graph-closure/prd.md`. |

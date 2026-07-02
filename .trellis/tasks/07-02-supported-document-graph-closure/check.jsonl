@@ -1,0 +1,13 @@
+{"file": "docs/goals/assura-supported-document-graph.md", "reason": "closure must match current support evidence and not overclaim"}
+{"file": "docs/content-runtime.md", "reason": "docs should describe a complete local graph workflow"}
+{"file": "docs/support-policy.md", "reason": "support policy must keep candidate enrichment separate from validation truth"}
+{"file": "docs/compatibility-and-surface.md", "reason": "release surface matrix must classify graph commands and experimental surfaces correctly"}
+{"file": "tests/content_query_cli.rs", "reason": "CLI proof for collections, search, relations, references, and agent-query wrappers"}
+{"file": "tests/project_intelligence_context_pack.rs", "reason": "bounded context-pack proof including repository-reference context"}
+{"file": "tests/repository_reference_graph_tests.rs", "reason": "repository-reference fact graph proof"}
+{"file": "tests/project_intelligence_real_repo_proof.rs", "reason": "realistic project-intelligence workflow proof"}
+{"file": "xtask/src/main.rs", "reason": "target-state checks should guard support-surface claims"}
+{"file": "docs/analysis/2026-07-02-supported-document-graph-closure.md", "reason": "closure evidence should prove the child goal without overclaiming"}
+{"file": "website/src/content/docs/product/code-intelligence.md", "reason": "code-symbol wording must remain optional candidate enrichment"}
+{"file": "website/src/content/docs/reference/release-readiness.md", "reason": "release readiness must not imply hosted/editor providers are required supported surfaces"}
+{"file": "docs/data/public-roadmap.json", "reason": "public roadmap should route next work to Performance Floor after graph closure"}

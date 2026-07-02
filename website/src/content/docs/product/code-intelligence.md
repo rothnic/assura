@@ -3,9 +3,9 @@ title: Code Intelligence
 description: Optional code-symbol enrichment for project intelligence facts.
 ---
 
-Code intelligence is optional enrichment. Assura must remain useful with
-ordinary repository files, modeled content, Markdown validation, and local facts
-before any code-symbol provider is required.
+Code intelligence is optional candidate enrichment. Assura must remain useful
+with ordinary repository files, modeled content, Markdown validation, and local
+facts; code-symbol providers are not required.
 
 ## Status
 

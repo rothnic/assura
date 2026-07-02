@@ -72,9 +72,9 @@ outside `.assura/`, such as `schemas/**`, when that fits their repository
 layout.
 
 `assura editor session` is LSP-shaped but is not a full LSP server. Full LSP server
-framing, editor marketplace packages, hosted language servers, required MCP
-adapters, and remote Project Intelligence providers are roadmap-only or
-unsupported for this release surface.
+framing and editor marketplace packages are roadmap-only; hosted language
+servers are unsupported, and required MCP adapters or remote Project
+Intelligence providers are unsupported roadmap-only surfaces for this release.
 
 ## Install Artifacts
 
