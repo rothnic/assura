@@ -835,12 +835,23 @@ fn pid_is_running(pid: u32) -> bool {
     #[cfg(windows)]
     {
         Command::new("tasklist")
-            .args(["/FI", &format!("PID eq {pid}")])
+            .args(["/FI", &format!("PID eq {pid}"), "/FO", "CSV", "/NH"])
             .output()
             .map(|output| {
                 output.status.success()
-                    && String::from_utf8_lossy(&output.stdout).contains(&pid.to_string())
+                    && tasklist_contains_pid(&String::from_utf8_lossy(&output.stdout), pid)
             })
             .unwrap_or(false)
     }
+}
+
+#[cfg(windows)]
+fn tasklist_contains_pid(output: &str, pid: u32) -> bool {
+    let pid = pid.to_string();
+    output.lines().any(|line| {
+        line.split(',')
+            .nth(1)
+            .map(|field| field.trim().trim_matches('"') == pid)
+            .unwrap_or(false)
+    })
 }
