@@ -41,14 +41,16 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 Post-Beta Capabilities is active after release `v0.2.0`.
 
 Owning task:
-`.trellis/tasks/07-02-post-beta-support-release-hardening`.
+`.trellis/tasks/07-02-post-beta-program-finalization`.
 
 Current branch:
-`codex/post-beta-support-release-hardening` is preparing the `v0.3.0` beta
-increment release-hardening branch.
+`codex/post-beta-program-finalization` is recording the merged
+support-hardening evidence and preparing the explicit `v0.3.0` beta-increment
+tag/live-release verification step.
 
 Current recommended goal:
-`docs/goals/assura-post-beta-support-release-hardening.md`.
+`docs/goals/assura-post-beta-capabilities-program.md`, with completed support
+hardening details in `docs/goals/assura-post-beta-support-release-hardening.md`.
 
 Public roadmap artifact:
 `docs/data/public-roadmap.json`.
@@ -88,9 +90,10 @@ floor is closed, the agent installer lifecycle is closed,
 `docs/goals/assura-vscode-supported-extension.md` is closed, and extension API
 clarification is closed for this beta increment. LS-Lint performance
 reassessment is closed after refreshing checked performance evidence and PR
-#135 is merged. Execute `docs/goals/assura-post-beta-support-release-hardening.md`
-on the current branch, then merge the release-hardening PR before tagging
-`v0.3.0`.
+#135 is merged. Support hardening is closed after PR #136 merged with all CI
+checks green. Merge the parent finalization PR, then tag `v0.3.0`, wait for
+release assets, run `ASSURA_VERSION=v0.3.0 cargo xtask release-live`, and
+record the live release evidence before marking the parent complete.
 
 ## Roadmap Rules
 

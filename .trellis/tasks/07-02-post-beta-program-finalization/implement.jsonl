@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "Defines active post-beta iteration routing, current recommended goal, and roadmap update rules."}
+{"file": ".trellis/spec/assura/workflow-status.md", "reason": "Captures workflow status reporting expectations for active task and release handoff state."}
+{"file": ".trellis/spec/assura/tooling-stabilization.md", "reason": "Documents release/readiness gate expectations and local tooling constraints relevant to finalization."}

@@ -7,6 +7,12 @@ status: active
 
 This policy applies to Assura pre-1.0 releases.
 
+The policy describes the current `v0.3.0` beta-increment release-candidate
+surface in this repository. Until the `v0.3.0` tag is pushed, release
+automation publishes assets, and `cargo xtask release-live` passes for
+`ASSURA_VERSION=v0.3.0`, the latest installable public release remains
+`v0.2.0`.
+
 ## Support Levels
 
 | Surface | Level | Policy |
