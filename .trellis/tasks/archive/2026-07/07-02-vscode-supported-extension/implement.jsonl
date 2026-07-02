@@ -1,0 +1,5 @@
+{"file":"docs/goals/assura-vscode-supported-extension.md","reason":"primary child goal with objective, scope, DoD, validation, and reviewer blockers"}
+{"file":"docs/goals/assura-post-beta-capabilities-program.md","reason":"parent program north-star and final verification story"}
+{"file":".trellis/spec/assura/roadmap.md","reason":"current roadmap routing and active post-beta iteration status"}
+{"file":"docs/support-policy.md","reason":"support classification source of truth for public surfaces"}
+{"file":"docs/compatibility-and-surface.md","reason":"public compatibility/status matrix for command and integration surfaces"}
