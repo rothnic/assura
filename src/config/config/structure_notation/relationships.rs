@@ -1,12 +1,13 @@
 /// Record relationship metadata from one concise structure path.
 fn record_relationship_metadata(
     path: &str,
+    local_captures: bool,
     value: &Value,
     relationships: &mut Vec<RelationshipSpec>,
 ) -> Result<(), String> {
     let captures = capture_names(path);
     let Value::Mapping(mapping) = value else {
-        if !captures.is_empty() {
+        if local_captures && !captures.is_empty() {
             if let Value::String(text) = value {
                 if parse_exists_shorthand(text)?.as_deref() == Some("1") {
                     relationships.push(RelationshipSpec::required_counterpart(path, captures));
@@ -35,7 +36,7 @@ fn record_relationship_metadata(
         .unwrap_or_default();
 
     if !captures.is_empty() {
-        if (exists.is_none() && provides.is_empty()) || !needs.is_empty() {
+        if local_captures && ((exists.is_none() && provides.is_empty()) || !needs.is_empty()) {
             relationships.push(RelationshipSpec::implicit_producer(path, captures.clone()));
         }
         for need in needs {
@@ -49,7 +50,10 @@ fn record_relationship_metadata(
                 None,
             ));
         }
-        if exists.as_deref() == Some("1") && mapping.get(string_value(PROVIDES)).is_none() {
+        if local_captures
+            && exists.as_deref() == Some("1")
+            && mapping.get(string_value(PROVIDES)).is_none()
+        {
             relationships.push(RelationshipSpec::required_counterpart(
                 path,
                 captures.clone(),

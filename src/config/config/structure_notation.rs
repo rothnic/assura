@@ -173,7 +173,7 @@ fn normalize_path_key(
 
     let child_path = join_scope_path(scope_path, key);
     let key_has_captures = !capture_names(key).is_empty();
-    record_relationship_metadata(&child_path, &value, relationships)?;
+    record_relationship_metadata(&child_path, key_has_captures, &value, relationships)?;
 
     if key.ends_with('/') {
         let directory = key.trim_end_matches('/');

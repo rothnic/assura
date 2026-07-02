@@ -287,6 +287,13 @@ structure:
             ][..]
         )
     );
+    assert!(
+        config
+            .extensions
+            .as_ref()
+            .map_or(true, |extensions| extensions.relationships.is_empty()),
+        "exact child requirements inside captured directories should remain structural requirements"
+    );
 }
 
 #[test]
@@ -318,6 +325,37 @@ structure:
             .and_then(|exists| exists.get("SKILL.md")),
         Some(&"1".to_string())
     );
+}
+
+#[test]
+fn captured_directory_exact_child_providers_remain_explicit_relationships() {
+    let config = parse_config(
+        r#"
+rules:
+  "@package-dir":
+    README.md:
+      provides: doc
+    src/: exists:1
+structure:
+  packages/:
+    "{package}/":
+      use: "@package-dir"
+      needs: doc
+"#,
+    )
+    .unwrap();
+
+    let relationships = &config.extensions.unwrap().relationships;
+    assert_eq!(relationships.len(), 1);
+    let relationship = &relationships[0];
+    assert_eq!(relationship.source, "packages/{package}");
+    assert_eq!(relationship.need, "doc");
+    assert_eq!(relationship.providers.len(), 1);
+    assert_eq!(
+        relationship.providers[0].path,
+        "packages/{package}/README.md"
+    );
+    assert_eq!(relationship.providers[0].kind.as_deref(), Some("file"));
 }
 
 #[test]

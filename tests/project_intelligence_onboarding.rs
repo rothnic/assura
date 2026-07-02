@@ -332,6 +332,172 @@ fn agent_onboard_generated_config_validates_dynamic_directory_skill_contracts() 
 }
 
 #[test]
+fn agent_project_dynamic_contracts_validate_repeated_project_structures() {
+    let project = TempDir::new().unwrap();
+    fs::create_dir_all(project.path().join(".assura")).unwrap();
+    fs::write(
+        project.path().join(".assura/config.yml"),
+        r#"version: "2.0"
+
+rules:
+  "@package-dir":
+    README.md: exists:1
+    src/: exists:1
+    docs/: exists:0-1
+    extra: false
+  "@doc-section":
+    README.md: exists:1
+    assets/: exists:0-1
+    extra: false
+  "@example-dir":
+    README.md: exists:1
+    fixtures/: exists:0-1
+    extra: false
+  "@fixture-dir":
+    README.md: exists:1
+    input/: exists:0-1
+    expected/: exists:0-1
+    extra: false
+
+structure:
+  ./:
+    extra: true
+    packages/: exists:1
+    docs/: exists:1
+    examples/: exists:1
+    tests/: exists:1
+  packages/:
+    extra: true
+    "{package}/":
+      use: "@package-dir"
+  docs/:
+    extra: true
+    "{section}/":
+      use: "@doc-section"
+  examples/:
+    extra: true
+    "{example}/":
+      use: "@example-dir"
+  tests/:
+    fixtures/: exists:1
+  tests/fixtures/:
+    extra: true
+    "{fixture}/":
+      use: "@fixture-dir"
+"#,
+    )
+    .unwrap();
+
+    for package in ["core", "ui"] {
+        let package_dir = project.path().join("packages").join(package);
+        fs::create_dir_all(package_dir.join("src")).unwrap();
+        fs::write(package_dir.join("README.md"), "# Package\n").unwrap();
+        fs::write(package_dir.join("src/lib.rs"), "").unwrap();
+    }
+    let docs_section = project.path().join("docs/process");
+    fs::create_dir_all(docs_section.join("assets")).unwrap();
+    fs::write(docs_section.join("README.md"), "# Process\n").unwrap();
+    fs::write(docs_section.join("assets/template.txt"), "template\n").unwrap();
+    let example = project.path().join("examples/basic");
+    fs::create_dir_all(example.join("fixtures")).unwrap();
+    fs::write(example.join("README.md"), "# Basic Example\n").unwrap();
+    fs::write(example.join("fixtures/sample.txt"), "sample\n").unwrap();
+    let fixture = project.path().join("tests/fixtures/parser");
+    fs::create_dir_all(fixture.join("input")).unwrap();
+    fs::create_dir_all(fixture.join("expected")).unwrap();
+    fs::write(fixture.join("README.md"), "# Parser Fixture\n").unwrap();
+
+    let valid_check = json_from_success(run_assura(&[
+        "check",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]));
+    assert_eq!(valid_check["success"], true);
+
+    let missing_package = project.path().join("packages/missing-readme");
+    fs::create_dir_all(missing_package.join("src")).unwrap();
+    let missing_check = run_assura(&[
+        "check",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]);
+    assert_eq!(missing_check.status.code(), Some(1));
+    let missing_json: Value = serde_json::from_slice(&missing_check.stdout).unwrap();
+    assert!(missing_json["violations"]
+        .as_array()
+        .expect("violations")
+        .iter()
+        .any(|item| {
+            item["path"] == "packages/missing-readme"
+                && item["rule"] == "exists_count"
+                && item["message"]
+                    .as_str()
+                    .is_some_and(|message| message.contains("README.md"))
+        }));
+
+    fs::write(missing_package.join("README.md"), "# Missing Fixed\n").unwrap();
+    fs::create_dir_all(project.path().join("docs/process/tmp")).unwrap();
+    let unexpected_check = run_assura(&[
+        "check",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]);
+    assert_eq!(unexpected_check.status.code(), Some(1));
+    let unexpected_json: Value = serde_json::from_slice(&unexpected_check.stdout).unwrap();
+    assert!(unexpected_json["violations"]
+        .as_array()
+        .expect("violations")
+        .iter()
+        .any(|item| item["path"] == "docs/process/tmp" && item["rule"] == "unexpected_directory"));
+
+    fs::remove_dir_all(project.path().join("docs/process/tmp")).unwrap();
+    let missing_example = project.path().join("examples/missing-readme");
+    fs::create_dir_all(missing_example.join("fixtures")).unwrap();
+    let missing_example_check = run_assura(&[
+        "check",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]);
+    assert_eq!(missing_example_check.status.code(), Some(1));
+    let missing_example_json: Value =
+        serde_json::from_slice(&missing_example_check.stdout).unwrap();
+    assert!(missing_example_json["violations"]
+        .as_array()
+        .expect("violations")
+        .iter()
+        .any(|item| {
+            item["path"] == "examples/missing-readme"
+                && item["rule"] == "exists_count"
+                && item["message"]
+                    .as_str()
+                    .is_some_and(|message| message.contains("README.md"))
+        }));
+
+    fs::write(missing_example.join("README.md"), "# Missing Fixed\n").unwrap();
+    fs::create_dir_all(project.path().join("tests/fixtures/parser/tmp")).unwrap();
+    let unexpected_fixture_check = run_assura(&[
+        "check",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]);
+    assert_eq!(unexpected_fixture_check.status.code(), Some(1));
+    let unexpected_fixture_json: Value =
+        serde_json::from_slice(&unexpected_fixture_check.stdout).unwrap();
+    assert!(unexpected_fixture_json["violations"]
+        .as_array()
+        .expect("violations")
+        .iter()
+        .any(|item| {
+            item["path"] == "tests/fixtures/parser/tmp" && item["rule"] == "unexpected_directory"
+        }));
+}
+
+#[test]
 fn agent_onboard_preserves_existing_user_authored_files() {
     let project = TempDir::new().unwrap();
     fs::write(project.path().join("AGENTS.md"), "# Existing Agent Notes\n").unwrap();
