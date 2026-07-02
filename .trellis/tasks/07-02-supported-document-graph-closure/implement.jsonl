@@ -1,0 +1,12 @@
+{"file": "docs/goals/assura-supported-document-graph.md", "reason": "child goal status, progress log, and definition-of-done closure target"}
+{"file": "docs/goals/assura-post-beta-capabilities-program.md", "reason": "parent progress log and next-child routing after graph closure"}
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "active roadmap routing for the parent post-beta program"}
+{"file": "docs/content-runtime.md", "reason": "supported document graph workflow documentation"}
+{"file": "docs/support-policy.md", "reason": "support classification for graph, content, repository-reference, semantic, and code-symbol surfaces"}
+{"file": "docs/compatibility-and-surface.md", "reason": "release-time command and project-intelligence surface matrix"}
+{"file": "xtask/src/main.rs", "reason": "target-state guards for unsupported graph/search/content validation claims"}
+{"file": ".trellis/tasks/archive/2026-07/07-01-supported-document-graph/prd.md", "reason": "previous completed graph task acceptance evidence"}
+{"file": "docs/analysis/2026-07-02-supported-document-graph-closure.md", "reason": "support-grade graph contract closure record"}
+{"file": "website/src/content/docs/product/code-intelligence.md", "reason": "public docs clarify code-symbol providers are optional candidate enrichment"}
+{"file": "website/src/content/docs/reference/release-readiness.md", "reason": "public release-readiness docs clarify hosted/editor-provider surfaces are unsupported roadmap-only"}
+{"file": "docs/data/public-roadmap.json", "reason": "public roadmap moves completed graph and preceding child goals out of Next and routes to Performance Floor"}

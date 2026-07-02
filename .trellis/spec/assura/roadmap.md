@@ -41,11 +41,11 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 Post-Beta Capabilities is active after release `v0.2.0`.
 
 Owning task:
-the next child task from `docs/goals/assura-post-beta-capabilities-program.md`.
+`.trellis/tasks/07-02-supported-document-graph-closure`.
 
 Current branch:
-`codex/markdown-engine-selection-record` for closing the Markdown engine
-selection and handing off to the next post-beta child goal.
+`codex/document-graph-support-closure` for closing the supported document graph
+child goal and handing off to the performance floor child goal.
 
 Current recommended goal:
 `docs/goals/assura-post-beta-capabilities-program.md`.
@@ -81,13 +81,11 @@ that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 ## Recommended Next Action
 
 Execute `docs/goals/assura-post-beta-capabilities-program.md` goal by goal.
-True daemon mode is complete in PR #117. The Markdown engine child is closed
-for this beta increment: Assura's native Markdown validation and safe-fix path
-is the supported default, `rumdl` remains an explicit opt-in compatibility
-adapter, and `mdlint` is rejected as a supported fixer until its safety
-failures are resolved. Continue with the next incomplete child goal from the
-parent program, preferring document-graph or self-dogfood hardening only if
-live goal state shows remaining gaps.
+True daemon mode is complete in PR #117. The Markdown engine and supported
+document graph children are closed for this beta increment. Continue with
+`docs/goals/assura-performance-floor-and-fixture-gate.md` so accepted
+LS-Lint-equivalent fixture rows cannot pass on aggregate speed while hiding a
+slower accepted fixture.
 
 ## Roadmap Rules
 
