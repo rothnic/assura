@@ -1,6 +1,6 @@
 ---
 title: Markdownlint-compatible Rust engine
-status: planning
+status: active
 priority: P0
 ---
 

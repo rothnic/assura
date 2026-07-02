@@ -19,3 +19,6 @@
 {"file": ".trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine/research/markdown-engine-probe-2026-07-02-invalid-representative.json", "reason": "checked fix-validation evidence including mdlint frontmatter loss"}
 {"file": ".trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine/research/markdown-engine-probe-2026-07-02-large-doc-representative.json", "reason": "checked fix-validation evidence including overlapping-fix failure"}
 {"file": ".trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine/research/markdown-engine-probe-2026-07-02-fixable-drift-representative.json", "reason": "checked fix-validation evidence for deterministic safe-fix workload"}
+{"file": "docs/analysis/2026-07-02-markdown-engine-selection.md", "reason": "review target for final Markdown engine selection decision"}
+{"file": "docs/goals/assura-markdownlint-compatible-rust-engine.md", "reason": "goal closure and supported-surface decision should match evidence"}
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "roadmap should no longer route agents back to completed Markdown candidate research"}

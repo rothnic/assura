@@ -2,7 +2,7 @@
 id: goal-assura-markdownlint-compatible-rust-engine
 type: goal
 title: Assura markdownlint-compatible Rust engine
-status: planned
+status: completed
 created: 2026-07-01
 owners:
   - assura-maintainers
@@ -231,3 +231,11 @@ structure validation.
   profiles; `mdlint` still fails because it loses frontmatter on the invalid
   profile and cannot apply overlapping fixes on `large-doc` and
   `fixable-drift`.
+- 2026-07-02: Closed the Markdown engine selection for this beta increment in
+  `docs/analysis/2026-07-02-markdown-engine-selection.md`. The supported
+  default remains Assura's native Markdown validation and safe-fix path because
+  it is the fastest accepted path that preserves staged findings, stable rule
+  IDs, rule-owned severity/suppression, frontmatter, line endings, and bounded
+  fixes. `rumdl` remains the explicit opt-in markdownlint-compatible adapter;
+  `mdlint` is rejected as a supported fixer until its mutation/frontmatter/
+  overlapping-fix failures are resolved.

@@ -41,11 +41,11 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 Post-Beta Capabilities is active after release `v0.2.0`.
 
 Owning task:
-`.trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine`.
+the next child task from `docs/goals/assura-post-beta-capabilities-program.md`.
 
 Current branch:
-`codex/markdown-engine-fix-validation` for the active Markdown engine
-candidate fix-correctness evidence branch.
+`codex/markdown-engine-selection-record` for closing the Markdown engine
+selection and handing off to the next post-beta child goal.
 
 Current recommended goal:
 `docs/goals/assura-post-beta-capabilities-program.md`.
@@ -81,11 +81,13 @@ that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 ## Recommended Next Action
 
 Execute `docs/goals/assura-post-beta-capabilities-program.md` goal by goal.
-True daemon mode is complete in PR #117. Continue
-`.trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine` by using
-representative Markdown probe profiles plus fix-validation evidence to decide
-whether `rumdl`, `mdlint`, another Rust candidate, or Assura-owned narrow
-fixers should advance toward the supported Markdown engine path.
+True daemon mode is complete in PR #117. The Markdown engine child is closed
+for this beta increment: Assura's native Markdown validation and safe-fix path
+is the supported default, `rumdl` remains an explicit opt-in compatibility
+adapter, and `mdlint` is rejected as a supported fixer until its safety
+failures are resolved. Continue with the next incomplete child goal from the
+parent program, preferring document-graph or self-dogfood hardening only if
+live goal state shows remaining gaps.
 
 ## Roadmap Rules
 
