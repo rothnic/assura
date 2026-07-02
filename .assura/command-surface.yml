@@ -264,6 +264,24 @@ commands:
         aliases: ["-f"]
         takes_value: true
         values: ["text", "json", "yaml", "advice", "status"]
+  - name: "assura agent onboard"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --agent:
+        takes_value: true
+        values: ["auto", "generic", "codex", "opencode", "claude", "pi"]
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status"]
   - name: "assura agent nudge"
     allow_positionals: true
     flags:

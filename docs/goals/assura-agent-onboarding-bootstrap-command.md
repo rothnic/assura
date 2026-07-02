@@ -74,3 +74,9 @@ Block if the bootstrap asks too many questions before creating a baseline, if
 the remote wrapper contains product logic, if existing files are overwritten
 without review, or if generated next steps let agents guess project
 conventions.
+
+## Progress Log
+
+| Date | Update | Evidence |
+| --- | --- | --- |
+| 2026-07-02 | Implemented the first local installed CLI slice as `assura agent onboard`. The command creates or preserves a broad baseline, writes the `.assura/onboarding/` packet, reuses the shared integration bundle for concrete host agents, verifies the generated project config, and keeps the remote wrapper and later specialization entrypoint as planned follow-up surfaces. | `cargo fmt --check`; `cargo test --test project_intelligence_onboarding --quiet`; `cargo test --test cli_command_surface_tests --quiet`; `cargo test --test agent_surface_cli --quiet`; `cargo run --quiet -- check --format json .`; `cargo xtask target-state`; `cargo xtask evidence`; `cargo xtask docs`; `git diff --check`; `cargo check --workspace --all-targets --all-features --quiet`. |

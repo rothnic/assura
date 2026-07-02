@@ -3804,6 +3804,7 @@ const SUPPORT_MATRIX_ROWS: &[SupportMatrixRow] = &[
             "assura agent missing-relations",
             "assura agent expand",
             "assura agent safe-fixes",
+            "assura agent onboard",
             "assura agent nudge",
             "assura agent integration",
             "assura agent integration install",
@@ -3816,12 +3817,14 @@ const SUPPORT_MATRIX_ROWS: &[SupportMatrixRow] = &[
         support_policy_markers: &["`assura agent`"],
         compatibility_markers: &[
             "| `assura agent` | Supported local agent project-intelligence surface |",
+            "| `assura agent onboard` | Experimental local agent-ready onboarding surface |",
             "| `assura agent nudge` | Experimental local agent nudge payload |",
             "| `assura agent integration` | Experimental local agent integration lifecycle |",
             "| `assura agent session` | Supported local agent session alias |",
         ],
         source_markers: &[
             "Commands::Agent",
+            "AgentCommands::Onboard",
             "AgentCommands::Context",
             "AgentCommands::Nudge",
             "AgentCommands::Integration",
@@ -3829,6 +3832,7 @@ const SUPPORT_MATRIX_ROWS: &[SupportMatrixRow] = &[
         test_markers: &[
             "tests/agent_surface_cli.rs",
             "agent_surface_defaults_to_json_and_reuses_content_contracts",
+            "agent_onboard_generates_broad_baseline_and_packet",
             "agent_nudge_after_tool_reports_bounded_changed_path_findings",
             "agent_integration_lifecycle_installs_reviewable_bundles_for_all_hosts",
             "agent_surface_session_alias_reuses_json_line_session_contract",

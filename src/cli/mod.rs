@@ -8,6 +8,10 @@ mod agent_integration;
 #[cfg(feature = "full-cli")]
 mod agent_nudge;
 #[cfg(feature = "full-cli")]
+mod agent_onboarding;
+#[cfg(feature = "full-cli")]
+mod agent_onboarding_templates;
+#[cfg(feature = "full-cli")]
 mod agent_query_args;
 #[cfg(feature = "full-cli")]
 pub mod args;
@@ -50,7 +54,7 @@ pub use agent_args::AgentCommands;
 #[cfg(feature = "full-cli")]
 pub use agent_args::{
     AgentIntegrationCommands, AgentIntegrationLifecycleArgs, AgentIntegrationStatusArgs,
-    AgentIntegrationTarget, AgentNudgeEvent, AgentNudgeTarget,
+    AgentIntegrationTarget, AgentNudgeEvent, AgentNudgeTarget, AgentOnboardingTarget,
 };
 #[cfg(feature = "full-cli")]
 pub use agent_query_args::AgentQueryArg;

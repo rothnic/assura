@@ -2,12 +2,28 @@
 
 use super::agent_integration::agent_integration_command;
 use super::agent_nudge::{agent_nudge_command, AgentNudgeOptions};
+use super::agent_onboarding::{agent_onboarding_command, AgentOnboardingOptions};
 use super::{AgentCommands, ContentCommands, ExitCode};
 use std::path::PathBuf;
 
 /// Run local project-intelligence commands for coding agents.
 pub async fn agent_command(command: AgentCommands, config: Option<PathBuf>) -> ExitCode {
     match command {
+        AgentCommands::Onboard {
+            path,
+            agent,
+            format,
+        } => {
+            agent_onboarding_command(
+                AgentOnboardingOptions {
+                    path,
+                    agent,
+                    format,
+                },
+                config,
+            )
+            .await
+        }
         AgentCommands::Nudge {
             path,
             event,
@@ -118,6 +134,9 @@ fn agent_to_content_command(command: AgentCommands) -> ContentCommands {
             format,
         },
         AgentCommands::Session { path } => ContentCommands::Session { path },
+        AgentCommands::Onboard { .. } => {
+            unreachable!("agent onboard is handled before content routing")
+        }
         AgentCommands::Nudge { .. } => {
             unreachable!("agent nudge is handled before content routing")
         }

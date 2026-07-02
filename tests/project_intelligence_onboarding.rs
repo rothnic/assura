@@ -187,3 +187,166 @@ fn project_intelligence_onboarding_starter_refuses_to_overwrite_files_without_fo
     assert_eq!(output.status.code(), Some(2));
     assert!(String::from_utf8_lossy(&output.stderr).contains("already exists"));
 }
+
+#[test]
+fn agent_onboard_generates_broad_baseline_and_packet() {
+    let project = TempDir::new().unwrap();
+
+    let output = json_from_success(run_assura(&[
+        "agent",
+        "onboard",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]));
+
+    assert_eq!(output["schema"], "assura.agent-onboarding.v1");
+    assert_eq!(output["detected"]["project_type"], "empty");
+    assert_eq!(output["detected"]["agent_harness"], "generic");
+    assert_eq!(output["installed"]["config"], ".assura/config.yml");
+    assert!(output["verified"]
+        .as_array()
+        .expect("verified array")
+        .iter()
+        .any(|item| item["name"] == "structure_config" && item["status"] == "pass"));
+    assert!(output["inactive"]
+        .as_array()
+        .expect("inactive array")
+        .iter()
+        .any(|item| item["name"] == "content_models"));
+
+    for path in [
+        ".assura/config.yml",
+        ".assura/presets.lock.yml",
+        ".assura/onboarding/summary.md",
+        ".assura/onboarding/questions.md",
+        ".assura/onboarding/agent-next.md",
+        ".assura/onboarding/doctor.json",
+        "AGENTS.md",
+        ".agents/skills/assura-project-maintenance/SKILL.md",
+        "docs/process/agent-workflow.md",
+        "docs/learnings/README.md",
+    ] {
+        assert!(project.path().join(path).is_file(), "missing {path}");
+    }
+
+    let agent_next =
+        fs::read_to_string(project.path().join(".assura/onboarding/agent-next.md")).unwrap();
+    assert!(agent_next.contains("Do not invent project conventions"));
+    assert!(agent_next.contains("What primary language or stack should this project use?"));
+    assert!(agent_next.contains("What test layout should the project use?"));
+
+    let doctor: Value = serde_json::from_str(
+        &fs::read_to_string(project.path().join(".assura/onboarding/doctor.json")).unwrap(),
+    )
+    .unwrap();
+    assert_eq!(doctor["schema"], "assura.agent-onboarding.doctor.v1");
+    assert!(doctor["inactive"]
+        .as_array()
+        .expect("inactive array")
+        .iter()
+        .any(|item| item["name"] == "project_specialization"));
+
+    let check = json_from_success(run_assura(&[
+        "check",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]));
+    assert_eq!(check["success"], true);
+}
+
+#[test]
+fn agent_onboard_preserves_existing_user_authored_files() {
+    let project = TempDir::new().unwrap();
+    fs::write(project.path().join("AGENTS.md"), "# Existing Agent Notes\n").unwrap();
+    fs::create_dir_all(project.path().join("src")).unwrap();
+    fs::write(
+        project.path().join("Cargo.toml"),
+        "[package]\nname = \"demo\"\n",
+    )
+    .unwrap();
+
+    let output = json_from_success(run_assura(&[
+        "agent",
+        "onboard",
+        project.path().to_str().unwrap(),
+        "--agent",
+        "codex",
+        "--format",
+        "json",
+    ]));
+
+    assert_eq!(output["detected"]["project_type"], "rust");
+    assert_eq!(output["detected"]["agent_harness"], "codex");
+    assert_eq!(output["integration"]["status"], "installed");
+    assert_eq!(
+        fs::read_to_string(project.path().join("AGENTS.md")).unwrap(),
+        "# Existing Agent Notes\n"
+    );
+    assert!(output["files"]
+        .as_array()
+        .expect("files array")
+        .iter()
+        .any(|item| item["path"] == "AGENTS.md" && item["action"] == "existing"));
+    assert!(project
+        .path()
+        .join(".assura/integrations/codex/manifest.json")
+        .is_file());
+}
+
+#[test]
+fn agent_onboard_merges_existing_config_and_accepts_config_flag() {
+    let project = TempDir::new().unwrap();
+    fs::create_dir_all(project.path().join(".assura")).unwrap();
+    let config_path = project.path().join(".assura/config.yml");
+    fs::write(
+        &config_path,
+        r#"version: "2.0"
+
+structure:
+  ./:
+    extra: true
+    CUSTOM.md: exists:0-1
+
+exclude:
+  - "custom/**"
+"#,
+    )
+    .unwrap();
+
+    let output = json_from_success(run_assura(&[
+        "--config",
+        config_path.to_str().unwrap(),
+        "agent",
+        "onboard",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]));
+
+    assert!(output["files"]
+        .as_array()
+        .expect("files array")
+        .iter()
+        .any(|item| item["path"] == ".assura/config.yml" && item["action"] == "merge"));
+
+    let merged_config: serde_yaml::Value =
+        serde_yaml::from_str(&fs::read_to_string(&config_path).unwrap()).unwrap();
+    assert_eq!(
+        merged_config["structure"]["./"]["CUSTOM.md"],
+        serde_yaml::Value::String("exists:0-1".to_string())
+    );
+    assert_eq!(
+        merged_config["structure"]["./"]["AGENTS.md"],
+        serde_yaml::Value::String("exists:1".to_string())
+    );
+    assert!(merged_config["exclude"]
+        .as_sequence()
+        .expect("exclude sequence")
+        .contains(&serde_yaml::Value::String("custom/**".to_string())));
+    assert!(merged_config["exclude"]
+        .as_sequence()
+        .expect("exclude sequence")
+        .contains(&serde_yaml::Value::String(".git/**".to_string())));
+}

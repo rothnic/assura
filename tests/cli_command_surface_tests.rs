@@ -283,6 +283,25 @@ fn hooks_help_lists_local_hook_subcommands() {
 }
 
 #[test]
+fn agent_help_lists_onboarding_surface() {
+    let output = Command::new(assura_full_bin())
+        .arg("agent")
+        .arg("--help")
+        .output()
+        .unwrap();
+
+    assert!(
+        output.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(stdout.contains("onboard"), "stdout was:\n{stdout}");
+    assert!(!stdout.contains("bootstrap"), "stdout was:\n{stdout}");
+}
+
+#[test]
 fn watch_returns_check_failure_for_invalid_project() {
     let project = TempDir::new().unwrap();
     let assura_dir = project.path().join(".assura");
