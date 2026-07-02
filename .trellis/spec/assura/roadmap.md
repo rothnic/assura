@@ -44,8 +44,8 @@ Owning task:
 `.trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine`.
 
 Current branch:
-`codex/markdown-engine-representative-probes` for the active Markdown engine
-representative fixture and fix-cost evidence branch.
+`codex/markdown-engine-fix-validation` for the active Markdown engine
+candidate fix-correctness evidence branch.
 
 Current recommended goal:
 `docs/goals/assura-post-beta-capabilities-program.md`.
@@ -82,10 +82,10 @@ that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
 Execute `docs/goals/assura-post-beta-capabilities-program.md` goal by goal.
 True daemon mode is complete in PR #117. Continue
-`.trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine` by using the
-representative Markdown probe profiles and fix-cost evidence to decide whether
-`rumdl`, `mdlint`, another Rust candidate, or Assura-owned narrow fixers should
-advance toward the supported Markdown engine path.
+`.trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine` by using
+representative Markdown probe profiles plus fix-validation evidence to decide
+whether `rumdl`, `mdlint`, another Rust candidate, or Assura-owned narrow
+fixers should advance toward the supported Markdown engine path.
 
 ## Roadmap Rules
 

@@ -13,14 +13,14 @@
           "errors": [],
           "failed_runs": 0,
           "iterations": 3,
-          "max_ms": 25.499551,
-          "median_ms": 21.359892,
-          "min_ms": 21.215197,
-          "p95_ms": 25.499551,
+          "max_ms": 24.931217,
+          "median_ms": 20.810502000000003,
+          "min_ms": 20.354153,
+          "p95_ms": 24.931217,
           "samples_ms": [
-            21.215197,
-            21.359892,
-            25.499551
+            20.354153,
+            20.810502000000003,
+            24.931217
           ],
           "successful_runs": 3
         },
@@ -28,14 +28,14 @@
           "errors": [],
           "failed_runs": 0,
           "iterations": 3,
-          "max_ms": 20.305656,
-          "median_ms": 20.272754,
-          "min_ms": 19.374489,
-          "p95_ms": 20.305656,
+          "max_ms": 20.069547,
+          "median_ms": 19.85746,
+          "min_ms": 19.122983,
+          "p95_ms": 20.069547,
           "samples_ms": [
-            19.374489,
-            20.272754,
-            20.305656
+            19.122983,
+            19.85746,
+            20.069547
           ],
           "successful_runs": 3
         }
@@ -47,14 +47,14 @@
         "errors": [],
         "failed_runs": 0,
         "iterations": 3,
-        "max_ms": 8.808351,
-        "median_ms": 8.724010000000002,
-        "min_ms": 7.524545,
-        "p95_ms": 8.808351,
+        "max_ms": 8.510673,
+        "median_ms": 8.235427,
+        "min_ms": 8.154440000000001,
+        "p95_ms": 8.510673,
         "samples_ms": [
-          7.524545,
-          8.724010000000002,
-          8.808351
+          8.154440000000001,
+          8.235427,
+          8.510673
         ],
         "successful_runs": 3
       }
@@ -69,19 +69,67 @@
         "evidence_scope": "candidate_fix_command_timing_only",
         "failed_runs": 0,
         "iterations": 3,
-        "max_ms": 20.526442999999997,
-        "median_ms": 19.999603,
-        "min_ms": 17.714587,
-        "p95_ms": 20.526442999999997,
+        "max_ms": 20.962449,
+        "median_ms": 20.054667000000002,
+        "min_ms": 19.778324,
+        "p95_ms": 20.962449,
         "post_fix_validation": false,
         "samples_ms": [
-          17.714587,
-          19.999603,
-          20.526442999999997
+          19.778324,
+          20.054667000000002,
+          20.962449
         ],
         "success_semantics": "expected_exit_status_and_no_known_fix_failure_marker",
         "successful_runs": 3,
         "supported": true
+      },
+      "fix_validation": {
+        "accepted_first_fix_command": true,
+        "changed_files": [
+          "target/markdown-engine-probe/rumdl/fixable-drift/fix-validation/docs/guide.md"
+        ],
+        "evidence_scope": "candidate_fix_validation_on_isolated_copy",
+        "first_fix": {
+          "accepted": true,
+          "error": null,
+          "exit_code": 0,
+          "stderr_bytes": 0,
+          "stderr_snippet": "",
+          "stdout_bytes": 3,
+          "stdout_snippet": "[]"
+        },
+        "fix_command_accepted": true,
+        "frontmatter_preserved": true,
+        "idempotent": true,
+        "line_endings_preserved": true,
+        "post_fix_check": {
+          "accepted": true,
+          "error": null,
+          "exit_code": 0,
+          "stderr_bytes": 0,
+          "stderr_snippet": "",
+          "stdout_bytes": 3,
+          "stdout_snippet": "[]"
+        },
+        "post_fix_check_accepted": true,
+        "post_fix_check_status": "ran",
+        "probe_fixture_root": "target/markdown-engine-probe/rumdl/fixable-drift/fix-validation",
+        "probe_markdown_files": [
+          "target/markdown-engine-probe/rumdl/fixable-drift/fix-validation/docs/guide.md"
+        ],
+        "second_fix": {
+          "accepted": true,
+          "error": null,
+          "exit_code": 0,
+          "stderr_bytes": 0,
+          "stderr_snippet": "",
+          "stdout_bytes": 3,
+          "stdout_snippet": "[]"
+        },
+        "second_run_changed_files": [],
+        "second_run_idempotent": true,
+        "supported": true,
+        "validation_passed": true
       },
       "name": "rumdl",
       "probe_fixture_root": "target/markdown-engine-probe/rumdl/fixable-drift",
@@ -97,14 +145,14 @@
         "errors": [],
         "failed_runs": 0,
         "iterations": 3,
-        "max_ms": 20.478312,
-        "median_ms": 17.524277,
-        "min_ms": 17.522217,
-        "p95_ms": 20.478312,
+        "max_ms": 19.037454,
+        "median_ms": 18.723804,
+        "min_ms": 16.201112,
+        "p95_ms": 19.037454,
         "samples_ms": [
-          17.522217,
-          17.524277,
-          20.478312
+          16.201112,
+          18.723804,
+          19.037454
         ],
         "successful_runs": 3
       },
@@ -134,6 +182,52 @@
         "successful_runs": 0,
         "supported": true
       },
+      "fix_validation": {
+        "accepted_first_fix_command": false,
+        "changed_files": [],
+        "evidence_scope": "candidate_fix_validation_on_isolated_copy",
+        "first_fix": {
+          "accepted": false,
+          "error": null,
+          "exit_code": 1,
+          "stderr_bytes": 168,
+          "stderr_snippet": "Failed to apply fixes to target/markdown-engine-probe/mdlint/fixable-drift/fix-validation/docs/guide.md: Fix error: Cannot apply fixes: overlapping fix ranges detected",
+          "stdout_bytes": 755,
+          "stdout_snippet": "{\"files\":[{\"path\":\"target/markdown-engine-probe/mdlint/fixable-drift/fix-validation/docs/guide.md\",\"violations\":[{\"line\":2,\"column\":1,\"rule\":\"MD022\",\"message\":\"Heading should be surrounded by blank lines (missing before)\",\"fixable\":true},{\"line\":2,\"column\":1,\"rule\":\"MD022\",\"message\":\"Heading should be surrounded by blank lines (missing after)\",\"fixable\":true},{\"line\":2,\"column\":1,\"rule\":\"MD041\",\"message\":\"First line in file should be a level 1 heading\"},{\"line\":4,\"column\":1,\"rule\":\"MD003\",\"message\":\"Heading style should be Atx but found Setext\"},{\"line\":6,\"column\":1,\"rule\":\"MD009\",\"message\":\"Trailing spaces (3 spaces)\",\"fixable\":true},{\"line\":13,\"column\":1,\"rule\":\"MD009\",\"message\":\"Trailing spaces (3 spaces)\",\"fixable\":true}]}],\"total_errors\":6}"
+        },
+        "fix_command_accepted": false,
+        "frontmatter_preserved": true,
+        "idempotent": true,
+        "line_endings_preserved": true,
+        "post_fix_check": {
+          "accepted": true,
+          "error": null,
+          "exit_code": 1,
+          "stderr_bytes": 168,
+          "stderr_snippet": "Failed to apply fixes to target/markdown-engine-probe/mdlint/fixable-drift/fix-validation/docs/guide.md: Fix error: Cannot apply fixes: overlapping fix ranges detected",
+          "stdout_bytes": 755,
+          "stdout_snippet": "{\"files\":[{\"path\":\"target/markdown-engine-probe/mdlint/fixable-drift/fix-validation/docs/guide.md\",\"violations\":[{\"line\":2,\"column\":1,\"rule\":\"MD022\",\"message\":\"Heading should be surrounded by blank lines (missing before)\",\"fixable\":true},{\"line\":2,\"column\":1,\"rule\":\"MD022\",\"message\":\"Heading should be surrounded by blank lines (missing after)\",\"fixable\":true},{\"line\":2,\"column\":1,\"rule\":\"MD041\",\"message\":\"First line in file should be a level 1 heading\"},{\"line\":4,\"column\":1,\"rule\":\"MD003\",\"message\":\"Heading style should be Atx but found Setext\"},{\"line\":6,\"column\":1,\"rule\":\"MD009\",\"message\":\"Trailing spaces (3 spaces)\",\"fixable\":true},{\"line\":13,\"column\":1,\"rule\":\"MD009\",\"message\":\"Trailing spaces (3 spaces)\",\"fixable\":true}]}],\"total_errors\":6}"
+        },
+        "post_fix_check_accepted": true,
+        "post_fix_check_status": "ran_with_findings",
+        "probe_fixture_root": "target/markdown-engine-probe/mdlint/fixable-drift/fix-validation",
+        "probe_markdown_files": [
+          "target/markdown-engine-probe/mdlint/fixable-drift/fix-validation/docs/guide.md"
+        ],
+        "second_fix": {
+          "accepted": false,
+          "error": null,
+          "exit_code": 1,
+          "stderr_bytes": 168,
+          "stderr_snippet": "Failed to apply fixes to target/markdown-engine-probe/mdlint/fixable-drift/fix-validation/docs/guide.md: Fix error: Cannot apply fixes: overlapping fix ranges detected",
+          "stdout_bytes": 755,
+          "stdout_snippet": "{\"files\":[{\"path\":\"target/markdown-engine-probe/mdlint/fixable-drift/fix-validation/docs/guide.md\",\"violations\":[{\"line\":2,\"column\":1,\"rule\":\"MD022\",\"message\":\"Heading should be surrounded by blank lines (missing before)\",\"fixable\":true},{\"line\":2,\"column\":1,\"rule\":\"MD022\",\"message\":\"Heading should be surrounded by blank lines (missing after)\",\"fixable\":true},{\"line\":2,\"column\":1,\"rule\":\"MD041\",\"message\":\"First line in file should be a level 1 heading\"},{\"line\":4,\"column\":1,\"rule\":\"MD003\",\"message\":\"Heading style should be Atx but found Setext\"},{\"line\":6,\"column\":1,\"rule\":\"MD009\",\"message\":\"Trailing spaces (3 spaces)\",\"fixable\":true},{\"line\":13,\"column\":1,\"rule\":\"MD009\",\"message\":\"Trailing spaces (3 spaces)\",\"fixable\":true}]}],\"total_errors\":6}"
+        },
+        "second_run_changed_files": [],
+        "second_run_idempotent": true,
+        "supported": true,
+        "validation_passed": false
+      },
       "name": "mdlint",
       "probe_fixture_root": "target/markdown-engine-probe/mdlint/fixable-drift",
       "probe_markdown_files": [
@@ -148,14 +242,14 @@
         "errors": [],
         "failed_runs": 0,
         "iterations": 3,
-        "max_ms": 6.831628,
-        "median_ms": 6.829796,
-        "min_ms": 6.108543999999999,
-        "p95_ms": 6.831628,
+        "max_ms": 6.832569,
+        "median_ms": 6.549186000000001,
+        "min_ms": 6.389024,
+        "p95_ms": 6.832569,
         "samples_ms": [
-          6.108543999999999,
-          6.829796,
-          6.831628
+          6.389024,
+          6.549186000000001,
+          6.832569
         ],
         "successful_runs": 3
       },
@@ -167,6 +261,10 @@
       "exit_code": 1,
       "fix_supported": false,
       "fix_timing": {
+        "reason": "candidate has no observed deterministic fix command for this probe",
+        "supported": false
+      },
+      "fix_validation": {
         "reason": "candidate has no observed deterministic fix command for this probe",
         "supported": false
       },
@@ -184,14 +282,14 @@
         "errors": [],
         "failed_runs": 0,
         "iterations": 3,
-        "max_ms": 13.149248,
-        "median_ms": 10.696987,
-        "min_ms": 9.282672,
-        "p95_ms": 13.149248,
+        "max_ms": 9.962696,
+        "median_ms": 9.686704,
+        "min_ms": 9.248634000000001,
+        "p95_ms": 9.962696,
         "samples_ms": [
-          9.282672,
-          10.696987,
-          13.149248
+          9.248634000000001,
+          9.686704,
+          9.962696
         ],
         "successful_runs": 3
       },
@@ -207,19 +305,67 @@
         "evidence_scope": "candidate_fix_command_timing_only",
         "failed_runs": 0,
         "iterations": 3,
-        "max_ms": 428.090275,
-        "median_ms": 365.316138,
-        "min_ms": 364.198725,
-        "p95_ms": 428.090275,
+        "max_ms": 394.07709600000004,
+        "median_ms": 390.55568600000004,
+        "min_ms": 388.03800900000005,
+        "p95_ms": 394.07709600000004,
         "post_fix_validation": false,
         "samples_ms": [
-          364.198725,
-          365.316138,
-          428.090275
+          388.03800900000005,
+          390.55568600000004,
+          394.07709600000004
         ],
         "success_semantics": "expected_exit_status_and_no_known_fix_failure_marker",
         "successful_runs": 3,
         "supported": true
+      },
+      "fix_validation": {
+        "accepted_first_fix_command": true,
+        "changed_files": [
+          "target/markdown-engine-probe/markdownlint-cli2/fixable-drift/fix-validation/docs/guide.md"
+        ],
+        "evidence_scope": "candidate_fix_validation_on_isolated_copy",
+        "first_fix": {
+          "accepted": true,
+          "error": null,
+          "exit_code": 1,
+          "stderr_bytes": 203,
+          "stderr_snippet": "target/markdown-engine-probe/markdownlint-cli2/fixable-drift/fix-validation/docs/guide.md:7 error MD025/single-title/single-h1 Multiple top-level headings in the same document [Context: \"Fixable Guide\"]",
+          "stdout_bytes": 194,
+          "stdout_snippet": "markdownlint-cli2 v0.23.0 (markdownlint v0.41.0)\nFinding: --json target/markdown-engine-probe/markdownlint-cli2/fixable-drift/fix-validation/docs/guide.md\nLinting: 1 file(s)\nSummary: 1 error(s)"
+        },
+        "fix_command_accepted": true,
+        "frontmatter_preserved": true,
+        "idempotent": true,
+        "line_endings_preserved": true,
+        "post_fix_check": {
+          "accepted": true,
+          "error": null,
+          "exit_code": 1,
+          "stderr_bytes": 203,
+          "stderr_snippet": "target/markdown-engine-probe/markdownlint-cli2/fixable-drift/fix-validation/docs/guide.md:7 error MD025/single-title/single-h1 Multiple top-level headings in the same document [Context: \"Fixable Guide\"]",
+          "stdout_bytes": 194,
+          "stdout_snippet": "markdownlint-cli2 v0.23.0 (markdownlint v0.41.0)\nFinding: --json target/markdown-engine-probe/markdownlint-cli2/fixable-drift/fix-validation/docs/guide.md\nLinting: 1 file(s)\nSummary: 1 error(s)"
+        },
+        "post_fix_check_accepted": true,
+        "post_fix_check_status": "ran_with_findings",
+        "probe_fixture_root": "target/markdown-engine-probe/markdownlint-cli2/fixable-drift/fix-validation",
+        "probe_markdown_files": [
+          "target/markdown-engine-probe/markdownlint-cli2/fixable-drift/fix-validation/docs/guide.md"
+        ],
+        "second_fix": {
+          "accepted": true,
+          "error": null,
+          "exit_code": 1,
+          "stderr_bytes": 203,
+          "stderr_snippet": "target/markdown-engine-probe/markdownlint-cli2/fixable-drift/fix-validation/docs/guide.md:7 error MD025/single-title/single-h1 Multiple top-level headings in the same document [Context: \"Fixable Guide\"]",
+          "stdout_bytes": 194,
+          "stdout_snippet": "markdownlint-cli2 v0.23.0 (markdownlint v0.41.0)\nFinding: --json target/markdown-engine-probe/markdownlint-cli2/fixable-drift/fix-validation/docs/guide.md\nLinting: 1 file(s)\nSummary: 1 error(s)"
+        },
+        "second_run_changed_files": [],
+        "second_run_idempotent": true,
+        "supported": true,
+        "validation_passed": true
       },
       "name": "markdownlint-cli2",
       "probe_fixture_root": "target/markdown-engine-probe/markdownlint-cli2/fixable-drift",
@@ -235,14 +381,14 @@
         "errors": [],
         "failed_runs": 0,
         "iterations": 3,
-        "max_ms": 408.468846,
-        "median_ms": 382.809202,
-        "min_ms": 364.03215700000004,
-        "p95_ms": 408.468846,
+        "max_ms": 391.174625,
+        "median_ms": 384.870904,
+        "min_ms": 382.501219,
+        "p95_ms": 391.174625,
         "samples_ms": [
-          364.03215700000004,
-          382.809202,
-          408.468846
+          382.501219,
+          384.870904,
+          391.174625
         ],
         "successful_runs": 3
       },

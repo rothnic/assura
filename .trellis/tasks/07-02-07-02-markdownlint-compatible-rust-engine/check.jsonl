@@ -15,3 +15,7 @@
 {"file": ".trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine/research/markdown-engine-probe-2026-07-02-frontmatter-link-heavy-representative.json", "reason": "checked representative timing evidence for frontmatter and link-heavy workload"}
 {"file": ".trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine/research/markdown-engine-probe-2026-07-02-large-doc-representative.json", "reason": "checked representative timing evidence for large Markdown workload"}
 {"file": ".trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine/research/markdown-engine-probe-2026-07-02-fixable-drift-representative.json", "reason": "checked representative timing evidence for deterministic safe-fix workload"}
+{"file": "xtask/src/main.rs", "reason": "unit coverage for Markdown candidate fix-validation helper behavior"}
+{"file": ".trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine/research/markdown-engine-probe-2026-07-02-invalid-representative.json", "reason": "checked fix-validation evidence including mdlint frontmatter loss"}
+{"file": ".trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine/research/markdown-engine-probe-2026-07-02-large-doc-representative.json", "reason": "checked fix-validation evidence including overlapping-fix failure"}
+{"file": ".trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine/research/markdown-engine-probe-2026-07-02-fixable-drift-representative.json", "reason": "checked fix-validation evidence for deterministic safe-fix workload"}

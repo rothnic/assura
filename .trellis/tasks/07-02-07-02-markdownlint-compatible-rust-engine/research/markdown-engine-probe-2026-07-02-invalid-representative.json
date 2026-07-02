@@ -23,14 +23,14 @@
           "errors": [],
           "failed_runs": 0,
           "iterations": 3,
-          "max_ms": 26.308748,
-          "median_ms": 24.028016,
-          "min_ms": 21.444841,
-          "p95_ms": 26.308748,
+          "max_ms": 23.655394,
+          "median_ms": 22.774518,
+          "min_ms": 21.661284,
+          "p95_ms": 23.655394,
           "samples_ms": [
-            21.444841,
-            24.028016,
-            26.308748
+            21.661284,
+            22.774518,
+            23.655394
           ],
           "successful_runs": 3
         },
@@ -38,14 +38,14 @@
           "errors": [],
           "failed_runs": 0,
           "iterations": 3,
-          "max_ms": 847.4624640000001,
-          "median_ms": 21.354467,
-          "min_ms": 18.66809,
-          "p95_ms": 847.4624640000001,
+          "max_ms": 19.90666,
+          "median_ms": 19.352634000000002,
+          "min_ms": 19.181676000000003,
+          "p95_ms": 19.90666,
           "samples_ms": [
-            18.66809,
-            21.354467,
-            847.4624640000001
+            19.181676000000003,
+            19.352634000000002,
+            19.90666
           ],
           "successful_runs": 3
         }
@@ -57,14 +57,14 @@
         "errors": [],
         "failed_runs": 0,
         "iterations": 3,
-        "max_ms": 12.336659,
-        "median_ms": 9.151224,
-        "min_ms": 8.471802,
-        "p95_ms": 12.336659,
+        "max_ms": 7.432637,
+        "median_ms": 7.1443710000000005,
+        "min_ms": 7.101678,
+        "p95_ms": 7.432637,
         "samples_ms": [
-          8.471802,
-          9.151224,
-          12.336659
+          7.101678,
+          7.1443710000000005,
+          7.432637
         ],
         "successful_runs": 3
       }
@@ -79,19 +79,69 @@
         "evidence_scope": "candidate_fix_command_timing_only",
         "failed_runs": 0,
         "iterations": 3,
-        "max_ms": 24.213298,
-        "median_ms": 23.801677,
-        "min_ms": 22.231306999999997,
-        "p95_ms": 24.213298,
+        "max_ms": 22.928314,
+        "median_ms": 22.759127,
+        "min_ms": 22.742611999999998,
+        "p95_ms": 22.928314,
         "post_fix_validation": false,
         "samples_ms": [
-          22.231306999999997,
-          23.801677,
-          24.213298
+          22.742611999999998,
+          22.759127,
+          22.928314
         ],
         "success_semantics": "expected_exit_status_and_no_known_fix_failure_marker",
         "successful_runs": 3,
         "supported": true
+      },
+      "fix_validation": {
+        "accepted_first_fix_command": true,
+        "changed_files": [
+          "target/markdown-engine-probe/rumdl/invalid/fix-validation/docs/guide.md",
+          "target/markdown-engine-probe/rumdl/invalid/fix-validation/docs/reference.md"
+        ],
+        "evidence_scope": "candidate_fix_validation_on_isolated_copy",
+        "first_fix": {
+          "accepted": true,
+          "error": null,
+          "exit_code": 1,
+          "stderr_bytes": 0,
+          "stderr_snippet": "",
+          "stdout_bytes": 825,
+          "stdout_snippet": "[\n  {\n    \"file\": \"target/markdown-engine-probe/rumdl/invalid/fix-validation/docs/guide.md\",\n    \"line\": 17,\n    \"column\": 5,\n    \"rule\": \"MD024\",\n    \"message\": \"Duplicate heading: 'Usage'.\",\n    \"severity\": \"error\",\n    \"fixable\": false,\n    \"fix\": null\n  },\n  {\n    \"file\": \"target/markdown-engine-probe/rumdl/invalid/fix-validation/docs/guide.md\",\n    \"line\": 8,\n    \"column\": 15,\n    \"rule\": \"MD057\",\n    \"message\": \"Relative link 'missing.md' does not exist\",\n    \"severity\": \"error\",\n    \"fixable\": false,\n    \"fix\": null\n  },\n  {\n    \"file\": \"target/markdown-engine-probe/rumdl/invalid/fix-validation/docs/guide.md\",\n    \"line\": 8,\n    \"column\": 28,\n    \"rule\": \"MD051\",\n    \"message\": \"Link fragment 'missing-anchor' not found in 'reference.md'\",\n    \"severity\": \"error\",\n    \"fixable\": false,\n    \"fix\": null\n  }\n]"
+        },
+        "fix_command_accepted": true,
+        "frontmatter_preserved": true,
+        "idempotent": true,
+        "line_endings_preserved": true,
+        "post_fix_check": {
+          "accepted": true,
+          "error": null,
+          "exit_code": 1,
+          "stderr_bytes": 0,
+          "stderr_snippet": "",
+          "stdout_bytes": 825,
+          "stdout_snippet": "[\n  {\n    \"file\": \"target/markdown-engine-probe/rumdl/invalid/fix-validation/docs/guide.md\",\n    \"line\": 8,\n    \"column\": 15,\n    \"rule\": \"MD057\",\n    \"message\": \"Relative link 'missing.md' does not exist\",\n    \"severity\": \"error\",\n    \"fixable\": false,\n    \"fix\": null\n  },\n  {\n    \"file\": \"target/markdown-engine-probe/rumdl/invalid/fix-validation/docs/guide.md\",\n    \"line\": 17,\n    \"column\": 5,\n    \"rule\": \"MD024\",\n    \"message\": \"Duplicate heading: 'Usage'.\",\n    \"severity\": \"error\",\n    \"fixable\": false,\n    \"fix\": null\n  },\n  {\n    \"file\": \"target/markdown-engine-probe/rumdl/invalid/fix-validation/docs/guide.md\",\n    \"line\": 8,\n    \"column\": 28,\n    \"rule\": \"MD051\",\n    \"message\": \"Link fragment 'missing-anchor' not found in 'reference.md'\",\n    \"severity\": \"error\",\n    \"fixable\": false,\n    \"fix\": null\n  }\n]"
+        },
+        "post_fix_check_accepted": true,
+        "post_fix_check_status": "ran_with_findings",
+        "probe_fixture_root": "target/markdown-engine-probe/rumdl/invalid/fix-validation",
+        "probe_markdown_files": [
+          "target/markdown-engine-probe/rumdl/invalid/fix-validation/docs/guide.md",
+          "target/markdown-engine-probe/rumdl/invalid/fix-validation/docs/reference.md"
+        ],
+        "second_fix": {
+          "accepted": true,
+          "error": null,
+          "exit_code": 1,
+          "stderr_bytes": 0,
+          "stderr_snippet": "",
+          "stdout_bytes": 825,
+          "stdout_snippet": "[\n  {\n    \"file\": \"target/markdown-engine-probe/rumdl/invalid/fix-validation/docs/guide.md\",\n    \"line\": 17,\n    \"column\": 5,\n    \"rule\": \"MD024\",\n    \"message\": \"Duplicate heading: 'Usage'.\",\n    \"severity\": \"error\",\n    \"fixable\": false,\n    \"fix\": null\n  },\n  {\n    \"file\": \"target/markdown-engine-probe/rumdl/invalid/fix-validation/docs/guide.md\",\n    \"line\": 8,\n    \"column\": 15,\n    \"rule\": \"MD057\",\n    \"message\": \"Relative link 'missing.md' does not exist\",\n    \"severity\": \"error\",\n    \"fixable\": false,\n    \"fix\": null\n  },\n  {\n    \"file\": \"target/markdown-engine-probe/rumdl/invalid/fix-validation/docs/guide.md\",\n    \"line\": 8,\n    \"column\": 28,\n    \"rule\": \"MD051\",\n    \"message\": \"Link fragment 'missing-anchor' not found in 'reference.md'\",\n    \"severity\": \"error\",\n    \"fixable\": false,\n    \"fix\": null\n  }\n]"
+        },
+        "second_run_changed_files": [],
+        "second_run_idempotent": true,
+        "supported": true,
+        "validation_passed": true
       },
       "name": "rumdl",
       "probe_fixture_root": "target/markdown-engine-probe/rumdl/invalid",
@@ -108,14 +158,14 @@
         "errors": [],
         "failed_runs": 0,
         "iterations": 3,
-        "max_ms": 23.067477999999998,
-        "median_ms": 22.651823,
-        "min_ms": 20.431585,
-        "p95_ms": 23.067477999999998,
+        "max_ms": 22.334426,
+        "median_ms": 22.099025,
+        "min_ms": 21.95145,
+        "p95_ms": 22.334426,
         "samples_ms": [
-          20.431585,
-          22.651823,
-          23.067477999999998
+          21.95145,
+          22.099025,
+          22.334426
         ],
         "successful_runs": 3
       },
@@ -131,19 +181,69 @@
         "evidence_scope": "candidate_fix_command_timing_only",
         "failed_runs": 0,
         "iterations": 3,
-        "max_ms": 8.975211,
-        "median_ms": 8.399157,
-        "min_ms": 7.994696000000001,
-        "p95_ms": 8.975211,
+        "max_ms": 7.699267,
+        "median_ms": 7.351017,
+        "min_ms": 6.852403,
+        "p95_ms": 7.699267,
         "post_fix_validation": false,
         "samples_ms": [
-          7.994696000000001,
-          8.399157,
-          8.975211
+          6.852403,
+          7.351017,
+          7.699267
         ],
         "success_semantics": "expected_exit_status_and_no_known_fix_failure_marker",
         "successful_runs": 3,
         "supported": true
+      },
+      "fix_validation": {
+        "accepted_first_fix_command": true,
+        "changed_files": [
+          "target/markdown-engine-probe/mdlint/invalid/fix-validation/docs/guide.md",
+          "target/markdown-engine-probe/mdlint/invalid/fix-validation/docs/reference.md"
+        ],
+        "evidence_scope": "candidate_fix_validation_on_isolated_copy",
+        "first_fix": {
+          "accepted": true,
+          "error": null,
+          "exit_code": 1,
+          "stderr_bytes": 164,
+          "stderr_snippet": "Fixed: target/markdown-engine-probe/mdlint/invalid/fix-validation/docs/guide.md\nFixed: target/markdown-engine-probe/mdlint/invalid/fix-validation/docs/reference.md",
+          "stdout_bytes": 1590,
+          "stdout_snippet": "{\"files\":[{\"path\":\"target/markdown-engine-probe/mdlint/invalid/fix-validation/docs/guide.md\",\"violations\":[{\"line\":2,\"column\":1,\"rule\":\"MD003\",\"message\":\"Heading style should be Atx but found Setext\"},{\"line\":2,\"column\":1,\"rule\":\"MD022\",\"message\":\"Heading should be surrounded by blank lines (missing before)\",\"fixable\":true},{\"line\":2,\"column\":1,\"rule\":\"MD041\",\"message\":\"First line in file should be a level 1 heading\"},{\"line\":6,\"column\":1,\"rule\":\"MD009\",\"message\":\"Trailing spaces (3 spaces)\",\"fixable\":true},{\"line\":8,\"column\":1,\"rule\":\"MD051\",\"message\":\"Link fragment 'missing-anchor' does not match any heading\"},{\"line\":9,\"column\":1,\"rule\":\"MD051\",\"message\":\"Link fragment 'L99' does not match any heading\"},{\"line\":11,\"column\":2,\"rule\":\"MD018\",\"message\":\"No space after hash on atx style heading\",\"fixable\":true},{\"line\":13,\"column\":1,\"rule\":\"MD012\",\"message\":\"Multiple consecutive blank lines [Expected: 1; Actual: 2]\",\"fixable\":true},{\"line\":14,\"column\":1,\"rule\":\"MD001\",\"message\":\"Heading level skipped from h1 to h3\"},{\"line\":18,\"column\":1,\"rule\":\"MD024\",\"message\":\"Multiple headings with the same content: \\\"Usage\\\" (first at line 16)\"}]},{\"path\":\"target/markdown-engine-probe/mdlint/invalid/fix-validation/docs/reference.md\",\"violations\":[{\"line\":2,\"column\":1,\"rule\":\"MD003\",\"message\":\"Heading style should be Atx but found Setext\"},{\"line\":2,\"column\":1,\"rule\":\"MD022\",\"message\":\"Heading should be surrounded by blank lines (missing before)\",\"fixable\":true},{\"line\":2,\"column\":1,\"rule\":\"MD041\",\"message\":\"First line in file should be a level 1 heading\"}]}],\"total_errors\":13}"
+        },
+        "fix_command_accepted": true,
+        "frontmatter_preserved": false,
+        "idempotent": true,
+        "line_endings_preserved": true,
+        "post_fix_check": {
+          "accepted": true,
+          "error": null,
+          "exit_code": 1,
+          "stderr_bytes": 0,
+          "stderr_snippet": "",
+          "stdout_bytes": 1119,
+          "stdout_snippet": "{\"files\":[{\"path\":\"target/markdown-engine-probe/mdlint/invalid/fix-validation/docs/guide.md\",\"violations\":[{\"line\":3,\"column\":1,\"rule\":\"MD003\",\"message\":\"Heading style should be Atx but found Setext\"},{\"line\":3,\"column\":1,\"rule\":\"MD041\",\"message\":\"First line in file should be a level 1 heading\"},{\"line\":9,\"column\":1,\"rule\":\"MD051\",\"message\":\"Link fragment 'missing-anchor' does not match any heading\"},{\"line\":10,\"column\":1,\"rule\":\"MD051\",\"message\":\"Link fragment 'L99' does not match any heading\"},{\"line\":12,\"column\":1,\"rule\":\"MD025\",\"message\":\"Multiple top-level headings (first h1 at line 6)\"},{\"line\":14,\"column\":1,\"rule\":\"MD001\",\"message\":\"Heading level skipped from h1 to h3\"},{\"line\":18,\"column\":1,\"rule\":\"MD024\",\"message\":\"Multiple headings with the same content: \\\"Usage\\\" (first at line 16)\"}]},{\"path\":\"target/markdown-engine-probe/mdlint/invalid/fix-validation/docs/reference.md\",\"violations\":[{\"line\":3,\"column\":1,\"rule\":\"MD003\",\"message\":\"Heading style should be Atx but found Setext\"},{\"line\":3,\"column\":1,\"rule\":\"MD041\",\"message\":\"First line in file should be a level 1 heading\"}]}],\"total_errors\":9}"
+        },
+        "post_fix_check_accepted": true,
+        "post_fix_check_status": "ran_with_findings",
+        "probe_fixture_root": "target/markdown-engine-probe/mdlint/invalid/fix-validation",
+        "probe_markdown_files": [
+          "target/markdown-engine-probe/mdlint/invalid/fix-validation/docs/guide.md",
+          "target/markdown-engine-probe/mdlint/invalid/fix-validation/docs/reference.md"
+        ],
+        "second_fix": {
+          "accepted": true,
+          "error": null,
+          "exit_code": 1,
+          "stderr_bytes": 0,
+          "stderr_snippet": "",
+          "stdout_bytes": 1119,
+          "stdout_snippet": "{\"files\":[{\"path\":\"target/markdown-engine-probe/mdlint/invalid/fix-validation/docs/guide.md\",\"violations\":[{\"line\":3,\"column\":1,\"rule\":\"MD003\",\"message\":\"Heading style should be Atx but found Setext\"},{\"line\":3,\"column\":1,\"rule\":\"MD041\",\"message\":\"First line in file should be a level 1 heading\"},{\"line\":9,\"column\":1,\"rule\":\"MD051\",\"message\":\"Link fragment 'missing-anchor' does not match any heading\"},{\"line\":10,\"column\":1,\"rule\":\"MD051\",\"message\":\"Link fragment 'L99' does not match any heading\"},{\"line\":12,\"column\":1,\"rule\":\"MD025\",\"message\":\"Multiple top-level headings (first h1 at line 6)\"},{\"line\":14,\"column\":1,\"rule\":\"MD001\",\"message\":\"Heading level skipped from h1 to h3\"},{\"line\":18,\"column\":1,\"rule\":\"MD024\",\"message\":\"Multiple headings with the same content: \\\"Usage\\\" (first at line 16)\"}]},{\"path\":\"target/markdown-engine-probe/mdlint/invalid/fix-validation/docs/reference.md\",\"violations\":[{\"line\":3,\"column\":1,\"rule\":\"MD003\",\"message\":\"Heading style should be Atx but found Setext\"},{\"line\":3,\"column\":1,\"rule\":\"MD041\",\"message\":\"First line in file should be a level 1 heading\"}]}],\"total_errors\":9}"
+        },
+        "second_run_changed_files": [],
+        "second_run_idempotent": true,
+        "supported": true,
+        "validation_passed": false
       },
       "name": "mdlint",
       "probe_fixture_root": "target/markdown-engine-probe/mdlint/invalid",
@@ -160,14 +260,14 @@
         "errors": [],
         "failed_runs": 0,
         "iterations": 3,
-        "max_ms": 9.048815999999999,
-        "median_ms": 8.891246,
-        "min_ms": 7.553984,
-        "p95_ms": 9.048815999999999,
+        "max_ms": 6.987915,
+        "median_ms": 6.958055,
+        "min_ms": 6.8587810000000005,
+        "p95_ms": 6.987915,
         "samples_ms": [
-          7.553984,
-          8.891246,
-          9.048815999999999
+          6.8587810000000005,
+          6.958055,
+          6.987915
         ],
         "successful_runs": 3
       },
@@ -179,6 +279,10 @@
       "exit_code": 1,
       "fix_supported": false,
       "fix_timing": {
+        "reason": "candidate has no observed deterministic fix command for this probe",
+        "supported": false
+      },
+      "fix_validation": {
         "reason": "candidate has no observed deterministic fix command for this probe",
         "supported": false
       },
@@ -197,14 +301,14 @@
         "errors": [],
         "failed_runs": 0,
         "iterations": 3,
-        "max_ms": 10.671483,
-        "median_ms": 10.050458,
-        "min_ms": 9.913211,
-        "p95_ms": 10.671483,
+        "max_ms": 9.580273,
+        "median_ms": 9.452703,
+        "min_ms": 9.282757,
+        "p95_ms": 9.580273,
         "samples_ms": [
-          9.913211,
-          10.050458,
-          10.671483
+          9.282757,
+          9.452703,
+          9.580273
         ],
         "successful_runs": 3
       },
@@ -220,19 +324,68 @@
         "evidence_scope": "candidate_fix_command_timing_only",
         "failed_runs": 0,
         "iterations": 3,
-        "max_ms": 414.187419,
-        "median_ms": 406.29780700000003,
-        "min_ms": 381.61569000000003,
-        "p95_ms": 414.187419,
+        "max_ms": 438.14840300000003,
+        "median_ms": 406.068029,
+        "min_ms": 377.543572,
+        "p95_ms": 438.14840300000003,
         "post_fix_validation": false,
         "samples_ms": [
-          381.61569000000003,
-          406.29780700000003,
-          414.187419
+          377.543572,
+          406.068029,
+          438.14840300000003
         ],
         "success_semantics": "expected_exit_status_and_no_known_fix_failure_marker",
         "successful_runs": 3,
         "supported": true
+      },
+      "fix_validation": {
+        "accepted_first_fix_command": true,
+        "changed_files": [
+          "target/markdown-engine-probe/markdownlint-cli2/invalid/fix-validation/docs/guide.md"
+        ],
+        "evidence_scope": "candidate_fix_validation_on_isolated_copy",
+        "first_fix": {
+          "accepted": true,
+          "error": null,
+          "exit_code": 1,
+          "stderr_bytes": 957,
+          "stderr_snippet": "target/markdown-engine-probe/markdownlint-cli2/invalid/fix-validation/docs/guide.md:5 error MD025/single-title/single-h1 Multiple top-level headings in the same document [Context: \"Guide\"]\ntarget/markdown-engine-probe/markdownlint-cli2/invalid/fix-validation/docs/guide.md:11 error MD025/single-title/single-h1 Multiple top-level headings in the same document [Context: \"Bad\"]\ntarget/markdown-engine-probe/markdownlint-cli2/invalid/fix-validation/docs/guide.md:13 error MD001/heading-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\ntarget/markdown-engine-probe/markdownlint-cli2/invalid/fix-validation/docs/guide.md:17 error MD024/no-duplicate-heading Multiple headings with the same content [Context: \"Usage\"]\ntarget/markdown-engine-probe/markdownlint-cli2/invalid/fix-validation/docs/reference.md:5 error MD025/single-title/single-h1 Multiple top-level headings in the same document [Context: \"Reference\"]",
+          "stdout_bytes": 276,
+          "stdout_snippet": "markdownlint-cli2 v0.23.0 (markdownlint v0.41.0)\nFinding: --json target/markdown-engine-probe/markdownlint-cli2/invalid/fix-validation/docs/guide.md target/markdown-engine-probe/markdownlint-cli2/invalid/fix-validation/docs/reference.md\nLinting: 2 file(s)\nSummary: 5 error(s)"
+        },
+        "fix_command_accepted": true,
+        "frontmatter_preserved": true,
+        "idempotent": true,
+        "line_endings_preserved": true,
+        "post_fix_check": {
+          "accepted": true,
+          "error": null,
+          "exit_code": 1,
+          "stderr_bytes": 957,
+          "stderr_snippet": "target/markdown-engine-probe/markdownlint-cli2/invalid/fix-validation/docs/guide.md:5 error MD025/single-title/single-h1 Multiple top-level headings in the same document [Context: \"Guide\"]\ntarget/markdown-engine-probe/markdownlint-cli2/invalid/fix-validation/docs/guide.md:11 error MD025/single-title/single-h1 Multiple top-level headings in the same document [Context: \"Bad\"]\ntarget/markdown-engine-probe/markdownlint-cli2/invalid/fix-validation/docs/guide.md:13 error MD001/heading-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\ntarget/markdown-engine-probe/markdownlint-cli2/invalid/fix-validation/docs/guide.md:17 error MD024/no-duplicate-heading Multiple headings with the same content [Context: \"Usage\"]\ntarget/markdown-engine-probe/markdownlint-cli2/invalid/fix-validation/docs/reference.md:5 error MD025/single-title/single-h1 Multiple top-level headings in the same document [Context: \"Reference\"]",
+          "stdout_bytes": 276,
+          "stdout_snippet": "markdownlint-cli2 v0.23.0 (markdownlint v0.41.0)\nFinding: --json target/markdown-engine-probe/markdownlint-cli2/invalid/fix-validation/docs/guide.md target/markdown-engine-probe/markdownlint-cli2/invalid/fix-validation/docs/reference.md\nLinting: 2 file(s)\nSummary: 5 error(s)"
+        },
+        "post_fix_check_accepted": true,
+        "post_fix_check_status": "ran_with_findings",
+        "probe_fixture_root": "target/markdown-engine-probe/markdownlint-cli2/invalid/fix-validation",
+        "probe_markdown_files": [
+          "target/markdown-engine-probe/markdownlint-cli2/invalid/fix-validation/docs/guide.md",
+          "target/markdown-engine-probe/markdownlint-cli2/invalid/fix-validation/docs/reference.md"
+        ],
+        "second_fix": {
+          "accepted": true,
+          "error": null,
+          "exit_code": 1,
+          "stderr_bytes": 957,
+          "stderr_snippet": "target/markdown-engine-probe/markdownlint-cli2/invalid/fix-validation/docs/guide.md:5 error MD025/single-title/single-h1 Multiple top-level headings in the same document [Context: \"Guide\"]\ntarget/markdown-engine-probe/markdownlint-cli2/invalid/fix-validation/docs/guide.md:11 error MD025/single-title/single-h1 Multiple top-level headings in the same document [Context: \"Bad\"]\ntarget/markdown-engine-probe/markdownlint-cli2/invalid/fix-validation/docs/guide.md:13 error MD001/heading-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]\ntarget/markdown-engine-probe/markdownlint-cli2/invalid/fix-validation/docs/guide.md:17 error MD024/no-duplicate-heading Multiple headings with the same content [Context: \"Usage\"]\ntarget/markdown-engine-probe/markdownlint-cli2/invalid/fix-validation/docs/reference.md:5 error MD025/single-title/single-h1 Multiple top-level headings in the same document [Context: \"Reference\"]",
+          "stdout_bytes": 276,
+          "stdout_snippet": "markdownlint-cli2 v0.23.0 (markdownlint v0.41.0)\nFinding: --json target/markdown-engine-probe/markdownlint-cli2/invalid/fix-validation/docs/guide.md target/markdown-engine-probe/markdownlint-cli2/invalid/fix-validation/docs/reference.md\nLinting: 2 file(s)\nSummary: 5 error(s)"
+        },
+        "second_run_changed_files": [],
+        "second_run_idempotent": true,
+        "supported": true,
+        "validation_passed": true
       },
       "name": "markdownlint-cli2",
       "probe_fixture_root": "target/markdown-engine-probe/markdownlint-cli2/invalid",
@@ -249,14 +402,14 @@
         "errors": [],
         "failed_runs": 0,
         "iterations": 3,
-        "max_ms": 395.23843400000004,
-        "median_ms": 394.52789,
-        "min_ms": 385.300563,
-        "p95_ms": 395.23843400000004,
+        "max_ms": 370.13449399999996,
+        "median_ms": 369.932378,
+        "min_ms": 361.196567,
+        "p95_ms": 370.13449399999996,
         "samples_ms": [
-          385.300563,
-          394.52789,
-          395.23843400000004
+          361.196567,
+          369.932378,
+          370.13449399999996
         ],
         "successful_runs": 3
       },

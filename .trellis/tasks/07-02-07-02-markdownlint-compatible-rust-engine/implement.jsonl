@@ -29,3 +29,7 @@
 {"file": ".trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine/research/markdown-engine-probe-2026-07-02-frontmatter-link-heavy-representative.json", "reason": "measured representative profile output for frontmatter and link-heavy workload"}
 {"file": ".trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine/research/markdown-engine-probe-2026-07-02-large-doc-representative.json", "reason": "measured representative profile output for larger Markdown workload"}
 {"file": ".trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine/research/markdown-engine-probe-2026-07-02-fixable-drift-representative.json", "reason": "measured representative profile output for deterministic safe-fix workload"}
+{"file": "xtask/src/main.rs", "reason": "external Markdown candidate fix-validation evidence for changed files, frontmatter, line endings, idempotence, and post-fix check status"}
+{"file": ".trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine/research/markdown-engine-candidate-evaluation.md", "reason": "candidate fix-validation results and decision impact"}
+{"file": ".trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine/task.json", "reason": "active Trellis task branch updated for the fix-validation slice"}
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "active roadmap branch and next-action routing updated for the fix-validation slice"}

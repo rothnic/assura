@@ -90,6 +90,15 @@ dimensions:
 Supported profile names are `invalid`, `frontmatter-link-heavy`, `large-doc`,
 and `fixable-drift`.
 
+The branch `codex/markdown-engine-fix-validation` adds `fix_validation` for
+external candidates with observed fix commands. Validation runs on one isolated
+copy per candidate/profile and records whether the first fix command was
+accepted, which Markdown files changed, whether frontmatter and line endings
+were preserved, whether a second fix run was idempotent, and what the
+post-fix check command reported. This is stronger than command timing but
+still not an adoption claim; a supported engine must also integrate through
+Assura's severity, suppression, daemon, editor, and agent contracts.
+
 For `assura-current`, the probe uses `target/debug/assura` when that binary is
 present and records `execution_mode: target-debug-binary`; it falls back to
 `cargo run` only when the binary has not been built. Local timing evidence
@@ -166,10 +175,10 @@ Result summary, median milliseconds:
 
 | Fixture | Files | Assura check | Assura fix dry-run | Assura fix apply | `rumdl` check | `rumdl` fix cmd | `mdlint` check | `mdlint` fix cmd | `mado` check | `markdownlint-cli2` check |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| `invalid` | 2 | 9.151 | 21.354 | 24.028 | 22.652 | 23.802 | 8.891 | 8.399 | 10.050 | 394.528 |
-| `frontmatter-link-heavy` | 2 | 8.184 | 21.120 | 23.260 | 21.958 | 21.427 | 7.921 | 7.805 | 10.084 | 373.312 |
-| `large-doc` | 1 | 7.680 | 19.213 | 22.380 | 19.392 | 22.456 | 6.686 | failed | 8.468 | 407.861 |
-| `fixable-drift` | 1 | 8.724 | 20.273 | 21.360 | 17.524 | 20.000 | 6.830 | failed | 10.697 | 382.809 |
+| `invalid` | 2 | 7.144 | 19.353 | 22.775 | 22.099 | 22.759 | 6.958 | 7.351 | 9.453 | 369.932 |
+| `frontmatter-link-heavy` | 2 | 7.431 | 20.096 | 22.201 | 22.283 | 22.343 | 8.932 | 9.277 | 10.287 | 413.085 |
+| `large-doc` | 1 | 8.043 | 20.377 | 22.217 | 19.227 | 23.452 | 7.934 | failed | 9.045 | 382.896 |
+| `fixable-drift` | 1 | 8.235 | 19.857 | 20.811 | 18.724 | 20.055 | 6.549 | failed | 9.687 | 384.871 |
 
 `mdlint` fix timing is marked failed when the command exits with a findings
 status but reports that fixes could not be applied because of overlapping fix
@@ -189,10 +198,34 @@ on these local profiles. `mdlint` remains the fastest Rust candidate in raw
 check timing, but it now has two independent fix-safety concerns: previous
 isolated probes observed unrequested fixture mutation in check mode, and this
 profile pass found failed fix application on `large-doc` and `fixable-drift`.
-External candidate fix rows are deliberately not safe-fix proof until a later
-slice validates post-fix state, idempotence, frontmatter preservation, and
-line-ending preservation. `markdownlint-cli2` remains much slower and stays a
-compatibility baseline only.
+The timing rows alone are deliberately not safe-fix proof; use the
+`fix_validation` rows added below for post-fix state, idempotence,
+frontmatter preservation, line-ending preservation, and post-fix check evidence.
+`markdownlint-cli2` remains much slower and stays a compatibility baseline only.
+
+## 2026-07-02 Candidate Fix Validation
+
+The same representative reports now include one `fix_validation` object for
+each external candidate with an observed fix command.
+
+Result summary:
+
+| Fixture | `rumdl` validation | `mdlint` validation | `markdownlint-cli2` validation |
+| --- | --- | --- | --- |
+| `invalid` | Pass: first fix accepted, 2 files changed, frontmatter preserved, line endings preserved, second run idempotent. | Fail: first fix accepted and idempotent, but frontmatter was not preserved after fixing 2 files. | Pass: first fix accepted, 1 file changed, frontmatter preserved, line endings preserved, second run idempotent. |
+| `frontmatter-link-heavy` | Pass: first fix accepted, 2 files changed, frontmatter preserved, line endings preserved, second run idempotent. | Pass: first fix accepted, 1 file changed, frontmatter preserved, line endings preserved, second run idempotent. | Pass: first fix accepted, 1 file changed, frontmatter preserved, line endings preserved, second run idempotent. |
+| `large-doc` | Pass: first fix accepted, 1 file changed, frontmatter preserved, line endings preserved, second run idempotent. | Fail: fix command was rejected because fixes could not be applied with overlapping ranges. | Pass: first fix accepted, 1 file changed, frontmatter preserved, line endings preserved, second run idempotent. |
+| `fixable-drift` | Pass: first fix accepted, 1 file changed, frontmatter preserved, line endings preserved, second run idempotent. | Fail: fix command was rejected because fixes could not be applied with overlapping ranges. | Pass: first fix accepted, 1 file changed, frontmatter preserved, line endings preserved, second run idempotent. |
+
+Decision impact: `rumdl` is now the only Rust candidate in this probe set that
+combines rich machine-readable diagnostics, fix metadata, isolated check
+safety, accepted fix commands, frontmatter/line-ending preservation, and
+second-run idempotence across all representative profiles. It remains slower
+than current Assura's narrow Markdown checks, so the next adoption slice should
+focus on candidate configuration and scoped integration rather than declaring a
+global default. `mdlint` should not advance as a supported fixer without a
+separate mitigation for check-mode mutation, frontmatter loss, and overlapping
+fix failures.
 
 ## Executable Fixture Probe
 
