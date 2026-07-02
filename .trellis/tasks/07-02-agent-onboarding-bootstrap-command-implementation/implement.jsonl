@@ -1,0 +1,6 @@
+{"file": "docs/goals/assura-agent-ready-project-onboarding-program.md", "reason": "Parent program scope, child order, bootstrap packet contract, and progress log."}
+{"file": "docs/goals/assura-agent-onboarding-bootstrap-command.md", "reason": "Child goal objective, scope, non-goals, and validation gates for this slice."}
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "Current active roadmap iteration and performance-lane separation."}
+{"file": "docs/support-policy.md", "reason": "Supported, experimental, roadmap, and unsupported surface classifications."}
+{"file": ".trellis/spec/assura/codex-agent-feedback.md", "reason": "Direction lock for stable agent feedback and prohibited per-agent formats."}
+{"file": "docs/goals/assura-agent-integration-lifecycle.md", "reason": "Existing local agent integration lifecycle contract to reuse during onboarding."}

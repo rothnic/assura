@@ -777,6 +777,12 @@ behavior remains implicit. Also block if the remote bootstrap script owns
 product behavior instead of delegating to the installed CLI, or if first-run
 onboarding asks excessive questions before establishing a safe baseline.
 
+## Progress Log
+
+| Date | Update | Evidence |
+| --- | --- | --- |
+| 2026-07-02 | Started implementation of the first child goal, `assura-agent-onboarding-bootstrap-command`, after revalidating the live roadmap, support policy, agent feedback direction lock, agent integration lifecycle, website onboarding gap, and current self-check behavior. The implementation slice is scoped to the installed local CLI onboarding surface; the remote wrapper and later specialization flow remain planned contracts until implemented. | `.trellis/tasks/07-02-agent-onboarding-bootstrap-command-implementation/prd.md`; `.trellis/spec/assura/roadmap.md`; `docs/support-policy.md`; `.trellis/spec/assura/codex-agent-feedback.md`; `docs/goals/assura-agent-integration-lifecycle.md`; `cargo run --quiet -- check --format json .` reported 0 violations across 1403 files. |
+
 ## Kickoff Text
 
 Use this prompt to start the large goal-driven work:
