@@ -3,8 +3,9 @@
 ## Goal
 
 Finalize the parent post-beta capabilities program after PR #136 by recording
-merged support-hardening evidence, closing stale child/task state, and deciding
-whether the `v0.3.0` beta increment is ready to tag and verify live.
+merged support-hardening evidence, closing stale child/task state, publishing
+the `v0.3.0` beta increment, verifying it live, and recording the parent
+completion audit.
 
 ## What I Already Know
 
@@ -15,8 +16,7 @@ whether the `v0.3.0` beta increment is ready to tag and verify live.
 - `cargo xtask release-readiness --format json` passes locally for `v0.3.0`.
 - `cargo xtask target-state` passes after archiving the completed
   support-hardening Trellis task.
-- The latest published GitHub release is still `v0.2.0`; `v0.3.0` has not been
-  tagged or published yet.
+- The `v0.3.0` tag and GitHub release are now published from merged `master`.
 - The parent goal remains beta-track work. Finalization must not imply GA or
   post-beta product status.
 
@@ -31,10 +31,10 @@ whether the `v0.3.0` beta increment is ready to tag and verify live.
 - Keep the final north-star verification scenario as the acceptance lens for
   parent completion.
 - Run local release and support gates before any tag/publish step.
-- If a `v0.3.0` tag is created, verify GitHub release assets and checksums with
-  the documented live gate and record evidence.
-- If a release tag is not created in this slice, leave the parent active and
-  record the exact remaining release/publication step.
+- Verify GitHub release assets and checksums with the documented live gate and
+  record evidence.
+- Mark the parent completed only if the completion audit maps every requested
+  capability to a beta-supported or explicitly experimental surface.
 
 ## Acceptance Criteria
 
@@ -46,6 +46,10 @@ whether the `v0.3.0` beta increment is ready to tag and verify live.
 - [x] `cargo xtask release-readiness --format json` passes.
 - [x] `cargo xtask target-state` passes.
 - [x] `cargo xtask release-smoke` passes before any tag is pushed.
+- [x] Release workflow for `v0.3.0` succeeds and publishes all expected assets.
+- [x] `cargo xtask release-live` and
+      `ASSURA_VERSION=v0.3.0 cargo xtask release-live` pass.
+- [x] Parent completion audit records the beta/pre-1.0 boundary.
 - [x] Final validation evidence is recorded in the task and goal files.
 - [x] Independent review finds no blocker before a finalization PR is opened.
 
@@ -61,19 +65,24 @@ whether the `v0.3.0` beta increment is ready to tag and verify live.
 - `cargo xtask docs` passed and built 39 website pages.
 - `cargo xtask evidence` passed review evidence and CI scope policy checks.
 - `git diff --check` passed.
+- Release workflow `28601020713` succeeded for tag `v0.3.0`.
+- `gh release view v0.3.0 --json tagName,url,isDraft,isPrerelease,publishedAt,assets`
+  confirmed a non-draft, non-prerelease release published at
+  `2026-07-02T15:23:53Z` with five platform archives and five checksum files.
+- `cargo xtask release-live` passed for the `latest` release URLs.
+- `ASSURA_VERSION=v0.3.0 cargo xtask release-live` passed for the explicit
+  versioned release URLs.
 - Independent review agent `019f2358-2c2a-7432-aa0f-57a3a4bf65c1` found no
   blockers. It flagged that support-policy and website release-readiness did
-  not repeat the unpublished-`v0.3.0` caveat strongly enough; both pages now
-  state that `v0.2.0` remains the latest installable public release until the
-  `v0.3.0` tag, release assets, and live gate exist.
+  not repeat the unpublished-`v0.3.0` caveat strongly enough before the tag was
+  published. After live verification, both pages now state that `v0.3.0` is
+  published and live-verified while Assura remains pre-1.0 beta.
 
 ## Definition Of Done
 
 - Finalization branch is clean, reviewed, pushed, and merged.
-- The parent goal is either:
-  - still active with one precise remaining live-release step; or
-  - complete only after `v0.3.0` is tagged, published, live-verified, and the
-    completion audit proves every parent requirement.
+- The parent goal is complete after `v0.3.0` is tagged, published,
+  live-verified, and the completion audit proves every parent requirement.
 
 ## Out Of Scope
 

@@ -34,23 +34,26 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 20 | Project Intelligence Simple Usability | Completed | PR #109 merged and deployed; task archived under `.trellis/tasks/archive/2026-06/` |
 | 21 | Markdown Reference Intelligence | Completed | Completed for beta in PR #112; post-beta Markdown, graph, daemon, agent, and editor hardening now routes through Post-Beta Capabilities |
 | 22 | Beta Code-Agnostic Capabilities | Completed | PR #112 merged; `v0.2.0` tag and GitHub release published with live release evidence |
-| 23 | Post-Beta Capabilities | Active | Parent goal `docs/goals/assura-post-beta-capabilities-program.md` owns self-config hardening, supported document graph, true daemon mode, Markdown engine, performance floor, agent installers, VS Code support, extension API clarity, LS-Lint reassessment, and release hardening |
+| 23 | Post-Beta Capabilities | Completed | `v0.3.0` beta increment published and live-verified with self-config hardening, supported document graph, true daemon mode, Markdown engine/safe fixes, performance floor, agent installers, VS Code support, extension API clarity, LS-Lint reassessment, and release hardening |
 
 ## Active Roadmap Iteration
 
-Post-Beta Capabilities is active after release `v0.2.0`.
+Post-Beta Capabilities completed as the `v0.3.0` beta increment after release
+`v0.2.0`.
 
 Owning task:
-`.trellis/tasks/07-02-post-beta-program-finalization`.
+`.trellis/tasks/archive/2026-07/07-02-post-beta-program-finalization`.
 
 Current branch:
-`codex/post-beta-program-finalization` is recording the merged
-support-hardening evidence and preparing the explicit `v0.3.0` beta-increment
-tag/live-release verification step.
+`codex/post-beta-live-release-evidence` recorded the live `v0.3.0` release
+evidence, parent completion audit, and archived finalization task.
 
 Current recommended goal:
-`docs/goals/assura-post-beta-capabilities-program.md`, with completed support
-hardening details in `docs/goals/assura-post-beta-support-release-hardening.md`.
+No incomplete child goal remains in this iteration. Use
+`docs/goals/assura-post-beta-capabilities-program.md` as the completed
+`v0.3.0` beta-increment record and choose the next roadmap iteration from a new
+product decision. Completed support-hardening details remain in
+`docs/goals/assura-post-beta-support-release-hardening.md`.
 
 Public roadmap artifact:
 `docs/data/public-roadmap.json`.
@@ -83,17 +86,11 @@ that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
 ## Recommended Next Action
 
-Execute `docs/goals/assura-post-beta-capabilities-program.md` goal by goal.
-True daemon mode is complete in PR #117. The Markdown engine and supported
-document graph children are closed for this beta increment, the performance
-floor is closed, the agent installer lifecycle is closed,
-`docs/goals/assura-vscode-supported-extension.md` is closed, and extension API
-clarification is closed for this beta increment. LS-Lint performance
-reassessment is closed after refreshing checked performance evidence and PR
-#135 is merged. Support hardening is closed after PR #136 merged with all CI
-checks green. Merge the parent finalization PR, then tag `v0.3.0`, wait for
-release assets, run `ASSURA_VERSION=v0.3.0 cargo xtask release-live`, and
-record the live release evidence before marking the parent complete.
+Merge the live release evidence PR, then use a new product decision to choose
+the next roadmap iteration. The completed `v0.3.0` parent record is
+`docs/goals/assura-post-beta-capabilities-program.md`; its north-star
+verification story should remain the regression lens for future capability
+work.
 
 ## Roadmap Rules
 

@@ -6,10 +6,7 @@ status: active
 # Assura v0.3.0 Release Notes
 
 These notes describe the current pre-1.0 public command surface for the
-`v0.3.0` beta-increment release-candidate build. They are not a claim that the
-already published July 1, 2026 `v0.2.0` archives contain the later daemon,
-agent-integration lifecycle, VS Code support, extension-boundary, and
-support-hardening work. Assura publishes installable archives from
+published `v0.3.0` beta increment. Assura publishes installable archives from
 [`.github/workflows/release.yml`](../.github/workflows/release.yml) when a
 maintainer pushes an intentional `v*` tag after the release checklist in
 [`docs/release-candidate-checklist.md`](./release-candidate-checklist.md)
@@ -92,12 +89,9 @@ The release workflow verifies those checksums before upload, and
 `cargo xtask release-live` checks that public checksum URLs are reachable
 after a tag is published.
 
-The `v0.2.0` archives were published on 2026-07-01 and do not contain the
-later daemon process, agent integration lifecycle, VS Code support,
-extension-boundary, and support-hardening surfaces described in these
-`v0.3.0` release-candidate notes. A future tag and release-candidate archive
-must be built before these current branch surfaces are advertised as installable
-release artifacts.
+The `v0.3.0` archives were published and live-verified on 2026-07-02. Live
+verification checked both the latest-release URLs and explicit `v0.3.0` URLs
+for every archive and checksum file.
 
 ## Current Feature Surface
 
@@ -278,6 +272,6 @@ ASSURA_VERSION=v0.3.0 cargo xtask release-live
 
 ## Next
 
-After `v0.3.0` is tagged and verified, the parent post-beta capabilities
-program can record release artifact evidence for this beta increment. Assura
-still remains pre-1.0 beta software after this release.
+The parent post-beta capabilities program records `v0.3.0` release artifact
+evidence for this beta increment. Assura still remains pre-1.0 beta software
+after this release.

@@ -3266,7 +3266,7 @@ fn check_post_beta_release_hardening(checks: &mut Checks) {
 
     for marker in [
         "Assura v0.3.0 Release Notes",
-        "beta-increment release-candidate build",
+        "published `v0.3.0` beta increment",
         "still remains pre-1.0 beta software",
     ] {
         checks.require(

@@ -1,0 +1,3 @@
+{"file":".agents/skills/assura-performance-reporting/SKILL.md","reason":"Performance report build shape, no-slower gate, and LS-Lint comparison verification commands."}
+{"file":"docs/validation.md","reason":"Repository validation command expectations for local and CI gates."}
+{"file":"docs/release-candidate-checklist.md","reason":"Release-evidence PR checks that must remain green after the performance fix."}

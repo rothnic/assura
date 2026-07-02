@@ -1,0 +1,3 @@
+{"file":"docs/goals/assura-post-beta-capabilities-program.md","reason":"Parent release-evidence PR context and beta completion criteria."}
+{"file":"docs/analysis/2026-05-19-ls-lint-2x-completion-audit.md","reason":"Historical LS-Lint performance evidence and accepted constraints for one-shot CLI claims."}
+{"file":"docs/archive/assura-native-ls-lint-performance-rearchitecture.md","reason":"Prior performance experiments and rejected approaches to avoid repeating stale optimization paths."}
