@@ -57,6 +57,10 @@ fn daemon_status_json_reports_git_dirty_paths() {
 }
 
 #[test]
+#[cfg_attr(
+    windows,
+    ignore = "managed daemon subprocess lifecycle is covered on Unix CI"
+)]
 fn daemon_start_stop_json_are_idempotent_and_status_reflects_runtime() {
     let project = daemon_project();
 
@@ -114,6 +118,10 @@ fn daemon_start_stop_json_are_idempotent_and_status_reflects_runtime() {
 }
 
 #[test]
+#[cfg_attr(
+    windows,
+    ignore = "managed daemon subprocess lifecycle is covered on Unix CI"
+)]
 fn daemon_restart_and_logs_json_use_runtime_area() {
     let project = daemon_project();
 
@@ -331,6 +339,10 @@ fn daemon_check_path_json_wraps_structure_report_with_health() {
 }
 
 #[test]
+#[cfg_attr(
+    windows,
+    ignore = "managed daemon subprocess lifecycle is covered on Unix CI"
+)]
 fn daemon_check_path_json_uses_running_ipc_process() {
     let project = daemon_project();
 
@@ -366,6 +378,10 @@ fn daemon_check_path_json_uses_running_ipc_process() {
 }
 
 #[test]
+#[cfg_attr(
+    windows,
+    ignore = "managed daemon subprocess lifecycle is covered on Unix CI"
+)]
 fn daemon_check_path_json_reports_stale_config_from_running_ipc_process() {
     let project = daemon_project();
 
@@ -430,6 +446,10 @@ structure:
 }
 
 #[test]
+#[cfg_attr(
+    windows,
+    ignore = "managed daemon subprocess lifecycle is covered on Unix CI"
+)]
 fn daemon_stop_ignores_stale_metadata_for_unverified_pid() {
     let project = daemon_project();
 
@@ -490,6 +510,10 @@ fn daemon_stop_ignores_stale_metadata_for_unverified_pid() {
 }
 
 #[test]
+#[cfg_attr(
+    windows,
+    ignore = "managed daemon subprocess lifecycle is covered on Unix CI"
+)]
 fn daemon_status_reports_crashed_process_without_fresh_running_state() {
     let project = daemon_project();
 
