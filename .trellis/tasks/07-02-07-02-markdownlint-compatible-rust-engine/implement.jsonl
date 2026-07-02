@@ -33,3 +33,8 @@
 {"file": ".trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine/research/markdown-engine-candidate-evaluation.md", "reason": "candidate fix-validation results and decision impact"}
 {"file": ".trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine/task.json", "reason": "active Trellis task branch updated for the fix-validation slice"}
 {"file": ".trellis/spec/assura/roadmap.md", "reason": "active roadmap branch and next-action routing updated for the fix-validation slice"}
+{"file": "docs/analysis/2026-07-02-markdown-engine-selection.md", "reason": "final Markdown engine selection decision for supported default, optional rumdl adapter, and rejected fixer candidates"}
+{"file": "docs/goals/assura-markdownlint-compatible-rust-engine.md", "reason": "child goal status and progress log updated after selection evidence"}
+{"file": "docs/goals/assura-post-beta-capabilities-program.md", "reason": "parent program progress log updated with Markdown engine child closure and next-goal handoff"}
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "active roadmap routing updated after Markdown engine selection"}
+{"file": ".trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine/task.json", "reason": "active Trellis task branch updated for Markdown engine selection closure"}
