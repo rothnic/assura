@@ -41,12 +41,12 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 Post-Beta Capabilities is active after release `v0.2.0`.
 
 Owning task:
-`.trellis/tasks/archive/2026-07/07-02-extension-api-clarification`.
+`.trellis/tasks/07-02-ls-lint-performance-reassessment`.
 
 Current branch:
-`codex/extension-api-clarification` is closing the boundary documentation and
-guardrails for first-party `extensions.*` config policies, supported local JSON
-contracts, internal Rust APIs, and deferred public plugin APIs.
+`codex/ls-lint-performance-reassessment` is reassessing accepted
+LS-Lint-equivalent fixture rows after the post-beta daemon, graph, Markdown,
+agent, editor, and extension-boundary slices.
 
 Current recommended goal:
 `docs/goals/assura-ls-lint-performance-reassessment.md`.
@@ -86,9 +86,10 @@ True daemon mode is complete in PR #117. The Markdown engine and supported
 document graph children are closed for this beta increment, the performance
 floor is closed, the agent installer lifecycle is closed,
 `docs/goals/assura-vscode-supported-extension.md` is closed, and extension API
-clarification is closed locally for this beta increment. Continue to
-`docs/goals/assura-ls-lint-performance-reassessment.md` after this branch is
-merged.
+clarification is closed for this beta increment. Finish
+`docs/goals/assura-ls-lint-performance-reassessment.md` by proving accepted
+fixture rows are no slower than native LS-Lint, explaining phase-level CLI
+floor costs, and refreshing checked performance evidence.
 
 ## Roadmap Rules
 

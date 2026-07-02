@@ -99,3 +99,16 @@ The envelope also includes `warm_claim_summary` for the persistent
 editor-session contract: a long-lived CLI process talks to the hot daemon over
 stdin/stdout so repeated agent/editor checks do not pay process startup on
 every validation.
+
+## Post-Beta Reassessment
+
+The current post-beta reassessment records a narrower conclusion than the old
+universal 2x ambition: accepted LS-Lint-equivalent cold rows must be no slower
+than native LS-Lint, and any remaining 2x misses must be attributable by phase.
+Small fixtures are expected to be sensitive to process floor and Rust CLI floor
+measurements; larger misses must identify real config-loading, checker-init, or
+walk-and-validate work instead of being excused by aggregate speedups.
+
+See
+[`docs/analysis/2026-07-02-ls-lint-performance-reassessment.md`](https://github.com/rothnic/assura/blob/master/docs/analysis/2026-07-02-ls-lint-performance-reassessment.md)
+for the current accepted-row and phase-attribution summary.

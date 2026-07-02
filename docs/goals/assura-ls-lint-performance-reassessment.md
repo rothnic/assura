@@ -31,6 +31,26 @@ why does any Rust Assura path have a CLI floor that can look worse than a Go
 LS-Lint path, and which part of startup, config loading, walking, matching,
 rule evaluation, reporting, or benchmark harness overhead owns that cost?
 
+## User-Specific Certainty Bar
+
+Nick should be able to ask "are we still slower than LS-Lint anywhere that
+matters?" and get a row-by-row answer:
+
+- every accepted LS-Lint-equivalent fixture has both a cold `assura-cli` row
+  and a native `ls-lint-cli` row;
+- the merge gate fails if any accepted cold Assura row is slower than the
+  matching native LS-Lint row;
+- aggregate speedups cannot hide a slower accepted row;
+- warm daemon/session rows can explain editor and agent ergonomics but cannot
+  prove cold CLI parity;
+- remaining 2x misses identify whether process startup, Rust CLI floor,
+  config loading, checker initialization, walk/validate, report sorting, or
+  benchmark harness behavior owns the cost.
+
+The final output of this goal should make it obvious whether a performance
+miss is a merge blocker, a stricter 2x ambition miss, or a separate warm-session
+optimization opportunity.
+
 ## Scope
 
 - Audit current `benches/history/current.json`,
@@ -92,3 +112,10 @@ Block if any accepted fixture row is slower than LS-Lint, if aggregate speedups
 hide row failures, if warm daemon measurements are used as cold CLI proof, if
 fixture rows are reclassified without evidence, or if the remediation makes the
 normal CLI cumbersome.
+
+## Progress Log
+
+| Date | Update | Evidence |
+| --- | --- | --- |
+| 2026-07-02 | Started the LS-Lint performance reassessment child after PR #134 merged. The slice is scoped to accepted fixture row-by-row no-slower proof, phase-level CLI-floor attribution, cold/warm claim separation, checked performance data refresh, and target-state/docs guardrails. | `.trellis/tasks/07-02-ls-lint-performance-reassessment/prd.md`; `.trellis/spec/assura/roadmap.md`; `gh pr view 134 --json state,mergedAt,mergeCommit,url`; branch `codex/ls-lint-performance-reassessment`. |
+| 2026-07-02 | Generated a fresh local 3-iteration release performance report. All 8 accepted realistic-equivalent cold `assura-cli` rows are no slower than native `ls-lint-cli`; cold 2x remains `not-complete`; warm/session 2x remains `complete`. Added a dated analysis artifact and target-state markers for accepted-row proof, cold/warm separation, and phase attribution. | `target/performance/ls-lint-reassessment.json`; `cargo xtask performance-no-slower target/performance/ls-lint-reassessment.json`; `docs/analysis/2026-07-02-ls-lint-performance-reassessment.md`; `xtask/src/main.rs`. |

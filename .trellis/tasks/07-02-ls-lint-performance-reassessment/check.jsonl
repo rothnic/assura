@@ -1,0 +1,6 @@
+{"id":"C1","title":"Release performance report generated","status":"done","notes":"3-iteration target report exists at target/performance/ls-lint-reassessment.json and performance-no-slower passes on that report."}
+{"id":"C2","title":"Accepted fixture rows are no slower","status":"done","notes":"The target report shows all 8 accepted LS-Lint-equivalent assura-cli rows are <= native ls-lint-cli rows."}
+{"id":"C3","title":"Phase attribution is explicit","status":"done","notes":"The reassessment analysis records process floor, Rust floor, config load, checker init, walk/validate, and report sort contribution for accepted rows."}
+{"id":"C4","title":"Cold and warm claims stay separate","status":"done","notes":"The analysis and website docs keep cold claim_summary separate from warm_claim_summary/session evidence."}
+{"id":"C5","title":"Repo validation passes","status":"todo","notes":"cargo check/clippy/self-check/target-state/docs/evidence/diff hygiene pass as scoped to changes."}
+{"id":"C6","title":"Independent review completed","status":"todo","notes":"Review agent checks fairness, reproducibility, fixture classification, and no hidden slow accepted rows."}

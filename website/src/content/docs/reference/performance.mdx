@@ -37,6 +37,11 @@ The warm gate is a separate editor-session measurement. It uses a persistent
 `assura-check-session` CLI process connected to `assura-checkd`, so it is not a
 replacement for the cold one-process `assura check` headline path.
 
+The post-beta LS-Lint reassessment keeps those claims separate: current accepted
+cold rows must be no slower than native LS-Lint row by row, while remaining 2x
+misses are explained through process floor, Rust CLI floor, config-load,
+checker-init, walk-and-validate, and report-sort phase rows.
+
 ## More Detail
 
 - [Performance test cases](/reference/performance-test-cases/) defines the
@@ -45,6 +50,9 @@ replacement for the cold one-process `assura check` headline path.
 - [Performance implementation notes](/reference/performance-implementation/) explains
   traversal rows, why `walkdir` is the default non-fail-fast traversal path, and
   why implementation-detail rows are not headline product evidence.
+- [Post-beta LS-Lint performance reassessment](https://github.com/rothnic/assura/blob/master/docs/analysis/2026-07-02-ls-lint-performance-reassessment.md)
+  records the current no-slower result, cold/warm claim split, and phase-level
+  CLI-floor attribution.
 - [Current comparison report](/data/performance/current.json) is the exact
   machine-readable report rendered on this page.
 - [Chart-ready JSONL history](/data/performance/ls-lint-comparison-history.jsonl)
