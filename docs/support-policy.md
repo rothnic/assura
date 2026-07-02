@@ -36,7 +36,7 @@ This policy applies to Assura pre-1.0 releases.
 | `.assura/models/**` model artifact layout | Supported project-intelligence layout policy | Model artifacts stored under `.assura/` must live under `.assura/models/**`; projects may still keep artifacts outside `.assura/` when that better fits their repository. |
 | `assura content session` | Supported local project-intelligence session | JSON-line request/response loop for repeated local agent/editor queries. It reloads conservatively when project files change and does not apply fixes or require a hosted daemon. |
 | `assura daemon` | Experimental local daemon process | Status, start, stop, restart, doctor, logs, health, changed-path, and reference-context commands expose local JSON contracts over daemon-ready state. Lifecycle commands now manage a local process with versioned health, check-path, and repository-reference IPC; broader editor and agent daemon workflows remain experimental follow-up work. |
-| `integrations/editors/vscode` | Experimental VS Code adapter | The package shells out to shared Assura CLI JSON contracts for diagnostics, daemon health, daemon lifecycle commands, logs, and safe-fix previews. It is not a marketplace release and must not implement editor-specific validation logic or apply fixes implicitly. |
+| `integrations/editors/vscode` | Supported beta local VS Code package | The package shells out to shared Assura CLI, daemon, and editor-session JSON contracts for diagnostics, daemon health, daemon lifecycle commands, logs, one-shot fallback, and safe-fix previews. Package metadata, doctor, build, test, and package-smoke scripts are release-gated. It is not a marketplace release and must not implement editor-specific validation logic or apply fixes implicitly. |
 | `assura info` | Experimental diagnostic | Text output can change before a documented automation contract exists. |
 | `extensions.custom_constraints` | Experimental first-party | Specialized constraint execution only. Common repository relationships should use `structure` captures, `exists:1`, `needs`, and `provides`. Breaking changes are allowed before 1.0 with release-note disclosure. |
 | `extensions.support_matrices` | Experimental first-party | Public command/API classification checks for repository policy. Rows must use `supported`, `experimental`, `internal`, `roadmap`, or `unsupported`. Breaking changes are allowed before 1.0 with release-note disclosure. |
@@ -59,8 +59,8 @@ Do not document these as supported:
 - shell-executed validation plugins;
 - hosted telemetry or dashboards;
 - required MCP or remote agent transports for local project-intelligence usage;
-- full LSP server framing or editor marketplace packages as current supported
-  editor behavior;
+- full LSP server framing or editor marketplace publication as current
+  supported editor behavior;
 - automatic repair;
 - dependency graph validation as a current release feature.
 - required code-intelligence providers for normal validation.

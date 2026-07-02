@@ -88,7 +88,7 @@ publishes and verifies a `.sha256` file next to every archive.
 
 | Surface | Status | Evidence |
 | --- | --- | --- |
-| `integrations/editors/vscode` | Experimental VS Code adapter | Package tests prove daemon command construction, one-shot check fallback, safe-fix preview-only command construction, status summaries, and diagnostic mapping over shared Assura CLI JSON contracts. |
+| `integrations/editors/vscode` | Supported beta local VS Code package | Package tests and smoke scripts prove daemon command construction, one-shot check fallback, safe-fix preview-only command construction, status summaries, diagnostic mapping, support metadata, marketplace deferral, and lifecycle doctor/package checks over shared Assura CLI JSON contracts. |
 
 ## Config Compatibility
 

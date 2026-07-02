@@ -1,8 +1,8 @@
 {
   "name": "assura-vscode",
   "displayName": "Assura",
-  "description": "Experimental VS Code adapter over Assura's local daemon and validation CLI contracts.",
-  "version": "0.0.0",
+  "description": "Beta local VS Code package over Assura's shared CLI, daemon, and editor-session contracts.",
+  "version": "0.3.0-beta.0",
   "private": true,
   "publisher": "assura",
   "engines": {
@@ -24,6 +24,17 @@
     "onCommand:assura.safeFixPreview"
   ],
   "main": "./src/extension.js",
+  "assura": {
+    "support": "supported-beta-local",
+    "marketplace": false,
+    "contracts": [
+      "assura check --format json",
+      "assura daemon ... --format json",
+      "assura daemon check-path ... --format json",
+      "assura editor session",
+      "assura fix markdown --dry-run --format json"
+    ]
+  },
   "contributes": {
     "commands": [
       {
@@ -78,6 +89,8 @@
   },
   "scripts": {
     "build": "node scripts/build-smoke.js",
+    "doctor": "node scripts/doctor.js",
+    "package": "node scripts/package-smoke.js",
     "test": "node --test tests/*.test.js"
   }
 }

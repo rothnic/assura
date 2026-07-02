@@ -132,6 +132,12 @@
           "summary": "Install, update, remove, status, and doctor Codex, OpenCode, Claude, and Pi integration bundles.",
           "detail_path": "docs/goals/assura-agent-integration-lifecycle.md",
           "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-agent-integration-lifecycle.md"
+        },
+        {
+          "label": "VS Code Support",
+          "summary": "Support a beta local VS Code package through shared daemon, editor-session, and CLI contracts.",
+          "detail_path": "docs/goals/assura-vscode-supported-extension.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-vscode-supported-extension.md"
         }
       ]
     },
@@ -144,6 +150,12 @@
           "summary": "Make Assura support-grade through one maintainer verification story covering self-validation, document graph workflows, daemon mode, agent/editor integrations, Markdown linting, and LS-Lint performance gates.",
           "detail_path": "docs/goals/assura-post-beta-capabilities-program.md",
           "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-post-beta-capabilities-program.md"
+        },
+        {
+          "label": "Extension APIs",
+          "summary": "Clarify first-party extensions, internal Rust APIs, and deferred plugin surfaces.",
+          "detail_path": "docs/goals/assura-extension-api-clarification.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-extension-api-clarification.md"
         }
       ]
     },
@@ -151,18 +163,6 @@
       "status": "next",
       "title": "Next",
       "items": [
-        {
-          "label": "VS Code Support",
-          "summary": "Promote the VS Code integration through shared daemon and CLI contracts.",
-          "detail_path": "docs/goals/assura-vscode-supported-extension.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-vscode-supported-extension.md"
-        },
-        {
-          "label": "Extension APIs",
-          "summary": "Clarify first-party extensions, internal Rust APIs, and deferred plugin surfaces.",
-          "detail_path": "docs/goals/assura-extension-api-clarification.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-extension-api-clarification.md"
-        },
         {
           "label": "LS-Lint Parity",
           "summary": "Reassess row-by-row LS-Lint performance and explain any CLI-floor cost.",

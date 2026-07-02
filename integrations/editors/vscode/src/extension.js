@@ -80,28 +80,43 @@ async function refreshDocumentDiagnostics(document, collection) {
     return;
   }
 
-  const daemonPayload = await runAssuraJson(
-    assuraPath(),
-    daemonCheckPathArgs(root, changedPath),
-    root,
-  );
-  const editorPayload = await runEditorSessionRequest(
-    assuraPath(),
-    root,
-    editorDiagnosticsRequest(changedPath),
-  );
-  const entries = [
-    ...diagnosticEntries(daemonPayload, {
+  const payloads = [];
+  try {
+    payloads.push(
+      await runAssuraJson(
+        assuraPath(),
+        daemonCheckPathArgs(root, changedPath),
+        root,
+      ),
+    );
+  } catch (error) {
+    vscode.window.showWarningMessage(
+      `Assura daemon diagnostics failed; using one-shot check fallback. ${error.message}`,
+    );
+    payloads.push(await runAssuraJson(assuraPath(), checkArgs(root), root));
+  }
+
+  try {
+    payloads.push(
+      await runEditorSessionRequest(
+        assuraPath(),
+        root,
+        editorDiagnosticsRequest(changedPath),
+      ),
+    );
+  } catch (error) {
+    vscode.window.showWarningMessage(
+      `Assura editor-session diagnostics failed: ${error.message}`,
+    );
+  }
+
+  const entries = payloads.flatMap((payload) =>
+    diagnosticEntries(payload, {
       workspacePath: root,
       changedPath,
       maxDiagnostics: maxDiagnostics(),
     }),
-    ...diagnosticEntries(editorPayload, {
-      workspacePath: root,
-      changedPath,
-      maxDiagnostics: maxDiagnostics(),
-    }),
-  ];
+  );
 
   collection.set(
     document.uri,

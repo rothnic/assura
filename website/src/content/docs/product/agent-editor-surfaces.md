@@ -18,10 +18,11 @@ should call the same contracts rather than invent parallel validation.
 | `assura agent` | Supported | Local coding-agent command group with JSON defaults for diagnostics, context packs, graph/search queries, relation checks, and safe-fix previews. |
 | `assura agent integration` | Experimental | Local install/update/remove/status/doctor commands that generate reviewable Codex, OpenCode, Claude, and Pi wrapper bundles under `.assura/integrations/<agent>/`. |
 | `assura editor session` | Supported | Local JSON-line editor protocol with LSP-shaped diagnostics, context, code-action preview methods, and conservative reload metadata. |
+| `integrations/editors/vscode` | Supported beta local package | Local VS Code adapter over shared CLI, daemon, and editor-session contracts. Package tests and smoke scripts gate metadata, daemon visibility, one-shot fallback, and preview-only safe fixes. Marketplace publication is deferred. |
 | `assura content agent-context` | Supported | Generic project-intelligence capability schema for wrappers; not agent-specific. |
 | `assura content agent-query` | Supported | Generic request/response envelope over diagnostics, graph/search, semantic candidates, and code-symbol queries. |
 | Git hook feedback | Experimental | Hooks can call the CLI and render bounded status or advice. |
-| Full LSP server and editor packages | Roadmap only | `Content-Length` framed language-server transport and marketplace plugins are not part of the current supported surface. |
+| Full LSP server and marketplace editor packages | Roadmap only | `Content-Length` framed language-server transport and marketplace publication are not part of the current supported surface. |
 | MCP adapter | Roadmap only | Optional future stdio adapter over the same local contracts; no remote access is required for current agent usability. |
 | Automatic agent orchestration | Unsupported | Assura can generate local wrapper bundles, but it does not own full agent workflow orchestration or silently mutate host-agent configuration. |
 

@@ -41,14 +41,14 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 Post-Beta Capabilities is active after release `v0.2.0`.
 
 Owning task:
-`.trellis/tasks/archive/2026-07/07-02-agent-integration-lifecycle`.
+`.trellis/tasks/archive/2026-07/07-02-vscode-supported-extension`.
 
 Current branch:
-`codex/agent-integration-lifecycle` contains the agent installer lifecycle
-closure and hands off to the VS Code support child goal.
+`codex/vscode-supported-extension` closes the supported beta local VS Code
+package slice over the shared CLI, daemon, and editor-session contracts.
 
 Current recommended goal:
-`docs/goals/assura-post-beta-capabilities-program.md`.
+`docs/goals/assura-extension-api-clarification.md`.
 
 Public roadmap artifact:
 `docs/data/public-roadmap.json`.
@@ -83,9 +83,9 @@ that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 Execute `docs/goals/assura-post-beta-capabilities-program.md` goal by goal.
 True daemon mode is complete in PR #117. The Markdown engine and supported
 document graph children are closed for this beta increment, the performance
-floor is closed, and the agent installer lifecycle is closed. Continue with
-`docs/goals/assura-vscode-supported-extension.md` so the VS Code extension path
-is supported through the shared daemon and CLI contracts.
+floor is closed, the agent installer lifecycle is closed, and
+`docs/goals/assura-vscode-supported-extension.md` is closed for this beta
+increment. Continue to extension API clarification.
 
 ## Roadmap Rules
 

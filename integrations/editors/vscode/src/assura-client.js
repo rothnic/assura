@@ -222,11 +222,15 @@ function structureViolations(payload) {
   return [];
 }
 
+function sameWorkspacePath(left, right) {
+  return left.replace(/\\/g, "/") === right.replace(/\\/g, "/");
+}
+
 function diagnosticEntries(report, options = {}) {
   const maxDiagnostics = options.maxDiagnostics ?? 100;
   const editorDiagnostics = report?.result?.diagnostics;
   if (Array.isArray(editorDiagnostics)) {
-    return editorDiagnostics.slice(0, maxDiagnostics).map((diagnostic) => {
+    const entries = editorDiagnostics.map((diagnostic) => {
       const relativePath =
         diagnostic.data?.path ?? report.result?.path ?? options.changedPath ?? ".";
       return {
@@ -240,9 +244,16 @@ function diagnosticEntries(report, options = {}) {
         data: diagnostic.data ?? diagnostic,
       };
     });
+    return entries
+      .filter(
+        (entry) =>
+          !options.changedPath ||
+          sameWorkspacePath(entry.path, options.changedPath),
+      )
+      .slice(0, maxDiagnostics);
   }
 
-  return structureViolations(report).slice(0, maxDiagnostics).map((violation) => {
+  const entries = structureViolations(report).map((violation) => {
     const relativePath =
       violation.path ??
       violation.file ??
@@ -264,6 +275,12 @@ function diagnosticEntries(report, options = {}) {
       data: violation,
     };
   });
+  return entries
+    .filter(
+      (entry) =>
+        !options.changedPath || sameWorkspacePath(entry.path, options.changedPath),
+    )
+    .slice(0, maxDiagnostics);
 }
 
 function workspacePathFromFolders(workspaceFolders) {
