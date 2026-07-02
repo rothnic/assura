@@ -1,0 +1,5 @@
+{"file": "docs/goals/assura-post-beta-support-release-hardening.md", "reason": "Goal definition and proof gates for this final child."}
+{"file": "docs/goals/assura-post-beta-capabilities-program.md", "reason": "Parent program and north-star verification scenario."}
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "Active roadmap routing and next-action language."}
+{"file": "docs/release-train.md", "reason": "Versioning policy and release-readiness workflow."}
+{"file": "docs/release-candidate-checklist.md", "reason": "Release PR evidence checklist and release publication steps."}
