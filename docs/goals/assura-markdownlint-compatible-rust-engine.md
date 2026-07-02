@@ -42,10 +42,57 @@ benchmark claims against `markdownlint-cli` and `markdownlint-cli2`. Compare
 against `mado`, `markdownlint-rs`/`mdlint`, current Assura Markdown checks, and
 Node `markdownlint-cli2` before adopting.
 
+## Outcome Verification Use Case
+
+The target user is a maintainer of a documentation-heavy Rust CLI similar to
+Assura. Their repository has product goals, ADRs, generated API references,
+release notes, and agent-written Markdown. They already rely on Assura for
+structure-first validation, but Markdown drift still leaks through: a generated
+doc landed in the wrong directory, a page has line-length and trailing-space
+drift, headings skip levels, two sections reuse the same heading text, a local
+anchor is stale after a rename, frontmatter contains a relation that the content
+graph will validate later, and a prior agent used a one-off suppression without
+a useful reason.
+
+At the end of this goal, that maintainer should be able to run one supported
+Markdown workflow:
+
+1. Configure Markdown linting inside the same staged Assura config that already
+   checks repository shape and coarse file policy first.
+2. Express rule configuration with stable rule IDs where rule severity,
+   suppression behavior, and fix policy live under the rule, rather than using
+   severity-keyed maps with one property per concern.
+3. Run `assura check` and see ordering that starts with structure/root hygiene
+   and coarse file policy before Markdown internals. Markdown findings should
+   then include markdownlint-compatible diagnostics, Assura-specific
+   link/reference graph diagnostics, severity overrides, and reasoned
+   suppression failures in the same JSON, text, YAML, and agent report
+   contracts.
+4. Run `assura fix markdown --dry-run` and see only deterministic safe fixes,
+   including whether the selected Rust engine or an Assura-owned narrow fixer
+   will apply each change.
+5. Run `assura fix markdown --apply` and get an idempotent result that preserves
+   frontmatter, line endings, intended prose, and unsupported unsafe cases.
+6. Use daemon/editor/agent surfaces without a second truth model: the daemon,
+   VS Code diagnostics, and agent nudges should report the same Markdown
+   findings and safe-fix previews as the one-shot CLI when the daemon state is
+   fresh.
+7. Read benchmark evidence that explains cold CLI cost, warm daemon behavior,
+   candidate engine time, fix time, and comparison rows for current Assura,
+   selected Rust candidates, and `markdownlint-cli2`.
+
+The verification fixture for this goal should contain both valid and invalid
+Markdown files so a reviewer can prove the whole path: staged ordering, config
+mapping, markdownlint-compatible diagnostics, Assura reference diagnostics,
+safe-fix preview/apply, suppression/severity mapping, and performance evidence.
+
 ## Scope
 
 - Build a local markdownlint compatibility matrix for rule IDs, config keys,
   suppressions, severities, fixability, and expected diagnostics.
+- Keep severity and fix policy modelled beneath stable rule identities in
+  Assura config and output mapping; do not introduce concern-specific keys
+  nested under a top-level `severity` map.
 - Preserve staged validation: structure and coarse file-level checks should
   gate or precede deeper Markdown linting in user-facing output and docs.
 - Evaluate `rumdl` as an embedded library or subprocess adapter, including
@@ -77,6 +124,8 @@ Node `markdownlint-cli2` before adopting.
 - Markdownlint-compatible rule/config fixtures pass for the accepted surface.
 - User-facing docs and diagnostics preserve the hierarchy from structure and
   coarse file policy to deeper Markdown checks.
+- Rule severity configuration is modular and rule-owned through stable rule
+  IDs, with compatibility mapping documented for markdownlint rule names.
 - Fixes are deterministic, idempotent, and preserve frontmatter and line endings
   where required.
 - Common Assura-owned fixer utilities, if added, have dedicated valid/invalid
