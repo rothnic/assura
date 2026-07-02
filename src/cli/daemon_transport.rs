@@ -1,10 +1,12 @@
 //! Local daemon socket transport helpers.
 
+#[cfg(unix)]
 use std::fs;
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
 #[cfg(unix)]
 use std::os::unix::net::{UnixListener, UnixStream};
+#[cfg(unix)]
 use std::path::PathBuf;
 use std::time::Duration;
 

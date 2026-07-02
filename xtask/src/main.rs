@@ -3845,8 +3845,21 @@ mod tests {
         if !unreleased.is_empty() {
             assert!(unreleased
                 .iter()
+                .any(|surface| surface.get("id").and_then(Value::as_str) == Some("daemon-mode")));
+            assert!(unreleased.iter().all(|surface| {
+                surface.get("id").and_then(Value::as_str)
+                    != Some("project-intelligence-local-surfaces")
+            }));
+            let surfaces = serde_json::from_str::<Value>(&read("docs/data/release-surfaces.json"))
+                .expect("release surfaces json");
+            assert!(surfaces
+                .get("surfaces")
+                .and_then(Value::as_array)
+                .into_iter()
+                .flatten()
                 .any(|surface| surface.get("id").and_then(Value::as_str)
-                    == Some("project-intelligence-local-surfaces")));
+                    == Some("project-intelligence-local-surfaces")
+                    && surface.get("first_release").and_then(Value::as_str) == Some("v0.2.0")));
         } else {
             let surfaces = serde_json::from_str::<Value>(&read("docs/data/release-surfaces.json"))
                 .expect("release surfaces json");
