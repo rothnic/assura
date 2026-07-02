@@ -14,6 +14,9 @@ categories = ["development-tools", "filesystem", "command-line-utilities"]
 rust-version = "1.70.0"
 readme = "README.md"
 
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(tarpaulin)'] }
+
 [workspace]
 members = [".", "crates/assura-check-cli", "crates/assura-stable-hash", "xtask"]
 default-members = [".", "crates/assura-check-cli", "crates/assura-stable-hash", "xtask"]
