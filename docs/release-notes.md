@@ -189,6 +189,12 @@ branch surfaces are advertised as installable release artifacts.
 
 ### Safe Fixes
 
+- `assura fix markdown --dry-run --format json` now defaults to `--rule all`
+  and previews every supported deterministic Markdown safe-fix class for
+  configured Markdown scopes.
+- `assura fix markdown --apply --format json` applies the same supported
+  safe-fix subset only after explicit opt-in and reports changed paths,
+  applied fix IDs, skipped fixes, and rollback guidance.
 - `assura fix markdown --rule trailing-spaces --dry-run --format json` emits
   `assura.safe-fix.markdown.v1` and reports proposed files and line fixes
   without writing.

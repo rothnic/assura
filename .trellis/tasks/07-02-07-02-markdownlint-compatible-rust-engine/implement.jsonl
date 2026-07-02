@@ -9,3 +9,7 @@
 {"file": "docs/analysis/2026-07-02-rumdl-adapter-decision.md", "reason": "MSRV-preserving subprocess adapter boundary and proof gates for the next rumdl slice"}
 {"file": "src/cli/check/markdown/rumdl_adapter.rs", "reason": "optional rumdl subprocess adapter, diagnostic mapping, suppression/severity behavior, and isolated-copy execution"}
 {"file": "tests/markdown_rumdl_adapter_tests.rs", "reason": "integration coverage for opt-in behavior, config validation, missing binary diagnostics, source immutability, and fake rumdl mapping"}
+{"file": "src/cli/check/markdown_fix.rs", "reason": "Markdown safe-fix runner, all-rule default aggregation, apply ordering, and audit totals"}
+{"file": "src/cli/check/markdown_fix_all.rs", "reason": "combined all-rule Markdown safe-fix orchestration and report merging kept out of the single-rule runner"}
+{"file": "src/cli/args.rs", "reason": "CLI default rule selection for assura fix markdown"}
+{"file": "src/cli/check/markdown_fix_report.rs", "reason": "safe-fix report rule enum for all-rule previews and applies"}

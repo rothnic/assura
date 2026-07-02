@@ -230,7 +230,7 @@ fn format_markdown_fix_report(
                 )
             } else {
                 format!(
-                    "Checked {} Markdown file(s); changed {} file(s); applied {} fix(es); failed {} file(s).",
+                    "Checked {} Markdown file(s); changed {} file(s); applied {} fix(es); failed {} operation(s).",
                     report.files_checked,
                     report.files_changed,
                     report.fixes_applied,
