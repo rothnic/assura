@@ -147,6 +147,16 @@ pub(super) fn runtime_status_for_health(health: &DaemonHealth) -> DaemonRuntimeS
         })
 }
 
+pub(super) fn runtime_listen_addr_for_health(health: &DaemonHealth) -> Option<String> {
+    read_runtime_status(&health.runtime_paths.status_file).and_then(|status| {
+        if status.state == "started" {
+            status.listen_addr
+        } else {
+            None
+        }
+    })
+}
+
 #[derive(Debug, Clone, Serialize)]
 pub(super) struct DaemonRuntimeStatus {
     pub(super) state: String,

@@ -9,8 +9,8 @@ priority: P0
 ## Objective
 
 Turn `assura daemon` from lifecycle metadata into a real local process with a
-versioned IPC health/check contract, while preserving one-shot CLI fallback and
-the existing `LocalDaemonCore` truth source.
+versioned IPC health/check/reference contract, while preserving one-shot CLI
+fallback and the existing `LocalDaemonCore` truth source.
 
 ## Current Gap
 
@@ -25,14 +25,14 @@ process and IPC endpoint without claiming the full parent goal is complete.
 ## Scope
 
 - Add a hidden daemon server entrypoint used by `daemon start`.
-- Start a background local process with a project-local Unix socket on Unix and
-  loopback TCP fallback elsewhere.
+- Start a background local process with a loopback TCP IPC address by default;
+  keep Unix socket transport support available for explicit daemon addresses.
 - Write runtime JSON with PID, IPC address, protocol version, and socket path
   when applicable.
 - Make `daemon status`, `daemon doctor`, `daemon stop`, and `daemon restart`
   probe and manage the real process.
-- Serve a minimal versioned IPC protocol for health and changed-path structure
-  checks.
+- Serve a minimal versioned IPC protocol for health, changed-path structure
+  checks, and bounded repository-reference queries.
 - Keep one-shot fallback behavior for unavailable, stale, or incompatible
   daemon states.
 - Update docs, support surface notes, and goal progress logs without implying
@@ -43,8 +43,8 @@ process and IPC endpoint without claiming the full parent goal is complete.
 - No hosted daemon or remote telemetry.
 - No separate per-agent daemon protocol.
 - No daemon-only validation semantics.
-- No claim that all content/reference queries are served over IPC in this
-  slice unless implemented and tested here.
+- No claim that all broader content queries are served over IPC in this slice
+  unless implemented and tested here.
 
 ## Acceptance Criteria
 
@@ -62,8 +62,14 @@ process and IPC endpoint without claiming the full parent goal is complete.
 - [x] `assura daemon check-path` can use the running daemon IPC path for a
       changed-path structure check and falls back to one-shot local state when
       no daemon is available.
-- [x] Tests cover lifecycle, IPC health/check-path, stale config safety, crash
-      detection, and fallback behavior.
+- [x] `assura daemon references` can use the running daemon IPC path for
+      source, target, and moved-target repository-reference context while
+      preserving one-shot fallback.
+- [x] Representative warm daemon changed-path and target-reference queries are
+      faster than cold one-shot rows, or any miss is attributed and fixed before
+      this child goal is claimed complete.
+- [x] Tests cover lifecycle, IPC health/check-path/references, stale config
+      safety, crash detection, and fallback behavior.
 - [x] Public docs classify true daemon mode accurately for this slice.
 
 ## Validation
@@ -71,6 +77,7 @@ process and IPC endpoint without claiming the full parent goal is complete.
 ```bash
 cargo fmt --check
 cargo test --test daemon_cli_tests --quiet
+cargo test --test daemon_reference_cli_tests --quiet
 cargo test --test daemon_core_tests --quiet
 cargo test --test editor_surface_cli --quiet
 cargo test --test agent_surface_cli --quiet
@@ -87,5 +94,5 @@ python3 ./.trellis/scripts/task.py validate 07-01-07-01-true-daemon-mode
 Block if `daemon start` still only writes metadata, if status can report stale
 or dead daemon state as fresh, if the IPC contract lacks protocol versioning,
 if one-shot fallback disappears, if lifecycle tests leave child processes
-behind, or if docs imply that editor/agent/content-reference daemon support is
-fully complete before the corresponding child goals prove it.
+behind, or if docs imply that editor/agent daemon support is fully complete
+before the corresponding child goals prove it.

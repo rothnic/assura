@@ -22,6 +22,20 @@ pub(super) fn health_for_path(path: PathBuf, config: Option<PathBuf>) -> (Daemon
     }
 }
 
+pub(super) fn runtime_probe_health_for_path(
+    path: PathBuf,
+    config: Option<PathBuf>,
+) -> DaemonHealth {
+    let project_root = path.canonicalize().unwrap_or(path);
+    let config_path = config.unwrap_or_else(|| project_root.join(".assura/config.yml"));
+    let config_path = config_path.canonicalize().unwrap_or(config_path);
+    DaemonHealth::unavailable(
+        project_root,
+        config_path,
+        "project state not loaded; probing daemon runtime metadata",
+    )
+}
+
 pub(super) fn daemon_status_output(health: DaemonHealth) -> DaemonStatusOutput {
     let runtime = runtime_status_for_health(&health);
     DaemonStatusOutput {
