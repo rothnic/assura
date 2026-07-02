@@ -35,29 +35,28 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 21 | Markdown Reference Intelligence | Completed | Completed for beta in PR #112; post-beta Markdown, graph, daemon, agent, and editor hardening now routes through Post-Beta Capabilities |
 | 22 | Beta Code-Agnostic Capabilities | Completed | PR #112 merged; `v0.2.0` tag and GitHub release published with live release evidence |
 | 23 | Post-Beta Capabilities | Completed | `v0.3.0` beta increment published and live-verified with self-config hardening, supported document graph, true daemon mode, Markdown engine/safe fixes, performance floor, agent installers, VS Code support, extension API clarity, LS-Lint reassessment, and release hardening |
-| 24 | Performance Polish | Active | New planning task `.trellis/tasks/07-02-native-performance-roadmap-and-goal-text`; kickoff goal `docs/goals/assura-performance-polish-program.md` |
-| 25 | Agent-Ready Project Onboarding | Planned / P0 Adoption | Dogfood feedback backlog captured in `docs/goals/assura-agent-ready-project-onboarding-program.md`; highest general adoption priority for new agentic repos |
+| 24 | Performance Polish | Planned / Separate Lane | Planning task `.trellis/tasks/07-02-native-performance-roadmap-and-goal-text`; kickoff goal `docs/goals/assura-performance-polish-program.md` |
+| 25 | Agent-Ready Project Onboarding | Active / P0 Adoption | Dogfood feedback backlog captured in `docs/goals/assura-agent-ready-project-onboarding-program.md`; highest general adoption priority for new agentic repos |
 
 ## Active Roadmap Iteration
 
-Performance Polish is the next roadmap iteration after the completed `v0.3.0`
-beta increment. It should turn Assura performance from a set of useful
-LS-Lint gates and local Criterion benches into a product-grade evidence system
-covering both LS-Lint-equivalent structure validation and Assura-native
-capabilities.
+Agent-Ready Project Onboarding is the next roadmap iteration after the
+completed `v0.3.0` beta increment. It should make Assura the default scaffold,
+doctor, and feedback loop for agent-ready repositories, starting with a broad
+first-run baseline and then asking only the specialization questions needed to
+avoid invented project conventions.
 
 Owning task:
-`.trellis/tasks/07-02-native-performance-roadmap-and-goal-text`.
+`.trellis/tasks/07-02-agent-onboarding-bootstrap-goal-refinement`.
 
 Current branch:
-`codex/post-beta-live-release-evidence`.
+`codex/agent-ready-onboarding-backlog`.
 
 Current recommended goal:
-For performance-focused work:
-`docs/goals/assura-performance-polish-program.md`.
-
-For broad product adoption and new-project onboarding:
 `docs/goals/assura-agent-ready-project-onboarding-program.md`.
+
+Separate performance lane:
+`docs/goals/assura-performance-polish-program.md`.
 
 Completed support-hardening details from the prior beta increment remain
 routed through `docs/goals/assura-post-beta-support-release-hardening.md`.
@@ -66,38 +65,23 @@ Public roadmap artifact:
 `docs/data/public-roadmap.json`.
 
 Triggering evidence:
-After the `v0.3.0` beta increment, live review found that Assura has stronger
-capabilities than LS-Lint but does not yet have a single performance evidence
-system for those Assura-native surfaces. Existing LS-Lint no-slower gates cover
-accepted structure fixtures, and local benches cover parts of content runtime
-and project-intelligence querying, but CI and checked history do not yet
-enforce native capability performance for collection validation, document graph
-queries, context packs, daemon/session requests, Markdown/reference workflows,
-or the remaining cold CLI-floor opportunities.
-
-A separate new-project dogfood run exposed a broader adoption gap: Assura can
-make a configured policy pass while the repository still does not feel
-scaffolded, discoverable, queryable, or self-explaining to a coding agent. That
-backlog is not "more intelligence" in the abstract; the product milestone is
-to make Assura the default scaffold, doctor, and feedback loop for
-agent-ready repositories.
+A new-project dogfood run exposed a broad adoption gap: Assura can make a
+configured policy pass while the repository still does not feel scaffolded,
+discoverable, queryable, or self-explaining to a coding agent. That backlog is
+not "more intelligence" in the abstract; the product milestone is to make
+Assura the default scaffold, doctor, and feedback loop for agent-ready
+repositories.
 
 North-star outcome:
-A documentation-heavy project can trust Assura performance at the same level as
-its correctness: accepted LS-Lint-equivalent fixtures cannot merge slower than
-native LS-Lint, native Assura content/graph/Markdown/daemon/editor-agent
-capabilities have tracked cold and warm budgets, and every performance miss is
-attributed to startup, config loading, walking, rule planning, validation,
-querying, serialization, IPC, or reporting before optimization work proceeds.
-The detailed kickoff criteria live in
-`docs/goals/assura-performance-polish-program.md`.
-
-The broad adoption north star is that a coding agent can enter a new project
-and reliably answer: what rules apply here, what guidance should I follow,
-which skills exist, what project facts are modeled, what references are
-broken, what is checked versus unchecked, what should I fix next, and whether
-the feedback is a nudge, warning, or merge gate. The detailed backlog lives in
+A coding agent can enter a new project and reliably answer: what rules apply
+here, what guidance should I follow, which skills exist, what project facts are
+modeled, what references are broken, what is checked versus unchecked, what
+should I fix next, and whether the feedback is a nudge, warning, or merge gate.
+The detailed backlog lives in
 `docs/goals/assura-agent-ready-project-onboarding-program.md`.
+
+Performance polish remains a separate planned lane. Its detailed kickoff
+criteria live in `docs/goals/assura-performance-polish-program.md`.
 
 Direction lock, clarified on 2026-05-31: do not create or revive
 `assura-codex-feedback`, do not add one CLI entrypoint per agent, and do not add

@@ -7,6 +7,18 @@ created: 2026-07-02
 owners:
   - assura-maintainers
 related:
+  - ./assura-agent-onboarding-bootstrap-command.md
+  - ./assura-agent-project-preset-dynamic-contracts.md
+  - ./assura-agent-doctor-explain-feedback.md
+  - ./assura-agent-guidance-skill-contracts.md
+  - ./assura-agent-search-reference-discovery.md
+  - ./assura-agent-content-activation-source-docs.md
+  - ./assura-agent-lifecycle-hooks-next-actions.md
+  - ./assura-website-agent-onboarding-experience.md
+  - ./assura-agent-document-project-preset.md
+  - ./assura-agent-requirements-evidence-traceability.md
+  - ./assura-agent-script-backed-computed-checks.md
+  - ./assura-agent-proposal-sbir-domain-pack.md
   - ./assura-performance-polish-program.md
   - ./assura-agent-integration-lifecycle.md
   - ./assura-supported-document-graph.md
@@ -53,6 +65,177 @@ project and reliably answer:
 - What should I fix next?
 - Will this be a nudge, warning, or merge gate?
 
+## First-Run Product Surface
+
+The desired product surface is one bootstrap action that does four jobs:
+
+1. install or update Assura if it is missing;
+2. create a safe broad agent-ready baseline;
+3. install the right hooks or adapters for the detected agent harness;
+4. verify setup and tell the agent exactly what to ask the user next.
+
+The remote bootstrap wrapper should be a convenience script hosted by Assura.
+Its only durable responsibility is to install or update Assura, verify the
+binary is available, and delegate to the real CLI. The installed CLI owns the
+actual onboarding workflow through a future agent-onboarding subcommand with
+project-type detection, agent-harness detection, apply, and verify options.
+
+The first-run rule is: start broad, verify, then ask. Do not ask the user 20
+questions before creating a useful baseline. Apply low-risk defaults first,
+then produce the short specialization questions an agent should ask before it
+adds project-specific conventions.
+
+## Bootstrap Phases
+
+### Phase 1: Install
+
+- Install or update Assura.
+- Verify the binary is on `PATH`.
+- Pin and report the installed version.
+- Avoid hidden global side effects beyond the documented install location.
+
+### Phase 2: Inspect
+
+- Detect whether the directory is empty, existing, a git repository, a
+  monorepo, docs-heavy, Rust, Node, Python, web app, or unknown.
+- Detect the agent harness: Codex, Claude, Cursor, GitHub Actions, generic
+  shell, or unknown.
+- Detect existing `AGENTS.md`, `.agents/`, `README`, package files,
+  `Cargo.toml`, `pyproject.toml`, docs, source directories, and test
+  directories.
+- Classify confidence. If detection is uncertain, apply low-risk defaults and
+  defer specialization.
+
+### Phase 3: Apply Broad Agent Baseline
+
+- Create `.assura/config.yml` if missing.
+- Add broad safe defaults if config already exists.
+- Create or merge `AGENTS.md`.
+- Create `.agents/skills/` baseline structure.
+- Create `docs/process/` and `docs/learnings/`.
+- Add binary and source-document custody defaults.
+- Add Markdown, link, line-limit, and safe-exclude defaults.
+- Add reusable skill-directory rules.
+
+### Phase 4: Install Harness Integration
+
+- Install advisory Assura hooks for the detected or requested agent harness.
+- Add Codex, Claude, Cursor, GitHub Actions, or generic shell adapter config
+  only when support is known.
+- If adapter support is uncertain, install generic hooks and print exact
+  manual steps rather than pretending unsupported integrations are active.
+- Default lifecycle behavior to nudge while working, warn before commit, and
+  gate before merge.
+
+### Phase 5: Apply Project-Type Pack
+
+- If project type is explicit, add best-practice examples and checks for that
+  pack.
+- If project type is auto-detected with high confidence, apply low-risk pack
+  defaults.
+- If uncertain, do not guess. Write the specialization questions and leave the
+  project in a valid broad baseline.
+
+### Phase 6: Verify
+
+- Run the configured check.
+- Run the future doctor surface.
+- Explain key generated files and scopes.
+- Report checked versus unchecked capabilities.
+- Do not treat "no violations" as equivalent to "fully onboarded."
+
+### Phase 7: Tell The Agent What To Ask Next
+
+- Write a concise question list.
+- Tell the agent not to invent project conventions.
+- Point the agent at the generated next-step file.
+- Include the next specialization action after the user answers.
+
+## Successful Bootstrap Output Contract
+
+A successful first run should not primarily say "no violations found." It
+should say that the project has a known baseline, the agent knows what is
+checked and unchecked, which hooks are active, and which user choices remain.
+
+The output should include:
+
+- installed Assura version;
+- installed or merged `.assura/config.yml`;
+- installed or merged `AGENTS.md` baseline;
+- `.agents/skills/` contract status;
+- `docs/process/` and `docs/learnings/` status;
+- agent nudge hook status;
+- pre-commit warning hook status;
+- pre-push or CI gate profile status;
+- detected project type;
+- detected agent harness;
+- git repository status;
+- existing source-file status;
+- verified active checks;
+- inactive capabilities;
+- recommended next action for the agent.
+
+## Generated Onboarding Packet
+
+The bootstrap should create a small predictable packet:
+
+```text
+.assura/
+  config.yml
+  presets.lock.yml
+  onboarding/
+    summary.md
+    questions.md
+    agent-next.md
+    doctor.json
+  examples/
+    agent-project/
+      AGENTS.example.md
+      SKILL.example.md
+
+AGENTS.md
+
+.agents/
+  skills/
+    assura-project-maintenance/
+      SKILL.md
+      agents/
+        openai.yaml
+      references/
+        assura-onboarding.md
+
+docs/
+  process/
+    agent-workflow.md
+  learnings/
+    README.md
+```
+
+The most important generated file is `.assura/onboarding/agent-next.md`.
+
+## Agent-Next File Contract
+
+`agent-next.md` is written for coding agents. It should say that Assura is
+installed and the broad agent-ready baseline is active, then instruct the
+agent not to invent project conventions.
+
+It should ask the user these specialization questions:
+
+1. What primary language or stack should this project use?
+2. What project type is this: library, app, docs site, proposal, research
+   repo, data project, monorepo, or other?
+3. What file naming convention should apply: kebab-case, snake_case,
+   PascalCase, or mixed by folder?
+4. What source layout should the project use?
+5. What test layout should the project use?
+6. Should docs be strict from day one or advisory until the first milestone?
+7. Should agent hooks be advisory only while working and blocking only in CI?
+8. Are there required files or folders specific to this project?
+9. Are there binary or source documents that should be tracked by manifest
+   instead of read as text?
+10. Should Assura create typed content models for tasks, decisions,
+    requirements, evidence, or source documents?
+
 ## Current Gap
 
 Today, "Assura passed" primarily means "the currently configured checks
@@ -87,12 +270,55 @@ Keep the split clear:
   AGENTS.md and SKILL.md contracts, search/reference discovery, and nudge/warn
   versus gate workflows.
 
+## Execution Sequence
+
+Execute these child goals in order unless revalidation proves a different
+dependency order is necessary:
+
+1. [Agent Onboarding Bootstrap Command](./assura-agent-onboarding-bootstrap-command.md)
+   creates the first-run bootstrap/onboard flow, install-and-delegate wrapper
+   contract, generated onboarding packet, and specialization handoff.
+2. [Agent Project Preset And Dynamic Contracts](./assura-agent-project-preset-dynamic-contracts.md)
+   implements the broad agent-project baseline and reusable repeated-directory
+   contracts for skills and other project-local structures.
+3. [Agent Doctor Explain Feedback](./assura-agent-doctor-explain-feedback.md)
+   adds checked-versus-unchecked doctor output and path-level explanation for
+   scopes, inheritance, skips, suppressions, and next actions.
+4. [Agent Guidance And Skill Contracts](./assura-agent-guidance-skill-contracts.md)
+   makes `AGENTS.md`, `SKILL.md`, skill indexes, and skill folders enforceable
+   without overfitting a single project.
+5. [Agent Search And Reference Discovery](./assura-agent-search-reference-discovery.md)
+   adds raw search fallback, frontmatter repository references, all/unresolved
+   reference listing, and agent-query discoverability.
+6. [Agent Content Activation And Source Docs](./assura-agent-content-activation-source-docs.md)
+   adds content initialization, content doctor, baseline content models, and
+   source-document custody.
+7. [Agent Lifecycle Hooks And Next Actions](./assura-agent-lifecycle-hooks-next-actions.md)
+   formalizes nudge/warn/gate lifecycle modes, hook profiles, and ranked
+   next-best-fix output.
+8. [Website Agent Onboarding Experience](./assura-website-agent-onboarding-experience.md)
+   rewrites the website onboarding path around the actual first-run agent
+   journey and the checked-versus-unchecked mental model.
+9. [Agent Document Project Preset](./assura-agent-document-project-preset.md)
+   layers a reusable document-project pack on top of the broad agent baseline.
+10. [Agent Requirements Evidence Traceability](./assura-agent-requirements-evidence-traceability.md)
+    adds reusable requirements, claims, evidence, findings, and coverage checks.
+11. [Agent Script Backed Computed Checks](./assura-agent-script-backed-computed-checks.md)
+    creates a controlled extension point for scores, rollups, and derived
+    validations before native computed fields exist.
+12. [Agent Proposal SBIR Domain Pack](./assura-agent-proposal-sbir-domain-pack.md)
+    packages proposal-specific gates, scoring, review, and final package checks
+    as an optional domain pack.
+
 ## P0 - Universal Agent-Project Foundation
 
 ### 1. Agent-Project Preset And Scaffold
 
 Deliver:
 
+- the future agent onboarding flow as the user-facing first-run entrypoint;
+- the remote bootstrap wrapper as install-and-delegate convenience, not as the
+  source of product behavior;
 - a future `init` preset named `agent-project`;
 - a merge mode for applying that preset to an existing repository;
 - default `.assura/config.yml`;
@@ -106,6 +332,13 @@ Deliver:
 Exit when a new coding-agent repo can run the preset and receive useful
 structure, guidance, skill, Markdown, and content-readiness feedback without
 hand-authoring a large config.
+
+The default baseline should be broad and safe. It should require `AGENTS.md`,
+`.assura/config.yml`, `.agents/skills/`, `docs/process/`, and
+`docs/learnings/`; recommend `README.md` and `.gitignore`; and check root
+clutter, unexpected binary reads, Markdown links, `AGENTS.md` size and
+sections, reusable skill contracts, unexpected skill folders, skill
+references/scripts/assets conventions, and advisory Markdown heading behavior.
 
 ### 2. Reusable Dynamic Directory Contracts
 
@@ -362,6 +595,84 @@ Agent-facing output should include ranked next actions:
 }
 ```
 
+## Project-Type Packs
+
+Project-type packs layer examples and checks after the broad baseline:
+
+- `agent-project`: `AGENTS.md`, skills, hooks, `docs/process/`, and
+  `docs/learnings/`.
+- `document-project`: source-document manifest, `library/topics/`,
+  `docs/drafts/`, `docs/final/`, and evidence.
+- `rust`: `Cargo.toml`, `src/`, `tests/`, `benches/`, `examples/`, and Rust
+  naming conventions.
+- `node`: `package.json`, `src/`, `test/`, docs, and package-manager
+  detection.
+- `python`: `pyproject.toml`, `src` package layout, `tests/`, and docs.
+- `web-app`: `src/`, routes or pages, components, public assets, and tests.
+- `monorepo`: `packages/*`, `apps/*`, shared docs, and workspace config.
+- `proposal-project`: requirements, evidence, source documents, scoring, and
+  review findings.
+
+Packs should be composable. Domain packs remain later layers, not requirements
+for the broad agent-project baseline.
+
+## Agent Harness Adapters
+
+The onboarding flow should support auto-detected and explicit harness adapters:
+
+- auto;
+- Codex;
+- Claude;
+- Cursor;
+- GitHub Copilot or GitHub Actions where appropriate;
+- generic shell.
+
+Each adapter should install only supported behavior. For Codex-like adapters,
+the expected shape is project hook guidance, a project-local
+`assura-project-maintenance` skill, supported hook or wrapper metadata when
+available, and delegation to shared Assura agent/check/daemon contracts. The
+generic adapter should create shell hooks, write `AGENTS.md` instructions, and
+provide check commands without claiming host-agent integration.
+
+If adapter support is uncertain, the onboarding flow must install generic
+hooks and print exact manual steps. It must not pretend unsupported
+integrations are active.
+
+## Hook Profile Semantics
+
+The default hook profile should match the product philosophy:
+
+- nudge while working;
+- warn before commit;
+- gate before merge.
+
+The future default profile should map working-tree or agent events to
+advisory output with exit 0, pre-commit to warning behavior, and pre-push or
+CI to blocking behavior on configured errors.
+
+## Specialization Flow
+
+After the user answers the generated questions, the agent should run a second
+specialization flow. It should accept answers from
+`.assura/onboarding/answers.yml` or an interactive equivalent, then turn those
+answers into project-specific rules.
+
+The first bootstrap command must still be enough to create a valid broad
+baseline. Specialization is for adding language, layout, naming, typed content
+models, source-document custody, traceability, and domain-specific behavior.
+
+## Ideal UX
+
+The intended user flow is:
+
+1. The user asks an agent to set up the new repository with Assura.
+2. The agent runs one bootstrap action from the project root.
+3. Assura installs itself if needed, creates a broad agent-ready config,
+   installs advisory hooks, verifies setup, and writes next questions.
+4. The agent reports that the broad baseline is active.
+5. The agent asks the user only the remaining specialization questions instead
+   of inventing project conventions.
+
 ## P5 - Domain Templates And Deeper Validation
 
 ### 19. Document-Project Preset
@@ -409,6 +720,14 @@ drive the core product sequence.
 - Binary source documents have a supported custody pattern.
 - Nudge, warning, and merge-gate behavior is explicit.
 - Agent-facing output includes next best fixes.
+- The onboarding packet includes `summary.md`, `questions.md`,
+  `agent-next.md`, and `doctor.json`.
+- The generated `agent-next.md` tells agents not to invent project conventions
+  and provides the required specialization questions.
+- The remote bootstrap wrapper installs and delegates; the installed CLI owns
+  the onboarding behavior.
+- The document-project preset, requirements/evidence traceability, computed
+  checks, and proposal/SBIR pack are captured as separately executable goals.
 - Domain-specific proposal/SBIR behavior remains deferred behind templates or
   packs rather than bloating the core preset.
 
@@ -443,6 +762,10 @@ surface before closure.
   existence and manifest/reference integrity.
 - R7: Confirm nudge/warn/gate modes map to agent workflow, pre-commit, and
   merge lifecycle.
+- R8: Confirm the bootstrap flow starts broad, verifies, and then asks only
+  specialization questions.
+- R9: Confirm generated onboarding files give agents enough instruction to stop
+  and ask instead of guessing conventions.
 
 ## Reviewer Blocking Criteria
 
@@ -450,7 +773,9 @@ Block if the program lets `assura check` imply operational completeness when
 models, search, references, skills, or hooks are inactive; if the preset is too
 domain-specific; if dynamic contracts require enumerating every skill or
 package manually; if binary files are read as UTF-8; or if nudge/warn/gate
-behavior remains implicit.
+behavior remains implicit. Also block if the remote bootstrap script owns
+product behavior instead of delegating to the installed CLI, or if first-run
+onboarding asks excessive questions before establishing a safe baseline.
 
 ## Kickoff Text
 
@@ -458,13 +783,20 @@ Use this prompt to start the large goal-driven work:
 
 Execute `docs/goals/assura-agent-ready-project-onboarding-program.md`.
 
-Revalidate the goal against the current roadmap, existing init/content/query
-surfaces, support-policy wording, agent integration lifecycle, document graph
-support, and current self-check behavior before coding. Build the next product
-milestone around making Assura the default scaffold, doctor, and feedback loop
-for agent-ready repos: agent-project preset, dynamic directory contracts,
-doctor and explain surfaces, AGENTS.md and SKILL.md contracts, skill index
-validation, raw search fallback, frontmatter repository references, reference
-graph discovery, content initialization and content doctor, baseline content
-models, source-document custody, nudge/warn/gate modes, hook profiles, and
-next-best-fix output. Keep proposal/SBIR scoring as a later domain pack.
+This increment excludes the performance backlog. Revalidate the goal against the
+current roadmap, existing init/content/query surfaces, support-policy wording,
+agent integration lifecycle, document graph support, website onboarding pages,
+and current self-check behavior before coding. Build the next product milestone
+around making Assura the default scaffold, doctor, and feedback loop for
+agent-ready repos: one-command bootstrap, install-and-delegate remote wrapper,
+agent onboarding flow, generated onboarding packet, `agent-next.md`,
+agent-project preset, dynamic directory contracts, doctor and explain surfaces,
+AGENTS.md and SKILL.md contracts, skill index validation, raw search fallback,
+frontmatter repository references, reference graph discovery, content
+initialization and content doctor, baseline content models, source-document
+custody, nudge/warn/gate modes, hook profiles, specialization flow,
+next-best-fix output, a much clearer website onboarding experience,
+document-project preset, requirements/evidence traceability, controlled
+script-backed computed checks, and an optional proposal/SBIR domain pack. Work
+through the linked child goals in order and keep domain-specific behavior out of
+the core presets.

@@ -158,22 +158,16 @@
       "title": "Now",
       "items": [
         {
-          "label": "Performance Polish",
-          "summary": "Promote LS-Lint and Assura-native performance evidence into tracked gates for structure, content, graph, Markdown, daemon, and agent/editor workflows.",
-          "detail_path": "docs/goals/assura-performance-polish-program.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-performance-polish-program.md"
-        },
-        {
           "label": "Agent-Ready Repos",
           "summary": "Make Assura the default scaffold, doctor, and feedback loop for new coding-agent projects.",
           "detail_path": "docs/goals/assura-agent-ready-project-onboarding-program.md",
           "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-agent-ready-project-onboarding-program.md"
         },
         {
-          "label": "Native Perf Report",
-          "summary": "Track content collection validation/querying, document graph, context pack, Markdown, reference, and daemon/session performance.",
-          "detail_path": "docs/goals/assura-performance-polish-program.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-performance-polish-program.md"
+          "label": "Onboarding Website",
+          "summary": "Show the agent bootstrap path, checked-versus-unchecked model, generated onboarding packet, and next-step questions clearly.",
+          "detail_path": "docs/goals/assura-website-agent-onboarding-experience.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-website-agent-onboarding-experience.md"
         }
       ]
     },
@@ -184,12 +178,18 @@
         {
           "label": "Doctor Explain",
           "summary": "Show configured, inactive, inherited, skipped, broken, and next-fix guidance for agent-ready projects.",
-          "detail_path": "docs/goals/assura-agent-ready-project-onboarding-program.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-agent-ready-project-onboarding-program.md"
+          "detail_path": "docs/goals/assura-agent-doctor-explain-feedback.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-agent-doctor-explain-feedback.md"
         },
         {
           "label": "CLI Floor",
           "summary": "Reduce startup and config/walk costs that keep small or many-scope rows from stronger performance targets.",
+          "detail_path": "docs/goals/assura-performance-polish-program.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-performance-polish-program.md"
+        },
+        {
+          "label": "Native Perf Report",
+          "summary": "Track content collection validation/querying, document graph, context pack, Markdown, reference, and daemon/session performance.",
           "detail_path": "docs/goals/assura-performance-polish-program.md",
           "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-performance-polish-program.md"
         }
