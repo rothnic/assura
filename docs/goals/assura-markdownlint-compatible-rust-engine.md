@@ -160,3 +160,15 @@ candidates, and `markdownlint-cli2`, or leaves repeatedly observed self-dogfood
 Markdown drift without either a selected-engine fix or a tracked Assura-owned
 fixer test. Also block if docs or output imply Markdown linting sits above
 structure validation.
+
+## Progress Log
+
+- 2026-07-02: PR #119 added the maintainer outcome verification use case,
+  stable rule-owned severity/config criteria, and current candidate evidence.
+- 2026-07-02: Started implementation branch
+  `codex/markdown-engine-fixture-probe` to add executable candidate fixtures
+  and probe evidence before adopting or rejecting a Markdown engine.
+- 2026-07-02: Added the Markdown engine candidate fixture package,
+  `cargo xtask markdown-engine-probe`, staged violation sorting, and tests that
+  prove current Assura behavior against the fixture while external candidates
+  remain optional until installed.

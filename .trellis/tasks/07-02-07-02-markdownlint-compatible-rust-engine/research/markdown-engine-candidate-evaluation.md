@@ -52,6 +52,25 @@ slice should therefore prove one of these paths:
 Any accepted path must include benchmark rows for current Assura checks,
 selected Rust candidate behavior, and `markdownlint-cli2`.
 
+## Executable Fixture Probe
+
+The branch `codex/markdown-engine-fixture-probe` adds
+`tests/fixtures/markdown_engine_candidates/` and
+`cargo xtask markdown-engine-probe` as the first executable evidence slice.
+Normal tests only require the current Assura binary. External candidate tools
+are optional: the probe reports `unavailable` when `rumdl`, `mdlint`, `mado`,
+or `markdownlint-cli2` are not installed instead of making CI depend on them.
+
+The fixture matrix locks these expectations before engine adoption:
+
+- structure and coarse file-policy findings sort before Markdown internals;
+- markdownlint-style rules map to stable Assura rule IDs;
+- Assura-owned link/reference rules remain separate from markdownlint
+  candidates;
+- severity and fix policy are owned by stable rule entries;
+- safe-fix preview covers bounded trailing-space and required-section fixes
+  without writing files.
+
 ## Source Links
 
 - `rumdl`: https://github.com/rvben/rumdl

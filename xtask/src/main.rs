@@ -40,6 +40,7 @@ fn run() -> Result<()> {
         "release-live" => run_release_live(),
         "release-readiness" => run_release_readiness(&rest),
         "performance-no-slower" => run_performance_no_slower(&rest),
+        "markdown-engine-probe" => run_markdown_engine_probe(&rest),
         "changed" => run_changed(&rest),
         "pr" => run_pr(),
         "full" => {
@@ -59,7 +60,7 @@ fn run() -> Result<()> {
 
 fn print_usage() {
     eprintln!(
-        "Usage: cargo xtask <fast|check|test|evidence|target-state|hygiene|docs|release-size|release-smoke|release-live|release-readiness|performance-no-slower|changed|pr|full>"
+        "Usage: cargo xtask <fast|check|test|evidence|target-state|hygiene|docs|release-size|release-smoke|release-live|release-readiness|performance-no-slower|markdown-engine-probe|changed|pr|full>"
     );
 }
 
@@ -989,6 +990,266 @@ fn run_performance_no_slower(args: &[String]) -> Result<()> {
     Err("performance no-slower gate failed".into())
 }
 
+#[derive(Default)]
+struct MarkdownEngineProbeOptions {
+    candidate: Option<String>,
+    run_external: bool,
+}
+
+fn run_markdown_engine_probe(args: &[String]) -> Result<()> {
+    let options = parse_markdown_engine_probe_options(args)?;
+    let root = repo_root();
+    let fixture_root = root.join("tests/fixtures/markdown_engine_candidates");
+    let matrix_path = fixture_root.join("matrix.json");
+    let matrix_text = fs::read_to_string(&matrix_path)?;
+    let matrix = serde_json::from_str::<Value>(&matrix_text)?;
+    if matrix.get("schema_version").and_then(Value::as_str)
+        != Some("assura.markdown-engine-candidate-fixtures.v1")
+    {
+        return Err(format!("{}: unexpected schema_version", matrix_path.display()).into());
+    }
+
+    let invalid_root = fixture_root.join("invalid");
+    let markdown_files = collect_files(invalid_root.join("docs"), Some(".md"))
+        .into_iter()
+        .map(|path| rel_from_root(&root, &path))
+        .collect::<Vec<_>>();
+
+    let mut candidates = Vec::new();
+    for candidate in markdown_engine_candidates() {
+        if options
+            .candidate
+            .as_deref()
+            .is_some_and(|name| name != candidate.name)
+        {
+            continue;
+        }
+        candidates.push(probe_markdown_candidate(
+            candidate,
+            &root,
+            &fixture_root,
+            &markdown_files,
+            options.run_external,
+        ));
+    }
+
+    if options.candidate.is_some() && candidates.is_empty() {
+        return Err("unknown markdown engine candidate".into());
+    }
+
+    let report = serde_json::json!({
+        "schema": "assura.markdown-engine-probe.v1",
+        "fixture_root": rel_from_root(&root, &fixture_root),
+        "matrix": rel_from_root(&root, &matrix_path),
+        "run_external": options.run_external,
+        "markdown_files": markdown_files,
+        "candidates": candidates,
+    });
+    println!("{}", serde_json::to_string_pretty(&report)?);
+    Ok(())
+}
+
+fn parse_markdown_engine_probe_options(args: &[String]) -> Result<MarkdownEngineProbeOptions> {
+    let mut options = MarkdownEngineProbeOptions::default();
+    let mut index = 0;
+    while index < args.len() {
+        match args[index].as_str() {
+            "--candidate" => {
+                let Some(value) = args.get(index + 1) else {
+                    return Err("missing value for --candidate".into());
+                };
+                options.candidate = Some(value.clone());
+                index += 2;
+            }
+            "--run-external" => {
+                options.run_external = true;
+                index += 1;
+            }
+            "--help" | "-h" => {
+                println!(
+                    "Usage: cargo xtask markdown-engine-probe [--candidate <name>] [--run-external]"
+                );
+                std::process::exit(0);
+            }
+            other => return Err(format!("unknown markdown-engine-probe option: {other}").into()),
+        }
+    }
+    Ok(options)
+}
+
+struct MarkdownEngineCandidate {
+    name: &'static str,
+    binary: Option<&'static str>,
+    probe_args: &'static [&'static str],
+}
+
+fn markdown_engine_candidates() -> &'static [MarkdownEngineCandidate] {
+    &[
+        MarkdownEngineCandidate {
+            name: "assura-current",
+            binary: None,
+            probe_args: &[],
+        },
+        MarkdownEngineCandidate {
+            name: "rumdl",
+            binary: Some("rumdl"),
+            probe_args: &["check", "--output-format", "json"],
+        },
+        MarkdownEngineCandidate {
+            name: "mdlint",
+            binary: Some("mdlint"),
+            probe_args: &["check", "--format", "json"],
+        },
+        MarkdownEngineCandidate {
+            name: "mado",
+            binary: Some("mado"),
+            probe_args: &[],
+        },
+        MarkdownEngineCandidate {
+            name: "markdownlint-cli2",
+            binary: Some("markdownlint-cli2"),
+            probe_args: &["--json"],
+        },
+    ]
+}
+
+fn probe_markdown_candidate(
+    candidate: &MarkdownEngineCandidate,
+    root: &Path,
+    fixture_root: &Path,
+    markdown_files: &[String],
+    run_external: bool,
+) -> Value {
+    if candidate.name == "assura-current" {
+        return probe_current_assura(root, fixture_root);
+    }
+
+    let Some(binary) = candidate.binary else {
+        return serde_json::json!({
+            "name": candidate.name,
+            "status": "invalid_candidate",
+        });
+    };
+
+    if !command_exists(binary) {
+        return serde_json::json!({
+            "name": candidate.name,
+            "binary": binary,
+            "status": "unavailable",
+            "available": false,
+        });
+    }
+
+    let version = command_output_lossy(binary, ["--version"]);
+    if !run_external {
+        return serde_json::json!({
+            "name": candidate.name,
+            "binary": binary,
+            "status": "available_not_run",
+            "available": true,
+            "version": version,
+            "probe_args": candidate.probe_args,
+        });
+    }
+
+    let mut command = Command::new(binary);
+    command.current_dir(root).args(candidate.probe_args);
+    for file in markdown_files {
+        command.arg(file);
+    }
+    let output = command.output();
+    match output {
+        Ok(output) => serde_json::json!({
+            "name": candidate.name,
+            "binary": binary,
+            "status": if output.status.success() { "ran" } else { "probe_failed" },
+            "available": true,
+            "version": version,
+            "exit_code": output.status.code(),
+            "stdout_bytes": output.stdout.len(),
+            "stderr": String::from_utf8_lossy(&output.stderr).trim(),
+        }),
+        Err(error) => serde_json::json!({
+            "name": candidate.name,
+            "binary": binary,
+            "status": "probe_error",
+            "available": true,
+            "version": version,
+            "error": error.to_string(),
+        }),
+    }
+}
+
+fn probe_current_assura(root: &Path, fixture_root: &Path) -> Value {
+    let output = Command::new("cargo")
+        .current_dir(root)
+        .args([
+            "run",
+            "--quiet",
+            "--",
+            "check",
+            fixture_root
+                .join("invalid")
+                .to_str()
+                .unwrap_or("tests/fixtures/markdown_engine_candidates/invalid"),
+            "--format",
+            "json",
+        ])
+        .output();
+    match output {
+        Ok(output) => {
+            let rules = serde_json::from_slice::<Value>(&output.stdout)
+                .ok()
+                .and_then(|report| {
+                    report
+                        .get("violations")
+                        .and_then(Value::as_array)
+                        .map(|items| {
+                            let mut rules = items
+                                .iter()
+                                .filter_map(|violation| {
+                                    violation.get("rule").and_then(Value::as_str)
+                                })
+                                .map(str::to_string)
+                                .collect::<Vec<_>>();
+                            rules.sort();
+                            rules.dedup();
+                            rules
+                        })
+                })
+                .unwrap_or_default();
+            serde_json::json!({
+                "name": "assura-current",
+                "status": "ran",
+                "exit_code": output.status.code(),
+                "rules": rules,
+                "stdout_bytes": output.stdout.len(),
+                "stderr": String::from_utf8_lossy(&output.stderr).trim(),
+            })
+        }
+        Err(error) => serde_json::json!({
+            "name": "assura-current",
+            "status": "probe_error",
+            "error": error.to_string(),
+        }),
+    }
+}
+
+fn command_output_lossy<const N: usize>(program: &str, args: [&str; N]) -> Option<String> {
+    Command::new(program)
+        .args(args)
+        .output()
+        .ok()
+        .map(|output| {
+            let text = if output.stdout.is_empty() {
+                &output.stderr
+            } else {
+                &output.stdout
+            };
+            String::from_utf8_lossy(text).trim().to_string()
+        })
+}
+
 fn parse_performance_no_slower_options(args: &[String]) -> Result<PerformanceNoSlowerOptions> {
     let mut options = PerformanceNoSlowerOptions::default();
     let mut index = 0;
@@ -1155,8 +1416,22 @@ fn exists(path: impl AsRef<Path>) -> bool {
                 .unwrap_or(false))
 }
 
+fn repo_root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap_or_else(|| Path::new("."))
+        .to_path_buf()
+}
+
 fn rel(path: &Path) -> String {
     path.to_string_lossy().replace('\\', "/")
+}
+
+fn rel_from_root(root: &Path, path: &Path) -> String {
+    match path.strip_prefix(root) {
+        Ok(path) => rel(path),
+        Err(_) => rel(path),
+    }
 }
 
 fn collect_files(root: impl AsRef<Path>, suffix: Option<&str>) -> Vec<PathBuf> {

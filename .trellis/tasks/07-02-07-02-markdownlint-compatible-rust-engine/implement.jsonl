@@ -4,3 +4,5 @@
 {"file": "docs/analysis/2026-06-18-markdown-tooling-evaluation.md", "reason": "prior Assura Markdown tooling and performance evidence"}
 {"file": "docs/goals/assura-markdown-lint-link-reference-engine.md", "reason": "existing Markdown validation/fix behavior that must not regress"}
 {"file": ".trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine/research/markdown-engine-candidate-evaluation.md", "reason": "live candidate evidence and outcome lens for this implementation branch"}
+{"file": "tests/fixtures/markdown_engine_candidates/matrix.json", "reason": "executable Markdown engine compatibility matrix and staged expectation contract"}
+{"file": "xtask/src/main.rs", "reason": "markdown-engine-probe command for optional candidate evidence collection"}

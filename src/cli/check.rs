@@ -352,9 +352,7 @@ impl StructureChecker {
                 if self.try_check_lslint_explicit_target(&checked_path, &mut report, scopes)? {
                     timings.walk_and_validate_ms = walk_started.elapsed().as_secs_f64() * 1000.0;
                     let sort_started = Instant::now();
-                    report.violations.sort_by(|left, right| {
-                        left.path.cmp(&right.path).then(left.rule.cmp(&right.rule))
-                    });
+                    report.sort_violations_staged();
                     timings.report_sort_ms = sort_started.elapsed().as_secs_f64() * 1000.0;
                     report.refresh_success();
                     return Ok(report);
@@ -366,9 +364,7 @@ impl StructureChecker {
             self.has_direct_count_constraints = has_direct_count_constraints;
             timings.walk_and_validate_ms = walk_started.elapsed().as_secs_f64() * 1000.0;
             let sort_started = Instant::now();
-            report
-                .violations
-                .sort_by(|left, right| left.path.cmp(&right.path).then(left.rule.cmp(&right.rule)));
+            report.sort_violations_staged();
             timings.report_sort_ms = sort_started.elapsed().as_secs_f64() * 1000.0;
             report.refresh_success();
             return Ok(report);
@@ -412,9 +408,7 @@ impl StructureChecker {
         }
 
         let sort_started = Instant::now();
-        report
-            .violations
-            .sort_by(|left, right| left.path.cmp(&right.path).then(left.rule.cmp(&right.rule)));
+        report.sort_violations_staged();
         timings.report_sort_ms = sort_started.elapsed().as_secs_f64() * 1000.0;
         report.refresh_success();
         Ok(report)
