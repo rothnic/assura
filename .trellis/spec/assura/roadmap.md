@@ -42,11 +42,11 @@ Post-Beta Capabilities completed as the `v0.3.0` beta increment after release
 `v0.2.0`.
 
 Owning task:
-`.trellis/tasks/07-02-post-beta-program-finalization`.
+`.trellis/tasks/archive/2026-07/07-02-post-beta-program-finalization`.
 
 Current branch:
-`codex/post-beta-live-release-evidence` is recording the live `v0.3.0` release
-evidence and parent completion audit.
+`codex/post-beta-live-release-evidence` recorded the live `v0.3.0` release
+evidence, parent completion audit, and archived finalization task.
 
 Current recommended goal:
 No incomplete child goal remains in this iteration. Use
