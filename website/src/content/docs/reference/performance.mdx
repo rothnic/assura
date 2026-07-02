@@ -28,6 +28,11 @@ real-repository rows are optional extended evidence when a report is generated
 with the external fixture flag; they are not part of the checked report
 rendered on this page today.
 
+Rows marked `fixture_acceptance=accepted-ls-lint-equivalent` are the enforced
+fixture floor. CI runs `cargo xtask performance-no-slower` against the checked
+report and fails if any accepted `assura-cli` fixture row is slower than the
+matching native `ls-lint-cli` row, even when aggregate numbers still look good.
+
 The warm gate is a separate editor-session measurement. It uses a persistent
 `assura-check-session` CLI process connected to `assura-checkd`, so it is not a
 replacement for the cold one-process `assura check` headline path.
@@ -51,7 +56,8 @@ replacement for the cold one-process `assura check` headline path.
 Baseline updates are explicit source changes:
 
 ```bash
-cargo build --release -p assura --bins
+cargo build --release --bin assura --no-default-features --features json-output,yaml-config
+cargo build --release --bin assura-full
 cargo build --release -p assura-check-cli
 target/release/assura performance-report \
   --output benches/history/current.json \

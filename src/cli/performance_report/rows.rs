@@ -49,6 +49,8 @@ pub struct PerformanceResultRow {
     pub evidence_role: String,
     /// True when this row must not drive public headline comparisons.
     pub diagnostic: bool,
+    /// Fixture acceptance class used by no-slower gates and public docs.
+    pub fixture_acceptance: String,
     /// Fixture source type such as generated or external pinned repo.
     pub source_type: String,
     /// Files expected to be checked after configured ignores are applied.
@@ -243,6 +245,8 @@ pub(in crate::cli::performance_report) fn row(
         }
         .to_string(),
         diagnostic,
+        fixture_acceptance: fixture_acceptance(metadata.cohort, metadata.native_ls_lint_parity)
+            .to_string(),
         source_type: metadata.source_type.to_string(),
         checked_file_count: metadata.checked_file_count,
         ignored_file_count: metadata.ignored_file_count,
@@ -320,6 +324,21 @@ pub(super) fn is_diagnostic_row(row_family: &str, fixture_cohort: &str) -> bool 
         || row_family.starts_with("assura:phase:")
         || row_family.starts_with("strategy:")
         || row_family.starts_with("traversal:")
+}
+
+fn fixture_acceptance(fixture_cohort: &str, native_ls_lint_parity: bool) -> &'static str {
+    if native_ls_lint_parity
+        && matches!(
+            fixture_cohort,
+            "realistic-equivalent" | "real-repo-headline"
+        )
+    {
+        "accepted-ls-lint-equivalent"
+    } else if native_ls_lint_parity {
+        "diagnostic"
+    } else {
+        "assura-native-diagnostic"
+    }
 }
 
 fn proves_whole_project_success(row_family: &str) -> bool {

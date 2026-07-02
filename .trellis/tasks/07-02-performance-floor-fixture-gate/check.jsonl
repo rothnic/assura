@@ -1,0 +1,5 @@
+{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file": "tests/performance_report_contract_tests.rs", "reason": "checked performance report contract tests"}
+{"file": "benches/history/current.json", "reason": "checked benchmark evidence consumed by gate"}
+{"file": "website/public/data/performance/current.json", "reason": "website performance data must match checked history"}
+{"file": ".github/workflows/ci.yml", "reason": "CI performance gate invocation"}

@@ -916,6 +916,10 @@ enum RowTiming {
 
 #[derive(Debug, PartialEq)]
 enum NoSlowerFailure {
+    InvalidAcceptance {
+        fixture_id: String,
+        reason: String,
+    },
     MissingAssura {
         fixture_id: String,
     },
@@ -957,11 +961,14 @@ fn run_performance_no_slower(args: &[String]) -> Result<()> {
     }
 
     eprintln!(
-        "Performance no-slower gate failed for cohort {} ({} must be <= {}).",
+        "Performance no-slower gate failed for accepted fixtures in cohort {} ({} must be <= {}).",
         options.cohort, options.assura_row, options.ls_lint_row
     );
     for failure in failures {
         match failure {
+            NoSlowerFailure::InvalidAcceptance { fixture_id, reason } => {
+                eprintln!("{fixture_id}: invalid fixture acceptance: {reason}");
+            }
             NoSlowerFailure::MissingAssura { fixture_id } => {
                 eprintln!("{fixture_id}: missing {}", options.assura_row);
             }
@@ -2149,6 +2156,7 @@ fn performance_no_slower_failures(
         .and_then(Value::as_array)
         .ok_or("performance report missing results array")?;
     let mut timings = BTreeMap::<String, FixtureTiming>::new();
+    let mut failures = Vec::new();
 
     for row in rows {
         if row.get("fixture_cohort").and_then(Value::as_str) != Some(cohort) {
@@ -2158,11 +2166,25 @@ fn performance_no_slower_failures(
             .get("fixture_id")
             .and_then(Value::as_str)
             .ok_or("performance row missing fixture_id")?;
-        let timing = timings.entry(fixture_id.to_string()).or_default();
 
         let Some(row_family) = row.get("row_family").and_then(Value::as_str) else {
             continue;
         };
+        if row_family != assura_row && row_family != ls_lint_row {
+            continue;
+        }
+        match accepted_fixture_row(row) {
+            Ok(false) => continue,
+            Ok(true) => {}
+            Err(reason) => {
+                failures.push(NoSlowerFailure::InvalidAcceptance {
+                    fixture_id: fixture_id.to_string(),
+                    reason: reason.to_string(),
+                });
+                continue;
+            }
+        }
+        let timing = timings.entry(fixture_id.to_string()).or_default();
         if row_family == assura_row {
             timing.assura = Some(timing_from_row(row));
         } else if row_family == ls_lint_row {
@@ -2170,11 +2192,10 @@ fn performance_no_slower_failures(
         }
     }
 
-    if timings.is_empty() {
+    if timings.is_empty() && failures.is_empty() {
         return Err(format!("performance report has no fixture rows for cohort {cohort}").into());
     }
 
-    let mut failures = Vec::new();
     for (fixture_id, timing) in timings {
         match (timing.assura, timing.ls_lint) {
             (None, _) => failures.push(NoSlowerFailure::MissingAssura { fixture_id }),
@@ -2198,6 +2219,15 @@ fn performance_no_slower_failures(
         }
     }
     Ok(failures)
+}
+
+fn accepted_fixture_row(row: &Value) -> Result<bool> {
+    match row.get("fixture_acceptance").and_then(Value::as_str) {
+        Some("accepted-ls-lint-equivalent") => Ok(true),
+        Some("diagnostic" | "experimental" | "retired" | "assura-native-diagnostic") => Ok(false),
+        Some(value) => Err(format!("unknown fixture_acceptance {value:?}").into()),
+        None => Err("missing fixture_acceptance".into()),
+    }
 }
 
 fn timing_from_row(row: &Value) -> RowTiming {
@@ -4279,6 +4309,41 @@ fn check_docs_release_performance(checks: &mut Checks) {
                 .is_some(),
         "performance current.json: missing cold or warm claim verdict",
     );
+    if let Some(rows) = bench_current.get("results").and_then(Value::as_array) {
+        let mut accepted_count = 0usize;
+        for row in rows {
+            let fixture_id = row
+                .get("fixture_id")
+                .and_then(Value::as_str)
+                .unwrap_or("<missing>");
+            let Some(acceptance) = row.get("fixture_acceptance").and_then(Value::as_str) else {
+                checks.add(format!(
+                    "performance current.json: row {fixture_id} missing fixture_acceptance"
+                ));
+                continue;
+            };
+            checks.require(
+                matches!(
+                    acceptance,
+                    "accepted-ls-lint-equivalent"
+                        | "diagnostic"
+                        | "experimental"
+                        | "retired"
+                        | "assura-native-diagnostic"
+                ),
+                format!(
+                    "performance current.json: row {fixture_id} has unknown fixture_acceptance {acceptance}"
+                ),
+            );
+            if acceptance == "accepted-ls-lint-equivalent" {
+                accepted_count += 1;
+            }
+        }
+        checks.require(
+            accepted_count > 0,
+            "performance current.json: missing accepted-ls-lint-equivalent fixture rows",
+        );
+    }
     match performance_no_slower_failures(
         &bench_current,
         "realistic-equivalent",
@@ -4825,6 +4890,7 @@ mod tests {
                 {
                     "fixture_cohort": "realistic-equivalent",
                     "fixture_id": "faster",
+                    "fixture_acceptance": "accepted-ls-lint-equivalent",
                     "row_family": "assura-cli",
                     "status": "pass",
                     "median_runtime_ms": 4.0
@@ -4832,6 +4898,7 @@ mod tests {
                 {
                     "fixture_cohort": "realistic-equivalent",
                     "fixture_id": "faster",
+                    "fixture_acceptance": "accepted-ls-lint-equivalent",
                     "row_family": "ls-lint-cli",
                     "tool_name": "ls-lint-native-cli",
                     "ls_lint_execution_mode": "native-binary-from-pinned-npm-package",
@@ -4841,6 +4908,7 @@ mod tests {
                 {
                     "fixture_cohort": "realistic-equivalent",
                     "fixture_id": "equal",
+                    "fixture_acceptance": "accepted-ls-lint-equivalent",
                     "row_family": "assura-cli",
                     "status": "pass",
                     "median_runtime_ms": 6.0
@@ -4848,6 +4916,7 @@ mod tests {
                 {
                     "fixture_cohort": "realistic-equivalent",
                     "fixture_id": "equal",
+                    "fixture_acceptance": "accepted-ls-lint-equivalent",
                     "row_family": "ls-lint-cli",
                     "tool_name": "ls-lint-native-cli",
                     "ls_lint_execution_mode": "native-binary-from-pinned-npm-package",
@@ -4875,6 +4944,7 @@ mod tests {
                 {
                     "fixture_cohort": "realistic-equivalent",
                     "fixture_id": "slower",
+                    "fixture_acceptance": "accepted-ls-lint-equivalent",
                     "row_family": "assura-cli",
                     "status": "pass",
                     "median_runtime_ms": 7.0
@@ -4882,6 +4952,7 @@ mod tests {
                 {
                     "fixture_cohort": "realistic-equivalent",
                     "fixture_id": "slower",
+                    "fixture_acceptance": "accepted-ls-lint-equivalent",
                     "row_family": "ls-lint-cli",
                     "tool_name": "ls-lint-native-cli",
                     "ls_lint_execution_mode": "native-binary-from-pinned-npm-package",
@@ -4891,6 +4962,7 @@ mod tests {
                 {
                     "fixture_cohort": "realistic-equivalent",
                     "fixture_id": "missing-ls-lint",
+                    "fixture_acceptance": "accepted-ls-lint-equivalent",
                     "row_family": "assura-cli",
                     "status": "pass",
                     "median_runtime_ms": 1.0
@@ -4898,6 +4970,7 @@ mod tests {
                 {
                     "fixture_cohort": "realistic-equivalent",
                     "fixture_id": "missing-assura",
+                    "fixture_acceptance": "accepted-ls-lint-equivalent",
                     "row_family": "ls-lint-cli",
                     "tool_name": "ls-lint-native-cli",
                     "ls_lint_execution_mode": "native-binary-from-pinned-npm-package",
@@ -4940,6 +5013,7 @@ mod tests {
                 {
                     "fixture_cohort": "realistic-equivalent",
                     "fixture_id": "non-native-ls-lint",
+                    "fixture_acceptance": "accepted-ls-lint-equivalent",
                     "row_family": "assura-cli",
                     "status": "pass",
                     "median_runtime_ms": 1.0
@@ -4947,6 +5021,7 @@ mod tests {
                 {
                     "fixture_cohort": "realistic-equivalent",
                     "fixture_id": "non-native-ls-lint",
+                    "fixture_acceptance": "accepted-ls-lint-equivalent",
                     "row_family": "ls-lint-cli",
                     "tool_name": "node-wrapper",
                     "ls_lint_execution_mode": "node-wrapper",
@@ -4956,12 +5031,14 @@ mod tests {
                 {
                     "fixture_cohort": "realistic-equivalent",
                     "fixture_id": "skipped-assura",
+                    "fixture_acceptance": "accepted-ls-lint-equivalent",
                     "row_family": "assura-cli",
                     "status": "skipped"
                 },
                 {
                     "fixture_cohort": "realistic-equivalent",
                     "fixture_id": "skipped-assura",
+                    "fixture_acceptance": "accepted-ls-lint-equivalent",
                     "row_family": "ls-lint-cli",
                     "tool_name": "ls-lint-native-cli",
                     "ls_lint_execution_mode": "native-binary-from-pinned-npm-package",
@@ -4989,9 +5066,6 @@ mod tests {
         assert_eq!(
             failures,
             vec![
-                NoSlowerFailure::MissingAssura {
-                    fixture_id: "no-target-rows".to_string()
-                },
                 NoSlowerFailure::InvalidLsLint {
                     fixture_id: "non-native-ls-lint".to_string(),
                     reason: "tool_name \"node-wrapper\" is not native LS-Lint".to_string()
@@ -5001,6 +5075,55 @@ mod tests {
                     reason: "status \"skipped\"".to_string()
                 }
             ]
+        );
+    }
+
+    #[test]
+    fn performance_no_slower_requires_accepted_fixture_metadata() {
+        let report = json!({
+            "results": [
+                {
+                    "fixture_cohort": "realistic-equivalent",
+                    "fixture_id": "missing-acceptance",
+                    "row_family": "assura-cli",
+                    "status": "pass",
+                    "median_runtime_ms": 1.0
+                },
+                {
+                    "fixture_cohort": "realistic-equivalent",
+                    "fixture_id": "diagnostic-row",
+                    "fixture_acceptance": "diagnostic",
+                    "row_family": "assura-cli",
+                    "status": "pass",
+                    "median_runtime_ms": 100.0
+                },
+                {
+                    "fixture_cohort": "realistic-equivalent",
+                    "fixture_id": "diagnostic-row",
+                    "fixture_acceptance": "diagnostic",
+                    "row_family": "ls-lint-cli",
+                    "tool_name": "ls-lint-native-cli",
+                    "ls_lint_execution_mode": "native-binary-from-pinned-npm-package",
+                    "status": "pass",
+                    "median_runtime_ms": 1.0
+                }
+            ]
+        });
+
+        let failures = performance_no_slower_failures(
+            &report,
+            "realistic-equivalent",
+            "assura-cli",
+            "ls-lint-cli",
+        )
+        .expect("report is valid");
+
+        assert_eq!(
+            failures,
+            vec![NoSlowerFailure::InvalidAcceptance {
+                fixture_id: "missing-acceptance".to_string(),
+                reason: "missing fixture_acceptance".to_string()
+            }]
         );
     }
 

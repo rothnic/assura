@@ -52,6 +52,31 @@ fn current_report_claim_summary_matches_headline_rows() {
         let row_family = row["row_family"]
             .as_str()
             .expect("current report row includes row_family");
+        let fixture_acceptance = row["fixture_acceptance"]
+            .as_str()
+            .expect("current report row includes fixture_acceptance");
+        assert!(
+            matches!(
+                fixture_acceptance,
+                "accepted-ls-lint-equivalent"
+                    | "diagnostic"
+                    | "experimental"
+                    | "retired"
+                    | "assura-native-diagnostic"
+            ),
+            "unexpected fixture_acceptance {fixture_acceptance:?}"
+        );
+        if row["native_ls_lint_parity"].as_bool() == Some(true)
+            && matches!(
+                row["fixture_cohort"].as_str(),
+                Some("realistic-equivalent" | "real-repo-headline")
+            )
+        {
+            assert_eq!(
+                fixture_acceptance, "accepted-ls-lint-equivalent",
+                "LS-Lint-equivalent fixture rows must be accepted for fixture-floor gates"
+            );
+        }
         assert_eq!(
             row["validation_execution_mode"].as_str(),
             Some(expected_execution_mode(row_family)),
