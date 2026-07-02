@@ -16,3 +16,7 @@
 {"file": "docs/goals/assura-post-beta-capabilities-program.md", "reason": "parent-program primary verification story used as the acceptance lens for this major increment"}
 {"file": ".trellis/spec/assura/roadmap.md", "reason": "active roadmap branch and north-star outcome routing for the current Markdown engine slice"}
 {"file": "docs/data/public-roadmap.json", "reason": "public roadmap summary now points to the maintainer verification story for Post-Beta Capabilities"}
+{"file": "xtask/src/main.rs", "reason": "markdown-engine-probe opt-in timing support for current Assura, Rust candidates, and markdownlint-cli2"}
+{"file": ".trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine/research/markdown-engine-candidate-evaluation.md", "reason": "measured candidate evidence and decision impact for rumdl selection"}
+{"file": ".trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine/task.json", "reason": "active Trellis task branch updated for the performance-evidence slice"}
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "active roadmap branch updated for the performance-evidence slice"}

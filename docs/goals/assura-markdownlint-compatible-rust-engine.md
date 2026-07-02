@@ -204,3 +204,11 @@ structure validation.
   and `--rule required-sections` runs, so the parent verification workflow can
   preview/apply the supported subset without requiring agents to know each
   individual fixer.
+- 2026-07-02: Started the performance-evidence slice on branch
+  `codex/markdown-engine-performance-evidence`. `cargo xtask
+  markdown-engine-probe` now has opt-in `--measure --iterations <n>` timing
+  output. Local five-iteration evidence shows all Rust candidates are much
+  faster than `markdownlint-cli2`, but `rumdl 0.2.27` is slower than current
+  Assura checks on the small invalid fixture, so `rumdl` remains a functional
+  leader rather than an accepted default engine until broader fixture and
+  fix-cost evidence closes the no-slower bar.

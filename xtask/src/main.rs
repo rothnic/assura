@@ -7,6 +7,7 @@ use std::ffi::OsStr;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
+use std::time::Instant;
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
@@ -994,6 +995,8 @@ fn run_performance_no_slower(args: &[String]) -> Result<()> {
 struct MarkdownEngineProbeOptions {
     candidate: Option<String>,
     run_external: bool,
+    measure: bool,
+    iterations: Option<usize>,
 }
 
 fn run_markdown_engine_probe(args: &[String]) -> Result<()> {
@@ -1029,7 +1032,7 @@ fn run_markdown_engine_probe(args: &[String]) -> Result<()> {
             &root,
             &fixture_root,
             &markdown_files,
-            options.run_external,
+            &options,
         ));
     }
 
@@ -1042,6 +1045,8 @@ fn run_markdown_engine_probe(args: &[String]) -> Result<()> {
         "fixture_root": rel_from_root(&root, &fixture_root),
         "matrix": rel_from_root(&root, &matrix_path),
         "run_external": options.run_external,
+        "measure": options.measure,
+        "iterations": markdown_engine_probe_iterations(&options),
         "markdown_files": markdown_files,
         "candidates": candidates,
     });
@@ -1065,9 +1070,26 @@ fn parse_markdown_engine_probe_options(args: &[String]) -> Result<MarkdownEngine
                 options.run_external = true;
                 index += 1;
             }
+            "--measure" => {
+                options.measure = true;
+                index += 1;
+            }
+            "--iterations" => {
+                let Some(value) = args.get(index + 1) else {
+                    return Err("missing value for --iterations".into());
+                };
+                let parsed = value
+                    .parse::<usize>()
+                    .map_err(|_| "--iterations must be a positive integer")?;
+                if parsed == 0 {
+                    return Err("--iterations must be greater than zero".into());
+                }
+                options.iterations = Some(parsed);
+                index += 2;
+            }
             "--help" | "-h" => {
                 println!(
-                    "Usage: cargo xtask markdown-engine-probe [--candidate <name>] [--run-external]"
+                    "Usage: cargo xtask markdown-engine-probe [--candidate <name>] [--run-external] [--measure] [--iterations <n>]"
                 );
                 std::process::exit(0);
             }
@@ -1118,10 +1140,10 @@ fn probe_markdown_candidate(
     root: &Path,
     fixture_root: &Path,
     markdown_files: &[String],
-    run_external: bool,
+    options: &MarkdownEngineProbeOptions,
 ) -> Value {
     if candidate.name == "assura-current" {
-        return probe_current_assura(root, fixture_root);
+        return probe_current_assura(root, fixture_root, options);
     }
 
     let Some(binary) = candidate.binary else {
@@ -1141,7 +1163,7 @@ fn probe_markdown_candidate(
     }
 
     let version = command_output_lossy(binary, ["--version"]);
-    if !run_external {
+    if !options.run_external {
         return serde_json::json!({
             "name": candidate.name,
             "binary": binary,
@@ -1152,7 +1174,6 @@ fn probe_markdown_candidate(
         });
     }
 
-    let mut command = Command::new(binary);
     let (probe_fixture_root, probe_markdown_files) =
         match prepare_external_probe_fixture(root, fixture_root, candidate.name, markdown_files) {
             Ok(value) => value,
@@ -1167,20 +1188,13 @@ fn probe_markdown_candidate(
                 });
             }
         };
-    command.current_dir(root).args(candidate.probe_args);
-    for file in &probe_markdown_files {
-        command.arg(file);
-    }
+    let mut command = external_candidate_command(binary, candidate, root, &probe_markdown_files);
     let output = command.output();
     match output {
         Ok(output) => {
             let exit_code = output.status.code();
-            let status = match exit_code {
-                Some(0) => "ran",
-                Some(1) => "ran_with_findings",
-                _ => "probe_failed",
-            };
-            serde_json::json!({
+            let status = markdown_probe_status(exit_code);
+            let mut candidate_report = serde_json::json!({
                 "name": candidate.name,
                 "binary": binary,
                 "status": status,
@@ -1193,7 +1207,18 @@ fn probe_markdown_candidate(
                 "stderr_bytes": output.stderr.len(),
                 "stdout_snippet": truncate_utf8(&output.stdout, 6000),
                 "stderr_snippet": truncate_utf8(&output.stderr, 6000),
-            })
+            });
+            if options.measure {
+                candidate_report["timing"] = measure_external_candidate(
+                    root,
+                    fixture_root,
+                    candidate,
+                    binary,
+                    markdown_files,
+                    markdown_engine_probe_iterations(options),
+                );
+            }
+            candidate_report
         }
         Err(error) => serde_json::json!({
             "name": candidate.name,
@@ -1234,6 +1259,20 @@ fn prepare_external_probe_fixture(
     Ok((probe_prefix, probe_markdown_files))
 }
 
+fn external_candidate_command(
+    binary: &str,
+    candidate: &MarkdownEngineCandidate,
+    root: &Path,
+    markdown_files: &[String],
+) -> Command {
+    let mut command = Command::new(binary);
+    command.current_dir(root).args(candidate.probe_args);
+    for file in markdown_files {
+        command.arg(file);
+    }
+    command
+}
+
 fn copy_dir_recursive(source: &Path, destination: &Path) -> std::io::Result<()> {
     fs::create_dir_all(destination)?;
     for entry in fs::read_dir(source)? {
@@ -1259,24 +1298,17 @@ fn truncate_utf8(bytes: &[u8], max_chars: usize) -> String {
     truncated.trim().to_string()
 }
 
-fn probe_current_assura(root: &Path, fixture_root: &Path) -> Value {
-    let output = Command::new("cargo")
-        .current_dir(root)
-        .args([
-            "run",
-            "--quiet",
-            "--",
-            "check",
-            fixture_root
-                .join("invalid")
-                .to_str()
-                .unwrap_or("tests/fixtures/markdown_engine_candidates/invalid"),
-            "--format",
-            "json",
-        ])
-        .output();
+fn probe_current_assura(
+    root: &Path,
+    fixture_root: &Path,
+    options: &MarkdownEngineProbeOptions,
+) -> Value {
+    let (mut command, execution_mode) = assura_current_probe_command(root, fixture_root);
+    let output = command.output();
     match output {
         Ok(output) => {
+            let exit_code = output.status.code();
+            let status = markdown_probe_status(exit_code);
             let rules = serde_json::from_slice::<Value>(&output.stdout)
                 .ok()
                 .and_then(|report| {
@@ -1297,14 +1329,23 @@ fn probe_current_assura(root: &Path, fixture_root: &Path) -> Value {
                         })
                 })
                 .unwrap_or_default();
-            serde_json::json!({
+            let mut current_report = serde_json::json!({
                 "name": "assura-current",
-                "status": "ran",
-                "exit_code": output.status.code(),
+                "status": status,
+                "execution_mode": execution_mode,
+                "exit_code": exit_code,
                 "rules": rules,
                 "stdout_bytes": output.stdout.len(),
                 "stderr": String::from_utf8_lossy(&output.stderr).trim(),
-            })
+            });
+            if options.measure {
+                current_report["timing"] = measure_assura_current(
+                    root,
+                    fixture_root,
+                    markdown_engine_probe_iterations(options),
+                );
+            }
+            current_report
         }
         Err(error) => serde_json::json!({
             "name": "assura-current",
@@ -1312,6 +1353,147 @@ fn probe_current_assura(root: &Path, fixture_root: &Path) -> Value {
             "error": error.to_string(),
         }),
     }
+}
+
+fn assura_current_probe_command(root: &Path, fixture_root: &Path) -> (Command, &'static str) {
+    let assura_binary = root
+        .join("target")
+        .join("debug")
+        .join(format!("assura{}", env::consts::EXE_SUFFIX));
+    let use_debug_binary = assura_binary.exists();
+    let mut command = if use_debug_binary {
+        let mut command = Command::new(&assura_binary);
+        command.current_dir(root).arg("check");
+        command
+    } else {
+        let mut command = Command::new("cargo");
+        command
+            .current_dir(root)
+            .args(["run", "--quiet", "--", "check"]);
+        command
+    };
+    let execution_mode = if use_debug_binary {
+        "target-debug-binary"
+    } else {
+        "cargo-run"
+    };
+    command.arg(markdown_engine_invalid_fixture_path(fixture_root));
+    command.args(["--format", "json"]);
+    (command, execution_mode)
+}
+
+fn markdown_engine_invalid_fixture_path(fixture_root: &Path) -> PathBuf {
+    fixture_root.join("invalid")
+}
+
+fn markdown_engine_probe_iterations(options: &MarkdownEngineProbeOptions) -> usize {
+    options.iterations.unwrap_or(5)
+}
+
+fn measure_assura_current(root: &Path, fixture_root: &Path, iterations: usize) -> Value {
+    let mut samples_ms = Vec::new();
+    let mut errors = Vec::new();
+    for _ in 0..iterations {
+        let (mut command, _) = assura_current_probe_command(root, fixture_root);
+        let started = Instant::now();
+        match command.output() {
+            Ok(output) if expected_markdown_probe_exit(output.status.code()) => {
+                samples_ms.push(elapsed_ms(started));
+            }
+            Ok(output) => errors.push(format!(
+                "unexpected exit code {:?}: {}",
+                output.status.code(),
+                truncate_utf8(&output.stderr, 400)
+            )),
+            Err(error) => errors.push(error.to_string()),
+        }
+    }
+    timing_report(iterations, samples_ms, errors)
+}
+
+fn measure_external_candidate(
+    root: &Path,
+    fixture_root: &Path,
+    candidate: &MarkdownEngineCandidate,
+    binary: &str,
+    markdown_files: &[String],
+    iterations: usize,
+) -> Value {
+    let mut samples_ms = Vec::new();
+    let mut errors = Vec::new();
+    for _ in 0..iterations {
+        let (_, probe_markdown_files) = match prepare_external_probe_fixture(
+            root,
+            fixture_root,
+            candidate.name,
+            markdown_files,
+        ) {
+            Ok(value) => value,
+            Err(error) => {
+                errors.push(error);
+                continue;
+            }
+        };
+        let mut command =
+            external_candidate_command(binary, candidate, root, &probe_markdown_files);
+        let started = Instant::now();
+        match command.output() {
+            Ok(output) if expected_markdown_probe_exit(output.status.code()) => {
+                samples_ms.push(elapsed_ms(started));
+            }
+            Ok(output) => errors.push(format!(
+                "unexpected exit code {:?}: {}",
+                output.status.code(),
+                truncate_utf8(&output.stderr, 400)
+            )),
+            Err(error) => errors.push(error.to_string()),
+        }
+    }
+    timing_report(iterations, samples_ms, errors)
+}
+
+fn expected_markdown_probe_exit(exit_code: Option<i32>) -> bool {
+    matches!(exit_code, Some(0) | Some(1))
+}
+
+fn markdown_probe_status(exit_code: Option<i32>) -> &'static str {
+    match exit_code {
+        Some(0) => "ran",
+        Some(1) => "ran_with_findings",
+        _ => "probe_failed",
+    }
+}
+
+fn elapsed_ms(started: Instant) -> f64 {
+    started.elapsed().as_secs_f64() * 1000.0
+}
+
+fn timing_report(iterations: usize, mut samples_ms: Vec<f64>, errors: Vec<String>) -> Value {
+    samples_ms.sort_by(|left, right| left.total_cmp(right));
+    let median_ms = percentile(&samples_ms, 0.50);
+    let p95_ms = percentile(&samples_ms, 0.95);
+    let min_ms = samples_ms.first().copied();
+    let max_ms = samples_ms.last().copied();
+    serde_json::json!({
+        "iterations": iterations,
+        "successful_runs": samples_ms.len(),
+        "failed_runs": errors.len(),
+        "median_ms": median_ms,
+        "p95_ms": p95_ms,
+        "min_ms": min_ms,
+        "max_ms": max_ms,
+        "samples_ms": samples_ms,
+        "errors": errors,
+    })
+}
+
+fn percentile(sorted_samples: &[f64], percentile: f64) -> Option<f64> {
+    if sorted_samples.is_empty() {
+        return None;
+    }
+    let rank = (percentile * sorted_samples.len() as f64).ceil() as usize;
+    let index = rank.saturating_sub(1).min(sorted_samples.len() - 1);
+    Some(sorted_samples[index])
 }
 
 fn command_output_lossy<const N: usize>(program: &str, args: [&str; N]) -> Option<String> {
@@ -4140,6 +4322,46 @@ mod tests {
                 }
             ]
         );
+    }
+
+    #[test]
+    fn markdown_engine_probe_options_parse_measurement_flags() {
+        let options = parse_markdown_engine_probe_options(&[
+            "--candidate".to_string(),
+            "rumdl".to_string(),
+            "--run-external".to_string(),
+            "--measure".to_string(),
+            "--iterations".to_string(),
+            "7".to_string(),
+        ])
+        .expect("options parse");
+
+        assert_eq!(options.candidate.as_deref(), Some("rumdl"));
+        assert!(options.run_external);
+        assert!(options.measure);
+        assert_eq!(markdown_engine_probe_iterations(&options), 7);
+    }
+
+    #[test]
+    fn markdown_engine_timing_report_sorts_and_summarizes_samples() {
+        let report = timing_report(4, vec![10.0, 1.0, 20.0, 5.0], vec!["boom".to_string()]);
+
+        assert_eq!(report["iterations"], 4);
+        assert_eq!(report["successful_runs"], 4);
+        assert_eq!(report["failed_runs"], 1);
+        assert_eq!(report["median_ms"], 5.0);
+        assert_eq!(report["p95_ms"], 20.0);
+        assert_eq!(report["min_ms"], 1.0);
+        assert_eq!(report["max_ms"], 20.0);
+        assert_eq!(report["samples_ms"], json!([1.0, 5.0, 10.0, 20.0]));
+    }
+
+    #[test]
+    fn markdown_engine_probe_status_distinguishes_findings_from_failures() {
+        assert_eq!(markdown_probe_status(Some(0)), "ran");
+        assert_eq!(markdown_probe_status(Some(1)), "ran_with_findings");
+        assert_eq!(markdown_probe_status(Some(2)), "probe_failed");
+        assert_eq!(markdown_probe_status(None), "probe_failed");
     }
 
     #[test]

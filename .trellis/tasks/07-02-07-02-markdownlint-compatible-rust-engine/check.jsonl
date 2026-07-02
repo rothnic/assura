@@ -7,3 +7,5 @@
 {"file": "tests/markdown_lint_fix_tests.rs", "reason": "all-rule Markdown safe-fix default, targeted rule compatibility, dry-run/apply audit, and idempotence coverage"}
 {"file": "docs/goals/assura-post-beta-capabilities-program.md", "reason": "primary verification story must remain executable and use supported command surfaces"}
 {"file": ".trellis/spec/assura/roadmap.md", "reason": "roadmap north-star must route agents back to the parent verification story"}
+{"file": "xtask/src/main.rs", "reason": "unit coverage for markdown-engine-probe measurement option parsing and timing report summaries"}
+{"file": ".trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine/research/markdown-engine-probe-2026-07-02-measured.json", "reason": "checked measured probe output proving Rust candidate and markdownlint-cli2 timing rows"}

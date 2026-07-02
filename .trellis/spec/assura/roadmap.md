@@ -44,7 +44,7 @@ Owning task:
 `.trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine`.
 
 Current branch:
-`codex/markdown-safe-fix-policy` for the active Markdown engine
+`codex/markdown-engine-performance-evidence` for the active Markdown engine
 implementation branch.
 
 Current recommended goal:

@@ -52,6 +52,80 @@ slice should therefore prove one of these paths:
 Any accepted path must include benchmark rows for current Assura checks,
 selected Rust candidate behavior, and `markdownlint-cli2`.
 
+## Probe Timing Contract
+
+The branch `codex/markdown-engine-performance-evidence` extends
+`cargo xtask markdown-engine-probe` with opt-in command timing:
+
+```bash
+cargo xtask markdown-engine-probe --run-external --measure --iterations 5
+```
+
+The default probe remains dependency-light and does not require third-party
+tools. Timing is emitted only when `--measure` is provided. `assura-current`
+receives timing whenever measurement is enabled; external candidates receive
+timing only when they are available and `--run-external` actually runs them.
+Each timed candidate receives a `timing` object with sorted samples, median,
+p95, min, max, successful run count, failed run count, and errors. External
+candidates are still measured against isolated copies under
+`target/markdown-engine-probe/` so candidates that mutate files cannot write
+into source fixtures.
+
+For `assura-current`, the probe uses `target/debug/assura` when that binary is
+present and records `execution_mode: target-debug-binary`; it falls back to
+`cargo run` only when the binary has not been built. Local timing evidence
+should therefore build the binary first:
+
+```bash
+cargo build --bin assura --quiet
+PATH="$PWD/target/markdown-engine-tools/bin:$PATH" \
+  cargo xtask markdown-engine-probe --run-external --measure --iterations 5 \
+  > .trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine/research/markdown-engine-probe-2026-07-02-measured.json
+```
+
+Timing is wall-clock command time for the configured probe command. It is not
+yet a final release benchmark, and it does not replace the later performance
+floor work. It exists to stop engine adoption from relying on qualitative
+"fast" claims.
+
+## 2026-07-02 Measured Candidate Probe
+
+Local environment:
+
+- `rustc 1.94.1 (e408947bf 2026-03-25)`
+- `cargo 1.94.1 (29ea6fb6a 2026-03-24)`
+- `node v25.6.0`
+- cached candidate binaries under `target/markdown-engine-tools/bin`
+
+Command:
+
+```bash
+cargo build --bin assura --quiet
+PATH="$PWD/target/markdown-engine-tools/bin:$PATH" \
+  cargo xtask markdown-engine-probe --run-external --measure --iterations 5 \
+  > .trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine/research/markdown-engine-probe-2026-07-02-measured.json
+```
+
+Result summary:
+
+| Candidate | Status | Median ms | p95 ms | Interpretation |
+| --- | --- | ---: | ---: | --- |
+| `assura-current` | `ran_with_findings` using `target-debug-binary` | 8.804 | 10.241 | Baseline for the current Rust-native Markdown checks on the small invalid fixture. |
+| `rumdl 0.2.27` | `ran_with_findings` | 22.132 | 22.442 | Functional leader and much faster than Node `markdownlint-cli2`, but not no-slower than current Assura on this fixture. Do not adopt as the default supported path yet. |
+| `mdlint 0.3.18` | `ran_with_findings` | 8.466 | 9.543 | Competitive raw command timing, but prior probes showed unrequested fixture mutation risk. Needs stronger sandbox/fix-safety investigation before adoption. |
+| `mado 0.3.0` | `ran_with_findings` | 10.719 | 11.667 | Competitive raw command timing, but prior evidence showed narrower rule/fix surface than `rumdl`. |
+| `markdownlint-cli2 v0.23.0` | `ran_with_findings` | 396.341 | 413.412 | Node compatibility baseline is much slower than all Rust candidates on this fixture. |
+
+Decision impact: this slice proves the benchmark plumbing and confirms that
+`rumdl` cannot be declared the accepted default engine on the small fixture
+yet. It remains the best feature-fit candidate, but the next slices must add
+larger/frontmatter/link-heavy fixtures, fix-cost measurement, and candidate
+configuration before claiming a selected Rust path is no slower than current
+Assura checks.
+
+Raw output is checked in at
+`./markdown-engine-probe-2026-07-02-measured.json`.
+
 ## Executable Fixture Probe
 
 The branch `codex/markdown-engine-fixture-probe` adds
