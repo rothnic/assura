@@ -41,12 +41,12 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 Post-Beta Capabilities is active after release `v0.2.0`.
 
 Owning task:
-`.trellis/tasks/archive/2026-07/07-02-ls-lint-performance-reassessment`.
+`.trellis/tasks/archive/2026-07/07-02-post-beta-primary-use-case-verification`.
 
 Current branch:
-`codex/ls-lint-performance-reassessment` is closing the LS-Lint performance
-reassessment child with checked row-by-row evidence and phase-level
-attribution.
+`codex/ls-lint-performance-reassessment` has closed the LS-Lint performance
+reassessment child locally and is hardening the parent north-star verification
+scenario before PR integration.
 
 Current recommended goal:
 `docs/goals/assura-post-beta-support-release-hardening.md`.
@@ -72,7 +72,8 @@ safe fixes, and performance gates without relying on unsupported services or
 private integration logic. The parent goal owns the detailed verification
 story: a maintainer renames architecture docs and moves code, then proves the
 CLI, daemon, agent hooks, editor, content graph, Markdown fixes, and LS-Lint
-performance gate all agree before merge.
+performance gate all agree before merge. The detailed acceptance scenario lives
+in `docs/goals/assura-post-beta-capabilities-program.md#north-star-verification-scenario`.
 
 Direction lock, clarified on 2026-05-31: do not create or revive
 `assura-codex-feedback`, do not add one CLI entrypoint per agent, and do not add
@@ -88,8 +89,10 @@ floor is closed, the agent installer lifecycle is closed,
 `docs/goals/assura-vscode-supported-extension.md` is closed, and extension API
 clarification is closed for this beta increment. LS-Lint performance
 reassessment is closed locally after refreshing checked performance evidence.
-Continue to `docs/goals/assura-post-beta-support-release-hardening.md` after
-this branch is merged.
+The current branch is adding the final user-specific verification story that
+Support Hardening must prove. Continue to
+`docs/goals/assura-post-beta-support-release-hardening.md` after this branch is
+merged.
 
 ## Roadmap Rules
 
