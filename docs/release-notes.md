@@ -62,6 +62,12 @@ metadata, daemon visibility, one-shot fallback, and preview-only safe fixes. It
 is not a marketplace release, does not start a hosted service, and does not
 apply fixes implicitly.
 
+Extension/API boundaries are now documented as a supported beta policy surface.
+Current `extensions.*` entries are first-party config policies executed by
+`assura check`; they are not a public plugin API, remote plugin loader,
+shell-executed validator system, plugin marketplace, TypeScript plugin SDK, or
+semver-stable Rust library API.
+
 ## Installable Archives
 
 Release automation builds these archives:

@@ -290,6 +290,29 @@ Markdown heading anchors, and invalid line anchors as `repository_reference_*`
 rules. Ambiguous lower-confidence references remain available as graph context
 through `assura content references`.
 
+## First-Party Extension Policies
+
+`extensions.*` entries are first-party config policies executed by
+`assura check`; they are not a public plugin API. Use them when a deterministic
+cross-file policy does not fit ordinary `structure` notation.
+
+| Family | Status | Purpose |
+| --- | --- | --- |
+| `extensions.custom_constraints` | Experimental first-party | Specialized built-in constraints. Prefer `structure` captures and `needs`/`provides` for common relationships. |
+| `extensions.release_contracts` | Experimental first-party | Release artifact, checksum, workflow, docs, installer, and branch-reference synchronization. |
+| `extensions.support_matrices` | Experimental first-party | Explicit support classification for commands, Rust export families, docs tables, packages, and binaries. |
+| `extensions.manifest_semantics` | Experimental first-party | Cargo manifest metadata, publish policy, description, keyword, and binary checks. |
+| `extensions.test_relationships` | Experimental first-party | Source/test evidence, manual-test exceptions, and fixture-family ownership. |
+| `extensions.module_topologies` | Experimental first-party | Rust module-family ownership, roots, export classification, and internal visibility. |
+| `extensions.docs_lifecycles` | Experimental first-party | Documentation lifecycle, frontmatter status, historical exceptions, and deterministic claim evidence. |
+| `extensions.repository_references` | Experimental first-party | Locally provable repository-reference diagnostics. |
+| `extensions.relationships` | Internal generated first-party | Relationships normalized from `structure` captures, `exists:1`, `needs`, and `provides`. |
+
+Assura does not currently support remote plugin loading, shell-executed
+validation plugins, plugin marketplaces, TypeScript plugin APIs, or
+semver-stable Rust library APIs. See
+[Extension API Boundaries](/reference/extension-api-boundaries/).
+
 ## Relationships
 
 Captured paths can express relationships without leaving the project tree. A

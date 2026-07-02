@@ -871,6 +871,7 @@ fn run_target_state() -> Result<()> {
     let mut checks = Checks::default();
     check_audit_artifact(&mut checks);
     check_command_surface_support(&mut checks);
+    check_extension_api_boundaries(&mut checks);
     check_document_graph_support_claims(&mut checks);
     check_manifest_semantics(&mut checks);
     check_test_relationships(&mut checks);
@@ -2784,6 +2785,147 @@ fn check_release_surface_claims(checks: &mut Checks) {
             compatibility_text.contains(marker),
             format!("docs/compatibility-and-surface.md: missing public-surface marker {marker:?}"),
         );
+    }
+}
+
+fn check_extension_api_boundaries(checks: &mut Checks) {
+    let boundary_path = "docs/extension-api-boundaries.md";
+    let boundary_text = read(boundary_path);
+    checks.require(
+        !boundary_text.trim().is_empty(),
+        format!("{boundary_path}: missing canonical extension/API boundary doc"),
+    );
+
+    let support_text = read("docs/support-policy.md");
+    let compatibility_text = read("docs/compatibility-and-surface.md");
+    let api_text = read("website/src/content/docs/reference/api.md");
+    let config_text = read("website/src/content/docs/reference/configuration.md");
+    let release_readiness_text = read("website/src/content/docs/reference/release-readiness.md");
+    let website_boundary_text =
+        read("website/src/content/docs/reference/extension-api-boundaries.md");
+    let config_notation_text = read(".trellis/spec/assura/config-notation.md");
+    let release_surfaces_text = read("docs/data/release-surfaces.json");
+
+    for marker in [
+        "First-party config extension policies",
+        "Supported local CLI",
+        "Internal Rust APIs",
+        "Deferred Public Plugin API",
+        "does not currently provide a public third-party plugin API",
+        "remote plugin loading",
+        "shell-executed validator system",
+        "plugin marketplace",
+        "TypeScript plugin APIs",
+        "semver-stable Rust library API",
+    ] {
+        checks.require(
+            boundary_text.contains(marker),
+            format!("{boundary_path}: missing boundary marker {marker:?}"),
+        );
+    }
+
+    let extension_families = [
+        "extensions.custom_constraints",
+        "extensions.release_contracts",
+        "extensions.support_matrices",
+        "extensions.manifest_semantics",
+        "extensions.test_relationships",
+        "extensions.module_topologies",
+        "extensions.docs_lifecycles",
+        "extensions.repository_references",
+        "extensions.relationships",
+    ];
+    for family in extension_families {
+        checks.require(
+            boundary_text.contains(family),
+            format!("{boundary_path}: missing {family}"),
+        );
+        checks.require(
+            support_text.contains(family),
+            format!("docs/support-policy.md: missing support row for {family}"),
+        );
+        checks.require(
+            compatibility_text.contains(&format!("config:{family}")),
+            format!("docs/compatibility-and-surface.md: missing compatibility row for {family}"),
+        );
+        checks.require(
+            config_text.contains(family),
+            format!("website configuration reference: missing {family}"),
+        );
+    }
+
+    for (path, text) in [
+        ("docs/support-policy.md", &support_text),
+        ("docs/compatibility-and-surface.md", &compatibility_text),
+        ("website API reference", &api_text),
+        ("website configuration reference", &config_text),
+        ("website release readiness", &release_readiness_text),
+        ("website extension boundary", &website_boundary_text),
+        (
+            ".trellis/spec/assura/config-notation.md",
+            &config_notation_text,
+        ),
+    ] {
+        checks.require(
+            text.contains("Extension API Boundaries")
+                || text.contains("extension-api-boundaries")
+                || text.contains("extension/API boundary")
+                || text.contains("extension and plugin language"),
+            format!("{path}: missing link or marker for extension/API boundary"),
+        );
+    }
+
+    for marker in [
+        "Public plugin API or SDK",
+        "Roadmap only",
+        "remote plugin loading",
+        "shell-executed",
+        "plugin marketplaces",
+        "TypeScript plugin APIs",
+        "semver-stable Rust",
+    ] {
+        checks.require(
+            support_text.contains(marker)
+                || boundary_text.contains(marker)
+                || website_boundary_text.contains(marker),
+            format!("extension/API docs: missing unsupported plugin marker {marker:?}"),
+        );
+    }
+
+    checks.require(
+        release_surfaces_text.contains("\"extension-api-boundaries\"")
+            && release_surfaces_text
+                .contains("\"detail_path\": \"docs/extension-api-boundaries.md\""),
+        "docs/data/release-surfaces.json: missing extension API boundary release surface",
+    );
+
+    for path in public_claim_files() {
+        let text = read(&path);
+        for (line_index, line) in text.lines().enumerate() {
+            let lower = line.to_ascii_lowercase();
+            let mentions_plugin_api = lower.contains("public plugin api")
+                || lower.contains("third-party plugin api")
+                || lower.contains("remote plugin")
+                || lower.contains("shell-executed")
+                || lower.contains("plugin marketplace")
+                || lower.contains("typescript plugin api")
+                || lower.contains("semver-stable rust");
+            let is_bounded = lower.contains("unsupported")
+                || lower.contains("not support")
+                || lower.contains("does not currently support")
+                || lower.contains("not currently support")
+                || lower.contains("roadmap only")
+                || lower.contains("deferred")
+                || lower.contains("future goal")
+                || lower.contains("not a public");
+            if mentions_plugin_api && lower.contains("supported") && !is_bounded {
+                checks.add(format!(
+                    "{}:{}: plugin/API language may imply unsupported public extension support",
+                    path,
+                    line_index + 1
+                ));
+            }
+        }
     }
 }
 

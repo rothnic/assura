@@ -138,14 +138,20 @@ perform automatic repair, background writes, or remote mutation.
 
 ## Custom Constraints
 
-`extensions.custom_constraints` is experimental and first-party in the pre-1.0
-release line. Common source/test and package/doc relationships should use
-`structure` captures, `exists:1`, `needs`, and `provides`. Specialized custom
-constraints run through `assura check` and report normal diagnostics with
-`custom:<id>` rule names.
+`extensions.*` entries are first-party configuration policies in the pre-1.0
+release line. They run through `assura check` and report normal diagnostics.
+Common source/test and package/doc relationships should use `structure`
+captures, `exists:1`, `needs`, and `provides`; specialized custom constraints
+remain the exception.
 
 Remote plugin loading, marketplace behavior, shell-executed plugins, and
 third-party plugin APIs are not release surfaces.
+
+The canonical boundary is
+[Extension API Boundaries](/reference/extension-api-boundaries/). Release
+readiness must keep that page, the support policy, compatibility matrix, and
+release-surface manifest aligned before claiming a new extension or API
+surface.
 
 ## Pre-1.0 Policy
 

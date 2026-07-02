@@ -107,6 +107,13 @@
       "detail_path": "docs/goals/assura-vscode-supported-extension.md"
     },
     {
+      "id": "extension-api-boundaries",
+      "label": "Extension API boundaries",
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "docs/extension-api-boundaries.md"
+    },
+    {
       "id": "agent-daemon-nudges",
       "label": "Agent daemon nudges",
       "status": "experimental",

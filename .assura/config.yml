@@ -508,8 +508,24 @@ extensions:
           status: supported
         - surface: "config:markdown.lint_common"
           status: experimental
+        - surface: "config:extensions.custom_constraints"
+          status: experimental
+        - surface: "config:extensions.release_contracts"
+          status: experimental
+        - surface: "config:extensions.support_matrices"
+          status: experimental
+        - surface: "config:extensions.manifest_semantics"
+          status: experimental
+        - surface: "config:extensions.test_relationships"
+          status: experimental
+        - surface: "config:extensions.module_topologies"
+          status: experimental
+        - surface: "config:extensions.docs_lifecycles"
+          status: experimental
         - surface: "config:extensions.repository_references"
           status: experimental
+        - surface: "config:extensions.relationships"
+          status: internal
         - surface: "command:assura quality plan"
           status: supported
         - surface: "command:assura hooks"
