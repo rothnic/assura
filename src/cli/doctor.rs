@@ -447,11 +447,7 @@ fn has_draft_model_files(project_root: &Path) -> bool {
     };
     entries.filter_map(Result::ok).any(|entry| {
         let path = entry.path();
-        path.is_file()
-            || path
-                .is_dir()
-                .then(|| directory_has_file(&path))
-                .unwrap_or(false)
+        path.is_file() || (path.is_dir() && directory_has_file(&path))
     })
 }
 
