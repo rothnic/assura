@@ -1,0 +1,7 @@
+{"file":"tests/agent_surface_cli.rs","reason":"Primary CLI proof for nudge events and integration lifecycle behavior."}
+{"file":"tests/daemon_cli_tests.rs","reason":"Daemon command contracts used by generated wrappers must remain valid."}
+{"file":"tests/real_project_agentic_feedback_tests.rs","reason":"Shared check --format agent contract must remain stable for agent adapters."}
+{"file":"docs/support-policy.md","reason":"Support classification must match the new lifecycle surface."}
+{"file":"docs/compatibility-and-surface.md","reason":"Compatibility matrix must list lifecycle commands and evidence."}
+{"file":"website/src/content/docs/reference/agent-feedback.md","reason":"Public docs should describe lifecycle use and limitations."}
+{"file":"xtask/src/main.rs","reason":"Target-state checks should require support/docs/tests for the lifecycle commands."}

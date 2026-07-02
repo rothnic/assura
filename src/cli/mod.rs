@@ -4,6 +4,8 @@ mod agent;
 #[cfg(feature = "full-cli")]
 mod agent_args;
 #[cfg(feature = "full-cli")]
+mod agent_integration;
+#[cfg(feature = "full-cli")]
 mod agent_nudge;
 #[cfg(feature = "full-cli")]
 mod agent_query_args;
@@ -46,7 +48,10 @@ pub use agent::agent_command;
 #[cfg(feature = "full-cli")]
 pub use agent_args::AgentCommands;
 #[cfg(feature = "full-cli")]
-pub use agent_args::{AgentNudgeEvent, AgentNudgeTarget};
+pub use agent_args::{
+    AgentIntegrationCommands, AgentIntegrationLifecycleArgs, AgentIntegrationStatusArgs,
+    AgentIntegrationTarget, AgentNudgeEvent, AgentNudgeTarget,
+};
 #[cfg(feature = "full-cli")]
 pub use agent_query_args::AgentQueryArg;
 #[cfg(feature = "full-cli")]

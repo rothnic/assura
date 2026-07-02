@@ -41,11 +41,11 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 Post-Beta Capabilities is active after release `v0.2.0`.
 
 Owning task:
-`.trellis/tasks/07-02-performance-floor-fixture-gate`.
+`.trellis/tasks/archive/2026-07/07-02-agent-integration-lifecycle`.
 
 Current branch:
-`codex/performance-floor-fixture-gate` for closing the accepted fixture
-performance floor and handing off to the agent installer lifecycle child goal.
+`codex/agent-integration-lifecycle` contains the agent installer lifecycle
+closure and hands off to the VS Code support child goal.
 
 Current recommended goal:
 `docs/goals/assura-post-beta-capabilities-program.md`.
@@ -82,11 +82,10 @@ that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
 Execute `docs/goals/assura-post-beta-capabilities-program.md` goal by goal.
 True daemon mode is complete in PR #117. The Markdown engine and supported
-document graph children are closed for this beta increment, and the performance
-floor is closing in the current task. Continue with
-`docs/goals/assura-agent-integration-lifecycle.md` so Codex, OpenCode, Claude,
-and Pi integrations have install, update, remove, and doctor workflows over the
-shared nudge and daemon contracts.
+document graph children are closed for this beta increment, the performance
+floor is closed, and the agent installer lifecycle is closed. Continue with
+`docs/goals/assura-vscode-supported-extension.md` so the VS Code extension path
+is supported through the shared daemon and CLI contracts.
 
 ## Roadmap Rules
 

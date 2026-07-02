@@ -434,6 +434,18 @@ extensions:
           status: supported
         - surface: "command:assura agent nudge"
           status: experimental
+        - surface: "command:assura agent integration"
+          status: experimental
+        - surface: "command:assura agent integration install"
+          status: experimental
+        - surface: "command:assura agent integration update"
+          status: experimental
+        - surface: "command:assura agent integration remove"
+          status: experimental
+        - surface: "command:assura agent integration status"
+          status: experimental
+        - surface: "command:assura agent integration doctor"
+          status: experimental
         - surface: "command:assura agent session"
           status: supported
         - surface: "command:assura editor"

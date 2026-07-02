@@ -50,6 +50,12 @@ publishes and verifies a `.sha256` file next to every archive.
 | `assura agent expand` | Supported local agent graph expansion | Agent-surface CLI tests compare output with `assura content expand`. |
 | `assura agent safe-fixes` | Supported local agent safe-fix preview | Agent-surface CLI tests compare output with `assura content agent-query safe-fixes`. |
 | `assura agent nudge` | Experimental local agent nudge payload | Agent-surface CLI tests prove bounded event-aware JSON for session start, before/after tool events, daemon fallback, and performance-gate path hints without per-agent validation commands. |
+| `assura agent integration` | Experimental local agent integration lifecycle | Agent-surface CLI tests prove install, update, remove, status, and doctor workflows generate reviewable `.assura/integrations/<agent>/` bundles for Codex, OpenCode, Claude, and Pi without embedding validation logic. |
+| `assura agent integration install` | Experimental local agent integration lifecycle | Generates manifest, wrapper, and README files under `.assura/integrations/<agent>/`; `--dry-run` previews writes. |
+| `assura agent integration update` | Experimental local agent integration lifecycle | Regenerates an existing Assura-managed bundle over the same shared nudge/check/daemon commands. |
+| `assura agent integration remove` | Experimental local agent integration lifecycle | Removes only Assura-managed bundle files and leaves host-agent configuration to the user. |
+| `assura agent integration status` | Experimental local agent integration lifecycle | Reports expected files, managed status, and host wiring guidance. |
+| `assura agent integration doctor` | Experimental local agent integration lifecycle | Checks config presence, managed bundle state, and shared nudge/check/daemon command delegation. |
 | `assura agent session` | Supported local agent session alias | Agent-surface CLI tests prove the alias emits the same JSON-line session envelope as `assura content session`. |
 | `assura editor` | Supported local editor project-intelligence surface | Editor-surface CLI tests prove help output and local session availability. |
 | `assura editor session` | Supported local editor session | Editor-surface CLI tests prove LSP-shaped diagnostics, context, safe-fix code-action previews, invalid-method errors, and conservative reload metadata. |

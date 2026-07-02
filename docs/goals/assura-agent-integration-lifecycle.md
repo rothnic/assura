@@ -2,7 +2,7 @@
 id: goal-assura-agent-integration-lifecycle
 type: goal
 title: Assura agent integration lifecycle
-status: planned
+status: completed
 created: 2026-07-01
 owners:
   - assura-maintainers
@@ -76,3 +76,9 @@ git diff --check
 Block if any integration embeds independent validation logic, emits unbounded
 context, hides install-time side effects, lacks uninstall/doctor behavior, or
 revives deprecated per-agent feedback commands or formats.
+
+## Progress Log
+
+| Date | Update | Evidence |
+| --- | --- | --- |
+| 2026-07-02 | Completed the agent integration lifecycle child for this beta increment. `assura agent integration install|update|remove|status|doctor` now generates reviewable local bundles under `.assura/integrations/<agent>/` for Codex, OpenCode, Claude, and Pi, with a stable manifest, wrapper script, and README. Generated wrappers delegate to `assura agent nudge`, `assura check --format agent`, and `assura daemon` commands, and nudge placement now covers session-start, before-tool, after-tool, file-read, and recovery events. | `.trellis/tasks/07-02-agent-integration-lifecycle/prd.md`; `src/cli/agent_integration.rs`; `src/cli/agent_integration_bundle.rs`; `tests/agent_surface_cli.rs`; `.assura/command-surface.yml`; `docs/support-policy.md`; `docs/compatibility-and-surface.md`; `website/src/content/docs/reference/agent-feedback.md`; `cargo test --test agent_surface_cli --quiet`; `cargo xtask target-state`. |

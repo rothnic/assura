@@ -101,8 +101,102 @@ pub enum AgentCommands {
         format: OutputFormat,
     },
 
+    #[command(about = "Install or manage local host-agent integration bundles")]
+    Integration {
+        #[command(subcommand)]
+        command: AgentIntegrationCommands,
+    },
+
     #[command(about = "Run a persistent JSON-line project-intelligence query session")]
     Session { path: Option<PathBuf> },
+}
+
+/// Lifecycle commands for generated host-agent integration bundles.
+#[derive(Subcommand, Debug)]
+pub enum AgentIntegrationCommands {
+    /// Generate reviewable wrapper files for one host agent.
+    Install(AgentIntegrationLifecycleArgs),
+    /// Regenerate an existing wrapper bundle.
+    Update(AgentIntegrationLifecycleArgs),
+    /// Remove an Assura-managed wrapper bundle.
+    Remove(AgentIntegrationLifecycleArgs),
+    /// Report whether an Assura-managed wrapper bundle is present.
+    Status(AgentIntegrationStatusArgs),
+    /// Diagnose config, daemon, and wrapper-bundle readiness.
+    Doctor(AgentIntegrationStatusArgs),
+}
+
+/// Shared install/update/remove arguments.
+#[derive(clap::Args, Debug)]
+pub struct AgentIntegrationLifecycleArgs {
+    /// Host agent integration to manage.
+    #[arg(value_enum)]
+    pub agent: AgentIntegrationTarget,
+
+    /// Project root directory.
+    pub path: Option<PathBuf>,
+
+    /// Preview file actions without writing.
+    #[arg(long)]
+    pub dry_run: bool,
+
+    /// Overwrite managed files even when they already exist.
+    #[arg(long)]
+    pub force: bool,
+
+    /// Output format.
+    #[arg(short, long, value_enum, default_value = "json")]
+    pub format: OutputFormat,
+}
+
+/// Shared status/doctor arguments.
+#[derive(clap::Args, Debug)]
+pub struct AgentIntegrationStatusArgs {
+    /// Host agent integration to inspect.
+    #[arg(value_enum)]
+    pub agent: AgentIntegrationTarget,
+
+    /// Project root directory.
+    pub path: Option<PathBuf>,
+
+    /// Output format.
+    #[arg(short, long, value_enum, default_value = "json")]
+    pub format: OutputFormat,
+}
+
+/// Supported host-agent integration targets.
+#[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]
+pub enum AgentIntegrationTarget {
+    /// Codex hook or command-wrapper bundle.
+    Codex,
+    /// OpenCode plugin or hook-wrapper bundle.
+    Opencode,
+    /// Claude Code hook-wrapper bundle.
+    Claude,
+    /// Pi agent extension or hook-wrapper bundle.
+    Pi,
+}
+
+impl AgentIntegrationTarget {
+    /// Stable lowercase target label.
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Codex => "codex",
+            Self::Opencode => "opencode",
+            Self::Claude => "claude",
+            Self::Pi => "pi",
+        }
+    }
+
+    /// Matching nudge target.
+    pub fn nudge_target(self) -> AgentNudgeTarget {
+        match self {
+            Self::Codex => AgentNudgeTarget::Codex,
+            Self::Opencode => AgentNudgeTarget::Opencode,
+            Self::Claude => AgentNudgeTarget::Claude,
+            Self::Pi => AgentNudgeTarget::Pi,
+        }
+    }
 }
 
 /// Local agent event that can receive a bounded Assura nudge.
@@ -114,6 +208,10 @@ pub enum AgentNudgeEvent {
     BeforeTool,
     /// After a tool call changed or inspected relevant files.
     AfterTool,
+    /// Before or after a read-focused file event.
+    FileRead,
+    /// Recovery or resume event after tool failure, stale state, or context loss.
+    Recovery,
 }
 
 /// Agent host label for documentation and hook routing.
