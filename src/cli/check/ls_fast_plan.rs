@@ -53,13 +53,20 @@ pub(super) fn compile_lslint_fast_scopes(config: &Config) -> Option<Vec<FastScop
     }
 
     let mut scopes = Vec::new();
+    let mut naming_cache = FastNamingCache::default();
     for (path, node) in &config.structure {
         if !is_fast_node(node) {
             return None;
         }
 
         let base = normalize_config_dir(path);
-        compile_scope_node(base, node, &EffectiveRules::default(), &mut scopes)?;
+        compile_scope_node(
+            base,
+            node,
+            &EffectiveRules::default(),
+            &mut scopes,
+            &mut naming_cache,
+        )?;
     }
 
     scopes.sort_by_key(|scope| Reverse(scope.depth()));
@@ -215,12 +222,18 @@ impl FastRules {
         )
     }
 
+    #[cfg(test)]
     pub(super) fn new(effective: EffectiveRules) -> Self {
+        let mut naming_cache = FastNamingCache::default();
+        Self::new_with_cache(effective, &mut naming_cache)
+    }
+
+    fn new_with_cache(effective: EffectiveRules, naming_cache: &mut FastNamingCache) -> Self {
         let file_naming = effective.files.as_ref().and_then(|files| {
             let default = files
                 .naming
                 .as_ref()
-                .map(|naming| compile_fast_naming(naming));
+                .map(|naming| naming_cache.compile(naming));
             let mut suffix_patterns = Vec::new();
             let glob_patterns = files
                 .naming_patterns
@@ -229,7 +242,7 @@ impl FastRules {
                     patterns
                         .iter()
                         .filter_map(|(pattern, naming)| {
-                            let naming = compile_fast_naming(naming);
+                            let naming = naming_cache.compile(naming);
                             if simple_suffix_pattern(pattern).is_some()
                                 && is_lslint_extension_pattern(pattern)
                             {
@@ -250,12 +263,12 @@ impl FastRules {
             .directories
             .as_ref()
             .and_then(|directories| directories.naming.as_ref())
-            .map(|naming| compile_fast_naming(naming));
+            .map(|naming| naming_cache.compile(naming));
         let self_directory_naming = effective
             .self_directory
             .as_ref()
             .and_then(|directory| directory.naming.as_ref())
-            .map(|naming| compile_fast_naming(naming));
+            .map(|naming| naming_cache.compile(naming));
 
         Self {
             has_direct_file_policy: has_direct_file_policy(&effective),
@@ -268,11 +281,30 @@ impl FastRules {
     }
 }
 
+#[derive(Default)]
+struct FastNamingCache {
+    by_convention: HashMap<String, FastNaming>,
+}
+
+impl FastNamingCache {
+    fn compile(&mut self, convention: &str) -> FastNaming {
+        if let Some(naming) = self.by_convention.get(convention) {
+            return naming.clone();
+        }
+
+        let naming = compile_fast_naming(convention);
+        self.by_convention
+            .insert(convention.to_string(), naming.clone());
+        naming
+    }
+}
+
 fn compile_scope_node(
     node_rel: PathBuf,
     node: &DirectoryNode,
     inherited: &EffectiveRules,
     scopes: &mut Vec<FastScope>,
+    naming_cache: &mut FastNamingCache,
 ) -> Option<()> {
     let effective = if node.inherit {
         EffectiveRules {
@@ -298,14 +330,14 @@ fn compile_scope_node(
 
     scopes.push(FastScope::new(
         node_rel.clone(),
-        FastRules::new(effective.clone()),
-        FastRules::new(strip_direct_content_policy(effective.clone())),
+        FastRules::new_with_cache(effective.clone(), naming_cache),
+        FastRules::new_with_cache(strip_direct_content_policy(effective.clone()), naming_cache),
     ));
 
     if let Some(children) = &node.children {
         for (child_name, child) in children {
             let child_rel = join_config_child(&node_rel, child_name);
-            compile_scope_node(child_rel, child, &effective, scopes)?;
+            compile_scope_node(child_rel, child, &effective, scopes, naming_cache)?;
         }
     }
 
