@@ -140,10 +140,13 @@ safe-fix preview/apply, suppression/severity mapping, and performance evidence.
 
 ```bash
 cargo fmt --check
+cargo check -p xtask --quiet
+cargo test --test markdown_engine_candidate_fixture_tests --quiet
 cargo test --test markdown_link_reference_tests --quiet
 cargo test --test markdown_suppression_severity_tests --quiet
 cargo test --test markdown_required_section_fix_tests --quiet
 cargo test --test markdown_lint_fix_tests --quiet
+PATH="$PWD/target/markdown-engine-tools/bin:$PATH" cargo xtask markdown-engine-probe --run-external
 cargo run --quiet -- check --format json .
 cargo xtask docs
 cargo xtask evidence
@@ -176,3 +179,8 @@ structure validation.
   prove the parent maintainer workflow: staged findings, rule-owned severity
   and fix policy, deterministic safe fixes, shared CLI/daemon/editor/agent
   diagnostics, and benchmark attribution.
+- 2026-07-02: Ran isolated external candidate probes for `rumdl`, `mdlint`,
+  `mado`, and `markdownlint-cli2`. `rumdl` remains the leading candidate
+  because it produced JSON diagnostics with fix metadata across the target
+  markdownlint-style fixture rules; `mdlint` requires extra caution because it
+  rewrote the isolated fixture in check mode.

@@ -1093,17 +1093,17 @@ fn markdown_engine_candidates() -> &'static [MarkdownEngineCandidate] {
         MarkdownEngineCandidate {
             name: "rumdl",
             binary: Some("rumdl"),
-            probe_args: &["check", "--output-format", "json"],
+            probe_args: &["check", "--output-format", "json", "--no-cache"],
         },
         MarkdownEngineCandidate {
             name: "mdlint",
             binary: Some("mdlint"),
-            probe_args: &["check", "--format", "json"],
+            probe_args: &["check", "--output-format", "json"],
         },
         MarkdownEngineCandidate {
             name: "mado",
             binary: Some("mado"),
-            probe_args: &[],
+            probe_args: &["check", "--output-format", "markdownlint"],
         },
         MarkdownEngineCandidate {
             name: "markdownlint-cli2",
@@ -1153,22 +1153,48 @@ fn probe_markdown_candidate(
     }
 
     let mut command = Command::new(binary);
+    let (probe_fixture_root, probe_markdown_files) =
+        match prepare_external_probe_fixture(root, fixture_root, candidate.name, markdown_files) {
+            Ok(value) => value,
+            Err(error) => {
+                return serde_json::json!({
+                    "name": candidate.name,
+                    "binary": binary,
+                    "status": "probe_error",
+                    "available": true,
+                    "version": version,
+                    "error": error,
+                });
+            }
+        };
     command.current_dir(root).args(candidate.probe_args);
-    for file in markdown_files {
+    for file in &probe_markdown_files {
         command.arg(file);
     }
     let output = command.output();
     match output {
-        Ok(output) => serde_json::json!({
-            "name": candidate.name,
-            "binary": binary,
-            "status": if output.status.success() { "ran" } else { "probe_failed" },
-            "available": true,
-            "version": version,
-            "exit_code": output.status.code(),
-            "stdout_bytes": output.stdout.len(),
-            "stderr": String::from_utf8_lossy(&output.stderr).trim(),
-        }),
+        Ok(output) => {
+            let exit_code = output.status.code();
+            let status = match exit_code {
+                Some(0) => "ran",
+                Some(1) => "ran_with_findings",
+                _ => "probe_failed",
+            };
+            serde_json::json!({
+                "name": candidate.name,
+                "binary": binary,
+                "status": status,
+                "available": true,
+                "version": version,
+                "exit_code": exit_code,
+                "probe_fixture_root": probe_fixture_root,
+                "probe_markdown_files": probe_markdown_files,
+                "stdout_bytes": output.stdout.len(),
+                "stderr_bytes": output.stderr.len(),
+                "stdout_snippet": truncate_utf8(&output.stdout, 6000),
+                "stderr_snippet": truncate_utf8(&output.stderr, 6000),
+            })
+        }
         Err(error) => serde_json::json!({
             "name": candidate.name,
             "binary": binary,
@@ -1178,6 +1204,59 @@ fn probe_markdown_candidate(
             "error": error.to_string(),
         }),
     }
+}
+
+fn prepare_external_probe_fixture(
+    root: &Path,
+    fixture_root: &Path,
+    candidate_name: &str,
+    markdown_files: &[String],
+) -> std::result::Result<(String, Vec<String>), String> {
+    let source_invalid_root = fixture_root.join("invalid");
+    let probe_invalid_root = root
+        .join("target/markdown-engine-probe")
+        .join(candidate_name)
+        .join("invalid");
+    match fs::remove_dir_all(&probe_invalid_root) {
+        Ok(()) => {}
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+        Err(error) => return Err(format!("remove probe fixture: {error}")),
+    }
+    copy_dir_recursive(&source_invalid_root, &probe_invalid_root)
+        .map_err(|error| format!("copy probe fixture: {error}"))?;
+
+    let source_prefix = rel_from_root(root, &source_invalid_root);
+    let probe_prefix = rel_from_root(root, &probe_invalid_root);
+    let probe_markdown_files = markdown_files
+        .iter()
+        .map(|file| file.replacen(&source_prefix, &probe_prefix, 1))
+        .collect::<Vec<_>>();
+    Ok((probe_prefix, probe_markdown_files))
+}
+
+fn copy_dir_recursive(source: &Path, destination: &Path) -> std::io::Result<()> {
+    fs::create_dir_all(destination)?;
+    for entry in fs::read_dir(source)? {
+        let entry = entry?;
+        let source_path = entry.path();
+        let destination_path = destination.join(entry.file_name());
+        let metadata = entry.metadata()?;
+        if metadata.is_dir() {
+            copy_dir_recursive(&source_path, &destination_path)?;
+        } else if metadata.is_file() {
+            fs::copy(&source_path, &destination_path)?;
+        }
+    }
+    Ok(())
+}
+
+fn truncate_utf8(bytes: &[u8], max_chars: usize) -> String {
+    let text = String::from_utf8_lossy(bytes);
+    let mut truncated = text.chars().take(max_chars).collect::<String>();
+    if text.chars().count() > max_chars {
+        truncated.push_str("...");
+    }
+    truncated.trim().to_string()
 }
 
 fn probe_current_assura(root: &Path, fixture_root: &Path) -> Value {

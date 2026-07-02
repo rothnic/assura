@@ -71,6 +71,59 @@ The fixture matrix locks these expectations before engine adoption:
 - safe-fix preview covers bounded trailing-space and required-section fixes
   without writing files.
 
+## 2026-07-02 Isolated Candidate Probe
+
+The branch `codex/markdown-engine-candidate-runs` corrected the probe command
+arguments and runs external tools against isolated copies under
+`target/markdown-engine-probe/<candidate>/invalid`. This isolation is required:
+`mdlint check --output-format json` printed `Fixed:` messages and rewrote the
+temporary fixture even though the probe did not pass `--fix`.
+
+Local tool versions:
+
+| Tool | Version evidence |
+| --- | --- |
+| `rumdl` | `rumdl 0.2.27`; crates.io metadata reports MIT and `rust-version: 1.94.0`. |
+| `mdlint` | `mdlint 0.3.18`; crates.io package `markdownlint-rs` is Unlicense. |
+| `mado` | `mado 0.3.0`; macOS x86_64 GitHub release asset. |
+| `markdownlint-cli2` | `markdownlint-cli2 v0.23.0 (markdownlint v0.41.0)`. |
+
+Probe command:
+
+```bash
+PATH="$PWD/target/markdown-engine-tools/bin:$PATH" \
+  cargo xtask markdown-engine-probe --run-external \
+  | tee target/markdown-engine-probe-2026-07-02-isolated.json
+```
+
+Result summary:
+
+| Candidate | Status | Fixture findings observed | Integration implication |
+| --- | --- | --- | --- |
+| `assura-current` | `ran` | Stable Assura rules for structure, suppressions, required sections, headings, links, and trailing spaces. | Remains the contract baseline and owns repository semantics. |
+| `rumdl` | `ran_with_findings` | JSON diagnostics for `MD001`, `MD009`, `MD012`, `MD018`, `MD024`, `MD025`, `MD051`, and `MD057`, with fix metadata for several rules. | Best fit for a Rust markdownlint-compatible lint/fix adapter, but direct embedding still requires an MSRV decision or subprocess boundary. |
+| `mdlint` | `ran_with_findings` | JSON diagnostics for `MD001`, `MD003`, `MD009`, `MD012`, `MD018`, `MD022`, `MD024`, `MD041`, and `MD051`; also wrote fixes to the isolated fixture. | Needs strict sandboxing or deeper investigation before any adapter; unrequested writes are a blocker for direct in-place probe use. |
+| `mado` | `ran_with_findings` | Markdownlint-style text for `MD001`, `MD009`, `MD012`, `MD018`, `MD024`, and `MD041`. | Useful comparison point, but narrower than `rumdl` and no JSON/fix surface was observed in this probe. |
+| `markdownlint-cli2` | `ran_with_findings` | Node baseline reported `MD001`, `MD009`, `MD012`, `MD018`, `MD024`, and `MD025`. | Remains compatibility baseline only; not acceptable as Assura's supported runtime dependency. |
+
+Current decision: continue evaluating `rumdl` first. It produced the richest
+machine-readable Rust output, surfaces fix metadata without mutating files in
+check mode, and overlaps the target markdownlint-compatible fixture rules. The
+next implementation slice should measure `rumdl` lint/fix cost and decide
+between a subprocess adapter and an explicit MSRV increase for direct library
+integration.
+
+Raw default checks against the `valid` fixture were intentionally not recorded
+as passing compatibility evidence. `rumdl`, `mdlint`, `mado`, and
+`markdownlint-cli2` all reported findings against the current Assura-valid
+fixture. The repeated causes were frontmatter being interpreted as heading
+content, single-H1/title expectations that conflict with this fixture shape,
+default 80-column line-length behavior, and link/reference semantics that
+Assura handles separately. `mdlint` also rewrote the valid fixture when run
+directly. This confirms the integration must provide an explicit candidate
+configuration/mapping layer before any candidate can be called compatible with
+Assura's valid fixture set.
+
 ## Source Links
 
 - `rumdl`: https://github.com/rvben/rumdl

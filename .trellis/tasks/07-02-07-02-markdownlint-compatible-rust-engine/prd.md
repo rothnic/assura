@@ -114,10 +114,13 @@ verification package.
 
 ```bash
 cargo fmt --check
+cargo check -p xtask --quiet
+cargo test --test markdown_engine_candidate_fixture_tests --quiet
 cargo test --test markdown_link_reference_tests --quiet
 cargo test --test markdown_suppression_severity_tests --quiet
 cargo test --test markdown_required_section_fix_tests --quiet
 cargo test --test markdown_lint_fix_tests --quiet
+PATH="$PWD/target/markdown-engine-tools/bin:$PATH" cargo xtask markdown-engine-probe --run-external
 cargo run --quiet -- check --format json .
 cargo xtask docs
 cargo xtask evidence
