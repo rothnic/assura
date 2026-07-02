@@ -1,0 +1,7 @@
+{"file":"docs/goals/assura-agent-integration-lifecycle.md","reason":"Child goal objective, scope, validation commands, and reviewer blocking criteria."}
+{"file":".trellis/spec/assura/codex-agent-feedback.md","reason":"Direction lock against per-agent feedback CLIs and per-agent format values."}
+{"file":"src/cli/agent_args.rs","reason":"Agent command and target/event argument surface."}
+{"file":"src/cli/agent.rs","reason":"Agent command dispatch and content-query delegation boundary."}
+{"file":"src/cli/agent_nudge.rs","reason":"Shared event-aware nudge contract reused by generated adapters."}
+{"file":"src/cli/daemon.rs","reason":"Shared daemon command family generated adapters must call instead of private daemon behavior."}
+{"file":".assura/command-surface.yml","reason":"Checked public command contract that must include lifecycle commands."}

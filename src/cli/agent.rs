@@ -1,5 +1,6 @@
 //! Local agent-facing project-intelligence command dispatch.
 
+use super::agent_integration::agent_integration_command;
 use super::agent_nudge::{agent_nudge_command, AgentNudgeOptions};
 use super::{AgentCommands, ContentCommands, ExitCode};
 use std::path::PathBuf;
@@ -32,6 +33,7 @@ pub async fn agent_command(command: AgentCommands, config: Option<PathBuf>) -> E
             )
             .await
         }
+        AgentCommands::Integration { command } => agent_integration_command(command).await,
         other => {
             crate::cli::content_query::content_command(agent_to_content_command(other), config)
                 .await
@@ -118,6 +120,9 @@ fn agent_to_content_command(command: AgentCommands) -> ContentCommands {
         AgentCommands::Session { path } => ContentCommands::Session { path },
         AgentCommands::Nudge { .. } => {
             unreachable!("agent nudge is handled before content routing")
+        }
+        AgentCommands::Integration { .. } => {
+            unreachable!("agent integration is handled before content routing")
         }
     }
 }

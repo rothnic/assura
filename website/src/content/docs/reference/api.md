@@ -69,6 +69,8 @@ the lower-level content-query commands.
 | `assura agent expand` | Expand graph context around one modeled object |
 | `assura agent missing-relations` | Report unresolved modeled relations |
 | `assura agent safe-fixes` | Preview safe fixes through the shared agent envelope |
+| `assura agent nudge` | Emit bounded event-aware nudge JSON for local host wrappers |
+| `assura agent integration install|update|remove|status|doctor` | Manage reviewable local Codex, OpenCode, Claude, and Pi integration bundles |
 | `assura agent session` | Run a persistent JSON-line local query session |
 
 Examples:
@@ -78,6 +80,8 @@ assura agent context .
 assura agent diagnostics tests/fixtures/content_runtime/missing_reference
 assura agent context-pack . --collection assura_goals --id goal-assura-project-intelligence-usability-program --text "Project Intelligence Usability" --limit 5
 assura agent safe-fixes tests/fixtures/project_intelligence_real_repo/beacon_crm/invalid
+assura agent integration install codex .
+assura agent integration doctor codex .
 ```
 
 MCP is not required for local agent usage. If an MCP adapter is added later, it

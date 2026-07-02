@@ -30,6 +30,7 @@ the same CLI options as humans and hooks; there is no separate agent mode.
 | Agent feedback package | Wrapper code that cannot call the Rust CLI directly | Report parsing and feedback rendering | Library return value or JSON | The wrapper |
 | Codex prompt hook | Optional Codex `UserPromptSubmit` command | `assura check --format agent --agent codex` | Codex `hookSpecificOutput.additionalContext` | Hook configuration |
 | Event-aware nudge | Local agent hook or wrapper | `assura agent nudge --event ... --agent <agent>` | Bounded `assura.agent-nudge.v1` JSON | The wrapper |
+| Agent integration lifecycle | Maintainer or setup script | `assura agent integration ...` | Reviewable `.assura/integrations/<agent>/` bundle | The maintainer |
 | Project-intelligence agent CLI | Local coding agent with shell access | `assura agent ...` | JSON diagnostics, context packs, graph/search, relation checks, and safe-fix previews | The caller |
 | Project-intelligence editor session | Local editor wrapper | `assura editor session` | LSP-shaped JSON-line diagnostics, context, and code-action previews | The wrapper |
 | Future tool/editor hook | Future agent integration | Scoped check plus feedback rendering | Tool result, next agent message, or status line | Hook configuration |
@@ -102,6 +103,8 @@ needs a concise decision about whether Assura context should be injected:
 assura agent nudge --event session-start --agent codex .
 assura agent nudge --event before-tool --agent opencode --changed docs/guide.md .
 assura agent nudge --event after-tool --agent claude --changed docs/guide.md .
+assura agent nudge --event file-read --agent codex --changed docs/guide.md .
+assura agent nudge --event recovery --agent opencode .
 assura agent nudge --event after-tool --agent pi --changed src/cli/check/rules.rs .
 ```
 
@@ -116,6 +119,8 @@ while `opencode`, `claude`, and `pi` should fetch generic
 | `session-start` | Compact daemon health and project readiness. | Inject only when `summary.should_inject` is true. |
 | `before-tool` | Path-aware edit, move, delete, or targeted read operations likely to influence edits. | Pass only paths relevant to the pending tool call. |
 | `after-tool` | Changed files produced new findings or affected references. | Keep `--max-issues` small and defer full reports to explicit commands. |
+| `file-read` | High-value reads that should account for affected docs, headings, references, or content records. | Pass the read path through `--changed`; inject only when Assura finds actionable context. |
+| `recovery` | Resume, stale daemon state, failed tool call, or context-repair moments. | Prefer compact daemon and fallback commands over broad reports. |
 
 Daemon-aware nudges include exact follow-up commands such as
 `assura daemon status --format json .`, `assura daemon doctor --format json .`,
@@ -130,6 +135,8 @@ those commands for detail instead of injecting daemon state into every event.
 | Before a push | Git pre-push hook | Catch drift before PR/CI feedback. |
 | Before Codex processes a user prompt | Optional Codex `UserPromptSubmit` hook | Inject bounded Assura context into Codex when the user has opted in. |
 | Before or after path-aware agent tool calls | `assura agent nudge --event before-tool|after-tool --changed <path>` | Give the agent immediate, bounded guidance only when changed paths matter. |
+| Before high-value file reads | `assura agent nudge --event file-read --changed <path>` | Surface affected-reference or content context before the agent trusts a file in isolation. |
+| During recovery or resume | `assura agent nudge --event recovery` | Re-anchor the agent on daemon health and fallback commands without flooding context. |
 | Before a user-facing agent response | Reuse the latest report or run a final scoped check | Avoid telling the user work is done while structure drift remains. |
 | After config or checkout changes | Full project check | Rebuild assumptions after policy or tree shape changes. |
 
@@ -224,6 +231,11 @@ step, while still giving the agent fresh feedback after edits.
 
 | Integration | Supported now | Expected delivery |
 | --- | --- | --- |
+| `assura agent integration install <agent>` | Experimental | Generates a reviewable `.assura/integrations/<agent>/` manifest, wrapper, and README for Codex, OpenCode, Claude, or Pi. |
+| `assura agent integration update <agent>` | Experimental | Regenerates the same managed files when Assura changes the shared wrapper contract. |
+| `assura agent integration remove <agent>` | Experimental | Removes only Assura-managed bundle files; host-agent config remains a manual opt-in step. |
+| `assura agent integration status <agent>` | Experimental | Reports expected files, managed status, and host wiring guidance. |
+| `assura agent integration doctor <agent>` | Experimental | Checks project config, managed bundle state, and delegation to nudge/check/daemon commands. |
 | Codex package library | Lower-level only | Wrapper code can use library helpers when it already has JSON. |
 | Codex `UserPromptSubmit` hook | Yes | A hook runs `assura check --format agent --agent codex` before Codex processes a prompt. |
 | Codex event nudges | Experimental | A hook or wrapper calls `assura agent nudge --agent codex` around relevant session and tool events. |

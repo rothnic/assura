@@ -22,6 +22,16 @@ pub(super) fn event_policy(event: AgentNudgeEvent, has_changed_paths: bool) -> E
             inject_when: "changed files create Assura findings or affected-reference context",
             changed_paths_required: !has_changed_paths,
         },
+        AgentNudgeEvent::FileRead => EventPolicy {
+            timing: "file_read",
+            inject_when: "the read path has structure, content, or reference context",
+            changed_paths_required: !has_changed_paths,
+        },
+        AgentNudgeEvent::Recovery => EventPolicy {
+            timing: "recovery",
+            inject_when: "daemon state is stale, unavailable, or recent tool context needs repair",
+            changed_paths_required: false,
+        },
     }
 }
 
@@ -68,6 +78,8 @@ pub(super) fn event_name(event: AgentNudgeEvent) -> &'static str {
         AgentNudgeEvent::SessionStart => "session_start",
         AgentNudgeEvent::BeforeTool => "before_tool",
         AgentNudgeEvent::AfterTool => "after_tool",
+        AgentNudgeEvent::FileRead => "file_read",
+        AgentNudgeEvent::Recovery => "recovery",
     }
 }
 

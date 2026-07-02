@@ -126,6 +126,12 @@
           "summary": "Fail accepted LS-Lint-equivalent fixture rows when Assura is slower.",
           "detail_path": "docs/goals/assura-performance-floor-and-fixture-gate.md",
           "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-performance-floor-and-fixture-gate.md"
+        },
+        {
+          "label": "Agent Installers",
+          "summary": "Install, update, remove, status, and doctor Codex, OpenCode, Claude, and Pi integration bundles.",
+          "detail_path": "docs/goals/assura-agent-integration-lifecycle.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-agent-integration-lifecycle.md"
         }
       ]
     },
@@ -145,12 +151,6 @@
       "status": "next",
       "title": "Next",
       "items": [
-        {
-          "label": "Agent Installers",
-          "summary": "Install, update, remove, and doctor Codex, OpenCode, Claude, and Pi hooks.",
-          "detail_path": "docs/goals/assura-agent-integration-lifecycle.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-agent-integration-lifecycle.md"
-        },
         {
           "label": "VS Code Support",
           "summary": "Promote the VS Code integration through shared daemon and CLI contracts.",
