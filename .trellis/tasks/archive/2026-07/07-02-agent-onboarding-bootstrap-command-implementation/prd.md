@@ -47,18 +47,38 @@ next.
 
 ## Acceptance Criteria
 
-- [ ] A brand-new temp repo can run the onboarding command and receive a broad
+- [x] A brand-new temp repo can run the onboarding command and receive a broad
       baseline, generated packet, and passing verification.
-- [ ] An existing repo can run the onboarding command without overwriting
+- [x] An existing repo can run the onboarding command without overwriting
       existing user-authored files.
-- [ ] `agent-next.md` includes all specialization questions from the parent
+- [x] Existing `.assura/config.yml` files receive missing broad defaults
+      without losing user-authored keys.
+- [x] `agent-next.md` includes all specialization questions from the parent
       goal and tells agents not to invent conventions.
-- [ ] `doctor.json` reports checked versus unchecked or inactive capabilities
+- [x] `doctor.json` reports checked versus unchecked or inactive capabilities
       clearly enough for a coding agent.
-- [ ] The final text or JSON output includes installed, detected, verified,
+- [x] The final text or JSON output includes installed, detected, verified,
       inactive, and next-action sections.
-- [ ] Command-surface tests prove unsupported future command claims are not
+- [x] Command-surface tests prove unsupported future command claims are not
       presented as current support.
+
+## Completion Evidence
+
+- Implemented in commit `b4a3057`.
+- Independent review by reviewer `Ohm` found two gaps: existing config merge
+  and `--config` handling. Both were fixed before commit.
+- Local validation passed:
+  `cargo fmt --check`,
+  `cargo test --test project_intelligence_onboarding --quiet`,
+  `cargo test --test cli_command_surface_tests --quiet`,
+  `cargo test --test agent_surface_cli --quiet`,
+  `cargo run --quiet -- check --format json .`,
+  `cargo xtask target-state`,
+  `cargo xtask docs`,
+  `cargo xtask evidence`,
+  `git diff --check`, and
+  `cargo check --workspace --all-targets --all-features --quiet`.
+- PR #139 is green and GitHub reported merge state `CLEAN`.
 
 ## Definition Of Done
 
