@@ -1,14 +1,15 @@
 ---
-title: Assura v0.2.0 Release Notes
+title: Assura v0.3.0 Release Notes
 status: active
 ---
 
-# Assura v0.2.0 Release Notes
+# Assura v0.3.0 Release Notes
 
 These notes describe the current pre-1.0 public command surface for the
-`v0.2.0` release-candidate build. They are not a claim that the already
-published May 24, 2026 `v0.1.0` archives contain later Project Intelligence
-or beta roadmap work. Assura publishes installable archives from
+`v0.3.0` beta-increment release-candidate build. They are not a claim that the
+already published July 1, 2026 `v0.2.0` archives contain the later daemon,
+agent-integration lifecycle, VS Code support, extension-boundary, and
+support-hardening work. Assura publishes installable archives from
 [`.github/workflows/release.yml`](../.github/workflows/release.yml) when a
 maintainer pushes an intentional `v*` tag after the release checklist in
 [`docs/release-candidate-checklist.md`](./release-candidate-checklist.md)
@@ -32,12 +33,15 @@ The current pre-1.0 command surface supports these public commands:
 - `assura performance-report` for checked Assura versus LS-Lint performance
   evidence.
 - `assura fix markdown --dry-run --format json` for safe-fix preview output
-  before applying deterministic Markdown trailing-space fixes.
+  before applying deterministic Markdown safe fixes.
 - `assura fix markdown --apply --format json` for explicitly accepted
   Markdown safe-fix apply/audit output.
 - `assura agent` for local coding-agent project-intelligence commands with
   JSON defaults for context, diagnostics, context packs, search/show/expand,
   missing relations, safe-fix previews, and local sessions.
+- `assura agent integration` for experimental local install, update, remove,
+  status, and doctor workflows that generate reviewable Codex, OpenCode,
+  Claude, and Pi bundles over shared Assura commands.
 - `assura editor session` for a local JSON-line editor protocol with
   LSP-shaped diagnostics, context, code-action preview requests, and
   conservative reload metadata.
@@ -88,13 +92,12 @@ The release workflow verifies those checksums before upload, and
 `cargo xtask release-live` checks that public checksum URLs are reachable
 after a tag is published.
 
-The original `v0.1.0` archives were published on 2026-05-24 and do not contain
-the later June 2026 Project Intelligence usability surfaces described in this
-branch's current release-candidate notes. On 2026-06-10, maintainers uploaded
-the missing `.sha256` sidecar files generated from those published archives. No
-release binary was rebuilt and no new version was cut for that asset repair.
-A future tag or release-candidate archive must be built before these current
-branch surfaces are advertised as installable release artifacts.
+The `v0.2.0` archives were published on 2026-07-01 and do not contain the
+later daemon process, agent integration lifecycle, VS Code support,
+extension-boundary, and support-hardening surfaces described in these
+`v0.3.0` release-candidate notes. A future tag and release-candidate archive
+must be built before these current branch surfaces are advertised as installable
+release artifacts.
 
 ## Current Feature Surface
 
@@ -184,12 +187,13 @@ branch surfaces are advertised as installable release artifacts.
   `textDocument/codeAction` JSON-line methods. It is local, does not require
   MCP or remote access, and does not claim full LSP server framing or editor
   marketplace packaging.
-- `assura daemon status`, `start`, `stop`, `restart`, `doctor`, and `logs`
-  are experimental local daemon commands. In the post-v0.2.0 development line,
-  lifecycle commands manage a local process with versioned health, check-path,
-  and repository-reference IPC, project-local `.assura/daemon/` status and log
-  files, bounded log output, and one-shot fallback guidance. Broader editor and
-  agent daemon workflows remain beta-track follow-up work.
+- `assura daemon status`, `start`, `stop`, `restart`, `doctor`, `logs`,
+  `health`, `check-path`, and `references` are experimental local daemon
+  commands. In the `v0.3.0` beta increment, lifecycle commands manage a local
+  process with versioned health, check-path, and repository-reference IPC,
+  project-local `.assura/daemon/` status and log files, bounded log output, and
+  one-shot fallback guidance. Broader daemon-backed workflows remain beta-track
+  work and must keep stale-state safety before support promotion.
 - Full LSP server packaging and MCP are not part of this
   content-query surface.
 - Runtime schema or source model artifacts stored under `.assura/` must live
@@ -224,7 +228,7 @@ branch surfaces are advertised as installable release artifacts.
 - Custom constraints execute through `assura check` and report normal
   `StructureViolation` records with `custom:<id>` rule names.
 - Remote plugin loading, marketplaces, shell-executed plugins, and third-party
-  Rust/TypeScript plugin APIs are not part of v0.2.0.
+  Rust/TypeScript plugin APIs are not part of v0.3.0.
 
 ## Removed Or Superseded Surfaces
 
@@ -269,10 +273,11 @@ After publishing a tag, maintainers must also run:
 
 ```bash
 cargo xtask release-live
-ASSURA_VERSION=v0.2.0 cargo xtask release-live
+ASSURA_VERSION=v0.3.0 cargo xtask release-live
 ```
 
 ## Next
 
-After `v0.2.0` is tagged and verified, the beta program can record release
-artifact evidence and move remaining follow-up work into post-beta hardening.
+After `v0.3.0` is tagged and verified, the parent post-beta capabilities
+program can record release artifact evidence for this beta increment. Assura
+still remains pre-1.0 beta software after this release.

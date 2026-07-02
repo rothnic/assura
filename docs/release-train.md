@@ -48,9 +48,12 @@ Cargo or from the failing readiness verdict.
 state. Supported or experimental surfaces with `"first_release": "unreleased"`
 block readiness when the local tag is already the latest GitHub release.
 
-Roadmap-only daemon, VS Code, and agent-daemon nudge surfaces stay in the
-manifest as `"status": "roadmap"` with `"first_release": "future"` until their
-own beta goals prove installable support.
+Roadmap-only surfaces stay in the manifest as `"status": "roadmap"` with a
+future release marker until their own beta goals prove installable support. When
+a beta goal promotes a supported or experimental user-facing surface, set its
+`first_release` to the prepared local tag and let `cargo xtask
+release-readiness --format json` prove no supported surface remains
+unreleased.
 
 ## Release PR Contract
 
@@ -64,6 +67,6 @@ A release PR should include:
 - local `cargo xtask release-smoke` evidence; and
 - the planned post-tag `cargo xtask release-live` command.
 
-Do not advertise daemon, editor-package, or agent-daemon support as installable
-until the release-readiness check, release artifacts, and live release
-verification prove that users can install the advertised surface.
+Do not advertise daemon, editor-package, or agent integration support as
+installable until the release-readiness check, release artifacts, and live
+release verification prove that users can install the advertised surface.
