@@ -13,3 +13,6 @@
 {"file": "src/cli/check/markdown_fix_all.rs", "reason": "combined all-rule Markdown safe-fix orchestration and report merging kept out of the single-rule runner"}
 {"file": "src/cli/args.rs", "reason": "CLI default rule selection for assura fix markdown"}
 {"file": "src/cli/check/markdown_fix_report.rs", "reason": "safe-fix report rule enum for all-rule previews and applies"}
+{"file": "docs/goals/assura-post-beta-capabilities-program.md", "reason": "parent-program primary verification story used as the acceptance lens for this major increment"}
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "active roadmap branch and north-star outcome routing for the current Markdown engine slice"}
+{"file": "docs/data/public-roadmap.json", "reason": "public roadmap summary now points to the maintainer verification story for Post-Beta Capabilities"}

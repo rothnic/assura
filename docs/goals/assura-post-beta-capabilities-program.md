@@ -154,6 +154,78 @@ The package must include both valid content and intentional failures:
 - accepted LS-Lint-equivalent performance rows that must be faster than
   LS-Lint or fail the merge gate with actionable attribution.
 
+### Primary Verification Story
+
+The acceptance story is a single maintainer journey, not a bundle of feature
+demos. Use a fixture named as a real project, for example
+`fixtures/post_beta_knowledge_workspace`, and write it so the maintainer's
+intent is obvious from the files:
+
+The maintainer has just renamed a core architecture page and moved one module.
+They want to know whether the repository's knowledge system is still safe for
+humans and agents to work in before merging a feature branch. They run Assura
+locally, then keep it warm while an editor and several coding agents continue
+to edit the project.
+
+The story starts with a dirty but realistic repository:
+
+- the root contains one misplaced generated artifact and one overly broad
+  allowlist entry;
+- `docs/goals/active/markdown-engine.md` has valid typed frontmatter but
+  references a moved ADR, a renamed code path, and a stale heading anchor;
+- `docs/analysis/rumdl-evaluation.md` has invalid frontmatter, duplicated
+  headings, a skipped heading level, trailing spaces on blank lines, and a
+  suppression without a useful reason;
+- `src/cli/check/markdown.rs` references a goal that no longer owns the rule;
+- a benchmark fixture row is accepted as LS-Lint-equivalent but is configured
+  so Assura's measured row is slower than native LS-Lint until the performance
+  slice fixes or explains the cost;
+- the daemon has an old status file whose config fingerprint no longer matches
+  the working tree.
+
+The reviewer should be able to run the story in this order:
+
+1. Run `assura init` or the documented config-refinement command and confirm
+   the resulting `.assura/config.yml` models structure, coarse file policy,
+   Markdown rules, content collections, references, agent nudges, daemon
+   settings, VS Code support, and performance fixture gates without relying on
+   private defaults.
+2. Run `assura check --format json` and confirm the first diagnostics are
+   structure/root-hygiene and coarse file-policy issues. Markdown internals,
+   content-model failures, reference failures, and optional extension findings
+   must appear later in the staged order with rule-owned severity and
+   suppression metadata.
+3. Run `assura fix markdown --dry-run --format json` and confirm the preview
+   contains only deterministic fixes, names the source fixer, and refuses
+   unsafe or semantic edits. Run `--apply`, then run the preview again and
+   confirm the supported fixes are idempotent.
+4. Run the supported content query commands: `assura content collections`,
+   `missing-relations`, `search`, `expand`, `references`, and `context-pack`.
+   The answers must explain which goals, ADRs, headings, code paths,
+   benchmark rows, and release docs are affected by the renamed page and moved
+   module.
+5. Start `assura daemon`, request the same check/content/reference answers over
+   IPC, then mutate the config and one referenced Markdown file. The daemon
+   must mark or reject stale truth until refreshed, and fresh daemon answers
+   must match one-shot CLI truth.
+6. Trigger Codex, OpenCode, Claude, and Pi adapter events around planned reads,
+   writes, and shell commands. Assura should inject short, cache-friendly
+   nudges only when the current file, command, or recent edit makes the finding
+   actionable.
+7. Open the fixture through the VS Code extension and confirm diagnostics,
+   safe-fix previews, daemon doctor output, and one-shot fallback match the
+   shared daemon and CLI contracts.
+8. Run the CI verification command. It must fail on the intentionally broken
+   state for the expected reasons, pass after the documented repairs, and fail
+   any accepted LS-Lint-equivalent performance row that is slower than native
+   LS-Lint without actionable attribution.
+
+The story passes only when the maintainer can answer: "What is structurally
+wrong, what Markdown/content/reference drift exists, what can be safely fixed,
+what changed context should my agents read, is my daemon fresh, do editor and
+agent surfaces agree with the CLI, and is Assura at least as fast as LS-Lint on
+accepted structure fixtures?"
+
 The end-to-end verification path should prove this user story:
 
 1. A maintainer clones the fixture and runs `assura init` or config refinement.
@@ -326,3 +398,4 @@ readiness.
 | 2026-07-02 | Merged isolated candidate probes in PR #122 and recorded the `rumdl` adapter boundary. The Markdown Engine child should next prove an optional subprocess adapter while preserving Assura's Rust 1.70 MSRV, then revisit direct library integration only with measured evidence. | PR #122; `docs/analysis/2026-07-02-rumdl-adapter-decision.md`; [Markdownlint-compatible Rust engine](./assura-markdownlint-compatible-rust-engine.md). |
 | 2026-07-02 | Merged the optional `rumdl` subprocess adapter proof in PR #124. The adapter is opt-in, maps selected `rumdl` diagnostics to stable Assura `markdown_*` IDs, reports setup/runtime failures as `markdown_engine`, uses isolated temporary Markdown copies so `assura check` cannot mutate source files, and avoids duplicate native/candidate findings for stable rules owned by enabled native checks. | PR #124; `src/cli/check/markdown/rumdl_adapter.rs`; `tests/markdown_rumdl_adapter_tests.rs`; [Markdownlint-compatible Rust engine](./assura-markdownlint-compatible-rust-engine.md). |
 | 2026-07-02 | Started the next Markdown Engine safe-fix slice from `origin/master`: `assura fix markdown` now defaults to the full supported deterministic safe-fix subset instead of trailing-spaces only, while targeted `--rule` runs remain available. This moves the parent verification story closer to one command that can preview/apply bounded Markdown repairs for agents and maintainers. | `src/cli/check/markdown_fix.rs`; `src/cli/args.rs`; `tests/markdown_lint_fix_tests.rs`; `docs/release-notes.md`; `docs/support-policy.md`; `docs/compatibility-and-surface.md`; `website/src/content/docs/reference/configuration.md`. |
+| 2026-07-02 | Added the primary verification story for this major increment so every child goal can be judged against one maintainer journey: renamed architecture docs, moved code, staged diagnostics, deterministic Markdown fixes, content graph queries, stale-safe daemon IPC, compact agent nudges, VS Code parity, and an LS-Lint no-slower fixture gate. | [Primary verification story](#primary-verification-story); `.trellis/spec/assura/roadmap.md`; `docs/data/public-roadmap.json`. |

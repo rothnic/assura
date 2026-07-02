@@ -105,7 +105,7 @@
       "items": [
         {
           "label": "Post-Beta Capabilities",
-          "summary": "Make Assura support-grade for self-validation, document graph workflows, daemon mode, agent/editor integrations, Markdown linting, and performance gates.",
+          "summary": "Make Assura support-grade through one maintainer verification story covering self-validation, document graph workflows, daemon mode, agent/editor integrations, Markdown linting, and LS-Lint performance gates.",
           "detail_path": "docs/goals/assura-post-beta-capabilities-program.md",
           "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-post-beta-capabilities-program.md"
         }
