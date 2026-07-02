@@ -1,5 +1,0 @@
-{"file": "docs/goals/assura-post-beta-support-release-hardening.md", "reason": "Verify acceptance criteria and evidence are recorded."}
-{"file": "docs/goals/assura-post-beta-capabilities-program.md", "reason": "Verify parent progress and remaining release action are accurate."}
-{"file": ".trellis/spec/assura/roadmap.md", "reason": "Verify roadmap routes to the support hardening branch and next action."}
-{"file": "docs/release-train.md", "reason": "Verify beta increment versioning and release-readiness language remain consistent."}
-{"file": "docs/release-candidate-checklist.md", "reason": "Verify release checklist examples and gates match the prepared beta increment."}
