@@ -994,9 +994,19 @@ fn run_performance_no_slower(args: &[String]) -> Result<()> {
 #[derive(Default)]
 struct MarkdownEngineProbeOptions {
     candidate: Option<String>,
+    fixture: Option<String>,
     run_external: bool,
     measure: bool,
     iterations: Option<usize>,
+}
+
+#[derive(Debug)]
+struct MarkdownEngineProbeFixture {
+    name: String,
+    root: PathBuf,
+    markdown_scope: PathBuf,
+    relative_root: String,
+    relative_markdown_scope: String,
 }
 
 fn run_markdown_engine_probe(args: &[String]) -> Result<()> {
@@ -1012,8 +1022,8 @@ fn run_markdown_engine_probe(args: &[String]) -> Result<()> {
         return Err(format!("{}: unexpected schema_version", matrix_path.display()).into());
     }
 
-    let invalid_root = fixture_root.join("invalid");
-    let markdown_files = collect_files(invalid_root.join("docs"), Some(".md"))
+    let fixture = markdown_engine_probe_fixture(&root, &fixture_root, &matrix, &options)?;
+    let markdown_files = collect_files(&fixture.markdown_scope, Some(".md"))
         .into_iter()
         .map(|path| rel_from_root(&root, &path))
         .collect::<Vec<_>>();
@@ -1030,7 +1040,7 @@ fn run_markdown_engine_probe(args: &[String]) -> Result<()> {
         candidates.push(probe_markdown_candidate(
             candidate,
             &root,
-            &fixture_root,
+            &fixture,
             &markdown_files,
             &options,
         ));
@@ -1044,6 +1054,9 @@ fn run_markdown_engine_probe(args: &[String]) -> Result<()> {
         "schema": "assura.markdown-engine-probe.v1",
         "fixture_root": rel_from_root(&root, &fixture_root),
         "matrix": rel_from_root(&root, &matrix_path),
+        "fixture": fixture.name,
+        "fixture_path": fixture.relative_root,
+        "markdown_scope": fixture.relative_markdown_scope,
         "run_external": options.run_external,
         "measure": options.measure,
         "iterations": markdown_engine_probe_iterations(&options),
@@ -1064,6 +1077,13 @@ fn parse_markdown_engine_probe_options(args: &[String]) -> Result<MarkdownEngine
                     return Err("missing value for --candidate".into());
                 };
                 options.candidate = Some(value.clone());
+                index += 2;
+            }
+            "--fixture" => {
+                let Some(value) = args.get(index + 1) else {
+                    return Err("missing value for --fixture".into());
+                };
+                options.fixture = Some(value.clone());
                 index += 2;
             }
             "--run-external" => {
@@ -1089,7 +1109,7 @@ fn parse_markdown_engine_probe_options(args: &[String]) -> Result<MarkdownEngine
             }
             "--help" | "-h" => {
                 println!(
-                    "Usage: cargo xtask markdown-engine-probe [--candidate <name>] [--run-external] [--measure] [--iterations <n>]"
+                    "Usage: cargo xtask markdown-engine-probe [--candidate <name>] [--fixture <name>] [--run-external] [--measure] [--iterations <n>]"
                 );
                 std::process::exit(0);
             }
@@ -1099,10 +1119,76 @@ fn parse_markdown_engine_probe_options(args: &[String]) -> Result<MarkdownEngine
     Ok(options)
 }
 
+fn markdown_engine_probe_fixture(
+    root: &Path,
+    fixture_root: &Path,
+    matrix: &Value,
+    options: &MarkdownEngineProbeOptions,
+) -> Result<MarkdownEngineProbeFixture> {
+    let fixture_name = options.fixture.as_deref().unwrap_or("invalid");
+    let fixture_value = matrix
+        .get("probe_profiles")
+        .and_then(|profiles| profiles.get(fixture_name))
+        .or_else(|| {
+            matrix
+                .get("variants")
+                .and_then(|variants| variants.get(fixture_name))
+        })
+        .ok_or_else(|| format!("unknown markdown engine probe fixture: {fixture_name}"))?;
+    let fixture_path = fixture_value
+        .get("path")
+        .and_then(Value::as_str)
+        .ok_or_else(|| format!("markdown engine probe fixture {fixture_name}: missing path"))?;
+    let markdown_scope = fixture_value
+        .get("markdown_scope")
+        .and_then(Value::as_str)
+        .map(str::to_string)
+        .unwrap_or_else(|| format!("{fixture_path}/docs"));
+    let source_root = fixture_root.join(fixture_path);
+    let markdown_scope_root = fixture_root.join(&markdown_scope);
+    if !source_root.exists() {
+        return Err(format!(
+            "markdown engine probe fixture {fixture_name}: {} does not exist",
+            source_root.display()
+        )
+        .into());
+    }
+    if !markdown_scope_root.exists() {
+        return Err(format!(
+            "markdown engine probe fixture {fixture_name}: markdown scope {} does not exist",
+            markdown_scope_root.display()
+        )
+        .into());
+    }
+    let canonical_source_root = source_root.canonicalize().map_err(|error| {
+        format!("markdown engine probe fixture {fixture_name}: canonicalize source root: {error}")
+    })?;
+    let canonical_markdown_scope = markdown_scope_root.canonicalize().map_err(|error| {
+        format!(
+            "markdown engine probe fixture {fixture_name}: canonicalize markdown scope: {error}"
+        )
+    })?;
+    if !canonical_markdown_scope.starts_with(&canonical_source_root) {
+        return Err(format!(
+            "markdown engine probe fixture {fixture_name}: markdown_scope must stay under fixture path"
+        )
+        .into());
+    }
+
+    Ok(MarkdownEngineProbeFixture {
+        name: fixture_name.to_string(),
+        relative_root: rel_from_root(root, &source_root),
+        relative_markdown_scope: rel_from_root(root, &markdown_scope_root),
+        root: source_root,
+        markdown_scope: markdown_scope_root,
+    })
+}
+
 struct MarkdownEngineCandidate {
     name: &'static str,
     binary: Option<&'static str>,
     probe_args: &'static [&'static str],
+    fix_args: Option<&'static [&'static str]>,
 }
 
 fn markdown_engine_candidates() -> &'static [MarkdownEngineCandidate] {
@@ -1111,26 +1197,31 @@ fn markdown_engine_candidates() -> &'static [MarkdownEngineCandidate] {
             name: "assura-current",
             binary: None,
             probe_args: &[],
+            fix_args: None,
         },
         MarkdownEngineCandidate {
             name: "rumdl",
             binary: Some("rumdl"),
             probe_args: &["check", "--output-format", "json", "--no-cache"],
+            fix_args: Some(&["check", "--fix", "--output-format", "json", "--no-cache"]),
         },
         MarkdownEngineCandidate {
             name: "mdlint",
             binary: Some("mdlint"),
             probe_args: &["check", "--output-format", "json"],
+            fix_args: Some(&["check", "--fix", "--output-format", "json"]),
         },
         MarkdownEngineCandidate {
             name: "mado",
             binary: Some("mado"),
             probe_args: &["check", "--output-format", "markdownlint"],
+            fix_args: None,
         },
         MarkdownEngineCandidate {
             name: "markdownlint-cli2",
             binary: Some("markdownlint-cli2"),
             probe_args: &["--json"],
+            fix_args: Some(&["--fix", "--json"]),
         },
     ]
 }
@@ -1138,12 +1229,12 @@ fn markdown_engine_candidates() -> &'static [MarkdownEngineCandidate] {
 fn probe_markdown_candidate(
     candidate: &MarkdownEngineCandidate,
     root: &Path,
-    fixture_root: &Path,
+    fixture: &MarkdownEngineProbeFixture,
     markdown_files: &[String],
     options: &MarkdownEngineProbeOptions,
 ) -> Value {
     if candidate.name == "assura-current" {
-        return probe_current_assura(root, fixture_root, options);
+        return probe_current_assura(root, fixture, options);
     }
 
     let Some(binary) = candidate.binary else {
@@ -1175,7 +1266,7 @@ fn probe_markdown_candidate(
     }
 
     let (probe_fixture_root, probe_markdown_files) =
-        match prepare_external_probe_fixture(root, fixture_root, candidate.name, markdown_files) {
+        match prepare_external_probe_fixture(root, fixture, candidate.name, markdown_files) {
             Ok(value) => value,
             Err(error) => {
                 return serde_json::json!({
@@ -1203,6 +1294,7 @@ fn probe_markdown_candidate(
                 "exit_code": exit_code,
                 "probe_fixture_root": probe_fixture_root,
                 "probe_markdown_files": probe_markdown_files,
+                "fix_supported": candidate.fix_args.is_some(),
                 "stdout_bytes": output.stdout.len(),
                 "stderr_bytes": output.stderr.len(),
                 "stdout_snippet": truncate_utf8(&output.stdout, 6000),
@@ -1211,7 +1303,15 @@ fn probe_markdown_candidate(
             if options.measure {
                 candidate_report["timing"] = measure_external_candidate(
                     root,
-                    fixture_root,
+                    fixture,
+                    candidate,
+                    binary,
+                    markdown_files,
+                    markdown_engine_probe_iterations(options),
+                );
+                candidate_report["fix_timing"] = measure_external_candidate_fix(
+                    root,
+                    fixture,
                     candidate,
                     binary,
                     markdown_files,
@@ -1233,24 +1333,23 @@ fn probe_markdown_candidate(
 
 fn prepare_external_probe_fixture(
     root: &Path,
-    fixture_root: &Path,
+    fixture: &MarkdownEngineProbeFixture,
     candidate_name: &str,
     markdown_files: &[String],
 ) -> std::result::Result<(String, Vec<String>), String> {
-    let source_invalid_root = fixture_root.join("invalid");
     let probe_invalid_root = root
         .join("target/markdown-engine-probe")
         .join(candidate_name)
-        .join("invalid");
+        .join(&fixture.name);
     match fs::remove_dir_all(&probe_invalid_root) {
         Ok(()) => {}
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
         Err(error) => return Err(format!("remove probe fixture: {error}")),
     }
-    copy_dir_recursive(&source_invalid_root, &probe_invalid_root)
+    copy_dir_recursive(&fixture.root, &probe_invalid_root)
         .map_err(|error| format!("copy probe fixture: {error}"))?;
 
-    let source_prefix = rel_from_root(root, &source_invalid_root);
+    let source_prefix = rel_from_root(root, &fixture.root);
     let probe_prefix = rel_from_root(root, &probe_invalid_root);
     let probe_markdown_files = markdown_files
         .iter()
@@ -1265,8 +1364,28 @@ fn external_candidate_command(
     root: &Path,
     markdown_files: &[String],
 ) -> Command {
+    external_candidate_command_with_args(binary, candidate.probe_args, root, markdown_files)
+}
+
+fn external_candidate_fix_command(
+    binary: &str,
+    candidate: &MarkdownEngineCandidate,
+    root: &Path,
+    markdown_files: &[String],
+) -> Option<Command> {
+    candidate
+        .fix_args
+        .map(|args| external_candidate_command_with_args(binary, args, root, markdown_files))
+}
+
+fn external_candidate_command_with_args(
+    binary: &str,
+    args: &[&str],
+    root: &Path,
+    markdown_files: &[String],
+) -> Command {
     let mut command = Command::new(binary);
-    command.current_dir(root).args(candidate.probe_args);
+    command.current_dir(root).args(args);
     for file in markdown_files {
         command.arg(file);
     }
@@ -1300,10 +1419,10 @@ fn truncate_utf8(bytes: &[u8], max_chars: usize) -> String {
 
 fn probe_current_assura(
     root: &Path,
-    fixture_root: &Path,
+    fixture: &MarkdownEngineProbeFixture,
     options: &MarkdownEngineProbeOptions,
 ) -> Value {
-    let (mut command, execution_mode) = assura_current_probe_command(root, fixture_root);
+    let (mut command, execution_mode) = assura_current_probe_command(root, fixture);
     let output = command.output();
     match output {
         Ok(output) => {
@@ -1341,7 +1460,12 @@ fn probe_current_assura(
             if options.measure {
                 current_report["timing"] = measure_assura_current(
                     root,
-                    fixture_root,
+                    fixture,
+                    markdown_engine_probe_iterations(options),
+                );
+                current_report["safe_fix_timing"] = measure_assura_safe_fix(
+                    root,
+                    fixture,
                     markdown_engine_probe_iterations(options),
                 );
             }
@@ -1355,21 +1479,19 @@ fn probe_current_assura(
     }
 }
 
-fn assura_current_probe_command(root: &Path, fixture_root: &Path) -> (Command, &'static str) {
+fn assura_current_base_command(root: &Path) -> (Command, &'static str) {
     let assura_binary = root
         .join("target")
         .join("debug")
         .join(format!("assura{}", env::consts::EXE_SUFFIX));
     let use_debug_binary = assura_binary.exists();
-    let mut command = if use_debug_binary {
+    let command = if use_debug_binary {
         let mut command = Command::new(&assura_binary);
-        command.current_dir(root).arg("check");
+        command.current_dir(root);
         command
     } else {
         let mut command = Command::new("cargo");
-        command
-            .current_dir(root)
-            .args(["run", "--quiet", "--", "check"]);
+        command.current_dir(root).args(["run", "--quiet", "--"]);
         command
     };
     let execution_mode = if use_debug_binary {
@@ -1377,24 +1499,54 @@ fn assura_current_probe_command(root: &Path, fixture_root: &Path) -> (Command, &
     } else {
         "cargo-run"
     };
-    command.arg(markdown_engine_invalid_fixture_path(fixture_root));
+    (command, execution_mode)
+}
+
+fn assura_current_probe_command(
+    root: &Path,
+    fixture: &MarkdownEngineProbeFixture,
+) -> (Command, &'static str) {
+    let (mut command, execution_mode) = assura_current_base_command(root);
+    command.arg("check");
+    command.arg(markdown_engine_probe_fixture_path(fixture));
     command.args(["--format", "json"]);
     (command, execution_mode)
 }
 
-fn markdown_engine_invalid_fixture_path(fixture_root: &Path) -> PathBuf {
-    fixture_root.join("invalid")
+fn assura_current_fix_command(
+    root: &Path,
+    fixture_root: &Path,
+    apply: bool,
+) -> (Command, &'static str) {
+    let (mut command, execution_mode) = assura_current_base_command(root);
+    command.args(["fix", "markdown"]);
+    command.arg(fixture_root);
+    if apply {
+        command.arg("--apply");
+    } else {
+        command.arg("--dry-run");
+    }
+    command.args(["--format", "json"]);
+    (command, execution_mode)
+}
+
+fn markdown_engine_probe_fixture_path(fixture: &MarkdownEngineProbeFixture) -> PathBuf {
+    fixture.root.clone()
 }
 
 fn markdown_engine_probe_iterations(options: &MarkdownEngineProbeOptions) -> usize {
     options.iterations.unwrap_or(5)
 }
 
-fn measure_assura_current(root: &Path, fixture_root: &Path, iterations: usize) -> Value {
+fn measure_assura_current(
+    root: &Path,
+    fixture: &MarkdownEngineProbeFixture,
+    iterations: usize,
+) -> Value {
     let mut samples_ms = Vec::new();
     let mut errors = Vec::new();
     for _ in 0..iterations {
-        let (mut command, _) = assura_current_probe_command(root, fixture_root);
+        let (mut command, _) = assura_current_probe_command(root, fixture);
         let started = Instant::now();
         match command.output() {
             Ok(output) if expected_markdown_probe_exit(output.status.code()) => {
@@ -1411,9 +1563,63 @@ fn measure_assura_current(root: &Path, fixture_root: &Path, iterations: usize) -
     timing_report(iterations, samples_ms, errors)
 }
 
+fn measure_assura_safe_fix(
+    root: &Path,
+    fixture: &MarkdownEngineProbeFixture,
+    iterations: usize,
+) -> Value {
+    serde_json::json!({
+        "dry_run": measure_assura_safe_fix_mode(root, fixture, iterations, false),
+        "apply": measure_assura_safe_fix_mode(root, fixture, iterations, true),
+    })
+}
+
+fn measure_assura_safe_fix_mode(
+    root: &Path,
+    fixture: &MarkdownEngineProbeFixture,
+    iterations: usize,
+    apply: bool,
+) -> Value {
+    let mut samples_ms = Vec::new();
+    let mut errors = Vec::new();
+    let mode = if apply { "apply" } else { "dry-run" };
+    for index in 0..iterations {
+        let probe_fixture_root = root
+            .join("target/markdown-engine-probe/assura-current-safe-fix")
+            .join(&fixture.name)
+            .join(mode)
+            .join(format!("run-{index}"));
+        match fs::remove_dir_all(&probe_fixture_root) {
+            Ok(()) => {}
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+            Err(error) => {
+                errors.push(format!("remove safe-fix fixture: {error}"));
+                continue;
+            }
+        }
+        if let Err(error) = copy_dir_recursive(&fixture.root, &probe_fixture_root) {
+            errors.push(format!("copy safe-fix fixture: {error}"));
+            continue;
+        }
+
+        let (mut command, _) = assura_current_fix_command(root, &probe_fixture_root, apply);
+        let started = Instant::now();
+        match command.output() {
+            Ok(output) if output.status.success() => samples_ms.push(elapsed_ms(started)),
+            Ok(output) => errors.push(format!(
+                "unexpected exit code {:?}: {}",
+                output.status.code(),
+                truncate_utf8(&output.stderr, 400)
+            )),
+            Err(error) => errors.push(error.to_string()),
+        }
+    }
+    timing_report(iterations, samples_ms, errors)
+}
+
 fn measure_external_candidate(
     root: &Path,
-    fixture_root: &Path,
+    fixture: &MarkdownEngineProbeFixture,
     candidate: &MarkdownEngineCandidate,
     binary: &str,
     markdown_files: &[String],
@@ -1422,18 +1628,14 @@ fn measure_external_candidate(
     let mut samples_ms = Vec::new();
     let mut errors = Vec::new();
     for _ in 0..iterations {
-        let (_, probe_markdown_files) = match prepare_external_probe_fixture(
-            root,
-            fixture_root,
-            candidate.name,
-            markdown_files,
-        ) {
-            Ok(value) => value,
-            Err(error) => {
-                errors.push(error);
-                continue;
-            }
-        };
+        let (_, probe_markdown_files) =
+            match prepare_external_probe_fixture(root, fixture, candidate.name, markdown_files) {
+                Ok(value) => value,
+                Err(error) => {
+                    errors.push(error);
+                    continue;
+                }
+            };
         let mut command =
             external_candidate_command(binary, candidate, root, &probe_markdown_files);
         let started = Instant::now();
@@ -1450,6 +1652,77 @@ fn measure_external_candidate(
         }
     }
     timing_report(iterations, samples_ms, errors)
+}
+
+fn measure_external_candidate_fix(
+    root: &Path,
+    fixture: &MarkdownEngineProbeFixture,
+    candidate: &MarkdownEngineCandidate,
+    binary: &str,
+    markdown_files: &[String],
+    iterations: usize,
+) -> Value {
+    if candidate.fix_args.is_none() {
+        return serde_json::json!({
+            "supported": false,
+            "reason": "candidate has no observed deterministic fix command for this probe"
+        });
+    }
+
+    let mut samples_ms = Vec::new();
+    let mut errors = Vec::new();
+    for _ in 0..iterations {
+        let (_, probe_markdown_files) =
+            match prepare_external_probe_fixture(root, fixture, candidate.name, markdown_files) {
+                Ok(value) => value,
+                Err(error) => {
+                    errors.push(error);
+                    continue;
+                }
+            };
+        let Some(mut command) =
+            external_candidate_fix_command(binary, candidate, root, &probe_markdown_files)
+        else {
+            errors.push("candidate has no fix command".to_string());
+            continue;
+        };
+        let started = Instant::now();
+        match command.output() {
+            Ok(output) if expected_markdown_fix_output(candidate, &output) => {
+                samples_ms.push(elapsed_ms(started));
+            }
+            Ok(output) => errors.push(format!(
+                "unexpected exit code {:?}: {}",
+                output.status.code(),
+                truncate_utf8(&output.stderr, 400)
+            )),
+            Err(error) => errors.push(error.to_string()),
+        }
+    }
+
+    let mut report = timing_report(iterations, samples_ms, errors);
+    report["supported"] = serde_json::json!(true);
+    report["evidence_scope"] = serde_json::json!("candidate_fix_command_timing_only");
+    report["post_fix_validation"] = serde_json::json!(false);
+    report["success_semantics"] =
+        serde_json::json!("expected_exit_status_and_no_known_fix_failure_marker");
+    report
+}
+
+fn expected_markdown_fix_output(
+    candidate: &MarkdownEngineCandidate,
+    output: &std::process::Output,
+) -> bool {
+    if !expected_markdown_probe_exit(output.status.code()) {
+        return false;
+    }
+    if candidate.name == "mdlint" {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        if stderr.contains("Failed to apply fixes") || stderr.contains("Cannot apply fixes") {
+            return false;
+        }
+    }
+    true
 }
 
 fn expected_markdown_probe_exit(exit_code: Option<i32>) -> bool {
@@ -4329,6 +4602,8 @@ mod tests {
         let options = parse_markdown_engine_probe_options(&[
             "--candidate".to_string(),
             "rumdl".to_string(),
+            "--fixture".to_string(),
+            "frontmatter-link-heavy".to_string(),
             "--run-external".to_string(),
             "--measure".to_string(),
             "--iterations".to_string(),
@@ -4337,9 +4612,38 @@ mod tests {
         .expect("options parse");
 
         assert_eq!(options.candidate.as_deref(), Some("rumdl"));
+        assert_eq!(options.fixture.as_deref(), Some("frontmatter-link-heavy"));
         assert!(options.run_external);
         assert!(options.measure);
         assert_eq!(markdown_engine_probe_iterations(&options), 7);
+    }
+
+    #[test]
+    fn markdown_engine_probe_fixture_rejects_scope_outside_fixture_root() {
+        let root = std::env::temp_dir().join(format!("assura-xtask-scope-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&root);
+        let fixture_root = root.join("fixtures");
+        std::fs::create_dir_all(fixture_root.join("selected/docs")).unwrap();
+        std::fs::create_dir_all(root.join("outside/docs")).unwrap();
+        let matrix = json!({
+            "probe_profiles": {
+                "bad": {
+                    "path": "selected",
+                    "markdown_scope": "../outside/docs"
+                }
+            }
+        });
+        let options = MarkdownEngineProbeOptions {
+            fixture: Some("bad".to_string()),
+            ..MarkdownEngineProbeOptions::default()
+        };
+
+        let error = markdown_engine_probe_fixture(&root, &fixture_root, &matrix, &options)
+            .expect_err("scope outside fixture root must fail")
+            .to_string();
+        assert!(error.contains("markdown_scope must stay under fixture path"));
+
+        let _ = std::fs::remove_dir_all(root);
     }
 
     #[test]
@@ -4362,6 +4666,26 @@ mod tests {
         assert_eq!(markdown_probe_status(Some(1)), "ran_with_findings");
         assert_eq!(markdown_probe_status(Some(2)), "probe_failed");
         assert_eq!(markdown_probe_status(None), "probe_failed");
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn markdown_engine_fix_output_detects_mdlint_failed_fixes() {
+        use std::os::unix::process::ExitStatusExt;
+
+        let candidate = MarkdownEngineCandidate {
+            name: "mdlint",
+            binary: Some("mdlint"),
+            probe_args: &[],
+            fix_args: Some(&[]),
+        };
+        let output = std::process::Output {
+            status: std::process::ExitStatus::from_raw(1 << 8),
+            stdout: Vec::new(),
+            stderr: b"Failed to apply fixes: Cannot apply fixes".to_vec(),
+        };
+
+        assert!(!expected_markdown_fix_output(&candidate, &output));
     }
 
     #[test]

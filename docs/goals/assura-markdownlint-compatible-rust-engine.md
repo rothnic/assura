@@ -212,3 +212,13 @@ structure validation.
   Assura checks on the small invalid fixture, so `rumdl` remains a functional
   leader rather than an accepted default engine until broader fixture and
   fix-cost evidence closes the no-slower bar.
+- 2026-07-02: Started the representative probe slice on branch
+  `codex/markdown-engine-representative-probes`. The probe now accepts
+  `--fixture <name>`, records named fixture profiles, measures candidate fix
+  commands when an observed deterministic fix mode exists, and measures
+  Assura's Markdown safe-fix dry-run/apply cost separately from check timing.
+  Initial three-iteration evidence across `invalid`, `frontmatter-link-heavy`,
+  `large-doc`, and `fixable-drift` keeps `rumdl` as the best functional fit but
+  still slower than current Assura checks, while `mdlint` remains the fastest
+  Rust check candidate with unresolved mutation-safety risk and failed fix
+  application on two representative profiles.

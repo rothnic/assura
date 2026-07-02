@@ -117,6 +117,27 @@ fn markdown_engine_candidate_matrix_describes_current_contract() {
             "{variant} fixture config should exist"
         );
     }
+    for profile in [
+        "invalid",
+        "frontmatter-link-heavy",
+        "large-doc",
+        "fixable-drift",
+    ] {
+        let path = matrix["probe_profiles"][profile]["path"]
+            .as_str()
+            .unwrap_or_else(|| panic!("{profile} profile path"));
+        let markdown_scope = matrix["probe_profiles"][profile]["markdown_scope"]
+            .as_str()
+            .unwrap_or_else(|| panic!("{profile} profile markdown scope"));
+        assert!(
+            fixture_path(path).join(".assura/config.yml").exists(),
+            "{profile} profile config should exist"
+        );
+        assert!(
+            Path::new(FIXTURE_ROOT).join(markdown_scope).exists(),
+            "{profile} profile markdown scope should exist"
+        );
+    }
 
     let config = normalize_newlines(
         &fs::read_to_string(fixture_path("invalid/.assura/config.yml"))
