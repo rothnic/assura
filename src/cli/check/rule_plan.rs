@@ -15,21 +15,28 @@ use std::sync::Arc;
 #[derive(Debug, Clone)]
 pub(super) struct RuleScope {
     path: PathBuf,
+    inherit: bool,
     exact: EffectiveRules,
     descendant: EffectiveRules,
 }
 
 impl RuleScope {
-    pub(super) fn new(path: PathBuf, exact: EffectiveRules, descendant: EffectiveRules) -> Self {
+    pub(super) fn new(
+        path: PathBuf,
+        inherit: bool,
+        exact: EffectiveRules,
+        descendant: EffectiveRules,
+    ) -> Self {
         Self {
             path,
+            inherit,
             exact,
             descendant,
         }
     }
 
-    pub(super) fn parts(&self) -> (&Path, &EffectiveRules, &EffectiveRules) {
-        (&self.path, &self.exact, &self.descendant)
+    pub(super) fn parts(&self) -> (&Path, bool, &EffectiveRules, &EffectiveRules) {
+        (&self.path, self.inherit, &self.exact, &self.descendant)
     }
 }
 
@@ -59,7 +66,7 @@ pub(super) fn rules_for_dir(dir_rel: &Path, scopes: &[RuleScope]) -> EffectiveRu
         .unwrap_or_default()
 }
 
-fn scope_match(scope: &RuleScope, dir_rel: &Path) -> Option<bool> {
+pub(super) fn scope_match(scope: &RuleScope, dir_rel: &Path) -> Option<bool> {
     if path_has_scope_magic(&scope.path) {
         if path_matches_scope_pattern(&scope.path, dir_rel) {
             return Some(true);
@@ -100,6 +107,7 @@ fn compile_scope_node(
 
     scopes.push(RuleScope::new(
         node_rel.clone(),
+        node.inherit,
         effective.clone(),
         strip_direct_content_policy(effective.clone()),
     ));
@@ -214,7 +222,7 @@ structure:
         let debug_scopes = scopes
             .iter()
             .map(|scope| {
-                let (path, exact, _) = scope.parts();
+                let (path, _, exact, _) = scope.parts();
                 format!(
                     "{} files_exists={:?} dir_allowed={:?}",
                     path.display(),
@@ -231,7 +239,7 @@ structure:
                 scope.parts().0 == Path::new(".agents/skills/{skill}")
                     && scope
                         .parts()
-                        .1
+                        .2
                         .files
                         .as_ref()
                         .and_then(|files| files.exists.as_ref())

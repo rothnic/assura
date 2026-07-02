@@ -402,6 +402,10 @@ extensions:
           status: supported
         - surface: "command:assura status --format json"
           status: supported
+        - surface: "command:assura doctor"
+          status: experimental
+        - surface: "command:assura explain"
+          status: experimental
         - surface: "command:assura init"
           status: supported
         - surface: "command:assura watch"

@@ -240,12 +240,12 @@ fn agent_onboard_generates_broad_baseline_and_packet() {
         &fs::read_to_string(project.path().join(".assura/onboarding/doctor.json")).unwrap(),
     )
     .unwrap();
-    assert_eq!(doctor["schema"], "assura.agent-onboarding.doctor.v1");
+    assert_eq!(doctor["schema"], "assura.project-doctor.v1");
     assert!(doctor["inactive"]
         .as_array()
         .expect("inactive array")
         .iter()
-        .any(|item| item["name"] == "project_specialization"));
+        .any(|item| item["name"] == "content_models"));
 
     let check = json_from_success(run_assura(&[
         "check",

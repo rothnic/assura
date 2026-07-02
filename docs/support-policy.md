@@ -22,6 +22,8 @@ checksums reachable. Assura remains pre-1.0 beta.
 | `--agent codex` delivery | Supported adapter | Delivery may depend on user-approved Codex hooks, but it must not require a separate CLI. |
 | `assura init` | Supported | Starter config output must be valid and self-checkable. |
 | `assura status --format json` | Supported | JSON summaries must remain usable for automation. |
+| `assura doctor` | Experimental local project doctor | Read-only project diagnostics report configured checks, inactive capabilities, recommended agent-project gaps, draft model files not wired into config, binary custody status, and ranked next actions. It must not mutate files or imply inactive capabilities are violations by default. |
+| `assura explain` | Experimental local path explanation | Read-only path diagnostics report applied scopes, inherited rules, skipped checks, binary/read behavior, suppressions, and next actions for one path. It must reuse structure-check semantics rather than adding a separate validation engine. |
 | `assura migrate` for complete LS-Lint 2.3 config semantics | Supported | Invalid LS-Lint config shapes and unsupported rule syntax must fail clearly. CLI drop-in parity is out of scope. |
 | `assura hooks` for local git hooks | Supported local workflow | Hooks must be opt-in and local to a checkout. |
 | `assura quality plan` | Supported local workflow | Quality-scope planning must stay config-backed and deterministic. |

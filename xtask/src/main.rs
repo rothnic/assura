@@ -3385,6 +3385,16 @@ const CLI_COMMAND_VARIANT_ROWS: &[CliCommandVariantRow] = &[
     },
     CliCommandVariantRow {
         enum_name: "Commands",
+        variant_name: "Doctor",
+        command_surface_names: &["assura doctor"],
+    },
+    CliCommandVariantRow {
+        enum_name: "Commands",
+        variant_name: "Explain",
+        command_surface_names: &["assura explain"],
+    },
+    CliCommandVariantRow {
+        enum_name: "Commands",
         variant_name: "Init",
         command_surface_names: &["assura init"],
     },
@@ -3713,6 +3723,32 @@ const SUPPORT_MATRIX_ROWS: &[SupportMatrixRow] = &[
             "tests/real_project_agentic_feedback_tests.rs",
             ".arg(\"status\")",
             "\"json\"",
+        ],
+        exception_markers: &[],
+    },
+    SupportMatrixRow {
+        surface: "assura doctor",
+        command_surface_names: &["assura doctor"],
+        support_policy_markers: &["`assura doctor`"],
+        compatibility_markers: &["| `assura doctor` | Experimental local project doctor |"],
+        source_markers: &["Commands::Doctor", "doctor_command"],
+        test_markers: &[
+            "tests/doctor_explain_cli.rs",
+            "doctor_reports_clean_check_with_inactive_and_unwired_model_gap",
+        ],
+        exception_markers: &[],
+    },
+    SupportMatrixRow {
+        surface: "assura explain",
+        command_surface_names: &["assura explain"],
+        support_policy_markers: &["`assura explain`"],
+        compatibility_markers: &[
+            "| `assura explain` | Experimental local path explanation |",
+        ],
+        source_markers: &["Commands::Explain", "explain_command"],
+        test_markers: &[
+            "tests/doctor_explain_cli.rs",
+            "explain_reports_inherited_scope_and_source_markdown_skips",
         ],
         exception_markers: &[],
     },

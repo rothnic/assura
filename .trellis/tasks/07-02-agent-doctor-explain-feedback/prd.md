@@ -54,18 +54,18 @@ read behavior, and ranked agent next actions.
 
 ## Acceptance Criteria
 
-- [ ] `assura doctor <path> --format json` emits a deterministic schema with
+- [x] `assura doctor <path> --format json` emits a deterministic schema with
       configured, inactive, gaps, and next-action sections.
-- [ ] `assura doctor <path> --format text` is understandable without implying
+- [x] `assura doctor <path> --format text` is understandable without implying
       "no violations" means "fully onboarded".
-- [ ] `assura doctor <path> --format agent` emits compact agent-oriented JSON
+- [x] `assura doctor <path> --format agent` emits compact agent-oriented JSON
       with ranked next actions and follow-up commands.
-- [ ] `assura explain <path> --format json` shows applied/inherited/skipped
+- [x] `assura explain <path> --format json` shows applied/inherited/skipped
       structure checks for Markdown, source, generated, binary, and skill
       paths where the information is available locally.
-- [ ] Onboarding verification includes checked versus unchecked doctor
+- [x] Onboarding verification includes checked versus unchecked doctor
       sections backed by the same project-doctor logic.
-- [ ] Tests prove doctor catches model files that exist but are not wired into
+- [x] Tests prove doctor catches model files that exist but are not wired into
       config.
 
 ## Definition Of Done

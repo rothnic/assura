@@ -2,6 +2,7 @@
 
 use super::agent_integration::install_agent_integration_bundle;
 use super::agent_onboarding_templates::{baseline_files, GeneratedFile};
+use super::doctor::project_doctor_packet_json;
 use super::{AgentIntegrationTarget, AgentOnboardingTarget, ExitCode, OutputFormat};
 use crate::cli::check::{run_structure_check_with_target_mode, CheckTargetMode};
 use serde::Serialize;
@@ -10,8 +11,6 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 const OUTPUT_SCHEMA: &str = "assura.agent-onboarding.v1";
-const DOCTOR_SCHEMA: &str = "assura.agent-onboarding.doctor.v1";
-
 /// Options for `assura agent onboard`.
 pub struct AgentOnboardingOptions {
     /// Project root directory.
@@ -62,17 +61,11 @@ fn run_agent_onboarding(
     }
 
     let integration = install_integration(&project_root, &detected)?;
-    let verified = verify_project(&project_root, config)?;
+    let config_path = config.unwrap_or_else(|| project_root.join(".assura/config.yml"));
+    let verified = verify_project(&project_root, Some(config_path.clone()))?;
     let inactive = inactive_capabilities();
     let next_actions = next_actions(&detected);
-    let doctor = OnboardingDoctor {
-        schema: DOCTOR_SCHEMA,
-        project_root: path_string(&project_root),
-        checked: verified.clone(),
-        inactive: inactive.clone(),
-        next_actions: next_actions.clone(),
-    };
-    let doctor_json = serde_json::to_string_pretty(&doctor).map_err(|error| error.to_string())?;
+    let doctor_json = project_doctor_packet_json(&project_root, Some(config_path))?;
     files.push(materialize_file(
         &project_root,
         GeneratedFile {
@@ -472,13 +465,4 @@ struct CheckItem {
     name: &'static str,
     status: &'static str,
     detail: &'static str,
-}
-
-#[derive(Serialize)]
-struct OnboardingDoctor {
-    schema: &'static str,
-    project_root: String,
-    checked: Vec<CheckItem>,
-    inactive: Vec<CheckItem>,
-    next_actions: Vec<&'static str>,
 }
