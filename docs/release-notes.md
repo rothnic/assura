@@ -176,10 +176,11 @@ branch surfaces are advertised as installable release artifacts.
   MCP or remote access, and does not claim full LSP server framing or editor
   marketplace packaging.
 - `assura daemon status`, `start`, `stop`, `restart`, `doctor`, and `logs`
-  are experimental local daemon management-preview commands. They expose
-  daemon-ready health, protocol, runtime metadata, bounded log output, and
-  actionable remediation over the shared local state contract; a long-running
-  socket/process daemon remains roadmap until implemented and tested.
+  are experimental local daemon commands. In the post-v0.2.0 development line,
+  lifecycle commands manage a local process with versioned health/check-path
+  IPC, project-local `.assura/daemon/` status and log files, bounded log
+  output, and one-shot fallback guidance. Broader editor, agent, and content
+  query daemon workflows remain beta-track follow-up work.
 - Full LSP server packaging and MCP are not part of this
   content-query surface.
 - Runtime schema or source model artifacts stored under `.assura/` must live

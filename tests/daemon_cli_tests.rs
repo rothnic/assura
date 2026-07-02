@@ -68,6 +68,10 @@ fn daemon_start_stop_json_are_idempotent_and_status_reflects_runtime() {
     assert_eq!(start["action"], "start");
     assert_eq!(start["changed"], true);
     assert_eq!(start["runtime"]["state"], "started");
+    assert_eq!(start["runtime"]["running"], true);
+    let started_pid = start["runtime"]["pid"].as_u64().unwrap() as u32;
+    assert!(started_pid > 0);
+    assert!(!start["runtime"]["listen_addr"].as_str().unwrap().is_empty());
     assert!(project.path().join(".assura/daemon/status.json").is_file());
 
     let repeat_start = assura_json(
@@ -77,14 +81,20 @@ fn daemon_start_stop_json_are_idempotent_and_status_reflects_runtime() {
     assert_eq!(repeat_start["action"], "start");
     assert_eq!(repeat_start["changed"], false);
     assert_eq!(repeat_start["runtime"]["state"], "started");
+    assert_eq!(repeat_start["runtime"]["running"], true);
 
     let status = assura_json(
         &project,
         &["daemon", "status", project.path_str(), "--format", "json"],
     );
     assert_eq!(status["process"]["state"], "started");
-    assert_eq!(status["process"]["mode"], "managed_runtime_metadata");
-    assert_eq!(status["process"]["running"], false);
+    assert_eq!(status["process"]["mode"], "managed_process");
+    assert_eq!(status["process"]["running"], true);
+    assert!(status["process"]["pid"].as_u64().unwrap() > 0);
+    assert!(!status["process"]["listen_addr"]
+        .as_str()
+        .unwrap()
+        .is_empty());
 
     let stop = assura_json(
         &project,
@@ -93,6 +103,7 @@ fn daemon_start_stop_json_are_idempotent_and_status_reflects_runtime() {
     assert_eq!(stop["action"], "stop");
     assert_eq!(stop["changed"], true);
     assert_eq!(stop["runtime"]["state"], "stopped");
+    wait_for_pid_to_exit(started_pid);
 
     let repeat_stop = assura_json(
         &project,
@@ -111,6 +122,7 @@ fn daemon_restart_and_logs_json_use_runtime_area() {
         &["daemon", "start", project.path_str(), "--format", "json"],
     );
     assert_eq!(start["runtime"]["state"], "started");
+    let first_pid = start["runtime"]["pid"].as_u64().unwrap() as u32;
 
     let restart = assura_json(
         &project,
@@ -119,6 +131,9 @@ fn daemon_restart_and_logs_json_use_runtime_area() {
     assert_eq!(restart["action"], "restart");
     assert_eq!(restart["changed"], true);
     assert_eq!(restart["runtime"]["state"], "started");
+    let restart_pid = restart["runtime"]["pid"].as_u64().unwrap() as u32;
+    assert_ne!(restart_pid, first_pid);
+    wait_for_pid_to_exit(first_pid);
 
     let repeat_restart = assura_json(
         &project,
@@ -127,6 +142,9 @@ fn daemon_restart_and_logs_json_use_runtime_area() {
     assert_eq!(repeat_restart["action"], "restart");
     assert_eq!(repeat_restart["changed"], true);
     assert_eq!(repeat_restart["runtime"]["state"], "started");
+    let repeat_restart_pid = repeat_restart["runtime"]["pid"].as_u64().unwrap() as u32;
+    assert_ne!(repeat_restart_pid, restart_pid);
+    wait_for_pid_to_exit(restart_pid);
 
     let logs = assura_json(
         &project,
@@ -146,8 +164,7 @@ fn daemon_restart_and_logs_json_use_runtime_area() {
         .unwrap()
         .ends_with(".assura/daemon/daemon.log"));
     assert_eq!(logs["tail"], 10);
-    assert_eq!(logs["returned_lines"], 5);
-    assert_eq!(logs["truncated"], false);
+    assert!(logs["returned_lines"].as_u64().unwrap() <= 10);
     assert!(logs["lines"]
         .as_array()
         .unwrap()
@@ -168,6 +185,13 @@ fn daemon_restart_and_logs_json_use_runtime_area() {
     );
     assert_eq!(truncated["returned_lines"], 2);
     assert_eq!(truncated["truncated"], true);
+
+    let stop = assura_json(
+        &project,
+        &["daemon", "stop", project.path_str(), "--format", "json"],
+    );
+    assert_eq!(stop["runtime"]["state"], "stopped");
+    wait_for_pid_to_exit(repeat_restart_pid);
 }
 
 #[test]
@@ -304,6 +328,199 @@ fn daemon_check_path_json_wraps_structure_report_with_health() {
     assert_eq!(json["schema"], "assura.daemon.check_path.v1");
     assert_eq!(json["health"]["state"], "running");
     assert_eq!(json["report"]["success"], true);
+}
+
+#[test]
+fn daemon_check_path_json_uses_running_ipc_process() {
+    let project = daemon_project();
+
+    let start = assura_json(
+        &project,
+        &["daemon", "start", project.path_str(), "--format", "json"],
+    );
+    assert_eq!(start["runtime"]["running"], true);
+
+    let json = assura_json(
+        &project,
+        &[
+            "daemon",
+            "check-path",
+            project.path_str(),
+            "--changed",
+            "docs/note.md",
+            "--format",
+            "json",
+        ],
+    );
+
+    assert_eq!(json["schema"], "assura.daemon.check_path.v1");
+    assert_eq!(json["protocol_version"], "assura.daemon.v1");
+    assert_eq!(json["health"]["state"], "running");
+    assert_eq!(json["report"]["success"], true);
+
+    let stop = assura_json(
+        &project,
+        &["daemon", "stop", project.path_str(), "--format", "json"],
+    );
+    assert_eq!(stop["runtime"]["state"], "stopped");
+}
+
+#[test]
+fn daemon_check_path_json_reports_stale_config_from_running_ipc_process() {
+    let project = daemon_project();
+
+    let start = assura_json(
+        &project,
+        &["daemon", "start", project.path_str(), "--format", "json"],
+    );
+    assert_eq!(start["runtime"]["running"], true);
+    fs::write(
+        project.path().join(".assura/config.yml"),
+        r#"
+structure:
+  docs/:
+    files:
+      naming_patterns:
+        "*.md": snake_case
+"#,
+    )
+    .unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_assura"))
+        .args([
+            "daemon",
+            "check-path",
+            project.path_str(),
+            "--changed",
+            "docs/note.md",
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(3));
+    let json: Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(json["schema"], "assura.daemon.error.v1");
+    assert_eq!(json["protocol_version"], "assura.daemon.v1");
+    assert_eq!(json["health"]["state"], "stale");
+
+    let status = assura_json(
+        &project,
+        &["daemon", "status", project.path_str(), "--format", "json"],
+    );
+    assert_eq!(status["process"]["state"], "stale");
+    assert_eq!(status["process"]["running"], false);
+
+    let doctor = assura_json(
+        &project,
+        &["daemon", "doctor", project.path_str(), "--format", "json"],
+    );
+    assert!(doctor["checks"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|check| { check["id"] == "managed_process" && check["status"] == "error" }));
+
+    let stop = assura_json(
+        &project,
+        &["daemon", "stop", project.path_str(), "--format", "json"],
+    );
+    assert_eq!(stop["runtime"]["state"], "stopped");
+}
+
+#[test]
+fn daemon_stop_ignores_stale_metadata_for_unverified_pid() {
+    let project = daemon_project();
+
+    let mut child = Command::new(env!("CARGO_BIN_EXE_assura-full"))
+        .args([
+            "daemon",
+            "serve",
+            project.path_str(),
+            "--listen",
+            "127.0.0.1:0",
+        ])
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
+        .spawn()
+        .unwrap();
+    let pid = child.id();
+    let status = serde_json::json!({
+        "schema": "assura.daemon.runtime-status.v1",
+        "protocol_version": "assura.daemon.v1",
+        "state": "started",
+        "running": true,
+        "pid": pid,
+        "socket_path": null,
+        "listen_addr": "127.0.0.1:9",
+        "mode": "managed_process",
+        "message": "stale test fixture",
+        "updated_at_unix": 1,
+        "health": {
+            "state": "running",
+            "reason": "stale test fixture",
+            "project_root": project.path_str(),
+            "config_path": project.path().join(".assura/config.yml"),
+            "generation": 1,
+            "runtime_paths": {
+                "status_dir": project.path().join(".assura/daemon"),
+                "status_file": project.path().join(".assura/daemon/status.json"),
+                "log_file": project.path().join(".assura/daemon/daemon.log")
+            },
+            "fallback_command": format!("assura check --format json {}", project.path_str())
+        }
+    });
+    fs::create_dir_all(project.path().join(".assura/daemon")).unwrap();
+    fs::write(
+        project.path().join(".assura/daemon/status.json"),
+        serde_json::to_string_pretty(&status).unwrap(),
+    )
+    .unwrap();
+
+    let stop = assura_json(
+        &project,
+        &["daemon", "stop", project.path_str(), "--format", "json"],
+    );
+    assert_eq!(stop["changed"], false);
+    assert!(pid_is_running(pid));
+
+    let _ = child.kill();
+    let _ = child.wait();
+}
+
+#[test]
+fn daemon_status_reports_crashed_process_without_fresh_running_state() {
+    let project = daemon_project();
+
+    let start = assura_json(
+        &project,
+        &["daemon", "start", project.path_str(), "--format", "json"],
+    );
+    let pid = start["runtime"]["pid"].as_u64().unwrap() as u32;
+    terminate_pid(pid);
+
+    let status = assura_json(
+        &project,
+        &["daemon", "status", project.path_str(), "--format", "json"],
+    );
+
+    assert_eq!(status["process"]["state"], "crashed");
+    assert_eq!(status["process"]["running"], false);
+    assert!(status["process"]["message"]
+        .as_str()
+        .unwrap()
+        .contains("not reachable"));
+
+    let doctor = assura_json(
+        &project,
+        &["daemon", "doctor", project.path_str(), "--format", "json"],
+    );
+    assert!(doctor["checks"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|check| { check["id"] == "managed_process" && check["status"] == "error" }));
 }
 
 #[test]
@@ -572,4 +789,58 @@ fn git(project: &DaemonProject, args: &[&str]) {
         String::from_utf8_lossy(&output.stdout),
         String::from_utf8_lossy(&output.stderr)
     );
+}
+
+fn terminate_pid(pid: u32) {
+    #[cfg(unix)]
+    let output = Command::new("kill").arg(pid.to_string()).output().unwrap();
+
+    #[cfg(windows)]
+    let output = Command::new("taskkill")
+        .args(["/PID", &pid.to_string(), "/T", "/F"])
+        .output()
+        .unwrap();
+
+    assert!(
+        output.status.success(),
+        "failed to terminate pid {pid}: stdout={} stderr={}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    std::thread::sleep(std::time::Duration::from_millis(200));
+}
+
+fn wait_for_pid_to_exit(pid: u32) {
+    for _ in 0..30 {
+        if !pid_is_running(pid) {
+            return;
+        }
+        std::thread::sleep(std::time::Duration::from_millis(100));
+    }
+    panic!("pid {pid} was still running");
+}
+
+fn pid_is_running(pid: u32) -> bool {
+    #[cfg(unix)]
+    {
+        Command::new("kill")
+            .arg("-0")
+            .arg(pid.to_string())
+            .stderr(std::process::Stdio::null())
+            .status()
+            .map(|status| status.success())
+            .unwrap_or(false)
+    }
+
+    #[cfg(windows)]
+    {
+        Command::new("tasklist")
+            .args(["/FI", &format!("PID eq {pid}")])
+            .output()
+            .map(|output| {
+                output.status.success()
+                    && String::from_utf8_lossy(&output.stdout).contains(&pid.to_string())
+            })
+            .unwrap_or(false)
+    }
 }

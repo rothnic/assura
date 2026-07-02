@@ -3,7 +3,7 @@
 This spec applies when changing `assura daemon` management commands used by
 humans, editors, hooks, and agents.
 
-## Scenario: Management Preview Commands
+## Scenario: Managed Local Daemon Commands
 
 ### 1. Scope / Trigger
 
@@ -11,9 +11,9 @@ humans, editors, hooks, and agents.
   contracts.
 - The daemon CLI must reuse the shared daemon/client state contract instead of
   adding editor-only or agent-specific lifecycle behavior.
-- Experimental preview commands may expose lifecycle placeholders, but they
-  must not advertise unimplemented `start`, `stop`, `restart`, or `logs`
-  behavior as available.
+- Experimental daemon commands may expose only the process and IPC behavior
+  that is implemented and tested. Keep editor, agent, reference, and hosted
+  daemon claims out of this contract until their separate goals prove them.
 
 ### 2. Signatures
 
@@ -33,6 +33,9 @@ humans, editors, hooks, and agents.
 - `status` emits schema `assura.daemon.status.v1` with
   `protocol_version`, `health`, `project`, `process`, and `management`
   fields.
+- `status.process` includes `state`, `running`, `pid`, `socket_path`,
+  `listen_addr`, `mode`, `message`, and `updated_at_unix`. A started daemon
+  must be probed over IPC before `running = true` is reported.
 - `status.project` includes `project_root`, `config_path`,
   `config_fingerprint`, and git `dirty_paths`. Non-git projects return an
   empty dirty path list.
@@ -48,9 +51,12 @@ humans, editors, hooks, and agents.
 - Runtime paths must stay under the explicit daemon runtime area exposed by
   `DaemonRuntimePaths`; do not write status, lock, or log files directly into
   `.assura/` root.
-- Lifecycle commands in this preview manage project-local runtime metadata and
-  logs. Do not claim a long-running socket/process daemon until that server is
-  implemented and tested.
+- Lifecycle commands manage a project-local daemon process and log/status
+  files. `start` launches the hidden `daemon serve` process; `stop` and
+  `restart` terminate or replace it idempotently.
+- The initial IPC protocol is versioned as `assura.daemon.v1` and supports
+  health probes plus changed-path structure checks. Broader content/reference
+  serving remains outside this slice unless covered by separate tests.
 
 ### 4. Validation & Error Matrix
 
@@ -60,13 +66,14 @@ humans, editors, hooks, and agents.
 | `status` runs in a git repository with local changes | Return changed or untracked paths in `project.dirty_paths`. |
 | `status` can read config | Return a stable hex `project.config_fingerprint`. |
 | Project cannot load | `status` returns JSON health with `state = "unavailable"`; `doctor` returns JSON diagnostics and exits with runtime error. |
-| `start` runs twice | First call returns `changed = true`; repeated call returns `changed = false` with runtime `state = "started"`. |
+| `start` runs twice | First call returns `changed = true`; repeated call returns `changed = false` with runtime `state = "started"` and `running = true`. |
 | `stop` runs twice | First call after start returns `changed = true`; repeated call returns `changed = false` with runtime `state = "stopped"`. |
 | `restart` runs after start | Return `action = "restart"`, `changed = true`, runtime `state = "started"`, and append a runtime log entry. |
 | `logs --tail <n>` runs | Return at most the last `<n>` lines with line counts and truncation metadata. |
+| Managed daemon process exits unexpectedly | `status` returns `process.state = "crashed"` and `process.running = false`. |
+| `check-path` runs while the daemon is running | Return schema `assura.daemon.check_path.v1` with `protocol_version = "assura.daemon.v1"` from daemon IPC. |
 | References mode omits all selectors or selects more than one | Return configuration error before loading daemon state. |
 | Daemon state is stale | Return schema `assura.daemon.error.v1` with structured stale health in JSON/YAML modes. |
-| Long-running socket/process daemon is not implemented | Keep support docs experimental/roadmap and keep process `running = false`. |
 
 ### 5. Good/Base/Bad Cases
 
@@ -74,11 +81,14 @@ humans, editors, hooks, and agents.
   machine-readable `project_state` error with a remediation command.
 - Good: repeated `daemon start --format json` and
   `daemon stop --format json` calls are idempotent.
+- Good: `daemon status --format json` after `daemon start` reports
+  `process.running = true`, a PID, and a local IPC address only after a
+  successful protocol probe.
 - Base: `daemon status --format json` on a valid project reports protocol,
   project metadata, config fingerprint, dirty paths, process metadata,
   management hints, and health.
-- Bad: `daemon start --format json` claims `process.running = true` before a
-  real long-running process or socket server exists.
+- Bad: `daemon status --format json` reports `process.running = true` from a
+  stale runtime file without probing the daemon process.
 
 ### 6. Tests Required
 
@@ -87,6 +97,7 @@ humans, editors, hooks, and agents.
 - CLI tests for status config fingerprint and git dirty paths.
 - CLI tests for idempotent start/stop, restart, runtime status files, and
   bounded logs.
+- CLI tests for IPC-backed changed-path checks and crashed-process status.
 - CLI tests for doctor success and unavailable-project remediation.
 - Parity tests showing `daemon references --source` and `--target` match the
   corresponding `content references` graph output.
@@ -105,7 +116,7 @@ humans, editors, hooks, and agents.
 }
 ```
 
-#### Correct
+#### Correct When Stopped Or Not Started
 
 ```json
 {
@@ -116,5 +127,18 @@ humans, editors, hooks, and agents.
 }
 ```
 
-Keep process status honest until a long-running process or socket server exists,
-even when runtime metadata lifecycle commands are available.
+#### Correct When Started And Probed
+
+```json
+{
+  "process": {
+    "running": true,
+    "mode": "managed_process",
+    "pid": 12345,
+    "listen_addr": "unix:.assura/daemon/assura.sock"
+  }
+}
+```
+
+Keep process status honest by probing the managed daemon before reporting it as
+fresh and running.

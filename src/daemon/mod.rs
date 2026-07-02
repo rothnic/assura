@@ -129,6 +129,14 @@ impl LocalDaemonCore {
         }
     }
 
+    /// Return daemon health after probing whether warm state is still fresh
+    /// enough for status-style callers to trust.
+    pub fn probe_health(&mut self) -> Result<DaemonHealth, DaemonCoreError> {
+        self.ensure_config_fresh()?;
+        self.mark_degraded_if_project_changed()?;
+        Ok(self.health())
+    }
+
     /// Rebuild project state after a known stale or degraded condition.
     pub fn refresh(&mut self) -> Result<DaemonHealth, DaemonCoreError> {
         self.state = DaemonHealthState::Warming;
