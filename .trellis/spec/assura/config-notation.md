@@ -675,6 +675,47 @@ claim tokens that must have current evidence files. Claim patterns are literal
 tokens or glob-style token patterns. Do not use it as broad natural-language
 stale-prose detection or automatic archival.
 
+Release contract policies use `extensions.release_contracts`:
+
+```yaml
+extensions:
+  release_contracts:
+    - id: release_archives
+      severity: high
+      artifacts:
+        - name: assura-linux-x86_64.tar.gz
+          checksum_sidecar: true
+      workflow_files:
+        - .github/workflows/release.yml
+      docs_files:
+        - docs/release-notes.md
+      installer_files:
+        - website/public/install.sh
+      allowed_url_branches:
+        - master
+```
+
+Use this rule for release artifact, checksum, workflow, docs, installer, and
+branch-reference synchronization. Do not use it as a release publisher,
+artifact builder, or substitute for release automation.
+
+Repository-reference policies use `extensions.repository_references`:
+
+```yaml
+extensions:
+  repository_references:
+    - id: source_refs
+      severity: high
+      paths:
+        - "src/**"
+```
+
+Use this rule for opt-in diagnostics when supported source, comment, docstring,
+or string-literal references point at missing files, missing Markdown anchors,
+or invalid line anchors. Do not use it as the source of truth for
+lower-confidence repository-reference candidates; those remain graph context
+through `assura content references` and context packs.
+
 ## Relationship Boundary
 
 `extensions.custom_constraints` remains an experimental first-party execution
@@ -682,6 +723,15 @@ surface for specialized constraints. It is not the preferred notation for common
 repo relationships. Common source-to-test, package-to-doc, and aggregate-section
 relationships belong in `structure:` through captures, `exists:1`, `needs:`,
 and `provides:`.
+
+`extensions.relationships` is an internal generated first-party policy family.
+It is normalized from concise `structure` notation and should not be the normal
+hand-authored surface. Users should write the structure entries that produce the
+relationship instead.
+
+For the full support boundary between first-party `extensions.*` policies,
+local CLI contracts, internal Rust APIs, and deferred public plugin APIs, see
+[`docs/extension-api-boundaries.md`](../../../docs/extension-api-boundaries.md).
 
 ## Non-Goals
 

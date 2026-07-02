@@ -6,9 +6,13 @@ sidebar:
   order: 2
 ---
 
-The supported v0.1 API is the command-line interface and its report formats.
+The supported API is the local command-line interface and its report formats.
 Rust library APIs, TypeScript plugin APIs, agent profiles, and custom runtime
-constraints are not stable public surfaces in this release.
+constraints are not stable public surfaces in this release. See
+[Extension API Boundaries](/reference/extension-api-boundaries/) for the
+canonical distinction between first-party `extensions.*` config policies,
+supported local JSON contracts, internal Rust modules, and deferred public
+plugin APIs.
 
 > **Current scope**
 >
@@ -86,6 +90,18 @@ assura agent integration doctor codex .
 
 MCP is not required for local agent usage. If an MCP adapter is added later, it
 should wrap these same CLI/library contracts.
+
+## Extension/API Boundary
+
+Current `extensions.*` configuration families are first-party policies executed
+by `assura check`. They are not a public third-party plugin API and they do not
+provide remote plugin loading, shell-executed validation plugins, plugin
+marketplaces, TypeScript plugin APIs, or semver-stable Rust library APIs.
+
+Automation should integrate through the local CLI, daemon, content, agent, and
+editor contracts documented on this page. Public plugin API work is roadmap-only
+until a separate goal proves sandboxing, versioning, distribution, security,
+diagnostics, and performance gates.
 
 ## Editor Surface
 

@@ -138,6 +138,12 @@
           "summary": "Support a beta local VS Code package through shared daemon, editor-session, and CLI contracts.",
           "detail_path": "docs/goals/assura-vscode-supported-extension.md",
           "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-vscode-supported-extension.md"
+        },
+        {
+          "label": "Extension APIs",
+          "summary": "Clarify first-party extensions, internal Rust APIs, and deferred plugin surfaces.",
+          "detail_path": "docs/goals/assura-extension-api-clarification.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-extension-api-clarification.md"
         }
       ]
     },
@@ -152,10 +158,10 @@
           "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-post-beta-capabilities-program.md"
         },
         {
-          "label": "Extension APIs",
-          "summary": "Clarify first-party extensions, internal Rust APIs, and deferred plugin surfaces.",
-          "detail_path": "docs/goals/assura-extension-api-clarification.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-extension-api-clarification.md"
+          "label": "LS-Lint Parity",
+          "summary": "Reassess row-by-row LS-Lint performance and explain any CLI-floor cost.",
+          "detail_path": "docs/goals/assura-ls-lint-performance-reassessment.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-ls-lint-performance-reassessment.md"
         }
       ]
     },
@@ -163,12 +169,6 @@
       "status": "next",
       "title": "Next",
       "items": [
-        {
-          "label": "LS-Lint Parity",
-          "summary": "Reassess row-by-row LS-Lint performance and explain any CLI-floor cost.",
-          "detail_path": "docs/goals/assura-ls-lint-performance-reassessment.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-ls-lint-performance-reassessment.md"
-        },
         {
           "label": "Release Hardening",
           "summary": "Align support docs, compatibility notes, target-state checks, and release evidence.",

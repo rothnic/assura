@@ -170,7 +170,27 @@ command names, or one `--format` value per agent.
 | --- | --- | --- |
 | `rust:content_repository` | Experimental | `tests/content_runtime_validation.rs` exercises the first repo-native content runtime validation slice. |
 
-## Extension Compatibility
+## Extension/API Boundary Compatibility
+
+[`docs/extension-api-boundaries.md`](extension-api-boundaries.md) is the
+canonical pre-1.0 boundary for extension and plugin language. Current
+`extensions.*` entries are first-party config policy families executed by
+`assura check`; they are not a public third-party plugin API, remote plugin
+loader, shell-executed validator system, plugin marketplace, TypeScript plugin
+SDK, or semver-stable Rust library API.
+
+| Surface | Status | Evidence |
+| --- | --- | --- |
+| `config:extensions.custom_constraints` | Experimental first-party | Custom constraint tests prove specialized built-in relationship checks and command-surface docs checks without shell execution, remote loading, or marketplace behavior. |
+| `config:extensions.release_contracts` | Experimental first-party | Release contract checks prove artifact, checksum, workflow, docs, installer, and branch-reference synchronization for configured release artifacts. |
+| `config:extensions.support_matrices` | Experimental first-party | Support matrix checks prove configured commands, Rust export families, docs claim tables, manifest packages, and binaries are classified with the supported status vocabulary. |
+| `config:extensions.manifest_semantics` | Experimental first-party | Manifest semantics checks prove configured Cargo package metadata, publish status, descriptions, keywords, and declared binaries. |
+| `config:extensions.test_relationships` | Experimental first-party | Test relationship checks prove configured source/test evidence, fixture-family ownership, and accepted manual-test exceptions. |
+| `config:extensions.module_topologies` | Experimental first-party | Module topology checks prove configured Rust module-family ownership, roots, public export classification, and internal visibility boundaries. |
+| `config:extensions.docs_lifecycles` | Experimental first-party | Docs lifecycle checks prove configured active/historical docs, frontmatter status, stale-claim evidence, and historical exceptions. |
+| `config:extensions.repository_references` | Experimental first-party | Repository-reference check tests prove opt-in source/comment/docstring diagnostics for missing targets, missing Markdown anchors, and invalid line anchors. |
+| `config:extensions.relationships` | Internal generated first-party | Structure notation tests prove capture relationships are normalized from `structure` captures, `exists:1`, `needs`, and `provides`. |
+| Public plugin API or SDK | Roadmap only | No current command, package, Rust module, or docs surface provides remote plugin loading, shell-executed validators, a plugin marketplace, TypeScript plugin APIs, or semver-stable Rust APIs. |
 
 Common repository relationships are authored in `structure` with single-brace
 captures, `exists:1`, `needs`, and `provides`. Custom constraints are
