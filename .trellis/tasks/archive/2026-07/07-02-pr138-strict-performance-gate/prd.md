@@ -29,7 +29,7 @@ accepted fixture.
 
 - [x] `cargo xtask performance-no-slower` passes on a regenerated comparison
       report.
-- [ ] CI Performance Report passes for PR #138.
+- [x] CI Performance Report passes for PR #138.
 - [x] Accepted LS-Lint-equivalent fixtures remain strictly no-slower.
 - [x] Performance report diagnostic rows are not skipped due to missing
       check-only binaries.
@@ -65,6 +65,11 @@ The regenerated report passed the strict no-slower gate. For
 `many_configured_scopes_regression`, local medians were `assura-cli`
 `47.997 ms` and `ls-lint-cli` `49.064 ms`; no rows were skipped for missing
 check-only binaries.
+
+CI run `28603514488` also passed Performance Report. For
+`many_configured_scopes_regression`, CI medians were `assura-cli` `16.269 ms`
+and `ls-lint-cli` `17.794 ms`; the report had zero skipped rows for that
+fixture.
 
 ## Out Of Scope
 
