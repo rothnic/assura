@@ -113,6 +113,11 @@ next implementation slice should measure `rumdl` lint/fix cost and decide
 between a subprocess adapter and an explicit MSRV increase for direct library
 integration.
 
+The adapter decision is now recorded in
+`docs/analysis/2026-07-02-rumdl-adapter-decision.md`: keep Assura's current
+Rust 1.70 MSRV for the next slice and prototype `rumdl` as an optional
+subprocess adapter before considering a direct dependency or MSRV increase.
+
 Raw default checks against the `valid` fixture were intentionally not recorded
 as passing compatibility evidence. `rumdl`, `mdlint`, `mado`, and
 `markdownlint-cli2` all reported findings against the current Assura-valid

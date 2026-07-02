@@ -184,3 +184,8 @@ structure validation.
   because it produced JSON diagnostics with fix metadata across the target
   markdownlint-style fixture rules; `mdlint` requires extra caution because it
   rewrote the isolated fixture in check mode.
+- 2026-07-02: Recorded the `rumdl` adapter decision in
+  `docs/analysis/2026-07-02-rumdl-adapter-decision.md`: keep Assura's Rust
+  1.70 MSRV for now, prototype `rumdl` as an optional subprocess adapter, and
+  defer any direct dependency or MSRV increase until adapter behavior and
+  performance are proved.
