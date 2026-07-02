@@ -1,0 +1,271 @@
+{
+  "candidates": [
+    {
+      "execution_mode": "target-debug-binary",
+      "exit_code": 1,
+      "name": "assura-current",
+      "rules": [
+        "markdown_duplicate_heading",
+        "markdown_link_heading_anchor",
+        "markdown_required_section",
+        "markdown_trailing_spaces"
+      ],
+      "safe_fix_timing": {
+        "apply": {
+          "errors": [],
+          "failed_runs": 0,
+          "iterations": 3,
+          "max_ms": 27.406350999999997,
+          "median_ms": 23.259553,
+          "min_ms": 21.658436,
+          "p95_ms": 27.406350999999997,
+          "samples_ms": [
+            21.658436,
+            23.259553,
+            27.406350999999997
+          ],
+          "successful_runs": 3
+        },
+        "dry_run": {
+          "errors": [],
+          "failed_runs": 0,
+          "iterations": 3,
+          "max_ms": 22.936671,
+          "median_ms": 21.119744999999998,
+          "min_ms": 19.679289,
+          "p95_ms": 22.936671,
+          "samples_ms": [
+            19.679289,
+            21.119744999999998,
+            22.936671
+          ],
+          "successful_runs": 3
+        }
+      },
+      "status": "ran_with_findings",
+      "stderr": "",
+      "stdout_bytes": 2645,
+      "timing": {
+        "errors": [],
+        "failed_runs": 0,
+        "iterations": 3,
+        "max_ms": 8.293197000000001,
+        "median_ms": 8.184413,
+        "min_ms": 7.835132,
+        "p95_ms": 8.293197000000001,
+        "samples_ms": [
+          7.835132,
+          8.184413,
+          8.293197000000001
+        ],
+        "successful_runs": 3
+      }
+    },
+    {
+      "available": true,
+      "binary": "rumdl",
+      "exit_code": 1,
+      "fix_supported": true,
+      "fix_timing": {
+        "errors": [],
+        "evidence_scope": "candidate_fix_command_timing_only",
+        "failed_runs": 0,
+        "iterations": 3,
+        "max_ms": 22.067943,
+        "median_ms": 21.426921,
+        "min_ms": 20.438043,
+        "p95_ms": 22.067943,
+        "post_fix_validation": false,
+        "samples_ms": [
+          20.438043,
+          21.426921,
+          22.067943
+        ],
+        "success_semantics": "expected_exit_status_and_no_known_fix_failure_marker",
+        "successful_runs": 3,
+        "supported": true
+      },
+      "name": "rumdl",
+      "probe_fixture_root": "target/markdown-engine-probe/rumdl/frontmatter-link-heavy",
+      "probe_markdown_files": [
+        "target/markdown-engine-probe/rumdl/frontmatter-link-heavy/docs/architecture.md",
+        "target/markdown-engine-probe/rumdl/frontmatter-link-heavy/docs/reference.md"
+      ],
+      "status": "ran_with_findings",
+      "stderr_bytes": 0,
+      "stderr_snippet": "",
+      "stdout_bytes": 1745,
+      "stdout_snippet": "[\n  {\n    \"file\": \"target/markdown-engine-probe/rumdl/frontmatter-link-heavy/docs/architecture.md\",\n    \"line\": 13,\n    \"column\": 3,\n    \"rule\": \"MD025\",\n    \"message\": \"Multiple top-level headings (level 1) in the same document\",\n    \"severity\": \"error\",\n    \"fixable\": true,\n    \"fix\": {\n      \"range\": {\n        \"start\": 196,\n        \"end\": 218\n      },\n      \"replacement\": \"## Runtime Architecture\"\n    }\n  },\n  {\n    \"file\": \"target/markdown-engine-probe/rumdl/frontmatter-link-heavy/docs/architecture.md\",\n    \"line\": 18,\n    \"column\": 1,\n    \"rule\": \"MD009\",\n    \"message\": \"Empty line has trailing spaces\",\n    \"severity\": \"warning\",\n    \"fixable\": true,\n    \"fix\": {\n      \"range\": {\n        \"start\": 391,\n        \"end\": 394\n      },\n      \"replacement\": \"\"\n    }\n  },\n  {\n    \"file\": \"target/markdown-engine-probe/rumdl/frontmatter-link-heavy/docs/architecture.md\",\n    \"line\": 29,\n    \"column\": 4,\n    \"rule\": \"MD024\",\n    \"message\": \"Duplicate heading: 'Usage'.\",\n    \"severity\": \"error\",\n    \"fixable\": false,\n    \"fix\": null\n  },\n  {\n    \"file\": \"target/markdown-engine-probe/rumdl/frontmatter-link-heavy/docs/architecture.md\",\n    \"line\": 16,\n    \"column\": 1,\n    \"rule\": \"MD051\",\n    \"message\": \"Link fragment 'missing-anchor' not found in './reference.md'\",\n    \"severity\": \"error\",\n    \"fixable\": false,\n    \"fix\": null\n  },\n  {\n    \"file\": \"target/markdown-engine-probe/rumdl/frontmatter-link-heavy/docs/reference.md\",\n    \"line\": 9,\n    \"column\": 3,\n    \"rule\": \"MD025\",\n    \"message\": \"Multiple top-level headings (level 1) in the same document\",\n    \"severity\": \"error\",\n    \"fixable\": true,\n    \"fix\": {\n      \"range\": {\n        \"start\": 100,\n        \"end\": 113\n      },\n      \"replacement\": \"## Runtime API\"\n    }\n  }\n]",
+      "timing": {
+        "errors": [],
+        "failed_runs": 0,
+        "iterations": 3,
+        "max_ms": 24.158411,
+        "median_ms": 21.957607,
+        "min_ms": 21.305327,
+        "p95_ms": 24.158411,
+        "samples_ms": [
+          21.305327,
+          21.957607,
+          24.158411
+        ],
+        "successful_runs": 3
+      },
+      "version": "rumdl 0.2.27"
+    },
+    {
+      "available": true,
+      "binary": "mdlint",
+      "exit_code": 1,
+      "fix_supported": true,
+      "fix_timing": {
+        "errors": [],
+        "evidence_scope": "candidate_fix_command_timing_only",
+        "failed_runs": 0,
+        "iterations": 3,
+        "max_ms": 8.568022999999998,
+        "median_ms": 7.8051509999999995,
+        "min_ms": 7.180225,
+        "p95_ms": 8.568022999999998,
+        "post_fix_validation": false,
+        "samples_ms": [
+          7.180225,
+          7.8051509999999995,
+          8.568022999999998
+        ],
+        "success_semantics": "expected_exit_status_and_no_known_fix_failure_marker",
+        "successful_runs": 3,
+        "supported": true
+      },
+      "name": "mdlint",
+      "probe_fixture_root": "target/markdown-engine-probe/mdlint/frontmatter-link-heavy",
+      "probe_markdown_files": [
+        "target/markdown-engine-probe/mdlint/frontmatter-link-heavy/docs/architecture.md",
+        "target/markdown-engine-probe/mdlint/frontmatter-link-heavy/docs/reference.md"
+      ],
+      "status": "ran_with_findings",
+      "stderr_bytes": 87,
+      "stderr_snippet": "Fixed: target/markdown-engine-probe/mdlint/frontmatter-link-heavy/docs/architecture.md",
+      "stdout_bytes": 1588,
+      "stdout_snippet": "{\"files\":[{\"path\":\"target/markdown-engine-probe/mdlint/frontmatter-link-heavy/docs/architecture.md\",\"violations\":[{\"line\":1,\"column\":1,\"rule\":\"MD041\",\"message\":\"First line in file should be a top-level heading\"},{\"line\":6,\"column\":1,\"rule\":\"MD032\",\"message\":\"List should be surrounded by blank lines\"},{\"line\":7,\"column\":1,\"rule\":\"MD032\",\"message\":\"List should be surrounded by blank lines\"},{\"line\":8,\"column\":1,\"rule\":\"MD032\",\"message\":\"List should be surrounded by blank lines\"},{\"line\":10,\"column\":1,\"rule\":\"MD003\",\"message\":\"Heading style should be Atx but found Setext\"},{\"line\":11,\"column\":1,\"rule\":\"MD032\",\"message\":\"List should be surrounded by blank lines\"},{\"line\":15,\"column\":1,\"rule\":\"MD051\",\"message\":\"Link fragment 'stable-api' does not match any heading\"},{\"line\":16,\"column\":1,\"rule\":\"MD051\",\"message\":\"Link fragment 'missing-anchor' does not match any heading\"},{\"line\":18,\"column\":1,\"rule\":\"MD009\",\"message\":\"Trailing spaces (3 spaces)\",\"fixable\":true},{\"line\":29,\"column\":1,\"rule\":\"MD024\",\"message\":\"Multiple headings with the same content: \\\"Usage\\\" (first at line 19)\"}]},{\"path\":\"target/markdown-engine-probe/mdlint/frontmatter-link-heavy/docs/reference.md\",\"violations\":[{\"line\":1,\"column\":1,\"rule\":\"MD041\",\"message\":\"First line in file should be a top-level heading\"},{\"line\":6,\"column\":1,\"rule\":\"MD003\",\"message\":\"Heading style should be Atx but found Setext\"},{\"line\":6,\"column\":1,\"rule\":\"MD032\",\"message\":\"List should be surrounded by blank lines\"},{\"line\":7,\"column\":1,\"rule\":\"MD032\",\"message\":\"List should be surrounded by blank lines\"}]}],\"total_errors\":14}",
+      "timing": {
+        "errors": [],
+        "failed_runs": 0,
+        "iterations": 3,
+        "max_ms": 8.5462,
+        "median_ms": 7.920622000000001,
+        "min_ms": 7.727218,
+        "p95_ms": 8.5462,
+        "samples_ms": [
+          7.727218,
+          7.920622000000001,
+          8.5462
+        ],
+        "successful_runs": 3
+      },
+      "version": "mdlint 0.3.18"
+    },
+    {
+      "available": true,
+      "binary": "mado",
+      "exit_code": 1,
+      "fix_supported": false,
+      "fix_timing": {
+        "reason": "candidate has no observed deterministic fix command for this probe",
+        "supported": false
+      },
+      "name": "mado",
+      "probe_fixture_root": "target/markdown-engine-probe/mado/frontmatter-link-heavy",
+      "probe_markdown_files": [
+        "target/markdown-engine-probe/mado/frontmatter-link-heavy/docs/architecture.md",
+        "target/markdown-engine-probe/mado/frontmatter-link-heavy/docs/reference.md"
+      ],
+      "status": "ran_with_findings",
+      "stderr_bytes": 0,
+      "stderr_snippet": "",
+      "stdout_bytes": 586,
+      "stdout_snippet": "target/markdown-engine-probe/mado/frontmatter-link-heavy/docs/architecture.md:1:1 MD041/first-line-h1 First line in file should be a top level header\ntarget/markdown-engine-probe/mado/frontmatter-link-heavy/docs/architecture.md:18:1 MD009/no-trailing-spaces Trailing spaces\ntarget/markdown-engine-probe/mado/frontmatter-link-heavy/docs/architecture.md:29:1 MD024/no-duplicate-header Multiple headers with the same content\ntarget/markdown-engine-probe/mado/frontmatter-link-heavy/docs/reference.md:1:1 MD041/first-line-h1 First line in file should be a top level header\n\nFound 4 errors.",
+      "timing": {
+        "errors": [],
+        "failed_runs": 0,
+        "iterations": 3,
+        "max_ms": 10.105284000000001,
+        "median_ms": 10.083992,
+        "min_ms": 9.84049,
+        "p95_ms": 10.105284000000001,
+        "samples_ms": [
+          9.84049,
+          10.083992,
+          10.105284000000001
+        ],
+        "successful_runs": 3
+      },
+      "version": "mado 0.3.0"
+    },
+    {
+      "available": true,
+      "binary": "markdownlint-cli2",
+      "exit_code": 1,
+      "fix_supported": true,
+      "fix_timing": {
+        "errors": [],
+        "evidence_scope": "candidate_fix_command_timing_only",
+        "failed_runs": 0,
+        "iterations": 3,
+        "max_ms": 381.674367,
+        "median_ms": 376.909912,
+        "min_ms": 372.713844,
+        "p95_ms": 381.674367,
+        "post_fix_validation": false,
+        "samples_ms": [
+          372.713844,
+          376.909912,
+          381.674367
+        ],
+        "success_semantics": "expected_exit_status_and_no_known_fix_failure_marker",
+        "successful_runs": 3,
+        "supported": true
+      },
+      "name": "markdownlint-cli2",
+      "probe_fixture_root": "target/markdown-engine-probe/markdownlint-cli2/frontmatter-link-heavy",
+      "probe_markdown_files": [
+        "target/markdown-engine-probe/markdownlint-cli2/frontmatter-link-heavy/docs/architecture.md",
+        "target/markdown-engine-probe/markdownlint-cli2/frontmatter-link-heavy/docs/reference.md"
+      ],
+      "status": "ran_with_findings",
+      "stderr_bytes": 770,
+      "stderr_snippet": "target/markdown-engine-probe/markdownlint-cli2/frontmatter-link-heavy/docs/architecture.md:13 error MD025/single-title/single-h1 Multiple top-level headings in the same document [Context: \"Runtime Architecture\"]\ntarget/markdown-engine-probe/markdownlint-cli2/frontmatter-link-heavy/docs/architecture.md:18:1 error MD009/no-trailing-spaces Trailing spaces [Expected: 0 or 2; Actual: 3]\ntarget/markdown-engine-probe/markdownlint-cli2/frontmatter-link-heavy/docs/architecture.md:29 error MD024/no-duplicate-heading Multiple headings with the same content [Context: \"Usage\"]\ntarget/markdown-engine-probe/markdownlint-cli2/frontmatter-link-heavy/docs/reference.md:9 error MD025/single-title/single-h1 Multiple top-level headings in the same document [Context: \"Runtime API\"]",
+      "stdout_bytes": 283,
+      "stdout_snippet": "markdownlint-cli2 v0.23.0 (markdownlint v0.41.0)\nFinding: --json target/markdown-engine-probe/markdownlint-cli2/frontmatter-link-heavy/docs/architecture.md target/markdown-engine-probe/markdownlint-cli2/frontmatter-link-heavy/docs/reference.md\nLinting: 2 file(s)\nSummary: 4 error(s)",
+      "timing": {
+        "errors": [],
+        "failed_runs": 0,
+        "iterations": 3,
+        "max_ms": 377.175094,
+        "median_ms": 373.31192200000004,
+        "min_ms": 359.918403,
+        "p95_ms": 377.175094,
+        "samples_ms": [
+          359.918403,
+          373.31192200000004,
+          377.175094
+        ],
+        "successful_runs": 3
+      },
+      "version": "markdownlint-cli2 v0.23.0 (markdownlint v0.41.0)\nFinding: --version\nLinting: 0 file(s)\nSummary: 0 error(s)"
+    }
+  ],
+  "fixture": "frontmatter-link-heavy",
+  "fixture_path": "tests/fixtures/markdown_engine_candidates/frontmatter_link_heavy",
+  "fixture_root": "tests/fixtures/markdown_engine_candidates",
+  "iterations": 3,
+  "markdown_files": [
+    "tests/fixtures/markdown_engine_candidates/frontmatter_link_heavy/docs/architecture.md",
+    "tests/fixtures/markdown_engine_candidates/frontmatter_link_heavy/docs/reference.md"
+  ],
+  "markdown_scope": "tests/fixtures/markdown_engine_candidates/frontmatter_link_heavy/docs",
+  "matrix": "tests/fixtures/markdown_engine_candidates/matrix.json",
+  "measure": true,
+  "run_external": true,
+  "schema": "assura.markdown-engine-probe.v1"
+}

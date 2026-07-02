@@ -20,3 +20,12 @@
 {"file": ".trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine/research/markdown-engine-candidate-evaluation.md", "reason": "measured candidate evidence and decision impact for rumdl selection"}
 {"file": ".trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine/task.json", "reason": "active Trellis task branch updated for the performance-evidence slice"}
 {"file": ".trellis/spec/assura/roadmap.md", "reason": "active roadmap branch updated for the performance-evidence slice"}
+{"file": "xtask/src/main.rs", "reason": "markdown-engine-probe fixture selection plus candidate fix timing and Assura safe-fix timing"}
+{"file": "tests/fixtures/markdown_engine_candidates/matrix.json", "reason": "named representative probe profiles for invalid, frontmatter/link-heavy, large-doc, and fixable-drift workloads"}
+{"file": "tests/fixtures/markdown_engine_candidates/frontmatter_link_heavy/.assura/config.yml", "reason": "frontmatter-heavy Markdown and stale-link workload configuration for candidate timing"}
+{"file": "tests/fixtures/markdown_engine_candidates/large_doc/docs/guide.md", "reason": "larger single-document Markdown workload for candidate timing"}
+{"file": "tests/fixtures/markdown_engine_candidates/fixable_drift/docs/guide.md", "reason": "deterministic safe-fix workload for dry-run/apply timing evidence"}
+{"file": ".trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine/research/markdown-engine-probe-2026-07-02-invalid-representative.json", "reason": "measured representative profile output for the small invalid workload"}
+{"file": ".trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine/research/markdown-engine-probe-2026-07-02-frontmatter-link-heavy-representative.json", "reason": "measured representative profile output for frontmatter and link-heavy workload"}
+{"file": ".trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine/research/markdown-engine-probe-2026-07-02-large-doc-representative.json", "reason": "measured representative profile output for larger Markdown workload"}
+{"file": ".trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine/research/markdown-engine-probe-2026-07-02-fixable-drift-representative.json", "reason": "measured representative profile output for deterministic safe-fix workload"}

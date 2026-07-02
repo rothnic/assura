@@ -83,6 +83,28 @@
       ]
     }
   },
+  "probe_profiles": {
+    "invalid": {
+      "path": "invalid",
+      "markdown_scope": "invalid/docs",
+      "purpose": "Small invalid compatibility fixture with structure, markdownlint-style, reference, suppression, and safe-fix findings."
+    },
+    "frontmatter-link-heavy": {
+      "path": "frontmatter_link_heavy",
+      "markdown_scope": "frontmatter_link_heavy/docs",
+      "purpose": "Frontmatter-heavy docs with many local links, stale anchors, and repository-reference drift."
+    },
+    "large-doc": {
+      "path": "large_doc",
+      "markdown_scope": "large_doc/docs",
+      "purpose": "Large single-document Markdown workload for parser, heading, blank-line, link, and fix-cost timing."
+    },
+    "fixable-drift": {
+      "path": "fixable_drift",
+      "markdown_scope": "fixable_drift/docs",
+      "purpose": "Deterministic safe-fix workload for dry-run/apply timing and idempotence evidence."
+    }
+  },
   "rule_mappings": [
     {
       "stable_rule_id": "markdown_heading_increment",

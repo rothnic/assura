@@ -59,6 +59,7 @@ The branch `codex/markdown-engine-performance-evidence` extends
 
 ```bash
 cargo xtask markdown-engine-probe --run-external --measure --iterations 5
+cargo xtask markdown-engine-probe --fixture frontmatter-link-heavy --run-external --measure --iterations 5
 ```
 
 The default probe remains dependency-light and does not require third-party
@@ -70,6 +71,24 @@ p95, min, max, successful run count, failed run count, and errors. External
 candidates are still measured against isolated copies under
 `target/markdown-engine-probe/` so candidates that mutate files cannot write
 into source fixtures.
+
+The branch `codex/markdown-engine-representative-probes` adds
+`--fixture <name>` and records named profiles in
+`tests/fixtures/markdown_engine_candidates/matrix.json`. It also splits timing
+dimensions:
+
+- `timing`: lint/check command time for the selected profile;
+- `fix_timing`: external candidate fix command time when an observed fix mode
+  exists for that candidate. This is command timing only; it does not prove
+  post-fix correctness, idempotence, frontmatter preservation, or line-ending
+  preservation;
+- `safe_fix_timing.dry_run`: Assura deterministic Markdown safe-fix preview
+  time;
+- `safe_fix_timing.apply`: Assura deterministic Markdown safe-fix apply time
+  on an isolated copy.
+
+Supported profile names are `invalid`, `frontmatter-link-heavy`, `large-doc`,
+and `fixable-drift`.
 
 For `assura-current`, the probe uses `target/debug/assura` when that binary is
 present and records `execution_mode: target-debug-binary`; it falls back to
@@ -125,6 +144,55 @@ Assura checks.
 
 Raw output is checked in at
 `./markdown-engine-probe-2026-07-02-measured.json`.
+
+## 2026-07-02 Representative Profile Probe
+
+Local command:
+
+```bash
+cargo build --bin assura --quiet
+for fixture in invalid frontmatter-link-heavy large-doc fixable-drift; do
+  PATH="$PWD/target/markdown-engine-tools/bin:$PATH" \
+    cargo xtask markdown-engine-probe \
+      --fixture "$fixture" \
+      --run-external \
+      --measure \
+      --iterations 3 \
+    > ".trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine/research/markdown-engine-probe-2026-07-02-${fixture}-representative.json"
+done
+```
+
+Result summary, median milliseconds:
+
+| Fixture | Files | Assura check | Assura fix dry-run | Assura fix apply | `rumdl` check | `rumdl` fix cmd | `mdlint` check | `mdlint` fix cmd | `mado` check | `markdownlint-cli2` check |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `invalid` | 2 | 9.151 | 21.354 | 24.028 | 22.652 | 23.802 | 8.891 | 8.399 | 10.050 | 394.528 |
+| `frontmatter-link-heavy` | 2 | 8.184 | 21.120 | 23.260 | 21.958 | 21.427 | 7.921 | 7.805 | 10.084 | 373.312 |
+| `large-doc` | 1 | 7.680 | 19.213 | 22.380 | 19.392 | 22.456 | 6.686 | failed | 8.468 | 407.861 |
+| `fixable-drift` | 1 | 8.724 | 20.273 | 21.360 | 17.524 | 20.000 | 6.830 | failed | 10.697 | 382.809 |
+
+`mdlint` fix timing is marked failed when the command exits with a findings
+status but reports that fixes could not be applied because of overlapping fix
+ranges. The raw reports are checked in beside this note:
+
+- `./markdown-engine-probe-2026-07-02-invalid-representative.json`
+- `./markdown-engine-probe-2026-07-02-frontmatter-link-heavy-representative.json`
+- `./markdown-engine-probe-2026-07-02-large-doc-representative.json`
+- `./markdown-engine-probe-2026-07-02-fixable-drift-representative.json`
+
+Decision impact: the representative profiles improve attribution by separating
+check cost from fix command cost and by adding workloads closer to the parent
+verification story. They do not yet justify selecting `rumdl` as the default
+engine. `rumdl` remains the strongest functional fit because it has rich JSON
+diagnostics and fix metadata, but it is still slower than current Assura checks
+on these local profiles. `mdlint` remains the fastest Rust candidate in raw
+check timing, but it now has two independent fix-safety concerns: previous
+isolated probes observed unrequested fixture mutation in check mode, and this
+profile pass found failed fix application on `large-doc` and `fixable-drift`.
+External candidate fix rows are deliberately not safe-fix proof until a later
+slice validates post-fix state, idempotence, frontmatter preservation, and
+line-ending preservation. `markdownlint-cli2` remains much slower and stays a
+compatibility baseline only.
 
 ## Executable Fixture Probe
 

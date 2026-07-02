@@ -9,3 +9,9 @@
 {"file": ".trellis/spec/assura/roadmap.md", "reason": "roadmap north-star must route agents back to the parent verification story"}
 {"file": "xtask/src/main.rs", "reason": "unit coverage for markdown-engine-probe measurement option parsing and timing report summaries"}
 {"file": ".trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine/research/markdown-engine-probe-2026-07-02-measured.json", "reason": "checked measured probe output proving Rust candidate and markdownlint-cli2 timing rows"}
+{"file": "xtask/src/main.rs", "reason": "unit coverage for markdown-engine-probe fixture option parsing, candidate status, and timing summaries"}
+{"file": "tests/markdown_engine_candidate_fixture_tests.rs", "reason": "contract coverage that representative probe profiles exist and keep staged Markdown fixture expectations stable"}
+{"file": ".trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine/research/markdown-engine-probe-2026-07-02-invalid-representative.json", "reason": "checked representative timing evidence for small invalid workload"}
+{"file": ".trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine/research/markdown-engine-probe-2026-07-02-frontmatter-link-heavy-representative.json", "reason": "checked representative timing evidence for frontmatter and link-heavy workload"}
+{"file": ".trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine/research/markdown-engine-probe-2026-07-02-large-doc-representative.json", "reason": "checked representative timing evidence for large Markdown workload"}
+{"file": ".trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine/research/markdown-engine-probe-2026-07-02-fixable-drift-representative.json", "reason": "checked representative timing evidence for deterministic safe-fix workload"}

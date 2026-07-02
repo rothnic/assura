@@ -1,0 +1,264 @@
+{
+  "candidates": [
+    {
+      "execution_mode": "target-debug-binary",
+      "exit_code": 1,
+      "name": "assura-current",
+      "rules": [
+        "markdown_required_section",
+        "markdown_trailing_spaces"
+      ],
+      "safe_fix_timing": {
+        "apply": {
+          "errors": [],
+          "failed_runs": 0,
+          "iterations": 3,
+          "max_ms": 25.499551,
+          "median_ms": 21.359892,
+          "min_ms": 21.215197,
+          "p95_ms": 25.499551,
+          "samples_ms": [
+            21.215197,
+            21.359892,
+            25.499551
+          ],
+          "successful_runs": 3
+        },
+        "dry_run": {
+          "errors": [],
+          "failed_runs": 0,
+          "iterations": 3,
+          "max_ms": 20.305656,
+          "median_ms": 20.272754,
+          "min_ms": 19.374489,
+          "p95_ms": 20.305656,
+          "samples_ms": [
+            19.374489,
+            20.272754,
+            20.305656
+          ],
+          "successful_runs": 3
+        }
+      },
+      "status": "ran_with_findings",
+      "stderr": "",
+      "stdout_bytes": 1811,
+      "timing": {
+        "errors": [],
+        "failed_runs": 0,
+        "iterations": 3,
+        "max_ms": 8.808351,
+        "median_ms": 8.724010000000002,
+        "min_ms": 7.524545,
+        "p95_ms": 8.808351,
+        "samples_ms": [
+          7.524545,
+          8.724010000000002,
+          8.808351
+        ],
+        "successful_runs": 3
+      }
+    },
+    {
+      "available": true,
+      "binary": "rumdl",
+      "exit_code": 1,
+      "fix_supported": true,
+      "fix_timing": {
+        "errors": [],
+        "evidence_scope": "candidate_fix_command_timing_only",
+        "failed_runs": 0,
+        "iterations": 3,
+        "max_ms": 20.526442999999997,
+        "median_ms": 19.999603,
+        "min_ms": 17.714587,
+        "p95_ms": 20.526442999999997,
+        "post_fix_validation": false,
+        "samples_ms": [
+          17.714587,
+          19.999603,
+          20.526442999999997
+        ],
+        "success_semantics": "expected_exit_status_and_no_known_fix_failure_marker",
+        "successful_runs": 3,
+        "supported": true
+      },
+      "name": "rumdl",
+      "probe_fixture_root": "target/markdown-engine-probe/rumdl/fixable-drift",
+      "probe_markdown_files": [
+        "target/markdown-engine-probe/rumdl/fixable-drift/docs/guide.md"
+      ],
+      "status": "ran_with_findings",
+      "stderr_bytes": 0,
+      "stderr_snippet": "",
+      "stdout_bytes": 1083,
+      "stdout_snippet": "[\n  {\n    \"file\": \"target/markdown-engine-probe/rumdl/fixable-drift/docs/guide.md\",\n    \"line\": 6,\n    \"column\": 1,\n    \"rule\": \"MD009\",\n    \"message\": \"Empty line has trailing spaces\",\n    \"severity\": \"warning\",\n    \"fixable\": true,\n    \"fix\": {\n      \"range\": {\n        \"start\": 62,\n        \"end\": 65\n      },\n      \"replacement\": \"\"\n    }\n  },\n  {\n    \"file\": \"target/markdown-engine-probe/rumdl/fixable-drift/docs/guide.md\",\n    \"line\": 7,\n    \"column\": 3,\n    \"rule\": \"MD025\",\n    \"message\": \"Multiple top-level headings (level 1) in the same document\",\n    \"severity\": \"error\",\n    \"fixable\": true,\n    \"fix\": {\n      \"range\": {\n        \"start\": 66,\n        \"end\": 81\n      },\n      \"replacement\": \"## Fixable Guide\"\n    }\n  },\n  {\n    \"file\": \"target/markdown-engine-probe/rumdl/fixable-drift/docs/guide.md\",\n    \"line\": 13,\n    \"column\": 1,\n    \"rule\": \"MD009\",\n    \"message\": \"Empty line has trailing spaces\",\n    \"severity\": \"warning\",\n    \"fixable\": true,\n    \"fix\": {\n      \"range\": {\n        \"start\": 175,\n        \"end\": 178\n      },\n      \"replacement\": \"\"\n    }\n  }\n]",
+      "timing": {
+        "errors": [],
+        "failed_runs": 0,
+        "iterations": 3,
+        "max_ms": 20.478312,
+        "median_ms": 17.524277,
+        "min_ms": 17.522217,
+        "p95_ms": 20.478312,
+        "samples_ms": [
+          17.522217,
+          17.524277,
+          20.478312
+        ],
+        "successful_runs": 3
+      },
+      "version": "rumdl 0.2.27"
+    },
+    {
+      "available": true,
+      "binary": "mdlint",
+      "exit_code": 1,
+      "fix_supported": true,
+      "fix_timing": {
+        "errors": [
+          "unexpected exit code Some(1): Failed to apply fixes to target/markdown-engine-probe/mdlint/fixable-drift/docs/guide.md: Fix error: Cannot apply fixes: overlapping fix ranges detected",
+          "unexpected exit code Some(1): Failed to apply fixes to target/markdown-engine-probe/mdlint/fixable-drift/docs/guide.md: Fix error: Cannot apply fixes: overlapping fix ranges detected",
+          "unexpected exit code Some(1): Failed to apply fixes to target/markdown-engine-probe/mdlint/fixable-drift/docs/guide.md: Fix error: Cannot apply fixes: overlapping fix ranges detected"
+        ],
+        "evidence_scope": "candidate_fix_command_timing_only",
+        "failed_runs": 3,
+        "iterations": 3,
+        "max_ms": null,
+        "median_ms": null,
+        "min_ms": null,
+        "p95_ms": null,
+        "post_fix_validation": false,
+        "samples_ms": [],
+        "success_semantics": "expected_exit_status_and_no_known_fix_failure_marker",
+        "successful_runs": 0,
+        "supported": true
+      },
+      "name": "mdlint",
+      "probe_fixture_root": "target/markdown-engine-probe/mdlint/fixable-drift",
+      "probe_markdown_files": [
+        "target/markdown-engine-probe/mdlint/fixable-drift/docs/guide.md"
+      ],
+      "status": "ran_with_findings",
+      "stderr_bytes": 153,
+      "stderr_snippet": "Failed to apply fixes to target/markdown-engine-probe/mdlint/fixable-drift/docs/guide.md: Fix error: Cannot apply fixes: overlapping fix ranges detected",
+      "stdout_bytes": 740,
+      "stdout_snippet": "{\"files\":[{\"path\":\"target/markdown-engine-probe/mdlint/fixable-drift/docs/guide.md\",\"violations\":[{\"line\":2,\"column\":1,\"rule\":\"MD022\",\"message\":\"Heading should be surrounded by blank lines (missing before)\",\"fixable\":true},{\"line\":2,\"column\":1,\"rule\":\"MD022\",\"message\":\"Heading should be surrounded by blank lines (missing after)\",\"fixable\":true},{\"line\":2,\"column\":1,\"rule\":\"MD041\",\"message\":\"First line in file should be a level 1 heading\"},{\"line\":4,\"column\":1,\"rule\":\"MD003\",\"message\":\"Heading style should be Atx but found Setext\"},{\"line\":6,\"column\":1,\"rule\":\"MD009\",\"message\":\"Trailing spaces (3 spaces)\",\"fixable\":true},{\"line\":13,\"column\":1,\"rule\":\"MD009\",\"message\":\"Trailing spaces (3 spaces)\",\"fixable\":true}]}],\"total_errors\":6}",
+      "timing": {
+        "errors": [],
+        "failed_runs": 0,
+        "iterations": 3,
+        "max_ms": 6.831628,
+        "median_ms": 6.829796,
+        "min_ms": 6.108543999999999,
+        "p95_ms": 6.831628,
+        "samples_ms": [
+          6.108543999999999,
+          6.829796,
+          6.831628
+        ],
+        "successful_runs": 3
+      },
+      "version": "mdlint 0.3.18"
+    },
+    {
+      "available": true,
+      "binary": "mado",
+      "exit_code": 1,
+      "fix_supported": false,
+      "fix_timing": {
+        "reason": "candidate has no observed deterministic fix command for this probe",
+        "supported": false
+      },
+      "name": "mado",
+      "probe_fixture_root": "target/markdown-engine-probe/mado/fixable-drift",
+      "probe_markdown_files": [
+        "target/markdown-engine-probe/mado/fixable-drift/docs/guide.md"
+      ],
+      "status": "ran_with_findings",
+      "stderr_bytes": 0,
+      "stderr_snippet": "",
+      "stdout_bytes": 366,
+      "stdout_snippet": "target/markdown-engine-probe/mado/fixable-drift/docs/guide.md:1:1 MD041/first-line-h1 First line in file should be a top level header\ntarget/markdown-engine-probe/mado/fixable-drift/docs/guide.md:6:1 MD009/no-trailing-spaces Trailing spaces\ntarget/markdown-engine-probe/mado/fixable-drift/docs/guide.md:13:1 MD009/no-trailing-spaces Trailing spaces\n\nFound 3 errors.",
+      "timing": {
+        "errors": [],
+        "failed_runs": 0,
+        "iterations": 3,
+        "max_ms": 13.149248,
+        "median_ms": 10.696987,
+        "min_ms": 9.282672,
+        "p95_ms": 13.149248,
+        "samples_ms": [
+          9.282672,
+          10.696987,
+          13.149248
+        ],
+        "successful_runs": 3
+      },
+      "version": "mado 0.3.0"
+    },
+    {
+      "available": true,
+      "binary": "markdownlint-cli2",
+      "exit_code": 1,
+      "fix_supported": true,
+      "fix_timing": {
+        "errors": [],
+        "evidence_scope": "candidate_fix_command_timing_only",
+        "failed_runs": 0,
+        "iterations": 3,
+        "max_ms": 428.090275,
+        "median_ms": 365.316138,
+        "min_ms": 364.198725,
+        "p95_ms": 428.090275,
+        "post_fix_validation": false,
+        "samples_ms": [
+          364.198725,
+          365.316138,
+          428.090275
+        ],
+        "success_semantics": "expected_exit_status_and_no_known_fix_failure_marker",
+        "successful_runs": 3,
+        "supported": true
+      },
+      "name": "markdownlint-cli2",
+      "probe_fixture_root": "target/markdown-engine-probe/markdownlint-cli2/fixable-drift",
+      "probe_markdown_files": [
+        "target/markdown-engine-probe/markdownlint-cli2/fixable-drift/docs/guide.md"
+      ],
+      "status": "ran_with_findings",
+      "stderr_bytes": 512,
+      "stderr_snippet": "target/markdown-engine-probe/markdownlint-cli2/fixable-drift/docs/guide.md:7 error MD025/single-title/single-h1 Multiple top-level headings in the same document [Context: \"Fixable Guide\"]\ntarget/markdown-engine-probe/markdownlint-cli2/fixable-drift/docs/guide.md:13:1 error MD009/no-trailing-spaces Trailing spaces [Expected: 0 or 2; Actual: 3]\ntarget/markdown-engine-probe/markdownlint-cli2/fixable-drift/docs/guide.md:14 error MD012/no-multiple-blanks Multiple consecutive blank lines [Expected: 1; Actual: 2]",
+      "stdout_bytes": 179,
+      "stdout_snippet": "markdownlint-cli2 v0.23.0 (markdownlint v0.41.0)\nFinding: --json target/markdown-engine-probe/markdownlint-cli2/fixable-drift/docs/guide.md\nLinting: 1 file(s)\nSummary: 3 error(s)",
+      "timing": {
+        "errors": [],
+        "failed_runs": 0,
+        "iterations": 3,
+        "max_ms": 408.468846,
+        "median_ms": 382.809202,
+        "min_ms": 364.03215700000004,
+        "p95_ms": 408.468846,
+        "samples_ms": [
+          364.03215700000004,
+          382.809202,
+          408.468846
+        ],
+        "successful_runs": 3
+      },
+      "version": "markdownlint-cli2 v0.23.0 (markdownlint v0.41.0)\nFinding: --version\nLinting: 0 file(s)\nSummary: 0 error(s)"
+    }
+  ],
+  "fixture": "fixable-drift",
+  "fixture_path": "tests/fixtures/markdown_engine_candidates/fixable_drift",
+  "fixture_root": "tests/fixtures/markdown_engine_candidates",
+  "iterations": 3,
+  "markdown_files": [
+    "tests/fixtures/markdown_engine_candidates/fixable_drift/docs/guide.md"
+  ],
+  "markdown_scope": "tests/fixtures/markdown_engine_candidates/fixable_drift/docs",
+  "matrix": "tests/fixtures/markdown_engine_candidates/matrix.json",
+  "measure": true,
+  "run_external": true,
+  "schema": "assura.markdown-engine-probe.v1"
+}

@@ -1,0 +1,28 @@
+structure:
+  ./:
+    files:
+      allow_extra: false
+      allowed_names:
+        - Cargo.toml
+        - README.md
+    directories:
+      allow_extra: false
+      allowed_names:
+        - docs
+        - src
+    children:
+      docs/:
+        markdown:
+          lint_trailing_spaces: true
+          lint_common: true
+          check_links: true
+          required_sections:
+            - Usage
+            - API
+          rules:
+            markdown_link_target:
+              severity: low
+            markdown_trailing_spaces:
+              severity: low
+exclude:
+  - target/**
