@@ -37,16 +37,16 @@ fixtures, and docs sections.
 
 ## Acceptance Criteria
 
-- [ ] A generated or referenced `agent-project` config can validate multiple
+- [x] A generated or referenced `agent-project` config can validate multiple
       skill directories through one reusable contract.
-- [ ] Passing fixtures cover multiple valid skill directories without listing
+- [x] Passing fixtures cover multiple valid skill directories without listing
       every skill by name.
-- [ ] Failing fixtures cover unexpected child folders and missing `SKILL.md`.
-- [ ] The onboarding command uses the reusable preset/contract path rather
+- [x] Failing fixtures cover unexpected child folders and missing `SKILL.md`.
+- [x] The onboarding command uses the reusable preset/contract path rather
       than embedding one-off per-skill config expansion.
-- [ ] Docs/support text explains that the baseline is broad and
+- [x] Docs/support text explains that the baseline is broad and
       non-domain-specific.
-- [ ] Existing child-1 onboarding tests remain green.
+- [x] Existing child-1 onboarding tests remain green.
 
 ## Definition Of Done
 
