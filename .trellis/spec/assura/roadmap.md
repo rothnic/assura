@@ -44,7 +44,7 @@ Owning task:
 `.trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine`.
 
 Current branch:
-`codex/markdown-engine-fixture-probe` for the active Markdown engine
+`codex/markdown-engine-candidate-evidence` for the active Markdown engine
 implementation branch.
 
 Current recommended goal:
@@ -80,10 +80,9 @@ that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 Execute `docs/goals/assura-post-beta-capabilities-program.md` goal by goal.
 True daemon mode is complete in PR #117. Start
 `.trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine` from
-`origin/master`, set its branch to the new implementation branch, revalidate
-`docs/goals/assura-markdownlint-compatible-rust-engine.md`, then evaluate the
-fastest practical Rust markdownlint-compatible lint/fix path before changing
-Assura's Markdown engine.
+`origin/master`, preserve the parent final verification package as the
+acceptance lens, then evaluate the fastest practical Rust
+markdownlint-compatible lint/fix path before changing Assura's Markdown engine.
 
 ## Roadmap Rules
 
