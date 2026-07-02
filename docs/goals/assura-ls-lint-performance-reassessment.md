@@ -2,7 +2,7 @@
 id: goal-assura-ls-lint-performance-reassessment
 type: goal
 title: Assura LS-Lint performance reassessment
-status: planned
+status: completed
 created: 2026-07-01
 owners:
   - assura-maintainers
@@ -117,5 +117,7 @@ normal CLI cumbersome.
 
 | Date | Update | Evidence |
 | --- | --- | --- |
-| 2026-07-02 | Started the LS-Lint performance reassessment child after PR #134 merged. The slice is scoped to accepted fixture row-by-row no-slower proof, phase-level CLI-floor attribution, cold/warm claim separation, checked performance data refresh, and target-state/docs guardrails. | `.trellis/tasks/07-02-ls-lint-performance-reassessment/prd.md`; `.trellis/spec/assura/roadmap.md`; `gh pr view 134 --json state,mergedAt,mergeCommit,url`; branch `codex/ls-lint-performance-reassessment`. |
+| 2026-07-02 | Started the LS-Lint performance reassessment child after PR #134 merged. The slice is scoped to accepted fixture row-by-row no-slower proof, phase-level CLI-floor attribution, cold/warm claim separation, checked performance data refresh, and target-state/docs guardrails. | `.trellis/tasks/archive/2026-07/07-02-ls-lint-performance-reassessment/prd.md`; `.trellis/spec/assura/roadmap.md`; `gh pr view 134 --json state,mergedAt,mergeCommit,url`; branch `codex/ls-lint-performance-reassessment`. |
 | 2026-07-02 | Generated a fresh local 3-iteration release performance report. All 8 accepted realistic-equivalent cold `assura-cli` rows are no slower than native `ls-lint-cli`; cold 2x remains `not-complete`; warm/session 2x remains `complete`. Added a dated analysis artifact and target-state markers for accepted-row proof, cold/warm separation, and phase attribution. | `target/performance/ls-lint-reassessment.json`; `cargo xtask performance-no-slower target/performance/ls-lint-reassessment.json`; `docs/analysis/2026-07-02-ls-lint-performance-reassessment.md`; `xtask/src/main.rs`. |
+| 2026-07-02 | Refreshed checked performance history from a clean source tree. The checked 5-iteration report has `source_worktree_dirty=false`, all 8 accepted rows no slower than native LS-Lint, cold `claim_summary.two_x_claim_verdict=not-complete`, and warm `warm_claim_summary.two_x_claim_verdict=complete`. | `benches/history/current.json`; `website/public/data/performance/current.json`; `benches/history/ls-lint-comparison-history.jsonl`; `website/public/data/performance/ls-lint-comparison-history.jsonl`; `cargo xtask performance-no-slower benches/history/current.json`; `jq '{commit_sha, branch, source_worktree_dirty, iterations, claim_summary, warm_claim_summary}' benches/history/current.json`. |
+| 2026-07-02 | Closed the LS-Lint Performance Reassessment child after independent review found no blockers. The review fixed one docs drift about the JSONL history cap and confirmed the checked report has 8 accepted cold `assura-cli` rows, all no slower than native `ls-lint-cli`, with cold/warm claims separated and phase attribution covering the requested cost buckets. | Review agent `019f22e9-1c23-74f0-9d37-64cb3772bc66`; `cargo clippy --workspace --all-targets -- -D warnings`; `cargo check --workspace --all-targets --quiet`; `cargo test --test performance_report_contract_tests`; `cargo test --test docs_lifecycle_tests check_docs_lifecycle_passes_for_current_claims_and_excepted_history`; `cargo xtask performance-no-slower benches/history/current.json`; `cargo xtask target-state`; `cargo run --quiet -- check --format json .`; `cargo xtask docs`; `cargo xtask evidence`; `git diff --check`. |

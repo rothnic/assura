@@ -41,15 +41,15 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 Post-Beta Capabilities is active after release `v0.2.0`.
 
 Owning task:
-`.trellis/tasks/07-02-ls-lint-performance-reassessment`.
+`.trellis/tasks/archive/2026-07/07-02-ls-lint-performance-reassessment`.
 
 Current branch:
-`codex/ls-lint-performance-reassessment` is reassessing accepted
-LS-Lint-equivalent fixture rows after the post-beta daemon, graph, Markdown,
-agent, editor, and extension-boundary slices.
+`codex/ls-lint-performance-reassessment` is closing the LS-Lint performance
+reassessment child with checked row-by-row evidence and phase-level
+attribution.
 
 Current recommended goal:
-`docs/goals/assura-ls-lint-performance-reassessment.md`.
+`docs/goals/assura-post-beta-support-release-hardening.md`.
 
 Public roadmap artifact:
 `docs/data/public-roadmap.json`.
@@ -86,10 +86,10 @@ True daemon mode is complete in PR #117. The Markdown engine and supported
 document graph children are closed for this beta increment, the performance
 floor is closed, the agent installer lifecycle is closed,
 `docs/goals/assura-vscode-supported-extension.md` is closed, and extension API
-clarification is closed for this beta increment. Finish
-`docs/goals/assura-ls-lint-performance-reassessment.md` by proving accepted
-fixture rows are no slower than native LS-Lint, explaining phase-level CLI
-floor costs, and refreshing checked performance evidence.
+clarification is closed for this beta increment. LS-Lint performance
+reassessment is closed locally after refreshing checked performance evidence.
+Continue to `docs/goals/assura-post-beta-support-release-hardening.md` after
+this branch is merged.
 
 ## Roadmap Rules
 

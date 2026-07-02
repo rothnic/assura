@@ -20,24 +20,26 @@ accepted cohort, but it is not cold `assura check` proof.
 
 ## Evidence
 
-Local reassessment command:
+Tracked reassessment command:
 
 ```bash
 cargo build --release --bin assura --no-default-features --features json-output,yaml-config
 cargo build --release --bin assura-full
 cargo build --release -p assura-check-cli
 target/release/assura performance-report \
-  --output target/performance/ls-lint-reassessment.json \
-  --history target/performance/ls-lint-reassessment.jsonl \
-  --website-dir target/performance/website-data \
-  --iterations 3
-cargo xtask performance-no-slower target/performance/ls-lint-reassessment.json
+  --output benches/history/current.json \
+  --history benches/history/ls-lint-comparison-history.jsonl \
+  --website-dir website/public/data/performance \
+  --iterations 5
+cargo xtask performance-no-slower benches/history/current.json
 ```
 
-Fresh local report:
+Fresh checked report:
 
-- commit: `b7dd0f276d866ede6e2c60806084d3c8dd102fdc`
+- commit: `82264736bae46168c1243a65bff3d41b81cbf418`
 - branch: `codex/ls-lint-performance-reassessment`
+- source worktree dirty: `false`
+- measured iterations: 5
 - LS-Lint: `ls-lint v2.3.0`
 - accepted fixture count: 8
 - accepted cold `assura-cli` rows no slower than native `ls-lint-cli`: 8 / 8
@@ -48,14 +50,14 @@ Fresh local report:
 
 | Fixture | Assura CLI ms | Native LS-Lint ms | Assura/LS-Lint | 2x status |
 | --- | ---: | ---: | ---: | --- |
-| `ignored_generated_heavy_repo` | 3.50 | 9.01 | 0.39 | `meets-target` |
-| `many_configured_scopes_regression` | 45.48 | 48.98 | 0.93 | `misses-target` |
-| `monorepo_packages` | 4.41 | 5.55 | 0.80 | `misses-target` |
-| `monorepo_policy` | 6.38 | 9.41 | 0.68 | `misses-target` |
-| `multipart_extension_regression` | 6.77 | 10.83 | 0.63 | `misses-target` |
-| `rule_heavy_repo` | 4.06 | 5.71 | 0.71 | `misses-target` |
-| `simple_library` | 4.49 | 4.79 | 0.94 | `blocked-by-rust-cli-floor` |
-| `web_app` | 4.27 | 5.09 | 0.84 | `blocked-by-rust-cli-floor` |
+| `ignored_generated_heavy_repo` | 3.45 | 9.67 | 0.36 | `meets-target` |
+| `many_configured_scopes_regression` | 41.67 | 45.75 | 0.91 | `misses-target` |
+| `monorepo_packages` | 3.82 | 6.04 | 0.63 | `misses-target` |
+| `monorepo_policy` | 5.80 | 8.84 | 0.66 | `misses-target` |
+| `multipart_extension_regression` | 7.05 | 12.75 | 0.55 | `misses-target` |
+| `rule_heavy_repo` | 4.45 | 5.20 | 0.86 | `misses-target` |
+| `simple_library` | 4.12 | 4.94 | 0.83 | `blocked-by-rust-cli-floor` |
+| `web_app` | 4.34 | 5.06 | 0.86 | `blocked-by-rust-cli-floor` |
 
 The no-slower merge gate passes because every accepted Assura row is at or
 below the matching native LS-Lint row. Aggregate speedup is not used as the
@@ -66,14 +68,14 @@ gate; a single slower accepted row would still fail
 
 | Fixture | Process floor ms | Rust CLI floor ms | Config load ms | Checker init ms | Walk/validate ms | Report sort ms |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| `ignored_generated_heavy_repo` | 1.83 | 2.61 | 0.08 | 0.01 | 0.10 | 0.00 |
-| `many_configured_scopes_regression` | 2.14 | 2.69 | 8.40 | 2.63 | 8.43 | 0.00 |
-| `monorepo_packages` | 2.23 | 2.75 | 0.20 | 0.05 | 0.43 | 0.00 |
-| `monorepo_policy` | 2.29 | 2.81 | 0.37 | 0.24 | 1.13 | 0.00 |
-| `multipart_extension_regression` | 2.17 | 2.75 | 0.05 | 0.01 | 2.42 | 0.00 |
-| `rule_heavy_repo` | 1.91 | 2.29 | 0.16 | 0.08 | 0.76 | 0.00 |
-| `simple_library` | 1.86 | 2.65 | 0.13 | 0.02 | 0.25 | 0.00 |
-| `web_app` | 2.52 | 3.41 | 0.10 | 0.03 | 0.12 | 0.00 |
+| `ignored_generated_heavy_repo` | 1.79 | 2.27 | 0.05 | 0.01 | 0.06 | 0.00 |
+| `many_configured_scopes_regression` | 1.82 | 2.46 | 8.34 | 2.56 | 8.96 | 0.00 |
+| `monorepo_packages` | 2.14 | 2.79 | 0.21 | 0.03 | 0.51 | 0.00 |
+| `monorepo_policy` | 2.08 | 2.32 | 0.29 | 0.19 | 0.95 | 0.00 |
+| `multipart_extension_regression` | 2.17 | 2.48 | 0.05 | 0.01 | 2.53 | 0.00 |
+| `rule_heavy_repo` | 1.75 | 2.35 | 0.13 | 0.07 | 0.62 | 0.00 |
+| `simple_library` | 1.99 | 2.57 | 0.14 | 0.03 | 0.43 | 0.00 |
+| `web_app` | 2.15 | 2.78 | 0.09 | 0.02 | 0.11 | 0.00 |
 
 The small fixtures are startup/floor dominated: their full `assura-cli` rows
 are only a few milliseconds, and their 2x targets sit close to or below the
