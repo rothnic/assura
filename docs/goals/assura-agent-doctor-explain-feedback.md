@@ -65,3 +65,9 @@ git diff --check
 Block if "no violations" can still be mistaken for "fully onboarded", if
 explain omits inherited or skipped rules, or if doctor output is not usable by
 agents.
+
+## Progress Log
+
+| Date | Update | Evidence |
+| --- | --- | --- |
+| 2026-07-02 | Started child goal 3 after closing child goal 2. Revalidated that the goal remains valid because top-level project doctor and path explain surfaces do not yet exist, while current onboarding/check output can still leave inactive, unwired, inherited, skipped, and next-action state implicit. | `.trellis/tasks/07-02-agent-doctor-explain-feedback/prd.md`; `.trellis/spec/assura/roadmap.md`; `docs/support-policy.md`; `docs/goals/assura-agent-ready-project-onboarding-program.md`; `python3 ./.trellis/scripts/task.py validate 07-02-agent-doctor-explain-feedback`. |

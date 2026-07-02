@@ -1,0 +1,8 @@
+{"file": "docs/goals/assura-agent-doctor-explain-feedback.md", "reason": "Child goal scope, definition of done, and reviewer blocking criteria for doctor/explain work."}
+{"file": "docs/goals/assura-agent-ready-project-onboarding-program.md", "reason": "Parent onboarding program sequence, first-run output contract, and checked-versus-unchecked product requirement."}
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "Active roadmap epic, direction lock, and priority of agent-ready onboarding over performance backlog."}
+{"file": ".trellis/spec/assura/codex-agent-feedback.md", "reason": "Stable agent feedback API direction lock and supported agent output constraints."}
+{"file": ".trellis/spec/assura/config-notation.md", "reason": "Current structure notation, reusable rules, captures, and relationship behavior doctor/explain must describe."}
+{"file": ".trellis/spec/assura/structure-enforcement.md", "reason": "Closed-world, direct-content, and exists-count semantics explain output must make understandable."}
+{"file": ".trellis/spec/assura/workflow-status.md", "reason": "Required workflow status snapshot shape for handoffs and reviews."}
+{"file": "docs/support-policy.md", "reason": "Current support levels and unsupported surfaces to keep command-surface truth intact."}
