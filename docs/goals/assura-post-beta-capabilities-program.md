@@ -267,6 +267,76 @@ adds commands, docs, tests, or adapters but does not improve one of these
 decisions is not sufficient for this major increment unless the child goal
 explicitly records why the work is prerequisite infrastructure.
 
+### North-Star Verification Scenario
+
+Use this scenario as the final beta-increment acceptance picture. A future
+agent should be able to run it from the goal file without reconstructing product
+intent from scattered tasks.
+
+The user is Nick, acting as maintainer of a Rust CLI repository whose docs are
+part of the product contract. He is reviewing a branch produced by multiple AI
+agents. The branch renamed `docs/architecture/runtime.md` to
+`docs/architecture/daemon-runtime.md`, moved `src/cli/check.rs` into
+`src/cli/check/mod.rs`, added new Markdown reference pages, edited frontmatter
+for several goal and analysis documents, and changed benchmark fixture
+metadata. The branch also contains realistic mistakes:
+
+1. One stale Markdown link still points at the old architecture file.
+2. One heading anchor was renamed in prose but not in cross references.
+3. One document has invalid frontmatter for its collection.
+4. One generated-reference block points at a moved source path.
+5. One Markdown file has deterministic formatting issues that are safe to fix.
+6. One Markdown issue needs human judgment and must not be auto-fixed.
+7. One daemon response is stale after the config changes.
+8. One agent nudge would be useful before a broad edit, but repeated full
+   reports would waste context and hurt caching.
+9. One VS Code diagnostic must match CLI truth while the daemon is unavailable.
+10. One accepted LS-Lint-equivalent fixture is intentionally slowed in a
+    negative test so CI proves the no-slower gate blocks the merge.
+
+The maintainer's successful journey is:
+
+1. Run `assura check` and see a staged report that starts with structure,
+   root/config scope, file-level policy, and coarse line/file limits before
+   Markdown internals, frontmatter, content graph, references, daemon/editor,
+   or language-specific checks. If coarse structure is broken, the report makes
+   that the first repair decision instead of burying it under Markdown lint.
+2. Inspect each finding as a stable rule with severity, supported suppression
+   shape, file path, line or heading context, and merge impact. Rule severity
+   is owned by the rule configuration, not by unique per-concern properties
+   under a severity object.
+3. Ask `assura content` which goals, ADRs, analysis notes, source files, tests,
+   headings, benchmark rows, and release docs are affected by the rename and
+   move. The answer is deterministic, locally supported, queryable, and bounded
+   enough to pass to agents as concise context.
+4. Run Markdown safe-fix preview, confirm only deterministic whitespace,
+   heading-shape, or markdownlint-compatible supported repairs are proposed,
+   apply those repairs, and see the human-judgment issue remain as a finding.
+5. Start or reuse `assura daemon`, run a changed-path check and reference query
+   over IPC, and verify that fresh daemon answers match one-shot CLI truth.
+   After `.assura/config.yml` changes, stale daemon state is rejected, marked
+   stale, or falls back to one-shot truth instead of pretending to be current.
+6. Let Codex, OpenCode, Claude, and Pi integration hooks request concise nudges
+   only around useful events such as before a broad edit, after a changed-path
+   check, or when a stale reference blocks progress. The transcript records
+   payload size and proves repeated events do not inject bulky reports.
+7. Open the branch in VS Code and see diagnostics, safe-fix previews, daemon
+   doctor messages, and one-shot fallback match the same JSON contracts used by
+   CLI and daemon. No editor-only interpretation is allowed.
+8. Run the release/support verification package and see support policy,
+   compatibility docs, release surfaces, website docs, and public roadmap agree
+   on what is supported, experimental, internal, planned, or unsupported.
+9. Run CI or the documented local equivalent and prove it fails for the
+   intentionally broken stale link, invalid frontmatter, missing reference,
+   stale daemon truth, unsupported support claim, and slower accepted
+   LS-Lint-equivalent row. After fixing the fixture, the same package passes.
+
+At the end of the scenario, the maintainer can make one branch-safety decision:
+merge, block, or send targeted repair instructions to an agent. This is the
+outcome this parent goal is optimizing for. A child goal that adds a command or
+adapter but cannot be tied back to one of these maintainer decisions is not
+complete for this increment.
+
 The end-to-end verification path should prove this user story:
 
 1. A maintainer clones the fixture and runs `assura init` or config refinement.
@@ -353,7 +423,9 @@ as a set of disconnected demos. It should include:
 - The north-star use case is executable as a final verification package with
   valid and invalid repository examples, expected CLI/editor/agent behavior,
   daemon stale-state behavior, safe-fix preview/apply evidence, and performance
-  gate evidence.
+  gate evidence. The package must specifically prove the
+  [North-Star Verification Scenario](#north-star-verification-scenario), not
+  only the individual child-goal command surfaces.
 - A versioned beta increment is planned or released with docs that accurately
   describe the new supported and experimental surfaces.
 - CI blocks any accepted LS-Lint-equivalent fixture that is slower than native
@@ -393,6 +465,9 @@ Child implementation goals add their own focused commands.
   or remote/shell plugin support without proof.
 - R9: Confirm the north-star use case is executable and covers the final user
   outcome, not just isolated child-goal tasks.
+- R10: Confirm the final scenario starts with structure/coarse file policy,
+  then moves inward to Markdown, frontmatter/content models, references,
+  daemon/editor/agent behavior, and performance gates.
 
 ## Reviewer Blocking Criteria
 
@@ -403,7 +478,8 @@ document graph support as experimental after promotion, implies Markdown linting
 sits above structure validation, or plans a Markdown rewrite without first
 measuring `rumdl` or a better Rust markdownlint-compatible candidate. Also
 block if the child goals can complete without proving the north-star use case
-end to end.
+end to end, or if the final fixture cannot demonstrate the maintainer's
+merge/block/targeted-repair decision from one coherent scenario.
 
 ## Kickoff Prompt
 
@@ -451,3 +527,6 @@ readiness.
 | 2026-07-02 | Started the Extension API Clarification child. This slice makes "extension APIs" concrete by separating first-party `extensions.*` config policies from supported local JSON contracts, internal Rust APIs, local editor/agent wrappers, and deferred public plugin/API surfaces. | [Extension API clarification](./assura-extension-api-clarification.md); `.trellis/tasks/archive/2026-07/07-02-extension-api-clarification/prd.md`; `docs/extension-api-boundaries.md`; `.trellis/spec/assura/roadmap.md`; branch `codex/extension-api-clarification`. |
 | 2026-07-02 | Recorded the Extension API Clarification decision and evidence. The beta answer is now that `extensions.*` means first-party `assura check` config policies, supported integration routes are local JSON contracts, local VS Code and agent packages are wrappers over those contracts, internal Rust modules are unstable before 1.0, and public plugin APIs remain roadmap-only until sandboxing, versioning, distribution, security, diagnostics, and performance gates are proven. | [Extension API clarification](./assura-extension-api-clarification.md); `docs/extension-api-boundaries.md`; `docs/support-policy.md`; `docs/compatibility-and-surface.md`; `docs/data/release-surfaces.json`; `website/src/content/docs/reference/extension-api-boundaries.md`; `xtask/src/main.rs`; `cargo xtask target-state`; `cargo xtask docs`; `cargo xtask evidence`. |
 | 2026-07-02 | Closed the Extension API Clarification child locally. The child now has a canonical boundary page, public website reference, support-policy rows, compatibility rows, release-surface registration, target-state guardrails, and independent review evidence. The next child goal is LS-Lint performance reassessment. | [Extension API clarification](./assura-extension-api-clarification.md); `.trellis/tasks/archive/2026-07/07-02-extension-api-clarification/prd.md`; `.trellis/spec/assura/roadmap.md`; `docs/data/public-roadmap.json`; review agent `019f22cf-d235-7f93-9b03-bc0712c2e90c`; `cargo fmt --check`; `cargo clippy --workspace --all-targets -- -D warnings`; `cargo check --workspace --all-targets --quiet`; `cargo run --quiet -- check --format json .`; `cargo xtask target-state`; `cargo xtask docs`; `cargo xtask evidence`; `git diff --check`. |
+| 2026-07-02 | Started the LS-Lint performance reassessment child. Fresh local release evidence shows every accepted realistic-equivalent cold `assura-cli` row no slower than native `ls-lint-cli`, while the stricter cold 2x claim remains incomplete and must stay separate from the complete warm/session claim. | [LS-Lint performance reassessment](./assura-ls-lint-performance-reassessment.md); `.trellis/tasks/archive/2026-07/07-02-ls-lint-performance-reassessment/prd.md`; `docs/analysis/2026-07-02-ls-lint-performance-reassessment.md`; `target/performance/ls-lint-reassessment.json`; `cargo xtask performance-no-slower target/performance/ls-lint-reassessment.json`. |
+| 2026-07-02 | Closed the LS-Lint performance reassessment child for this beta increment. Checked 5-iteration performance data now proves every accepted realistic-equivalent cold `assura-cli` row is no slower than native `ls-lint-cli`; remaining cold 2x misses are explicitly attributed and remain separate from the complete warm/session claim. The next child goal should be Support Hardening. | [LS-Lint performance reassessment](./assura-ls-lint-performance-reassessment.md); `docs/analysis/2026-07-02-ls-lint-performance-reassessment.md`; `benches/history/current.json`; `website/public/data/performance/current.json`; review agent `019f22e9-1c23-74f0-9d37-64cb3772bc66`; `cargo xtask performance-no-slower benches/history/current.json`; `cargo xtask target-state`; `cargo xtask docs`; `cargo xtask evidence`. |
+| 2026-07-02 | Hardened the parent acceptance picture with a concrete north-star verification scenario. The final beta increment must prove a maintainer can review a multi-agent branch with renamed docs, moved code, staged diagnostics, content graph queries, safe Markdown fixes, stale-safe daemon IPC, concise agent nudges, VS Code parity, support-matrix agreement, and an LS-Lint no-slower blocker before deciding whether to merge. | [North-Star Verification Scenario](#north-star-verification-scenario); `.trellis/tasks/archive/2026-07/07-02-post-beta-primary-use-case-verification/prd.md`; [Post-beta support and release hardening](./assura-post-beta-support-release-hardening.md). |

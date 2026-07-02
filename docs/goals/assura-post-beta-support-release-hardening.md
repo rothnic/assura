@@ -36,6 +36,12 @@ their support levels before any beta or post-beta release claim is made.
 - Audit public docs, release notes, support policy, compatibility matrix,
   command surface, release surfaces, and website roadmap for consistent
   support wording.
+- Build or identify the final verification package for the parent
+  north-star scenario: a documentation-heavy Rust repository branch with
+  renamed architecture docs, moved source paths, Markdown/reference drift,
+  invalid content/frontmatter, safe and unsafe Markdown findings, stale daemon
+  state, agent nudge transcripts, VS Code parity evidence, and a negative
+  LS-Lint no-slower fixture.
 - Ensure supported, experimental, internal, planned, and unsupported surfaces
   are classified consistently.
 - Add target-state checks for the new supported surfaces and for known
@@ -56,6 +62,8 @@ their support levels before any beta or post-beta release claim is made.
 
 - Support policy, compatibility docs, release surfaces, website docs, and public
   roadmap agree on the status of every post-beta capability.
+- The parent [North-Star Verification Scenario](./assura-post-beta-capabilities-program.md#north-star-verification-scenario)
+  is executable or explicitly deferred with a release-blocking reason.
 - Target-state checks prevent the most likely unsupported claims.
 - All child goals have completion evidence or explicit deferral notes.
 - Release readiness commands pass on a clean branch.
@@ -81,10 +89,14 @@ git diff --check
 - R2: Confirm release evidence covers every promoted surface.
 - R3: Confirm unsupported or deferred items remain clearly marked.
 - R4: Confirm target-state checks cover the highest-risk overclaims.
+- R5: Confirm the final verification package proves the maintainer can make a
+  merge, block, or targeted-repair decision from one coherent scenario.
 
 ## Reviewer Blocking Criteria
 
 Block if public docs claim unsupported daemon, editor, agent, graph, Markdown,
 extension, or non-beta behavior; if release evidence is stale; if target-state
 permits a known overclaim; or if a child goal is marked complete without
-independent review.
+independent review. Also block if the release can proceed without proving, or
+explicitly deferring as a release blocker, the parent north-star verification
+scenario.

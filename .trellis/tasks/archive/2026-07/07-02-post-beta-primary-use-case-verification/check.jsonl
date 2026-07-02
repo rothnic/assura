@@ -1,0 +1,3 @@
+{"file": "docs/goals/assura-post-beta-capabilities-program.md", "reason": "Check that the final use case is concrete enough to guide child-goal verification."}
+{"file": "docs/goals/assura-post-beta-support-release-hardening.md", "reason": "Check that release hardening blocks on proving the parent scenario."}
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "Check that roadmap routing references the active task and next goal accurately."}

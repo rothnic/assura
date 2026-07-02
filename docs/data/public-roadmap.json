@@ -144,6 +144,12 @@
           "summary": "Clarify first-party extensions, internal Rust APIs, and deferred plugin surfaces.",
           "detail_path": "docs/goals/assura-extension-api-clarification.md",
           "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-extension-api-clarification.md"
+        },
+        {
+          "label": "LS-Lint Parity",
+          "summary": "Reassess row-by-row LS-Lint performance and explain any CLI-floor cost.",
+          "detail_path": "docs/goals/assura-ls-lint-performance-reassessment.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-ls-lint-performance-reassessment.md"
         }
       ]
     },
@@ -158,10 +164,10 @@
           "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-post-beta-capabilities-program.md"
         },
         {
-          "label": "LS-Lint Parity",
-          "summary": "Reassess row-by-row LS-Lint performance and explain any CLI-floor cost.",
-          "detail_path": "docs/goals/assura-ls-lint-performance-reassessment.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-ls-lint-performance-reassessment.md"
+          "label": "Release Hardening",
+          "summary": "Align support docs, compatibility notes, target-state checks, and release evidence.",
+          "detail_path": "docs/goals/assura-post-beta-support-release-hardening.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-post-beta-support-release-hardening.md"
         }
       ]
     },
@@ -170,10 +176,10 @@
       "title": "Next",
       "items": [
         {
-          "label": "Release Hardening",
-          "summary": "Align support docs, compatibility notes, target-state checks, and release evidence.",
-          "detail_path": "docs/goals/assura-post-beta-support-release-hardening.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-post-beta-support-release-hardening.md"
+          "label": "Beta Increment",
+          "summary": "Package the completed capability program as a versioned beta increment without claiming GA.",
+          "detail_path": "docs/goals/assura-post-beta-capabilities-program.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-post-beta-capabilities-program.md"
         }
       ]
     }

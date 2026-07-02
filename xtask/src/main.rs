@@ -4278,9 +4278,13 @@ fn check_docs_release_performance(checks: &mut Checks) {
     let release_readiness_text = read("website/src/content/docs/reference/release-readiness.md");
     let installation_text = read("website/src/content/docs/guides/installation.md");
     let performance_text = read("website/src/content/docs/reference/performance.mdx");
+    let performance_implementation_text =
+        read("website/src/content/docs/reference/performance-implementation.mdx");
     let performance_cases_text =
         read("website/src/content/docs/reference/performance-test-cases.mdx");
     let why_assura_text = read("website/src/content/docs/why-assura.md");
+    let performance_reassessment_text =
+        read("docs/analysis/2026-07-02-ls-lint-performance-reassessment.md");
     let performance_review_text =
         read("docs/analysis/2026-06-19-goal-13-release-performance-review.md");
     let goal_13_text =
@@ -4527,6 +4531,27 @@ fn check_docs_release_performance(checks: &mut Checks) {
             "performance current.json: no-slower gate could not be evaluated: {error}"
         )),
     }
+    checks.require(
+        performance_reassessment_text
+            .contains("Post-Beta LS-Lint Performance Reassessment")
+            && performance_reassessment_text.contains("every accepted LS-Lint-equivalent fixture row is no slower")
+            && performance_reassessment_text.contains("Warm/session evidence remains separate")
+            && performance_reassessment_text.contains("Phase Attribution")
+            && performance_reassessment_text.contains("process/Rust CLI floors"),
+        "performance reassessment analysis: missing post-beta no-slower, cold/warm split, or phase-attribution markers",
+    );
+    checks.require(
+        performance_text.contains("Post-beta LS-Lint performance reassessment")
+            && performance_text.contains("phase-level")
+            && performance_text.contains("CLI-floor attribution")
+            && performance_text
+                .contains("docs/analysis/2026-07-02-ls-lint-performance-reassessment.md")
+            && performance_implementation_text.contains("Post-Beta Reassessment")
+            && performance_implementation_text.contains("accepted LS-Lint-equivalent cold rows")
+            && performance_implementation_text
+                .contains("docs/analysis/2026-07-02-ls-lint-performance-reassessment.md"),
+        "performance docs: missing post-beta LS-Lint reassessment links and claim boundaries",
+    );
     checks.require(
         text_contains_ordered(
             &ci_workflow,

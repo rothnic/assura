@@ -72,6 +72,11 @@ normal benchmark or CI runs. The tracked JSONL history is capped to the most
 recent 1,000 rows to keep generated evidence inside the repository structure
 policy.
 
+The post-beta LS-Lint reassessment is recorded in
+`docs/analysis/2026-07-02-ls-lint-performance-reassessment.md`. It treats the
+accepted-row no-slower gate separately from the stricter 2x claim and uses
+phase rows to explain remaining CLI-floor and implementation costs.
+
 ### Local Baseline: 2026-05-14
 
 This historical baseline used the npm wrapper path and is retained only as

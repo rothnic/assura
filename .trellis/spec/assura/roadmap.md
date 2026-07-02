@@ -41,15 +41,15 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 Post-Beta Capabilities is active after release `v0.2.0`.
 
 Owning task:
-`.trellis/tasks/archive/2026-07/07-02-extension-api-clarification`.
+`.trellis/tasks/archive/2026-07/07-02-post-beta-primary-use-case-verification`.
 
 Current branch:
-`codex/extension-api-clarification` is closing the boundary documentation and
-guardrails for first-party `extensions.*` config policies, supported local JSON
-contracts, internal Rust APIs, and deferred public plugin APIs.
+`codex/ls-lint-performance-reassessment` has closed the LS-Lint performance
+reassessment child locally and is hardening the parent north-star verification
+scenario before PR integration.
 
 Current recommended goal:
-`docs/goals/assura-ls-lint-performance-reassessment.md`.
+`docs/goals/assura-post-beta-support-release-hardening.md`.
 
 Public roadmap artifact:
 `docs/data/public-roadmap.json`.
@@ -72,7 +72,8 @@ safe fixes, and performance gates without relying on unsupported services or
 private integration logic. The parent goal owns the detailed verification
 story: a maintainer renames architecture docs and moves code, then proves the
 CLI, daemon, agent hooks, editor, content graph, Markdown fixes, and LS-Lint
-performance gate all agree before merge.
+performance gate all agree before merge. The detailed acceptance scenario lives
+in `docs/goals/assura-post-beta-capabilities-program.md#north-star-verification-scenario`.
 
 Direction lock, clarified on 2026-05-31: do not create or revive
 `assura-codex-feedback`, do not add one CLI entrypoint per agent, and do not add
@@ -86,8 +87,11 @@ True daemon mode is complete in PR #117. The Markdown engine and supported
 document graph children are closed for this beta increment, the performance
 floor is closed, the agent installer lifecycle is closed,
 `docs/goals/assura-vscode-supported-extension.md` is closed, and extension API
-clarification is closed locally for this beta increment. Continue to
-`docs/goals/assura-ls-lint-performance-reassessment.md` after this branch is
+clarification is closed for this beta increment. LS-Lint performance
+reassessment is closed locally after refreshing checked performance evidence.
+The current branch is adding the final user-specific verification story that
+Support Hardening must prove. Continue to
+`docs/goals/assura-post-beta-support-release-hardening.md` after this branch is
 merged.
 
 ## Roadmap Rules
