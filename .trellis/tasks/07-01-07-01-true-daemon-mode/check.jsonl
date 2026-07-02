@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/assura/daemon-management-cli.md", "reason": "Verify daemon lifecycle outputs do not overclaim unsupported process or IPC behavior."}
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "Verify active task, branch, and next action route to the current daemon slice."}
+{"file": "docs/goals/assura-true-daemon-mode.md", "reason": "Verify progress evidence and validation commands match the child goal."}
+{"file": "docs/goals/assura-post-beta-capabilities-program.md", "reason": "Verify the parent progress log and beta-track constraints remain accurate."}

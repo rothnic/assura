@@ -66,7 +66,7 @@
     },
     {
       "id": "daemon-management-cli-preview",
-      "label": "Daemon management CLI preview",
+      "label": "Daemon management CLI",
       "status": "experimental",
       "first_release": "v0.2.0",
       "detail_path": "docs/goals/assura-daemon-management-cli.md"
@@ -95,9 +95,9 @@
     {
       "id": "daemon-mode",
       "label": "Daemon mode",
-      "status": "roadmap",
-      "first_release": "future",
-      "detail_path": "docs/goals/assura-reference-daemon-readiness.md"
+      "status": "experimental",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-true-daemon-mode.md"
     },
     {
       "id": "vscode-extension",

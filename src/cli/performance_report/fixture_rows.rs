@@ -62,6 +62,16 @@ pub(super) fn measure_scenario_rows(
             ls_lint_status,
             assura_cli,
         ),
+        measure_ls_lint(
+            &fixture,
+            iterations,
+            timestamp,
+            commit_sha,
+            branch,
+            environment,
+            baseline_id,
+            ls_lint,
+        ),
         measure_process_floor(
             &fixture,
             iterations,
@@ -257,16 +267,6 @@ pub(super) fn measure_scenario_rows(
         environment,
         baseline_id,
         ls_lint_status,
-    ));
-    results.push(measure_ls_lint(
-        &fixture,
-        iterations,
-        timestamp,
-        commit_sha,
-        branch,
-        environment,
-        baseline_id,
-        ls_lint,
     ));
     results.push(measure_walkdir_traversal(
         &fixture,

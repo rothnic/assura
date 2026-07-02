@@ -1,6 +1,6 @@
 //! Text rendering for daemon CLI response contracts.
 
-use super::{DaemonCheckPathOutput, DaemonErrorOutput, DaemonTextRender};
+use super::{DaemonCheckPathOutput, DaemonTextRender};
 use crate::daemon::{DaemonAffectedReferences, DaemonHealth, DaemonMovedTargetReferences};
 
 impl DaemonTextRender for DaemonHealth {
@@ -93,12 +93,6 @@ impl DaemonTextRender for DaemonMovedTargetReferences {
             ));
         }
         lines.join("\n")
-    }
-}
-
-impl DaemonTextRender for DaemonErrorOutput {
-    fn render_text(&self) -> String {
-        format!("{}\nerror={}", self.health.render_text(), self.error)
     }
 }
 

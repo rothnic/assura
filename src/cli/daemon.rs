@@ -1,13 +1,19 @@
-//! CLI probes for daemon-ready local project state.
+//! CLI commands for local daemon process and daemon-ready project state.
 
 #[path = "daemon_lifecycle.rs"]
 mod lifecycle;
 #[path = "daemon_management.rs"]
 mod management;
+#[path = "daemon_process.rs"]
+mod process;
 #[path = "daemon_references.rs"]
 mod references;
+#[path = "daemon_render.rs"]
+mod render;
 #[path = "daemon_text.rs"]
 mod text;
+#[path = "daemon_transport.rs"]
+mod transport;
 
 use super::{ExitCode, OutputFormat};
 use crate::cli::check::StructureCheckReport;
@@ -20,7 +26,13 @@ use lifecycle::{
     daemon_logs_output, daemon_restart_output, daemon_start_output, daemon_stop_output,
 };
 use management::{daemon_doctor_output, daemon_status_output, health_for_path};
+use process::{request_check_path, serve_daemon};
 use references::{reference_request, DaemonReferenceRequest};
+pub(crate) use render::DaemonTextRender;
+use render::{
+    exit_code_from_i32, render_error, render_load_error, render_raw_value, render_success,
+    render_success_with_exit, DaemonCommandError, DaemonCommandOutcome,
+};
 use serde::Serialize;
 use std::path::PathBuf;
 
@@ -37,7 +49,7 @@ pub enum DaemonCommands {
         format: OutputFormat,
     },
 
-    /// Start local daemon runtime metadata for a project.
+    /// Start a local daemon process for a project.
     Start {
         /// Project root directory (defaults to current directory).
         path: Option<PathBuf>,
@@ -47,7 +59,7 @@ pub enum DaemonCommands {
         format: OutputFormat,
     },
 
-    /// Stop local daemon runtime metadata for a project.
+    /// Stop the local daemon process for a project.
     Stop {
         /// Project root directory (defaults to current directory).
         path: Option<PathBuf>,
@@ -57,7 +69,7 @@ pub enum DaemonCommands {
         format: OutputFormat,
     },
 
-    /// Restart local daemon runtime metadata for a project.
+    /// Restart the local daemon process for a project.
     Restart {
         /// Project root directory (defaults to current directory).
         path: Option<PathBuf>,
@@ -144,13 +156,26 @@ pub enum DaemonCommands {
         #[arg(short, long, value_enum, default_value = "text")]
         format: OutputFormat,
     },
+
+    /// Run the local daemon server process.
+    #[command(hide = true)]
+    Serve {
+        /// Project root directory.
+        path: PathBuf,
+
+        /// IPC listen address.
+        #[arg(long)]
+        listen: String,
+    },
 }
 
 /// Run a daemon-ready probe command.
 pub async fn daemon_command(command: DaemonCommands, config: Option<PathBuf>) -> ExitCode {
     match run_daemon_command(command, config) {
         Ok(outcome) => {
-            println!("{}", outcome.rendered);
+            if !outcome.rendered.is_empty() {
+                println!("{}", outcome.rendered);
+            }
             outcome.exit_code
         }
         Err(error) => {
@@ -166,6 +191,18 @@ fn run_daemon_command(
 ) -> Result<DaemonCommandOutcome, DaemonCommandError> {
     let format = command.format();
     let path = command.path();
+    if let DaemonCommands::Serve { path, listen } = command {
+        return match serve_daemon(path, config, listen) {
+            Ok(()) => Ok(DaemonCommandOutcome {
+                rendered: String::new(),
+                exit_code: ExitCode::Success,
+            }),
+            Err(message) => Err(DaemonCommandError {
+                message,
+                exit_code: ExitCode::RuntimeError,
+            }),
+        };
+    }
     let reference_request = match &command {
         DaemonCommands::References {
             source,
@@ -194,16 +231,13 @@ fn run_daemon_command(
         }
         DaemonCommands::Start { .. } => {
             let (health, loaded) = health_for_path(path, config);
-            let exit_code = if loaded {
+            let output = daemon_start_output(health, loaded);
+            let exit_code = if loaded && output.succeeded() {
                 ExitCode::Success
             } else {
                 ExitCode::RuntimeError
             };
-            return render_success_with_exit(
-                daemon_start_output(health, loaded),
-                format,
-                exit_code,
-            );
+            return render_success_with_exit(output, format, exit_code);
         }
         DaemonCommands::Stop { .. } => {
             let (health, _) = health_for_path(path, config);
@@ -211,19 +245,13 @@ fn run_daemon_command(
         }
         DaemonCommands::Restart { .. } => {
             let (health, loaded) = health_for_path(path, config);
-            let exit_code = if loaded {
+            let output = daemon_restart_output(health, loaded);
+            let exit_code = if loaded && output.succeeded() {
                 ExitCode::Success
             } else {
                 ExitCode::RuntimeError
             };
-            if loaded {
-                let _ = daemon_stop_output(health.clone());
-            }
-            return render_success_with_exit(
-                daemon_restart_output(health, loaded),
-                format,
-                exit_code,
-            );
+            return render_success_with_exit(output, format, exit_code);
         }
         DaemonCommands::Doctor { .. } => {
             let (health, loaded) = health_for_path(path, config);
@@ -246,22 +274,41 @@ fn run_daemon_command(
     }
     let mut core = match LocalDaemonCore::load(path, config) {
         Ok(core) => core,
-        Err(error) => return render_load_error(error, format, &command),
+        Err(error) => return render_load_error(error, format, command.path()),
     };
 
     match command {
         DaemonCommands::Health { .. } => render_success(core.health(), format),
-        DaemonCommands::CheckPath { changed, .. } => match core.check_changed_path(changed) {
-            Ok(report) => render_success(
-                DaemonCheckPathOutput {
-                    schema: "assura.daemon.check_path.v1",
-                    health: core.health(),
-                    report,
-                },
-                format,
-            ),
-            Err(error) => render_error(error, format, Some(core.health())),
-        },
+        DaemonCommands::CheckPath { changed, .. } => {
+            if matches!(format, OutputFormat::Json | OutputFormat::Yaml) {
+                let runtime = lifecycle::runtime_status_for_health(&core.health());
+                if matches!(
+                    runtime.state.as_str(),
+                    "started" | "stale" | "degraded" | "warming"
+                ) {
+                    if let Some(listen_addr) = runtime.listen_addr.as_deref() {
+                        if let Ok(response) = request_check_path(listen_addr, &changed) {
+                            return render_raw_value(
+                                response.value,
+                                format,
+                                exit_code_from_i32(response.exit_code),
+                            );
+                        }
+                    }
+                }
+            }
+            match core.check_changed_path(changed) {
+                Ok(report) => render_success(
+                    DaemonCheckPathOutput {
+                        schema: "assura.daemon.check_path.v1",
+                        health: core.health(),
+                        report,
+                    },
+                    format,
+                ),
+                Err(error) => render_error(error, format, Some(core.health())),
+            }
+        }
         DaemonCommands::References { limit, .. } => {
             match reference_request.expect("references request prevalidated") {
                 DaemonReferenceRequest::Source(path) => {
@@ -285,7 +332,8 @@ fn run_daemon_command(
         | DaemonCommands::Stop { .. }
         | DaemonCommands::Restart { .. }
         | DaemonCommands::Doctor { .. }
-        | DaemonCommands::Logs { .. } => {
+        | DaemonCommands::Logs { .. }
+        | DaemonCommands::Serve { .. } => {
             unreachable!("management preview commands return before daemon core load")
         }
     }
@@ -303,6 +351,7 @@ impl DaemonCommands {
             | Self::Health { format, .. }
             | Self::CheckPath { format, .. }
             | Self::References { format, .. } => *format,
+            Self::Serve { .. } => OutputFormat::Text,
         }
     }
 
@@ -317,6 +366,7 @@ impl DaemonCommands {
             | Self::Health { path, .. }
             | Self::CheckPath { path, .. }
             | Self::References { path, .. } => path.clone(),
+            Self::Serve { path, .. } => Some(path.clone()),
         };
         path.unwrap_or_else(|| PathBuf::from("."))
     }
@@ -344,138 +394,9 @@ fn render_moved_reference(
     }
 }
 
-fn render_success<T>(
-    value: T,
-    format: OutputFormat,
-) -> Result<DaemonCommandOutcome, DaemonCommandError>
-where
-    T: Serialize + DaemonTextRender,
-{
-    render_success_with_exit(value, format, ExitCode::Success)
-}
-
-fn render_success_with_exit<T>(
-    value: T,
-    format: OutputFormat,
-    exit_code: ExitCode,
-) -> Result<DaemonCommandOutcome, DaemonCommandError>
-where
-    T: Serialize + DaemonTextRender,
-{
-    Ok(DaemonCommandOutcome {
-        rendered: render(value, format)?,
-        exit_code,
-    })
-}
-
-fn render_error(
-    error: DaemonCoreError,
-    format: OutputFormat,
-    fallback_health: Option<DaemonHealth>,
-) -> Result<DaemonCommandOutcome, DaemonCommandError> {
-    match error {
-        DaemonCoreError::Stale(health) => Ok(DaemonCommandOutcome {
-            rendered: render(
-                DaemonErrorOutput {
-                    schema: "assura.daemon.error.v1",
-                    error: "daemon state is stale",
-                    health: *health,
-                },
-                format,
-            )?,
-            exit_code: ExitCode::RuntimeError,
-        }),
-        other if matches!(format, OutputFormat::Json | OutputFormat::Yaml) => {
-            let message = other.to_string();
-            let health = fallback_health
-                .map(|health| {
-                    DaemonHealth::unavailable(
-                        health.project_root,
-                        health.config_path,
-                        message.clone(),
-                    )
-                })
-                .unwrap_or_else(|| {
-                    DaemonHealth::unavailable(
-                        PathBuf::from("."),
-                        PathBuf::from(".assura/config.yml"),
-                        message.clone(),
-                    )
-                });
-            Ok(DaemonCommandOutcome {
-                rendered: render(
-                    DaemonErrorOutput {
-                        schema: "assura.daemon.error.v1",
-                        error: "daemon state is unavailable",
-                        health,
-                    },
-                    format,
-                )?,
-                exit_code: ExitCode::RuntimeError,
-            })
-        }
-        other => Err(DaemonCommandError {
-            message: other.to_string(),
-            exit_code: ExitCode::RuntimeError,
-        }),
-    }
-}
-
-fn render_load_error(
-    error: DaemonCoreError,
-    format: OutputFormat,
-    command: &DaemonCommands,
-) -> Result<DaemonCommandOutcome, DaemonCommandError> {
-    let project_root = command.path();
-    let config_path = project_root.join(".assura/config.yml");
-    let reason = error.to_string();
-    let health = DaemonHealth::unavailable(project_root, config_path, reason);
-    render_error(error, format, Some(health))
-}
-
-fn render<T>(value: T, format: OutputFormat) -> Result<String, DaemonCommandError>
-where
-    T: Serialize + DaemonTextRender,
-{
-    match format {
-        OutputFormat::Json => {
-            serde_json::to_string_pretty(&value).map_err(|error| DaemonCommandError {
-                message: error.to_string(),
-                exit_code: ExitCode::RuntimeError,
-            })
-        }
-        OutputFormat::Yaml => serde_yaml::to_string(&value).map_err(|error| DaemonCommandError {
-            message: error.to_string(),
-            exit_code: ExitCode::RuntimeError,
-        }),
-        OutputFormat::Text | OutputFormat::Advice | OutputFormat::Status => Ok(value.render_text()),
-    }
-}
-
-struct DaemonCommandOutcome {
-    rendered: String,
-    exit_code: ExitCode,
-}
-
-struct DaemonCommandError {
-    message: String,
-    exit_code: ExitCode,
-}
-
 #[derive(Debug, Serialize)]
 struct DaemonCheckPathOutput {
     schema: &'static str,
     health: DaemonHealth,
     report: StructureCheckReport,
-}
-
-#[derive(Debug, Serialize)]
-struct DaemonErrorOutput {
-    schema: &'static str,
-    error: &'static str,
-    health: DaemonHealth,
-}
-
-trait DaemonTextRender {
-    fn render_text(&self) -> String;
 }

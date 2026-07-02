@@ -33,6 +33,7 @@ pub(super) fn daemon_status_output(health: DaemonHealth) -> DaemonStatusOutput {
             running: runtime.running,
             pid: runtime.pid,
             socket_path: runtime.socket_path,
+            listen_addr: runtime.listen_addr,
             mode: runtime.mode,
             message: runtime.message,
             updated_at_unix: runtime.updated_at_unix,
@@ -67,11 +68,33 @@ pub(super) fn daemon_doctor_output(health: DaemonHealth, loaded: bool) -> Daemon
             health.runtime_paths.status_dir.display()
         )),
     });
+    let runtime = runtime_status_for_health(&health);
+    let (status, message, remediation_command) = if runtime.running {
+        ("ok", "managed daemon process is running", None)
+    } else if runtime.state == "not_started" || runtime.state == "stopped" {
+        (
+            "warning",
+            "managed daemon process is not running",
+            Some(format!(
+                "assura daemon start --format json {}",
+                health.project_root.display()
+            )),
+        )
+    } else {
+        (
+            "error",
+            "managed daemon process is stale, crashed, or incompatible",
+            Some(format!(
+                "assura daemon restart --format json {}",
+                health.project_root.display()
+            )),
+        )
+    };
     checks.push(DaemonDoctorCheck {
         id: "managed_process",
-        status: "warning",
-        message: "managed daemon process lifecycle is not running in this preview",
-        remediation_command: Some("assura daemon status --format json".to_string()),
+        status,
+        message,
+        remediation_command,
     });
 
     DaemonDoctorOutput {
@@ -120,6 +143,7 @@ struct DaemonProcessStatus {
     pid: Option<u32>,
     #[serde(serialize_with = "serialize_optional_path")]
     socket_path: Option<PathBuf>,
+    listen_addr: Option<String>,
     mode: String,
     message: String,
     updated_at_unix: Option<u64>,

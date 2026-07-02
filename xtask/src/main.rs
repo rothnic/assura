@@ -2096,6 +2096,11 @@ const CLI_COMMAND_VARIANT_ROWS: &[CliCommandVariantRow] = &[
         variant_name: "References",
         command_surface_names: &["assura daemon references"],
     },
+    CliCommandVariantRow {
+        enum_name: "DaemonCommands",
+        variant_name: "Serve",
+        command_surface_names: &[],
+    },
 ];
 
 fn cli_command_variant_rows() -> &'static [CliCommandVariantRow] {
@@ -2391,14 +2396,14 @@ const SUPPORT_MATRIX_ROWS: &[SupportMatrixRow] = &[
             "assura daemon check-path",
             "assura daemon references",
         ],
-        support_policy_markers: &["| `assura daemon` | Experimental local daemon management preview |"],
+        support_policy_markers: &["| `assura daemon` | Experimental local daemon process |"],
         compatibility_markers: &[
-            "| `assura daemon` | Experimental local daemon management preview |",
-            "| `assura daemon status` | Experimental local daemon status preview |",
-            "| `assura daemon start` | Experimental local daemon lifecycle preview |",
-            "| `assura daemon stop` | Experimental local daemon lifecycle preview |",
-            "| `assura daemon restart` | Experimental local daemon lifecycle preview |",
-            "| `assura daemon doctor` | Experimental local daemon doctor preview |",
+            "| `assura daemon` | Experimental local daemon process |",
+            "| `assura daemon status` | Experimental local daemon status |",
+            "| `assura daemon start` | Experimental local daemon lifecycle |",
+            "| `assura daemon stop` | Experimental local daemon lifecycle |",
+            "| `assura daemon restart` | Experimental local daemon lifecycle |",
+            "| `assura daemon doctor` | Experimental local daemon doctor |",
             "| `assura daemon logs` | Experimental local daemon logs preview |",
         ],
         source_markers: &[
@@ -2418,6 +2423,8 @@ const SUPPORT_MATRIX_ROWS: &[SupportMatrixRow] = &[
             "daemon_start_stop_json_are_idempotent_and_status_reflects_runtime",
             "daemon_restart_and_logs_json_use_runtime_area",
             "daemon_doctor_json_reports_actionable_checks",
+            "daemon_check_path_json_uses_running_ipc_process",
+            "daemon_status_reports_crashed_process_without_fresh_running_state",
             "daemon_health_json_exposes_running_state_and_fallback",
             "daemon_references_source_json_matches_content_references",
             "daemon_references_target_json_matches_content_references",
@@ -3838,8 +3845,21 @@ mod tests {
         if !unreleased.is_empty() {
             assert!(unreleased
                 .iter()
+                .any(|surface| surface.get("id").and_then(Value::as_str) == Some("daemon-mode")));
+            assert!(unreleased.iter().all(|surface| {
+                surface.get("id").and_then(Value::as_str)
+                    != Some("project-intelligence-local-surfaces")
+            }));
+            let surfaces = serde_json::from_str::<Value>(&read("docs/data/release-surfaces.json"))
+                .expect("release surfaces json");
+            assert!(surfaces
+                .get("surfaces")
+                .and_then(Value::as_array)
+                .into_iter()
+                .flatten()
                 .any(|surface| surface.get("id").and_then(Value::as_str)
-                    == Some("project-intelligence-local-surfaces")));
+                    == Some("project-intelligence-local-surfaces")
+                    && surface.get("first_release").and_then(Value::as_str) == Some("v0.2.0")));
         } else {
             let surfaces = serde_json::from_str::<Value>(&read("docs/data/release-surfaces.json"))
                 .expect("release surfaces json");

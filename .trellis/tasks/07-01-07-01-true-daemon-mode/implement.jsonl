@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/assura/daemon-management-cli.md", "reason": "Daemon management contract and support boundaries for lifecycle, health, doctor, and check-path commands."}
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "Active roadmap routing for the post-beta capabilities parent goal and current Trellis task."}
+{"file": "docs/goals/assura-true-daemon-mode.md", "reason": "Child goal objective, validation gates, and reviewer blocking criteria."}
+{"file": "docs/goals/assura-post-beta-capabilities-program.md", "reason": "Parent program sequencing, north-star use case, and beta-track support boundaries."}

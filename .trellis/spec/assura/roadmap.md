@@ -41,10 +41,10 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 Post-Beta Capabilities is active after release `v0.2.0`.
 
 Owning task:
-`.trellis/tasks/07-01-supported-document-graph`.
+`.trellis/tasks/07-01-07-01-true-daemon-mode`.
 
 Current branch:
-`codex/supported-document-graph`.
+`codex/true-daemon-mode`.
 
 Current recommended goal:
 `docs/goals/assura-post-beta-capabilities-program.md`.
@@ -77,8 +77,8 @@ that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 ## Recommended Next Action
 
 Execute `docs/goals/assura-post-beta-capabilities-program.md` goal by goal.
-Continue with supported document graph after the merged self-config hardening
-slice, unless live evidence justifies a recorded reorder.
+Continue with true daemon mode after the merged supported document-graph slice,
+unless live evidence justifies a recorded reorder.
 
 ## Roadmap Rules
 

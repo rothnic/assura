@@ -406,7 +406,8 @@ jobs:
     - name: Install tarpaulin
       run: cargo install cargo-tarpaulin
     - name: Generate coverage
-      run: cargo tarpaulin --verbose --all-features --workspace --timeout 120 --out xml
+      run: >
+        cargo tarpaulin --verbose --all-features --workspace --lib --timeout 120 --out xml
     - name: Summarize coverage
       run: |
         python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
