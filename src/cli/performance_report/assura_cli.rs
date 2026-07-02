@@ -427,7 +427,10 @@ pub(super) fn measure_assura_cli_row(
         let mut command = Command::new(binary_path);
         match &invocation {
             AssuraInvocation::FullCli => {
-                command.arg("check").arg(&fixture.root).arg("--quiet");
+                command
+                    .current_dir(&fixture.root)
+                    .arg("check")
+                    .arg("--quiet");
             }
             AssuraInvocation::CheckOnly => {
                 command.current_dir(&fixture.root).arg("--quiet");
