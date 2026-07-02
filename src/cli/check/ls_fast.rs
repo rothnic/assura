@@ -41,9 +41,7 @@ impl StructureChecker {
         timings.walk_and_validate_ms = walk_started.elapsed().as_secs_f64() * 1000.0;
 
         let sort_started = Instant::now();
-        report
-            .violations
-            .sort_by(|left, right| left.path.cmp(&right.path).then(left.rule.cmp(&right.rule)));
+        report.sort_violations_staged();
         timings.report_sort_ms = sort_started.elapsed().as_secs_f64() * 1000.0;
         Ok(true)
     }

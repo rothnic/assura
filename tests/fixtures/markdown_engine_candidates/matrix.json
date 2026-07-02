@@ -1,0 +1,189 @@
+{
+  "schema_version": "assura.markdown-engine-candidate-fixtures.v1",
+  "fixture_package": "markdown_engine_candidates",
+  "purpose": "Executable compatibility evidence for a future markdownlint-compatible Rust engine without adopting one.",
+  "candidate_order": [
+    "rumdl",
+    "mdlint",
+    "mado",
+    "assura-current",
+    "markdownlint-cli2"
+  ],
+  "stage_order": [
+    "structure",
+    "coarse_file_policy",
+    "markdownlint_candidate",
+    "assura_markdown_reference",
+    "safe_fix"
+  ],
+  "variants": {
+    "valid": {
+      "path": "valid",
+      "expected_assura_success": true,
+      "expected_assura_rules": []
+    },
+    "invalid": {
+      "path": "invalid",
+      "expected_assura_success": false,
+      "expected_assura_rules": [
+        "unexpected_file",
+        "markdown_suppression",
+        "markdown_required_section",
+        "markdown_trailing_spaces",
+        "markdown_heading_increment",
+        "markdown_heading_marker_spacing",
+        "markdown_duplicate_heading",
+        "markdown_multiple_blank_lines",
+        "markdown_link_format",
+        "markdown_link_target",
+        "markdown_link_heading_anchor",
+        "markdown_link_line_anchor"
+      ],
+      "expected_stage_rules": {
+        "structure": [
+          "unexpected_file"
+        ],
+        "markdownlint_candidate": [
+          "markdown_heading_increment",
+          "markdown_heading_marker_spacing",
+          "markdown_duplicate_heading",
+          "markdown_multiple_blank_lines",
+          "markdown_trailing_spaces"
+        ],
+        "assura_markdown_reference": [
+          "markdown_link_format",
+          "markdown_link_target",
+          "markdown_link_heading_anchor",
+          "markdown_link_line_anchor"
+        ],
+        "safe_fix": [
+          "markdown_required_section",
+          "markdown_trailing_spaces"
+        ]
+      },
+      "expected_advisory_rules": [
+        "markdown_link_target",
+        "markdown_trailing_spaces"
+      ],
+      "expected_blocking_rules": [
+        "unexpected_file",
+        "markdown_suppression",
+        "markdown_required_section",
+        "markdown_heading_increment",
+        "markdown_heading_marker_spacing",
+        "markdown_duplicate_heading",
+        "markdown_multiple_blank_lines",
+        "markdown_link_format",
+        "markdown_link_heading_anchor",
+        "markdown_link_line_anchor"
+      ],
+      "expected_safe_fix_operations": [
+        "remove_blank_line_trailing_spaces",
+        "insert_required_section_heading"
+      ]
+    }
+  },
+  "rule_mappings": [
+    {
+      "stable_rule_id": "markdown_heading_increment",
+      "markdownlint_aliases": [
+        "MD001",
+        "heading-increment"
+      ],
+      "config_owner": "markdown.rules.markdown_heading_increment",
+      "stage": "markdownlint_candidate",
+      "fixable": false
+    },
+    {
+      "stable_rule_id": "markdown_heading_marker_spacing",
+      "markdownlint_aliases": [
+        "MD018",
+        "MD019",
+        "no-missing-space-atx",
+        "no-multiple-space-atx"
+      ],
+      "config_owner": "markdown.rules.markdown_heading_marker_spacing",
+      "stage": "markdownlint_candidate",
+      "fixable": true
+    },
+    {
+      "stable_rule_id": "markdown_duplicate_heading",
+      "markdownlint_aliases": [
+        "MD024",
+        "no-duplicate-heading"
+      ],
+      "config_owner": "markdown.rules.markdown_duplicate_heading",
+      "stage": "markdownlint_candidate",
+      "fixable": false
+    },
+    {
+      "stable_rule_id": "markdown_multiple_blank_lines",
+      "markdownlint_aliases": [
+        "MD012",
+        "no-multiple-blanks"
+      ],
+      "config_owner": "markdown.rules.markdown_multiple_blank_lines",
+      "stage": "markdownlint_candidate",
+      "fixable": true
+    },
+    {
+      "stable_rule_id": "markdown_trailing_spaces",
+      "markdownlint_aliases": [
+        "MD009",
+        "no-trailing-spaces"
+      ],
+      "config_owner": "markdown.rules.markdown_trailing_spaces",
+      "stage": "markdownlint_candidate",
+      "fixable": true
+    },
+    {
+      "stable_rule_id": "markdown_required_section",
+      "markdownlint_aliases": [],
+      "config_owner": "markdown.rules.markdown_required_section",
+      "stage": "safe_fix",
+      "fixable": true,
+      "assura_owned": true
+    },
+    {
+      "stable_rule_id": "markdown_link_target",
+      "markdownlint_aliases": [],
+      "config_owner": "markdown.rules.markdown_link_target",
+      "stage": "assura_markdown_reference",
+      "fixable": false,
+      "assura_owned": true
+    },
+    {
+      "stable_rule_id": "markdown_link_heading_anchor",
+      "markdownlint_aliases": [],
+      "config_owner": "markdown.rules.markdown_link_heading_anchor",
+      "stage": "assura_markdown_reference",
+      "fixable": false,
+      "assura_owned": true
+    },
+    {
+      "stable_rule_id": "markdown_link_line_anchor",
+      "markdownlint_aliases": [],
+      "config_owner": "markdown.rules.markdown_link_line_anchor",
+      "stage": "assura_markdown_reference",
+      "fixable": false,
+      "assura_owned": true
+    },
+    {
+      "stable_rule_id": "markdown_link_format",
+      "markdownlint_aliases": [],
+      "config_owner": "markdown.rules.markdown_link_format",
+      "stage": "assura_markdown_reference",
+      "fixable": false,
+      "assura_owned": true
+    }
+  ],
+  "config_constraints": {
+    "severity_owner": "rule",
+    "forbidden_keys": [
+      "rule_severity",
+      "severity",
+      "severity_map"
+    ],
+    "suppression_syntax": "<!-- assura-ignore <markdown_rule>: <reason> -->"
+  }
+}

@@ -2,3 +2,4 @@
 {"file": "tests/markdown_suppression_severity_tests.rs", "reason": "severity and suppression behavior that candidate integration must preserve"}
 {"file": "tests/markdown_required_section_fix_tests.rs", "reason": "safe-fix determinism and idempotence baseline"}
 {"file": "tests/markdown_lint_fix_tests.rs", "reason": "Markdown fix command behavior baseline"}
+{"file": "tests/markdown_engine_candidate_fixture_tests.rs", "reason": "candidate fixture matrix, staged ordering, severity ownership, and safe-fix preview proof"}

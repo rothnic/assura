@@ -42,6 +42,38 @@ impl StructureCheckReport {
     pub fn refresh_success(&mut self) {
         self.success = !self.has_blocking_violations();
     }
+
+    /// Sort findings in the user-facing validation hierarchy.
+    pub(in crate::cli::check) fn sort_violations_staged(&mut self) {
+        self.violations.sort_by(|left, right| {
+            violation_stage_rank(&left.rule)
+                .cmp(&violation_stage_rank(&right.rule))
+                .then(left.path.cmp(&right.path))
+                .then(left.rule.cmp(&right.rule))
+        });
+    }
+}
+
+fn violation_stage_rank(rule: &str) -> u8 {
+    match rule {
+        "required_file"
+        | "required_directory"
+        | "unexpected_file"
+        | "unexpected_directory"
+        | "forbidden_file"
+        | "forbidden_directory"
+        | "exists_count"
+        | "file_naming"
+        | "directory_naming"
+        | "extension"
+        | "max_lines"
+        | "max_size"
+        | "require_docs" => 0,
+        rule if rule.starts_with("markdown_link_") => 3,
+        rule if rule.starts_with("markdown_") => 2,
+        rule if rule.starts_with("content_") || rule.starts_with("repository_reference_") => 4,
+        _ => 5,
+    }
 }
 
 /// A single structure validation violation.

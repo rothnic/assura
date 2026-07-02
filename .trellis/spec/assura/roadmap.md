@@ -44,7 +44,7 @@ Owning task:
 `.trellis/tasks/07-02-07-02-markdownlint-compatible-rust-engine`.
 
 Current branch:
-`codex/markdownlint-compatible-rust-engine` for the active Markdown engine
+`codex/markdown-engine-fixture-probe` for the active Markdown engine
 implementation branch.
 
 Current recommended goal:

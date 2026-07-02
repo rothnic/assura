@@ -115,9 +115,7 @@ impl PreparedStructureCheck {
         );
         checker.validate_configured_structure(&mut report);
         checker.validate_one_changed_path(&checked_path, &mut report);
-        report
-            .violations
-            .sort_by(|left, right| left.path.cmp(&right.path).then(left.rule.cmp(&right.rule)));
+        report.sort_violations_staged();
         report.refresh_success();
         Ok(report)
     }
