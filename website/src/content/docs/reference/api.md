@@ -114,9 +114,10 @@ wire global Codex, Claude, OpenCode, or Pi configuration.
 `--content-template none` is the default and keeps content models inactive.
 `--content-template agent-project` writes broad Decision, Task, Requirement,
 Evidence, Doc, Finding, Skill, Process, and Learning models plus starter
-records. `--content-template document-project` adds SourceDocument metadata and
-`source-documents/manifest.md` custody that validates referenced file paths
-without requiring Assura to read binary files as text.
+records. `--content-template document-project` adds SourceDocument metadata,
+`source-documents/manifest.md` custody, `library/topics/`, `docs/drafts/`, and
+`docs/final/` starter records that validate referenced file paths without
+requiring Assura to read binary files as text.
 
 MCP is not required for local agent usage. If an MCP adapter is added later, it
 should wrap these same CLI/library contracts.

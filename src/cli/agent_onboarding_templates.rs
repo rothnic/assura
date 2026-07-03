@@ -71,6 +71,9 @@ impl GeneratedFile {
 fn agent_ready_config(content_template: AgentContentTemplate) -> String {
     let repository_references = content::repository_reference_config(content_template);
     let content_config = content::content_config(content_template);
+    let root_required_dirs = content::root_required_dirs(content_template);
+    let root_structure = content::root_structure(content_template);
+    let docs_structure = content::docs_structure(content_template);
     format!(
         r#"version: "2.0"
 
@@ -138,6 +141,7 @@ structure:
         - ".assura"
         - ".agents"
         - "docs"
+{root_required_dirs}
   .assura/:
     required: true
     config.yml: exists:1
@@ -168,12 +172,14 @@ structure:
     required: true
     process/: exists:1
     learnings/: exists:1
+{docs_structure}
   docs/process/:
     required: true
     agent-workflow.md: exists:1
   docs/learnings/:
     required: true
     README.md: exists:1
+{root_structure}
 
 exclude:
   - ".git/**"

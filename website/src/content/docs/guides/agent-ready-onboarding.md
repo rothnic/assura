@@ -181,15 +181,17 @@ project facts:
 assura agent onboard . --content-template agent-project --format json
 ```
 
-Use the document-project template when source-document custody should be active
-from the first run:
+Use the document-project template when source-document custody and a generic
+document workflow should be active from the first run:
 
 ```bash
 assura agent onboard . --content-template document-project --format json
 ```
 
-Document projects validate referenced source file paths through manifest
-metadata without requiring binary files to be read as text.
+Document projects add `source-documents/`, `library/topics/`, `docs/drafts/`,
+and `docs/final/` on top of the broad project records. They validate referenced
+source file paths through manifest metadata without requiring binary files to
+be read as text.
 
 Domain packs, including proposal or SBIR-specific scoring, are optional
 roadmap/domain behavior. They are not part of the core agent-project baseline.

@@ -385,6 +385,28 @@ fn agent_onboard_document_project_tracks_source_document_custody() {
         .path()
         .join("source-documents/files/sample-source.txt")
         .is_file());
+    for path in [
+        "library/topics/topic-document-project-baseline.md",
+        "docs/drafts/draft-document-project-baseline.md",
+        "docs/final/final-document-project-baseline.md",
+        "docs/requirements/requirement-agent-content-baseline.md",
+        "docs/evidence/evidence-agent-content-baseline.md",
+        "docs/decisions/decision-agent-content-baseline.md",
+        "docs/process/agent-workflow.md",
+        "docs/learnings/README.md",
+    ] {
+        assert!(project.path().join(path).is_file(), "missing {path}");
+    }
+
+    let config = fs::read_to_string(project.path().join(".assura/config.yml")).unwrap();
+    assert!(config.contains("library/:"));
+    assert!(config.contains("source-documents/:"));
+    assert!(config.contains("class: Topic"));
+    assert!(config.contains("class: Draft"));
+    assert!(config.contains("class: FinalDocument"));
+    assert!(config.contains("topics.related_requirements"));
+    assert!(config.contains("drafts.evidence"));
+    assert!(config.contains("final_docs.evidence"));
 
     let check = json_from_success(run_assura(&[
         "check",
@@ -402,6 +424,21 @@ fn agent_onboard_document_project_tracks_source_document_custody() {
     ]));
     assert_eq!(doctor["binary_custody"]["status"], "active");
     assert_eq!(doctor["gaps"].as_array().expect("gaps").len(), 0);
+
+    let topic_search = json_from_success(run_assura(&[
+        "content",
+        "search",
+        "Document Project Baseline Topic",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]));
+    assert!(topic_search["matches"]
+        .as_array()
+        .expect("matches")
+        .iter()
+        .any(|item| item["collection"] == "topics"
+            && item["instance_id"] == "topic-document-project-baseline"));
 
     let references = json_from_success(run_assura(&[
         "content",
