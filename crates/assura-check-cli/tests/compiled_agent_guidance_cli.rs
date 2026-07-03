@@ -36,6 +36,7 @@ extensions:
         - "project-*"
       skill_reference_sections:
         - Read as needed
+      skill_doc_routing_section: Read as needed
       skill_reference_prefixes:
         - references/
         - scripts/
@@ -222,4 +223,5 @@ Follow local project guidance.
     let stdout = String::from_utf8_lossy(&new_field_invalid.stdout);
     assert!(stdout.contains("progressive-disclosure guidance"));
     assert!(stdout.contains("must reference supporting docs or assets"));
+    assert!(stdout.contains("must use a Markdown table with use-case and local reference columns"));
 }

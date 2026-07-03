@@ -35,6 +35,9 @@ pub struct AgentGuidanceConfig {
     /// SKILL.md sections that should point to deeper references or assets.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub skill_reference_sections: Vec<String>,
+    /// SKILL.md section that maps use cases to supporting docs or assets.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub skill_doc_routing_section: Option<String>,
     /// Allowed prefixes for SKILL.md reference targets.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub skill_reference_prefixes: Vec<String>,

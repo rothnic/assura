@@ -36,8 +36,10 @@ extensions:
       skill_routing_section: Skills
       allowed_skill_name_patterns:
         - "project-*"
+        - "project_*"
       skill_reference_sections:
         - Read as needed
+      skill_doc_routing_section: Read as needed
       skill_reference_prefixes:
         - references/
         - scripts/
@@ -79,7 +81,9 @@ Run the workflow.
 
 ## Read as needed
 
-- `references/runbook.md`
+| When | Read first |
+| --- | --- |
+| Updating the workflow | `references/runbook.md` |
 
 ## Outputs
 
@@ -113,6 +117,7 @@ concise indexes to deeper references.
 | When | Must first load |
 | --- | --- |
 | Maintaining project guidance | [`{skill}`](.agents/skills/{skill}/SKILL.md) |
+| Running split project-specific workflows | `project_*` |
 
 ## Anchors
 

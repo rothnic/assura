@@ -16,6 +16,7 @@ struct PortableAgentGuidanceConfig {
     allowed_skill_name_patterns: Vec<String>,
     #[serde(default)]
     skill_reference_sections: Vec<String>,
+    skill_doc_routing_section: Option<String>,
     #[serde(default)]
     skill_reference_prefixes: Vec<String>,
     max_agents_lines: Option<usize>,
@@ -37,6 +38,7 @@ impl From<AgentGuidanceConfig> for PortableAgentGuidanceConfig {
             skill_routing_section: config.skill_routing_section,
             allowed_skill_name_patterns: config.allowed_skill_name_patterns,
             skill_reference_sections: config.skill_reference_sections,
+            skill_doc_routing_section: config.skill_doc_routing_section,
             skill_reference_prefixes: config.skill_reference_prefixes,
             max_agents_lines: config.max_agents_lines,
             max_skill_lines: config.max_skill_lines,
@@ -59,6 +61,7 @@ impl From<PortableAgentGuidanceConfig> for AgentGuidanceConfig {
             skill_routing_section: config.skill_routing_section,
             allowed_skill_name_patterns: config.allowed_skill_name_patterns,
             skill_reference_sections: config.skill_reference_sections,
+            skill_doc_routing_section: config.skill_doc_routing_section,
             skill_reference_prefixes: config.skill_reference_prefixes,
             max_agents_lines: config.max_agents_lines,
             max_skill_lines: config.max_skill_lines,

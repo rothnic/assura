@@ -97,8 +97,10 @@ sections named `Operating Rules`, `Process Docs vs Skills`, `Skills`, and
 project-local skill or skill-name pattern to load first. Each project-local
 `SKILL.md` entrypoint declares `name`, `description`, and `applies_when`
 frontmatter plus `Workflow`, `Read as needed`, `Outputs`, and `Guardrails`
-sections. `Read as needed` should point to deeper references, scripts, assets,
-or process docs so `SKILL.md` stays a concise index.
+sections. `Read as needed` should be a use-case table that points to deeper
+references, scripts, assets, or process docs so `SKILL.md` stays a concise
+index. Guidance length diagnostics tell agents to move long procedures out of
+`AGENTS.md` or `SKILL.md` and link the deeper material instead.
 
 MCP is not required for local agent usage. If an MCP adapter is added later, it
 should wrap these same CLI/library contracts.

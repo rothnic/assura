@@ -150,7 +150,7 @@ impl StructureChecker {
             AgentGuidanceLineLimit {
                 limit: policy.max_agents_lines,
                 label: "AGENTS.md",
-                hint: "keep AGENTS.md as a use-case router; move operational detail into docs/process/ and route repeatable workflows to project-local SKILL.md entrypoints",
+                hint: "keep AGENTS.md as a use-case router with stable sections and the skill-loading table; move operational detail into docs/process/ or project-local SKILL.md entrypoints",
             },
             report,
         );
@@ -182,11 +182,12 @@ impl StructureChecker {
             AgentGuidanceLineLimit {
                 limit: policy.max_skill_lines,
                 label: "SKILL.md",
-                hint: "keep SKILL.md as a concise index; move long examples and runbooks into references/, scripts/, assets/, or docs/process/ and link them from the configured reference section",
+                hint: "keep SKILL.md as frontmatter plus a concise workflow index; move long examples and runbooks into references/, scripts/, assets/, or docs/process/ and link them from the configured reference section",
             },
             report,
         );
         self.validate_skill_reference_sections(policy, skill_rel, &content, report);
+        self.validate_skill_doc_routing_section(policy, skill_rel, &content, report);
         Ok(())
     }
 

@@ -85,8 +85,10 @@ extensions:
       skill_routing_section: Skills
       allowed_skill_name_patterns:
         - "assura-*"
+        - "assura_*"
       skill_reference_sections:
         - Read as needed
+      skill_doc_routing_section: Read as needed
       skill_reference_prefixes:
         - references/
         - scripts/
@@ -192,6 +194,8 @@ Use `docs/process/` for durable process documentation and use project-local
 skills for repeatable agent workflows. Keep skill entrypoints concise.
 Progressive disclosure: keep AGENTS.md as a use-case router and SKILL.md as
 concise indexes to deeper references.
+Reference this best-practice message when editing agent guidance instead of
+expanding AGENTS.md with long procedures.
 
 ## Skills
 
@@ -222,8 +226,10 @@ Use `assura check --format agent --warn .` for advisory feedback while working.
 
 ## Read as needed
 
-- `references/assura-onboarding.md`
-- `.assura/onboarding/agent-next.md`
+| When | Read first |
+| --- | --- |
+| Specializing the broad baseline | `references/assura-onboarding.md` |
+| Choosing the next onboarding action | `.assura/onboarding/agent-next.md` |
 
 ## Outputs
 
@@ -296,7 +302,9 @@ Keep SKILL.md concise and put detailed references in subdirectories.
 
 ## Read as needed
 
-- `references/runbook.md`
+| When | Read first |
+| --- | --- |
+| Running the workflow | `references/runbook.md` |
 
 ## Outputs
 

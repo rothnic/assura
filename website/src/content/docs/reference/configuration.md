@@ -330,8 +330,10 @@ extensions:
       skill_routing_section: Skills
       allowed_skill_name_patterns:
         - "assura-*"
+        - "assura_*"
       skill_reference_sections:
         - Read as needed
+      skill_doc_routing_section: Read as needed
       skill_reference_prefixes:
         - references/
         - scripts/
@@ -346,8 +348,11 @@ This policy checks local guidance shape only. It reports stale or missing
 links, missing `SKILL.md` frontmatter fields, missing required skill sections,
 oversized guidance entrypoints, missing progressive-disclosure references,
 unknown skill names in configured use-case routing tables, and SKILL sections
-that fail to point to deeper references. It does not install a global skill
-registry or create host-agent-specific validation logic.
+that fail to point to deeper references. When `skill_doc_routing_section` is
+configured, that SKILL section may be empty, but non-empty content must be a
+use-case table that routes agents to approved local docs, scripts, assets, or
+process references. It does not install a global skill registry or create
+host-agent-specific validation logic.
 
 ## First-Party Extension Policies
 

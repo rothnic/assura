@@ -36,8 +36,10 @@ extensions:
       skill_routing_section: Skills
       allowed_skill_name_patterns:
         - "project-*"
+        - "project_*"
       skill_reference_sections:
         - Read as needed
+      skill_doc_routing_section: Read as needed
       skill_reference_prefixes:
         - references/
         - scripts/
@@ -112,7 +114,9 @@ Run the workflow.
 
 ## Read as needed
 
-- `references/runbook.md`
+| When | Read first |
+| --- | --- |
+| Updating the baseline | `references/runbook.md` |
 
 ## Outputs
 
@@ -237,5 +241,137 @@ Run the workflow.
             && violation
                 .message
                 .contains("must reference supporting docs or assets")
+    }));
+}
+
+#[test]
+fn skill_contract_allows_empty_doc_routing_section_when_configured() {
+    let project = TempDir::new().unwrap();
+    write_config(&project, "high", 80);
+    write_agents_md(&project, "project-maintenance");
+    write_skill(
+        &project,
+        "project-maintenance",
+        r#"---
+name: project-maintenance
+description: Maintain project-local Assura guidance.
+applies_when: Use when maintaining the project-local Assura baseline.
+---
+
+# Project Maintenance
+
+## Workflow
+
+Run the workflow.
+
+## Read as needed
+
+## Outputs
+
+- Updated baseline files.
+
+## Guardrails
+
+- Keep the entrypoint concise.
+"#,
+    );
+
+    let report = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+
+    assert!(report.success, "{:#?}", report.violations);
+    assert!(report.violations.is_empty());
+}
+
+#[test]
+fn skill_contract_requires_doc_routing_section_table_when_configured() {
+    let project = TempDir::new().unwrap();
+    write_config(&project, "high", 80);
+    write_agents_md(&project, "project-maintenance");
+    write_skill(
+        &project,
+        "project-maintenance",
+        r#"---
+name: project-maintenance
+description: Maintain project-local Assura guidance.
+applies_when: Use when maintaining the project-local Assura baseline.
+---
+
+# Project Maintenance
+
+## Workflow
+
+Run the workflow.
+
+## Read as needed
+
+- `references/runbook.md`
+
+## Outputs
+
+- Updated baseline files.
+
+## Guardrails
+
+- Keep the entrypoint concise.
+"#,
+    );
+
+    let report = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+
+    assert!(!report.success);
+    assert!(report.violations.iter().any(|violation| {
+        violation.path == Path::new(".agents/skills/project-maintenance/SKILL.md")
+            && violation.rule == "agent_guidance:agent_project_guidance"
+            && violation
+                .message
+                .contains("must use a Markdown table with use-case and local reference columns")
+    }));
+}
+
+#[test]
+fn skill_contract_rejects_unsupported_doc_routing_references() {
+    let project = TempDir::new().unwrap();
+    write_config(&project, "high", 80);
+    write_agents_md(&project, "project-maintenance");
+    write_skill(
+        &project,
+        "project-maintenance",
+        r#"---
+name: project-maintenance
+description: Maintain project-local Assura guidance.
+applies_when: Use when maintaining the project-local Assura baseline.
+---
+
+# Project Maintenance
+
+## Workflow
+
+Run the workflow.
+
+## Read as needed
+
+| When | Read first |
+| --- | --- |
+| Updating the baseline | `notes/runbook.md` |
+
+## Outputs
+
+- Updated baseline files.
+
+## Guardrails
+
+- Keep the entrypoint concise.
+"#,
+    );
+
+    let report = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+
+    assert!(!report.success);
+    assert!(report.violations.iter().any(|violation| {
+        violation.path == Path::new(".agents/skills/project-maintenance/SKILL.md")
+            && violation.rule == "agent_guidance:agent_project_guidance"
+            && violation
+                .message
+                .contains("unsupported local reference `notes/runbook.md`")
     }));
 }
