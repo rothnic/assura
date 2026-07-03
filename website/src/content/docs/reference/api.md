@@ -93,10 +93,12 @@ assura agent integration doctor codex .
 Generated agent-ready baselines include `AGENTS.md`, `.agents/skills/`, and
 `extensions.agent_guidance` checks. The default shape expects `AGENTS.md`
 sections named `Operating Rules`, `Process Docs vs Skills`, `Skills`, and
-`Anchors`; each project-local `SKILL.md` entrypoint declares `name`,
-`description`, and `applies_when` frontmatter plus `Workflow`, `Read as needed`,
-`Outputs`, and `Guardrails` sections. Longer examples and runbooks should live
-under `references/` or `docs/process/`.
+`Anchors`; the `Skills` section includes a use-case table that names the
+project-local skill or skill-name pattern to load first. Each project-local
+`SKILL.md` entrypoint declares `name`, `description`, and `applies_when`
+frontmatter plus `Workflow`, `Read as needed`, `Outputs`, and `Guardrails`
+sections. `Read as needed` should point to deeper references, scripts, assets,
+or process docs so `SKILL.md` stays a concise index.
 
 MCP is not required for local agent usage. If an MCP adapter is added later, it
 should wrap these same CLI/library contracts.

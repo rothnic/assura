@@ -32,6 +32,17 @@ extensions:
         - Outputs
         - Guardrails
       skill_index_section: Skills
+      best_practices_reference: "Progressive disclosure: keep AGENTS.md as a use-case router and SKILL.md as concise indexes to deeper references."
+      skill_routing_section: Skills
+      allowed_skill_name_patterns:
+        - "project-*"
+      skill_reference_sections:
+        - Read as needed
+      skill_reference_prefixes:
+        - references/
+        - scripts/
+        - assets/
+        - docs/process/
       max_agents_lines: {max_agents_lines}
       max_skill_lines: 80
 structure:
@@ -94,16 +105,148 @@ Read the onboarding packet before specializing.
 ## Process Docs vs Skills
 
 Use process docs for durable background and skills for repeatable workflows.
+Progressive disclosure: keep AGENTS.md as a use-case router and SKILL.md as
+concise indexes to deeper references.
 
 ## Skills
 
-- [Maintenance](.agents/skills/{skill}/SKILL.md): use for local maintenance.
+| When | Must first load |
+| --- | --- |
+| Maintaining project guidance | [`{skill}`](.agents/skills/{skill}/SKILL.md) |
 
 ## Anchors
 
 Keep these section headings stable.
 "#
     )
+}
+
+#[test]
+fn agents_md_contract_validates_use_case_skill_routing_table() {
+    let project = TempDir::new().unwrap();
+    write_config(&project, "high", 120);
+    write_valid_skill(&project, "project-maintenance");
+    fs::write(
+        project.path().join("AGENTS.md"),
+        r#"# Agent Instructions
+
+## Operating Rules
+
+Read the onboarding packet before specializing.
+
+## Process Docs vs Skills
+
+Use process docs for durable background and skills for repeatable workflows.
+Progressive disclosure: keep AGENTS.md as a use-case router and SKILL.md as
+concise indexes to deeper references.
+
+## Skills
+
+| When | Must first load |
+| --- | --- |
+| Maintaining project guidance | `missing-skill` |
+
+## Anchors
+
+Keep these section headings stable.
+"#,
+    )
+    .unwrap();
+
+    let report = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+
+    assert!(!report.success);
+    assert!(report.violations.iter().any(|violation| {
+        violation.path == Path::new("AGENTS.md")
+            && violation.rule == "agent_guidance:agent_project_guidance"
+            && violation
+                .message
+                .contains("unknown skill or pattern `missing-skill`")
+    }));
+}
+
+#[test]
+fn agents_md_contract_requires_progressive_disclosure_reference() {
+    let project = TempDir::new().unwrap();
+    write_config(&project, "high", 120);
+    write_valid_skill(&project, "project-maintenance");
+    fs::write(
+        project.path().join("AGENTS.md"),
+        r#"# Agent Instructions
+
+## Operating Rules
+
+Read the onboarding packet before specializing.
+
+## Process Docs vs Skills
+
+Use process docs for durable background and skills for repeatable workflows.
+
+## Skills
+
+| When | Must first load |
+| --- | --- |
+| Maintaining project guidance | [`project-maintenance`](.agents/skills/project-maintenance/SKILL.md) |
+
+## Anchors
+
+Keep these section headings stable.
+"#,
+    )
+    .unwrap();
+
+    let report = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+
+    assert!(!report.success);
+    assert!(report.violations.iter().any(|violation| {
+        violation.path == Path::new("AGENTS.md")
+            && violation.rule == "agent_guidance:agent_project_guidance"
+            && violation
+                .message
+                .contains("must reference `Progressive disclosure")
+    }));
+}
+
+#[test]
+fn agents_md_contract_requires_wildcard_skill_routes_to_be_configured() {
+    let project = TempDir::new().unwrap();
+    write_config(&project, "high", 120);
+    write_valid_skill(&project, "project-maintenance");
+    fs::write(
+        project.path().join("AGENTS.md"),
+        r#"# Agent Instructions
+
+## Operating Rules
+
+Read the onboarding packet before specializing.
+
+## Process Docs vs Skills
+
+Use process docs for durable background and skills for repeatable workflows.
+Progressive disclosure: keep AGENTS.md as a use-case router and SKILL.md as
+concise indexes to deeper references.
+
+## Skills
+
+| When | Must first load |
+| --- | --- |
+| Maintaining project guidance | `*` |
+
+## Anchors
+
+Keep these section headings stable.
+"#,
+    )
+    .unwrap();
+
+    let report = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+
+    assert!(!report.success);
+    assert!(report.violations.iter().any(|violation| {
+        violation.path == Path::new("AGENTS.md")
+            && violation.rule == "agent_guidance:agent_project_guidance"
+            && violation.message.contains("unknown skill or pattern `*`")
+    }));
 }
 
 #[test]

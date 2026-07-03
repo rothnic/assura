@@ -32,6 +32,17 @@ extensions:
         - Outputs
         - Guardrails
       skill_index_section: Skills
+      best_practices_reference: "Progressive disclosure: keep AGENTS.md as a use-case router and SKILL.md as concise indexes to deeper references."
+      skill_routing_section: Skills
+      allowed_skill_name_patterns:
+        - "project-*"
+      skill_reference_sections:
+        - Read as needed
+      skill_reference_prefixes:
+        - references/
+        - scripts/
+        - assets/
+        - docs/process/
       max_agents_lines: 120
       max_skill_lines: {max_skill_lines}
 structure:
@@ -61,10 +72,14 @@ Read project guidance before acting.
 ## Process Docs vs Skills
 
 Keep process docs durable and skills executable.
+Progressive disclosure: keep AGENTS.md as a use-case router and SKILL.md as
+concise indexes to deeper references.
 
 ## Skills
 
-- [Maintenance](.agents/skills/{skill}/SKILL.md): use for local maintenance.
+| When | Must first load |
+| --- | --- |
+| Maintaining project guidance | [`{skill}`](.agents/skills/{skill}/SKILL.md) |
 
 ## Anchors
 
@@ -176,5 +191,51 @@ fn skill_contract_warns_when_skill_entrypoint_should_move_detail_to_references()
             && violation.severity == "low"
             && violation.message.contains("references/")
             && violation.message.contains("docs/process/")
+    }));
+}
+
+#[test]
+fn skill_contract_requires_reference_sections_to_point_to_deeper_material() {
+    let project = TempDir::new().unwrap();
+    write_config(&project, "high", 80);
+    write_agents_md(&project, "project-maintenance");
+    write_skill(
+        &project,
+        "project-maintenance",
+        r#"---
+name: project-maintenance
+description: Maintain project-local Assura guidance.
+applies_when: Use when maintaining the project-local Assura baseline.
+---
+
+# Project Maintenance
+
+## Workflow
+
+Run the workflow.
+
+## Read as needed
+
+- No deeper references yet.
+
+## Outputs
+
+- Updated baseline files.
+
+## Guardrails
+
+- Keep the entrypoint concise.
+"#,
+    );
+
+    let report = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+
+    assert!(!report.success);
+    assert!(report.violations.iter().any(|violation| {
+        violation.path == Path::new(".agents/skills/project-maintenance/SKILL.md")
+            && violation.rule == "agent_guidance:agent_project_guidance"
+            && violation
+                .message
+                .contains("must reference supporting docs or assets")
     }));
 }

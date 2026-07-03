@@ -92,6 +92,22 @@ pub(super) fn markdown_links(content: &str) -> Vec<String> {
     links
 }
 
+pub(super) fn inline_code_spans(content: &str) -> Vec<String> {
+    let mut spans = Vec::new();
+    for line in content.lines() {
+        let mut rest = line;
+        while let Some(start) = rest.find('`') {
+            let after_start = &rest[start + 1..];
+            let Some(end) = after_start.find('`') else {
+                break;
+            };
+            spans.push(after_start[..end].trim().to_string());
+            rest = &after_start[end + 1..];
+        }
+    }
+    spans
+}
+
 pub(super) fn path_to_slash(path: &Path) -> String {
     path.components()
         .map(|component| component.as_os_str().to_string_lossy())

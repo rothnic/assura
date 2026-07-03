@@ -81,6 +81,18 @@ extensions:
         - Outputs
         - Guardrails
       skill_index_section: Skills
+      best_practices_reference: "Progressive disclosure: keep AGENTS.md as a use-case router and SKILL.md as concise indexes to deeper references."
+      skill_routing_section: Skills
+      allowed_skill_name_patterns:
+        - "assura-*"
+      skill_reference_sections:
+        - Read as needed
+      skill_reference_prefixes:
+        - references/
+        - scripts/
+        - assets/
+        - docs/process/
+        - .assura/onboarding/
       max_agents_lines: 160
       max_skill_lines: 120
 
@@ -178,12 +190,14 @@ Use `assura check --format agent --warn .` for advisory feedback while working.
 
 Use `docs/process/` for durable process documentation and use project-local
 skills for repeatable agent workflows. Keep skill entrypoints concise.
+Progressive disclosure: keep AGENTS.md as a use-case router and SKILL.md as
+concise indexes to deeper references.
 
 ## Skills
 
-- [Assura Project Maintenance](.agents/skills/assura-project-maintenance/SKILL.md):
-  use when maintaining the broad Assura baseline, onboarding packet, or
-  specialization handoff.
+| When | Must first load |
+| --- | --- |
+| Maintaining the broad Assura baseline, onboarding packet, or specialization handoff | [`assura-project-maintenance`](.agents/skills/assura-project-maintenance/SKILL.md) |
 
 ## Anchors
 
@@ -252,11 +266,14 @@ Replace with project-specific guidance after user answers.
 
 Keep durable process docs in `docs/process/` and executable agent workflows in
 project-local skills.
+Progressive disclosure: keep AGENTS.md as a use-case router and SKILL.md as
+concise indexes to deeper references.
 
 ## Skills
 
-- [Example Skill](../../.agents/skills/example-skill/SKILL.md): use for a
-  repeatable project-local workflow.
+| When | Must first load |
+| --- | --- |
+| Running a repeatable project-local workflow | [`example-skill`](../../.agents/skills/example-skill/SKILL.md) |
 
 ## Anchors
 

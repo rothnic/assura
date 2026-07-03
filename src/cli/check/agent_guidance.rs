@@ -2,17 +2,22 @@
 
 mod markdown;
 mod paths;
+mod routing;
+mod skill;
 
 use super::rules::{display_rel, is_excluded_rel_with};
 use super::{CheckError, StructureCheckReport, StructureChecker, StructureViolation};
 use crate::config::config::AgentGuidanceConfig;
 use markdown::{
-    frontmatter_mapping, heading_anchor, markdown_heading_sequence, markdown_heading_texts,
-    markdown_links, markdown_section, path_to_slash,
+    heading_anchor, markdown_heading_sequence, markdown_heading_texts, markdown_links,
+    markdown_section, path_to_slash,
 };
 use paths::{
     checked_path_relevant_to, checked_path_relevant_to_any, compile_agent_guidance_patterns,
     pattern_matches_any, safe_agent_guidance_path,
+};
+use routing::{
+    compile_skill_name_patterns, skill_name_from_path, skill_reference_allowed, SkillRoutingTable,
 };
 use std::collections::HashSet;
 use std::fs;
@@ -137,6 +142,7 @@ impl StructureChecker {
             report,
         );
         self.validate_duplicate_heading_anchors(policy, agents_rel, &content, report);
+        self.validate_best_practices_reference(policy, agents_rel, &content, report);
         self.validate_line_limit(
             policy,
             agents_rel,
@@ -144,11 +150,12 @@ impl StructureChecker {
             AgentGuidanceLineLimit {
                 limit: policy.max_agents_lines,
                 label: "AGENTS.md",
-                hint: "move operational detail into docs/process/ or project-local skills",
+                hint: "keep AGENTS.md as a use-case router; move operational detail into docs/process/ and route repeatable workflows to project-local SKILL.md entrypoints",
             },
             report,
         );
         self.validate_skill_index(policy, agents_rel, &content, skill_files, report)?;
+        self.validate_skill_routing_section(policy, agents_rel, &content, skill_files, report)?;
         Ok(())
     }
 
@@ -175,11 +182,37 @@ impl StructureChecker {
             AgentGuidanceLineLimit {
                 limit: policy.max_skill_lines,
                 label: "SKILL.md",
-                hint: "move long examples and runbooks into references/ or docs/process/",
+                hint: "keep SKILL.md as a concise index; move long examples and runbooks into references/, scripts/, assets/, or docs/process/ and link them from the configured reference section",
             },
             report,
         );
+        self.validate_skill_reference_sections(policy, skill_rel, &content, report);
         Ok(())
+    }
+
+    fn validate_best_practices_reference(
+        &self,
+        policy: &AgentGuidanceConfig,
+        agents_rel: &Path,
+        content: &str,
+        report: &mut StructureCheckReport,
+    ) {
+        let Some(reference) = policy.best_practices_reference.as_deref() else {
+            return;
+        };
+        if contains_normalized_text(content, reference) {
+            return;
+        }
+        self.push_agent_guidance_violation(
+            report,
+            policy,
+            agents_rel.to_path_buf(),
+            format!(
+                "Agent guidance `{}` AGENTS.md `{}` must reference `{reference}` so agents can find the progressive-disclosure guidance",
+                policy.id,
+                display_rel(agents_rel)
+            ),
+        );
     }
 
     fn validate_required_markdown_sections(
@@ -334,46 +367,60 @@ impl StructureChecker {
         Ok(())
     }
 
-    fn validate_skill_frontmatter(
+    fn validate_skill_routing_section(
         &self,
         policy: &AgentGuidanceConfig,
-        skill_rel: &Path,
+        agents_rel: &Path,
         content: &str,
+        skill_files: &[PathBuf],
         report: &mut StructureCheckReport,
-    ) {
-        if policy.required_skill_frontmatter.is_empty() {
-            return;
+    ) -> Result<(), CheckError> {
+        let Some(section) = policy.skill_routing_section.as_deref() else {
+            return Ok(());
+        };
+        let Some(section_content) = markdown_section(content, section) else {
+            return Ok(());
+        };
+        if section_content.trim().is_empty() {
+            return Ok(());
         }
-        let Some(frontmatter) = frontmatter_mapping(content) else {
+        let Some(table) = SkillRoutingTable::parse(section_content) else {
             self.push_agent_guidance_violation(
                 report,
                 policy,
-                skill_rel.to_path_buf(),
+                agents_rel.to_path_buf(),
                 format!(
-                    "Agent guidance `{}` SKILL.md `{}` is missing YAML frontmatter",
+                    "Agent guidance `{}` AGENTS.md `{}` section `{section}` must use a Markdown table with use-case and skill-loading columns; leave it empty if no routing rules are known yet",
                     policy.id,
-                    display_rel(skill_rel)
+                    display_rel(agents_rel)
                 ),
             );
-            return;
+            return Ok(());
         };
-        for field in &policy.required_skill_frontmatter {
-            if !frontmatter.contains_key(field.as_str()) {
-                self.push_agent_guidance_violation(
-                    report,
-                    policy,
-                    skill_rel.to_path_buf(),
-                    format!(
-                        "Agent guidance `{}` SKILL.md `{}` is missing frontmatter field `{field}`",
-                        policy.id,
-                        display_rel(skill_rel)
-                    ),
-                );
+        let skill_names = skill_files
+            .iter()
+            .filter_map(|path| skill_name_from_path(path))
+            .collect::<HashSet<_>>();
+        let allowed_patterns = compile_skill_name_patterns(&policy.allowed_skill_name_patterns)?;
+        for skill_ref in table.skill_references() {
+            if skill_reference_allowed(&skill_ref, &skill_names, &allowed_patterns) {
+                continue;
             }
+            self.push_agent_guidance_violation(
+                report,
+                policy,
+                agents_rel.to_path_buf(),
+                format!(
+                    "Agent guidance `{}` AGENTS.md `{}` section `{section}` routes to unknown skill or pattern `{skill_ref}`; use an existing skill name or a configured allowed skill-name pattern",
+                    policy.id,
+                    display_rel(agents_rel)
+                ),
+            );
         }
+        Ok(())
     }
 
-    fn push_agent_guidance_violation(
+    pub(super) fn push_agent_guidance_violation(
         &self,
         report: &mut StructureCheckReport,
         policy: &AgentGuidanceConfig,
@@ -397,4 +444,10 @@ fn normalize_project_link(target: &str) -> Option<String> {
     normalized
         .starts_with(".agents/skills/")
         .then(|| normalized.to_string())
+}
+
+fn contains_normalized_text(content: &str, needle: &str) -> bool {
+    let normalized_content = content.split_whitespace().collect::<Vec<_>>().join(" ");
+    let normalized_needle = needle.split_whitespace().collect::<Vec<_>>().join(" ");
+    normalized_content.contains(&normalized_needle)
 }

@@ -30,6 +30,17 @@ extensions:
         - Outputs
         - Guardrails
       skill_index_section: Skills
+      best_practices_reference: "Progressive disclosure: keep AGENTS.md as a use-case router and SKILL.md as concise indexes to deeper references."
+      skill_routing_section: Skills
+      allowed_skill_name_patterns:
+        - "project-*"
+      skill_reference_sections:
+        - Read as needed
+      skill_reference_prefixes:
+        - references/
+        - scripts/
+        - assets/
+        - docs/process/
       max_agents_lines: 80
       max_skill_lines: 80
 structure:
@@ -54,10 +65,13 @@ Use the project-local guidance.
 ## Process Docs vs Skills
 
 Keep durable process docs separate from executable skills.
+Progressive disclosure: keep AGENTS.md as a use-case router and SKILL.md as concise indexes to deeper references.
 
 ## Skills
 
-- [Project Maintenance](.agents/skills/project-maintenance/SKILL.md)
+| When | Must first load |
+| --- | --- |
+| Maintaining project guidance | [`project-maintenance`](.agents/skills/project-maintenance/SKILL.md) |
 
 ## Anchors
 
@@ -143,4 +157,69 @@ Follow local project guidance.
     let stdout = String::from_utf8_lossy(&invalid.stdout);
     assert!(stdout.contains("agent_guidance:agent_project_guidance"));
     assert!(stdout.contains("applies_when"));
+
+    fs::write(
+        project.join("AGENTS.md"),
+        r#"# Agent Guidance
+
+## Operating Rules
+
+Use the project-local guidance.
+
+## Process Docs vs Skills
+
+Keep durable process docs separate from executable skills.
+
+## Skills
+
+| When | Must first load |
+| --- | --- |
+| Maintaining project guidance | [`project-maintenance`](.agents/skills/project-maintenance/SKILL.md) |
+
+## Anchors
+
+Keep section headings stable.
+"#,
+    )
+    .unwrap();
+    fs::write(
+        project.join(".agents/skills/project-maintenance/SKILL.md"),
+        r#"---
+name: project-maintenance
+description: Maintain project guidance.
+applies_when: Maintaining project guidance.
+---
+
+# Project Maintenance
+
+## Workflow
+
+Follow local project guidance.
+
+## Read as needed
+
+- No deeper references yet.
+
+## Outputs
+
+- Updated guidance or a no-op explanation.
+
+## Guardrails
+
+- Keep the entrypoint concise.
+"#,
+    )
+    .unwrap();
+
+    let new_field_invalid = Command::new(env!("CARGO_BIN_EXE_assura-check-compiled"))
+        .arg("--compiled-config")
+        .arg(&compiled_config)
+        .arg("--quiet")
+        .arg(&project)
+        .output()
+        .unwrap();
+    assert_eq!(new_field_invalid.status.code(), Some(1));
+    let stdout = String::from_utf8_lossy(&new_field_invalid.stdout);
+    assert!(stdout.contains("progressive-disclosure guidance"));
+    assert!(stdout.contains("must reference supporting docs or assets"));
 }

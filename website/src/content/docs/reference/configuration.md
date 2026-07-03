@@ -318,6 +318,17 @@ extensions:
         - Outputs
         - Guardrails
       skill_index_section: Skills
+      best_practices_reference: "Progressive disclosure: keep AGENTS.md as a use-case router and SKILL.md as concise indexes to deeper references."
+      skill_routing_section: Skills
+      allowed_skill_name_patterns:
+        - "assura-*"
+      skill_reference_sections:
+        - Read as needed
+      skill_reference_prefixes:
+        - references/
+        - scripts/
+        - assets/
+        - docs/process/
       max_agents_lines: 160
       max_skill_lines: 120
 ```
@@ -325,7 +336,9 @@ extensions:
 This policy checks local guidance shape only. It reports stale or missing
 `AGENTS.md` sections, duplicate heading anchors, missing project-local skill
 links, missing `SKILL.md` frontmatter fields, missing required skill sections,
-and oversized guidance entrypoints. It does not install a global skill
+oversized guidance entrypoints, missing progressive-disclosure references,
+unknown skill names in configured use-case routing tables, and SKILL sections
+that fail to point to deeper references. It does not install a global skill
 registry or create host-agent-specific validation logic.
 
 ## First-Party Extension Policies
