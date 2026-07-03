@@ -1,0 +1,5 @@
+{"file":"docs/goals/assura-agent-content-activation-source-docs.md","reason":"Definition of done and reviewer blocking criteria"}
+{"file":"docs/support-policy.md","reason":"Verify docs preserve supported versus experimental command truth"}
+{"file":"docs/compatibility-and-surface.md","reason":"Verify command and support-surface wording after implementation"}
+{"file":"website/src/content/docs/product/query-search.md","reason":"Website query/search docs must stay truthful about content activation and fallback search"}
+{"file":".assura/config.yml","reason":"Self-check must cover any new command/config/doc surfaces introduced"}
