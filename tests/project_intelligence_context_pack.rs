@@ -52,6 +52,23 @@ fn add_trailing_spaces_after_heading(markdown: &str) -> String {
     markdown.replace(&marker, &replacement)
 }
 
+fn replace_fragment_with_native_newlines(
+    haystack: &str,
+    needle: &str,
+    replacement: &str,
+) -> String {
+    let lf_result = haystack.replace(needle, replacement);
+    if lf_result != haystack {
+        return lf_result;
+    }
+
+    let crlf_needle = needle.replace('\n', "\r\n");
+    let crlf_replacement = replacement.replace('\n', "\r\n");
+    let crlf_result = haystack.replace(&crlf_needle, &crlf_replacement);
+    assert_ne!(crlf_result, haystack, "expected test fixture fragment");
+    crlf_result
+}
+
 #[test]
 fn context_pack_wraps_beacon_diagnostics_relations_search_and_safe_fixes() {
     let pack = json_from_success(run_assura(&[
@@ -206,7 +223,8 @@ extensions:
 
     let schema_path = temp.path().join("schemas/content_runtime.schema.json");
     let mut schema = fs::read_to_string(&schema_path).expect("schema");
-    schema = schema.replace(
+    schema = replace_fragment_with_native_newlines(
+        &schema,
         r#""specs": {
           "type": "array",
           "items": { "type": "string", "minLength": 1 }
@@ -224,7 +242,8 @@ extensions:
 
     let goal_path = temp.path().join("docs/goals/goal_portable_structure.md");
     let mut goal = fs::read_to_string(&goal_path).expect("goal");
-    goal = goal.replace(
+    goal = replace_fragment_with_native_newlines(
+        &goal,
         "specs:\n  - spec-portable-structure\n---",
         "specs:\n  - spec-portable-structure\nsource_documents:\n  - specs/spec_portable_structure.json\n  - docs/missing_source.md\n---",
     );
