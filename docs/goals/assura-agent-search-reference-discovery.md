@@ -67,3 +67,9 @@ git diff --check
 Block if agents must fall back to external grep for day-one discovery, if
 frontmatter references are invisible to the graph, or if unresolved-reference
 counts cannot be enumerated.
+
+## Progress Log
+
+| Date | Update | Evidence |
+| --- | --- | --- |
+| 2026-07-02 | Revalidated and started child goal 5 after completing child goal 4. Existing content/query surfaces already provide modeled keyword search, repository-reference facts, affected-source/target `content references`, context packs, and agent-query envelopes, but not explicit raw repository fallback search, configurable frontmatter reference extraction, direct all/unresolved reference listing, or machine-readable agent-query capability discovery. | `.trellis/tasks/07-02-07-03-agent-search-reference-discovery/prd.md`; `docs/support-policy.md`; `docs/compatibility-and-surface.md`; `docs/goals/assura-supported-document-graph.md`; `docs/goals/assura-content-query-and-search-cli.md`; `src/cli/content_query/agent_query.rs`; `src/cli/content_args.rs`; `cargo run --quiet -- check --format json .` reported 0 violations across 1434 files. |

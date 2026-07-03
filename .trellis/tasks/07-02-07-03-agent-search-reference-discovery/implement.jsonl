@@ -1,0 +1,7 @@
+{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file": "docs/goals/assura-agent-search-reference-discovery.md", "reason": "Child goal scope and acceptance criteria."}
+{"file": "docs/goals/assura-agent-ready-project-onboarding-program.md", "reason": "Parent program sequencing and raw discovery requirements."}
+{"file": "docs/goals/assura-supported-document-graph.md", "reason": "Current supported repository-reference graph contract."}
+{"file": "docs/goals/assura-content-query-and-search-cli.md", "reason": "Current content query/search CLI contract."}
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "Active roadmap priority and performance-lane separation."}
+{"file": "docs/support-policy.md", "reason": "Current support-policy truth for repository references and agent/content surfaces."}
