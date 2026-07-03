@@ -96,7 +96,10 @@ Generated agent-ready baselines include `AGENTS.md`, `.agents/skills/`, and
 `extensions.agent_guidance` checks. The default shape expects `AGENTS.md`
 sections named `Operating Rules`, `Process Docs vs Skills`, `Skills`, and
 `Anchors`; the `Skills` section includes a use-case table that names the
-project-local skill or skill-name pattern to load first. Each project-local
+project-local skill or skill-name pattern to load first. The generated
+`assura-structure-fit` skill installs under `.agents/skills/` and provides the
+`STRUCTURE_FIT_CHECK` anchor for deciding whether a structure mismatch should
+be fixed by moving/renaming a path or by changing config. Each project-local
 `SKILL.md` entrypoint declares `name`, `description`, and `applies_when`
 frontmatter plus `Workflow`, `Read as needed`, `Outputs`, and `Guardrails`
 sections. `Read as needed` should be a use-case table that points to deeper

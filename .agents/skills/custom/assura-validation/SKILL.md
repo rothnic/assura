@@ -1,7 +1,6 @@
 ---
 name: assura-validation
 description: "Validate project structure with assura check and .assura/config.yml."
-triggers: ["validate", "assura check", "file naming", "project structure"]
 ---
 
 # Assura Validation
@@ -83,16 +82,21 @@ structure:
 
 ## Best Practices
 
-1. **Run checks before committing**: Use git hooks to validate automatically
+1. **Run checks before committing**: Use advisory checks while drafting and
+   blocking checks before push or CI.
    ```bash
-   assura hooks install
+   assura check --format agent --warn .
+   assura check --format json .
    ```
 
 2. **Start with warnings**: Set severity to low/medium initially, then increase
 
-3. **Exclude generated files**: Use `exclude.paths` for build artifacts
+3. **Use onboarding packets for agents**: Run `assura agent onboard . --format
+   json` when a repo needs project-local AGENTS/skills guidance.
 
-4. **Document exceptions**: Keep policy exceptions in `.assura/config.yml`
+4. **Exclude generated files**: Use `exclude` for build artifacts
+
+5. **Document exceptions**: Keep policy exceptions in `.assura/config.yml`
 
 ## Troubleshooting
 

@@ -772,6 +772,7 @@ structure:
                 - "assura-goal-validation"
                 - "assura-local-build"
                 - "assura-performance-reporting"
+                - "assura-structure-fit"
                 - "built-in"
                 - "custom"
                 - "trellis-before-dev"
@@ -833,6 +834,31 @@ structure:
                   allow_extra: false
                 directories:
                   allow_extra: false
+              assura-structure-fit/:
+                files:
+                  naming: "kebab-case"
+                  naming_patterns:
+                    "SKILL.md": "regex:^SKILL$"
+                  allowed_names:
+                    - "SKILL.md"
+                  max_lines: 600
+                  max_size: "24KB"
+                  allow_extra: false
+                directories:
+                  allowed_names:
+                    - "references"
+                  allow_extra: false
+                children:
+                  references/:
+                    files:
+                      naming: "kebab-case"
+                      allowed_names:
+                        - "structure-fit-check.md"
+                      max_lines: 600
+                      max_size: "24KB"
+                      allow_extra: false
+                    directories:
+                      allow_extra: false
               built-in/:
                 files:
                   allow_extra: false

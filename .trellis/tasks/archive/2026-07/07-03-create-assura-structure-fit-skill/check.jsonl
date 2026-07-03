@@ -1,0 +1,7 @@
+{"path":"cargo run --quiet -- check --format json .","reason":"Assura self-check must accept the new skill, reference file, AGENTS entry, and config update."}
+{"path":"cargo fmt --check","reason":"Rust formatting for onboarding template module split and regression test edits."}
+{"path":"cargo test --test project_intelligence_onboarding --quiet","reason":"Generated onboarding must install and route the structure-fit skill."}
+{"path":"cargo xtask evidence","reason":"Docs/workflow scoped validation from project guidance."}
+{"path":"cargo xtask target-state","reason":"Website/API/support target-state markers must remain current."}
+{"path":"cargo xtask docs","reason":"Website guide and API docs changed."}
+{"path":"git diff --check","reason":"Whitespace validation before commit."}

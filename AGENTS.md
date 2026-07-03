@@ -82,6 +82,7 @@ Located in `.agents/skills/`:
 | `assura-goal-validation` | Goal creation and revalidation workflow for old or separate-context goal docs | Creating a goal, choosing the next goal, or starting an older goal that may be stale |
 | `assura-local-build` | Local Cargo/OpenSSL/network troubleshooting for WSL or locked-down environments | Cargo validation fails for platform or dependency-access reasons |
 | `assura-performance-reporting` | Performance-report, LS-Lint warm comparison, benchmark history, and website performance data workflow | Changing `assura performance-report` or PR performance evidence |
+| `assura-structure-fit` | Structure mismatch decision workflow with `STRUCTURE_FIT_CHECK` progressive-disclosure guidance | Assura rejects a new or moved file/directory, or a config change would allow a new path |
 
 **Usage**: Read `.agents/skills/<skill-name>/SKILL.md` for instructions.
 

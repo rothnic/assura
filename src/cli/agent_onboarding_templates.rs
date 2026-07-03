@@ -2,6 +2,7 @@
 
 use super::agent_onboarding::DetectedSection;
 use super::agent_onboarding_content_templates as content;
+use super::agent_onboarding_structure_fit_templates as structure_fit;
 use super::AgentContentTemplate;
 
 pub(super) fn baseline_files(
@@ -28,6 +29,14 @@ pub(super) fn baseline_files(
         GeneratedFile::static_file(
             ".agents/skills/assura-project-maintenance/references/assura-onboarding.md",
             onboarding_reference(),
+        ),
+        GeneratedFile::static_file(
+            ".agents/skills/assura-structure-fit/SKILL.md",
+            structure_fit::skill(),
+        ),
+        GeneratedFile::static_file(
+            ".agents/skills/assura-structure-fit/references/structure-fit-check.md",
+            structure_fit::reference(),
         ),
         GeneratedFile::static_file("docs/process/agent-workflow.md", agent_workflow_doc()),
         GeneratedFile::static_file("docs/learnings/README.md", learnings_readme()),
@@ -234,6 +243,7 @@ expanding AGENTS.md with long procedures.
 | When | Must first load |
 | --- | --- |
 | Maintaining the broad Assura baseline, onboarding packet, or specialization handoff | [`assura-project-maintenance`](.agents/skills/assura-project-maintenance/SKILL.md) |
+| Handling an Assura structure mismatch or deciding whether config should allow a new path | [`assura-structure-fit`](.agents/skills/assura-structure-fit/SKILL.md) |
 
 ## Anchors
 
@@ -426,6 +436,10 @@ source-document, hook, or project-specific rules.
 Use `.assura/onboarding/lifecycle.md` to decide between nudge, warn, and gate
 feedback. Warn mode is advisory for draft work; gate mode is for pre-push,
 merge, or CI checks.
+
+For structure mismatches, apply `STRUCTURE_FIT_CHECK` from
+`.agents/skills/assura-structure-fit/references/structure-fit-check.md` before
+editing `.assura/config.yml`.
 
 ## Ask The User
 

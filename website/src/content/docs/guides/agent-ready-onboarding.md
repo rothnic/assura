@@ -163,6 +163,19 @@ not the same thing as a fully onboarded repository.
 The agent should read `agent-next.md` before it changes language, layout,
 naming, traceability, source-document, hook, or domain conventions.
 
+## Project-Local Skills
+
+Onboarding installs Assura guidance as project-local skills under
+`.agents/skills/`. Agents should load these local skills from `AGENTS.md`
+routing; Assura does not silently mutate host-agent or global skill
+configuration.
+
+The generated `assura-structure-fit` skill defines `STRUCTURE_FIT_CHECK`, a
+compact anchor for structure mismatch feedback. When a new file or directory
+does not fit `.assura/config.yml`, agents should apply that check before
+editing config: inspect existing structure, prefer reuse or rename, and add a
+new config rule only for a durable non-duplicative project role.
+
 ## Agent-Next Questions
 
 The generated `agent-next.md` asks for the missing choices that Assura should

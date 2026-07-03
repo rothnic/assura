@@ -246,16 +246,40 @@ fn agent_onboard_generates_broad_baseline_and_packet() {
         ".assura/onboarding/doctor.json",
         "AGENTS.md",
         ".agents/skills/assura-project-maintenance/SKILL.md",
+        ".agents/skills/assura-structure-fit/SKILL.md",
+        ".agents/skills/assura-structure-fit/references/structure-fit-check.md",
         "docs/process/agent-workflow.md",
         "docs/learnings/README.md",
     ] {
         assert!(project.path().join(path).is_file(), "missing {path}");
     }
 
+    let agents_md = fs::read_to_string(project.path().join("AGENTS.md")).unwrap();
+    assert!(agents_md.contains("assura-structure-fit"));
+    assert!(agents_md.contains("structure mismatch"));
+    let structure_skill = fs::read_to_string(
+        project
+            .path()
+            .join(".agents/skills/assura-structure-fit/SKILL.md"),
+    )
+    .unwrap();
+    assert!(structure_skill.contains("STRUCTURE_FIT_CHECK"));
+    assert!(structure_skill.contains("references/structure-fit-check.md"));
+    let structure_reference = fs::read_to_string(
+        project
+            .path()
+            .join(".agents/skills/assura-structure-fit/references/structure-fit-check.md"),
+    )
+    .unwrap();
+    assert!(structure_reference.contains("project-locally"));
+    assert!(structure_reference.contains("does not silently"));
+
     let agent_next =
         fs::read_to_string(project.path().join(".assura/onboarding/agent-next.md")).unwrap();
     assert!(agent_next.contains("Do not invent project conventions"));
     assert!(agent_next.contains(".assura/onboarding/lifecycle.md"));
+    assert!(agent_next.contains("STRUCTURE_FIT_CHECK"));
+    assert!(agent_next.contains(".agents/skills/assura-structure-fit"));
     assert!(agent_next.contains("What primary language or stack should this project use?"));
     assert!(agent_next.contains("What test layout should the project use?"));
     let lifecycle =
