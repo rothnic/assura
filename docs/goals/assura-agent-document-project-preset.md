@@ -15,9 +15,9 @@ related:
 
 ## Objective
 
-Provide a reusable document-project preset for research, documentation,
-compliance, and knowledge-base repositories without making the core
-agent-project preset domain-specific.
+Provide a reusable document-project preset for academic research, content
+authoring, documentation, and knowledge-base repositories without making the
+core agent-project preset domain-specific.
 
 ## Scope
 
@@ -40,11 +40,11 @@ agent-project preset domain-specific.
 
 ## Definition Of Done
 
-- A new document-heavy repo can apply the preset and get useful structure,
+- A new research-authoring repo can apply the preset and get useful structure,
   custody, Markdown, reference, and content-model readiness checks.
 - Existing repos can merge the preset without losing local conventions.
-- The preset remains broad enough for docs, research, compliance, and knowledge
-  bases.
+- The preset remains broad enough for academic research, content authoring,
+  documentation, and knowledge bases.
 - Website onboarding explains when to choose document-project versus
   agent-project.
 

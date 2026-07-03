@@ -384,7 +384,7 @@ fn onboarding_questions() -> &'static str {
     r#"# Assura Onboarding Questions
 
 1. What primary language or stack should this project use?
-2. What project type is this: library, app, docs site, research repo, data project, monorepo, document-heavy repo, or other?
+2. What project type is this: library, app, docs site, research-authoring project, data project, monorepo, or other?
 3. What file naming convention should apply: kebab-case, snake_case, PascalCase, or mixed by folder?
 4. What source layout should the project use?
 5. What test layout should the project use?
@@ -430,7 +430,7 @@ merge, or CI checks.
 ## Ask The User
 
 1. What primary language or stack should this project use?
-2. What project type is this: library, app, docs site, research repo, data project, monorepo, document-heavy repo, or other?
+2. What project type is this: library, app, docs site, research-authoring project, data project, monorepo, or other?
 3. What file naming convention should apply: kebab-case, snake_case, PascalCase, or mixed by folder?
 4. What source layout should the project use?
 5. What test layout should the project use?

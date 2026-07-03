@@ -385,6 +385,9 @@ fn agent_onboard_document_project_tracks_source_document_custody() {
         .path()
         .join("source-documents/files/sample-source.txt")
         .is_file());
+    let questions =
+        fs::read_to_string(project.path().join(".assura/onboarding/questions.md")).unwrap();
+    assert!(questions.contains("research-authoring project"));
     for path in [
         "library/topics/topic-document-project-baseline.md",
         "docs/drafts/draft-document-project-baseline.md",
@@ -428,7 +431,7 @@ fn agent_onboard_document_project_tracks_source_document_custody() {
     let topic_search = json_from_success(run_assura(&[
         "content",
         "search",
-        "Document Project Baseline Topic",
+        "Research Authoring Baseline Topic",
         project.path().to_str().unwrap(),
         "--format",
         "json",

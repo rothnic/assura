@@ -1,0 +1,3 @@
+{"file": "website/src/content/docs/guides/agent-ready-onboarding.md", "reason": "Primary user-facing document-project positioning."}
+{"file": "src/cli/agent_onboarding_templates.rs", "reason": "Generated onboarding questions should match the research-authoring framing."}
+{"file": "docs/goals/assura-agent-document-project-preset.md", "reason": "Goal text should describe the generic document-project example clearly."}

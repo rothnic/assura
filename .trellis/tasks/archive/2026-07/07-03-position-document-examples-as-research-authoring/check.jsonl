@@ -1,0 +1,2 @@
+{"file": "tests/project_intelligence_onboarding.rs", "reason": "Focused onboarding test covers generated question and document-project output."}
+{"file": "xtask/src/main.rs", "reason": "Target-state website marker should protect the research-authoring framing."}

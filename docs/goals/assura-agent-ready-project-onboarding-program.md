@@ -222,8 +222,8 @@ agent not to invent project conventions.
 It should ask the user these specialization questions:
 
 1. What primary language or stack should this project use?
-2. What project type is this: library, app, docs site, research repo, data
-   project, monorepo, document-heavy repo, or other?
+2. What project type is this: library, app, docs site, research-authoring
+   project, data project, monorepo, or other?
 3. What file naming convention should apply: kebab-case, snake_case,
    PascalCase, or mixed by folder?
 4. What source layout should the project use?
@@ -598,7 +598,7 @@ Project-type packs layer examples and checks after the broad baseline:
 - `agent-project`: `AGENTS.md`, skills, hooks, `docs/process/`, and
   `docs/learnings/`.
 - `document-project`: source-document manifest, `library/topics/`,
-  `docs/drafts/`, `docs/final/`, and evidence.
+  `docs/drafts/`, `docs/final/`, and evidence for research/content authoring.
 - `rust`: `Cargo.toml`, `src/`, `tests/`, `benches/`, `examples/`, and Rust
   naming conventions.
 - `node`: `package.json`, `src/`, `test/`, docs, and package-manager
@@ -606,8 +606,8 @@ Project-type packs layer examples and checks after the broad baseline:
 - `python`: `pyproject.toml`, `src` package layout, `tests/`, and docs.
 - `web-app`: `src/`, routes or pages, components, public assets, and tests.
 - `monorepo`: `packages/*`, `apps/*`, shared docs, and workspace config.
-- `document-heavy-project`: requirements, evidence, source documents, and
-  review findings.
+- `research-authoring-project`: literature notes, source documents, evidence,
+  drafts, and final papers/reports.
 
 Project-type examples should be composable later layers, not requirements for
 the broad agent-project baseline.
@@ -743,7 +743,7 @@ surface before closure.
 - R1: Confirm the backlog prevents a green check from implying unconfigured
   capabilities are complete.
 - R2: Confirm the agent-project preset is broadly useful and not tailored to
-  one document-heavy workflow.
+  one research/content authoring workflow.
 - R3: Confirm doctor and explain answer active, inactive, inherited, skipped,
   and next-action questions.
 - R4: Confirm AGENTS.md and SKILL.md checks improve agent routing without

@@ -208,17 +208,18 @@ project facts:
 assura agent onboard . --content-template agent-project --format json
 ```
 
-Use the document-project template when source-document custody and a generic
-document workflow should be active from the first run:
+Use the document-project template for research-authoring projects: academic
+research and content authoring work such as literature reviews, papers, theses,
+reports, and knowledge bases.
 
 ```bash
 assura agent onboard . --content-template document-project --format json
 ```
 
 Document projects add `source-documents/`, `library/topics/`, `docs/drafts/`,
-and `docs/final/` on top of the broad project records. They validate referenced
-source file paths through manifest metadata without requiring binary files to
-be read as text.
+and `docs/final/` on top of the broad project records. They help an agent keep
+source material, research notes, drafts, evidence, and final outputs linked
+without requiring binary files to be read as text.
 
 ## Lifecycle Profiles
 

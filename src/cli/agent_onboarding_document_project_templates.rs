@@ -116,55 +116,57 @@ const DOCUMENT_PROJECT_RELATIONS: &str = r#"  topics.related_requirements:
 fn topic_document_project_baseline() -> &'static str {
     r#"---
 id: topic-document-project-baseline
-title: Document Project Baseline Topic
+title: Research Authoring Baseline Topic
 status: active
 related_requirements:
   - requirement-agent-content-baseline
-summary: A starter topic that demonstrates the document-project library shape.
+summary: A starter research note that demonstrates the document-project library shape.
 ---
 
-# Document Project Baseline Topic
+# Research Authoring Baseline Topic
 
-Use topics for reusable research, domain notes, or knowledge-base material that
-should inform drafts and final documents.
+Use topics for literature notes, research context, or reusable background
+material that should inform drafts and final documents.
 "#
 }
 
 fn draft_document_project_baseline() -> &'static str {
     r#"---
 id: draft-document-project-baseline
-title: Document Project Baseline Draft
+title: Research Authoring Baseline Draft
 status: draft
 requirements:
   - requirement-agent-content-baseline
 evidence:
   - evidence-agent-content-baseline
-summary: A starter draft linked to generic requirements and evidence.
+summary: A starter research or content draft linked to requirements and evidence.
 ---
 
-# Document Project Baseline Draft
+# Research Authoring Baseline Draft
 
-Use drafts for work in progress that still needs review, evidence checks, or
-source-document reconciliation before it becomes final.
+Use drafts for papers, theses, reports, or knowledge-base content that still
+needs review, evidence checks, or source-document reconciliation before it
+becomes final.
 "#
 }
 
 fn final_document_project_baseline() -> &'static str {
     r#"---
 id: final-document-project-baseline
-title: Document Project Baseline Final Document
+title: Research Authoring Baseline Final Document
 status: final
 requirements:
   - requirement-agent-content-baseline
 evidence:
   - evidence-agent-content-baseline
-summary: A starter final document linked to generic requirements and evidence.
+summary: A starter final research or content output linked to requirements and evidence.
 ---
 
-# Document Project Baseline Final Document
+# Research Authoring Baseline Final Document
 
-Use final documents for reviewed outputs that should remain traceable to
-requirements, evidence, and source-document custody metadata.
+Use final documents for reviewed papers, reports, or published content that
+should remain traceable to requirements, evidence, and source-document custody
+metadata.
 "#
 }
 
