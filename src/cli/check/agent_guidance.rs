@@ -18,6 +18,12 @@ use std::collections::HashSet;
 use std::fs;
 use std::path::{Path, PathBuf};
 
+struct AgentGuidanceLineLimit<'a> {
+    limit: Option<usize>,
+    label: &'a str,
+    hint: &'a str,
+}
+
 impl StructureChecker {
     pub(super) fn validate_agent_guidance(
         &self,
@@ -135,9 +141,11 @@ impl StructureChecker {
             policy,
             agents_rel,
             &content,
-            policy.max_agents_lines,
-            "AGENTS.md",
-            "move operational detail into docs/process/ or project-local skills",
+            AgentGuidanceLineLimit {
+                limit: policy.max_agents_lines,
+                label: "AGENTS.md",
+                hint: "move operational detail into docs/process/ or project-local skills",
+            },
             report,
         );
         self.validate_skill_index(policy, agents_rel, &content, skill_files, report)?;
@@ -164,9 +172,11 @@ impl StructureChecker {
             policy,
             skill_rel,
             &content,
-            policy.max_skill_lines,
-            "SKILL.md",
-            "move long examples and runbooks into references/ or docs/process/",
+            AgentGuidanceLineLimit {
+                limit: policy.max_skill_lines,
+                label: "SKILL.md",
+                hint: "move long examples and runbooks into references/ or docs/process/",
+            },
             report,
         );
         Ok(())
@@ -232,11 +242,10 @@ impl StructureChecker {
         policy: &AgentGuidanceConfig,
         rel: &Path,
         content: &str,
-        limit: Option<usize>,
-        label: &str,
-        hint: &str,
+        line_limit: AgentGuidanceLineLimit<'_>,
         report: &mut StructureCheckReport,
     ) {
+        let AgentGuidanceLineLimit { limit, label, hint } = line_limit;
         let Some(limit) = limit else {
             return;
         };
