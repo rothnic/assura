@@ -385,3 +385,18 @@ the exact missing input.
     the logical argument while still proving no shell expansion occurred.
 - Next action: rerun focused computed-check gates, commit and push the fixture
   assertion fix, then re-check PR #139 on the new head.
+
+### 2026-07-03 - Iteration 1 Windows Cmd Argument Token Fix
+
+- Pushed first Windows argument fixture fix to PR #139 at
+  `c1ba372`.
+- Remote re-check still failed only
+  `computed_check_passes_args_literally_and_sends_versioned_stdin`, with
+  `.cmd` fixture exit code 11 from the Windows-only argument assertion.
+- Local fix:
+  - kept runtime behavior unchanged;
+  - changed the Windows `.cmd` fixture to validate the full `%*` representation
+    contains the semicolon argument token and both spaced-argument words,
+    avoiding brittle `%~N` positional assumptions from `cmd.exe /C call`.
+- Next action: rerun focused computed-check gates, commit and push the token
+  assertion fix, then re-check PR #139 on the new head.

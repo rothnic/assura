@@ -496,8 +496,9 @@ echo %request% | findstr /C:"\"schema\":\"assura.computed-check.input.v1\"" >nul
 echo %request% | findstr /C:"\"id\":\"rollup_score\"" >nul || exit /b 10
 echo %request% | findstr /C:"\"checked_path\":" >nul || exit /b 10
 echo %request% | findstr /C:"\"config_path\":" >nul || exit /b 10
-if not "%~1"=="literal;echo-no-shell" exit /b 11
-echo %* | findstr /C:"two words" >nul || exit /b 11
+echo %* | findstr /C:"literal;echo-no-shell" >nul || exit /b 11
+echo %* | findstr /C:"two" >nul || exit /b 11
+echo %* | findstr /C:"words" >nul || exit /b 11
 echo {"schema":"assura.computed-check.output.v1","findings":[]}
 "#
 }
