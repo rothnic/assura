@@ -1,0 +1,6 @@
+{"path":".trellis/spec/assura/roadmap.md","reason":"Current roadmap status and recommended next action."}
+{"path":"docs/goals/assura-performance-polish-program.md","reason":"Existing planned performance lane to sequence into executable subgoals."}
+{"path":"docs/goals/assura-agent-ready-project-onboarding-program.md","reason":"Completed onboarding program and review criteria that must not be reopened casually."}
+{"path":"docs/analysis/2026-07-03-agent-ready-onboarding-final-audit.md","reason":"Final audit evidence for completed onboarding scope."}
+{"path":"docs/goals/assura-post-onboarding-backlog-execution-sequence.md","reason":"New goal prompt artifact with ordered measurable subgoals."}
+{"path":"docs/data/public-roadmap.json","reason":"Public roadmap now group must include the current recommended goal."}

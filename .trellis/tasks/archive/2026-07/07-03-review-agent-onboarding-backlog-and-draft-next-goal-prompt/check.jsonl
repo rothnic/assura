@@ -1,0 +1,5 @@
+{"path":".trellis/spec/assura/roadmap.md","reason":"Verify the goal prompt follows current roadmap routing."}
+{"path":"docs/goals/assura-performance-polish-program.md","reason":"Verify subgoals preserve the existing performance program gates."}
+{"path":"docs/goals/assura-agent-ready-project-onboarding-program.md","reason":"Verify onboarding follow-up is limited to PR closure/regression handling."}
+{"path":"docs/goals/assura-post-onboarding-backlog-execution-sequence.md","reason":"Verify the created prompt has measurable gates and current routing."}
+{"path":"docs/data/public-roadmap.json","reason":"Verify public roadmap target-state agrees with internal recommended goal."}

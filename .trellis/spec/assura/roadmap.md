@@ -53,7 +53,7 @@ Current branch:
 `codex/agent-ready-onboarding-backlog`.
 
 Current recommended goal:
-`docs/goals/assura-performance-polish-program.md`.
+`docs/goals/assura-post-onboarding-backlog-execution-sequence.md`.
 
 Performance lane:
 `docs/goals/assura-performance-polish-program.md`.
@@ -90,9 +90,11 @@ that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
 ## Recommended Next Action
 
-Agent-ready onboarding is complete for this increment. Kick off
-`docs/goals/assura-performance-polish-program.md` when the next slice is about
-native performance evidence, no-slower gates, or CLI-floor optimization.
+Agent-ready onboarding is complete for this increment. First execute
+`docs/goals/assura-post-onboarding-backlog-execution-sequence.md` to publish
+and revalidate the local PR #139 follow-up commits, then continue into
+`docs/goals/assura-performance-polish-program.md` for native performance
+evidence, no-slower gates, and CLI-floor optimization.
 
 Priority rule: performance work remains separate from the completed
 agent-ready onboarding program. Reopen onboarding only for follow-up product

@@ -176,6 +176,12 @@
       "title": "Now",
       "items": [
         {
+          "label": "PR Handoff",
+          "summary": "Publish and revalidate the local agent-ready onboarding follow-up commits before starting the performance lane.",
+          "detail_path": "docs/goals/assura-post-onboarding-backlog-execution-sequence.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-post-onboarding-backlog-execution-sequence.md"
+        },
+        {
           "label": "CLI Floor",
           "summary": "Reduce startup and config/walk costs that keep small or many-scope rows from stronger performance targets.",
           "detail_path": "docs/goals/assura-performance-polish-program.md",
