@@ -1,0 +1,6 @@
+{"file":"docs/goals/assura-agent-ready-project-onboarding-program.md","reason":"Parent program objective, sequencing, and non-domain baseline constraints"}
+{"file":"docs/goals/assura-agent-content-activation-source-docs.md","reason":"Current child goal objective, definition of done, and validation commands"}
+{"file":"docs/goals/assura-content-model-source-of-truth.md","reason":"Content runtime source-of-truth and model artifact layout constraints"}
+{"file":"docs/goals/assura-supported-document-graph.md","reason":"Supported document graph/query contract and candidate-enrichment boundaries"}
+{"file":"docs/support-policy.md","reason":"Current support levels and command-surface truth for onboarding, doctor, and content"}
+{"file":".trellis/spec/assura/roadmap.md","reason":"Active roadmap priority and performance lane separation"}
