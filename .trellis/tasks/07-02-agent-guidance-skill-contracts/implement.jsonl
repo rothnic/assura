@@ -1,9 +1,0 @@
-{"file": "docs/goals/assura-agent-guidance-skill-contracts.md", "reason": "Child goal scope, definition of done, validation commands, and reviewer blocking criteria."}
-{"file": "docs/goals/assura-agent-ready-project-onboarding-program.md", "reason": "Parent onboarding program sequence, first-run output contract, and AGENTS/SKILL contract requirements."}
-{"file": ".trellis/spec/assura/roadmap.md", "reason": "Active roadmap epic, priority, branch, and performance-lane separation."}
-{"file": ".trellis/spec/assura/codex-agent-feedback.md", "reason": "Stable shared agent feedback direction lock and no per-agent command drift."}
-{"file": ".trellis/spec/assura/config-notation.md", "reason": "Current structure notation and reusable dynamic contract semantics."}
-{"file": ".trellis/spec/assura/structure-enforcement.md", "reason": "Closed-world structure, direct-content, and exists-count semantics for validation output."}
-{"file": ".trellis/spec/assura/workflow-status.md", "reason": "Required workflow status snapshot shape for handoffs and review evidence."}
-{"file": "docs/support-policy.md", "reason": "Current support levels and future/experimental surface wording."}
-{"file": "docs/compatibility-and-surface.md", "reason": "Public command compatibility and surface contract documentation."}
