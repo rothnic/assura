@@ -58,7 +58,7 @@ fixtures, and docs sections.
 
 ## Out Of Scope
 
-- Proposal/SBIR or other domain packs.
+- Domain-specific or other domain packs.
 - Rust, Node, Python, or web-app-specific project rules.
 - Performance benchmark changes.
 - Doctor/explain, content activation, lifecycle hook, and website overhaul

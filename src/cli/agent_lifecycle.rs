@@ -117,45 +117,7 @@ pub(super) fn ranked_next_actions(
         affected_paths: vec![".assura/onboarding/agent-next.md"],
         follow_up: ".assura/onboarding/agent-next.md".to_string(),
     }];
-
-    if matches!(content_template, AgentContentTemplate::ProposalSbir) {
-        actions.extend([
-            RankedNextAction {
-                priority: 2,
-                action: "Reconcile proposal source documents",
-                reason: "Proposal evidence and package metadata must stay linked to source custody.",
-                affected_paths: vec!["source-documents/manifest.md", "proposals/evidence/"],
-                follow_up: "assura content references . --format json".to_string(),
-            },
-            RankedNextAction {
-                priority: 3,
-                action: "Fill missing proposal evidence",
-                reason: "High-priority proposal requirements need evidence before scorecards and package readiness are meaningful.",
-                affected_paths: vec!["proposals/evidence/"],
-                follow_up: "assura content agent-query diagnostics --format json".to_string(),
-            },
-            RankedNextAction {
-                priority: 4,
-                action: "Resolve proposal review findings",
-                reason: "Final package readiness depends on review findings carrying owner and resolved status.",
-                affected_paths: vec!["proposals/review-findings/"],
-                follow_up: "assura check --format agent --warn --max-issues 10 .".to_string(),
-            },
-            RankedNextAction {
-                priority: 5,
-                action: "Verify final proposal package metadata",
-                reason: "The package manifest and submission checklist are checked before gate-mode feedback.",
-                affected_paths: vec!["proposals/package/", "proposals/submission/"],
-                follow_up: "assura check --format agent --min-severity medium .".to_string(),
-            },
-        ]);
-    }
-
-    let generic_base_priority = if matches!(content_template, AgentContentTemplate::ProposalSbir) {
-        6
-    } else {
-        2
-    };
+    let generic_base_priority = 2;
 
     actions.extend([
         RankedNextAction {

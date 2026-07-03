@@ -10,6 +10,5 @@
 {"file": "docs/goals/assura-agent-document-project-preset.md", "reason": "Child goal for the document-project preset and reusable document-heavy repository baseline."}
 {"file": "docs/goals/assura-agent-requirements-evidence-traceability.md", "reason": "Child goal for reusable requirements, claims, evidence, findings, and coverage traceability."}
 {"file": "docs/goals/assura-agent-script-backed-computed-checks.md", "reason": "Child goal for controlled script-backed computed checks and rollups."}
-{"file": "docs/goals/assura-agent-proposal-sbir-domain-pack.md", "reason": "Child goal for the optional proposal/SBIR domain pack."}
 {"file": ".trellis/spec/assura/roadmap.md", "reason": "Roadmap routing confirms this goal is the P0 adoption backlog."}
 {"file": "docs/data/public-roadmap.json", "reason": "Public roadmap already points to the agent-ready backlog and should remain valid."}

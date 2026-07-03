@@ -10,6 +10,5 @@
 {"file": "docs/goals/assura-agent-document-project-preset.md", "reason": "Confirm document-project preset work is separately executable."}
 {"file": "docs/goals/assura-agent-requirements-evidence-traceability.md", "reason": "Confirm requirements/evidence traceability work is separately executable."}
 {"file": "docs/goals/assura-agent-script-backed-computed-checks.md", "reason": "Confirm computed-check work is separately executable."}
-{"file": "docs/goals/assura-agent-proposal-sbir-domain-pack.md", "reason": "Confirm proposal/SBIR domain pack work is separately executable."}
 {"file": ".trellis/spec/assura/roadmap.md", "reason": "Confirm roadmap still points to agent-ready onboarding as P0 adoption backlog."}
 {"file": "docs/data/public-roadmap.json", "reason": "Confirm public roadmap JSON remains valid after the refinement."}

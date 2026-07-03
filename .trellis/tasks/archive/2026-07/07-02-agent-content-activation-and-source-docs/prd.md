@@ -14,7 +14,7 @@ what is checked versus unchecked.
 Implement the next child goal from
 `docs/goals/assura-agent-content-activation-source-docs.md` so a project can
 intentionally activate baseline content models and source-document custody
-without requiring proposal/SBIR domain packs.
+without requiring domain-specific domain packs.
 
 ## Requirements
 
@@ -32,13 +32,13 @@ without requiring proposal/SBIR domain packs.
   without reading binary files as UTF-8.
 - Preserve current command-surface truth. Future CLI surfaces must remain
   clearly marked until implemented.
-- Keep domain-specific proposal/SBIR behavior out of the core templates.
+- Keep domain-specific domain-specific behavior out of the core templates.
 
 ## Non-Goals
 
 - No hosted content service.
 - No semantic search requirement.
-- No proposal scoring, SBIR pack, or domain-specific source-document policy.
+- No proposal scoring, domain-specific pack, or domain-specific source-document policy.
 - No public plugin API.
 
 ## Evidence

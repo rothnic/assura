@@ -22,13 +22,13 @@ polish remains a separate lane.
 | Content models and source-document custody are intentional | `agent-project` and `document-project` content templates, source manifest tests | Complete |
 | Nudge, warn, and gate lifecycle is explicit | `lifecycle_profiles`, `.assura/onboarding/lifecycle.md`, lifecycle tests | Complete |
 | Agent-facing next actions are ranked | onboarding next actions and `assura content agent-query next-actions` tests | Complete |
-| Document-project, traceability, computed checks, and proposal/SBIR pack are separate layers | child goals 9-12, support policy, compatibility matrix, proposal pack tests | Complete |
-| Domain-specific behavior stays out of core presets | support policy, website guide, document-project tests, proposal pack opt-in tests | Complete |
+| Document-project, traceability, and computed checks are separate layers | child goals 9-11, support policy, compatibility matrix, focused tests | Complete |
+| Document-heavy behavior stays generic | support policy, website guide, document-project tests | Complete |
 | Future remote bootstrap remains truthful | website guide and support policy mark remote bootstrap as future; installed CLI owns current onboarding behavior | Complete for this increment |
 
 ## Child Goal Status
 
-All twelve child goals in the parent execution sequence are marked completed
+All eleven child goals in the parent execution sequence are marked completed
 and have implementation evidence in their goal files or parent progress log.
 
 ## Validation Scope
@@ -50,8 +50,8 @@ Final closure should include:
 
 Review should block if public docs imply unsupported remote bootstrap behavior,
 if public roadmap status contradicts the completed parent goal, if the website
-guide loses the checked-versus-unchecked mental model, or if proposal/SBIR
-behavior appears in a generic preset.
+guide loses the checked-versus-unchecked mental model, or if one project type
+appears in a generic preset.
 
 Independent review `019f2738-76c6-75a3-ac6a-fac247b8ae32` found stale
 "future" wording in the parent goal. The wording was corrected, and the same

@@ -35,7 +35,7 @@ active modeled content.
 
 ## Non-Goals
 
-- No proposal scoring pack in the core model set.
+- No one-off scoring pack in the core model set.
 - No hosted content service.
 - No mandatory semantic search.
 
@@ -65,8 +65,8 @@ git diff --check
 ## Reviewer Blocking Criteria
 
 Block if draft models can silently appear active, if binary files are read as
-text, if baseline models are proposal-specific, or if source-document custody
-requires a domain pack.
+text, if baseline models are tailored to one document-heavy workflow, or if
+source-document custody requires a separate pack.
 
 ## Progress Log
 

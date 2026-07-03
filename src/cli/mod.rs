@@ -16,10 +16,6 @@ mod agent_onboarding_content_templates;
 #[cfg(feature = "full-cli")]
 mod agent_onboarding_document_project_templates;
 #[cfg(feature = "full-cli")]
-mod agent_onboarding_proposal_sbir_scripts;
-#[cfg(feature = "full-cli")]
-mod agent_onboarding_proposal_sbir_templates;
-#[cfg(feature = "full-cli")]
 mod agent_onboarding_report;
 #[cfg(feature = "full-cli")]
 mod agent_onboarding_templates;

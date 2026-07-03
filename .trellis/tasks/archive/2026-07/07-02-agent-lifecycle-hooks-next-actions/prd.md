@@ -67,7 +67,7 @@ agent-facing output:
 - No hidden mutation of Codex, Claude, OpenCode, Pi, or global agent configs.
 - No new per-agent validation command or `--format <agent>-hook` value.
 - No daemon requirement for baseline onboarding.
-- No proposal/SBIR or domain-specific lifecycle pack.
+- No domain-specific or domain-specific lifecycle pack.
 
 ## Acceptance Criteria
 

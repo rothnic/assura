@@ -376,15 +376,10 @@ fn verify_project(project_root: &Path, config: Option<PathBuf>) -> Result<Vec<Ch
 
 fn content_section(template: AgentContentTemplate) -> ContentSection {
     if template.activates_content() {
-        let detail = if matches!(template, AgentContentTemplate::ProposalSbir) {
-            "proposal/SBIR domain pack content models and checks are configured"
-        } else {
-            "baseline repo-native content models are configured"
-        };
         ContentSection {
             template: template.as_str(),
             status: "active",
-            detail,
+            detail: "baseline repo-native content models are configured",
         }
     } else {
         ContentSection {
@@ -401,13 +396,6 @@ fn inactive_capabilities(template: AgentContentTemplate) -> Vec<CheckItem> {
         status: "inactive",
         detail: "waiting for user answers in .assura/onboarding/questions.md",
     }];
-    if !matches!(template, AgentContentTemplate::ProposalSbir) {
-        items.push(CheckItem {
-            name: "domain_pack",
-            status: "inactive",
-            detail: "proposal/SBIR and other domain packs require explicit opt-in with --content-template proposal-sbir",
-        });
-    }
     if !template.activates_content() {
         items.push(CheckItem {
             name: "content_models",

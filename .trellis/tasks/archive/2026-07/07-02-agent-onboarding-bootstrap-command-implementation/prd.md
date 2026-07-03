@@ -122,7 +122,7 @@ content activation, and website onboarding without changing this boundary.
 ## Out Of Scope
 
 - Remote bootstrap script implementation.
-- Domain-specific proposal/SBIR behavior.
+- Domain-specific domain-specific behavior.
 - Broad content model initialization beyond generated handoff text.
 - Requirements/evidence traceability and computed checks.
 - Performance-polish work.

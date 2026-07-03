@@ -94,7 +94,7 @@ surfaces.
 - Agent-specific validation engines or one command per agent harness.
 - Raw search, frontmatter reference graph, content model activation, lifecycle
   hook modes, website onboarding overhaul, document-project preset,
-  requirements/evidence traceability, computed checks, and proposal/SBIR
+  requirements/evidence traceability, computed checks, and domain-specific
   domain packs.
 - Blocking every early draft by default.
 

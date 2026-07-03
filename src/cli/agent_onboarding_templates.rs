@@ -2,7 +2,6 @@
 
 use super::agent_onboarding::DetectedSection;
 use super::agent_onboarding_content_templates as content;
-use super::agent_onboarding_proposal_sbir_templates as proposal_sbir;
 use super::AgentContentTemplate;
 
 pub(super) fn baseline_files(
@@ -48,10 +47,7 @@ pub(super) fn baseline_files(
         },
         GeneratedFile::static_file(".assura/onboarding/questions.md", onboarding_questions()),
         GeneratedFile::static_file(".assura/onboarding/lifecycle.md", onboarding_lifecycle()),
-        GeneratedFile::static_file(
-            ".assura/onboarding/agent-next.md",
-            agent_next(content_template),
-        ),
+        GeneratedFile::static_file(".assura/onboarding/agent-next.md", agent_next()),
     ];
     files.extend(content::content_template_files(content_template));
     files
@@ -72,15 +68,6 @@ impl GeneratedFile {
             contents: contents.to_string(),
             required: true,
             executable: false,
-        }
-    }
-
-    pub(super) fn executable_file(path: &'static str, contents: &'static str) -> Self {
-        Self {
-            path,
-            contents: contents.to_string(),
-            required: true,
-            executable: true,
         }
     }
 }
@@ -397,7 +384,7 @@ fn onboarding_questions() -> &'static str {
     r#"# Assura Onboarding Questions
 
 1. What primary language or stack should this project use?
-2. What project type is this: library, app, docs site, proposal, research repo, data project, monorepo, or other?
+2. What project type is this: library, app, docs site, research repo, data project, monorepo, document-heavy repo, or other?
 3. What file naming convention should apply: kebab-case, snake_case, PascalCase, or mixed by folder?
 4. What source layout should the project use?
 5. What test layout should the project use?
@@ -427,18 +414,14 @@ manual host wiring.
 "#
 }
 
-fn agent_next(content_template: AgentContentTemplate) -> &'static str {
-    if matches!(content_template, AgentContentTemplate::ProposalSbir) {
-        return proposal_sbir::agent_next();
-    }
-
+fn agent_next() -> &'static str {
     r#"# Agent Next
 
 Assura is installed and the broad agent-ready baseline is active.
 
 Do not invent project conventions. Ask the user the remaining specialization
 questions before adding language, layout, naming, traceability, content-model,
-source-document, hook, or domain-specific rules.
+source-document, hook, or project-specific rules.
 
 Use `.assura/onboarding/lifecycle.md` to decide between nudge, warn, and gate
 feedback. Warn mode is advisory for draft work; gate mode is for pre-push,
@@ -447,7 +430,7 @@ merge, or CI checks.
 ## Ask The User
 
 1. What primary language or stack should this project use?
-2. What project type is this: library, app, docs site, proposal, research repo, data project, monorepo, or other?
+2. What project type is this: library, app, docs site, research repo, data project, monorepo, document-heavy repo, or other?
 3. What file naming convention should apply: kebab-case, snake_case, PascalCase, or mixed by folder?
 4. What source layout should the project use?
 5. What test layout should the project use?

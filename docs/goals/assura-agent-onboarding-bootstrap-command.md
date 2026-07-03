@@ -36,7 +36,7 @@ setup, and tells the agent exactly what to ask next.
 
 ## Non-Goals
 
-- No domain-specific proposal pack implementation.
+- No one-off project-type pack implementation.
 - No unsupported host-agent config mutation.
 - No remote script that owns product behavior.
 - No broad content model or traceability implementation beyond generated

@@ -1,6 +1,0 @@
-{"file": ".trellis/spec/assura/index.md", "reason": "Canonical validation expectations for new checks and CLI integration."}
-{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Cross-layer validation from config/template through CLI, docs, and tests."}
-{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Reuse existing onboarding, traceability, and computed-check abstractions."}
-{"file": "docs/compatibility-and-surface.md", "reason": "Public command/config surface documentation must match implementation."}
-{"file": "website/src/content/docs/guides/agent-ready-onboarding.md", "reason": "User-facing onboarding guide must explain optional domain pack behavior."}
-{"file": ".assura/command-surface.yml", "reason": "Command-surface validation must include any new onboarding template value."}

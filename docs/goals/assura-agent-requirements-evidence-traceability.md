@@ -18,7 +18,7 @@ related:
 
 Make requirements, claims, evidence, findings, and document coverage queryable
 and enforceable for serious documentation workflows without requiring a
-domain-specific proposal pack.
+one-off document package.
 
 ## Scope
 
@@ -34,8 +34,8 @@ domain-specific proposal pack.
 
 ## Non-Goals
 
-- No weighted proposal score computation.
-- No domain-specific government or SBIR portal rules.
+- No weighted project score computation.
+- No project-type portal rules.
 - No natural-language fact extraction from arbitrary prose.
 
 ## Definition Of Done
@@ -76,4 +76,4 @@ first, or if evidence/source references bypass repository reference validation.
 
 | Date | Update | Evidence |
 | --- | --- | --- |
-| 2026-07-03 | Completed reusable requirements/evidence traceability. Added `extensions.requirements_traceability` over content-runtime collections and relations, document-project onboarding generation for generic claims and source-document evidence links, agent-query/doctor/report visibility, support matrix rows, and website/docs coverage without proposal/SBIR scoring behavior. | `.trellis/tasks/archive/2026-07/07-03-agent-requirements-evidence-traceability/prd.md`; `src/cli/check/requirements_traceability.rs`; `src/config/config/extensions/requirements_traceability.rs`; `src/config/config/validation/requirements_traceability.rs`; `src/cli/check/compiled_artifact_requirements_traceability.rs`; `tests/requirements_traceability.rs`; `tests/content_query_cli.rs`; `tests/content_runtime_references.rs`; `tests/project_intelligence_onboarding.rs`; `tests/content_runtime_dx_docs.rs`; `tests/policy_language_completeness_tests.rs`; `docs/support-policy.md`; `docs/compatibility-and-surface.md`; `website/src/content/docs/reference/configuration.md`; `cargo fmt --check`; `cargo check --workspace --all-targets --all-features --quiet`; `cargo test --test requirements_traceability --quiet`; `cargo test --test content_query_cli --quiet`; `cargo test --test content_runtime_references --quiet`; `cargo test --test project_intelligence_onboarding --quiet`; `cargo test --test content_runtime_dx_docs --quiet`; `cargo test --test policy_language_completeness_tests --quiet`; `cargo run --quiet -- check --format json .`; `cargo xtask target-state`; `cargo xtask docs`; `cargo xtask evidence`; `git diff --check`. |
+| 2026-07-03 | Completed reusable requirements/evidence traceability. Added `extensions.requirements_traceability` over content-runtime collections and relations, document-project onboarding generation for generic claims and source-document evidence links, agent-query/doctor/report visibility, support matrix rows, and website/docs coverage without domain-specific scoring behavior. | `.trellis/tasks/archive/2026-07/07-03-agent-requirements-evidence-traceability/prd.md`; `src/cli/check/requirements_traceability.rs`; `src/config/config/extensions/requirements_traceability.rs`; `src/config/config/validation/requirements_traceability.rs`; `src/cli/check/compiled_artifact_requirements_traceability.rs`; `tests/requirements_traceability.rs`; `tests/content_query_cli.rs`; `tests/content_runtime_references.rs`; `tests/project_intelligence_onboarding.rs`; `tests/content_runtime_dx_docs.rs`; `tests/policy_language_completeness_tests.rs`; `docs/support-policy.md`; `docs/compatibility-and-surface.md`; `website/src/content/docs/reference/configuration.md`; `cargo fmt --check`; `cargo check --workspace --all-targets --all-features --quiet`; `cargo test --test requirements_traceability --quiet`; `cargo test --test content_query_cli --quiet`; `cargo test --test content_runtime_references --quiet`; `cargo test --test project_intelligence_onboarding --quiet`; `cargo test --test content_runtime_dx_docs --quiet`; `cargo test --test policy_language_completeness_tests --quiet`; `cargo run --quiet -- check --format json .`; `cargo xtask target-state`; `cargo xtask docs`; `cargo xtask evidence`; `git diff --check`. |

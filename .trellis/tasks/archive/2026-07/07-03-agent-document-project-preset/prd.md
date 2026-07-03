@@ -7,7 +7,7 @@ reusable, broad document-project pack layered on the agent-project baseline.
 The preset should help research, documentation, compliance, and knowledge-base
 repositories organize source documents, topics, drafts, final documents,
 requirements, evidence, decisions, process docs, and learnings without adding
-proposal/SBIR scoring or domain-specific behavior.
+domain-specific scoring or domain-specific behavior.
 
 ## What I Already Know
 
@@ -51,7 +51,7 @@ that those records are modeled and discoverable.
   - requirements, evidence, decisions, process docs, and learnings.
 - Keep generated records generic enough for research, documentation,
   compliance, and knowledge-base repositories.
-- Keep proposal/SBIR scoring, portals, weighted criteria, and review-package
+- Keep domain-specific scoring, portals, weighted criteria, and review-package
   behavior out of this preset.
 - Preserve existing-file safety and merge behavior.
 - Validate referenced source file paths without reading binary files as UTF-8.
@@ -72,7 +72,7 @@ that those records are modeled and discoverable.
       files and still accepts binary targets without reading them as text.
 - [ ] Existing user-authored files are preserved.
 - [ ] Website/reference docs explain the broader document-project preset and
-      keep proposal/SBIR domain behavior out of the generic preset.
+      keep domain-specific domain behavior out of the generic preset.
 - [ ] Validation commands from the goal pass.
 
 ## Definition Of Done
@@ -88,7 +88,7 @@ that those records are modeled and discoverable.
 
 - No `assura init --preset document-project` surface in this slice; current
   user entrypoint remains `assura agent onboard --content-template`.
-- No proposal/SBIR scoring, portal submission, weighted review criteria, or
+- No domain-specific scoring, portal submission, weighted review criteria, or
   final package checks.
 - No hosted search, semantic index, or generated PDF/DOCX packaging.
 

@@ -53,7 +53,7 @@ a dedicated guide that teaches that journey end to end.
 - Show first-run output snippets for installed, detected, verified, inactive,
   lifecycle profiles, and user choices needed.
 - Explain agent-project, document-project, and optional domain packs without
-  adding proposal/SBIR behavior to the core preset.
+  adding domain-specific behavior to the core preset.
 - Explain nudge, warn, and gate lifecycle modes using existing commands.
 - Add target-state checks that fail if the dedicated guide, sidebar link, or
   key command-surface truth markers drift.

@@ -88,7 +88,6 @@ assura agent safe-fixes tests/fixtures/project_intelligence_real_repo/beacon_crm
 assura agent onboard . --agent auto
 assura agent onboard . --content-template agent-project
 assura agent onboard . --content-template document-project
-assura agent onboard . --content-template proposal-sbir
 assura agent integration install codex .
 assura agent integration doctor codex .
 ```
@@ -118,11 +117,7 @@ Evidence, Doc, Finding, Skill, Process, and Learning models plus starter
 records. `--content-template document-project` adds SourceDocument metadata,
 `source-documents/manifest.md` custody, `library/topics/`, `docs/drafts/`, and
 `docs/final/` starter records that validate referenced file paths without
-requiring Assura to read binary files as text. `--content-template
-proposal-sbir` composes the document-project baseline with proposal
-requirements, evidence, claims, scorecards, review findings, package manifests,
-submission checklists, traceability checks, and a project-local computed check
-for final package readiness.
+requiring Assura to read binary files as text.
 
 MCP is not required for local agent usage. If an MCP adapter is added later, it
 should wrap these same CLI/library contracts.

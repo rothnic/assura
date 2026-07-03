@@ -29,8 +29,8 @@ specialized.
    `inactive`, `lifecycle_profiles`, and `next_actions`.
 4. Open `.assura/onboarding/agent-next.md`.
 5. Ask the user only the remaining specialization questions.
-6. Specialize the config, content templates, hooks, or domain packs only after
-   those answers are recorded.
+6. Specialize the config, content templates, or hooks only after those answers
+   are recorded.
 
 Roadmap note: a future remote bootstrap wrapper may install Assura and delegate
 to the installed CLI. Today, use the installer plus `assura agent onboard`; do
@@ -53,6 +53,33 @@ assura agent integration doctor codex .
 The bundle lives under `.assura/integrations/<agent>/`. Assura leaves host
 configuration as manual opt-in so the generated files can be reviewed and
 removed.
+
+## Agent Prompt
+
+Give the coding agent a short instruction like this when it enters a repository:
+
+```text
+Run Assura onboarding before changing project structure.
+
+1. Run: assura agent onboard . --agent auto --format json
+2. Read the report sections: installed, detected, verified, inactive,
+   lifecycle_profiles, and next_actions.
+3. Open .assura/onboarding/agent-next.md.
+4. Treat inactive entries as unchecked, not as passing.
+5. Ask the user the remaining questions before adding language, layout,
+   naming, source-document, hook, or content-model rules.
+6. Use warn mode while drafting and gate mode before push or CI.
+```
+
+The flow is intentionally simple:
+
+| Step | Agent action | Output |
+| --- | --- | --- |
+| 1 | Run onboarding | `.assura/config.yml` and `.assura/onboarding/` |
+| 2 | Read checked state | `verified`, `inactive`, and `doctor.json` |
+| 3 | Read handoff | `.assura/onboarding/agent-next.md` |
+| 4 | Ask before specializing | User-backed answers, not invented conventions |
+| 5 | Validate again | `assura check` and `assura doctor` |
 
 ## Report Shape
 
@@ -193,20 +220,6 @@ and `docs/final/` on top of the broad project records. They validate referenced
 source file paths through manifest metadata without requiring binary files to
 be read as text.
 
-Use the proposal/SBIR domain pack only when the repository is explicitly a
-proposal workspace:
-
-```bash
-assura agent onboard . --content-template proposal-sbir --format json
-```
-
-The proposal/SBIR pack composes the document-project baseline with proposal
-requirements, evidence, claims, scorecards, review findings, package manifests,
-submission checklists, traceability checks, and a project-local computed check
-for readiness. The proposal/SBIR pack is not part of the core agent-project baseline
-or the generic document-project baseline. Other domain packs remain roadmap
-behavior.
-
 ## Lifecycle Profiles
 
 The onboarding report and `.assura/onboarding/lifecycle.md` use the same three
@@ -227,12 +240,11 @@ After the user answers the generated questions:
 
 1. Update `.assura/config.yml` with the chosen language, layout, naming, and
    strictness rules.
-2. Activate `agent-project`, `document-project`, or an explicit domain pack
-   such as `proposal-sbir` when the user wants modeled facts.
+2. Activate `agent-project` or `document-project` when the user wants modeled
+   facts.
 3. Add host-agent integration bundles only for supported adapters the user
    wants to wire manually.
-4. Keep optional domain packs separate from the core baseline.
-5. Rerun:
+4. Rerun:
 
    ```bash
    assura check --format json .

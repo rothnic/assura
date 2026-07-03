@@ -1,0 +1,4 @@
+{"file": "src/cli/agent_args.rs", "reason": "Remove specialized content-template variant from CLI args"}
+{"file": "src/cli/agent_onboarding.rs", "reason": "Update onboarding content status and inactive capability messaging"}
+{"file": "src/cli/agent_lifecycle.rs", "reason": "Remove specialized ranked next actions"}
+{"file": "src/cli/agent_onboarding_templates.rs", "reason": "Remove specialized agent-next branch"}

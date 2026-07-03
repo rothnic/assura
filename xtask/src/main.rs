@@ -4976,6 +4976,7 @@ fn check_agent_onboarding_website(checks: &mut Checks) {
         "## First-Run Phases",
         "## Report Shape",
         "## Generated Packet",
+        "## Agent Prompt",
         "## Agent-Next Questions",
         "## Checked Versus Unchecked",
         "## Content And Project Packs",
@@ -5000,10 +5001,10 @@ fn check_agent_onboarding_website(checks: &mut Checks) {
         "library/topics/",
         "docs/drafts/",
         "docs/final/",
+        "Treat inactive entries as unchecked",
         "assura doctor . --format json",
         "assura explain AGENTS.md --format json",
-        "roadmap",
-        "not part of the core agent-project baseline",
+        "Roadmap note",
     ] {
         checks.require(
             guide.contains(marker),

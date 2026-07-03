@@ -53,9 +53,9 @@ the next questions before project specialization.
   commands.
 - The page includes example output or structured snippets for installed,
   detected, verified, inactive, and user choices needed.
-- The website shows how this path relates to agent-project, document-project,
-  and optional domain packs without making performance polish part of the
-  onboarding increment.
+- The website shows the agent-focused onboarding prompt, agent-project,
+  document-project, and specialization flow without making performance polish
+  part of the onboarding increment.
 - Screenshot or rendered-page evidence is captured for the revised onboarding
   page at desktop and mobile widths.
 - Planned surfaces are labeled as roadmap until implementation lands.
@@ -82,4 +82,4 @@ handoff.
 
 | Date | Update | Evidence |
 | --- | --- | --- |
-| 2026-07-03 | Completed the dedicated website onboarding path. The website now links from Getting Started and the home page to an Agent-Ready Onboarding guide that labels `assura agent onboard` as an experimental local surface, separates roadmap bootstrap behavior from current commands, shows installed/detected/content/lifecycle/verified/inactive/next-action output, explains checked versus unchecked state, documents the onboarding packet and `agent-next.md`, and routes agent-project, document-project, optional domain packs, adapter bundles, nudge/warn/gate lifecycle, doctor/explain, and specialization flow. Added target-state checks for the guide, sidebar, entry links, output markers, experimental-local wording, supported command markers, and forbidden unsupported commands. | `website/src/content/docs/guides/agent-ready-onboarding.md`; `website/astro.config.mjs`; `website/src/content/docs/index.mdx`; `website/src/content/docs/guides/getting-started.md`; `xtask/src/main.rs`; `.trellis/tasks/archive/2026-07/07-02-website-agent-onboarding-experience/evidence/rendered-proof.md`; independent review agents `019f265b-c003-73f0-94cf-ca51c030afc6` and `019f265c-2524-7731-9959-973e3c4b33ca`; `cargo fmt --check`; `cargo run --quiet -- check --format json .`; `cargo xtask target-state`; `cargo xtask docs`; `cargo xtask evidence`; `pnpm --dir website build`; `cargo check --workspace --all-targets --all-features --quiet`; `git diff --check`. |
+| 2026-07-03 | Completed the dedicated website onboarding path. The website now links from Getting Started and the home page to an Agent-Ready Onboarding guide that labels `assura agent onboard` as an experimental local surface, separates roadmap bootstrap behavior from current commands, shows installed/detected/content/lifecycle/verified/inactive/next-action output, provides a simple agent prompt and flow table, documents the onboarding packet and `agent-next.md`, and routes agent-project, document-project, adapter bundles, nudge/warn/gate lifecycle, doctor/explain, and specialization flow. Added target-state checks for the guide, sidebar, entry links, output markers, experimental-local wording, supported command markers, and forbidden unsupported commands. | `website/src/content/docs/guides/agent-ready-onboarding.md`; `website/astro.config.mjs`; `website/src/content/docs/index.mdx`; `website/src/content/docs/guides/getting-started.md`; `xtask/src/main.rs`; `.trellis/tasks/archive/2026-07/07-02-website-agent-onboarding-experience/evidence/rendered-proof.md`; independent review agents `019f265b-c003-73f0-94cf-ca51c030afc6` and `019f265c-2524-7731-9959-973e3c4b33ca`; `cargo fmt --check`; `cargo run --quiet -- check --format json .`; `cargo xtask target-state`; `cargo xtask docs`; `cargo xtask evidence`; `pnpm --dir website build`; `cargo check --workspace --all-targets --all-features --quiet`; `git diff --check`. |

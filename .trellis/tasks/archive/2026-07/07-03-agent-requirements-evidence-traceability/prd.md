@@ -36,7 +36,7 @@ checks and agent-facing gaps:
 ## Non-Goals
 
 - No weighted proposal scoring.
-- No proposal, government, or SBIR-specific fields or checks.
+- No proposal, government, or domain-specific fields or checks.
 - No natural-language fact extraction from arbitrary prose.
 
 ## Proof Gates
@@ -57,4 +57,4 @@ checks and agent-facing gaps:
 Block if the checks only work for one domain, if unconfigured models produce a
 green completeness signal, if agent-query cannot expose the gaps, if source
 links bypass repository-reference/source-document validation, or if generated
-document-project content contains proposal/SBIR-specific behavior.
+document-project content contains domain-specific-specific behavior.

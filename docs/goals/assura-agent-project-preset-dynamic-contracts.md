@@ -36,7 +36,7 @@ hardcoded config entries.
 ## Non-Goals
 
 - No language-specific Rust/Node/Python rules unless a pack explicitly opts in.
-- No proposal or SBIR domain model.
+- No one-off document-heavy domain model.
 - No performance benchmark changes.
 
 ## Definition Of Done

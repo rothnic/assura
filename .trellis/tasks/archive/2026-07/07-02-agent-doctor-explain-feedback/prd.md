@@ -84,7 +84,7 @@ read behavior, and ranked agent next actions.
 
 - Natural-language query engine.
 - Hidden mutation, automatic setup, or safe-fix application.
-- Domain-specific proposal/SBIR checks.
+- Domain-specific domain-specific checks.
 - Lifecycle hook mode implementation.
 - Performance backlog work.
 

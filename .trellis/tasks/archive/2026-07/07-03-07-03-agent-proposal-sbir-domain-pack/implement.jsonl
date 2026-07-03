@@ -1,6 +1,0 @@
-{"file": "docs/goals/assura-agent-proposal-sbir-domain-pack.md", "reason": "Child goal defining the optional proposal/SBIR domain pack scope and proof gates."}
-{"file": "docs/goals/assura-agent-ready-project-onboarding-program.md", "reason": "Parent program sequencing and cross-child progress requirements."}
-{"file": ".trellis/spec/assura/config-notation.md", "reason": "First-party extension and config-surface constraints for domain pack modeling."}
-{"file": ".trellis/spec/assura/codex-agent-feedback.md", "reason": "Stable agent feedback surface; avoid per-agent command additions."}
-{"file": ".trellis/spec/assura/structure-enforcement.md", "reason": "Structure validation and file-length diagnostic behavior constraints."}
-{"file": "docs/support-policy.md", "reason": "Support commitments for agent onboarding presets and optional domain packs."}

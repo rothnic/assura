@@ -18,7 +18,6 @@ related:
   - ./assura-agent-document-project-preset.md
   - ./assura-agent-requirements-evidence-traceability.md
   - ./assura-agent-script-backed-computed-checks.md
-  - ./assura-agent-proposal-sbir-domain-pack.md
   - ./assura-performance-polish-program.md
   - ./assura-agent-integration-lifecycle.md
   - ./assura-supported-document-graph.md
@@ -223,8 +222,8 @@ agent not to invent project conventions.
 It should ask the user these specialization questions:
 
 1. What primary language or stack should this project use?
-2. What project type is this: library, app, docs site, proposal, research
-   repo, data project, monorepo, or other?
+2. What project type is this: library, app, docs site, research repo, data
+   project, monorepo, document-heavy repo, or other?
 3. What file naming convention should apply: kebab-case, snake_case,
    PascalCase, or mixed by folder?
 4. What source layout should the project use?
@@ -260,7 +259,7 @@ unchecked can train an agent to stop too early.
 ## Priority Relative To Other Backlog
 
 This program is the highest general adoption backlog for agentic development
-projects. It should outrank domain-specific proposal/SBIR work and lower-level
+projects. It should outrank narrow project-type specialization and lower-level
 performance polish unless the active goal is explicitly performance-focused.
 
 Keep the split clear:
@@ -307,10 +306,6 @@ dependency order is necessary:
 11. [Agent Script Backed Computed Checks](./assura-agent-script-backed-computed-checks.md)
     creates a controlled extension point for scores, rollups, and derived
     validations before native computed fields exist.
-12. [Agent Proposal SBIR Domain Pack](./assura-agent-proposal-sbir-domain-pack.md)
-    packages proposal-specific gates, scoring, review, and final package checks
-    as an optional domain pack.
-
 ## P0 - Universal Agent-Project Foundation
 
 ### 1. Agent-Project Preset And Scaffold
@@ -528,7 +523,7 @@ Provide common agent-project models:
 - Process;
 - Learning.
 
-These are more universal than proposal scoring and support the top-down
+These are more universal than project-specific scoring and support the top-down
 project-intelligence story.
 
 ### 15. Source-Document Custody Model
@@ -611,11 +606,11 @@ Project-type packs layer examples and checks after the broad baseline:
 - `python`: `pyproject.toml`, `src` package layout, `tests/`, and docs.
 - `web-app`: `src/`, routes or pages, components, public assets, and tests.
 - `monorepo`: `packages/*`, `apps/*`, shared docs, and workspace config.
-- `proposal-project`: requirements, evidence, source documents, scoring, and
+- `document-heavy-project`: requirements, evidence, source documents, and
   review findings.
 
-Packs should be composable. Domain packs remain later layers, not requirements
-for the broad agent-project baseline.
+Project-type examples should be composable later layers, not requirements for
+the broad agent-project baseline.
 
 ## Agent Harness Adapters
 
@@ -660,7 +655,7 @@ answers into project-specific rules.
 
 The first bootstrap command must still be enough to create a valid broad
 baseline. Specialization is for adding language, layout, naming, typed content
-models, source-document custody, traceability, and domain-specific behavior.
+models, source-document custody, and traceability.
 
 ## Ideal UX
 
@@ -699,13 +694,6 @@ Support broadly useful checks:
 Start with script-backed computed checks for scoring, weighted criteria,
 confidence adjustment, and rollups before building native computed fields.
 
-### 22. Proposal/SBIR Domain Pack
-
-Defer proposal/SBIR-specific behavior behind a domain pack. It may include
-gates, weighted scores, confidence, review actions, portal submission
-checklists, and final PDF/DOCX package checks via scripts, but it should not
-drive the core product sequence.
-
 ## Definition Of Done
 
 - A new agent project can be scaffolded with one command and gets useful
@@ -729,10 +717,10 @@ drive the core product sequence.
   the onboarding behavior. For this increment, the remote wrapper remains a
   future convenience surface that is clearly documented as future; the installed
   CLI owns current onboarding behavior.
-- The document-project preset, requirements/evidence traceability, computed
-  checks, and proposal/SBIR pack are captured as separately executable goals.
-- Domain-specific proposal/SBIR behavior remains deferred behind templates or
-  packs rather than bloating the core preset.
+- The document-project preset, requirements/evidence traceability, and computed
+  checks are captured as separately executable goals.
+- Document-heavy behavior remains generic rather than bloating the core preset
+  with one customer's workflow.
 
 ## Validation Commands
 
@@ -754,8 +742,8 @@ surface before closure.
 
 - R1: Confirm the backlog prevents a green check from implying unconfigured
   capabilities are complete.
-- R2: Confirm the agent-project preset is broadly useful and not
-  proposal-specific.
+- R2: Confirm the agent-project preset is broadly useful and not tailored to
+  one document-heavy workflow.
 - R3: Confirm doctor and explain answer active, inactive, inherited, skipped,
   and next-action questions.
 - R4: Confirm AGENTS.md and SKILL.md checks improve agent routing without
@@ -784,11 +772,10 @@ onboarding asks excessive questions before establishing a safe baseline.
 
 | Date | Update | Evidence |
 | --- | --- | --- |
-| 2026-07-03 | Completed the parent agent-ready onboarding program final audit. All twelve child goals are marked completed, public/internal roadmap routing now reflects the completed adoption increment, the website onboarding guide keeps future remote bootstrap behavior clearly marked, and the final audit records requirement-by-requirement evidence. Performance polish remains the separate current recommended lane. | `docs/analysis/2026-07-03-agent-ready-onboarding-final-audit.md`; `.trellis/tasks/archive/2026-07/07-03-07-03-agent-ready-onboarding-program-final-audit/prd.md`; `.trellis/spec/assura/roadmap.md`; `docs/data/public-roadmap.json`; `docs/goals/assura-agent-ready-project-onboarding-program.md`; `docs/goals/assura-agent-requirements-evidence-traceability.md`; `website/src/content/docs/guides/agent-ready-onboarding.md`; independent review agent `019f2738-76c6-75a3-ac6a-fac247b8ae32`; `python3 ./.trellis/scripts/workflow_gate.py --platform codex`; `cargo fmt --check`; `cargo check --workspace --all-targets --all-features --quiet`; `cargo test --test project_intelligence_onboarding --quiet`; `cargo test --test project_intelligence_proposal_sbir_onboarding --quiet`; `cargo test --test requirements_traceability --quiet`; `cargo test --test computed_checks --quiet`; `cargo test --test content_query_cli --quiet`; `cargo test --test doctor_explain_cli --quiet`; `cargo run --quiet -- check --format json .`; `cargo xtask target-state`; `cargo xtask docs`; `cargo xtask evidence`; `git diff --check`. |
-| 2026-07-03 | Completed child goal 12, `assura-agent-proposal-sbir-domain-pack`. Agent-ready onboarding now offers an explicit `proposal-sbir` content template that composes the document-project baseline with proposal requirements, evidence, claims, scorecards, review findings, package manifests, submission checklists, proposal traceability, and platform-aware script-backed readiness checks. Generic `agent-project` and `document-project` presets remain domain-neutral. The next step is the parent program final audit/proof pass. | `docs/goals/assura-agent-proposal-sbir-domain-pack.md`; `.trellis/tasks/archive/2026-07/07-03-07-03-agent-proposal-sbir-domain-pack/prd.md`; `src/cli/agent_onboarding_proposal_sbir_templates.rs`; `src/cli/agent_onboarding_proposal_sbir_scripts.rs`; `src/cli/agent_lifecycle.rs`; `src/cli/check/computed_checks.rs`; `src/config/config/extensions/computed_checks.rs`; `tests/project_intelligence_proposal_sbir_onboarding.rs`; `tests/computed_checks.rs`; `crates/assura-check-cli/tests/compiled_computed_checks_cli.rs`; `docs/support-policy.md`; `docs/extension-api-boundaries.md`; `docs/compatibility-and-surface.md`; `website/src/content/docs/guides/agent-ready-onboarding.md`; `website/src/content/docs/reference/api.md`; `website/src/content/docs/reference/configuration.md`; independent review agent `019f271f-4ea7-76b3-90b0-916d3c137d97`; `cargo fmt --check`; `cargo check --workspace --all-targets --all-features --quiet`; `cargo test --test computed_checks --quiet`; `cargo test -p assura-check-cli --test compiled_computed_checks_cli --quiet`; `cargo test --test project_intelligence_onboarding --quiet`; `cargo test --test project_intelligence_proposal_sbir_onboarding --quiet`; `cargo clippy --workspace --all-targets --all-features -- -D warnings`; `cargo run --quiet -- check --format json .`; `cargo xtask target-state`; `cargo xtask docs`; `cargo xtask evidence`; `git diff --check`. |
-| 2026-07-03 | Completed child goal 11, `assura-agent-script-backed-computed-checks`. Assura now supports explicit `extensions.computed_checks` policies for allowlisted project-local scripts with versioned stdin/stdout JSON, bounded timeouts, no shell interpolation, canonical project-root confinement, metadata-preserving findings, report/doctor/agent-query integration, and compiled artifact round-trip coverage. The next executable child goal is `assura-agent-proposal-sbir-domain-pack`. | `docs/goals/assura-agent-script-backed-computed-checks.md`; `.trellis/tasks/archive/2026-07/07-03-agent-script-backed-computed-checks/prd.md`; `src/cli/check/computed_checks.rs`; `src/config/config/extensions/computed_checks.rs`; `src/config/config/validation/computed_checks.rs`; `src/cli/check/compiled_artifact_computed_checks.rs`; `src/cli/check/compiled_artifact_relationships.rs`; `tests/computed_checks.rs`; `crates/assura-check-cli/tests/compiled_computed_checks_cli.rs`; `docs/support-policy.md`; `docs/extension-api-boundaries.md`; `docs/compatibility-and-surface.md`; `website/src/content/docs/reference/configuration.md`; independent review agent `019f26fb-d657-7d91-a0a7-0b9e4f87666c`; `cargo fmt --check`; `cargo check --workspace --all-targets --all-features --quiet`; `cargo test --test computed_checks --quiet`; `cargo test --test project_intelligence_fact_model_tests --quiet`; `cargo test -p assura-check-cli --test compiled_computed_checks_cli --quiet`; `cargo test --test agent_surface_cli --quiet`; `cargo test --test content_query_cli --quiet`; `cargo run --quiet -- check --format json .`; `cargo xtask target-state`; `cargo xtask docs`; `cargo xtask evidence`; `git diff --check`. |
+| 2026-07-03 | Completed the parent agent-ready onboarding program final audit. All eleven child goals are marked completed, public/internal roadmap routing now reflects the completed adoption increment, the website onboarding guide keeps future remote bootstrap behavior clearly marked, and the final audit records requirement-by-requirement evidence. Performance polish remains the separate current recommended lane. | `docs/analysis/2026-07-03-agent-ready-onboarding-final-audit.md`; `.trellis/tasks/archive/2026-07/07-03-07-03-agent-ready-onboarding-program-final-audit/prd.md`; `.trellis/spec/assura/roadmap.md`; `docs/data/public-roadmap.json`; `docs/goals/assura-agent-ready-project-onboarding-program.md`; `docs/goals/assura-agent-requirements-evidence-traceability.md`; `website/src/content/docs/guides/agent-ready-onboarding.md`; independent review agent `019f2738-76c6-75a3-ac6a-fac247b8ae32`; `python3 ./.trellis/scripts/workflow_gate.py --platform codex`; `cargo fmt --check`; `cargo check --workspace --all-targets --all-features --quiet`; `cargo test --test project_intelligence_onboarding --quiet`; `cargo test --test requirements_traceability --quiet`; `cargo test --test computed_checks --quiet`; `cargo test --test content_query_cli --quiet`; `cargo test --test doctor_explain_cli --quiet`; `cargo run --quiet -- check --format json .`; `cargo xtask target-state`; `cargo xtask docs`; `cargo xtask evidence`; `git diff --check`. |
+| 2026-07-03 | Completed child goal 11, `assura-agent-script-backed-computed-checks`. Assura now supports explicit `extensions.computed_checks` policies for allowlisted project-local scripts with versioned stdin/stdout JSON, bounded timeouts, no shell interpolation, canonical project-root confinement, metadata-preserving findings, report/doctor/agent-query integration, and compiled artifact round-trip coverage. The next step is the parent program final audit/proof pass. | `docs/goals/assura-agent-script-backed-computed-checks.md`; `.trellis/tasks/archive/2026-07/07-03-agent-script-backed-computed-checks/prd.md`; `src/cli/check/computed_checks.rs`; `src/config/config/extensions/computed_checks.rs`; `src/config/config/validation/computed_checks.rs`; `src/cli/check/compiled_artifact_computed_checks.rs`; `src/cli/check/compiled_artifact_relationships.rs`; `tests/computed_checks.rs`; `crates/assura-check-cli/tests/compiled_computed_checks_cli.rs`; `docs/support-policy.md`; `docs/extension-api-boundaries.md`; `docs/compatibility-and-surface.md`; `website/src/content/docs/reference/configuration.md`; independent review agent `019f26fb-d657-7d91-a0a7-0b9e4f87666c`; `cargo fmt --check`; `cargo check --workspace --all-targets --all-features --quiet`; `cargo test --test computed_checks --quiet`; `cargo test --test project_intelligence_fact_model_tests --quiet`; `cargo test -p assura-check-cli --test compiled_computed_checks_cli --quiet`; `cargo test --test agent_surface_cli --quiet`; `cargo test --test content_query_cli --quiet`; `cargo run --quiet -- check --format json .`; `cargo xtask target-state`; `cargo xtask docs`; `cargo xtask evidence`; `git diff --check`. |
 | 2026-07-03 | Completed child goal 10, `assura-agent-requirements-evidence-traceability`. Assura now has reusable `extensions.requirements_traceability` checks for high-priority requirement coverage, claim-to-evidence links, evidence-to-source-document links, and finding owner/status metadata, with report, doctor, agent-query, support matrix, and website/reference coverage. | `docs/goals/assura-agent-requirements-evidence-traceability.md`; `.trellis/tasks/archive/2026-07/07-03-agent-requirements-evidence-traceability/prd.md`; `src/cli/check/requirements_traceability.rs`; `src/config/config/extensions/requirements_traceability.rs`; `src/config/config/validation/requirements_traceability.rs`; `tests/requirements_traceability.rs`; `tests/content_query_cli.rs`; `tests/content_runtime_references.rs`; `tests/project_intelligence_onboarding.rs`; `docs/support-policy.md`; `docs/compatibility-and-surface.md`; `website/src/content/docs/reference/configuration.md`; `cargo fmt --check`; `cargo check --workspace --all-targets --all-features --quiet`; `cargo test --test requirements_traceability --quiet`; `cargo test --test content_query_cli --quiet`; `cargo test --test content_runtime_references --quiet`; `cargo test --test project_intelligence_onboarding --quiet`; `cargo run --quiet -- check --format json .`; `cargo xtask target-state`; `cargo xtask docs`; `cargo xtask evidence`; `git diff --check`. |
-| 2026-07-03 | Completed child goal 9, `assura-agent-document-project-preset`. The document-project content template now composes from the broad agent-project model and adds generic source-document custody, library topics, drafts, and final-doc records with content collections and relations, while preserving binary-safe source-file validation and keeping proposal/SBIR behavior out of the generic preset. The next executable child goal is `assura-agent-requirements-evidence-traceability`. | `docs/goals/assura-agent-document-project-preset.md`; `src/cli/agent_onboarding_content_templates.rs`; `src/cli/agent_onboarding_document_project_templates.rs`; `src/cli/agent_onboarding_templates.rs`; `tests/project_intelligence_onboarding.rs`; `website/src/content/docs/guides/agent-ready-onboarding.md`; `website/src/content/docs/reference/api.md`; `docs/support-policy.md`; `docs/compatibility-and-surface.md`; `.trellis/tasks/archive/2026-07/07-03-agent-document-project-preset/prd.md`; independent review agent `019f2679-dad9-7d81-8b83-40e08504cc94`; `cargo fmt --check`; `cargo test --test project_intelligence_onboarding --quiet`; `cargo test --test project_intelligence_onboarding source_document_custody_does_not_read_binary_targets_as_utf8 --quiet`; `cargo test content_runtime --quiet`; `cargo run --quiet -- check --format json .`; `cargo xtask target-state`; `cargo xtask docs`; `cargo xtask evidence`; `git diff --check`. |
+| 2026-07-03 | Completed child goal 9, `assura-agent-document-project-preset`. The document-project content template now composes from the broad agent-project model and adds generic source-document custody, library topics, drafts, and final-doc records with content collections and relations, while preserving binary-safe source-file validation and keeping domain-specific behavior out of the generic preset. The next executable child goal is `assura-agent-requirements-evidence-traceability`. | `docs/goals/assura-agent-document-project-preset.md`; `src/cli/agent_onboarding_content_templates.rs`; `src/cli/agent_onboarding_document_project_templates.rs`; `src/cli/agent_onboarding_templates.rs`; `tests/project_intelligence_onboarding.rs`; `website/src/content/docs/guides/agent-ready-onboarding.md`; `website/src/content/docs/reference/api.md`; `docs/support-policy.md`; `docs/compatibility-and-surface.md`; `.trellis/tasks/archive/2026-07/07-03-agent-document-project-preset/prd.md`; independent review agent `019f2679-dad9-7d81-8b83-40e08504cc94`; `cargo fmt --check`; `cargo test --test project_intelligence_onboarding --quiet`; `cargo test --test project_intelligence_onboarding source_document_custody_does_not_read_binary_targets_as_utf8 --quiet`; `cargo test content_runtime --quiet`; `cargo run --quiet -- check --format json .`; `cargo xtask target-state`; `cargo xtask docs`; `cargo xtask evidence`; `git diff --check`. |
 | 2026-07-03 | Completed child goal 8, `assura-website-agent-onboarding-experience`. The website now has a dedicated Agent-Ready Onboarding guide reachable from Getting Started and the home page, distinguishes experimental local onboarding/integration surfaces from roadmap bootstrap behavior, shows checked versus unchecked output including lifecycle profiles and remaining specialization questions, and adds target-state guards for the guide, entry links, command truth, experimental wording, and unsupported planned commands. The child-7 active task deletions in this commit are intentional cleanup for the previously created Trellis archive at `.trellis/tasks/archive/2026-07/07-02-agent-lifecycle-hooks-next-actions/`. The next executable child goal is `assura-agent-document-project-preset`. | `docs/goals/assura-website-agent-onboarding-experience.md`; `website/src/content/docs/guides/agent-ready-onboarding.md`; `website/astro.config.mjs`; `website/src/content/docs/index.mdx`; `website/src/content/docs/guides/getting-started.md`; `xtask/src/main.rs`; `.trellis/tasks/archive/2026-07/07-02-website-agent-onboarding-experience/prd.md`; `.trellis/tasks/archive/2026-07/07-02-website-agent-onboarding-experience/evidence/rendered-proof.md`; independent review agents `019f265b-c003-73f0-94cf-ca51c030afc6` and `019f265c-2524-7731-9959-973e3c4b33ca`; `cargo fmt --check`; `cargo run --quiet -- check --format json .`; `cargo xtask target-state`; `cargo xtask docs`; `cargo xtask evidence`; `pnpm --dir website build`; `cargo check --workspace --all-targets --all-features --quiet`; `git diff --check`. |
 | 2026-07-03 | Completed child goal 7, `assura-agent-lifecycle-hooks-next-actions`. Agent-ready onboarding now exposes explicit nudge, warn, and gate lifecycle profiles, writes `.assura/onboarding/lifecycle.md`, and returns ranked next-action objects so agents can distinguish advisory draft work from pre-push or CI gate checks without new per-agent CLI surfaces. The next executable child goal is `assura-website-agent-onboarding-experience`. | `docs/goals/assura-agent-lifecycle-hooks-next-actions.md`; `.trellis/tasks/archive/2026-07/07-02-agent-lifecycle-hooks-next-actions/prd.md`; `src/cli/agent_lifecycle.rs`; `src/cli/agent_onboarding.rs`; `src/cli/agent_onboarding_report.rs`; `src/cli/agent_onboarding_templates.rs`; `tests/project_intelligence_onboarding.rs`; `tests/real_project_agentic_feedback_tests.rs`; independent review agent `019f264c-49b2-7f01-b4e3-14010041d3f2`; `cargo fmt --check`; `cargo test --test agent_surface_cli --quiet`; `cargo test --test real_project_agentic_feedback_tests --quiet`; `cargo test --test project_intelligence_onboarding --quiet`; `cargo run --quiet -- check --format agent --agent codex .`; `cargo run --quiet -- check --format json .`; `cargo xtask target-state`; `cargo xtask docs`; `cargo xtask evidence`; `git diff --check`. |
 | 2026-07-03 | Completed child goal 6, `assura-agent-content-activation-source-docs`. Agent-ready onboarding now makes content activation explicit with `--content-template none`, `agent-project`, and `document-project`; generated agent projects activate baseline content models and records; generated document projects add source-document custody metadata and manifest reference validation without reading binary targets as UTF-8. The next executable child goal is `assura-agent-lifecycle-hooks-next-actions`. | `docs/goals/assura-agent-content-activation-source-docs.md`; `src/cli/agent_args.rs`; `src/cli/agent_onboarding.rs`; `src/cli/agent_onboarding_templates.rs`; `src/cli/agent_onboarding_content_templates.rs`; `src/cli/doctor.rs`; `src/cli/doctor_content.rs`; `tests/project_intelligence_onboarding.rs`; `tests/doctor_explain_cli.rs`; independent review agent `019f2624-a975-7812-9bcb-cac759e40e73`; `cargo fmt --check`; `cargo test content_runtime --quiet`; `cargo test --test project_intelligence_onboarding --quiet`; `cargo test --test doctor_explain_cli --quiet`; `cargo test --test content_runtime_references --quiet`; `cargo run --quiet -- check --format json .`; `cargo xtask target-state`; `cargo xtask docs`; `cargo xtask evidence`; `git diff --check`. |
@@ -821,6 +808,5 @@ initialization and content doctor, baseline content models, source-document
 custody, nudge/warn/gate modes, hook profiles, specialization flow,
 next-best-fix output, a much clearer website onboarding experience,
 document-project preset, requirements/evidence traceability, controlled
-script-backed computed checks, and an optional proposal/SBIR domain pack. Work
-through the linked child goals in order and keep domain-specific behavior out of
-the core presets.
+script-backed computed checks. Work through the linked child goals in order and
+keep one-off project-type behavior out of the core presets.

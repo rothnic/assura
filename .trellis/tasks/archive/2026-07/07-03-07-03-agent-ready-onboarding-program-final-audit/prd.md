@@ -8,7 +8,7 @@ completion durable and truthful.
 
 ## Problem
 
-All twelve child implementation slices have been completed in code, tests, docs,
+All eleven child implementation slices have been completed in code, tests, docs,
 and commits, but the parent goal remains `planned` and the audit found at least
 one child goal status drift (`assura-agent-requirements-evidence-traceability`
 still says `planned`). The website guide also carries duplicated marker wording
@@ -20,7 +20,7 @@ that should be cleaned up without weakening target-state checks.
 - Keep performance polish excluded and separate.
 - Preserve command-surface truth: implemented local onboarding surfaces only,
   future remote bootstrap surfaces clearly marked as future.
-- Keep proposal/SBIR domain behavior out of generic presets.
+- Keep document-heavy onboarding generic and out of one project-type workflow.
 - Update parent completion evidence only after validation and review.
 - Do not add new product behavior unless the audit reveals a required gap.
 

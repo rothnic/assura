@@ -39,7 +39,7 @@ agent-query, hooks, or merge gates.
 - No remote plugin loading, marketplace plugin system, or shell-executed
   validator plugin API.
 - No native formula language in this slice.
-- No domain-specific proposal/SBIR scoring in core presets.
+- No domain-specific domain-specific scoring in core presets.
 - No hidden global installs or host-agent configuration mutation.
 
 ## Definition Of Done
