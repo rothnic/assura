@@ -1,4 +1,0 @@
-{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
-{"file": "docs/compatibility-and-surface.md", "reason": "Public surface compatibility claims to keep aligned."}
-{"file": "website/src/content/docs/reference/api.md", "reason": "Website API reference proof for agent/content discovery surfaces."}
-{"file": "website/src/content/docs/product/query-search.md", "reason": "Website query/search product docs proof."}
