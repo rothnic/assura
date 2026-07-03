@@ -279,7 +279,8 @@ impl FactIngestor {
     }
 
     /// Finish ingestion and return the fact set.
-    pub fn finish(self) -> FactSet {
+    pub fn finish(mut self) -> FactSet {
+        self.facts.sort_stable();
         self.facts
     }
 

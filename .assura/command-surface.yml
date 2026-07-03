@@ -913,6 +913,9 @@ commands:
       --format:
         takes_value: true
         values: ["json", "jsonl"]
+      --suite:
+        takes_value: true
+        values: ["ls-lint", "native"]
       --ls-lint-package:
         takes_value: true
       --include-external-fixtures: {}

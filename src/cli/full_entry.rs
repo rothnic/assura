@@ -121,6 +121,7 @@ async fn run_full_cli(cli: Cli) -> ExitCode {
             baseline_id,
             format,
             ls_lint_package,
+            suite,
             include_external_fixtures,
         } => {
             performance_report_command(PerformanceReportCommandOptions {
@@ -131,6 +132,7 @@ async fn run_full_cli(cli: Cli) -> ExitCode {
                 baseline_id,
                 format,
                 ls_lint_package,
+                suite,
                 include_external_fixtures,
             })
             .await

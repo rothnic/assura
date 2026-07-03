@@ -4,7 +4,7 @@ use assura::config::loader::ConfigLoader;
 use assura::content_repository::{AdapterKind, CollectionSpec, ContentRepository, RepositoryModel};
 use assura::intelligence::{
     model_instance_id, resource_id, EdgeId, FactGeneration, FactId, FactIngestor, FactOrigin,
-    FactSet, ProjectEdge, ProjectFact, Resource, SymbolRef,
+    FactSet, ProjectEdge, ProjectFact, Resource, SearchChunk, SymbolRef,
 };
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -363,6 +363,22 @@ fn project_intelligence_preserves_overlapping_fact_ids_from_other_generations() 
 }
 
 #[test]
+fn project_intelligence_sorts_fact_set_once_after_bulk_ingest() {
+    let mut ingestor = FactIngestor::new("bulk-sort");
+    ingestor.add_search_chunk(search_chunk("z-last"));
+    ingestor.add_search_chunk(search_chunk("a-first"));
+
+    let facts = ingestor.finish();
+    let mut expected = vec![
+        FactId::from_parts("search_chunk", "a-first"),
+        FactId::from_parts("search_chunk", "z-last"),
+    ];
+    expected.sort();
+
+    assert_eq!(fact_ids(&facts), expected);
+}
+
+#[test]
 fn project_intelligence_allows_unresolved_code_symbol_refs() {
     let source_id = resource_id("docs/goals/goal_portable_structure.md");
     let mut ingestor = FactIngestor::new("symbols-1");
@@ -461,6 +477,16 @@ fn resource_fact(path: &str, generation: &str) -> ProjectFact {
             .and_then(|extension| extension.to_str())
             .map(ToOwned::to_owned),
     })
+}
+
+fn search_chunk(id: &str) -> SearchChunk {
+    SearchChunk {
+        id: FactId::from_parts("search_chunk", id),
+        generation: FactGeneration::new("bulk-sort"),
+        origin: FactOrigin::Derived,
+        source_id: resource_id(format!("docs/{id}.md")),
+        text: id.to_string(),
+    }
 }
 
 fn symbol_ref_edge(generation: &str) -> ProjectEdge {

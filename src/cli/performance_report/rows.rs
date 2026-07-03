@@ -158,6 +158,8 @@ pub(in crate::cli::performance_report) struct RowMeasurement<'a> {
     pub(in crate::cli::performance_report) assura_binary_profile: Option<&'a str>,
     pub(in crate::cli::performance_report) ls_lint_binary_path: Option<&'a Path>,
     pub(in crate::cli::performance_report) ls_lint_execution_mode: Option<&'a str>,
+    pub(in crate::cli::performance_report) expected_assura_exit_status: Option<i32>,
+    pub(in crate::cli::performance_report) expected_ls_lint_exit_status: Option<i32>,
 }
 
 impl<'a> RowMeasurement<'a> {
@@ -169,6 +171,8 @@ impl<'a> RowMeasurement<'a> {
             assura_binary_profile: None,
             ls_lint_binary_path: None,
             ls_lint_execution_mode: None,
+            expected_assura_exit_status: None,
+            expected_ls_lint_exit_status: None,
         }
     }
 
@@ -192,6 +196,16 @@ impl<'a> RowMeasurement<'a> {
         Self {
             ls_lint_binary_path: Some(binary_path),
             ls_lint_execution_mode: execution_mode,
+            ..self
+        }
+    }
+
+    pub(in crate::cli::performance_report) fn with_expected_assura_exit_status(
+        self,
+        expected_status: i32,
+    ) -> Self {
+        Self {
+            expected_assura_exit_status: Some(expected_status),
             ..self
         }
     }
@@ -258,8 +272,12 @@ pub(in crate::cli::performance_report) fn row(
         ls_lint_config_path: metadata.ls_lint_config_path.to_string(),
         config_generation_method: metadata.config_generation_method.to_string(),
         shared_config_id: metadata.shared_config_id.clone(),
-        expected_assura_exit_status: metadata.expected_assura_exit_status,
-        expected_ls_lint_exit_status: metadata.expected_ls_lint_exit_status,
+        expected_assura_exit_status: measurement
+            .expected_assura_exit_status
+            .unwrap_or(metadata.expected_assura_exit_status),
+        expected_ls_lint_exit_status: measurement
+            .expected_ls_lint_exit_status
+            .unwrap_or(metadata.expected_ls_lint_exit_status),
         assura_binary_profile: measurement.assura_binary_profile.map(str::to_string),
         assura_binary_path: measurement
             .assura_binary_path
@@ -388,6 +406,20 @@ pub(super) fn validation_execution_mode(row_family: &str) -> &'static str {
         row if row.starts_with("assura:phase:") => "phase-timing",
         row if row.starts_with("traversal:") => "traversal-only",
         row if row.starts_with("strategy:") => "diagnostic-strategy-cli",
+        "native:content-check-cli" => "native-cold-check-cli",
+        "native:content-collections-cli"
+        | "native:content-instances-cli"
+        | "native:content-show-cli"
+        | "native:content-expand-cli"
+        | "native:content-search-cli"
+        | "native:content-missing-relations-cli"
+        | "native:content-references-cli"
+        | "native:agent-query-keyword-search-cli"
+        | "native:agent-query-missing-relations-cli" => "native-query-cli",
+        "native:context-pack-cli" => "native-context-pack-cli",
+        "native:markdown-safe-fix-dry-run-cli" => "native-markdown-safe-fix-cli",
+        "native:session-agent-context-cli" => "native-session-query-cli",
+        "native:daemon-status-cli" => "native-daemon-query-cli",
         _ => "diagnostic",
     }
 }

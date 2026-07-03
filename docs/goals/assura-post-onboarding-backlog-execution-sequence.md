@@ -27,12 +27,13 @@ work without calibrated proof gates.
 
 - Branch: `codex/agent-ready-onboarding-backlog`.
 - PR: `#139` (`docs: add agent-ready onboarding backlog`) is open and green on
-  the remote head checked on 2026-07-03.
-- Local branch state: ahead of `origin/codex/agent-ready-onboarding-backlog`
-  by nine commits at the time this goal was written.
+  remote head `3d62c00791200543bda55c3da89fb742accca99b`, checked on
+  2026-07-03.
+- Local branch state: clean and aligned with
+  `origin/codex/agent-ready-onboarding-backlog` after the Subgoal 1 CI fixes.
 - Completed local onboarding follow-ups include:
   - generic research/content-authoring framing for `document-project`;
-  - removal of overfit SBIR/domain-specific pack references;
+  - removal of overfit domain-specific pack references;
   - `assura-structure-fit` skill and `STRUCTURE_FIT_CHECK` onboarding routing.
 - Roadmap state: Agent-Ready Project Onboarding is completed locally; the
   separate planned lane is `docs/goals/assura-performance-polish-program.md`.
@@ -400,3 +401,157 @@ the exact missing input.
     avoiding brittle `%~N` positional assumptions from `cmd.exe /C call`.
 - Next action: rerun focused computed-check gates, commit and push the token
   assertion fix, then re-check PR #139 on the new head.
+
+### 2026-07-03 - Subgoal 1 Green And Subgoal 2 Revalidation
+
+- Subgoal 1 final state:
+  - PR #139 head:
+    `3d62c00791200543bda55c3da89fb742accca99b`;
+  - GitHub checks passed, including platform Test Suite, Clippy, Rustfmt,
+    Evidence Gates, Documentation Scope, Security Audit, Performance Report,
+    Release Bundle Smoke, Windows Installer Smoke, and installable adoption
+    smokes;
+  - `git status --short --branch` showed the local branch clean and aligned
+    with `origin/codex/agent-ready-onboarding-backlog`.
+- Subgoal 2 checked-artifact revalidation:
+  - `benches/history/current.json` and
+    `website/public/data/performance/current.json` are byte-identical;
+  - tracked report timestamp: `2026-07-02T12:57:13Z`;
+  - tracked report commit:
+    `82264736bae46168c1243a65bff3d41b81cbf418`;
+  - tracked cold no-slower state: 8 / 8 accepted LS-Lint-equivalent rows pass;
+  - tracked cold 2x state: `not-complete`;
+  - tracked warm/session 2x state: `complete`.
+- Fresh branch evidence:
+  - release artifacts were rebuilt with:
+    `cargo build --release --bin assura --no-default-features --features json-output,yaml-config`,
+    `cargo build --release --bin assura-full`, and
+    `cargo build --release -p assura-check-cli`;
+  - first temp report
+    `target/performance/ls-lint-current-revalidation.json` exposed the known
+    tight row risk: `many_configured_scopes_regression` was slower by
+    0.226 ms and failed `cargo xtask performance-no-slower`;
+  - second temp report
+    `target/performance/ls-lint-current-revalidation-2.json` passed
+    `cargo xtask performance-no-slower`, with
+    `many_configured_scopes_regression` at 41.695 ms for `assura-cli` versus
+    45.921 ms for native `ls-lint-cli`;
+  - second temp cold 2x state remains `not-complete`; warm/session remains
+    `complete`.
+- Ranked next implementation targets from measured evidence:
+  1. `many_configured_scopes_regression`: top real-work row and no-slower
+     noise risk; current attribution is dominated by config load,
+     checker init, and walk/validate.
+  2. Cold small rows (`web_app`, `simple_library`, and current
+     `monorepo_packages` sample): 2x misses are floor-bound or near the Rust
+     CLI floor.
+  3. Native Assura capability reporting: content runtime, document graph,
+     context-pack, Markdown, daemon/session, serialization, and write-path
+     rows still lack checked JSON history and website-ready data.
+- Decision: Subgoal 2 is revalidated. Continue to Subgoal 3 before optimizing
+  rows, but keep the many-scope no-slower margin as an explicit blocker if any
+  fresh report fails twice in a row.
+
+### 2026-07-03 - Subgoals 3 And 4 Native Matrix Baseline
+
+- Subgoal 3 implementation state:
+  - `assura performance-report --suite native` now generates an Assura-native
+    suite separate from the LS-Lint comparison suite;
+  - fixtures cover `native_small`, `native_medium`, `native_large`,
+    `native_reference_heavy`, `native_adapter_mix`, and `native_real_project`;
+  - each fixture emits 14 native row families covering content validation,
+    content queries, missing relations, references, context packs, agent query,
+    Markdown safe-fix dry-run, session-style agent context, and daemon status;
+  - native rows are classified as `assura-native-diagnostic` and write
+    `native-current.json` / `native-history.jsonl` instead of replacing the
+    LS-Lint `current.json` report.
+- Subgoal 4 checked-artifact state:
+  - generated 5-iteration native baseline:
+    `benches/history/native-current.json`;
+  - generated native history:
+    `benches/history/native-history.jsonl`;
+  - generated website data:
+    `website/public/data/performance/native-current.json` and
+    `website/public/data/performance/native-history.jsonl`;
+  - `benches/history/native-current.json` and website `native-current.json`
+    are byte-identical;
+  - `benches/history/current.json` and website `current.json` remain
+    byte-identical LS-Lint comparison artifacts.
+- Native baseline evidence:
+  - latest regenerated timestamp: `2026-07-03T19:58:28Z`;
+  - commit: `4dee574dac5e4df9be8b6d029b2dc06a286297a7`;
+  - branch: `codex/agent-ready-onboarding-backlog`;
+  - source worktree dirty flag: `false`;
+  - result matrix: 84 rows, 84 pass, 0 skipped, 0 failed;
+  - `cargo xtask native-performance-no-regression benches/history/native-current.json`
+    passed;
+  - `cargo xtask performance-no-slower benches/history/current.json` passed.
+- Optimization target from checked native evidence:
+  - `native_large` dominates native rows; most large cold query rows are around
+    38 seconds because each CLI process reloads and reindexes the generated
+    content project;
+  - non-large hot spots are `native_adapter_mix` and `native_reference_heavy`
+    query/context rows in the 398-462 ms range;
+  - Subgoal 5 should first attribute native cold content load/index time versus
+    relation validation/query formatting before adding any persistent store or
+    caching design.
+
+### 2026-07-03 - Subgoal 5 First Native Query Optimization
+
+- Root cause:
+  - native content-query startup was dominated by
+    `FactSet::upsert_fact` / `upsert_edge` sorting the whole fact or edge list
+    on every insert;
+  - large native query fixtures insert thousands of facts and edges per CLI
+    process, which made project-intelligence context loading quadratic.
+- Implementation:
+  - `FactSet` now replaces matching id/generation entries in place and sorts
+    facts/edges once with `sort_stable`;
+  - `FactIngestor::finish` performs the deterministic final sort for normal
+    bulk ingestion;
+  - regression coverage asserts final deterministic ordering after bulk ingest.
+- Before/after evidence:
+  - pre-optimization `native_large` cold query rows averaged
+    37,972.783 ms across the 12 query/context row families, with a range of
+    37,337.056-38,351.089 ms;
+  - post-optimization `native_large` cold query rows average 4,796.956 ms
+    across the same 12 row families, with a range of
+    4,615.432-4,890.687 ms;
+  - `native_large` query rows improved by roughly 7.9x while preserving
+    84 / 84 passing native rows.
+- Remaining Subgoal 5 targets:
+  - latest regenerated native large query rows average roughly 5.0 seconds
+    per cold query, with run variance up to a 7.1 second p50 row;
+  - the next optimization should attribute repository validation, fact-store
+    index rebuild, code-symbol scan, repository-reference scan, and JSON
+    formatting costs separately before adding caches or a persistent store;
+  - LS-Lint no-slower remains green and should not be relaxed.
+
+### 2026-07-03 - Review Fix For Native Expected Status Metadata
+
+- Independent review found a blocking evidence consistency issue:
+  - native diagnostic fixtures intentionally expect
+    `assura-full check --format json` to exit `1` for broken-reference
+    content-check rows;
+  - the report rows still serialized fixture-level
+    `expected_assura_exit_status: 0`, so the row could pass while publishing
+    contradictory expected-status metadata.
+- Fix:
+  - `RowMeasurement` now supports row-level expected Assura status overrides;
+  - native content-check rows for `native_reference_heavy` and
+    `native_real_project` serialize `expected_assura_exit_status: 1`;
+  - `cargo xtask native-performance-no-regression` now rejects missing or
+    contradictory native expected-status metadata, with unit coverage.
+- Regenerated checked artifacts:
+  - `benches/history/native-current.json`;
+  - `benches/history/native-history.jsonl`;
+  - `website/public/data/performance/native-current.json`;
+  - `website/public/data/performance/native-history.jsonl`.
+- Verification:
+  - latest native report timestamp: `2026-07-03T19:58:28Z`;
+  - native history rows: 336 rows in both checked and website JSONL mirrors;
+  - diagnostic content-check rows now pass with
+    `expected_assura_exit_status: 1`;
+  - `cargo xtask native-performance-no-regression benches/history/native-current.json`
+    passed;
+  - `cargo xtask performance-no-slower benches/history/current.json` passed.

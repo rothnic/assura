@@ -2,7 +2,7 @@
 // allow-reason: performance row factories keep measured dimensions explicit
 // for benchmark auditability despite wide argument lists.
 
-use crate::cli::args::PerformanceReportFormat;
+use crate::cli::args::{PerformanceReportFormat, PerformanceReportSuite};
 use crate::cli::check::run_structure_check_with_timings;
 use crate::cli::ExitCode;
 use serde::Serialize;
@@ -35,6 +35,8 @@ mod io;
 mod ls_lint;
 mod metadata;
 mod monorepo_policy;
+mod native;
+mod native_fixtures;
 mod phases;
 mod prepared_rows;
 mod process_floor;
@@ -128,6 +130,8 @@ pub struct PerformanceReportCommandOptions {
     pub format: PerformanceReportFormat,
     /// LS-Lint package spec used for comparison.
     pub ls_lint_package: String,
+    /// Performance suite to generate.
+    pub suite: PerformanceReportSuite,
     /// Whether to include opt-in pinned external Git fixtures.
     pub include_external_fixtures: bool,
 }
@@ -139,6 +143,7 @@ pub async fn performance_report_command(options: PerformanceReportCommandOptions
         options.iterations.max(1),
         options.baseline_id,
         options.ls_lint_package,
+        options.suite,
         options.include_external_fixtures,
         command_line,
     ) {
@@ -171,9 +176,12 @@ pub async fn performance_report_command(options: PerformanceReportCommandOptions
             }
 
             if let Some(website_dir) = options.website_dir {
-                if let Err(error) =
-                    write_website_data(&website_dir, &report, options.history.as_deref())
-                {
+                if let Err(error) = write_website_data(
+                    &website_dir,
+                    &report,
+                    options.history.as_deref(),
+                    options.suite,
+                ) {
                     eprintln!(
                         "Error: failed to write website data under {}: {error}",
                         website_dir.display()
@@ -195,6 +203,7 @@ fn generate_report(
     iterations: usize,
     baseline_id: String,
     ls_lint_package: String,
+    suite: PerformanceReportSuite,
     include_external_fixtures: bool,
     command_line: String,
 ) -> Result<PerformanceReport, String> {
@@ -204,6 +213,36 @@ fn generate_report(
     let source_worktree_dirty =
         git_value(["status", "--porcelain"]).is_some_and(|status| !status.trim().is_empty());
     let environment = collect_environment();
+    if suite == PerformanceReportSuite::Native {
+        let (ls_lint_status, results) = native::measure_native_rows(
+            iterations,
+            &timestamp,
+            &commit_sha,
+            &branch,
+            &environment,
+            &baseline_id,
+        )?;
+        let claim_summary = summarize_headline_claim(&results, iterations);
+        let warm_claim_summary = summarize_warm_claim(&results, iterations);
+
+        return Ok(PerformanceReport {
+            schema_version: SCHEMA_VERSION.to_string(),
+            timestamp,
+            commit_sha,
+            branch,
+            source_worktree_dirty,
+            environment,
+            comparison_baseline_id: baseline_id,
+            command_line,
+            iterations,
+            ls_lint_package: "not-applicable".to_string(),
+            ls_lint_status,
+            claim_summary,
+            warm_claim_summary,
+            results,
+        });
+    }
+
     let assura_cli = prepare_assura_cli();
     let assura_check_cli = prepare_assura_check_cli();
     let assura_check_compiled = prepare_assura_check_compiled();

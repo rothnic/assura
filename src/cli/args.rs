@@ -207,6 +207,9 @@ pub enum Commands {
         #[arg(long, default_value = "@ls-lint/ls-lint@2.3.0")]
         ls_lint_package: String,
 
+        #[arg(long, default_value = "ls-lint", value_enum)]
+        suite: PerformanceReportSuite,
+
         #[arg(
             long,
             help = "Include pinned external Git fixtures; may clone large repositories"
@@ -348,6 +351,12 @@ impl From<MarkdownFixRuleArg> for crate::cli::check::MarkdownFixRule {
 pub enum PerformanceReportFormat {
     Json,
     Jsonl,
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]
+pub enum PerformanceReportSuite {
+    LsLint,
+    Native,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]

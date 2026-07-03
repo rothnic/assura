@@ -16,34 +16,30 @@ impl FactSet {
     pub fn upsert_fact(&mut self, fact: ProjectFact) {
         let id = fact.id().clone();
         let generation = fact.generation().id.clone();
-        self.facts
-            .retain(|existing| existing.id() != &id || existing.generation().id != generation);
-        self.facts.push(fact);
-        self.facts.sort_by(|left, right| {
-            left.id().cmp(right.id()).then_with(|| {
-                left.generation()
-                    .id
-                    .as_str()
-                    .cmp(right.generation().id.as_str())
-            })
-        });
+        if let Some(existing) = self
+            .facts
+            .iter()
+            .position(|existing| existing.id() == &id && existing.generation().id == generation)
+        {
+            self.facts[existing] = fact;
+        } else {
+            self.facts.push(fact);
+        }
     }
 
     /// Add or replace one edge by ID.
     pub fn upsert_edge(&mut self, edge: ProjectEdge) {
         let id = edge.id().clone();
         let generation = edge.generation().id.clone();
-        self.edges
-            .retain(|existing| existing.id() != &id || existing.generation().id != generation);
-        self.edges.push(edge);
-        self.edges.sort_by(|left, right| {
-            left.id().cmp(right.id()).then_with(|| {
-                left.generation()
-                    .id
-                    .as_str()
-                    .cmp(right.generation().id.as_str())
-            })
-        });
+        if let Some(existing) = self
+            .edges
+            .iter()
+            .position(|existing| existing.id() == &id && existing.generation().id == generation)
+        {
+            self.edges[existing] = edge;
+        } else {
+            self.edges.push(edge);
+        }
     }
 
     /// Replace all facts and edges produced by one generation.
@@ -58,6 +54,27 @@ impl FactSet {
         for edge in replacement.edges {
             self.upsert_edge(edge);
         }
+        self.sort_stable();
+    }
+
+    /// Sort facts and edges into deterministic ID/generation order.
+    pub fn sort_stable(&mut self) {
+        self.facts.sort_by(|left, right| {
+            left.id().cmp(right.id()).then_with(|| {
+                left.generation()
+                    .id
+                    .as_str()
+                    .cmp(right.generation().id.as_str())
+            })
+        });
+        self.edges.sort_by(|left, right| {
+            left.id().cmp(right.id()).then_with(|| {
+                left.generation()
+                    .id
+                    .as_str()
+                    .cmp(right.generation().id.as_str())
+            })
+        });
     }
 
     /// Count facts with the requested variant name.
