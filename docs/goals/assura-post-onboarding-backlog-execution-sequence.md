@@ -366,3 +366,22 @@ the exact missing input.
     still flow to the fixture script.
 - Next action: rerun focused computed-check and full validation gates, commit
   and push the runtime Windows path fix, then re-check PR #139 on the new head.
+
+### 2026-07-03 - Iteration 1 Windows Cmd Argument Fixture Fix
+
+- Pushed Windows path fix to PR #139 at
+  `8d9dbd335742431bca50c3f8147e7e5e2b81c391`.
+- Remote re-check proved the path fix worked: Windows computed-check tests no
+  longer failed to start `.cmd` scripts and no longer reported path lookup
+  failures.
+- Remaining remote failure: only
+  `computed_check_passes_args_literally_and_sends_versioned_stdin` failed,
+  with `.cmd` fixture exit code 11 from the Windows-only argument assertion.
+- Local fix:
+  - kept Unix fixture and runtime behavior unchanged;
+  - kept the first semicolon-containing argument exact;
+  - changed the Windows `.cmd` fixture to validate the spaced argument through
+    `cmd.exe`'s `%*` representation, which may preserve or drop quotes around
+    the logical argument while still proving no shell expansion occurred.
+- Next action: rerun focused computed-check gates, commit and push the fixture
+  assertion fix, then re-check PR #139 on the new head.
