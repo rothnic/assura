@@ -6,11 +6,15 @@ mod agent_args;
 #[cfg(feature = "full-cli")]
 mod agent_integration;
 #[cfg(feature = "full-cli")]
+mod agent_lifecycle;
+#[cfg(feature = "full-cli")]
 mod agent_nudge;
 #[cfg(feature = "full-cli")]
 mod agent_onboarding;
 #[cfg(feature = "full-cli")]
 mod agent_onboarding_content_templates;
+#[cfg(feature = "full-cli")]
+mod agent_onboarding_report;
 #[cfg(feature = "full-cli")]
 mod agent_onboarding_templates;
 #[cfg(feature = "full-cli")]

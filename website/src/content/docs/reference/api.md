@@ -104,6 +104,13 @@ references, scripts, assets, or process docs so `SKILL.md` stays a concise
 index. Guidance length diagnostics tell agents to move long procedures out of
 `AGENTS.md` or `SKILL.md` and link the deeper material instead.
 
+The onboarding packet includes `.assura/onboarding/lifecycle.md` and structured
+JSON `lifecycle_profiles` for three modes: `nudge` for path-aware working-loop
+events, `warn` for advisory local checks that use `--warn`, and `gate` for
+pre-push or CI checks that preserve normal nonzero exit behavior. Host-agent
+integration bundles remain reviewable local files; Assura does not silently
+wire global Codex, Claude, OpenCode, or Pi configuration.
+
 `--content-template none` is the default and keeps content models inactive.
 `--content-template agent-project` writes broad Decision, Task, Requirement,
 Evidence, Doc, Finding, Skill, Process, and Learning models plus starter

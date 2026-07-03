@@ -1,6 +1,11 @@
 //! First-run local onboarding for agent-ready repositories.
 
 use super::agent_integration::install_agent_integration_bundle;
+use super::agent_lifecycle::{lifecycle_profiles, ranked_next_actions};
+use super::agent_onboarding_report::{
+    render_report, CheckItem, ContentSection, FileAction, InstalledSection, IntegrationSection,
+    OnboardingReport, RenderedOnboardingReport,
+};
 use super::agent_onboarding_templates::{baseline_files, GeneratedFile};
 use super::doctor::project_doctor_packet_json;
 use super::{
@@ -64,12 +69,14 @@ fn run_agent_onboarding(
         files.push(materialize_baseline_file(&project_root, file)?);
     }
 
-    let integration = install_integration(&project_root, &detected)?;
+    let integration_target = integration_target(&detected);
+    let integration = install_integration(&project_root, &detected, integration_target)?;
     let config_path = config.unwrap_or_else(|| project_root.join(".assura/config.yml"));
     let verified = verify_project(&project_root, Some(config_path.clone()))?;
     let content = content_section(options.content_template);
     let inactive = inactive_capabilities(options.content_template);
-    let next_actions = next_actions(&detected);
+    let lifecycle_profiles = lifecycle_profiles(&project_root, integration_target);
+    let next_actions = ranked_next_actions(integration_target, options.content_template);
     let doctor_json = project_doctor_packet_json(&project_root, Some(config_path))?;
     files.push(materialize_file(
         &project_root,
@@ -92,6 +99,7 @@ fn run_agent_onboarding(
             detected,
             integration,
             content,
+            lifecycle_profiles,
             files,
             verified,
             inactive,
@@ -280,14 +288,8 @@ fn merge_missing_values(existing: &mut Value, defaults: &Value) -> bool {
 fn install_integration(
     project_root: &Path,
     detected: &DetectedSection,
+    target: Option<AgentIntegrationTarget>,
 ) -> Result<IntegrationSection, String> {
-    let target = match detected.agent_harness {
-        "codex" => Some(AgentIntegrationTarget::Codex),
-        "opencode" => Some(AgentIntegrationTarget::Opencode),
-        "claude" => Some(AgentIntegrationTarget::Claude),
-        "pi" => Some(AgentIntegrationTarget::Pi),
-        _ => None,
-    };
     if let Some(agent) = target {
         let installed = install_agent_integration_bundle(agent, project_root.to_path_buf())?;
         Ok(IntegrationSection {
@@ -308,6 +310,16 @@ fn install_integration(
             mode: "manual-shell",
             detail: "no supported host-agent harness detected; use AGENTS.md and assura check --format agent --warn",
         })
+    }
+}
+
+fn integration_target(detected: &DetectedSection) -> Option<AgentIntegrationTarget> {
+    match detected.agent_harness {
+        "codex" => Some(AgentIntegrationTarget::Codex),
+        "opencode" => Some(AgentIntegrationTarget::Opencode),
+        "claude" => Some(AgentIntegrationTarget::Claude),
+        "pi" => Some(AgentIntegrationTarget::Pi),
+        _ => None,
     }
 }
 
@@ -380,83 +392,6 @@ fn inactive_capabilities(template: AgentContentTemplate) -> Vec<CheckItem> {
     items
 }
 
-fn next_actions(detected: &DetectedSection) -> Vec<&'static str> {
-    let mut actions = vec![
-        "Read .assura/onboarding/agent-next.md",
-        "Ask the user the remaining specialization questions before adding project-specific rules",
-        "Do not invent language, layout, naming, or domain conventions",
-    ];
-    if detected.agent_harness == "generic" {
-        actions.push("Use generic shell guidance until a supported host-agent adapter is selected");
-    }
-    actions
-}
-
-fn render_report(report: &RenderedOnboardingReport) -> String {
-    match report.format {
-        OutputFormat::Json => serde_json::to_string_pretty(&report.report).unwrap_or_default(),
-        OutputFormat::Yaml => serde_yaml::to_string(&report.report).unwrap_or_default(),
-        OutputFormat::Text | OutputFormat::Advice | OutputFormat::Status => report.render_text(),
-    }
-}
-
-#[derive(Serialize)]
-struct RenderedOnboardingReport {
-    #[serde(flatten)]
-    report: OnboardingReport,
-    #[serde(skip)]
-    format: OutputFormat,
-}
-
-impl RenderedOnboardingReport {
-    fn render_text(&self) -> String {
-        let report = &self.report;
-        format!(
-            "Assura agent onboarding\ninstalled: assura {}\ndetected: project={} agent={} confidence={}\ncontent: {}={}\nverified: {}\ninactive: {}\nnext: {}\npacket: .assura/onboarding/agent-next.md",
-            report.installed.assura_version,
-            report.detected.project_type,
-            report.detected.agent_harness,
-            report.detected.agent_confidence,
-            report.content.template,
-            report.content.status,
-            report
-                .verified
-                .iter()
-                .map(|item| format!("{}={}", item.name, item.status))
-                .collect::<Vec<_>>()
-                .join(", "),
-            report
-                .inactive
-                .iter()
-                .map(|item| item.name)
-                .collect::<Vec<_>>()
-                .join(", "),
-            report.next_actions.first().copied().unwrap_or("read agent-next.md")
-        )
-    }
-}
-
-#[derive(Serialize)]
-struct OnboardingReport {
-    schema: &'static str,
-    project_root: String,
-    installed: InstalledSection,
-    detected: DetectedSection,
-    integration: IntegrationSection,
-    content: ContentSection,
-    files: Vec<FileAction>,
-    verified: Vec<CheckItem>,
-    inactive: Vec<CheckItem>,
-    next_actions: Vec<&'static str>,
-}
-
-#[derive(Serialize)]
-struct InstalledSection {
-    assura_version: &'static str,
-    config: &'static str,
-    onboarding_packet: &'static str,
-}
-
 #[derive(Clone, Serialize)]
 pub(super) struct DetectedSection {
     pub(super) project_type: &'static str,
@@ -466,34 +401,4 @@ pub(super) struct DetectedSection {
     pub(super) agent_confidence: &'static str,
     pub(super) git_repository: bool,
     pub(super) existing_source_files: bool,
-}
-
-#[derive(Serialize)]
-struct IntegrationSection {
-    status: &'static str,
-    agent: &'static str,
-    mode: &'static str,
-    detail: &'static str,
-}
-
-#[derive(Serialize)]
-struct ContentSection {
-    template: &'static str,
-    status: &'static str,
-    detail: &'static str,
-}
-
-#[derive(Serialize)]
-struct FileAction {
-    path: &'static str,
-    action: &'static str,
-    existed: bool,
-    required: bool,
-}
-
-#[derive(Clone, Serialize)]
-struct CheckItem {
-    name: &'static str,
-    status: &'static str,
-    detail: &'static str,
 }

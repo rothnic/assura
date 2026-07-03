@@ -206,6 +206,25 @@ fn agent_onboard_generates_broad_baseline_and_packet() {
     assert_eq!(output["installed"]["config"], ".assura/config.yml");
     assert_eq!(output["content"]["template"], "none");
     assert_eq!(output["content"]["status"], "inactive");
+    let lifecycle_modes = output["lifecycle_profiles"]
+        .as_array()
+        .expect("lifecycle profiles")
+        .iter()
+        .map(|item| item["mode"].as_str().expect("mode"))
+        .collect::<Vec<_>>();
+    assert_eq!(lifecycle_modes, ["nudge", "warn", "gate"]);
+    assert!(output["lifecycle_profiles"]
+        .as_array()
+        .expect("lifecycle profiles")
+        .iter()
+        .any(|item| item["mode"] == "gate" && item["blocking"] == true));
+    let first_action = &output["next_actions"][0];
+    assert_eq!(first_action["priority"], 1);
+    assert_eq!(first_action["action"], "Read the onboarding handoff");
+    assert_eq!(
+        first_action["affected_paths"][0],
+        ".assura/onboarding/agent-next.md"
+    );
     assert!(output["verified"]
         .as_array()
         .expect("verified array")
@@ -222,6 +241,7 @@ fn agent_onboard_generates_broad_baseline_and_packet() {
         ".assura/presets.lock.yml",
         ".assura/onboarding/summary.md",
         ".assura/onboarding/questions.md",
+        ".assura/onboarding/lifecycle.md",
         ".assura/onboarding/agent-next.md",
         ".assura/onboarding/doctor.json",
         "AGENTS.md",
@@ -235,8 +255,15 @@ fn agent_onboard_generates_broad_baseline_and_packet() {
     let agent_next =
         fs::read_to_string(project.path().join(".assura/onboarding/agent-next.md")).unwrap();
     assert!(agent_next.contains("Do not invent project conventions"));
+    assert!(agent_next.contains(".assura/onboarding/lifecycle.md"));
     assert!(agent_next.contains("What primary language or stack should this project use?"));
     assert!(agent_next.contains("What test layout should the project use?"));
+    let lifecycle =
+        fs::read_to_string(project.path().join(".assura/onboarding/lifecycle.md")).unwrap();
+    assert!(lifecycle.contains("| nudge |"));
+    assert!(lifecycle.contains("| warn |"));
+    assert!(lifecycle.contains("| gate |"));
+    assert!(lifecycle.contains("does not silently mutate"));
 
     let doctor: Value = serde_json::from_str(
         &fs::read_to_string(project.path().join(".assura/onboarding/doctor.json")).unwrap(),
@@ -719,6 +746,45 @@ fn agent_onboard_preserves_existing_user_authored_files() {
     assert_eq!(output["detected"]["project_type"], "rust");
     assert_eq!(output["detected"]["agent_harness"], "codex");
     assert_eq!(output["integration"]["status"], "installed");
+    assert!(output["lifecycle_profiles"]
+        .as_array()
+        .expect("lifecycle profiles")
+        .iter()
+        .any(|item| item["mode"] == "nudge"
+            && item["command"]
+                .as_str()
+                .expect("command")
+                .contains("--agent codex")));
+    assert!(output["lifecycle_profiles"]
+        .as_array()
+        .expect("lifecycle profiles")
+        .iter()
+        .any(|item| item["mode"] == "warn"
+            && item["command"]
+                .as_str()
+                .expect("command")
+                .contains("--agent codex --warn")));
+    assert!(output["lifecycle_profiles"]
+        .as_array()
+        .expect("lifecycle profiles")
+        .iter()
+        .any(|item| item["mode"] == "gate"
+            && item["blocking"] == true
+            && item["command"]
+                .as_str()
+                .expect("command")
+                .contains("--agent codex --min-severity medium")));
+    assert!(output["next_actions"]
+        .as_array()
+        .expect("next actions")
+        .iter()
+        .any(
+            |item| item["action"] == "Review host-agent integration bundle"
+                && item["follow_up"]
+                    .as_str()
+                    .expect("follow_up")
+                    .contains("agent integration doctor codex")
+        ));
     assert_eq!(
         fs::read_to_string(project.path().join("AGENTS.md")).unwrap(),
         "# Existing Agent Notes\n"

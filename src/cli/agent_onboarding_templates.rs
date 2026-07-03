@@ -44,6 +44,7 @@ pub(super) fn baseline_files(
             required: true,
         },
         GeneratedFile::static_file(".assura/onboarding/questions.md", onboarding_questions()),
+        GeneratedFile::static_file(".assura/onboarding/lifecycle.md", onboarding_lifecycle()),
         GeneratedFile::static_file(".assura/onboarding/agent-next.md", agent_next()),
     ];
     files.extend(content::content_template_files(content_template));
@@ -148,6 +149,7 @@ structure:
     required: true
     summary.md: exists:1
     questions.md: exists:1
+    lifecycle.md: exists:1
     agent-next.md: exists:1
     doctor.json: exists:1
   .assura/examples/agent-project/:
@@ -204,6 +206,7 @@ specialization questions. Do not invent language, layout, naming, traceability,
 or domain conventions.
 
 Use `assura check --format agent --warn .` for advisory feedback while working.
+Use gate-mode checks before push or CI by omitting `--warn`.
 
 ## Process Docs vs Skills
 
@@ -381,6 +384,24 @@ fn onboarding_questions() -> &'static str {
 "#
 }
 
+fn onboarding_lifecycle() -> &'static str {
+    r#"# Assura Lifecycle Profiles
+
+Use these modes consistently:
+
+| Mode | When | Blocking | Command |
+| --- | --- | --- | --- |
+| nudge | During agent working loops and path-aware tool events | no | `assura agent nudge --event before-tool --changed <path> --format json .` |
+| warn | Before local commits or while drafting | no | `assura check --format agent --warn --min-severity low --max-issues 10 .` |
+| gate | Before push, merge, or CI | yes | `assura check --format agent --min-severity medium --max-issues 20 .` |
+
+Host-agent integrations are reviewable local bundles under
+`.assura/integrations/<agent>/`. Assura does not silently mutate global or
+host-agent configuration. Run `assura agent integration doctor <agent> .` after
+manual host wiring.
+"#
+}
+
 fn agent_next() -> &'static str {
     r#"# Agent Next
 
@@ -389,6 +410,10 @@ Assura is installed and the broad agent-ready baseline is active.
 Do not invent project conventions. Ask the user the remaining specialization
 questions before adding language, layout, naming, traceability, content-model,
 source-document, hook, or domain-specific rules.
+
+Use `.assura/onboarding/lifecycle.md` to decide between nudge, warn, and gate
+feedback. Warn mode is advisory for draft work; gate mode is for pre-push,
+merge, or CI checks.
 
 ## Ask The User
 
