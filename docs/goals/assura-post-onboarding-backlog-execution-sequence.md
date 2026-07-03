@@ -279,3 +279,51 @@ paths, and reviewer outcomes. Stop only when the measurable done criteria and
 validation commands for that subgoal pass, or when a blocker is recorded with
 the exact missing input.
 ```
+
+## Progress Log
+
+### 2026-07-03 - Iteration 1 Start
+
+- Active task:
+  `.trellis/tasks/07-03-execute-post-onboarding-backlog-sequence`.
+- Context level: not exposed.
+- Live state revalidated:
+  - workflow gate ready before task creation;
+  - PR #139 open and green on old remote head
+    `c0e7b881f866027b087afc0ee6580e83f886f4e2`;
+  - local branch ahead of
+    `origin/codex/agent-ready-onboarding-backlog` by 10 commits.
+- Next action: publish the 10 local commits to PR #139, post a PR handoff
+  comment naming the follow-up scope, then wait for and verify checks on the
+  new head before starting performance implementation.
+
+### 2026-07-03 - Iteration 1 PR Handoff Fix
+
+- Pushed local follow-up stack to PR #139:
+  `c0e7b881f866027b087afc0ee6580e83f886f4e2` ->
+  `0bbc3fb91981f092770143de05f6e59755b09597`.
+- Posted PR handoff comment:
+  <https://github.com/rothnic/assura/pull/139#issuecomment-4877244067>.
+- Independent review result: PR comment and pushed-head evidence satisfied
+  Subgoal 1 scope requirements, but remote Test Suite checks failed on the
+  new head and blocked Subgoal 1 completion.
+- Remote failing test evidence:
+  `crates/assura-check-cli/tests/compiled_requirements_traceability_cli.rs`
+  failed because compiled requirements-traceability artifacts rejected content
+  runtime metadata with `invalid compiled config: Found an Option discriminant
+  that wasn't 0 or 1`.
+- Root cause: compiled artifacts reused content-runtime config structs with
+  `skip_serializing_if` serde attributes, which are unsafe for postcard's
+  non-self-describing binary format.
+- Local fix:
+  - added portable content-runtime config structs to the compiled artifact
+    boundary;
+  - bumped compiled artifact schema version;
+  - changed the compiled traceability fixture into a minimal valid modeled
+    project that proves enforcement still works.
+- Local validation after fix:
+  - `cargo fmt --check` passed;
+  - `cargo test -p assura-check-cli --test compiled_requirements_traceability_cli --all-features` passed;
+  - `cargo test --all-features` passed.
+- Next action: run Assura/Trellis docs and evidence gates, commit and push the
+  CI fix, then re-check PR #139 on the new head.

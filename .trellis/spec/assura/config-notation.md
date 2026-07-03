@@ -82,6 +82,10 @@ surface in the same goal:
 - Any portable artifact payload shape change must bump
   `COMPILED_CONFIG_SCHEMA_VERSION` so old artifacts fail as incompatible
   instead of deserialization-invalid.
+- Portable artifact payload structs must not reuse source config structs that
+  rely on skipped serde fields such as `skip_serializing_if`. Postcard is a
+  non-self-describing binary format, so skipped fields can shift later bytes
+  into the wrong field and produce invalid-option-discriminant errors.
 - Generated configs that opt into the extension must self-check without
   advisory drift unless the generated policy intentionally uses non-blocking
   severity.
@@ -94,6 +98,7 @@ surface in the same goal:
 | New source YAML field configured | Runtime check observes the field. |
 | Compiled artifact created before payload-shape change | Reject as incompatible after schema bump. |
 | Compiled artifact created after payload-shape change | Runtime check observes every new portable field. |
+| Portable artifact includes optional or defaulted source fields | Serialize every binary field explicitly through a dedicated portable struct. |
 | Generated template enables the extension | `assura check --format json` succeeds on generated output. |
 
 ### 5. Good/Base/Bad Cases
@@ -103,6 +108,9 @@ surface in the same goal:
 - Base: omitting the new field leaves older projects unaffected.
 - Bad: direct checks enforce a new field, but compiled checks silently drop it
   because the portable conversion was not updated.
+- Bad: a compiled artifact stores a source config struct with
+  `skip_serializing_if`, then `assura-check-compiled` fails with
+  `invalid compiled config: Found an Option discriminant that wasn't 0 or 1`.
 
 ### 6. Tests Required
 
@@ -127,6 +135,26 @@ Correct:
 ```rust
 const COMPILED_CONFIG_SCHEMA_VERSION: u32 = 19;
 ```
+
+Wrong:
+
+```rust
+struct PortableConfig {
+    models: Option<ContentModelConfig>,
+}
+```
+
+where `ContentModelConfig` is a YAML-facing type with skipped serde fields.
+
+Correct:
+
+```rust
+struct PortableConfig {
+    models: Option<PortableContentModelConfig>,
+}
+```
+
+with explicit `From` conversions between source and portable structs.
 
 with compiled CLI regression coverage for the new field.
 
