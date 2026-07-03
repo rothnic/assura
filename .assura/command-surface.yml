@@ -308,6 +308,9 @@ commands:
       --agent:
         takes_value: true
         values: ["auto", "generic", "codex", "opencode", "claude", "pi"]
+      --content-template:
+        takes_value: true
+        values: ["none", "agent-project", "document-project"]
       --format:
         aliases: ["-f"]
         takes_value: true

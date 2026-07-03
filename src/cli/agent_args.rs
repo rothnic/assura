@@ -11,6 +11,8 @@ pub enum AgentCommands {
         path: Option<PathBuf>,
         #[arg(long, value_enum, default_value = "auto")]
         agent: AgentOnboardingTarget,
+        #[arg(long, value_enum, default_value = "none")]
+        content_template: AgentContentTemplate,
         #[arg(short, long, value_enum, default_value = "json")]
         format: OutputFormat,
     },
@@ -201,6 +203,33 @@ pub enum AgentOnboardingTarget {
     Claude,
     /// Pi agent hook-wrapper bundle.
     Pi,
+}
+
+/// Optional repo-native content template for the first-run onboarding flow.
+#[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]
+pub enum AgentContentTemplate {
+    /// Do not activate content runtime models.
+    None,
+    /// Activate broad agent-project facts such as decisions and requirements.
+    AgentProject,
+    /// Activate agent-project facts plus source-document custody metadata.
+    DocumentProject,
+}
+
+impl AgentContentTemplate {
+    /// Stable lowercase template label.
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::None => "none",
+            Self::AgentProject => "agent-project",
+            Self::DocumentProject => "document-project",
+        }
+    }
+
+    /// Whether this template enables content runtime configuration.
+    pub fn activates_content(self) -> bool {
+        !matches!(self, Self::None)
+    }
 }
 
 impl AgentOnboardingTarget {

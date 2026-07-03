@@ -204,6 +204,8 @@ fn agent_onboard_generates_broad_baseline_and_packet() {
     assert_eq!(output["detected"]["project_type"], "empty");
     assert_eq!(output["detected"]["agent_harness"], "generic");
     assert_eq!(output["installed"]["config"], ".assura/config.yml");
+    assert_eq!(output["content"]["template"], "none");
+    assert_eq!(output["content"]["status"], "inactive");
     assert!(output["verified"]
         .as_array()
         .expect("verified array")
@@ -246,6 +248,202 @@ fn agent_onboard_generates_broad_baseline_and_packet() {
         .expect("inactive array")
         .iter()
         .any(|item| item["name"] == "content_models"));
+
+    let check = json_from_success(run_assura(&[
+        "check",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]));
+    assert_eq!(check["success"], true);
+}
+
+#[test]
+fn agent_onboard_content_template_activates_agent_project_models() {
+    let project = TempDir::new().unwrap();
+
+    let output = json_from_success(run_assura(&[
+        "agent",
+        "onboard",
+        project.path().to_str().unwrap(),
+        "--content-template",
+        "agent-project",
+        "--format",
+        "json",
+    ]));
+
+    assert_eq!(output["content"]["template"], "agent-project");
+    assert_eq!(output["content"]["status"], "active");
+    assert!(!output["inactive"]
+        .as_array()
+        .expect("inactive array")
+        .iter()
+        .any(|item| item["name"] == "content_models"));
+    assert!(project
+        .path()
+        .join(".assura/models/agent-project/baseline.schema.json")
+        .is_file());
+    assert!(project
+        .path()
+        .join("docs/requirements/requirement-agent-content-baseline.md")
+        .is_file());
+
+    let config = fs::read_to_string(project.path().join(".assura/config.yml")).unwrap();
+    assert!(config.contains("models:"));
+    assert!(config.contains("class: Decision"));
+    assert!(config.contains("class: Requirement"));
+    assert!(!config.contains("SourceDocument"));
+
+    let check = json_from_success(run_assura(&[
+        "check",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]));
+    assert_eq!(check["success"], true);
+
+    let search = json_from_success(run_assura(&[
+        "content",
+        "search",
+        "Agent Content Baseline Requirement",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]));
+    assert!(search["matches"]
+        .as_array()
+        .expect("matches")
+        .iter()
+        .any(|item| item["collection"] == "requirements"
+            && item["instance_id"] == "requirement-agent-content-baseline"));
+
+    let doctor = json_from_success(run_assura(&[
+        "doctor",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]));
+    assert!(doctor["configured"]
+        .as_array()
+        .expect("configured")
+        .iter()
+        .any(|item| item["name"] == "content_models" && item["status"] == "active"));
+    assert!(!doctor["inactive"]
+        .as_array()
+        .expect("inactive")
+        .iter()
+        .any(|item| item["name"] == "content_models"));
+    assert_eq!(doctor["gaps"].as_array().expect("gaps").len(), 0);
+}
+
+#[test]
+fn agent_onboard_document_project_tracks_source_document_custody() {
+    let project = TempDir::new().unwrap();
+    let output = json_from_success(run_assura(&[
+        "agent",
+        "onboard",
+        project.path().to_str().unwrap(),
+        "--content-template",
+        "document-project",
+        "--format",
+        "json",
+    ]));
+
+    assert_eq!(output["content"]["template"], "document-project");
+    assert!(project
+        .path()
+        .join("source-documents/manifest.md")
+        .is_file());
+    assert!(project
+        .path()
+        .join("source-documents/files/sample-source.txt")
+        .is_file());
+
+    let check = json_from_success(run_assura(&[
+        "check",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]));
+    assert_eq!(check["success"], true);
+
+    let doctor = json_from_success(run_assura(&[
+        "doctor",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]));
+    assert_eq!(doctor["binary_custody"]["status"], "active");
+    assert_eq!(doctor["gaps"].as_array().expect("gaps").len(), 0);
+
+    let references = json_from_success(run_assura(&[
+        "content",
+        "references",
+        project.path().to_str().unwrap(),
+        "--source",
+        "source-documents/manifest.md",
+        "--format",
+        "json",
+    ]));
+    let manifest_references = references["references"].as_array().expect("references");
+    assert!(manifest_references.iter().any(|item| {
+        item["source_path"] == "source-documents/manifest.md"
+            && item["target_path"] == "source-documents/files/sample-source.txt"
+            && item["target_exists"] == true
+    }));
+
+    fs::remove_file(
+        project
+            .path()
+            .join("source-documents/files/sample-source.txt"),
+    )
+    .unwrap();
+    let missing = run_assura(&[
+        "check",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]);
+    assert_eq!(missing.status.code(), Some(1));
+    let missing_json: Value = serde_json::from_slice(&missing.stdout).unwrap();
+    assert!(missing_json["violations"]
+        .as_array()
+        .expect("violations")
+        .iter()
+        .any(|item| item["rule"] == "repository_reference_target"
+            && item["path"] == "source-documents/manifest.md"));
+}
+
+#[test]
+fn source_document_custody_does_not_read_binary_targets_as_utf8() {
+    let project = TempDir::new().unwrap();
+    json_from_success(run_assura(&[
+        "agent",
+        "onboard",
+        project.path().to_str().unwrap(),
+        "--content-template",
+        "document-project",
+        "--format",
+        "json",
+    ]));
+
+    let manifest_path = project.path().join("source-documents/manifest.md");
+    let manifest = fs::read_to_string(&manifest_path).unwrap().replace(
+        "source-documents/files/sample-source.txt",
+        "source-documents/files/source.pdf",
+    );
+    fs::write(&manifest_path, manifest).unwrap();
+    fs::remove_file(
+        project
+            .path()
+            .join("source-documents/files/sample-source.txt"),
+    )
+    .unwrap();
+    fs::write(
+        project.path().join("source-documents/files/source.pdf"),
+        [0xff, 0x00, 0xfe, 0xfd],
+    )
+    .unwrap();
 
     let check = json_from_success(run_assura(&[
         "check",

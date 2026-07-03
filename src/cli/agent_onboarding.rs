@@ -3,7 +3,9 @@
 use super::agent_integration::install_agent_integration_bundle;
 use super::agent_onboarding_templates::{baseline_files, GeneratedFile};
 use super::doctor::project_doctor_packet_json;
-use super::{AgentIntegrationTarget, AgentOnboardingTarget, ExitCode, OutputFormat};
+use super::{
+    AgentContentTemplate, AgentIntegrationTarget, AgentOnboardingTarget, ExitCode, OutputFormat,
+};
 use crate::cli::check::{run_structure_check_with_target_mode, CheckTargetMode};
 use serde::Serialize;
 use serde_yaml::Value;
@@ -17,6 +19,8 @@ pub struct AgentOnboardingOptions {
     pub path: Option<PathBuf>,
     /// Requested host-agent profile.
     pub agent: AgentOnboardingTarget,
+    /// Optional content runtime activation template.
+    pub content_template: AgentContentTemplate,
     /// Output format.
     pub format: OutputFormat,
 }
@@ -56,14 +60,15 @@ fn run_agent_onboarding(
 
     let detected = detect_project(&project_root, options.agent);
     let mut files = Vec::new();
-    for file in baseline_files(&detected) {
+    for file in baseline_files(&detected, options.content_template) {
         files.push(materialize_baseline_file(&project_root, file)?);
     }
 
     let integration = install_integration(&project_root, &detected)?;
     let config_path = config.unwrap_or_else(|| project_root.join(".assura/config.yml"));
     let verified = verify_project(&project_root, Some(config_path.clone()))?;
-    let inactive = inactive_capabilities();
+    let content = content_section(options.content_template);
+    let inactive = inactive_capabilities(options.content_template);
     let next_actions = next_actions(&detected);
     let doctor_json = project_doctor_packet_json(&project_root, Some(config_path))?;
     files.push(materialize_file(
@@ -78,7 +83,7 @@ fn run_agent_onboarding(
     Ok(RenderedOnboardingReport {
         report: OnboardingReport {
             schema: OUTPUT_SCHEMA,
-            project_root: path_string(&project_root),
+            project_root: project_root.display().to_string(),
             installed: InstalledSection {
                 assura_version: env!("CARGO_PKG_VERSION"),
                 config: ".assura/config.yml",
@@ -86,6 +91,7 @@ fn run_agent_onboarding(
             },
             detected,
             integration,
+            content,
             files,
             verified,
             inactive,
@@ -335,24 +341,43 @@ fn verify_project(project_root: &Path, config: Option<PathBuf>) -> Result<Vec<Ch
     ])
 }
 
-fn inactive_capabilities() -> Vec<CheckItem> {
-    vec![
+fn content_section(template: AgentContentTemplate) -> ContentSection {
+    if template.activates_content() {
+        ContentSection {
+            template: template.as_str(),
+            status: "active",
+            detail: "baseline repo-native content models are configured",
+        }
+    } else {
+        ContentSection {
+            template: "none",
+            status: "inactive",
+            detail: "content runtime activation was not requested",
+        }
+    }
+}
+
+fn inactive_capabilities(template: AgentContentTemplate) -> Vec<CheckItem> {
+    let mut items = vec![
         CheckItem {
             name: "project_specialization",
             status: "inactive",
             detail: "waiting for user answers in .assura/onboarding/questions.md",
         },
         CheckItem {
-            name: "content_models",
-            status: "inactive",
-            detail: "deferred to the content activation child goal",
-        },
-        CheckItem {
             name: "domain_pack",
             status: "inactive",
             detail: "proposal/SBIR and other domain packs are optional future packs",
         },
-    ]
+    ];
+    if !template.activates_content() {
+        items.push(CheckItem {
+            name: "content_models",
+            status: "inactive",
+            detail: "deferred until --content-template is selected",
+        });
+    }
+    items
 }
 
 fn next_actions(detected: &DetectedSection) -> Vec<&'static str> {
@@ -375,10 +400,6 @@ fn render_report(report: &RenderedOnboardingReport) -> String {
     }
 }
 
-fn path_string(path: &Path) -> String {
-    path.display().to_string()
-}
-
 #[derive(Serialize)]
 struct RenderedOnboardingReport {
     #[serde(flatten)]
@@ -391,11 +412,13 @@ impl RenderedOnboardingReport {
     fn render_text(&self) -> String {
         let report = &self.report;
         format!(
-            "Assura agent onboarding\ninstalled: assura {}\ndetected: project={} agent={} confidence={}\nverified: {}\ninactive: {}\nnext: {}\npacket: .assura/onboarding/agent-next.md",
+            "Assura agent onboarding\ninstalled: assura {}\ndetected: project={} agent={} confidence={}\ncontent: {}={}\nverified: {}\ninactive: {}\nnext: {}\npacket: .assura/onboarding/agent-next.md",
             report.installed.assura_version,
             report.detected.project_type,
             report.detected.agent_harness,
             report.detected.agent_confidence,
+            report.content.template,
+            report.content.status,
             report
                 .verified
                 .iter()
@@ -420,6 +443,7 @@ struct OnboardingReport {
     installed: InstalledSection,
     detected: DetectedSection,
     integration: IntegrationSection,
+    content: ContentSection,
     files: Vec<FileAction>,
     verified: Vec<CheckItem>,
     inactive: Vec<CheckItem>,
@@ -449,6 +473,13 @@ struct IntegrationSection {
     status: &'static str,
     agent: &'static str,
     mode: &'static str,
+    detail: &'static str,
+}
+
+#[derive(Serialize)]
+struct ContentSection {
+    template: &'static str,
+    status: &'static str,
     detail: &'static str,
 }
 

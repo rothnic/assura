@@ -2,7 +2,7 @@
 id: goal-assura-agent-content-activation-source-docs
 type: goal
 title: Assura agent content activation and source docs
-status: planned
+status: completed
 created: 2026-07-02
 owners:
   - assura-maintainers
@@ -67,3 +67,9 @@ git diff --check
 Block if draft models can silently appear active, if binary files are read as
 text, if baseline models are proposal-specific, or if source-document custody
 requires a domain pack.
+
+## Progress Log
+
+| Date | Update | Evidence |
+| --- | --- | --- |
+| 2026-07-03 | Completed content activation and source-document custody. `assura agent onboard` now has explicit `--content-template none`, `agent-project`, and `document-project` modes; generated agent projects activate baseline Decision, Task, Requirement, Evidence, Doc, Finding, Skill, Process, and Learning models; generated document projects add SourceDocument custody metadata and file-reference validation without reading binary targets as UTF-8. Doctor now reports content runtime schema, empty-collection, zero-chunk, and relation-edge gaps when content is active. | `src/cli/agent_args.rs`; `src/cli/agent_onboarding.rs`; `src/cli/agent_onboarding_templates.rs`; `src/cli/agent_onboarding_content_templates.rs`; `src/cli/doctor.rs`; `src/cli/doctor_content.rs`; `tests/project_intelligence_onboarding.rs`; `tests/doctor_explain_cli.rs`; independent review agent `019f2624-a975-7812-9bcb-cac759e40e73`; `cargo fmt --check`; `cargo test content_runtime --quiet`; `cargo test --test project_intelligence_onboarding --quiet`; `cargo test --test doctor_explain_cli --quiet`; `cargo test --test content_runtime_references --quiet`; `cargo run --quiet -- check --format json .`; `cargo xtask target-state`; `cargo xtask docs`; `cargo xtask evidence`; `git diff --check`. |

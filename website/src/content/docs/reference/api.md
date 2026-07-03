@@ -86,6 +86,8 @@ assura agent diagnostics tests/fixtures/content_runtime/missing_reference
 assura agent context-pack . --collection assura_goals --id goal-assura-project-intelligence-usability-program --text "Project Intelligence Usability" --limit 5
 assura agent safe-fixes tests/fixtures/project_intelligence_real_repo/beacon_crm/invalid
 assura agent onboard . --agent auto
+assura agent onboard . --content-template agent-project
+assura agent onboard . --content-template document-project
 assura agent integration install codex .
 assura agent integration doctor codex .
 ```
@@ -101,6 +103,13 @@ sections. `Read as needed` should be a use-case table that points to deeper
 references, scripts, assets, or process docs so `SKILL.md` stays a concise
 index. Guidance length diagnostics tell agents to move long procedures out of
 `AGENTS.md` or `SKILL.md` and link the deeper material instead.
+
+`--content-template none` is the default and keeps content models inactive.
+`--content-template agent-project` writes broad Decision, Task, Requirement,
+Evidence, Doc, Finding, Skill, Process, and Learning models plus starter
+records. `--content-template document-project` adds SourceDocument metadata and
+`source-documents/manifest.md` custody that validates referenced file paths
+without requiring Assura to read binary files as text.
 
 MCP is not required for local agent usage. If an MCP adapter is added later, it
 should wrap these same CLI/library contracts.

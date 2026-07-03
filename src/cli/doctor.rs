@@ -5,6 +5,7 @@ use super::check::{
     explain_structure_path, run_structure_check_with_target_mode, CheckError, CheckTargetMode,
     PathExplainReport, StructureCheckReport,
 };
+use super::doctor_content;
 use super::ExitCode;
 use crate::config::config::Config;
 use crate::config::loader::ConfigLoader;
@@ -344,12 +345,15 @@ fn inactive_items(project_root: &Path, config: &Config) -> Vec<DoctorItem> {
             detail: "No content collections are configured.".to_string(),
         });
     }
-    items.push(DoctorItem {
-        name: "search_chunks".to_string(),
-        status: "unchecked",
-        detail: "No search chunk index is configured for project-doctor activation checks."
-            .to_string(),
-    });
+    if config.models.is_none() || config.collections.is_empty() {
+        items.push(DoctorItem {
+            name: "search_chunks".to_string(),
+            status: "unchecked",
+            detail:
+                "No active content runtime is configured for project-doctor search chunk checks."
+                    .to_string(),
+        });
+    }
     if config
         .extensions
         .as_ref()
@@ -398,6 +402,7 @@ fn gap_items(project_root: &Path, config: &Config) -> Vec<DoctorItem> {
             });
         }
     }
+    gaps.extend(doctor_content::content_runtime_gaps(project_root, config));
     gaps
 }
 

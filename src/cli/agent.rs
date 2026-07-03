@@ -12,12 +12,14 @@ pub async fn agent_command(command: AgentCommands, config: Option<PathBuf>) -> E
         AgentCommands::Onboard {
             path,
             agent,
+            content_template,
             format,
         } => {
             agent_onboarding_command(
                 AgentOnboardingOptions {
                     path,
                     agent,
+                    content_template,
                     format,
                 },
                 config,

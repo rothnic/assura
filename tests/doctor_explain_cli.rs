@@ -209,6 +209,77 @@ source_documents:
 }
 
 #[test]
+fn doctor_reports_active_content_runtime_empty_collections_and_relations() {
+    let project = TempDir::new().unwrap();
+    write_config(
+        &project,
+        r##"
+structure:
+  ./:
+    extra: true
+models:
+  validation_artifact: ".assura/models/agent-project/baseline.schema.json"
+collections:
+  requirements:
+    class: Requirement
+    path: "docs/requirements/*.md"
+    adapter: markdown_frontmatter
+    id: id
+  tasks:
+    class: Task
+    path: "docs/tasks/*.md"
+    adapter: markdown_frontmatter
+    id: id
+relations:
+  tasks.requirements:
+    target: requirements
+    many: true
+exclude:
+  - target/**
+"##,
+    );
+    fs::create_dir_all(project.path().join(".assura/models/agent-project")).unwrap();
+    fs::write(
+        project
+            .path()
+            .join(".assura/models/agent-project/baseline.schema.json"),
+        r##"{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "Requirement": { "type": "object", "additionalProperties": true },
+    "Task": { "type": "object", "additionalProperties": true }
+  }
+}
+"##,
+    )
+    .unwrap();
+
+    let doctor = json_from_success(run_assura(&[
+        "doctor",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]));
+
+    assert!(doctor["configured"]
+        .as_array()
+        .expect("configured")
+        .iter()
+        .any(|item| item["name"] == "content_models" && item["status"] == "active"));
+    let gaps = doctor["gaps"].as_array().expect("gaps");
+    assert!(gaps
+        .iter()
+        .any(|item| item["name"] == "empty_collection:requirements"));
+    assert!(gaps
+        .iter()
+        .any(|item| item["name"] == "empty_collection:tasks"));
+    assert!(gaps.iter().any(|item| item["name"] == "zero_search_chunks"));
+    assert!(gaps
+        .iter()
+        .any(|item| item["name"] == "relation_without_edges:tasks.requirements"));
+}
+
+#[test]
 fn explain_reports_inherited_scope_and_source_markdown_skips() {
     let project = TempDir::new().unwrap();
     write_config(
