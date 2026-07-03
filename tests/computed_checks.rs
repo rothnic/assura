@@ -145,8 +145,8 @@ fn computed_check_rejects_unsafe_windows_script_path() {
     fs::write(
         &config_path,
         config.replace(
-            "      script: scripts/missing.sh\n",
-            "      script: scripts/missing.sh\n      windows_script: ../outside.cmd\n",
+            "      windows_script: scripts/missing.cmd\n",
+            "      windows_script: ../outside.cmd\n",
         ),
     )
     .unwrap();
@@ -324,6 +324,7 @@ fn computed_project_without_script(script: &str, timeout_ms: u64) -> TempDir {
     for dir in [".assura", "scripts", "docs", "schemas", "records"] {
         fs::create_dir_all(project.path().join(dir)).unwrap();
     }
+    let windows_script = windows_script_name(script);
     fs::write(
         project.path().join(".assura/config.yml"),
         format!(
@@ -332,6 +333,7 @@ fn computed_project_without_script(script: &str, timeout_ms: u64) -> TempDir {
     - id: rollup_score
       severity: high
       script: scripts/{script}
+      windows_script: scripts/{windows_script}
       timeout_ms: {timeout_ms}
 models:
   validation_artifact: schemas/content.schema.json
@@ -360,14 +362,39 @@ exclude:
     project
 }
 
+fn windows_script_name(script: &str) -> String {
+    Path::new(script)
+        .with_extension("cmd")
+        .to_string_lossy()
+        .replace('\\', "/")
+}
+
 fn write_script(project_root: &Path, name: &str, body: &str) {
     let path = project_root.join("scripts").join(name);
     fs::write(&path, body).unwrap();
+    fs::write(
+        project_root.join("scripts").join(windows_script_name(name)),
+        windows_script_body(name),
+    )
+    .unwrap();
     #[cfg(unix)]
     {
         let mut perms = fs::metadata(&path).unwrap().permissions();
         perms.set_mode(0o755);
         fs::set_permissions(&path, perms).unwrap();
+    }
+}
+
+fn windows_script_body(name: &str) -> &'static str {
+    match name {
+        "pass.sh" => pass_cmd_script(),
+        "finding.sh" => finding_cmd_script(),
+        "invalid.sh" => invalid_cmd_script(),
+        "nonzero.sh" => nonzero_cmd_script(),
+        "timeout.sh" => timeout_cmd_script(),
+        "invalid-severity.sh" => invalid_severity_cmd_script(),
+        "contract.sh" => contract_cmd_script(),
+        _ => pass_cmd_script(),
     }
 }
 
@@ -415,6 +442,63 @@ if [ "$#" -ne 2 ] || [ "$1" != "literal;echo-no-shell" ] || [ "$2" != "two words
   exit 11
 fi
 printf '%s\n' '{"schema":"assura.computed-check.output.v1","findings":[]}'
+"#
+}
+
+fn pass_cmd_script() -> &'static str {
+    r#"@echo off
+set /p request=
+echo {"schema":"assura.computed-check.output.v1","findings":[]}
+"#
+}
+
+fn finding_cmd_script() -> &'static str {
+    r#"@echo off
+set /p request=
+echo {"schema":"assura.computed-check.output.v1","findings":[{"code":"score_low","message":"Rollup score is below threshold","path":"docs/source.md","severity":"high","metadata":{"score":42,"source":"fixture"}}]}
+"#
+}
+
+fn invalid_cmd_script() -> &'static str {
+    r#"@echo off
+set /p request=
+echo not-json
+"#
+}
+
+fn nonzero_cmd_script() -> &'static str {
+    r#"@echo off
+set /p request=
+echo boom 1>&2
+exit /b 7
+"#
+}
+
+fn timeout_cmd_script() -> &'static str {
+    r#"@echo off
+set /p request=
+ping -n 3 127.0.0.1 >nul
+echo {"schema":"assura.computed-check.output.v1","findings":[]}
+"#
+}
+
+fn invalid_severity_cmd_script() -> &'static str {
+    r#"@echo off
+set /p request=
+echo {"schema":"assura.computed-check.output.v1","findings":[{"code":"bad_severity","message":"Bad severity","severity":"urgent"}]}
+"#
+}
+
+fn contract_cmd_script() -> &'static str {
+    r#"@echo off
+set /p request=
+echo %request% | findstr /C:"\"schema\":\"assura.computed-check.input.v1\"" >nul || exit /b 10
+echo %request% | findstr /C:"\"id\":\"rollup_score\"" >nul || exit /b 10
+echo %request% | findstr /C:"\"checked_path\":" >nul || exit /b 10
+echo %request% | findstr /C:"\"config_path\":" >nul || exit /b 10
+if not "%~1"=="literal;echo-no-shell" exit /b 11
+if not "%~2"=="two words" exit /b 11
+echo {"schema":"assura.computed-check.output.v1","findings":[]}
 "#
 }
 

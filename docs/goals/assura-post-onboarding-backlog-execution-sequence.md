@@ -327,3 +327,23 @@ the exact missing input.
   - `cargo test --all-features` passed.
 - Next action: run Assura/Trellis docs and evidence gates, commit and push the
   CI fix, then re-check PR #139 on the new head.
+
+### 2026-07-03 - Iteration 1 Windows CI Fixture Fix
+
+- Pushed compiled-artifact fix to PR #139 at
+  `64f0135dc2e89b21f642173cf4de7fe3fcf41ced`.
+- Remote re-check fixed the original macOS compiled traceability failure, but
+  Windows Test Suite failed in `tests/computed_checks.rs`.
+- Remote failing test evidence: computed-check fixtures configured only `.sh`
+  scripts, so Windows tried to execute them directly and returned
+  `%1 is not a valid Win32 application. (os error 193)`.
+- Local fix:
+  - kept the runtime behavior unchanged;
+  - added paired `.cmd` fixture scripts and explicit `windows_script` config
+    entries so the integration tests exercise the supported Windows path.
+- Local validation after fix:
+  - `cargo fmt --check` passed;
+  - `cargo test --test computed_checks --quiet` passed;
+  - `cargo run --quiet -- check --format json .` passed.
+- Next action: run the broader Rust validation, commit and push the Windows
+  fixture fix, then re-check PR #139 on the new head.
