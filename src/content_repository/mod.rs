@@ -29,6 +29,7 @@ use serde_json::json;
 use std::collections::{btree_map::Entry, HashMap};
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::time::Instant;
 use validation::{
     edge_from, invalid_reference_scalar, missing_required_reference, validate_object_data,
     validate_placement, validate_references,
@@ -38,6 +39,15 @@ use validation::{
 pub struct ContentRepository {
     model: RepositoryModel,
     schema_validators: HashMap<String, Validator>,
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+pub(crate) struct RepositoryValidationProfile {
+    pub(crate) file_index_ms: f64,
+    pub(crate) object_load_ms: f64,
+    pub(crate) edge_collect_ms: f64,
+    pub(crate) reference_validate_ms: f64,
+    pub(crate) total_ms: f64,
 }
 
 impl ContentRepository {
@@ -61,10 +71,21 @@ impl ContentRepository {
 
     /// Load and validate all configured collections under `root`.
     pub fn validate(&self, root: &Path) -> RepositoryValidation {
+        self.validate_profiled(root).0
+    }
+
+    pub(crate) fn validate_profiled(
+        &self,
+        root: &Path,
+    ) -> (RepositoryValidation, RepositoryValidationProfile) {
+        let total_started = Instant::now();
         let mut snapshot = RepositorySnapshot::default();
         let mut findings = Vec::new();
+        let started = Instant::now();
         let matched_files = self.match_collection_files(root);
+        let file_index_ms = elapsed_ms(started);
 
+        let started = Instant::now();
         for (collection, matches) in self.model.collections.iter().zip(matched_files) {
             if let Some(finding) = matches.pattern_error {
                 findings.push(finding);
@@ -72,11 +93,25 @@ impl ContentRepository {
             }
             self.load_collection_files(collection, &matches.files, &mut snapshot, &mut findings);
         }
+        let object_load_ms = elapsed_ms(started);
 
+        let started = Instant::now();
         self.collect_edges(&mut snapshot, &mut findings);
+        let edge_collect_ms = elapsed_ms(started);
+        let started = Instant::now();
         validate_references(&snapshot, &mut findings);
+        let reference_validate_ms = elapsed_ms(started);
 
-        RepositoryValidation { snapshot, findings }
+        (
+            RepositoryValidation { snapshot, findings },
+            RepositoryValidationProfile {
+                file_index_ms,
+                object_load_ms,
+                edge_collect_ms,
+                reference_validate_ms,
+                total_ms: elapsed_ms(total_started),
+            },
+        )
     }
 
     fn match_collection_files(&self, root: &Path) -> Vec<CollectionFileMatches> {
@@ -282,6 +317,10 @@ fn is_ignored_dir(path: &Path) -> bool {
     path.file_name()
         .and_then(|name| name.to_str())
         .is_some_and(|name| matches!(name, ".git" | "target" | "node_modules"))
+}
+
+fn elapsed_ms(started: Instant) -> f64 {
+    started.elapsed().as_secs_f64() * 1000.0
 }
 
 pub(super) fn normalize_slashes(value: &str) -> String {

@@ -37,6 +37,7 @@ mod metadata;
 mod monorepo_policy;
 mod native;
 mod native_fixtures;
+mod native_phases;
 mod phases;
 mod prepared_rows;
 mod process_floor;

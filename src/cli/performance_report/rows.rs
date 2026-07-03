@@ -420,6 +420,7 @@ pub(super) fn validation_execution_mode(row_family: &str) -> &'static str {
         "native:markdown-safe-fix-dry-run-cli" => "native-markdown-safe-fix-cli",
         "native:session-agent-context-cli" => "native-session-query-cli",
         "native:daemon-status-cli" => "native-daemon-query-cli",
+        row if row.starts_with("native:phase:") => "native-phase-timing",
         _ => "diagnostic",
     }
 }

@@ -2300,6 +2300,17 @@ const NATIVE_PERFORMANCE_ROW_FAMILIES: &[&str] = &[
     "native:context-pack-cli",
     "native:daemon-status-cli",
     "native:markdown-safe-fix-dry-run-cli",
+    "native:phase:config-model-load",
+    "native:phase:edge-collect",
+    "native:phase:fact-ingest-load",
+    "native:phase:factset-serialize-json",
+    "native:phase:file-index",
+    "native:phase:incremental-replace-generation",
+    "native:phase:object-load-validate",
+    "native:phase:reference-validate",
+    "native:phase:repository-validate-total",
+    "native:phase:schema-compile",
+    "native:phase:warm-keyword-query",
     "native:session-agent-context-cli",
 ];
 
@@ -5110,6 +5121,8 @@ fn check_native_performance_artifacts(
         "native-current.json",
         "native-history.jsonl",
         "assura-native-diagnostic",
+        "native:phase:*",
+        "native:phase:incremental-replace-generation",
         "native-performance-no-regression",
     ] {
         checks.require(

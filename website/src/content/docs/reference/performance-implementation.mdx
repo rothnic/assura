@@ -38,6 +38,7 @@ should expect one tool to be faster than the other.
 | `native:markdown-safe-fix-dry-run-cli` | Markdown safe-fix planning without writing changes | Markdown validation and fix-planning cost |
 | `native:session-agent-context-cli` | Session-style agent-context query row | Warm workflow proxy evidence, not cold CLI parity |
 | `native:daemon-status-cli` | Daemon status request through the full CLI | Daemon surface smoke and protocol overhead |
+| `native:phase:*` | Assura-native attribution rows for model load, schema compile, repository validation, fact-store indexing, incremental update, warm query, and JSON serialization | Deciding what to optimize before adding caches or a persistent store |
 
 ## Fixture Acceptance
 
@@ -103,6 +104,12 @@ CI and local release checks use
 `cargo xtask native-performance-no-regression` to reject native reports that
 drop matrix rows, publish non-passing rows, omit samples, lose expected Assura
 exit-status metadata, or stop identifying the report as `--suite native`.
+The native matrix also requires `native:phase:*` attribution rows so content
+runtime costs cannot be reported only as full CLI latency. Those rows identify
+whether cost is owned by schema compilation, file indexing, object validation
+and diagnostic construction, relation validation, fact-store ingest/indexing,
+incremental generation replacement, warm query execution, or JSON
+serialization.
 The current checked native artifacts are:
 
 - `benches/history/native-current.json`

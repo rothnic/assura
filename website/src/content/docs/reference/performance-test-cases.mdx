@@ -93,6 +93,22 @@ Current native row families:
 - `native:markdown-safe-fix-dry-run-cli`
 - `native:session-agent-context-cli`
 - `native:daemon-status-cli`
+- `native:phase:config-model-load`
+- `native:phase:schema-compile`
+- `native:phase:file-index`
+- `native:phase:object-load-validate`
+- `native:phase:edge-collect`
+- `native:phase:reference-validate`
+- `native:phase:repository-validate-total`
+- `native:phase:fact-ingest-load`
+- `native:phase:incremental-replace-generation`
+- `native:phase:warm-keyword-query`
+- `native:phase:factset-serialize-json`
+
+The `native:phase:*` rows are attribution rows. They separate configuration and
+model loading, schema compilation, file indexing, object validation, relation
+edge collection, reference validation, project-intelligence fact ingestion,
+incremental generation replacement, warm query latency, and JSON serialization.
 
 Refresh the native artifacts with:
 

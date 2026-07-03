@@ -589,3 +589,81 @@ the exact missing input.
   - `cargo run --quiet -- check --format json .` passed;
   - `git diff --check` passed;
   - `cargo xtask docs` passed.
+
+### 2026-07-03 - Subgoal 5 Native Attribution Rows
+
+- Added checked native attribution rows to `assura performance-report --suite
+  native`:
+  - content runtime attribution:
+    `native:phase:config-model-load`, `native:phase:schema-compile`,
+    `native:phase:file-index`, `native:phase:object-load-validate`,
+    `native:phase:edge-collect`, `native:phase:reference-validate`, and
+    `native:phase:repository-validate-total`;
+  - project-intelligence attribution:
+    `native:phase:fact-ingest-load`,
+    `native:phase:incremental-replace-generation`,
+    `native:phase:warm-keyword-query`, and
+    `native:phase:factset-serialize-json`.
+- `cargo xtask native-performance-no-regression` now requires those phase rows
+  for every native fixture, so a native report cannot pass with only full CLI
+  aggregate latency.
+- Regenerated checked native artifacts from clean source commit
+  `6b55a004ba7389eb8ad1690ef14b143c278dd2bf`:
+  - `benches/history/native-current.json`;
+  - `benches/history/native-history.jsonl`;
+  - `website/public/data/performance/native-current.json`;
+  - `website/public/data/performance/native-history.jsonl`.
+- Regenerated native report metadata:
+  - timestamp: `2026-07-03T20:48:21Z`;
+  - `source_worktree_dirty: false`;
+  - result matrix: 150 rows, 150 pass, 0 skipped, 0 failed;
+  - phase attribution rows: 66 rows.
+- Top measured native attribution costs:
+  - `native_large` `native:phase:fact-ingest-load`: 2,993.617 ms median;
+  - `native_large` `native:phase:incremental-replace-generation`:
+    2,733.031 ms median;
+  - `native_large` `native:phase:repository-validate-total`:
+    257.723 ms median;
+  - `native_large` `native:phase:object-load-validate`: 236.282 ms median;
+  - `native_large` `native:phase:file-index`: 15.539 ms median.
+- Subgoal 5 decision:
+  - current content runtime cost is not owned by schema compilation or relation
+    validation in the calibrated native matrix;
+  - the next high-impact optimization, if continued, should target
+    project-intelligence fact ingest/index loading and incremental generation
+    replacement before introducing any persistent store or cache dependency;
+  - LS-Lint no-slower remains green and was not relaxed.
+- Verification:
+  - `cargo fmt --check` passed;
+  - `cargo check --workspace --all-targets --all-features --quiet` passed;
+  - `cargo test -p xtask native_performance_gate --quiet` passed;
+  - `cargo run --quiet -- check --format json .` passed;
+  - `git diff --check` passed;
+  - `cargo xtask native-performance-no-regression benches/history/native-current.json`
+    passed;
+  - `cargo xtask performance-no-slower benches/history/current.json` passed;
+  - `cargo xtask target-state` passed.
+
+### 2026-07-03 - Final Review And Release Gate Closure
+
+- Independent review result:
+  - no blocking findings;
+  - reviewer confirmed the native gate requires the 6 fixture x 25 row-family
+    matrix, pass status, samples, expected-status metadata, and `--suite
+    native` report identity;
+  - reviewer confirmed checked native artifacts have 150 rows, 6 fixtures, 25
+    row families per fixture, 11 `native:phase:*` row families,
+    `source_worktree_dirty: false`, no failed or skipped rows, and matching
+    benches/website mirrors;
+  - reviewer found no contradiction between implementation, docs, and goal log
+    cost ownership;
+  - reviewer found no Subgoal 5/6 blockers around LS-Lint no-slower,
+    cold-vs-warm substitution, diagnostic reclassification, or local-only
+    Criterion evidence.
+- Residual non-blocking review note:
+  - `native_performance_failures` intentionally filters to
+    `fixture_cohort == "assura-native"`, so a hand-edited report with extra
+    non-native failing rows would be ignored; normal `--suite native`
+    generation does not produce those rows.
+- Final local release gate:
+  - `cargo test --workspace --all-targets --all-features` passed.

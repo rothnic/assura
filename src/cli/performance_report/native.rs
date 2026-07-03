@@ -7,6 +7,7 @@
 use super::assura_cli::{prepare_assura_full_cli, PreparedAssuraCli};
 use super::fixtures::materialize_fixture;
 use super::native_fixtures::native_scenarios;
+use super::native_phases::measure_native_phase_rows;
 use super::{
     row, MaterializedFixture, PerformanceEnvironment, PerformanceResultRow, RowMeasurement,
     ToolAvailability,
@@ -166,6 +167,15 @@ pub(super) fn measure_native_rows(
                 command,
             ));
         }
+        rows.extend(measure_native_phase_rows(
+            &fixture,
+            iterations,
+            timestamp,
+            commit_sha,
+            branch,
+            environment,
+            baseline_id,
+        ));
         let _ = std::fs::remove_dir_all(&fixture.root);
     }
     Ok((suite_status, rows))
