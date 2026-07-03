@@ -1,3 +1,0 @@
-{"file": ".trellis/spec/assura/index.md", "reason": "Quality bar for new validation constraints and CLI integration coverage."}
-{"file": ".trellis/spec/assura/config-notation.md", "reason": "Verify extension config and compiled-artifact behavior are covered."}
-{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Review that traceability gaps survive check, doctor, query, and docs layers."}
