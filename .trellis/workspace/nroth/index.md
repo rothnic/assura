@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 8
+- **Total Sessions**: 9
 - **Last Active**: 2026-07-02
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~282 | Active |
+| `journal-1.md` | ~316 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 9 | 2026-07-02 | Agent reference discovery PR review | `e3dedea`, `b63eb5a` | `codex/agent-ready-onboarding-backlog` |
 | 8 | 2026-07-02 | Agent guidance skill contracts | `27de33a` | `codex/agent-ready-onboarding-backlog` |
 | 7 | 2026-06-19 | Docs lifecycle rule first slice | `021fe10` | `codex/archive-docs-lifecycle-implementation` |
 | 6 | 2026-06-09 | Release README professionalization | `96c46a3` | `master` |

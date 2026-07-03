@@ -280,3 +280,37 @@ Completed child goal 4 of the agent-ready onboarding program. Added first-party 
 ### Next Steps
 
 - None - task complete
+
+
+## Session 9: Agent reference discovery PR review
+
+**Date**: 2026-07-02
+**Task**: Agent reference discovery PR review
+**Branch**: `codex/agent-ready-onboarding-backlog`
+
+### Summary
+
+Completed agent search/reference discovery, fixed the Windows context-pack fixture regression, verified PR #139 checks, and archived the active Trellis task.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `e3dedea` | (see git log) |
+| `b63eb5a` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
