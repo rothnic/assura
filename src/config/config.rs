@@ -32,11 +32,11 @@ pub use content::{
     ContentCodeSymbolConfig, ContentCollectionConfig, ContentModelConfig, ContentRelationConfig,
 };
 pub use extensions::{
-    CommandSurfaceCommand, CommandSurfaceContract, CommandSurfaceFlag, CustomConstraintConfig,
-    DocsLifecycleClaimPatternConfig, DocsLifecycleConfig, ExtensionConfig, ManifestSemanticsConfig,
-    ManifestSemanticsManifestConfig, ModuleTopologyConfig, ModuleTopologyModuleConfig,
-    RelationshipConstraintConfig, RelationshipProviderConfig, ReleaseArtifactConfig,
-    ReleaseContractConfig, RepositoryReferenceConfig, SupportMatrixConfig,
+    AgentGuidanceConfig, CommandSurfaceCommand, CommandSurfaceContract, CommandSurfaceFlag,
+    CustomConstraintConfig, DocsLifecycleClaimPatternConfig, DocsLifecycleConfig, ExtensionConfig,
+    ManifestSemanticsConfig, ManifestSemanticsManifestConfig, ModuleTopologyConfig,
+    ModuleTopologyModuleConfig, RelationshipConstraintConfig, RelationshipProviderConfig,
+    ReleaseArtifactConfig, ReleaseContractConfig, RepositoryReferenceConfig, SupportMatrixConfig,
     SupportMatrixDocsClaimSourceConfig, SupportMatrixEntryConfig, TestRelationshipConfig,
     TestRelationshipFixtureFamilyConfig, TestRelationshipIgnoredTestConfig,
     TestRelationshipSourceConfig,

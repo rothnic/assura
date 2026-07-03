@@ -3,7 +3,7 @@ use crate::config::config::{
     ManifestSemanticsConfig, ManifestSemanticsManifestConfig, ModuleTopologyConfig,
     RelationshipConstraintConfig, RelationshipProviderConfig, ReleaseArtifactConfig,
     ReleaseContractConfig, RepositoryReferenceConfig, SupportMatrixConfig,
-    SupportMatrixEntryConfig, SupportMatrixDocsClaimSourceConfig, TestRelationshipConfig,
+    SupportMatrixDocsClaimSourceConfig, SupportMatrixEntryConfig, TestRelationshipConfig,
     TestRelationshipFixtureFamilyConfig, TestRelationshipIgnoredTestConfig,
     TestRelationshipSourceConfig,
 };
@@ -19,6 +19,8 @@ struct PortableExtensionConfig {
     module_topologies: Vec<PortableModuleTopologyConfig>,
     docs_lifecycles: Vec<PortableDocsLifecycleConfig>,
     repository_references: Vec<RepositoryReferenceConfig>,
+    #[serde(default)]
+    agent_guidance: Vec<PortableAgentGuidanceConfig>,
     relationships: Vec<PortableRelationshipConstraintConfig>,
 }
 
@@ -157,6 +159,7 @@ impl From<ExtensionConfig> for PortableExtensionConfig {
             module_topologies: config.module_topologies.into_iter().map(Into::into).collect(),
             docs_lifecycles: config.docs_lifecycles.into_iter().map(Into::into).collect(),
             repository_references: config.repository_references,
+            agent_guidance: config.agent_guidance.into_iter().map(Into::into).collect(),
             relationships: config.relationships.into_iter().map(Into::into).collect(),
         }
     }
@@ -189,6 +192,7 @@ impl From<PortableExtensionConfig> for ExtensionConfig {
             module_topologies: config.module_topologies.into_iter().map(Into::into).collect(),
             docs_lifecycles: config.docs_lifecycles.into_iter().map(Into::into).collect(),
             repository_references: config.repository_references,
+            agent_guidance: config.agent_guidance.into_iter().map(Into::into).collect(),
             relationships: config.relationships.into_iter().map(Into::into).collect(),
         }
     }

@@ -231,6 +231,7 @@ struct PortableConfig {
     exclude: Vec<String>,
 }
 
+include!("compiled_artifact_agent_guidance.rs");
 include!("compiled_artifact_extensions.rs");
 include!("compiled_artifact_module_topology.rs");
 include!("compiled_artifact_docs_lifecycle.rs");

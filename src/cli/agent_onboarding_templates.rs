@@ -59,6 +59,31 @@ impl GeneratedFile {
 fn agent_ready_config() -> &'static str {
     r#"version: "2.0"
 
+extensions:
+  agent_guidance:
+    - id: agent_project_guidance
+      severity: low
+      agents_path: AGENTS.md
+      skill_paths:
+        - ".agents/skills/*/SKILL.md"
+      required_agents_sections:
+        - Operating Rules
+        - Process Docs vs Skills
+        - Skills
+        - Anchors
+      required_skill_frontmatter:
+        - name
+        - description
+        - applies_when
+      required_skill_sections:
+        - Workflow
+        - Read as needed
+        - Outputs
+        - Guardrails
+      skill_index_section: Skills
+      max_agents_lines: 160
+      max_skill_lines: 120
+
 rules:
   "@assura-skill-dir":
     SKILL.md: exists:1
@@ -140,12 +165,30 @@ fn agents_md() -> &'static str {
 
 Assura has installed a broad agent-ready baseline for this repository.
 
+## Operating Rules
+
 Before adding project-specific conventions, read
 `.assura/onboarding/agent-next.md` and ask the user the remaining
 specialization questions. Do not invent language, layout, naming, traceability,
 or domain conventions.
 
 Use `assura check --format agent --warn .` for advisory feedback while working.
+
+## Process Docs vs Skills
+
+Use `docs/process/` for durable process documentation and use project-local
+skills for repeatable agent workflows. Keep skill entrypoints concise.
+
+## Skills
+
+- [Assura Project Maintenance](.agents/skills/assura-project-maintenance/SKILL.md):
+  use when maintaining the broad Assura baseline, onboarding packet, or
+  specialization handoff.
+
+## Anchors
+
+Use these section headings as stable anchors for agent routing:
+Operating Rules, Process Docs vs Skills, Skills, Anchors.
 "#
 }
 
@@ -153,12 +196,32 @@ fn project_maintenance_skill() -> &'static str {
     r#"---
 name: assura-project-maintenance
 description: Maintain the project-local Assura baseline and onboarding packet.
+applies_when: Maintaining the Assura baseline, onboarding packet, or specialization handoff.
 ---
 
 # Assura Project Maintenance
 
+## Workflow
+
 Read `.assura/onboarding/agent-next.md` before specializing this repository.
 Use `assura check --format agent --warn .` for advisory feedback while working.
+
+## Read as needed
+
+- `references/assura-onboarding.md`
+- `.assura/onboarding/agent-next.md`
+
+## Outputs
+
+- Updated Assura baseline files or a concise explanation that no baseline
+  update was needed.
+- Clear remaining specialization questions for the user.
+
+## Guardrails
+
+- Do not invent project conventions before the user answers specialization
+  questions.
+- Keep longer examples and runbooks in `references/` or `docs/process/`.
 "#
 }
 
@@ -179,11 +242,53 @@ fn learnings_readme() -> &'static str {
 }
 
 fn agents_example() -> &'static str {
-    "# Agent Instructions Example\n\nReplace with project-specific guidance after user answers.\n"
+    r#"# Agent Instructions Example
+
+## Operating Rules
+
+Replace with project-specific guidance after user answers.
+
+## Process Docs vs Skills
+
+Keep durable process docs in `docs/process/` and executable agent workflows in
+project-local skills.
+
+## Skills
+
+- [Example Skill](../../.agents/skills/example-skill/SKILL.md): use for a
+  repeatable project-local workflow.
+
+## Anchors
+
+Keep these headings stable for agent routing.
+"#
 }
 
 fn skill_example() -> &'static str {
-    "# Skill Example\n\nKeep SKILL.md concise and put detailed references in subdirectories.\n"
+    r#"---
+name: example-skill
+description: Briefly describe the repeatable project-local workflow.
+applies_when: Use when the project-local workflow is needed.
+---
+
+# Skill Example
+
+## Workflow
+
+Keep SKILL.md concise and put detailed references in subdirectories.
+
+## Read as needed
+
+- `references/runbook.md`
+
+## Outputs
+
+- Name the concrete artifact or status this skill should produce.
+
+## Guardrails
+
+- Move long examples into `references/` or `docs/process/`.
+"#
 }
 
 fn onboarding_summary(detected: &DetectedSection) -> String {

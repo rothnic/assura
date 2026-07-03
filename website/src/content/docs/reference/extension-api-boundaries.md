@@ -31,6 +31,7 @@ Current config families under `extensions.*` are local and deterministic:
 - `extensions.module_topologies`
 - `extensions.docs_lifecycles`
 - `extensions.repository_references`
+- `extensions.agent_guidance`
 - `extensions.relationships`
 
 These policies parse configured paths, surfaces, expected values, and evidence

@@ -213,6 +213,9 @@ fn corrective_context_for_rule(rule: &str) -> &'static str {
     if rule.starts_with("docs_lifecycle:") {
         return "Add lifecycle metadata, declare current evidence for the claim, add an explicit historical exception, or update extensions.docs_lifecycles when docs policy changed.";
     }
+    if rule.starts_with("agent_guidance:") {
+        return "Update AGENTS.md, project-local SKILL.md frontmatter/sections, skill index links, or extensions.agent_guidance when the guidance contract changed.";
+    }
     if rule.starts_with("relationship:") {
         return "Create one of the expected counterpart/provider artifacts named in the relationship message, or update the declaring structure entry in .assura/config.yml.";
     }

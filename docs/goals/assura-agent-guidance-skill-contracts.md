@@ -2,7 +2,7 @@
 id: goal-assura-agent-guidance-skill-contracts
 type: goal
 title: Assura agent guidance and skill contracts
-status: planned
+status: completed
 created: 2026-07-02
 owners:
   - assura-maintainers
@@ -66,3 +66,10 @@ git diff --check
 Block if agents can enter with stale or unlinkable guidance, if the contract
 duplicates long workflow docs into `SKILL.md`, or if draft-mode checks are too
 strict for normal onboarding.
+
+## Progress Log
+
+| Date | Update | Evidence |
+| --- | --- | --- |
+| 2026-07-02 | Completed child goal 4. Added first-party `extensions.agent_guidance` checks for required `AGENTS.md` sections, duplicate heading anchors, project-local skill index links, required `SKILL.md` frontmatter and sections, and concise guidance entrypoints. The generated agent-ready baseline now enables the checks with advisory defaults, public docs show the expected guidance shape, and Assura self-policy tracks the new config surface plus compiled artifact coverage. | `src/cli/check/agent_guidance.rs`; `src/cli/check/agent_guidance/`; `src/config/config/extensions/agent_guidance.rs`; `src/cli/agent_onboarding_templates.rs`; `tests/agents_md.rs`; `tests/skill_contract.rs`; `crates/assura-check-cli/tests/compiled_agent_guidance_cli.rs`; independent review `McClintock`; `cargo fmt --check`; `cargo test agents_md --quiet`; `cargo test skill_contract --quiet`; `cargo test -p assura-check-cli --test compiled_agent_guidance_cli --quiet`; `cargo run --quiet -- check --format json .`; `cargo xtask target-state`; `cargo xtask docs`; `cargo xtask evidence`; `git diff --check`. |
+| 2026-07-02 | Revalidated and started child goal 4. Existing self-check and generated onboarding contracts cover file/folder shape for `AGENTS.md` and `.agents/skills/*`, but do not yet enforce semantic AGENTS/SKILL routing contracts such as required sections, skill frontmatter, skill index links, or progressive-disclosure guidance. | `.trellis/tasks/07-02-agent-guidance-skill-contracts/prd.md`; `.assura/config.yml`; `tests/project_intelligence_onboarding.rs`; `cargo run --quiet -- check --format json .` reported 0 violations across 1421 files. |

@@ -192,6 +192,7 @@ SDK, or semver-stable Rust library API.
 | `config:extensions.module_topologies` | Experimental first-party | Module topology checks prove configured Rust module-family ownership, roots, public export classification, and internal visibility boundaries. |
 | `config:extensions.docs_lifecycles` | Experimental first-party | Docs lifecycle checks prove configured active/historical docs, frontmatter status, stale-claim evidence, and historical exceptions. |
 | `config:extensions.repository_references` | Experimental first-party | Repository-reference check tests prove opt-in source/comment/docstring diagnostics for missing targets, missing Markdown anchors, and invalid line anchors. |
+| `config:extensions.agent_guidance` | Experimental first-party | Agent guidance contract tests prove opt-in `AGENTS.md` and project-local `SKILL.md` checks for required sections, frontmatter fields, skill index links, and concise entrypoints. |
 | `config:extensions.relationships` | Internal generated first-party | Structure notation tests prove capture relationships are normalized from `structure` captures, `exists:1`, `needs`, and `provides`. |
 | Public plugin API or SDK | Roadmap only | No current command, package, Rust module, or docs surface provides remote plugin loading, shell-executed validators, a plugin marketplace, TypeScript plugin APIs, or semver-stable Rust APIs. |
 
@@ -234,6 +235,8 @@ extensions:
         - surface: "config:markdown.lint_common"
           status: experimental
         - surface: "config:extensions.repository_references"
+          status: experimental
+        - surface: "config:extensions.agent_guidance"
           status: experimental
         - surface: "package:assura"
           status: supported

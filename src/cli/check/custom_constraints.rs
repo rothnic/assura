@@ -34,6 +34,7 @@ impl StructureChecker {
             && extensions.test_relationships.is_empty()
             && extensions.module_topologies.is_empty()
             && extensions.docs_lifecycles.is_empty()
+            && extensions.agent_guidance.is_empty()
         {
             return Ok(());
         }
@@ -59,6 +60,9 @@ impl StructureChecker {
         }
         if !extensions.docs_lifecycles.is_empty() {
             self.validate_docs_lifecycles(&extensions.docs_lifecycles, checked_path, report)?;
+        }
+        if !extensions.agent_guidance.is_empty() {
+            self.validate_agent_guidance(&extensions.agent_guidance, checked_path, report)?;
         }
 
         if extensions.custom_constraints.is_empty() && extensions.relationships.is_empty() {

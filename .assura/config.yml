@@ -201,6 +201,18 @@ extensions:
           required_tests:
             - tests/custom_constraints_tests.rs
             - crates/assura-check-cli/tests/compiled_manifest_semantics_cli.rs
+        - source: src/cli/check/agent_guidance.rs
+          required_tests:
+            - tests/agents_md.rs
+            - tests/skill_contract.rs
+            - crates/assura-check-cli/tests/compiled_agent_guidance_cli.rs
+        - source: src/cli/check/agent_guidance/*.rs
+          required_tests:
+            - tests/agents_md.rs
+            - tests/skill_contract.rs
+        - source: src/cli/check/compiled_artifact_agent_guidance.rs
+          required_tests:
+            - crates/assura-check-cli/tests/compiled_agent_guidance_cli.rs
       allowed_ignore_reasons:
         - manual_performance_audit
       ignored_tests:
@@ -529,6 +541,8 @@ extensions:
         - surface: "config:extensions.docs_lifecycles"
           status: experimental
         - surface: "config:extensions.repository_references"
+          status: experimental
+        - surface: "config:extensions.agent_guidance"
           status: experimental
         - surface: "config:extensions.relationships"
           status: internal

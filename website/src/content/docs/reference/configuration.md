@@ -290,6 +290,44 @@ Markdown heading anchors, and invalid line anchors as `repository_reference_*`
 rules. Ambiguous lower-confidence references remain available as graph context
 through `assura content references`.
 
+## Agent Guidance
+
+Opt into experimental agent guidance diagnostics with
+`extensions.agent_guidance`:
+
+```yaml
+extensions:
+  agent_guidance:
+    - id: agent_project_guidance
+      severity: low
+      agents_path: AGENTS.md
+      skill_paths:
+        - ".agents/skills/*/SKILL.md"
+      required_agents_sections:
+        - Operating Rules
+        - Process Docs vs Skills
+        - Skills
+        - Anchors
+      required_skill_frontmatter:
+        - name
+        - description
+        - applies_when
+      required_skill_sections:
+        - Workflow
+        - Read as needed
+        - Outputs
+        - Guardrails
+      skill_index_section: Skills
+      max_agents_lines: 160
+      max_skill_lines: 120
+```
+
+This policy checks local guidance shape only. It reports stale or missing
+`AGENTS.md` sections, duplicate heading anchors, missing project-local skill
+links, missing `SKILL.md` frontmatter fields, missing required skill sections,
+and oversized guidance entrypoints. It does not install a global skill
+registry or create host-agent-specific validation logic.
+
 ## First-Party Extension Policies
 
 `extensions.*` entries are first-party config policies executed by
@@ -306,6 +344,7 @@ cross-file policy does not fit ordinary `structure` notation.
 | `extensions.module_topologies` | Experimental first-party | Rust module-family ownership, roots, export classification, and internal visibility. |
 | `extensions.docs_lifecycles` | Experimental first-party | Documentation lifecycle, frontmatter status, historical exceptions, and deterministic claim evidence. |
 | `extensions.repository_references` | Experimental first-party | Locally provable repository-reference diagnostics. |
+| `extensions.agent_guidance` | Experimental first-party | `AGENTS.md` and project-local `SKILL.md` routing contracts. |
 | `extensions.relationships` | Internal generated first-party | Relationships normalized from `structure` captures, `exists:1`, `needs`, and `provides`. |
 
 Assura does not currently support remote plugin loading, shell-executed

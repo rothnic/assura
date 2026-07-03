@@ -1,5 +1,6 @@
 //! Structure-first project validation used by the public `assura check` command.
 
+mod agent_guidance;
 mod artifact_check;
 #[cfg(feature = "yaml-config")]
 mod batch;
