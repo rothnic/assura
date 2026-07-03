@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/assura/index.md", "reason": "Canonical Assura validation expectations."}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Cross-check docs, support policy, website, and test evidence."}
+{"file": "xtask/src/main.rs", "reason": "Target-state website markers and closure checks."}
+{"file": "docs/data/public-roadmap.json", "reason": "Public roadmap status must not contradict parent closure."}

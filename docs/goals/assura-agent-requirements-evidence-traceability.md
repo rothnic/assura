@@ -2,7 +2,7 @@
 id: goal-assura-agent-requirements-evidence-traceability
 type: goal
 title: Assura agent requirements evidence traceability
-status: planned
+status: completed
 created: 2026-07-02
 owners:
   - assura-maintainers
@@ -74,12 +74,6 @@ first, or if evidence/source references bypass repository reference validation.
 
 ## Progress Log
 
-- 2026-07-03: Revalidated against live Project Intelligence and agent-ready
-  onboarding state. Implemented a reusable `extensions.requirements_traceability`
-  policy backed by content-runtime collections and relations, with mixed-format
-  fixtures for Markdown frontmatter, YAML, JSON, and JSONL records.
-- 2026-07-03: Added document-project onboarding generation for generic claims,
-  source-document evidence links, high-priority requirement coverage, and
-  finding owner/status metadata. Added agent-query, doctor, report, support
-  matrix, and website/docs coverage without adding domain-specific proposal or
-  SBIR scoring behavior.
+| Date | Update | Evidence |
+| --- | --- | --- |
+| 2026-07-03 | Completed reusable requirements/evidence traceability. Added `extensions.requirements_traceability` over content-runtime collections and relations, document-project onboarding generation for generic claims and source-document evidence links, agent-query/doctor/report visibility, support matrix rows, and website/docs coverage without proposal/SBIR scoring behavior. | `.trellis/tasks/archive/2026-07/07-03-agent-requirements-evidence-traceability/prd.md`; `src/cli/check/requirements_traceability.rs`; `src/config/config/extensions/requirements_traceability.rs`; `src/config/config/validation/requirements_traceability.rs`; `src/cli/check/compiled_artifact_requirements_traceability.rs`; `tests/requirements_traceability.rs`; `tests/content_query_cli.rs`; `tests/content_runtime_references.rs`; `tests/project_intelligence_onboarding.rs`; `tests/content_runtime_dx_docs.rs`; `tests/policy_language_completeness_tests.rs`; `docs/support-policy.md`; `docs/compatibility-and-surface.md`; `website/src/content/docs/reference/configuration.md`; `cargo fmt --check`; `cargo check --workspace --all-targets --all-features --quiet`; `cargo test --test requirements_traceability --quiet`; `cargo test --test content_query_cli --quiet`; `cargo test --test content_runtime_references --quiet`; `cargo test --test project_intelligence_onboarding --quiet`; `cargo test --test content_runtime_dx_docs --quiet`; `cargo test --test policy_language_completeness_tests --quiet`; `cargo run --quiet -- check --format json .`; `cargo xtask target-state`; `cargo xtask docs`; `cargo xtask evidence`; `git diff --check`. |

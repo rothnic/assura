@@ -36,26 +36,26 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 22 | Beta Code-Agnostic Capabilities | Completed | PR #112 merged; `v0.2.0` tag and GitHub release published with live release evidence |
 | 23 | Post-Beta Capabilities | Completed | `v0.3.0` beta increment published and live-verified with self-config hardening, supported document graph, true daemon mode, Markdown engine/safe fixes, performance floor, agent installers, VS Code support, extension API clarity, LS-Lint reassessment, and release hardening |
 | 24 | Performance Polish | Planned / Separate Lane | Planning task `.trellis/tasks/07-02-native-performance-roadmap-and-goal-text`; kickoff goal `docs/goals/assura-performance-polish-program.md` |
-| 25 | Agent-Ready Project Onboarding | Active / P0 Adoption | Dogfood feedback backlog captured in `docs/goals/assura-agent-ready-project-onboarding-program.md`; highest general adoption priority for new agentic repos |
+| 25 | Agent-Ready Project Onboarding | Completed | Parent program and all twelve child goals completed locally on `codex/agent-ready-onboarding-backlog`; final audit in `docs/analysis/2026-07-03-agent-ready-onboarding-final-audit.md` |
 
 ## Active Roadmap Iteration
 
-Agent-Ready Project Onboarding is the next roadmap iteration after the
-completed `v0.3.0` beta increment. It should make Assura the default scaffold,
-doctor, and feedback loop for agent-ready repositories, starting with a broad
-first-run baseline and then asking only the specialization questions needed to
-avoid invented project conventions.
+Agent-Ready Project Onboarding completed the adoption iteration after the
+`v0.3.0` beta increment. It made Assura the default scaffold, doctor, and
+feedback loop for agent-ready repositories, starting with a broad first-run
+baseline and then asking only the specialization questions needed to avoid
+invented project conventions.
 
-Owning task:
-`.trellis/tasks/07-02-agent-onboarding-bootstrap-goal-refinement`.
+Completion audit:
+`docs/analysis/2026-07-03-agent-ready-onboarding-final-audit.md`.
 
 Current branch:
 `codex/agent-ready-onboarding-backlog`.
 
 Current recommended goal:
-`docs/goals/assura-agent-ready-project-onboarding-program.md`.
+`docs/goals/assura-performance-polish-program.md`.
 
-Separate performance lane:
+Performance lane:
 `docs/goals/assura-performance-polish-program.md`.
 
 Completed support-hardening details from the prior beta increment remain
@@ -90,16 +90,13 @@ that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
 ## Recommended Next Action
 
-Kick off `docs/goals/assura-agent-ready-project-onboarding-program.md` when the
-next slice is about adoption, new-project setup, agent scaffolding,
-discoverability, or false green checks. Kick off
+Agent-ready onboarding is complete for this increment. Kick off
 `docs/goals/assura-performance-polish-program.md` when the next slice is about
 native performance evidence, no-slower gates, or CLI-floor optimization.
 
-Priority rule: the agent-ready onboarding P0/P1 backlog outranks lower-level
-CLI-floor optimization because it fixes the highest-leverage adoption failure:
-agents can currently make Assura green without knowing what was not configured,
-not modeled, not indexed, not referenced, or not enforced.
+Priority rule: performance work remains separate from the completed
+agent-ready onboarding program. Reopen onboarding only for follow-up product
+decisions, regressions, or post-merge review findings.
 
 ## Roadmap Rules
 

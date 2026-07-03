@@ -1,0 +1,5 @@
+{"file": "docs/goals/assura-agent-ready-project-onboarding-program.md", "reason": "Parent program requirements, definition of done, review criteria, and progress log."}
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "Current roadmap state and performance-lane separation."}
+{"file": "docs/support-policy.md", "reason": "Current support and future-surface claims for onboarding and agent integrations."}
+{"file": "docs/compatibility-and-surface.md", "reason": "Public command/config surface evidence for implemented onboarding surfaces."}
+{"file": "website/src/content/docs/guides/agent-ready-onboarding.md", "reason": "Website onboarding proof and current command truth."}

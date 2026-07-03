@@ -203,11 +203,9 @@ assura agent onboard . --content-template proposal-sbir --format json
 The proposal/SBIR pack composes the document-project baseline with proposal
 requirements, evidence, claims, scorecards, review findings, package manifests,
 submission checklists, traceability checks, and a project-local computed check
-for readiness. It is not part of the core agent-project or generic
-document-project baselines.
-Other domain packs remain roadmap behavior, and proposal/SBIR scoring is not
-part of the core agent-project baseline.
-The proposal/SBIR pack is not part of the core agent-project baseline.
+for readiness. The proposal/SBIR pack is not part of the core agent-project baseline
+or the generic document-project baseline. Other domain packs remain roadmap
+behavior.
 
 ## Lifecycle Profiles
 
