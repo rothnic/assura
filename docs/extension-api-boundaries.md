@@ -41,6 +41,7 @@ untrusted code from a repository.
 | `extensions.docs_lifecycles` | Experimental first-party | Documentation lifecycle, frontmatter status, historical exception, and deterministic claim-evidence checks. Not broad natural-language stale-prose detection. |
 | `extensions.repository_references` | Experimental first-party | Opt-in diagnostics for locally provable repository-reference target, heading-anchor, and line-anchor failures from supported source references and configured Markdown frontmatter fields. Lower-confidence candidates remain graph context, not validation truth. |
 | `extensions.agent_guidance` | Experimental first-party | Opt-in `AGENTS.md` and project-local `SKILL.md` use-case routing, progressive-disclosure references, SKILL doc-routing tables, supporting-reference checks, and concise-entrypoint remediation. Not a global skill registry or host-agent-specific validation engine. |
+| `extensions.requirements_traceability` | Experimental first-party | Content-runtime-backed checks for requirement coverage, claim-to-evidence links, evidence-to-source-document links, and finding owner/status metadata. Not domain-specific scoring, remote evidence custody, or lightweight compiled-check enforcement. |
 | `extensions.relationships` | Internal generated policy | Normalized capture relationships produced from concise `structure` notation. Users should author captures, `exists:1`, `needs`, and `provides` instead of hand-writing this family. |
 
 ## Supported Local Contracts

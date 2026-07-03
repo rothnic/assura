@@ -21,6 +21,8 @@ struct PortableExtensionConfig {
     repository_references: Vec<RepositoryReferenceConfig>,
     #[serde(default)]
     agent_guidance: Vec<PortableAgentGuidanceConfig>,
+    #[serde(default)]
+    requirements_traceability: Vec<PortableRequirementsTraceabilityConfig>,
     relationships: Vec<PortableRelationshipConstraintConfig>,
 }
 
@@ -160,6 +162,11 @@ impl From<ExtensionConfig> for PortableExtensionConfig {
             docs_lifecycles: config.docs_lifecycles.into_iter().map(Into::into).collect(),
             repository_references: config.repository_references,
             agent_guidance: config.agent_guidance.into_iter().map(Into::into).collect(),
+            requirements_traceability: config
+                .requirements_traceability
+                .into_iter()
+                .map(Into::into)
+                .collect(),
             relationships: config.relationships.into_iter().map(Into::into).collect(),
         }
     }
@@ -193,6 +200,11 @@ impl From<PortableExtensionConfig> for ExtensionConfig {
             docs_lifecycles: config.docs_lifecycles.into_iter().map(Into::into).collect(),
             repository_references: config.repository_references,
             agent_guidance: config.agent_guidance.into_iter().map(Into::into).collect(),
+            requirements_traceability: config
+                .requirements_traceability
+                .into_iter()
+                .map(Into::into)
+                .collect(),
             relationships: config.relationships.into_iter().map(Into::into).collect(),
         }
     }

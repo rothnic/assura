@@ -3,9 +3,11 @@
 mod agent_guidance;
 mod builders;
 mod repository_references;
+mod requirements_traceability;
 
 pub use agent_guidance::AgentGuidanceConfig;
 pub use repository_references::RepositoryReferenceConfig;
+pub use requirements_traceability::RequirementsTraceabilityConfig;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -42,6 +44,10 @@ pub struct ExtensionConfig {
     /// `assura check`.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub agent_guidance: Vec<AgentGuidanceConfig>,
+    /// Configured requirements, claims, evidence, and findings traceability
+    /// policies executed by `assura check`.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub requirements_traceability: Vec<RequirementsTraceabilityConfig>,
     /// Internal relationship constraints normalized from structure notation.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub relationships: Vec<RelationshipConstraintConfig>,

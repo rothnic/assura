@@ -52,9 +52,13 @@ domain-specific proposal pack.
 
 ```bash
 cargo fmt --check
-cargo test content_runtime --quiet
+cargo check --workspace --all-targets --all-features --quiet
+cargo test --test requirements_traceability --quiet
+cargo test --test content_query_cli --quiet
 cargo test --test content_runtime_references --quiet
-cargo test --test project_intelligence_cli --quiet
+cargo test --test project_intelligence_onboarding --quiet
+cargo test --test content_runtime_dx_docs --quiet
+cargo test --test policy_language_completeness_tests --quiet
 cargo run --quiet -- check --format json .
 cargo xtask target-state
 cargo xtask docs
@@ -67,3 +71,15 @@ git diff --check
 Block if traceability only works for one domain, if gaps are hidden behind a
 green check, if relation queries require knowing exact source or target IDs
 first, or if evidence/source references bypass repository reference validation.
+
+## Progress Log
+
+- 2026-07-03: Revalidated against live Project Intelligence and agent-ready
+  onboarding state. Implemented a reusable `extensions.requirements_traceability`
+  policy backed by content-runtime collections and relations, with mixed-format
+  fixtures for Markdown frontmatter, YAML, JSON, and JSONL records.
+- 2026-07-03: Added document-project onboarding generation for generic claims,
+  source-document evidence links, high-priority requirement coverage, and
+  finding owner/status metadata. Added agent-query, doctor, report, support
+  matrix, and website/docs coverage without adding domain-specific proposal or
+  SBIR scoring behavior.

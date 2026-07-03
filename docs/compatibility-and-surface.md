@@ -99,6 +99,7 @@ publishes and verifies a `.sha256` file next to every archive.
 | --- | --- | --- |
 | `config:markdown.lint_common` | Experimental | Common-lint CLI tests prove stable findings for heading increments, heading marker spacing, duplicate headings, multiple blank lines, suppressions, and severity overrides. |
 | `config:extensions.repository_references` | Experimental | Repository-reference check tests prove opt-in source/comment/docstring diagnostics for missing targets, missing Markdown anchors, and invalid line anchors. |
+| `config:extensions.requirements_traceability` | Experimental full-CLI policy | Requirements traceability tests prove content-runtime-backed diagnostics for high-priority requirement coverage, claim-to-evidence links, evidence-to-source-document links, finding owner/status metadata, and agent-query gap exposure. Lightweight compiled check artifacts preserve config shape but do not enforce this content-runtime policy. |
 | `project-intelligence:repository-reference-facts` | Supported | Repository-reference graph tests prove Markdown, source-comment, docstring, and string-literal path candidates become bounded `RepositoryReference` edges with confidence labels. Object-mode context-pack tests prove those edges are available as bounded inbound/outbound document-graph context. |
 
 ## Project Intelligence Layout Compatibility

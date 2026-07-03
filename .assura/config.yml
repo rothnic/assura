@@ -213,6 +213,15 @@ extensions:
         - source: src/cli/check/compiled_artifact_agent_guidance.rs
           required_tests:
             - crates/assura-check-cli/tests/compiled_agent_guidance_cli.rs
+        - source: src/cli/check/requirements_traceability.rs
+          required_tests:
+            - tests/requirements_traceability.rs
+        - source: src/config/config/validation/requirements_traceability.rs
+          required_tests:
+            - tests/requirements_traceability.rs
+        - source: src/cli/check/compiled_artifact_requirements_traceability.rs
+          required_tests:
+            - crates/assura-check-cli/tests/compiled_requirements_traceability_cli.rs
       allowed_ignore_reasons:
         - manual_performance_audit
       ignored_tests:
@@ -543,6 +552,8 @@ extensions:
         - surface: "config:extensions.repository_references"
           status: experimental
         - surface: "config:extensions.agent_guidance"
+          status: experimental
+        - surface: "config:extensions.requirements_traceability"
           status: experimental
         - surface: "config:extensions.relationships"
           status: internal

@@ -342,9 +342,10 @@ fn is_source_reference_file(path: &Path) -> bool {
 }
 
 fn ingest_safe_fix_structure_report(ingestor: &mut FactIngestor, mut report: StructureCheckReport) {
-    report
-        .violations
-        .retain(|violation| violation.rule == "markdown_trailing_spaces");
+    report.violations.retain(|violation| {
+        violation.rule == "markdown_trailing_spaces"
+            || violation.rule.starts_with("requirements_traceability:")
+    });
     if !report.violations.is_empty() {
         ingestor.ingest_check_report(&report);
     }

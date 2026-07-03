@@ -36,10 +36,10 @@ pub use extensions::{
     CustomConstraintConfig, DocsLifecycleClaimPatternConfig, DocsLifecycleConfig, ExtensionConfig,
     ManifestSemanticsConfig, ManifestSemanticsManifestConfig, ModuleTopologyConfig,
     ModuleTopologyModuleConfig, RelationshipConstraintConfig, RelationshipProviderConfig,
-    ReleaseArtifactConfig, ReleaseContractConfig, RepositoryReferenceConfig, SupportMatrixConfig,
-    SupportMatrixDocsClaimSourceConfig, SupportMatrixEntryConfig, TestRelationshipConfig,
-    TestRelationshipFixtureFamilyConfig, TestRelationshipIgnoredTestConfig,
-    TestRelationshipSourceConfig,
+    ReleaseArtifactConfig, ReleaseContractConfig, RepositoryReferenceConfig,
+    RequirementsTraceabilityConfig, SupportMatrixConfig, SupportMatrixDocsClaimSourceConfig,
+    SupportMatrixEntryConfig, TestRelationshipConfig, TestRelationshipFixtureFamilyConfig,
+    TestRelationshipIgnoredTestConfig, TestRelationshipSourceConfig,
 };
 pub use quality::{QualityConfig, QualityScopeConfig};
 #[cfg(feature = "yaml-config")]

@@ -48,6 +48,7 @@ pub(super) fn compile_lslint_fast_scopes(config: &Config) -> Option<Vec<FastScop
             || !extensions.docs_lifecycles.is_empty()
             || !extensions.repository_references.is_empty()
             || !extensions.agent_guidance.is_empty()
+            || !extensions.requirements_traceability.is_empty()
             || !extensions.relationships.is_empty()
     }) {
         return None;

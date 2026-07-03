@@ -39,6 +39,7 @@ pub(super) fn root_structure() -> &'static str {
 pub(super) fn docs_structure() -> &'static str {
     r#"    requirements/: exists:1
     evidence/: exists:1
+    claims/: exists:1
     decisions/: exists:1
     drafts/: exists:1
     final/: exists:1
@@ -103,6 +104,9 @@ const DOCUMENT_PROJECT_RELATIONS: &str = r#"  topics.related_requirements:
     many: true
   final_docs.evidence:
     target: evidence
+    many: true
+  evidence.source_documents:
+    target: source_documents
     many: true
   source_documents.related_requirements:
     target: requirements

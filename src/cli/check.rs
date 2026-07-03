@@ -53,6 +53,8 @@ mod profiling;
 mod release_contract;
 mod report;
 mod repository_references;
+#[cfg(feature = "full-cli")]
+mod requirements_traceability;
 mod rule_plan;
 mod rules;
 #[cfg(test)]

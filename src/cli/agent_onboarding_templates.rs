@@ -70,6 +70,7 @@ impl GeneratedFile {
 
 fn agent_ready_config(content_template: AgentContentTemplate) -> String {
     let repository_references = content::repository_reference_config(content_template);
+    let requirements_traceability = content::requirements_traceability_config(content_template);
     let content_config = content::content_config(content_template);
     let root_required_dirs = content::root_required_dirs(content_template);
     let root_structure = content::root_structure(content_template);
@@ -116,6 +117,7 @@ extensions:
       max_agents_lines: 160
       max_skill_lines: 120
 {repository_references}
+{requirements_traceability}
 {content_config}
 
 rules:

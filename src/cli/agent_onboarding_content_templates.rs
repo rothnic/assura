@@ -19,6 +19,40 @@ pub(super) fn repository_reference_config(template: AgentContentTemplate) -> &'s
     }
 }
 
+pub(super) fn requirements_traceability_config(template: AgentContentTemplate) -> &'static str {
+    if matches!(template, AgentContentTemplate::DocumentProject) {
+        r#"  requirements_traceability:
+    - id: document_project_traceability
+      severity: high
+      requirements_collection: requirements
+      priority_field: priority
+      high_priority_values:
+        - high
+        - critical
+      coverage_collections:
+        - evidence
+        - docs
+        - drafts
+        - final_docs
+        - claims
+      claim_collections:
+        - claims
+      evidence_collections:
+        - evidence
+      source_document_collections:
+        - source_documents
+      finding_collections:
+        - findings
+      owner_fields:
+        - owner
+      status_fields:
+        - status
+"#
+    } else {
+        ""
+    }
+}
+
 pub(super) fn content_config(template: AgentContentTemplate) -> String {
     match template {
         AgentContentTemplate::None => String::new(),
@@ -82,6 +116,10 @@ fn agent_project_content_files() -> Vec<GeneratedFile> {
             evidence_agent_content_baseline(),
         ),
         GeneratedFile::static_file(
+            "docs/claims/claim-agent-content-baseline.md",
+            claim_agent_content_baseline(),
+        ),
+        GeneratedFile::static_file(
             "docs/decisions/decision-agent-content-baseline.md",
             decision_agent_content_baseline(),
         ),
@@ -127,6 +165,11 @@ const AGENT_PROJECT_COLLECTIONS: &str = r#"  decisions:
     path: "docs/evidence/*.md"
     adapter: markdown_frontmatter
     id: id
+  claims:
+    class: Claim
+    path: "docs/claims/*.md"
+    adapter: markdown_frontmatter
+    id: id
   docs:
     class: Doc
     path: "docs/project-docs/*.md"
@@ -165,6 +208,12 @@ relations:
   evidence.requirements:
     target: requirements
     many: true
+  claims.requirements:
+    target: requirements
+    many: true
+  claims.evidence:
+    target: evidence
+    many: true
   docs.requirements:
     target: requirements
     many: true
@@ -199,6 +248,7 @@ fn agent_project_schema() -> &'static str {
     "Task": { "$ref": "#/$defs/ProjectRecord" },
     "Requirement": { "$ref": "#/$defs/ProjectRecord" },
     "Evidence": { "$ref": "#/$defs/ProjectRecord" },
+    "Claim": { "$ref": "#/$defs/ProjectRecord" },
     "Doc": { "$ref": "#/$defs/ProjectRecord" },
     "Finding": { "$ref": "#/$defs/ProjectRecord" },
     "Process": { "$ref": "#/$defs/ProjectRecord" },
@@ -223,6 +273,8 @@ fn agent_project_schema() -> &'static str {
         "id": { "type": "string" },
         "title": { "type": "string" },
         "status": { "type": "string" },
+        "priority": { "type": "string" },
+        "owner": { "type": "string" },
         "kind": { "type": "string" },
         "origin": { "type": "string" },
         "source_files": {
@@ -256,6 +308,10 @@ fn agent_project_schema() -> &'static str {
           "type": "array",
           "items": { "type": "string" }
         },
+        "source_documents": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
         "summary": { "type": "string" }
       },
       "additionalProperties": true
@@ -270,6 +326,7 @@ fn requirement_agent_content_baseline() -> &'static str {
 id: requirement-agent-content-baseline
 title: Agent Content Baseline Requirement
 status: active
+priority: high
 summary: Agent-ready projects should make modeled project facts explicit when content is activated.
 ---
 
@@ -303,12 +360,33 @@ title: Agent Content Baseline Evidence
 status: active
 requirements:
   - requirement-agent-content-baseline
+source_documents:
+  - source-documents-manifest
 ---
 
 # Agent Content Baseline Evidence
 
 This file proves the content runtime can index evidence linked to a
 requirement.
+"#
+}
+
+fn claim_agent_content_baseline() -> &'static str {
+    r#"---
+id: claim-agent-content-baseline
+title: Agent Content Baseline Claim
+status: active
+requirements:
+  - requirement-agent-content-baseline
+evidence:
+  - evidence-agent-content-baseline
+summary: A starter claim linked to evidence and a generic requirement.
+---
+
+# Agent Content Baseline Claim
+
+Use claims for deterministic statements that should remain traceable to
+evidence rather than being rediscovered from prose.
 "#
 }
 
@@ -333,6 +411,7 @@ fn finding_agent_content_baseline() -> &'static str {
 id: finding-agent-content-baseline
 title: Agent Content Baseline Finding
 status: open
+owner: project-maintainers
 evidence:
   - evidence-agent-content-baseline
 ---

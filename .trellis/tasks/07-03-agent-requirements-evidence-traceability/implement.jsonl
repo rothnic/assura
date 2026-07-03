@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/assura/index.md", "reason": "Assura task source-of-truth, extension-change expectations, and validation fixture bar."}
+{"file": ".trellis/spec/assura/config-notation.md", "reason": "First-party extension contract changes and generated-config expectations."}
+{"file": ".trellis/spec/assura/codex-agent-feedback.md", "reason": "Keep agent-facing feedback on current assura check and agent-query surfaces."}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Avoid duplicating content-runtime graph parsing."}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Trace data flow across config, validation, doctor, query, docs, and generated templates."}

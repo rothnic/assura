@@ -255,11 +255,23 @@ struct AgentQueryGapsOutput {
     safe_fixes: usize,
     missing_relations: usize,
     unresolved_repository_references: usize,
+    requirements_traceability: usize,
 }
 
 fn gaps(context: &QueryContext) -> AgentQueryGapsOutput {
+    let diagnostics = diagnostics(context);
     AgentQueryGapsOutput {
-        diagnostics: diagnostics(context).diagnostics.len(),
+        requirements_traceability: diagnostics
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| {
+                diagnostic
+                    .rule
+                    .as_str()
+                    .starts_with("requirements_traceability:")
+            })
+            .count(),
+        diagnostics: diagnostics.diagnostics.len(),
         safe_fixes: safe_fixes(context).safe_fixes.len(),
         missing_relations: context.store.missing_relationship_targets().len(),
         unresolved_repository_references: context.store.unresolved_repository_references().len(),
@@ -302,6 +314,12 @@ fn next_actions(context: &QueryContext) -> AgentQueryNextActionsOutput {
         actions.push(next_action(
             "repository references have unresolved targets",
             "assura content agent-query unresolved-references --format json",
+        ));
+    }
+    if gaps.requirements_traceability > 0 {
+        actions.push(next_action(
+            "requirements traceability gaps exist",
+            "assura content agent-query diagnostics --format json",
         ));
     }
     if actions.is_empty() {

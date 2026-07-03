@@ -1,14 +1,45 @@
 //! Content-runtime activation checks for project doctor output.
 
 use super::doctor::DoctorItem;
-use crate::config::config::Config;
+use crate::config::config::{Config, RequirementsTraceabilityConfig};
 use crate::content_repository::{ContentFinding, ContentRepository, RepositoryModel};
 use std::collections::{BTreeMap, HashSet};
 use std::path::Path;
 
 pub(super) fn content_runtime_gaps(project_root: &Path, config: &Config) -> Vec<DoctorItem> {
+    let traceability_policies = config
+        .extensions
+        .as_ref()
+        .map(|extensions| extensions.requirements_traceability.as_slice())
+        .unwrap_or(&[]);
     if config.models.is_none() && config.collections.is_empty() {
-        return Vec::new();
+        if traceability_policies.is_empty() {
+            return Vec::new();
+        }
+        return traceability_policies
+            .iter()
+            .map(|policy| DoctorItem {
+                name: format!("requirements_traceability_inactive:{}", policy.id),
+                status: "gap",
+                detail: format!(
+                    "Requirements traceability `{}` is configured but content runtime models and collections are inactive.",
+                    policy.id
+                ),
+            })
+            .collect();
+    }
+    if config.models.is_none() && !traceability_policies.is_empty() {
+        return traceability_policies
+            .iter()
+            .map(|policy| DoctorItem {
+                name: format!("requirements_traceability_inactive:{}", policy.id),
+                status: "gap",
+                detail: format!(
+                    "Requirements traceability `{}` is configured but models.validation_artifact is missing.",
+                    policy.id
+                ),
+            })
+            .collect();
     }
     let state = ContentDoctorState::load(project_root, config);
     let mut gaps = Vec::new();
@@ -63,7 +94,59 @@ pub(super) fn content_runtime_gaps(project_root: &Path, config: &Config) -> Vec<
             });
         }
     }
+    for policy in traceability_policies {
+        gaps.extend(traceability_policy_gaps(policy, config, &state));
+    }
     gaps
+}
+
+fn traceability_policy_gaps(
+    policy: &RequirementsTraceabilityConfig,
+    config: &Config,
+    state: &ContentDoctorState,
+) -> Vec<DoctorItem> {
+    let mut gaps = Vec::new();
+    for collection in traceability_policy_collections(policy) {
+        if !config.collections.contains_key(&collection) {
+            gaps.push(DoctorItem {
+                name: format!("requirements_traceability_missing_collection:{collection}"),
+                status: "gap",
+                detail: format!(
+                    "Requirements traceability `{}` references collection `{collection}`, but it is not configured.",
+                    policy.id
+                ),
+            });
+            continue;
+        }
+        if state
+            .collection_counts
+            .get(&collection)
+            .copied()
+            .unwrap_or(0)
+            == 0
+        {
+            gaps.push(DoctorItem {
+                name: format!("requirements_traceability_empty_collection:{collection}"),
+                status: "gap",
+                detail: format!(
+                    "Requirements traceability `{}` references collection `{collection}`, but no records were indexed.",
+                    policy.id
+                ),
+            });
+        }
+    }
+    gaps
+}
+
+fn traceability_policy_collections(policy: &RequirementsTraceabilityConfig) -> HashSet<String> {
+    let mut collections = HashSet::new();
+    collections.insert(policy.requirements_collection.clone());
+    collections.extend(policy.coverage_collections.iter().cloned());
+    collections.extend(policy.claim_collections.iter().cloned());
+    collections.extend(policy.evidence_collections.iter().cloned());
+    collections.extend(policy.source_document_collections.iter().cloned());
+    collections.extend(policy.finding_collections.iter().cloned());
+    collections
 }
 
 #[derive(Default)]

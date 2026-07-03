@@ -71,7 +71,12 @@ fn violation_stage_rank(rule: &str) -> u8 {
         | "require_docs" => 0,
         rule if rule.starts_with("markdown_link_") => 3,
         rule if rule.starts_with("markdown_") => 2,
-        rule if rule.starts_with("content_") || rule.starts_with("repository_reference_") => 4,
+        rule if rule.starts_with("content_")
+            || rule.starts_with("repository_reference_")
+            || rule.starts_with("requirements_traceability:") =>
+        {
+            4
+        }
         _ => 5,
     }
 }
@@ -215,6 +220,9 @@ fn corrective_context_for_rule(rule: &str) -> &'static str {
     }
     if rule.starts_with("agent_guidance:") {
         return "Update AGENTS.md, project-local SKILL.md frontmatter/sections, skill index links, or extensions.agent_guidance when the guidance contract changed.";
+    }
+    if rule.starts_with("requirements_traceability:") {
+        return "Link high-priority requirements to configured coverage, claims to evidence, evidence to source documents, and findings to owner/status metadata, or update extensions.requirements_traceability when the policy changed.";
     }
     if rule.starts_with("relationship:") {
         return "Create one of the expected counterpart/provider artifacts named in the relationship message, or update the declaring structure entry in .assura/config.yml.";

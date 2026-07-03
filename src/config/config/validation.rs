@@ -22,6 +22,8 @@ mod release_contracts;
 #[cfg(feature = "yaml-config")]
 mod repository_references;
 #[cfg(feature = "yaml-config")]
+mod requirements_traceability;
+#[cfg(feature = "yaml-config")]
 mod support_matrices;
 #[cfg(feature = "yaml-config")]
 mod test_relationships;
@@ -196,6 +198,9 @@ fn validate_extension_config(config: &ExtensionConfig) -> Result<(), String> {
         }
     }
     repository_references::validate_repository_reference_configs(&config.repository_references)?;
+    requirements_traceability::validate_requirements_traceability_configs(
+        &config.requirements_traceability,
+    )?;
     let mut relationship_ids = HashSet::new();
     for relationship in &config.relationships {
         validate_relationship_constraint(relationship)?;
@@ -356,7 +361,6 @@ fn validate_range(value: usize, min: usize, max: usize, context: &str) -> Result
     }
 }
 
-/// Validates that a naming convention string is valid.
 #[cfg(feature = "full-cli")]
 pub(crate) fn validate_naming_convention(conv: &str) -> Result<(), validator::ValidationError> {
     validate_naming_convention_text(conv).map_err(|message| {
@@ -411,7 +415,6 @@ fn validate_naming_convention_text(conv: &str) -> Result<(), String> {
     }
 }
 
-/// Split OR-composed naming conventions without splitting pipes inside regexes.
 pub(crate) fn split_naming_conventions(conv: &str) -> Vec<&str> {
     let trimmed = conv.trim();
     if trimmed.is_empty() {
@@ -454,7 +457,6 @@ pub(crate) fn split_naming_conventions(conv: &str) -> Vec<&str> {
     }
 }
 
-/// Validates that a size string is valid, such as `100KB`, `1MB`, or `10 MB`.
 #[cfg(feature = "full-cli")]
 pub(crate) fn validate_size_string(size: &str) -> Result<(), validator::ValidationError> {
     validate_size_string_text(size).map_err(|message| {

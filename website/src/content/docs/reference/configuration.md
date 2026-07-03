@@ -354,6 +354,46 @@ use-case table that routes agents to approved local docs, scripts, assets, or
 process references. It does not install a global skill registry or create
 host-agent-specific validation logic.
 
+## Requirements Traceability
+
+Opt into experimental requirements, claims, evidence, source-document, and
+finding traceability diagnostics with `extensions.requirements_traceability`:
+
+```yaml
+extensions:
+  requirements_traceability:
+    - id: document_project_traceability
+      severity: high
+      requirements_collection: requirements
+      priority_field: priority
+      high_priority_values:
+        - high
+        - critical
+      coverage_collections:
+        - evidence
+        - claims
+        - docs
+      claim_collections:
+        - claims
+      evidence_collections:
+        - evidence
+      source_document_collections:
+        - source_documents
+      finding_collections:
+        - findings
+      owner_fields:
+        - owner
+      status_fields:
+        - status
+```
+
+This policy is backed by the content runtime in the full CLI. It checks that
+configured collections exist, high-priority requirements have coverage from
+configured collections, claims link to evidence through modeled relations,
+evidence links to source documents, and findings carry owner and status
+metadata. It does not infer domain-specific scoring, replace repository
+reference checks, or add a public plugin API.
+
 ## First-Party Extension Policies
 
 `extensions.*` entries are first-party config policies executed by
@@ -371,6 +411,7 @@ cross-file policy does not fit ordinary `structure` notation.
 | `extensions.docs_lifecycles` | Experimental first-party | Documentation lifecycle, frontmatter status, historical exceptions, and deterministic claim evidence. |
 | `extensions.repository_references` | Experimental first-party | Locally provable repository-reference diagnostics. |
 | `extensions.agent_guidance` | Experimental first-party | `AGENTS.md` and project-local `SKILL.md` routing contracts. |
+| `extensions.requirements_traceability` | Experimental first-party | Content-runtime-backed requirement, claim, evidence, source-document, and finding traceability checks. |
 | `extensions.relationships` | Internal generated first-party | Relationships normalized from `structure` captures, `exists:1`, `needs`, and `provides`. |
 
 Assura does not currently support remote plugin loading, shell-executed
