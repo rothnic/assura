@@ -878,6 +878,7 @@ fn run_target_state() -> Result<()> {
     check_test_relationships(&mut checks);
     check_docs_release_performance(&mut checks);
     check_public_roadmap(&mut checks);
+    check_agent_onboarding_website(&mut checks);
     check_agent_workflow_state(&mut checks);
     check_goal_revalidation_route(&mut checks);
     check_root_tooling_boundary(&mut checks);
@@ -4943,6 +4944,82 @@ fn check_public_roadmap(checks: &mut Checks) {
         internal_roadmap.contains("docs/data/public-roadmap.json"),
         ".trellis/spec/assura/roadmap.md must point to the public roadmap artifact",
     );
+}
+
+fn check_agent_onboarding_website(checks: &mut Checks) {
+    let guide_path = "website/src/content/docs/guides/agent-ready-onboarding.md";
+    checks.require(
+        exists(guide_path),
+        format!("{guide_path}: dedicated agent-ready onboarding guide is missing"),
+    );
+    if !exists(guide_path) {
+        return;
+    }
+
+    let guide = read(guide_path);
+    let astro_config = read("website/astro.config.mjs");
+    let home = read("website/src/content/docs/index.mdx");
+    let getting_started = read("website/src/content/docs/guides/getting-started.md");
+
+    checks.require(
+        astro_config
+            .contains("{ label: 'Agent-Ready Onboarding', slug: 'guides/agent-ready-onboarding' }"),
+        "website sidebar must include the Agent-Ready Onboarding guide",
+    );
+    checks.require(
+        home.contains("/guides/agent-ready-onboarding/")
+            || getting_started.contains("/guides/agent-ready-onboarding/"),
+        "website entry points must link to the Agent-Ready Onboarding guide",
+    );
+
+    for marker in [
+        "## First-Run Phases",
+        "## Report Shape",
+        "## Generated Packet",
+        "## Agent-Next Questions",
+        "## Checked Versus Unchecked",
+        "## Content And Project Packs",
+        "## Lifecycle Profiles",
+        "## Specialization Flow",
+        "\"content\"",
+        "\"template\": \"none\"",
+        "\"status\": \"inactive\"",
+        "\"lifecycle_profiles\"",
+        "\"mode\": \"nudge\"",
+        "\"mode\": \"warn\"",
+        "\"mode\": \"gate\"",
+        "\"blocking\": true",
+        "\"action\": \"Ask remaining specialization questions\"",
+        "\"affected_paths\": [\".assura/onboarding/questions.md\"]",
+        "current experimental local command",
+        "experimental, reviewable local integration bundle",
+        "assura agent onboard . --agent auto --format json",
+        "assura agent onboard . --content-template agent-project --format json",
+        "assura agent onboard . --content-template document-project --format json",
+        "assura doctor . --format json",
+        "assura explain AGENTS.md --format json",
+        "roadmap",
+        "not part of the core agent-project baseline",
+    ] {
+        checks.require(
+            guide.contains(marker),
+            format!("{guide_path}: missing agent onboarding marker {marker:?}"),
+        );
+    }
+
+    for forbidden in [
+        "assura bootstrap",
+        "assura agent specialize",
+        "assura agent onboard --remote",
+        "assura agent onboard . --remote",
+        "assura remote bootstrap",
+        "assura check --format codex-hook",
+    ] {
+        checks.require(
+            !guide.contains(forbidden),
+            format!("{guide_path}: contains unsupported onboarding command {forbidden:?}"),
+        );
+    }
 }
 
 fn label_word_count(label: &str) -> usize {

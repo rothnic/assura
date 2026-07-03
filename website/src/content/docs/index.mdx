@@ -27,6 +27,9 @@ import { Card, CardGrid } from '@astrojs/starlight/components';
   <Card title="assura init" icon="setting">
     Creates a starter `.assura/config.yml` without overwriting existing config by default.
   </Card>
+  <Card title="Agent-ready onboarding" icon="rocket">
+    Creates a broad local baseline, onboarding packet, lifecycle profiles, and agent handoff.
+  </Card>
   <Card title="assura migrate" icon="seti:yaml">
     Converts LS-Lint 2.3 rule configuration into Assura structure config.
   </Card>
@@ -42,3 +45,7 @@ curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/publi
 assura init
 assura check --format json .
 ```
+
+For coding-agent-first repositories, start with
+[Agent-Ready Onboarding](/guides/agent-ready-onboarding/) instead of inventing
+project conventions before the baseline is verified.

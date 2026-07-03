@@ -1,0 +1,6 @@
+{"file": "docs/goals/assura-website-agent-onboarding-experience.md", "reason": "Verify child goal definition of done and validation commands are satisfied."}
+{"file": "docs/support-policy.md", "reason": "Check website wording remains aligned with current command-surface truth."}
+{"file": "docs/compatibility-and-surface.md", "reason": "Check website claims remain aligned with implemented evidence."}
+{"file": "website/src/content/docs/guides/getting-started.md", "reason": "Existing getting-started entry point that should link to the new onboarding guide."}
+{"file": "website/astro.config.mjs", "reason": "Confirm the dedicated onboarding guide is discoverable in navigation."}
+{"file": "xtask/src/main.rs", "reason": "Confirm target-state drift guard checks the new guide and unsupported-surface boundaries."}

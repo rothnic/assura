@@ -9,6 +9,11 @@ sidebar:
 Assura validates repository structure from `.assura/config.yml`. The primary
 supported command is `assura check`.
 
+If a coding agent is entering a new repository, use the dedicated
+[Agent-Ready Onboarding](/guides/agent-ready-onboarding/) path first. It creates
+a broad baseline, writes `.assura/onboarding/agent-next.md`, and separates
+checked capabilities from choices that still need user answers.
+
 ## First Run
 
 1. **Install Assura**

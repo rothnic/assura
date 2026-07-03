@@ -1,5 +1,0 @@
-{"file": ".trellis/spec/assura/roadmap.md", "reason": "Confirm implementation still aligns with the active roadmap and direction lock."}
-{"file": "docs/goals/assura-agent-lifecycle-hooks-next-actions.md", "reason": "Verify child goal definition of done and validation commands are satisfied."}
-{"file": "docs/support-policy.md", "reason": "Check command-surface claims remain accurate after lifecycle profile changes."}
-{"file": "docs/compatibility-and-surface.md", "reason": "Check compatibility matrix remains aligned with implemented surfaces and tests."}
-{"file": "website/src/content/docs/reference/agent-feedback.md", "reason": "Check website onboarding proof explains lifecycle semantics without overclaiming."}
