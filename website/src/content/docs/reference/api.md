@@ -171,16 +171,26 @@ wrappers must still require explicit user approval before running
 | `assura content agent-query` | Wrap one query in the shared agent envelope |
 | `assura content context-pack` | Build one bounded project-intelligence handoff packet |
 | `assura content session` | Run a persistent JSON-line local query session |
-| `assura content search` | Search modeled content facts with lexical scores |
+| `assura content search` | Search modeled content facts with lexical scores; use `--raw` or `--fallback-raw` for bounded raw repository text discovery |
 | `assura content expand` | Expand graph context around one modeled object |
 | `assura content missing-relations` | Report unresolved modeled relations |
-| `assura content references` | Report inbound repository references by target path or outbound references by source path |
+| `assura content references` | Report inbound, outbound, all, or unresolved repository-reference edges |
 
 Object-mode context-pack JSON includes `repository_references.path`,
 `repository_references.inbound`, and `repository_references.outbound` for the
 modeled object's repository path. Those arrays use the same edge shape as
 `assura content references`, including source position, target path, anchor or
 line range, existence, rule, kind, and confidence.
+
+`assura content references` accepts exactly one selector: `--source <path>`,
+`--target <path>`, `--all`, or `--unresolved`. Configured Markdown
+frontmatter reference fields use the same output shape with
+`reference_kind: frontmatter_reference`.
+
+`assura content agent-query capabilities` returns deterministic capability
+metadata with names, descriptions, required arguments, and suggested follow-up
+commands. `unresolved-references`, `gaps`, and `next-actions` are canned
+agent-query capabilities for reference cleanup and next-step discovery.
 
 `assura content session [path]` reads one JSON request per stdin line and emits
 one `assura.project-intelligence.session.response.v1` JSON response per stdout

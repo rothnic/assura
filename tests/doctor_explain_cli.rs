@@ -155,6 +155,60 @@ exclude:
 }
 
 #[test]
+fn doctor_summarizes_frontmatter_repository_reference_gaps() {
+    let project = TempDir::new().unwrap();
+    write_config(
+        &project,
+        r#"
+structure:
+  ./:
+    extra: true
+extensions:
+  repository_references:
+    - id: source_docs
+      paths:
+        - "docs/**/*.md"
+      frontmatter_fields:
+        - source_documents
+      severity: high
+exclude:
+  - .assura/**
+"#,
+    );
+    fs::create_dir_all(project.path().join("docs")).unwrap();
+    fs::write(project.path().join("docs/source.md"), "# Source\n").unwrap();
+    fs::write(
+        project.path().join("docs/note.md"),
+        r#"---
+source_documents:
+  - docs/source.md
+  - docs/missing.md
+---
+# Note
+"#,
+    )
+    .unwrap();
+
+    let output = run_assura(&[
+        "doctor",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]);
+    assert_eq!(output.status.code(), Some(1));
+    let doctor = json_from_output(&output);
+    let repository_refs = doctor["configured"]
+        .as_array()
+        .expect("configured")
+        .iter()
+        .find(|item| item["name"] == "repository_references")
+        .expect("repository references item");
+    let detail = repository_refs["detail"].as_str().expect("detail");
+    assert!(detail.contains("1 configured frontmatter field(s)"));
+    assert!(detail.contains("1 unresolved reference target violation(s)"));
+}
+
+#[test]
 fn explain_reports_inherited_scope_and_source_markdown_skips() {
     let project = TempDir::new().unwrap();
     write_config(

@@ -39,7 +39,7 @@ untrusted code from a repository.
 | `extensions.test_relationships` | Experimental first-party | Source/test evidence, manual-test exceptions, and fixture-family ownership checks. Not a coverage percentage or semantic test-adequacy claim. |
 | `extensions.module_topologies` | Experimental first-party | Rust module-family ownership, root existence, public export classification, and internal visibility checks. Not a full Rust parser or public API guarantee. |
 | `extensions.docs_lifecycles` | Experimental first-party | Documentation lifecycle, frontmatter status, historical exception, and deterministic claim-evidence checks. Not broad natural-language stale-prose detection. |
-| `extensions.repository_references` | Experimental first-party | Opt-in diagnostics for locally provable repository-reference target, heading-anchor, and line-anchor failures. Lower-confidence candidates remain graph context, not validation truth. |
+| `extensions.repository_references` | Experimental first-party | Opt-in diagnostics for locally provable repository-reference target, heading-anchor, and line-anchor failures from supported source references and configured Markdown frontmatter fields. Lower-confidence candidates remain graph context, not validation truth. |
 | `extensions.agent_guidance` | Experimental first-party | Opt-in `AGENTS.md` and project-local `SKILL.md` routing, progressive-disclosure, and supporting-reference checks. Not a global skill registry or host-agent-specific validation engine. |
 | `extensions.relationships` | Internal generated policy | Normalized capture relationships produced from concise `structure` notation. Users should author captures, `exists:1`, `needs`, and `provides` instead of hand-writing this family. |
 

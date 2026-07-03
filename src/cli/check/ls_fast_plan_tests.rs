@@ -106,6 +106,7 @@ fn fast_plan_rejects_repository_reference_diagnostics() {
         repository_references: vec![RepositoryReferenceConfig {
             id: "source_refs".to_string(),
             paths: vec!["src/**".to_string()],
+            frontmatter_fields: Vec::new(),
             severity: Some("high".to_string()),
         }],
         ..ExtensionConfig::default()

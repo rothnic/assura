@@ -26,8 +26,37 @@ fn validate_repository_reference_config(policy: &RepositoryReferenceConfig) -> R
     for path in &policy.paths {
         validate_relative_pattern(path, &format!("{context}.paths"))?;
     }
+    for field in &policy.frontmatter_fields {
+        validate_frontmatter_field(field, &format!("{context}.frontmatter_fields"))?;
+    }
     if let Some(severity) = &policy.severity {
         validate_severity(severity).map_err(|error| format!("{context}.severity: {error}"))?;
+    }
+    Ok(())
+}
+
+fn validate_frontmatter_field(field: &str, context: &str) -> Result<(), String> {
+    if field.is_empty() {
+        return Err(format!("{context}: frontmatter field must not be empty"));
+    }
+    if field.starts_with('.') || field.ends_with('.') || field.contains("..") {
+        return Err(format!(
+            "{context}.{field}: frontmatter field paths must use non-empty dot-separated segments"
+        ));
+    }
+    if !field
+        .chars()
+        .all(|ch| ch.is_ascii_alphanumeric() || ch == '_' || ch == '-')
+        && !field.split('.').all(|part| {
+            !part.is_empty()
+                && part
+                    .chars()
+                    .all(|ch| ch.is_ascii_alphanumeric() || ch == '_' || ch == '-')
+        })
+    {
+        return Err(format!(
+            "{context}.{field}: frontmatter field paths may only contain letters, numbers, hyphen, underscore, and dot separators"
+        ));
     }
     Ok(())
 }

@@ -5,17 +5,30 @@ use super::output::{RepositoryReferenceOutput, RepositoryReferencesOutput};
 use crate::intelligence::{resource_id, RepositoryReferenceEdge};
 use std::path::PathBuf;
 
+pub(super) struct ReferenceMode<'a> {
+    pub(super) source: Option<&'a PathBuf>,
+    pub(super) target: Option<&'a PathBuf>,
+    pub(super) all: bool,
+    pub(super) unresolved: bool,
+}
+
 pub(super) fn repository_references(
     context: &QueryContext,
-    source: Option<&PathBuf>,
-    target: Option<&PathBuf>,
+    mode: ReferenceMode<'_>,
     limit: usize,
 ) -> Result<RepositoryReferencesOutput, ContentQueryError> {
-    match (source, target) {
-        (Some(_), Some(_)) | (None, None) => Err(ContentQueryError::configuration(
-            "references requires exactly one of --source or --target",
-        )),
-        (Some(source), None) => {
+    let selector_count = usize::from(mode.source.is_some())
+        + usize::from(mode.target.is_some())
+        + usize::from(mode.all)
+        + usize::from(mode.unresolved);
+    if selector_count != 1 {
+        return Err(ContentQueryError::configuration(
+            "references requires exactly one of --source, --target, --all, or --unresolved",
+        ));
+    }
+
+    match (mode.source, mode.target, mode.all, mode.unresolved) {
+        (Some(source), None, false, false) => {
             let references = context
                 .store
                 .repository_references_from_path(source)
@@ -29,7 +42,7 @@ pub(super) fn repository_references(
                 references,
             })
         }
-        (None, Some(target)) => {
+        (None, Some(target), false, false) => {
             let target_id = resource_id(target);
             let references = context
                 .store
@@ -44,6 +57,35 @@ pub(super) fn repository_references(
                 references,
             })
         }
+        (None, None, true, false) => {
+            let references = context
+                .store
+                .repository_references()
+                .into_iter()
+                .map(reference_output)
+                .take(limit)
+                .collect();
+            Ok(RepositoryReferencesOutput {
+                mode: "all",
+                path: PathBuf::from("."),
+                references,
+            })
+        }
+        (None, None, false, true) => {
+            let references = context
+                .store
+                .unresolved_repository_references()
+                .into_iter()
+                .map(reference_output)
+                .take(limit)
+                .collect();
+            Ok(RepositoryReferencesOutput {
+                mode: "unresolved",
+                path: PathBuf::from("."),
+                references,
+            })
+        }
+        _ => unreachable!("selector count was already validated"),
     }
 }
 

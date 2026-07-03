@@ -152,6 +152,72 @@ def run():
     )));
 }
 
+#[test]
+fn configured_frontmatter_fields_create_repository_reference_edges() {
+    let project = reference_project();
+    let source_rel = Path::new("docs/note.md");
+    let content = r#"---
+source_documents:
+  - docs/guide.md
+  - docs/missing.md
+related: src/lib.rs
+---
+# Note
+"#;
+    let fields = vec!["source_documents".to_string(), "related".to_string()];
+
+    let mut ingestor = FactIngestor::new("refs-1");
+    ingestor.ingest_frontmatter_references(project.path(), source_rel, content, &fields);
+    let facts = ingestor.finish();
+
+    let references = repository_references(&facts.edges);
+    assert_eq!(references.len(), 3);
+    assert!(references.iter().any(|edge| {
+        edge.source_path == source_rel
+            && edge.source_line == Some(2)
+            && edge.target_path == Path::new("docs/guide.md")
+            && edge.target_exists
+            && edge.reference_kind == "frontmatter_reference"
+            && edge.confidence == "exact"
+    }));
+    assert!(references.iter().any(|edge| {
+        edge.source_path == source_rel
+            && edge.target_path == Path::new("docs/missing.md")
+            && !edge.target_exists
+            && edge.rule == "repository_reference_target"
+    }));
+    assert!(references.iter().any(|edge| {
+        edge.source_path == source_rel
+            && edge.source_line == Some(5)
+            && edge.target_path == Path::new("src/lib.rs")
+            && edge.target_exists
+    }));
+}
+
+#[test]
+fn configured_frontmatter_fields_support_crlf_markdown() {
+    let project = reference_project();
+    let source_rel = Path::new("docs/note.md");
+    let content =
+        "---\r\nsource_documents:\r\n  - docs/guide.md\r\n  - docs/missing.md\r\n---\r\n# Note\r\n";
+    let fields = vec!["source_documents".to_string()];
+
+    let mut ingestor = FactIngestor::new("refs-1");
+    ingestor.ingest_frontmatter_references(project.path(), source_rel, content, &fields);
+    let facts = ingestor.finish();
+
+    let references = repository_references(&facts.edges);
+    assert_eq!(references.len(), 2);
+    assert!(references.iter().any(|edge| {
+        edge.target_path == Path::new("docs/guide.md")
+            && edge.source_line == Some(2)
+            && edge.reference_kind == "frontmatter_reference"
+    }));
+    assert!(references
+        .iter()
+        .any(|edge| { edge.target_path == Path::new("docs/missing.md") && !edge.target_exists }));
+}
+
 fn reference_project() -> TempDir {
     let project = TempDir::new().unwrap();
     fs::create_dir_all(project.path().join("docs")).unwrap();

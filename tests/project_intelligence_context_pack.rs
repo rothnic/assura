@@ -183,6 +183,83 @@ fn context_pack_wraps_repository_references_for_object_context() {
 }
 
 #[test]
+fn context_pack_wraps_configured_frontmatter_repository_references() {
+    let temp = tempfile::tempdir().expect("tempdir");
+    copy_dir(
+        Path::new("tests/fixtures/content_runtime/valid"),
+        temp.path(),
+    );
+    let config_path = temp.path().join(".assura/config.yml");
+    let mut config = fs::read_to_string(&config_path).expect("config");
+    config.push_str(
+        r#"
+extensions:
+  repository_references:
+    - id: source_docs
+      paths:
+        - "docs/goals/*.md"
+      frontmatter_fields:
+        - source_documents
+"#,
+    );
+    fs::write(&config_path, config).expect("write config");
+
+    let schema_path = temp.path().join("schemas/content_runtime.schema.json");
+    let mut schema = fs::read_to_string(&schema_path).expect("schema");
+    schema = schema.replace(
+        r#""specs": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }"#,
+        r#""specs": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "source_documents": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }"#,
+    );
+    fs::write(&schema_path, schema).expect("write schema");
+
+    let goal_path = temp.path().join("docs/goals/goal_portable_structure.md");
+    let mut goal = fs::read_to_string(&goal_path).expect("goal");
+    goal = goal.replace(
+        "specs:\n  - spec-portable-structure\n---",
+        "specs:\n  - spec-portable-structure\nsource_documents:\n  - specs/spec_portable_structure.json\n  - docs/missing_source.md\n---",
+    );
+    fs::write(&goal_path, goal).expect("write goal");
+
+    let pack = json_from_success(run_assura(&[
+        "content",
+        "context-pack",
+        temp.path().to_str().expect("temp path"),
+        "--collection",
+        "goals",
+        "--id",
+        "goal-portable-structure",
+        "--limit",
+        "5",
+        "--format",
+        "json",
+    ]));
+
+    let outbound = pack["repository_references"]["outbound"]
+        .as_array()
+        .expect("outbound references");
+    assert!(outbound.iter().any(|item| {
+        item["reference_kind"] == "frontmatter_reference"
+            && item["target_path"] == "specs/spec_portable_structure.json"
+            && item["target_exists"] == true
+    }));
+    assert!(outbound.iter().any(|item| {
+        item["reference_kind"] == "frontmatter_reference"
+            && item["target_path"] == "docs/missing_source.md"
+            && item["target_exists"] == false
+    }));
+}
+
+#[test]
 fn context_pack_reports_repository_reference_truncation() {
     let pack = json_from_success(run_assura(&[
         "content",

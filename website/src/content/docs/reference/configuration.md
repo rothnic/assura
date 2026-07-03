@@ -281,14 +281,22 @@ extensions:
     - id: source_refs
       paths:
         - "src/**"
+      frontmatter_fields:
+        - source_documents
+        - related
       severity: high
 ```
 
 Assura scans supported source and config file types under matching paths for
-local file references. It reports locally provable missing targets, missing
-Markdown heading anchors, and invalid line anchors as `repository_reference_*`
-rules. Ambiguous lower-confidence references remain available as graph context
-through `assura content references`.
+local file references. When `frontmatter_fields` is set, matching Markdown files
+also treat string or list values in those frontmatter fields as repository
+references. This is useful for fields such as `source_documents`, `related`,
+`evidence`, or `requirements`.
+
+The check reports locally provable missing targets, missing Markdown heading
+anchors, and invalid line anchors as `repository_reference_*` rules. Ambiguous
+lower-confidence references remain available as graph context through
+`assura content references`.
 
 ## Agent Guidance
 

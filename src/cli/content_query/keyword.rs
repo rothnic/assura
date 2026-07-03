@@ -25,11 +25,13 @@ pub(super) fn search(context: &QueryContext, query: &str) -> SearchOutput {
     });
     SearchOutput {
         query: query.to_string(),
+        mode: "modeled",
+        fallback_used: false,
         matches,
     }
 }
 
-fn lexical_match_score(query: &str, text: &str) -> f32 {
+pub(super) fn lexical_match_score(query: &str, text: &str) -> f32 {
     let normalized_text = text.to_ascii_lowercase();
     let normalized_query = query.to_ascii_lowercase();
     let terms = normalized_query
@@ -69,6 +71,8 @@ fn search_match(
             path: resources
                 .get(&instance.resource_id)
                 .map(|resource| resource.path.clone()),
+            line: None,
+            column: None,
             text: chunk.text.clone(),
         },
         Some(ProjectFact::MarkdownSection(section)) => SearchMatchOutput {
@@ -78,6 +82,8 @@ fn search_match(
             collection: None,
             instance_id: None,
             path: document_path(context, &section.document_id),
+            line: Some(section.line_number),
+            column: None,
             text: chunk.text.clone(),
         },
         Some(ProjectFact::MarkdownLink(link)) => SearchMatchOutput {
@@ -87,6 +93,8 @@ fn search_match(
             collection: None,
             instance_id: None,
             path: Some(link.source_path.clone()),
+            line: Some(link.source_line),
+            column: Some(link.source_column),
             text: chunk.text.clone(),
         },
         Some(ProjectFact::Diagnostic(diagnostic)) => SearchMatchOutput {
@@ -99,6 +107,14 @@ fn search_match(
                 .location
                 .as_ref()
                 .map(|location| location.path.clone()),
+            line: diagnostic
+                .location
+                .as_ref()
+                .and_then(|location| location.line),
+            column: diagnostic
+                .location
+                .as_ref()
+                .and_then(|location| location.column),
             text: chunk.text.clone(),
         },
         _ => SearchMatchOutput {
@@ -108,6 +124,8 @@ fn search_match(
             collection: None,
             instance_id: None,
             path: None,
+            line: None,
+            column: None,
             text: chunk.text.clone(),
         },
     }

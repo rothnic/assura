@@ -64,19 +64,19 @@ publishes and verifies a `.sha256` file next to every archive.
 | `assura editor session` | Supported local editor session | Editor-surface CLI tests prove LSP-shaped diagnostics, context, safe-fix code-action previews, invalid-method errors, and conservative reload metadata. |
 | `assura content` | Supported first project-intelligence query surface | Content query CLI fixture tests and product docs. |
 | `assura content agent-context` | Supported generic agent context | Agent-context CLI fixture tests; wrappers must reuse this contract instead of creating per-agent query commands. |
-| `assura content agent-query` | Supported generic agent query envelope | Agent-query CLI fixture tests prove diagnostics, graph, search, semantic, and code-symbol queries reuse one wrapper schema. |
+| `assura content agent-query` | Supported generic agent query envelope | Agent-query CLI fixture tests prove diagnostics, graph, search, semantic, code-symbol, capability-discovery, unresolved-reference, gap, and next-action queries reuse one wrapper schema. |
 | `assura content context-pack` | Supported bounded project-intelligence context bundle | Context-pack tests prove diagnostics, graph/search context, repository-reference context, relation status, and safe-fix preview metadata compose without writes. |
 | `assura content session` | Supported local project-intelligence session | Session tests prove repeated JSON-line requests reuse context and reload conservatively after modeled content changes. |
 | `assura content collections` | Supported | Content query CLI fixture tests. |
 | `assura content instances` | Supported | Content query CLI fixture tests. |
 | `assura content show` | Supported | Content query CLI fixture tests. |
-| `assura content search` | Supported scored keyword search | Content query CLI fixture tests prove deterministic lexical scores; semantic candidate retrieval uses the separate `semantic-search` command. |
+| `assura content search` | Supported scored keyword search | Content query CLI fixture tests prove deterministic lexical scores and explicit raw/fallback raw repository text discovery; semantic candidate retrieval uses the separate `semantic-search` command. |
 | `assura content semantic-search` | Experimental optional local candidate search | Semantic search fixture tests; candidates do not decide validation correctness. |
 | `assura content symbols` | Experimental optional code-symbol query | Code-symbol fixture tests; baseline evidence is candidate context and does not decide validation correctness. |
 | `assura content symbol-refs` | Experimental optional code-symbol query | Code-symbol fixture tests; unresolved provider refs remain queryable. |
 | `assura content missing-relations` | Supported relation query | Content query CLI fixture tests. |
 | `assura content expand` | Supported bounded graph expansion | Content query CLI fixture tests. |
-| `assura content references` | Supported repository-reference graph query | Content query CLI tests prove bounded inbound references by target path and outbound references by source path. |
+| `assura content references` | Supported repository-reference graph query | Content query CLI tests prove bounded inbound references by target path, outbound references by source path, all-reference listing, unresolved-reference listing, and configured frontmatter reference edges. |
 | `assura daemon` | Experimental local daemon process | Daemon CLI tests prove JSON status, start, stop, restart, doctor, logs, health, changed-path, and reference-context contracts over local daemon-ready state. Lifecycle commands manage a real local process with versioned health, check-path, and repository-reference IPC. |
 | `assura daemon status` | Experimental local daemon status | Daemon CLI tests prove JSON health, protocol, process metadata, crashed-process detection, and management command hints. |
 | `assura daemon start` | Experimental local daemon lifecycle | Daemon CLI tests prove idempotent process-backed JSON start behavior with PID and IPC address metadata. |

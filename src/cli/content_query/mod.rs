@@ -10,6 +10,7 @@ mod facts;
 mod keyword;
 mod output;
 mod output_text;
+mod raw_search;
 mod references;
 mod semantic;
 mod session;
@@ -28,7 +29,8 @@ use self::output::{
     render, CollectionOutput, CollectionsOutput, DiagnosticOutput, ExpandOutput, InstanceOutput,
     InstancesOutput, MissingRelationsOutput, RelatedFactOutput, RelationOutput,
 };
-use self::references::repository_references;
+use self::raw_search::{modeled_with_raw_fallback, raw_search};
+use self::references::{repository_references, ReferenceMode};
 use self::semantic::semantic_search;
 use self::session::content_session_command;
 use super::{ContentCommands, ExitCode, OutputFormat};
@@ -118,7 +120,22 @@ fn run_content_command(
         ContentCommands::Show { collection, id, .. } => {
             render(show_instance(&context, &collection, &id)?, format)
         }
-        ContentCommands::Search { query, .. } => render(search(&context, &query), format),
+        ContentCommands::Search {
+            query,
+            raw,
+            fallback_raw,
+            limit,
+            ..
+        } => {
+            let output = if raw {
+                raw_search(&context, &query, limit)
+            } else if fallback_raw {
+                modeled_with_raw_fallback(&context, &query, limit)
+            } else {
+                search(&context, &query)
+            };
+            render(output, format)
+        }
         ContentCommands::SemanticSearch {
             query,
             limit,
@@ -138,10 +155,21 @@ fn run_content_command(
         ContentCommands::References {
             source,
             target,
+            all,
+            unresolved,
             limit,
             ..
         } => render(
-            repository_references(&context, source.as_ref(), target.as_ref(), limit)?,
+            repository_references(
+                &context,
+                ReferenceMode {
+                    source: source.as_ref(),
+                    target: target.as_ref(),
+                    all,
+                    unresolved,
+                },
+                limit,
+            )?,
             format,
         ),
         ContentCommands::Expand {

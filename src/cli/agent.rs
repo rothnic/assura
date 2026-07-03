@@ -104,6 +104,9 @@ fn agent_to_content_command(command: AgentCommands) -> ContentCommands {
         } => ContentCommands::Search {
             query,
             path,
+            raw: false,
+            fallback_raw: false,
+            limit: 20,
             format,
         },
         AgentCommands::MissingRelations { path, format } => {

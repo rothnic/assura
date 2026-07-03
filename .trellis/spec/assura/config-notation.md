@@ -782,11 +782,17 @@ extensions:
       severity: high
       paths:
         - "src/**"
+      frontmatter_fields:
+        - source_documents
+        - related
 ```
 
 Use this rule for opt-in diagnostics when supported source, comment, docstring,
-or string-literal references point at missing files, missing Markdown anchors,
-or invalid line anchors. Do not use it as the source of truth for
+string-literal, or configured Markdown frontmatter path references point at
+missing files, missing Markdown anchors, or invalid line anchors. Configured
+frontmatter fields are also repository-reference graph facts, so they appear in
+`assura content references`, context packs, and unresolved-reference
+agent-query output. Do not use this rule as the source of truth for
 lower-confidence repository-reference candidates; those remain graph context
 through `assura content references` and context packs.
 

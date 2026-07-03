@@ -82,6 +82,18 @@ pub enum ContentCommands {
     Search {
         query: String,
         path: Option<PathBuf>,
+        #[arg(
+            long,
+            help = "Search repository text directly instead of modeled facts"
+        )]
+        raw: bool,
+        #[arg(
+            long,
+            help = "Search repository text when modeled facts have no matches"
+        )]
+        fallback_raw: bool,
+        #[arg(long, default_value_t = 20)]
+        limit: usize,
         #[arg(short, long, value_enum, default_value = "text")]
         format: OutputFormat,
     },
@@ -126,6 +138,13 @@ pub enum ContentCommands {
         source: Option<PathBuf>,
         #[arg(long)]
         target: Option<PathBuf>,
+        #[arg(long, help = "List all repository-reference edges")]
+        all: bool,
+        #[arg(
+            long,
+            help = "List repository-reference edges whose targets are unresolved"
+        )]
+        unresolved: bool,
         #[arg(long, default_value_t = 20)]
         limit: usize,
         #[arg(short, long, value_enum, default_value = "text")]

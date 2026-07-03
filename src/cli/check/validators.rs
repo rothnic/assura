@@ -187,16 +187,20 @@ impl StructureChecker {
                 || (files.require_docs == Some(true)
                     && path.extension().and_then(|ext| ext.to_str()) == Some("rs"))
         });
-        let repository_reference_severity = self
-            .repository_reference_severity_for_path(&rel)
-            .filter(|_| is_source_reference_file(path))
+        let repository_reference_policy = self
+            .repository_reference_policy_for_path(&rel)
+            .filter(|_| {
+                is_source_reference_file(path)
+                    || (self.has_repository_reference_frontmatter_fields_for_path(&rel)
+                        && path.extension().and_then(|ext| ext.to_str()) == Some("md"))
+            })
             .filter(|_| {
                 fs::metadata(path)
                     .map(|metadata| metadata.len() <= SOURCE_REFERENCE_FILE_SIZE_LIMIT)
                     .unwrap_or(false)
             });
         let content =
-            if needs_file_content || needs_markdown || repository_reference_severity.is_some() {
+            if needs_file_content || needs_markdown || repository_reference_policy.is_some() {
                 match fs::read_to_string(path) {
                     Ok(content) => Some(content),
                     Err(error) => {
@@ -230,9 +234,9 @@ impl StructureChecker {
             }
         }
 
-        if let (Some(severity), Some(content)) = (repository_reference_severity, content.as_deref())
-        {
-            self.validate_repository_references(&rel, content, &severity, report);
+        if let (Some(policy), Some(content)) = (repository_reference_policy, content.as_deref()) {
+            let severity = policy.severity.as_deref().unwrap_or("medium");
+            self.validate_repository_references(&rel, content, severity, report);
         }
     }
 

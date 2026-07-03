@@ -256,6 +256,20 @@ fn configured_items(report: &StructureCheckReport, config: &Config) -> Vec<Docto
     let repository_references = extensions
         .map(|extensions| extensions.repository_references.len())
         .unwrap_or_default();
+    let frontmatter_reference_fields = extensions
+        .map(|extensions| {
+            extensions
+                .repository_references
+                .iter()
+                .map(|policy| policy.frontmatter_fields.len())
+                .sum::<usize>()
+        })
+        .unwrap_or_default();
+    let unresolved_repository_references = report
+        .violations
+        .iter()
+        .filter(|violation| violation.rule == "repository_reference_target")
+        .count();
     let relationships = extensions
         .map(|extensions| extensions.relationships.len())
         .unwrap_or_default();
@@ -299,7 +313,7 @@ fn configured_items(report: &StructureCheckReport, config: &Config) -> Vec<Docto
                 "active"
             },
             detail: format!(
-                "{repository_references} configured repository-reference policy item(s)"
+                "{repository_references} configured repository-reference policy item(s); {frontmatter_reference_fields} configured frontmatter field(s); {unresolved_repository_references} unresolved reference target violation(s)"
             ),
         },
         DoctorItem {

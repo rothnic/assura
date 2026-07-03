@@ -196,6 +196,8 @@ pub(super) struct SafeFixOutput {
 #[derive(Debug, Serialize)]
 pub(super) struct SearchOutput {
     pub(super) query: String,
+    pub(super) mode: &'static str,
+    pub(super) fallback_used: bool,
     pub(super) matches: Vec<SearchMatchOutput>,
 }
 
@@ -265,6 +267,8 @@ pub(super) struct SearchMatchOutput {
     pub(super) instance_id: Option<String>,
     #[serde(serialize_with = "serialize_optional_path")]
     pub(super) path: Option<PathBuf>,
+    pub(super) line: Option<usize>,
+    pub(super) column: Option<usize>,
     pub(super) text: String,
 }
 
