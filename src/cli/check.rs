@@ -14,6 +14,7 @@ mod compiled_artifact_tests;
 mod compiled_config;
 mod compiled_fingerprint;
 mod compiled_plan_artifact;
+mod computed_checks;
 mod configured_structure;
 #[cfg(feature = "full-cli")]
 mod content_runtime;

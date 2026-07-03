@@ -33,13 +33,14 @@ pub use content::{
 };
 pub use extensions::{
     AgentGuidanceConfig, CommandSurfaceCommand, CommandSurfaceContract, CommandSurfaceFlag,
-    CustomConstraintConfig, DocsLifecycleClaimPatternConfig, DocsLifecycleConfig, ExtensionConfig,
-    ManifestSemanticsConfig, ManifestSemanticsManifestConfig, ModuleTopologyConfig,
-    ModuleTopologyModuleConfig, RelationshipConstraintConfig, RelationshipProviderConfig,
-    ReleaseArtifactConfig, ReleaseContractConfig, RepositoryReferenceConfig,
-    RequirementsTraceabilityConfig, SupportMatrixConfig, SupportMatrixDocsClaimSourceConfig,
-    SupportMatrixEntryConfig, TestRelationshipConfig, TestRelationshipFixtureFamilyConfig,
-    TestRelationshipIgnoredTestConfig, TestRelationshipSourceConfig,
+    ComputedCheckConfig, CustomConstraintConfig, DocsLifecycleClaimPatternConfig,
+    DocsLifecycleConfig, ExtensionConfig, ManifestSemanticsConfig, ManifestSemanticsManifestConfig,
+    ModuleTopologyConfig, ModuleTopologyModuleConfig, RelationshipConstraintConfig,
+    RelationshipProviderConfig, ReleaseArtifactConfig, ReleaseContractConfig,
+    RepositoryReferenceConfig, RequirementsTraceabilityConfig, SupportMatrixConfig,
+    SupportMatrixDocsClaimSourceConfig, SupportMatrixEntryConfig, TestRelationshipConfig,
+    TestRelationshipFixtureFamilyConfig, TestRelationshipIgnoredTestConfig,
+    TestRelationshipSourceConfig,
 };
 pub use quality::{QualityConfig, QualityScopeConfig};
 #[cfg(feature = "yaml-config")]

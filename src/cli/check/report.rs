@@ -2,6 +2,7 @@
 
 use crate::cli::config::ConfigError;
 use serde::{Deserialize, Serialize, Serializer};
+use serde_json::Value;
 use std::path::{Path, PathBuf};
 use thiserror::Error;
 
@@ -73,7 +74,8 @@ fn violation_stage_rank(rule: &str) -> u8 {
         rule if rule.starts_with("markdown_") => 2,
         rule if rule.starts_with("content_")
             || rule.starts_with("repository_reference_")
-            || rule.starts_with("requirements_traceability:") =>
+            || rule.starts_with("requirements_traceability:")
+            || rule.starts_with("computed_check:") =>
         {
             4
         }
@@ -99,6 +101,9 @@ pub struct StructureViolation {
     pub blocking: bool,
     /// Stable corrective context for fixing the violation or policy.
     pub corrective_context: String,
+    /// Machine-readable finding metadata when the producer supplies it.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub metadata: Option<Value>,
 }
 
 impl StructureViolation {
@@ -119,7 +124,13 @@ impl StructureViolation {
             severity: severity.as_str().to_string(),
             severity_label: severity.label().to_string(),
             blocking: severity.is_blocking(),
+            metadata: None,
         }
+    }
+
+    pub(in crate::cli::check) fn with_metadata(mut self, metadata: Option<Value>) -> Self {
+        self.metadata = metadata;
+        self
     }
 
     /// Whether this violation should make the check fail.
@@ -223,6 +234,9 @@ fn corrective_context_for_rule(rule: &str) -> &'static str {
     }
     if rule.starts_with("requirements_traceability:") {
         return "Link high-priority requirements to configured coverage, claims to evidence, evidence to source documents, and findings to owner/status metadata, or update extensions.requirements_traceability when the policy changed.";
+    }
+    if rule.starts_with("computed_check:") {
+        return "Fix the configured computed-check script, emitted finding JSON, derived project data, or extensions.computed_checks policy.";
     }
     if rule.starts_with("relationship:") {
         return "Create one of the expected counterpart/provider artifacts named in the relationship message, or update the declaring structure entry in .assura/config.yml.";

@@ -485,5 +485,6 @@ fn diagnostic_output(diagnostic: &Diagnostic) -> DiagnosticOutput {
             .location
             .as_ref()
             .map(|location| location.path.clone()),
+        metadata: diagnostic.metadata.clone(),
     }
 }

@@ -394,6 +394,33 @@ evidence links to source documents, and findings carry owner and status
 metadata. It does not infer domain-specific scoring, replace repository
 reference checks, or add a public plugin API.
 
+## Computed Checks
+
+Opt into experimental project-local computed findings with
+`extensions.computed_checks`:
+
+```yaml
+extensions:
+  computed_checks:
+    - id: rollup_score
+      severity: high
+      script: scripts/assura-rollup-score.sh
+      args:
+        - --threshold
+        - "80"
+      timeout_ms: 5000
+```
+
+Assura executes only configured project-relative scripts, passes a versioned
+JSON request on stdin, and accepts only versioned JSON findings on stdout.
+Each accepted finding becomes a normal diagnostic with a
+`computed_check:<policy-id>:<finding-code>` rule ID. Missing scripts, unsafe
+paths, invalid output, nonzero exits, and timeouts are reported as ordinary
+Assura findings so they flow through reports, doctor, agent-query gaps, hooks,
+and merge gates. Computed checks are an advanced first-party extension policy,
+not a public plugin API, remote execution surface, marketplace, or
+domain-specific scoring preset.
+
 ## First-Party Extension Policies
 
 `extensions.*` entries are first-party config policies executed by
@@ -412,6 +439,7 @@ cross-file policy does not fit ordinary `structure` notation.
 | `extensions.repository_references` | Experimental first-party | Locally provable repository-reference diagnostics. |
 | `extensions.agent_guidance` | Experimental first-party | `AGENTS.md` and project-local `SKILL.md` routing contracts. |
 | `extensions.requirements_traceability` | Experimental first-party | Content-runtime-backed requirement, claim, evidence, source-document, and finding traceability checks. |
+| `extensions.computed_checks` | Experimental first-party | Project-local script-backed computed findings with versioned JSON contracts. |
 | `extensions.relationships` | Internal generated first-party | Relationships normalized from `structure` captures, `exists:1`, `needs`, and `provides`. |
 
 Assura does not currently support remote plugin loading, shell-executed

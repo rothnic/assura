@@ -36,10 +36,14 @@ impl StructureChecker {
             && extensions.docs_lifecycles.is_empty()
             && extensions.agent_guidance.is_empty()
             && extensions.requirements_traceability.is_empty()
+            && extensions.computed_checks.is_empty()
         {
             return Ok(());
         }
 
+        if !extensions.computed_checks.is_empty() {
+            self.validate_computed_checks(&extensions.computed_checks, report);
+        }
         if !extensions.release_contracts.is_empty() {
             self.validate_release_contracts(&extensions.release_contracts, report)?;
         }

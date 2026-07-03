@@ -279,6 +279,9 @@ pub struct Diagnostic {
     pub target_id: Option<FactId>,
     /// Source location for editor and agent surfaces.
     pub location: Option<SourceLocation>,
+    /// Machine-readable producer metadata when available.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub metadata: Option<Value>,
 }
 
 /// Deterministic safe-fix proposal attached to a diagnostic.

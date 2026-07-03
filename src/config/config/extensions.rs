@@ -2,10 +2,12 @@
 
 mod agent_guidance;
 mod builders;
+mod computed_checks;
 mod repository_references;
 mod requirements_traceability;
 
 pub use agent_guidance::AgentGuidanceConfig;
+pub use computed_checks::ComputedCheckConfig;
 pub use repository_references::RepositoryReferenceConfig;
 pub use requirements_traceability::RequirementsTraceabilityConfig;
 use serde::{Deserialize, Serialize};
@@ -48,6 +50,10 @@ pub struct ExtensionConfig {
     /// policies executed by `assura check`.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub requirements_traceability: Vec<RequirementsTraceabilityConfig>,
+    /// Configured project-local script-backed computed checks executed by
+    /// `assura check`.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub computed_checks: Vec<ComputedCheckConfig>,
     /// Internal relationship constraints normalized from structure notation.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub relationships: Vec<RelationshipConstraintConfig>,

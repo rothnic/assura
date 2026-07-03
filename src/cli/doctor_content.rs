@@ -7,6 +7,7 @@ use std::collections::{BTreeMap, HashSet};
 use std::path::Path;
 
 pub(super) fn content_runtime_gaps(project_root: &Path, config: &Config) -> Vec<DoctorItem> {
+    let mut computed_gaps = computed_check_gaps(project_root, config);
     let traceability_policies = config
         .extensions
         .as_ref()
@@ -14,9 +15,9 @@ pub(super) fn content_runtime_gaps(project_root: &Path, config: &Config) -> Vec<
         .unwrap_or(&[]);
     if config.models.is_none() && config.collections.is_empty() {
         if traceability_policies.is_empty() {
-            return Vec::new();
+            return computed_gaps;
         }
-        return traceability_policies
+        computed_gaps.extend(traceability_policies
             .iter()
             .map(|policy| DoctorItem {
                 name: format!("requirements_traceability_inactive:{}", policy.id),
@@ -25,11 +26,11 @@ pub(super) fn content_runtime_gaps(project_root: &Path, config: &Config) -> Vec<
                     "Requirements traceability `{}` is configured but content runtime models and collections are inactive.",
                     policy.id
                 ),
-            })
-            .collect();
+            }));
+        return computed_gaps;
     }
     if config.models.is_none() && !traceability_policies.is_empty() {
-        return traceability_policies
+        computed_gaps.extend(traceability_policies
             .iter()
             .map(|policy| DoctorItem {
                 name: format!("requirements_traceability_inactive:{}", policy.id),
@@ -38,11 +39,11 @@ pub(super) fn content_runtime_gaps(project_root: &Path, config: &Config) -> Vec<
                     "Requirements traceability `{}` is configured but models.validation_artifact is missing.",
                     policy.id
                 ),
-            })
-            .collect();
+            }));
+        return computed_gaps;
     }
     let state = ContentDoctorState::load(project_root, config);
-    let mut gaps = Vec::new();
+    let mut gaps = computed_gaps;
     for finding in &state.findings {
         if matches!(
             finding.code,
@@ -98,6 +99,27 @@ pub(super) fn content_runtime_gaps(project_root: &Path, config: &Config) -> Vec<
         gaps.extend(traceability_policy_gaps(policy, config, &state));
     }
     gaps
+}
+
+fn computed_check_gaps(project_root: &Path, config: &Config) -> Vec<DoctorItem> {
+    let Some(extensions) = &config.extensions else {
+        return Vec::new();
+    };
+    extensions
+        .computed_checks
+        .iter()
+        .filter_map(|policy| {
+            let script_path = project_root.join(&policy.script);
+            (!script_path.is_file()).then(|| DoctorItem {
+                name: format!("computed_check_script_missing:{}", policy.id),
+                status: "gap",
+                detail: format!(
+                    "Computed check `{}` script `{}` is configured but missing.",
+                    policy.id, policy.script
+                ),
+            })
+        })
+        .collect()
 }
 
 fn traceability_policy_gaps(

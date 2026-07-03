@@ -1,6 +1,6 @@
 use super::{
-    AgentGuidanceConfig, CustomConstraintConfig, DocsLifecycleConfig, ExtensionConfig,
-    ManifestSemanticsConfig, ModuleTopologyConfig, RelationshipConstraintConfig,
+    AgentGuidanceConfig, ComputedCheckConfig, CustomConstraintConfig, DocsLifecycleConfig,
+    ExtensionConfig, ManifestSemanticsConfig, ModuleTopologyConfig, RelationshipConstraintConfig,
     ReleaseContractConfig, SupportMatrixConfig, TestRelationshipConfig,
 };
 
@@ -55,6 +55,12 @@ impl ExtensionConfig {
     /// Add an agent guidance and skill contract policy.
     pub fn with_agent_guidance(mut self, policy: AgentGuidanceConfig) -> Self {
         self.agent_guidance.push(policy);
+        self
+    }
+
+    /// Add a project-local script-backed computed check policy.
+    pub fn with_computed_check(mut self, policy: ComputedCheckConfig) -> Self {
+        self.computed_checks.push(policy);
         self
     }
 

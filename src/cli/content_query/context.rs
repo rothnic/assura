@@ -345,6 +345,7 @@ fn ingest_safe_fix_structure_report(ingestor: &mut FactIngestor, mut report: Str
     report.violations.retain(|violation| {
         violation.rule == "markdown_trailing_spaces"
             || violation.rule.starts_with("requirements_traceability:")
+            || violation.rule.starts_with("computed_check:")
     });
     if !report.violations.is_empty() {
         ingestor.ingest_check_report(&report);

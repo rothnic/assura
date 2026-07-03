@@ -295,6 +295,8 @@ pub(super) struct DiagnosticOutput {
     pub(super) message: String,
     #[serde(serialize_with = "serialize_optional_path")]
     pub(super) path: Option<PathBuf>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(super) metadata: Option<Value>,
 }
 
 #[derive(Debug, Serialize)]

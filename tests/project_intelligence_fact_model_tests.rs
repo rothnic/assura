@@ -119,6 +119,7 @@ fn project_intelligence_ingests_diagnostics_and_safe_fixes() {
             severity_label: "Low".to_string(),
             blocking: false,
             corrective_context: "Run `assura fix markdown`.".to_string(),
+            metadata: None,
         }],
     };
 

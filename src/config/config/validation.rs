@@ -1,3 +1,5 @@
+//! Config semantic validation.
+
 #[cfg(feature = "yaml-config")]
 use super::{
     Config, CustomConstraintConfig, DirectoryBundle, DirectoryNode, ExtensionConfig, FileBundle,
@@ -9,6 +11,8 @@ use glob::Pattern;
 use std::collections::HashSet;
 #[cfg(feature = "yaml-config")]
 use std::path::{Component, Path};
+#[cfg(feature = "yaml-config")]
+mod computed_checks;
 #[cfg(feature = "yaml-config")]
 mod docs_lifecycles;
 #[cfg(feature = "yaml-config")]
@@ -27,13 +31,11 @@ mod requirements_traceability;
 mod support_matrices;
 #[cfg(feature = "yaml-config")]
 mod test_relationships;
-/// Validate structure-first config semantics without the full validator stack.
 #[cfg(feature = "yaml-config")]
 pub(crate) fn validate_config_semantics(config: &Config) -> Result<(), String> {
     for (pattern, bundle) in &config.patterns {
         validate_file_bundle(bundle, &format!("patterns.{pattern}"))?;
     }
-
     for (path, node) in &config.structure {
         validate_directory_node(node, &format!("structure.{path}"))?;
     }
@@ -43,7 +45,6 @@ pub(crate) fn validate_config_semantics(config: &Config) -> Result<(), String> {
     if let Some(quality) = &config.quality {
         quality::validate_quality_config(quality)?;
     }
-
     Ok(())
 }
 
@@ -102,7 +103,6 @@ fn validate_directory_bundle(bundle: &DirectoryBundle, context: &str) -> Result<
 
     Ok(())
 }
-
 #[cfg(feature = "yaml-config")]
 fn validate_markdown_bundle(bundle: &MarkdownBundle, context: &str) -> Result<(), String> {
     if bundle.required_fields.is_some() {
@@ -201,6 +201,7 @@ fn validate_extension_config(config: &ExtensionConfig) -> Result<(), String> {
     requirements_traceability::validate_requirements_traceability_configs(
         &config.requirements_traceability,
     )?;
+    computed_checks::validate_computed_check_configs(&config.computed_checks)?;
     let mut relationship_ids = HashSet::new();
     for relationship in &config.relationships {
         validate_relationship_constraint(relationship)?;

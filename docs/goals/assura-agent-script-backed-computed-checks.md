@@ -2,7 +2,7 @@
 id: goal-assura-agent-script-backed-computed-checks
 type: goal
 title: Assura agent script backed computed checks
-status: planned
+status: completed
 created: 2026-07-02
 owners:
   - assura-maintainers
