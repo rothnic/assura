@@ -25,6 +25,9 @@ fn validate_computed_check_config(policy: &ComputedCheckConfig) -> Result<(), St
     let context = format!("extensions.computed_checks.{}", policy.id);
     validate_identifier(&policy.id, &format!("{context}.id"))?;
     validate_project_relative_script(&policy.script, &format!("{context}.script"))?;
+    if let Some(windows_script) = &policy.windows_script {
+        validate_project_relative_script(windows_script, &format!("{context}.windows_script"))?;
+    }
     if policy.timeout_ms == 0 || policy.timeout_ms > 60_000 {
         return Err(format!(
             "{context}.timeout_ms: expected a value from 1 to 60000"

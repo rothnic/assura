@@ -110,16 +110,56 @@ pub(super) fn ranked_next_actions(
     integration_target: Option<AgentIntegrationTarget>,
     content_template: AgentContentTemplate,
 ) -> Vec<RankedNextAction> {
-    let mut actions = vec![
+    let mut actions = vec![RankedNextAction {
+        priority: 1,
+        action: "Read the onboarding handoff",
+        reason: "The broad baseline is active but project specialization is still pending.",
+        affected_paths: vec![".assura/onboarding/agent-next.md"],
+        follow_up: ".assura/onboarding/agent-next.md".to_string(),
+    }];
+
+    if matches!(content_template, AgentContentTemplate::ProposalSbir) {
+        actions.extend([
+            RankedNextAction {
+                priority: 2,
+                action: "Reconcile proposal source documents",
+                reason: "Proposal evidence and package metadata must stay linked to source custody.",
+                affected_paths: vec!["source-documents/manifest.md", "proposals/evidence/"],
+                follow_up: "assura content references . --format json".to_string(),
+            },
+            RankedNextAction {
+                priority: 3,
+                action: "Fill missing proposal evidence",
+                reason: "High-priority proposal requirements need evidence before scorecards and package readiness are meaningful.",
+                affected_paths: vec!["proposals/evidence/"],
+                follow_up: "assura content agent-query diagnostics --format json".to_string(),
+            },
+            RankedNextAction {
+                priority: 4,
+                action: "Resolve proposal review findings",
+                reason: "Final package readiness depends on review findings carrying owner and resolved status.",
+                affected_paths: vec!["proposals/review-findings/"],
+                follow_up: "assura check --format agent --warn --max-issues 10 .".to_string(),
+            },
+            RankedNextAction {
+                priority: 5,
+                action: "Verify final proposal package metadata",
+                reason: "The package manifest and submission checklist are checked before gate-mode feedback.",
+                affected_paths: vec!["proposals/package/", "proposals/submission/"],
+                follow_up: "assura check --format agent --min-severity medium .".to_string(),
+            },
+        ]);
+    }
+
+    let generic_base_priority = if matches!(content_template, AgentContentTemplate::ProposalSbir) {
+        6
+    } else {
+        2
+    };
+
+    actions.extend([
         RankedNextAction {
-            priority: 1,
-            action: "Read the onboarding handoff",
-            reason: "The broad baseline is active but project specialization is still pending.",
-            affected_paths: vec![".assura/onboarding/agent-next.md"],
-            follow_up: ".assura/onboarding/agent-next.md".to_string(),
-        },
-        RankedNextAction {
-            priority: 2,
+            priority: generic_base_priority,
             action: "Ask remaining specialization questions",
             reason:
                 "Assura should not invent language, layout, naming, hook, or domain conventions.",
@@ -127,24 +167,24 @@ pub(super) fn ranked_next_actions(
             follow_up: ".assura/onboarding/questions.md".to_string(),
         },
         RankedNextAction {
-            priority: 3,
+            priority: generic_base_priority + 1,
             action: "Use advisory feedback while drafting",
             reason: "Warn mode reports guidance without blocking normal agent work.",
             affected_paths: vec![".assura/config.yml"],
             follow_up: "assura check --format agent --warn --max-issues 5 .".to_string(),
         },
         RankedNextAction {
-            priority: 4,
+            priority: generic_base_priority + 2,
             action: "Use gate feedback before push or CI",
             reason: "Gate mode preserves the configured severity contract before merge.",
             affected_paths: vec![".assura/config.yml"],
             follow_up: "assura check --format agent --min-severity medium .".to_string(),
         },
-    ];
+    ]);
 
     if let Some(target) = integration_target {
         actions.push(RankedNextAction {
-            priority: 5,
+            priority: generic_base_priority + 3,
             action: "Review host-agent integration bundle",
             reason: "Host wiring remains manual opt-in and should be reviewed before use.",
             affected_paths: vec![".assura/integrations/"],
@@ -154,7 +194,7 @@ pub(super) fn ranked_next_actions(
 
     if !content_template.activates_content() {
         actions.push(RankedNextAction {
-            priority: 6,
+            priority: generic_base_priority + 4,
             action: "Choose whether to activate content models",
             reason: "Content facts stay inactive until a template is selected deliberately.",
             affected_paths: vec![".assura/onboarding/questions.md"],

@@ -46,7 +46,8 @@ impl StructureChecker {
         policy: &ComputedCheckConfig,
         report: &mut StructureCheckReport,
     ) {
-        let script_abs = self.project_root.join(Path::new(&policy.script));
+        let selected_script = platform_script(policy);
+        let script_abs = self.project_root.join(Path::new(selected_script));
         if !script_abs.is_file() {
             self.push_computed_check_violation(
                 report,
@@ -55,7 +56,7 @@ impl StructureChecker {
                 "script_missing",
                 format!(
                     "Computed check `{}` script `{}` does not exist",
-                    policy.id, policy.script
+                    policy.id, selected_script
                 ),
                 None,
             );
@@ -168,11 +169,13 @@ impl StructureChecker {
             self.push_computed_check_violation_with_metadata(
                 report,
                 policy,
-                path,
-                &finding.code,
-                finding.message,
-                severity,
-                finding.metadata,
+                ComputedCheckViolationInput {
+                    path,
+                    code: finding.code,
+                    message: finding.message,
+                    severity: severity.map(str::to_string),
+                    metadata: finding.metadata,
+                },
             );
         }
     }
@@ -187,7 +190,15 @@ impl StructureChecker {
         severity: Option<&str>,
     ) {
         self.push_computed_check_violation_with_metadata(
-            report, policy, path, code, message, severity, None,
+            report,
+            policy,
+            ComputedCheckViolationInput {
+                path,
+                code: code.as_ref().to_string(),
+                message,
+                severity: severity.map(str::to_string),
+                metadata: None,
+            },
         );
     }
 
@@ -195,22 +206,30 @@ impl StructureChecker {
         &self,
         report: &mut StructureCheckReport,
         policy: &ComputedCheckConfig,
-        path: PathBuf,
-        code: impl AsRef<str>,
-        message: String,
-        severity: Option<&str>,
-        metadata: Option<serde_json::Value>,
+        violation: ComputedCheckViolationInput,
     ) {
         report.violations.push(
             StructureViolation::new(
-                path,
-                format!("computed_check:{}:{}", policy.id, code.as_ref()),
-                message,
-                severity.or(policy.severity.as_deref()).unwrap_or("medium"),
+                violation.path,
+                format!("computed_check:{}:{}", policy.id, violation.code),
+                violation.message,
+                violation
+                    .severity
+                    .as_deref()
+                    .or(policy.severity.as_deref())
+                    .unwrap_or("medium"),
             )
-            .with_metadata(metadata),
+            .with_metadata(violation.metadata),
         );
     }
+}
+
+struct ComputedCheckViolationInput {
+    path: PathBuf,
+    code: String,
+    message: String,
+    severity: Option<String>,
+    metadata: Option<serde_json::Value>,
 }
 
 struct ScriptExecutionError {
@@ -223,7 +242,8 @@ fn run_computed_check_script(
     script_abs: &Path,
     report: &StructureCheckReport,
 ) -> Result<ComputedCheckOutput, ScriptExecutionError> {
-    let mut child = Command::new(script_abs)
+    let mut command = command_for_script(script_abs);
+    let mut child = command
         .args(&policy.args)
         .current_dir(&report.project_root)
         .stdin(Stdio::piped())
@@ -326,6 +346,32 @@ fn run_computed_check_script(
             policy.id
         ),
     })
+}
+
+fn platform_script(policy: &ComputedCheckConfig) -> &str {
+    #[cfg(windows)]
+    if let Some(script) = policy.windows_script.as_deref() {
+        return script;
+    }
+    policy.script.as_str()
+}
+
+fn command_for_script(script_abs: &Path) -> Command {
+    #[cfg(windows)]
+    {
+        if script_abs
+            .extension()
+            .and_then(|extension| extension.to_str())
+            .is_some_and(|extension| {
+                matches!(extension.to_ascii_lowercase().as_str(), "bat" | "cmd")
+            })
+        {
+            let mut command = Command::new("cmd.exe");
+            command.arg("/C").arg(script_abs);
+            return command;
+        }
+    }
+    Command::new(script_abs)
 }
 
 fn truncate_stderr(stderr: &[u8]) -> String {

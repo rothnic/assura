@@ -2,7 +2,7 @@
 id: goal-assura-agent-proposal-sbir-domain-pack
 type: goal
 title: Assura agent proposal SBIR domain pack
-status: planned
+status: completed
 created: 2026-07-02
 owners:
   - assura-maintainers
@@ -54,9 +54,12 @@ and document-project foundations.
 
 ```bash
 cargo fmt --check
-cargo test content_runtime --quiet
-cargo test computed_checks --quiet
-cargo test --test project_intelligence_cli --quiet
+cargo check --workspace --all-targets --all-features --quiet
+cargo test --test computed_checks --quiet
+cargo test -p assura-check-cli --test compiled_computed_checks_cli --quiet
+cargo test --test project_intelligence_onboarding --quiet
+cargo test --test project_intelligence_proposal_sbir_onboarding --quiet
+cargo clippy --workspace --all-targets --all-features -- -D warnings
 cargo run --quiet -- check --format json .
 cargo xtask target-state
 cargo xtask docs
@@ -69,3 +72,9 @@ git diff --check
 Block if proposal/SBIR logic leaks into generic presets, if scoring cannot be
 audited from source records, if final package checks require unsafe binary
 reads, or if agent output suggests the pack is a substitute for expert review.
+
+## Progress Log
+
+| Date | Update | Evidence |
+| --- | --- | --- |
+| 2026-07-03 | Completed the optional proposal/SBIR domain pack. `assura agent onboard --content-template proposal-sbir` now composes the document-project baseline with proposal requirements, evidence, claims, scorecards, review findings, package manifests, submission checklists, proposal-specific requirements traceability, and platform-aware script-backed readiness checks. The generated agent handoff and ranked next actions prioritize source custody, missing proposal evidence, review findings, and final package readiness while preserving the generic presets as domain-neutral. | `src/cli/agent_onboarding_proposal_sbir_templates.rs`; `src/cli/agent_onboarding_proposal_sbir_scripts.rs`; `src/cli/agent_onboarding_content_templates.rs`; `src/cli/agent_lifecycle.rs`; `src/cli/check/computed_checks.rs`; `src/config/config/extensions/computed_checks.rs`; `tests/project_intelligence_proposal_sbir_onboarding.rs`; `tests/computed_checks.rs`; `crates/assura-check-cli/tests/compiled_computed_checks_cli.rs`; `docs/support-policy.md`; `docs/extension-api-boundaries.md`; `docs/compatibility-and-surface.md`; `website/src/content/docs/guides/agent-ready-onboarding.md`; `website/src/content/docs/reference/api.md`; `website/src/content/docs/reference/configuration.md`; `.trellis/tasks/archive/2026-07/07-03-07-03-agent-proposal-sbir-domain-pack/prd.md`; independent review agent `019f271f-4ea7-76b3-90b0-916d3c137d97`; `cargo fmt --check`; `cargo check --workspace --all-targets --all-features --quiet`; `cargo test --test computed_checks --quiet`; `cargo test -p assura-check-cli --test compiled_computed_checks_cli --quiet`; `cargo test --test project_intelligence_onboarding --quiet`; `cargo test --test project_intelligence_proposal_sbir_onboarding --quiet`; `cargo clippy --workspace --all-targets --all-features -- -D warnings`; `cargo run --quiet -- check --format json .`; `cargo xtask target-state`; `cargo xtask docs`; `cargo xtask evidence`; `git diff --check`. |

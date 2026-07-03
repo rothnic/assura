@@ -5,6 +5,7 @@ use crate::config::config::ComputedCheckConfig;
 struct PortableComputedCheckConfig {
     id: String,
     script: String,
+    windows_script: Option<String>,
     args: Vec<String>,
     timeout_ms: u64,
     severity: Option<String>,
@@ -15,6 +16,7 @@ impl From<ComputedCheckConfig> for PortableComputedCheckConfig {
         Self {
             id: config.id,
             script: config.script,
+            windows_script: config.windows_script,
             args: config.args,
             timeout_ms: config.timeout_ms,
             severity: config.severity,
@@ -27,6 +29,7 @@ impl From<PortableComputedCheckConfig> for ComputedCheckConfig {
         Self {
             id: config.id,
             script: config.script,
+            windows_script: config.windows_script,
             args: config.args,
             timeout_ms: config.timeout_ms,
             severity: config.severity,

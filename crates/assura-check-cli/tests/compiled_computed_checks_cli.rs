@@ -15,6 +15,7 @@ fn write_project(root: &Path) {
     - id: rollup_score
       severity: high
       script: scripts/rollup.sh
+      windows_script: scripts/rollup.cmd
       timeout_ms: 5000
 structure:
   ./:
@@ -37,6 +38,16 @@ printf '%s\n' '{"schema":"assura.computed-check.output.v1","findings":[]}'
 fn write_script(root: &Path, body: &str) {
     let path = root.join("scripts/rollup.sh");
     fs::write(&path, body).unwrap();
+    let cmd_body = if body.contains("score_low") {
+        r#"@echo off
+echo {"schema":"assura.computed-check.output.v1","findings":[{"code":"score_low","message":"Rollup score is below threshold","path":"docs/source.md","severity":"high"}]}
+"#
+    } else {
+        r#"@echo off
+echo {"schema":"assura.computed-check.output.v1","findings":[]}
+"#
+    };
+    fs::write(root.join("scripts/rollup.cmd"), cmd_body).unwrap();
     #[cfg(unix)]
     {
         let mut permissions = fs::metadata(&path).unwrap().permissions();

@@ -214,6 +214,8 @@ pub enum AgentContentTemplate {
     AgentProject,
     /// Activate agent-project facts plus source-document custody metadata.
     DocumentProject,
+    /// Activate document-project facts plus proposal/SBIR scoring and package checks.
+    ProposalSbir,
 }
 
 impl AgentContentTemplate {
@@ -223,6 +225,7 @@ impl AgentContentTemplate {
             Self::None => "none",
             Self::AgentProject => "agent-project",
             Self::DocumentProject => "document-project",
+            Self::ProposalSbir => "proposal-sbir",
         }
     }
 

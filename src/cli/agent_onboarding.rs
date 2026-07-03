@@ -84,6 +84,7 @@ fn run_agent_onboarding(
             path: ".assura/onboarding/doctor.json",
             contents: doctor_json,
             required: true,
+            executable: false,
         },
     )?);
 
@@ -222,6 +223,7 @@ fn materialize_file(project_root: &Path, file: GeneratedFile) -> Result<FileActi
             fs::create_dir_all(parent).map_err(|error| error.to_string())?;
         }
         fs::write(&path, &file.contents).map_err(|error| error.to_string())?;
+        set_executable_if_needed(&path, file.executable)?;
     }
     Ok(FileAction {
         path: file.path,
@@ -229,6 +231,25 @@ fn materialize_file(project_root: &Path, file: GeneratedFile) -> Result<FileActi
         existed,
         required: file.required,
     })
+}
+
+#[cfg(unix)]
+fn set_executable_if_needed(path: &Path, executable: bool) -> Result<(), String> {
+    if !executable {
+        return Ok(());
+    }
+    use std::os::unix::fs::PermissionsExt;
+
+    let mut permissions = fs::metadata(path)
+        .map_err(|error| error.to_string())?
+        .permissions();
+    permissions.set_mode(0o755);
+    fs::set_permissions(path, permissions).map_err(|error| error.to_string())
+}
+
+#[cfg(not(unix))]
+fn set_executable_if_needed(_path: &Path, _executable: bool) -> Result<(), String> {
+    Ok(())
 }
 
 fn materialize_config(project_root: &Path, file: GeneratedFile) -> Result<FileAction, String> {
@@ -355,10 +376,15 @@ fn verify_project(project_root: &Path, config: Option<PathBuf>) -> Result<Vec<Ch
 
 fn content_section(template: AgentContentTemplate) -> ContentSection {
     if template.activates_content() {
+        let detail = if matches!(template, AgentContentTemplate::ProposalSbir) {
+            "proposal/SBIR domain pack content models and checks are configured"
+        } else {
+            "baseline repo-native content models are configured"
+        };
         ContentSection {
             template: template.as_str(),
             status: "active",
-            detail: "baseline repo-native content models are configured",
+            detail,
         }
     } else {
         ContentSection {
@@ -370,18 +396,18 @@ fn content_section(template: AgentContentTemplate) -> ContentSection {
 }
 
 fn inactive_capabilities(template: AgentContentTemplate) -> Vec<CheckItem> {
-    let mut items = vec![
-        CheckItem {
-            name: "project_specialization",
-            status: "inactive",
-            detail: "waiting for user answers in .assura/onboarding/questions.md",
-        },
-        CheckItem {
+    let mut items = vec![CheckItem {
+        name: "project_specialization",
+        status: "inactive",
+        detail: "waiting for user answers in .assura/onboarding/questions.md",
+    }];
+    if !matches!(template, AgentContentTemplate::ProposalSbir) {
+        items.push(CheckItem {
             name: "domain_pack",
             status: "inactive",
-            detail: "proposal/SBIR and other domain packs are optional future packs",
-        },
-    ];
+            detail: "proposal/SBIR and other domain packs require explicit opt-in with --content-template proposal-sbir",
+        });
+    }
     if !template.activates_content() {
         items.push(CheckItem {
             name: "content_models",

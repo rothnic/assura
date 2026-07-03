@@ -138,6 +138,36 @@ fn computed_check_reports_missing_invalid_nonzero_and_timeout_scripts() {
 }
 
 #[test]
+fn computed_check_rejects_unsafe_windows_script_path() {
+    let project = computed_project_without_script("missing.sh", 5_000);
+    let config_path = project.path().join(".assura/config.yml");
+    let config = fs::read_to_string(&config_path).unwrap();
+    fs::write(
+        &config_path,
+        config.replace(
+            "      script: scripts/missing.sh\n",
+            "      script: scripts/missing.sh\n      windows_script: ../outside.cmd\n",
+        ),
+    )
+    .unwrap();
+
+    let output = run_assura(&[
+        "check",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]);
+    assert_eq!(
+        output.status.code(),
+        Some(2),
+        "stdout:\n{}\nstderr:\n{}",
+        stdout(&output),
+        stderr(&output)
+    );
+    assert!(stderr(&output).contains("windows_script"));
+}
+
+#[test]
 fn computed_check_rejects_script_symlink_that_escapes_project() {
     #[cfg(unix)]
     {

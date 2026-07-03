@@ -405,14 +405,16 @@ extensions:
     - id: rollup_score
       severity: high
       script: scripts/assura-rollup-score.sh
+      windows_script: scripts/assura-rollup-score.cmd
       args:
         - --threshold
         - "80"
       timeout_ms: 5000
 ```
 
-Assura executes only configured project-relative scripts, passes a versioned
-JSON request on stdin, and accepts only versioned JSON findings on stdout.
+Assura executes only configured project-relative scripts, selects
+`windows_script` on Windows when present, passes a versioned JSON request on
+stdin, and accepts only versioned JSON findings on stdout.
 Each accepted finding becomes a normal diagnostic with a
 `computed_check:<policy-id>:<finding-code>` rule ID. Missing scripts, unsafe
 paths, invalid output, nonzero exits, and timeouts are reported as ordinary

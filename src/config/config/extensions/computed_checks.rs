@@ -8,6 +8,9 @@ pub struct ComputedCheckConfig {
     pub id: String,
     /// Project-local script path, relative to the project root.
     pub script: String,
+    /// Optional Windows-specific project-local script path.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub windows_script: Option<String>,
     /// Literal arguments passed to the script without shell expansion.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub args: Vec<String>,

@@ -2,6 +2,7 @@
 
 use super::agent_onboarding::DetectedSection;
 use super::agent_onboarding_content_templates as content;
+use super::agent_onboarding_proposal_sbir_templates as proposal_sbir;
 use super::AgentContentTemplate;
 
 pub(super) fn baseline_files(
@@ -13,6 +14,7 @@ pub(super) fn baseline_files(
             path: ".assura/config.yml",
             contents: agent_ready_config(content_template),
             required: true,
+            executable: false,
         },
         GeneratedFile::static_file(".assura/presets.lock.yml", presets_lock()),
         GeneratedFile::static_file("AGENTS.md", agents_md()),
@@ -42,10 +44,14 @@ pub(super) fn baseline_files(
             path: ".assura/onboarding/summary.md",
             contents: onboarding_summary(detected),
             required: true,
+            executable: false,
         },
         GeneratedFile::static_file(".assura/onboarding/questions.md", onboarding_questions()),
         GeneratedFile::static_file(".assura/onboarding/lifecycle.md", onboarding_lifecycle()),
-        GeneratedFile::static_file(".assura/onboarding/agent-next.md", agent_next()),
+        GeneratedFile::static_file(
+            ".assura/onboarding/agent-next.md",
+            agent_next(content_template),
+        ),
     ];
     files.extend(content::content_template_files(content_template));
     files
@@ -56,6 +62,7 @@ pub(super) struct GeneratedFile {
     pub(super) path: &'static str,
     pub(super) contents: String,
     pub(super) required: bool,
+    pub(super) executable: bool,
 }
 
 impl GeneratedFile {
@@ -64,6 +71,16 @@ impl GeneratedFile {
             path,
             contents: contents.to_string(),
             required: true,
+            executable: false,
+        }
+    }
+
+    pub(super) fn executable_file(path: &'static str, contents: &'static str) -> Self {
+        Self {
+            path,
+            contents: contents.to_string(),
+            required: true,
+            executable: true,
         }
     }
 }
@@ -410,7 +427,11 @@ manual host wiring.
 "#
 }
 
-fn agent_next() -> &'static str {
+fn agent_next(content_template: AgentContentTemplate) -> &'static str {
+    if matches!(content_template, AgentContentTemplate::ProposalSbir) {
+        return proposal_sbir::agent_next();
+    }
+
     r#"# Agent Next
 
 Assura is installed and the broad agent-ready baseline is active.

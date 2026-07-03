@@ -310,7 +310,7 @@ commands:
         values: ["auto", "generic", "codex", "opencode", "claude", "pi"]
       --content-template:
         takes_value: true
-        values: ["none", "agent-project", "document-project"]
+        values: ["none", "agent-project", "document-project", "proposal-sbir"]
       --format:
         aliases: ["-f"]
         takes_value: true

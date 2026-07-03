@@ -193,8 +193,21 @@ and `docs/final/` on top of the broad project records. They validate referenced
 source file paths through manifest metadata without requiring binary files to
 be read as text.
 
-Domain packs, including proposal or SBIR-specific scoring, are optional
-roadmap/domain behavior. They are not part of the core agent-project baseline.
+Use the proposal/SBIR domain pack only when the repository is explicitly a
+proposal workspace:
+
+```bash
+assura agent onboard . --content-template proposal-sbir --format json
+```
+
+The proposal/SBIR pack composes the document-project baseline with proposal
+requirements, evidence, claims, scorecards, review findings, package manifests,
+submission checklists, traceability checks, and a project-local computed check
+for readiness. It is not part of the core agent-project or generic
+document-project baselines.
+Other domain packs remain roadmap behavior, and proposal/SBIR scoring is not
+part of the core agent-project baseline.
+The proposal/SBIR pack is not part of the core agent-project baseline.
 
 ## Lifecycle Profiles
 
@@ -216,8 +229,8 @@ After the user answers the generated questions:
 
 1. Update `.assura/config.yml` with the chosen language, layout, naming, and
    strictness rules.
-2. Activate `agent-project` or `document-project` content templates when the
-   user wants modeled facts.
+2. Activate `agent-project`, `document-project`, or an explicit domain pack
+   such as `proposal-sbir` when the user wants modeled facts.
 3. Add host-agent integration bundles only for supported adapters the user
    wants to wire manually.
 4. Keep optional domain packs separate from the core baseline.

@@ -113,6 +113,14 @@ const DOCUMENT_PROJECT_RELATIONS: &str = r#"  topics.related_requirements:
     many: true
 "#;
 
+pub(super) fn content_collections() -> &'static str {
+    DOCUMENT_PROJECT_COLLECTIONS
+}
+
+pub(super) fn content_relations() -> &'static str {
+    DOCUMENT_PROJECT_RELATIONS
+}
+
 fn topic_document_project_baseline() -> &'static str {
     r#"---
 id: topic-document-project-baseline
