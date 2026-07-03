@@ -347,3 +347,22 @@ the exact missing input.
   - `cargo run --quiet -- check --format json .` passed.
 - Next action: run the broader Rust validation, commit and push the Windows
   fixture fix, then re-check PR #139 on the new head.
+
+### 2026-07-03 - Iteration 1 Windows Cmd Path Fix
+
+- Pushed Windows fixture fix to PR #139 at
+  `32762fc0f93447fd881a0e1cfe3b8f707704a28c`.
+- Remote re-check removed the `.sh` spawn error, but Windows Test Suite still
+  failed in `tests/computed_checks.rs` with computed-check `nonzero_exit`.
+- Remote failing test evidence: `.cmd` fixture scripts launched through
+  `cmd.exe` received canonical temp paths with a Windows extended-length
+  `\\?\` prefix, and `cmd.exe` returned `The system cannot find the path
+  specified.`
+- Local fix:
+  - kept computed-check policy semantics unchanged;
+  - normalized extended-length `\\?\` and `\\?\UNC\` paths before passing
+    `.cmd`/`.bat` scripts to `cmd.exe`;
+  - launched batch scripts through `cmd.exe /D /C call` so literal arguments
+    still flow to the fixture script.
+- Next action: rerun focused computed-check and full validation gates, commit
+  and push the runtime Windows path fix, then re-check PR #139 on the new head.

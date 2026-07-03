@@ -367,11 +367,27 @@ fn command_for_script(script_abs: &Path) -> Command {
             })
         {
             let mut command = Command::new("cmd.exe");
-            command.arg("/C").arg(script_abs);
+            command
+                .arg("/D")
+                .arg("/C")
+                .arg("call")
+                .arg(cmd_compatible_script_path(script_abs));
             return command;
         }
     }
     Command::new(script_abs)
+}
+
+#[cfg_attr(not(windows), allow(dead_code))]
+fn cmd_compatible_script_path(script_abs: &Path) -> PathBuf {
+    let path = script_abs.to_string_lossy();
+    let Some(stripped) = path.strip_prefix(r"\\?\") else {
+        return script_abs.to_path_buf();
+    };
+    if let Some(unc) = stripped.strip_prefix(r"UNC\") {
+        return PathBuf::from(format!(r"\\{unc}"));
+    }
+    PathBuf::from(stripped)
 }
 
 fn truncate_stderr(stderr: &[u8]) -> String {
@@ -447,4 +463,26 @@ fn valid_severity(value: &str) -> bool {
         value.to_ascii_lowercase().as_str(),
         "low" | "medium" | "high" | "critical"
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::cmd_compatible_script_path;
+    use std::path::{Path, PathBuf};
+
+    #[test]
+    fn cmd_compatible_script_path_strips_extended_drive_prefix() {
+        assert_eq!(
+            cmd_compatible_script_path(Path::new(r"\\?\C:\Temp\rollup.cmd")),
+            PathBuf::from(r"C:\Temp\rollup.cmd")
+        );
+    }
+
+    #[test]
+    fn cmd_compatible_script_path_strips_extended_unc_prefix() {
+        assert_eq!(
+            cmd_compatible_script_path(Path::new(r"\\?\UNC\server\share\rollup.cmd")),
+            PathBuf::from(r"\\server\share\rollup.cmd")
+        );
+    }
 }
