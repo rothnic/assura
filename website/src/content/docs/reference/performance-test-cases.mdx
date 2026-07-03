@@ -11,6 +11,8 @@ Assura reports four kinds of evidence:
 
 - current checked cases: generated LS-Lint-equivalent repositories in the
   `realistic-equivalent` cohort
+- native checked cases: generated Assura-only content and agent workflow
+  repositories in the `assura-native` cohort
 - optional external cases: pinned real repositories in the
   `real-repo-headline` cohort
 - support cases: generated fixtures in `generated-fixtures-v1` and
@@ -50,6 +52,61 @@ target/release/assura performance-report \
   --history benches/history/ls-lint-comparison-history.jsonl \
   --website-dir website/public/data/performance \
   --iterations 5
+```
+
+## Assura-Native Checked Cohort
+
+The native report is generated with `assura performance-report --suite native`.
+It writes `benches/history/native-current.json`,
+`benches/history/native-history.jsonl`,
+`website/public/data/performance/native-current.json`, and
+`website/public/data/performance/native-history.jsonl`.
+
+Native rows use `fixture_acceptance=assura-native-diagnostic` because they do
+not have LS-Lint equivalents. They are still merge-gated by
+`cargo xtask native-performance-no-regression`, which checks the full fixture
+matrix, pass status, sample presence, expected Assura exit status, and native
+report metadata.
+
+Current native fixtures:
+
+- `native_small`
+- `native_medium`
+- `native_large`
+- `native_reference_heavy`
+- `native_adapter_mix`
+- `native_real_project`
+
+Current native row families:
+
+- `native:content-check-cli`
+- `native:content-collections-cli`
+- `native:content-instances-cli`
+- `native:content-show-cli`
+- `native:content-expand-cli`
+- `native:content-search-cli`
+- `native:content-missing-relations-cli`
+- `native:content-references-cli`
+- `native:context-pack-cli`
+- `native:agent-query-keyword-search-cli`
+- `native:agent-query-missing-relations-cli`
+- `native:markdown-safe-fix-dry-run-cli`
+- `native:session-agent-context-cli`
+- `native:daemon-status-cli`
+
+Refresh the native artifacts with:
+
+```bash
+cargo build --release --bin assura --no-default-features --features json-output,yaml-config
+cargo build --release --bin assura-full
+cargo build --release -p assura-check-cli
+target/release/assura performance-report \
+  --suite native \
+  --output benches/history/native-current.json \
+  --history benches/history/native-history.jsonl \
+  --website-dir website/public/data/performance \
+  --iterations 5
+cargo xtask native-performance-no-regression benches/history/native-current.json
 ```
 
 ## Optional Pinned Repository Cases

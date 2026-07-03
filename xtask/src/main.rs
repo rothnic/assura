@@ -4894,6 +4894,29 @@ fn check_docs_release_performance(checks: &mut Checks) {
         ),
         ".github/workflows/ci.yml: Performance Report job must generate a 5-iteration report, enforce cargo xtask performance-no-slower on that report, and keep summary/artifact steps on failure",
     );
+    checks.require(
+        text_contains_ordered(
+            &ci_workflow,
+            &[
+                "- name: Generate native performance report",
+                "--suite native",
+                "--output target/performance/native-current.json",
+                "--history target/performance/native-history.jsonl",
+                "--iterations 5",
+                "- name: Enforce native performance gate",
+                "run: cargo xtask native-performance-no-regression target/performance/native-current.json",
+                "name: native-performance-report",
+            ],
+        ),
+        ".github/workflows/ci.yml: Performance Report job must generate, gate, and upload the native performance report",
+    );
+
+    check_native_performance_artifacts(
+        checks,
+        &performance_text,
+        &performance_implementation_text,
+        &performance_cases_text,
+    );
 
     let current_cohort = bench_current
         .pointer("/claim_summary/fixture_cohort")
@@ -5008,6 +5031,98 @@ fn check_docs_release_performance(checks: &mut Checks) {
         checks.require(
             goal_13_text.contains("accepted bounded follow-up"),
             "Goal 13 progress log: missing accepted bounded follow-up record",
+        );
+    }
+}
+
+fn check_native_performance_artifacts(
+    checks: &mut Checks,
+    performance_text: &str,
+    performance_implementation_text: &str,
+    performance_cases_text: &str,
+) {
+    let Ok(bench_native) =
+        serde_json::from_str::<Value>(&read("benches/history/native-current.json"))
+    else {
+        checks.add("benches/history/native-current.json: invalid JSON");
+        return;
+    };
+    let Ok(website_native) =
+        serde_json::from_str::<Value>(&read("website/public/data/performance/native-current.json"))
+    else {
+        checks.add("website/public/data/performance/native-current.json: invalid JSON");
+        return;
+    };
+    checks.require(
+        bench_native == website_native,
+        "native performance current.json drift: benches/history and website/public data must match",
+    );
+    checks.require(
+        read("benches/history/native-history.jsonl")
+            == read("website/public/data/performance/native-history.jsonl"),
+        "native performance history drift: benches/history and website/public data must match",
+    );
+    checks.require(
+        bench_native.get("schema_version").and_then(Value::as_str) == Some("assura.performance.v1"),
+        "native performance current.json: unexpected schema_version",
+    );
+    checks.require(
+        bench_native
+            .get("source_worktree_dirty")
+            .and_then(Value::as_bool)
+            == Some(false),
+        "native performance current.json: source_worktree_dirty must be false",
+    );
+    checks.require(
+        bench_native.get("ls_lint_package").and_then(Value::as_str) == Some("not-applicable"),
+        "native performance current.json: ls_lint_package must be not-applicable",
+    );
+    let native_command = bench_native
+        .get("command_line")
+        .and_then(Value::as_str)
+        .unwrap_or_default();
+    for (option, expected_value) in [
+        ("--suite", "native"),
+        ("--output", "benches/history/native-current.json"),
+        ("--history", "benches/history/native-history.jsonl"),
+        ("--website-dir", "website/public/data/performance"),
+    ] {
+        checks.require(
+            command_option_value(native_command, option) == Some(expected_value),
+            format!("native performance command_line must set {option} to {expected_value}"),
+        );
+        checks.require(
+            text_contains_option_value(performance_text, option, expected_value)
+                || text_contains_option_value(performance_cases_text, option, expected_value),
+            format!("native performance docs command missing {option} {expected_value}"),
+        );
+    }
+    match native_performance_failures(&bench_native) {
+        Ok(failures) => checks.require(
+            failures.is_empty(),
+            format!("native performance current.json gate failed: {failures:?}"),
+        ),
+        Err(error) => checks.add(format!(
+            "native performance current.json gate could not be evaluated: {error}"
+        )),
+    }
+    for marker in [
+        "native-current.json",
+        "native-history.jsonl",
+        "assura-native-diagnostic",
+        "native-performance-no-regression",
+    ] {
+        checks.require(
+            performance_text.contains(marker)
+                || performance_implementation_text.contains(marker)
+                || performance_cases_text.contains(marker),
+            format!("performance docs: missing native performance marker {marker}"),
+        );
+    }
+    for fixture in NATIVE_PERFORMANCE_FIXTURES {
+        checks.require(
+            performance_cases_text.contains(&format!("`{fixture}`")),
+            format!("performance test cases docs: missing native fixture {fixture}"),
         );
     }
 }

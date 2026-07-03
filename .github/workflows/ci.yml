@@ -466,6 +466,15 @@ jobs:
           --iterations 5
     - name: Enforce no-slower gate
       run: cargo xtask performance-no-slower target/performance/ls-lint-comparison.json
+    - name: Generate native performance report
+      run: |
+        target/release/assura performance-report \
+          --suite native \
+          --output target/performance/native-current.json \
+          --history target/performance/native-history.jsonl \
+          --iterations 5
+    - name: Enforce native performance gate
+      run: cargo xtask native-performance-no-regression target/performance/native-current.json
     - name: Summarize performance
       if: always()
       run: |
@@ -538,6 +547,28 @@ jobs:
                 for phase in phases
             ]
             print(f"| `{fixture}` | " + " | ".join(values) + " |")
+
+        native_path = Path("target/performance/native-current.json")
+        if native_path.exists():
+            native = json.loads(native_path.read_text())
+            native_rows = native["results"]
+            print()
+            print("## Assura Native Performance")
+            print()
+            print(f"- Rows: `{len(native_rows)}`")
+            print(f"- Commit: `{native['commit_sha']}`")
+            print(f"- Source dirty: `{native['source_worktree_dirty']}`")
+            print("- Full machine-readable native report is attached as `native-performance-report`.")
+            print()
+            print("| Fixture | Rows | Slowest median |")
+            print("| --- | ---: | ---: |")
+            for fixture in sorted({row["fixture_id"] for row in native_rows}):
+                fixture_rows = [row for row in native_rows if row["fixture_id"] == fixture]
+                slowest = max(
+                    fixture_rows,
+                    key=lambda row: row["median_runtime_ms"] or 0,
+                )
+                print(f"| `{fixture}` | {len(fixture_rows)} | {median(slowest)} `{slowest['row_family']}` |")
         PY
     - name: Upload performance artifact
       if: always()
@@ -545,5 +576,15 @@ jobs:
       with:
         name: ls-lint-performance-report
         path: target/performance/ls-lint-comparison.json
+        if-no-files-found: error
+        retention-days: 30
+    - name: Upload native performance artifact
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: native-performance-report
+        path: |
+          target/performance/native-current.json
+          target/performance/native-history.jsonl
         if-no-files-found: error
         retention-days: 30

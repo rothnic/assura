@@ -555,3 +555,37 @@ the exact missing input.
   - `cargo xtask native-performance-no-regression benches/history/native-current.json`
     passed;
   - `cargo xtask performance-no-slower benches/history/current.json` passed.
+
+### 2026-07-03 - Subgoal 6 Native Release Evidence Wiring
+
+- Published native performance suite commit to PR #139:
+  `2edf9703e4f6c613d47bcc554a1780e93751d723`.
+- Remote PR checks passed on the pushed head, including Documentation Scope,
+  CI Scope, Security Scope, Workers build, Check, Clippy, Code Coverage,
+  Evidence Gates, Rustfmt, Security Audit, Performance Report, platform Test
+  Suites, Release Bundle Smoke, Windows Installer Smoke, and installable
+  adoption smokes for macOS, Ubuntu, and Windows.
+- Cleaned the PR handoff comment to remove overfit domain-specific wording and
+  name the native performance suite, checked history, website data, and native
+  regression gate.
+- Release-evidence follow-up:
+  - CI Performance Report job now generates
+    `target/performance/native-current.json`, enforces
+    `cargo xtask native-performance-no-regression`, summarizes the native
+    matrix, and uploads `native-performance-report`;
+  - `cargo xtask target-state` now verifies native checked data mirrors,
+    native report metadata, native matrix gate output, native docs markers,
+    and native CI wiring;
+  - website performance docs now surface `native-current.json`,
+    `native-history.jsonl`, the six native fixtures, native row families, and
+    the distinction between `assura-native-diagnostic` rows and the LS-Lint
+    cold CLI gate;
+  - `website/src/components/performance-evidence.astro` now renders an
+    Assura-native performance section from the checked native report.
+- Validation:
+  - `cargo fmt --check` passed;
+  - `cargo xtask target-state` passed;
+  - `cargo test -p xtask native_performance_gate --quiet` passed;
+  - `cargo run --quiet -- check --format json .` passed;
+  - `git diff --check` passed;
+  - `cargo xtask docs` passed.
