@@ -92,6 +92,7 @@ quality:
         - ".github/workflows/**"
         - ".cargo/config.toml"
         - "scripts/ci-scope.sh"
+        - "scripts/ci-scope-github.sh"
         - "scripts/check-ci-scope.sh"
         - "scripts/summarize-rust-cache.sh"
         - "xtask/**"
@@ -1167,6 +1168,7 @@ structure:
           allowed_names:
             - "check-ci-scope.sh"
             - "ci-scope.sh"
+            - "ci-scope-github.sh"
             - "smoke-install-adoption.ps1"
             - "smoke-install-adoption.sh"
             - "summarize-rust-cache.sh"

@@ -5579,6 +5579,7 @@ fn active_root_quality_files() -> Vec<String> {
         "docs/analysis/review-record-template.md".to_string(),
         AUDIT.to_string(),
         "scripts/ci-scope.sh".to_string(),
+        "scripts/ci-scope-github.sh".to_string(),
         "scripts/check-ci-scope.sh".to_string(),
     ];
     paths.extend(

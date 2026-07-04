@@ -23,23 +23,9 @@ jobs:
     - name: Classify changed paths
       id: scope
       shell: bash
-      run: |
-        case "${{ github.event_name }}" in
-          pull_request)
-            scripts/ci-scope.sh \
-              --base "${{ github.event.pull_request.base.sha }}" \
-              --head "${{ github.event.pull_request.head.sha }}" \
-              --merge-base
-            ;;
-          push)
-            scripts/ci-scope.sh \
-              --base "${{ github.event.before }}" \
-              --head "${{ github.sha }}"
-            ;;
-          *)
-            scripts/ci-scope.sh --all "unsupported event"
-            ;;
-        esac
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: scripts/ci-scope-github.sh
 
   docs:
     name: Build Documentation

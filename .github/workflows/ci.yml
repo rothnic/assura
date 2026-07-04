@@ -21,6 +21,18 @@ jobs:
       performance: ${{ steps.scope.outputs.performance }}
       evidence: ${{ steps.scope.outputs.evidence }}
       website: ${{ steps.scope.outputs.website }}
+      scope_mode: ${{ steps.scope.outputs.scope_mode }}
+      scope_reason: ${{ steps.scope.outputs.scope_reason }}
+      full_rust: ${{ steps.scope.outputs.full_rust }}
+      full_release: ${{ steps.scope.outputs.full_release }}
+      full_performance: ${{ steps.scope.outputs.full_performance }}
+      full_evidence: ${{ steps.scope.outputs.full_evidence }}
+      full_website: ${{ steps.scope.outputs.full_website }}
+      delta_rust: ${{ steps.scope.outputs.delta_rust }}
+      delta_release: ${{ steps.scope.outputs.delta_release }}
+      delta_performance: ${{ steps.scope.outputs.delta_performance }}
+      delta_evidence: ${{ steps.scope.outputs.delta_evidence }}
+      delta_website: ${{ steps.scope.outputs.delta_website }}
     steps:
     - uses: actions/checkout@v4
       with:
@@ -28,23 +40,31 @@ jobs:
     - name: Classify changed paths
       id: scope
       shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: scripts/ci-scope-github.sh
+    - name: Summarize CI scope decision
+      shell: bash
       run: |
-        case "${{ github.event_name }}" in
-          pull_request)
-            scripts/ci-scope.sh \
-              --base "${{ github.event.pull_request.base.sha }}" \
-              --head "${{ github.event.pull_request.head.sha }}" \
-              --merge-base
-            ;;
-          push)
-            scripts/ci-scope.sh \
-              --base "${{ github.event.before }}" \
-              --head "${{ github.sha }}"
-            ;;
-          *)
-            scripts/ci-scope.sh --all "unsupported event"
-            ;;
-        esac
+        cat <<'MD' >> "$GITHUB_STEP_SUMMARY"
+        ## CI Scope Decision
+
+        | Scope | Effective | Full PR/Push | Delta |
+        | --- | --- | --- | --- |
+        | Mode | `${{ steps.scope.outputs.scope_mode }}` | `full` | `delta` |
+        | Reason | `${{ steps.scope.outputs.scope_reason }}` |  |  |
+        | Rust | `${{ steps.scope.outputs.rust }}` | `${{ steps.scope.outputs.full_rust }}` | `${{ steps.scope.outputs.delta_rust }}` |
+        | Release | `${{ steps.scope.outputs.release }}` | `${{ steps.scope.outputs.full_release }}` | `${{ steps.scope.outputs.delta_release }}` |
+        | Performance | `${{ steps.scope.outputs.performance }}` | `${{ steps.scope.outputs.full_performance }}` | `${{ steps.scope.outputs.delta_performance }}` |
+        | Evidence | `${{ steps.scope.outputs.evidence }}` | `${{ steps.scope.outputs.full_evidence }}` | `${{ steps.scope.outputs.delta_evidence }}` |
+        | Website | `${{ steps.scope.outputs.website }}` | `${{ steps.scope.outputs.full_website }}` | `${{ steps.scope.outputs.delta_website }}` |
+
+        Pull request synchronize events use the commit delta as the effective
+        scope only when skipped full-scope jobs already passed on the previous
+        PR head. Opened/reopened PRs, pushes, schedules, workflow/classifier
+        changes, unavailable delta state, and missing previous-head evidence
+        fall back to full scope.
+        MD
 
   check:
     name: Check

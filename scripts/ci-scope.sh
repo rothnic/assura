@@ -7,6 +7,7 @@ Usage:
   scripts/ci-scope.sh --base <sha> --head <sha> [--merge-base]
   scripts/ci-scope.sh --files-from <path|->
   scripts/ci-scope.sh --all [reason]
+  scripts/ci-scope.sh --prefix <output-prefix> ...
 
 Classifies changed paths into CI scopes and writes GitHub Actions outputs when
 GITHUB_OUTPUT is set. Unknown diff state falls back to all scopes.
@@ -18,6 +19,7 @@ head_sha=""
 merge_base=false
 files_from=""
 force_all_reason=""
+output_prefix=""
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -43,6 +45,10 @@ while [ "$#" -gt 0 ]; do
       if [ "$#" -gt 0 ] && [[ "$1" != --* ]]; then
         shift
       fi
+      ;;
+    --prefix)
+      output_prefix="${2:-}"
+      shift 2
       ;;
     -h|--help)
       usage
@@ -79,9 +85,10 @@ set_all() {
 append_output() {
   local name="$1"
   local value="$2"
-  printf '%s=%s\n' "$name" "$value"
+  local output_name="${output_prefix}${name}"
+  printf '%s=%s\n' "$output_name" "$value"
   if [ -n "${GITHUB_OUTPUT:-}" ]; then
-    printf '%s=%s\n' "$name" "$value" >> "$GITHUB_OUTPUT"
+    printf '%s=%s\n' "$output_name" "$value" >> "$GITHUB_OUTPUT"
   fi
 }
 
@@ -127,7 +134,7 @@ classify_path() {
   local path="$1"
 
   case "$path" in
-    .github/workflows/*|.cargo/config.toml|xtask/*|xtask/**|scripts/ci-scope.sh|scripts/summarize-rust-cache.sh)
+    .github/workflows/*|.cargo/config.toml|xtask/*|xtask/**|scripts/ci-scope.sh|scripts/ci-scope-github.sh|scripts/summarize-rust-cache.sh)
       set_all "workflow, classifier, or validation command changed"
       return
       ;;

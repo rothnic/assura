@@ -115,11 +115,29 @@ Phases are cumulative for normal development: `frequent` is the local loop,
 adds final merge confidence. `release` adds release-specific checks.
 `scheduled` is separate for background audits.
 
-GitHub Actions currently uses `scripts/ci-scope.sh` as the lightweight bootstrap
-classifier before running expensive jobs. It mirrors the same policy shape but
-does not invoke `assura quality plan` yet because compiling Assura inside the
-first scope job would erase the speed win for docs-only changes. Classifier
-policy is covered by `cargo xtask evidence`; test it directly with:
+GitHub Actions uses `scripts/ci-scope-github.sh` as the lightweight bootstrap
+classifier before running expensive jobs. That wrapper calls
+`scripts/ci-scope.sh` and records two scopes when possible:
+
+- full scope: the full PR or push diff;
+- effective scope: the scope used by jobs in the current workflow run.
+
+For `pull_request` `synchronize` events, effective scope can be the commit
+delta from the previous PR head to the new PR head. If the delta would skip a
+heavy full-scope job family, the wrapper first checks the previous PR head for
+successful check runs in that family. This lets docs/planning-only follow-up
+commits avoid rerunning heavy Rust, release, performance, coverage, rustdoc,
+security, and install-smoke jobs after those jobs are already green. If the
+previous-head evidence is missing or not green, the wrapper falls back to full
+scope.
+
+Opened/reopened PRs, pushes, schedules, workflow/classifier changes, and
+unavailable delta state use full scope.
+
+The wrapper mirrors the same policy shape but does not invoke
+`assura quality plan` yet because compiling Assura inside the first scope job
+would erase the speed win for docs-only changes. Classifier policy is covered by
+`cargo xtask evidence`; test it directly with:
 
 ```bash
 scripts/check-ci-scope.sh
@@ -138,6 +156,11 @@ Workflow or classifier changes intentionally force every CI scope. Docs,
 Trellis, skill, Assura config, and agent-policy-only changes keep evidence
 validation and Assura self-check active without scheduling Rust compile/test,
 release, coverage, rustdoc, or performance jobs.
+
+Branch names are useful routing hints, but they are not the CI authority. Use
+`docs/*` or `planning/*` branch names for documentation and backlog-only work
+when practical, and prefer a separate PR for planning-only follow-ups. CI still
+uses changed paths, not branch names, to decide which jobs are required.
 
 Security Audit uses the same classifier. It runs for Cargo metadata changes and
 scheduled audits; source-only Rust changes are covered by Rust compile/test
