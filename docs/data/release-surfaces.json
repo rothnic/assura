@@ -121,6 +121,13 @@
       "detail_path": "docs/goals/assura-agent-integration-lifecycle.md"
     },
     {
+      "id": "agent-ready-doctor-explain",
+      "label": "Agent-ready doctor and explain",
+      "status": "experimental",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-agent-doctor-explain-feedback.md"
+    },
+    {
       "id": "agent-daemon-nudges",
       "label": "Agent daemon nudges",
       "status": "experimental",

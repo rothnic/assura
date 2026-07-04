@@ -1,0 +1,16 @@
+{"path":".agents/skills/assura-structure-fit/SKILL.md","reason":"New concise skill entrypoint for Assura structure mismatch reasoning."}
+{"path":".agents/skills/assura-structure-fit/references/structure-fit-check.md","reason":"Progressively disclosed deeper guidance behind the STRUCTURE_FIT_CHECK anchor."}
+{"path":"AGENTS.md","reason":"Register the new skill as a lean routing entry for future agents."}
+{"path":".assura/config.yml","reason":"Whitelist the new repo-local skill and its reference file without allowing arbitrary skill structure."}
+{"path":"src/cli/agent_onboarding_templates.rs","reason":"Review whether generated onboarding should reference project-local skill install/routing behavior."}
+{"path":"src/cli/agent_onboarding_structure_fit_templates.rs","reason":"Generated structure-fit skill and reference contents are kept outside the main onboarding template file to respect file length limits."}
+{"path":"src/cli/mod.rs","reason":"Register the generated structure-fit template module."}
+{"path":"website/src/content/docs/guides/agent-ready-onboarding.md","reason":"Review whether public onboarding docs need to mention project-local skill installation or routing."}
+{"path":"tests/project_intelligence_onboarding.rs","reason":"Regression coverage for generated structure-fit skill installation and handoff references."}
+{"path":"xtask/src/main.rs","reason":"Target-state marker update if website/onboarding claims add a new public marker."}
+{"path":".agents/skills/custom/assura-validation/SKILL.md","reason":"Audit/update existing Assura validation skill for current feature surface if stale commands are found."}
+{"path":".agents/skills/custom/constraint-development/SKILL.md","reason":"Audit existing constraint-development skill for current feature surface."}
+{"path":".agents/skills/assura-goal-execution/SKILL.md","reason":"Audit existing Assura goal skill for current feature surface."}
+{"path":".agents/skills/assura-goal-validation/SKILL.md","reason":"Audit existing Assura goal validation skill for current feature surface."}
+{"path":".agents/skills/assura-local-build/SKILL.md","reason":"Audit existing local-build skill for current feature surface."}
+{"path":".agents/skills/assura-performance-reporting/SKILL.md","reason":"Audit existing performance skill for current feature surface."}

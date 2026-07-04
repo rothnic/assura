@@ -1,0 +1,14 @@
+{"file": "docs/goals/assura-agent-ready-project-onboarding-program.md", "reason": "Parent backlog goal that needs the bootstrap/onboard phases and generated packet contract."}
+{"file": "docs/goals/assura-agent-onboarding-bootstrap-command.md", "reason": "Child goal for the first-run bootstrap/onboard flow."}
+{"file": "docs/goals/assura-agent-project-preset-dynamic-contracts.md", "reason": "Child goal for the broad preset and dynamic repeated-directory contracts."}
+{"file": "docs/goals/assura-agent-doctor-explain-feedback.md", "reason": "Child goal for checked-versus-unchecked doctor output and explain behavior."}
+{"file": "docs/goals/assura-agent-guidance-skill-contracts.md", "reason": "Child goal for AGENTS.md, SKILL.md, skill index, and skill folder contracts."}
+{"file": "docs/goals/assura-agent-search-reference-discovery.md", "reason": "Child goal for raw search, frontmatter references, reference discovery, and agent-query discoverability."}
+{"file": "docs/goals/assura-agent-content-activation-source-docs.md", "reason": "Child goal for content activation, baseline models, and source-document custody."}
+{"file": "docs/goals/assura-agent-lifecycle-hooks-next-actions.md", "reason": "Child goal for nudge/warn/gate hooks and next-action output."}
+{"file": "docs/goals/assura-website-agent-onboarding-experience.md", "reason": "Child goal for improving the website onboarding experience."}
+{"file": "docs/goals/assura-agent-document-project-preset.md", "reason": "Child goal for the document-project preset and reusable document-heavy repository baseline."}
+{"file": "docs/goals/assura-agent-requirements-evidence-traceability.md", "reason": "Child goal for reusable requirements, claims, evidence, findings, and coverage traceability."}
+{"file": "docs/goals/assura-agent-script-backed-computed-checks.md", "reason": "Child goal for controlled script-backed computed checks and rollups."}
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "Roadmap routing confirms this goal is the P0 adoption backlog."}
+{"file": "docs/data/public-roadmap.json", "reason": "Public roadmap already points to the agent-ready backlog and should remain valid."}

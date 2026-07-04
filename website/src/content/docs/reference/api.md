@@ -73,6 +73,7 @@ the lower-level content-query commands.
 | `assura agent expand` | Expand graph context around one modeled object |
 | `assura agent missing-relations` | Report unresolved modeled relations |
 | `assura agent safe-fixes` | Preview safe fixes through the shared agent envelope |
+| `assura agent onboard` | Create a broad agent-ready baseline and onboarding packet |
 | `assura agent nudge` | Emit bounded event-aware nudge JSON for local host wrappers |
 | `assura agent integration install|update|remove|status|doctor` | Manage reviewable local Codex, OpenCode, Claude, and Pi integration bundles |
 | `assura agent session` | Run a persistent JSON-line local query session |
@@ -84,9 +85,42 @@ assura agent context .
 assura agent diagnostics tests/fixtures/content_runtime/missing_reference
 assura agent context-pack . --collection assura_goals --id goal-assura-project-intelligence-usability-program --text "Project Intelligence Usability" --limit 5
 assura agent safe-fixes tests/fixtures/project_intelligence_real_repo/beacon_crm/invalid
+assura agent onboard . --agent auto
+assura agent onboard . --content-template agent-project
+assura agent onboard . --content-template document-project
 assura agent integration install codex .
 assura agent integration doctor codex .
 ```
+
+Generated agent-ready baselines include `AGENTS.md`, `.agents/skills/`, and
+`extensions.agent_guidance` checks. The default shape expects `AGENTS.md`
+sections named `Operating Rules`, `Process Docs vs Skills`, `Skills`, and
+`Anchors`; the `Skills` section includes a use-case table that names the
+project-local skill or skill-name pattern to load first. The generated
+`assura-structure-fit` skill installs under `.agents/skills/` and provides the
+`STRUCTURE_FIT_CHECK` anchor for deciding whether a structure mismatch should
+be fixed by moving/renaming a path or by changing config. Each project-local
+`SKILL.md` entrypoint declares `name`, `description`, and `applies_when`
+frontmatter plus `Workflow`, `Read as needed`, `Outputs`, and `Guardrails`
+sections. `Read as needed` should be a use-case table that points to deeper
+references, scripts, assets, or process docs so `SKILL.md` stays a concise
+index. Guidance length diagnostics tell agents to move long procedures out of
+`AGENTS.md` or `SKILL.md` and link the deeper material instead.
+
+The onboarding packet includes `.assura/onboarding/lifecycle.md` and structured
+JSON `lifecycle_profiles` for three modes: `nudge` for path-aware working-loop
+events, `warn` for advisory local checks that use `--warn`, and `gate` for
+pre-push or CI checks that preserve normal nonzero exit behavior. Host-agent
+integration bundles remain reviewable local files; Assura does not silently
+wire global Codex, Claude, OpenCode, or Pi configuration.
+
+`--content-template none` is the default and keeps content models inactive.
+`--content-template agent-project` writes broad Decision, Task, Requirement,
+Evidence, Doc, Finding, Skill, Process, and Learning models plus starter
+records. `--content-template document-project` adds SourceDocument metadata,
+`source-documents/manifest.md` custody, `library/topics/`, `docs/drafts/`, and
+`docs/final/` starter records that validate referenced file paths without
+requiring Assura to read binary files as text.
 
 MCP is not required for local agent usage. If an MCP adapter is added later, it
 should wrap these same CLI/library contracts.
@@ -159,16 +193,26 @@ wrappers must still require explicit user approval before running
 | `assura content agent-query` | Wrap one query in the shared agent envelope |
 | `assura content context-pack` | Build one bounded project-intelligence handoff packet |
 | `assura content session` | Run a persistent JSON-line local query session |
-| `assura content search` | Search modeled content facts with lexical scores |
+| `assura content search` | Search modeled content facts with lexical scores; use `--raw` or `--fallback-raw` for bounded raw repository text discovery |
 | `assura content expand` | Expand graph context around one modeled object |
 | `assura content missing-relations` | Report unresolved modeled relations |
-| `assura content references` | Report inbound repository references by target path or outbound references by source path |
+| `assura content references` | Report inbound, outbound, all, or unresolved repository-reference edges |
 
 Object-mode context-pack JSON includes `repository_references.path`,
 `repository_references.inbound`, and `repository_references.outbound` for the
 modeled object's repository path. Those arrays use the same edge shape as
 `assura content references`, including source position, target path, anchor or
 line range, existence, rule, kind, and confidence.
+
+`assura content references` accepts exactly one selector: `--source <path>`,
+`--target <path>`, `--all`, or `--unresolved`. Configured Markdown
+frontmatter reference fields use the same output shape with
+`reference_kind: frontmatter_reference`.
+
+`assura content agent-query capabilities` returns deterministic capability
+metadata with names, descriptions, required arguments, and suggested follow-up
+commands. `unresolved-references`, `gaps`, and `next-actions` are canned
+agent-query capabilities for reference cleanup and next-step discovery.
 
 `assura content session [path]` reads one JSON request per stdin line and emits
 one `assura.project-intelligence.session.response.v1` JSON response per stdout

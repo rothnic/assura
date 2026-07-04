@@ -172,8 +172,8 @@ fn normalize_path_key(
     }
 
     let child_path = join_scope_path(scope_path, key);
-    let has_captures = !capture_names(&child_path).is_empty();
-    record_relationship_metadata(&child_path, &value, relationships)?;
+    let key_has_captures = !capture_names(key).is_empty();
+    record_relationship_metadata(&child_path, key_has_captures, &value, relationships)?;
 
     if key.ends_with('/') {
         let directory = key.trim_end_matches('/');
@@ -191,7 +191,7 @@ fn normalize_path_key(
             set_nested_mapping(output, "children", directory, Value::Mapping(child));
         } else {
             let directive = node_directive(value, rules, stack)?;
-            if has_captures {
+            if key_has_captures {
                 apply_captured_directory_directive(output, directory, directive)?;
             } else {
                 apply_directory_directive(output, directory, directive)?;
@@ -201,7 +201,7 @@ fn normalize_path_key(
     }
 
     let directive = node_directive(value, rules, stack)?;
-    if has_captures {
+    if key_has_captures {
         apply_captured_file_directive(output, key, directive)?;
     } else {
         apply_file_directive(output, key, directive)?;

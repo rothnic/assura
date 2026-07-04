@@ -31,25 +31,133 @@ pub(crate) fn source_references(source_rel: &Path, content: &str) -> Vec<SourceR
             let Some(candidate) = normalize_reference_token(raw) else {
                 continue;
             };
-            let Some(target) = parse_source_reference_target(source_rel, candidate) else {
+            let kind = context.unwrap_or(SourceReferenceContext::StringLiteral);
+            let Some(reference) = reference_from_raw_token(
+                source_rel,
+                candidate,
+                line_number,
+                line[..start].chars().count() + 1,
+                kind.reference_kind(),
+                kind.confidence(),
+            ) else {
                 continue;
             };
-            let kind = context.unwrap_or(SourceReferenceContext::StringLiteral);
-            references.push(SourceReference {
-                raw: candidate.to_string(),
-                line_number,
-                column_number: line[..start].chars().count() + 1,
-                target_path: target.path,
-                target_anchor: target.anchor,
-                target_line_start: target.line_start,
-                target_line_end: target.line_end,
-                kind: kind.reference_kind(),
-                confidence: kind.confidence(),
-            });
+            references.push(reference);
         }
     }
 
     references
+}
+
+pub(crate) fn frontmatter_references(
+    source_rel: &Path,
+    content: &str,
+    fields: &[String],
+) -> Vec<SourceReference> {
+    if fields.is_empty() {
+        return Vec::new();
+    }
+    let Some((frontmatter, frontmatter_start_line)) = markdown_frontmatter(content) else {
+        return Vec::new();
+    };
+    let Ok(value) = serde_yaml::from_str::<serde_yaml::Value>(frontmatter) else {
+        return Vec::new();
+    };
+
+    fields
+        .iter()
+        .filter_map(|field| {
+            let value = yaml_path_value(&value, field)?;
+            let (line_number, column_number) = frontmatter_field_location(frontmatter, field)
+                .unwrap_or((frontmatter_start_line, 1));
+            Some(
+                yaml_reference_values(value)
+                    .into_iter()
+                    .filter_map(move |raw| {
+                        reference_from_raw_token(
+                            source_rel,
+                            raw,
+                            line_number,
+                            column_number,
+                            "frontmatter_reference",
+                            "exact",
+                        )
+                    })
+                    .collect::<Vec<_>>(),
+            )
+        })
+        .flatten()
+        .collect()
+}
+
+fn reference_from_raw_token(
+    source_rel: &Path,
+    raw: &str,
+    line_number: usize,
+    column_number: usize,
+    kind: &'static str,
+    confidence: &'static str,
+) -> Option<SourceReference> {
+    let candidate = normalize_reference_token(raw)?;
+    let target = parse_source_reference_target(source_rel, candidate)?;
+    Some(SourceReference {
+        raw: candidate.to_string(),
+        line_number,
+        column_number,
+        target_path: target.path,
+        target_anchor: target.anchor,
+        target_line_start: target.line_start,
+        target_line_end: target.line_end,
+        kind,
+        confidence,
+    })
+}
+
+fn markdown_frontmatter(content: &str) -> Option<(&str, usize)> {
+    if let Some(rest) = content.strip_prefix("---\r\n") {
+        let (frontmatter, _) = rest.split_once("\r\n---")?;
+        return Some((frontmatter, 2));
+    }
+    let rest = content.strip_prefix("---\n")?;
+    let (frontmatter, _) = rest.split_once("\n---")?;
+    Some((frontmatter, 2))
+}
+
+fn yaml_path_value<'a>(value: &'a serde_yaml::Value, field: &str) -> Option<&'a serde_yaml::Value> {
+    let mut current = value;
+    for segment in field.split('.') {
+        let serde_yaml::Value::Mapping(mapping) = current else {
+            return None;
+        };
+        current = mapping.get(serde_yaml::Value::String(segment.to_string()))?;
+    }
+    Some(current)
+}
+
+fn yaml_reference_values(value: &serde_yaml::Value) -> Vec<&str> {
+    match value {
+        serde_yaml::Value::String(value) => vec![value.as_str()],
+        serde_yaml::Value::Sequence(values) => values
+            .iter()
+            .filter_map(|value| match value {
+                serde_yaml::Value::String(value) => Some(value.as_str()),
+                _ => None,
+            })
+            .collect(),
+        _ => Vec::new(),
+    }
+}
+
+fn frontmatter_field_location(frontmatter: &str, field: &str) -> Option<(usize, usize)> {
+    let field_name = field.rsplit('.').next().unwrap_or(field);
+    for (index, line) in frontmatter.lines().enumerate() {
+        let trimmed = line.trim_start();
+        if trimmed.starts_with(field_name) && trimmed[field_name.len()..].starts_with(':') {
+            let column = line.len() - trimmed.len() + 1;
+            return Some((index + 2, column));
+        }
+    }
+    None
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

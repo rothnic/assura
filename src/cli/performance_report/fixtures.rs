@@ -11,13 +11,13 @@ use super::monorepo_policy::{
     create_ignored_generated_heavy_project, create_monorepo_policy_project,
     create_realistic_rule_heavy_project,
 };
+use super::native_fixtures::create_native_project;
 use super::real_project_feedback_fixture::create_real_project_agentic_feedback;
 use super::realistic_fixtures::create_monorepo_packages_project;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
-
 static FIXTURE_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
 #[derive(Clone, Copy)]
@@ -68,6 +68,12 @@ pub(in crate::cli::performance_report) enum FixtureKind {
     IgnoredGeneratedHeavyRepo,
     MultipartExtensionRegression,
     ManyConfiguredScopesRegression,
+    NativeSmall,
+    NativeMedium,
+    NativeLarge,
+    NativeReferenceHeavy,
+    NativeAdapterMix,
+    NativeRealProject,
     PinnedNextJs,
     PinnedMdBook,
     PinnedVite,
@@ -257,6 +263,12 @@ pub(in crate::cli::performance_report) fn materialize_fixture(
         FixtureKind::ManyConfiguredScopesRegression => {
             create_many_configured_scopes_regression_project(&root)?
         }
+        FixtureKind::NativeSmall
+        | FixtureKind::NativeMedium
+        | FixtureKind::NativeLarge
+        | FixtureKind::NativeReferenceHeavy
+        | FixtureKind::NativeAdapterMix
+        | FixtureKind::NativeRealProject => create_native_project(&root, scenario.kind)?,
         FixtureKind::PinnedNextJs
         | FixtureKind::PinnedMdBook
         | FixtureKind::PinnedVite

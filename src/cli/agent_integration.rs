@@ -4,7 +4,8 @@
 mod bundle;
 
 use super::{
-    AgentIntegrationCommands, AgentIntegrationLifecycleArgs, AgentIntegrationStatusArgs, ExitCode,
+    AgentIntegrationCommands, AgentIntegrationLifecycleArgs, AgentIntegrationStatusArgs,
+    AgentIntegrationTarget, ExitCode, OutputFormat,
 };
 use crate::cli::ConfigDiscovery;
 use bundle::{
@@ -36,6 +37,24 @@ pub async fn agent_integration_command(command: AgentIntegrationCommands) -> Exi
             ExitCode::RuntimeError
         }
     }
+}
+
+pub(super) fn install_agent_integration_bundle(
+    agent: AgentIntegrationTarget,
+    project_root: PathBuf,
+) -> Result<bool, String> {
+    let report = lifecycle_command(
+        "install",
+        AgentIntegrationLifecycleArgs {
+            agent,
+            path: Some(project_root),
+            dry_run: false,
+            force: false,
+            format: OutputFormat::Json,
+        },
+        false,
+    )?;
+    Ok(report.report.installed)
 }
 
 fn run_agent_integration_command(

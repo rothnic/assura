@@ -1,0 +1,7 @@
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "Active roadmap iteration and direction lock for agent-ready onboarding work."}
+{"file": "docs/goals/assura-agent-lifecycle-hooks-next-actions.md", "reason": "Child goal objective, scope, validation commands, and reviewer blocking criteria."}
+{"file": "docs/goals/assura-agent-integration-lifecycle.md", "reason": "Completed integration lifecycle contract to reuse instead of creating new host-agent behavior."}
+{"file": "docs/goals/assura-beta-structure-severity-contract.md", "reason": "Severity and blocking/advisory contract used by nudge, warn, and gate profiles."}
+{"file": "docs/support-policy.md", "reason": "Supported and experimental command-surface truth for agent feedback, hooks, nudge, and integration commands."}
+{"file": "docs/compatibility-and-surface.md", "reason": "Compatibility evidence for current agent and hook surfaces."}
+{"file": "website/src/content/docs/reference/agent-feedback.md", "reason": "Public lifecycle and nudge documentation constraints."}

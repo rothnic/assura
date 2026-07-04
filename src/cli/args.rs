@@ -83,6 +83,24 @@ pub enum Commands {
         format: OutputFormat,
     },
 
+    #[command(about = "Explain configured, inactive, and recommended project checks")]
+    Doctor {
+        #[arg(help = "Path to inspect (defaults to current directory)")]
+        path: Option<PathBuf>,
+
+        #[arg(short, long, value_enum, default_value = "text")]
+        format: CheckOutputFormat,
+    },
+
+    #[command(about = "Explain why structure rules apply or skip one path")]
+    Explain {
+        #[arg(help = "Path to explain (defaults to current directory)")]
+        path: Option<PathBuf>,
+
+        #[arg(short, long, value_enum, default_value = "text")]
+        format: CheckOutputFormat,
+    },
+
     #[command(about = "Initialize assura in a project")]
     Init {
         #[arg(help = "Project root directory (defaults to current directory)")]
@@ -188,6 +206,9 @@ pub enum Commands {
 
         #[arg(long, default_value = "@ls-lint/ls-lint@2.3.0")]
         ls_lint_package: String,
+
+        #[arg(long, default_value = "ls-lint", value_enum)]
+        suite: PerformanceReportSuite,
 
         #[arg(
             long,
@@ -330,6 +351,12 @@ impl From<MarkdownFixRuleArg> for crate::cli::check::MarkdownFixRule {
 pub enum PerformanceReportFormat {
     Json,
     Jsonl,
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]
+pub enum PerformanceReportSuite {
+    LsLint,
+    Native,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]

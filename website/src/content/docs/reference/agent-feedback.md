@@ -129,6 +129,14 @@ those commands for detail instead of injecting daemon state into every event.
 
 ## When To Check
 
+Agent-ready onboarding writes `.assura/onboarding/lifecycle.md` with the same
+three lifecycle modes used by the JSON onboarding report:
+
+- `nudge`: path-aware working-loop feedback from `assura agent nudge`.
+- `warn`: advisory checks with `assura check --format agent --warn`.
+- `gate`: pre-push or CI checks without `--warn`, preserving blocking exit
+  behavior for configured medium, high, or critical findings.
+
 | Moment | Recommended check | Why |
 | --- | --- | --- |
 | Before a commit | Git pre-commit hook | Catch drift before local history changes. |

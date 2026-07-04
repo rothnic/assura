@@ -1,5 +1,6 @@
 ---
 import currentReport from '../../public/data/performance/current.json';
+import nativeReport from '../../public/data/performance/native-current.json';
 
 type ResultRow = {
   fixture_id: string;
@@ -111,7 +112,9 @@ type Pair = {
 };
 
 const report = currentReport as CurrentReport;
+const native = nativeReport as CurrentReport;
 const rows = (report.results ?? []).filter((row) => row.status === 'pass');
+const nativeRows = (native.results ?? []).filter((row) => row.status === 'pass');
 const claimSummary = report.claim_summary;
 const warmClaimSummary = report.warm_claim_summary;
 
@@ -247,6 +250,20 @@ const datasetLabel = isRealRepoHeadline
 const syntheticRows = rows.filter(
   (row) => row.row_family === 'assura-cli' && row.fixture_cohort === 'synthetic-stress',
 );
+const nativeFixtureIds = Array.from(new Set(nativeRows.map((row) => row.fixture_id)));
+const nativeFixtureSummaries = nativeFixtureIds.map((fixtureId) => {
+  const fixtureRows = nativeRows.filter((row) => row.fixture_id === fixtureId);
+  const slowest = fixtureRows.reduce<ResultRow | null>(
+    (current, row) => (
+      !current || (row.median_runtime_ms ?? 0) > (current.median_runtime_ms ?? 0)
+        ? row
+        : current
+    ),
+    null,
+  );
+  const checkRow = fixtureRows.find((row) => row.row_family === 'native:content-check-cli');
+  return { fixtureId, fixtureRows, slowest, checkRow };
+});
 const firstAssuraRow =
   rows.find((row) => row.row_family === 'assura-cli') ??
   rows.find((row) => row.row_family === 'assura-check-cli');
@@ -259,6 +276,8 @@ const hardwareLabel = [
 ].filter(Boolean).join('; ') || 'unknown hardware';
 const commandLine = report.command_line ?? 'not recorded';
 const sourceState = report.source_worktree_dirty ? 'dirty worktree' : 'clean worktree';
+const nativeCommandLine = native.command_line ?? 'not recorded';
+const nativeSourceState = native.source_worktree_dirty ? 'dirty worktree' : 'clean worktree';
 
 const totalAssura = headlinePairs.reduce(
   (total, pair) => total + (pair.assura.median_runtime_ms ?? 0),
@@ -510,5 +529,82 @@ function testCaseHref(fixtureId: string): string {
         <span>{row.rule_count} rules; {row.rule_surface_summary}</span>
       </div>
     ))}
+  </div>
+
+  <h2 id="native-performance">Assura-Native Performance</h2>
+  <p class="perf-section-intro">
+    Native rows measure Assura-only capabilities that LS-Lint does not provide:
+    content collections, graph queries, references, context packs, Markdown
+    safe-fix dry runs, agent-query paths, session-style requests, and daemon
+    status. These rows are diagnostic product evidence, not substitutes for
+    the LS-Lint-equivalent cold CLI gate above.
+  </p>
+
+  <dl class="perf-run-context" aria-label="Native performance report context">
+    <div>
+      <dt>Native report</dt>
+      <dd><a href="/data/performance/native-current.json">native-current.json</a></dd>
+    </div>
+    <div>
+      <dt>History</dt>
+      <dd><a href="/data/performance/native-history.jsonl">native-history.jsonl</a></dd>
+    </div>
+    <div>
+      <dt>Rows</dt>
+      <dd>{nativeRows.length} passing rows across {nativeFixtureSummaries.length} fixtures</dd>
+    </div>
+    <div>
+      <dt>Evidence source</dt>
+      <dd>Commit <code>{shortSha(native.commit_sha)}</code>; {nativeSourceState}</dd>
+    </div>
+    <div>
+      <dt>Captured</dt>
+      <dd>{formatTimestamp(native.timestamp)}</dd>
+    </div>
+    <div>
+      <dt>Command</dt>
+      <dd><code>{nativeCommandLine}</code></dd>
+    </div>
+  </dl>
+
+  <div class="perf-table-wrap" aria-label="Assura-native performance by fixture">
+    <table class="perf-table">
+      <thead>
+        <tr>
+          <th>Native fixture</th>
+          <th>Scale</th>
+          <th>Rows</th>
+          <th>Slowest measured row</th>
+        </tr>
+      </thead>
+      <tbody>
+        {nativeFixtureSummaries.map(({ fixtureId, fixtureRows, slowest, checkRow }) => (
+          <tr>
+            <td data-label="Native fixture">
+              <strong><a href={testCaseHref(fixtureId)}>{fixtureId.replaceAll('_', ' ')}</a></strong>
+              <span class="perf-cell-note"><code>{fixtureId}</code></span>
+            </td>
+            <td data-label="Scale">
+              {checkRow ? scale(checkRow) : 'n/a'}
+              {checkRow?.rule_surface_summary && (
+                <span class="perf-cell-note">{checkRow.rule_surface_summary}</span>
+              )}
+            </td>
+            <td data-label="Rows">
+              {fixtureRows.length} native diagnostic rows
+              <span class="perf-cell-note">Gate: <code>cargo xtask native-performance-no-regression</code></span>
+            </td>
+            <td data-label="Slowest measured row">
+              {slowest ? (
+                <>
+                  <strong>{formatMs(slowest.median_runtime_ms)}</strong>
+                  <span class="perf-cell-note"><code>{slowest.row_family}</code></span>
+                </>
+              ) : 'n/a'}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   </div>
 </section>

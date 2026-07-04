@@ -1,3 +1,5 @@
+//! Config semantic validation.
+
 #[cfg(feature = "yaml-config")]
 use super::{
     Config, CustomConstraintConfig, DirectoryBundle, DirectoryNode, ExtensionConfig, FileBundle,
@@ -9,6 +11,8 @@ use glob::Pattern;
 use std::collections::HashSet;
 #[cfg(feature = "yaml-config")]
 use std::path::{Component, Path};
+#[cfg(feature = "yaml-config")]
+mod computed_checks;
 #[cfg(feature = "yaml-config")]
 mod docs_lifecycles;
 #[cfg(feature = "yaml-config")]
@@ -22,16 +26,16 @@ mod release_contracts;
 #[cfg(feature = "yaml-config")]
 mod repository_references;
 #[cfg(feature = "yaml-config")]
+mod requirements_traceability;
+#[cfg(feature = "yaml-config")]
 mod support_matrices;
 #[cfg(feature = "yaml-config")]
 mod test_relationships;
-/// Validate structure-first config semantics without the full validator stack.
 #[cfg(feature = "yaml-config")]
 pub(crate) fn validate_config_semantics(config: &Config) -> Result<(), String> {
     for (pattern, bundle) in &config.patterns {
         validate_file_bundle(bundle, &format!("patterns.{pattern}"))?;
     }
-
     for (path, node) in &config.structure {
         validate_directory_node(node, &format!("structure.{path}"))?;
     }
@@ -41,7 +45,6 @@ pub(crate) fn validate_config_semantics(config: &Config) -> Result<(), String> {
     if let Some(quality) = &config.quality {
         quality::validate_quality_config(quality)?;
     }
-
     Ok(())
 }
 
@@ -100,7 +103,6 @@ fn validate_directory_bundle(bundle: &DirectoryBundle, context: &str) -> Result<
 
     Ok(())
 }
-
 #[cfg(feature = "yaml-config")]
 fn validate_markdown_bundle(bundle: &MarkdownBundle, context: &str) -> Result<(), String> {
     if bundle.required_fields.is_some() {
@@ -196,6 +198,10 @@ fn validate_extension_config(config: &ExtensionConfig) -> Result<(), String> {
         }
     }
     repository_references::validate_repository_reference_configs(&config.repository_references)?;
+    requirements_traceability::validate_requirements_traceability_configs(
+        &config.requirements_traceability,
+    )?;
+    computed_checks::validate_computed_check_configs(&config.computed_checks)?;
     let mut relationship_ids = HashSet::new();
     for relationship in &config.relationships {
         validate_relationship_constraint(relationship)?;
@@ -356,7 +362,6 @@ fn validate_range(value: usize, min: usize, max: usize, context: &str) -> Result
     }
 }
 
-/// Validates that a naming convention string is valid.
 #[cfg(feature = "full-cli")]
 pub(crate) fn validate_naming_convention(conv: &str) -> Result<(), validator::ValidationError> {
     validate_naming_convention_text(conv).map_err(|message| {
@@ -411,7 +416,6 @@ fn validate_naming_convention_text(conv: &str) -> Result<(), String> {
     }
 }
 
-/// Split OR-composed naming conventions without splitting pipes inside regexes.
 pub(crate) fn split_naming_conventions(conv: &str) -> Vec<&str> {
     let trimmed = conv.trim();
     if trimmed.is_empty() {
@@ -454,7 +458,6 @@ pub(crate) fn split_naming_conventions(conv: &str) -> Vec<&str> {
     }
 }
 
-/// Validates that a size string is valid, such as `100KB`, `1MB`, or `10 MB`.
 #[cfg(feature = "full-cli")]
 pub(crate) fn validate_size_string(size: &str) -> Result<(), validator::ValidationError> {
     validate_size_string_text(size).map_err(|message| {

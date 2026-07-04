@@ -6,6 +6,17 @@ use std::path::PathBuf;
 
 #[derive(Subcommand, Debug)]
 pub enum AgentCommands {
+    #[command(about = "Bootstrap a broad agent-ready project baseline")]
+    Onboard {
+        path: Option<PathBuf>,
+        #[arg(long, value_enum, default_value = "auto")]
+        agent: AgentOnboardingTarget,
+        #[arg(long, value_enum, default_value = "none")]
+        content_template: AgentContentTemplate,
+        #[arg(short, long, value_enum, default_value = "json")]
+        format: OutputFormat,
+    },
+
     #[command(about = "Report shared project-intelligence agent context")]
     Context {
         path: Option<PathBuf>,
@@ -175,6 +186,75 @@ pub enum AgentIntegrationTarget {
     Claude,
     /// Pi agent extension or hook-wrapper bundle.
     Pi,
+}
+
+/// Host-agent target for the first-run onboarding flow.
+#[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]
+pub enum AgentOnboardingTarget {
+    /// Detect a known local host, otherwise use the generic shell profile.
+    Auto,
+    /// Vendor-neutral shell and AGENTS.md guidance only.
+    Generic,
+    /// Codex hook or command-wrapper bundle.
+    Codex,
+    /// OpenCode plugin or hook-wrapper bundle.
+    Opencode,
+    /// Claude Code hook-wrapper bundle.
+    Claude,
+    /// Pi agent hook-wrapper bundle.
+    Pi,
+}
+
+/// Optional repo-native content template for the first-run onboarding flow.
+#[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]
+pub enum AgentContentTemplate {
+    /// Do not activate content runtime models.
+    None,
+    /// Activate broad agent-project facts such as decisions and requirements.
+    AgentProject,
+    /// Activate agent-project facts plus source-document custody metadata.
+    DocumentProject,
+}
+
+impl AgentContentTemplate {
+    /// Stable lowercase template label.
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::None => "none",
+            Self::AgentProject => "agent-project",
+            Self::DocumentProject => "document-project",
+        }
+    }
+
+    /// Whether this template enables content runtime configuration.
+    pub fn activates_content(self) -> bool {
+        !matches!(self, Self::None)
+    }
+}
+
+impl AgentOnboardingTarget {
+    /// Matching integration target when this onboarding target is concrete.
+    pub fn integration_target(self) -> Option<AgentIntegrationTarget> {
+        match self {
+            Self::Auto | Self::Generic => None,
+            Self::Codex => Some(AgentIntegrationTarget::Codex),
+            Self::Opencode => Some(AgentIntegrationTarget::Opencode),
+            Self::Claude => Some(AgentIntegrationTarget::Claude),
+            Self::Pi => Some(AgentIntegrationTarget::Pi),
+        }
+    }
+
+    /// Stable lowercase target label.
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Auto => "auto",
+            Self::Generic => "generic",
+            Self::Codex => "codex",
+            Self::Opencode => "opencode",
+            Self::Claude => "claude",
+            Self::Pi => "pi",
+        }
+    }
 }
 
 impl AgentIntegrationTarget {

@@ -1,6 +1,7 @@
 //! Report file rendering and persistence helpers.
 
 use super::{PerformanceReport, PerformanceResultRow};
+use crate::cli::args::PerformanceReportSuite;
 use std::fs::{self, OpenOptions};
 use std::io::Write;
 use std::path::Path;
@@ -45,13 +46,21 @@ pub(super) fn write_website_data(
     path: &Path,
     report: &PerformanceReport,
     history_source: Option<&Path>,
+    suite: PerformanceReportSuite,
 ) -> std::io::Result<()> {
     fs::create_dir_all(path)?;
+    let current_target = path.join(match suite {
+        PerformanceReportSuite::LsLint => "current.json",
+        PerformanceReportSuite::Native => "native-current.json",
+    });
     fs::write(
-        path.join("current.json"),
+        current_target,
         serde_json::to_string(report).unwrap_or_default(),
     )?;
-    let history_target = path.join("ls-lint-comparison-history.jsonl");
+    let history_target = path.join(match suite {
+        PerformanceReportSuite::LsLint => "ls-lint-comparison-history.jsonl",
+        PerformanceReportSuite::Native => "native-history.jsonl",
+    });
     if let Some(history_source) = history_source {
         fs::copy(history_source, history_target)?;
     } else {

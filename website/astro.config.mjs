@@ -32,6 +32,7 @@ export default defineConfig({
 					items: [
 						{ label: 'Getting Started Guide', slug: 'guides/getting-started' },
 						{ label: 'Quick Start', slug: 'guides/quickstart' },
+						{ label: 'Agent-Ready Onboarding', slug: 'guides/agent-ready-onboarding' },
 						{ label: 'Installation', slug: 'guides/installation' },
 						{ label: 'Adoption Walkthrough', slug: 'guides/adoption-walkthrough' },
 						{ label: 'LS-Lint Migration', slug: 'guides/ls-lint-migration' },

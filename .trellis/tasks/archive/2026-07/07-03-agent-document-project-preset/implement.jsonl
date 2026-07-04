@@ -1,0 +1,10 @@
+{"file": ".trellis/spec/assura/index.md", "reason": "Project direction, canonical sources, and constraints for Assura implementation."}
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "Active roadmap iteration and agent-ready onboarding priority."}
+{"file": ".trellis/spec/guides/index.md", "reason": "Shared thinking-guide routing for code reuse and cross-layer changes."}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Template changes should extend existing constants rather than duplicate logic."}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Preset changes span CLI output, generated config, content runtime, tests, and website docs."}
+{"file": "docs/goals/assura-agent-document-project-preset.md", "reason": "Child goal objective, scope, non-goals, validation commands, and reviewer blocking criteria."}
+{"file": "docs/goals/assura-agent-ready-project-onboarding-program.md", "reason": "Parent sequence and document-project pack requirements."}
+{"file": "docs/support-policy.md", "reason": "Support status and command-surface truth for experimental onboarding surfaces."}
+{"file": "docs/compatibility-and-surface.md", "reason": "Compatibility matrix for document-project onboarding claims."}
+{"file": ".trellis/tasks/07-03-agent-document-project-preset/prd.md", "reason": "Task-local revalidation result, requirements, and acceptance criteria."}

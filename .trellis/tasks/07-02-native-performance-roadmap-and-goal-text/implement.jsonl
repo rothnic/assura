@@ -1,0 +1,6 @@
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "Internal roadmap source that must route the new performance-polish iteration."}
+{"file": "docs/data/public-roadmap.json", "reason": "Public roadmap artifact that should expose the new next item."}
+{"file": "docs/analysis/2026-07-02-ls-lint-performance-reassessment.md", "reason": "Current LS-Lint performance conclusion and future performance tracks."}
+{"file": "docs/analysis/2026-06-28-content-runtime-index-performance.md", "reason": "Existing native content-runtime performance evidence to carry into the goal."}
+{"file": "docs/analysis/2026-06-28-project-intelligence-store-spike.md", "reason": "Existing native query/search store benchmark evidence to carry into the goal."}
+{"file": "docs/goals/assura-agent-ready-project-onboarding-program.md", "reason": "New parent backlog goal for agent-project scaffolding, doctor/explain, skills, search, references, and lifecycle feedback."}

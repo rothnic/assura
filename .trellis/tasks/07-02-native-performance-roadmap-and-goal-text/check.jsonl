@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "Confirm active/next roadmap routing points to the new goal."}
+{"file": "docs/data/public-roadmap.json", "reason": "Confirm public roadmap JSON remains valid and routes to the new goal."}
+{"file": "docs/goals/assura-performance-polish-program.md", "reason": "Confirm the kickoff goal text contains objective, test plan, validation commands, and blocking criteria."}
+{"file": "docs/goals/assura-agent-ready-project-onboarding-program.md", "reason": "Confirm the agent-ready backlog goal captures priority, scope, proof gates, and kickoff text."}

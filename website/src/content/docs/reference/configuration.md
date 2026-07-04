@@ -281,14 +281,147 @@ extensions:
     - id: source_refs
       paths:
         - "src/**"
+      frontmatter_fields:
+        - source_documents
+        - related
       severity: high
 ```
 
 Assura scans supported source and config file types under matching paths for
-local file references. It reports locally provable missing targets, missing
-Markdown heading anchors, and invalid line anchors as `repository_reference_*`
-rules. Ambiguous lower-confidence references remain available as graph context
-through `assura content references`.
+local file references. When `frontmatter_fields` is set, matching Markdown files
+also treat string or list values in those frontmatter fields as repository
+references. This is useful for fields such as `source_documents`, `related`,
+`evidence`, or `requirements`.
+
+The check reports locally provable missing targets, missing Markdown heading
+anchors, and invalid line anchors as `repository_reference_*` rules. Ambiguous
+lower-confidence references remain available as graph context through
+`assura content references`.
+
+## Agent Guidance
+
+Opt into experimental agent guidance diagnostics with
+`extensions.agent_guidance`:
+
+```yaml
+extensions:
+  agent_guidance:
+    - id: agent_project_guidance
+      severity: low
+      agents_path: AGENTS.md
+      skill_paths:
+        - ".agents/skills/*/SKILL.md"
+      required_agents_sections:
+        - Operating Rules
+        - Process Docs vs Skills
+        - Skills
+        - Anchors
+      required_skill_frontmatter:
+        - name
+        - description
+        - applies_when
+      required_skill_sections:
+        - Workflow
+        - Read as needed
+        - Outputs
+        - Guardrails
+      skill_index_section: Skills
+      best_practices_reference: "Progressive disclosure: keep AGENTS.md as a use-case router and SKILL.md as concise indexes to deeper references."
+      skill_routing_section: Skills
+      allowed_skill_name_patterns:
+        - "assura-*"
+        - "assura_*"
+      skill_reference_sections:
+        - Read as needed
+      skill_doc_routing_section: Read as needed
+      skill_reference_prefixes:
+        - references/
+        - scripts/
+        - assets/
+        - docs/process/
+      max_agents_lines: 160
+      max_skill_lines: 120
+```
+
+This policy checks local guidance shape only. It reports stale or missing
+`AGENTS.md` sections, duplicate heading anchors, missing project-local skill
+links, missing `SKILL.md` frontmatter fields, missing required skill sections,
+oversized guidance entrypoints, missing progressive-disclosure references,
+unknown skill names in configured use-case routing tables, and SKILL sections
+that fail to point to deeper references. When `skill_doc_routing_section` is
+configured, that SKILL section may be empty, but non-empty content must be a
+use-case table that routes agents to approved local docs, scripts, assets, or
+process references. It does not install a global skill registry or create
+host-agent-specific validation logic.
+
+## Requirements Traceability
+
+Opt into experimental requirements, claims, evidence, source-document, and
+finding traceability diagnostics with `extensions.requirements_traceability`:
+
+```yaml
+extensions:
+  requirements_traceability:
+    - id: document_project_traceability
+      severity: high
+      requirements_collection: requirements
+      priority_field: priority
+      high_priority_values:
+        - high
+        - critical
+      coverage_collections:
+        - evidence
+        - claims
+        - docs
+      claim_collections:
+        - claims
+      evidence_collections:
+        - evidence
+      source_document_collections:
+        - source_documents
+      finding_collections:
+        - findings
+      owner_fields:
+        - owner
+      status_fields:
+        - status
+```
+
+This policy is backed by the content runtime in the full CLI. It checks that
+configured collections exist, high-priority requirements have coverage from
+configured collections, claims link to evidence through modeled relations,
+evidence links to source documents, and findings carry owner and status
+metadata. It does not infer domain-specific scoring, replace repository
+reference checks, or add a public plugin API.
+
+## Computed Checks
+
+Opt into experimental project-local computed findings with
+`extensions.computed_checks`:
+
+```yaml
+extensions:
+  computed_checks:
+    - id: rollup_score
+      severity: high
+      script: scripts/assura-rollup-score.sh
+      windows_script: scripts/assura-rollup-score.cmd
+      args:
+        - --threshold
+        - "80"
+      timeout_ms: 5000
+```
+
+Assura executes only configured project-relative scripts, selects
+`windows_script` on Windows when present, passes a versioned JSON request on
+stdin, and accepts only versioned JSON findings on stdout.
+Each accepted finding becomes a normal diagnostic with a
+`computed_check:<policy-id>:<finding-code>` rule ID. Missing scripts, unsafe
+paths, invalid output, nonzero exits, and timeouts are reported as ordinary
+Assura findings so they flow through reports, doctor, agent-query gaps, hooks,
+and merge gates. Computed checks are an advanced first-party extension policy,
+not a public plugin API, remote execution surface, marketplace, or
+domain-specific scoring preset.
 
 ## First-Party Extension Policies
 
@@ -306,6 +439,9 @@ cross-file policy does not fit ordinary `structure` notation.
 | `extensions.module_topologies` | Experimental first-party | Rust module-family ownership, roots, export classification, and internal visibility. |
 | `extensions.docs_lifecycles` | Experimental first-party | Documentation lifecycle, frontmatter status, historical exceptions, and deterministic claim evidence. |
 | `extensions.repository_references` | Experimental first-party | Locally provable repository-reference diagnostics. |
+| `extensions.agent_guidance` | Experimental first-party | `AGENTS.md` and project-local `SKILL.md` routing contracts. |
+| `extensions.requirements_traceability` | Experimental first-party | Content-runtime-backed requirement, claim, evidence, source-document, and finding traceability checks. |
+| `extensions.computed_checks` | Experimental first-party | Project-local script-backed computed findings with versioned JSON contracts. |
 | `extensions.relationships` | Internal generated first-party | Relationships normalized from `structure` captures, `exists:1`, `needs`, and `provides`. |
 
 Assura does not currently support remote plugin loading, shell-executed

@@ -1,11 +1,9 @@
 use crate::config::config::{
     CustomConstraintConfig, DocsLifecycleClaimPatternConfig, DocsLifecycleConfig, ExtensionConfig,
     ManifestSemanticsConfig, ManifestSemanticsManifestConfig, ModuleTopologyConfig,
-    RelationshipConstraintConfig, RelationshipProviderConfig, ReleaseArtifactConfig,
-    ReleaseContractConfig, RepositoryReferenceConfig, SupportMatrixConfig,
-    SupportMatrixEntryConfig, SupportMatrixDocsClaimSourceConfig, TestRelationshipConfig,
-    TestRelationshipFixtureFamilyConfig, TestRelationshipIgnoredTestConfig,
-    TestRelationshipSourceConfig,
+    ReleaseArtifactConfig, ReleaseContractConfig, RepositoryReferenceConfig, SupportMatrixConfig,
+    SupportMatrixDocsClaimSourceConfig, SupportMatrixEntryConfig, TestRelationshipConfig,
+    TestRelationshipFixtureFamilyConfig, TestRelationshipIgnoredTestConfig, TestRelationshipSourceConfig,
 };
 
 /// Binary-safe extension config stored inside compiled artifacts.
@@ -19,6 +17,12 @@ struct PortableExtensionConfig {
     module_topologies: Vec<PortableModuleTopologyConfig>,
     docs_lifecycles: Vec<PortableDocsLifecycleConfig>,
     repository_references: Vec<RepositoryReferenceConfig>,
+    #[serde(default)]
+    agent_guidance: Vec<PortableAgentGuidanceConfig>,
+    #[serde(default)]
+    requirements_traceability: Vec<PortableRequirementsTraceabilityConfig>,
+    #[serde(default)]
+    computed_checks: Vec<PortableComputedCheckConfig>,
     relationships: Vec<PortableRelationshipConstraintConfig>,
 }
 
@@ -112,24 +116,6 @@ struct PortableTestRelationshipIgnoredTestConfig {
     reason: String,
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
-struct PortableRelationshipConstraintConfig {
-    id: String,
-    source: String,
-    source_declaration: Option<String>,
-    need: String,
-    providers: Vec<PortableRelationshipProviderConfig>,
-    severity: Option<String>,
-}
-
-#[derive(Clone, Debug, Deserialize, Serialize)]
-struct PortableRelationshipProviderConfig {
-    path: String,
-    section: Option<String>,
-    kind: Option<String>,
-    declaration: Option<String>,
-}
-
 impl From<ExtensionConfig> for PortableExtensionConfig {
     fn from(config: ExtensionConfig) -> Self {
         Self {
@@ -157,6 +143,13 @@ impl From<ExtensionConfig> for PortableExtensionConfig {
             module_topologies: config.module_topologies.into_iter().map(Into::into).collect(),
             docs_lifecycles: config.docs_lifecycles.into_iter().map(Into::into).collect(),
             repository_references: config.repository_references,
+            agent_guidance: config.agent_guidance.into_iter().map(Into::into).collect(),
+            requirements_traceability: config
+                .requirements_traceability
+                .into_iter()
+                .map(Into::into)
+                .collect(),
+            computed_checks: config.computed_checks.into_iter().map(Into::into).collect(),
             relationships: config.relationships.into_iter().map(Into::into).collect(),
         }
     }
@@ -189,6 +182,13 @@ impl From<PortableExtensionConfig> for ExtensionConfig {
             module_topologies: config.module_topologies.into_iter().map(Into::into).collect(),
             docs_lifecycles: config.docs_lifecycles.into_iter().map(Into::into).collect(),
             repository_references: config.repository_references,
+            agent_guidance: config.agent_guidance.into_iter().map(Into::into).collect(),
+            requirements_traceability: config
+                .requirements_traceability
+                .into_iter()
+                .map(Into::into)
+                .collect(),
+            computed_checks: config.computed_checks.into_iter().map(Into::into).collect(),
             relationships: config.relationships.into_iter().map(Into::into).collect(),
         }
     }
@@ -431,54 +431,6 @@ impl From<PortableTestRelationshipIgnoredTestConfig> for TestRelationshipIgnored
             path: config.path,
             test: config.test,
             reason: config.reason,
-        }
-    }
-}
-
-impl From<RelationshipConstraintConfig> for PortableRelationshipConstraintConfig {
-    fn from(config: RelationshipConstraintConfig) -> Self {
-        Self {
-            id: config.id,
-            source: config.source,
-            source_declaration: config.source_declaration,
-            need: config.need,
-            providers: config.providers.into_iter().map(Into::into).collect(),
-            severity: config.severity,
-        }
-    }
-}
-
-impl From<PortableRelationshipConstraintConfig> for RelationshipConstraintConfig {
-    fn from(config: PortableRelationshipConstraintConfig) -> Self {
-        Self {
-            id: config.id,
-            source: config.source,
-            source_declaration: config.source_declaration,
-            need: config.need,
-            providers: config.providers.into_iter().map(Into::into).collect(),
-            severity: config.severity,
-        }
-    }
-}
-
-impl From<RelationshipProviderConfig> for PortableRelationshipProviderConfig {
-    fn from(config: RelationshipProviderConfig) -> Self {
-        Self {
-            path: config.path,
-            section: config.section,
-            kind: config.kind,
-            declaration: config.declaration,
-        }
-    }
-}
-
-impl From<PortableRelationshipProviderConfig> for RelationshipProviderConfig {
-    fn from(config: PortableRelationshipProviderConfig) -> Self {
-        Self {
-            path: config.path,
-            section: config.section,
-            kind: config.kind,
-            declaration: config.declaration,
         }
     }
 }

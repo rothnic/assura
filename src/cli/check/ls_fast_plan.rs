@@ -8,7 +8,7 @@ use super::rules::{
     dir_contains, join_config_child, merge_directory_bundle, merge_file_bundle,
     merge_markdown_bundle, normalize_config_dir, strip_direct_content_policy, EffectiveRules,
 };
-use super::scope_patterns::{path_has_scope_magic, CompiledScopePattern};
+use super::scope_patterns::{path_has_scope_magic, path_scope_specificity, CompiledScopePattern};
 use crate::config::config::{Config, DirectoryBundle, DirectoryNode, FileBundle};
 use std::cmp::Reverse;
 use std::collections::HashMap;
@@ -47,6 +47,9 @@ pub(super) fn compile_lslint_fast_scopes(config: &Config) -> Option<Vec<FastScop
             || !extensions.module_topologies.is_empty()
             || !extensions.docs_lifecycles.is_empty()
             || !extensions.repository_references.is_empty()
+            || !extensions.agent_guidance.is_empty()
+            || !extensions.requirements_traceability.is_empty()
+            || !extensions.computed_checks.is_empty()
             || !extensions.relationships.is_empty()
     }) {
         return None;
@@ -69,7 +72,7 @@ pub(super) fn compile_lslint_fast_scopes(config: &Config) -> Option<Vec<FastScop
         )?;
     }
 
-    scopes.sort_by_key(|scope| Reverse(scope.depth()));
+    scopes.sort_by_key(|scope| Reverse(scope.specificity()));
     Some(scopes)
 }
 
@@ -178,8 +181,8 @@ impl FastScope {
         (&self.path, &self.exact, &self.descendant)
     }
 
-    fn depth(&self) -> usize {
-        self.path.components().count()
+    fn specificity(&self) -> (usize, usize, usize, usize) {
+        path_scope_specificity(&self.path)
     }
 
     pub(super) fn has_scope_magic(&self) -> bool {

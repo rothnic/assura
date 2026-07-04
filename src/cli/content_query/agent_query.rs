@@ -5,6 +5,7 @@ use super::context::{ContentQueryError, QueryContext};
 use super::output::{
     AgentQueryOutput, AgentQueryRequestOutput, DiagnosticsOutput, SafeFixOutput, SafeFixesOutput,
 };
+use super::references::{repository_references, ReferenceMode};
 use super::{diagnostic_output, expand, missing_relations, search};
 use crate::cli::AgentQueryArg as QueryArg;
 use crate::intelligence::{ProjectFact, SafeFix};
@@ -19,6 +20,7 @@ pub(super) fn agent_query(
     request: AgentQueryRequest<'_>,
 ) -> Result<AgentQueryOutput, ContentQueryError> {
     let response = match request.query {
+        QueryArg::Capabilities => to_response(agent_query_capabilities())?,
         QueryArg::Diagnostics => to_response(diagnostics(context))?,
         QueryArg::SafeFixes => to_response(safe_fixes(context))?,
         QueryArg::GraphExpand => {
@@ -49,6 +51,18 @@ pub(super) fn agent_query(
             to_response(symbol_refs(context, symbol))?
         }
         QueryArg::MissingRelations => to_response(missing_relations(context))?,
+        QueryArg::UnresolvedReferences => to_response(repository_references(
+            context,
+            ReferenceMode {
+                source: None,
+                target: None,
+                all: false,
+                unresolved: true,
+            },
+            request.limit,
+        )?)?,
+        QueryArg::Gaps => to_response(gaps(context))?,
+        QueryArg::NextActions => to_response(next_actions(context))?,
     };
 
     Ok(AgentQueryOutput {
@@ -89,6 +103,7 @@ fn to_response<T: Serialize>(value: T) -> Result<serde_json::Value, ContentQuery
 
 fn agent_query_capability(query: QueryArg) -> &'static str {
     match query {
+        QueryArg::Capabilities => "capabilities",
         QueryArg::Diagnostics => "diagnostics",
         QueryArg::SafeFixes => "safe_fixes",
         QueryArg::GraphExpand => "graph_queries",
@@ -96,11 +111,15 @@ fn agent_query_capability(query: QueryArg) -> &'static str {
         QueryArg::SemanticCandidates => "semantic_candidates",
         QueryArg::CodeSymbols | QueryArg::CodeSymbolRefs => "code_symbols",
         QueryArg::MissingRelations => "graph_queries",
+        QueryArg::UnresolvedReferences => "repository_references",
+        QueryArg::Gaps => "gaps",
+        QueryArg::NextActions => "next_actions",
     }
 }
 
 fn agent_query_cli(query: QueryArg) -> &'static str {
     match query {
+        QueryArg::Capabilities => "assura content agent-query capabilities",
         QueryArg::Diagnostics => "assura content agent-query diagnostics",
         QueryArg::SafeFixes => "assura content agent-query safe-fixes",
         QueryArg::GraphExpand => "assura content agent-query graph-expand",
@@ -109,7 +128,223 @@ fn agent_query_cli(query: QueryArg) -> &'static str {
         QueryArg::CodeSymbols => "assura content agent-query code-symbols",
         QueryArg::CodeSymbolRefs => "assura content agent-query code-symbol-refs",
         QueryArg::MissingRelations => "assura content agent-query missing-relations",
+        QueryArg::UnresolvedReferences => "assura content agent-query unresolved-references",
+        QueryArg::Gaps => "assura content agent-query gaps",
+        QueryArg::NextActions => "assura content agent-query next-actions",
     }
+}
+
+#[derive(Debug, Serialize)]
+struct AgentQueryCapabilitiesOutput {
+    capabilities: Vec<AgentQueryCapabilityOutput>,
+}
+
+#[derive(Debug, Serialize)]
+struct AgentQueryCapabilityOutput {
+    name: &'static str,
+    description: &'static str,
+    required_args: Vec<&'static str>,
+    suggested_commands: Vec<&'static str>,
+}
+
+fn agent_query_capabilities() -> AgentQueryCapabilitiesOutput {
+    AgentQueryCapabilitiesOutput {
+        capabilities: vec![
+            capability(
+                "capabilities",
+                "List deterministic project-intelligence capabilities.",
+                vec![],
+                vec!["assura content agent-query capabilities --format json"],
+            ),
+            capability(
+                "diagnostics",
+                "Return fact-backed validation diagnostics.",
+                vec![],
+                vec!["assura content agent-query diagnostics --format json"],
+            ),
+            capability(
+                "safe_fixes",
+                "Return deterministic safe-fix proposals.",
+                vec![],
+                vec!["assura content agent-query safe-fixes --format json"],
+            ),
+            capability(
+                "keyword_search",
+                "Search modeled project-intelligence facts by keyword.",
+                vec!["--text"],
+                vec!["assura content agent-query keyword-search --text <query> --format json"],
+            ),
+            capability(
+                "semantic_candidates",
+                "Return optional local semantic candidate context; candidates do not decide validation truth.",
+                vec!["--text"],
+                vec![
+                    "assura content agent-query semantic-candidates --text <query> --enable-local --format json",
+                ],
+            ),
+            capability(
+                "repository_references",
+                "Enumerate repository-reference edges and unresolved targets.",
+                vec![],
+                vec![
+                    "assura content references --all --format json",
+                    "assura content agent-query unresolved-references --format json",
+                ],
+            ),
+            capability(
+                "graph_expand",
+                "Expand bounded graph context around one modeled content instance.",
+                vec!["--collection", "--id"],
+                vec!["assura content agent-query graph-expand --collection <name> --id <id> --format json"],
+            ),
+            capability(
+                "missing_relations",
+                "List modeled content relation edges with unresolved targets.",
+                vec![],
+                vec![
+                    "assura content agent-query missing-relations --format json",
+                ],
+            ),
+            capability(
+                "code_symbols",
+                "Return code-symbol references for one modeled content instance.",
+                vec!["--collection", "--id"],
+                vec![
+                    "assura content agent-query code-symbols --collection <name> --id <id> --format json",
+                ],
+            ),
+            capability(
+                "code_symbol_refs",
+                "Return modeled content references to one code symbol.",
+                vec!["--symbol"],
+                vec!["assura content agent-query code-symbol-refs --symbol <symbol> --format json"],
+            ),
+            capability(
+                "gaps",
+                "Summarize deterministic gaps an agent should inspect next.",
+                vec![],
+                vec!["assura content agent-query gaps --format json"],
+            ),
+            capability(
+                "next_actions",
+                "Return deterministic follow-up commands for current gaps.",
+                vec![],
+                vec!["assura content agent-query next-actions --format json"],
+            ),
+        ],
+    }
+}
+
+fn capability(
+    name: &'static str,
+    description: &'static str,
+    required_args: Vec<&'static str>,
+    suggested_commands: Vec<&'static str>,
+) -> AgentQueryCapabilityOutput {
+    AgentQueryCapabilityOutput {
+        name,
+        description,
+        required_args,
+        suggested_commands,
+    }
+}
+
+#[derive(Debug, Serialize)]
+struct AgentQueryGapsOutput {
+    diagnostics: usize,
+    safe_fixes: usize,
+    missing_relations: usize,
+    unresolved_repository_references: usize,
+    requirements_traceability: usize,
+    computed_checks: usize,
+}
+
+fn gaps(context: &QueryContext) -> AgentQueryGapsOutput {
+    let diagnostics = diagnostics(context);
+    AgentQueryGapsOutput {
+        requirements_traceability: diagnostics
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| {
+                diagnostic
+                    .rule
+                    .as_str()
+                    .starts_with("requirements_traceability:")
+            })
+            .count(),
+        computed_checks: diagnostics
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.rule.as_str().starts_with("computed_check:"))
+            .count(),
+        diagnostics: diagnostics.diagnostics.len(),
+        safe_fixes: safe_fixes(context).safe_fixes.len(),
+        missing_relations: context.store.missing_relationship_targets().len(),
+        unresolved_repository_references: context.store.unresolved_repository_references().len(),
+    }
+}
+
+#[derive(Debug, Serialize)]
+struct AgentQueryNextActionsOutput {
+    actions: Vec<AgentQueryNextActionOutput>,
+}
+
+#[derive(Debug, Serialize)]
+struct AgentQueryNextActionOutput {
+    reason: &'static str,
+    command: &'static str,
+}
+
+fn next_actions(context: &QueryContext) -> AgentQueryNextActionsOutput {
+    let gaps = gaps(context);
+    let mut actions = Vec::new();
+    if gaps.diagnostics > 0 {
+        actions.push(next_action(
+            "validation diagnostics exist",
+            "assura content agent-query diagnostics --format json",
+        ));
+    }
+    if gaps.safe_fixes > 0 {
+        actions.push(next_action(
+            "safe fixes are available",
+            "assura content agent-query safe-fixes --format json",
+        ));
+    }
+    if gaps.missing_relations > 0 {
+        actions.push(next_action(
+            "modeled content relations have unresolved targets",
+            "assura content agent-query missing-relations --format json",
+        ));
+    }
+    if gaps.unresolved_repository_references > 0 {
+        actions.push(next_action(
+            "repository references have unresolved targets",
+            "assura content agent-query unresolved-references --format json",
+        ));
+    }
+    if gaps.requirements_traceability > 0 {
+        actions.push(next_action(
+            "requirements traceability gaps exist",
+            "assura content agent-query diagnostics --format json",
+        ));
+    }
+    if gaps.computed_checks > 0 {
+        actions.push(next_action(
+            "computed check findings exist",
+            "assura content agent-query diagnostics --format json",
+        ));
+    }
+    if actions.is_empty() {
+        actions.push(next_action(
+            "no deterministic gaps found",
+            "assura content agent-query capabilities --format json",
+        ));
+    }
+    AgentQueryNextActionsOutput { actions }
+}
+
+fn next_action(reason: &'static str, command: &'static str) -> AgentQueryNextActionOutput {
+    AgentQueryNextActionOutput { reason, command }
 }
 
 pub(super) fn diagnostics(context: &QueryContext) -> DiagnosticsOutput {

@@ -1,0 +1,4 @@
+{"file":"docs/goals/assura-post-onboarding-backlog-execution-sequence.md","reason":"Primary executable goal with ordered subgoals, proof gates, and reviewer blocking criteria."}
+{"file":"docs/goals/assura-performance-polish-program.md","reason":"Performance lane source of truth to revalidate before native benchmark/report implementation."}
+{"file":".trellis/spec/assura/roadmap.md","reason":"Current roadmap routing and priority rule separating onboarding from performance polish."}
+{"file":".trellis/spec/assura/index.md","reason":"Assura canonical sources and constraints for structure-first CLI work."}

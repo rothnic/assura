@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/assura/index.md", "reason": "Reviewer should verify Assura project constraints and current direction."}
+{"file": ".trellis/spec/assura/config-notation.md", "reason": "Reviewer should check first-party extension schema, compiled artifact, and docs coverage."}
+{"file": ".trellis/spec/assura/codex-agent-feedback.md", "reason": "Reviewer should verify computed findings flow through stable agent feedback rather than new per-agent surfaces."}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Reviewer should trace config-to-report-to-agent-query data flow and error handling."}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Reviewer should flag duplicate extension plumbing or missed existing helpers."}

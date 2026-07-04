@@ -123,6 +123,26 @@ impl InMemoryFactStore {
             .collect()
     }
 
+    /// Return all repository-reference edges in stable store order.
+    pub fn repository_references(&self) -> Vec<&RepositoryReferenceEdge> {
+        self.facts
+            .edges
+            .iter()
+            .filter_map(|edge| match edge {
+                ProjectEdge::RepositoryReference(edge) => Some(edge),
+                _ => None,
+            })
+            .collect()
+    }
+
+    /// Return repository-reference edges whose target path did not exist at ingestion time.
+    pub fn unresolved_repository_references(&self) -> Vec<&RepositoryReferenceEdge> {
+        self.repository_references()
+            .into_iter()
+            .filter(|edge| !edge.target_exists)
+            .collect()
+    }
+
     /// Return path scopes whose glob pattern matches a repository-relative path.
     pub fn path_scopes_for_path(&self, path: impl AsRef<Path>) -> Vec<&PathScope> {
         let normalized = normalize_path(path.as_ref());

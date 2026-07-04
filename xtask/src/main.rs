@@ -41,6 +41,7 @@ fn run() -> Result<()> {
         "release-live" => run_release_live(),
         "release-readiness" => run_release_readiness(&rest),
         "performance-no-slower" => run_performance_no_slower(&rest),
+        "native-performance-no-regression" => run_native_performance_no_regression(&rest),
         "markdown-engine-probe" => run_markdown_engine_probe(&rest),
         "changed" => run_changed(&rest),
         "pr" => run_pr(),
@@ -61,7 +62,7 @@ fn run() -> Result<()> {
 
 fn print_usage() {
     eprintln!(
-        "Usage: cargo xtask <fast|check|test|evidence|target-state|hygiene|docs|release-size|release-smoke|release-live|release-readiness|performance-no-slower|markdown-engine-probe|changed|pr|full>"
+        "Usage: cargo xtask <fast|check|test|evidence|target-state|hygiene|docs|release-size|release-smoke|release-live|release-readiness|performance-no-slower|native-performance-no-regression|markdown-engine-probe|changed|pr|full>"
     );
 }
 
@@ -878,6 +879,7 @@ fn run_target_state() -> Result<()> {
     check_test_relationships(&mut checks);
     check_docs_release_performance(&mut checks);
     check_public_roadmap(&mut checks);
+    check_agent_onboarding_website(&mut checks);
     check_agent_workflow_state(&mut checks);
     check_goal_revalidation_route(&mut checks);
     check_root_tooling_boundary(&mut checks);
@@ -999,6 +1001,44 @@ fn run_performance_no_slower(args: &[String]) -> Result<()> {
         }
     }
     Err("performance no-slower gate failed".into())
+}
+
+fn run_native_performance_no_regression(args: &[String]) -> Result<()> {
+    let report_path = parse_native_performance_report_path(args)?;
+    let report_text = fs::read_to_string(&report_path)?;
+    let report = serde_json::from_str::<Value>(&report_text)?;
+    let failures = native_performance_failures(&report)?;
+
+    if failures.is_empty() {
+        println!("Native performance gate passed for {report_path}.");
+        return Ok(());
+    }
+
+    eprintln!("Native performance gate failed for {report_path}.");
+    for failure in failures {
+        eprintln!("{failure}");
+    }
+    Err("native performance gate failed".into())
+}
+
+fn parse_native_performance_report_path(args: &[String]) -> Result<String> {
+    let mut report_path = "benches/history/native-current.json".to_string();
+    for value in args {
+        match value.as_str() {
+            "--help" | "-h" => {
+                return Err(
+                    "Usage: cargo xtask native-performance-no-regression [report.json]".into(),
+                );
+            }
+            value if value.starts_with("--") => {
+                return Err(
+                    format!("unknown native-performance-no-regression option: {value}").into(),
+                );
+            }
+            value => report_path = value.to_string(),
+        }
+    }
+    Ok(report_path)
 }
 
 #[derive(Default)]
@@ -2237,6 +2277,171 @@ fn performance_no_slower_failures(
     Ok(failures)
 }
 
+const NATIVE_PERFORMANCE_FIXTURES: &[&str] = &[
+    "native_adapter_mix",
+    "native_large",
+    "native_medium",
+    "native_real_project",
+    "native_reference_heavy",
+    "native_small",
+];
+
+const NATIVE_PERFORMANCE_ROW_FAMILIES: &[&str] = &[
+    "native:agent-query-keyword-search-cli",
+    "native:agent-query-missing-relations-cli",
+    "native:content-check-cli",
+    "native:content-collections-cli",
+    "native:content-expand-cli",
+    "native:content-instances-cli",
+    "native:content-missing-relations-cli",
+    "native:content-references-cli",
+    "native:content-search-cli",
+    "native:content-show-cli",
+    "native:context-pack-cli",
+    "native:daemon-status-cli",
+    "native:markdown-safe-fix-dry-run-cli",
+    "native:phase:config-model-load",
+    "native:phase:edge-collect",
+    "native:phase:fact-ingest-load",
+    "native:phase:factset-serialize-json",
+    "native:phase:file-index",
+    "native:phase:incremental-replace-generation",
+    "native:phase:object-load-validate",
+    "native:phase:reference-validate",
+    "native:phase:repository-validate-total",
+    "native:phase:schema-compile",
+    "native:phase:warm-keyword-query",
+    "native:session-agent-context-cli",
+];
+
+fn native_performance_failures(report: &Value) -> Result<Vec<String>> {
+    if report.get("schema_version").and_then(Value::as_str) != Some("assura.performance.v1") {
+        return Ok(vec![
+            "schema_version must be assura.performance.v1".to_string()
+        ]);
+    }
+    let rows = report
+        .get("results")
+        .and_then(Value::as_array)
+        .ok_or("performance report missing results array")?;
+
+    let mut failures = Vec::new();
+    let mut matrix = BTreeSet::<(String, String)>::new();
+    let native_rows = rows
+        .iter()
+        .filter(|row| row.get("fixture_cohort").and_then(Value::as_str) == Some("assura-native"))
+        .collect::<Vec<_>>();
+
+    if native_rows.is_empty() {
+        failures.push("report has no assura-native rows".to_string());
+    }
+
+    if report
+        .get("ls_lint_package")
+        .and_then(Value::as_str)
+        .is_some_and(|value| value != "not-applicable")
+    {
+        failures.push("native report ls_lint_package must be not-applicable".to_string());
+    }
+    if !command_line_contains(report, "--suite", "native") {
+        failures.push("native report command_line must include --suite native".to_string());
+    }
+
+    for row in native_rows {
+        let fixture_id = row
+            .get("fixture_id")
+            .and_then(Value::as_str)
+            .unwrap_or("<missing-fixture>");
+        let row_family = row
+            .get("row_family")
+            .and_then(Value::as_str)
+            .unwrap_or("<missing-row-family>");
+        let label = format!("{fixture_id} {row_family}");
+
+        matrix.insert((fixture_id.to_string(), row_family.to_string()));
+
+        if row.get("fixture_acceptance").and_then(Value::as_str) != Some("assura-native-diagnostic")
+        {
+            failures.push(format!(
+                "{label}: fixture_acceptance must be assura-native-diagnostic"
+            ));
+        }
+        if row.get("status").and_then(Value::as_str) != Some("pass") {
+            let status = row
+                .get("status")
+                .and_then(Value::as_str)
+                .unwrap_or("<missing>");
+            let details = row
+                .get("details")
+                .and_then(Value::as_str)
+                .unwrap_or("<no details>");
+            failures.push(format!("{label}: status {status}: {details}"));
+        }
+        let expected_assura_exit_status = row
+            .get("expected_assura_exit_status")
+            .and_then(Value::as_i64);
+        let expected_native_status = expected_native_assura_exit_status(fixture_id, row_family);
+        if expected_assura_exit_status != Some(expected_native_status) {
+            failures.push(format!(
+                "{label}: expected_assura_exit_status must be {expected_native_status}"
+            ));
+        }
+        if row
+            .get("median_runtime_ms")
+            .and_then(Value::as_f64)
+            .is_none()
+        {
+            failures.push(format!("{label}: missing median_runtime_ms"));
+        }
+        let samples = row
+            .pointer("/distribution/samples")
+            .and_then(Value::as_u64)
+            .unwrap_or(0);
+        if samples == 0 {
+            failures.push(format!(
+                "{label}: distribution.samples must be greater than zero"
+            ));
+        }
+        if row
+            .get("latency_threshold_met")
+            .and_then(Value::as_bool)
+            .is_some_and(|met| !met)
+        {
+            failures.push(format!("{label}: latency threshold was not met"));
+        }
+    }
+
+    for fixture_id in NATIVE_PERFORMANCE_FIXTURES {
+        for row_family in NATIVE_PERFORMANCE_ROW_FAMILIES {
+            if !matrix.contains(&(fixture_id.to_string(), row_family.to_string())) {
+                failures.push(format!(
+                    "{fixture_id} {row_family}: missing native matrix row"
+                ));
+            }
+        }
+    }
+
+    Ok(failures)
+}
+
+fn expected_native_assura_exit_status(fixture_id: &str, row_family: &str) -> i64 {
+    if matches!(fixture_id, "native_reference_heavy" | "native_real_project")
+        && row_family == "native:content-check-cli"
+    {
+        1
+    } else {
+        0
+    }
+}
+
+fn command_line_contains(report: &Value, option: &str, value: &str) -> bool {
+    report
+        .get("command_line")
+        .and_then(Value::as_str)
+        .and_then(|command_line| command_option_value(command_line, option))
+        == Some(value)
+}
+
 fn accepted_fixture_row(row: &Value) -> Result<bool> {
     match row.get("fixture_acceptance").and_then(Value::as_str) {
         Some("accepted-ls-lint-equivalent") => Ok(true),
@@ -3385,6 +3590,16 @@ const CLI_COMMAND_VARIANT_ROWS: &[CliCommandVariantRow] = &[
     },
     CliCommandVariantRow {
         enum_name: "Commands",
+        variant_name: "Doctor",
+        command_surface_names: &["assura doctor"],
+    },
+    CliCommandVariantRow {
+        enum_name: "Commands",
+        variant_name: "Explain",
+        command_surface_names: &["assura explain"],
+    },
+    CliCommandVariantRow {
+        enum_name: "Commands",
         variant_name: "Init",
         command_surface_names: &["assura init"],
     },
@@ -3717,6 +3932,32 @@ const SUPPORT_MATRIX_ROWS: &[SupportMatrixRow] = &[
         exception_markers: &[],
     },
     SupportMatrixRow {
+        surface: "assura doctor",
+        command_surface_names: &["assura doctor"],
+        support_policy_markers: &["`assura doctor`"],
+        compatibility_markers: &["| `assura doctor` | Experimental local project doctor |"],
+        source_markers: &["Commands::Doctor", "doctor_command"],
+        test_markers: &[
+            "tests/doctor_explain_cli.rs",
+            "doctor_reports_clean_check_with_inactive_and_unwired_model_gap",
+        ],
+        exception_markers: &[],
+    },
+    SupportMatrixRow {
+        surface: "assura explain",
+        command_surface_names: &["assura explain"],
+        support_policy_markers: &["`assura explain`"],
+        compatibility_markers: &[
+            "| `assura explain` | Experimental local path explanation |",
+        ],
+        source_markers: &["Commands::Explain", "explain_command"],
+        test_markers: &[
+            "tests/doctor_explain_cli.rs",
+            "explain_reports_inherited_scope_and_source_markdown_skips",
+        ],
+        exception_markers: &[],
+    },
+    SupportMatrixRow {
         surface: "assura migrate",
         command_surface_names: &["assura migrate"],
         support_policy_markers: &["`assura migrate` for complete LS-Lint 2.3 config semantics"],
@@ -3804,6 +4045,7 @@ const SUPPORT_MATRIX_ROWS: &[SupportMatrixRow] = &[
             "assura agent missing-relations",
             "assura agent expand",
             "assura agent safe-fixes",
+            "assura agent onboard",
             "assura agent nudge",
             "assura agent integration",
             "assura agent integration install",
@@ -3816,12 +4058,14 @@ const SUPPORT_MATRIX_ROWS: &[SupportMatrixRow] = &[
         support_policy_markers: &["`assura agent`"],
         compatibility_markers: &[
             "| `assura agent` | Supported local agent project-intelligence surface |",
+            "| `assura agent onboard` | Experimental local agent-ready onboarding surface |",
             "| `assura agent nudge` | Experimental local agent nudge payload |",
             "| `assura agent integration` | Experimental local agent integration lifecycle |",
             "| `assura agent session` | Supported local agent session alias |",
         ],
         source_markers: &[
             "Commands::Agent",
+            "AgentCommands::Onboard",
             "AgentCommands::Context",
             "AgentCommands::Nudge",
             "AgentCommands::Integration",
@@ -3829,6 +4073,7 @@ const SUPPORT_MATRIX_ROWS: &[SupportMatrixRow] = &[
         test_markers: &[
             "tests/agent_surface_cli.rs",
             "agent_surface_defaults_to_json_and_reuses_content_contracts",
+            "agent_onboard_generates_broad_baseline_and_packet",
             "agent_nudge_after_tool_reports_bounded_changed_path_findings",
             "agent_integration_lifecycle_installs_reviewable_bundles_for_all_hosts",
             "agent_surface_session_alias_reuses_json_line_session_contract",
@@ -4660,6 +4905,29 @@ fn check_docs_release_performance(checks: &mut Checks) {
         ),
         ".github/workflows/ci.yml: Performance Report job must generate a 5-iteration report, enforce cargo xtask performance-no-slower on that report, and keep summary/artifact steps on failure",
     );
+    checks.require(
+        text_contains_ordered(
+            &ci_workflow,
+            &[
+                "- name: Generate native performance report",
+                "--suite native",
+                "--output target/performance/native-current.json",
+                "--history target/performance/native-history.jsonl",
+                "--iterations 5",
+                "- name: Enforce native performance gate",
+                "run: cargo xtask native-performance-no-regression target/performance/native-current.json",
+                "name: native-performance-report",
+            ],
+        ),
+        ".github/workflows/ci.yml: Performance Report job must generate, gate, and upload the native performance report",
+    );
+
+    check_native_performance_artifacts(
+        checks,
+        &performance_text,
+        &performance_implementation_text,
+        &performance_cases_text,
+    );
 
     let current_cohort = bench_current
         .pointer("/claim_summary/fixture_cohort")
@@ -4774,6 +5042,100 @@ fn check_docs_release_performance(checks: &mut Checks) {
         checks.require(
             goal_13_text.contains("accepted bounded follow-up"),
             "Goal 13 progress log: missing accepted bounded follow-up record",
+        );
+    }
+}
+
+fn check_native_performance_artifacts(
+    checks: &mut Checks,
+    performance_text: &str,
+    performance_implementation_text: &str,
+    performance_cases_text: &str,
+) {
+    let Ok(bench_native) =
+        serde_json::from_str::<Value>(&read("benches/history/native-current.json"))
+    else {
+        checks.add("benches/history/native-current.json: invalid JSON");
+        return;
+    };
+    let Ok(website_native) =
+        serde_json::from_str::<Value>(&read("website/public/data/performance/native-current.json"))
+    else {
+        checks.add("website/public/data/performance/native-current.json: invalid JSON");
+        return;
+    };
+    checks.require(
+        bench_native == website_native,
+        "native performance current.json drift: benches/history and website/public data must match",
+    );
+    checks.require(
+        read("benches/history/native-history.jsonl")
+            == read("website/public/data/performance/native-history.jsonl"),
+        "native performance history drift: benches/history and website/public data must match",
+    );
+    checks.require(
+        bench_native.get("schema_version").and_then(Value::as_str) == Some("assura.performance.v1"),
+        "native performance current.json: unexpected schema_version",
+    );
+    checks.require(
+        bench_native
+            .get("source_worktree_dirty")
+            .and_then(Value::as_bool)
+            == Some(false),
+        "native performance current.json: source_worktree_dirty must be false",
+    );
+    checks.require(
+        bench_native.get("ls_lint_package").and_then(Value::as_str) == Some("not-applicable"),
+        "native performance current.json: ls_lint_package must be not-applicable",
+    );
+    let native_command = bench_native
+        .get("command_line")
+        .and_then(Value::as_str)
+        .unwrap_or_default();
+    for (option, expected_value) in [
+        ("--suite", "native"),
+        ("--output", "benches/history/native-current.json"),
+        ("--history", "benches/history/native-history.jsonl"),
+        ("--website-dir", "website/public/data/performance"),
+    ] {
+        checks.require(
+            command_option_value(native_command, option) == Some(expected_value),
+            format!("native performance command_line must set {option} to {expected_value}"),
+        );
+        checks.require(
+            text_contains_option_value(performance_text, option, expected_value)
+                || text_contains_option_value(performance_cases_text, option, expected_value),
+            format!("native performance docs command missing {option} {expected_value}"),
+        );
+    }
+    match native_performance_failures(&bench_native) {
+        Ok(failures) => checks.require(
+            failures.is_empty(),
+            format!("native performance current.json gate failed: {failures:?}"),
+        ),
+        Err(error) => checks.add(format!(
+            "native performance current.json gate could not be evaluated: {error}"
+        )),
+    }
+    for marker in [
+        "native-current.json",
+        "native-history.jsonl",
+        "assura-native-diagnostic",
+        "native:phase:*",
+        "native:phase:incremental-replace-generation",
+        "native-performance-no-regression",
+    ] {
+        checks.require(
+            performance_text.contains(marker)
+                || performance_implementation_text.contains(marker)
+                || performance_cases_text.contains(marker),
+            format!("performance docs: missing native performance marker {marker}"),
+        );
+    }
+    for fixture in NATIVE_PERFORMANCE_FIXTURES {
+        checks.require(
+            performance_cases_text.contains(&format!("`{fixture}`")),
+            format!("performance test cases docs: missing native fixture {fixture}"),
         );
     }
 }
@@ -4903,6 +5265,95 @@ fn check_public_roadmap(checks: &mut Checks) {
         internal_roadmap.contains("docs/data/public-roadmap.json"),
         ".trellis/spec/assura/roadmap.md must point to the public roadmap artifact",
     );
+}
+
+fn check_agent_onboarding_website(checks: &mut Checks) {
+    let guide_path = "website/src/content/docs/guides/agent-ready-onboarding.md";
+    checks.require(
+        exists(guide_path),
+        format!("{guide_path}: dedicated agent-ready onboarding guide is missing"),
+    );
+    if !exists(guide_path) {
+        return;
+    }
+
+    let guide = read(guide_path);
+    let astro_config = read("website/astro.config.mjs");
+    let home = read("website/src/content/docs/index.mdx");
+    let getting_started = read("website/src/content/docs/guides/getting-started.md");
+
+    checks.require(
+        astro_config
+            .contains("{ label: 'Agent-Ready Onboarding', slug: 'guides/agent-ready-onboarding' }"),
+        "website sidebar must include the Agent-Ready Onboarding guide",
+    );
+    checks.require(
+        home.contains("/guides/agent-ready-onboarding/")
+            || getting_started.contains("/guides/agent-ready-onboarding/"),
+        "website entry points must link to the Agent-Ready Onboarding guide",
+    );
+
+    for marker in [
+        "## First-Run Phases",
+        "## Report Shape",
+        "## Generated Packet",
+        "## Project-Local Skills",
+        "## Agent Prompt",
+        "## Agent-Next Questions",
+        "## Checked Versus Unchecked",
+        "## Content And Project Packs",
+        "## Lifecycle Profiles",
+        "## Specialization Flow",
+        "\"content\"",
+        "\"template\": \"none\"",
+        "\"status\": \"inactive\"",
+        "\"lifecycle_profiles\"",
+        "\"mode\": \"nudge\"",
+        "\"mode\": \"warn\"",
+        "\"mode\": \"gate\"",
+        "\"blocking\": true",
+        "\"action\": \"Ask remaining specialization questions\"",
+        "\"affected_paths\": [\".assura/onboarding/questions.md\"]",
+        "current experimental local command",
+        "experimental, reviewable local integration bundle",
+        "assura agent onboard . --agent auto --format json",
+        "assura agent onboard . --content-template agent-project --format json",
+        "assura agent onboard . --content-template document-project --format json",
+        ".agents/skills/",
+        "assura-structure-fit",
+        "STRUCTURE_FIT_CHECK",
+        "does not silently mutate host-agent or global skill",
+        "source-documents/",
+        "library/topics/",
+        "docs/drafts/",
+        "docs/final/",
+        "research-authoring project",
+        "literature reviews",
+        "papers, theses",
+        "Treat inactive entries as unchecked",
+        "assura doctor . --format json",
+        "assura explain AGENTS.md --format json",
+        "Roadmap note",
+    ] {
+        checks.require(
+            guide.contains(marker),
+            format!("{guide_path}: missing agent onboarding marker {marker:?}"),
+        );
+    }
+
+    for forbidden in [
+        "assura bootstrap",
+        "assura agent specialize",
+        "assura agent onboard --remote",
+        "assura agent onboard . --remote",
+        "assura remote bootstrap",
+        "assura check --format codex-hook",
+    ] {
+        checks.require(
+            !guide.contains(forbidden),
+            format!("{guide_path}: contains unsupported onboarding command {forbidden:?}"),
+        );
+    }
 }
 
 fn label_word_count(label: &str) -> usize {
@@ -5128,6 +5579,7 @@ fn active_root_quality_files() -> Vec<String> {
         "docs/analysis/review-record-template.md".to_string(),
         AUDIT.to_string(),
         "scripts/ci-scope.sh".to_string(),
+        "scripts/ci-scope-github.sh".to_string(),
         "scripts/check-ci-scope.sh".to_string(),
     ];
     paths.extend(
@@ -5449,6 +5901,71 @@ mod tests {
     }
 
     #[test]
+    fn native_performance_gate_accepts_complete_passing_matrix() {
+        let mut rows = Vec::new();
+        for fixture_id in NATIVE_PERFORMANCE_FIXTURES {
+            for row_family in NATIVE_PERFORMANCE_ROW_FAMILIES {
+                let expected_assura_exit_status =
+                    expected_native_assura_exit_status(fixture_id, row_family);
+                rows.push(json!({
+                    "fixture_cohort": "assura-native",
+                    "fixture_id": fixture_id,
+                    "fixture_acceptance": "assura-native-diagnostic",
+                    "row_family": row_family,
+                    "expected_assura_exit_status": expected_assura_exit_status,
+                    "status": "pass",
+                    "median_runtime_ms": 1.0,
+                    "distribution": {
+                        "samples": 1
+                    }
+                }));
+            }
+        }
+        let report = json!({
+            "schema_version": "assura.performance.v1",
+            "ls_lint_package": "not-applicable",
+            "command_line": "assura performance-report --suite native",
+            "results": rows
+        });
+
+        let failures = native_performance_failures(&report).expect("report is valid");
+
+        assert!(failures.is_empty());
+    }
+
+    #[test]
+    fn native_performance_gate_reports_skipped_and_missing_rows() {
+        let report = json!({
+            "schema_version": "assura.performance.v1",
+            "ls_lint_package": "not-applicable",
+            "command_line": "assura performance-report --suite native",
+            "results": [
+                {
+                    "fixture_cohort": "assura-native",
+                    "fixture_id": "native_small",
+                    "fixture_acceptance": "assura-native-diagnostic",
+                    "row_family": "native:content-check-cli",
+                    "expected_assura_exit_status": 1,
+                    "status": "skipped",
+                    "details": "expected exit 0, got Some(2)",
+                    "distribution": {
+                        "samples": 0
+                    }
+                }
+            ]
+        });
+
+        let failures = native_performance_failures(&report).expect("report is valid");
+
+        assert!(failures.iter().any(
+            |failure| failure.contains("native_small native:content-check-cli: status skipped")
+        ));
+        assert!(failures.iter().any(|failure| failure.contains(
+            "native_adapter_mix native:agent-query-keyword-search-cli: missing native matrix row"
+        )));
+    }
+
+    #[test]
     fn markdown_engine_probe_options_parse_measurement_flags() {
         let options = parse_markdown_engine_probe_options(&[
             "--candidate".to_string(),
@@ -5664,7 +6181,8 @@ mod tests {
         if !unreleased.is_empty() {
             assert!(unreleased
                 .iter()
-                .any(|surface| surface.get("id").and_then(Value::as_str) == Some("daemon-mode")));
+                .any(|surface| surface.get("id").and_then(Value::as_str)
+                    == Some("agent-ready-doctor-explain")));
             assert!(unreleased.iter().all(|surface| {
                 surface.get("id").and_then(Value::as_str)
                     != Some("project-intelligence-local-surfaces")

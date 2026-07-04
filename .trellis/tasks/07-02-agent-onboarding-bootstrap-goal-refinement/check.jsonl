@@ -1,0 +1,14 @@
+{"file": "docs/goals/assura-agent-ready-project-onboarding-program.md", "reason": "Confirm bootstrap phases, onboarding packet, agent-next questions, packs, adapters, and specialization flow are captured."}
+{"file": "docs/goals/assura-agent-onboarding-bootstrap-command.md", "reason": "Confirm first-run bootstrap work is separately executable."}
+{"file": "docs/goals/assura-agent-project-preset-dynamic-contracts.md", "reason": "Confirm preset and dynamic contracts work is separately executable."}
+{"file": "docs/goals/assura-agent-doctor-explain-feedback.md", "reason": "Confirm doctor/explain work is separately executable."}
+{"file": "docs/goals/assura-agent-guidance-skill-contracts.md", "reason": "Confirm guidance and skill contract work is separately executable."}
+{"file": "docs/goals/assura-agent-search-reference-discovery.md", "reason": "Confirm search/reference work is separately executable."}
+{"file": "docs/goals/assura-agent-content-activation-source-docs.md", "reason": "Confirm content/source document work is separately executable."}
+{"file": "docs/goals/assura-agent-lifecycle-hooks-next-actions.md", "reason": "Confirm lifecycle/next-action work is separately executable."}
+{"file": "docs/goals/assura-website-agent-onboarding-experience.md", "reason": "Confirm website onboarding work is separately executable."}
+{"file": "docs/goals/assura-agent-document-project-preset.md", "reason": "Confirm document-project preset work is separately executable."}
+{"file": "docs/goals/assura-agent-requirements-evidence-traceability.md", "reason": "Confirm requirements/evidence traceability work is separately executable."}
+{"file": "docs/goals/assura-agent-script-backed-computed-checks.md", "reason": "Confirm computed-check work is separately executable."}
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "Confirm roadmap still points to agent-ready onboarding as P0 adoption backlog."}
+{"file": "docs/data/public-roadmap.json", "reason": "Confirm public roadmap JSON remains valid after the refinement."}

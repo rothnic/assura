@@ -34,6 +34,8 @@ publishes and verifies a `.sha256` file next to every archive.
 | `assura check --format agent --agent codex` | Supported adapter | Codex delivery fixture under the shared agent format. |
 | `assura init` | Supported | Installable adoption smoke. |
 | `assura status --format json` | Supported | Installable adoption smoke. |
+| `assura doctor` | Experimental local project doctor | Doctor/explain CLI tests prove clean configured checks still report inactive capabilities, unwired draft model files, recommended preset gaps, and ranked next actions. |
+| `assura explain` | Experimental local path explanation | Doctor/explain CLI tests prove path explanations expose inherited scopes, skipped checks, excluded generated/binary paths, and agent-oriented output. |
 | `assura migrate` | Supported for complete LS-Lint 2.3 config semantics | LS-Lint feature matrix, native golden parity tests, migration tests, and adoption smoke. |
 | `assura hooks` | Supported for local git hooks | CLI help and local hook behavior. |
 | `assura quality plan` | Supported for local quality planning | `.assura/config.yml`, `docs/validation.md`, and changed-check scripts. |
@@ -49,6 +51,7 @@ publishes and verifies a `.sha256` file next to every archive.
 | `assura agent missing-relations` | Supported local agent relation query | Agent-surface CLI tests compare output with `assura content missing-relations`. |
 | `assura agent expand` | Supported local agent graph expansion | Agent-surface CLI tests compare output with `assura content expand`. |
 | `assura agent safe-fixes` | Supported local agent safe-fix preview | Agent-surface CLI tests compare output with `assura content agent-query safe-fixes`. |
+| `assura agent onboard` | Experimental local agent-ready onboarding surface | Project-intelligence onboarding tests prove the command generates a broad baseline, project-local maintenance and structure-fit skills, onboarding packet, checked/unchecked report, reusable dynamic skill-directory contract, explicit nudge/warn/gate lifecycle profiles, ranked next actions, optional `--content-template agent-project` and `document-project` activation, source-document custody metadata, generic document-project topics/drafts/final-doc records, and non-destructive existing-file behavior. |
 | `assura agent nudge` | Experimental local agent nudge payload | Agent-surface CLI tests prove bounded event-aware JSON for session start, before/after tool events, daemon fallback, and performance-gate path hints without per-agent validation commands. |
 | `assura agent integration` | Experimental local agent integration lifecycle | Agent-surface CLI tests prove install, update, remove, status, and doctor workflows generate reviewable `.assura/integrations/<agent>/` bundles for Codex, OpenCode, Claude, and Pi without embedding validation logic. |
 | `assura agent integration install` | Experimental local agent integration lifecycle | Generates manifest, wrapper, and README files under `.assura/integrations/<agent>/`; `--dry-run` previews writes. |
@@ -61,19 +64,19 @@ publishes and verifies a `.sha256` file next to every archive.
 | `assura editor session` | Supported local editor session | Editor-surface CLI tests prove LSP-shaped diagnostics, context, safe-fix code-action previews, invalid-method errors, and conservative reload metadata. |
 | `assura content` | Supported first project-intelligence query surface | Content query CLI fixture tests and product docs. |
 | `assura content agent-context` | Supported generic agent context | Agent-context CLI fixture tests; wrappers must reuse this contract instead of creating per-agent query commands. |
-| `assura content agent-query` | Supported generic agent query envelope | Agent-query CLI fixture tests prove diagnostics, graph, search, semantic, and code-symbol queries reuse one wrapper schema. |
+| `assura content agent-query` | Supported generic agent query envelope | Agent-query CLI fixture tests prove diagnostics, graph, search, semantic, code-symbol, capability-discovery, unresolved-reference, gap, and next-action queries reuse one wrapper schema. |
 | `assura content context-pack` | Supported bounded project-intelligence context bundle | Context-pack tests prove diagnostics, graph/search context, repository-reference context, relation status, and safe-fix preview metadata compose without writes. |
 | `assura content session` | Supported local project-intelligence session | Session tests prove repeated JSON-line requests reuse context and reload conservatively after modeled content changes. |
 | `assura content collections` | Supported | Content query CLI fixture tests. |
 | `assura content instances` | Supported | Content query CLI fixture tests. |
 | `assura content show` | Supported | Content query CLI fixture tests. |
-| `assura content search` | Supported scored keyword search | Content query CLI fixture tests prove deterministic lexical scores; semantic candidate retrieval uses the separate `semantic-search` command. |
+| `assura content search` | Supported scored keyword search | Content query CLI fixture tests prove deterministic lexical scores and explicit raw/fallback raw repository text discovery; semantic candidate retrieval uses the separate `semantic-search` command. |
 | `assura content semantic-search` | Experimental optional local candidate search | Semantic search fixture tests; candidates do not decide validation correctness. |
 | `assura content symbols` | Experimental optional code-symbol query | Code-symbol fixture tests; baseline evidence is candidate context and does not decide validation correctness. |
 | `assura content symbol-refs` | Experimental optional code-symbol query | Code-symbol fixture tests; unresolved provider refs remain queryable. |
 | `assura content missing-relations` | Supported relation query | Content query CLI fixture tests. |
 | `assura content expand` | Supported bounded graph expansion | Content query CLI fixture tests. |
-| `assura content references` | Supported repository-reference graph query | Content query CLI tests prove bounded inbound references by target path and outbound references by source path. |
+| `assura content references` | Supported repository-reference graph query | Content query CLI tests prove bounded inbound references by target path, outbound references by source path, all-reference listing, unresolved-reference listing, and configured frontmatter reference edges. |
 | `assura daemon` | Experimental local daemon process | Daemon CLI tests prove JSON status, start, stop, restart, doctor, logs, health, changed-path, and reference-context contracts over local daemon-ready state. Lifecycle commands manage a real local process with versioned health, check-path, and repository-reference IPC. |
 | `assura daemon status` | Experimental local daemon status | Daemon CLI tests prove JSON health, protocol, process metadata, crashed-process detection, and management command hints. |
 | `assura daemon start` | Experimental local daemon lifecycle | Daemon CLI tests prove idempotent process-backed JSON start behavior with PID and IPC address metadata. |
@@ -96,6 +99,7 @@ publishes and verifies a `.sha256` file next to every archive.
 | --- | --- | --- |
 | `config:markdown.lint_common` | Experimental | Common-lint CLI tests prove stable findings for heading increments, heading marker spacing, duplicate headings, multiple blank lines, suppressions, and severity overrides. |
 | `config:extensions.repository_references` | Experimental | Repository-reference check tests prove opt-in source/comment/docstring diagnostics for missing targets, missing Markdown anchors, and invalid line anchors. |
+| `config:extensions.requirements_traceability` | Experimental full-CLI policy | Requirements traceability tests prove content-runtime-backed diagnostics for high-priority requirement coverage, claim-to-evidence links, evidence-to-source-document links, finding owner/status metadata, and agent-query gap exposure. Lightweight compiled check artifacts preserve config shape but do not enforce this content-runtime policy. |
 | `project-intelligence:repository-reference-facts` | Supported | Repository-reference graph tests prove Markdown, source-comment, docstring, and string-literal path candidates become bounded `RepositoryReference` edges with confidence labels. Object-mode context-pack tests prove those edges are available as bounded inbound/outbound document-graph context. |
 
 ## Project Intelligence Layout Compatibility
@@ -189,6 +193,8 @@ SDK, or semver-stable Rust library API.
 | `config:extensions.module_topologies` | Experimental first-party | Module topology checks prove configured Rust module-family ownership, roots, public export classification, and internal visibility boundaries. |
 | `config:extensions.docs_lifecycles` | Experimental first-party | Docs lifecycle checks prove configured active/historical docs, frontmatter status, stale-claim evidence, and historical exceptions. |
 | `config:extensions.repository_references` | Experimental first-party | Repository-reference check tests prove opt-in source/comment/docstring diagnostics for missing targets, missing Markdown anchors, and invalid line anchors. |
+| `config:extensions.agent_guidance` | Experimental first-party | Agent guidance contract tests prove opt-in `AGENTS.md` and project-local `SKILL.md` checks for required sections, frontmatter fields, skill index links, use-case skill routing tables, allowed skill-name patterns, progressive-disclosure references, SKILL doc-routing tables, supporting reference links, and concise entrypoint remediation. |
+| `config:extensions.computed_checks` | Experimental first-party | Computed-check tests prove opt-in project-local scripts emit versioned JSON findings, handle missing/invalid/timeout/nonzero behavior, support optional Windows-specific script paths, appear in doctor and agent-query gaps, and round-trip through compiled check artifacts without becoming a public plugin API. |
 | `config:extensions.relationships` | Internal generated first-party | Structure notation tests prove capture relationships are normalized from `structure` captures, `exists:1`, `needs`, and `provides`. |
 | Public plugin API or SDK | Roadmap only | No current command, package, Rust module, or docs surface provides remote plugin loading, shell-executed validators, a plugin marketplace, TypeScript plugin APIs, or semver-stable Rust APIs. |
 
@@ -231,6 +237,8 @@ extensions:
         - surface: "config:markdown.lint_common"
           status: experimental
         - surface: "config:extensions.repository_references"
+          status: experimental
+        - surface: "config:extensions.agent_guidance"
           status: experimental
         - surface: "package:assura"
           status: supported

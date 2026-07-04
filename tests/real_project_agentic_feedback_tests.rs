@@ -324,6 +324,29 @@ fn check_agent_format_emits_stable_priority_feedback_for_real_project_fixture() 
 }
 
 #[test]
+fn check_agent_warn_mode_is_advisory_and_gate_mode_blocks() {
+    let project = fixture_path("invalid");
+
+    let (warn_status, warn_json) =
+        run_agent_check(&project, &["--warn", "--min-severity", "medium"]);
+    assert!(
+        warn_status.success(),
+        "warn mode should report without blocking:\n{warn_json:#}"
+    );
+    assert_eq!(warn_json["blocking"], false);
+    assert_eq!(warn_json["feedback"][0]["status"], "fail");
+
+    let (gate_status, gate_json) = run_agent_check(&project, &["--min-severity", "medium"]);
+    assert_eq!(
+        gate_status.code(),
+        Some(1),
+        "gate mode should block on configured medium+ findings:\n{gate_json:#}"
+    );
+    assert_eq!(gate_json["blocking"], true);
+    assert_eq!(gate_json["feedback"][0]["status"], "fail");
+}
+
+#[test]
 fn check_agent_codex_adapter_wraps_real_project_feedback_for_user_prompt_submit() {
     let project = fixture_path("invalid");
 

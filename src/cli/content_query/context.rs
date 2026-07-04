@@ -4,6 +4,7 @@ use super::ContentCommands;
 use crate::cli::check::{run_structure_check, StructureCheckReport};
 use crate::cli::AgentQueryArg;
 use crate::cli::ExitCode;
+use crate::config::config::Config;
 use crate::config::loader::ConfigLoader;
 use crate::content_repository::{ContentFinding, ContentRepository, RepositoryModel};
 use crate::intelligence::{FactIngestor, InMemoryFactStore};
@@ -98,6 +99,7 @@ impl QueryContext {
         ingest_markdown_reference_facts(&mut ingestor, &project_root);
         if references_enabled {
             ingest_source_reference_facts(&mut ingestor, &project_root);
+            ingest_frontmatter_reference_facts(&mut ingestor, &project_root, &config);
         }
         if code_symbols_enabled {
             ingestor.ingest_local_rust_code_symbols(&project_root);
@@ -190,6 +192,41 @@ fn ingest_source_reference_facts(ingestor: &mut FactIngestor, project_root: &Pat
     }
 }
 
+fn ingest_frontmatter_reference_facts(
+    ingestor: &mut FactIngestor,
+    project_root: &Path,
+    config: &Config,
+) {
+    let Some(extensions) = &config.extensions else {
+        return;
+    };
+    let field_policies = extensions
+        .repository_references
+        .iter()
+        .filter(|policy| !policy.frontmatter_fields.is_empty())
+        .collect::<Vec<_>>();
+    if field_policies.is_empty() {
+        return;
+    }
+    for path in markdown_reference_files(project_root) {
+        let Ok(content) = fs::read_to_string(&path) else {
+            continue;
+        };
+        let Ok(rel_path) = path.strip_prefix(project_root) else {
+            continue;
+        };
+        let fields = field_policies
+            .iter()
+            .filter(|policy| repository_reference_policy_matches(&policy.paths, rel_path))
+            .flat_map(|policy| policy.frontmatter_fields.iter().cloned())
+            .collect::<Vec<_>>();
+        if fields.is_empty() {
+            continue;
+        }
+        ingestor.ingest_frontmatter_references(project_root, rel_path, &content, &fields);
+    }
+}
+
 fn markdown_reference_files(project_root: &Path) -> Vec<PathBuf> {
     let mut files = Vec::new();
     collect_markdown_reference_files(project_root, project_root, &mut files);
@@ -250,7 +287,7 @@ fn collect_source_reference_files(root: &Path, dir: &Path, files: &mut Vec<PathB
     }
 }
 
-fn ignored_reference_scan_path(path: &Path) -> bool {
+pub(super) fn ignored_reference_scan_path(path: &Path) -> bool {
     path.components().any(|component| {
         let value = component.as_os_str().to_string_lossy();
         matches!(
@@ -258,6 +295,16 @@ fn ignored_reference_scan_path(path: &Path) -> bool {
             ".git" | "target" | "node_modules" | "dist" | "coverage"
         )
     })
+}
+
+fn repository_reference_policy_matches(patterns: &[String], rel: &Path) -> bool {
+    if patterns.is_empty() {
+        return true;
+    }
+    let rel = rel.to_string_lossy().replace('\\', "/");
+    patterns
+        .iter()
+        .any(|pattern| glob::Pattern::new(pattern).is_ok_and(|pattern| pattern.matches(&rel)))
 }
 
 fn is_source_reference_file(path: &Path) -> bool {
@@ -295,9 +342,11 @@ fn is_source_reference_file(path: &Path) -> bool {
 }
 
 fn ingest_safe_fix_structure_report(ingestor: &mut FactIngestor, mut report: StructureCheckReport) {
-    report
-        .violations
-        .retain(|violation| violation.rule == "markdown_trailing_spaces");
+    report.violations.retain(|violation| {
+        violation.rule == "markdown_trailing_spaces"
+            || violation.rule.starts_with("requirements_traceability:")
+            || violation.rule.starts_with("computed_check:")
+    });
     if !report.violations.is_empty() {
         ingestor.ingest_check_report(&report);
     }
@@ -366,7 +415,10 @@ impl SemanticCommand for ContentCommands {
             self,
             ContentCommands::AgentContext { .. }
                 | ContentCommands::AgentQuery {
-                    query: AgentQueryArg::GraphExpand,
+                    query: AgentQueryArg::GraphExpand
+                        | AgentQueryArg::UnresolvedReferences
+                        | AgentQueryArg::Gaps
+                        | AgentQueryArg::NextActions,
                     ..
                 }
                 | ContentCommands::ContextPack { .. }

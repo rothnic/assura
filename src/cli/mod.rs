@@ -6,7 +6,21 @@ mod agent_args;
 #[cfg(feature = "full-cli")]
 mod agent_integration;
 #[cfg(feature = "full-cli")]
+mod agent_lifecycle;
+#[cfg(feature = "full-cli")]
 mod agent_nudge;
+#[cfg(feature = "full-cli")]
+mod agent_onboarding;
+#[cfg(feature = "full-cli")]
+mod agent_onboarding_content_templates;
+#[cfg(feature = "full-cli")]
+mod agent_onboarding_document_project_templates;
+#[cfg(feature = "full-cli")]
+mod agent_onboarding_report;
+#[cfg(feature = "full-cli")]
+mod agent_onboarding_structure_fit_templates;
+#[cfg(feature = "full-cli")]
+mod agent_onboarding_templates;
 #[cfg(feature = "full-cli")]
 mod agent_query_args;
 #[cfg(feature = "full-cli")]
@@ -26,6 +40,12 @@ mod content_args;
 pub mod content_query;
 #[cfg(feature = "full-cli")]
 pub mod daemon;
+#[cfg(feature = "full-cli")]
+mod doctor;
+#[cfg(feature = "full-cli")]
+mod doctor_agent;
+#[cfg(feature = "full-cli")]
+mod doctor_content;
 #[cfg(feature = "full-cli")]
 mod editor;
 #[cfg(feature = "full-cli")]
@@ -49,8 +69,9 @@ pub use agent::agent_command;
 pub use agent_args::AgentCommands;
 #[cfg(feature = "full-cli")]
 pub use agent_args::{
-    AgentIntegrationCommands, AgentIntegrationLifecycleArgs, AgentIntegrationStatusArgs,
-    AgentIntegrationTarget, AgentNudgeEvent, AgentNudgeTarget,
+    AgentContentTemplate, AgentIntegrationCommands, AgentIntegrationLifecycleArgs,
+    AgentIntegrationStatusArgs, AgentIntegrationTarget, AgentNudgeEvent, AgentNudgeTarget,
+    AgentOnboardingTarget,
 };
 #[cfg(feature = "full-cli")]
 pub use agent_query_args::AgentQueryArg;
@@ -89,6 +110,8 @@ pub use content_args::ContentCommands;
 pub use content_query::content_command;
 #[cfg(feature = "full-cli")]
 pub use daemon::{daemon_command, DaemonCommands};
+#[cfg(feature = "full-cli")]
+pub use doctor::{doctor_command, explain_command};
 #[cfg(feature = "full-cli")]
 pub use editor::editor_command;
 #[cfg(feature = "full-cli")]

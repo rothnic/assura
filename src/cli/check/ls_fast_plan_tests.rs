@@ -106,6 +106,7 @@ fn fast_plan_rejects_repository_reference_diagnostics() {
         repository_references: vec![RepositoryReferenceConfig {
             id: "source_refs".to_string(),
             paths: vec!["src/**".to_string()],
+            frontmatter_fields: Vec::new(),
             severity: Some("high".to_string()),
         }],
         ..ExtensionConfig::default()
@@ -154,6 +155,186 @@ fn fast_plan_supports_wildcard_directory_scopes() {
     let descendant_rules = fast_rules_for_dir(std::path::Path::new("packages/core/src"), &scopes)
         .expect("wildcard package descendant should inherit");
     assert!(descendant_rules.file_naming.is_some());
+}
+
+#[test]
+fn fast_plan_supports_captured_directory_scopes() {
+    let mut skill_children = HashMap::new();
+    skill_children.insert(
+        "{skill}".to_string(),
+        DirectoryNode {
+            files: Some(FileBundle {
+                exists: Some(HashMap::from([("SKILL.md".to_string(), "1".to_string())])),
+                ..FileBundle::default()
+            }),
+            ..DirectoryNode::default()
+        },
+    );
+
+    let mut config = Config::new();
+    config.structure.insert(
+        "./".to_string(),
+        DirectoryNode {
+            children: Some(HashMap::from([(
+                ".agents".to_string(),
+                DirectoryNode {
+                    children: Some(HashMap::from([(
+                        "skills".to_string(),
+                        DirectoryNode {
+                            children: Some(skill_children),
+                            ..DirectoryNode::default()
+                        },
+                    )])),
+                    ..DirectoryNode::default()
+                },
+            )])),
+            ..DirectoryNode::default()
+        },
+    );
+
+    let scopes = compile_lslint_fast_scopes(&config).unwrap();
+    let skill_rules = fast_rules_for_dir(
+        std::path::Path::new(".agents/skills/assura-project-maintenance"),
+        &scopes,
+    )
+    .expect("captured skill scope should match");
+    assert_eq!(
+        skill_rules
+            .effective
+            .files
+            .as_ref()
+            .and_then(|files| files.exists.as_ref())
+            .and_then(|exists| exists.get("SKILL.md")),
+        Some(&"1".to_string())
+    );
+}
+
+#[test]
+fn fast_plan_literal_scopes_override_captured_scopes_at_same_depth() {
+    let mut skill_children = HashMap::new();
+    skill_children.insert(
+        "{skill}".to_string(),
+        DirectoryNode {
+            files: Some(FileBundle {
+                exists: Some(HashMap::from([("SKILL.md".to_string(), "1".to_string())])),
+                ..FileBundle::default()
+            }),
+            ..DirectoryNode::default()
+        },
+    );
+    skill_children.insert(
+        "special-skill".to_string(),
+        DirectoryNode {
+            files: Some(FileBundle {
+                exists: Some(HashMap::from([("README.md".to_string(), "1".to_string())])),
+                ..FileBundle::default()
+            }),
+            ..DirectoryNode::default()
+        },
+    );
+
+    let mut config = Config::new();
+    config.structure.insert(
+        "./".to_string(),
+        DirectoryNode {
+            children: Some(HashMap::from([(
+                ".agents".to_string(),
+                DirectoryNode {
+                    children: Some(HashMap::from([(
+                        "skills".to_string(),
+                        DirectoryNode {
+                            children: Some(skill_children),
+                            ..DirectoryNode::default()
+                        },
+                    )])),
+                    ..DirectoryNode::default()
+                },
+            )])),
+            ..DirectoryNode::default()
+        },
+    );
+
+    let scopes = compile_lslint_fast_scopes(&config).unwrap();
+    let rules = fast_rules_for_dir(
+        std::path::Path::new(".agents/skills/special-skill"),
+        &scopes,
+    )
+    .expect("literal skill scope should match");
+    let exists = rules
+        .effective
+        .files
+        .as_ref()
+        .and_then(|files| files.exists.as_ref())
+        .expect("literal scope should carry file count rules");
+    assert_eq!(exists.get("README.md"), Some(&"1".to_string()));
+    assert!(
+        !exists.contains_key("SKILL.md"),
+        "literal same-depth scope should win over the captured default"
+    );
+}
+
+#[test]
+fn fast_plan_constrained_patterns_override_long_capture_names_at_same_depth() {
+    let mut skill_children = HashMap::new();
+    skill_children.insert(
+        "{very_long_capture_name}".to_string(),
+        DirectoryNode {
+            files: Some(FileBundle {
+                exists: Some(HashMap::from([("SKILL.md".to_string(), "1".to_string())])),
+                ..FileBundle::default()
+            }),
+            ..DirectoryNode::default()
+        },
+    );
+    skill_children.insert(
+        "release-*".to_string(),
+        DirectoryNode {
+            files: Some(FileBundle {
+                exists: Some(HashMap::from([("README.md".to_string(), "1".to_string())])),
+                ..FileBundle::default()
+            }),
+            ..DirectoryNode::default()
+        },
+    );
+
+    let mut config = Config::new();
+    config.structure.insert(
+        "./".to_string(),
+        DirectoryNode {
+            children: Some(HashMap::from([(
+                ".agents".to_string(),
+                DirectoryNode {
+                    children: Some(HashMap::from([(
+                        "skills".to_string(),
+                        DirectoryNode {
+                            children: Some(skill_children),
+                            ..DirectoryNode::default()
+                        },
+                    )])),
+                    ..DirectoryNode::default()
+                },
+            )])),
+            ..DirectoryNode::default()
+        },
+    );
+
+    let scopes = compile_lslint_fast_scopes(&config).unwrap();
+    let rules = fast_rules_for_dir(
+        std::path::Path::new(".agents/skills/release-maintenance"),
+        &scopes,
+    )
+    .expect("constrained pattern skill scope should match");
+    let exists = rules
+        .effective
+        .files
+        .as_ref()
+        .and_then(|files| files.exists.as_ref())
+        .expect("pattern scope should carry file count rules");
+    assert_eq!(exists.get("README.md"), Some(&"1".to_string()));
+    assert!(
+        !exists.contains_key("SKILL.md"),
+        "capture variable names should not add literal specificity"
+    );
 }
 
 #[test]

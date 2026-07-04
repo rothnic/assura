@@ -175,6 +175,7 @@ impl FactIngestor {
                 message: finding.message.clone(),
                 target_id,
                 location,
+                metadata: None,
             }));
             self.upsert_diagnostic_search_chunk(diagnostic_id, finding.message.clone());
         }
@@ -207,6 +208,7 @@ impl FactIngestor {
                 message: violation.message.clone(),
                 target_id: Some(target_id.clone()),
                 location: Some(location),
+                metadata: violation.metadata.clone(),
             }));
             self.upsert_diagnostic_search_chunk(diagnostic_id.clone(), violation.message.clone());
 
@@ -277,7 +279,8 @@ impl FactIngestor {
     }
 
     /// Finish ingestion and return the fact set.
-    pub fn finish(self) -> FactSet {
+    pub fn finish(mut self) -> FactSet {
+        self.facts.sort_stable();
         self.facts
     }
 

@@ -1,5 +1,6 @@
 //! Structure-first project validation used by the public `assura check` command.
 
+mod agent_guidance;
 mod artifact_check;
 #[cfg(feature = "yaml-config")]
 mod batch;
@@ -13,12 +14,15 @@ mod compiled_artifact_tests;
 mod compiled_config;
 mod compiled_fingerprint;
 mod compiled_plan_artifact;
+mod computed_checks;
 mod configured_structure;
 #[cfg(feature = "full-cli")]
 mod content_runtime;
 mod custom_constraints;
 mod direct_contents;
 mod docs_lifecycle;
+#[cfg(feature = "yaml-config")]
+mod explain;
 #[cfg(all(feature = "yaml-config", feature = "json-output"))]
 pub mod fast_cli;
 mod ls_fast;
@@ -50,6 +54,8 @@ mod profiling;
 mod release_contract;
 mod report;
 mod repository_references;
+#[cfg(feature = "full-cli")]
+mod requirements_traceability;
 mod rule_plan;
 mod rules;
 #[cfg(test)]
@@ -76,6 +82,11 @@ pub use batch::run_structure_checks;
 pub use cache::run_structure_check_cached;
 pub use compiled_artifact::CompiledStructureConfigArtifact;
 use compiled_config::CompiledStructureConfig;
+#[cfg(feature = "yaml-config")]
+pub use explain::{
+    explain_structure_path, PathExplainNextAction, PathExplainReport, PathExplainRules,
+    PathExplainScope, PathExplainSkip,
+};
 use glob::Pattern;
 use ls_fast_plan::FastScope;
 #[cfg(feature = "yaml-config")]

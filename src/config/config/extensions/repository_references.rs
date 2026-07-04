@@ -10,6 +10,9 @@ pub struct RepositoryReferenceConfig {
     /// reference file types.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub paths: Vec<String>,
+    /// Markdown frontmatter fields that contain repository-relative references.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub frontmatter_fields: Vec<String>,
     /// Optional diagnostic severity.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub severity: Option<String>,

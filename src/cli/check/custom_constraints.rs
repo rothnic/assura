@@ -34,10 +34,16 @@ impl StructureChecker {
             && extensions.test_relationships.is_empty()
             && extensions.module_topologies.is_empty()
             && extensions.docs_lifecycles.is_empty()
+            && extensions.agent_guidance.is_empty()
+            && extensions.requirements_traceability.is_empty()
+            && extensions.computed_checks.is_empty()
         {
             return Ok(());
         }
 
+        if !extensions.computed_checks.is_empty() {
+            self.validate_computed_checks(&extensions.computed_checks, report);
+        }
         if !extensions.release_contracts.is_empty() {
             self.validate_release_contracts(&extensions.release_contracts, report)?;
         }
@@ -59,6 +65,13 @@ impl StructureChecker {
         }
         if !extensions.docs_lifecycles.is_empty() {
             self.validate_docs_lifecycles(&extensions.docs_lifecycles, checked_path, report)?;
+        }
+        if !extensions.agent_guidance.is_empty() {
+            self.validate_agent_guidance(&extensions.agent_guidance, checked_path, report)?;
+        }
+        #[cfg(feature = "full-cli")]
+        if !extensions.requirements_traceability.is_empty() {
+            self.validate_requirements_traceability(&extensions.requirements_traceability, report);
         }
 
         if extensions.custom_constraints.is_empty() && extensions.relationships.is_empty() {

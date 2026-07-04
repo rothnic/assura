@@ -1,0 +1,6 @@
+{"file": "docs/goals/assura-agent-doctor-explain-feedback.md", "reason": "Validation commands and reviewer blocking criteria for the child goal."}
+{"file": ".trellis/spec/assura/codex-agent-feedback.md", "reason": "Review output for stable agent feedback compatibility and no per-agent command drift."}
+{"file": ".trellis/spec/assura/config-notation.md", "reason": "Review doctor/explain descriptions against current notation semantics."}
+{"file": ".trellis/spec/assura/structure-enforcement.md", "reason": "Review path explanation against direct-content and exists rule contracts."}
+{"file": ".trellis/spec/assura/workflow-status.md", "reason": "Review completion snapshot and handoff format."}
+{"file": "docs/support-policy.md", "reason": "Review support-policy wording if command surfaces or experimental status change."}

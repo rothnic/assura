@@ -1,0 +1,9 @@
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "Active roadmap iteration and current recommended goal for agent-ready onboarding."}
+{"file": "docs/goals/assura-website-agent-onboarding-experience.md", "reason": "Child goal objective, definition of done, validation commands, and reviewer criteria."}
+{"file": "docs/goals/assura-agent-ready-project-onboarding-program.md", "reason": "Parent program first-run output contract, generated packet contract, and command-surface boundaries."}
+{"file": "docs/support-policy.md", "reason": "Current supported/experimental/roadmap command-surface truth."}
+{"file": "docs/compatibility-and-surface.md", "reason": "Compatibility evidence for implemented onboarding, agent, and integration surfaces."}
+{"file": "website/src/content/docs/reference/api.md", "reason": "Current website command reference for agent onboarding and content templates."}
+{"file": "website/src/content/docs/reference/agent-feedback.md", "reason": "Current website explanation of feedback delivery and lifecycle modes."}
+{"file": "website/astro.config.mjs", "reason": "Starlight sidebar navigation source."}
+{"file": "xtask/src/main.rs", "reason": "Target-state drift checks for website and command-surface claims."}

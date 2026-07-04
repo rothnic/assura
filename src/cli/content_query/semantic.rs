@@ -197,6 +197,7 @@ fn diagnostics_for_targets(
                         .location
                         .as_ref()
                         .map(|location| location.path.clone()),
+                    metadata: diagnostic.metadata.clone(),
                 })
             }
             _ => None,

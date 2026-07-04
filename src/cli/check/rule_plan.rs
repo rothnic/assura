@@ -6,6 +6,7 @@ use super::rules::{
 };
 use super::scope_patterns::{
     path_has_matching_scope_ancestor, path_has_scope_magic, path_matches_scope_pattern,
+    path_scope_specificity,
 };
 use crate::config::config::{Config, DirectoryNode};
 use std::path::{Path, PathBuf};
@@ -14,21 +15,28 @@ use std::sync::Arc;
 #[derive(Debug, Clone)]
 pub(super) struct RuleScope {
     path: PathBuf,
+    inherit: bool,
     exact: EffectiveRules,
     descendant: EffectiveRules,
 }
 
 impl RuleScope {
-    pub(super) fn new(path: PathBuf, exact: EffectiveRules, descendant: EffectiveRules) -> Self {
+    pub(super) fn new(
+        path: PathBuf,
+        inherit: bool,
+        exact: EffectiveRules,
+        descendant: EffectiveRules,
+    ) -> Self {
         Self {
             path,
+            inherit,
             exact,
             descendant,
         }
     }
 
-    pub(super) fn parts(&self) -> (&Path, &EffectiveRules, &EffectiveRules) {
-        (&self.path, &self.exact, &self.descendant)
+    pub(super) fn parts(&self) -> (&Path, bool, &EffectiveRules, &EffectiveRules) {
+        (&self.path, self.inherit, &self.exact, &self.descendant)
     }
 }
 
@@ -38,6 +46,7 @@ pub(super) fn compile_rule_scopes(config: &Config) -> Vec<RuleScope> {
         let base = normalize_config_dir(path);
         compile_scope_node(base, node, &EffectiveRules::default(), &mut scopes);
     }
+    scopes.sort_by_key(|scope| path_scope_specificity(&scope.path));
     scopes
 }
 
@@ -57,7 +66,7 @@ pub(super) fn rules_for_dir(dir_rel: &Path, scopes: &[RuleScope]) -> EffectiveRu
         .unwrap_or_default()
 }
 
-fn scope_match(scope: &RuleScope, dir_rel: &Path) -> Option<bool> {
+pub(super) fn scope_match(scope: &RuleScope, dir_rel: &Path) -> Option<bool> {
     if path_has_scope_magic(&scope.path) {
         if path_matches_scope_pattern(&scope.path, dir_rel) {
             return Some(true);
@@ -98,6 +107,7 @@ fn compile_scope_node(
 
     scopes.push(RuleScope::new(
         node_rel.clone(),
+        node.inherit,
         effective.clone(),
         strip_direct_content_policy(effective.clone()),
     ));
@@ -114,6 +124,7 @@ fn compile_scope_node(
 mod tests {
     use super::*;
     use crate::config::config::{DirectoryBundle, DirectoryNode, FileBundle};
+    use crate::config::loader::ConfigLoader;
     use std::collections::HashMap;
 
     #[test]
@@ -183,5 +194,160 @@ mod tests {
             .as_ref()
             .and_then(|files| files.allowed_names.as_ref())
             .is_none());
+    }
+
+    #[test]
+    fn dynamic_directory_scopes_apply_normalized_captured_rule_fragments() {
+        let config = ConfigLoader::parse(
+            r#"
+version: "2.0"
+rules:
+  "@assura-skill-dir":
+    SKILL.md: exists:1
+    agents/: exists:0-1
+    references/: exists:0-1
+    scripts/: exists:0-1
+    assets/: exists:0-1
+    extra: false
+structure:
+  .agents/skills/:
+    extra: true
+    "{skill}/":
+      use: "@assura-skill-dir"
+"#,
+        )
+        .unwrap();
+
+        let scopes = compile_rule_scopes(&config);
+        let debug_scopes = scopes
+            .iter()
+            .map(|scope| {
+                let (path, _, exact, _) = scope.parts();
+                format!(
+                    "{} files_exists={:?} dir_allowed={:?}",
+                    path.display(),
+                    exact.files.as_ref().and_then(|files| files.exists.as_ref()),
+                    exact
+                        .directories
+                        .as_ref()
+                        .and_then(|directories| directories.allowed_names.as_ref())
+                )
+            })
+            .collect::<Vec<_>>();
+        assert!(
+            scopes.iter().any(|scope| {
+                scope.parts().0 == Path::new(".agents/skills/{skill}")
+                    && scope
+                        .parts()
+                        .2
+                        .files
+                        .as_ref()
+                        .and_then(|files| files.exists.as_ref())
+                        .and_then(|exists| exists.get("SKILL.md"))
+                        == Some(&"1".to_string())
+            }),
+            "compiled scopes should include the captured skill rule: {debug_scopes:#?}"
+        );
+        let rules = rules_for_dir(
+            Path::new(".agents/skills/assura-project-maintenance"),
+            &scopes,
+        );
+        assert_eq!(
+            rules
+                .files
+                .as_ref()
+                .and_then(|files| files.exists.as_ref())
+                .and_then(|exists| exists.get("SKILL.md")),
+            Some(&"1".to_string())
+        );
+        assert_eq!(
+            rules
+                .directories
+                .as_ref()
+                .and_then(|directories| directories.allowed_names.as_ref())
+                .map(Vec::as_slice),
+            Some(
+                &[
+                    "agents".to_string(),
+                    "references".to_string(),
+                    "scripts".to_string(),
+                    "assets".to_string()
+                ][..]
+            )
+        );
+    }
+
+    #[test]
+    fn literal_scopes_override_captured_scopes_at_same_depth() {
+        let config = ConfigLoader::parse(
+            r#"
+version: "2.0"
+structure:
+  .agents/skills/:
+    "{skill}/":
+      SKILL.md: exists:1
+    special-skill/:
+      README.md: exists:1
+"#,
+        )
+        .unwrap();
+
+        let scopes = compile_rule_scopes(&config);
+        let rules = rules_for_dir(Path::new(".agents/skills/special-skill"), &scopes);
+
+        assert_eq!(
+            rules
+                .files
+                .as_ref()
+                .and_then(|files| files.exists.as_ref())
+                .and_then(|exists| exists.get("README.md")),
+            Some(&"1".to_string())
+        );
+        assert!(
+            rules
+                .files
+                .as_ref()
+                .and_then(|files| files.exists.as_ref())
+                .and_then(|exists| exists.get("SKILL.md"))
+                .is_none(),
+            "literal same-depth scope should win over the captured default"
+        );
+    }
+
+    #[test]
+    fn constrained_patterns_override_long_capture_names_at_same_depth() {
+        let config = ConfigLoader::parse(
+            r#"
+version: "2.0"
+structure:
+  .agents/skills/:
+    "{very_long_capture_name}/":
+      SKILL.md: exists:1
+    "release-*/":
+      README.md: exists:1
+"#,
+        )
+        .unwrap();
+
+        let scopes = compile_rule_scopes(&config);
+        let rules = rules_for_dir(Path::new(".agents/skills/release-maintenance"), &scopes);
+
+        assert_eq!(
+            rules
+                .files
+                .as_ref()
+                .and_then(|files| files.exists.as_ref())
+                .and_then(|exists| exists.get("README.md")),
+            Some(&"1".to_string())
+        );
+        assert!(
+            rules
+                .files
+                .as_ref()
+                .and_then(|files| files.exists.as_ref())
+                .and_then(|exists| exists.get("SKILL.md"))
+                .is_none(),
+            "capture variable names should not add literal specificity"
+        );
     }
 }

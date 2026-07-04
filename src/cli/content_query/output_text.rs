@@ -191,16 +191,30 @@ impl TextRender for SafeFixesOutput {
 
 impl TextRender for SearchOutput {
     fn render_text(&self) -> String {
-        let mut lines = vec![format!("Search matches: {}", self.matches.len())];
+        let mut lines = vec![format!(
+            "Search matches: {} mode={} fallback={}",
+            self.matches.len(),
+            self.mode,
+            self.fallback_used
+        )];
         for item in &self.matches {
             let label = item
                 .instance_id
                 .as_deref()
                 .unwrap_or(item.source_id.as_str());
+            let location = item.path.as_ref().map(|path| {
+                format!(
+                    " [{}:{}:{}]",
+                    display_path(path),
+                    optional_usize(item.line),
+                    optional_usize(item.column)
+                )
+            });
             lines.push(format!(
-                "{:.3} {} - {}",
+                "{:.3} {}{} - {}",
                 item.score,
                 label,
+                location.unwrap_or_default(),
                 compact_text(&item.text)
             ));
         }

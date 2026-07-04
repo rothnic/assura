@@ -35,49 +35,53 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 21 | Markdown Reference Intelligence | Completed | Completed for beta in PR #112; post-beta Markdown, graph, daemon, agent, and editor hardening now routes through Post-Beta Capabilities |
 | 22 | Beta Code-Agnostic Capabilities | Completed | PR #112 merged; `v0.2.0` tag and GitHub release published with live release evidence |
 | 23 | Post-Beta Capabilities | Completed | `v0.3.0` beta increment published and live-verified with self-config hardening, supported document graph, true daemon mode, Markdown engine/safe fixes, performance floor, agent installers, VS Code support, extension API clarity, LS-Lint reassessment, and release hardening |
+| 24 | Performance Polish | Planned / Separate Lane | Planning task `.trellis/tasks/07-02-native-performance-roadmap-and-goal-text`; kickoff goal `docs/goals/assura-performance-polish-program.md` |
+| 25 | Agent-Ready Project Onboarding | Completed | Parent program and all twelve child goals completed locally on `codex/agent-ready-onboarding-backlog`; final audit in `docs/analysis/2026-07-03-agent-ready-onboarding-final-audit.md` |
 
 ## Active Roadmap Iteration
 
-Post-Beta Capabilities completed as the `v0.3.0` beta increment after release
-`v0.2.0`.
+Agent-Ready Project Onboarding completed the adoption iteration after the
+`v0.3.0` beta increment. It made Assura the default scaffold, doctor, and
+feedback loop for agent-ready repositories, starting with a broad first-run
+baseline and then asking only the specialization questions needed to avoid
+invented project conventions.
 
-Owning task:
-`.trellis/tasks/archive/2026-07/07-02-post-beta-program-finalization`.
+Completion audit:
+`docs/analysis/2026-07-03-agent-ready-onboarding-final-audit.md`.
 
 Current branch:
-`codex/post-beta-live-release-evidence` recorded the live `v0.3.0` release
-evidence, parent completion audit, and archived finalization task.
+`codex/agent-ready-onboarding-backlog`.
 
 Current recommended goal:
-No incomplete child goal remains in this iteration. Use
-`docs/goals/assura-post-beta-capabilities-program.md` as the completed
-`v0.3.0` beta-increment record and choose the next roadmap iteration from a new
-product decision. Completed support-hardening details remain in
-`docs/goals/assura-post-beta-support-release-hardening.md`.
+`docs/goals/assura-post-onboarding-backlog-execution-sequence.md`.
+
+Performance lane:
+`docs/goals/assura-performance-polish-program.md`.
+
+Completed support-hardening details from the prior beta increment remain
+routed through `docs/goals/assura-post-beta-support-release-hardening.md`.
 
 Public roadmap artifact:
 `docs/data/public-roadmap.json`.
 
 Triggering evidence:
-After the beta release, live review identified the next large iteration:
-refine Assura's own config and docs variance, make document graph support
-fully supported for content validation/search/query, implement a true daemon
-process, adopt the fastest practical Rust markdownlint-compatible engine,
-enforce a no-slower-than-LS-Lint fixture floor, install Codex/OpenCode/Claude/Pi
-agent integrations, support the VS Code extension path, clarify extension API
-boundaries, reassess LS-Lint parity after the new surfaces land, and harden
-support/release evidence.
+A new-project dogfood run exposed a broad adoption gap: Assura can make a
+configured policy pass while the repository still does not feel scaffolded,
+discoverable, queryable, or self-explaining to a coding agent. That backlog is
+not "more intelligence" in the abstract; the product milestone is to make
+Assura the default scaffold, doctor, and feedback loop for agent-ready
+repositories.
 
 North-star outcome:
-A documentation-heavy project can use one local Assura workflow to validate
-structure first, then Markdown, content models, repository references, graph
-queries, daemon-backed warm state, compact agent nudges, VS Code diagnostics,
-safe fixes, and performance gates without relying on unsupported services or
-private integration logic. The parent goal owns the detailed verification
-story: a maintainer renames architecture docs and moves code, then proves the
-CLI, daemon, agent hooks, editor, content graph, Markdown fixes, and LS-Lint
-performance gate all agree before merge. The detailed acceptance scenario lives
-in `docs/goals/assura-post-beta-capabilities-program.md#north-star-verification-scenario`.
+A coding agent can enter a new project and reliably answer: what rules apply
+here, what guidance should I follow, which skills exist, what project facts are
+modeled, what references are broken, what is checked versus unchecked, what
+should I fix next, and whether the feedback is a nudge, warning, or merge gate.
+The detailed backlog lives in
+`docs/goals/assura-agent-ready-project-onboarding-program.md`.
+
+Performance polish remains a separate planned lane. Its detailed kickoff
+criteria live in `docs/goals/assura-performance-polish-program.md`.
 
 Direction lock, clarified on 2026-05-31: do not create or revive
 `assura-codex-feedback`, do not add one CLI entrypoint per agent, and do not add
@@ -86,11 +90,15 @@ that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
 ## Recommended Next Action
 
-Merge the live release evidence PR, then use a new product decision to choose
-the next roadmap iteration. The completed `v0.3.0` parent record is
-`docs/goals/assura-post-beta-capabilities-program.md`; its north-star
-verification story should remain the regression lens for future capability
-work.
+Agent-ready onboarding is complete for this increment. First execute
+`docs/goals/assura-post-onboarding-backlog-execution-sequence.md` to publish
+and revalidate the local PR #139 follow-up commits, then continue into
+`docs/goals/assura-performance-polish-program.md` for native performance
+evidence, no-slower gates, and CLI-floor optimization.
+
+Priority rule: performance work remains separate from the completed
+agent-ready onboarding program. Reopen onboarding only for follow-up product
+decisions, regressions, or post-merge review findings.
 
 ## Roadmap Rules
 

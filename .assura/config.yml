@@ -92,6 +92,7 @@ quality:
         - ".github/workflows/**"
         - ".cargo/config.toml"
         - "scripts/ci-scope.sh"
+        - "scripts/ci-scope-github.sh"
         - "scripts/check-ci-scope.sh"
         - "scripts/summarize-rust-cache.sh"
         - "xtask/**"
@@ -201,6 +202,44 @@ extensions:
           required_tests:
             - tests/custom_constraints_tests.rs
             - crates/assura-check-cli/tests/compiled_manifest_semantics_cli.rs
+        - source: src/cli/check/agent_guidance.rs
+          required_tests:
+            - tests/agents_md.rs
+            - tests/skill_contract.rs
+            - crates/assura-check-cli/tests/compiled_agent_guidance_cli.rs
+        - source: src/cli/check/agent_guidance/*.rs
+          required_tests:
+            - tests/agents_md.rs
+            - tests/skill_contract.rs
+        - source: src/cli/check/computed_checks.rs
+          required_tests:
+            - tests/computed_checks.rs
+            - crates/assura-check-cli/tests/compiled_computed_checks_cli.rs
+        - source: src/cli/check/compiled_artifact_computed_checks.rs
+          required_tests:
+            - crates/assura-check-cli/tests/compiled_computed_checks_cli.rs
+        - source: src/cli/check/compiled_artifact_relationships.rs
+          required_tests:
+            - crates/assura-check-cli/tests/compiled_config_cli.rs
+        - source: src/config/config/extensions/computed_checks.rs
+          required_tests:
+            - tests/computed_checks.rs
+            - crates/assura-check-cli/tests/compiled_computed_checks_cli.rs
+        - source: src/config/config/validation/computed_checks.rs
+          required_tests:
+            - tests/computed_checks.rs
+        - source: src/cli/check/compiled_artifact_agent_guidance.rs
+          required_tests:
+            - crates/assura-check-cli/tests/compiled_agent_guidance_cli.rs
+        - source: src/cli/check/requirements_traceability.rs
+          required_tests:
+            - tests/requirements_traceability.rs
+        - source: src/config/config/validation/requirements_traceability.rs
+          required_tests:
+            - tests/requirements_traceability.rs
+        - source: src/cli/check/compiled_artifact_requirements_traceability.rs
+          required_tests:
+            - crates/assura-check-cli/tests/compiled_requirements_traceability_cli.rs
       allowed_ignore_reasons:
         - manual_performance_audit
       ignored_tests:
@@ -402,6 +441,10 @@ extensions:
           status: supported
         - surface: "command:assura status --format json"
           status: supported
+        - surface: "command:assura doctor"
+          status: experimental
+        - surface: "command:assura explain"
+          status: experimental
         - surface: "command:assura init"
           status: supported
         - surface: "command:assura watch"
@@ -432,6 +475,8 @@ extensions:
           status: supported
         - surface: "command:assura agent safe-fixes"
           status: supported
+        - surface: "command:assura agent onboard"
+          status: experimental
         - surface: "command:assura agent nudge"
           status: experimental
         - surface: "command:assura agent integration"
@@ -523,6 +568,12 @@ extensions:
         - surface: "config:extensions.docs_lifecycles"
           status: experimental
         - surface: "config:extensions.repository_references"
+          status: experimental
+        - surface: "config:extensions.agent_guidance"
+          status: experimental
+        - surface: "config:extensions.requirements_traceability"
+          status: experimental
+        - surface: "config:extensions.computed_checks"
           status: experimental
         - surface: "config:extensions.relationships"
           status: internal
@@ -722,6 +773,7 @@ structure:
                 - "assura-goal-validation"
                 - "assura-local-build"
                 - "assura-performance-reporting"
+                - "assura-structure-fit"
                 - "built-in"
                 - "custom"
                 - "trellis-before-dev"
@@ -783,6 +835,31 @@ structure:
                   allow_extra: false
                 directories:
                   allow_extra: false
+              assura-structure-fit/:
+                files:
+                  naming: "kebab-case"
+                  naming_patterns:
+                    "SKILL.md": "regex:^SKILL$"
+                  allowed_names:
+                    - "SKILL.md"
+                  max_lines: 600
+                  max_size: "24KB"
+                  allow_extra: false
+                directories:
+                  allowed_names:
+                    - "references"
+                  allow_extra: false
+                children:
+                  references/:
+                    files:
+                      naming: "kebab-case"
+                      allowed_names:
+                        - "structure-fit-check.md"
+                      max_lines: 600
+                      max_size: "24KB"
+                      allow_extra: false
+                    directories:
+                      allow_extra: false
               built-in/:
                 files:
                   allow_extra: false
@@ -1091,6 +1168,7 @@ structure:
           allowed_names:
             - "check-ci-scope.sh"
             - "ci-scope.sh"
+            - "ci-scope-github.sh"
             - "smoke-install-adoption.ps1"
             - "smoke-install-adoption.sh"
             - "summarize-rust-cache.sh"

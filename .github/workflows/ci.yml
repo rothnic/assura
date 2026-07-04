@@ -21,6 +21,18 @@ jobs:
       performance: ${{ steps.scope.outputs.performance }}
       evidence: ${{ steps.scope.outputs.evidence }}
       website: ${{ steps.scope.outputs.website }}
+      scope_mode: ${{ steps.scope.outputs.scope_mode }}
+      scope_reason: ${{ steps.scope.outputs.scope_reason }}
+      full_rust: ${{ steps.scope.outputs.full_rust }}
+      full_release: ${{ steps.scope.outputs.full_release }}
+      full_performance: ${{ steps.scope.outputs.full_performance }}
+      full_evidence: ${{ steps.scope.outputs.full_evidence }}
+      full_website: ${{ steps.scope.outputs.full_website }}
+      delta_rust: ${{ steps.scope.outputs.delta_rust }}
+      delta_release: ${{ steps.scope.outputs.delta_release }}
+      delta_performance: ${{ steps.scope.outputs.delta_performance }}
+      delta_evidence: ${{ steps.scope.outputs.delta_evidence }}
+      delta_website: ${{ steps.scope.outputs.delta_website }}
     steps:
     - uses: actions/checkout@v4
       with:
@@ -28,23 +40,31 @@ jobs:
     - name: Classify changed paths
       id: scope
       shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: scripts/ci-scope-github.sh
+    - name: Summarize CI scope decision
+      shell: bash
       run: |
-        case "${{ github.event_name }}" in
-          pull_request)
-            scripts/ci-scope.sh \
-              --base "${{ github.event.pull_request.base.sha }}" \
-              --head "${{ github.event.pull_request.head.sha }}" \
-              --merge-base
-            ;;
-          push)
-            scripts/ci-scope.sh \
-              --base "${{ github.event.before }}" \
-              --head "${{ github.sha }}"
-            ;;
-          *)
-            scripts/ci-scope.sh --all "unsupported event"
-            ;;
-        esac
+        cat <<'MD' >> "$GITHUB_STEP_SUMMARY"
+        ## CI Scope Decision
+
+        | Scope | Effective | Full PR/Push | Delta |
+        | --- | --- | --- | --- |
+        | Mode | `${{ steps.scope.outputs.scope_mode }}` | `full` | `delta` |
+        | Reason | `${{ steps.scope.outputs.scope_reason }}` |  |  |
+        | Rust | `${{ steps.scope.outputs.rust }}` | `${{ steps.scope.outputs.full_rust }}` | `${{ steps.scope.outputs.delta_rust }}` |
+        | Release | `${{ steps.scope.outputs.release }}` | `${{ steps.scope.outputs.full_release }}` | `${{ steps.scope.outputs.delta_release }}` |
+        | Performance | `${{ steps.scope.outputs.performance }}` | `${{ steps.scope.outputs.full_performance }}` | `${{ steps.scope.outputs.delta_performance }}` |
+        | Evidence | `${{ steps.scope.outputs.evidence }}` | `${{ steps.scope.outputs.full_evidence }}` | `${{ steps.scope.outputs.delta_evidence }}` |
+        | Website | `${{ steps.scope.outputs.website }}` | `${{ steps.scope.outputs.full_website }}` | `${{ steps.scope.outputs.delta_website }}` |
+
+        Pull request synchronize events use the commit delta as the effective
+        scope only when skipped full-scope jobs already passed on the previous
+        PR head. Opened/reopened PRs, pushes, schedules, workflow/classifier
+        changes, unavailable delta state, and missing previous-head evidence
+        fall back to full scope.
+        MD
 
   check:
     name: Check
@@ -466,6 +486,15 @@ jobs:
           --iterations 5
     - name: Enforce no-slower gate
       run: cargo xtask performance-no-slower target/performance/ls-lint-comparison.json
+    - name: Generate native performance report
+      run: |
+        target/release/assura performance-report \
+          --suite native \
+          --output target/performance/native-current.json \
+          --history target/performance/native-history.jsonl \
+          --iterations 5
+    - name: Enforce native performance gate
+      run: cargo xtask native-performance-no-regression target/performance/native-current.json
     - name: Summarize performance
       if: always()
       run: |
@@ -538,6 +567,28 @@ jobs:
                 for phase in phases
             ]
             print(f"| `{fixture}` | " + " | ".join(values) + " |")
+
+        native_path = Path("target/performance/native-current.json")
+        if native_path.exists():
+            native = json.loads(native_path.read_text())
+            native_rows = native["results"]
+            print()
+            print("## Assura Native Performance")
+            print()
+            print(f"- Rows: `{len(native_rows)}`")
+            print(f"- Commit: `{native['commit_sha']}`")
+            print(f"- Source dirty: `{native['source_worktree_dirty']}`")
+            print("- Full machine-readable native report is attached as `native-performance-report`.")
+            print()
+            print("| Fixture | Rows | Slowest median |")
+            print("| --- | ---: | ---: |")
+            for fixture in sorted({row["fixture_id"] for row in native_rows}):
+                fixture_rows = [row for row in native_rows if row["fixture_id"] == fixture]
+                slowest = max(
+                    fixture_rows,
+                    key=lambda row: row["median_runtime_ms"] or 0,
+                )
+                print(f"| `{fixture}` | {len(fixture_rows)} | {median(slowest)} `{slowest['row_family']}` |")
         PY
     - name: Upload performance artifact
       if: always()
@@ -545,5 +596,15 @@ jobs:
       with:
         name: ls-lint-performance-report
         path: target/performance/ls-lint-comparison.json
+        if-no-files-found: error
+        retention-days: 30
+    - name: Upload native performance artifact
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: native-performance-report
+        path: |
+          target/performance/native-current.json
+          target/performance/native-history.jsonl
         if-no-files-found: error
         retention-days: 30

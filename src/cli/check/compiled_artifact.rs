@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-const COMPILED_CONFIG_SCHEMA_VERSION: u32 = 18;
+const COMPILED_CONFIG_SCHEMA_VERSION: u32 = 23;
 const ASSURA_VERSION_HASH: u64 = stable_hash_const(env!("CARGO_PKG_VERSION").as_bytes());
 
 /// Portable artifact containing a parsed Assura structure config.
@@ -182,41 +182,7 @@ impl CompiledStructureConfigArtifact {
     }
 }
 
-fn infer_project_root(config_path: &Path) -> std::io::Result<PathBuf> {
-    let config_dir = config_path.parent().ok_or_else(|| {
-        std::io::Error::new(
-            std::io::ErrorKind::InvalidInput,
-            "config path has no parent directory",
-        )
-    })?;
-    if config_dir.file_name().and_then(|name| name.to_str()) == Some(".assura") {
-        return config_dir.parent().map(Path::to_path_buf).ok_or_else(|| {
-            std::io::Error::new(
-                std::io::ErrorKind::InvalidInput,
-                "config path is not inside a project root",
-            )
-        });
-    }
-    Ok(config_dir.to_path_buf())
-}
-
-pub(super) fn path_to_portable(path: PathBuf) -> String {
-    let portable = path.to_string_lossy().replace('\\', "/");
-    portable
-        .strip_prefix("//?/")
-        .or_else(|| portable.strip_prefix("//./"))
-        .unwrap_or(&portable)
-        .to_string()
-}
-
-fn portable_path_matches(path: &Path, expected: &str) -> std::io::Result<bool> {
-    if path.is_absolute() && path_to_portable(path.to_path_buf()) == expected {
-        return Ok(true);
-    }
-
-    Ok(path_to_portable(path.canonicalize()?) == expected)
-}
-
+include!("compiled_artifact_paths.rs");
 #[derive(Clone, Debug, Deserialize, Serialize)]
 struct PortableConfig {
     patterns: HashMap<String, PortableFileBundle>,
@@ -224,17 +190,22 @@ struct PortableConfig {
     ls: Option<LsLintCompatibility>,
     extensions: Option<PortableExtensionConfig>,
     quality: Option<QualityConfig>,
-    models: Option<ContentModelConfig>,
-    collections: HashMap<String, ContentCollectionConfig>,
-    relations: HashMap<String, ContentRelationConfig>,
-    code_symbols: HashMap<String, ContentCodeSymbolConfig>,
+    models: Option<PortableContentModelConfig>,
+    collections: HashMap<String, PortableContentCollectionConfig>,
+    relations: HashMap<String, PortableContentRelationConfig>,
+    code_symbols: HashMap<String, PortableContentCodeSymbolConfig>,
     exclude: Vec<String>,
 }
 
+include!("compiled_artifact_agent_guidance.rs");
+include!("compiled_artifact_requirements_traceability.rs");
+include!("compiled_artifact_computed_checks.rs");
+include!("compiled_artifact_relationships.rs");
 include!("compiled_artifact_extensions.rs");
 include!("compiled_artifact_module_topology.rs");
 include!("compiled_artifact_docs_lifecycle.rs");
 include!("compiled_artifact_bundles.rs");
+include!("compiled_artifact_content.rs");
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub(super) struct PortableDirectoryNode {
     files: Option<PortableFileBundle>,
@@ -292,10 +263,22 @@ impl From<Config> for PortableConfig {
             ls: config.ls,
             extensions: config.extensions.map(Into::into),
             quality: config.quality,
-            models: config.models,
-            collections: config.collections,
-            relations: config.relations,
-            code_symbols: config.code_symbols,
+            models: config.models.map(Into::into),
+            collections: config
+                .collections
+                .into_iter()
+                .map(|(name, collection)| (name, collection.into()))
+                .collect(),
+            relations: config
+                .relations
+                .into_iter()
+                .map(|(name, relation)| (name, relation.into()))
+                .collect(),
+            code_symbols: config
+                .code_symbols
+                .into_iter()
+                .map(|(name, symbol)| (name, symbol.into()))
+                .collect(),
             exclude: config.exclude,
         }
     }
@@ -317,10 +300,22 @@ impl From<PortableConfig> for Config {
             ls: config.ls,
             extensions: config.extensions.map(Into::into),
             quality: config.quality,
-            models: config.models,
-            collections: config.collections,
-            relations: config.relations,
-            code_symbols: config.code_symbols,
+            models: config.models.map(Into::into),
+            collections: config
+                .collections
+                .into_iter()
+                .map(|(name, collection)| (name, collection.into()))
+                .collect(),
+            relations: config
+                .relations
+                .into_iter()
+                .map(|(name, relation)| (name, relation.into()))
+                .collect(),
+            code_symbols: config
+                .code_symbols
+                .into_iter()
+                .map(|(name, symbol)| (name, symbol.into()))
+                .collect(),
             exclude: config.exclude,
         }
     }

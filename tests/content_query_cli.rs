@@ -1,4 +1,5 @@
 use serde_json::Value;
+use std::fs;
 use std::process::{Command, Output};
 
 fn assura_bin() -> &'static str {
@@ -145,6 +146,51 @@ fn content_query_searches_and_reports_missing_relations() {
         .expect("matches array")
         .iter()
         .any(|item| item["source_kind"] == "diagnostic"));
+}
+
+#[test]
+fn content_query_searches_raw_text_when_models_are_inactive() {
+    let project = tempfile::tempdir().expect("temp project");
+    fs::create_dir_all(project.path().join(".assura")).expect("assura dir");
+    fs::create_dir_all(project.path().join("docs")).expect("docs dir");
+    fs::write(
+        project.path().join(".assura/config.yml"),
+        "structure:\n  ./:\n    required: false\n",
+    )
+    .expect("config");
+    fs::write(
+        project.path().join("docs/note.md"),
+        "# Note\n\nRawAlphaTerm only appears in unmodeled text.\n",
+    )
+    .expect("note");
+    let path = project.path().to_str().expect("temp path");
+
+    let raw = json_output(run_content(&[
+        "search",
+        "RawAlphaTerm",
+        path,
+        "--raw",
+        "--format",
+        "json",
+    ]));
+    assert_eq!(raw["mode"], "raw");
+    assert_eq!(raw["fallback_used"], false);
+    assert_eq!(raw["matches"][0]["source_kind"], "raw_text");
+    assert_eq!(raw["matches"][0]["path"], "docs/note.md");
+    assert_eq!(raw["matches"][0]["line"], 3);
+    assert_eq!(raw["matches"][0]["column"], 1);
+
+    let fallback = json_output(run_content(&[
+        "search",
+        "RawAlphaTerm",
+        path,
+        "--fallback-raw",
+        "--format",
+        "json",
+    ]));
+    assert_eq!(fallback["mode"], "raw_fallback");
+    assert_eq!(fallback["fallback_used"], true);
+    assert_eq!(fallback["matches"][0]["source_kind"], "raw_text");
 }
 
 #[test]
@@ -384,6 +430,121 @@ fn content_query_reports_repository_reference_context() {
 }
 
 #[test]
+fn content_query_lists_all_and_unresolved_frontmatter_references() {
+    let project = tempfile::tempdir().expect("temp project");
+    fs::create_dir_all(project.path().join(".assura")).expect("assura dir");
+    fs::create_dir_all(project.path().join("docs")).expect("docs dir");
+    fs::write(
+        project.path().join(".assura/config.yml"),
+        r#"structure:
+  ./:
+    required: false
+extensions:
+  repository_references:
+    - id: source_docs
+      paths:
+        - "docs/**/*.md"
+      frontmatter_fields:
+        - source_documents
+        - related
+      severity: high
+"#,
+    )
+    .expect("config");
+    fs::write(
+        project.path().join("docs/note.md"),
+        r#"---
+source_documents:
+  - docs/source.md
+  - docs/missing.md
+related: docs/guide.md
+---
+# Note
+"#,
+    )
+    .expect("note");
+    fs::write(project.path().join("docs/source.md"), "# Source\n").expect("source");
+    fs::write(project.path().join("docs/guide.md"), "# Guide\n").expect("guide");
+    let path = project.path().to_str().expect("temp path");
+
+    let all = json_output(run_content(&[
+        "references",
+        path,
+        "--all",
+        "--format",
+        "json",
+    ]));
+    assert_eq!(all["mode"], "all");
+    let all_refs = all["references"].as_array().expect("all references");
+    assert!(all_refs.iter().any(|item| {
+        item["source_path"] == "docs/note.md"
+            && item["target_path"] == "docs/source.md"
+            && item["reference_kind"] == "frontmatter_reference"
+            && item["target_exists"] == true
+    }));
+    assert!(all_refs.iter().any(|item| {
+        item["target_path"] == "docs/missing.md" && item["target_exists"] == false
+    }));
+
+    let unresolved = json_output(run_content(&[
+        "references",
+        path,
+        "--unresolved",
+        "--format",
+        "json",
+    ]));
+    assert_eq!(unresolved["mode"], "unresolved");
+    let unresolved_refs = unresolved["references"]
+        .as_array()
+        .expect("unresolved references");
+    assert_eq!(unresolved_refs.len(), 1);
+    assert_eq!(unresolved_refs[0]["target_path"], "docs/missing.md");
+    assert_eq!(
+        unresolved_refs[0]["reference_kind"],
+        "frontmatter_reference"
+    );
+
+    let agent_unresolved = json_output(run_content(&[
+        "agent-query",
+        "unresolved-references",
+        path,
+        "--format",
+        "json",
+    ]));
+    assert_eq!(
+        agent_unresolved["request"]["capability"],
+        "repository_references"
+    );
+    assert_eq!(
+        agent_unresolved["response"]["references"][0]["target_path"],
+        "docs/missing.md"
+    );
+
+    let gaps = json_output(run_content(&[
+        "agent-query",
+        "gaps",
+        path,
+        "--format",
+        "json",
+    ]));
+    assert_eq!(gaps["response"]["unresolved_repository_references"], 1);
+
+    let next_actions = json_output(run_content(&[
+        "agent-query",
+        "next-actions",
+        path,
+        "--format",
+        "json",
+    ]));
+    assert!(next_actions["response"]["actions"]
+        .as_array()
+        .expect("actions")
+        .iter()
+        .any(|item| item["command"]
+            == "assura content agent-query unresolved-references --format json"));
+}
+
+#[test]
 fn content_query_references_requires_exactly_one_direction() {
     let no_direction = run_content(&[
         "references",
@@ -393,7 +554,7 @@ fn content_query_references_requires_exactly_one_direction() {
     ]);
     assert!(!no_direction.status.success());
     assert!(String::from_utf8_lossy(&no_direction.stderr)
-        .contains("references requires exactly one of --source or --target"));
+        .contains("references requires exactly one of --source, --target, --all, or --unresolved"));
 
     let both_directions = run_content(&[
         "references",
@@ -407,7 +568,7 @@ fn content_query_references_requires_exactly_one_direction() {
     ]);
     assert!(!both_directions.status.success());
     assert!(String::from_utf8_lossy(&both_directions.stderr)
-        .contains("references requires exactly one of --source or --target"));
+        .contains("references requires exactly one of --source, --target, --all, or --unresolved"));
 }
 
 #[test]
@@ -495,4 +656,44 @@ fn content_query_agent_query_wraps_shared_contracts() {
         .expect("symbols array")
         .iter()
         .any(|item| item["resolved"] == true));
+
+    let capabilities = json_output(run_content(&[
+        "agent-query",
+        "capabilities",
+        "tests/fixtures/content_runtime/code_symbols",
+        "--format",
+        "json",
+    ]));
+    assert_eq!(capabilities["request"]["capability"], "capabilities");
+    assert!(capabilities["response"]["capabilities"]
+        .as_array()
+        .expect("capabilities")
+        .iter()
+        .any(|item| {
+            item["name"] == "repository_references"
+                && item["required_args"].as_array().expect("args").is_empty()
+                && item["suggested_commands"]
+                    .as_array()
+                    .expect("commands")
+                    .iter()
+                    .any(|command| command == "assura content references --all --format json")
+        }));
+    let names = capabilities["response"]["capabilities"]
+        .as_array()
+        .expect("capabilities")
+        .iter()
+        .filter_map(|item| item["name"].as_str())
+        .collect::<Vec<_>>();
+    for expected in [
+        "semantic_candidates",
+        "code_symbols",
+        "code_symbol_refs",
+        "graph_expand",
+        "missing_relations",
+    ] {
+        assert!(
+            names.contains(&expected),
+            "capabilities should include {expected}; got {names:?}"
+        );
+    }
 }

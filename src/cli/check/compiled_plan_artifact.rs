@@ -31,8 +31,14 @@ pub(super) struct PortableCompiledPlan {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 struct PortableRuleScope {
     path: String,
+    #[serde(default = "default_true")]
+    inherit: bool,
     exact: PortableEffectiveRules,
     descendant: PortableEffectiveRules,
+}
+
+fn default_true() -> bool {
+    true
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -158,9 +164,10 @@ impl PortableCompiledPlan {
 
 impl From<RuleScope> for PortableRuleScope {
     fn from(scope: RuleScope) -> Self {
-        let (path, exact, descendant) = scope.parts();
+        let (path, inherit, exact, descendant) = scope.parts();
         Self {
             path: path_to_portable(path.to_path_buf()),
+            inherit,
             exact: exact.into(),
             descendant: descendant.into(),
         }
@@ -171,6 +178,7 @@ impl From<PortableRuleScope> for RuleScope {
     fn from(scope: PortableRuleScope) -> Self {
         RuleScope::new(
             PathBuf::from(scope.path),
+            scope.inherit,
             scope.exact.into(),
             scope.descendant.into(),
         )

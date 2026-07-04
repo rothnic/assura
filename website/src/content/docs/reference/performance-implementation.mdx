@@ -32,6 +32,13 @@ should expect one tool to be faster than the other.
 | `assura:phase:*` | Timed Assura implementation phases | Locating hot spots |
 | `traversal:*` | Raw filesystem enumeration only | Traversal strategy attribution |
 | `strategy:*` | Full-check traversal strategy variants | Comparing implementation choices under validation load |
+| `native:content-*` | Assura-native content collection and document graph CLI rows | Product surfaces without LS-Lint equivalents |
+| `native:context-pack-cli` | Context-pack selection and rendering through the full CLI | Agent context payload performance |
+| `native:agent-query-*` | Agent-oriented query paths over the content graph | Agent/editor query latency evidence |
+| `native:markdown-safe-fix-dry-run-cli` | Markdown safe-fix planning without writing changes | Markdown validation and fix-planning cost |
+| `native:session-agent-context-cli` | Session-style agent-context query row | Warm workflow proxy evidence, not cold CLI parity |
+| `native:daemon-status-cli` | Daemon status request through the full CLI | Daemon surface smoke and protocol overhead |
+| `native:phase:*` | Assura-native attribution rows for model load, schema compile, repository validation, fact-store indexing, incremental update, warm query, and JSON serialization | Deciding what to optimize before adding caches or a persistent store |
 
 ## Fixture Acceptance
 
@@ -83,6 +90,32 @@ median for the same fixture. Assura CLI rows also include
 `meets_two_x_target` remains the numeric pass/fail result. The claim-status
 field explains whether a miss is an implementation gap or a measured
 subprocess-floor limit.
+
+## Assura-Native Gate
+
+The native report suite is generated with `assura performance-report --suite
+native`. It writes `native-current.json` and `native-history.jsonl` beside the
+LS-Lint comparison data. Native rows are intentionally classified as
+`assura-native-diagnostic`: they measure Assura-only content, graph, Markdown,
+agent-query, session, and daemon surfaces and must not be used to satisfy the
+cold `assura check` versus LS-Lint claim.
+
+CI and local release checks use
+`cargo xtask native-performance-no-regression` to reject native reports that
+drop matrix rows, publish non-passing rows, omit samples, lose expected Assura
+exit-status metadata, or stop identifying the report as `--suite native`.
+The native matrix also requires `native:phase:*` attribution rows so content
+runtime costs cannot be reported only as full CLI latency. Those rows identify
+whether cost is owned by schema compilation, file indexing, object validation
+and diagnostic construction, relation validation, fact-store ingest/indexing,
+incremental generation replacement, warm query execution, or JSON
+serialization.
+The current checked native artifacts are:
+
+- `benches/history/native-current.json`
+- `benches/history/native-history.jsonl`
+- `website/public/data/performance/native-current.json`
+- `website/public/data/performance/native-history.jsonl`
 
 The report envelope also includes `claim_summary`, a machine-readable verdict
 for the public headline row set. `two_x_claim_verdict=complete` is only valid

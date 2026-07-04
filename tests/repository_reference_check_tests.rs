@@ -110,6 +110,77 @@ fn repository_reference_check_reports_source_comment_breakage() {
 }
 
 #[test]
+fn repository_reference_check_reports_configured_frontmatter_breakage() {
+    let project = TempDir::new().unwrap();
+    fs::create_dir_all(project.path().join(".assura")).unwrap();
+    fs::create_dir_all(project.path().join("docs")).unwrap();
+    fs::write(
+        project.path().join(".assura/config.yml"),
+        r#"
+structure:
+  ./:
+    extra: true
+extensions:
+  repository_references:
+    - id: broad_docs
+      paths:
+        - "docs/**/*.md"
+      severity: low
+    - id: source_docs
+      paths:
+        - "docs/**/*.md"
+      frontmatter_fields:
+        - source_documents
+      severity: high
+    - id: related_docs
+      paths:
+        - "docs/**/*.md"
+      frontmatter_fields:
+        - related
+      severity: high
+"#,
+    )
+    .unwrap();
+    fs::write(project.path().join("docs/source.md"), "# Source\n").unwrap();
+    fs::write(
+        project.path().join("docs/note.md"),
+        r#"---
+source_documents:
+  - docs/source.md
+  - docs/missing.md
+related: docs/missing-related.md
+---
+# Note
+"#,
+    )
+    .unwrap();
+
+    let (output, json) = check_json(&project);
+
+    assert_eq!(output.status.code(), Some(1), "report: {json:#}");
+    let violations = json["violations"].as_array().unwrap();
+    assert_eq!(violations.len(), 2, "report: {json:#}");
+    assert!(violations.iter().all(|violation| {
+        violation["path"] == "docs/note.md"
+            && violation["rule"] == "repository_reference_target"
+            && violation["severity"] == "high"
+            && violation["message"]
+                .as_str()
+                .is_some_and(|message| message.contains("frontmatter_reference; confidence=exact"))
+    }));
+    assert!(violations.iter().any(|violation| {
+        violation["message"]
+            .as_str()
+            .is_some_and(|message| message.contains("docs/missing.md"))
+    }));
+    assert!(violations.iter().any(|violation| {
+        violation["message"]
+            .as_str()
+            .is_some_and(|message| message.contains("docs/missing-related.md"))
+    }));
+}
+
+#[test]
 fn repository_reference_check_is_opt_in() {
     let project = write_project(false);
 

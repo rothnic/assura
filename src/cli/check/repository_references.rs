@@ -4,7 +4,7 @@ use super::rules::display_rel;
 use super::{StructureCheckReport, StructureChecker};
 use crate::config::config::RepositoryReferenceConfig;
 use crate::markdown_links::is_markdown_file;
-use crate::repository_references::{source_references, SourceReference};
+use crate::repository_references::{frontmatter_references, source_references, SourceReference};
 use glob::Pattern;
 use std::collections::{HashMap, HashSet};
 use std::path::Path;
@@ -19,12 +19,25 @@ impl StructureChecker {
             .is_some_and(|extensions| !extensions.repository_references.is_empty())
     }
 
-    pub(super) fn repository_reference_severity_for_path(&self, rel: &Path) -> Option<String> {
+    pub(super) fn repository_reference_policy_for_path(
+        &self,
+        rel: &Path,
+    ) -> Option<RepositoryReferenceConfig> {
         let policies = &self.config.extensions.as_ref()?.repository_references;
         policies
             .iter()
             .find(|policy| repository_reference_policy_matches(policy, rel))
-            .map(|policy| policy.severity.as_deref().unwrap_or("medium").to_string())
+            .cloned()
+    }
+
+    pub(super) fn has_repository_reference_frontmatter_fields_for_path(&self, rel: &Path) -> bool {
+        let Some(extensions) = &self.config.extensions else {
+            return false;
+        };
+        extensions.repository_references.iter().any(|policy| {
+            repository_reference_policy_matches(policy, rel)
+                && !policy.frontmatter_fields.is_empty()
+        })
     }
 
     pub(super) fn validate_repository_references(
@@ -36,14 +49,61 @@ impl StructureChecker {
     ) {
         let mut target_cache = HashMap::new();
         for reference in source_references(rel, content) {
-            let target_path = self.project_root.join(&reference.target_path);
-            if !target_path.is_file() {
-                self.push_repository_reference_violation(
-                    report,
+            self.validate_repository_reference(
+                rel,
+                &reference,
+                severity,
+                report,
+                &mut target_cache,
+            );
+        }
+
+        let policies = self
+            .config
+            .extensions
+            .as_ref()
+            .map(|extensions| {
+                extensions
+                    .repository_references
+                    .iter()
+                    .filter(|policy| {
+                        repository_reference_policy_matches(policy, rel)
+                            && !policy.frontmatter_fields.is_empty()
+                    })
+                    .cloned()
+                    .collect::<Vec<_>>()
+            })
+            .unwrap_or_default();
+        for policy in policies {
+            let frontmatter_severity = policy.severity.as_deref().unwrap_or("medium");
+            for reference in frontmatter_references(rel, content, &policy.frontmatter_fields) {
+                self.validate_repository_reference(
                     rel,
                     &reference,
-                    "repository_reference_target",
-                    format!(
+                    frontmatter_severity,
+                    report,
+                    &mut target_cache,
+                );
+            }
+        }
+    }
+
+    fn validate_repository_reference(
+        &self,
+        rel: &Path,
+        reference: &SourceReference,
+        severity: &str,
+        report: &mut StructureCheckReport,
+        target_cache: &mut HashMap<std::path::PathBuf, Option<String>>,
+    ) {
+        let target_path = self.project_root.join(&reference.target_path);
+        if !target_path.is_file() {
+            self.push_repository_reference_violation(
+                report,
+                rel,
+                reference,
+                "repository_reference_target",
+                format!(
                         "File '{}' references missing local target '{}' on line {}, column {} [{}; confidence={}]",
                         display_rel(rel),
                         display_rel(&reference.target_path),
@@ -52,31 +112,29 @@ impl StructureChecker {
                         reference.kind,
                         reference.confidence
                     ),
-                    severity,
-                );
-                continue;
-            }
+                severity,
+            );
+            return;
+        }
 
-            if reference.target_line_start.is_some() {
-                self.validate_repository_reference_line(
-                    rel,
-                    &reference,
-                    &target_path,
-                    severity,
-                    report,
-                    &mut target_cache,
-                );
-            } else if reference.target_anchor.is_some() && is_markdown_file(&reference.target_path)
-            {
-                self.validate_repository_reference_markdown_anchor(
-                    rel,
-                    &reference,
-                    &target_path,
-                    severity,
-                    report,
-                    &mut target_cache,
-                );
-            }
+        if reference.target_line_start.is_some() {
+            self.validate_repository_reference_line(
+                rel,
+                reference,
+                &target_path,
+                severity,
+                report,
+                target_cache,
+            );
+        } else if reference.target_anchor.is_some() && is_markdown_file(&reference.target_path) {
+            self.validate_repository_reference_markdown_anchor(
+                rel,
+                reference,
+                &target_path,
+                severity,
+                report,
+                target_cache,
+            );
         }
     }
 

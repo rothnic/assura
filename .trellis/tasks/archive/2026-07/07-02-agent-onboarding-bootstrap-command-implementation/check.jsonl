@@ -1,0 +1,6 @@
+{"file": "docs/goals/assura-agent-ready-project-onboarding-program.md", "reason": "Verify first slice still moves the parent program toward the requested end state."}
+{"file": "docs/goals/assura-agent-onboarding-bootstrap-command.md", "reason": "Verify implementation satisfies the child goal acceptance criteria and non-goals."}
+{"file": ".assura/command-surface.yml", "reason": "Verify implemented command surfaces are recorded and future-only surfaces are not overclaimed."}
+{"file": "docs/support-policy.md", "reason": "Verify support-policy wording matches the implemented/experimental surface."}
+{"file": ".trellis/spec/assura/codex-agent-feedback.md", "reason": "Verify the implementation does not revive superseded per-agent feedback commands or formats."}
+{"file": "docs/goals/assura-agent-integration-lifecycle.md", "reason": "Verify onboarding reuses integration lifecycle contracts without embedding validation logic."}

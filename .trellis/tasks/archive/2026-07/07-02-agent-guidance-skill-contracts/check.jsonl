@@ -1,0 +1,8 @@
+{"file": "docs/goals/assura-agent-guidance-skill-contracts.md", "reason": "Review child goal acceptance criteria and blocking criteria."}
+{"file": "docs/goals/assura-agent-ready-project-onboarding-program.md", "reason": "Review parent program requirements for AGENTS/SKILL contracts and false-green prevention."}
+{"file": ".trellis/spec/assura/codex-agent-feedback.md", "reason": "Check agent-facing output compatibility and no per-agent command drift."}
+{"file": ".trellis/spec/assura/config-notation.md", "reason": "Check new contract behavior against current notation semantics."}
+{"file": ".trellis/spec/assura/structure-enforcement.md", "reason": "Check validation behavior against structure enforcement semantics."}
+{"file": ".trellis/spec/assura/workflow-status.md", "reason": "Check completion snapshot and handoff format."}
+{"file": "docs/support-policy.md", "reason": "Check support policy if command surface or experimental wording changes."}
+{"file": "docs/compatibility-and-surface.md", "reason": "Check public surface documentation remains truthful."}

@@ -56,6 +56,108 @@ surface in the same goal:
 - Keep LS-Lint compatibility claims separate from Assura-authored notation
   robustness claims.
 
+## Scenario: First-Party Extension Contract Changes
+
+### 1. Scope / Trigger
+
+- Trigger: adding, removing, or changing fields under a first-party
+  `extensions.*` config family.
+- Applies to source config structs, check behavior, generated onboarding
+  templates, docs, fixtures, and compiled config artifacts.
+
+### 2. Signatures
+
+- Source config structs live under `src/config/config/extensions/`.
+- Check implementation lives under `src/cli/check/`.
+- Compiled artifact portability lives under
+  `src/cli/check/compiled_artifact_*.rs`.
+- Binary artifact compatibility is guarded by
+  `COMPILED_CONFIG_SCHEMA_VERSION` in `src/cli/check/compiled_artifact.rs`.
+
+### 3. Contracts
+
+- New optional extension fields must deserialize safely from YAML and preserve
+  missing-field behavior with `#[serde(default)]` or `Option<T>`.
+- New fields that affect checking must round-trip through compiled artifacts.
+- Any portable artifact payload shape change must bump
+  `COMPILED_CONFIG_SCHEMA_VERSION` so old artifacts fail as incompatible
+  instead of deserialization-invalid.
+- Portable artifact payload structs must not reuse source config structs that
+  rely on skipped serde fields such as `skip_serializing_if`. Postcard is a
+  non-self-describing binary format, so skipped fields can shift later bytes
+  into the wrong field and produce invalid-option-discriminant errors.
+- Generated configs that opt into the extension must self-check without
+  advisory drift unless the generated policy intentionally uses non-blocking
+  severity.
+
+### 4. Validation & Error Matrix
+
+| Condition | Required behavior |
+| --- | --- |
+| New source YAML field omitted | Preserve previous default behavior. |
+| New source YAML field configured | Runtime check observes the field. |
+| Compiled artifact created before payload-shape change | Reject as incompatible after schema bump. |
+| Compiled artifact created after payload-shape change | Runtime check observes every new portable field. |
+| Portable artifact includes optional or defaulted source fields | Serialize every binary field explicitly through a dedicated portable struct. |
+| Generated template enables the extension | `assura check --format json` succeeds on generated output. |
+
+### 5. Good/Base/Bad Cases
+
+- Good: `extensions.agent_guidance.skill_routing_section` works in direct
+  checks and compiled checks, with a schema bump for the portable payload.
+- Base: omitting the new field leaves older projects unaffected.
+- Bad: direct checks enforce a new field, but compiled checks silently drop it
+  because the portable conversion was not updated.
+- Bad: a compiled artifact stores a source config struct with
+  `skip_serializing_if`, then `assura-check-compiled` fails with
+  `invalid compiled config: Found an Option discriminant that wasn't 0 or 1`.
+
+### 6. Tests Required
+
+- Unit or integration coverage for direct check behavior.
+- Negative coverage for the new diagnostic branch.
+- Generated-template coverage when onboarding emits the field.
+- Compiled CLI coverage that proves each new portable field still affects
+  validation after `assura-check-compile-config`.
+
+### 7. Wrong vs Correct
+
+Wrong:
+
+```rust
+const COMPILED_CONFIG_SCHEMA_VERSION: u32 = 18;
+```
+
+after adding a new portable extension field.
+
+Correct:
+
+```rust
+const COMPILED_CONFIG_SCHEMA_VERSION: u32 = 19;
+```
+
+Wrong:
+
+```rust
+struct PortableConfig {
+    models: Option<ContentModelConfig>,
+}
+```
+
+where `ContentModelConfig` is a YAML-facing type with skipped serde fields.
+
+Correct:
+
+```rust
+struct PortableConfig {
+    models: Option<PortableContentModelConfig>,
+}
+```
+
+with explicit `From` conversions between source and portable structs.
+
+with compiled CLI regression coverage for the new field.
+
 ## Notation Coverage Proof
 
 Before Iteration 02 notation work is called complete, Assura needs a checked
@@ -708,11 +810,17 @@ extensions:
       severity: high
       paths:
         - "src/**"
+      frontmatter_fields:
+        - source_documents
+        - related
 ```
 
 Use this rule for opt-in diagnostics when supported source, comment, docstring,
-or string-literal references point at missing files, missing Markdown anchors,
-or invalid line anchors. Do not use it as the source of truth for
+string-literal, or configured Markdown frontmatter path references point at
+missing files, missing Markdown anchors, or invalid line anchors. Configured
+frontmatter fields are also repository-reference graph facts, so they appear in
+`assura content references`, context packs, and unresolved-reference
+agent-query output. Do not use this rule as the source of truth for
 lower-confidence repository-reference candidates; those remain graph context
 through `assura content references` and context packs.
 

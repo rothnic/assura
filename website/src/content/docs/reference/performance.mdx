@@ -1,6 +1,6 @@
 ---
 title: Performance
-description: Current Assura CLI versus native LS-Lint CLI comparison.
+description: Current Assura CLI, native LS-Lint comparison, and Assura-native performance evidence.
 ---
 
 import PerformanceEvidence from '../../../components/performance-evidence.astro';
@@ -37,6 +37,13 @@ The warm gate is a separate editor-session measurement. It uses a persistent
 `assura-check-session` CLI process connected to `assura-checkd`, so it is not a
 replacement for the cold one-process `assura check` headline path.
 
+Assura-native rows are a second checked report, not a replacement for the
+LS-Lint comparison. They measure product surfaces LS-Lint does not provide:
+content collections, document graph queries, references, context packs,
+Markdown safe-fix dry runs, agent-query paths, session-style requests, and
+daemon status. Native rows use `fixture_acceptance=assura-native-diagnostic`
+and are protected by `cargo xtask native-performance-no-regression`.
+
 The post-beta LS-Lint reassessment keeps those claims separate: current accepted
 cold rows must be no slower than native LS-Lint row by row, while remaining 2x
 misses are explained through process floor, Rust CLI floor, config-load,
@@ -58,6 +65,10 @@ checker-init, walk-and-validate, and report-sort phase rows.
 - [Chart-ready JSONL history](/data/performance/ls-lint-comparison-history.jsonl)
   is a rolling audit trail capped to the most recent 1,000 rows, not a clean
   release-over-release chart yet.
+- [Current native report](/data/performance/native-current.json) is the checked
+  machine-readable Assura-native suite rendered on this page.
+- [Native JSONL history](/data/performance/native-history.jsonl) is the native
+  suite audit trail used by regression review.
 
 ## Updating The Baseline
 
@@ -72,6 +83,21 @@ target/release/assura performance-report \
   --history benches/history/ls-lint-comparison-history.jsonl \
   --website-dir website/public/data/performance \
   --iterations 5
+```
+
+Refresh the native Assura report with:
+
+```bash
+cargo build --release --bin assura --no-default-features --features json-output,yaml-config
+cargo build --release --bin assura-full
+cargo build --release -p assura-check-cli
+target/release/assura performance-report \
+  --suite native \
+  --output benches/history/native-current.json \
+  --history benches/history/native-history.jsonl \
+  --website-dir website/public/data/performance \
+  --iterations 5
+cargo xtask native-performance-no-regression benches/history/native-current.json
 ```
 
 Review the generated diff in `benches/history/` and

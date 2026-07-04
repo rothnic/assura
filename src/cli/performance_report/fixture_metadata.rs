@@ -110,6 +110,12 @@ fn ignored_paths(kind: FixtureKind) -> &'static [&'static str] {
         FixtureKind::MultipartExtensionRegression | FixtureKind::ManyConfiguredScopesRegression => {
             &[".assura"]
         }
+        FixtureKind::NativeSmall
+        | FixtureKind::NativeMedium
+        | FixtureKind::NativeLarge
+        | FixtureKind::NativeReferenceHeavy
+        | FixtureKind::NativeAdapterMix
+        | FixtureKind::NativeRealProject => &[".assura"],
         FixtureKind::PinnedNextJs
         | FixtureKind::PinnedMdBook
         | FixtureKind::PinnedVite
@@ -194,6 +200,16 @@ fn external_ignored_paths(kind: FixtureKind) -> &'static [&'static str] {
 fn source_type(kind: FixtureKind) -> &'static str {
     if matches!(kind, FixtureKind::RealProjectAgenticFeedback) {
         "checked-repo-fixture"
+    } else if matches!(
+        kind,
+        FixtureKind::NativeSmall
+            | FixtureKind::NativeMedium
+            | FixtureKind::NativeLarge
+            | FixtureKind::NativeReferenceHeavy
+            | FixtureKind::NativeAdapterMix
+            | FixtureKind::NativeRealProject
+    ) {
+        "generated-native"
     } else if kind.is_external_pinned() {
         "external-pinned-repo"
     } else {
@@ -231,6 +247,12 @@ fn fixture_cohort(kind: FixtureKind) -> &'static str {
                 "realistic-equivalent"
             }
         }
+        FixtureKind::NativeSmall
+        | FixtureKind::NativeMedium
+        | FixtureKind::NativeLarge
+        | FixtureKind::NativeReferenceHeavy
+        | FixtureKind::NativeAdapterMix
+        | FixtureKind::NativeRealProject => "assura-native",
         FixtureKind::PinnedNextJs
         | FixtureKind::PinnedMdBook
         | FixtureKind::PinnedVite
@@ -258,6 +280,12 @@ fn rule_count(kind: FixtureKind) -> usize {
         FixtureKind::RuleHeavyRepo => 38,
         FixtureKind::MultipartExtensionRegression => 1,
         FixtureKind::ManyConfiguredScopesRegression => 801,
+        FixtureKind::NativeSmall => 80,
+        FixtureKind::NativeMedium => 800,
+        FixtureKind::NativeLarge => 8000,
+        FixtureKind::NativeReferenceHeavy => 1000,
+        FixtureKind::NativeAdapterMix => 1000,
+        FixtureKind::NativeRealProject => 480,
         FixtureKind::PinnedNextJs => 22,
         FixtureKind::PinnedMdBook => 14,
         FixtureKind::PinnedVite => 22,
@@ -307,6 +335,24 @@ fn rule_surface_summary(kind: FixtureKind) -> &'static str {
         FixtureKind::ManyConfiguredScopesRegression => {
             "large LS-Lint config with many explicit package scopes and root directory naming"
         }
+        FixtureKind::NativeSmall => {
+            "native content authoring matrix with 25 goals, 25 specs, 5 ADRs, Markdown links, relations, context packs, and search"
+        }
+        FixtureKind::NativeMedium => {
+            "native content authoring matrix with 250 goals, 250 specs, 50 ADRs, Markdown links, relations, context packs, and search"
+        }
+        FixtureKind::NativeLarge => {
+            "native content authoring matrix with 2500 goals, 2500 specs, 500 ADRs, Markdown links, relations, context packs, and search"
+        }
+        FixtureKind::NativeReferenceHeavy => {
+            "native reference-heavy matrix with many-to-many relations, missing targets, Markdown links, and diagnostic classification"
+        }
+        FixtureKind::NativeAdapterMix => {
+            "native adapter-mix matrix with Markdown frontmatter, JSON records, code-symbol references, relations, and context packs"
+        }
+        FixtureKind::NativeRealProject => {
+            "native real-project shaped content authoring matrix with goals, specs, ADRs, notes, broken references, and agent-query rows"
+        }
         FixtureKind::PinnedNextJs => {
             "pinned Next.js checkout with package/example route naming, source-family rules, foreign-language bans, and generated-output pruning"
         }
@@ -353,6 +399,12 @@ fn config_generation_method(kind: FixtureKind) -> &'static str {
         | FixtureKind::MultipartExtensionRegression
         | FixtureKind::ManyConfiguredScopesRegression => "ls-lint-conversion",
         FixtureKind::RealProjectAgenticFeedback => "assura-native-policy-fixture",
+        FixtureKind::NativeSmall
+        | FixtureKind::NativeMedium
+        | FixtureKind::NativeLarge
+        | FixtureKind::NativeReferenceHeavy
+        | FixtureKind::NativeAdapterMix
+        | FixtureKind::NativeRealProject => "assura-native-generated-matrix",
         FixtureKind::MonorepoPolicy => "hand-authored-equivalent-pair",
         FixtureKind::PinnedNextJs
         | FixtureKind::PinnedMdBook
@@ -368,11 +420,29 @@ fn config_generation_method(kind: FixtureKind) -> &'static str {
 }
 
 fn native_ls_lint_parity(kind: FixtureKind) -> bool {
-    !matches!(kind, FixtureKind::RealProjectAgenticFeedback)
+    !matches!(
+        kind,
+        FixtureKind::RealProjectAgenticFeedback
+            | FixtureKind::NativeSmall
+            | FixtureKind::NativeMedium
+            | FixtureKind::NativeLarge
+            | FixtureKind::NativeReferenceHeavy
+            | FixtureKind::NativeAdapterMix
+            | FixtureKind::NativeRealProject
+    )
 }
 
 fn ls_lint_config_path(kind: FixtureKind) -> &'static str {
-    if matches!(kind, FixtureKind::RealProjectAgenticFeedback) {
+    if matches!(
+        kind,
+        FixtureKind::RealProjectAgenticFeedback
+            | FixtureKind::NativeSmall
+            | FixtureKind::NativeMedium
+            | FixtureKind::NativeLarge
+            | FixtureKind::NativeReferenceHeavy
+            | FixtureKind::NativeAdapterMix
+            | FixtureKind::NativeRealProject
+    ) {
         "not-applicable"
     } else {
         ".ls-lint.yml"
@@ -380,7 +450,16 @@ fn ls_lint_config_path(kind: FixtureKind) -> &'static str {
 }
 
 fn expected_ls_lint_exit_status(kind: FixtureKind) -> i32 {
-    if matches!(kind, FixtureKind::RealProjectAgenticFeedback) {
+    if matches!(
+        kind,
+        FixtureKind::RealProjectAgenticFeedback
+            | FixtureKind::NativeSmall
+            | FixtureKind::NativeMedium
+            | FixtureKind::NativeLarge
+            | FixtureKind::NativeReferenceHeavy
+            | FixtureKind::NativeAdapterMix
+            | FixtureKind::NativeRealProject
+    ) {
         1
     } else {
         0

@@ -71,6 +71,14 @@ pub(super) fn prepare_assura_cli() -> PreparedAssuraCli {
     }
 }
 
+pub(super) fn prepare_assura_full_cli() -> PreparedAssuraCli {
+    prepare_sibling_binary(if cfg!(windows) {
+        "assura-full.exe"
+    } else {
+        "assura-full"
+    })
+}
+
 fn primary_assura_binary_path(current_exe: &Path) -> PathBuf {
     let full_companion = if cfg!(windows) {
         "assura-full.exe"

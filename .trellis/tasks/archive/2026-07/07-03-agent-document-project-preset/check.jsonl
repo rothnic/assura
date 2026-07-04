@@ -1,0 +1,9 @@
+{"file": ".trellis/spec/assura/index.md", "reason": "Review against core Assura constraints and canonical sources."}
+{"file": ".trellis/spec/assura/roadmap.md", "reason": "Review whether the implementation stays inside the active agent-ready onboarding lane."}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Review for duplicated template/config logic."}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Review data flow across generated files, config, content runtime, tests, and docs."}
+{"file": "docs/goals/assura-agent-document-project-preset.md", "reason": "Review child goal completion and blocking criteria."}
+{"file": "docs/goals/assura-agent-ready-project-onboarding-program.md", "reason": "Review parent sequencing and generic-vs-domain pack boundaries."}
+{"file": "docs/support-policy.md", "reason": "Review command support status and unsupported surface claims."}
+{"file": "docs/compatibility-and-surface.md", "reason": "Review compatibility evidence and public-surface wording."}
+{"file": ".trellis/tasks/07-03-agent-document-project-preset/prd.md", "reason": "Review task-specific acceptance criteria."}
