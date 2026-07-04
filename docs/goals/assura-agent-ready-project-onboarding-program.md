@@ -18,6 +18,7 @@ related:
   - ./assura-agent-document-project-preset.md
   - ./assura-agent-requirements-evidence-traceability.md
   - ./assura-agent-script-backed-computed-checks.md
+  - ./assura-llm-wiki-personal-knowledge-base-starters.md
   - ./assura-performance-polish-program.md
   - ./assura-agent-integration-lifecycle.md
   - ./assura-supported-document-graph.md
@@ -599,6 +600,9 @@ Project-type packs layer examples and checks after the broad baseline:
   `docs/learnings/`.
 - `document-project`: source-document manifest, `library/topics/`,
   `docs/drafts/`, `docs/final/`, and evidence for research/content authoring.
+- `llm-wiki`: configurable personal knowledge-base starters for raw sources,
+  generated wiki pages, Obsidian-compatible vaults, research authoring, and
+  agent skill wikis.
 - `rust`: `Cargo.toml`, `src/`, `tests/`, `benches/`, `examples/`, and Rust
   naming conventions.
 - `node`: `package.json`, `src/`, `test/`, docs, and package-manager
