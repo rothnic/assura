@@ -35,25 +35,28 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 21 | Markdown Reference Intelligence | Completed | Completed for beta in PR #112; post-beta Markdown, graph, daemon, agent, and editor hardening now routes through Post-Beta Capabilities |
 | 22 | Beta Code-Agnostic Capabilities | Completed | PR #112 merged; `v0.2.0` tag and GitHub release published with live release evidence |
 | 23 | Post-Beta Capabilities | Completed | `v0.3.0` beta increment published and live-verified with self-config hardening, supported document graph, true daemon mode, Markdown engine/safe fixes, performance floor, agent installers, VS Code support, extension API clarity, LS-Lint reassessment, and release hardening |
-| 24 | Performance Polish | Planned / Separate Lane | Planning task `.trellis/tasks/07-02-native-performance-roadmap-and-goal-text`; kickoff goal `docs/goals/assura-performance-polish-program.md` |
-| 25 | Agent-Ready Project Onboarding | Completed | Parent program and all twelve child goals completed locally on `codex/agent-ready-onboarding-backlog`; final audit in `docs/analysis/2026-07-03-agent-ready-onboarding-final-audit.md` |
+| 24 | Performance Polish | Planned / Separate Lane | Kickoff goal `docs/goals/assura-performance-polish-program.md`; PR #139 landed the first native performance report/gate slice, but the broader optimization and product-grade native regression system remains the next core lane |
+| 25 | Agent-Ready Project Onboarding | Completed | Parent program and all twelve child goals merged in PR #139 at `0020278066bc7498627ae9ef5a32bec54296ce73`; final audit in `docs/analysis/2026-07-03-agent-ready-onboarding-final-audit.md` |
 
 ## Active Roadmap Iteration
 
 Agent-Ready Project Onboarding completed the adoption iteration after the
-`v0.3.0` beta increment. It made Assura the default scaffold, doctor, and
-feedback loop for agent-ready repositories, starting with a broad first-run
-baseline and then asking only the specialization questions needed to avoid
-invented project conventions.
+`v0.3.0` beta increment and merged through PR #139 on 2026-07-04. It made
+Assura the default scaffold, doctor, and feedback loop for agent-ready
+repositories, starting with a broad first-run baseline and then asking only
+the specialization questions needed to avoid invented project conventions.
 
 Completion audit:
 `docs/analysis/2026-07-03-agent-ready-onboarding-final-audit.md`.
 
-Current branch:
-`codex/agent-ready-onboarding-backlog`.
+Current cleanup branch:
+`codex/post-merge-backlog-truth-pass`.
 
 Current recommended goal:
-`docs/goals/assura-post-onboarding-backlog-execution-sequence.md`.
+`docs/goals/assura-performance-polish-program.md`.
+
+Adjacent planned proof:
+`docs/goals/assura-compact-project-review-common-issues.md`.
 
 Performance lane:
 `docs/goals/assura-performance-polish-program.md`.
@@ -90,11 +93,13 @@ that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
 ## Recommended Next Action
 
-Agent-ready onboarding is complete for this increment. First execute
-`docs/goals/assura-post-onboarding-backlog-execution-sequence.md` to publish
-and revalidate the local PR #139 follow-up commits, then continue into
-`docs/goals/assura-performance-polish-program.md` for native performance
-evidence, no-slower gates, and CLI-floor optimization.
+Agent-ready onboarding is complete for this increment and PR #139 is merged.
+Execute `docs/goals/assura-performance-polish-program.md` next for native
+performance evidence, no-slower gates, checked native regression history, and
+CLI-floor optimization. Keep
+`docs/goals/assura-compact-project-review-common-issues.md` as the adjacent
+common-issue review proof so the next implementation lane improves both speed
+and the first diagnostic path users and agents hit.
 
 Priority rule: performance work remains separate from the completed
 agent-ready onboarding program. Reopen onboarding only for follow-up product

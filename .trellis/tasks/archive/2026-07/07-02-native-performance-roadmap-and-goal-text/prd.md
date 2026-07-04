@@ -46,15 +46,15 @@ performance backlog in priority order.
 
 ## Acceptance Criteria
 
-- [ ] `.trellis/spec/assura/roadmap.md` names the new iteration and points to
+- [x] `.trellis/spec/assura/roadmap.md` names the new iteration and points to
       the performance-polish goal.
-- [ ] `docs/data/public-roadmap.json` exposes the new next roadmap item.
-- [ ] A new `docs/goals/` performance goal can be referenced directly by a
+- [x] `docs/data/public-roadmap.json` exposes the new next roadmap item.
+- [x] A new `docs/goals/` performance goal can be referenced directly by a
       future `/goal` kickoff.
-- [ ] A new `docs/goals/` agent-ready onboarding goal can be referenced
+- [x] A new `docs/goals/` agent-ready onboarding goal can be referenced
       directly by a future `/goal` kickoff.
-- [ ] Existing completed post-beta goals are not incorrectly reopened.
-- [ ] Repo self-check succeeds for the docs/planning change.
+- [x] Existing completed post-beta goals are not incorrectly reopened.
+- [x] Repo self-check succeeds for the docs/planning change.
 
 ## Out Of Scope
 

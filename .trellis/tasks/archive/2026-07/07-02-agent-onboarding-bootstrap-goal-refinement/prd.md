@@ -38,14 +38,14 @@ user next.
 
 ## Acceptance Criteria
 
-- [ ] Agent-ready onboarding goal includes the single-command bootstrap
+- [x] Agent-ready onboarding goal includes the single-command bootstrap
       product shape.
-- [ ] The generated onboarding packet is explicit.
-- [ ] The agent next-step question list is explicit.
-- [ ] The broad baseline remains low-risk and non-specialized.
-- [ ] Child goal docs cover every non-performance item from the review.
-- [ ] Website onboarding improvements are represented as a goal.
-- [ ] The planned CLI surfaces do not fail Assura command-surface self-checks.
+- [x] The generated onboarding packet is explicit.
+- [x] The agent next-step question list is explicit.
+- [x] The broad baseline remains low-risk and non-specialized.
+- [x] Child goal docs cover every non-performance item from the review.
+- [x] Website onboarding improvements are represented as a goal.
+- [x] The planned CLI surfaces do not fail Assura command-surface self-checks.
 
 ## Out Of Scope
 

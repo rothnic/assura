@@ -2,7 +2,7 @@
 id: goal-assura-project-intelligence-repo-wide-code-content-search
 type: goal
 title: Assura project intelligence repo-wide code and content search
-status: planned
+status: completed
 created: 2026-06-30
 owners:
   - assura-maintainers
@@ -13,6 +13,17 @@ related:
 ---
 
 # Assura Project Intelligence Repo-Wide Code And Content Search
+
+## Post-Merge Revalidation
+
+Closed as superseded on 2026-07-04. The original one-result-set repo-wide
+search goal is not the next executable lane. Existing supported surfaces cover
+content search, agent-query, context packs, repository references, and code
+symbol facts separately; the remaining user need should be revalidated through
+`docs/goals/assura-compact-project-review-common-issues.md` for first
+diagnostics and
+`docs/goals/assura-llm-wiki-personal-knowledge-base-starters.md` for modeled
+content/query starter examples before a new unified-search command is proposed.
 
 ## Objective
 

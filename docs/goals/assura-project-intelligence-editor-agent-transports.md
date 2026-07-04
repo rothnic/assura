@@ -2,7 +2,7 @@
 id: goal-assura-project-intelligence-editor-agent-transports
 type: goal
 title: Assura project intelligence editor and agent transports
-status: planned
+status: completed
 created: 2026-06-29
 owners:
   - assura-maintainers
@@ -21,13 +21,15 @@ related:
 
 ## Status
 
-Superseded by two narrower executable goals:
+Superseded and closed by two narrower executable goals:
 
 - [Project Intelligence Agent CLI Surface](./assura-project-intelligence-agent-cli-surface.md)
 - [Project Intelligence LSP Editor Transport](./assura-project-intelligence-lsp-editor-transport.md)
 
 This document remains as the original umbrella framing, but agents should not
-execute it directly.
+execute it directly. Current proof lives in
+`docs/analysis/2026-06-29-project-intelligence-usability-final-audit.md`,
+`tests/agent_surface_cli.rs`, and `tests/editor_surface_cli.rs`.
 
 ## Objective
 

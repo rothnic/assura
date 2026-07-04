@@ -2,7 +2,7 @@
 id: goal-assura-markdown-reference-intelligence-program
 type: goal
 title: Assura Markdown reference intelligence program
-status: planned
+status: completed
 created: 2026-06-30
 owners:
   - assura-maintainers
@@ -20,6 +20,15 @@ related:
 ---
 
 # Assura Markdown Reference Intelligence Program
+
+## Post-Merge Revalidation
+
+Completed for the beta scope. The current roadmap records Markdown Reference
+Intelligence as completed in PR #112, and post-beta Markdown, graph, daemon,
+agent, and editor hardening now routes through completed Post-Beta Capabilities
+and follow-up performance/common-issue goals. This parent program remains as
+historical execution framing and should not be selected as the next executable
+goal.
 
 ## Objective
 

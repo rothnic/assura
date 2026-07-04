@@ -2,7 +2,7 @@
 id: goal-assura-project-intelligence-simple-cli
 type: goal
 title: Assura project intelligence simple CLI
-status: planned
+status: completed
 created: 2026-06-30
 owners:
   - assura-maintainers
@@ -13,6 +13,17 @@ related:
 ---
 
 # Assura Project Intelligence Simple CLI
+
+## Post-Merge Revalidation
+
+Closed as superseded on 2026-07-04. The proposed future `assura find` command
+was not implemented as written. The current product priority is a narrower
+first diagnostic flow in
+`docs/goals/assura-compact-project-review-common-issues.md`, while deeper
+content search/query examples remain in
+`docs/goals/assura-llm-wiki-personal-knowledge-base-starters.md`. Reopen this
+only as a new, revalidated command-design goal after those paths prove the
+remaining common query gap.
 
 ## Objective
 

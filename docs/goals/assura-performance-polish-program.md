@@ -23,6 +23,16 @@ related:
 
 # Assura Performance Polish Program
 
+## Post-Merge Revalidation
+
+Still planned after PR #139. That PR landed the first checked
+`assura performance-report --suite native` suite, native checked history,
+website native performance data, CI/native regression gate wiring, and phase
+attribution rows. The broader goal remains open because the next lane still
+needs calibrated native regression policy, focused optimization of the highest
+impact native and CLI-floor rows, and documentation that keeps LS-Lint parity,
+Assura-native diagnostics, cold CLI, and warm daemon/session evidence distinct.
+
 ## Objective
 
 Make Assura performance boringly trustworthy across both sides of the product:
@@ -48,13 +58,15 @@ complete product-grade system.
 - `assura performance-report` and CI enforce the LS-Lint comparison path.
 - `cargo xtask performance-no-slower` fails accepted LS-Lint-equivalent rows
   that are slower than native LS-Lint.
-- `benches/content_runtime.rs` measures content repository validation, but the
-  result is local Criterion evidence rather than checked release history.
-- `benches/project_intelligence.rs` measures fact-store load, search, graph
-  traversal, and session-style query behavior, but it is not exposed as a
-  supported native performance report.
-- The public performance data under `benches/history/current.json` and
-  `website/public/data/performance/current.json` is LS-Lint-focused.
+- PR #139 added checked native performance history and website data under
+  `benches/history/native-current.json` and
+  `website/public/data/performance/native-current.json`.
+- `benches/content_runtime.rs` and `benches/project_intelligence.rs` informed
+  the first native suite, but native budgets and regression policy still need
+  product-grade calibration from checked report rows.
+- The public LS-Lint data under `benches/history/current.json` and
+  `website/public/data/performance/current.json` remains distinct from the
+  Assura-native report artifacts.
 - The remaining cold 2x misses are understood at a high level, but the
   highest-impact rows need a focused optimization pass with before/after proof.
 

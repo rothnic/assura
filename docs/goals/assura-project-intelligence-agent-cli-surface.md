@@ -2,7 +2,7 @@
 id: goal-assura-project-intelligence-agent-cli-surface
 type: goal
 title: Assura project intelligence agent CLI surface
-status: planned
+status: completed
 created: 2026-06-29
 owners:
   - assura-maintainers
@@ -16,6 +16,16 @@ related:
 ---
 
 # Assura Project Intelligence Agent CLI Surface
+
+## Post-Merge Revalidation
+
+Completed by the Project Intelligence usability program. Current evidence:
+`docs/analysis/2026-06-29-project-intelligence-usability-final-audit.md`
+classifies `assura agent ...` as a supported local surface, and
+`tests/agent_surface_cli.rs` covers diagnostics, context packs, search/show,
+expand, missing-relations, safe-fix preview, and session behavior over shared
+content-query contracts. No separate per-agent command family or MCP
+dependency is needed for this completed scope.
 
 ## Objective
 
