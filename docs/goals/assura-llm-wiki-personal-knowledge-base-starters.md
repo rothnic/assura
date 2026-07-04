@@ -13,6 +13,7 @@ related:
   - ./assura-project-intelligence-content-model-validation-demo.md
   - ./assura-content-query-and-search-cli.md
   - ./assura-supported-document-graph.md
+  - ../analysis/2026-07-04-backlog-priority-agent-harness-and-okf-assessment.md
 ---
 
 # Assura LLM Wiki Personal Knowledge Base Starters
@@ -54,6 +55,7 @@ Representative GitHub scan, refreshed on 2026-07-04:
 | [AgriciDaniel/claude-obsidian](https://github.com/AgriciDaniel/claude-obsidian) | A popular Obsidian plus Claude Code workflow with methodology modes, linting, hot cache, and skills. | Validate vault shape, skill shape, links, sources, and traceability independent of Claude-specific commands. |
 | [Ar9av/obsidian-wiki](https://github.com/Ar9av/obsidian-wiki) | Agent-readable Markdown skills, multi-agent install routing, vault doctor/query/lint commands, and Obsidian-centric setup. | Reuse the multi-agent routing idea while keeping Assura's role to config, validation, and query facts. |
 | [VectifyAI/OpenKB](https://github.com/VectifyAI/OpenKB) | CLI that compiles raw documents into an interlinked wiki and generates skills, decks, visualizations, query/chat outputs. | Treat generated outputs as modeled content with evidence and link contracts. |
+| [Google Open Knowledge Format](https://cloud.google.com/blog/products/data-analytics/how-the-open-knowledge-format-can-improve-data-sharing) and [OKF v0.1 spec](https://raw.githubusercontent.com/GoogleCloudPlatform/knowledge-catalog/main/okf/SPEC.md) | Vendor-neutral directory of Markdown files with YAML frontmatter, required `type`, optional `index.md` for progressive disclosure, optional `log.md`, and standard Markdown links as graph edges. | Support OKF as a specified LLM-wiki/content bundle shape with fast file/frontmatter/link validation and query examples. |
 | [swarmclawai/swarmvault](https://github.com/swarmclawai/swarmvault) | Local-first LLM wiki, graph, context-pack, search, review, and agent memory store with profiles and agent install options. | Use as a benchmark for the breadth of questions users expect: next action, query, graph, context pack, doctor. |
 | [ussumant/llm-wiki-compiler](https://github.com/ussumant/llm-wiki-compiler) | Claude/Codex-compatible plugin that compiles Markdown or codebases into a topic wiki with search, lint, and context helper. | Show Assura can validate compiled wiki outputs and references without owning the compiler. |
 | [NulightJens/ai-second-brain-skills](https://github.com/NulightJens/ai-second-brain-skills) | Two skills around setup and self-healing, with `raw/`, `wiki/`, index, log, ingest, query, and lint mental model. | Provide first-party Assura examples for skill-driven progressive disclosure plus link/reference checks. |
@@ -165,9 +167,50 @@ showing when a task should load a skill or skill pattern, and validate that
 `SKILL.md` files route to internal references rather than embedding long
 examples in the entrypoint.
 
+### 5. Open Knowledge Format Bundle
+
+Starter for projects that want a specified, interoperable LLM-wiki or
+metadata-as-code bundle without adopting a hosted catalog or generation engine.
+
+```text
+okf/
+  index.md
+  log.md
+  datasets/
+    index.md
+    <dataset>.md
+  tables/
+    index.md
+    <table>.md
+  metrics/
+    index.md
+    <metric>.md
+  references/
+    <source>.md
+```
+
+Model Concept, Resource, Tag, Citation, Link, and LogEntry records. Validate
+that non-reserved Markdown concept files have parseable YAML frontmatter and a
+non-empty `type`; optionally check recommended `title`, `description`,
+`resource`, `tags`, and `timestamp` fields. Treat `index.md` and `log.md` as
+reserved files with their own lightweight shape checks. Keep broken internal
+links advisory by default, matching OKF's permissive consumer model, while
+allowing projects to opt into stricter blocking link checks.
+
+Performance posture:
+
+- validate OKF bundles with the existing file walk, Markdown/frontmatter parse,
+  repository-reference index, and content runtime;
+- avoid a separate graph database, vector store, hosted catalog, BigQuery
+  exporter, visualizer, or LLM crawler in this goal;
+- include small, medium, large, and reference-heavy OKF fixtures in native
+  performance reporting before describing OKF support as performant;
+- report cold CLI, warm/session, link-index, query, context-pack, and
+  serialization rows for the OKF fixture family.
+
 ## Scope
 
-- Add starter configs or preset templates for the four shapes above.
+- Add starter configs or preset templates for the five shapes above.
 - Provide valid and invalid fixtures for each starter.
 - Document when to choose each starter and how to customize it safely.
 - Model collections and relations using the existing content runtime rather
@@ -180,6 +223,9 @@ examples in the entrypoint.
   desktop apps, and RAG systems.
 - Keep examples generic enough for personal research, academic writing,
   content authoring, documentation, and small-team knowledge bases.
+- Include OKF-specific docs that distinguish Assura format validation and
+  querying from OKF producer agents, visualizers, hosted catalogs, BigQuery
+  exporters, and LLM-generated enrichment.
 
 ## Effective Query Examples
 
@@ -211,6 +257,9 @@ assura content expand examples/llm-wiki-minimal concepts concept-retrieval --for
 assura content context-pack examples/research-authoring --text "source traceability" --limit 8 --format json
 assura content agent-query gaps examples/agent-skill-wiki --format json
 assura content agent-query next-actions examples/llm-wiki-minimal --format json
+assura content collections examples/okf-basic --format json
+assura content agent-query unresolved-references examples/okf-basic --format json
+assura content expand examples/okf-basic concepts tables/orders --format json
 ```
 
 If current command names differ, the implementation should use the supported
@@ -225,10 +274,12 @@ current names and update this goal with the final command list.
 - No hosted service, remote provider, or MCP server requirement.
 - No single canonical folder structure that all knowledge bases must use.
 - No automatic claim extraction from arbitrary prose.
+- No OKF producer agent, BigQuery crawler, static visualizer, hosted knowledge
+  catalog, or required OKF ingestion service.
 
 ## Definition Of Done
 
-- Four starter configurations are available as checked examples, templates, or
+- Five starter configurations are available as checked examples, templates, or
   documented preset variants.
 - Each starter has a passing fixture and an intentionally broken fixture.
 - `assura check --format json` catches the broken fixture conditions with
@@ -244,6 +295,11 @@ current names and update this goal with the final command list.
   instead of duplicated.
 - The starter docs link to the external scan above as comparative inspiration,
   not as hard dependencies.
+- The OKF starter validates required `type` frontmatter, reserved `index.md`
+  and `log.md` conventions, configured link policy, citations, tags, resources,
+  and missing recommended fields with stable JSON output.
+- OKF fixtures are included in the native performance suite before the starter
+  is described as supported and performant.
 
 ## Validation Commands
 
@@ -273,9 +329,13 @@ Assura self-check, evidence, and docs gates that cover the changed files.
   structure across all knowledge bases.
 - R3: Confirm the research-authoring starter composes with the generic
   `document-project` preset and does not reintroduce domain-specific overfit.
-- R4: Confirm each query example is backed by a fixture and has stable JSON for
+- R4: Confirm OKF support follows the v0.1 spec's permissive consumption model
+  by default and does not reject unknown types, unknown fields, missing
+  optional fields, or broken links unless project config opts into stricter
+  behavior.
+- R5: Confirm each query example is backed by a fixture and has stable JSON for
   agents.
-- R5: Confirm broken links, missing source evidence, orphan pages, and missing
+- R6: Confirm broken links, missing source evidence, orphan pages, and missing
   relation targets cannot pass silently.
 
 ## Reviewer Blocking Criteria
@@ -292,6 +352,9 @@ Block if the implementation:
 - treats vector search, hosted models, or MCP as required for correctness;
 - lets generated wiki pages, claims, analyses, or skill references pass without
   source or target validation when the starter says they are required.
+- describes OKF support without native performance evidence for OKF fixtures;
+- implements an OKF producer, crawler, visualizer, or hosted catalog instead of
+  validating and querying OKF bundle structure.
 
 ## Copy/Paste Goal Prompt
 
@@ -304,7 +367,7 @@ source-document custody, requirements/evidence traceability, repository
 reference, and content-query surfaces before designing any new config.
 
 Implement the smallest slice that proves the product path:
-1. add the four LLM-wiki starter configurations or clearly documented template
+1. add the five LLM-wiki starter configurations or clearly documented template
    variants;
 2. add valid and broken fixtures for each;
 3. prove assura check catches broken source/link/relation conditions;
@@ -313,9 +376,10 @@ Implement the smallest slice that proves the product path:
 5. document when to choose each starter and how to customize it without being
    locked into one wiki structure.
 
-Do not build an LLM wiki app, Obsidian plugin, ingestion engine, vector search
-stack, or hosted service. Use Assura's existing content modeling and query
-surfaces unless live code inspection proves a narrow missing capability.
+Do not build an LLM wiki app, Obsidian plugin, ingestion engine, OKF producer,
+BigQuery crawler, visualizer, vector search stack, or hosted service. Use
+Assura's existing content modeling and query surfaces unless live code
+inspection proves a narrow missing capability.
 Record validation commands, changed files, and any reviewer findings in this
 goal before closing it.
 ```
