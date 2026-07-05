@@ -1,0 +1,5 @@
+{"file":".trellis/spec/assura/index.md","reason":"Review against project-level constraints and no-parallel-validator expectations."}
+{"file":".trellis/spec/assura/tooling-stabilization.md","reason":"Validation-scope and evidence-gate expectations for command/docs changes."}
+{"file":".trellis/spec/assura/workflow-status.md","reason":"Ensure handoff includes the expected workflow status snapshot."}
+{"file":"docs/goals/assura-compact-project-review-common-issues.md","reason":"Review against acceptance criteria and reviewer blocking criteria."}
+{"file":"docs/analysis/2026-07-05-compact-project-review-revalidation.md","reason":"Confirm implementation answers the live check/doctor/content-gap evidence."}
