@@ -314,3 +314,36 @@ Completed agent search/reference discovery, fixed the Windows context-pack fixtu
 ### Next Steps
 
 - None - task complete
+
+
+## Session 10: Performance polish gates and stop policy
+
+**Date**: 2026-07-05
+**Task**: Performance polish gates and stop policy
+**Branch**: `codex/post-merge-backlog-truth-pass`
+
+### Summary
+
+Added native performance regression metadata and gates, refreshed checked performance evidence, added VPS comparison helper output, and recorded the stop policy that pauses cold CLI micro-optimization in favor of core structure validation work.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `cdeae4c` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
