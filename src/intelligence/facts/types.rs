@@ -80,10 +80,13 @@ pub struct SourceLocation {
     /// Repository-relative path.
     pub path: PathBuf,
     /// One-based line number when known.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub line: Option<usize>,
     /// One-based column number when known.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub column: Option<usize>,
     /// Model or frontmatter field when known.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub field: Option<String>,
 }
 
@@ -200,6 +203,7 @@ pub struct Resource {
     /// Repository-relative path.
     pub path: PathBuf,
     /// File extension when present.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub extension: Option<String>,
 }
 
@@ -276,8 +280,10 @@ pub struct Diagnostic {
     /// Human-readable message.
     pub message: String,
     /// Target fact ID when Assura can resolve one.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub target_id: Option<FactId>,
     /// Source location for editor and agent surfaces.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub location: Option<SourceLocation>,
     /// Machine-readable producer metadata when available.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -296,8 +302,10 @@ pub struct SafeFix {
     /// Diagnostic this fix addresses.
     pub diagnostic_id: FactId,
     /// Target fact ID when Assura can resolve one.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub target_id: Option<FactId>,
     /// Source location for the concrete edit when known.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub location: Option<SourceLocation>,
     /// Machine-readable operation name.
     pub operation: String,
@@ -353,6 +361,7 @@ pub struct RelationshipEdge {
     /// Source model instance fact ID.
     pub source_id: FactId,
     /// Target model instance fact ID when resolved.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub target_id: Option<FactId>,
     /// Source field carrying the relation.
     pub field: String,

@@ -24,10 +24,13 @@ pub struct MarkdownLink {
     /// Repository-relative target path.
     pub target_path: PathBuf,
     /// Optional target anchor without the leading `#`.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub target_anchor: Option<String>,
     /// Optional GitHub line-anchor start.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub target_line_start: Option<usize>,
     /// Optional GitHub line-anchor end.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub target_line_end: Option<usize>,
     /// Whether the target path exists when fact ingestion ran.
     pub target_exists: bool,

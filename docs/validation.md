@@ -58,6 +58,7 @@ cargo xtask docs
 cargo xtask release-size
 cargo xtask release-smoke
 cargo xtask release-live
+cargo perf-vps -- --help
 ```
 
 Run the website build for docs or frontend changes. Run the release smoke for
@@ -98,6 +99,43 @@ cargo xtask evidence
 This checks review evidence templates, goal frontmatter metadata, local
 markdown links in goal/review/spec docs, and stale forbidden user-facing command
 surfaces such as per-agent feedback CLIs or per-agent check formats.
+
+For the repeated `vps` LS-Lint structure lane, use the repo-native wrapper
+instead of rebuilding the remote rsync/patch/build command sequence:
+
+```bash
+cargo perf-vps fast-rules-cache \
+  src/cli/check/ls_fast_plan.rs \
+  src/cli/check/ls_fast_rules_cache.rs
+```
+
+`cargo perf-vps` is a short alias for the `vps` LS-Lint comparison harness. It
+defaults to `vps` and `<remote-home>/data/projects`, so the normal structure
+lane does not need a remembered SSH/rsync recipe anymore. Pass `-- --help` to
+see the underlying script options for host, remote root, iterations, fixture
+selection, or exact-command tie-breakers.
+
+The helper prints an `accepted_fixture_delta` section for every accepted
+LS-Lint-equivalent fixture. Treat that table as required evidence for any
+retained cold optimization: the target row, spillover rows, and exact
+`assura check --quiet` tie-breaker need to agree. The current stop policy lives
+in `docs/analysis/2026-07-05-performance-decision-matrix.md`; strict cold 2x
+is a stretch diagnostic, not a reason to keep tuning when the no-slower gate is
+green and the remaining miss is floor-dominated.
+
+Plain one-shot `assura check` still reparses `.assura/config.yml` in each new
+process. If you want to skip YAML parse/semantic validation across processes,
+use the explicit compiled-config path instead:
+
+```bash
+cargo run -p assura-check-cli --bin assura-check-compile-config -- \
+  --config .assura/config.yml \
+  --output .assura/check-config.bin
+assura-check-compiled --quiet
+```
+
+The `--cache-dir` result cache is separate: it can reuse prior reports, but it
+still rereads and hashes YAML before it does so.
 
 ## CI Scope Gate
 

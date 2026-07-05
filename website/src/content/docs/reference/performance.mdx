@@ -42,12 +42,52 @@ LS-Lint comparison. They measure product surfaces LS-Lint does not provide:
 content collections, document graph queries, references, context packs,
 Markdown safe-fix dry runs, agent-query paths, session-style requests, and
 daemon status. Native rows use `fixture_acceptance=assura-native-diagnostic`
-and are protected by `cargo xtask native-performance-no-regression`.
+and are protected by `cargo xtask native-performance-no-regression`. That gate
+is baseline-relative, not LS-Lint-relative: each native row carries
+`native_regression_*` metadata calibrated from the checked native baseline so
+reviewers can see whether the current row remains inside the expected envelope.
 
 The post-beta LS-Lint reassessment keeps those claims separate: current accepted
 cold rows must be no slower than native LS-Lint row by row, while remaining 2x
 misses are explained through process floor, Rust CLI floor, config-load,
 checker-init, walk-and-validate, and report-sort phase rows.
+
+## Recent Product Gains
+
+The native suite has moved on product-path work, not just harness/reporting:
+
+- `native_large native:phase:fact-ingest-load`: `2993.6 ms` -> `137.0 ms`
+  (`-95.4%`)
+- `native_large native:phase:incremental-replace-generation`: `2733.0 ms` ->
+  `118.3 ms` (`-95.7%`)
+- `native_large native:phase:object-load-validate`: `236.3 ms` -> `188.7 ms`
+  (`-20.1%`)
+- `native_large native:phase:repository-validate-total`: `257.7 ms` ->
+  `209.8 ms` (`-18.6%`)
+
+Those deltas come from the checked native history under
+`/data/performance/native-history.jsonl`, not from ad hoc local smoke runs.
+The remaining LS-Lint-equivalent cold miss is much narrower: the checked
+`many_configured_scopes_regression` row is already faster than native LS-Lint
+(`14.95 ms` versus `19.08 ms`), but it is still not at the separate 2x target.
+The current cold cost on that row is concentrated in `assura:phase:config-load`
+(`4.15 ms`) and `assura:phase:walk-and-validate` (`5.12 ms`), so the next
+headline work is still product-path runtime rather than more report plumbing.
+
+## Beta Performance Posture
+
+For beta, the cold LS-Lint release guardrail is row-by-row no-slower parity,
+not universal cold 2x. The current checked report has every accepted cold
+LS-Lint-equivalent fixture faster than native LS-Lint, while warm/session rows
+meet the 2x target across the accepted fixture set. Remaining cold 2x misses are
+tracked as diagnostics so they can guide future work without forcing
+entrypoint-specific branches or sub-millisecond tuning into the product.
+
+Future cold optimizations must improve the ordinary public command. A change is
+not enough if it only helps a phase row, an in-process row, `assura-check-cli`,
+or a traversal experiment while `assura check --quiet` is flat or slower. The
+working stop/keep matrix is maintained in
+`docs/analysis/2026-07-05-performance-decision-matrix.md`.
 
 ## More Detail
 
@@ -102,3 +142,15 @@ cargo xtask native-performance-no-regression benches/history/native-current.json
 
 Review the generated diff in `benches/history/` and
 `website/public/data/performance/` before merging.
+
+When a checked refresh is produced from a temporary clean snapshot of a dirty
+source lane, also export the source provenance before running the command so
+the checked artifact preserves the original branch/commit/patch tuple and the
+fact that the source lane was dirty:
+
+```bash
+export ASSURA_SOURCE_COMMIT_SHA="<source-lane commit>"
+export ASSURA_SOURCE_BRANCH="<source-lane branch>"
+export ASSURA_SOURCE_PATCH_ID="<stable patch id for the materialized diff>"
+export ASSURA_SOURCE_WORKTREE_DIRTY=true
+```

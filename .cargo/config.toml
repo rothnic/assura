@@ -1,5 +1,12 @@
 [alias]
 xtask = ["run", "--package", "xtask", "--"]
+perf-vps = [
+  "run",
+  "--package",
+  "xtask",
+  "--",
+  "perf-vps-ls-lint-compare",
+]
 build-assura-check-linux-static = [
   "build",
   "--config",

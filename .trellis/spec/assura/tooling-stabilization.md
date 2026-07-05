@@ -94,6 +94,8 @@ evidence.
 ### Signatures
 
 - `assura performance-report --output <path> [--history <path>]`
+- `cargo xtask perf-vps-ls-lint-compare -- <label> <repo-path>
+  [<repo-path>...]`
 - `cargo xtask performance-no-slower [report.json] [--cohort <name>]
   [--assura-row <row>] [--ls-lint-row <row>]`
 - Criterion benchmark: `cargo bench --bench ls_lint_comparison -- --noplot`
@@ -132,6 +134,23 @@ evidence.
 - Native LS-Lint metadata is part of the no-slower gate: selected LS-Lint rows
   must use `tool_name=ls-lint-native-cli` and
   `ls_lint_execution_mode=native-binary-from-pinned-npm-package`.
+- VPS comparison helper: `cargo xtask perf-vps-ls-lint-compare` snapshots the
+  current worktree to the remote `after` copy, reverses the requested patch into
+  a remote `before` copy, builds the same release bundle on both sides, runs
+  `performance-report --suite ls-lint`, and enforces
+  `cargo xtask performance-no-slower` on the candidate.
+- VPS helper environment: default host is `vps`; callers may override with
+  `--host`, `--remote-root`, `ASSURA_PERF_VPS_HOST`, or
+  `ASSURA_PERF_VPS_REMOTE_ROOT`.
+- VPS helper output: the final summary must include the target fixture phase
+  deltas, an `accepted_fixture_delta` table for every accepted
+  LS-Lint-equivalent fixture, and exact public-command deltas when the shared
+  fixture is available.
+- Cold optimization stop policy: keep strict no-slower as the release gate.
+  Retain a cold optimization only when the public `assura-cli` target row, the
+  exact `assura check --quiet` tie-breaker, and accepted spillover rows all
+  satisfy the thresholds in
+  `docs/analysis/2026-07-05-performance-decision-matrix.md`.
 
 ### Validation & Error Matrix
 
@@ -142,6 +161,8 @@ evidence.
 | Website copy mentions a winner | Derive the winner from current generated data, not from prior run assumptions. |
 | Any headline fixture has Assura median runtime greater than native LS-Lint | `cargo xtask performance-no-slower` exits nonzero and prints the fixture ID. |
 | A headline fixture is missing either paired row | `cargo xtask performance-no-slower` exits nonzero and identifies the missing row. |
+| `--no-exact` is passed to the VPS helper | Skip exact public-command timing even if the default shared fixture exists. |
+| A cold candidate improves only phase, in-process, or check-only rows | Reject or keep investigating; do not count it as product progress. |
 
 ### Good / Base / Bad Cases
 
@@ -159,6 +180,9 @@ evidence.
 - Website build after checked-in report data changes.
 - A regenerated report proving the checked-in JSON uses the native execution
   mode.
+- `bash -n scripts/perf-vps-ls-lint-compare.sh` after helper changes.
+- `cargo xtask perf-vps-ls-lint-compare -- --help` after helper signature or
+  summary-output changes.
 
 ### Wrong vs Correct
 

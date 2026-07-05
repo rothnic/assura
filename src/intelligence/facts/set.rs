@@ -1,5 +1,6 @@
 use super::types::{FactId, ProjectEdge, ProjectFact};
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeSet;
 use std::path::Path;
 
 /// Complete fact set for one or more project intelligence generations.
@@ -48,13 +49,11 @@ impl FactSet {
             .retain(|fact| fact.generation().id.as_str() != generation);
         self.edges
             .retain(|edge| edge.generation().id.as_str() != generation);
-        for fact in replacement.facts {
-            self.upsert_fact(fact);
-        }
-        for edge in replacement.edges {
-            self.upsert_edge(edge);
-        }
+        self.facts.extend(replacement.facts);
+        self.edges.extend(replacement.edges);
         self.sort_stable();
+        dedupe_facts_keep_last(&mut self.facts);
+        dedupe_edges_keep_last(&mut self.edges);
     }
 
     /// Sort facts and edges into deterministic ID/generation order.
@@ -84,6 +83,32 @@ impl FactSet {
             .filter(|fact| fact_kind(fact) == kind)
             .count()
     }
+}
+
+fn dedupe_facts_keep_last(facts: &mut Vec<ProjectFact>) {
+    let mut seen = BTreeSet::new();
+    let mut deduped = Vec::with_capacity(facts.len());
+    for fact in facts.drain(..).rev() {
+        let key = (fact.id().clone(), fact.generation().id.clone());
+        if seen.insert(key) {
+            deduped.push(fact);
+        }
+    }
+    deduped.reverse();
+    *facts = deduped;
+}
+
+fn dedupe_edges_keep_last(edges: &mut Vec<ProjectEdge>) {
+    let mut seen = BTreeSet::new();
+    let mut deduped = Vec::with_capacity(edges.len());
+    for edge in edges.drain(..).rev() {
+        let key = (edge.id().clone(), edge.generation().id.clone());
+        if seen.insert(key) {
+            deduped.push(edge);
+        }
+    }
+    deduped.reverse();
+    *edges = deduped;
 }
 
 /// Create a stable model definition ID for a collection binding.

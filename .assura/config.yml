@@ -80,6 +80,7 @@ quality:
       paths:
         - "benches/**"
         - "benches/history/**"
+        - "scripts/perf-vps-ls-lint-compare.sh"
         - "website/public/data/performance/**"
         - "website/src/content/docs/reference/performance*"
         - "docs/analysis/*performance*"
@@ -1169,6 +1170,7 @@ structure:
             - "check-ci-scope.sh"
             - "ci-scope.sh"
             - "ci-scope-github.sh"
+            - "perf-vps-ls-lint-compare.sh"
             - "smoke-install-adoption.ps1"
             - "smoke-install-adoption.sh"
             - "summarize-rust-cache.sh"

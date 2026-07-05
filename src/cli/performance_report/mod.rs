@@ -38,6 +38,7 @@ mod monorepo_policy;
 mod native;
 mod native_fixtures;
 mod native_phases;
+mod native_regression;
 mod phases;
 mod prepared_rows;
 mod process_floor;
@@ -63,7 +64,10 @@ pub(in crate::cli::performance_report) use fixtures::MaterializedFixture;
 use fixtures::{materialize_fixture, scenarios};
 use io::{append_history, render_jsonl, write_text, write_website_data};
 use ls_lint::{prepare_ls_lint, PreparedLsLint};
-use metadata::{git_value, utc_timestamp};
+use metadata::{
+    git_value, resolve_source_worktree_dirty, source_provenance_from_env, utc_timestamp,
+};
+use native_regression::annotate_native_regressions;
 use phases::AssuraPhaseSamples;
 pub(in crate::cli::performance_report) use rows::{row, RowMeasurement};
 pub use rows::{PerformanceResultRow, RuntimeDistribution};
@@ -82,7 +86,15 @@ pub struct PerformanceReport {
     pub commit_sha: String,
     /// Current git branch when available.
     pub branch: String,
-    /// Whether the source worktree had uncommitted changes during the run.
+    /// Source lane commit when a clean snapshot was materialized from another worktree.
+    pub source_commit_sha: Option<String>,
+    /// Source lane branch when a clean snapshot was materialized from another worktree.
+    pub source_branch: Option<String>,
+    /// Stable patch identifier for the source-lane diff used to materialize a clean snapshot.
+    pub source_patch_id: Option<String>,
+    /// Whether the source lane had uncommitted changes when the measured
+    /// snapshot was produced. For in-place runs without source provenance, this
+    /// describes the executing checkout.
     pub source_worktree_dirty: bool,
     /// Environment and toolchain metadata for this measurement run.
     pub environment: PerformanceEnvironment,
@@ -211,11 +223,14 @@ fn generate_report(
     let timestamp = utc_timestamp();
     let commit_sha = git_value(["rev-parse", "HEAD"]).unwrap_or_else(|| "unknown".to_string());
     let branch = git_value(["branch", "--show-current"]).unwrap_or_else(|| "unknown".to_string());
-    let source_worktree_dirty =
+    let measured_worktree_dirty =
         git_value(["status", "--porcelain"]).is_some_and(|status| !status.trim().is_empty());
+    let source_provenance = source_provenance_from_env();
+    let source_worktree_dirty =
+        resolve_source_worktree_dirty(measured_worktree_dirty, &source_provenance);
     let environment = collect_environment();
     if suite == PerformanceReportSuite::Native {
-        let (ls_lint_status, results) = native::measure_native_rows(
+        let (ls_lint_status, mut results) = native::measure_native_rows(
             iterations,
             &timestamp,
             &commit_sha,
@@ -223,6 +238,7 @@ fn generate_report(
             &environment,
             &baseline_id,
         )?;
+        annotate_native_regressions(&mut results);
         let claim_summary = summarize_headline_claim(&results, iterations);
         let warm_claim_summary = summarize_warm_claim(&results, iterations);
 
@@ -231,6 +247,9 @@ fn generate_report(
             timestamp,
             commit_sha,
             branch,
+            source_commit_sha: source_provenance.source_commit_sha.clone(),
+            source_branch: source_provenance.source_branch.clone(),
+            source_patch_id: source_provenance.source_patch_id.clone(),
             source_worktree_dirty,
             environment,
             comparison_baseline_id: baseline_id,
@@ -288,6 +307,9 @@ fn generate_report(
         timestamp,
         commit_sha,
         branch,
+        source_commit_sha: source_provenance.source_commit_sha,
+        source_branch: source_provenance.source_branch,
+        source_patch_id: source_provenance.source_patch_id,
         source_worktree_dirty,
         environment,
         comparison_baseline_id: baseline_id,

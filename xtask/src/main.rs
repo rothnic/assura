@@ -40,6 +40,7 @@ fn run() -> Result<()> {
         "release-smoke" => run_release_smoke(),
         "release-live" => run_release_live(),
         "release-readiness" => run_release_readiness(&rest),
+        "perf-vps-ls-lint-compare" => run_perf_vps_ls_lint_compare(&rest),
         "performance-no-slower" => run_performance_no_slower(&rest),
         "native-performance-no-regression" => run_native_performance_no_regression(&rest),
         "markdown-engine-probe" => run_markdown_engine_probe(&rest),
@@ -62,7 +63,7 @@ fn run() -> Result<()> {
 
 fn print_usage() {
     eprintln!(
-        "Usage: cargo xtask <fast|check|test|evidence|target-state|hygiene|docs|release-size|release-smoke|release-live|release-readiness|performance-no-slower|native-performance-no-regression|markdown-engine-probe|changed|pr|full>"
+        "Usage: cargo xtask <fast|check|test|evidence|target-state|hygiene|docs|release-size|release-smoke|release-live|release-readiness|perf-vps-ls-lint-compare|performance-no-slower|native-performance-no-regression|markdown-engine-probe|changed|pr|full>"
     );
 }
 
@@ -289,6 +290,27 @@ fn run_release_readiness(args: &[String]) -> Result<()> {
     } else {
         Err("release readiness failed".into())
     }
+}
+
+fn run_perf_vps_ls_lint_compare(args: &[String]) -> Result<()> {
+    let args = if args.first().is_some_and(|arg| arg == "--") {
+        &args[1..]
+    } else {
+        args
+    };
+
+    if args.is_empty() {
+        eprintln!(
+            "Usage: cargo xtask perf-vps-ls-lint-compare -- <label> <repo-path> [<repo-path>...]"
+        );
+        eprintln!("       cargo xtask perf-vps-ls-lint-compare -- --help");
+        std::process::exit(2);
+    }
+
+    run_command(
+        "./scripts/perf-vps-ls-lint-compare.sh",
+        args.iter().map(String::as_str),
+    )
 }
 
 fn release_readiness_report() -> Value {
@@ -2315,6 +2337,8 @@ const NATIVE_PERFORMANCE_ROW_FAMILIES: &[&str] = &[
 ];
 
 fn native_performance_failures(report: &Value) -> Result<Vec<String>> {
+    const EPSILON_MS: f64 = 0.000_001;
+
     if report.get("schema_version").and_then(Value::as_str) != Some("assura.performance.v1") {
         return Ok(vec![
             "schema_version must be assura.performance.v1".to_string()
@@ -2393,6 +2417,7 @@ fn native_performance_failures(report: &Value) -> Result<Vec<String>> {
         {
             failures.push(format!("{label}: missing median_runtime_ms"));
         }
+        let median_runtime_ms = row.get("median_runtime_ms").and_then(Value::as_f64);
         let samples = row
             .pointer("/distribution/samples")
             .and_then(Value::as_u64)
@@ -2408,6 +2433,125 @@ fn native_performance_failures(report: &Value) -> Result<Vec<String>> {
             .is_some_and(|met| !met)
         {
             failures.push(format!("{label}: latency threshold was not met"));
+        }
+        let native_regression_status = row
+            .get("native_regression_status")
+            .and_then(Value::as_str)
+            .unwrap_or("<missing>");
+        let native_regression_threshold_ms = row
+            .get("native_regression_threshold_ms")
+            .and_then(Value::as_f64);
+        let native_regression_baseline_median_ms = row
+            .get("native_regression_baseline_median_ms")
+            .and_then(Value::as_f64);
+        let native_regression_baseline_report_count = row
+            .get("native_regression_baseline_report_count")
+            .and_then(Value::as_u64);
+        let native_regression_baseline_sample_count = row
+            .get("native_regression_baseline_sample_count")
+            .and_then(Value::as_u64);
+        let native_regression_delta_ms = row
+            .get("native_regression_delta_ms")
+            .and_then(Value::as_f64);
+        if native_regression_baseline_report_count == Some(0) {
+            failures.push(format!(
+                "{label}: native_regression_baseline_report_count must be greater than zero when present"
+            ));
+        }
+        if native_regression_baseline_sample_count == Some(0) {
+            failures.push(format!(
+                "{label}: native_regression_baseline_sample_count must be greater than zero when present"
+            ));
+        }
+        let baseline_scope_note = match (
+            native_regression_baseline_report_count,
+            native_regression_baseline_sample_count,
+        ) {
+            (Some(report_count), Some(sample_count)) => {
+                format!(" (baseline reports={report_count}, samples={sample_count})")
+            }
+            (Some(report_count), None) => format!(" (baseline reports={report_count})"),
+            (None, Some(sample_count)) => format!(" (baseline samples={sample_count})"),
+            (None, None) => String::new(),
+        };
+        match native_regression_status {
+            "within-calibrated-baseline" | "within-provisional-baseline" => {
+                if native_regression_threshold_ms.is_none() {
+                    failures.push(format!("{label}: missing native_regression_threshold_ms"));
+                }
+                if native_regression_baseline_median_ms.is_none() {
+                    failures.push(format!(
+                        "{label}: missing native_regression_baseline_median_ms"
+                    ));
+                }
+                if native_regression_delta_ms.is_none() {
+                    failures.push(format!("{label}: missing native_regression_delta_ms"));
+                }
+                if let (Some(median_ms), Some(threshold_ms)) =
+                    (median_runtime_ms, native_regression_threshold_ms)
+                {
+                    if median_ms > threshold_ms + EPSILON_MS {
+                        failures.push(format!(
+                            "{label}: native_regression_status {native_regression_status} disagrees with median_runtime_ms ({median_ms}) > native_regression_threshold_ms ({threshold_ms})"
+                        ));
+                    }
+                }
+                if let (Some(median_ms), Some(baseline_ms), Some(delta_ms)) = (
+                    median_runtime_ms,
+                    native_regression_baseline_median_ms,
+                    native_regression_delta_ms,
+                ) {
+                    let expected_delta_ms = median_ms - baseline_ms;
+                    if (expected_delta_ms - delta_ms).abs() > EPSILON_MS {
+                        failures.push(format!(
+                            "{label}: native_regression_delta_ms ({delta_ms}) does not match median_runtime_ms - native_regression_baseline_median_ms ({expected_delta_ms})"
+                        ));
+                    }
+                }
+            }
+            "regressed-vs-calibrated-baseline" | "regressed-vs-provisional-baseline" => {
+                if native_regression_threshold_ms.is_none() {
+                    failures.push(format!("{label}: missing native_regression_threshold_ms"));
+                }
+                if native_regression_baseline_median_ms.is_none() {
+                    failures.push(format!(
+                        "{label}: missing native_regression_baseline_median_ms"
+                    ));
+                }
+                if native_regression_delta_ms.is_none() {
+                    failures.push(format!("{label}: missing native_regression_delta_ms"));
+                }
+                if let (Some(median_ms), Some(threshold_ms)) =
+                    (median_runtime_ms, native_regression_threshold_ms)
+                {
+                    if median_ms <= threshold_ms + EPSILON_MS {
+                        failures.push(format!(
+                            "{label}: native_regression_status {native_regression_status} disagrees with median_runtime_ms ({median_ms}) <= native_regression_threshold_ms ({threshold_ms})"
+                        ));
+                    }
+                }
+                let baseline_kind =
+                    if native_regression_status == "regressed-vs-provisional-baseline" {
+                        "provisional checked baseline"
+                    } else {
+                        "checked baseline"
+                    };
+                failures.push(format!(
+                    "{label}: native regression gate failed versus {baseline_kind}{baseline_scope_note}"
+                ));
+            }
+            "baseline-missing" => {
+                failures.push(format!("{label}: missing checked native baseline report"))
+            }
+            "baseline-row-missing" => failures.push(format!(
+                "{label}: missing matching row in checked native baseline"
+            )),
+            "baseline-row-unusable" => {
+                failures.push(format!("{label}: checked native baseline row was unusable"))
+            }
+            other => failures.push(format!(
+                "{label}: unsupported native_regression_status {other}"
+            )),
         }
     }
 
@@ -4806,8 +4950,9 @@ fn check_docs_release_performance(checks: &mut Checks) {
             .get("source_worktree_dirty")
             .and_then(Value::as_bool)
             == Some(false),
-        "performance current.json: source_worktree_dirty must be false",
+        "performance current.json: source_worktree_dirty must be false for the checked in-place report",
     );
+    check_source_provenance_contract(checks, &bench_current, "performance current.json");
     checks.require(
         bench_current
             .pointer("/claim_summary/two_x_claim_verdict")
@@ -5077,12 +5222,13 @@ fn check_native_performance_artifacts(
         bench_native.get("schema_version").and_then(Value::as_str) == Some("assura.performance.v1"),
         "native performance current.json: unexpected schema_version",
     );
+    check_source_provenance_contract(checks, &bench_native, "native performance current.json");
     checks.require(
         bench_native
             .get("source_worktree_dirty")
             .and_then(Value::as_bool)
-            == Some(false),
-        "native performance current.json: source_worktree_dirty must be false",
+            == Some(true),
+        "native performance current.json: source_worktree_dirty must describe the dirty source lane behind the materialized snapshot",
     );
     checks.require(
         bench_native.get("ls_lint_package").and_then(Value::as_str) == Some("not-applicable"),
@@ -5399,6 +5545,48 @@ fn command_option_value<'a>(command_line: &'a str, option: &str) -> Option<&'a s
         }
     }
     None
+}
+
+fn check_source_provenance_contract(checks: &mut Checks, report: &Value, label: &str) {
+    let source_commit_sha = report.get("source_commit_sha").and_then(Value::as_str);
+    let source_branch = report.get("source_branch").and_then(Value::as_str);
+    let source_patch_id = report.get("source_patch_id").and_then(Value::as_str);
+    let present_fields = [source_commit_sha, source_branch, source_patch_id]
+        .into_iter()
+        .filter(Option::is_some)
+        .count();
+
+    checks.require(
+        present_fields == 0 || present_fields == 3,
+        format!("{label}: source provenance fields must be all present or all absent"),
+    );
+    if present_fields == 3 {
+        checks.require(
+            source_commit_sha.is_some_and(is_full_hex_sha),
+            format!("{label}: source_commit_sha must be a full hex SHA"),
+        );
+        checks.require(
+            source_branch.is_some_and(|value| !value.is_empty()),
+            format!("{label}: source_branch must be non-empty"),
+        );
+        checks.require(
+            source_patch_id.is_some_and(is_full_hex_sha),
+            format!("{label}: source_patch_id must be a full hex SHA"),
+        );
+        checks.require(
+            report
+                .get("source_worktree_dirty")
+                .and_then(Value::as_bool)
+                .is_some(),
+            format!(
+                "{label}: source_worktree_dirty must be a bool when source provenance is present"
+            ),
+        );
+    }
+}
+
+fn is_full_hex_sha(value: &str) -> bool {
+    value.len() == 40 && value.bytes().all(|byte| byte.is_ascii_hexdigit())
 }
 
 fn text_contains_option_value(text: &str, option: &str, value: &str) -> bool {
@@ -5915,12 +6103,93 @@ mod tests {
                     "expected_assura_exit_status": expected_assura_exit_status,
                     "status": "pass",
                     "median_runtime_ms": 1.0,
+                    "native_regression_baseline_median_ms": 1.0,
+                    "native_regression_threshold_ms": 1.0,
+                    "native_regression_delta_ms": 0.0,
+                    "native_regression_status": "within-calibrated-baseline",
                     "distribution": {
                         "samples": 1
                     }
                 }));
             }
         }
+        let report = json!({
+            "schema_version": "assura.performance.v1",
+            "ls_lint_package": "not-applicable",
+            "command_line": "assura performance-report --suite native",
+            "results": rows
+        });
+
+        let failures = native_performance_failures(&report).expect("report is valid");
+
+        assert!(failures.is_empty());
+    }
+
+    #[test]
+    fn native_performance_gate_rejects_inconsistent_regression_numbers() {
+        let report = json!({
+            "schema_version": "assura.performance.v1",
+            "ls_lint_package": "not-applicable",
+            "command_line": "assura performance-report --suite native",
+            "results": [
+                {
+                    "fixture_cohort": "assura-native",
+                    "fixture_id": "native_small",
+                    "fixture_acceptance": "assura-native-diagnostic",
+                    "row_family": "native:content-check-cli",
+                    "expected_assura_exit_status": 0,
+                    "status": "pass",
+                    "median_runtime_ms": 2.0,
+                    "native_regression_baseline_median_ms": 1.0,
+                    "native_regression_threshold_ms": 1.5,
+                    "native_regression_delta_ms": 1.0,
+                    "native_regression_status": "within-calibrated-baseline",
+                    "distribution": {
+                        "samples": 1
+                    }
+                }
+            ]
+        });
+
+        let failures = native_performance_failures(&report).expect("report is valid");
+
+        assert!(failures.iter().any(|failure| failure
+            .contains("native_regression_status within-calibrated-baseline disagrees")));
+    }
+
+    #[test]
+    fn native_performance_gate_accepts_provisional_baseline_status() {
+        let mut rows = Vec::new();
+        for fixture_id in NATIVE_PERFORMANCE_FIXTURES {
+            for row_family in NATIVE_PERFORMANCE_ROW_FAMILIES {
+                let expected_assura_exit_status =
+                    expected_native_assura_exit_status(fixture_id, row_family);
+                rows.push(json!({
+                    "fixture_cohort": "assura-native",
+                    "fixture_id": fixture_id,
+                    "fixture_acceptance": "assura-native-diagnostic",
+                    "row_family": row_family,
+                    "expected_assura_exit_status": expected_assura_exit_status,
+                    "status": "pass",
+                    "median_runtime_ms": 1.0,
+                    "native_regression_baseline_median_ms": 1.0,
+                    "native_regression_baseline_report_count": 2,
+                    "native_regression_baseline_sample_count": 10,
+                    "native_regression_threshold_ms": 1.0,
+                    "native_regression_delta_ms": 0.0,
+                    "native_regression_status": "within-calibrated-baseline",
+                    "distribution": {
+                        "samples": 1
+                    }
+                }));
+            }
+        }
+        rows[0]["median_runtime_ms"] = json!(1.2);
+        rows[0]["native_regression_baseline_report_count"] = json!(1);
+        rows[0]["native_regression_baseline_sample_count"] = json!(5);
+        rows[0]["native_regression_threshold_ms"] = json!(1.25);
+        rows[0]["native_regression_delta_ms"] = json!(0.2);
+        rows[0]["native_regression_status"] = json!("within-provisional-baseline");
         let report = json!({
             "schema_version": "assura.performance.v1",
             "ls_lint_package": "not-applicable",

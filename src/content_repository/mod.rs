@@ -195,11 +195,11 @@ impl ContentRepository {
 
             match parse_objects(collection, &file.rel_path, &content) {
                 Ok(objects) => {
-                    for object in objects {
+                    for mut object in objects {
                         validate_placement(&self.model, &object, findings);
                         validate_object_data(
                             collection,
-                            &object,
+                            &mut object,
                             schema_validator_for(collection, &self.schema_validators),
                             findings,
                         );

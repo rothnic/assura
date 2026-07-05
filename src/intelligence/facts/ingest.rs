@@ -10,6 +10,7 @@ use crate::content_repository::{
 };
 use crate::intelligence::semantic::{local_hash_embedding_record, LOCAL_HASH_EMBEDDING_PROVIDER};
 use serde_json::Value;
+use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 use std::path::Path;
 
@@ -18,6 +19,8 @@ use std::path::Path;
 pub struct FactIngestor {
     pub(super) generation: FactGeneration,
     pub(super) facts: FactSet,
+    fact_positions: BTreeMap<(FactId, String), usize>,
+    edge_positions: BTreeMap<(EdgeId, String), usize>,
 }
 
 impl FactIngestor {
@@ -26,6 +29,8 @@ impl FactIngestor {
         Self {
             generation: FactGeneration::new(generation),
             facts: FactSet::default(),
+            fact_positions: BTreeMap::new(),
+            edge_positions: BTreeMap::new(),
         }
     }
 
@@ -40,7 +45,7 @@ impl FactIngestor {
     pub fn ingest_repository_validation(&mut self, validation: &RepositoryValidation) {
         for object in validation.snapshot.objects.values() {
             let resource_id = resource_id(&object.rel_path);
-            self.facts.upsert_fact(ProjectFact::Resource(Resource {
+            self.upsert_fact(ProjectFact::Resource(Resource {
                 id: resource_id.clone(),
                 generation: self.generation.clone(),
                 origin: FactOrigin::Source,
@@ -54,71 +59,66 @@ impl FactIngestor {
 
             let model_id = model_definition_id(&object.collection, &object.object_type);
             let instance_id = model_instance_id(&object.collection, &object.id);
-            self.facts
-                .upsert_fact(ProjectFact::ModelInstance(ModelInstance {
-                    id: instance_id.clone(),
-                    generation: self.generation.clone(),
-                    origin: FactOrigin::Source,
-                    model_id,
-                    resource_id: resource_id.clone(),
-                    collection: object.collection.clone(),
-                    object_type: object.object_type.clone(),
-                    instance_id: object.id.clone(),
-                    data: object.data.clone(),
-                }));
+            self.upsert_fact(ProjectFact::ModelInstance(ModelInstance {
+                id: instance_id.clone(),
+                generation: self.generation.clone(),
+                origin: FactOrigin::Source,
+                model_id,
+                resource_id: resource_id.clone(),
+                collection: object.collection.clone(),
+                object_type: object.object_type.clone(),
+                instance_id: object.id.clone(),
+                data: object.data.clone(),
+            }));
 
-            self.facts
-                .upsert_fact(ProjectFact::SearchChunk(SearchChunk {
-                    id: FactId::from_parts(
-                        "search_chunk",
-                        &format!("instance:{}:{}", object.collection, object.id),
-                    ),
-                    generation: self.generation.clone(),
-                    origin: FactOrigin::Derived,
-                    source_id: instance_id.clone(),
-                    text: searchable_object_text(&object.data),
-                }));
+            self.upsert_fact(ProjectFact::SearchChunk(SearchChunk {
+                id: FactId::from_parts(
+                    "search_chunk",
+                    &format!("instance:{}:{}", object.collection, object.id),
+                ),
+                generation: self.generation.clone(),
+                origin: FactOrigin::Derived,
+                source_id: instance_id.clone(),
+                text: searchable_object_text(&object.data),
+            }));
 
             if object.body.is_some() {
                 let document_id = markdown_document_id(&object.rel_path);
-                self.facts
-                    .upsert_fact(ProjectFact::MarkdownDocument(MarkdownDocument {
-                        id: document_id.clone(),
-                        generation: self.generation.clone(),
-                        origin: FactOrigin::Source,
-                        resource_id,
-                        path: object.rel_path.clone(),
-                    }));
+                self.upsert_fact(ProjectFact::MarkdownDocument(MarkdownDocument {
+                    id: document_id.clone(),
+                    generation: self.generation.clone(),
+                    origin: FactOrigin::Source,
+                    resource_id,
+                    path: object.rel_path.clone(),
+                }));
 
                 for heading in &object.headings {
                     let section_id =
                         markdown_section_id(&object.rel_path, heading.line_number, &heading.text);
-                    self.facts
-                        .upsert_fact(ProjectFact::MarkdownSection(MarkdownSection {
-                            id: section_id.clone(),
-                            generation: self.generation.clone(),
-                            origin: FactOrigin::Source,
-                            document_id: document_id.clone(),
-                            level: heading.level,
-                            title: heading.text.clone(),
-                            line_number: heading.line_number,
-                        }));
-                    self.facts
-                        .upsert_fact(ProjectFact::SearchChunk(SearchChunk {
-                            id: FactId::from_parts(
-                                "search_chunk",
-                                &format!(
-                                    "section:{}:{}:{}",
-                                    normalize_path(&object.rel_path),
-                                    heading.line_number,
-                                    heading.text
-                                ),
+                    self.upsert_fact(ProjectFact::MarkdownSection(MarkdownSection {
+                        id: section_id.clone(),
+                        generation: self.generation.clone(),
+                        origin: FactOrigin::Source,
+                        document_id: document_id.clone(),
+                        level: heading.level,
+                        title: heading.text.clone(),
+                        line_number: heading.line_number,
+                    }));
+                    self.upsert_fact(ProjectFact::SearchChunk(SearchChunk {
+                        id: FactId::from_parts(
+                            "search_chunk",
+                            &format!(
+                                "section:{}:{}:{}",
+                                normalize_path(&object.rel_path),
+                                heading.line_number,
+                                heading.text
                             ),
-                            generation: self.generation.clone(),
-                            origin: FactOrigin::Derived,
-                            source_id: section_id,
-                            text: heading.text.clone(),
-                        }));
+                        ),
+                        generation: self.generation.clone(),
+                        origin: FactOrigin::Derived,
+                        source_id: section_id,
+                        text: heading.text.clone(),
+                    }));
                 }
             }
         }
@@ -127,23 +127,22 @@ impl FactIngestor {
             let source_id = model_instance_id(&edge.source.collection, &edge.source.id);
             let target_collections = relationship_candidate_collections(validation, edge);
             let target_id = resolved_edge_target(validation, edge, &target_collections);
-            self.facts
-                .upsert_edge(ProjectEdge::Relationship(RelationshipEdge {
-                    id: EdgeId::from_parts(
-                        "relationship",
-                        &format!(
-                            "{}:{}:{}:{}",
-                            edge.source.collection, edge.source.id, edge.field, edge.target_id
-                        ),
+            self.upsert_edge(ProjectEdge::Relationship(RelationshipEdge {
+                id: EdgeId::from_parts(
+                    "relationship",
+                    &format!(
+                        "{}:{}:{}:{}",
+                        edge.source.collection, edge.source.id, edge.field, edge.target_id
                     ),
-                    generation: self.generation.clone(),
-                    origin: FactOrigin::Derived,
-                    source_id,
-                    target_id,
-                    field: edge.field.clone(),
-                    target_collections,
-                    target_instance_id: edge.target_id.clone(),
-                }));
+                ),
+                generation: self.generation.clone(),
+                origin: FactOrigin::Derived,
+                source_id,
+                target_id,
+                field: edge.field.clone(),
+                target_collections,
+                target_instance_id: edge.target_id.clone(),
+            }));
         }
 
         for finding in &validation.findings {
@@ -166,7 +165,7 @@ impl FactIngestor {
                     finding.message
                 ),
             );
-            self.facts.upsert_fact(ProjectFact::Diagnostic(Diagnostic {
+            self.upsert_fact(ProjectFact::Diagnostic(Diagnostic {
                 id: diagnostic_id.clone(),
                 generation: self.generation.clone(),
                 origin: FactOrigin::Derived,
@@ -199,7 +198,7 @@ impl FactIngestor {
                 ),
             );
             let fix_location = location.clone();
-            self.facts.upsert_fact(ProjectFact::Diagnostic(Diagnostic {
+            self.upsert_fact(ProjectFact::Diagnostic(Diagnostic {
                 id: diagnostic_id.clone(),
                 generation: self.generation.clone(),
                 origin: FactOrigin::Derived,
@@ -213,7 +212,7 @@ impl FactIngestor {
             self.upsert_diagnostic_search_chunk(diagnostic_id.clone(), violation.message.clone());
 
             if violation.rule == "markdown_trailing_spaces" {
-                self.facts.upsert_fact(ProjectFact::SafeFix(SafeFix {
+                self.upsert_fact(ProjectFact::SafeFix(SafeFix {
                     id: FactId::from_parts(
                         "safe_fix",
                         &format!("{}:remove_blank_line_trailing_spaces", diagnostic_id),
@@ -252,7 +251,7 @@ impl FactIngestor {
         target_id: Option<FactId>,
     ) {
         let symbol = symbol.into();
-        self.facts.upsert_edge(ProjectEdge::SymbolRef(SymbolRef {
+        self.upsert_edge(ProjectEdge::SymbolRef(SymbolRef {
             id: EdgeId::from_parts(
                 "symbol_ref",
                 &format!(
@@ -275,7 +274,7 @@ impl FactIngestor {
 
     /// Add a precomputed search chunk to this generation.
     pub fn add_search_chunk(&mut self, chunk: SearchChunk) {
-        self.facts.upsert_fact(ProjectFact::SearchChunk(chunk));
+        self.upsert_fact(ProjectFact::SearchChunk(chunk));
     }
 
     /// Finish ingestion and return the fact set.
@@ -298,22 +297,21 @@ impl FactIngestor {
         for chunk in chunks {
             let record = local_hash_embedding_record(&chunk);
             debug_assert_eq!(record.provider, LOCAL_HASH_EMBEDDING_PROVIDER);
-            self.facts.upsert_fact(ProjectFact::EmbeddingRecord(record));
+            self.upsert_fact(ProjectFact::EmbeddingRecord(record));
         }
     }
 
     fn ingest_collection_model(&mut self, collection: &CollectionSpec, schema: Option<&Value>) {
         let model_id = model_definition_id(&collection.name, &collection.object_type);
-        self.facts
-            .upsert_fact(ProjectFact::ModelDefinition(ModelDefinition {
-                id: model_id.clone(),
-                generation: self.generation.clone(),
-                origin: FactOrigin::Source,
-                collection: collection.name.clone(),
-                object_type: collection.object_type.clone(),
-                adapter: adapter_name(collection.adapter).to_string(),
-            }));
-        self.facts.upsert_fact(ProjectFact::PathScope(PathScope {
+        self.upsert_fact(ProjectFact::ModelDefinition(ModelDefinition {
+            id: model_id.clone(),
+            generation: self.generation.clone(),
+            origin: FactOrigin::Source,
+            collection: collection.name.clone(),
+            object_type: collection.object_type.clone(),
+            adapter: adapter_name(collection.adapter).to_string(),
+        }));
+        self.upsert_fact(ProjectFact::PathScope(PathScope {
             id: FactId::from_parts("path_scope", &collection.name),
             generation: self.generation.clone(),
             origin: FactOrigin::Source,
@@ -323,23 +321,22 @@ impl FactIngestor {
         }));
 
         for (field, kind, required) in schema_fields(collection, schema) {
-            self.facts
-                .upsert_fact(ProjectFact::FieldDefinition(FieldDefinition {
-                    id: FactId::from_parts(
-                        "field",
-                        &format!("{}:{}:{field}", collection.name, collection.object_type),
-                    ),
-                    generation: self.generation.clone(),
-                    origin: FactOrigin::Source,
-                    model_id: model_id.clone(),
-                    name: field,
-                    kind,
-                    required,
-                }));
+            self.upsert_fact(ProjectFact::FieldDefinition(FieldDefinition {
+                id: FactId::from_parts(
+                    "field",
+                    &format!("{}:{}:{field}", collection.name, collection.object_type),
+                ),
+                generation: self.generation.clone(),
+                origin: FactOrigin::Source,
+                model_id: model_id.clone(),
+                name: field,
+                kind,
+                required,
+            }));
         }
 
         for reference in &collection.references {
-            self.facts.upsert_fact(ProjectFact::RelationshipDefinition(
+            self.upsert_fact(ProjectFact::RelationshipDefinition(
                 RelationshipDefinition {
                     id: FactId::from_parts(
                         "relationship_definition",
@@ -362,14 +359,35 @@ impl FactIngestor {
     }
 
     fn upsert_diagnostic_search_chunk(&mut self, diagnostic_id: FactId, text: String) {
-        self.facts
-            .upsert_fact(ProjectFact::SearchChunk(SearchChunk {
-                id: FactId::from_parts("search_chunk", &format!("diagnostic:{diagnostic_id}")),
-                generation: self.generation.clone(),
-                origin: FactOrigin::Derived,
-                source_id: diagnostic_id,
-                text,
-            }));
+        self.upsert_fact(ProjectFact::SearchChunk(SearchChunk {
+            id: FactId::from_parts("search_chunk", &format!("diagnostic:{diagnostic_id}")),
+            generation: self.generation.clone(),
+            origin: FactOrigin::Derived,
+            source_id: diagnostic_id,
+            text,
+        }));
+    }
+
+    fn upsert_fact(&mut self, fact: ProjectFact) {
+        let key = (fact.id().clone(), fact.generation().id.clone());
+        if let Some(index) = self.fact_positions.get(&key).copied() {
+            self.facts.facts[index] = fact;
+        } else {
+            let index = self.facts.facts.len();
+            self.facts.facts.push(fact);
+            self.fact_positions.insert(key, index);
+        }
+    }
+
+    fn upsert_edge(&mut self, edge: ProjectEdge) {
+        let key = (edge.id().clone(), edge.generation().id.clone());
+        if let Some(index) = self.edge_positions.get(&key).copied() {
+            self.facts.edges[index] = edge;
+        } else {
+            let index = self.facts.edges.len();
+            self.facts.edges.push(edge);
+            self.edge_positions.insert(key, index);
+        }
     }
 }
 

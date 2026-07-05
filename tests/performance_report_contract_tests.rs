@@ -6,6 +6,12 @@ const WEBSITE_CURRENT_REPORT: &str =
 const HISTORY_REPORT: &str = include_str!("../benches/history/ls-lint-comparison-history.jsonl");
 const WEBSITE_HISTORY_REPORT: &str =
     include_str!("../website/public/data/performance/ls-lint-comparison-history.jsonl");
+const NATIVE_CURRENT_REPORT: &str = include_str!("../benches/history/native-current.json");
+const WEBSITE_NATIVE_CURRENT_REPORT: &str =
+    include_str!("../website/public/data/performance/native-current.json");
+const NATIVE_HISTORY_REPORT: &str = include_str!("../benches/history/native-history.jsonl");
+const WEBSITE_NATIVE_HISTORY_REPORT: &str =
+    include_str!("../website/public/data/performance/native-history.jsonl");
 
 #[test]
 fn current_report_claim_summary_matches_headline_rows() {
@@ -21,7 +27,7 @@ fn current_report_claim_summary_matches_headline_rows() {
     assert_eq!(
         report["source_worktree_dirty"].as_bool(),
         Some(false),
-        "checked current report must be generated from a clean source worktree"
+        "checked current report must describe a clean measured checkout"
     );
     assert!(
         report["command_line"]
@@ -103,6 +109,8 @@ fn checked_current_reports_match_and_cover_accepted_fixture_targets() {
         .get("results")
         .and_then(serde_json::Value::as_array)
         .expect("current report includes result rows");
+    assert_source_provenance_shape(&report, "current report");
+    assert_rows_match_report_provenance(&report, rows, "current report");
     let cohort = report
         .pointer("/claim_summary/fixture_cohort")
         .and_then(serde_json::Value::as_str)
@@ -158,6 +166,166 @@ fn history_rows_include_execution_mode_metadata() {
                 row["validation_execution_mode"].as_str(),
                 Some(expected_execution_mode(row_family)),
                 "{name} line {} has unexpected execution mode for {row_family}",
+                index + 1
+            );
+        }
+    }
+}
+
+#[test]
+fn native_current_report_matches_checked_website_data_and_carries_regression_metadata() {
+    assert_eq!(
+        NATIVE_CURRENT_REPORT, WEBSITE_NATIVE_CURRENT_REPORT,
+        "website native current data must match checked benchmark data"
+    );
+    assert_eq!(
+        NATIVE_HISTORY_REPORT, WEBSITE_NATIVE_HISTORY_REPORT,
+        "website native history data must match checked benchmark history"
+    );
+
+    let report: serde_json::Value = serde_json::from_str(NATIVE_CURRENT_REPORT)
+        .expect("native current performance report parses as JSON");
+    let rows = report
+        .get("results")
+        .and_then(serde_json::Value::as_array)
+        .expect("native report includes result rows");
+
+    assert_eq!(
+        report["source_worktree_dirty"].as_bool(),
+        Some(true),
+        "checked native report must record that the source lane was dirty when materialized"
+    );
+    assert_eq!(
+        report["ls_lint_package"].as_str(),
+        Some("not-applicable"),
+        "native report must keep LS-Lint comparison metadata separate"
+    );
+    assert!(
+        report["command_line"]
+            .as_str()
+            .is_some_and(|value| value.contains("--suite native")),
+        "native report command line must identify the native suite"
+    );
+    assert!(
+        report["commit_sha"].as_str().is_some_and(is_full_hex_sha),
+        "native report must record a full commit SHA"
+    );
+    assert_source_provenance_shape(&report, "native current report");
+    assert_rows_match_report_provenance(&report, rows, "native current report");
+
+    for row in rows.iter().filter(|row| {
+        row["row_family"]
+            .as_str()
+            .is_some_and(|row_family| row_family.starts_with("native:"))
+    }) {
+        assert_eq!(
+            row["fixture_acceptance"].as_str(),
+            Some("assura-native-diagnostic"),
+            "native rows must stay out of the LS-Lint accepted fixture gate"
+        );
+        assert!(
+            matches!(
+                row["native_regression_status"].as_str(),
+                Some("within-calibrated-baseline" | "within-provisional-baseline")
+            ),
+            "checked native rows must carry a passing calibrated or provisional regression status"
+        );
+        assert!(
+            row["native_regression_threshold_ms"]
+                .as_f64()
+                .is_some_and(|value| value >= 0.0),
+            "native rows must record a checked native threshold"
+        );
+        assert!(
+            row["native_regression_baseline_median_ms"]
+                .as_f64()
+                .is_some_and(|value| value >= 0.0),
+            "native rows must record the checked baseline median"
+        );
+        assert!(
+            row["native_regression_baseline_report_count"]
+                .as_u64()
+                .is_some_and(|value| value > 0),
+            "native rows must record the number of checked reports behind the baseline"
+        );
+        assert!(
+            row["native_regression_baseline_sample_count"]
+                .as_u64()
+                .is_some_and(|value| value > 0),
+            "native rows must record the number of checked samples behind the baseline"
+        );
+        assert!(
+            row.get("native_regression_delta_ms").is_some(),
+            "native rows must record the baseline delta field even when the value is zero"
+        );
+        assert_source_provenance_shape(row, "native current row");
+    }
+
+    for (index, line) in NATIVE_HISTORY_REPORT.lines().enumerate() {
+        if line.trim().is_empty() {
+            continue;
+        }
+        let row: serde_json::Value = serde_json::from_str(line)
+            .unwrap_or_else(|error| panic!("native history line {} parses: {error}", index + 1));
+        assert!(
+            row["commit_sha"].as_str().is_some_and(is_full_hex_sha),
+            "native history line {} must record a full commit SHA",
+            index + 1
+        );
+        assert_source_provenance_shape(&row, &format!("native history line {}", index + 1));
+    }
+}
+
+fn is_full_hex_sha(value: &str) -> bool {
+    value.len() == 40 && value.bytes().all(|byte| byte.is_ascii_hexdigit())
+}
+
+fn assert_source_provenance_shape(value: &serde_json::Value, label: &str) {
+    let source_commit_sha = value["source_commit_sha"].as_str();
+    let source_branch = value["source_branch"].as_str();
+    let source_patch_id = value["source_patch_id"].as_str();
+    let present_fields = [source_commit_sha, source_branch, source_patch_id]
+        .into_iter()
+        .filter(Option::is_some)
+        .count();
+
+    assert!(
+        present_fields == 0 || present_fields == 3,
+        "{label} must either omit all source provenance fields or record the full source tuple"
+    );
+    if present_fields == 3 {
+        assert!(
+            source_commit_sha.is_some_and(is_full_hex_sha),
+            "{label} must record a full source_commit_sha when source provenance is present"
+        );
+        assert!(
+            source_branch.is_some_and(|value| !value.is_empty()),
+            "{label} must record a non-empty source_branch when source provenance is present"
+        );
+        assert!(
+            source_patch_id.is_some_and(is_full_hex_sha),
+            "{label} must record a full source_patch_id when source provenance is present"
+        );
+    }
+}
+
+fn assert_rows_match_report_provenance(
+    report: &serde_json::Value,
+    rows: &[serde_json::Value],
+    label: &str,
+) {
+    for (index, row) in rows.iter().enumerate() {
+        for field in [
+            "commit_sha",
+            "branch",
+            "source_commit_sha",
+            "source_branch",
+            "source_patch_id",
+        ] {
+            assert_eq!(
+                row.get(field),
+                report.get(field),
+                "{label} row {} must match report {field}",
                 index + 1
             );
         }

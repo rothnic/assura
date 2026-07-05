@@ -2,7 +2,10 @@
 // allow-reason: performance row factories keep measured dimensions explicit
 // for benchmark auditability despite wide argument lists.
 
-use super::{stats, MaterializedFixture, PerformanceEnvironment, ASSURA_VERSION, SCHEMA_VERSION};
+use super::{
+    metadata::source_provenance_from_env, stats, MaterializedFixture, PerformanceEnvironment,
+    ASSURA_VERSION, SCHEMA_VERSION,
+};
 use serde::Serialize;
 use std::path::Path;
 
@@ -17,6 +20,12 @@ pub struct PerformanceResultRow {
     pub commit_sha: String,
     /// Current git branch when available.
     pub branch: String,
+    /// Source lane commit when a clean snapshot was materialized from another worktree.
+    pub source_commit_sha: Option<String>,
+    /// Source lane branch when a clean snapshot was materialized from another worktree.
+    pub source_branch: Option<String>,
+    /// Stable patch identifier for the source-lane diff used to materialize a clean snapshot.
+    pub source_patch_id: Option<String>,
     /// Operating system identifier reported by the Rust target.
     pub os: String,
     /// CPU architecture identifier reported by the Rust target.
@@ -123,6 +132,18 @@ pub struct PerformanceResultRow {
     pub latency_threshold_ms: Option<f64>,
     /// Whether this row's p95 latency meets the goal-specific threshold.
     pub latency_threshold_met: Option<bool>,
+    /// Checked native baseline median for the matching native row, when applicable.
+    pub native_regression_baseline_median_ms: Option<f64>,
+    /// Number of checked native report rows that contributed to this row's baseline.
+    pub native_regression_baseline_report_count: Option<usize>,
+    /// Total measured samples across checked native report rows that contributed to this baseline.
+    pub native_regression_baseline_sample_count: Option<usize>,
+    /// Calibrated native-regression threshold derived from the checked baseline row.
+    pub native_regression_threshold_ms: Option<f64>,
+    /// Current median minus the checked native baseline median, when applicable.
+    pub native_regression_delta_ms: Option<f64>,
+    /// Machine-readable native regression status versus the checked baseline row.
+    pub native_regression_status: Option<String>,
     /// Distribution details for charting and review.
     pub distribution: RuntimeDistribution,
     /// Whether this tool run passed.
@@ -225,6 +246,7 @@ pub(in crate::cli::performance_report) fn row(
     failure: Option<String>,
     baseline_id: &str,
 ) -> PerformanceResultRow {
+    let source_provenance = source_provenance_from_env();
     let distribution = stats::distribution(samples);
     let median_runtime_ms = stats::median(&distribution.samples_ms);
     let p95_runtime_ms = distribution.p95_ms;
@@ -238,6 +260,9 @@ pub(in crate::cli::performance_report) fn row(
         timestamp: timestamp.to_string(),
         commit_sha: commit_sha.to_string(),
         branch: branch.to_string(),
+        source_commit_sha: source_provenance.source_commit_sha,
+        source_branch: source_provenance.source_branch,
+        source_patch_id: source_provenance.source_patch_id,
         os: environment.os.clone(),
         arch: environment.arch.clone(),
         rust_version: environment.rust_version.clone(),
@@ -307,6 +332,12 @@ pub(in crate::cli::performance_report) fn row(
         latency_threshold_met: latency_threshold_ms
             .zip(p95_runtime_ms)
             .map(|(threshold, p95)| p95 <= threshold),
+        native_regression_baseline_median_ms: None,
+        native_regression_baseline_report_count: None,
+        native_regression_baseline_sample_count: None,
+        native_regression_threshold_ms: None,
+        native_regression_delta_ms: None,
+        native_regression_status: None,
         distribution,
         success,
         status: if success {

@@ -1,0 +1,4 @@
+{"file":".trellis/spec/assura/index.md","reason":"Project-level constraints, roadmap source-of-truth, and evidence expectations for non-trivial Assura work."}
+{"file":".trellis/spec/assura/roadmap.md","reason":"Confirms Performance Polish is the active next lane and keeps scope separate from completed onboarding work."}
+{"file":"docs/goals/assura-performance-polish-program.md","reason":"Canonical objective, current gap, and performance-polish definition of done."}
+{"file":"docs/analysis/2026-07-04-performance-polish-program-revalidation.md","reason":"Live revalidation result and the chosen first execution slice for this task."}

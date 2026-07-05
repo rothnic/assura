@@ -275,9 +275,21 @@ const hardwareLabel = [
   report.environment?.logical_cpu_count ? `${report.environment.logical_cpu_count} logical CPUs` : null,
 ].filter(Boolean).join('; ') || 'unknown hardware';
 const commandLine = report.command_line ?? 'not recorded';
-const sourceState = report.source_worktree_dirty ? 'dirty worktree' : 'clean worktree';
+const sourceState = report.source_commit_sha
+  ? report.source_worktree_dirty
+    ? 'source lane dirty when materialized'
+    : 'source lane clean when materialized'
+  : report.source_worktree_dirty
+    ? 'measured worktree dirty'
+    : 'measured worktree clean';
 const nativeCommandLine = native.command_line ?? 'not recorded';
-const nativeSourceState = native.source_worktree_dirty ? 'dirty worktree' : 'clean worktree';
+const nativeSourceState = native.source_commit_sha
+  ? native.source_worktree_dirty
+    ? 'source lane dirty when materialized'
+    : 'source lane clean when materialized'
+  : native.source_worktree_dirty
+    ? 'measured worktree dirty'
+    : 'measured worktree clean';
 
 const totalAssura = headlinePairs.reduce(
   (total, pair) => total + (pair.assura.median_runtime_ms ?? 0),

@@ -80,6 +80,37 @@ Compare only runs from the same machine and similar build profile. Do not treat
 checked-in history from another host as proof of a local regression or
 improvement.
 
+For the repeated `vps` LS-Lint structure lane, prefer the helper script instead
+of reconstructing the rsync/patch/build workflow by hand:
+
+```bash
+cargo xtask perf-vps-ls-lint-compare -- <label> <repo-path> [<repo-path>...]
+```
+
+The xtask delegates to `scripts/perf-vps-ls-lint-compare.sh`, which snapshots
+the current dirty worktree to `vps`, reverses only the requested patch on the
+remote `before/` copy, runs the checked release build plus
+`performance-report --suite ls-lint` on both sides, enforces
+`cargo xtask performance-no-slower` on the candidate, and prints the named
+`many_configured_scopes_regression` row, the target phase deltas, and an
+`accepted_fixture_delta` table for every accepted fixture. If the
+shared canonical fixture is present on `vps`, it also runs the exact-command
+`assura check --quiet` / `assura-check --quiet` tie-breakers, using
+`hyperfine` when available and a built-in Python fallback otherwise, and prints
+the exact-command percent deltas. By
+default it resolves the remote workspace root as `<remote-home>/data/projects`;
+override with `--host`, `--remote-root`, or the
+`ASSURA_PERF_VPS_HOST` / `ASSURA_PERF_VPS_REMOTE_ROOT` environment variables
+when needed.
+
+Before keeping another cold LS-Lint structure optimization, check
+`docs/analysis/2026-07-05-performance-decision-matrix.md`. The default beta
+posture is: cold accepted rows must stay no slower than LS-Lint, warm/session
+2x remains the repeat-use story, and strict cold 2x is not worth indefinite
+micro-tuning. A candidate should show the all-accepted-fixture delta table from
+`cargo perf-vps`, improve the exact `assura check --quiet` tie-breaker, and
+avoid material spillover regressions before it is retained.
+
 ## Tracked Data
 
 After the target artifact is valid, update tracked report data:

@@ -363,6 +363,73 @@ fn project_intelligence_preserves_overlapping_fact_ids_from_other_generations() 
 }
 
 #[test]
+fn project_intelligence_replace_generation_keeps_last_duplicate_from_replacement() {
+    let mut facts = FactSet::default();
+    facts.upsert_fact(resource_fact("docs/original.md", "snapshot-1"));
+
+    let mut replacement = FactSet::default();
+    replacement
+        .facts
+        .push(ProjectFact::SearchChunk(SearchChunk {
+            id: FactId::from_parts("search_chunk", "duplicate"),
+            generation: FactGeneration::new("snapshot-1"),
+            origin: FactOrigin::Derived,
+            source_id: resource_id("docs/original.md"),
+            text: "first".to_string(),
+        }));
+    replacement
+        .facts
+        .push(ProjectFact::SearchChunk(SearchChunk {
+            id: FactId::from_parts("search_chunk", "duplicate"),
+            generation: FactGeneration::new("snapshot-1"),
+            origin: FactOrigin::Derived,
+            source_id: resource_id("docs/original.md"),
+            text: "second".to_string(),
+        }));
+
+    facts.replace_generation("snapshot-1", replacement);
+
+    assert_eq!(facts.facts.len(), 1);
+    assert!(matches!(
+        &facts.facts[0],
+        ProjectFact::SearchChunk(chunk) if chunk.text == "second"
+    ));
+}
+
+#[test]
+fn project_intelligence_ingestor_preserves_duplicate_ids_across_generations() {
+    let mut ingestor = FactIngestor::new("snapshot-2");
+    ingestor.add_search_chunk(SearchChunk {
+        id: FactId::from_parts("search_chunk", "shared"),
+        generation: FactGeneration::new("snapshot-1"),
+        origin: FactOrigin::Derived,
+        source_id: resource_id("docs/shared.md"),
+        text: "first generation".to_string(),
+    });
+    ingestor.add_search_chunk(SearchChunk {
+        id: FactId::from_parts("search_chunk", "shared"),
+        generation: FactGeneration::new("snapshot-2"),
+        origin: FactOrigin::Derived,
+        source_id: resource_id("docs/shared.md"),
+        text: "second generation".to_string(),
+    });
+
+    let facts = ingestor.finish();
+
+    assert_eq!(facts.facts.len(), 2);
+    assert!(facts.facts.iter().any(|fact| matches!(
+        fact,
+        ProjectFact::SearchChunk(chunk)
+            if chunk.generation.id == "snapshot-1" && chunk.text == "first generation"
+    )));
+    assert!(facts.facts.iter().any(|fact| matches!(
+        fact,
+        ProjectFact::SearchChunk(chunk)
+            if chunk.generation.id == "snapshot-2" && chunk.text == "second generation"
+    )));
+}
+
+#[test]
 fn project_intelligence_sorts_fact_set_once_after_bulk_ingest() {
     let mut ingestor = FactIngestor::new("bulk-sort");
     ingestor.add_search_chunk(search_chunk("z-last"));

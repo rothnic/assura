@@ -78,7 +78,7 @@ fn project_intelligence_store_reports_benchmark_fixture_footprint() {
     assert_eq!(stats.fact_count, 1_683);
     assert_eq!(stats.edge_count, 480);
     assert_eq!(stats.search_chunk_count, 240);
-    assert_eq!(stats.serialized_bytes, 502_203);
+    assert_eq!(stats.serialized_bytes, 494_266);
 }
 
 fn fixture_facts(generation: &str, goals: usize) -> FactSet {

@@ -1,5 +1,4 @@
 //! Lightweight `assura check` entrypoint optimized for validation latency.
-
 use super::{
     run_structure_check_cached, run_structure_check_with_target_mode, run_structure_checks,
     CheckError, CheckTargetMode, StructureCheckReport,
@@ -12,7 +11,6 @@ use serde::Serialize;
 use std::ffi::{OsStr, OsString};
 use std::fmt::Write as _;
 use std::path::PathBuf;
-
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 #[derive(Debug)]
 struct Options {
