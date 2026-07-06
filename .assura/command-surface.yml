@@ -343,7 +343,7 @@ commands:
         aliases: ["-h"]
       --event:
         takes_value: true
-        values: ["session-start", "before-tool", "after-tool", "file-read", "recovery"]
+        values: ["session-start", "before-tool", "after-tool", "file-read", "idle", "recovery"]
       --changed:
         takes_value: true
       --agent:

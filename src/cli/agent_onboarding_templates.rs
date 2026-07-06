@@ -413,7 +413,7 @@ Use these modes consistently:
 
 | Mode | When | Blocking | Command |
 | --- | --- | --- | --- |
-| nudge | During agent working loops and path-aware tool events | no | `assura agent nudge --event before-tool --changed <path> --format json .` |
+| nudge | During agent working loops, path-aware tool events, and idle reviews | no | `assura agent nudge --event before-tool --changed <path> --format json .` |
 | warn | Before local commits or while drafting | no | `assura check --format agent --warn --min-severity low --max-issues 10 .` |
 | gate | Before push, merge, or CI | yes | `assura check --format agent --min-severity medium --max-issues 20 .` |
 

@@ -290,6 +290,8 @@ pub enum AgentNudgeEvent {
     AfterTool,
     /// Before or after a read-focused file event.
     FileRead,
+    /// Periodic or host-detected idle session review.
+    Idle,
     /// Recovery or resume event after tool failure, stale state, or context loss.
     Recovery,
 }

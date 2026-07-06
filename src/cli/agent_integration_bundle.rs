@@ -81,9 +81,16 @@ impl IntegrationBundle {
                 EventPlacement::new(AgentNudgeEvent::BeforeTool, "before path-aware edit, move, delete, or shell tool calls"),
                 EventPlacement::new(AgentNudgeEvent::AfterTool, "after writes or commands that may change project state"),
                 EventPlacement::new(AgentNudgeEvent::FileRead, "before or after high-value file reads"),
+                EventPlacement::new(AgentNudgeEvent::Idle, "when a session goes idle or a periodic agent review runs"),
                 EventPlacement::new(AgentNudgeEvent::Recovery, "after failed tools, stale daemon state, or context recovery"),
             ],
             files: vec!["manifest.json", "assura-agent.sh", "README.md"],
+            logging: LoggingGuidance {
+                enabled_by_default: true,
+                log_file: ".assura/agent-sessions/nudges.jsonl",
+                disable: "ASSURA_AGENT_LOG=0",
+                session_id: "ASSURA_AGENT_SESSION_ID",
+            },
             host: host_guidance(self.agent),
         }
     }
@@ -139,6 +146,7 @@ pub(super) struct IntegrationManifest {
     shared_commands: SharedCommands,
     event_placements: Vec<EventPlacement>,
     files: Vec<&'static str>,
+    logging: LoggingGuidance,
     host: HostGuidance,
 }
 
@@ -165,6 +173,14 @@ struct EventPlacement {
     placement: &'static str,
 }
 
+#[derive(Debug, Serialize)]
+struct LoggingGuidance {
+    enabled_by_default: bool,
+    log_file: &'static str,
+    disable: &'static str,
+    session_id: &'static str,
+}
+
 impl EventPlacement {
     fn new(event: AgentNudgeEvent, placement: &'static str) -> Self {
         let event = match event {
@@ -172,6 +188,7 @@ impl EventPlacement {
             AgentNudgeEvent::BeforeTool => "before-tool",
             AgentNudgeEvent::AfterTool => "after-tool",
             AgentNudgeEvent::FileRead => "file-read",
+            AgentNudgeEvent::Idle => "idle",
             AgentNudgeEvent::Recovery => "recovery",
         };
         Self { event, placement }
@@ -290,7 +307,7 @@ pub(super) fn host_guidance(agent: AgentIntegrationTarget) -> HostGuidance {
         AgentIntegrationTarget::Codex => HostGuidance {
             install_mode: "reviewable-local-bundle",
             host_config_status: "manual-opt-in",
-            config_hint: "Wire .assura/integrations/codex/assura-agent.sh from an approved Codex hook; Assura does not silently mutate .codex/hooks.json.",
+            config_hint: "Wire .assura/integrations/codex/assura-agent.sh or .codex/hooks/assura-agent-nudge.py from approved Codex UserPromptSubmit and PostToolUse hooks.",
             fallback: "Run assura check --format agent --agent codex --warn for prompt-level feedback.",
         },
         AgentIntegrationTarget::Opencode => HostGuidance {
@@ -343,19 +360,40 @@ set -eu
 PROJECT_ROOT="${{ASSURA_PROJECT_ROOT:-{project_root}}}"
 MODE="${{ASSURA_AGENT_MODE:-nudge}}"
 EVENT="${{ASSURA_AGENT_EVENT:-session-start}}"
+ASSURA_AGENT_LOG="${{ASSURA_AGENT_LOG:-1}}"
+ASSURA_AGENT_LOG_DIR="${{ASSURA_AGENT_LOG_DIR:-$PROJECT_ROOT/.assura/agent-sessions}}"
+if [ -z "${{ASSURA_AGENT_SESSION_ID:-}}" ]; then
+  ASSURA_AGENT_SESSION_ID="$(date -u +%Y%m%dT%H%M%SZ)-$$"
+fi
+export ASSURA_AGENT_LOG ASSURA_AGENT_LOG_DIR ASSURA_AGENT_SESSION_ID
+
+run_assura() {{
+  if [ -n "${{ASSURA_BIN:-}}" ] && [ -x "$ASSURA_BIN" ]; then
+    "$ASSURA_BIN" "$@"
+  elif command -v assura >/dev/null 2>&1; then
+    assura "$@"
+  elif [ -x "$PROJECT_ROOT/target/debug/assura" ]; then
+    "$PROJECT_ROOT/target/debug/assura" "$@"
+  elif command -v cargo >/dev/null 2>&1; then
+    (cd "$PROJECT_ROOT" && cargo run --quiet -- "$@")
+  else
+    echo "assura command not found and local cargo fallback is unavailable" >&2
+    return 127
+  fi
+}}
 
 case "$MODE" in
   nudge)
-    exec assura agent nudge "$PROJECT_ROOT" --agent {agent} --event "$EVENT" --format json "$@"
+    run_assura agent nudge "$PROJECT_ROOT" --agent {agent} --event "$EVENT" --format json "$@"
     ;;
   check)
-    exec assura check "$PROJECT_ROOT" --format agent{check_extra} --warn "$@"
+    run_assura check "$PROJECT_ROOT" --format agent{check_extra} --warn "$@"
     ;;
   daemon-status)
-    exec assura daemon status "$PROJECT_ROOT" --format json "$@"
+    run_assura daemon status "$PROJECT_ROOT" --format json "$@"
     ;;
   daemon-doctor)
-    exec assura daemon doctor "$PROJECT_ROOT" --format json "$@"
+    run_assura daemon doctor "$PROJECT_ROOT" --format json "$@"
     ;;
   *)
     echo "Unsupported ASSURA_AGENT_MODE: $MODE" >&2
@@ -385,7 +423,32 @@ does not silently mutate host-agent configuration.
 
 Set `ASSURA_AGENT_MODE` to one of `nudge`, `check`, `daemon-status`, or
 `daemon-doctor`. For nudges, set `ASSURA_AGENT_EVENT` to `session-start`,
-`before-tool`, `after-tool`, `file-read`, or `recovery`.
+`before-tool`, `after-tool`, `file-read`, `idle`, or `recovery`.
+
+Set `ASSURA_BIN=/absolute/path/to/assura` when the host hook should use a
+specific Assura binary instead of the first `assura` on `PATH`.
+
+## Codex Hooks
+
+For Codex, wire the repo-local adapter from approved `UserPromptSubmit` and
+`PostToolUse` hooks. The prompt hook records a baseline and idle nudge. The
+post-tool hook records changed-path deltas since the previous prompt/tool
+snapshot, calls this wrapper with `ASSURA_AGENT_EVENT=after-tool`, and injects
+Codex context only when Assura findings, high-risk Git intent, or large change
+pressure make the nudge worth interrupting the model.
+
+## Logging
+
+Wrapper invocations enable Assura nudge logging by default. Each `nudge` call
+appends a compact JSONL record to:
+
+```bash
+.assura/agent-sessions/nudges.jsonl
+```
+
+Set `ASSURA_AGENT_SESSION_ID` in the host integration to group records by agent
+session. Set `ASSURA_AGENT_LOG=0` to disable logging or `ASSURA_AGENT_LOG_DIR`
+to move the log directory.
 
 ## Shared Commands
 
@@ -394,6 +457,7 @@ assura agent nudge --agent {agent_name} --event session-start --format json {roo
 assura agent nudge --agent {agent_name} --event before-tool --changed <path> --format json {root}
 assura agent nudge --agent {agent_name} --event after-tool --changed <path> --format json {root}
 assura agent nudge --agent {agent_name} --event file-read --changed <path> --format json {root}
+assura agent nudge --agent {agent_name} --event idle --format json {root}
 assura agent nudge --agent {agent_name} --event recovery --format json {root}
 {check}
 assura daemon status --format json {root}

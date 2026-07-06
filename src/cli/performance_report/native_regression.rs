@@ -186,7 +186,7 @@ fn load_native_baseline_rows() -> Result<BTreeMap<NativeBaselineKey, NativeBasel
 fn load_native_history_rows(
     history_path: &Path,
 ) -> Result<BTreeMap<NativeBaselineKey, NativeBaselineRow>, String> {
-    let history_text = fs::read_to_string(&history_path)
+    let history_text = fs::read_to_string(history_path)
         .map_err(|error| format!("{}: {error}", history_path.display()))?;
 
     let mut grouped = BTreeMap::<NativeBaselineKey, Vec<(f64, f64, f64, Vec<f64>, usize)>>::new();

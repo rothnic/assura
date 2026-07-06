@@ -1036,13 +1036,57 @@ structure:
           allow_extra: false
         directories:
           allowed_names:
+            - "agent-sessions"
             - "hooks"
+            - "integrations"
             - "models"
           allow_extra: false
         children:
+          agent-sessions/:
+            files:
+              naming: "kebab-case"
+              allowed_patterns:
+                - "*.jsonl"
+              allow_extra: false
+            directories:
+              allow_extra: false
           hooks/:
             files:
               naming: "kebab-case"
+          integrations/:
+            files:
+              naming: "kebab-case"
+              allow_extra: false
+            directories:
+              allowed_names:
+                - "claude"
+                - "codex"
+                - "opencode"
+                - "pi"
+              allow_extra: false
+            children:
+              claude/:
+                files: &assura_agent_integration_files
+                  naming: "kebab-case"
+                  allowed_names:
+                    - "README.md"
+                    - "assura-agent.sh"
+                    - "manifest.json"
+                  allow_extra: false
+                directories:
+                  allow_extra: false
+              codex/:
+                files: *assura_agent_integration_files
+                directories:
+                  allow_extra: false
+              opencode/:
+                files: *assura_agent_integration_files
+                directories:
+                  allow_extra: false
+              pi/:
+                files: *assura_agent_integration_files
+                directories:
+                  allow_extra: false
           models/:
             files:
               naming: "kebab-case"

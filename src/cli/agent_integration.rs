@@ -297,6 +297,14 @@ fn doctor_checks(bundle: &IntegrationBundle, files: &[FileAction]) -> Vec<Doctor
             message: "wrapper delegates to assura agent nudge",
         },
         DoctorCheck {
+            name: "nudge_logging_contract",
+            status: check_status(
+                wrapper_contains(&wrapper_path, "ASSURA_AGENT_LOG")
+                    && wrapper_contains(&wrapper_path, ".assura/agent-sessions"),
+            ),
+            message: "wrapper records nudge payloads for session review",
+        },
+        DoctorCheck {
             name: "shared_check_contract",
             status: check_status(
                 wrapper_contains(&wrapper_path, "assura check")

@@ -2,6 +2,8 @@
 
 #[path = "agent_nudge_helpers.rs"]
 mod helpers;
+#[path = "agent_nudge_log.rs"]
+mod log;
 
 use super::{AgentNudgeEvent, AgentNudgeTarget, ExitCode, OutputFormat};
 use crate::cli::check::{StructureCheckReport, StructureViolation};
@@ -38,6 +40,9 @@ pub struct AgentNudgeOptions {
 pub async fn agent_nudge_command(options: AgentNudgeOptions, config: Option<PathBuf>) -> ExitCode {
     match build_agent_nudge(options, config) {
         Ok(output) => {
+            if let Err(error) = log::maybe_write(&output.project_root, &output.output) {
+                eprintln!("Warning: failed to write Assura nudge log: {error}");
+            }
             println!("{}", output.render());
             ExitCode::Success
         }
@@ -166,6 +171,7 @@ fn build_agent_nudge(
     );
     let should_inject = nudges.iter().any(|nudge| nudge.inject);
     let event = event_name(options.event);
+    let project_root_for_log = health.project_root.clone();
     let output = AgentNudgeOutput {
         schema: "assura.agent-nudge.v1",
         target_agent: agent_name(options.agent),
@@ -205,6 +211,7 @@ fn build_agent_nudge(
     Ok(RenderedNudge {
         output,
         format: options.format,
+        project_root: project_root_for_log,
     })
 }
 
@@ -439,6 +446,7 @@ struct Findings {
 struct RenderedNudge {
     output: AgentNudgeOutput,
     format: OutputFormat,
+    project_root: PathBuf,
 }
 
 impl RenderedNudge {

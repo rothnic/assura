@@ -1,7 +1,7 @@
 use serde_json::Value;
 use std::fs;
 use std::io::{BufRead, BufReader, Write};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::{Child, ChildStdin, Command, Output, Stdio};
 use tempfile::TempDir;
 
@@ -81,6 +81,85 @@ fn copy_dir(source: &Path, destination: &Path) {
             fs::copy(&source_path, &destination_path).expect("copy file");
         }
     }
+}
+
+fn git_command(project: &Path, args: &[&str]) {
+    let output = Command::new("git")
+        .args(args)
+        .current_dir(project)
+        .env("GIT_AUTHOR_NAME", "Assura Test")
+        .env("GIT_AUTHOR_EMAIL", "assura-test@example.com")
+        .env("GIT_COMMITTER_NAME", "Assura Test")
+        .env("GIT_COMMITTER_EMAIL", "assura-test@example.com")
+        .output()
+        .expect("git command runs");
+    assert!(
+        output.status.success(),
+        "git {:?}\nstdout:\n{}\nstderr:\n{}",
+        args,
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+}
+
+fn git_nudge_fixture() -> TempDir {
+    let project = tempfile::tempdir().expect("temp project");
+    fs::create_dir_all(project.path().join(".assura")).expect("create config dir");
+    fs::create_dir_all(project.path().join("src")).expect("create src");
+    fs::write(
+        project.path().join(".assura/config.yml"),
+        r#"
+structure:
+  ./:
+    extra: true
+    children:
+      src/:
+        files:
+          naming: kebab-case
+          extensions: ["rs"]
+exclude:
+  - target/**
+"#,
+    )
+    .expect("write config");
+    fs::write(project.path().join("src/good.rs"), "fn good() {}\n").expect("write good file");
+    let path = project.path().to_str().expect("fixture path");
+    let install = run_assura(&["agent", "integration", "install", "codex", path]);
+    assert!(
+        install.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&install.stdout),
+        String::from_utf8_lossy(&install.stderr)
+    );
+    git_command(project.path(), &["init"]);
+    git_command(project.path(), &["add", "."]);
+    git_command(project.path(), &["commit", "-m", "initial"]);
+    project
+}
+
+fn codex_hook_script() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(".codex")
+        .join("hooks")
+        .join("assura-agent-nudge.py")
+}
+
+fn run_codex_hook(project: &Path, input: Value, session_id: &str) -> Output {
+    let mut child = Command::new("python3")
+        .arg(codex_hook_script())
+        .current_dir(project)
+        .env("ASSURA_BIN", assura_bin())
+        .env("ASSURA_AGENT_SESSION_ID", session_id)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .expect("codex hook starts");
+    {
+        let stdin = child.stdin.as_mut().expect("hook stdin");
+        write!(stdin, "{input}").expect("write hook input");
+    }
+    child.wait_with_output().expect("hook exits")
 }
 
 struct SessionProcess {
@@ -335,10 +414,11 @@ fn agent_nudge_accepts_beta_agent_labels_and_events_without_private_validation_p
             "before-tool",
             "after-tool",
             "file-read",
+            "idle",
             "recovery",
         ] {
             let mut args = vec!["nudge", path, "--event", event, "--agent", agent];
-            if !["session-start", "recovery"].contains(&event) {
+            if !["session-start", "idle", "recovery"].contains(&event) {
                 args.extend_from_slice(&["--changed", "src/BadName.rs"]);
             }
             let nudge = agent_json(&args);
@@ -352,6 +432,7 @@ fn agent_nudge_accepts_beta_agent_labels_and_events_without_private_validation_p
                     "before-tool" => "before_tool",
                     "after-tool" => "after_tool",
                     "file-read" => "file_read",
+                    "idle" => "idle",
                     "recovery" => "recovery",
                     _ => unreachable!(),
                 }
@@ -425,6 +506,7 @@ fn agent_integration_lifecycle_installs_reviewable_bundles_for_all_hosts() {
                 "before-tool",
                 "after-tool",
                 "file-read",
+                "idle",
                 "recovery"
             ]
         );
@@ -450,6 +532,17 @@ fn agent_integration_lifecycle_installs_reviewable_bundles_for_all_hosts() {
         assert!(wrapper_text.contains("assura check"));
         assert!(wrapper_text.contains("assura daemon status"));
         assert!(wrapper_text.contains("assura daemon doctor"));
+        assert!(wrapper_text.contains("ASSURA_AGENT_LOG"));
+        assert!(wrapper_text.contains("ASSURA_BIN"));
+        assert!(wrapper_text.contains(".assura/agent-sessions"));
+        assert!(readme_text.contains("nudges.jsonl"));
+        if agent == "codex" {
+            assert!(readme_text.contains("PostToolUse"));
+        }
+        assert_eq!(
+            manifest_json["logging"]["log_file"],
+            ".assura/agent-sessions/nudges.jsonl"
+        );
         assert!(!wrapper_text.contains("assura-codex-feedback"));
 
         let status = agent_json(&["integration", "status", agent, path]);
@@ -473,6 +566,38 @@ fn agent_integration_lifecycle_installs_reviewable_bundles_for_all_hosts() {
         assert_eq!(remove["changed"], true);
         assert_eq!(remove["installed"], false);
     }
+}
+
+#[test]
+fn codex_hooks_config_wires_assura_post_tool_use() {
+    let config_text = fs::read_to_string(".codex/hooks.json").expect("codex hooks config");
+    let config: Value = serde_json::from_str(&config_text).expect("hooks config is JSON");
+
+    let prompt_hooks = config["hooks"]["UserPromptSubmit"]
+        .as_array()
+        .expect("prompt hooks");
+    assert!(prompt_hooks.iter().any(|group| {
+        group["hooks"].as_array().unwrap().iter().any(|hook| {
+            hook["command"]
+                .as_str()
+                .unwrap_or_default()
+                .contains("assura-agent-nudge.py")
+        })
+    }));
+
+    let post_tool_hooks = config["hooks"]["PostToolUse"]
+        .as_array()
+        .expect("post tool hooks");
+    assert!(post_tool_hooks.iter().any(|group| {
+        group["matcher"] == "*"
+            && group["hooks"].as_array().unwrap().iter().any(|hook| {
+                hook["command"]
+                    .as_str()
+                    .unwrap_or_default()
+                    .contains("assura-agent-nudge.py")
+                    && hook["statusMessage"] == "Reviewing Assura nudges"
+            })
+    }));
 }
 
 #[test]
@@ -534,6 +659,170 @@ fn agent_integration_lifecycle_protects_unmanaged_files_and_doctor_fails_incompl
         .unwrap()
         .iter()
         .any(|check| { check["name"] == "shared_nudge_contract" && check["status"] == "fail" }));
+    assert!(json["checks"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|check| { check["name"] == "nudge_logging_contract" && check["status"] == "fail" }));
+}
+
+#[test]
+fn agent_nudge_logs_compact_jsonl_when_enabled() {
+    let project = nudge_fixture();
+    let path = project.path().to_str().expect("fixture path");
+    let log_dir = project.path().join(".assura/agent-sessions");
+    let output = Command::new(assura_bin())
+        .args([
+            "agent",
+            "nudge",
+            path,
+            "--event",
+            "after-tool",
+            "--changed",
+            "src/BadName.rs",
+            "--agent",
+            "codex",
+        ])
+        .env("ASSURA_AGENT_LOG", "1")
+        .env("ASSURA_AGENT_LOG_DIR", &log_dir)
+        .env("ASSURA_AGENT_SESSION_ID", "test-session")
+        .output()
+        .expect("assura nudge runs");
+    assert!(
+        output.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    let log_text = fs::read_to_string(log_dir.join("nudges.jsonl")).expect("nudge log is written");
+    let lines = log_text.lines().collect::<Vec<_>>();
+    assert_eq!(lines.len(), 1);
+    let record: Value = serde_json::from_str(lines[0]).expect("log record is JSON");
+    assert_eq!(record["schema"], "assura.agent-nudge-log.v1");
+    assert_eq!(record["session_id"], "test-session");
+    assert_eq!(record["target_agent"], "codex");
+    assert_eq!(record["event"], "after_tool");
+    assert_eq!(record["should_inject"], true);
+    assert_eq!(record["payload"]["schema"], "assura.agent-nudge.v1");
+    assert_eq!(record["payload"]["summary"]["should_inject"], true);
+}
+
+#[test]
+fn codex_post_tool_hook_injects_changed_path_nudge_and_logs_state() {
+    let project = git_nudge_fixture();
+    fs::write(project.path().join("src/BadName.rs"), "fn bad() {}\n").expect("write bad file");
+
+    let output = run_codex_hook(
+        project.path(),
+        serde_json::json!({
+            "session_id": "post-tool-test",
+            "cwd": project.path().to_str().expect("project path"),
+            "hook_event_name": "PostToolUse",
+            "turn_id": "turn-1",
+            "tool_use_id": "tool-1",
+            "tool_name": "apply_patch",
+            "tool_input": {"command": "*** Begin Patch\n*** Add File: src/BadName.rs\n+fn bad() {}\n*** End Patch"},
+            "tool_response": {"status": "success"}
+        }),
+        "post-tool-test",
+    );
+    assert!(
+        output.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let hook_output: Value = serde_json::from_slice(&output.stdout).expect("hook emits JSON");
+    assert_eq!(
+        hook_output["hookSpecificOutput"]["hookEventName"],
+        "PostToolUse"
+    );
+    let context = hook_output["hookSpecificOutput"]["additionalContext"]
+        .as_str()
+        .expect("additional context");
+    assert!(context.contains("<assura-nudge>"));
+    assert!(context.contains("Intent: edit"));
+    assert!(context.contains("Git delta: 1 changed since previous hook/message"));
+    assert!(context.contains("src/BadName.rs"));
+    assert!(context.contains("file_naming"));
+
+    let log_text = fs::read_to_string(project.path().join(".assura/agent-sessions/nudges.jsonl"))
+        .expect("nudge log");
+    let log_record: Value = serde_json::from_str(log_text.lines().last().unwrap()).unwrap();
+    assert_eq!(log_record["event"], "after_tool");
+    assert_eq!(log_record["session_id"], "post-tool-test");
+    assert_eq!(log_record["changed_path_count"], 1);
+    assert_eq!(log_record["should_inject"], true);
+
+    let state_text = fs::read_to_string(
+        project
+            .path()
+            .join(".assura/agent-sessions/codex-hook-state.jsonl"),
+    )
+    .expect("hook state log");
+    let state_record: Value = serde_json::from_str(state_text.lines().last().unwrap()).unwrap();
+    assert_eq!(state_record["schema"], "assura.codex-hook-state.v1");
+    assert_eq!(state_record["hook_event_name"], "PostToolUse");
+    assert_eq!(state_record["tool_intent"], "edit");
+    assert_eq!(state_record["changed_since_previous_count"], 1);
+}
+
+#[test]
+fn codex_post_tool_hook_injects_git_commit_intent_without_new_delta() {
+    let project = git_nudge_fixture();
+    fs::write(
+        project.path().join("src/commit-ready.rs"),
+        "fn commit_ready() {}\n",
+    )
+    .expect("write valid dirty file");
+
+    let prompt = run_codex_hook(
+        project.path(),
+        serde_json::json!({
+            "session_id": "commit-intent-test",
+            "cwd": project.path().to_str().expect("project path"),
+            "hook_event_name": "UserPromptSubmit",
+            "turn_id": "turn-1",
+            "prompt": "commit the current work"
+        }),
+        "commit-intent-test",
+    );
+    assert!(
+        prompt.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&prompt.stdout),
+        String::from_utf8_lossy(&prompt.stderr)
+    );
+
+    let output = run_codex_hook(
+        project.path(),
+        serde_json::json!({
+            "session_id": "commit-intent-test",
+            "cwd": project.path().to_str().expect("project path"),
+            "hook_event_name": "PostToolUse",
+            "turn_id": "turn-1",
+            "tool_use_id": "tool-2",
+            "tool_name": "Bash",
+            "tool_input": {"command": "git commit -m test"},
+            "tool_response": {"exit_code": 1}
+        }),
+        "commit-intent-test",
+    );
+    assert!(
+        output.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let hook_output: Value = serde_json::from_slice(&output.stdout).expect("hook emits JSON");
+    let context = hook_output["hookSpecificOutput"]["additionalContext"]
+        .as_str()
+        .expect("additional context");
+    assert!(context.contains("Intent: git_commit"));
+    assert!(context.contains("Git delta: 0 changed since previous hook/message"));
+    assert!(context.contains("Git intent: detected git_commit"));
+    assert!(context.contains("Summary: 0 nudge(s)"));
 }
 
 #[test]

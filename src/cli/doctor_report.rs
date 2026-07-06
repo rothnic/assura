@@ -31,12 +31,12 @@ pub(super) struct ProjectDoctorBuild {
 
 impl ProjectDoctorReport {
     pub(super) fn from_check(report: &StructureCheckReport, config: &Config) -> Self {
-        let configured = configured_items(&report, &config);
-        let inactive = inactive_items(&report.project_root, &config);
-        let gaps = gap_items(&report.project_root, &config);
+        let configured = configured_items(report, config);
+        let inactive = inactive_items(&report.project_root, config);
+        let gaps = gap_items(&report.project_root, config);
         let binary_custody = binary_custody_item(&report.project_root);
-        let blocking_violations = blocking_violations(&report);
-        let next_actions = next_actions(&report, &inactive, &gaps);
+        let blocking_violations = blocking_violations(report);
+        let next_actions = next_actions(report, &inactive, &gaps);
         Self {
             schema: DOCTOR_SCHEMA,
             project_root: display_path(&report.project_root),

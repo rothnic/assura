@@ -9,6 +9,28 @@
             "timeout": 5
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/assura-agent-nudge.py\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/assura-agent-nudge.py\"",
+            "timeout": 10,
+            "statusMessage": "Reviewing Assura nudges"
+          }
+        ]
       }
     ]
   }
