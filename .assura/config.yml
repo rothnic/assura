@@ -772,6 +772,7 @@ structure:
             directories:
               naming: "kebab-case"
               allowed_names:
+                - "assura-agent-harness-hooks"
                 - "assura-goal-execution"
                 - "assura-goal-validation"
                 - "assura-local-build"
@@ -790,6 +791,31 @@ structure:
                 - "trellis-update-spec"
               allow_extra: false
             children:
+              assura-agent-harness-hooks/:
+                files:
+                  naming: "kebab-case"
+                  naming_patterns:
+                    "SKILL.md": "regex:^SKILL$"
+                  allowed_names:
+                    - "SKILL.md"
+                  max_lines: 600
+                  max_size: "24KB"
+                  allow_extra: false
+                directories:
+                  allowed_names:
+                    - "references"
+                  allow_extra: false
+                children:
+                  references/:
+                    files:
+                      naming: "kebab-case"
+                      allowed_names:
+                        - "harness-hook-matrix.md"
+                      max_lines: 600
+                      max_size: "24KB"
+                      allow_extra: false
+                    directories:
+                      allow_extra: false
               assura-goal-execution/:
                 files:
                   naming: "kebab-case"

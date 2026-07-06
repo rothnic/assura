@@ -21,6 +21,8 @@ expanding into richer dependency and documentation constraints.
   `.trellis/spec/assura/config-notation.md`
 - Codex agent feedback contract:
   `.trellis/spec/assura/codex-agent-feedback.md`
+- Cross-harness hook distribution and lifecycle contract:
+  `.trellis/spec/assura/agent-harness-hooks.md`
 - Compact project review contract:
   `.trellis/spec/assura/compact-project-review.md`
 - Daemon management CLI contract:
