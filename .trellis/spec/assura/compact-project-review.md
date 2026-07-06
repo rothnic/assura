@@ -49,9 +49,15 @@
   checks.
 - Generated, archive, log, and benchmark reference noise must be filtered,
   classified, or explicitly listed as omitted from blocking review policy.
-- Text output must stay compact and include the structure-fit boundary:
-  inspect nearby shape before adding paths; change `.assura/config.yml` only
-  when the path is intentional.
+- Text output must stay compact, row-aligned, and scan-first for humans:
+  header/status, check, heat, hot dirs, content, finding counts, action
+  buckets, policy, next command, and detail commands.
+- Text output may use ANSI color only when stdout is a terminal or
+  `ASSURA_FORCE_COLOR=1`/`CLICOLOR_FORCE` is set. Piped/captured output must
+  remain plain text, and `NO_COLOR`/`CLICOLOR=0` must disable automatic color.
+- Text output must include the structure-fit boundary: inspect nearby shape
+  before adding paths; change `.assura/config.yml` only when the path is
+  intentional.
 
 ### 4. Validation & Error Matrix
 
@@ -62,13 +68,16 @@
 | Content runtime has configured blocking diagnostics | Exit follows `check`; content gaps also point to content-query details. |
 | Unresolved repository-reference candidates exist only as raw candidates | Exit `0` when no blocking checks fail; finding is informational. |
 | Project is not a Git checkout | Exit follows normal review; `heatmap.git_available=false`; Git counters stay zero/unknown. |
-| Git checkout has branch/worktree pressure | Review includes compact `heat:` and `hot:` text plus JSON `heatmap` totals and directory rollups. |
+| Git checkout has branch/worktree pressure | Review includes compact aligned heat/hot-dir rows plus JSON `heatmap` totals and directory rollups. |
+| Text output is captured or piped | Output contains no ANSI escapes by default. |
+| Text output is forced with `ASSURA_FORCE_COLOR=1` | Output contains ANSI styling without changing text content or JSON/agent output. |
 | No config is discoverable | Exit with the existing no-config error code. |
 | Content-query loading fails | Exit with the existing content-query error code. |
 
 ### 5. Good/Base/Bad Cases
 
-- Good: Before a PR, a user runs `assura review . --format text`, sees no
+- Good: Before a PR, a user runs `assura review . --format text`, sees aligned
+  status/heat/action rows with terminal color when interactive, sees no
   blockers, sees advisory/inactive follow-up, and can jump to lower-level
   commands for evidence.
 - Base: During onboarding, an agent runs `assura review . --format agent` and
@@ -90,6 +99,8 @@
   findings and lower-level content-query commands.
 - Agent format test: schema `assura.project-review.agent.v1` and bounded
   finding/action arrays.
+- Text format test: captured output stays plain, aligned rows preserve the
+  structure-fit policy, and forced color emits ANSI styling.
 
 ### 7. Wrong vs Correct
 

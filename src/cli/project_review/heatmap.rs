@@ -21,112 +21,59 @@ pub(super) struct ProjectReviewHeatmap {
     pub(super) legend: Vec<&'static str>,
 }
 
-impl ProjectReviewHeatmap {
-    pub(super) fn render_text_lines(&self) -> Vec<String> {
-        let mut lines = vec![format!(
-            "heat: !{} chg={} ?{} branch_files={} commits={}",
-            self.totals.validation_violations,
-            self.totals.modified_files,
-            self.totals.untracked_files,
-            self.totals.branch_changed_files,
-            optional_usize(self.branch.commits_on_branch)
-        )];
-        if self.hot_dirs.is_empty() {
-            lines.push("hot: none".to_string());
-        } else {
-            lines.push(format!(
-                "hot: {}",
-                self.hot_dirs
-                    .iter()
-                    .take(3)
-                    .map(HeatDirectory::compact_text)
-                    .collect::<Vec<_>>()
-                    .join(" | ")
-            ));
-        }
-        if !self.risk_flags.is_empty() {
-            lines.push(format!(
-                "risk: {}",
-                self.risk_flags
-                    .iter()
-                    .take(3)
-                    .map(|flag| flag.id)
-                    .collect::<Vec<_>>()
-                    .join(", ")
-            ));
-        }
-        lines
-    }
-}
-
 #[derive(Debug, Clone, Default, Serialize)]
 pub(super) struct HeatBranch {
-    name: Option<String>,
-    base: Option<String>,
-    upstream: Option<String>,
-    commits_on_branch: Option<usize>,
-    ahead: Option<usize>,
-    behind: Option<usize>,
+    pub(super) name: Option<String>,
+    pub(super) base: Option<String>,
+    pub(super) upstream: Option<String>,
+    pub(super) commits_on_branch: Option<usize>,
+    pub(super) ahead: Option<usize>,
+    pub(super) behind: Option<usize>,
 }
 
 #[derive(Debug, Clone, Default, Serialize)]
 pub(super) struct HeatTotals {
-    validation_violations: usize,
-    blocking_violations: usize,
-    naming_violations: usize,
-    line_limit_violations: usize,
-    content_diagnostics: usize,
-    unresolved_repository_references: usize,
-    staged_files: usize,
-    unstaged_files: usize,
-    modified_files: usize,
-    untracked_files: usize,
-    deleted_files: usize,
-    conflicted_files: usize,
-    branch_changed_files: usize,
-    line_additions: usize,
-    line_deletions: usize,
+    pub(super) validation_violations: usize,
+    pub(super) blocking_violations: usize,
+    pub(super) naming_violations: usize,
+    pub(super) line_limit_violations: usize,
+    pub(super) content_diagnostics: usize,
+    pub(super) unresolved_repository_references: usize,
+    pub(super) staged_files: usize,
+    pub(super) unstaged_files: usize,
+    pub(super) modified_files: usize,
+    pub(super) untracked_files: usize,
+    pub(super) deleted_files: usize,
+    pub(super) conflicted_files: usize,
+    pub(super) branch_changed_files: usize,
+    pub(super) line_additions: usize,
+    pub(super) line_deletions: usize,
 }
 
 #[derive(Debug, Clone, Default, Serialize)]
 pub(super) struct HeatDirectory {
-    path: String,
-    score: usize,
-    validation_violations: usize,
-    blocking_violations: usize,
-    naming_violations: usize,
-    line_limit_violations: usize,
-    staged_files: usize,
-    unstaged_files: usize,
-    modified_files: usize,
-    untracked_files: usize,
-    deleted_files: usize,
-    conflicted_files: usize,
-    branch_changed_files: usize,
-    line_additions: usize,
-    line_deletions: usize,
-}
-
-impl HeatDirectory {
-    fn compact_text(&self) -> String {
-        format!(
-            "{} !{} chg={} ?{} br={} +/-{}/{}",
-            self.path,
-            self.validation_violations,
-            self.modified_files,
-            self.untracked_files,
-            self.branch_changed_files,
-            self.line_additions,
-            self.line_deletions
-        )
-    }
+    pub(super) path: String,
+    pub(super) score: usize,
+    pub(super) validation_violations: usize,
+    pub(super) blocking_violations: usize,
+    pub(super) naming_violations: usize,
+    pub(super) line_limit_violations: usize,
+    pub(super) staged_files: usize,
+    pub(super) unstaged_files: usize,
+    pub(super) modified_files: usize,
+    pub(super) untracked_files: usize,
+    pub(super) deleted_files: usize,
+    pub(super) conflicted_files: usize,
+    pub(super) branch_changed_files: usize,
+    pub(super) line_additions: usize,
+    pub(super) line_deletions: usize,
 }
 
 #[derive(Debug, Clone, Serialize)]
 pub(super) struct HeatRiskFlag {
-    id: &'static str,
-    severity: &'static str,
-    detail: String,
+    pub(super) id: &'static str,
+    pub(super) severity: &'static str,
+    pub(super) detail: String,
 }
 
 pub(super) fn build_project_review_heatmap(
@@ -334,10 +281,4 @@ fn is_naming_violation(rule: &str) -> bool {
 
 fn is_directory_violation(rule: &str) -> bool {
     rule.contains("directory")
-}
-
-fn optional_usize(value: Option<usize>) -> String {
-    value
-        .map(|value| value.to_string())
-        .unwrap_or_else(|| "n/a".to_string())
 }

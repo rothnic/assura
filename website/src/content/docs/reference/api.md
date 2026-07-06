@@ -40,11 +40,13 @@ Supported check and review formats are `text`, `json`, `yaml`, `advice`,
 `yaml`.
 
 Use `assura review . --format text` before adding a new top-level path or
-opening a PR. Use `--format agent` when a local coding agent needs the compact
-JSON packet with blocking, advisory, inactive, informational, and omitted-noise
-classification. Review JSON also includes an advisory `heatmap` with compact
-totals and top hot directories for validation, worktree, branch, and churn
-signals; Git fields are best-effort and non-fatal outside a checkout.
+opening a PR. The text format uses aligned, concise rows with terminal color
+when interactive and plain output when piped. Use `--format agent` when a local
+coding agent needs the compact JSON packet with blocking, advisory, inactive,
+informational, and omitted-noise classification. Review JSON also includes an
+advisory `heatmap` with compact totals and top hot directories for validation,
+worktree, branch, and churn signals; Git fields are best-effort and non-fatal
+outside a checkout.
 
 ## Init Options
 

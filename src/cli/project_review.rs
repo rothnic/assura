@@ -2,6 +2,7 @@
 
 mod heatmap;
 mod report;
+mod text;
 
 use self::heatmap::build_project_review_heatmap;
 use self::report::{render_project_review, ProjectReviewReport};

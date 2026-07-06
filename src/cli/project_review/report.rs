@@ -1,6 +1,7 @@
 //! Project review report assembly and rendering.
 
 use super::heatmap::ProjectReviewHeatmap;
+use super::text::render_project_review_text;
 use crate::cli::args::CheckOutputFormat;
 use crate::cli::content_query::AgentQueryGapsOutput;
 use crate::cli::doctor::{DoctorItem, DoctorNextAction, DoctorViolation, ProjectDoctorReport};
@@ -21,7 +22,7 @@ pub(super) fn render_project_review(
                 .unwrap_or_default()
         }
         CheckOutputFormat::Text | CheckOutputFormat::Advice | CheckOutputFormat::Status => {
-            report.render_text()
+            render_project_review_text(report)
         }
     }
 }
@@ -29,18 +30,18 @@ pub(super) fn render_project_review(
 #[derive(Debug, Clone, Serialize)]
 pub(super) struct ProjectReviewReport {
     schema: &'static str,
-    status: &'static str,
+    pub(super) status: &'static str,
     project_root: String,
     config_path: String,
     checked_path: String,
-    structure: ProjectReviewStructure,
-    summary: ProjectReviewSummary,
-    findings: Vec<ProjectReviewFinding>,
-    content_gaps: ProjectReviewContentGaps,
-    heatmap: ProjectReviewHeatmap,
+    pub(super) structure: ProjectReviewStructure,
+    pub(super) summary: ProjectReviewSummary,
+    pub(super) findings: Vec<ProjectReviewFinding>,
+    pub(super) content_gaps: ProjectReviewContentGaps,
+    pub(super) heatmap: ProjectReviewHeatmap,
     omitted_noise: Vec<ProjectReviewOmission>,
-    next_actions: Vec<ProjectReviewAction>,
-    lower_level_commands: Vec<&'static str>,
+    pub(super) next_actions: Vec<ProjectReviewAction>,
+    pub(super) lower_level_commands: Vec<&'static str>,
 }
 
 impl ProjectReviewReport {
@@ -97,67 +98,10 @@ impl ProjectReviewReport {
         self.summary.blocking > 0
     }
 
-    fn render_text(&self) -> String {
-        let mut lines = vec![
-            "Assura project review".to_string(),
-            format!(
-                "status={} check={} files={} dirs={} violations={}",
-                self.status,
-                self.structure.status,
-                self.structure.files_checked,
-                self.structure.dirs_checked,
-                self.structure.violations
-            ),
-            format!(
-                "summary: blocking={} advisory={} inactive={} informational={} omitted_noise={}",
-                self.summary.blocking,
-                self.summary.advisory,
-                self.summary.inactive,
-                self.summary.informational,
-                self.summary.omitted_noise
-            ),
-            format!(
-                "content-gaps: diagnostics={} missing_relations={} unresolved_refs={} safe_fixes={}",
-                self.content_gaps.diagnostics,
-                self.content_gaps.missing_relations,
-                self.content_gaps.unresolved_repository_references,
-                self.content_gaps.safe_fixes
-            ),
-        ];
-
-        lines.extend(self.heatmap.render_text_lines());
-        lines.extend(text_finding_lines(
-            "fix-now",
-            self.findings_by_action("fix-now"),
-        ));
-        lines.extend(text_finding_lines(
-            "configure-intentionally",
-            self.findings_by_action("configure-intentionally"),
-        ));
-        lines.extend(text_finding_lines(
-            "inspect-before-changing",
-            self.findings_by_action("inspect-before-changing"),
-        ));
-        lines.push(
-            "structure-fit: inspect nearby shape before adding paths; change .assura/config.yml only when the path is intentional."
-                .to_string(),
-        );
-        if let Some(action) = self.next_actions.first() {
-            lines.push(format!("next: {}", action.action));
-            lines.push(format!("follow-up: {}", action.command));
-        }
-        lines.push(
-            "noise-policy: generated/archive/log/benchmark reference noise is informational, not a blocker."
-                .to_string(),
-        );
-        lines.push(format!(
-            "details: {}",
-            self.lower_level_commands.join(" | ")
-        ));
-        lines.join("\n")
-    }
-
-    fn findings_by_action(&self, action_kind: &'static str) -> Vec<&ProjectReviewFinding> {
+    pub(super) fn findings_by_action(
+        &self,
+        action_kind: &'static str,
+    ) -> Vec<&ProjectReviewFinding> {
         self.findings
             .iter()
             .filter(|finding| finding.action_kind == action_kind)
@@ -167,20 +111,20 @@ impl ProjectReviewReport {
 }
 
 #[derive(Debug, Clone, Serialize)]
-struct ProjectReviewStructure {
-    status: &'static str,
-    files_checked: usize,
-    dirs_checked: usize,
-    violations: usize,
+pub(super) struct ProjectReviewStructure {
+    pub(super) status: &'static str,
+    pub(super) files_checked: usize,
+    pub(super) dirs_checked: usize,
+    pub(super) violations: usize,
 }
 
 #[derive(Debug, Clone, Serialize)]
-struct ProjectReviewSummary {
-    blocking: usize,
-    advisory: usize,
-    inactive: usize,
-    informational: usize,
-    omitted_noise: usize,
+pub(super) struct ProjectReviewSummary {
+    pub(super) blocking: usize,
+    pub(super) advisory: usize,
+    pub(super) inactive: usize,
+    pub(super) informational: usize,
+    pub(super) omitted_noise: usize,
 }
 
 impl ProjectReviewSummary {
@@ -196,11 +140,11 @@ impl ProjectReviewSummary {
 }
 
 #[derive(Debug, Clone, Serialize)]
-struct ProjectReviewFinding {
-    id: String,
+pub(super) struct ProjectReviewFinding {
+    pub(super) id: String,
     category: &'static str,
     severity: &'static str,
-    action_kind: &'static str,
+    pub(super) action_kind: &'static str,
     title: String,
     detail: String,
     command: &'static str,
@@ -208,11 +152,11 @@ struct ProjectReviewFinding {
 }
 
 #[derive(Debug, Clone, Serialize)]
-struct ProjectReviewContentGaps {
-    diagnostics: usize,
-    safe_fixes: usize,
-    missing_relations: usize,
-    unresolved_repository_references: usize,
+pub(super) struct ProjectReviewContentGaps {
+    pub(super) diagnostics: usize,
+    pub(super) safe_fixes: usize,
+    pub(super) missing_relations: usize,
+    pub(super) unresolved_repository_references: usize,
     requirements_traceability: usize,
     computed_checks: usize,
 }
@@ -238,10 +182,10 @@ struct ProjectReviewOmission {
 }
 
 #[derive(Debug, Clone, Serialize)]
-struct ProjectReviewAction {
+pub(super) struct ProjectReviewAction {
     priority: u32,
-    action: String,
-    command: String,
+    pub(super) action: String,
+    pub(super) command: String,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -465,20 +409,6 @@ fn violation_category(rule: &str) -> &'static str {
     } else {
         "structure"
     }
-}
-
-fn text_finding_lines(label: &str, findings: Vec<&ProjectReviewFinding>) -> Vec<String> {
-    if findings.is_empty() {
-        return vec![format!("{label}: none")];
-    }
-    vec![format!(
-        "{label}: {}",
-        findings
-            .iter()
-            .map(|finding| finding.id.as_str())
-            .collect::<Vec<_>>()
-            .join(", ")
-    )]
 }
 
 fn count_severity(findings: &[ProjectReviewFinding], severity: &'static str) -> usize {

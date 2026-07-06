@@ -67,6 +67,10 @@ violations, content-gap counts, and best-effort Git state into compact totals
 and top hot directories. Git is optional: outside a checkout,
 `heatmap.git_available=false` and review still completes.
 
+The default text format is optimized for humans: aligned rows, concise action
+buckets, and terminal color when interactive. Piped output stays plain; use
+`ASSURA_FORCE_COLOR=1` when a script or screenshot needs ANSI color.
+
 Use it in three common places:
 
 | Moment | Command | What to look for |

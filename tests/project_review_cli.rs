@@ -16,10 +16,25 @@ fn run_assura(args: &[&str]) -> Output {
         .expect("assura command runs")
 }
 
+fn run_assura_with_env(args: &[&str], envs: &[(&str, &str)]) -> Output {
+    let mut command = Command::new(assura_bin());
+    command.args(args);
+    for (key, value) in envs {
+        command.env(key, value);
+    }
+    command.output().expect("assura command runs")
+}
+
 fn run_review(args: &[&str]) -> Output {
     let mut command = vec!["review"];
     command.extend_from_slice(args);
     run_assura(&command)
+}
+
+fn run_review_with_env(args: &[&str], envs: &[(&str, &str)]) -> Output {
+    let mut command = vec!["review"];
+    command.extend_from_slice(args);
+    run_assura_with_env(&command, envs)
 }
 
 fn run_git(project: &TempDir, args: &[&str]) {
@@ -183,6 +198,7 @@ exclude:
     let stdout = String::from_utf8_lossy(&text.stdout);
     assert!(stdout.contains("assura explain <path> --format json"));
     assert!(stdout.contains(".assura/config.yml"));
+    assert!(!stdout.contains("\x1b["));
 
     let experiment_heat = review["heatmap"]["hot_dirs"]
         .as_array()
@@ -324,8 +340,10 @@ exclude:
 
     let text = run_review(&[project.path().to_str().unwrap(), "--format", "text"]);
     let stdout = String::from_utf8_lossy(&text.stdout);
-    assert!(stdout.contains("heat: !1 chg=1 ?1 branch_files=1 commits=1"));
-    assert!(stdout.contains("hot: src !1 chg=1 ?1"));
+    assert!(stdout.contains("Heat"));
+    assert!(stdout.contains("!1 chg=1 ?1 br=1 commits=1"));
+    assert!(stdout.contains("Hot dirs"));
+    assert!(stdout.contains("src !1 chg=1 ?1"));
 }
 
 #[test]
@@ -372,4 +390,30 @@ exclude:
             .is_empty(),
         "nested project heat should ignore sibling repo changes: {review:#}"
     );
+}
+
+#[test]
+fn review_text_output_supports_forced_ansi_color() {
+    let project = TempDir::new().expect("temp project");
+    write_config(
+        &project,
+        r#"
+structure:
+  ./:
+    extra: true
+exclude:
+  - .assura/**
+"#,
+    );
+
+    let text = run_review_with_env(
+        &[project.path().to_str().unwrap(), "--format", "text"],
+        &[("ASSURA_FORCE_COLOR", "1")],
+    );
+    assert!(text.status.success());
+    let stdout = String::from_utf8_lossy(&text.stdout);
+    assert!(stdout.contains("\x1b["));
+    assert!(stdout.contains("Assura review"));
+    assert!(stdout.contains("Check"));
+    assert!(stdout.contains("Details"));
 }
