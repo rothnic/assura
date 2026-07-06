@@ -110,11 +110,12 @@ pub(super) struct HeatDirectory {
 impl HeatDirectory {
     fn compact_text(&self) -> String {
         format!(
-            "{} !{} chg={} ?{} +/-{}/{}",
+            "{} !{} chg={} ?{} br={} +/-{}/{}",
             self.path,
             self.validation_violations,
             self.modified_files,
             self.untracked_files,
+            self.branch_changed_files,
             self.line_additions,
             self.line_deletions
         )
