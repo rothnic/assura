@@ -557,7 +557,8 @@ fn agent_onboard_generated_config_validates_dynamic_directory_skill_contracts() 
     ]));
 
     let config = fs::read_to_string(project.path().join(".assura/config.yml")).unwrap();
-    assert!(config.contains("\"@agents-dir\""));
+    assert!(config.contains("\"@agentic-project\""));
+    assert!(!config.contains("\"@agents-dir\""));
     assert!(!config.contains("\"@assura-skill-dir\""));
     assert!(!config.contains("rules:"));
     assert!(!config.contains(".agents/skills/assura-project-maintenance/:"));
@@ -951,12 +952,8 @@ exclude:
         serde_yaml::Value::String("exists:0-1".to_string())
     );
     assert_eq!(
-        merged_config["structure"]["./"]["AGENTS.md"],
-        serde_yaml::Value::String("exists:1".to_string())
-    );
-    assert_eq!(
-        merged_config["structure"][".agents/"]["use"],
-        serde_yaml::Value::String("@agents-dir".to_string())
+        merged_config["structure"]["./"]["use"],
+        serde_yaml::Value::String("@agentic-project".to_string())
     );
     assert!(merged_config["exclude"]
         .as_sequence()

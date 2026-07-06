@@ -135,8 +135,8 @@ extensions:
 
 structure:
   ./:
+    use: "@agentic-project"
     extra: true
-    AGENTS.md: exists:1
     README.md: exists:0-1
     ".gitignore": exists:0-1
     Cargo.toml: exists:0-1
@@ -145,7 +145,6 @@ structure:
     directories:
       required:
         - ".assura"
-        - ".agents"
         - "docs"
 {root_required_dirs}
   .assura/:
@@ -166,9 +165,6 @@ structure:
     required: true
     AGENTS.example.md: exists:1
     SKILL.example.md: exists:1
-  .agents/:
-    required: true
-    use: "@agents-dir"
   docs/:
     required: true
     process/: exists:1

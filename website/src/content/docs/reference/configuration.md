@@ -112,6 +112,7 @@ the project needs relationships or reusable contracts.
 | Captured source/test pair | `"{component}.tsx"` and `"{component}.test.tsx": exists:1` |
 | Package documentation need | `needs: doc` with `provides: doc` |
 | Reusable package policy | `rules:` plus `use: "@package-standard"` |
+| Agentic project baseline | `use: "@agentic-project"` at the project root |
 | Markdown outline | `markdown.outline` with nested heading lists |
 
 Use the detailed fields below when a rule needs extra attributes or when you
@@ -120,6 +121,38 @@ are reading generated migration output.
 Markdown outline notation validates ordered heading structure without separate
 heading-depth fields. It is for Assura-specific document structure checks, not
 a replacement for generic Markdown linting or link validation.
+
+## Built-In Agentic Rules
+
+Use the root-level agentic preset to require the standard agent guidance
+surfaces without listing every skill directory by name:
+
+```yaml
+structure:
+  ./:
+    use: "@agentic-project"
+```
+
+`@agentic-project` requires root `AGENTS.md`, requires `.agents/`, applies the
+`.agents/` best-practice rule below, and allows `.assura/` when root
+direct-content policies are closed.
+
+Use the narrower `.agents/` preset only when you are validating that subtree
+directly:
+
+```yaml
+structure:
+  .agents/:
+    use: "@agents-dir"
+```
+
+`@agents-dir` validates `.agents/skills/{skill}/`,
+`.agents/skills/built-in/{skill}/`, and
+`.agents/skills/custom/{skill}/` directories. Skill directories must be
+kebab-case and contain `SKILL.md`; optional `agents/`, `references/`,
+`scripts/`, and `assets/` subdirectories are validated when present. Use
+`extensions.agent_guidance` for AGENTS.md and SKILL.md section, routing,
+progressive-disclosure, and line-limit checks.
 
 ## Directory Nodes
 

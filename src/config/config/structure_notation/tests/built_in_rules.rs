@@ -118,3 +118,81 @@ structure:
         Some("24KB")
     );
 }
+
+#[test]
+fn built_in_agentic_project_rule_composes_root_guidance_and_skills() {
+    let config = parse_config(
+        r#"
+structure:
+  ./:
+    use: "@agentic-project"
+    extra: false
+"#,
+    )
+    .unwrap();
+
+    let root = config.structure.get("./").unwrap();
+    let files = root.files.as_ref().expect("root file rules");
+    assert_eq!(
+        files
+            .exists
+            .as_ref()
+            .and_then(|exists| exists.get("AGENTS.md")),
+        Some(&"1".to_string())
+    );
+    assert_eq!(files.allow_extra, Some(false));
+
+    let directories = root.directories.as_ref().expect("root directory rules");
+    assert_eq!(
+        directories
+            .exists
+            .as_ref()
+            .and_then(|exists| exists.get(".assura")),
+        Some(&"0-1".to_string())
+    );
+    assert_eq!(directories.allow_extra, Some(false));
+
+    let agents = root
+        .children
+        .as_ref()
+        .and_then(|children| children.get(".agents"))
+        .expect("agentic project should require .agents child");
+    assert!(agents.required);
+    assert!(!agents.inherit);
+
+    let skill = agents
+        .children
+        .as_ref()
+        .and_then(|children| children.get("skills"))
+        .and_then(|skills| skills.children.as_ref())
+        .and_then(|children| children.get("{skill}"))
+        .expect("agentic project should compose skill directory best practices");
+    assert_eq!(
+        skill
+            .files
+            .as_ref()
+            .and_then(|files| files.exists.as_ref())
+            .and_then(|exists| exists.get("SKILL.md")),
+        Some(&"1".to_string())
+    );
+}
+
+#[test]
+fn built_in_agentic_project_children_merge_with_local_children() {
+    let config = parse_config(
+        r#"
+structure:
+  ./:
+    use: "@agentic-project"
+    children:
+      docs/:
+        README.md: exists:0-1
+"#,
+    )
+    .unwrap();
+
+    let root = config.structure.get("./").unwrap();
+    let children = root.children.as_ref().expect("root children");
+    assert!(children.contains_key(".agents"));
+    assert!(children.contains_key("docs/"));
+}

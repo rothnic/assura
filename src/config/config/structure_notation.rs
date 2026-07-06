@@ -238,7 +238,8 @@ fn insert_directory_node_attr(
             }
             normalized.insert(Value::String(child_name.to_string()), Value::Mapping(child));
         }
-        output.insert(string_value(key), Value::Mapping(normalized));
+        let target = ensure_mapping(output, key);
+        merge_mapping(target, normalized);
     } else {
         merge_directory_node_attr(output, key, value);
     }

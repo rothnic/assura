@@ -76,6 +76,14 @@ skills/:
 extra: false
 "#;
 
+const BUILTIN_AGENTIC_PROJECT: &str = r#"
+AGENTS.md: exists:1
+.agents/:
+  required: true
+  use: "@agents-dir"
+.assura/: exists:0-1
+"#;
+
 impl RuleRegistry {
     fn from_root(root: &mut Mapping) -> Result<Self, String> {
         let mut rules = builtin_rules()?;
@@ -140,6 +148,7 @@ fn builtin_rules() -> Result<HashMap<String, Value>, String> {
         ("agent-skill-resource-dir", BUILTIN_AGENT_SKILL_RESOURCE_DIR),
         ("agent-skill-dir", BUILTIN_AGENT_SKILL_DIR),
         ("agents-dir", BUILTIN_AGENTS_DIR),
+        ("agentic-project", BUILTIN_AGENTIC_PROJECT),
     ] {
         rules.insert(
             name.to_string(),

@@ -696,6 +696,7 @@ collections:
 # All other root files must be standard project files
 structure:
   ./:
+    use: "@agentic-project"
     files:
       # Standard project files are allowed
       allowed_names:
@@ -720,7 +721,6 @@ structure:
       # Required files that must exist in root
       required:
         - "README.md"
-        - "AGENTS.md"
       naming: "PascalCase"
       allow_extra: false
     directories:
@@ -744,9 +744,6 @@ structure:
     
     # Subdirectories
     children:
-      .agents/:
-        use: "@agents-dir"
-      
       .assura/:
         files:
           naming: "kebab-case"

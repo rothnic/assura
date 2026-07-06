@@ -311,8 +311,21 @@ Merge order should be deterministic:
 3. Prefer exact keys over pattern keys.
 4. Prefer more specific scopes over broader scopes.
 
-Built-in agent-directory best practices should be used instead of enumerating
-every project-local skill:
+Built-in agentic project best practices should be used instead of enumerating
+root guidance files and every project-local skill:
+
+```yaml
+structure:
+  ./:
+    use: "@agentic-project"
+```
+
+The built-in `@agentic-project` requires root `AGENTS.md`, requires a
+`.agents/` directory, applies `@agents-dir` to that directory, and allows the
+`.assura/` config directory when root direct-content policies are closed.
+
+Use the narrower agent-directory rule when the project only needs to validate
+a `.agents/` subtree:
 
 ```yaml
 structure:
