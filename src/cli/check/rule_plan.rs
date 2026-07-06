@@ -201,19 +201,11 @@ mod tests {
         let config = ConfigLoader::parse(
             r#"
 version: "2.0"
-rules:
-  "@assura-skill-dir":
-    SKILL.md: exists:1
-    agents/: exists:0-1
-    references/: exists:0-1
-    scripts/: exists:0-1
-    assets/: exists:0-1
-    extra: false
 structure:
   .agents/skills/:
     extra: true
     "{skill}/":
-      use: "@assura-skill-dir"
+      use: "@agent-skill-dir"
 "#,
         )
         .unwrap();
@@ -264,16 +256,26 @@ structure:
             rules
                 .directories
                 .as_ref()
-                .and_then(|directories| directories.allowed_names.as_ref())
-                .map(Vec::as_slice),
-            Some(
-                &[
-                    "agents".to_string(),
-                    "references".to_string(),
-                    "scripts".to_string(),
-                    "assets".to_string()
-                ][..]
-            )
+                .and_then(|directories| directories.allow_extra),
+            Some(false)
+        );
+        let reference_rules = rules_for_dir(
+            Path::new(".agents/skills/assura-project-maintenance/references"),
+            &scopes,
+        );
+        assert_eq!(
+            reference_rules
+                .files
+                .as_ref()
+                .and_then(|files| files.naming.as_deref()),
+            Some("kebab-case")
+        );
+        assert_eq!(
+            reference_rules
+                .files
+                .as_ref()
+                .and_then(|files| files.max_lines),
+            Some(600)
         );
     }
 

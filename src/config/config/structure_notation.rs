@@ -240,9 +240,26 @@ fn insert_directory_node_attr(
         }
         output.insert(string_value(key), Value::Mapping(normalized));
     } else {
-        output.insert(string_value(key), value);
+        merge_directory_node_attr(output, key, value);
     }
     Ok(())
+}
+
+fn merge_directory_node_attr(output: &mut Mapping, key: &str, value: Value) {
+    let key_value = string_value(key);
+    let Some(existing) = output.remove(&key_value) else {
+        output.insert(key_value, value);
+        return;
+    };
+
+    let merged = match (existing, value) {
+        (Value::Mapping(mut target), Value::Mapping(source)) => {
+            merge_mapping(&mut target, source);
+            Value::Mapping(target)
+        }
+        (_, value) => value,
+    };
+    output.insert(key_value, merged);
 }
 
 include!("structure_notation/directives.rs");

@@ -328,7 +328,7 @@ fn corrective_context_for_rule(rule: &str) -> &'static str {
             "Rename the file to an allowed extension or update files.extensions for this scope."
         }
         "max_lines" => {
-            "Split or shorten the file, or raise files.max_lines when the size is intentional."
+            "Split the file along a natural responsibility boundary, or raise files.max_lines when the larger file is intentional."
         }
         "max_size" => {
             "Reduce the file size or raise files.max_size when the larger file is intentional."

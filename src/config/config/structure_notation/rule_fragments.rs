@@ -4,24 +4,94 @@ struct RuleRegistry {
     rules: HashMap<String, Value>,
 }
 
+const BUILTIN_AGENT_SKILL_FILE: &str = r#"
+exists: 1
+max_lines: 600
+max_size: "24KB"
+"#;
+
+const BUILTIN_AGENT_SKILL_RESOURCE_DIR: &str = r#"
+inherit: false
+.dir: kebab-case
+files:
+  naming: kebab-case
+  max_lines: 600
+  max_size: "24KB"
+directories:
+  naming: kebab-case
+extra: true
+"#;
+
+const BUILTIN_AGENT_SKILL_DIR: &str = r#"
+inherit: false
+.dir: kebab-case
+SKILL.md: "@agent-skill-file"
+agents/:
+  required: false
+  use: "@agent-skill-resource-dir"
+references/:
+  required: false
+  use: "@agent-skill-resource-dir"
+scripts/:
+  required: false
+  use: "@agent-skill-resource-dir"
+assets/:
+  required: false
+  use: "@agent-skill-resource-dir"
+extra: false
+"#;
+
+const BUILTIN_AGENTS_DIR: &str = r#"
+inherit: false
+README.md: exists:0-1
+SKILL.md: exists:0-1
+TEMPLATE.md: exists:0-1
+prd.json: exists:0-1
+skills/:
+  inherit: false
+  README.md: exists:0-1
+  TEMPLATE.md: exists:0-1
+  files:
+    allow_extra: false
+  directories:
+    allow_extra: true
+  built-in/:
+    required: false
+    "{skill}/":
+      use: "@agent-skill-dir"
+    files:
+      allow_extra: false
+    directories:
+      allow_extra: true
+  custom/:
+    required: false
+    "{skill}/":
+      use: "@agent-skill-dir"
+    files:
+      allow_extra: false
+    directories:
+      allow_extra: true
+  "{skill}/":
+    use: "@agent-skill-dir"
+extra: false
+"#;
+
 impl RuleRegistry {
     fn from_root(root: &mut Mapping) -> Result<Self, String> {
+        let mut rules = builtin_rules()?;
         let Some(value) = root.remove(string_value("rules")) else {
-            return Ok(Self::default());
+            return Ok(Self { rules });
         };
         let Value::Mapping(mapping) = value else {
             return Err("Assura config rules must be a mapping".to_string());
         };
 
-        let mut rules = HashMap::new();
         for (key, value) in mapping {
             let Some(name) = key.as_str() else {
                 return Err("Assura config rule names must be strings".to_string());
             };
             let name = normalize_rule_name(name)?;
-            if rules.insert(name.to_string(), value).is_some() {
-                return Err(format!("duplicate Assura config rule '@{name}'"));
-            }
+            rules.insert(name.to_string(), value);
         }
         Ok(Self { rules })
     }
@@ -63,6 +133,24 @@ impl RuleRegistry {
     }
 }
 
+fn builtin_rules() -> Result<HashMap<String, Value>, String> {
+    let mut rules = HashMap::new();
+    for (name, source) in [
+        ("agent-skill-file", BUILTIN_AGENT_SKILL_FILE),
+        ("agent-skill-resource-dir", BUILTIN_AGENT_SKILL_RESOURCE_DIR),
+        ("agent-skill-dir", BUILTIN_AGENT_SKILL_DIR),
+        ("agents-dir", BUILTIN_AGENTS_DIR),
+    ] {
+        rules.insert(
+            name.to_string(),
+            serde_yaml::from_str(source).map_err(|error| {
+                format!("invalid built-in Assura config rule '@{name}': {error}")
+            })?,
+        );
+    }
+    Ok(rules)
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum FragmentKind {
     Node,
@@ -88,10 +176,7 @@ fn classify_fragment(value: &Value) -> Result<FragmentKind, String> {
     }
 
     match (has_node_attrs, has_tree_attrs) {
-        (true, true) => Err(
-            "Assura config fragments cannot mix node attributes and path keys at the same level"
-                .to_string(),
-        ),
+        (true, true) => Ok(FragmentKind::Tree),
         (true, false) => Ok(FragmentKind::Node),
         _ => Ok(FragmentKind::Tree),
     }

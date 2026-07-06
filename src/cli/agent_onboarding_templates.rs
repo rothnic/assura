@@ -133,15 +133,6 @@ extensions:
 {requirements_traceability}
 {content_config}
 
-rules:
-  "@assura-skill-dir":
-    SKILL.md: exists:1
-    agents/: exists:0-1
-    references/: exists:0-1
-    scripts/: exists:0-1
-    assets/: exists:0-1
-    extra: false
-
 structure:
   ./:
     extra: true
@@ -177,12 +168,7 @@ structure:
     SKILL.example.md: exists:1
   .agents/:
     required: true
-    skills/: exists:1
-  .agents/skills/:
-    required: true
-    extra: true
-    "{{skill}}/":
-      use: "@assura-skill-dir"
+    use: "@agents-dir"
   docs/:
     required: true
     process/: exists:1

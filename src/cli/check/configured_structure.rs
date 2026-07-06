@@ -43,7 +43,6 @@ impl StructureChecker {
             }
 
             if !node.required {
-                self.validate_child_node_requirements(node_rel, node, report);
                 return;
             }
             self.push_violation(

@@ -237,12 +237,14 @@ structure:
     );
 }
 
+mod built_in_rules;
+
 #[test]
 fn nested_captured_directory_use_expands_tree_rule_fragments() {
     let config = parse_config(
         r#"
 rules:
-  "@assura-skill-dir":
+  "@agent-skill-dir":
     SKILL.md: exists:1
     agents/: exists:0-1
     references/: exists:0-1
@@ -253,7 +255,7 @@ structure:
   .agents/skills/:
     extra: true
     "{skill}/":
-      use: "@assura-skill-dir"
+      use: "@agent-skill-dir"
 "#,
     )
     .unwrap();

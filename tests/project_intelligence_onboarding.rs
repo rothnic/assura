@@ -557,8 +557,9 @@ fn agent_onboard_generated_config_validates_dynamic_directory_skill_contracts() 
     ]));
 
     let config = fs::read_to_string(project.path().join(".assura/config.yml")).unwrap();
-    assert!(config.contains("\"@assura-skill-dir\""));
-    assert!(config.contains("\"{skill}/\""));
+    assert!(config.contains("\"@agents-dir\""));
+    assert!(!config.contains("\"@assura-skill-dir\""));
+    assert!(!config.contains("rules:"));
     assert!(!config.contains(".agents/skills/assura-project-maintenance/:"));
 
     let second_skill = project.path().join(".agents/skills/release-maintenance");
@@ -577,6 +578,30 @@ fn agent_onboard_generated_config_validates_dynamic_directory_skill_contracts() 
         "json",
     ]));
     assert_eq!(valid_check["success"], true);
+
+    let long_skill = project.path().join(".agents/skills/long-skill");
+    fs::create_dir_all(&long_skill).unwrap();
+    fs::write(long_skill.join("SKILL.md"), "# Long Skill\n".repeat(601)).unwrap();
+    let invalid_long_check = run_assura(&[
+        "check",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]);
+    assert_eq!(invalid_long_check.status.code(), Some(1));
+    let invalid_long_json: Value = serde_json::from_slice(&invalid_long_check.stdout).unwrap();
+    assert!(invalid_long_json["violations"]
+        .as_array()
+        .expect("violations")
+        .iter()
+        .any(|item| {
+            item["path"] == ".agents/skills/long-skill/SKILL.md"
+                && item["rule"] == "max_lines"
+                && item["corrective_context"]
+                    .as_str()
+                    .is_some_and(|context| context.contains("natural responsibility boundary"))
+        }));
+    fs::remove_dir_all(&long_skill).unwrap();
 
     let missing_skill = project.path().join(".agents/skills/missing-skill-md");
     fs::create_dir_all(&missing_skill).unwrap();
@@ -598,6 +623,25 @@ fn agent_onboard_generated_config_validates_dynamic_directory_skill_contracts() 
                 && item["message"]
                     .as_str()
                     .is_some_and(|message| message.contains("SKILL.md"))
+        }));
+
+    let badly_named_skill = project.path().join(".agents/skills/bad_name");
+    fs::create_dir_all(&badly_named_skill).unwrap();
+    fs::write(badly_named_skill.join("SKILL.md"), "# Bad Name\n").unwrap();
+    let invalid_name_check = run_assura(&[
+        "check",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]);
+    assert_eq!(invalid_name_check.status.code(), Some(1));
+    let invalid_name_json: Value = serde_json::from_slice(&invalid_name_check.stdout).unwrap();
+    assert!(invalid_name_json["violations"]
+        .as_array()
+        .expect("violations")
+        .iter()
+        .any(|item| {
+            item["path"] == ".agents/skills/bad_name" && item["rule"] == "directory_naming"
         }));
 
     fs::write(missing_skill.join("SKILL.md"), "# Missing Fixed\n").unwrap();
@@ -910,13 +954,9 @@ exclude:
         merged_config["structure"]["./"]["AGENTS.md"],
         serde_yaml::Value::String("exists:1".to_string())
     );
-    assert!(merged_config["rules"]
-        .as_mapping()
-        .expect("rules mapping")
-        .contains_key(serde_yaml::Value::String("@assura-skill-dir".to_string())));
     assert_eq!(
-        merged_config["structure"][".agents/skills/"]["{skill}/"]["use"],
-        serde_yaml::Value::String("@assura-skill-dir".to_string())
+        merged_config["structure"][".agents/"]["use"],
+        serde_yaml::Value::String("@agents-dir".to_string())
     );
     assert!(merged_config["exclude"]
         .as_sequence()

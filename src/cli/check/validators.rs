@@ -1,6 +1,7 @@
 //! File, directory, and markdown validators for structure-first checks.
 
 use super::case::{validate_file_stem_with_path, validate_name_with_path};
+use super::direct_contents::exists_patterns_allow_name;
 use super::patterns::{
     best_lslint_suffix_match, is_lslint_extension_pattern, lslint_file_stem,
     matches_any_compiled_pattern, matches_single_compiled_pattern,
@@ -85,6 +86,8 @@ impl StructureChecker {
                 &rel,
                 &self.glob_patterns,
             );
+            let allowed_by_exists =
+                exists_patterns_allow_name(directories.exists.as_ref(), name, &self.glob_patterns);
             let forbidden_by_pattern = matches_any_compiled_pattern(
                 directories.forbidden_patterns.as_deref(),
                 name,
@@ -107,6 +110,7 @@ impl StructureChecker {
                 && !configured_child
                 && !allowed_by_name
                 && !allowed_by_pattern
+                && !allowed_by_exists
             {
                 self.push_violation(
                     report,
@@ -118,7 +122,7 @@ impl StructureChecker {
                 return;
             }
 
-            if !configured_child && !allowed_by_name && !allowed_by_pattern {
+            if !configured_child && !allowed_by_name && !allowed_by_pattern && !allowed_by_exists {
                 if let Some(naming) = directories.naming.as_deref() {
                     if !validate_name_with_path(
                         name,
@@ -263,6 +267,8 @@ impl StructureChecker {
             rel,
             &self.glob_patterns,
         );
+        let allowed_by_exists =
+            exists_patterns_allow_name(files.exists.as_ref(), filename, &self.glob_patterns);
         let forbidden_by_pattern = matches_any_compiled_pattern(
             files.forbidden_patterns.as_deref(),
             filename,
@@ -276,7 +282,7 @@ impl StructureChecker {
             DirectFilePolicy {
                 filename,
                 allowed_by_name,
-                allowed_by_pattern,
+                allowed_by_pattern: allowed_by_pattern || allowed_by_exists,
                 forbidden_by_pattern,
             },
             report,
@@ -287,7 +293,7 @@ impl StructureChecker {
             rel,
             files,
             filename,
-            allowed_by_name || allowed_by_pattern,
+            allowed_by_name || allowed_by_pattern || allowed_by_exists,
             report,
         );
         self.validate_file_size(path, rel, files, report);

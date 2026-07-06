@@ -15,6 +15,7 @@ mod compiled_config;
 mod compiled_fingerprint;
 mod compiled_plan_artifact;
 mod computed_checks;
+mod configured_dirs;
 mod configured_structure;
 #[cfg(feature = "full-cli")]
 mod content_runtime;
@@ -114,6 +115,7 @@ pub struct StructureCheckTimings {
     /// Time spent sorting report violations.
     pub report_sort_ms: f64,
 }
+use configured_dirs::ConfiguredDirSet;
 use regex_lite::Regex;
 use rule_plan::{rules_for_dir, RuleScope};
 use rules::{is_excluded_rel_with, normalize_config_dir, CompiledExclusion, EffectiveRules};
@@ -274,7 +276,7 @@ pub(in crate::cli::check) struct StructureChecker {
     project_root: PathBuf,
     config: Config,
     fail_fast: bool,
-    configured_dirs: Vec<PathBuf>,
+    configured_dirs: ConfiguredDirSet,
     exclude_patterns: Vec<CompiledExclusion>,
     naming_regexes: HashMap<String, Regex>,
     glob_patterns: HashMap<String, Pattern>,
@@ -305,7 +307,7 @@ impl StructureChecker {
             project_root,
             config: compiled.config.clone(),
             fail_fast,
-            configured_dirs: compiled.configured_dirs.clone(),
+            configured_dirs: ConfiguredDirSet::new(compiled.configured_dirs.clone()),
             exclude_patterns: compiled.exclude_patterns.clone(),
             naming_regexes: compiled.naming_regexes.clone(),
             glob_patterns: compiled.glob_patterns.clone(),
@@ -330,7 +332,7 @@ impl StructureChecker {
             project_root,
             config: compiled.config,
             fail_fast,
-            configured_dirs: compiled.configured_dirs,
+            configured_dirs: ConfiguredDirSet::new(compiled.configured_dirs),
             exclude_patterns: compiled.exclude_patterns,
             naming_regexes: compiled.naming_regexes,
             glob_patterns: compiled.glob_patterns,
@@ -449,9 +451,7 @@ impl StructureChecker {
     }
 
     pub(super) fn is_configured_dir(&self, rel: &Path) -> bool {
-        self.configured_dirs
-            .binary_search_by(|configured| configured.as_path().cmp(rel))
-            .is_ok()
+        self.configured_dirs.contains(rel)
     }
 
     pub(super) fn push_violation(

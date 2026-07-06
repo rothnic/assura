@@ -7,6 +7,8 @@ use super::rules::{
 };
 use super::{StructureCheckReport, StructureChecker};
 use crate::config::config::{DirectoryBundle, FileBundle};
+use glob::Pattern;
+use std::collections::HashMap;
 use std::ffi::OsStr;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -21,6 +23,21 @@ pub(super) struct DirectFilePolicy<'a> {
 struct DirectChildNames {
     files: Vec<String>,
     directories: Vec<String>,
+}
+
+pub(super) fn exists_patterns_allow_name(
+    exists: Option<&HashMap<String, String>>,
+    name: &str,
+    glob_patterns: &HashMap<String, Pattern>,
+) -> bool {
+    exists
+        .map(|exists| {
+            exists.iter().any(|(pattern, expected)| {
+                count_rule_allows_child(expected)
+                    && matches_single_compiled_pattern(pattern, name, glob_patterns)
+            })
+        })
+        .unwrap_or(false)
 }
 
 impl StructureChecker {
@@ -195,6 +212,34 @@ impl StructureChecker {
 
         Some(children)
     }
+}
+
+fn count_rule_allows_child(expected: &str) -> bool {
+    let expected = expected.trim();
+    if expected == "exists" {
+        return true;
+    }
+
+    if let Some((_, max)) = expected.split_once('-') {
+        return max
+            .trim()
+            .parse::<usize>()
+            .map(|max| max > 0)
+            .unwrap_or(false);
+    }
+
+    if let Some((_, max)) = expected.split_once("..") {
+        return max
+            .trim()
+            .parse::<usize>()
+            .map(|max| max > 0)
+            .unwrap_or(false);
+    }
+
+    expected
+        .parse::<usize>()
+        .map(|required| required > 0)
+        .unwrap_or(false)
 }
 
 fn join_child_rel(parent: &Path, name: &OsStr) -> PathBuf {
