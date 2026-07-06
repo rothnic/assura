@@ -3,4 +3,14 @@
 {"file":".trellis/spec/assura/workflow-status.md","reason":"Defines required workflow status snapshots for non-trivial Assura work."}
 {"file":"docs/goals/assura-compact-project-review-common-issues.md","reason":"Canonical objective, scope, non-goals, validation commands, and reviewer criteria."}
 {"file":"docs/analysis/2026-07-05-compact-project-review-revalidation.md","reason":"Live revalidation evidence for the current first diagnostic gap."}
+{"file":"src/cli/project_review.rs","reason":"New compact review command orchestration over existing doctor and content-query summaries."}
+{"file":"src/cli/project_review/report.rs","reason":"Stable text, JSON, YAML, and agent project-review report assembly with severity/action classification."}
+{"file":"src/cli/args.rs","reason":"Adds the `assura review [path] --format ...` command surface without adding a new binary entry point."}
+{"file":"src/cli/full_entry.rs","reason":"Dispatches the review subcommand through the existing full CLI."}
+{"file":"src/cli/doctor.rs","reason":"Exposes existing doctor report data inside the CLI module for reuse instead of duplicating validation logic."}
+{"file":"src/cli/content_query/agent_query.rs","reason":"Exposes existing content gap summary inside the CLI module for reuse by the review command."}
+{"file":".assura/config.yml","reason":"Declares the durable `src/cli/project_review/` module family with the same narrow CLI module rules as existing families."}
+{"file":".trellis/spec/assura/compact-project-review.md","reason":"Captures the executable command, schema, severity, noise, and validation contract."}
+{"file":"docs/validation.md","reason":"Documents before-new-path, before-PR, and onboarding review usage."}
+{"file":"website/src/content/docs/reference/api.md","reason":"Documents the public command surface and agent-format usage."}
 {"file":"docs/analysis/2026-07-04-backlog-priority-agent-harness-and-okf-assessment.md","reason":"Backlog assessment that ranks compact project review as the adjacent product proof after performance."}

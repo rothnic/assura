@@ -118,6 +118,12 @@ logic outside existing surfaces, emits unbounded context for agents, or leaves
 users without a clear distinction between "fix the repo" and "decide whether
 this path belongs in the repo contract."
 
+## Progress Log
+
+| Date | Update | Evidence |
+| --- | --- | --- |
+| 2026-07-05 | Implemented the first compact review slice as the `assura review` command with text, JSON, YAML, and agent formats. The command reuses existing project doctor and content agent-query gap summaries, reports blocking/advisory/inactive/informational findings, includes structure-fit guidance, and classifies raw unresolved reference candidates as informational with generated/archive/log/benchmark noise omitted from blocking policy. The line-limit check forced a natural split into `src/cli/project_review.rs` plus `src/cli/project_review/report.rs`; the durable module family was declared narrowly in `.assura/config.yml`. | `src/cli/project_review.rs`; `src/cli/project_review/report.rs`; `tests/project_review_cli.rs`; `.trellis/spec/assura/compact-project-review.md`; `docs/validation.md`; `cargo test --test project_review_cli --quiet`; `cargo run --quiet --bin assura-full -- check --format json .`; `cargo run --quiet --bin assura-full -- review . --format text`. |
+
 ## Copy/Paste Goal Prompt
 
 ```text

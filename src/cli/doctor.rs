@@ -65,7 +65,7 @@ pub(super) fn project_doctor_packet_json(
     serde_json::to_string_pretty(&report).map_err(|error| error.to_string())
 }
 
-fn build_project_doctor(
+pub(super) fn build_project_doctor(
     path: Option<PathBuf>,
     config: Option<PathBuf>,
 ) -> Result<ProjectDoctorReport, CheckError> {
@@ -97,7 +97,7 @@ fn render_explain(report: &PathExplainReport, format: CheckOutputFormat) -> Stri
     }
 }
 
-fn exit_code_for_check_error(error: &CheckError) -> ExitCode {
+pub(super) fn exit_code_for_check_error(error: &CheckError) -> ExitCode {
     match error {
         CheckError::NoConfig(_) => ExitCode::NoConfigFound,
         CheckError::MissingPath(_)
@@ -114,13 +114,13 @@ fn exit_code_for_check_error(error: &CheckError) -> ExitCode {
 pub(super) struct ProjectDoctorReport {
     schema: &'static str,
     pub(super) project_root: String,
-    config_path: String,
-    checked_path: String,
+    pub(super) config_path: String,
+    pub(super) checked_path: String,
     pub(super) check: DoctorCheckSummary,
-    configured: Vec<DoctorItem>,
+    pub(super) configured: Vec<DoctorItem>,
     pub(super) inactive: Vec<DoctorItem>,
     pub(super) gaps: Vec<DoctorItem>,
-    binary_custody: DoctorItem,
+    pub(super) binary_custody: DoctorItem,
     pub(super) blocking_violations: Vec<DoctorViolation>,
     pub(super) next_actions: Vec<DoctorNextAction>,
 }
@@ -208,9 +208,9 @@ impl ProjectDoctorReport {
 #[derive(Debug, Clone, Serialize)]
 pub(super) struct DoctorCheckSummary {
     pub(super) status: &'static str,
-    files_checked: usize,
-    dirs_checked: usize,
-    violations: usize,
+    pub(super) files_checked: usize,
+    pub(super) dirs_checked: usize,
+    pub(super) violations: usize,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -229,11 +229,11 @@ pub(super) struct DoctorNextAction {
 
 #[derive(Debug, Clone, Serialize)]
 pub(super) struct DoctorViolation {
-    path: String,
-    rule: String,
-    severity: String,
-    blocking: bool,
-    message: String,
+    pub(super) path: String,
+    pub(super) rule: String,
+    pub(super) severity: String,
+    pub(super) blocking: bool,
+    pub(super) message: String,
 }
 
 fn blocking_violations(report: &StructureCheckReport) -> Vec<DoctorViolation> {

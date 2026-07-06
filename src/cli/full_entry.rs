@@ -7,8 +7,9 @@ use tracing::{error, info};
 use super::{
     agent_command, check_command, content_command, daemon_command, editor_command, explain_command,
     fix_markdown_command, info_command, init_command, migrate_command, performance_report_command,
-    quality_plan_command, status_command, watch_command, CheckCommandOptions, Cli, Commands,
-    ExitCode, FixCommands, HookCommands, PerformanceReportCommandOptions, QualityCommands,
+    project_review_command, quality_plan_command, status_command, watch_command,
+    CheckCommandOptions, Cli, Commands, ExitCode, FixCommands, HookCommands,
+    PerformanceReportCommandOptions, QualityCommands,
 };
 
 /// Run the complete Clap/Tokio-powered CLI for non-check commands and fallbacks.
@@ -86,6 +87,9 @@ async fn run_full_cli(cli: Cli) -> ExitCode {
         }
         Commands::Status { path, format } => status_command(path, config_path, format).await,
         Commands::Doctor { path, format } => super::doctor_command(path, config_path, format).await,
+        Commands::Review { path, format } => {
+            project_review_command(path, config_path, format).await
+        }
         Commands::Explain { path, format } => explain_command(path, config_path, format).await,
         Commands::Init {
             path,

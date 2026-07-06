@@ -34,6 +34,7 @@ publishes and verifies a `.sha256` file next to every archive.
 | `assura check --format agent --agent codex` | Supported adapter | Codex delivery fixture under the shared agent format. |
 | `assura init` | Supported | Installable adoption smoke. |
 | `assura status --format json` | Supported | Installable adoption smoke. |
+| `assura review` | Experimental compact project review | Project-review CLI tests prove clean/inactive guidance, blocking structure mismatches, unmodeled path pressure, noisy reference classification, actionable content gaps, and bounded agent JSON over existing check/doctor/content-query surfaces. |
 | `assura doctor` | Experimental local project doctor | Doctor/explain CLI tests prove clean configured checks still report inactive capabilities, unwired draft model files, recommended preset gaps, and ranked next actions. |
 | `assura explain` | Experimental local path explanation | Doctor/explain CLI tests prove path explanations expose inherited scopes, skipped checks, excluded generated/binary paths, and agent-oriented output. |
 | `assura migrate` | Supported for complete LS-Lint 2.3 config semantics | LS-Lint feature matrix, native golden parity tests, migration tests, and adoption smoke. |

@@ -46,6 +46,35 @@ remain under `.trellis/tasks/` instead of the archive, when goal frontmatter
 uses a status outside `planned`, `active`, `completed`, or `archived`, or when
 the Phase 01 ledger and `assura-goal-01..08` frontmatter statuses disagree.
 
+## Compact Project Review
+
+Use `assura review` when the question is broader than "does this exact check
+pass?":
+
+```bash
+assura review . --format text
+assura review . --format json
+assura review . --format agent
+```
+
+The review command is a read-only first diagnostic over existing
+`check`, `doctor`, and `content agent-query gaps` truth. It reports blocking,
+advisory, inactive, and informational findings, then points to lower-level
+commands for evidence.
+
+Use it in three common places:
+
+| Moment | Command | What to look for |
+| --- | --- | --- |
+| Before adding a new top-level directory or module family | `assura review . --format text` | The structure-fit line: inspect nearby shape first, change `.assura/config.yml` only when the path is intentional. |
+| Before opening a PR | `assura review . --format json` | `summary.blocking == 0`; advisory/inactive items can be routed as follow-up unless the PR explicitly owns them. |
+| While onboarding an existing repository | `assura review . --format agent` | Stable agent JSON with next actions and lower-level commands, without scraping text output. |
+
+Raw unresolved repository-reference counts are informational in this review
+unless a configured validation policy promotes concrete findings through normal
+checks. Generated, archive, log, and benchmark reference noise is explicitly
+omitted from blocking review policy.
+
 ## Targeted Gates
 
 Use focused commands when the change is narrow:

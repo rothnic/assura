@@ -3739,6 +3739,11 @@ const CLI_COMMAND_VARIANT_ROWS: &[CliCommandVariantRow] = &[
     },
     CliCommandVariantRow {
         enum_name: "Commands",
+        variant_name: "Review",
+        command_surface_names: &["assura review"],
+    },
+    CliCommandVariantRow {
+        enum_name: "Commands",
         variant_name: "Explain",
         command_surface_names: &["assura explain"],
     },
@@ -4072,6 +4077,18 @@ const SUPPORT_MATRIX_ROWS: &[SupportMatrixRow] = &[
             "tests/real_project_agentic_feedback_tests.rs",
             ".arg(\"status\")",
             "\"json\"",
+        ],
+        exception_markers: &[],
+    },
+    SupportMatrixRow {
+        surface: "assura review",
+        command_surface_names: &["assura review"],
+        support_policy_markers: &["`assura review`"],
+        compatibility_markers: &["| `assura review` | Experimental compact project review |"],
+        source_markers: &["Commands::Review", "project_review_command"],
+        test_markers: &[
+            "tests/project_review_cli.rs",
+            "review_clean_repo_reports_inactive_guidance_without_blocking",
         ],
         exception_markers: &[],
     },

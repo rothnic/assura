@@ -442,6 +442,8 @@ extensions:
           status: supported
         - surface: "command:assura status --format json"
           status: supported
+        - surface: "command:assura review"
+          status: experimental
         - surface: "command:assura doctor"
           status: experimental
         - surface: "command:assura explain"
@@ -1386,6 +1388,7 @@ structure:
                 - "check"
                 - "content_query"
                 - "performance_report"
+                - "project_review"
               allow_extra: false
             children:
               check/:
@@ -1397,6 +1400,10 @@ structure:
                   naming: "snake_case"
                   max_lines: 500
               performance_report/:
+                files:
+                  naming: "snake_case"
+                  max_lines: 500
+              project_review/:
                 files:
                   naming: "snake_case"
                   max_lines: 500

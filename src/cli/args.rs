@@ -92,6 +92,15 @@ pub enum Commands {
         format: CheckOutputFormat,
     },
 
+    #[command(about = "Run a compact project health review over existing Assura checks")]
+    Review {
+        #[arg(help = "Path to inspect (defaults to current directory)")]
+        path: Option<PathBuf>,
+
+        #[arg(short, long, value_enum, default_value = "text")]
+        format: CheckOutputFormat,
+    },
+
     #[command(about = "Explain why structure rules apply or skip one path")]
     Explain {
         #[arg(help = "Path to explain (defaults to current directory)")]

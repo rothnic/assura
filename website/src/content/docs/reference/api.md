@@ -16,9 +16,9 @@ plugin APIs.
 
 > **Current scope**
 >
-> Build automation against `assura check`, `assura status`, `assura agent`,
-> `assura editor`, `assura content`, and the JSON/YAML report fields
-> documented here.
+> Build automation against `assura check`, `assura status`, `assura review`,
+> `assura agent`, `assura editor`, `assura content`, and the JSON/YAML report
+> fields documented here.
 
 ## Command Surface
 
@@ -26,6 +26,7 @@ plugin APIs.
 | --- | --- |
 | `assura check [path]` | Validate a project or subpath |
 | `assura status [path]` | Print discovered config and rule summary |
+| `assura review [path]` | Run a compact first diagnostic over check, doctor, and content gaps |
 | `assura init [path]` | Create a starter `.assura/config.yml` |
 | `assura migrate [.ls-lint.yml ...]` | Convert LS-Lint 2.3 rule config |
 | `assura agent ...` | Run local project-intelligence commands for coding agents |
@@ -34,8 +35,14 @@ plugin APIs.
 | `assura info [path]` | Print text configuration details |
 | `assura watch [path]` | Run one check as a current watch wrapper |
 
-Supported check formats are `text`, `json`, `yaml`, `advice`, and `status`.
-Supported status formats are `text`, `json`, and `yaml`.
+Supported check and review formats are `text`, `json`, `yaml`, `advice`,
+`status`, and `agent`. Supported status formats are `text`, `json`, and
+`yaml`.
+
+Use `assura review . --format text` before adding a new top-level path or
+opening a PR. Use `--format agent` when a local coding agent needs the compact
+JSON packet with blocking, advisory, inactive, informational, and omitted-noise
+classification.
 
 ## Init Options
 

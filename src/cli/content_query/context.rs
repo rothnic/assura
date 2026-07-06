@@ -445,21 +445,21 @@ pub(crate) struct ContentQueryError {
 }
 
 impl ContentQueryError {
-    pub(super) fn configuration(message: impl Into<String>) -> Self {
+    pub(crate) fn configuration(message: impl Into<String>) -> Self {
         Self {
             message: message.into(),
             exit_code: ExitCode::ConfigurationError,
         }
     }
 
-    pub(super) fn no_config(message: impl Into<String>) -> Self {
+    pub(crate) fn no_config(message: impl Into<String>) -> Self {
         Self {
             message: message.into(),
             exit_code: ExitCode::NoConfigFound,
         }
     }
 
-    pub(super) fn runtime(message: impl Into<String>) -> Self {
+    pub(crate) fn runtime(message: impl Into<String>) -> Self {
         Self {
             message: message.into(),
             exit_code: ExitCode::RuntimeError,
