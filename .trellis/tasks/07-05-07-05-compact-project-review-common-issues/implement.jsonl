@@ -8,8 +8,11 @@
 {"file":"src/cli/args.rs","reason":"Adds the `assura review [path] --format ...` command surface without adding a new binary entry point."}
 {"file":"src/cli/full_entry.rs","reason":"Dispatches the review subcommand through the existing full CLI."}
 {"file":"src/cli/doctor.rs","reason":"Exposes existing doctor report data inside the CLI module for reuse instead of duplicating validation logic."}
+{"file":"src/cli/doctor_report.rs","reason":"Natural line-limit split for project doctor report types and assembly while keeping doctor.rs focused on command orchestration."}
 {"file":"src/cli/content_query/agent_query.rs","reason":"Exposes existing content gap summary inside the CLI module for reuse by the review command."}
 {"file":".assura/config.yml","reason":"Declares the durable `src/cli/project_review/` module family with the same narrow CLI module rules as existing families."}
+{"file":"src/cli/project_review/heatmap.rs","reason":"Adds advisory directory heat-map model, scoring, risk flags, text rendering, and reuse of the shared structure report."}
+{"file":"src/cli/project_review/heatmap/git.rs","reason":"Collects best-effort local Git branch, status, branch-diff, and churn signals without making Git availability a hard dependency."}
 {"file":".trellis/spec/assura/compact-project-review.md","reason":"Captures the executable command, schema, severity, noise, and validation contract."}
 {"file":"docs/validation.md","reason":"Documents before-new-path, before-PR, and onboarding review usage."}
 {"file":"website/src/content/docs/reference/api.md","reason":"Documents the public command surface and agent-format usage."}

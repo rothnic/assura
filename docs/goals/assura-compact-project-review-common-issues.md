@@ -44,6 +44,9 @@ inconsistent with the repository's existing structure.
 - Include structure-fit guidance for new files/directories: check the nearby
   project shape, avoid duplication, and only change `.assura/config.yml` when
   the new path is intentionally part of the repository contract.
+- Include an advisory directory heat map that rolls up validation, content-gap,
+  worktree, branch, and churn pressure without turning Git availability into a
+  hard requirement.
 - Keep output bounded for agent use, with stable JSON fields and concise text.
 - Filter or classify low-value reference noise from generated artifacts,
   archives, benchmark history, and logs before surfacing content-gap counts.
@@ -70,13 +73,15 @@ inconsistent with the repository's existing structure.
   crowding out the task.
 - The flow distinguishes "fix this file" from "decide whether this path should
   exist in the project contract."
+- The flow shows where work is heating up by directory so agents can notice
+  growing untracked, changed, violating, or branch-heavy areas while working.
 - Generated/archive/log/benchmark reference noise is filtered, classified, or
   explicitly reported as omitted.
 - Docs show how to use the compact review before creating a new top-level
   directory, before opening a PR, and when onboarding an existing repository.
 - Tests cover a clean repo, a structure mismatch, duplicated/unmodeled path
-  pressure, inactive optional guidance, noisy reference gaps, and a genuinely
-  actionable content gap.
+  pressure, inactive optional guidance, noisy reference gaps, a genuinely
+  actionable content gap, and directory heat-map rollups from real Git state.
 
 ## Validation Commands
 
@@ -123,6 +128,8 @@ this path belongs in the repo contract."
 | Date | Update | Evidence |
 | --- | --- | --- |
 | 2026-07-05 | Implemented the first compact review slice as the `assura review` command with text, JSON, YAML, and agent formats. The command reuses existing project doctor and content agent-query gap summaries, reports blocking/advisory/inactive/informational findings, includes structure-fit guidance, and classifies raw unresolved reference candidates as informational with generated/archive/log/benchmark noise omitted from blocking policy. The line-limit check forced a natural split into `src/cli/project_review.rs` plus `src/cli/project_review/report.rs`; the durable module family was declared narrowly in `.assura/config.yml`. | `src/cli/project_review.rs`; `src/cli/project_review/report.rs`; `tests/project_review_cli.rs`; `.trellis/spec/assura/compact-project-review.md`; `docs/validation.md`; `cargo test --test project_review_cli --quiet`; `cargo run --quiet --bin assura-full -- check --format json .`; `cargo run --quiet --bin assura-full -- review . --format text`. |
+| 2026-07-05 | Added the advisory directory heat-map slice to `assura review`. The report now includes `heatmap` in JSON/agent output and compact `heat:`/`hot:` text lines with validation, naming, content-gap totals, Git branch/worktree state, churn, risk flags, and top hot directories. The implementation reuses the same structure report already built for doctor and best-effort local Git calls; Git unavailable is non-fatal. A real temporary Git repository test now proves branch commits, branch-changed files, untracked files, modified files, and a naming violation roll up under `src`. The line-limit gate also forced a natural doctor split into `src/cli/doctor_report.rs` instead of shortening `doctor.rs`. | `src/cli/project_review/heatmap.rs`; `src/cli/project_review/heatmap/git.rs`; `src/cli/doctor_report.rs`; `tests/project_review_cli.rs`; `.trellis/spec/assura/compact-project-review.md`; `docs/validation.md`; `docs/support-policy.md`; `website/src/content/docs/reference/api.md`; `cargo test --test project_review_cli --quiet`; `cargo test --test doctor_explain_cli --quiet`; `cargo run --quiet -- check --format json .`. |
+| 2026-07-05 | Independent review found four optimization/correctness gaps. Fixed the valid issues before commit: nested Git checkouts now scope status/diff/churn to the Assura project path and strip repo-root prefixes, directory-targeted violations now roll up to the directory itself, Git reads run with optional locks disabled, and normal doctor/review construction no longer clones the full `StructureCheckReport`. Added regressions for nested Git scoping and `unexpected_directory` hot-dir visibility. | `src/cli/project_review/heatmap.rs`; `src/cli/project_review/heatmap/git.rs`; `src/cli/doctor.rs`; `src/cli/doctor_report.rs`; `tests/project_review_cli.rs`; `cargo test --test project_review_cli --quiet` now runs 7 tests; `cargo test --test doctor_explain_cli --quiet`; `cargo run --quiet -- check --format json .`. |
 
 ## Copy/Paste Goal Prompt
 

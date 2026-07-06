@@ -62,13 +62,18 @@ The review command is a read-only first diagnostic over existing
 advisory, inactive, and informational findings, then points to lower-level
 commands for evidence.
 
+The same report includes an advisory `heatmap` packet. It rolls structure
+violations, content-gap counts, and best-effort Git state into compact totals
+and top hot directories. Git is optional: outside a checkout,
+`heatmap.git_available=false` and review still completes.
+
 Use it in three common places:
 
 | Moment | Command | What to look for |
 | --- | --- | --- |
 | Before adding a new top-level directory or module family | `assura review . --format text` | The structure-fit line: inspect nearby shape first, change `.assura/config.yml` only when the path is intentional. |
-| Before opening a PR | `assura review . --format json` | `summary.blocking == 0`; advisory/inactive items can be routed as follow-up unless the PR explicitly owns them. |
-| While onboarding an existing repository | `assura review . --format agent` | Stable agent JSON with next actions and lower-level commands, without scraping text output. |
+| Before opening a PR | `assura review . --format json` | `summary.blocking == 0`; use `heatmap.hot_dirs` to spot large changed/untracked/violating areas before review. |
+| While onboarding an existing repository | `assura review . --format agent` | Stable agent JSON with next actions, heat-map signals, and lower-level commands, without scraping text output. |
 
 Raw unresolved repository-reference counts are informational in this review
 unless a configured validation policy promotes concrete findings through normal

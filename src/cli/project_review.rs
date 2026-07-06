@@ -1,13 +1,15 @@
 //! Compact project review command built from existing Assura truth surfaces.
 
+mod heatmap;
 mod report;
 
+use self::heatmap::build_project_review_heatmap;
 use self::report::{render_project_review, ProjectReviewReport};
 use super::args::CheckOutputFormat;
 use super::check::CheckError;
 use super::content_query::context::{ContentQueryError, QueryContext};
 use super::content_query::{content_gap_summary, AgentQueryGapsOutput};
-use super::doctor::{build_project_doctor, exit_code_for_check_error};
+use super::doctor::{build_project_doctor_with_structure_report, exit_code_for_check_error};
 use super::ExitCode;
 use std::path::PathBuf;
 
@@ -37,11 +39,16 @@ fn build_project_review(
     path: Option<PathBuf>,
     config: Option<PathBuf>,
 ) -> Result<ProjectReviewReport, ProjectReviewError> {
-    let doctor =
-        build_project_doctor(path.clone(), config.clone()).map_err(ProjectReviewError::Check)?;
+    let doctor_build = build_project_doctor_with_structure_report(path.clone(), config.clone())
+        .map_err(ProjectReviewError::Check)?;
     let content_gaps =
         load_content_gap_summary(path, config).map_err(ProjectReviewError::Content)?;
-    Ok(ProjectReviewReport::from_parts(doctor, content_gaps))
+    let heatmap = build_project_review_heatmap(&doctor_build.structure_report, &content_gaps);
+    Ok(ProjectReviewReport::from_parts(
+        doctor_build.doctor,
+        content_gaps,
+        heatmap,
+    ))
 }
 
 fn load_content_gap_summary(

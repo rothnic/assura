@@ -1,5 +1,6 @@
 use serde_json::Value;
 use std::fs;
+use std::path::Path;
 use std::process::{Command, Output};
 use tempfile::TempDir;
 
@@ -19,6 +20,26 @@ fn run_review(args: &[&str]) -> Output {
     let mut command = vec!["review"];
     command.extend_from_slice(args);
     run_assura(&command)
+}
+
+fn run_git(project: &TempDir, args: &[&str]) {
+    run_git_path(project.path(), args);
+}
+
+fn run_git_path(project: &Path, args: &[&str]) {
+    let output = Command::new("git")
+        .arg("-C")
+        .arg(project)
+        .args(args)
+        .output()
+        .expect("git command runs");
+    assert!(
+        output.status.success(),
+        "git {:?}\nstdout:\n{}\nstderr:\n{}",
+        args,
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
 }
 
 fn json_from_success(output: Output) -> Value {
@@ -98,6 +119,7 @@ exclude:
             .len()
             <= 4
     );
+    assert_eq!(agent["heatmap"]["git_available"], false);
 }
 
 #[test]
@@ -161,6 +183,14 @@ exclude:
     let stdout = String::from_utf8_lossy(&text.stdout);
     assert!(stdout.contains("assura explain <path> --format json"));
     assert!(stdout.contains(".assura/config.yml"));
+
+    let experiment_heat = review["heatmap"]["hot_dirs"]
+        .as_array()
+        .expect("hot dirs")
+        .iter()
+        .find(|dir| dir["path"] == "experiments")
+        .unwrap_or_else(|| panic!("missing experiments heat: {review:#}"));
+    assert_eq!(experiment_heat["validation_violations"], 1);
 }
 
 #[test]
@@ -224,5 +254,122 @@ fn review_reports_actionable_content_gap_from_content_runtime_fixture() {
     assert_eq!(
         content["command"],
         "assura content agent-query diagnostics --format json ."
+    );
+}
+
+#[test]
+fn review_heatmap_rolls_up_git_and_validation_signals_by_directory() {
+    let project = TempDir::new().expect("temp project");
+    write_config(
+        &project,
+        r#"
+structure:
+  ./:
+    extra: true
+    children:
+      src/:
+        files:
+          naming: kebab-case
+          extensions:
+            - rs
+exclude:
+  - .assura/**
+  - .git/**
+"#,
+    );
+    fs::create_dir_all(project.path().join("src")).expect("src dir");
+    fs::create_dir_all(project.path().join("docs")).expect("docs dir");
+    fs::write(project.path().join("src/good.rs"), "fn good() {}\n").expect("good rs");
+
+    run_git(&project, &["init"]);
+    run_git(&project, &["config", "user.email", "assura@example.test"]);
+    run_git(&project, &["config", "user.name", "Assura Test"]);
+    run_git(&project, &["branch", "-M", "main"]);
+    run_git(&project, &["add", "."]);
+    run_git(&project, &["commit", "-m", "initial"]);
+    run_git(&project, &["checkout", "-b", "feature/heat"]);
+    fs::write(project.path().join("docs/branch.md"), "# Branch doc\n").expect("branch doc");
+    run_git(&project, &["add", "docs/branch.md"]);
+    run_git(&project, &["commit", "-m", "branch doc"]);
+
+    fs::write(
+        project.path().join("src/good.rs"),
+        "fn good() {}\nfn changed() {}\n",
+    )
+    .expect("modify good rs");
+    fs::write(project.path().join("src/BadName.rs"), "fn bad_name() {}\n").expect("bad rs");
+
+    let output = run_review(&[project.path().to_str().unwrap(), "--format", "json"]);
+    assert_eq!(output.status.code(), Some(1));
+    let review = json_from_output(&output);
+
+    assert_eq!(review["heatmap"]["git_available"], true);
+    assert_eq!(review["heatmap"]["branch"]["name"], "feature/heat");
+    assert_eq!(review["heatmap"]["branch"]["commits_on_branch"], 1);
+    assert_eq!(review["heatmap"]["totals"]["untracked_files"], 1);
+    assert_eq!(review["heatmap"]["totals"]["modified_files"], 1);
+    assert_eq!(review["heatmap"]["totals"]["branch_changed_files"], 1);
+    assert_eq!(review["heatmap"]["totals"]["validation_violations"], 1);
+    assert_eq!(review["heatmap"]["totals"]["naming_violations"], 1);
+
+    let hot_dirs = review["heatmap"]["hot_dirs"].as_array().expect("hot dirs");
+    let src_heat = hot_dirs
+        .iter()
+        .find(|dir| dir["path"] == "src")
+        .unwrap_or_else(|| panic!("missing src heat: {review:#}"));
+    assert_eq!(src_heat["validation_violations"], 1);
+    assert_eq!(src_heat["naming_violations"], 1);
+    assert_eq!(src_heat["untracked_files"], 1);
+    assert_eq!(src_heat["modified_files"], 1);
+
+    let text = run_review(&[project.path().to_str().unwrap(), "--format", "text"]);
+    let stdout = String::from_utf8_lossy(&text.stdout);
+    assert!(stdout.contains("heat: !1 chg=1 ?1 branch_files=1 commits=1"));
+    assert!(stdout.contains("hot: src !1 chg=1 ?1"));
+}
+
+#[test]
+fn review_heatmap_scopes_git_signals_to_nested_project_root() {
+    let repo = TempDir::new().expect("temp repo");
+    let project = repo.path().join("workspace/project");
+    fs::create_dir_all(project.join(".assura")).expect("assura dir");
+    fs::create_dir_all(project.join("src")).expect("src dir");
+    fs::write(
+        project.join(".assura/config.yml"),
+        r#"
+structure:
+  ./:
+    extra: true
+exclude:
+  - .assura/**
+"#,
+    )
+    .expect("write config");
+    fs::write(project.join("src/good.rs"), "fn good() {}\n").expect("good rs");
+    fs::write(repo.path().join("outside.txt"), "outside\n").expect("outside");
+
+    run_git(&repo, &["init"]);
+    run_git(&repo, &["config", "user.email", "assura@example.test"]);
+    run_git(&repo, &["config", "user.name", "Assura Test"]);
+    run_git(&repo, &["branch", "-M", "main"]);
+    run_git(&repo, &["add", "."]);
+    run_git(&repo, &["commit", "-m", "initial"]);
+
+    fs::write(repo.path().join("outside.txt"), "outside\nchanged\n").expect("outside changed");
+    fs::write(repo.path().join("outside-new.txt"), "new outside\n").expect("outside new");
+
+    let review = json_from_success(run_review(&[project.to_str().unwrap(), "--format", "json"]));
+
+    assert_eq!(review["heatmap"]["git_available"], true);
+    assert_eq!(review["heatmap"]["totals"]["modified_files"], 0);
+    assert_eq!(review["heatmap"]["totals"]["untracked_files"], 0);
+    assert_eq!(review["heatmap"]["totals"]["line_additions"], 0);
+    assert_eq!(review["heatmap"]["totals"]["branch_changed_files"], 0);
+    assert!(
+        review["heatmap"]["hot_dirs"]
+            .as_array()
+            .expect("hot dirs")
+            .is_empty(),
+        "nested project heat should ignore sibling repo changes: {review:#}"
     );
 }

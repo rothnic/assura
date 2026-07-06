@@ -23,10 +23,23 @@
 - The command reuses `doctor` output plus `content agent-query gaps` summary;
   it must not add a parallel validation engine.
 - JSON includes `status`, `structure`, `summary`, `findings`,
-  `content_gaps`, `omitted_noise`, `next_actions`, and
+  `content_gaps`, `heatmap`, `omitted_noise`, `next_actions`, and
   `lower_level_commands`.
-- Agent output includes bounded `findings`, `omitted_noise`, and
-  `next_actions` arrays so wrappers do not need to scrape text.
+- Agent output includes bounded `findings`, `heatmap.hot_dirs`,
+  `omitted_noise`, and `next_actions` arrays so wrappers do not need to scrape
+  text.
+- `heatmap` is an advisory rolled-up signal packet, not an additional
+  validation engine. It reuses the structure check report, content-gap summary,
+  and best-effort local Git state.
+- `heatmap.git_available=false` is non-fatal. Review must still complete
+  outside Git repositories.
+- `heatmap.hot_dirs` is capped at five entries and ranks directory-level
+  pressure from validation violations, naming violations, line-limit
+  violations, tracked worktree changes, untracked files, deleted/conflicted
+  files, branch-changed files, and line churn.
+- `heatmap.totals` includes branch-level signals such as files changed since
+  the detected base branch and commits on the current branch when Git can
+  provide them.
 - Finding severities are `blocking`, `advisory`, `inactive`, or
   `informational`.
 - Finding action kinds are `fix-now`, `configure-intentionally`,
@@ -48,6 +61,8 @@
 | Structure check has blocking violations | Exit `1`; status `fail`; findings include `fix-now` blocking items. |
 | Content runtime has configured blocking diagnostics | Exit follows `check`; content gaps also point to content-query details. |
 | Unresolved repository-reference candidates exist only as raw candidates | Exit `0` when no blocking checks fail; finding is informational. |
+| Project is not a Git checkout | Exit follows normal review; `heatmap.git_available=false`; Git counters stay zero/unknown. |
+| Git checkout has branch/worktree pressure | Review includes compact `heat:` and `hot:` text plus JSON `heatmap` totals and directory rollups. |
 | No config is discoverable | Exit with the existing no-config error code. |
 | Content-query loading fails | Exit with the existing content-query error code. |
 
@@ -67,6 +82,8 @@
 - Clean repo test: pass structure, no blocking summary, inactive guidance.
 - Structure mismatch test: nonzero exit and blocking `fix-now` finding.
 - Unmodeled path-pressure test: unexpected path plus structure-fit guidance.
+- Heat-map test: real Git branch/worktree state plus a validation violation
+  rolls up to `heatmap.totals` and the expected hot directory.
 - Noisy reference test: unresolved candidate count is informational and
   omitted-noise policy includes generated/archive/log/benchmark categories.
 - Actionable content-gap test: content runtime diagnostics surface as content

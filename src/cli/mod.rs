@@ -47,6 +47,8 @@ mod doctor_agent;
 #[cfg(feature = "full-cli")]
 mod doctor_content;
 #[cfg(feature = "full-cli")]
+mod doctor_report;
+#[cfg(feature = "full-cli")]
 mod editor;
 #[cfg(feature = "full-cli")]
 mod editor_args;

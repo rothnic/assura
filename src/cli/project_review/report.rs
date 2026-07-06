@@ -1,5 +1,6 @@
 //! Project review report assembly and rendering.
 
+use super::heatmap::ProjectReviewHeatmap;
 use crate::cli::args::CheckOutputFormat;
 use crate::cli::content_query::AgentQueryGapsOutput;
 use crate::cli::doctor::{DoctorItem, DoctorNextAction, DoctorViolation, ProjectDoctorReport};
@@ -36,6 +37,7 @@ pub(super) struct ProjectReviewReport {
     summary: ProjectReviewSummary,
     findings: Vec<ProjectReviewFinding>,
     content_gaps: ProjectReviewContentGaps,
+    heatmap: ProjectReviewHeatmap,
     omitted_noise: Vec<ProjectReviewOmission>,
     next_actions: Vec<ProjectReviewAction>,
     lower_level_commands: Vec<&'static str>,
@@ -45,6 +47,7 @@ impl ProjectReviewReport {
     pub(super) fn from_parts(
         doctor: ProjectDoctorReport,
         content_gaps: AgentQueryGapsOutput,
+        heatmap: ProjectReviewHeatmap,
     ) -> Self {
         let mut findings = Vec::new();
         findings.extend(blocking_findings(&doctor.blocking_violations));
@@ -78,6 +81,7 @@ impl ProjectReviewReport {
             summary,
             findings,
             content_gaps: ProjectReviewContentGaps::from(content_gaps),
+            heatmap,
             omitted_noise,
             next_actions: review_next_actions(&doctor.next_actions),
             lower_level_commands: vec![
@@ -121,6 +125,7 @@ impl ProjectReviewReport {
             ),
         ];
 
+        lines.extend(self.heatmap.render_text_lines());
         lines.extend(text_finding_lines(
             "fix-now",
             self.findings_by_action("fix-now"),
@@ -247,6 +252,7 @@ struct ProjectReviewAgentReport {
     summary: ProjectReviewSummary,
     findings: Vec<ProjectReviewFinding>,
     content_gaps: ProjectReviewContentGaps,
+    heatmap: ProjectReviewHeatmap,
     omitted_noise: Vec<ProjectReviewOmission>,
     next_actions: Vec<ProjectReviewAction>,
     lower_level_commands: Vec<&'static str>,
@@ -261,6 +267,7 @@ impl From<&ProjectReviewReport> for ProjectReviewAgentReport {
             summary: report.summary.clone(),
             findings: report.findings.iter().take(12).cloned().collect(),
             content_gaps: report.content_gaps.clone(),
+            heatmap: report.heatmap.clone(),
             omitted_noise: report.omitted_noise.clone(),
             next_actions: report.next_actions.iter().take(6).cloned().collect(),
             lower_level_commands: report.lower_level_commands.clone(),
