@@ -48,6 +48,7 @@ SKILL.md: exists:0-1
 TEMPLATE.md: exists:0-1
 prd.json: exists:0-1
 skills/:
+  required: false
   inherit: false
   README.md: exists:0-1
   TEMPLATE.md: exists:0-1
@@ -79,7 +80,7 @@ extra: false
 const BUILTIN_AGENTIC_PROJECT: &str = r#"
 AGENTS.md: exists:1
 .agents/:
-  required: true
+  required: false
   use: "@agents-dir"
 .assura/: exists:0-1
 "#;

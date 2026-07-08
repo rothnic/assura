@@ -84,7 +84,8 @@ structure:
         .children
         .as_ref()
         .and_then(|children| children.get("skills"))
-        .expect("agents directory should require skills child");
+        .expect("agents directory should allow skills child");
+    assert!(!skills.required);
     assert!(!skills.inherit);
     let skill = skills
         .children
@@ -156,8 +157,8 @@ structure:
         .children
         .as_ref()
         .and_then(|children| children.get(".agents"))
-        .expect("agentic project should require .agents child");
-    assert!(agents.required);
+        .expect("agentic project should allow .agents child");
+    assert!(!agents.required);
     assert!(!agents.inherit);
 
     let skill = agents

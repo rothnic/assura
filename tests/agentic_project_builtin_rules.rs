@@ -25,10 +25,9 @@ fn json_from_success(output: Output) -> Value {
 }
 
 #[test]
-fn agentic_project_builtin_rule_enforces_root_guidance_and_skill_tree() {
+fn agentic_project_builtin_rule_allows_optional_agents_and_constrains_skills() {
     let project = TempDir::new().unwrap();
     fs::create_dir_all(project.path().join(".assura")).unwrap();
-    fs::create_dir_all(project.path().join(".agents/skills/release-maintenance")).unwrap();
     fs::write(
         project.path().join(".assura/config.yml"),
         r#"version: "2.0"
@@ -44,6 +43,25 @@ exclude:
     )
     .unwrap();
     fs::write(project.path().join("AGENTS.md"), "# Agent Guidance\n").unwrap();
+
+    let valid_without_agents = json_from_success(run_assura(&[
+        "check",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]));
+    assert_eq!(valid_without_agents["success"], true);
+
+    fs::create_dir_all(project.path().join(".agents")).unwrap();
+    let valid_without_skills = json_from_success(run_assura(&[
+        "check",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]));
+    assert_eq!(valid_without_skills["success"], true);
+
+    fs::create_dir_all(project.path().join(".agents/skills/release-maintenance")).unwrap();
     fs::write(
         project
             .path()

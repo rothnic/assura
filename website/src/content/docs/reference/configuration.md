@@ -133,9 +133,9 @@ structure:
     use: "@agentic-project"
 ```
 
-`@agentic-project` requires root `AGENTS.md`, requires `.agents/`, applies the
-`.agents/` best-practice rule below, and allows `.assura/` when root
-direct-content policies are closed.
+`@agentic-project` requires root `AGENTS.md`, allows optional `.agents/`,
+applies the `.agents/` best-practice rule below when that directory exists,
+and allows `.assura/` when root direct-content policies are closed.
 
 Use the narrower `.agents/` preset only when you are validating that subtree
 directly:
@@ -146,7 +146,8 @@ structure:
     use: "@agents-dir"
 ```
 
-`@agents-dir` validates `.agents/skills/{skill}/`,
+`@agents-dir` allows optional `skills/` content and validates
+`.agents/skills/{skill}/`,
 `.agents/skills/built-in/{skill}/`, and
 `.agents/skills/custom/{skill}/` directories. Skill directories must be
 kebab-case and contain `SKILL.md`; optional `agents/`, `references/`,

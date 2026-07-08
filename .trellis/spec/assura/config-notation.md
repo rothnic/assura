@@ -320,9 +320,10 @@ structure:
     use: "@agentic-project"
 ```
 
-The built-in `@agentic-project` requires root `AGENTS.md`, requires a
-`.agents/` directory, applies `@agents-dir` to that directory, and allows the
-`.assura/` config directory when root direct-content policies are closed.
+The built-in `@agentic-project` requires root `AGENTS.md`, allows an optional
+`.agents/` directory, applies `@agents-dir` when that directory exists, and
+allows the `.assura/` config directory when root direct-content policies are
+closed.
 
 Use the narrower agent-directory rule when the project only needs to validate
 a `.agents/` subtree:
@@ -333,16 +334,17 @@ structure:
     use: "@agents-dir"
 ```
 
-The built-in `@agents-dir` composes `@agent-skill-dir` for each
-`.agents/skills/{skill}/`, `.agents/skills/built-in/{skill}/`, and
-`.agents/skills/custom/{skill}/` directory that exists. Each skill directory
-is an inheritance boundary, must be kebab-case, must contain `SKILL.md`, and
-receives the standard skill file line/size limits. Optional resource
-subdirectories such as `agents/`, `references/`, `scripts/`, and `assets/` are
-validated when present with kebab-case naming and the same file size/line
-limits. Exact file rules can stay concise through rule references such as
-`SKILL.md: "@agent-skill-file"`; project configs should not repeat expanded
-file-bundle YAML for this common case.
+The built-in `@agents-dir` allows optional `skills/` content and composes
+`@agent-skill-dir` for each `.agents/skills/{skill}/`,
+`.agents/skills/built-in/{skill}/`, and `.agents/skills/custom/{skill}/`
+directory that exists. Each skill directory is an inheritance boundary, must
+be kebab-case, must contain `SKILL.md`, and receives the standard skill file
+line/size limits. Optional resource subdirectories such as `agents/`,
+`references/`, `scripts/`, and `assets/` are validated when present with
+kebab-case naming and the same file size/line limits. Exact file rules can
+stay concise through rule references such as `SKILL.md: "@agent-skill-file"`;
+project configs should not repeat expanded file-bundle YAML for this common
+case.
 
 ## Markdown Outline Notation
 
