@@ -2,7 +2,7 @@
 
 use super::PerformanceResultRow;
 use serde_json::Value;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -39,38 +39,99 @@ struct NativeBaselineKey {
     assura_binary_profile: String,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+struct NativeBaselineEnvironmentKey {
+    os: String,
+    arch: String,
+    rust_version: String,
+    node_version: String,
+    npm_version: String,
+    assura_version: String,
+    assura_binary_profile: String,
+}
+
 pub(super) fn annotate_native_regressions(rows: &mut [PerformanceResultRow]) {
     let baseline = load_native_baseline_rows().ok();
+    annotate_native_regressions_with_baseline(rows, baseline.as_ref());
+}
 
+fn annotate_native_regressions_with_baseline(
+    rows: &mut [PerformanceResultRow],
+    baseline: Option<&BTreeMap<NativeBaselineKey, NativeBaselineRow>>,
+) {
+    let baseline_environments = baseline.map(baseline_environment_keys);
     for row in rows.iter_mut() {
         if !row.row_family.starts_with("native:") {
             continue;
         }
 
-        let Some(baseline) = baseline.as_ref() else {
+        let Some(baseline) = baseline else {
             row.native_regression_status = Some(STATUS_BASELINE_MISSING.to_string());
             continue;
         };
 
         let key = NativeBaselineKey::from_performance_row(row);
-        let Some(baseline_row) = baseline.get(&key) else {
+        if let Some(baseline_row) = baseline.get(&key).copied() {
+            apply_native_baseline(row, baseline_row);
+            continue;
+        }
+
+        let environment_key = NativeBaselineEnvironmentKey::from_performance_row(row);
+        if baseline_environments
+            .as_ref()
+            .is_some_and(|environments| environments.contains(&environment_key))
+        {
             row.native_regression_status = Some(STATUS_BASELINE_ROW_MISSING.to_string());
             continue;
-        };
+        }
 
-        row.native_regression_baseline_median_ms = Some(baseline_row.median_ms);
-        row.native_regression_baseline_report_count = Some(baseline_row.report_count);
-        row.native_regression_baseline_sample_count = Some(baseline_row.sample_count);
-        row.native_regression_threshold_ms = Some(baseline_row.threshold_ms);
-        row.native_regression_delta_ms = row
-            .median_runtime_ms
-            .map(|median_ms| median_ms - baseline_row.median_ms);
-        row.native_regression_status = Some(classify_regression_status(
-            row.median_runtime_ms,
-            baseline_row.threshold_ms,
-            baseline_row.report_count,
-        ));
+        match provisional_baseline_from_current_row(row) {
+            Some(baseline_row) => apply_native_baseline(row, baseline_row),
+            None => row.native_regression_status = Some(STATUS_BASELINE_ROW_UNUSABLE.to_string()),
+        }
     }
+}
+
+fn baseline_environment_keys(
+    baseline: &BTreeMap<NativeBaselineKey, NativeBaselineRow>,
+) -> BTreeSet<NativeBaselineEnvironmentKey> {
+    baseline
+        .keys()
+        .map(NativeBaselineEnvironmentKey::from_baseline_key)
+        .collect()
+}
+
+fn apply_native_baseline(row: &mut PerformanceResultRow, baseline_row: NativeBaselineRow) {
+    row.native_regression_baseline_median_ms = Some(baseline_row.median_ms);
+    row.native_regression_baseline_report_count = Some(baseline_row.report_count);
+    row.native_regression_baseline_sample_count = Some(baseline_row.sample_count);
+    row.native_regression_threshold_ms = Some(baseline_row.threshold_ms);
+    row.native_regression_delta_ms = row
+        .median_runtime_ms
+        .map(|median_ms| median_ms - baseline_row.median_ms);
+    row.native_regression_status = Some(classify_regression_status(
+        row.median_runtime_ms,
+        baseline_row.threshold_ms,
+        baseline_row.report_count,
+    ));
+}
+
+fn provisional_baseline_from_current_row(row: &PerformanceResultRow) -> Option<NativeBaselineRow> {
+    let median_ms = row.median_runtime_ms?;
+    let max_ms = row.distribution.max_ms?;
+    let min_ms = row.distribution.min_ms.unwrap_or(median_ms);
+    Some(NativeBaselineRow {
+        median_ms,
+        threshold_ms: derive_threshold_ms(
+            1,
+            median_ms,
+            min_ms,
+            max_ms,
+            &row.distribution.samples_ms,
+        ),
+        report_count: 1,
+        sample_count: row.distribution.samples,
+    })
 }
 
 impl NativeBaselineKey {
@@ -107,6 +168,35 @@ impl NativeBaselineKey {
                 .unwrap_or("not-applicable")
                 .to_string(),
         })
+    }
+}
+
+impl NativeBaselineEnvironmentKey {
+    fn from_performance_row(row: &PerformanceResultRow) -> Self {
+        Self {
+            os: row.os.clone(),
+            arch: row.arch.clone(),
+            rust_version: row.rust_version.clone(),
+            node_version: row.node_version.clone(),
+            npm_version: row.npm_version.clone(),
+            assura_version: row.assura_version.clone(),
+            assura_binary_profile: row
+                .assura_binary_profile
+                .clone()
+                .unwrap_or_else(|| "not-applicable".to_string()),
+        }
+    }
+
+    fn from_baseline_key(key: &NativeBaselineKey) -> Self {
+        Self {
+            os: key.os.clone(),
+            arch: key.arch.clone(),
+            rust_version: key.rust_version.clone(),
+            node_version: key.node_version.clone(),
+            npm_version: key.npm_version.clone(),
+            assura_version: key.assura_version.clone(),
+            assura_binary_profile: key.assura_binary_profile.clone(),
+        }
     }
 }
 
@@ -362,132 +452,5 @@ fn repo_root() -> PathBuf {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::{
-        baseline_is_calibrated, classify_regression_status, derive_threshold_ms, median,
-        representative_provisional_max_ms, NativeBaselineKey,
-    };
-    use serde_json::json;
-
-    #[test]
-    fn threshold_uses_highest_observed_sample_once_baseline_is_calibrated() {
-        let threshold = derive_threshold_ms(2, 100.0, 95.0, 115.0, &[95.0, 100.0, 115.0]);
-        assert_eq!(threshold, 115.0);
-    }
-
-    #[test]
-    fn provisional_threshold_adds_single_report_slack() {
-        let threshold = derive_threshold_ms(
-            1,
-            0.501_056,
-            0.498_84,
-            0.508_271,
-            &[0.498_84, 0.500_311, 0.501_056, 0.502_117, 0.508_271],
-        );
-        assert!((threshold - 0.542_702).abs() < f64::EPSILON);
-    }
-
-    #[test]
-    fn provisional_threshold_ignores_single_extreme_outlier() {
-        let threshold = derive_threshold_ms(
-            1,
-            0.486,
-            0.482,
-            24.909,
-            &[0.482, 0.484, 0.486, 0.491, 24.909],
-        );
-        assert!(threshold < 1.0);
-        assert_eq!(
-            representative_provisional_max_ms(&[0.482, 0.484, 0.486, 0.491, 24.909]),
-            Some(0.491)
-        );
-    }
-
-    #[test]
-    fn regression_status_uses_median_against_calibrated_threshold() {
-        assert_eq!(
-            classify_regression_status(Some(19.9), 20.0, 2),
-            "within-calibrated-baseline"
-        );
-        assert_eq!(
-            classify_regression_status(Some(20.1), 20.0, 2),
-            "regressed-vs-calibrated-baseline"
-        );
-        assert_eq!(
-            classify_regression_status(None, 20.0, 2),
-            "baseline-row-unusable"
-        );
-    }
-
-    #[test]
-    fn regression_status_reports_provisional_baseline_until_second_report() {
-        assert_eq!(
-            classify_regression_status(Some(19.9), 20.0, 1),
-            "within-provisional-baseline"
-        );
-        assert_eq!(
-            classify_regression_status(Some(20.1), 20.0, 1),
-            "regressed-vs-provisional-baseline"
-        );
-    }
-
-    #[test]
-    fn baseline_becomes_calibrated_after_second_report() {
-        assert!(!baseline_is_calibrated(1));
-        assert!(baseline_is_calibrated(2));
-    }
-
-    #[test]
-    fn median_uses_sorted_middle_values() {
-        assert_eq!(median(&[]), None);
-        assert_eq!(median(&[3.0, 1.0, 2.0]), Some(2.0));
-        assert_eq!(median(&[4.0, 1.0, 3.0, 2.0]), Some(2.5));
-    }
-
-    #[test]
-    fn baseline_key_scopes_by_environment_and_profile() {
-        let base = json!({
-            "fixture_id": "native_small",
-            "row_family": "native:content-check-cli",
-            "os": "macos",
-            "arch": "x86_64",
-            "rust_version": "rustc 1.94.1",
-            "node_version": "v25.6.0",
-            "npm_version": "11.8.0",
-            "assura_version": "0.3.0",
-            "assura_binary_profile": "release"
-        });
-        let different_profile = json!({
-            "fixture_id": "native_small",
-            "row_family": "native:content-check-cli",
-            "os": "macos",
-            "arch": "x86_64",
-            "rust_version": "rustc 1.94.1",
-            "node_version": "v25.6.0",
-            "npm_version": "11.8.0",
-            "assura_version": "0.3.0",
-            "assura_binary_profile": "release-static-crt"
-        });
-        let different_os = json!({
-            "fixture_id": "native_small",
-            "row_family": "native:content-check-cli",
-            "os": "linux",
-            "arch": "x86_64",
-            "rust_version": "rustc 1.94.1",
-            "node_version": "v25.6.0",
-            "npm_version": "11.8.0",
-            "assura_version": "0.3.0",
-            "assura_binary_profile": "release"
-        });
-
-        let base_key = NativeBaselineKey::from_value(&base).unwrap();
-        assert_ne!(
-            base_key,
-            NativeBaselineKey::from_value(&different_profile).unwrap()
-        );
-        assert_ne!(
-            base_key,
-            NativeBaselineKey::from_value(&different_os).unwrap()
-        );
-    }
-}
+#[path = "native_regression_tests.rs"]
+mod tests;
