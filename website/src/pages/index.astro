@@ -23,14 +23,14 @@ const heroFacts = [
 ];
 
 const terminalLines = [
-  { text: '$ assura check', tone: 'prompt' },
-  { text: 'Assura structure check', tone: 'plain' },
-  { text: '=======================', tone: 'muted' },
-  { text: 'Files checked: 1561', tone: 'plain' },
-  { text: 'Directories checked: 353', tone: 'plain' },
-  { text: 'Violations: 0', tone: 'pass' },
+  { text: '$ assura review', tone: 'prompt' },
+  { text: 'Assura review  needs-review', tone: 'plain' },
+  { text: 'Check: pass  files=1562 dirs=353 violations=0', tone: 'plain' },
+  { text: 'Branch: files=8 lines=+412/-96 commits=3', tone: 'info' },
+  { text: 'Worktree: modified=2 untracked=1 lines=+74/-18', tone: 'info' },
+  { text: 'Hot dirs: src/cli, website/src', tone: 'muted' },
   { text: '', tone: 'plain' },
-  { text: 'All configured structure checks passed.', tone: 'pass' },
+  { text: 'Next: inspect shape before policy changes', tone: 'pass' },
 ];
 
 const problemPoints = [
@@ -48,21 +48,48 @@ const problemPoints = [
   },
 ];
 
-const workflow = [
+const contractLayers = [
   {
-    step: '01',
-    title: 'Start top down',
-    body: 'Begin with a language-agnostic repo contract: required files, allowed directories, docs signals, and generated-output boundaries.',
+    label: 'Repo contract',
+    title: 'Top-level shape',
+    body: 'Allowed directories, required docs, generated-output boundaries.',
+    signal: 'language agnostic',
   },
   {
-    step: '02',
-    title: 'Feed agents quickly',
-    body: 'Run the same contract locally, in hooks, in CI, or inside an agent loop while edit context is still fresh.',
+    label: 'Review signal',
+    title: 'Branch and worktree heat',
+    body: 'Changed files, line churn, untracked paths, hot directories.',
+    signal: 'fast local feedback',
   },
   {
-    step: '03',
-    title: 'Extend by layer',
-    body: 'Keep repo health central, then attach project-specific or language-specific checks where file contents need deeper validation.',
+    label: 'Agent loop',
+    title: 'Repairable findings',
+    body: 'Bounded context that tells coding agents what changed and how to fix it.',
+    signal: 'machine actionable',
+  },
+  {
+    label: 'Extension hooks',
+    title: 'Project-specific depth',
+    body: 'Attach language, content, release, or policy checks after shape is stable.',
+    signal: 'layered validation',
+  },
+];
+
+const reviewSignals = [
+  {
+    label: 'Branch',
+    value: '8 files',
+    detail: '+412 / -96 lines',
+  },
+  {
+    label: 'Worktree',
+    value: '2 modified',
+    detail: '1 untracked',
+  },
+  {
+    label: 'Hot path',
+    value: 'src/cli',
+    detail: 'policy + churn',
   },
 ];
 
@@ -194,12 +221,12 @@ const comparisons = [
             <span>Install</span>
             <code>{installCommand}</code>
           </div>
-          <div class="terminal hero-terminal" aria-label="Example assura check output">
+          <div class="terminal hero-terminal" aria-label="Example assura review output">
             <div class="terminal-bar">
               <span aria-hidden="true"></span>
               <span aria-hidden="true"></span>
               <span aria-hidden="true"></span>
-              <strong>assura check</strong>
+              <strong>assura review</strong>
             </div>
             <pre><code>{terminalLines.map((line) => (
               <span class:list={['terminal-line', line.tone]}>{line.text || ' '}</span>
@@ -233,28 +260,54 @@ const comparisons = [
         </div>
       </section>
 
-      <section class="section workflow-section" aria-labelledby="workflow-title">
+      <section class="section contract-section" aria-labelledby="workflow-title">
         <div class="section-copy narrow">
           <p class="eyebrow">How it works</p>
-          <h2 id="workflow-title">A checkable path from first run to CI.</h2>
+          <h2 id="workflow-title">Start with the repo. Then go deeper.</h2>
           <p>
-            Start broad, keep the feedback local, and tighten the policy as the project
-            learns which boundaries should be stable.
+            Assura starts above language tools with the repository contract, then
+            layers fast branch, worktree, agent, and project-specific signals around it.
           </p>
         </div>
-        <ol class="workflow-list">
-          {
-            workflow.map((item) => (
-              <li>
-                <span>{item.step}</span>
-                <div>
-                  <h3>{item.title}</h3>
-                  <p>{item.body}</p>
-                </div>
-              </li>
-            ))
-          }
-        </ol>
+        <div class="contract-stage">
+          <div class="contract-stack" aria-label="Assura validation layers">
+            {
+              contractLayers.map((layer) => (
+                <article class="contract-layer">
+                  <div>
+                    <span>{layer.label}</span>
+                    <h3>{layer.title}</h3>
+                    <p>{layer.body}</p>
+                  </div>
+                  <code>{layer.signal}</code>
+                </article>
+              ))
+            }
+          </div>
+          <aside class="review-snapshot" aria-label="Compact assura review signal">
+            <div class="snapshot-topline">
+              <span>assura review</span>
+              <strong>needs-review</strong>
+            </div>
+            <div class="snapshot-metrics">
+              {
+                reviewSignals.map((signal) => (
+                  <div>
+                    <span>{signal.label}</span>
+                    <strong>{signal.value}</strong>
+                    <small>{signal.detail}</small>
+                  </div>
+                ))
+              }
+            </div>
+            <div class="snapshot-flow" aria-label="Signal flow">
+              <span>shape</span>
+              <span>branch</span>
+              <span>worktree</span>
+              <span>agent</span>
+            </div>
+          </aside>
+        </div>
       </section>
 
       <section class="section agent-section" aria-labelledby="agent-title">
@@ -841,7 +894,7 @@ const comparisons = [
     border-top: 1px solid var(--border);
   }
 
-  .workflow-section,
+  .contract-section,
   .comparison-section {
     border-top: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
@@ -906,7 +959,7 @@ const comparisons = [
   .line-card h3,
   .capability-card h3,
   .comparison-card h3,
-  .workflow-list h3 {
+  .contract-layer h3 {
     margin: 0;
     color: var(--text);
     font-size: 1rem;
@@ -917,36 +970,160 @@ const comparisons = [
   .line-card p,
   .capability-card p,
   .comparison-card p,
-  .workflow-list p {
+  .contract-layer p {
     margin: 0.45rem 0 0;
     color: var(--muted);
     font-size: 0.94rem;
     line-height: 1.58;
   }
 
-  .workflow-list {
+  .contract-stage {
     display: grid;
-    gap: 0;
+    grid-template-columns: minmax(0, 1.25fr) minmax(18rem, 0.75fr);
+    gap: clamp(1rem, 3vw, 1.5rem);
+    align-items: stretch;
     margin: 2.2rem 0 0;
-    padding: 0;
-    list-style: none;
   }
 
-  .workflow-list li {
+  .contract-stack {
     display: grid;
-    grid-template-columns: 4.1rem minmax(0, 1fr);
-    gap: 1rem;
-    align-items: start;
-    min-height: 5.3rem;
-    border-top: 1px solid var(--border);
-    padding: 1.15rem 0;
+    min-width: 0;
+    gap: 0.65rem;
   }
 
-  .workflow-list span {
+  .contract-layer {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 1rem;
+    align-items: center;
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    background:
+      linear-gradient(90deg, color-mix(in srgb, var(--primary) 8%, transparent), transparent 34%),
+      var(--surface);
+    padding: 1rem;
+    box-shadow: 0 1px 2px var(--shadow);
+  }
+
+  .contract-layer::before {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 0.18rem;
+    background: var(--primary);
+    content: "";
+  }
+
+  .contract-layer:nth-child(2)::before {
+    background: var(--info);
+  }
+
+  .contract-layer:nth-child(3)::before {
+    background: var(--warning);
+  }
+
+  .contract-layer:nth-child(4)::before {
+    background: var(--border-strong);
+  }
+
+  .contract-layer span,
+  .snapshot-topline span,
+  .snapshot-metrics span,
+  .snapshot-flow span {
     color: var(--primary);
     font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .contract-layer code {
+    justify-self: end;
+    border: 1px solid var(--border);
+    border-radius: 0.42rem;
+    background: var(--surface-muted);
+    padding: 0.42rem 0.55rem;
+    color: var(--text);
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 0.74rem;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  .review-snapshot {
+    display: flex;
+    align-self: start;
+    min-width: 0;
+    flex-direction: column;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    background: var(--surface);
+    box-shadow: 0 1rem 2.4rem var(--shadow);
+  }
+
+  .snapshot-topline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+    border-bottom: 1px solid var(--border);
+    padding: 0.85rem 1rem;
+  }
+
+  .snapshot-topline strong {
+    color: var(--warning);
     font-size: 0.84rem;
-    font-weight: 850;
+    line-height: 1;
+  }
+
+  .snapshot-metrics {
+    display: grid;
+    gap: 0;
+  }
+
+  .snapshot-metrics div {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.25rem 0.75rem;
+    align-items: baseline;
+    border-bottom: 1px solid var(--border);
+    padding: 0.9rem 1rem;
+  }
+
+  .snapshot-metrics strong {
+    color: var(--text);
+    font-size: 1.15rem;
+    line-height: 1.1;
+    text-align: right;
+  }
+
+  .snapshot-metrics small {
+    grid-column: 1 / -1;
+    color: var(--muted);
+    font-size: 0.84rem;
+    line-height: 1.35;
+  }
+
+  .snapshot-flow {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.35rem;
+    padding: 1rem;
+  }
+
+  .snapshot-flow span {
+    display: inline-flex;
+    min-width: 0;
+    min-height: 2rem;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    border-radius: 0.38rem;
+    background: var(--surface-muted);
+    color: var(--muted);
+    font-size: 0.66rem;
   }
 
   .text-link {
@@ -1125,6 +1302,22 @@ const comparisons = [
       grid-template-columns: 1fr;
     }
 
+    .contract-stage {
+      grid-template-columns: 1fr;
+    }
+
+    .snapshot-metrics {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .snapshot-metrics div {
+      border-right: 1px solid var(--border);
+    }
+
+    .snapshot-metrics div:nth-child(3) {
+      border-right: 0;
+    }
+
     .capability-grid,
     .comparison-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1214,9 +1407,27 @@ const comparisons = [
       line-height: 1.03;
     }
 
-    .workflow-list li {
-      grid-template-columns: 3.1rem minmax(0, 1fr);
-      min-height: 0;
+    .contract-stage {
+      margin-top: 1.45rem;
+    }
+
+    .contract-layer {
+      grid-template-columns: 1fr;
+      gap: 0.7rem;
+      padding: 0.9rem;
+    }
+
+    .contract-layer code {
+      justify-self: start;
+      white-space: normal;
+    }
+
+    .snapshot-metrics {
+      grid-template-columns: 1fr;
+    }
+
+    .snapshot-metrics div {
+      border-right: 0;
     }
 
     .feedback-topline {

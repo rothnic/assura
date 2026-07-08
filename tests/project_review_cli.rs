@@ -303,10 +303,18 @@ exclude:
     run_git(&project, &["branch", "-M", "main"]);
     run_git(&project, &["add", "."]);
     run_git(&project, &["commit", "-m", "initial"]);
+    let remote = TempDir::new().expect("temp remote");
+    run_git_path(remote.path(), &["init", "--bare"]);
+    run_git(
+        &project,
+        &["remote", "add", "origin", remote.path().to_str().unwrap()],
+    );
+    run_git(&project, &["push", "-u", "origin", "main"]);
     run_git(&project, &["checkout", "-b", "feature/heat"]);
     fs::write(project.path().join("docs/branch.md"), "# Branch doc\n").expect("branch doc");
     run_git(&project, &["add", "docs/branch.md"]);
     run_git(&project, &["commit", "-m", "branch doc"]);
+    run_git(&project, &["push", "-u", "origin", "feature/heat"]);
 
     fs::write(
         project.path().join("src/good.rs"),
@@ -321,10 +329,21 @@ exclude:
 
     assert_eq!(review["heatmap"]["git_available"], true);
     assert_eq!(review["heatmap"]["branch"]["name"], "feature/heat");
+    assert_eq!(review["heatmap"]["branch"]["base"], "origin/main");
+    assert_eq!(
+        review["heatmap"]["branch"]["upstream"],
+        "origin/feature/heat"
+    );
     assert_eq!(review["heatmap"]["branch"]["commits_on_branch"], 1);
     assert_eq!(review["heatmap"]["totals"]["untracked_files"], 1);
     assert_eq!(review["heatmap"]["totals"]["modified_files"], 1);
     assert_eq!(review["heatmap"]["totals"]["branch_changed_files"], 1);
+    assert_eq!(review["heatmap"]["totals"]["branch_line_additions"], 1);
+    assert_eq!(review["heatmap"]["totals"]["branch_line_deletions"], 0);
+    assert_eq!(review["heatmap"]["totals"]["worktree_line_additions"], 1);
+    assert_eq!(review["heatmap"]["totals"]["worktree_line_deletions"], 0);
+    assert_eq!(review["heatmap"]["totals"]["line_additions"], 1);
+    assert_eq!(review["heatmap"]["totals"]["line_deletions"], 0);
     assert_eq!(review["heatmap"]["totals"]["validation_violations"], 1);
     assert_eq!(review["heatmap"]["totals"]["naming_violations"], 1);
 
@@ -337,13 +356,26 @@ exclude:
     assert_eq!(src_heat["naming_violations"], 1);
     assert_eq!(src_heat["untracked_files"], 1);
     assert_eq!(src_heat["modified_files"], 1);
+    assert_eq!(src_heat["worktree_line_additions"], 1);
+    let docs_heat = hot_dirs
+        .iter()
+        .find(|dir| dir["path"] == "docs")
+        .unwrap_or_else(|| panic!("missing docs heat: {review:#}"));
+    assert_eq!(docs_heat["branch_changed_files"], 1);
+    assert_eq!(docs_heat["branch_line_additions"], 1);
 
     let text = run_review(&[project.path().to_str().unwrap(), "--format", "text"]);
     let stdout = String::from_utf8_lossy(&text.stdout);
     assert!(stdout.contains("Heat"));
-    assert!(stdout.contains("!1 chg=1 ?1 br=1 commits=1"));
+    assert!(stdout.contains("!1 hot_dirs=2 risks=1"));
+    assert!(stdout.contains("Branch"));
+    assert!(stdout.contains("feature/heat files=1 lines=+1/-0 commits=1"));
+    assert!(stdout.contains("Worktree"));
+    assert!(stdout
+        .contains("staged=0 unstaged=1 modified=1 untracked=1 deleted=0 conflicts=0 lines=+1/-0"));
     assert!(stdout.contains("Hot dirs"));
-    assert!(stdout.contains("src !1 chg=1 ?1"));
+    assert!(stdout.contains("src !1 modified=1 untracked=1 branch=0 worktree_lines=+1/-0"));
+    assert!(stdout.contains("docs !0 modified=0 untracked=0 branch=1 branch_lines=+1/-0"));
 }
 
 #[test]
@@ -382,6 +414,8 @@ exclude:
     assert_eq!(review["heatmap"]["totals"]["modified_files"], 0);
     assert_eq!(review["heatmap"]["totals"]["untracked_files"], 0);
     assert_eq!(review["heatmap"]["totals"]["line_additions"], 0);
+    assert_eq!(review["heatmap"]["totals"]["branch_line_additions"], 0);
+    assert_eq!(review["heatmap"]["totals"]["worktree_line_additions"], 0);
     assert_eq!(review["heatmap"]["totals"]["branch_changed_files"], 0);
     assert!(
         review["heatmap"]["hot_dirs"]

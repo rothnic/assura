@@ -46,6 +46,10 @@ pub(super) struct HeatTotals {
     pub(super) deleted_files: usize,
     pub(super) conflicted_files: usize,
     pub(super) branch_changed_files: usize,
+    pub(super) branch_line_additions: usize,
+    pub(super) branch_line_deletions: usize,
+    pub(super) worktree_line_additions: usize,
+    pub(super) worktree_line_deletions: usize,
     pub(super) line_additions: usize,
     pub(super) line_deletions: usize,
 }
@@ -65,6 +69,10 @@ pub(super) struct HeatDirectory {
     pub(super) deleted_files: usize,
     pub(super) conflicted_files: usize,
     pub(super) branch_changed_files: usize,
+    pub(super) branch_line_additions: usize,
+    pub(super) branch_line_deletions: usize,
+    pub(super) worktree_line_additions: usize,
+    pub(super) worktree_line_deletions: usize,
     pub(super) line_additions: usize,
     pub(super) line_deletions: usize,
 }
@@ -105,8 +113,9 @@ pub(super) fn build_project_review_heatmap(
             "! validation violations",
             "chg tracked changed files",
             "? untracked files",
-            "+/- line churn",
             "branch_files files changed since branch base",
+            "branch_lines line churn since branch base",
+            "worktree_lines uncommitted tracked line churn",
         ],
     }
 }
@@ -162,7 +171,11 @@ fn heat_score(dir: &HeatDirectory) -> usize {
         + (dir.deleted_files * 3)
         + (dir.conflicted_files * 10)
         + dir.branch_changed_files
-        + ((dir.line_additions + dir.line_deletions) / 100)
+        + ((dir.branch_line_additions
+            + dir.branch_line_deletions
+            + dir.worktree_line_additions
+            + dir.worktree_line_deletions)
+            / 100)
 }
 
 fn risk_flags(totals: &HeatTotals, commits_on_branch: Option<usize>) -> Vec<HeatRiskFlag> {
@@ -192,13 +205,14 @@ fn risk_flags(totals: &HeatTotals, commits_on_branch: Option<usize>) -> Vec<Heat
             format!("{} untracked file(s)", totals.untracked_files),
         ));
     }
-    if totals.line_additions + totals.line_deletions >= 1_000 {
+    let total_line_additions = totals.branch_line_additions + totals.worktree_line_additions;
+    let total_line_deletions = totals.branch_line_deletions + totals.worktree_line_deletions;
+    if total_line_additions + total_line_deletions >= 1_000 {
         flags.push(risk(
             "large-churn",
             "advisory",
             format!(
-                "{} added and {} deleted line(s)",
-                totals.line_additions, totals.line_deletions
+                "{total_line_additions} added and {total_line_deletions} deleted line(s) across branch and worktree"
             ),
         ));
     }

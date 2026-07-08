@@ -40,6 +40,11 @@
 - `heatmap.totals` includes branch-level signals such as files changed since
   the detected base branch and commits on the current branch when Git can
   provide them.
+- Branch heat should prefer the repository default/base branch such as
+  `origin/main`, `origin/master`, `main`, or `master`. A feature branch's
+  tracking upstream is only the fallback base and is used for ahead/behind
+  counters when present, so pushed feature branches do not hide their own
+  branch delta.
 - Finding severities are `blocking`, `advisory`, `inactive`, or
   `informational`.
 - Finding action kinds are `fix-now`, `configure-intentionally`,

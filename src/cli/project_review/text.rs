@@ -26,6 +26,8 @@ pub(super) fn render_project_review_text(report: &ProjectReviewReport) -> String
             ),
         ),
         row(&style, "Heat", render_heat(report, &style)),
+        row(&style, "Branch", render_branch_signal(report, &style)),
+        row(&style, "Worktree", render_worktree_signal(report, &style)),
         row(&style, "Hot dirs", render_hot_dirs(report, &style)),
         row(
             &style,
@@ -87,12 +89,40 @@ pub(super) fn render_project_review_text(report: &ProjectReviewReport) -> String
 
 fn render_heat(report: &ProjectReviewReport, style: &TextStyle) -> String {
     format!(
-        "!{} chg={} ?{} br={} commits={}",
+        "!{} hot_dirs={} risks={}",
         style.issue_count(report.heatmap.totals.validation_violations),
-        report.heatmap.totals.modified_files,
-        report.heatmap.totals.untracked_files,
-        report.heatmap.totals.branch_changed_files,
+        style.change_count(report.heatmap.hot_dirs.len()),
+        style.change_count(report.heatmap.risk_flags.len())
+    )
+}
+
+fn render_branch_signal(report: &ProjectReviewReport, style: &TextStyle) -> String {
+    let branch = report.heatmap.branch.name.as_deref().unwrap_or("n/a");
+    format!(
+        "{branch} files={} lines={} commits={}",
+        style.change_count(report.heatmap.totals.branch_changed_files),
+        line_delta(
+            report.heatmap.totals.branch_line_additions,
+            report.heatmap.totals.branch_line_deletions
+        ),
         optional_usize(report.heatmap.branch.commits_on_branch)
+    )
+}
+
+fn render_worktree_signal(report: &ProjectReviewReport, style: &TextStyle) -> String {
+    let totals = &report.heatmap.totals;
+    format!(
+        "staged={} unstaged={} modified={} untracked={} deleted={} conflicts={} lines={}",
+        style.change_count(totals.staged_files),
+        style.change_count(totals.unstaged_files),
+        style.change_count(totals.modified_files),
+        style.change_count(totals.untracked_files),
+        style.change_count(totals.deleted_files),
+        style.change_count(totals.conflicted_files),
+        line_delta(
+            totals.worktree_line_additions,
+            totals.worktree_line_deletions
+        )
     )
 }
 
@@ -107,17 +137,23 @@ fn render_hot_dirs(report: &ProjectReviewReport, style: &TextStyle) -> String {
         .take(3)
         .map(|dir| {
             let mut text = format!(
-                "{} !{} chg={} ?{} br={}",
+                "{} !{} modified={} untracked={} branch={}",
                 dir.path,
                 style.issue_count(dir.validation_violations),
-                dir.modified_files,
-                dir.untracked_files,
-                dir.branch_changed_files
+                style.change_count(dir.modified_files),
+                style.change_count(dir.untracked_files),
+                style.change_count(dir.branch_changed_files)
             );
-            if dir.line_additions > 0 || dir.line_deletions > 0 {
+            if dir.branch_line_additions > 0 || dir.branch_line_deletions > 0 {
                 text.push_str(&format!(
-                    " +/-{}/{}",
-                    dir.line_additions, dir.line_deletions
+                    " branch_lines={}",
+                    line_delta(dir.branch_line_additions, dir.branch_line_deletions)
+                ));
+            }
+            if dir.worktree_line_additions > 0 || dir.worktree_line_deletions > 0 {
+                text.push_str(&format!(
+                    " worktree_lines={}",
+                    line_delta(dir.worktree_line_additions, dir.worktree_line_deletions)
                 ));
             }
             text
@@ -168,6 +204,10 @@ fn optional_usize(value: Option<usize>) -> String {
         .unwrap_or_else(|| "n/a".to_string())
 }
 
+fn line_delta(additions: usize, deletions: usize) -> String {
+    format!("+{additions}/-{deletions}")
+}
+
 struct TextStyle {
     color: bool,
 }
@@ -196,6 +236,14 @@ impl TextStyle {
             self.paint("32", "0")
         } else {
             self.paint("31;1", &value.to_string())
+        }
+    }
+
+    fn change_count(&self, value: usize) -> String {
+        if value == 0 {
+            self.paint("32", "0")
+        } else {
+            self.paint("33;1", &value.to_string())
         }
     }
 

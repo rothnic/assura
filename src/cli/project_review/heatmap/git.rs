@@ -32,9 +32,9 @@ pub(super) fn collect_git_heat(
         ),
         ..HeatBranch::default()
     };
-    branch.base = branch.upstream.clone().or_else(|| fallback_base(git_root));
-    if let Some(base) = branch.base.as_deref() {
-        let branch_range = format!("{base}...HEAD");
+    branch.base = fallback_base(git_root).or_else(|| branch.upstream.clone());
+    if let Some(compare_ref) = branch.upstream.as_deref().or(branch.base.as_deref()) {
+        let branch_range = format!("{compare_ref}...HEAD");
         if let Some(counts) = git(
             git_root,
             &["rev-list", "--left-right", "--count", &branch_range],
@@ -45,15 +45,18 @@ pub(super) fn collect_git_heat(
                 branch.ahead = parts[1].parse::<usize>().ok();
             }
         }
+    }
+    if let Some(base) = branch.base.as_deref() {
         if let Some(merge_base) = git(git_root, &["merge-base", "HEAD", base]) {
             let commit_range = format!("{merge_base}..HEAD");
             branch.commits_on_branch = git_usize(git_root, &["rev-list", "--count", &commit_range]);
             add_branch_files(git_root, &scope, &merge_base, totals, dirs);
+            add_branch_numstat(git_root, &scope, &merge_base, totals, dirs);
         }
     }
 
     add_status_files(git_root, &scope, totals, dirs);
-    add_numstat(git_root, &scope, totals, dirs);
+    add_worktree_numstat(git_root, &scope, totals, dirs);
 
     GitHeat {
         available: true,
@@ -156,7 +159,7 @@ fn parse_status_line(line: &str) -> Option<(char, char, &str)> {
     None
 }
 
-fn add_numstat(
+fn add_worktree_numstat(
     git_root: &Path,
     scope: &GitScope,
     totals: &mut HeatTotals,
@@ -178,12 +181,56 @@ fn add_numstat(
         let Some(scoped_path) = scope.scoped_path(parts[2]) else {
             continue;
         };
+        totals.worktree_line_additions += additions;
+        totals.worktree_line_deletions += deletions;
         totals.line_additions += additions;
         totals.line_deletions += deletions;
         for dir in rollup_dirs(scoped_path) {
             let entry = dir_entry(dirs, &dir);
+            entry.worktree_line_additions += additions;
+            entry.worktree_line_deletions += deletions;
             entry.line_additions += additions;
             entry.line_deletions += deletions;
+        }
+    }
+}
+
+fn add_branch_numstat(
+    git_root: &Path,
+    scope: &GitScope,
+    merge_base: &str,
+    totals: &mut HeatTotals,
+    dirs: &mut BTreeMap<String, HeatDirectory>,
+) {
+    let branch_range = format!("{merge_base}..HEAD");
+    let Some(output) = git(
+        git_root,
+        &[
+            "diff",
+            "--numstat",
+            &branch_range,
+            "--",
+            scope.pathspec.as_str(),
+        ],
+    ) else {
+        return;
+    };
+    for line in output.lines() {
+        let parts = line.split('\t').collect::<Vec<_>>();
+        if parts.len() < 3 {
+            continue;
+        }
+        let additions = parts[0].parse::<usize>().unwrap_or_default();
+        let deletions = parts[1].parse::<usize>().unwrap_or_default();
+        let Some(scoped_path) = scope.scoped_path(parts[2]) else {
+            continue;
+        };
+        totals.branch_line_additions += additions;
+        totals.branch_line_deletions += deletions;
+        for dir in rollup_dirs(scoped_path) {
+            let entry = dir_entry(dirs, &dir);
+            entry.branch_line_additions += additions;
+            entry.branch_line_deletions += deletions;
         }
     }
 }
