@@ -274,7 +274,7 @@ def run_wrapper(
     env.setdefault("ASSURA_AGENT_LOG", "1")
     env.setdefault("ASSURA_AGENT_LOG_DIR", str(root / ".assura" / "agent-sessions"))
     env["ASSURA_AGENT_SESSION_ID"] = current_session_id
-    command = [str(wrapper)]
+    command = wrapper_command(wrapper)
     min_severity = env.get("ASSURA_AGENT_MIN_SEVERITY", DEFAULT_MIN_SEVERITY)
     max_issues = env.get("ASSURA_AGENT_MAX_ISSUES")
     if min_severity:
@@ -292,7 +292,7 @@ def run_wrapper(
             text=True,
             timeout=8,
         )
-    except (FileNotFoundError, subprocess.TimeoutExpired):
+    except (FileNotFoundError, OSError, subprocess.TimeoutExpired):
         return None
     if result.returncode != 0:
         return None
@@ -300,6 +300,15 @@ def run_wrapper(
         return json.loads(result.stdout)
     except json.JSONDecodeError:
         return None
+
+
+def wrapper_command(wrapper: Path) -> list[str]:
+    if os.name != "nt" or wrapper.suffix != ".sh":
+        return [str(wrapper)]
+    shell = shutil.which("sh") or shutil.which("bash")
+    if shell:
+        return [shell, str(wrapper)]
+    return [str(wrapper)]
 
 
 def compact_context(payload: dict[str, Any], meta: dict[str, Any]) -> str:
