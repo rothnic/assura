@@ -10,6 +10,7 @@ const installCommand =
 
 const navItems = [
   { label: 'Docs', href: '/guides/quickstart/' },
+  { label: 'Compare', href: '#compare' },
   { label: 'Roadmap', href: '/roadmap/' },
   { label: 'Performance', href: '/reference/performance/' },
   { label: 'GitHub', href: 'https://github.com/rothnic/assura' },
@@ -50,66 +51,78 @@ const problemPoints = [
 const workflow = [
   {
     step: '01',
-    title: 'Declare shape',
-    body: 'Capture naming, required files, forbidden paths, and closed-world boundaries in .assura/config.yml.',
+    title: 'Start top down',
+    body: 'Begin with a language-agnostic repo contract: required files, allowed directories, docs signals, and generated-output boundaries.',
   },
   {
     step: '02',
-    title: 'Check everywhere',
-    body: 'Run the same contract locally, in hooks, in CI, or inside an agent loop.',
+    title: 'Feed agents quickly',
+    body: 'Run the same contract locally, in hooks, in CI, or inside an agent loop while edit context is still fresh.',
   },
   {
     step: '03',
-    title: 'Return repairable output',
-    body: 'Text, JSON, YAML, status, advice, and agent reports give each workflow the right level of detail.',
+    title: 'Extend by layer',
+    body: 'Keep repo health central, then attach project-specific or language-specific checks where file contents need deeper validation.',
   },
 ];
 
 const capabilities = [
   {
-    label: 'Structure validation',
-    body: 'File and directory naming, required files, forbidden entries, child-count limits, and repo shape.',
+    label: 'Top-down repo contract',
+    body: 'Validate the repository as a system: shape, naming, required files, forbidden paths, direct-child limits, and docs conventions.',
     command: 'assura check',
   },
   {
-    label: 'LS-Lint migration',
-    body: 'Convert supported LS-Lint 2.3 configs, then extend beyond naming-only policy.',
-    command: 'assura migrate .ls-lint.yml',
-  },
-  {
-    label: 'Agent feedback',
-    body: 'Emit bounded, machine-actionable findings that Codex and other harnesses can use to self-correct.',
+    label: 'Agent feedback loop',
+    body: 'Return bounded, repairable findings agents can act on without more prompting: what drifted, why it matters, and how to fix it.',
     command: 'assura check --format agent --agent codex',
   },
   {
-    label: 'Automation reports',
-    body: 'Use JSON, YAML, status, and advice outputs for CI, evidence, and developer feedback surfaces.',
-    command: 'assura check --format json',
-  },
-  {
-    label: 'Local hooks',
-    body: 'Wire structure checks into advisory local loops and stronger merge gates without a hosted service.',
+    label: 'Hooks and merge gates',
+    body: 'Nudge during active edits, warn before commit, and block real drift before merge using the same local contract.',
     command: 'assura hooks',
   },
   {
-    label: 'Performance evidence',
-    body: 'Keep validation speed visible with checked reports instead of vague performance claims.',
+    label: 'Fast enough for loops',
+    body: 'Keep checks cheap enough for local work and agent harnesses, with checked performance evidence instead of vague claims.',
     command: 'assura performance-report',
+  },
+  {
+    label: 'Automation reports',
+    body: 'Use text, JSON, YAML, status, advice, and agent outputs for CI, evidence, and developer feedback surfaces.',
+    command: 'assura check --format json',
+  },
+  {
+    label: 'Extension boundary',
+    body: 'Start with language-agnostic repo health, then attach custom or language-specific constraints when the project needs them.',
+    command: 'extensions.custom_constraints',
   },
 ];
 
 const comparisons = [
   {
-    label: 'Code linters',
-    body: 'Linters inspect what is inside files. Assura checks whether the files and directories themselves belong.',
+    label: 'Custom scripts',
+    body: 'Useful for one-off checks, but they drift into bespoke glue. Assura gives the repo contract one config, one CLI, and standard reports.',
+  },
+  {
+    label: 'ESLint, Biome, Ruff',
+    body: 'Great inside source files. Assura sits above them, checking whether files, docs, generated output, and directories belong at all.',
   },
   {
     label: 'LS-Lint',
-    body: 'LS-Lint checks names. Assura adds required files, forbidden paths, child limits, reports, and agent output.',
+    body: 'Good for naming rules and a clean migration source. Assura extends the idea into top-down shape, required files, hooks, CI, and agent feedback.',
+  },
+  {
+    label: 'Pre-commit and CI glue',
+    body: 'Good delivery mechanisms, not the policy itself. Assura supplies the deterministic repo-level signal those hooks can run.',
+  },
+  {
+    label: 'Policy engines',
+    body: 'Powerful for broad governance, often heavy for edit loops. Assura keeps local repository health fast and developer-shaped.',
   },
   {
     label: 'Convention docs',
-    body: 'Docs describe structure. Assura turns the same convention into a local pass or fail contract.',
+    body: 'Docs explain intent. Assura turns the same intent into timely, repairable feedback for humans and coding agents.',
   },
 ];
 ---
@@ -245,22 +258,35 @@ const comparisons = [
       </section>
 
       <section class="section agent-section" aria-labelledby="agent-title">
-        <div class="terminal" aria-label="Agent format check output">
-          <div class="terminal-bar">
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
-            <strong>assura check --format agent</strong>
+        <div class="feedback-panel" aria-label="Decoded agent feedback example">
+          <div class="feedback-topline">
+            <span>agent feedback</span>
+            <code>assura check --format agent</code>
           </div>
-          <pre><code><span class="terminal-line prompt">$ assura check --format agent --agent codex</span>
-<span class="terminal-line plain">{'{'}</span>
-<span class="terminal-line plain">  "hookSpecificOutput": {'{'}</span>
-<span class="terminal-line muted">    "hookEventName": "UserPromptSubmit",</span>
-<span class="terminal-line info">    "additionalContext": "&lt;assura-feedback&gt;..."</span>
-<span class="terminal-line pass">    "Assura: pass; no structural feedback."</span>
-<span class="terminal-line info">    "...&lt;/assura-feedback&gt;"</span>
-<span class="terminal-line plain">  {'}'}</span>
-<span class="terminal-line plain">{'}'}</span></code></pre>
+          <div class="feedback-status">
+            <span aria-hidden="true"></span>
+            <div>
+              <p>Repo drift detected</p>
+              <strong>Generated output escaped the repo contract.</strong>
+            </div>
+          </div>
+          <dl class="feedback-list">
+            <div>
+              <dt>Where</dt>
+              <dd><code>src/tmp.log</code></dd>
+            </div>
+            <div>
+              <dt>Why</dt>
+              <dd>This project uses a closed-world structure policy.</dd>
+            </div>
+            <div>
+              <dt>Fix</dt>
+              <dd>Remove the file or declare the path in <code>.assura/config.yml</code>.</dd>
+            </div>
+          </dl>
+          <div class="feedback-note">
+            Raw JSON stays available for harnesses; the message an agent needs is this small.
+          </div>
         </div>
         <div class="section-copy">
           <p class="eyebrow">Built for the agent era</p>
@@ -276,11 +302,12 @@ const comparisons = [
 
       <section class="section capability-section" aria-labelledby="capability-title">
         <div class="section-copy narrow">
-          <p class="eyebrow">What ships</p>
-          <h2 id="capability-title">The practical command surface.</h2>
+          <p class="eyebrow">What Assura adds</p>
+          <h2 id="capability-title">One repo-level safety layer before specialized tools.</h2>
           <p>
-            Assura is intentionally local and boring: one CLI, explicit config, and
-            report formats that fit developer tools you already use.
+            Assura starts with general-purpose repository health and safety. Language
+            linters, custom checks, and deeper policy hooks can layer on after the
+            top-down contract is stable.
           </p>
         </div>
         <div class="capability-grid">
@@ -296,13 +323,14 @@ const comparisons = [
         </div>
       </section>
 
-      <section class="section comparison-section" aria-labelledby="comparison-title">
+      <section id="compare" class="section comparison-section" aria-labelledby="comparison-title">
         <div class="section-copy narrow">
           <p class="eyebrow">Where it fits</p>
-          <h2 id="comparison-title">The layer your toolchain is missing.</h2>
+          <h2 id="comparison-title">Comparable tools solve pieces of the problem.</h2>
           <p>
-            Assura does not replace code linters, docs, or reviews. It handles the
-            structural contract those systems usually leave implicit.
+            Keep the tools that already work. Assura covers the fast, language-agnostic
+            repo contract they usually leave implicit, then hands clean signals to
+            hooks, CI, agents, and specialized linters.
           </p>
         </div>
         <div class="comparison-grid">
@@ -930,6 +958,113 @@ const comparisons = [
     font-weight: 720;
   }
 
+  .feedback-panel {
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    background: var(--surface);
+    box-shadow: 0 1.25rem 3rem var(--shadow);
+  }
+
+  .feedback-topline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border-bottom: 1px solid var(--border);
+    padding: 0.85rem 1rem;
+    color: var(--soft);
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 0.74rem;
+    font-weight: 760;
+    text-transform: uppercase;
+  }
+
+  .feedback-topline code {
+    color: var(--primary);
+    font-size: 0.74rem;
+    text-transform: none;
+  }
+
+  .feedback-status {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.85rem;
+    align-items: start;
+    padding: 1rem;
+  }
+
+  .feedback-status > span {
+    width: 0.78rem;
+    height: 0.78rem;
+    margin-top: 0.36rem;
+    border-radius: 999px;
+    background: var(--warning);
+    box-shadow: 0 0 0 0.34rem color-mix(in srgb, var(--warning) 16%, transparent);
+  }
+
+  .feedback-status p {
+    margin: 0;
+    color: var(--primary);
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 0.78rem;
+    font-weight: 780;
+    text-transform: uppercase;
+  }
+
+  .feedback-status strong {
+    display: block;
+    margin-top: 0.35rem;
+    color: var(--text);
+    font-size: 1.25rem;
+    line-height: 1.2;
+  }
+
+  .feedback-list {
+    display: grid;
+    gap: 0;
+    margin: 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .feedback-list div {
+    display: grid;
+    grid-template-columns: 5rem minmax(0, 1fr);
+    gap: 1rem;
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .feedback-list dt {
+    color: var(--soft);
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 0.74rem;
+    font-weight: 780;
+    text-transform: uppercase;
+  }
+
+  .feedback-list dd {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.94rem;
+    line-height: 1.5;
+  }
+
+  .feedback-list code {
+    color: var(--text);
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 0.84rem;
+  }
+
+  .feedback-note {
+    padding: 0.85rem 1rem;
+    color: var(--soft);
+    font-size: 0.86rem;
+    line-height: 1.5;
+  }
+
   .capability-grid,
   .comparison-grid {
     display: grid;
@@ -1017,7 +1152,8 @@ const comparisons = [
     }
 
     .nav-links a:nth-child(2),
-    .nav-links a:nth-child(3) {
+    .nav-links a:nth-child(3),
+    .nav-links a:nth-child(4) {
       display: none;
     }
 
@@ -1081,6 +1217,17 @@ const comparisons = [
     .workflow-list li {
       grid-template-columns: 3.1rem minmax(0, 1fr);
       min-height: 0;
+    }
+
+    .feedback-topline {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .feedback-list div {
+      grid-template-columns: 1fr;
+      gap: 0.35rem;
     }
 
     .capability-grid,
