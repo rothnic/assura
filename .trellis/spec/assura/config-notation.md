@@ -346,6 +346,15 @@ stay concise through rule references such as `SKILL.md: "@agent-skill-file"`;
 project configs should not repeat expanded file-bundle YAML for this common
 case.
 
+Global or user-level skills installed outside the checked repository are out of
+scope for `@agents-dir`. A third-party skill copied, vendored, or linked into
+`.agents/skills/**` is project-local guidance for validation purposes: the
+project owns a bounded `SKILL.md` entrypoint there, even if the deeper content
+comes from upstream. If an upstream skill is too large or should remain
+vendor-owned, keep it global and add a small project-local wrapper skill that
+routes agents to the external/global source or to deeper local `references/`,
+`scripts/`, and `assets/` content.
+
 ## Markdown Outline Notation
 
 Markdown outlines use nested YAML lists and maps. The nesting is the heading

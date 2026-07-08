@@ -155,6 +155,20 @@ kebab-case and contain `SKILL.md`; optional `agents/`, `references/`,
 `extensions.agent_guidance` for AGENTS.md and SKILL.md section, routing,
 progressive-disclosure, and line-limit checks.
 
+Project-local skill directories are intentionally strict. Once a repository
+adds `.agents/skills/<skill>/`, `.agents/skills/built-in/<skill>/`, or
+`.agents/skills/custom/<skill>/`, that directory is treated as a skill and must
+provide a bounded `SKILL.md` entrypoint. The entrypoint should route agents to
+deeper `references/`, `scripts/`, `assets/`, or process docs instead of
+compressing a large skill into one file.
+
+Global or user-level skills installed outside the repository are not validated
+by this project rule. If a third-party skill is copied, vendored, or linked
+under `.agents/skills/**`, treat that checked project-facing path as owned by
+the project: keep a concise local `SKILL.md`, preserve upstream content in
+deeper references when useful, or keep the skill global and add a small wrapper
+skill that tells agents where to find it.
+
 ## Directory Nodes
 
 Each key under `structure` is a directory scope. Use `./` for the project root.
