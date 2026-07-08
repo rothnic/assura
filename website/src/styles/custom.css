@@ -5,19 +5,28 @@
 
 /* Root variables for Assura branding */
 :root {
-  /* Primary accent colors - Teal/Cyan mix */
-  --assura-primary: #7dd3fc;
-  --assura-secondary: #94a3b8;
-  --assura-accent: #2dd4bf;
+  /* Product palette shared with the standalone landing page. */
+  --assura-primary: #066b75;
+  --assura-secondary: #526568;
+  --assura-accent: #087a54;
+  --assura-warn: #b87706;
   
-  /* Dark mode (Mocha) adjustments */
-  --sl-color-text-accent: #7dd3fc;
-  --sl-color-bg-accent: rgba(125, 211, 252, 0.1);
+  --sl-color-text-accent: #066b75;
+  --sl-color-bg-accent: rgba(6, 107, 117, 0.1);
+}
+
+:root[data-theme='dark'] {
+  --assura-primary: #66e6f4;
+  --assura-secondary: #a9bbbf;
+  --assura-accent: #83f3aa;
+  --assura-warn: #ffd166;
+  --sl-color-text-accent: #66e6f4;
+  --sl-color-bg-accent: rgba(102, 230, 244, 0.1);
 }
 
 /* Custom styling for Assura */
 .hero-title {
-  background: linear-gradient(135deg, #7dd3fc 0%, #2dd4bf 100%);
+  background: linear-gradient(135deg, var(--assura-primary) 0%, var(--assura-accent) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -26,12 +35,12 @@
 /* Code block styling */
 .astro-code {
   border-radius: 0.5rem;
-  border: 1px solid rgba(125, 211, 252, 0.2);
+  border: 1px solid color-mix(in srgb, var(--assura-primary) 28%, transparent);
 }
 
 /* Button styling */
 button.action.primary {
-  background: linear-gradient(135deg, #7dd3fc 0%, #2dd4bf 100%);
+  background: linear-gradient(135deg, var(--assura-primary) 0%, var(--assura-accent) 100%);
   color: #0f172a;
   font-weight: 600;
   border: none;
@@ -40,7 +49,7 @@ button.action.primary {
 
 button.action.primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(125, 211, 252, 0.3);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--assura-primary) 30%, transparent);
 }
 
 /* Table styling */
@@ -56,7 +65,7 @@ th {
 
 /* Card/grid styling */
 .sl-markdown-content .card {
-  border: 1px solid rgba(125, 211, 252, 0.2);
+  border: 1px solid color-mix(in srgb, var(--assura-primary) 28%, transparent);
   border-radius: 0.5rem;
   padding: 1rem;
   transition: all 0.2s ease;
@@ -64,7 +73,7 @@ th {
 
 .sl-markdown-content .card:hover {
   border-color: var(--assura-primary);
-  box-shadow: 0 2px 8px rgba(125, 211, 252, 0.1);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--assura-primary) 16%, transparent);
 }
 
 /* Severity badge colors */

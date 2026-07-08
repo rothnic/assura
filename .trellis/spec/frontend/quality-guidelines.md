@@ -6,46 +6,47 @@
 
 ## Overview
 
-<!--
-Document your project's quality standards here.
-
-Questions to answer:
-- What patterns are forbidden?
-- What linting rules do you enforce?
-- What are your testing requirements?
-- What code review standards apply?
--->
-
-(To be filled by the team)
+Website changes should prove both build correctness and rendered layout quality.
+For standalone landing pages, verify desktop, tablet, and mobile widths in light
+and dark color schemes before claiming completion.
 
 ---
 
 ## Forbidden Patterns
 
-<!-- Patterns that should never be used and why -->
-
-(To be filled by the team)
+- Do not turn the docs home into the product landing experience by expanding
+  Starlight Markdown splash pages. Use a custom Astro page when the route needs
+  standalone product polish.
+- Do not commit temporary browser screenshots or verification folders at the
+  repository root. Assura should reject those as structure drift.
+- Do not rely on low-contrast accent colors for small labels. Light-mode
+  product accents used for text should meet WCAG AA contrast for normal text.
 
 ---
 
 ## Required Patterns
 
-<!-- Patterns that must always be used -->
-
-(To be filled by the team)
+- Run the website production build after route or style changes.
+- Smoke-test at least one existing docs route when changing `/` or shared docs
+  palette CSS.
+- Keep static pages static unless an island adds clear product value.
 
 ---
 
 ## Testing Requirements
 
-<!-- What level of testing is expected -->
+For landing-page work, collect:
 
-(To be filled by the team)
+- `pnpm build` or `cargo xtask docs`
+- `cargo run --quiet -- check --format json .`
+- browser screenshots and DOM overflow checks at representative breakpoints
+- a docs-route smoke check
 
 ---
 
 ## Code Review Checklist
 
-<!-- What reviewers should check -->
-
-(To be filled by the team)
+- Does `/` feel like a deliberate product surface rather than a docs template?
+- Do existing Starlight docs routes still build and render?
+- Do text, buttons, and navigation avoid wrapping overflow on mobile?
+- Do light and dark palettes preserve contrast for small text?

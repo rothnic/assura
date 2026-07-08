@@ -1,0 +1,4 @@
+{"file":".trellis/spec/frontend/index.md","reason":"Frontend spec index for check context"}
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"Frontend quality checks for responsive and accessible landing page"}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Review for unnecessary duplicated frontend patterns"}
+{"file":".trellis/spec/assura/structure-enforcement.md","reason":"Structure validation expectations for new website files"}
