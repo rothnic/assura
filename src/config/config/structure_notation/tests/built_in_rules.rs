@@ -29,7 +29,7 @@ structure:
         Some(&"1".to_string())
     );
     assert_eq!(
-        files.allowed_names.as_ref().map(Vec::as_slice),
+        files.allowed_names.as_deref(),
         Some(&["SKILL.md".to_string()][..])
     );
     assert_eq!(files.max_lines, Some(600));
