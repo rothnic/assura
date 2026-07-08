@@ -6,22 +6,22 @@
 /* Root variables for Assura branding */
 :root {
   /* Product palette shared with the standalone landing page. */
-  --assura-primary: #066b75;
-  --assura-secondary: #526568;
-  --assura-accent: #087a54;
-  --assura-warn: #b87706;
+  --assura-primary: #0f766e;
+  --assura-secondary: #52525b;
+  --assura-accent: #16a34a;
+  --assura-warn: #b45309;
   
-  --sl-color-text-accent: #066b75;
-  --sl-color-bg-accent: rgba(6, 107, 117, 0.1);
+  --sl-color-text-accent: #0f766e;
+  --sl-color-bg-accent: rgba(15, 118, 110, 0.1);
 }
 
 :root[data-theme='dark'] {
-  --assura-primary: #66e6f4;
-  --assura-secondary: #a9bbbf;
-  --assura-accent: #83f3aa;
-  --assura-warn: #ffd166;
-  --sl-color-text-accent: #66e6f4;
-  --sl-color-bg-accent: rgba(102, 230, 244, 0.1);
+  --assura-primary: #5eead4;
+  --assura-secondary: #a1a1aa;
+  --assura-accent: #86efac;
+  --assura-warn: #fbbf24;
+  --sl-color-text-accent: #5eead4;
+  --sl-color-bg-accent: rgba(94, 234, 212, 0.1);
 }
 
 /* Custom styling for Assura */
