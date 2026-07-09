@@ -27,8 +27,8 @@ const heroFacts = [
 const lateWorkflow = [
   'Agent changes 18 files',
   'Hooks fail after the batch',
-  'CI repeats the same problem',
-  'Review turns into cleanup',
+  'Agent rushes a broad refactor',
+  'Commit passes with debt',
 ];
 
 const earlyWorkflow = [
@@ -72,12 +72,12 @@ const problemSignals = [
     body: 'A new helper lands in the wrong folder, docs reference an old path, or generated output escapes its boundary.',
   },
   {
-    label: 'Late wall',
-    body: 'Pre-commit, CI, and review catch the combined mess after the agent has already built on top of it.',
+    label: 'Hook pressure',
+    body: 'Git hooks fire after the batch, so the agent optimizes for a green commit instead of evaluating the right refactor.',
   },
   {
-    label: 'Expensive repair',
-    body: 'The agent now has to refactor a large patch instead of moving one file while context is fresh.',
+    label: 'Rushed repair',
+    body: 'A fix that could have moved one file becomes a wide patch that passes checks but leaves structural debt.',
   },
 ];
 
@@ -243,8 +243,8 @@ const performanceLayers = [
             <p class="hero-copy">
               AI agents change projects faster than teams can review them.
               Assura turns structure, docs, references, and branch changes into
-              early nudges before drift becomes failed hooks, broken CI, or cleanup
-              refactors.
+              early nudges before drift becomes failed hooks, broken CI, or rushed
+              cleanup refactors.
             </p>
             <div class="hero-actions" aria-label="Primary actions">
               <a class="button button-primary" href="/guides/quickstart/">Start with one command</a>
@@ -303,7 +303,8 @@ const performanceLayers = [
           <p>
             Teams layer naming linters, code linters, custom scripts, hooks, CI, and
             convention docs. Each tool sees a slice. Agents often hit the combined
-            wall only after a large batch of work.
+            wall only after a large batch of work, when the pressure is to make the
+            commit pass instead of choosing the right repair.
           </p>
         </div>
         <div class="problem-grid" aria-label="Late project drift cost">
@@ -317,10 +318,10 @@ const performanceLayers = [
         <div class="cost-line" aria-label="Cost of fixing drift over time">
           <span>edit</span>
           <span>small drift</span>
-          <span>bigger drift</span>
-          <span>hook fail</span>
-          <span>CI fail</span>
-          <span>review cleanup</span>
+          <span>drift grows</span>
+          <span>hook blocks</span>
+          <span>rushed refactor</span>
+          <span>debt lands</span>
         </div>
       </section>
 
