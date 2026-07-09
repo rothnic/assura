@@ -19,7 +19,7 @@ const navItems = [
 const heroFacts = [
   'Fast local checks',
   'Branch-aware review',
-  'Agent-readable nudges',
+  'Thresholded signals',
   'Warn before commit',
   'Gate before merge',
 ];
@@ -47,15 +47,15 @@ const reviewLines = [
   { text: 'Worktree: 2 mod | 1 untracked | +74/-18', tone: 'info' },
   { text: '', tone: 'plain' },
   { text: 'project', tone: 'plain' },
-  { text: '|- src/cli/            heat 82  rising', tone: 'warn' },
-  { text: '|  |- churn            +412/-96 lines', tone: 'muted' },
-  { text: '|  `- nudge            review src/cli before adding more', tone: 'pass' },
-  { text: '|- website/src/        heat 48', tone: 'warn' },
-  { text: '|  `- docs             2 changed pages, stale-link risk', tone: 'muted' },
-  { text: '`- .agents/skills/     heat 36', tone: 'warn' },
-  { text: '   `- readiness        SKILL.md needs required section', tone: 'muted' },
+  { text: '|- src/cli/            warn heat 82 (>=70)', tone: 'warn' },
+  { text: '|  |- churn            508 lines (>=300)', tone: 'muted' },
+  { text: '|  `- next             inspect path first', tone: 'pass' },
+  { text: '|- website/src/        watch heat 48 (>=35)', tone: 'info' },
+  { text: '|  `- docs             2 pages; link risk', tone: 'muted' },
+  { text: '`- .agents/skills/     watch heat 36 (>=35)', tone: 'info' },
+  { text: '   `- readiness        section missing', tone: 'muted' },
   { text: '', tone: 'plain' },
-  { text: 'Hidden: 14 unchanged warnings, 7 generated/archive findings', tone: 'muted' },
+  { text: 'Hidden: 21 unchanged/generated', tone: 'muted' },
   { text: 'Next: assura review --path src/cli --explain', tone: 'pass' },
 ];
 
@@ -101,7 +101,7 @@ const comparisons = [
     misses:
       'A runner, not a signal model. It fires after a batch and passes through whatever each tool prints.',
     fit:
-      'Assura can nudge earlier, warn before commit, and use the same bounded policy as a gate.',
+      'Assura can show thresholds earlier, warn before commit, and use the same bounded policy as a gate.',
   },
   {
     label: 'CI',
@@ -144,9 +144,9 @@ const signalFamilies = [
 
 const lifecycleStages = [
   {
-    label: 'Nudge',
+    label: 'Watch',
     status: 'while editing',
-    body: 'Point out hot spots and near-threshold drift before it becomes policy failure.',
+    body: 'Show values approaching their threshold before they become policy failures.',
   },
   {
     label: 'Warn',
@@ -165,7 +165,7 @@ const onboardingCreates = [
   'AGENTS.md guidance',
   '.agents/skills/',
   'onboarding packet',
-  'nudge / warn / gate profile',
+  'watch / warn / gate profile',
 ];
 
 const onboardingOpen = [
@@ -243,7 +243,7 @@ const performanceLayers = [
             <p class="hero-copy">
               AI agents change projects faster than teams can review them.
               Assura turns structure, docs, references, and branch changes into
-              early nudges before drift becomes failed hooks, broken CI, or rushed
+              early warnings before drift becomes failed hooks, broken CI, or rushed
               cleanup refactors.
             </p>
             <div class="hero-actions" aria-label="Primary actions">
@@ -362,8 +362,8 @@ const performanceLayers = [
           </div>
           <p>
             <code>assura review</code> compares the active branch or worktree to its
-            source branch, rolls risk up by area, hides unchanged noise, and points to
-            the next useful command.
+            source branch, rolls risk up by area, shows value and threshold, hides
+            unchanged noise, and points to the next useful command.
           </p>
         </div>
         <div class="review-layout">
@@ -435,7 +435,7 @@ const performanceLayers = [
 
       <section class="section lifecycle-section" aria-labelledby="lifecycle-title">
         <div class="section-head compact">
-          <p class="eyebrow">Nudge, warn, gate</p>
+          <p class="eyebrow">Watch, warn, gate</p>
           <h2 id="lifecycle-title">Small fixes while the work is still small.</h2>
           <p>
             Assura separates advisory signals from merge blockers, so agents get
