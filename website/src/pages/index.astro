@@ -982,15 +982,32 @@ const performanceLayers = [
 
   .review-terminal,
   .command-panel {
+    position: relative;
     width: 100%;
     min-width: 0;
     overflow: hidden;
-    border: 1px solid var(--terminal-border);
+    border: 1px solid color-mix(in srgb, var(--terminal-border) 82%, var(--primary));
     border-radius: 0.5rem;
-    background: var(--terminal-bg);
-    box-shadow: 0 1.25rem 3rem var(--shadow);
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--surface-muted) 24%, transparent), transparent 42%),
+      var(--terminal-bg);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, #ffffff 8%, transparent),
+      0 1.25rem 3rem var(--shadow);
     color: var(--terminal-text);
     text-align: left;
+  }
+
+  .review-terminal::before,
+  .command-panel::before {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(90deg, color-mix(in srgb, var(--primary) 10%, transparent), transparent 38%),
+      radial-gradient(circle at 18% 0%, color-mix(in srgb, var(--primary) 12%, transparent), transparent 32%);
+    content: "";
+    opacity: 0.58;
+    pointer-events: none;
   }
 
   .review-terminal.large {
@@ -1003,7 +1020,7 @@ const performanceLayers = [
     align-items: center;
     gap: 0.42rem;
     border-bottom: 1px solid var(--terminal-border);
-    background: rgba(255, 255, 255, 0.04);
+    background: color-mix(in srgb, var(--surface-muted) 42%, transparent);
     padding: 0.72rem 0.85rem;
   }
 
@@ -1029,7 +1046,7 @@ const performanceLayers = [
   .terminal-bar strong {
     min-width: 0;
     margin-left: 0.35rem;
-    color: color-mix(in srgb, var(--terminal-text) 70%, transparent);
+    color: color-mix(in srgb, var(--terminal-text) 76%, transparent);
     font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
     font-size: 0.76rem;
     font-weight: 680;
@@ -1037,43 +1054,70 @@ const performanceLayers = [
   }
 
   .review-terminal pre {
+    position: relative;
     margin: 0;
     overflow-x: auto;
-    padding: 0.95rem;
+    padding: 0.82rem;
     font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-    font-size: 0.78rem;
-    line-height: 1.55;
+    font-size: 0.76rem;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.42;
+  }
+
+  .review-terminal pre code {
+    display: grid;
+    gap: 0.16rem;
   }
 
   .terminal-line {
     display: block;
+    border-radius: 0.32rem;
     min-width: max-content;
+    padding: 0.08rem 0.42rem 0.1rem;
     white-space: pre;
   }
 
-  .terminal-line.prompt,
-  .terminal-line.pass {
+  .terminal-line.prompt {
     color: var(--primary);
+    font-weight: 760;
+  }
+
+  .terminal-line.pass {
+    background: color-mix(in srgb, var(--primary-soft) 44%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 22%, transparent);
+    color: var(--primary);
+    font-weight: 760;
   }
 
   .terminal-line.warn {
+    background: color-mix(in srgb, var(--warning-soft) 62%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--warning) 24%, transparent);
     color: var(--warning);
+    font-weight: 760;
   }
 
   .terminal-line.fail {
+    background: color-mix(in srgb, var(--danger-soft) 64%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--danger) 24%, transparent);
     color: var(--danger);
+    font-weight: 760;
   }
 
   .terminal-line.info {
+    background: color-mix(in srgb, var(--info-soft) 45%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--info) 18%, transparent);
     color: var(--info);
   }
 
   .terminal-line.muted {
+    background: color-mix(in srgb, var(--surface-muted) 40%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--terminal-text) 8%, transparent);
     color: color-mix(in srgb, var(--terminal-text) 58%, transparent);
   }
 
   .terminal-line.plain {
-    color: var(--terminal-text);
+    color: color-mix(in srgb, var(--terminal-text) 88%, transparent);
+    font-weight: 700;
   }
 
   .command-strip {
@@ -1307,7 +1351,13 @@ const performanceLayers = [
 
   .metric-card {
     display: grid;
+    min-width: 0;
     gap: 0.25rem;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    background: color-mix(in srgb, var(--surface) 88%, transparent);
+    padding: 0.85rem;
+    box-shadow: 0 1px 2px var(--shadow);
   }
 
   .metric-card span,
@@ -1323,6 +1373,7 @@ const performanceLayers = [
   .metric-card strong {
     color: var(--text);
     font-size: 1.65rem;
+    font-variant-numeric: tabular-nums;
     line-height: 1;
   }
 
@@ -1718,15 +1769,20 @@ const performanceLayers = [
     }
 
     .review-terminal pre {
-      padding: 0.78rem;
-      font-size: 0.74rem;
-      line-height: 1.5;
+      padding: 0.64rem;
+      font-size: 0.68rem;
+      line-height: 1.36;
+    }
+
+    .review-terminal pre code {
+      gap: 0.12rem;
     }
 
     .terminal-line {
-      min-width: 0;
-      white-space: pre-wrap;
-      overflow-wrap: anywhere;
+      min-width: max-content;
+      padding: 0.07rem 0.32rem 0.08rem;
+      white-space: pre;
+      overflow-wrap: normal;
     }
 
     .command-strip {
