@@ -83,19 +83,25 @@ const problemSignals = [
 
 const comparisons = [
   {
-    label: 'ESLint, Ruff, Biome',
-    misses: 'Usually inspect code inside files.',
-    fit: 'Assura checks whether files, folders, docs, and generated output belong where they are.',
+    label: 'Language linters',
+    misses:
+      'Strong inside one runtime, but not a single fast policy for line counts, Markdown, config, docs, generated files, and agent instructions.',
+    fit:
+      'Assura handles language-agnostic file and project hygiene first, then lets language-specific checks attach by layer.',
   },
   {
     label: 'LS-Lint',
-    misses: 'Good naming rules and migration input.',
-    fit: 'Assura adds structure, required files, branch heat, docs, and agent feedback on top.',
+    misses:
+      'Fast filesystem naming, not file contents. No shared rule bundles, rule-specific repair advice, or agent-ready feedback.',
+    fit:
+      'Assura keeps the structure speed and adds content-aware checks, reusable policy layers, and concrete fixes.',
   },
   {
     label: 'Pre-commit',
-    misses: 'Runs after work has already accumulated.',
-    fit: 'Assura can nudge earlier and use the same policy as a local gate later.',
+    misses:
+      'A runner, not a signal model. It fires after a batch and passes through whatever each tool prints.',
+    fit:
+      'Assura can nudge earlier, warn before commit, and use the same bounded policy as a gate.',
   },
   {
     label: 'CI',
@@ -104,13 +110,16 @@ const comparisons = [
   },
   {
     label: 'Custom scripts',
-    misses: 'Easy to fork into bespoke glue.',
-    fit: 'Assura gives one CLI, one report shape, and stable output for agents and automation.',
+    misses:
+      'Can count lines or enforce conventions, but often become slow bespoke glue with repeated config and inconsistent output.',
+    fit:
+      'Assura gives one efficient CLI, one report shape, reusable rules, and stable automation output.',
   },
   {
     label: 'Convention docs',
-    misses: 'Explain intent without enforcement.',
-    fit: 'Assura turns the same intent into visible, repairable project signals.',
+    misses:
+      'Explain intent, but cannot identify the changed line, failing rule, or expected repair.',
+    fit: 'Assura turns that intent into visible, repairable signals agents can act on.',
   },
 ];
 
@@ -320,8 +329,9 @@ const performanceLayers = [
           <p class="eyebrow">Where it fits</p>
           <h2 id="compare-title">One signal layer above your existing tools.</h2>
           <p>
-            Assura does not replace linters, hooks, CI, or docs. It shows where
-            project-level drift is happening before those tools fail late.
+            Assura does not replace linters, hooks, CI, or docs. It covers the
+            language-agnostic signals they leave scattered: line counts, structure,
+            docs, references, reusable rules, and repair guidance.
           </p>
         </div>
         <div class="comparison-grid">
