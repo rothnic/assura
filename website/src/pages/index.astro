@@ -43,13 +43,13 @@ const reviewLines = [
   { text: 'Assura review: needs attention', tone: 'plain' },
   { text: 'Compared with: origin/main', tone: 'muted' },
   { text: '', tone: 'plain' },
-  { text: 'Changed since base: 8 files  +412/-96 lines  3 commits', tone: 'info' },
-  { text: 'Worktree: 2 modified  1 untracked  +74/-18 lines', tone: 'info' },
+  { text: 'Changed: 8 files | +412/-96 | 3 commits', tone: 'info' },
+  { text: 'Worktree: 2 mod | 1 untracked | +74/-18', tone: 'info' },
   { text: '', tone: 'plain' },
   { text: 'project', tone: 'plain' },
   { text: '|- src/cli/            heat 82  rising', tone: 'warn' },
   { text: '|  |- churn            +412/-96 lines', tone: 'muted' },
-  { text: '|  `- nudge            split helper before another command', tone: 'pass' },
+  { text: '|  `- nudge            split CLI helper now', tone: 'pass' },
   { text: '|- website/src/        heat 48', tone: 'warn' },
   { text: '|  `- docs             2 changed pages, stale-link risk', tone: 'muted' },
   { text: '`- .agents/skills/     heat 36', tone: 'warn' },
@@ -232,10 +232,10 @@ const performanceLayers = [
             <p class="eyebrow">Early warning signals for AI-assisted work</p>
             <h1 id="hero-title">Catch project drift before review.</h1>
             <p class="hero-copy">
-              AI agents can change a project faster than humans can review it.
-              Assura watches structure, docs, references, and branch changes, then
-              gives agents early nudges before small messes become failed hooks,
-              broken CI, or cleanup refactors.
+              AI agents change projects faster than teams can review them.
+              Assura turns structure, docs, references, and branch changes into
+              early nudges before drift becomes failed hooks, broken CI, or cleanup
+              refactors.
             </p>
             <div class="hero-actions" aria-label="Primary actions">
               <a class="button button-primary" href="/guides/quickstart/">Start with one command</a>
@@ -1511,6 +1511,14 @@ const performanceLayers = [
     .metric-grid {
       grid-template-columns: repeat(4, minmax(0, 1fr));
     }
+
+    .hero-visual > .review-terminal {
+      order: -1;
+    }
+
+    .hero-visual > .workflow-board {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
   }
 
   @media (max-width: 720px) {
@@ -1544,23 +1552,48 @@ const performanceLayers = [
       padding-bottom: 1.45rem;
     }
 
+    .hero-content {
+      justify-items: start;
+      gap: 1.05rem;
+      text-align: left;
+    }
+
+    .hero-copy-block {
+      justify-items: start;
+      width: 100%;
+    }
+
+    .eyebrow {
+      margin-bottom: 0.65rem;
+      font-size: 0.68rem;
+      line-height: 1.35;
+    }
+
     h1 {
-      font-size: clamp(2.15rem, 10.5vw, 3.25rem);
+      width: 100%;
+      max-width: 12em;
+      font-size: clamp(2.32rem, 9.8vw, 2.95rem);
+      line-height: 0.98;
     }
 
     .hero-copy {
-      margin-top: 0.9rem;
-      font-size: 0.98rem;
-      line-height: 1.56;
+      max-width: 35rem;
+      margin: 0.85rem 0 0;
+      font-size: 0.96rem;
+      line-height: 1.52;
     }
 
     .hero-actions {
       width: 100%;
       margin-top: 1.15rem;
+      justify-content: flex-start;
+      gap: 0.6rem;
     }
 
     .hero-actions .button {
       flex: 1 1 10rem;
+      min-height: 2.55rem;
+      padding-inline: 0.78rem;
     }
 
     .hero-facts {
@@ -1568,15 +1601,48 @@ const performanceLayers = [
     }
 
     .hero-pulse {
-      justify-content: stretch;
+      display: grid;
       width: 100%;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      background: color-mix(in srgb, var(--surface) 86%, transparent);
+      padding: 0.62rem 0.7rem;
+      box-shadow: 0 1px 2px var(--shadow);
     }
 
     .hero-pulse code,
     .hero-pulse span {
-      flex: 1 1 8rem;
-      justify-content: center;
+      min-height: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      padding: 0;
       text-align: center;
+    }
+
+    .hero-pulse code {
+      grid-column: 1 / -1;
+      justify-content: flex-start;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.5rem;
+      font-size: 0.78rem;
+      text-align: left;
+    }
+
+    .hero-pulse span {
+      justify-content: flex-start;
+      padding-top: 0.5rem;
+      color: var(--muted);
+      font-size: 0.72rem;
+      line-height: 1.2;
+      text-align: left;
+    }
+
+    .hero-pulse span + span {
+      border-left: 1px solid var(--border);
+      padding-left: 0.5rem;
     }
 
     .workflow-board,
@@ -1587,6 +1653,47 @@ const performanceLayers = [
     .metric-grid,
     .check-columns {
       grid-template-columns: 1fr;
+    }
+
+    .hero-visual {
+      width: 100%;
+      gap: 0.7rem;
+    }
+
+    .hero-visual > .review-terminal {
+      order: -1;
+    }
+
+    .hero-visual > .workflow-board {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.55rem;
+    }
+
+    .hero-visual .workflow-lane h2 {
+      padding: 0.62rem 0.68rem;
+      font-size: 0.8rem;
+    }
+
+    .hero-visual .workflow-lane ol {
+      gap: 0.42rem;
+      padding: 0.68rem;
+    }
+
+    .hero-visual .workflow-lane li {
+      grid-template-columns: 1.2rem minmax(0, 1fr);
+      gap: 0.4rem;
+      font-size: 0.72rem;
+      line-height: 1.32;
+    }
+
+    .hero-visual .workflow-lane li::before {
+      width: 1.18rem;
+      height: 1.18rem;
+      font-size: 0.62rem;
+    }
+
+    .hero-visual .workflow-lane li:nth-child(n+4) {
+      display: none;
     }
 
     .review-terminal pre {
