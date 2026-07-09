@@ -40,20 +40,30 @@ const earlyWorkflow = [
 
 const reviewLines = [
   { text: '$ assura review --base auto', tone: 'prompt' },
-  { text: 'Assura review: needs attention', tone: 'plain' },
-  { text: 'Compared with: origin/main', tone: 'muted' },
+  { text: 'Status: needs attention', tone: 'plain' },
+  { text: 'Base: origin/main', tone: 'muted' },
   { text: '', tone: 'plain' },
-  { text: 'Changed: 8 files | +412/-96 | 3 commits', tone: 'info' },
+  { text: 'Branch: 8 files | +412/-96 | 3 commits', tone: 'info' },
   { text: 'Worktree: 2 mod | 1 untracked | +74/-18', tone: 'info' },
   { text: '', tone: 'plain' },
-  { text: 'project', tone: 'plain' },
-  { text: '|- src/cli/            warn heat 82 (>=70)', tone: 'warn' },
-  { text: '|  |- churn            508 lines (>=300)', tone: 'muted' },
-  { text: '|  `- next             inspect path first', tone: 'pass' },
-  { text: '|- website/src/        watch heat 48 (>=35)', tone: 'info' },
-  { text: '|  `- docs             2 pages; link risk', tone: 'muted' },
-  { text: '`- .agents/skills/     watch heat 36 (>=35)', tone: 'info' },
-  { text: '   `- readiness        section missing', tone: 'muted' },
+  { text: 'Signals (! warn, ~ watch)', tone: 'plain' },
+  { text: '! src/cli/          82/70  508 lines', tone: 'warn' },
+  { text: '~ website/src/      48/35  link risk', tone: 'info' },
+  { text: '~ .agents/skills/   36/35  missing section', tone: 'info' },
+  { text: '', tone: 'plain' },
+  { text: 'Hidden: 21 unchanged/generated paths', tone: 'muted' },
+  { text: 'Next: assura review --path src/cli --explain', tone: 'pass' },
+];
+
+const heroReviewLines = [
+  { text: '$ assura review --base auto', tone: 'prompt' },
+  { text: 'Status: needs attention', tone: 'plain' },
+  { text: 'Branch: 8 files | +412/-96 | 3 commits', tone: 'info' },
+  { text: 'Worktree: 2 mod | 1 untracked | +74/-18', tone: 'info' },
+  { text: '', tone: 'plain' },
+  { text: 'Signals (! warn, ~ watch)', tone: 'plain' },
+  { text: '! src/cli/        82/70  508 lines', tone: 'warn' },
+  { text: '~ website/src/    48/35  link risk', tone: 'info' },
   { text: '', tone: 'plain' },
   { text: 'Hidden: 21 unchanged/generated', tone: 'muted' },
   { text: 'Next: assura review --path src/cli --explain', tone: 'pass' },
@@ -283,7 +293,7 @@ const performanceLayers = [
                 <span aria-hidden="true"></span>
                 <strong>assura review --base auto</strong>
               </div>
-              <pre><code>{reviewLines.slice(0, 12).map((line) => (
+              <pre><code>{heroReviewLines.map((line) => (
                 <span class:list={['terminal-line', line.tone]}>{line.text || ' '}</span>
               ))}</code></pre>
             </div>
@@ -372,7 +382,7 @@ const performanceLayers = [
               <span aria-hidden="true"></span>
               <span aria-hidden="true"></span>
               <span aria-hidden="true"></span>
-              <strong>project heat map</strong>
+              <strong>threshold report</strong>
             </div>
             <pre><code>{reviewLines.map((line) => (
               <span class:list={['terminal-line', line.tone]}>{line.text || ' '}</span>
