@@ -1723,12 +1723,62 @@ const performanceLayers = [
 
     .cost-line {
       grid-template-columns: 1fr;
+      position: relative;
+      gap: 0;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      background: color-mix(in srgb, var(--surface) 88%, transparent);
+      padding: 0.78rem 0.85rem;
+      box-shadow: 0 1px 2px var(--shadow);
+    }
+
+    .cost-line::before {
+      position: absolute;
+      top: 1.35rem;
+      bottom: 1.35rem;
+      left: 1.32rem;
+      width: 1px;
+      background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--soft) 45%, transparent),
+        var(--primary),
+        var(--warning),
+        var(--danger)
+      );
+      content: "";
     }
 
     .cost-line span,
     .cost-line span:first-child,
     .cost-line span:last-child {
+      position: relative;
+      min-height: 2.08rem;
+      justify-content: flex-start;
+      border: 0;
       border-radius: 0.5rem;
+      background: transparent;
+      padding: 0.38rem 0.4rem 0.38rem 2rem;
+      text-align: left;
+    }
+
+    .cost-line span::before {
+      position: absolute;
+      left: 0.13rem;
+      width: 0.64rem;
+      height: 0.64rem;
+      border: 2px solid var(--surface);
+      border-radius: 999px;
+      background: currentColor;
+      box-shadow: 0 0 0 1px color-mix(in srgb, currentColor 38%, transparent);
+      content: "";
+    }
+
+    .cost-line span:first-child {
+      color: var(--soft);
+    }
+
+    .cost-line span:last-child {
+      color: var(--danger);
     }
 
     .branch-layer,
