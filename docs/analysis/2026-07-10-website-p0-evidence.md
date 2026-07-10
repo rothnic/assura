@@ -10,9 +10,12 @@ pull_request: https://github.com/rothnic/assura/pull/140
 
 ## Result
 
-Website P0 passes its local proof gates. The remaining release proof is the
-fresh pull-request CI run and Workers preview generated after this change is
-pushed.
+Website P0 passes its local and hosted proof gates. Pull request 140 completed
+every required check, including the strict Performance Report and marketing
+browser verification, and Cloudflare published the refreshed preview.
+
+- Branch preview: https://codex-assura-landing-experience-assura.nlr06886.workers.dev
+- Commit preview: https://926791e0-assura.nlr06886.workers.dev
 
 ## Product Truth
 
@@ -86,8 +89,8 @@ meet the 2x target.
 A fresh local release run at
 `target/performance/website-roadmap-local.json` also passed the strict
 no-slower gate without weakening its threshold. The prior pull-request failure
-was a 0.17 millisecond cold-run miss on one fixture and requires a fresh hosted
-run after push.
+was a 0.17 millisecond cold-run miss on one fixture. The fresh hosted strict
+Performance Report passed without weakening its threshold.
 
 ## Independent Review
 

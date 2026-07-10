@@ -16,6 +16,7 @@ interface Props {
   canonicalPath?: string;
   imagePath?: string;
   noindex?: boolean;
+  structuredData?: Record<string, unknown> | Array<Record<string, unknown>>;
   navItems: NavItem[];
 }
 
@@ -33,6 +34,7 @@ const props = Astro.props;
       canonicalPath={props.canonicalPath}
       imagePath={props.imagePath}
       noindex={props.noindex}
+      structuredData={props.structuredData}
     />
     <slot name="head" />
   </head>
@@ -41,6 +43,22 @@ const props = Astro.props;
     <MarketingHeader navItems={props.navItems} />
     <slot />
     <MarketingFooter />
+    <script is:inline>
+      document.addEventListener('click', (event) => {
+        const target = event.target instanceof Element
+          ? event.target.closest('[data-analytics-event]')
+          : null;
+        const name = target?.getAttribute('data-analytics-event');
+        if (!name) return;
+        const detail = {
+          name,
+          path: window.location.pathname,
+          label: target.textContent?.trim() || '',
+        };
+        window.dispatchEvent(new CustomEvent('assura:cta', { detail }));
+        window.zaraz?.track?.(name, detail);
+      });
+    </script>
     <slot name="scripts" />
   </body>
 </html>

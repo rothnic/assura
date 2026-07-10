@@ -24,9 +24,13 @@ const { navItems } = Astro.props;
     </a>
     <nav class="nav-links" aria-label="Primary navigation">
       {navItems.map((item) => (
-        <a class:list={[item.mobile && 'nav-mobile']} href={item.href}>{item.label}</a>
+        <a
+          class:list={[item.mobile && 'nav-mobile']}
+          href={item.href}
+          data-analytics-event={item.href.includes('github.com') ? 'github_click' : item.href.includes('/guides/') ? 'docs_click' : 'navigation_click'}
+        >{item.label}</a>
       ))}
-      <a class="nav-start" href="#onboard" data-open-setup>Start</a>
+      <a class="nav-start" href="#onboard" data-open-setup data-analytics-event="setup_open">Start</a>
     </nav>
   </div>
 </header>

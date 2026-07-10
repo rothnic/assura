@@ -1,0 +1,48 @@
+---
+import FocusedMarketingPage from '../../components/marketing/focused-marketing-page.astro';
+import performance from '../../data/performance-summary.json';
+
+const title = 'Assura Performance: Fast Repository Validation';
+const description = 'See current Assura cold CLI and warm persistent-session benchmark evidence, methodology, environments, and regression gates.';
+const canonicalPath = '/performance/';
+const structuredData = { '@context': 'https://schema.org', '@type': 'TechArticle', headline: title, description, url: `https://assura.dev${canonicalPath}`, author: { '@type': 'Person', name: 'Nick Roth', url: 'https://www.nickroth.com/' } };
+---
+
+<FocusedMarketingPage
+  {title}
+  {description}
+  {canonicalPath}
+  imagePath="/social/performance.webp"
+  eyebrow="Performance evidence"
+  heading="Fast enough for the check. Warm enough for the loop."
+  intro="Assura protects two different paths: the one-shot CLI developers already use and persistent sessions for repeated agent or editor feedback. The evidence keeps those claims separate."
+  artifactTitle="assura performance-report"
+  artifactLines={[
+    `release                  ${performance.assura_version}`,
+    `cold fixtures            ${performance.cold.fixture_count}`,
+    `cold faster              ${performance.cold.assura_faster_count} / ${performance.cold.fixture_count}`,
+    `cold aggregate           ${performance.cold.aggregate_speedup_ratio.toFixed(2)}x`,
+    `warm aggregate           ${performance.warm.aggregate_speedup_ratio.toFixed(2)}x`,
+    `warm 2x target           ${performance.warm.two_x_pass_count} / ${performance.warm.fixture_count}`,
+  ]}
+  highlights={[
+    { label: 'Cold CLI', body: 'Release-built process-to-process measurements protect the direct command path without promising a universal multiplier.' },
+    { label: 'Warm session', body: 'Persistent request handling measures the loop used by agents and editors without paying startup cost every time.' },
+    { label: 'Regression gates', body: 'Checked report history and strict comparison gates keep homepage claims tied to a promoted release.' },
+  ]}
+  sections={[
+    { label: 'Comparable work first', body: 'Accepted cold rows compare equivalent LS-Lint-style repository checks. Assura-only product surfaces are reported separately.' },
+    { label: 'Environment is part of the result', body: 'The technical report records tool versions, fixtures, commands, build profiles, and machine context needed to interpret a number.' },
+    { label: 'No universal cold 2x claim', body: 'Current evidence is shown as measured. Warm-session targets do not get relabeled as cold CLI performance.' },
+    { label: 'Product surfaces stay visible', body: 'Native rows cover content collections, references, context packs, agent queries, session requests, and daemon status where LS-Lint has no equivalent.' },
+  ]}
+  adjacentLinks={[
+    { label: 'Compare Assura with LS-Lint', href: '/compare/ls-lint/' },
+    { label: 'See the project review workflow', href: '/project-review/' },
+  ]}
+  docsLinks={[
+    { label: 'Read benchmark methodology', href: '/reference/performance/' },
+    { label: 'Inspect implementation details', href: '/reference/performance-implementation/' },
+  ]}
+  {structuredData}
+/>

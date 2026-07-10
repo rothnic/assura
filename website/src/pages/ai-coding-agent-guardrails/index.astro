@@ -1,0 +1,41 @@
+---
+import FocusedMarketingPage from '../../components/marketing/focused-marketing-page.astro';
+import review from '../../data/review-demo.json';
+
+const title = 'AI Coding Agent Guardrails That Catch Drift Early | Assura';
+const description = 'Give coding agents bounded project-level warnings while they work, then enforce configured policy before merge.';
+const canonicalPath = '/ai-coding-agent-guardrails/';
+const structuredData = { '@context': 'https://schema.org', '@type': 'TechArticle', headline: title, description, url: `https://assura.dev${canonicalPath}`, author: { '@type': 'Person', name: 'Nick Roth', url: 'https://www.nickroth.com/' } };
+---
+
+<FocusedMarketingPage
+  {title}
+  {description}
+  {canonicalPath}
+  imagePath="/social/agent-guardrails.webp"
+  eyebrow="AI coding agent guardrails"
+  heading="Guide the repair before a late gate forces it."
+  intro="Hooks and CI are necessary, but they arrive after an agent has built on top of early drift. Assura adds bounded project signals during the working loop and reserves hard failure for configured merge policy."
+  artifactTitle="assura review · experimental"
+  artifactLines={review.display_lines.map((line) => line.text)}
+  highlights={[
+    { label: 'While editing', body: 'Return bounded advisory context at supported agent events without blocking the current change.' },
+    { label: 'Before commit', body: 'Show branch, worktree, structure, and changed-path findings while the repair is still focused.' },
+    { label: 'Before merge', body: 'Use the authoritative Check gate for serious configured policy that should not land.' },
+  ]}
+  sections={[
+    { label: 'Late gates distort repairs', body: 'When a commit is already blocked, the shortest path to green can become a broad refactor that breaks context and leaves technical debt.' },
+    { label: 'Bound the feedback', body: 'Agent-facing output prioritizes a small number of repairable findings and points to deeper commands instead of dumping every observation.' },
+    { label: 'Use branch and worktree context', body: 'Review separates committed branch changes from dirty worktree state so agents can see what this task introduced.' },
+    { label: 'Keep human decisions visible', body: 'Onboarding reports inactive capabilities and unresolved project choices instead of pretending unchecked behavior passed.' },
+  ]}
+  adjacentLinks={[
+    { label: 'See a project review', href: '/project-review/' },
+    { label: 'Understand project intelligence', href: '/project-intelligence/' },
+  ]}
+  docsLinks={[
+    { label: 'Read agent-ready onboarding', href: '/guides/agent-ready-onboarding/' },
+    { label: 'Inspect agent feedback delivery', href: '/reference/agent-feedback/' },
+  ]}
+  {structuredData}
+/>

@@ -3,6 +3,13 @@ import AxeBuilder from '@axe-core/playwright';
 
 const widths = [360, 390, 430, 768, 1024, 1440];
 const themes = ['light', 'dark'] as const;
+const marketingRoutes = [
+  { path: '/', heading: 'Catch project drift before review.' },
+  { path: '/compare/ls-lint/', heading: 'A faster path from naming checks to agent-ready project validation.' },
+  { path: '/performance/', heading: 'Fast enough for the check. Warm enough for the loop.' },
+  { path: '/ai-coding-agent-guardrails/', heading: 'Guide the repair before a late gate forces it.' },
+  { path: '/about/', heading: 'Built to make AI-assisted work easier to trust.' },
+];
 
 for (const colorScheme of themes) {
   for (const width of widths) {
@@ -81,4 +88,53 @@ test('technical docs remain reachable', async ({ page }) => {
   const response = await page.goto('/guides/quickstart/');
   expect(response?.status()).toBe(200);
   await expect(page.locator('main')).toBeVisible();
+});
+
+test('P1 routes expose unique canonical metadata and structured data', async ({ page }) => {
+  const titles = new Set<string>();
+  const descriptions = new Set<string>();
+
+  for (const route of marketingRoutes) {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(route.path);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(route.heading);
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', `https://assura.dev${route.path}`);
+    await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', /\/social\/.*\.webp$/);
+    const title = await page.title();
+    const description = await page.locator('meta[name="description"]').getAttribute('content');
+    expect(titles.has(title)).toBe(false);
+    expect(descriptions.has(description || '')).toBe(false);
+    titles.add(title);
+    descriptions.add(description || '');
+    const jsonLd = await page.locator('script[type="application/ld+json"]').textContent();
+    expect(() => JSON.parse(jsonLd || '')).not.toThrow();
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(overflow).toBe(0);
+    const audit = await new AxeBuilder({ page }).analyze();
+    expect(audit.violations).toEqual([]);
+  }
+});
+
+test('robots policy and sitemap discovery endpoints are available', async ({ page, request }) => {
+  const robots = await request.get('/robots.txt');
+  expect(robots.ok()).toBe(true);
+  expect(await robots.text()).toContain('Sitemap: https://assura.dev/sitemap-index.xml');
+  await page.goto('/');
+  await expect(page.locator('link[rel="sitemap"]')).toHaveAttribute('href', '/sitemap-index.xml');
+  await expect(page.locator('#robots-policy')).toHaveAttribute('content', 'index, follow');
+});
+
+test('high-value CTA emits a named analytics event', async ({ page }) => {
+  await page.goto('/');
+  await page.evaluate(() => {
+    (window as Window & { capturedCta?: unknown }).capturedCta = null;
+    window.addEventListener('assura:cta', (event) => {
+      (window as Window & { capturedCta?: unknown }).capturedCta = (event as CustomEvent).detail;
+    }, { once: true });
+  });
+  await page.getByRole('link', { name: 'Start with your agent' }).first().click();
+  const event = await page.evaluate(() => (window as Window & { capturedCta?: unknown }).capturedCta);
+  expect(event).toMatchObject({ name: 'setup_open', path: '/' });
 });

@@ -13,6 +13,21 @@ const pageTitle = 'Assura | Catch project drift before review';
 const pageDescription =
   'Assura gives AI coding agents early warning signals about project structure, branch heat, docs, references, and policy drift before cleanup gets expensive.';
 
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': ['SoftwareApplication', 'SoftwareSourceCode'],
+  name: 'Assura',
+  applicationCategory: 'DeveloperApplication',
+  operatingSystem: 'Linux, macOS, Windows',
+  description: pageDescription,
+  url: 'https://assura.dev/',
+  codeRepository: 'https://github.com/rothnic/assura',
+  downloadUrl: 'https://github.com/rothnic/assura/releases/latest',
+  license: ['https://opensource.org/license/mit', 'https://www.apache.org/licenses/LICENSE-2.0'],
+  author: { '@type': 'Person', name: 'Nick Roth', url: 'https://www.nickroth.com/' },
+  offers: { '@type': 'Offer', price: 0, priceCurrency: 'USD' },
+};
+
 const installScriptUrl = 'https://assura.dev/install.sh';
 const installCommand = `curl -fsSL ${installScriptUrl} | sh`;
 
@@ -29,8 +44,8 @@ Read .assura/onboarding/agent-next.md, summarize what is active, what is inactiv
 
 const navItems = [
   { label: 'How it works', href: '#review-output' },
-  { label: 'Compare', href: '#compare' },
-  { label: 'Performance', href: '/reference/performance/' },
+  { label: 'Compare', href: '/compare/ls-lint/' },
+  { label: 'Performance', href: '/performance/' },
   { label: 'Docs', href: '/guides/quickstart/', mobile: true },
   { label: 'GitHub', href: 'https://github.com/rothnic/assura' },
 ];
@@ -160,7 +175,9 @@ const performanceLayers = [
   title={pageTitle}
   description={pageDescription}
   canonicalPath="/"
+  imagePath="/social/home.webp"
   navItems={navItems}
+  structuredData={structuredData}
 >
   <main id="main-content">
       <section class="hero" aria-labelledby="hero-title">
@@ -176,13 +193,14 @@ const performanceLayers = [
               cleanup refactors.
             </p>
             <div class="hero-actions" aria-label="Primary actions">
-              <a class="button button-primary" href="#review-output">
+              <a class="button button-primary" href="#review-output" data-analytics-event="review_example_click">
                 See a project review
               </a>
               <a
                 class="button button-secondary"
                 href="#onboard"
                 data-open-setup
+                data-analytics-event="setup_open"
               >
                 Start with your agent
               </a>
@@ -416,8 +434,8 @@ const performanceLayers = [
           <h2 id="final-title">Give your agent one local project signal.</h2>
         </div>
         <div class="final-actions">
-          <a class="button button-primary" href="#onboard" data-open-setup>Start with your agent</a>
-          <a class="button button-secondary surface" href="/guides/agent-ready-onboarding/">
+          <a class="button button-primary" href="#onboard" data-open-setup data-analytics-event="setup_open">Start with your agent</a>
+          <a class="button button-secondary surface" href="/guides/agent-ready-onboarding/" data-analytics-event="docs_click">
             Read onboarding
           </a>
         </div>

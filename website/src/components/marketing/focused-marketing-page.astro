@@ -1,0 +1,104 @@
+---
+import AgentSetupDialog from './agent-setup-dialog.astro';
+import MarketingLayout from './marketing-layout.astro';
+import { agentSetupPrompt, installCommand, marketingNav } from '../../data/marketing';
+
+interface Item {
+  label: string;
+  body: string;
+}
+
+interface LinkItem {
+  label: string;
+  href: string;
+}
+
+interface Props {
+  title: string;
+  description: string;
+  canonicalPath: string;
+  imagePath: string;
+  eyebrow: string;
+  heading: string;
+  intro: string;
+  artifactTitle: string;
+  artifactLines: string[];
+  highlights: Item[];
+  sections: Item[];
+  docsLinks: LinkItem[];
+  adjacentLinks: LinkItem[];
+  structuredData?: Record<string, unknown> | Array<Record<string, unknown>>;
+}
+
+const props = Astro.props;
+---
+
+<MarketingLayout
+  title={props.title}
+  description={props.description}
+  canonicalPath={props.canonicalPath}
+  imagePath={props.imagePath}
+  navItems={marketingNav}
+  structuredData={props.structuredData}
+>
+  <main id="main-content" class="focused-page">
+    <section class="focused-hero" aria-labelledby="focused-title">
+      <div class="focused-hero-copy">
+        <p class="eyebrow">{props.eyebrow}</p>
+        <h1 id="focused-title">{props.heading}</h1>
+        <p>{props.intro}</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="#onboard" data-open-setup data-analytics-event="setup_open">
+            Start with your agent
+          </a>
+          <a class="button button-secondary surface" href={props.docsLinks[0].href} data-analytics-event="docs_click">
+            {props.docsLinks[0].label}
+          </a>
+        </div>
+      </div>
+      <div class="focused-artifact" aria-label={props.artifactTitle}>
+        <header>
+          <span></span><span></span><span></span>
+          <strong>{props.artifactTitle}</strong>
+        </header>
+        <pre tabindex="0"><code>{props.artifactLines.join('\n')}</code></pre>
+      </div>
+    </section>
+
+    <section class="focused-band" aria-label="Key points">
+      {props.highlights.map((item) => (
+        <article>
+          <h2>{item.label}</h2>
+          <p>{item.body}</p>
+        </article>
+      ))}
+    </section>
+
+    <section class="focused-content" aria-label="Details">
+      {props.sections.map((item, index) => (
+        <article>
+          <span>{String(index + 1).padStart(2, '0')}</span>
+          <div>
+            <h2>{item.label}</h2>
+            <p>{item.body}</p>
+          </div>
+        </article>
+      ))}
+    </section>
+
+    <section class="focused-links" aria-labelledby="next-title">
+      <div>
+        <p class="eyebrow">Continue</p>
+        <h2 id="next-title">Follow the signal into the details.</h2>
+      </div>
+      <nav aria-label="Related product and documentation pages">
+        {[...props.adjacentLinks, ...props.docsLinks].map((item) => (
+          <a href={item.href} data-analytics-event={item.href.includes('/guides/') || item.href.includes('/reference/') ? 'docs_click' : 'related_page_click'}>
+            {item.label}<span aria-hidden="true">→</span>
+          </a>
+        ))}
+      </nav>
+    </section>
+  </main>
+  <AgentSetupDialog prompt={agentSetupPrompt} installCommand={installCommand} />
+</MarketingLayout>

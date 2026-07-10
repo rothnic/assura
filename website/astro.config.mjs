@@ -1,11 +1,14 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import sitemap from '@astrojs/sitemap';
 import catppuccin from '@catppuccin/starlight';
 
 // https://astro.build/config
 export default defineConfig({
+	site: 'https://assura.dev',
 	integrations: [
+		sitemap(),
 		starlight({
 			title: 'Assura',
 			description: 'Structure-first repository validation and project intelligence',

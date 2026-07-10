@@ -1,0 +1,58 @@
+---
+import FocusedMarketingPage from '../../components/marketing/focused-marketing-page.astro';
+
+const title = 'About Assura and Nick Roth';
+const description = 'Why Nick Roth created Assura, the open-source product principles behind it, and how correctness and performance evidence guide the roadmap.';
+const canonicalPath = '/about/';
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'ProfilePage',
+  url: `https://assura.dev${canonicalPath}`,
+  mainEntity: {
+    '@type': 'Person',
+    name: 'Nick Roth',
+    alternateName: 'rothnic',
+    url: 'https://www.nickroth.com/',
+    sameAs: ['https://github.com/rothnic', 'https://www.linkedin.com/in/nicholasleeroth/'],
+  },
+};
+---
+
+<FocusedMarketingPage
+  {title}
+  {description}
+  {canonicalPath}
+  imagePath="/social/about.webp"
+  eyebrow="Product and creator"
+  heading="Built to make AI-assisted work easier to trust."
+  intro="Nick Roth is a product manager, systems engineer, and AI developer. He created Assura after seeing coding agents move faster than repository-level conventions, review workflows, and late validation gates could keep up."
+  artifactTitle="assura product principles"
+  artifactLines={[
+    'local first         project evidence stays close',
+    'top down            language-agnostic before specific',
+    'truthful state      unchecked is not passing',
+    'bounded output      point to the next useful detail',
+    'measured speed      publish current evidence',
+  ]}
+  highlights={[
+    { label: 'Product judgment', body: 'Turn scattered conventions and checks into one understandable workflow for people and coding agents.' },
+    { label: 'Systems discipline', body: 'Keep validation deterministic, local, composable, and explicit about what was and was not checked.' },
+    { label: 'Open evidence', body: 'Publish the commands, fixtures, benchmark methodology, and product boundaries behind public claims.' },
+  ]}
+  sections={[
+    { label: 'Why Assura exists', body: 'AI agents can create a large patch before a human sees the first structural problem. Earlier project signals keep repairs smaller and more deliberate.' },
+    { label: 'Top-down validation', body: 'Assura begins with language-agnostic repository health, then leaves clear extension points for runtime, framework, content, and domain policy.' },
+    { label: 'Performance with context', body: 'Speed matters because the signal must fit the working loop. Claims remain tied to current release evidence and clearly separated benchmark paths.' },
+    { label: 'Roadmap philosophy', body: 'Pre-1.0 development favors direct, testable product contracts over compatibility layers or speculative surface area.' },
+  ]}
+  adjacentLinks={[
+    { label: 'Visit Nick Roth’s personal site', href: 'https://www.nickroth.com/' },
+    { label: 'Follow Nick Roth on GitHub', href: 'https://github.com/rothnic' },
+    { label: 'Connect with Nick Roth on LinkedIn', href: 'https://www.linkedin.com/in/nicholasleeroth/' },
+  ]}
+  docsLinks={[
+    { label: 'Read the Assura roadmap', href: '/roadmap/' },
+    { label: 'Review release readiness', href: '/reference/release-readiness/' },
+  ]}
+  {structuredData}
+/>

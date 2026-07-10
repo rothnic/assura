@@ -1,0 +1,54 @@
+---
+import FocusedMarketingPage from '../../../components/marketing/focused-marketing-page.astro';
+import performance from '../../../data/performance-summary.json';
+
+const title = 'Assura vs LS-Lint: Repository Validation Beyond Naming';
+const description = 'Compare LS-Lint naming checks with Assura structure, content, reusable policy, agent feedback, and measured cold and warm performance.';
+const canonicalPath = '/compare/ls-lint/';
+const structuredData = [
+  { '@context': 'https://schema.org', '@type': 'TechArticle', headline: title, description, url: `https://assura.dev${canonicalPath}`, author: { '@type': 'Person', name: 'Nick Roth', url: 'https://www.nickroth.com/' } },
+  { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Assura', item: 'https://assura.dev/' },
+    { '@type': 'ListItem', position: 2, name: 'LS-Lint comparison', item: `https://assura.dev${canonicalPath}` },
+  ] },
+];
+---
+
+<FocusedMarketingPage
+  {title}
+  {description}
+  {canonicalPath}
+  imagePath="/social/ls-lint-comparison.webp"
+  eyebrow="LS-Lint comparison"
+  heading="A faster path from naming checks to agent-ready project validation."
+  intro="LS-Lint is a focused filesystem naming tool. Assura preserves that fast starting point, then adds project structure, language-agnostic file content, reusable rules, and repair guidance agents can act on."
+  artifactTitle="current performance evidence"
+  artifactLines={[
+    `cold accepted fixtures   ${performance.cold.assura_faster_count} / ${performance.cold.fixture_count} faster`,
+    `cold aggregate           ${performance.cold.aggregate_speedup_ratio.toFixed(2)}x`,
+    `warm 2x target           ${performance.warm.two_x_pass_count} / ${performance.warm.fixture_count} met`,
+    `warm aggregate           ${performance.warm.aggregate_speedup_ratio.toFixed(2)}x`,
+    '',
+    'evidence                 Assura 0.3.0',
+  ]}
+  highlights={[
+    { label: 'What LS-Lint does well', body: 'Fast, direct file and folder naming checks with a small configuration surface.' },
+    { label: 'Where Assura starts', body: 'The same repository-level naming and placement concerns, with an LS-Lint migration path.' },
+    { label: 'Where Assura expands', body: 'Line limits, Markdown, config, references, reusable policy layers, agent reports, and warm sessions.' },
+  ]}
+  sections={[
+    { label: 'Beyond filesystem operations', body: 'Assura can inspect language-agnostic concerns inside files, including line counts, document structure, frontmatter, links, and references.' },
+    { label: 'Less repeated policy', body: 'Reusable rule fragments and inherited project structure reduce duplication when the same expectations apply across multiple paths.' },
+    { label: 'Repair guidance for agents', body: 'Rule-specific findings carry path and policy context so an agent can understand the expected repair instead of parsing a generic failure.' },
+    { label: 'Performance claims stay bounded', body: 'Cold one-shot comparisons and warm persistent-session results are reported separately from checked release evidence.' },
+  ]}
+  adjacentLinks={[
+    { label: 'See current performance evidence', href: '/performance/' },
+    { label: 'Explore repository validation', href: '/repository-validation/' },
+  ]}
+  docsLinks={[
+    { label: 'Read the migration guide', href: '/guides/ls-lint-migration/' },
+    { label: 'Inspect benchmark test cases', href: '/reference/performance-test-cases/' },
+  ]}
+  {structuredData}
+/>
