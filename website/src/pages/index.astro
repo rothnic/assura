@@ -348,14 +348,17 @@ const performanceLayers = [
         <div class="comparison-grid">
           {comparisons.map((item) => (
             <article class="comparison-card">
-              <h3>{item.label}</h3>
+              <div class="comparison-card-head">
+                <span>Alternative</span>
+                <h3>{item.label}</h3>
+              </div>
               <dl>
-                <div>
-                  <dt>What it misses</dt>
+                <div class="comparison-panel tool-panel">
+                  <dt>Tool gap</dt>
                   <dd>{item.misses}</dd>
                 </div>
-                <div>
-                  <dt>Where Assura fits</dt>
+                <div class="comparison-panel assura-panel">
+                  <dt>Assura adds</dt>
                   <dd>{item.fit}</dd>
                 </div>
               </dl>
@@ -1317,19 +1320,93 @@ const performanceLayers = [
     color: var(--warning);
   }
 
+  .comparison-card {
+    display: grid;
+    gap: 0.82rem;
+    padding: 0.85rem;
+  }
+
+  .comparison-card-head {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+  }
+
+  .comparison-card-head span {
+    order: 2;
+    flex: 0 0 auto;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--surface-muted) 80%, transparent);
+    padding: 0.24rem 0.44rem;
+    color: var(--soft);
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 0.62rem;
+    font-weight: 800;
+    line-height: 1;
+    text-transform: uppercase;
+  }
+
   .comparison-card dl {
     display: grid;
-    gap: 0.75rem;
-    margin: 0.9rem 0 0;
+    gap: 0.5rem;
+    margin: 0;
+  }
+
+  .comparison-panel {
+    display: grid;
+    gap: 0.32rem;
+    border: 1px solid var(--border);
+    border-radius: 0.46rem;
+    padding: 0.75rem 0.78rem;
+  }
+
+  .tool-panel {
+    background: color-mix(in srgb, var(--surface-muted) 58%, transparent);
+  }
+
+  .assura-panel {
+    border-color: color-mix(in srgb, var(--primary) 34%, var(--border));
+    background: color-mix(in srgb, var(--primary-soft) 36%, var(--surface));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 12%, transparent);
   }
 
   .comparison-card dt {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
     margin: 0;
     color: var(--soft);
     font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
     font-size: 0.7rem;
     font-weight: 800;
     text-transform: uppercase;
+  }
+
+  .comparison-card dt::before {
+    width: 0.42rem;
+    height: 0.42rem;
+    border-radius: 999px;
+    background: var(--soft);
+    content: "";
+  }
+
+  .tool-panel dt {
+    color: var(--warning);
+  }
+
+  .tool-panel dt::before {
+    background: var(--warning);
+  }
+
+  .assura-panel dt {
+    color: var(--primary);
+  }
+
+  .assura-panel dt::before {
+    background: var(--primary);
   }
 
   .comparison-card dd {
