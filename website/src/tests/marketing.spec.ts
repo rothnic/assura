@@ -9,6 +9,14 @@ const marketingRoutes = [
   { path: '/performance/', heading: 'Fast enough for the check. Warm enough for the loop.' },
   { path: '/ai-coding-agent-guardrails/', heading: 'Guide the repair before a late gate forces it.' },
   { path: '/about/', heading: 'Built to make AI-assisted work easier to trust.' },
+  { path: '/project-review/', heading: 'See what this branch changed before review starts.' },
+  { path: '/agent-onboarding/', heading: 'Give the agent a baseline without teaching it to guess.' },
+  { path: '/repository-validation/', heading: 'Validate the project from the top down.' },
+  { path: '/project-intelligence/', heading: 'Turn local project facts into better agent context.' },
+  { path: '/examples/', heading: 'Start from a project shape that resembles yours.' },
+  { path: '/insights/benchmark-methodology/', heading: 'Measure equivalent work before comparing speed.' },
+  { path: '/case-studies/dogfooding-assura/', heading: 'The repository is the first production fixture.' },
+  { path: '/changelog/', heading: 'Release evidence, not just release notes.' },
 ];
 
 for (const colorScheme of themes) {
@@ -137,4 +145,21 @@ test('high-value CTA emits a named analytics event', async ({ page }) => {
   await page.getByRole('link', { name: 'Start with your agent' }).first().click();
   const event = await page.evaluate(() => (window as Window & { capturedCta?: unknown }).capturedCta);
   expect(event).toMatchObject({ name: 'setup_open', path: '/' });
+});
+
+test('marketing pages do not publish broken internal links', async ({ page, request }) => {
+  const links = new Set<string>();
+  for (const route of marketingRoutes) {
+    await page.goto(route.path);
+    const hrefs = await page.locator('a[href^="/"]').evaluateAll((anchors) =>
+      anchors.map((anchor) => anchor.getAttribute('href')).filter((href): href is string => Boolean(href)),
+    );
+    hrefs.forEach((href) => links.add(href));
+  }
+
+  for (const href of links) {
+    if (href.startsWith('/#')) continue;
+    const response = await request.get(href);
+    expect(response.status(), `Expected ${href} to resolve`).toBeLessThan(400);
+  }
 });

@@ -1,0 +1,45 @@
+---
+import FocusedMarketingPage from '../../components/marketing/focused-marketing-page.astro';
+import check from '../../data/check-demo.json';
+
+const title = 'Repository Structure Validation and Policy as Code | Assura';
+const description = 'Validate file and folder naming, required paths, child limits, file content, Markdown, references, and monorepo structure with one fast local CLI.';
+const canonicalPath = '/repository-validation/';
+const structuredData = { '@context': 'https://schema.org', '@type': 'TechArticle', headline: title, description, url: `https://assura.dev${canonicalPath}`, author: { '@type': 'Person', name: 'Nick Roth', url: 'https://www.nickroth.com/' } };
+---
+
+<FocusedMarketingPage
+  {title} {description} {canonicalPath} {structuredData}
+  imagePath="/social/repository-validation.webp"
+  eyebrow="Repository validation"
+  heading="Validate the project from the top down."
+  intro="Assura starts with stable, language-agnostic repository policy: where files belong, how paths are named, what must exist, how large structures can grow, and which content-level rules apply across file types."
+  artifactTitle="assura check · supported"
+  artifactLines={[
+    `$ ${check.command}`,
+    `files checked     ${check.files_checked}`,
+    `dirs checked      ${check.dirs_checked}`,
+    `violations        ${check.violation_count}`,
+    '',
+    ...check.violations.slice(0, 3).map((item) => `! ${item.path}  ${item.rule}`),
+  ]}
+  highlights={[
+    { label: 'Filesystem shape', body: 'File and directory naming, allowed and required paths, forbidden entries, child counts, and generated-output boundaries.' },
+    { label: 'Inside every file type', body: 'Language-agnostic line limits, Markdown sections, frontmatter, references, and content rules beyond filesystem operations.' },
+    { label: 'Reusable policy', body: 'Shared rules and inherited structure reduce duplicated configuration across packages, apps, docs, and monorepo areas.' },
+  ]}
+  sections={[
+    { label: 'Start broad', body: 'Establish project-level health and safety before attaching runtime or framework-specific tools.' },
+    { label: 'Return repair context', body: 'Findings identify the path, rule, severity, blocking state, and configured expectation so agents can choose a focused repair.' },
+    { label: 'Use the same contract everywhere', body: 'Run the configured policy locally, in hooks, in CI, and through bounded agent reports.' },
+    { label: 'Extend by layer', body: 'Specialized language, content, release, or domain constraints attach after the broad repository contract is stable.' },
+  ]}
+  adjacentLinks={[
+    { label: 'Compare with LS-Lint', href: '/compare/ls-lint/' },
+    { label: 'Explore project intelligence', href: '/project-intelligence/' },
+  ]}
+  docsLinks={[
+    { label: 'Read structure validation docs', href: '/product/structure-validation/' },
+    { label: 'Open the rules reference', href: '/docs/rules/' },
+  ]}
+/>

@@ -1,0 +1,46 @@
+---
+import FocusedMarketingPage from '../../components/marketing/focused-marketing-page.astro';
+import onboarding from '../../data/onboarding-demo.json';
+
+const title = 'Agent-Ready Repository Onboarding | Assura';
+const description = 'Give Codex and other coding agents a broad local validation baseline while keeping inactive capabilities and human project decisions visible.';
+const canonicalPath = '/agent-onboarding/';
+const structuredData = { '@context': 'https://schema.org', '@type': 'TechArticle', headline: title, description, url: `https://assura.dev${canonicalPath}`, author: { '@type': 'Person', name: 'Nick Roth', url: 'https://www.nickroth.com/' } };
+---
+
+<FocusedMarketingPage
+  {title} {description} {canonicalPath} {structuredData}
+  imagePath="/social/agent-onboarding.webp"
+  eyebrow="Agent-ready onboarding"
+  heading="Give the agent a baseline without teaching it to guess."
+  intro="One experimental onboarding command creates or preserves the broad Assura baseline, installs project-local guidance, verifies the result, and leaves project-specific questions for a human decision."
+  artifactTitle="assura agent onboard · experimental"
+  artifactLines={[
+    `$ ${onboarding.command}`,
+    '',
+    `project type      ${onboarding.detected.project_type}`,
+    `config            ${onboarding.installed.config}`,
+    `verified          ${onboarding.verified.length}`,
+    `inactive          ${onboarding.inactive.length}`,
+    `next action       ${onboarding.next_actions[0].follow_up}`,
+  ]}
+  highlights={[
+    { label: 'Creates', body: `A config, presets lock, project-local skills, process guidance, examples, and an onboarding packet across ${onboarding.files.length} recorded file actions.` },
+    { label: 'Preserves', body: 'Existing configuration and AGENTS.md guidance are merged or retained rather than silently replaced.' },
+    { label: 'Does not guess', body: 'Language, layout, naming, hooks, content models, and domain rules remain explicit human decisions.' },
+  ]}
+  sections={[
+    { label: 'Active versus inactive', body: 'The onboarding result names verified setup separately from content models and specialization that are still inactive.' },
+    { label: 'Harness-aware, not harness-dependent', body: 'Supported harnesses can receive integration bundles; generic environments still get AGENTS.md and manual-shell guidance.' },
+    { label: 'A concrete handoff', body: 'The generated agent-next document tells the agent what to read, what to ask, and which broad checks are ready.' },
+    { label: 'One lifecycle, separate pressure', body: 'Advisory working-loop feedback, pre-commit warnings, and blocking pre-push or CI policy are configured as distinct stages.' },
+  ]}
+  adjacentLinks={[
+    { label: 'See the project review flow', href: '/project-review/' },
+    { label: 'Understand agent guardrails', href: '/ai-coding-agent-guardrails/' },
+  ]}
+  docsLinks={[
+    { label: 'Read the onboarding guide', href: '/guides/agent-ready-onboarding/' },
+    { label: 'See multi-agent configuration', href: '/examples/multi-agent-config/' },
+  ]}
+/>

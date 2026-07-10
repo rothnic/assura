@@ -1,0 +1,45 @@
+---
+import FocusedMarketingPage from '../../../components/marketing/focused-marketing-page.astro';
+import performance from '../../../data/performance-summary.json';
+
+const title = 'How Assura Benchmarks Repository Validation';
+const description = 'The release-bound methodology behind Assura cold CLI, warm session, LS-Lint comparison, fixture acceptance, and regression claims.';
+const canonicalPath = '/insights/benchmark-methodology/';
+const structuredData = { '@context': 'https://schema.org', '@type': 'TechArticle', headline: title, description, datePublished: '2026-07-10', url: `https://assura.dev${canonicalPath}`, author: { '@type': 'Person', name: 'Nick Roth', url: 'https://www.nickroth.com/' } };
+---
+
+<FocusedMarketingPage
+  {title} {description} {canonicalPath} {structuredData}
+  imagePath="/social/benchmark-methodology.webp"
+  eyebrow="Engineering evidence"
+  heading="Measure equivalent work before comparing speed."
+  intro="Assura separates process-to-process cold comparisons from persistent warm sessions, accepts only equivalent LS-Lint-style fixtures, and keeps Assura-native capabilities outside the parity headline."
+  artifactTitle="checked benchmark cohort"
+  artifactLines={[
+    `release              ${performance.assura_version}`,
+    `cold iterations      ${performance.cold.measured_iterations}`,
+    `accepted fixtures    ${performance.cold.fixture_count}`,
+    `cold faster          ${performance.cold.assura_faster_count}`,
+    `warm 2x pass         ${performance.warm.two_x_pass_count}`,
+    `environment          ${performance.environment.os} ${performance.environment.arch}`,
+  ]}
+  highlights={[
+    { label: 'Equivalent fixtures', body: 'Naming and repository-shape rows compare work both tools can perform.' },
+    { label: 'Separate runtimes', body: 'Cold startup and warm persistent-session behavior answer different product questions.' },
+    { label: 'Release-bound claims', body: 'Homepage facts are generated from checked JSON whose Assura version must match the promoted package.' },
+  ]}
+  sections={[
+    { label: 'Build the compared binaries', body: 'The suite uses release artifacts for Assura, Assura full-feature paths, the check-only CLI, and the matching LS-Lint runner.' },
+    { label: 'Require enough iterations', body: 'Reports record measured and minimum completion iterations before a row can support a public claim.' },
+    { label: 'Keep floors observable', body: 'Process and Rust CLI floor classifications remain explicit instead of being hidden inside an aggregate.' },
+    { label: 'Gate regressions', body: 'CI checks strict cold parity and native baseline behavior independently so one claim cannot mask another.' },
+  ]}
+  adjacentLinks={[
+    { label: 'See the performance summary', href: '/performance/' },
+    { label: 'Compare with LS-Lint', href: '/compare/ls-lint/' },
+  ]}
+  docsLinks={[
+    { label: 'Read technical methodology', href: '/reference/performance/' },
+    { label: 'Inspect benchmark cases', href: '/reference/performance-test-cases/' },
+  ]}
+/>

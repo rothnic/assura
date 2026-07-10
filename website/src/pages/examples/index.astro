@@ -1,0 +1,45 @@
+---
+import FocusedMarketingPage from '../../components/marketing/focused-marketing-page.astro';
+
+const title = 'Assura Examples for Software, Docs, and Agent Workflows';
+const description = 'Explore Assura examples for agent-ready software projects, monorepos, Markdown-heavy repositories, LS-Lint migration, CI, and project intelligence.';
+const canonicalPath = '/examples/';
+const structuredData = { '@context': 'https://schema.org', '@type': 'CollectionPage', name: title, description, url: `https://assura.dev${canonicalPath}` };
+---
+
+<FocusedMarketingPage
+  {title} {description} {canonicalPath} {structuredData}
+  imagePath="/social/examples.webp"
+  eyebrow="Examples"
+  heading="Start from a project shape that resembles yours."
+  intro="Assura’s examples move from a broad repository contract into specific software, documentation, migration, CI, and agent workflows. Each example points to the exact technical guide behind it."
+  artifactTitle="example index"
+  artifactLines={[
+    'software/       agent-ready baseline',
+    'monorepo/       package and app boundaries',
+    'markdown/       sections and content models',
+    'migration/      LS-Lint configuration',
+    'ci/             hooks and required checks',
+    'intelligence/   facts, references, context',
+  ]}
+  highlights={[
+    { label: 'Software projects', body: 'Start with structure, naming, generated output, agent guidance, hooks, and CI.' },
+    { label: 'Document projects', body: 'Validate Markdown, frontmatter, source custody, references, and traceability.' },
+    { label: 'Existing policy', body: 'Migrate LS-Lint naming rules or connect current custom constraints without replacing specialized linters.' },
+  ]}
+  sections={[
+    { label: 'Agent-ready software project', body: 'A broad baseline with AGENTS.md guidance, project-local skills, advisory feedback, and a merge gate.' },
+    { label: 'Monorepo structure', body: 'Separate shared policy from app, package, docs, and generated-output boundaries.' },
+    { label: 'Markdown-heavy repository', body: 'Treat headings, frontmatter, links, and content models as deterministic project policy.' },
+    { label: 'Requirements and evidence', body: 'Connect documents and references so missing traceability is visible instead of inferred during review.' },
+  ]}
+  adjacentLinks={[
+    { label: 'Read the LS-Lint comparison', href: '/compare/ls-lint/' },
+    { label: 'Understand repository validation', href: '/repository-validation/' },
+  ]}
+  docsLinks={[
+    { label: 'Open the basic setup example', href: '/examples/basic-setup/' },
+    { label: 'See real project feedback', href: '/examples/real-project-feedback/' },
+    { label: 'Explore multi-agent setup', href: '/examples/multi-agent-config/' },
+  ]}
+/>

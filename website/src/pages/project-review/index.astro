@@ -1,0 +1,38 @@
+---
+import FocusedMarketingPage from '../../components/marketing/focused-marketing-page.astro';
+import review from '../../data/review-demo.json';
+
+const title = 'Project Review for AI-Assisted Code Changes | Assura';
+const description = 'Review repository health, branch changes, dirty worktree state, inactive checks, and ranked next actions before project drift reaches CI.';
+const canonicalPath = '/project-review/';
+const structuredData = { '@context': 'https://schema.org', '@type': 'TechArticle', headline: title, description, url: `https://assura.dev${canonicalPath}`, author: { '@type': 'Person', name: 'Nick Roth', url: 'https://www.nickroth.com/' } };
+---
+
+<FocusedMarketingPage
+  {title} {description} {canonicalPath} {structuredData}
+  imagePath="/social/project-review.webp"
+  eyebrow="Project review"
+  heading="See what this branch changed before review starts."
+  intro="Assura Review is a compact project-health radar. It separates branch and worktree change pressure, reports configured and inactive signals, and directs the agent to Explain or the authoritative Check gate."
+  artifactTitle="assura review · experimental"
+  artifactLines={review.display_lines.map((line) => line.text)}
+  highlights={[
+    { label: 'Branch', body: `${review.metrics.branch_files} changed file and concrete line churn compared with the detected source branch.` },
+    { label: 'Worktree', body: `${review.metrics.worktree_modified} modified and ${review.metrics.worktree_untracked} untracked path kept separate from committed work.` },
+    { label: 'Policy', body: `${review.metrics.blocking} blocking violation and ${review.metrics.inactive} inactive capabilities, without treating unchecked behavior as passing.` },
+  ]}
+  sections={[
+    { label: 'Review is the radar', body: 'Use a bounded diagnostic while work is in progress. Review summarizes project health and change context without replacing the final gate.' },
+    { label: 'Explain one path', body: 'When a finding needs context, Explain shows the effective inherited structure policy for the path instead of repeating the entire project report.' },
+    { label: 'Check is the gate', body: 'Before merge, Check enforces the configured blocking contract with stable exit behavior for hooks and CI.' },
+    { label: 'Current limits stay visible', body: 'Review labels experimental behavior and reports inactive capabilities, so a clean configured check is not presented as complete project coverage.' },
+  ]}
+  adjacentLinks={[
+    { label: 'Add coding-agent guardrails', href: '/ai-coding-agent-guardrails/' },
+    { label: 'Set up agent onboarding', href: '/agent-onboarding/' },
+  ]}
+  docsLinks={[
+    { label: 'Read the project review example', href: '/examples/project-intelligence-demo/' },
+    { label: 'Inspect configuration reference', href: '/reference/configuration/' },
+  ]}
+/>

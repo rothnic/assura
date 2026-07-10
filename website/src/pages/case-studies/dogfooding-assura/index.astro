@@ -1,0 +1,45 @@
+---
+import FocusedMarketingPage from '../../../components/marketing/focused-marketing-page.astro';
+
+const title = 'Dogfooding Assura on Assura';
+const description = 'How Assura uses its own repository validation, workflow gates, generated evidence, agent guidance, and CI checks to keep a fast-moving project coherent.';
+const canonicalPath = '/case-studies/dogfooding-assura/';
+const structuredData = { '@context': 'https://schema.org', '@type': 'TechArticle', headline: title, description, datePublished: '2026-07-10', url: `https://assura.dev${canonicalPath}`, author: { '@type': 'Person', name: 'Nick Roth', url: 'https://www.nickroth.com/' } };
+---
+
+<FocusedMarketingPage
+  {title} {description} {canonicalPath} {structuredData}
+  imagePath="/social/dogfood-case-study.webp"
+  eyebrow="Case study"
+  heading="The repository is the first production fixture."
+  intro="Assura validates its own structure before commits and pushes, generates website evidence from the real CLI, and routes agent work through repository-local goals, specs, and skills. Failures become product feedback rather than hidden exceptions."
+  artifactTitle="assura self-check"
+  artifactLines={[
+    '$ assura check',
+    'files checked      1,600',
+    'directories        363',
+    'violations         0',
+    '',
+    'website evidence   generated from CLI',
+    'browser matrix     light + dark, six widths',
+  ]}
+  highlights={[
+    { label: 'Closed-world shape', body: 'New source, docs, generated artifacts, and website routes must fit the declared repository structure.' },
+    { label: 'Agent routing', body: 'AGENTS.md stays an index into focused skills, Trellis specs, active goals, and bounded verification commands.' },
+    { label: 'Evidence as output', body: 'Performance, command examples, CI scope, target state, and website demos are generated or checked rather than copied by hand.' },
+  ]}
+  sections={[
+    { label: 'A warning can reveal stale policy', body: 'When the repository rejects a legitimate new file, the change must either reuse the intended location or update the policy deliberately.' },
+    { label: 'A passing check has a boundary', body: 'Configured structure passing does not mean inactive content, query, or project-specific rules were evaluated.' },
+    { label: 'Website claims execute', body: 'The marketing fixture runs public commands and sanitizes their structured results before the site can build.' },
+    { label: 'CI scope is part of correctness', body: 'Rust and CLI changes trigger website evidence verification so product behavior cannot drift behind a static demo.' },
+  ]}
+  adjacentLinks={[
+    { label: 'Explore Assura examples', href: '/examples/' },
+    { label: 'Read benchmark methodology', href: '/insights/benchmark-methodology/' },
+  ]}
+  docsLinks={[
+    { label: 'See real project feedback', href: '/examples/real-project-feedback/' },
+    { label: 'Review release readiness', href: '/reference/release-readiness/' },
+  ]}
+/>
