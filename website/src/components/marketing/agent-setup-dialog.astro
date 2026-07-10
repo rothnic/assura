@@ -1,0 +1,81 @@
+---
+interface Props {
+  prompt: string;
+  installCommand: string;
+}
+
+const { prompt, installCommand } = Astro.props;
+---
+
+<dialog id="agent-setup-dialog" class="setup-dialog" aria-labelledby="setup-dialog-title">
+  <div class="dialog-shell">
+    <header class="dialog-head">
+      <div>
+        <span>Agent setup</span>
+        <h2 id="setup-dialog-title">Start with one agent instruction.</h2>
+      </div>
+      <button class="dialog-close" type="button" data-close-setup aria-label="Close setup dialog">×</button>
+    </header>
+    <p class="dialog-copy">
+      Give this prompt to the coding agent already working in your project. It
+      installs Assura, establishes a broad baseline, verifies the setup, and
+      leaves unresolved project decisions visible.
+    </p>
+    <div class="dialog-command">
+      <div>
+        <span>Recommended</span>
+        <strong>Agent prompt</strong>
+      </div>
+      <pre><code id="agent-prompt">{prompt}</code></pre>
+      <button class="button button-primary" type="button" data-copy-target="agent-prompt" data-copied-label="Prompt copied">
+        Copy agent prompt
+      </button>
+    </div>
+    <div class="install-row">
+      <span>Manual install</span>
+      <code id="install-command">{installCommand}</code>
+      <button class="copy-inline" type="button" data-copy-target="install-command" data-copied-label="Copied">
+        Copy
+      </button>
+    </div>
+    <span id="copy-status" class="sr-only" role="status" aria-live="polite"></span>
+  </div>
+</dialog>
+
+<script is:inline>
+  const setupDialog = document.getElementById('agent-setup-dialog');
+  if (setupDialog instanceof HTMLDialogElement) {
+    for (const trigger of document.querySelectorAll('[data-open-setup]')) {
+      trigger.addEventListener('click', (event) => {
+        event.preventDefault();
+        setupDialog.showModal();
+      });
+    }
+    for (const trigger of setupDialog.querySelectorAll('[data-close-setup]')) {
+      trigger.addEventListener('click', () => setupDialog.close());
+    }
+    setupDialog.addEventListener('click', (event) => {
+      if (event.target === setupDialog) setupDialog.close();
+    });
+  }
+
+  for (const button of document.querySelectorAll('[data-copy-target]')) {
+    button.addEventListener('click', async () => {
+      const targetId = button.getAttribute('data-copy-target');
+      const target = targetId ? document.getElementById(targetId) : null;
+      const value = target?.textContent?.trim();
+      if (!value) return;
+
+      await navigator.clipboard.writeText(value);
+      const originalLabel = button.getAttribute('data-original-label') || button.textContent || '';
+      button.setAttribute('data-original-label', originalLabel);
+      button.textContent = button.getAttribute('data-copied-label') || 'Copied';
+      const status = document.getElementById('copy-status');
+      if (status) status.textContent = `${button.textContent}.`;
+      window.setTimeout(() => {
+        button.textContent = button.getAttribute('data-original-label') || originalLabel;
+        if (status) status.textContent = '';
+      }, 1600);
+    });
+  }
+</script>

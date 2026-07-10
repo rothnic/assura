@@ -67,6 +67,8 @@ __pycache__/
 # ============================================================================
 website/.astro/
 website/dist/
+website/playwright-report/
+website/test-results/
 website/node_modules/
 
 # ============================================================================

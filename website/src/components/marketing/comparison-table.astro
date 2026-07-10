@@ -1,0 +1,73 @@
+---
+const comparisons = [
+  {
+    tool: 'Language linters',
+    goodAt: 'Details inside source files for one language or runtime.',
+    adds: 'One fast language-agnostic policy for line limits, structure, Markdown, config, generated files, and agent guidance.',
+  },
+  {
+    tool: 'LS-Lint',
+    goodAt: 'Fast filesystem naming rules.',
+    adds: 'File-content checks, reusable policy layers, rule-specific repair guidance, agent output, and warm sessions.',
+  },
+  {
+    tool: 'Pre-commit',
+    goodAt: 'Running local gates after a batch of work.',
+    adds: 'Earlier project-review signals and the same bounded policy at the eventual gate.',
+  },
+  {
+    tool: 'CI',
+    goodAt: 'Authoritative post-push validation.',
+    adds: 'Local branch and worktree context before the failure leaves the machine.',
+  },
+  {
+    tool: 'Custom scripts',
+    goodAt: 'One-off project policy and bespoke checks.',
+    adds: 'Shared configuration, one report shape, reusable rules, lifecycle integration, and performance discipline.',
+  },
+  {
+    tool: 'Convention docs',
+    goodAt: 'Explaining project intent to people and agents.',
+    adds: 'Deterministic findings with the path, rule, and concrete repair context.',
+  },
+];
+---
+
+<div class="comparison-table-wrap">
+  <table class="comparison-table">
+    <thead>
+      <tr>
+        <th>Tool</th>
+        <th>Good at</th>
+        <th>Assura adds</th>
+      </tr>
+    </thead>
+    <tbody>
+      {comparisons.map((item) => (
+        <tr>
+          <th scope="row">{item.tool}</th>
+          <td>{item.goodAt}</td>
+          <td>{item.adds}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+
+<div class="comparison-accordion">
+  {comparisons.map((item, index) => (
+    <details open={index === 0}>
+      <summary>{item.tool}</summary>
+      <dl>
+        <div>
+          <dt>Good at</dt>
+          <dd>{item.goodAt}</dd>
+        </div>
+        <div>
+          <dt>Assura adds</dt>
+          <dd>{item.adds}</dd>
+        </div>
+      </dl>
+    </details>
+  ))}
+</div>

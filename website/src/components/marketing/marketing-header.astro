@@ -1,0 +1,32 @@
+---
+interface NavItem {
+  label: string;
+  href: string;
+  mobile?: boolean;
+}
+
+interface Props {
+  navItems: NavItem[];
+}
+
+const { navItems } = Astro.props;
+---
+
+<header class="site-header" aria-label="Primary">
+  <div class="header-inner">
+    <a class="brand" href="/" aria-label="Assura home">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 28 28" focusable="false">
+          <path d="M7.2 14.6 11.7 19 21 8.8"></path>
+        </svg>
+      </span>
+      <span>assura</span>
+    </a>
+    <nav class="nav-links" aria-label="Primary navigation">
+      {navItems.map((item) => (
+        <a class:list={[item.mobile && 'nav-mobile']} href={item.href}>{item.label}</a>
+      ))}
+      <a class="nav-start" href="#onboard" data-open-setup>Start</a>
+    </nav>
+  </div>
+</header>

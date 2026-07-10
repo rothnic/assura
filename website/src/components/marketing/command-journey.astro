@@ -1,0 +1,31 @@
+---
+const steps = [
+  { label: 'Onboard', status: 'Experimental', command: 'assura agent onboard', body: 'Establish the broad agent-ready baseline.' },
+  { label: 'Review', status: 'Experimental', command: 'assura review', body: 'See what changed and where attention is needed.' },
+  { label: 'Explain', status: 'Experimental', command: 'assura explain', body: 'Understand one path, inherited rule, or signal.' },
+  { label: 'Check', status: 'Supported', command: 'assura check', body: 'Enforce configured policy before merge.' },
+];
+---
+
+<section class="section journey-section" aria-labelledby="journey-title">
+  <div class="section-head compact">
+    <p class="eyebrow">The command model</p>
+    <h2 id="journey-title">Review first. Check last.</h2>
+    <p>Review is the radar. Check is the gate.</p>
+  </div>
+  <ol class="command-journey">
+    {steps.map((step, index) => (
+      <li>
+        <span>{String(index + 1).padStart(2, '0')}</span>
+        <div>
+          <div class="journey-label">
+            <strong>{step.label}</strong>
+            <small>{step.status}</small>
+          </div>
+          <code>{step.command}</code>
+          <p>{step.body}</p>
+        </div>
+      </li>
+    ))}
+  </ol>
+</section>

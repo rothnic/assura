@@ -1,0 +1,225 @@
+{
+  "command": "assura agent onboard . --agent auto --format json",
+  "content": {
+    "detail": "content runtime activation was not requested",
+    "status": "inactive",
+    "template": "none"
+  },
+  "detected": {
+    "agent_confidence": "low",
+    "agent_harness": "generic",
+    "existing_source_files": true,
+    "git_repository": false,
+    "project_confidence": "high",
+    "project_type": "monorepo",
+    "requested_agent": "auto"
+  },
+  "files": [
+    {
+      "action": "merge",
+      "existed": true,
+      "path": ".assura/config.yml",
+      "required": true
+    },
+    {
+      "action": "write",
+      "existed": false,
+      "path": ".assura/presets.lock.yml",
+      "required": true
+    },
+    {
+      "action": "existing",
+      "existed": true,
+      "path": "AGENTS.md",
+      "required": true
+    },
+    {
+      "action": "write",
+      "existed": false,
+      "path": ".agents/skills/assura-project-maintenance/SKILL.md",
+      "required": true
+    },
+    {
+      "action": "write",
+      "existed": false,
+      "path": ".agents/skills/assura-project-maintenance/agents/openai.yaml",
+      "required": true
+    },
+    {
+      "action": "write",
+      "existed": false,
+      "path": ".agents/skills/assura-project-maintenance/references/assura-onboarding.md",
+      "required": true
+    },
+    {
+      "action": "write",
+      "existed": false,
+      "path": ".agents/skills/assura-structure-fit/SKILL.md",
+      "required": true
+    },
+    {
+      "action": "write",
+      "existed": false,
+      "path": ".agents/skills/assura-structure-fit/references/structure-fit-check.md",
+      "required": true
+    },
+    {
+      "action": "write",
+      "existed": false,
+      "path": "docs/process/agent-workflow.md",
+      "required": true
+    },
+    {
+      "action": "write",
+      "existed": false,
+      "path": "docs/learnings/README.md",
+      "required": true
+    },
+    {
+      "action": "write",
+      "existed": false,
+      "path": ".assura/examples/agent-project/AGENTS.example.md",
+      "required": true
+    },
+    {
+      "action": "write",
+      "existed": false,
+      "path": ".assura/examples/agent-project/SKILL.example.md",
+      "required": true
+    },
+    {
+      "action": "write",
+      "existed": false,
+      "path": ".assura/onboarding/summary.md",
+      "required": true
+    },
+    {
+      "action": "write",
+      "existed": false,
+      "path": ".assura/onboarding/questions.md",
+      "required": true
+    },
+    {
+      "action": "write",
+      "existed": false,
+      "path": ".assura/onboarding/lifecycle.md",
+      "required": true
+    },
+    {
+      "action": "write",
+      "existed": false,
+      "path": ".assura/onboarding/agent-next.md",
+      "required": true
+    },
+    {
+      "action": "write",
+      "existed": false,
+      "path": ".assura/onboarding/doctor.json",
+      "required": true
+    }
+  ],
+  "generated_from": "assura.agent-onboarding.v1",
+  "inactive": [
+    {
+      "detail": "waiting for user answers in .assura/onboarding/questions.md",
+      "name": "project_specialization",
+      "status": "inactive"
+    },
+    {
+      "detail": "deferred until --content-template is selected",
+      "name": "content_models",
+      "status": "inactive"
+    }
+  ],
+  "installed": {
+    "assura_version": "0.3.0",
+    "config": ".assura/config.yml",
+    "onboarding_packet": ".assura/onboarding/"
+  },
+  "integration": {
+    "agent": "generic",
+    "detail": "no supported host-agent harness detected; use AGENTS.md and assura check --format agent --warn",
+    "mode": "manual-shell",
+    "status": "generic-guidance"
+  },
+  "lifecycle_profiles": [
+    {
+      "blocking": false,
+      "mode": "nudge",
+      "name": "agent-working-loop",
+      "trigger": "session start, before-tool, after-tool, file-read, idle, or recovery"
+    },
+    {
+      "blocking": false,
+      "mode": "warn",
+      "name": "pre-commit-warning",
+      "trigger": "before local commit or during draft agent work"
+    },
+    {
+      "blocking": true,
+      "mode": "gate",
+      "name": "pre-push-or-ci-gate",
+      "trigger": "before push, merge, or CI required check"
+    }
+  ],
+  "next_actions": [
+    {
+      "action": "Read the onboarding handoff",
+      "affected_paths": [
+        ".assura/onboarding/agent-next.md"
+      ],
+      "follow_up": ".assura/onboarding/agent-next.md",
+      "priority": 1,
+      "reason": "The broad baseline is active but project specialization is still pending."
+    },
+    {
+      "action": "Ask remaining specialization questions",
+      "affected_paths": [
+        ".assura/onboarding/questions.md"
+      ],
+      "follow_up": ".assura/onboarding/questions.md",
+      "priority": 2,
+      "reason": "Assura should not invent language, layout, naming, hook, or domain conventions."
+    },
+    {
+      "action": "Use advisory feedback while drafting",
+      "affected_paths": [
+        ".assura/config.yml"
+      ],
+      "follow_up": "assura check --format agent --warn --max-issues 5 .",
+      "priority": 3,
+      "reason": "Warn mode reports guidance without blocking normal agent work."
+    },
+    {
+      "action": "Use gate feedback before push or CI",
+      "affected_paths": [
+        ".assura/config.yml"
+      ],
+      "follow_up": "assura check --format agent --min-severity medium .",
+      "priority": 4,
+      "reason": "Gate mode preserves the configured severity contract before merge."
+    },
+    {
+      "action": "Choose whether to activate content models",
+      "affected_paths": [
+        ".assura/onboarding/questions.md"
+      ],
+      "follow_up": "assura agent onboard . --content-template agent-project",
+      "priority": 6,
+      "reason": "Content facts stay inactive until a template is selected deliberately."
+    }
+  ],
+  "schema": "assura.website-onboarding-demo.v1",
+  "verified": [
+    {
+      "detail": ".assura/config.yml loaded and checked",
+      "name": "structure_config",
+      "status": "pass"
+    },
+    {
+      "detail": ".assura/onboarding/agent-next.md exists",
+      "name": "onboarding_packet",
+      "status": "pass"
+    }
+  ]
+}

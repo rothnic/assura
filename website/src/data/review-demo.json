@@ -1,0 +1,144 @@
+{
+  "branch": {
+    "base": "origin/main",
+    "commits": 1,
+    "files": 1,
+    "lines_added": 3,
+    "lines_deleted": 0,
+    "name": "feature/agent-review"
+  },
+  "command": "assura review",
+  "display_lines": [
+    {
+      "text": "$ assura review",
+      "tone": "prompt"
+    },
+    {
+      "text": "Project status: fail",
+      "tone": "plain"
+    },
+    {
+      "text": "Compared with origin/main",
+      "tone": "muted"
+    },
+    {
+      "text": "",
+      "tone": "plain"
+    },
+    {
+      "text": "Branch    1 file | +3/-0 lines | 1 commit",
+      "tone": "info"
+    },
+    {
+      "text": "Worktree  1 modified | 1 untracked | +2/-0",
+      "tone": "info"
+    },
+    {
+      "text": "",
+      "tone": "plain"
+    },
+    {
+      "text": "Needs attention",
+      "tone": "plain"
+    },
+    {
+      "text": "! apps/web/src/   file naming   1 violation",
+      "tone": "warn"
+    },
+    {
+      "text": "",
+      "tone": "plain"
+    },
+    {
+      "text": "Next  assura check --format agent .",
+      "tone": "pass"
+    }
+  ],
+  "findings": [
+    {
+      "command": "assura check --format agent .",
+      "detail": "apps/web/src/BadName.tsx: File 'BadName.tsx' does not match naming convention 'kebab-case'",
+      "id": "blocking:file_naming",
+      "title": "Fix blocking `file_naming` violation"
+    }
+  ],
+  "generated_from": "assura.project-review.v1",
+  "metrics": [
+    {
+      "detail": "blocking violation",
+      "label": "Policy",
+      "value": "1"
+    },
+    {
+      "detail": "+3 / -0 lines",
+      "label": "Branch",
+      "value": "1 file"
+    },
+    {
+      "detail": "1 untracked",
+      "label": "Worktree",
+      "value": "1 modified"
+    },
+    {
+      "detail": "reported, not passed",
+      "label": "Inactive",
+      "value": "5"
+    }
+  ],
+  "next_command": "assura check --format agent .",
+  "schema": "assura.website-review-demo.v1",
+  "signals": [
+    {
+      "branch_changed_files": 0,
+      "branch_lines": {
+        "added": 0,
+        "deleted": 0
+      },
+      "modified_files": 1,
+      "naming_violations": 1,
+      "path": "apps/web/src",
+      "untracked_files": 1,
+      "violations": 1,
+      "worktree_lines": {
+        "added": 2,
+        "deleted": 0
+      }
+    },
+    {
+      "branch_changed_files": 1,
+      "branch_lines": {
+        "added": 3,
+        "deleted": 0
+      },
+      "modified_files": 0,
+      "naming_violations": 0,
+      "path": "apps/web/docs",
+      "untracked_files": 0,
+      "violations": 0,
+      "worktree_lines": {
+        "added": 0,
+        "deleted": 0
+      }
+    }
+  ],
+  "status": "fail",
+  "structure": {
+    "dirs_checked": 20,
+    "files_checked": 28,
+    "status": "fail",
+    "violations": 6
+  },
+  "summary": {
+    "advisory": 0,
+    "blocking": 1,
+    "inactive": 5,
+    "informational": 2,
+    "omitted_noise": 4
+  },
+  "worktree": {
+    "lines_added": 2,
+    "lines_deleted": 0,
+    "modified": 1,
+    "untracked": 1
+  }
+}

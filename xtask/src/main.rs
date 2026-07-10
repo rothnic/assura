@@ -1,5 +1,7 @@
 //! Rust-first repository maintenance entrypoint.
 
+mod website_demo;
+
 use serde_json::Value;
 use std::collections::{BTreeMap, BTreeSet};
 use std::env;
@@ -43,6 +45,7 @@ fn run() -> Result<()> {
         "perf-vps-ls-lint-compare" => run_perf_vps_ls_lint_compare(&rest),
         "performance-no-slower" => run_performance_no_slower(&rest),
         "native-performance-no-regression" => run_native_performance_no_regression(&rest),
+        "website-demo-data" => website_demo::run(&rest),
         "markdown-engine-probe" => run_markdown_engine_probe(&rest),
         "changed" => run_changed(&rest),
         "pr" => run_pr(),
@@ -63,7 +66,7 @@ fn run() -> Result<()> {
 
 fn print_usage() {
     eprintln!(
-        "Usage: cargo xtask <fast|check|test|evidence|target-state|hygiene|docs|release-size|release-smoke|release-live|release-readiness|perf-vps-ls-lint-compare|performance-no-slower|native-performance-no-regression|markdown-engine-probe|changed|pr|full>"
+        "Usage: cargo xtask <fast|check|test|evidence|target-state|hygiene|docs|release-size|release-smoke|release-live|release-readiness|perf-vps-ls-lint-compare|performance-no-slower|native-performance-no-regression|website-demo-data|markdown-engine-probe|changed|pr|full>"
     );
 }
 
@@ -138,6 +141,7 @@ fn run_hygiene() -> Result<()> {
 }
 
 fn run_docs() -> Result<()> {
+    website_demo::run(&["--check".to_string()])?;
     if command_exists("pnpm") {
         run_command("pnpm", ["--dir", "website", "build"])
     } else if command_exists("npm") {

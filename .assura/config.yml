@@ -957,6 +957,7 @@ structure:
               naming: "snake_case"
               allowed_names:
                 - "main.rs"
+                - "website_demo.rs"
               allow_extra: false
             directories:
               allow_extra: false
@@ -1313,6 +1314,7 @@ structure:
             - "README.md"
             - "astro.config.mjs"
             - "package.json"
+            - "playwright.config.ts"
             - "pnpm-lock.yaml"
             - "tsconfig.json"
           allow_extra: false
@@ -1320,6 +1322,8 @@ structure:
           allowed_names:
             - "public"
             - "src"
+            - "test-results"
+            - "playwright-report"
           allow_extra: false
 
 # Global exclusions
@@ -1342,6 +1346,10 @@ exclude:
   - "dist"
   - "**/dist/**"
   - "**/dist"
+  - "website/test-results/**"
+  - "website/test-results"
+  - "website/playwright-report/**"
+  - "website/playwright-report"
   - "package-lock.json"
   - "**/package-lock.json"
   - "tests/fixtures/ls-lint/**"

@@ -1,0 +1,39 @@
+{
+  "command": "assura check",
+  "dirs_checked": 20,
+  "files_checked": 28,
+  "generated_from": "assura check --format json",
+  "schema": "assura.website-check-demo.v1",
+  "success": false,
+  "violation_count": 6,
+  "violations": [
+    {
+      "blocking": true,
+      "message": "File 'BadName.tsx' does not match naming convention 'kebab-case'",
+      "path": "apps/web/src/BadName.tsx",
+      "rule": "file_naming",
+      "severity": "medium"
+    },
+    {
+      "blocking": false,
+      "message": "Agent guidance `agent_project_guidance` AGENTS.md `AGENTS.md` is missing required section `Operating Rules`",
+      "path": "AGENTS.md",
+      "rule": "agent_guidance:agent_project_guidance",
+      "severity": "low"
+    },
+    {
+      "blocking": false,
+      "message": "Agent guidance `agent_project_guidance` AGENTS.md `AGENTS.md` is missing required section `Process Docs vs Skills`",
+      "path": "AGENTS.md",
+      "rule": "agent_guidance:agent_project_guidance",
+      "severity": "low"
+    },
+    {
+      "blocking": false,
+      "message": "Agent guidance `agent_project_guidance` AGENTS.md `AGENTS.md` is missing required section `Skills`",
+      "path": "AGENTS.md",
+      "rule": "agent_guidance:agent_project_guidance",
+      "severity": "low"
+    }
+  ]
+}

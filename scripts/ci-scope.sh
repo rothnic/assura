@@ -153,6 +153,7 @@ classify_path() {
       release=true
       performance=true
       rustdoc=true
+      website=true
       case "$path" in
         Cargo.toml|Cargo.lock)
           security=true

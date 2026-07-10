@@ -1,0 +1,26 @@
+---
+interface TerminalLine {
+  text: string;
+  tone?: 'prompt' | 'plain' | 'muted' | 'info' | 'warn' | 'pass';
+}
+
+interface Props {
+  title: string;
+  lines: TerminalLine[];
+  className?: string;
+}
+
+const { title, lines, className = '' } = Astro.props;
+---
+
+<div class:list={['review-terminal', className]}>
+  <div class="terminal-bar">
+    <span aria-hidden="true"></span>
+    <span aria-hidden="true"></span>
+    <span aria-hidden="true"></span>
+    <strong>{title}</strong>
+  </div>
+  <pre><code>{lines.map((line) => (
+    <span class:list={['terminal-line', line.tone ?? 'plain']}>{line.text || ' '}</span>
+  ))}</code></pre>
+</div>
