@@ -5,8 +5,19 @@ const pageTitle = 'Assura | Catch project drift before review';
 const pageDescription =
   'Assura gives AI coding agents early warning signals about project structure, branch heat, docs, references, and policy drift before cleanup gets expensive.';
 
-const installCommand =
-  'curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sh';
+const installScriptUrl = 'https://assura.dev/install.sh';
+const installCommand = `curl -fsSL ${installScriptUrl} | sh`;
+
+const agentSetupPrompt = `Install Assura in this repository and set it up for agent-ready checks.
+If assura is not installed, run:
+ASSURA_INSTALL=${installScriptUrl}
+curl -fsSL "$ASSURA_INSTALL" | sh
+
+Then run:
+assura agent onboard . --agent auto --format json
+assura check --format json .
+
+Read .assura/onboarding/agent-next.md, summarize what is active, what is inactive, and what questions need human answers before adding project-specific rules.`;
 
 const navItems = [
   { label: 'Docs', href: '/guides/quickstart/' },
@@ -234,7 +245,11 @@ const performanceLayers = [
     <header class="site-header" aria-label="Primary">
       <div class="header-inner">
         <a class="brand" href="/" aria-label="Assura home">
-          <span class="brand-mark" aria-hidden="true"></span>
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 28 28" focusable="false">
+              <path d="M7.2 14.6 11.7 19 21 8.8"></path>
+            </svg>
+          </span>
           <span>assura</span>
         </a>
         <nav class="nav-links" aria-label="Primary navigation">
@@ -257,14 +272,44 @@ const performanceLayers = [
               cleanup refactors.
             </p>
             <div class="hero-actions" aria-label="Primary actions">
-              <a class="button button-primary" href="/guides/quickstart/">Start with one command</a>
-              <a class="button button-secondary" href="#review-output">See review output</a>
+              <button
+                class="button button-primary"
+                type="button"
+                data-copy-target="agent-prompt"
+                data-copied-label="Prompt copied"
+              >
+                Copy agent prompt
+              </button>
+              <button
+                class="button button-secondary"
+                type="button"
+                data-copy-target="install-command"
+                data-copied-label="Command copied"
+              >
+                Copy install command
+              </button>
             </div>
-            <div class="hero-pulse" aria-label="Compact assura review summary">
-              <code>assura review --base auto</code>
-              <span>3 hot spots</span>
-              <span>8 files</span>
-              <span>+412 / -96 lines</span>
+            <div id="start-command" class="start-panel" aria-label="Agent setup prompt and install command">
+              <div class="start-panel-head">
+                <div>
+                  <span>Agent prompt</span>
+                  <strong>Install and set up Assura</strong>
+                </div>
+                <a href="#review-output">See review output</a>
+              </div>
+              <pre><code id="agent-prompt">{agentSetupPrompt}</code></pre>
+              <div class="install-row">
+                <span>Manual install</span>
+                <code id="install-command">{installCommand}</code>
+                <button
+                  class="copy-inline"
+                  type="button"
+                  data-copy-target="install-command"
+                  data-copied-label="Copied"
+                >
+                  Copy
+                </button>
+              </div>
             </div>
             <ul class="hero-facts" aria-label="Assura product strengths">
               {heroFacts.map((fact) => <li>{fact}</li>)}
@@ -297,11 +342,6 @@ const performanceLayers = [
                 <span class:list={['terminal-line', line.tone]}>{line.text || ' '}</span>
               ))}</code></pre>
             </div>
-          </div>
-
-          <div class="command-strip" aria-label="Install command">
-            <span>Install</span>
-            <code>{installCommand}</code>
           </div>
         </div>
       </section>
@@ -541,6 +581,36 @@ const performanceLayers = [
         </div>
       </section>
     </main>
+    <footer class="site-footer" aria-label="Site footer">
+      <div class="footer-inner">
+        <p>
+          Built by <a href="https://nickroth.com/">Nick Roth</a>.
+        </p>
+        <nav class="footer-links" aria-label="Personal links">
+          <a href="https://nickroth.com/">nickroth.com</a>
+          <a href="https://www.linkedin.com/in/nicholasleeroth">LinkedIn</a>
+        </nav>
+      </div>
+    </footer>
+    <script is:inline>
+      for (const button of document.querySelectorAll('[data-copy-target]')) {
+        button.addEventListener('click', async () => {
+          const targetId = button.getAttribute('data-copy-target');
+          const target = targetId ? document.getElementById(targetId) : null;
+          const value = target?.textContent?.trim();
+
+          if (!value) return;
+
+          await navigator.clipboard.writeText(value);
+          const originalLabel = button.getAttribute('data-original-label') || button.textContent || '';
+          button.setAttribute('data-original-label', originalLabel);
+          button.textContent = button.getAttribute('data-copied-label') || 'Copied';
+          window.setTimeout(() => {
+            button.textContent = button.getAttribute('data-original-label') || originalLabel;
+          }, 1600);
+        });
+      }
+    </script>
   </body>
 </html>
 
@@ -551,27 +621,27 @@ const performanceLayers = [
 
   :global(:root) {
     color-scheme: light;
-    --page-bg: #fbfbfb;
-    --page-bg-soft: #f4f4f5;
+    --page-bg: #f7faf9;
+    --page-bg-soft: #edf4f2;
     --surface: #ffffff;
-    --surface-muted: #f7f7f8;
-    --surface-strong: #eceff1;
-    --text: #171717;
-    --muted: #52525b;
-    --soft: #71717a;
-    --border: rgba(24, 24, 27, 0.13);
-    --border-strong: rgba(24, 24, 27, 0.22);
+    --surface-muted: #f0f6f4;
+    --surface-strong: #dde9e6;
+    --text: #0d1716;
+    --muted: #41524f;
+    --soft: #667370;
+    --border: rgba(13, 23, 22, 0.14);
+    --border-strong: rgba(13, 23, 22, 0.24);
     --primary: #0f766e;
-    --primary-strong: #115e59;
-    --primary-soft: rgba(15, 118, 110, 0.1);
+    --primary-strong: #0a5e58;
+    --primary-soft: rgba(15, 118, 110, 0.12);
     --info: #2563eb;
     --info-soft: rgba(37, 99, 235, 0.1);
     --danger: #dc2626;
     --danger-soft: rgba(220, 38, 38, 0.1);
     --warning: #b45309;
     --warning-soft: rgba(180, 83, 9, 0.12);
-    --shadow: rgba(24, 24, 27, 0.08);
-    --terminal-bg: #111315;
+    --shadow: rgba(7, 20, 18, 0.1);
+    --terminal-bg: #0b0d0e;
     --terminal-border: rgba(255, 255, 255, 0.12);
     --terminal-text: #f4f4f5;
   }
@@ -693,14 +763,45 @@ const performanceLayers = [
   }
 
   .brand-mark {
+    position: relative;
+    display: inline-grid;
     width: 1.55rem;
     height: 1.55rem;
+    flex: 0 0 auto;
+    place-items: center;
     border: 1px solid color-mix(in srgb, var(--primary) 52%, transparent);
     border-radius: 0.45rem;
     background:
-      linear-gradient(135deg, color-mix(in srgb, var(--primary) 30%, transparent), transparent 58%),
-      var(--surface);
-    box-shadow: inset 0 0 0 0.32rem var(--primary-soft);
+      radial-gradient(circle at 28% 24%, color-mix(in srgb, #ffffff 36%, transparent), transparent 28%),
+      linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 34%, var(--surface)) 68%);
+    box-shadow:
+      inset 0 0 0 1px color-mix(in srgb, #ffffff 18%, transparent),
+      0 0.45rem 1rem color-mix(in srgb, var(--primary) 22%, transparent);
+    color: #ffffff;
+  }
+
+  .brand-mark::before {
+    position: absolute;
+    inset: 0.24rem;
+    border: 1px solid color-mix(in srgb, #ffffff 22%, transparent);
+    border-radius: 0.27rem;
+    background: color-mix(in srgb, #000000 10%, transparent);
+    content: "";
+  }
+
+  .brand-mark svg {
+    position: relative;
+    z-index: 1;
+    width: 1.05rem;
+    height: 1.05rem;
+  }
+
+  .brand-mark path {
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 3.2;
   }
 
   .nav-links {
@@ -812,10 +913,16 @@ const performanceLayers = [
     border-radius: 0.5rem;
     padding: 0.78rem 1rem;
     text-decoration: none;
+    font: inherit;
     font-size: 0.94rem;
     font-weight: 740;
     line-height: 1;
     white-space: nowrap;
+  }
+
+  button.button,
+  .copy-inline {
+    cursor: pointer;
   }
 
   .button-primary {
@@ -845,6 +952,119 @@ const performanceLayers = [
     }
   }
 
+  .start-panel {
+    display: grid;
+    width: min(100%, 58rem);
+    gap: 0.75rem;
+    margin-top: 1rem;
+    border: 1px solid color-mix(in srgb, var(--primary) 28%, var(--border));
+    border-radius: 0.58rem;
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--surface) 86%, transparent), color-mix(in srgb, var(--surface-muted) 70%, transparent)),
+      var(--surface);
+    padding: 0.85rem;
+    box-shadow: 0 1rem 2.6rem color-mix(in srgb, var(--shadow) 74%, transparent);
+    text-align: left;
+  }
+
+  .start-panel-head {
+    display: flex;
+    min-width: 0;
+    align-items: start;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .start-panel-head > div {
+    display: grid;
+    gap: 0.2rem;
+    min-width: 0;
+  }
+
+  .start-panel-head span,
+  .install-row span {
+    color: var(--primary);
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 0.68rem;
+    font-weight: 800;
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+
+  .start-panel-head strong {
+    color: var(--text);
+    font-size: 0.96rem;
+    line-height: 1.25;
+  }
+
+  .start-panel-head a {
+    flex: 0 0 auto;
+    color: var(--muted);
+    font-size: 0.82rem;
+    font-weight: 720;
+    text-decoration: none;
+  }
+
+  .start-panel-head a:hover {
+    color: var(--primary);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  .start-panel pre {
+    margin: 0;
+    overflow-x: auto;
+    border: 1px solid var(--terminal-border);
+    border-radius: 0.46rem;
+    background: var(--terminal-bg);
+    padding: 0.78rem;
+    color: var(--terminal-text);
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 0.74rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+  }
+
+  .install-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 0.65rem;
+    align-items: center;
+    border-top: 1px solid var(--border);
+    padding-top: 0.72rem;
+  }
+
+  .install-row code {
+    min-width: 0;
+    overflow-x: auto;
+    color: var(--text);
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 0.72rem;
+    line-height: 1.35;
+    white-space: nowrap;
+  }
+
+  .copy-inline {
+    display: inline-flex;
+    min-height: 2rem;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-strong);
+    border-radius: 0.42rem;
+    background: var(--surface);
+    padding: 0.45rem 0.62rem;
+    color: var(--text);
+    font: inherit;
+    font-size: 0.76rem;
+    font-weight: 760;
+    line-height: 1;
+  }
+
+  .copy-inline:hover {
+    border-color: color-mix(in srgb, var(--primary) 46%, var(--border));
+    color: var(--primary);
+  }
+
   .hero-facts {
     display: flex;
     flex-wrap: wrap;
@@ -869,35 +1089,6 @@ const performanceLayers = [
     border-radius: 999px;
     background: var(--primary);
     content: "";
-  }
-
-  .hero-pulse {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.45rem;
-    width: min(100%, 44rem);
-    margin-top: 0.85rem;
-  }
-
-  .hero-pulse code,
-  .hero-pulse span {
-    display: inline-flex;
-    min-height: 2rem;
-    align-items: center;
-    border: 1px solid var(--border);
-    border-radius: 0.45rem;
-    background: color-mix(in srgb, var(--surface) 86%, transparent);
-    padding: 0.45rem 0.6rem;
-    color: var(--muted);
-    font-size: 0.78rem;
-    font-weight: 720;
-    line-height: 1.2;
-  }
-
-  .hero-pulse code {
-    color: var(--primary);
-    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   }
 
   .hero-visual {
@@ -1121,36 +1312,6 @@ const performanceLayers = [
   .terminal-line.plain {
     color: color-mix(in srgb, var(--terminal-text) 88%, transparent);
     font-weight: 700;
-  }
-
-  .command-strip {
-    display: grid;
-    width: min(100%, 60rem);
-    grid-template-columns: auto minmax(0, 1fr);
-    gap: 0.8rem;
-    align-items: center;
-    border: 1px solid var(--border);
-    border-radius: 0.5rem;
-    background: color-mix(in srgb, var(--surface) 86%, transparent);
-    padding: 0.68rem 0.78rem;
-    box-shadow: 0 1px 2px var(--shadow);
-    text-align: left;
-    backdrop-filter: blur(16px);
-  }
-
-  .command-strip span {
-    color: var(--soft);
-    font-size: 0.78rem;
-    font-weight: 760;
-    text-transform: uppercase;
-  }
-
-  .command-strip code {
-    min-width: 0;
-    color: var(--text);
-    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-    font-size: 0.78rem;
-    line-height: 1.45;
   }
 
   .section {
@@ -1632,6 +1793,47 @@ const performanceLayers = [
     font-size: clamp(1.85rem, 3.4vw, 3rem);
   }
 
+  .site-footer {
+    border-top: 1px solid var(--border);
+    background: color-mix(in srgb, var(--surface) 64%, var(--page-bg));
+  }
+
+  .footer-inner {
+    display: flex;
+    width: min(100% - 2rem, 1120px);
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 0 auto;
+    padding: 1.25rem 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  .footer-inner p {
+    margin: 0;
+  }
+
+  .footer-inner a {
+    color: var(--text);
+    font-weight: 720;
+    text-decoration: none;
+    text-underline-offset: 0.2em;
+  }
+
+  .footer-inner a:hover {
+    color: var(--primary);
+    text-decoration: underline;
+  }
+
+  .footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.85rem;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
   .button-secondary.surface {
     border-color: var(--border);
     background: var(--surface);
@@ -1696,6 +1898,16 @@ const performanceLayers = [
       display: none;
     }
 
+    .footer-inner {
+      width: min(100% - 1.25rem, 1120px);
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .footer-links {
+      justify-content: flex-start;
+    }
+
     .hero {
       padding-top: 1.7rem;
       padding-bottom: 1.45rem;
@@ -1749,49 +1961,36 @@ const performanceLayers = [
       display: none;
     }
 
-    .hero-pulse {
-      display: grid;
+    .start-panel {
       width: 100%;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 0;
-      border: 1px solid var(--border);
-      border-radius: 0.5rem;
-      background: color-mix(in srgb, var(--surface) 86%, transparent);
-      padding: 0.62rem 0.7rem;
-      box-shadow: 0 1px 2px var(--shadow);
+      padding: 0.7rem;
     }
 
-    .hero-pulse code,
-    .hero-pulse span {
-      min-height: 0;
-      border: 0;
-      border-radius: 0;
-      background: transparent;
-      padding: 0;
-      text-align: center;
+    .start-panel-head {
+      align-items: start;
     }
 
-    .hero-pulse code {
+    .start-panel-head a {
+      font-size: 0.76rem;
+    }
+
+    .start-panel pre {
+      padding: 0.66rem;
+      font-size: 0.66rem;
+      line-height: 1.45;
+    }
+
+    .install-row {
+      grid-template-columns: 1fr auto;
+      gap: 0.48rem;
+    }
+
+    .install-row span {
       grid-column: 1 / -1;
-      justify-content: flex-start;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 0.5rem;
-      font-size: 0.78rem;
-      text-align: left;
     }
 
-    .hero-pulse span {
-      justify-content: flex-start;
-      padding-top: 0.5rem;
-      color: var(--muted);
-      font-size: 0.72rem;
-      line-height: 1.2;
-      text-align: left;
-    }
-
-    .hero-pulse span + span {
-      border-left: 1px solid var(--border);
-      padding-left: 0.5rem;
+    .install-row code {
+      font-size: 0.66rem;
     }
 
     .workflow-board,
@@ -1860,10 +2059,6 @@ const performanceLayers = [
       padding: 0.07rem 0.32rem 0.08rem;
       white-space: pre;
       overflow-wrap: normal;
-    }
-
-    .command-strip {
-      display: none;
     }
 
     .section {
