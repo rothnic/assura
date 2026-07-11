@@ -11,7 +11,7 @@ claims:
     status: experimental
     command: assura review
     smoke_args: [review]
-    expected_exit: 1
+    expected_exit: 0
 
   - id: path-explanation
     copy: Explain the effective structure policy for one path.
@@ -46,8 +46,21 @@ claims:
 
   - id: explicit-review-base
     copy: Select an explicit comparison base.
-    status: planned
+    status: experimental
+    command: assura review --base main
+    smoke_args: [review, --base, main]
+    expected_exit: 0
 
   - id: finding-history
     copy: Distinguish new, worsened, unchanged, and resolved findings.
-    status: planned
+    status: experimental
+    command: assura review --format agent
+    smoke_args: [review, --format, agent]
+    expected_exit: 0
+
+  - id: cache-observability
+    copy: Inspect worktree-local and shared immutable cache namespaces and fallback state.
+    status: experimental
+    command: assura cache status --format json
+    smoke_args: [cache, status, --format, json]
+    expected_exit: 0

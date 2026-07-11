@@ -10,9 +10,9 @@ pull_request: https://github.com/rothnic/assura/pull/140
 
 ## Result
 
-The reusable SEO and focused-page implementation is complete locally. Hosted
-preview noindex verification and Google Search Console/Bing Webmaster Tools
-submission remain open before the roadmap milestone can be closed.
+The reusable SEO and focused-page implementation is complete. The hosted
+branch preview returns `x-robots-tag: noindex`; Google Search Console/Bing
+Webmaster Tools submission remains an account-owner publication step.
 
 ## Route Matrix
 
@@ -53,7 +53,9 @@ also passed with 1,599 files and 363 directories checked.
 
 ## Open External Proof
 
-- Verify the refreshed Workers preview renders `noindex, nofollow` after push.
+- Verified on 2026-07-10:
+  `https://codex-assura-landing-experience-assura.nlr06886.workers.dev/project-review/`
+  returned HTTP 200 with `x-robots-tag: noindex`.
 - Submit `https://assura.dev/sitemap-index.xml` to Google Search Console and
   Bing Webmaster Tools using the site-owner accounts.
 - Record the accepted submission states or validation errors in this document.

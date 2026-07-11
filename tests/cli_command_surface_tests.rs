@@ -60,6 +60,73 @@ fn companion_help_can_render_primary_command_name() {
 }
 
 #[test]
+fn cache_status_and_clean_report_observable_namespaces() {
+    let project = TempDir::new().unwrap();
+    let cache = project.path().join("explicit-cache");
+    fs::create_dir_all(cache.join("worktrees/example")).unwrap();
+    fs::write(
+        cache.join(".assura-cache-root.json"),
+        "{\"schema\":\"assura.check-cache-root.v1\"}\n",
+    )
+    .unwrap();
+    fs::write(cache.join("worktrees/example/report.json"), "{}\n").unwrap();
+
+    let status = Command::new(assura_full_bin())
+        .args(["cache", "status"])
+        .arg(project.path())
+        .arg("--cache-dir")
+        .arg(&cache)
+        .args(["--format", "json"])
+        .output()
+        .unwrap();
+    assert!(status.status.success());
+    let status: Value = serde_json::from_slice(&status.stdout).unwrap();
+    assert_eq!(status["action"], "status");
+    assert_eq!(status["status"]["schema"], "assura.check-cache-status.v1");
+    assert_eq!(status["status"]["entries"], 1);
+    assert!(status["status"]["worktree_namespace"]
+        .as_str()
+        .is_some_and(|value| value.starts_with("worktrees/")));
+    assert!(status["status"]["fallback_reason"].is_string());
+
+    let clean = Command::new(assura_full_bin())
+        .args(["cache", "clean"])
+        .arg(project.path())
+        .arg("--cache-dir")
+        .arg(&cache)
+        .args(["--format", "json"])
+        .output()
+        .unwrap();
+    assert!(clean.status.success());
+    let clean: Value = serde_json::from_slice(&clean.stdout).unwrap();
+    assert_eq!(clean["removed_entries"], 1);
+    assert_eq!(clean["status"]["entries"], 0);
+}
+
+#[test]
+fn cache_clean_refuses_an_unrecognized_or_project_root() {
+    let project = TempDir::new().unwrap();
+    fs::write(project.path().join("keep.txt"), "keep\n").unwrap();
+    fs::write(
+        project.path().join(".assura-cache-root.json"),
+        "{\"schema\":\"assura.check-cache-root.v1\"}\n",
+    )
+    .unwrap();
+
+    let output = Command::new(assura_full_bin())
+        .args(["cache", "clean"])
+        .arg(project.path())
+        .arg("--cache-dir")
+        .arg(project.path())
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(3));
+    assert!(project.path().join("keep.txt").is_file());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("refusing to remove"));
+}
+
+#[test]
 fn init_creates_supported_structure_config() {
     let project = TempDir::new().unwrap();
 

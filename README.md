@@ -100,6 +100,7 @@ exclude:
 | `assura check` | Supported structure validation command |
 | `assura check --format json`, `yaml`, `advice`, `status`, `agent` | Supported automation output |
 | `assura check --format agent --agent codex` | Supported Codex adapter on the shared agent format |
+| `assura check --cache` / `assura cache status|clean` | Experimental correctness-checked cache and diagnostics |
 | `assura init` | Supported starter config creation |
 | `assura status --format json` | Supported project/config/rule summary |
 | `assura review` | Experimental compact project-health radar |

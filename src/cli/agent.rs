@@ -34,6 +34,7 @@ pub async fn agent_command(command: AgentCommands, config: Option<PathBuf>) -> E
             min_severity,
             max_issues,
             reference_limit,
+            cooldown_seconds,
             format,
         } => {
             agent_nudge_command(
@@ -45,6 +46,7 @@ pub async fn agent_command(command: AgentCommands, config: Option<PathBuf>) -> E
                     min_severity,
                     max_issues,
                     reference_limit,
+                    cooldown_seconds,
                     format,
                 },
                 config,

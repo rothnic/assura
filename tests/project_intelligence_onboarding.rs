@@ -230,6 +230,12 @@ fn agent_onboard_generates_broad_baseline_and_packet() {
         .expect("verified array")
         .iter()
         .any(|item| item["name"] == "structure_config" && item["status"] == "pass"));
+    assert_eq!(output["review"]["status"], "needs-review");
+    assert_eq!(output["review"]["blocking"], 0);
+    assert_eq!(
+        output["review"]["next_command"],
+        "assura review --format agent ."
+    );
     assert!(output["inactive"]
         .as_array()
         .expect("inactive array")
@@ -307,6 +313,34 @@ fn agent_onboard_generates_broad_baseline_and_packet() {
         "json",
     ]));
     assert_eq!(check["success"], true);
+    let review = json_from_success(run_assura(&[
+        "review",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]));
+    assert_eq!(review["finding_history"]["cache"]["loaded"], false);
+    assert!(review["findings"]
+        .as_array()
+        .expect("review findings")
+        .iter()
+        .all(|finding| finding["state"] == "new"));
+}
+
+#[test]
+fn agent_onboard_text_keeps_verification_and_review_fields_aligned() {
+    let project = TempDir::new().unwrap();
+    let output = run_assura(&[
+        "agent",
+        "onboard",
+        project.path().to_str().unwrap(),
+        "--format",
+        "text",
+    ]);
+    assert!(output.status.success());
+    let text = String::from_utf8_lossy(&output.stdout);
+    assert!(text.contains("verified: structure_config=pass, onboarding_packet=pass"));
+    assert!(text.contains("review: needs-review blocking=0"));
 }
 
 #[test]

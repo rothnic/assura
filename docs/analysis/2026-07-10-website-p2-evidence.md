@@ -10,9 +10,9 @@ pull_request: https://github.com/rothnic/assura/pull/140
 
 ## Result
 
-The P2 conversion and category-ownership surfaces are implemented and verified
-locally. The Assura branch preview and personal-site case study must deploy
-before the milestone can be marked published.
+The P2 conversion and category-ownership surfaces are implemented and deployed
+to branch previews. Production publication still requires merging the two pull
+requests.
 
 ## New Marketing Surfaces
 
@@ -47,6 +47,9 @@ The GitHub repository now uses:
 The personal-site case study is implemented and verified in pull request 60:
 https://github.com/rothnic/nickroth/pull/60
 
+Preview:
+https://codex-assura-case-study.nickroth.pages.dev/work/assura-agentic-project-validation/
+
 GitHub does not expose profile pinning through the current GraphQL API, and the
 profile already has six pinned items. Replacing one pin remains a manual owner
 decision.
@@ -66,7 +69,8 @@ decision.
 
 ## Open Publication Proof
 
-- Verify the refreshed Assura Workers preview after this commit is pushed.
+- Assura branch preview:
+  https://codex-assura-landing-experience-assura.nlr06886.workers.dev
 - Merge and deploy personal-site pull request 60.
 - Pin Assura on the GitHub profile after choosing which current pin to replace.
 - Submit the production sitemap and record URL discovery in the webmaster

@@ -62,7 +62,7 @@
       "title": "Fix blocking `file_naming` violation"
     }
   ],
-  "generated_from": "assura.project-review.v1",
+  "generated_from": "assura.project-review.v2",
   "metrics": [
     {
       "detail": "blocking violation",

@@ -11,7 +11,7 @@ type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 const FIXTURE_SOURCE: &str = "tests/fixtures/real-project-agentic-feedback/valid";
 const OUTPUT_DIR: &str = "website/src/data";
 const CLAIMS_PATH: &str = "website/src/data/claims.yml";
-const FORBIDDEN_WEBSITE_COMMANDS: &[&str] = &["assura review --base", "assura review --path"];
+const FORBIDDEN_WEBSITE_COMMANDS: &[&str] = &["assura review --path"];
 
 #[derive(Deserialize)]
 struct ClaimManifest {
@@ -34,10 +34,10 @@ pub(crate) fn run(args: &[String]) -> Result<()> {
         _ => return Err("Usage: cargo xtask website-demo-data [--check]".into()),
     };
 
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .parent()
-        .ok_or("xtask manifest has no repository parent")?
-        .to_path_buf();
+    let root = std::env::current_dir()?.canonicalize()?;
+    if !root.join("Cargo.toml").is_file() || !root.join("website").is_dir() {
+        return Err("website-demo-data must run from the repository root".into());
+    }
     build_assura(&root)?;
     let binary = root.join("target/debug/assura-full");
     let (fixture, onboarding) = prepare_fixture(&root, &binary)?;

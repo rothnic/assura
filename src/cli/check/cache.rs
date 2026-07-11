@@ -11,9 +11,24 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
+use std::process::Command;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-const CACHE_SCHEMA_VERSION: u32 = 4;
+#[path = "cache/snapshot.rs"]
+mod snapshot;
+#[path = "cache/status.rs"]
+mod status;
+use snapshot::{
+    collect_directory_snapshot, collect_file_snapshot, DirectoryFingerprint, FileFingerprint,
+};
+use status::{cache_root_for_entry, ensure_cache_root, set_private_permissions};
+pub use status::{
+    clean_check_cache, default_check_cache_dir, inspect_check_cache, CheckCacheStatus,
+};
+
+const CACHE_SCHEMA_VERSION: u32 = 5;
+const CACHE_ROOT_SCHEMA: &str = "assura.check-cache-root.v1";
+const CACHE_ROOT_MARKER: &str = ".assura-cache-root.json";
 
 #[derive(Debug, Deserialize, Serialize)]
 struct CachedCheckReport {
@@ -26,16 +41,11 @@ struct CachedCheckReport {
     config_path: PathBuf,
     checked_path: PathBuf,
     exclude_patterns: Vec<String>,
+    #[serde(default)]
     dir_snapshot: Vec<DirectoryFingerprint>,
+    #[serde(default)]
+    file_snapshot: Option<FileFingerprint>,
     report: StructureCheckReport,
-}
-
-#[derive(Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
-struct DirectoryFingerprint {
-    rel: String,
-    modified_ns: u128,
-    child_count: usize,
-    child_hash: u64,
 }
 
 /// Run structure validation with an opt-in hot cache for unchanged naming-only trees.
@@ -63,7 +73,7 @@ pub fn run_structure_check_cached(
         });
     }
 
-    let cache_path = cache_file_path(
+    let cache_path = worktree_cache_file_path(
         &cache_dir,
         &project_root,
         &discovered_config_path,
@@ -96,10 +106,37 @@ pub fn run_structure_check_cached(
             return Ok(report);
         }
     }
+    let shared_path = (!fail_fast)
+        .then(|| shared_cache_file_path(&cache_dir, &project_root, &checked_path, config_hash))
+        .flatten();
+    if let Some(path) = shared_path.as_ref() {
+        if let Some(cached) = read_cache(path) {
+            if let Some(report) = fresh_shared_report(
+                &cached,
+                config_hash,
+                &project_root,
+                &discovered_config_path,
+                &checked_path,
+            ) {
+                if shared_cache_file_path(&cache_dir, &project_root, &checked_path, config_hash)
+                    .as_ref()
+                    == Some(path)
+                {
+                    return Ok(report);
+                }
+            }
+        }
+    }
 
     let config = ConfigLoader::parse_validated(&config_content)?;
     let exclude_patterns = config.exclude.clone();
     let mut checker = StructureChecker::new(project_root.clone(), config, fail_fast);
+    let before_dir_snapshot = collect_directory_snapshot(
+        checked_path.as_path(),
+        checked_path.as_path(),
+        &checker.exclude_patterns,
+    )?;
+    let before_file_snapshot = collect_file_snapshot(checked_path.as_path())?;
     let mut timings = StructureCheckTimings::default();
     let report = checker.check(
         checked_path.clone(),
@@ -108,26 +145,38 @@ pub fn run_structure_check_cached(
         &mut timings,
     )?;
 
-    if !fail_fast && checked_path.is_dir() && checker.lslint_fast_scopes.is_some() {
-        write_cache(
-            &cache_path,
-            CachedCheckReport {
-                schema_version: CACHE_SCHEMA_VERSION,
-                assura_version: env!("CARGO_PKG_VERSION").to_string(),
-                config_hash,
-                config_fingerprint: SourceConfigFingerprint::from_path(&discovered_config_path)
-                    .ok(),
-                project_root,
-                config_path: discovered_config_path,
-                checked_path,
-                exclude_patterns,
-                dir_snapshot: collect_directory_snapshot(
-                    report.checked_path.as_path(),
-                    &checker.exclude_patterns,
-                )?,
-                report: report.clone(),
-            },
-        );
+    if !fail_fast && checker.lslint_fast_scopes.is_some() {
+        let dir_snapshot = collect_directory_snapshot(
+            report.checked_path.as_path(),
+            report.checked_path.as_path(),
+            &checker.exclude_patterns,
+        )?;
+        let file_snapshot = collect_file_snapshot(report.checked_path.as_path())?;
+        if dir_snapshot != before_dir_snapshot || file_snapshot != before_file_snapshot {
+            return Ok(report);
+        }
+        let cached_report = CachedCheckReport {
+            schema_version: CACHE_SCHEMA_VERSION,
+            assura_version: env!("CARGO_PKG_VERSION").to_string(),
+            config_hash,
+            config_fingerprint: SourceConfigFingerprint::from_path(&discovered_config_path).ok(),
+            project_root,
+            config_path: discovered_config_path,
+            checked_path,
+            exclude_patterns,
+            dir_snapshot,
+            file_snapshot,
+            report: report.clone(),
+        };
+        write_cache(&cache_path, &cached_report);
+        if let Some(path) = shared_cache_file_path(
+            &cache_dir,
+            &cached_report.project_root,
+            &cached_report.checked_path,
+            config_hash,
+        ) {
+            write_cache(&path, &cached_report);
+        }
     }
 
     Ok(report)
@@ -163,8 +212,13 @@ fn fresh_cached_report(
         .iter()
         .map(|pattern| CompiledExclusion::new(pattern))
         .collect::<Vec<_>>();
-    let current_snapshot = collect_directory_snapshot(checked_path, &exclude_patterns).ok()?;
-    (current_snapshot == cached.dir_snapshot).then_some(cached.report.clone())
+    let fresh = if checked_path.is_file() {
+        collect_file_snapshot(checked_path).ok()? == cached.file_snapshot
+    } else {
+        collect_directory_snapshot(checked_path, checked_path, &exclude_patterns).ok()?
+            == cached.dir_snapshot
+    };
+    fresh.then_some(cached.report.clone())
 }
 
 impl CachedCheckReport {
@@ -181,132 +235,34 @@ impl CachedCheckReport {
     }
 }
 
-fn write_cache(cache_path: &Path, cached: CachedCheckReport) {
+fn write_cache(cache_path: &Path, cached: &CachedCheckReport) {
     let Some(parent) = cache_path.parent() else {
         return;
     };
+    let Some(cache_root) = cache_root_for_entry(cache_path) else {
+        return;
+    };
+    if !ensure_cache_root(cache_root) {
+        return;
+    }
     if fs::create_dir_all(parent).is_err() {
         return;
     }
-    if let Ok(content) = serde_json::to_vec(&cached) {
-        let _ = fs::write(cache_path, content);
-    }
-}
-
-fn collect_directory_snapshot(
-    root: &Path,
-    exclude_patterns: &[CompiledExclusion],
-) -> Result<Vec<DirectoryFingerprint>, CheckError> {
-    let mut dirs = Vec::new();
-    collect_directory_snapshot_inner(root, root, Path::new(""), exclude_patterns, &mut dirs)?;
-    dirs.sort();
-    Ok(dirs)
-}
-
-fn collect_directory_snapshot_inner(
-    root: &Path,
-    dir: &Path,
-    dir_rel: &Path,
-    exclude_patterns: &[CompiledExclusion],
-    dirs: &mut Vec<DirectoryFingerprint>,
-) -> Result<(), CheckError> {
-    let metadata = fs::metadata(dir)?;
-    let (child_count, child_hash, child_dirs) =
-        collect_child_fingerprint(dir, dir_rel, exclude_patterns)?;
-    dirs.push(DirectoryFingerprint {
-        rel: rel_string(root, dir),
-        modified_ns: modified_ns(metadata.modified().ok()),
-        child_count,
-        child_hash,
-    });
-
-    for (child_rel, child_dir) in child_dirs {
-        collect_directory_snapshot_inner(root, &child_dir, &child_rel, exclude_patterns, dirs)?;
-    }
-
-    Ok(())
-}
-
-type ChildFingerprint = (usize, u64, Vec<(PathBuf, PathBuf)>);
-
-fn collect_child_fingerprint(
-    dir: &Path,
-    dir_rel: &Path,
-    exclude_patterns: &[CompiledExclusion],
-) -> Result<ChildFingerprint, CheckError> {
-    let mut children = Vec::new();
-    for entry in fs::read_dir(dir)? {
-        let entry = entry?;
-        let name = entry.file_name();
-        let child_rel = join_rel(dir_rel, &name);
-        if is_excluded_rel_with(exclude_patterns, &child_rel) {
-            continue;
+    set_private_permissions(parent, true);
+    if let Ok(content) = serde_json::to_vec(cached) {
+        let temporary = cache_path.with_extension(format!("tmp-{}", std::process::id()));
+        if fs::write(&temporary, content).is_ok() {
+            set_private_permissions(&temporary, false);
+            #[cfg(windows)]
+            if cache_path.exists() {
+                let _ = fs::remove_file(cache_path);
+            }
+            let _ = fs::rename(temporary, cache_path);
         }
-
-        let file_type = entry.file_type()?;
-        let kind = child_kind(&file_type);
-        children.push((
-            name.to_string_lossy().into_owned(),
-            kind,
-            child_rel,
-            file_type.is_dir(),
-            entry.path(),
-        ));
-    }
-
-    children.sort_by(|left, right| left.0.cmp(&right.0).then(left.1.cmp(&right.1)));
-
-    let mut hasher = StableHasher::default();
-    for (name, kind, _, _, _) in &children {
-        hasher.write(&(name.len() as u64).to_le_bytes());
-        hasher.write(name.as_bytes());
-        hasher.write(&[*kind]);
-    }
-    let child_count = children.len();
-    let child_hash = hasher.finish();
-    let child_dirs = children
-        .into_iter()
-        .filter_map(|(_, _, child_rel, is_dir, path)| is_dir.then_some((child_rel, path)))
-        .collect();
-    Ok((child_count, child_hash, child_dirs))
-}
-
-fn join_rel(parent: &Path, name: &std::ffi::OsStr) -> PathBuf {
-    if parent.as_os_str().is_empty() {
-        PathBuf::from(name)
-    } else {
-        parent.join(name)
     }
 }
 
-fn child_kind(file_type: &fs::FileType) -> u8 {
-    if file_type.is_file() {
-        b'f'
-    } else if file_type.is_dir() {
-        b'd'
-    } else if file_type.is_symlink() {
-        b'l'
-    } else {
-        b'o'
-    }
-}
-
-fn rel_string(root: &Path, path: &Path) -> String {
-    let rel = path.strip_prefix(root).unwrap_or(path);
-    rel.components()
-        .map(|component| component.as_os_str().to_string_lossy())
-        .collect::<Vec<_>>()
-        .join("/")
-}
-
-fn modified_ns(modified: Option<SystemTime>) -> u128 {
-    modified
-        .and_then(|time| time.duration_since(UNIX_EPOCH).ok())
-        .map(|duration| duration.as_nanos())
-        .unwrap_or(0)
-}
-
-fn cache_file_path(
+fn worktree_cache_file_path(
     cache_dir: &Path,
     project_root: &Path,
     config_path: &Path,
@@ -316,132 +272,104 @@ fn cache_file_path(
     project_root.hash(&mut hasher);
     config_path.hash(&mut hasher);
     checked_path.hash(&mut hasher);
-    cache_dir.join(format!("{:016x}.json", hasher.finish()))
+    cache_dir
+        .join("worktrees")
+        .join(digest_path(project_root))
+        .join(format!("{:016x}.json", hasher.finish()))
+}
+
+fn shared_cache_file_path(
+    cache_dir: &Path,
+    project_root: &Path,
+    checked_path: &Path,
+    config_hash: u64,
+) -> Option<PathBuf> {
+    let namespace = shared_namespace(project_root)?;
+    let relative = checked_path.strip_prefix(project_root).ok()?;
+    let mut hasher = StableHasher::default();
+    relative.hash(&mut hasher);
+    config_hash.hash(&mut hasher);
+    Some(
+        cache_dir
+            .join("shared")
+            .join(namespace)
+            .join(format!("{:016x}.json", hasher.finish())),
+    )
+}
+
+fn shared_namespace(project_root: &Path) -> Option<String> {
+    if !git_value(
+        project_root,
+        &[
+            "status",
+            "--porcelain=v1",
+            "--untracked-files=all",
+            "--ignored=matching",
+            "--",
+            ".",
+        ],
+    )?
+    .is_empty()
+    {
+        return None;
+    }
+    let common = PathBuf::from(git_value(project_root, &["rev-parse", "--git-common-dir"])?);
+    let common = if common.is_absolute() {
+        common
+    } else {
+        project_root.join(common)
+    };
+    let head = git_value(project_root, &["rev-parse", "HEAD"])?;
+    Some(format!("{}-{head}", digest_path(&common)))
+}
+
+fn fresh_shared_report(
+    cached: &CachedCheckReport,
+    config_hash: u64,
+    project_root: &Path,
+    config_path: &Path,
+    checked_path: &Path,
+) -> Option<StructureCheckReport> {
+    if cached.schema_version != CACHE_SCHEMA_VERSION
+        || cached.assura_version != env!("CARGO_PKG_VERSION")
+        || cached.config_hash != config_hash
+    {
+        return None;
+    }
+    let mut report = cached.report.clone();
+    report.project_root = project_root.to_path_buf();
+    report.config_path = config_path.to_path_buf();
+    report.checked_path = checked_path.to_path_buf();
+    for violation in &mut report.violations {
+        if let Ok(relative) = violation.path.strip_prefix(&cached.project_root) {
+            violation.path = project_root.join(relative);
+        }
+    }
+    Some(report)
+}
+
+fn git_value(path: &Path, args: &[&str]) -> Option<String> {
+    let output = Command::new("git")
+        .env("GIT_OPTIONAL_LOCKS", "0")
+        .arg("-C")
+        .arg(path)
+        .args(args)
+        .output()
+        .ok()?;
+    output
+        .status
+        .success()
+        .then(|| String::from_utf8_lossy(&output.stdout).trim().to_string())
+}
+
+fn digest_path(path: &Path) -> String {
+    let canonical = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
+    format!(
+        "{:016x}",
+        stable_hash(canonical.to_string_lossy().as_bytes())
+    )
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn cached_report_requires_hash_even_when_config_fingerprint_matches() {
-        let temp = tempfile::tempdir().unwrap();
-        fs::create_dir(temp.path().join(".assura")).unwrap();
-        fs::write(temp.path().join(".assura/config.yml"), "structure: {}\n").unwrap();
-        fs::write(temp.path().join("valid-file.ts"), "").unwrap();
-        let config_path = temp.path().join(".assura/config.yml");
-        let checked_path = temp.path();
-        let cached = CachedCheckReport {
-            schema_version: CACHE_SCHEMA_VERSION,
-            assura_version: env!("CARGO_PKG_VERSION").to_string(),
-            config_hash: 123,
-            config_fingerprint: SourceConfigFingerprint::from_path(&config_path).ok(),
-            project_root: temp.path().to_path_buf(),
-            config_path: config_path.clone(),
-            checked_path: checked_path.to_path_buf(),
-            exclude_patterns: Vec::new(),
-            dir_snapshot: collect_directory_snapshot(checked_path, &[]).unwrap(),
-            report: StructureCheckReport {
-                success: true,
-                project_root: temp.path().to_path_buf(),
-                config_path: config_path.clone(),
-                checked_path: checked_path.to_path_buf(),
-                files_checked: 1,
-                dirs_checked: 1,
-                violations: Vec::new(),
-            },
-        };
-
-        assert!(
-            fresh_cached_report(Some(&cached), None, temp.path(), &config_path, checked_path)
-                .is_none()
-        );
-    }
-
-    #[test]
-    fn cached_report_rejects_stale_config_without_hash() {
-        let temp = tempfile::tempdir().unwrap();
-        fs::create_dir(temp.path().join(".assura")).unwrap();
-        fs::write(temp.path().join(".assura/config.yml"), "structure: {}\n").unwrap();
-        let config_path = temp.path().join(".assura/config.yml");
-        let cached = CachedCheckReport {
-            schema_version: CACHE_SCHEMA_VERSION,
-            assura_version: env!("CARGO_PKG_VERSION").to_string(),
-            config_hash: stable_hash(b"structure: {}\n"),
-            config_fingerprint: SourceConfigFingerprint::from_path(&config_path).ok(),
-            project_root: temp.path().to_path_buf(),
-            config_path: config_path.clone(),
-            checked_path: temp.path().to_path_buf(),
-            exclude_patterns: Vec::new(),
-            dir_snapshot: collect_directory_snapshot(temp.path(), &[]).unwrap(),
-            report: StructureCheckReport {
-                success: true,
-                project_root: temp.path().to_path_buf(),
-                config_path: config_path.clone(),
-                checked_path: temp.path().to_path_buf(),
-                files_checked: 0,
-                dirs_checked: 1,
-                violations: Vec::new(),
-            },
-        };
-
-        fs::write(&config_path, "structure:\n  src/: {}\n").unwrap();
-
-        assert!(
-            fresh_cached_report(Some(&cached), None, temp.path(), &config_path, temp.path(),)
-                .is_none()
-        );
-    }
-
-    #[test]
-    fn child_fingerprint_changes_when_child_name_changes() {
-        let temp = tempfile::tempdir().unwrap();
-        fs::write(temp.path().join("valid-file.ts"), "").unwrap();
-        let (_, before_hash, _) =
-            collect_child_fingerprint(temp.path(), Path::new(""), &[]).unwrap();
-
-        fs::rename(
-            temp.path().join("valid-file.ts"),
-            temp.path().join("bad_name.ts"),
-        )
-        .unwrap();
-        let (_, after_hash, _) =
-            collect_child_fingerprint(temp.path(), Path::new(""), &[]).unwrap();
-
-        assert_ne!(before_hash, after_hash);
-    }
-
-    #[test]
-    fn child_fingerprint_changes_when_child_type_changes() {
-        let temp = tempfile::tempdir().unwrap();
-        let child = temp.path().join("child");
-        fs::write(&child, "").unwrap();
-        let (_, before_hash, _) =
-            collect_child_fingerprint(temp.path(), Path::new(""), &[]).unwrap();
-
-        fs::remove_file(&child).unwrap();
-        fs::create_dir(&child).unwrap();
-        let (_, after_hash, child_dirs) =
-            collect_child_fingerprint(temp.path(), Path::new(""), &[]).unwrap();
-
-        assert_ne!(before_hash, after_hash);
-        assert_eq!(child_dirs, vec![(PathBuf::from("child"), child)]);
-    }
-
-    #[test]
-    fn directory_snapshot_prunes_excluded_children() {
-        let temp = tempfile::tempdir().unwrap();
-        fs::create_dir(temp.path().join("dist")).unwrap();
-        fs::create_dir(temp.path().join("src")).unwrap();
-        fs::write(temp.path().join("dist").join("one.ts"), "").unwrap();
-        fs::write(temp.path().join("src").join("one.ts"), "").unwrap();
-        let exclude = vec![CompiledExclusion::new("dist/**")];
-
-        let before = collect_directory_snapshot(temp.path(), &exclude).unwrap();
-        fs::write(temp.path().join("dist").join("two.ts"), "").unwrap();
-        let after = collect_directory_snapshot(temp.path(), &exclude).unwrap();
-
-        assert_eq!(before, after);
-        assert!(before.iter().all(|fingerprint| fingerprint.rel != "dist"));
-    }
-}
+#[path = "cache/tests.rs"]
+mod tests;

@@ -26,6 +26,7 @@ pub(super) fn render_project_review_text(report: &ProjectReviewReport) -> String
             ),
         ),
         row(&style, "Heat", render_heat(report, &style)),
+        row(&style, "Thresholds", render_thresholds(report)),
         row(&style, "Branch", render_branch_signal(report, &style)),
         row(&style, "Worktree", render_worktree_signal(report, &style)),
         row(&style, "Hot dirs", render_hot_dirs(report, &style)),
@@ -130,36 +131,62 @@ fn render_hot_dirs(report: &ProjectReviewReport, style: &TextStyle) -> String {
     if report.heatmap.hot_dirs.is_empty() {
         return "none".to_string();
     }
-    report
-        .heatmap
-        .hot_dirs
-        .iter()
-        .take(3)
-        .map(|dir| {
+    let mut dirs = report.heatmap.hot_dirs.iter().take(3).collect::<Vec<_>>();
+    dirs.sort_by(|left, right| left.path.cmp(&right.path));
+    dirs.iter()
+        .enumerate()
+        .map(|(index, dir)| {
+            let ancestors = dirs[..index]
+                .iter()
+                .filter(|candidate| dir.path.starts_with(&format!("{}/", candidate.path)))
+                .count();
+            let marker = if index + 1 == dirs.len() { "`-" } else { "|-" };
+            let label = if ancestors > 0 {
+                dir.path.rsplit('/').next().unwrap_or(&dir.path)
+            } else {
+                &dir.path
+            };
             let mut text = format!(
-                "{} !{} modified={} untracked={} branch={}",
-                dir.path,
+                "{}{marker} {} v={} files=b{}/m{}/u{} lines=b{},w{}",
+                "|  ".repeat(ancestors),
+                label,
                 style.issue_count(dir.validation_violations),
+                style.change_count(dir.branch_changed_files),
                 style.change_count(dir.modified_files),
                 style.change_count(dir.untracked_files),
-                style.change_count(dir.branch_changed_files)
+                line_delta(dir.branch_line_additions, dir.branch_line_deletions),
+                line_delta(dir.worktree_line_additions, dir.worktree_line_deletions)
             );
-            if dir.branch_line_additions > 0 || dir.branch_line_deletions > 0 {
-                text.push_str(&format!(
-                    " branch_lines={}",
-                    line_delta(dir.branch_line_additions, dir.branch_line_deletions)
-                ));
-            }
-            if dir.worktree_line_additions > 0 || dir.worktree_line_deletions > 0 {
-                text.push_str(&format!(
-                    " worktree_lines={}",
-                    line_delta(dir.worktree_line_additions, dir.worktree_line_deletions)
-                ));
+            if dir.blocking_violations > 0 {
+                text.push_str(&format!(" blocking={}", dir.blocking_violations));
             }
             text
         })
         .collect::<Vec<_>>()
-        .join(" | ")
+        .join(&format!("\n{}", " ".repeat(LABEL_WIDTH + 1)))
+}
+
+fn render_thresholds(report: &ProjectReviewReport) -> String {
+    let totals = &report.heatmap.totals;
+    let thresholds = &report.heatmap.thresholds;
+    let worktree_files = totals.modified_files + totals.untracked_files + totals.deleted_files;
+    let churn = totals.branch_line_additions
+        + totals.branch_line_deletions
+        + totals.worktree_line_additions
+        + totals.worktree_line_deletions;
+    format!(
+        "blocking={}/{} worktree={}/{} untracked={}/{} churn={}/{} commits={}/{}",
+        totals.blocking_violations,
+        thresholds.blocking_violations,
+        worktree_files,
+        thresholds.worktree_files,
+        totals.untracked_files,
+        thresholds.untracked_files,
+        churn,
+        thresholds.line_churn,
+        report.heatmap.branch.commits_on_branch.unwrap_or_default(),
+        thresholds.commits_on_branch,
+    )
 }
 
 fn action_row(

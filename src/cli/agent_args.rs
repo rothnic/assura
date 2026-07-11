@@ -108,6 +108,12 @@ pub enum AgentCommands {
         max_issues: usize,
         #[arg(long, default_value_t = 20)]
         reference_limit: usize,
+        #[arg(
+            long,
+            default_value_t = 300,
+            help = "Suppress identical event messages for this many seconds; use 0 to disable"
+        )]
+        cooldown_seconds: u64,
         #[arg(short, long, value_enum, default_value = "json")]
         format: OutputFormat,
     },

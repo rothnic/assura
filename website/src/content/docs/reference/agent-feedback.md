@@ -97,7 +97,9 @@ parse human prose.
 ## Event-Aware Nudges
 
 Use `assura agent nudge` when a wrapper can observe session or tool events and
-needs a concise decision about whether Assura context should be injected:
+needs a concise decision about whether Assura context should be injected.
+Identical messages are suppressed during the default 300-second cooldown;
+wrappers can set `--cooldown-seconds 0` for measurement or deliberate replay:
 
 ```bash
 assura agent nudge --event session-start --agent codex .

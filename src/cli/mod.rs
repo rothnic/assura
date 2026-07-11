@@ -25,6 +25,8 @@ mod agent_onboarding_templates;
 mod agent_query_args;
 #[cfg(feature = "full-cli")]
 pub mod args;
+#[cfg(feature = "full-cli")]
+mod cache_management;
 pub mod check;
 pub mod check_feedback;
 #[cfg(feature = "full-cli")]
@@ -81,10 +83,12 @@ pub use agent_args::{
 pub use agent_query_args::AgentQueryArg;
 #[cfg(feature = "full-cli")]
 pub use args::{
-    AgentTarget, CheckOutputFormat, Cli, Commands, ExitCode, FixCommands, HookCommands,
-    MarkdownFixRuleArg, OutputFormat, PerformanceReportFormat, QualityCommands, QualityPhase,
-    QualityPlanFormat,
+    AgentTarget, CacheCommands, CheckOutputFormat, Cli, Commands, ExitCode, FixCommands,
+    HookCommands, MarkdownFixRuleArg, OutputFormat, PerformanceReportFormat, QualityCommands,
+    QualityPhase, QualityPlanFormat,
 };
+#[cfg(feature = "full-cli")]
+pub use cache_management::cache_command;
 #[cfg(all(feature = "yaml-config", feature = "json-output"))]
 pub use check::run_structure_check_cached;
 #[cfg(feature = "yaml-config")]

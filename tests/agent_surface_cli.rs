@@ -392,7 +392,7 @@ fn agent_nudge_session_start_is_compact_and_cache_stable() {
     assert_eq!(nudge["cache_policy"]["stable_by_default"], true);
     assert_eq!(
         nudge["cache_policy"]["volatile_fields"],
-        serde_json::json!([])
+        serde_json::json!(["cache_policy.cooldown.suppressed"])
     );
     assert_eq!(nudge["summary"]["should_inject"], false);
     assert_eq!(nudge["summary"]["nudge_count"], 0);
@@ -866,6 +866,30 @@ fn agent_nudge_after_tool_reports_bounded_changed_path_findings() {
         .as_str()
         .expect("suggested command")
         .contains("--agent codex"));
+}
+
+#[test]
+fn agent_nudge_suppresses_identical_messages_during_the_cooldown() {
+    let project = nudge_fixture();
+    let path = project.path().to_str().expect("fixture path");
+    let args = [
+        "nudge",
+        path,
+        "--event",
+        "after-tool",
+        "--changed",
+        "src/BadName.rs",
+        "--cooldown-seconds",
+        "600",
+    ];
+
+    let first = agent_json(&args);
+    let second = agent_json(&args);
+    assert_eq!(first["summary"]["nudge_count"], 1);
+    assert_eq!(first["cache_policy"]["cooldown"]["suppressed"], 0);
+    assert_eq!(second["summary"]["nudge_count"], 0);
+    assert_eq!(second["cache_policy"]["cooldown"]["suppressed"], 1);
+    assert_eq!(second["summary"]["omitted_count"], 1);
 }
 
 #[test]

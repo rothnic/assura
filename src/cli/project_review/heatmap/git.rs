@@ -14,12 +14,18 @@ pub(super) fn collect_git_heat(
     project_root: &Path,
     totals: &mut HeatTotals,
     dirs: &mut BTreeMap<String, HeatDirectory>,
-) -> GitHeat {
+    requested_base: Option<&str>,
+) -> Result<GitHeat, String> {
     let Some(repo_root) = git(project_root, &["rev-parse", "--show-toplevel"]) else {
-        return GitHeat {
+        if let Some(base) = requested_base {
+            return Err(format!(
+                "cannot use explicit review base `{base}` outside a Git repository"
+            ));
+        }
+        return Ok(GitHeat {
             available: false,
             branch: HeatBranch::default(),
-        };
+        });
     };
     let scope = GitScope::new(project_root, &repo_root);
     let git_root = scope.repo_root.as_path();
@@ -32,8 +38,19 @@ pub(super) fn collect_git_heat(
         ),
         ..HeatBranch::default()
     };
-    branch.base = fallback_base(git_root).or_else(|| branch.upstream.clone());
-    if let Some(compare_ref) = branch.upstream.as_deref().or(branch.base.as_deref()) {
+    branch.base = match requested_base {
+        Some(base) => {
+            let commit_ref = format!("{base}^{{commit}}");
+            if git(git_root, &["rev-parse", "--verify", "--quiet", &commit_ref]).is_none() {
+                return Err(format!(
+                    "review base `{base}` is not a valid Git commit ref"
+                ));
+            }
+            Some(base.to_string())
+        }
+        None => fallback_base(git_root).or_else(|| branch.upstream.clone()),
+    };
+    if let Some(compare_ref) = branch.base.as_deref().or(branch.upstream.as_deref()) {
         let branch_range = format!("{compare_ref}...HEAD");
         if let Some(counts) = git(
             git_root,
@@ -47,7 +64,13 @@ pub(super) fn collect_git_heat(
         }
     }
     if let Some(base) = branch.base.as_deref() {
-        if let Some(merge_base) = git(git_root, &["merge-base", "HEAD", base]) {
+        let merge_base = git(git_root, &["merge-base", "HEAD", base]);
+        if requested_base.is_some() && merge_base.is_none() {
+            return Err(format!(
+                "review base `{base}` has no common ancestor with HEAD"
+            ));
+        }
+        if let Some(merge_base) = merge_base {
             let commit_range = format!("{merge_base}..HEAD");
             branch.commits_on_branch = git_usize(git_root, &["rev-list", "--count", &commit_range]);
             add_branch_files(git_root, &scope, &merge_base, totals, dirs);
@@ -58,10 +81,10 @@ pub(super) fn collect_git_heat(
     add_status_files(git_root, &scope, totals, dirs);
     add_worktree_numstat(git_root, &scope, totals, dirs);
 
-    GitHeat {
+    Ok(GitHeat {
         available: true,
         branch,
-    }
+    })
 }
 
 struct GitScope {

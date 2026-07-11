@@ -1,14 +1,15 @@
 //! Project review report assembly and rendering.
 
 use super::heatmap::ProjectReviewHeatmap;
+use super::history::{apply_finding_history, FindingHistorySummary};
 use super::text::render_project_review_text;
 use crate::cli::args::CheckOutputFormat;
 use crate::cli::content_query::AgentQueryGapsOutput;
 use crate::cli::doctor::{DoctorItem, DoctorNextAction, DoctorViolation, ProjectDoctorReport};
 use serde::Serialize;
 
-const PROJECT_REVIEW_SCHEMA: &str = "assura.project-review.v1";
-const PROJECT_REVIEW_AGENT_SCHEMA: &str = "assura.project-review.agent.v1";
+const PROJECT_REVIEW_SCHEMA: &str = "assura.project-review.v2";
+const PROJECT_REVIEW_AGENT_SCHEMA: &str = "assura.project-review.agent.v2";
 
 pub(super) fn render_project_review(
     report: &ProjectReviewReport,
@@ -28,7 +29,7 @@ pub(super) fn render_project_review(
 }
 
 #[derive(Debug, Clone, Serialize)]
-pub(super) struct ProjectReviewReport {
+pub(crate) struct ProjectReviewReport {
     schema: &'static str,
     pub(super) status: &'static str,
     project_root: String,
@@ -37,6 +38,7 @@ pub(super) struct ProjectReviewReport {
     pub(super) structure: ProjectReviewStructure,
     pub(super) summary: ProjectReviewSummary,
     pub(super) findings: Vec<ProjectReviewFinding>,
+    pub(super) finding_history: FindingHistorySummary,
     pub(super) content_gaps: ProjectReviewContentGaps,
     pub(super) heatmap: ProjectReviewHeatmap,
     omitted_noise: Vec<ProjectReviewOmission>,
@@ -49,6 +51,7 @@ impl ProjectReviewReport {
         doctor: ProjectDoctorReport,
         content_gaps: AgentQueryGapsOutput,
         heatmap: ProjectReviewHeatmap,
+        persist_history: bool,
     ) -> Self {
         let mut findings = Vec::new();
         findings.extend(blocking_findings(&doctor.blocking_violations));
@@ -57,6 +60,8 @@ impl ProjectReviewReport {
         findings.extend(content_findings(&content_gaps));
         findings.push(structure_fit_finding());
 
+        let finding_history =
+            apply_finding_history(&doctor.project_root, &mut findings, persist_history);
         let omitted_noise = omitted_noise_policy();
         let summary = ProjectReviewSummary::from_findings(&findings, omitted_noise.len());
         let status = if summary.blocking > 0 {
@@ -81,6 +86,7 @@ impl ProjectReviewReport {
             },
             summary,
             findings,
+            finding_history,
             content_gaps: ProjectReviewContentGaps::from(content_gaps),
             heatmap,
             omitted_noise,
@@ -94,8 +100,14 @@ impl ProjectReviewReport {
         }
     }
 
-    pub(super) fn has_blocking_findings(&self) -> bool {
-        self.summary.blocking > 0
+    pub(crate) fn onboarding_summary(&self) -> (&'static str, &'static str, usize, usize, usize) {
+        (
+            self.structure.status,
+            self.status,
+            self.summary.blocking,
+            self.summary.advisory,
+            self.summary.inactive,
+        )
     }
 
     pub(super) fn findings_by_action(
@@ -104,7 +116,10 @@ impl ProjectReviewReport {
     ) -> Vec<&ProjectReviewFinding> {
         self.findings
             .iter()
-            .filter(|finding| finding.action_kind == action_kind)
+            .filter(|finding| {
+                finding.action_kind == action_kind
+                    && !matches!(finding.state, "unchanged" | "resolved")
+            })
             .take(4)
             .collect()
     }
@@ -142,13 +157,15 @@ impl ProjectReviewSummary {
 #[derive(Debug, Clone, Serialize)]
 pub(super) struct ProjectReviewFinding {
     pub(super) id: String,
-    category: &'static str,
-    severity: &'static str,
+    pub(super) fingerprint: String,
+    pub(super) state: &'static str,
+    pub(super) category: &'static str,
+    pub(super) severity: &'static str,
     pub(super) action_kind: &'static str,
-    title: String,
-    detail: String,
-    command: &'static str,
-    source: &'static str,
+    pub(super) title: String,
+    pub(super) detail: String,
+    pub(super) command: &'static str,
+    pub(super) source: &'static str,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -195,6 +212,7 @@ struct ProjectReviewAgentReport {
     project_root: String,
     summary: ProjectReviewSummary,
     findings: Vec<ProjectReviewFinding>,
+    finding_history: FindingHistorySummary,
     content_gaps: ProjectReviewContentGaps,
     heatmap: ProjectReviewHeatmap,
     omitted_noise: Vec<ProjectReviewOmission>,
@@ -209,7 +227,14 @@ impl From<&ProjectReviewReport> for ProjectReviewAgentReport {
             status: report.status,
             project_root: report.project_root.clone(),
             summary: report.summary.clone(),
-            findings: report.findings.iter().take(12).cloned().collect(),
+            findings: report
+                .findings
+                .iter()
+                .filter(|finding| finding.state != "unchanged")
+                .take(12)
+                .cloned()
+                .collect(),
+            finding_history: report.finding_history.clone(),
             content_gaps: report.content_gaps.clone(),
             heatmap: report.heatmap.clone(),
             omitted_noise: report.omitted_noise.clone(),
@@ -223,6 +248,8 @@ fn blocking_findings(violations: &[DoctorViolation]) -> Vec<ProjectReviewFinding
     violations
         .iter()
         .map(|violation| ProjectReviewFinding {
+            fingerprint: String::new(),
+            state: "new",
             id: format!("blocking:{}", violation.rule),
             category: violation_category(&violation.rule),
             severity: "blocking",
@@ -239,6 +266,8 @@ fn advisory_findings(items: &[DoctorItem]) -> Vec<ProjectReviewFinding> {
     items
         .iter()
         .map(|item| ProjectReviewFinding {
+            fingerprint: String::new(),
+            state: "new",
             id: format!("gap:{}", item.name),
             category: "configuration",
             severity: "advisory",
@@ -258,6 +287,8 @@ fn inactive_findings(
     let mut findings = items
         .iter()
         .map(|item| ProjectReviewFinding {
+            fingerprint: String::new(),
+            state: "new",
             id: format!("inactive:{}", item.name),
             category: "configuration",
             severity: "inactive",
@@ -271,6 +302,8 @@ fn inactive_findings(
 
     if binary_custody.status == "inactive" {
         findings.push(ProjectReviewFinding {
+            fingerprint: String::new(),
+            state: "new",
             id: "inactive:binary_custody".to_string(),
             category: "configuration",
             severity: "inactive",
@@ -288,6 +321,8 @@ fn content_findings(gaps: &AgentQueryGapsOutput) -> Vec<ProjectReviewFinding> {
     let mut findings = Vec::new();
     if gaps.diagnostics > 0 || gaps.missing_relations > 0 {
         findings.push(ProjectReviewFinding {
+            fingerprint: String::new(),
+            state: "new",
             id: "content:diagnostics".to_string(),
             category: "content",
             severity: "advisory",
@@ -303,6 +338,8 @@ fn content_findings(gaps: &AgentQueryGapsOutput) -> Vec<ProjectReviewFinding> {
     }
     if gaps.safe_fixes > 0 {
         findings.push(ProjectReviewFinding {
+            fingerprint: String::new(),
+            state: "new",
             id: "content:safe_fixes".to_string(),
             category: "content",
             severity: "advisory",
@@ -315,6 +352,8 @@ fn content_findings(gaps: &AgentQueryGapsOutput) -> Vec<ProjectReviewFinding> {
     }
     if gaps.unresolved_repository_references > 0 {
         findings.push(ProjectReviewFinding {
+            fingerprint: String::new(),
+            state: "new",
             id: "content:unresolved_repository_references".to_string(),
             category: "content",
             severity: "informational",
@@ -330,6 +369,8 @@ fn content_findings(gaps: &AgentQueryGapsOutput) -> Vec<ProjectReviewFinding> {
     }
     if gaps.requirements_traceability > 0 || gaps.computed_checks > 0 {
         findings.push(ProjectReviewFinding {
+            fingerprint: String::new(),
+            state: "new",
             id: "content:policy_diagnostics".to_string(),
             category: "content",
             severity: "advisory",
@@ -348,6 +389,8 @@ fn content_findings(gaps: &AgentQueryGapsOutput) -> Vec<ProjectReviewFinding> {
 
 fn structure_fit_finding() -> ProjectReviewFinding {
     ProjectReviewFinding {
+        fingerprint: String::new(),
+        state: "new",
         id: "structure-fit:inspect-before-changing".to_string(),
         category: "structure-fit",
         severity: "informational",

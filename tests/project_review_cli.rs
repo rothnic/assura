@@ -111,7 +111,7 @@ exclude:
         "json",
     ]));
 
-    assert_eq!(review["schema"], "assura.project-review.v1");
+    assert_eq!(review["schema"], "assura.project-review.v2");
     assert_eq!(review["structure"]["status"], "pass");
     assert_eq!(review["summary"]["blocking"], 0);
     assert!(review["summary"]["inactive"].as_u64().expect("inactive") > 0);
@@ -125,7 +125,7 @@ exclude:
         "--format",
         "agent",
     ]));
-    assert_eq!(agent["schema"], "assura.project-review.agent.v1");
+    assert_eq!(agent["schema"], "assura.project-review.agent.v2");
     assert!(agent["findings"].as_array().expect("agent findings").len() <= 12);
     assert!(
         agent["omitted_noise"]
@@ -138,7 +138,7 @@ exclude:
 }
 
 #[test]
-fn review_exits_nonzero_for_required_file_mismatch() {
+fn review_reports_blockers_without_becoming_the_policy_gate() {
     let project = TempDir::new().expect("temp project");
     write_config(
         &project,
@@ -154,7 +154,7 @@ exclude:
     );
 
     let output = run_review(&[project.path().to_str().unwrap(), "--format", "json"]);
-    assert_eq!(output.status.code(), Some(1));
+    assert_eq!(output.status.code(), Some(0));
     let review = json_from_output(&output);
 
     assert_eq!(review["status"], "fail");
@@ -162,6 +162,39 @@ exclude:
     let blocking = finding(&review, "blocking:exists_count");
     assert_eq!(blocking["category"], "structure");
     assert_eq!(blocking["action_kind"], "fix-now");
+}
+
+#[test]
+fn review_keeps_distinct_fingerprints_for_multiple_targets_of_one_rule() {
+    let project = TempDir::new().expect("temp project");
+    write_config(
+        &project,
+        r#"
+structure:
+  ./:
+    files:
+      exists:
+        README.md: 1
+        LICENSE: 1
+exclude:
+  - .assura/**
+"#,
+    );
+
+    let review = json_from_success(run_review(&[
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]));
+    let fingerprints = review["findings"]
+        .as_array()
+        .expect("findings")
+        .iter()
+        .filter(|item| item["id"] == "blocking:exists_count")
+        .map(|item| item["fingerprint"].as_str().expect("fingerprint"))
+        .collect::<std::collections::BTreeSet<_>>();
+
+    assert_eq!(fingerprints.len(), 2, "{review:#}");
 }
 
 #[test]
@@ -184,7 +217,7 @@ exclude:
     fs::create_dir_all(project.path().join("experiments")).expect("experiments dir");
 
     let output = run_review(&[project.path().to_str().unwrap(), "--format", "json"]);
-    assert_eq!(output.status.code(), Some(1));
+    assert_eq!(output.status.code(), Some(0));
     let review = json_from_output(&output);
 
     let blocking = finding(&review, "blocking:unexpected_directory");
@@ -256,7 +289,7 @@ fn review_reports_actionable_content_gap_from_content_runtime_fixture() {
         "--format",
         "json",
     ]);
-    assert_eq!(output.status.code(), Some(1));
+    assert_eq!(output.status.code(), Some(0));
     let review = json_from_output(&output);
 
     assert_eq!(review["content_gaps"]["diagnostics"], 1);
@@ -324,7 +357,7 @@ exclude:
     fs::write(project.path().join("src/BadName.rs"), "fn bad_name() {}\n").expect("bad rs");
 
     let output = run_review(&[project.path().to_str().unwrap(), "--format", "json"]);
-    assert_eq!(output.status.code(), Some(1));
+    assert_eq!(output.status.code(), Some(0));
     let review = json_from_output(&output);
 
     assert_eq!(review["heatmap"]["git_available"], true);
@@ -346,6 +379,13 @@ exclude:
     assert_eq!(review["heatmap"]["totals"]["line_deletions"], 0);
     assert_eq!(review["heatmap"]["totals"]["validation_violations"], 1);
     assert_eq!(review["heatmap"]["totals"]["naming_violations"], 1);
+    assert!(review["heatmap"]["hot_dirs"]
+        .as_array()
+        .expect("hot dirs")
+        .iter()
+        .all(|dir| dir.get("score").is_none()));
+    assert_eq!(review["heatmap"]["thresholds"]["worktree_files"], 10);
+    assert_eq!(review["heatmap"]["thresholds"]["line_churn"], 1_000);
 
     let hot_dirs = review["heatmap"]["hot_dirs"].as_array().expect("hot dirs");
     let src_heat = hot_dirs
@@ -368,14 +408,233 @@ exclude:
     let stdout = String::from_utf8_lossy(&text.stdout);
     assert!(stdout.contains("Heat"));
     assert!(stdout.contains("!1 hot_dirs=2 risks=1"));
+    assert!(stdout.contains("Thresholds"));
+    assert!(stdout.contains("worktree=2/10"));
     assert!(stdout.contains("Branch"));
     assert!(stdout.contains("feature/heat files=1 lines=+1/-0 commits=1"));
     assert!(stdout.contains("Worktree"));
     assert!(stdout
         .contains("staged=0 unstaged=1 modified=1 untracked=1 deleted=0 conflicts=0 lines=+1/-0"));
     assert!(stdout.contains("Hot dirs"));
-    assert!(stdout.contains("src !1 modified=1 untracked=1 branch=0 worktree_lines=+1/-0"));
-    assert!(stdout.contains("docs !0 modified=0 untracked=0 branch=1 branch_lines=+1/-0"));
+    assert!(stdout.contains("|- docs v=0 files=b1/m0/u0 lines=b+1/-0,w+0/-0"));
+    assert!(stdout.contains("`- src v=1 files=b0/m1/u1 lines=b+0/-0,w+1/-0 blocking=1"));
+
+    let explicit = run_review(&[
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+        "--base",
+        "main",
+    ]);
+    let explicit_review = json_from_output(&explicit);
+    assert_eq!(explicit_review["heatmap"]["branch"]["base"], "main");
+    assert_eq!(
+        explicit_review["heatmap"]["totals"]["branch_changed_files"],
+        1
+    );
+}
+
+#[test]
+fn review_bounds_agent_output_and_renders_nested_hot_directories_as_a_tree() {
+    let project = TempDir::new().expect("temp project");
+    write_config(
+        &project,
+        r#"
+structure:
+  ./:
+    extra: true
+exclude:
+  - .assura/**
+  - .git/**
+        "#,
+    );
+    fs::create_dir_all(project.path().join("src/cli")).expect("nested source directory");
+    fs::write(project.path().join("src/cli/change.txt"), "baseline\n").expect("baseline");
+    fs::write(project.path().join("src/cli/second.txt"), "baseline\n").expect("baseline");
+    run_git(&project, &["init"]);
+    run_git(&project, &["config", "user.email", "assura@example.test"]);
+    run_git(&project, &["config", "user.name", "Assura Test"]);
+    run_git(&project, &["add", "."]);
+    run_git(&project, &["commit", "-m", "initial"]);
+
+    for index in 0..8 {
+        let directory = if index == 0 {
+            project.path().join("src/cli")
+        } else {
+            project.path().join(format!("area-{index}"))
+        };
+        fs::create_dir_all(&directory).expect("hot directory");
+        fs::write(directory.join("change.txt"), "change\n").expect("untracked change");
+        if index == 0 {
+            fs::write(directory.join("second.txt"), "change\n").expect("second change");
+        }
+    }
+
+    let agent = json_from_success(run_review(&[
+        project.path().to_str().unwrap(),
+        "--format",
+        "agent",
+    ]));
+    assert!(agent["findings"].as_array().expect("findings").len() <= 12);
+    assert!(
+        agent["heatmap"]["hot_dirs"]
+            .as_array()
+            .expect("hot dirs")
+            .len()
+            <= 5
+    );
+    assert!(
+        agent["next_actions"]
+            .as_array()
+            .expect("next actions")
+            .len()
+            <= 6
+    );
+
+    let text = run_review(&[project.path().to_str().unwrap(), "--format", "text"]);
+    let stdout = String::from_utf8_lossy(&text.stdout);
+    assert!(stdout.contains("|- src"), "{stdout}");
+    assert!(stdout.contains("|  `- cli"), "{stdout}");
+}
+
+#[test]
+fn review_rejects_an_invalid_explicit_base() {
+    let project = TempDir::new().expect("temp project");
+    write_config(
+        &project,
+        r#"
+structure:
+  ./:
+    extra: true
+exclude:
+  - .assura/**
+  - .git/**
+"#,
+    );
+    run_git(&project, &["init"]);
+    run_git(&project, &["config", "user.email", "assura@example.test"]);
+    run_git(&project, &["config", "user.name", "Assura Test"]);
+    run_git(&project, &["add", "."]);
+    run_git(&project, &["commit", "-m", "initial"]);
+
+    let output = run_review(&[project.path().to_str().unwrap(), "--base", "missing-ref"]);
+    assert_eq!(output.status.code(), Some(2));
+    assert!(String::from_utf8_lossy(&output.stderr)
+        .contains("review base `missing-ref` is not a valid Git commit ref"));
+}
+
+#[test]
+fn review_rejects_an_explicit_base_without_a_common_ancestor() {
+    let project = TempDir::new().expect("temp project");
+    write_config(
+        &project,
+        r#"
+structure:
+  ./:
+    extra: true
+exclude:
+  - .assura/**
+  - .git/**
+"#,
+    );
+    run_git(&project, &["init"]);
+    run_git(&project, &["config", "user.email", "assura@example.test"]);
+    run_git(&project, &["config", "user.name", "Assura Test"]);
+    run_git(&project, &["add", "."]);
+    run_git(&project, &["commit", "-m", "initial"]);
+
+    let tree = Command::new("git")
+        .arg("-C")
+        .arg(project.path())
+        .args(["mktree"])
+        .output()
+        .expect("mktree");
+    assert!(tree.status.success());
+    let tree = String::from_utf8_lossy(&tree.stdout).trim().to_string();
+    let orphan = Command::new("git")
+        .arg("-C")
+        .arg(project.path())
+        .env("GIT_AUTHOR_NAME", "Assura Test")
+        .env("GIT_AUTHOR_EMAIL", "assura@example.test")
+        .env("GIT_COMMITTER_NAME", "Assura Test")
+        .env("GIT_COMMITTER_EMAIL", "assura@example.test")
+        .args(["commit-tree", &tree, "-m", "orphan"])
+        .output()
+        .expect("commit-tree");
+    assert!(orphan.status.success());
+    let orphan = String::from_utf8_lossy(&orphan.stdout).trim().to_string();
+    run_git(&project, &["update-ref", "refs/heads/orphan", &orphan]);
+
+    let output = run_review(&[project.path().to_str().unwrap(), "--base", "orphan"]);
+    assert_eq!(output.status.code(), Some(2));
+    assert!(String::from_utf8_lossy(&output.stderr).contains("has no common ancestor with HEAD"));
+}
+
+#[test]
+fn review_fingerprints_and_tracks_finding_state_without_dirtying_the_repo() {
+    let project = TempDir::new().expect("temp project");
+    write_config(
+        &project,
+        r#"
+structure:
+  ./:
+    files:
+      exists:
+        README.md: 1
+exclude:
+  - .assura/**
+  - .git/**
+"#,
+    );
+    run_git(&project, &["init"]);
+    run_git(&project, &["config", "user.email", "assura@example.test"]);
+    run_git(&project, &["config", "user.name", "Assura Test"]);
+    run_git(&project, &["add", "."]);
+    run_git(&project, &["commit", "-m", "initial"]);
+
+    let first = json_from_output(&run_review(&[
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]));
+    let first_blocking = finding(&first, "blocking:exists_count");
+    let fingerprint = first_blocking["fingerprint"].as_str().expect("fingerprint");
+    assert_eq!(fingerprint.len(), 64);
+    assert_eq!(first_blocking["state"], "new");
+    assert_eq!(first["finding_history"]["cache"]["mode"], "git-worktree");
+
+    let second = json_from_output(&run_review(&[
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]));
+    assert_eq!(
+        finding(&second, "blocking:exists_count")["fingerprint"],
+        fingerprint
+    );
+    assert_eq!(
+        finding(&second, "blocking:exists_count")["state"],
+        "unchanged"
+    );
+    assert!(
+        second["finding_history"]["unchanged"]
+            .as_u64()
+            .expect("unchanged")
+            > 0
+    );
+
+    fs::write(project.path().join("README.md"), "# Project\n").expect("README");
+    let third = json_from_success(run_review(&[
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]));
+    assert_eq!(
+        finding(&third, "blocking:exists_count")["state"],
+        "resolved"
+    );
+    assert_eq!(third["finding_history"]["resolved"], 1);
+    assert!(!project.path().join(".assura/cache").exists());
 }
 
 #[test]
@@ -423,6 +682,21 @@ exclude:
             .expect("hot dirs")
             .is_empty(),
         "nested project heat should ignore sibling repo changes: {review:#}"
+    );
+
+    let sibling = repo.path().join("workspace/sibling");
+    fs::create_dir_all(sibling.join(".assura")).expect("sibling assura dir");
+    fs::write(
+        sibling.join(".assura/config.yml"),
+        "structure:\n  ./:\n    extra: true\nexclude:\n  - .assura/**\n",
+    )
+    .expect("sibling config");
+    let sibling_review =
+        json_from_success(run_review(&[sibling.to_str().unwrap(), "--format", "json"]));
+    assert_ne!(
+        review["finding_history"]["cache"]["path"],
+        sibling_review["finding_history"]["cache"]["path"],
+        "nested projects in one worktree require separate history namespaces"
     );
 }
 

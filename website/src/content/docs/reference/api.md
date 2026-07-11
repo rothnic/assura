@@ -27,6 +27,7 @@ plugin APIs.
 | `assura check [path]` | Validate a project or subpath |
 | `assura status [path]` | Print discovered config and rule summary |
 | `assura review [path]` | Run a compact first diagnostic over check, doctor, and content gaps |
+| `assura cache status|clean [path]` | Inspect or remove correctness-checked local cache namespaces |
 | `assura init [path]` | Create a starter `.assura/config.yml` |
 | `assura migrate [.ls-lint.yml ...]` | Convert LS-Lint 2.3 rule config |
 | `assura agent ...` | Run local project-intelligence commands for coding agents |
@@ -67,6 +68,8 @@ outside a checkout.
 | `--min-severity low|medium|high|critical` | Hide lower-severity feedback items without changing what is checked |
 | `--max-issues <count>` | Cap displayed feedback items without changing what is checked |
 | `--agent generic|codex` | Select a delivery adapter for `--format agent`; Codex wraps feedback for `UserPromptSubmit` |
+| `--cache` | Reuse a Git-aware default cache only when correctness fingerprints match |
+| `--cache-dir <path>` | Reuse an explicit cache root |
 
 ## Agent Surface
 

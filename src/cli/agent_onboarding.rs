@@ -8,10 +8,10 @@ use super::agent_onboarding_report::{
 };
 use super::agent_onboarding_templates::{baseline_files, GeneratedFile};
 use super::doctor::project_doctor_packet_json;
+use super::project_review::build_project_review;
 use super::{
     AgentContentTemplate, AgentIntegrationTarget, AgentOnboardingTarget, ExitCode, OutputFormat,
 };
-use crate::cli::check::{run_structure_check_with_target_mode, CheckTargetMode};
 use serde::Serialize;
 use serde_yaml::Value;
 use std::fs;
@@ -72,7 +72,7 @@ fn run_agent_onboarding(
     let integration_target = integration_target(&detected);
     let integration = install_integration(&project_root, &detected, integration_target)?;
     let config_path = config.unwrap_or_else(|| project_root.join(".assura/config.yml"));
-    let verified = verify_project(&project_root, Some(config_path.clone()))?;
+    let (verified, review) = verify_project(&project_root, Some(config_path.clone()))?;
     let content = content_section(options.content_template);
     let inactive = inactive_capabilities(options.content_template);
     let lifecycle_profiles = lifecycle_profiles(&project_root, integration_target);
@@ -103,6 +103,7 @@ fn run_agent_onboarding(
             lifecycle_profiles,
             files,
             verified,
+            review,
             inactive,
             next_actions,
         },
@@ -344,19 +345,28 @@ fn integration_target(detected: &DetectedSection) -> Option<AgentIntegrationTarg
     }
 }
 
-fn verify_project(project_root: &Path, config: Option<PathBuf>) -> Result<Vec<CheckItem>, String> {
+fn verify_project(
+    project_root: &Path,
+    config: Option<PathBuf>,
+) -> Result<(Vec<CheckItem>, OnboardingReview), String> {
     let config_path = config.unwrap_or_else(|| project_root.join(".assura/config.yml"));
-    let report = run_structure_check_with_target_mode(
+    let report = build_project_review(
         Some(project_root.to_path_buf()),
         Some(config_path),
+        None,
         false,
-        CheckTargetMode::Recursive,
     )
     .map_err(|error| error.to_string())?;
-    Ok(vec![
+    let (structure_status, review_status, blocking, advisory, inactive) =
+        report.onboarding_summary();
+    let verified = vec![
         CheckItem {
             name: "structure_config",
-            status: if report.success { "pass" } else { "fail" },
+            status: if structure_status == "pass" {
+                "pass"
+            } else {
+                "fail"
+            },
             detail: ".assura/config.yml loaded and checked",
         },
         CheckItem {
@@ -371,7 +381,15 @@ fn verify_project(project_root: &Path, config: Option<PathBuf>) -> Result<Vec<Ch
             },
             detail: ".assura/onboarding/agent-next.md exists",
         },
-    ])
+    ];
+    let review = OnboardingReview {
+        status: review_status,
+        blocking,
+        advisory,
+        inactive,
+        next_command: "assura review --format agent .",
+    };
+    Ok((verified, review))
 }
 
 fn content_section(template: AgentContentTemplate) -> ContentSection {
@@ -415,4 +433,13 @@ pub(super) struct DetectedSection {
     pub(super) agent_confidence: &'static str,
     pub(super) git_repository: bool,
     pub(super) existing_source_files: bool,
+}
+
+#[derive(Serialize)]
+pub(super) struct OnboardingReview {
+    pub(super) status: &'static str,
+    pub(super) blocking: usize,
+    pub(super) advisory: usize,
+    pub(super) inactive: usize,
+    pub(super) next_command: &'static str,
 }

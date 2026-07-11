@@ -99,6 +99,19 @@ pub enum Commands {
 
         #[arg(short, long, value_enum, default_value = "text")]
         format: CheckOutputFormat,
+
+        #[arg(
+            long,
+            default_value = "auto",
+            help = "Git comparison base: auto or an explicit ref"
+        )]
+        base: String,
+    },
+
+    #[command(about = "Inspect or clean Assura's correctness-checked local cache")]
+    Cache {
+        #[command(subcommand)]
+        command: CacheCommands,
     },
 
     #[command(about = "Explain why structure rules apply or skip one path")]
@@ -236,6 +249,28 @@ pub enum Commands {
     Quality {
         #[command(subcommand)]
         command: QualityCommands,
+    },
+}
+
+#[derive(Subcommand, Debug)]
+pub enum CacheCommands {
+    #[command(about = "Report cache namespaces, fallback mode, entries, and size")]
+    Status {
+        #[arg(help = "Project or worktree path (defaults to current directory)")]
+        path: Option<PathBuf>,
+        #[arg(long, help = "Inspect an explicit cache root")]
+        cache_dir: Option<PathBuf>,
+        #[arg(short, long, value_enum, default_value = "text")]
+        format: OutputFormat,
+    },
+    #[command(about = "Remove all entries from a cache root")]
+    Clean {
+        #[arg(help = "Project or worktree path (defaults to current directory)")]
+        path: Option<PathBuf>,
+        #[arg(long, help = "Clean an explicit cache root")]
+        cache_dir: Option<PathBuf>,
+        #[arg(short, long, value_enum, default_value = "text")]
+        format: OutputFormat,
     },
 }
 

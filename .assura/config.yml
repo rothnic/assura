@@ -444,6 +444,12 @@ extensions:
           status: supported
         - surface: "command:assura review"
           status: experimental
+        - surface: "command:assura cache"
+          status: experimental
+        - surface: "command:assura cache status"
+          status: experimental
+        - surface: "command:assura cache clean"
+          status: experimental
         - surface: "command:assura doctor"
           status: experimental
         - surface: "command:assura explain"

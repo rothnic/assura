@@ -16,9 +16,31 @@ pub(super) struct ProjectReviewHeatmap {
     pub(super) git_available: bool,
     pub(super) branch: HeatBranch,
     pub(super) totals: HeatTotals,
+    pub(super) thresholds: HeatThresholds,
     pub(super) hot_dirs: Vec<HeatDirectory>,
     pub(super) risk_flags: Vec<HeatRiskFlag>,
     pub(super) legend: Vec<&'static str>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub(super) struct HeatThresholds {
+    pub(super) blocking_violations: usize,
+    pub(super) worktree_files: usize,
+    pub(super) untracked_files: usize,
+    pub(super) line_churn: usize,
+    pub(super) commits_on_branch: usize,
+}
+
+impl Default for HeatThresholds {
+    fn default() -> Self {
+        Self {
+            blocking_violations: 1,
+            worktree_files: 10,
+            untracked_files: 5,
+            line_churn: 1_000,
+            commits_on_branch: 10,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Default, Serialize)]
@@ -57,6 +79,7 @@ pub(super) struct HeatTotals {
 #[derive(Debug, Clone, Default, Serialize)]
 pub(super) struct HeatDirectory {
     pub(super) path: String,
+    #[serde(skip)]
     pub(super) score: usize,
     pub(super) validation_violations: usize,
     pub(super) blocking_violations: usize,
@@ -82,12 +105,15 @@ pub(super) struct HeatRiskFlag {
     pub(super) id: &'static str,
     pub(super) severity: &'static str,
     pub(super) detail: String,
+    pub(super) value: usize,
+    pub(super) threshold: usize,
 }
 
 pub(super) fn build_project_review_heatmap(
     report: &StructureCheckReport,
     content_gaps: &AgentQueryGapsOutput,
-) -> ProjectReviewHeatmap {
+    requested_base: Option<&str>,
+) -> Result<ProjectReviewHeatmap, String> {
     let mut totals = HeatTotals {
         content_diagnostics: content_gaps.diagnostics,
         unresolved_repository_references: content_gaps.unresolved_repository_references,
@@ -99,14 +125,16 @@ pub(super) fn build_project_review_heatmap(
         add_violation(&mut totals, &mut dirs, &report.project_root, violation);
     }
 
-    let git = collect_git_heat(&report.project_root, &mut totals, &mut dirs);
+    let git = collect_git_heat(&report.project_root, &mut totals, &mut dirs, requested_base)?;
     let hot_dirs = hot_directories(dirs);
-    let risk_flags = risk_flags(&totals, git.branch.commits_on_branch);
+    let thresholds = HeatThresholds::default();
+    let risk_flags = risk_flags(&totals, git.branch.commits_on_branch, &thresholds);
 
-    ProjectReviewHeatmap {
+    Ok(ProjectReviewHeatmap {
         git_available: git.available,
         branch: git.branch,
         totals,
+        thresholds,
         hot_dirs,
         risk_flags,
         legend: vec![
@@ -117,7 +145,7 @@ pub(super) fn build_project_review_heatmap(
             "branch_lines line churn since branch base",
             "worktree_lines uncommitted tracked line churn",
         ],
-    }
+    })
 }
 
 fn add_violation(
@@ -178,9 +206,13 @@ fn heat_score(dir: &HeatDirectory) -> usize {
             / 100)
 }
 
-fn risk_flags(totals: &HeatTotals, commits_on_branch: Option<usize>) -> Vec<HeatRiskFlag> {
+fn risk_flags(
+    totals: &HeatTotals,
+    commits_on_branch: Option<usize>,
+    thresholds: &HeatThresholds,
+) -> Vec<HeatRiskFlag> {
     let mut flags = Vec::new();
-    if totals.blocking_violations > 0 {
+    if totals.blocking_violations >= thresholds.blocking_violations {
         flags.push(risk(
             "blocking-validation",
             "blocking",
@@ -188,35 +220,43 @@ fn risk_flags(totals: &HeatTotals, commits_on_branch: Option<usize>) -> Vec<Heat
                 "{} blocking validation signal(s)",
                 totals.blocking_violations
             ),
+            totals.blocking_violations,
+            thresholds.blocking_violations,
         ));
     }
     let worktree_files = totals.modified_files + totals.untracked_files + totals.deleted_files;
-    if worktree_files >= 10 {
+    if worktree_files >= thresholds.worktree_files {
         flags.push(risk(
             "large-worktree",
             "advisory",
             format!("{worktree_files} changed/untracked/deleted file(s) in the worktree"),
+            worktree_files,
+            thresholds.worktree_files,
         ));
     }
-    if totals.untracked_files >= 5 {
+    if totals.untracked_files >= thresholds.untracked_files {
         flags.push(risk(
             "untracked-growth",
             "advisory",
             format!("{} untracked file(s)", totals.untracked_files),
+            totals.untracked_files,
+            thresholds.untracked_files,
         ));
     }
     let total_line_additions = totals.branch_line_additions + totals.worktree_line_additions;
     let total_line_deletions = totals.branch_line_deletions + totals.worktree_line_deletions;
-    if total_line_additions + total_line_deletions >= 1_000 {
+    if total_line_additions + total_line_deletions >= thresholds.line_churn {
         flags.push(risk(
             "large-churn",
             "advisory",
             format!(
                 "{total_line_additions} added and {total_line_deletions} deleted line(s) across branch and worktree"
             ),
+            total_line_additions + total_line_deletions,
+            thresholds.line_churn,
         ));
     }
-    if commits_on_branch.unwrap_or_default() >= 10 {
+    if commits_on_branch.unwrap_or_default() >= thresholds.commits_on_branch {
         flags.push(risk(
             "long-branch",
             "advisory",
@@ -224,16 +264,26 @@ fn risk_flags(totals: &HeatTotals, commits_on_branch: Option<usize>) -> Vec<Heat
                 "{} commit(s) since branch base",
                 commits_on_branch.unwrap_or_default()
             ),
+            commits_on_branch.unwrap_or_default(),
+            thresholds.commits_on_branch,
         ));
     }
     flags
 }
 
-fn risk(id: &'static str, severity: &'static str, detail: String) -> HeatRiskFlag {
+fn risk(
+    id: &'static str,
+    severity: &'static str,
+    detail: String,
+    value: usize,
+    threshold: usize,
+) -> HeatRiskFlag {
     HeatRiskFlag {
         id,
         severity,
         detail,
+        value,
+        threshold,
     }
 }
 

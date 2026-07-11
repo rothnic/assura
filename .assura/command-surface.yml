@@ -45,6 +45,7 @@ commands:
       --no-parallel: {}
       --ls-lint-target-semantics: {}
       --watch: {}
+      --cache: {}
   - name: "assura status"
     allow_positionals: true
     flags:
@@ -86,6 +87,53 @@ commands:
       --quiet: {}
       --help:
         aliases: ["-h"]
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status", "agent"]
+      --base:
+        takes_value: true
+  - name: "assura cache"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+  - name: "assura cache status"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --cache-dir:
+        takes_value: true
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status", "agent"]
+  - name: "assura cache clean"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --cache-dir:
+        takes_value: true
       --format:
         aliases: ["-f"]
         takes_value: true

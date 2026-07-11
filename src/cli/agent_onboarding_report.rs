@@ -1,7 +1,7 @@
 //! Serializable report types for `assura agent onboard`.
 
 use super::agent_lifecycle::{LifecycleProfile, RankedNextAction};
-use super::agent_onboarding::DetectedSection;
+use super::agent_onboarding::{DetectedSection, OnboardingReview};
 use super::OutputFormat;
 use serde::Serialize;
 
@@ -25,7 +25,7 @@ impl RenderedOnboardingReport {
     fn render_text(&self) -> String {
         let report = &self.report;
         format!(
-            "Assura agent onboarding\ninstalled: assura {}\ndetected: project={} agent={} confidence={}\ncontent: {}={}\nlifecycle: {}\nverified: {}\ninactive: {}\nnext: {}\npacket: .assura/onboarding/agent-next.md",
+            "Assura agent onboarding\ninstalled: assura {}\ndetected: project={} agent={} confidence={}\ncontent: {}={}\nlifecycle: {}\nverified: {}\nreview: {} blocking={} advisory={} inactive={}\ninactive: {}\nnext: {}\npacket: .assura/onboarding/agent-next.md",
             report.installed.assura_version,
             report.detected.project_type,
             report.detected.agent_harness,
@@ -44,6 +44,10 @@ impl RenderedOnboardingReport {
                 .map(|item| format!("{}={}", item.name, item.status))
                 .collect::<Vec<_>>()
                 .join(", "),
+            report.review.status,
+            report.review.blocking,
+            report.review.advisory,
+            report.review.inactive,
             report
                 .inactive
                 .iter()
@@ -70,6 +74,7 @@ pub(super) struct OnboardingReport {
     pub(super) lifecycle_profiles: Vec<LifecycleProfile>,
     pub(super) files: Vec<FileAction>,
     pub(super) verified: Vec<CheckItem>,
+    pub(super) review: OnboardingReview,
     pub(super) inactive: Vec<CheckItem>,
     pub(super) next_actions: Vec<RankedNextAction>,
 }

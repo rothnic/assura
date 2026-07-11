@@ -5,7 +5,7 @@ mod artifact_check;
 #[cfg(feature = "yaml-config")]
 mod batch;
 #[cfg(all(feature = "yaml-config", feature = "json-output"))]
-mod cache;
+pub(crate) mod cache;
 mod case;
 mod command_surface_docs;
 mod compiled_artifact;

@@ -11,20 +11,28 @@
 
 ### 2. Signatures
 
-- `assura review [path] --format text|json|yaml|agent`
+- `assura review [path] --format text|json|yaml|agent --base <auto|ref>`
 - Default path is the current directory.
 - Default format is `text`.
+- Default base is `auto`; explicit refs must resolve to a Git commit.
 - The command uses the existing global `--config <path>` option.
 
 ### 3. Contracts
 
-- JSON output uses schema `assura.project-review.v1`.
-- Agent output uses schema `assura.project-review.agent.v1`.
+- JSON output uses schema `assura.project-review.v2`.
+- Agent output uses schema `assura.project-review.agent.v2`.
 - The command reuses `doctor` output plus `content agent-query gaps` summary;
   it must not add a parallel validation engine.
 - JSON includes `status`, `structure`, `summary`, `findings`,
-  `content_gaps`, `heatmap`, `omitted_noise`, `next_actions`, and
+  `finding_history`, `content_gaps`, `heatmap`, `omitted_noise`, `next_actions`, and
   `lower_level_commands`.
+- Findings include stable SHA-256 fingerprints and `new`, `worsened`,
+  `unchanged`, or `resolved` state. Git projects persist state in worktree-local
+  Git metadata; non-Git projects report their temporary fallback path.
+- Review is advisory: successfully assembled reports exit `0` even when their
+  status is `fail`. `assura check` remains the policy gate.
+- Onboarding may embed a review summary but must not read or mutate finding
+  history.
 - Agent output includes bounded `findings`, `heatmap.hot_dirs`,
   `omitted_noise`, and `next_actions` arrays so wrappers do not need to scrape
   text.
@@ -37,6 +45,9 @@
   pressure from validation violations, naming violations, line-limit
   violations, tracked worktree changes, untracked files, deleted/conflicted
   files, branch-changed files, and line churn.
+- Serialized heat directories expose concrete signal counts, not the internal
+  ranking score. `heatmap.thresholds` publishes each review threshold next to
+  the measured totals.
 - `heatmap.totals` includes branch-level signals such as files changed since
   the detected base branch and commits on the current branch when Git can
   provide them.
@@ -57,6 +68,9 @@
 - Text output must stay compact, row-aligned, and scan-first for humans:
   header/status, check, heat, hot dirs, content, finding counts, action
   buckets, policy, next command, and detail commands.
+- Text output renders hot directories as a compact tree with concrete
+  violation, file, and line values. Unchanged findings are hidden from default
+  action rows and bounded agent output while remaining available in full JSON.
 - Text output may use ANSI color only when stdout is a terminal or
   `ASSURA_FORCE_COLOR=1`/`CLICOLOR_FORCE` is set. Piped/captured output must
   remain plain text, and `NO_COLOR`/`CLICOLOR=0` must disable automatic color.
@@ -69,11 +83,15 @@
 | Condition | Expected behavior |
 | --- | --- |
 | Structure check passes with only inactive/advisory guidance | Exit `0`; status `needs-review`; summary has no blocking findings. |
-| Structure check has blocking violations | Exit `1`; status `fail`; findings include `fix-now` blocking items. |
-| Content runtime has configured blocking diagnostics | Exit follows `check`; content gaps also point to content-query details. |
+| Structure check has blocking violations | Exit `0`; status `fail`; findings include `fix-now` blocking items. |
+| Content runtime has configured blocking diagnostics | Exit `0`; content gaps also point to content-query details. `assura check` remains nonzero. |
 | Unresolved repository-reference candidates exist only as raw candidates | Exit `0` when no blocking checks fail; finding is informational. |
 | Project is not a Git checkout | Exit follows normal review; `heatmap.git_available=false`; Git counters stay zero/unknown. |
 | Git checkout has branch/worktree pressure | Review includes compact aligned heat/hot-dir rows plus JSON `heatmap` totals and directory rollups. |
+| Explicit `--base <ref>` resolves | Branch metrics compare against that ref and report it in `heatmap.branch.base`. |
+| Explicit `--base <ref>` is invalid | Exit with configuration error and name the invalid ref. |
+| Review repeats without changes | Stable fingerprints remain `unchanged` and repeated agent/action output is hidden. |
+| A prior finding disappears | The next review emits a bounded `resolved` history item. |
 | Text output is captured or piped | Output contains no ANSI escapes by default. |
 | Text output is forced with `ASSURA_FORCE_COLOR=1` | Output contains ANSI styling without changing text content or JSON/agent output. |
 | No config is discoverable | Exit with the existing no-config error code. |
@@ -94,7 +112,7 @@
 ### 6. Tests Required
 
 - Clean repo test: pass structure, no blocking summary, inactive guidance.
-- Structure mismatch test: nonzero exit and blocking `fix-now` finding.
+- Structure mismatch test: advisory exit `0` and blocking `fix-now` finding.
 - Unmodeled path-pressure test: unexpected path plus structure-fit guidance.
 - Heat-map test: real Git branch/worktree state plus a validation violation
   rolls up to `heatmap.totals` and the expected hot directory.
@@ -102,7 +120,7 @@
   omitted-noise policy includes generated/archive/log/benchmark categories.
 - Actionable content-gap test: content runtime diagnostics surface as content
   findings and lower-level content-query commands.
-- Agent format test: schema `assura.project-review.agent.v1` and bounded
+- Agent format test: schema `assura.project-review.agent.v2` and bounded
   finding/action arrays.
 - Text format test: captured output stays plain, aligned rows preserve the
   structure-fit policy, and forced color emits ANSI styling.
