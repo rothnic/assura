@@ -59,6 +59,16 @@ test('short mobile view keeps the project review visible', async ({ page }) => {
   await expect(page.getByText('$ assura review').first()).toBeVisible();
 });
 
+test('example output CTA connects project policy to pass and fail paths', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  await page.getByRole('link', { name: 'See how rules apply' }).click();
+  await expect(page.getByRole('heading', { name: '.assura/config.yml' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Project tree' })).toBeVisible();
+  await expect(page.getByLabel('Pass').first()).toBeVisible();
+  await expect(page.getByLabel('Blocking violation').first()).toBeVisible();
+});
+
 test('setup actions retain a no-JavaScript onboarding destination', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('link', { name: 'Start with your agent' }).first()).toHaveAttribute('href', '#onboard');

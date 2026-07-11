@@ -627,6 +627,225 @@
     align-self: start;
   }
 
+  .policy-tree-demo {
+    display: grid;
+    grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+
+  .policy-panel,
+  .tree-panel {
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--border) 72%, var(--primary));
+    border-radius: 0.5rem;
+    background: #0b0d0e;
+    box-shadow: 0 1rem 2.5rem var(--shadow);
+    color: var(--terminal-text);
+  }
+
+  .policy-panel > header,
+  .tree-panel > header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    border-bottom: 1px solid var(--terminal-border);
+    background: #17191a;
+    padding: 0.72rem 0.85rem;
+  }
+
+  .policy-panel header span,
+  .tree-panel header span,
+  .policy-panel header h3,
+  .tree-panel header h3 {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 0.72rem;
+  }
+
+  .policy-panel header span,
+  .tree-panel header span {
+    color: #c6c8c9;
+    text-transform: uppercase;
+  }
+
+  .policy-panel header h3,
+  .tree-panel header h3 {
+    margin: 0;
+    color: #f4f4f5;
+  }
+
+  .policy-panel pre {
+    margin: 0;
+    overflow-x: auto;
+    padding: 1rem;
+  }
+
+  .policy-panel code {
+    display: grid;
+    min-width: max-content;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 0.78rem;
+    line-height: 1.55;
+  }
+
+  .config-line {
+    display: flex;
+    min-width: max-content;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .config-line.key {
+    color: #9fc4ff;
+  }
+
+  .config-line.value {
+    color: #69e4d0;
+  }
+
+  .tree-panel .tree-root {
+    display: grid;
+    gap: 0.28rem;
+    margin: 0;
+    padding: 0.9rem;
+    list-style: none;
+  }
+
+  .tree-panel .tree-root ul {
+    display: grid;
+    gap: 0.28rem;
+    margin: 0.28rem 0 0;
+    border-left: 1px solid #343839;
+    padding: 0 0 0 0.85rem;
+    list-style: none;
+  }
+
+  .tree-panel li {
+    min-width: 0;
+  }
+
+  .tree-row {
+    display: grid;
+    grid-template-columns: 1.25rem minmax(0, 1fr) auto;
+    gap: 0.45rem;
+    align-items: center;
+    min-width: 0;
+    border: 1px solid transparent;
+    border-radius: 0.35rem;
+    padding: 0.28rem 0.45rem;
+  }
+
+  .tree-row code,
+  .tree-row small,
+  .tree-status,
+  .tree-panel footer {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  }
+
+  .tree-row code {
+    min-width: 0;
+    color: #f0f1f1;
+    font-size: 0.76rem;
+    overflow-wrap: anywhere;
+  }
+
+  .tree-row small {
+    color: #c4c7c7;
+    font-size: 0.72rem;
+    text-align: right;
+  }
+
+  .tree-status {
+    display: inline-flex;
+    width: 1.1rem;
+    height: 1.1rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: var(--surface-muted);
+    color: var(--soft);
+    font-size: 0.68rem;
+    font-style: normal;
+    font-weight: 900;
+  }
+
+  .tree-row.pass {
+    border-color: #246b5d;
+    background: #102b27;
+  }
+
+  .tree-row.pass .tree-status {
+    background: #184d43;
+    color: #79f2dd;
+  }
+
+  .tree-row.fail {
+    border-color: #8c3d45;
+    background: #351a1c;
+  }
+
+  .tree-row.fail .tree-status {
+    background: #642b31;
+    color: #ff9ba5;
+  }
+
+  .tree-panel footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.9rem;
+    border-top: 1px solid var(--terminal-border);
+    padding: 0.65rem 0.9rem;
+    color: #c4c7c7;
+    font-size: 0.72rem;
+  }
+
+  .tree-panel footer span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .legend-dot {
+    width: 0.48rem;
+    height: 0.48rem;
+    border-radius: 999px;
+    background: var(--soft);
+  }
+
+  .legend-dot.pass {
+    background: var(--primary);
+  }
+
+  .legend-dot.fail {
+    background: var(--danger);
+  }
+
+  .rule-marker {
+    display: inline-flex;
+    width: 1.1rem;
+    height: 1.1rem;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #475051;
+    border-radius: 999px;
+    background: #222728;
+    color: #f4f4f5;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 0.62rem;
+    font-style: normal;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .tree-row small .rule-marker {
+    margin-right: 0.18rem;
+    vertical-align: -0.15rem;
+  }
+
   .terminal-bar {
     display: flex;
     min-width: 0;
@@ -1448,6 +1667,7 @@
   @media (max-width: 980px) {
     .workflow-board,
     .review-layout,
+    .policy-tree-demo,
     .map-section,
     .onboarding-layout,
     .section-head.split {

@@ -5,6 +5,7 @@ import CommandJourney from '../components/marketing/command-journey.astro';
 import ComparisonTable from '../components/marketing/comparison-table.astro';
 import MarketingLayout from '../components/marketing/marketing-layout.astro';
 import PerformanceProof from '../components/marketing/performance-proof.astro';
+import PolicyTreeDemo from '../components/marketing/policy-tree-demo.astro';
 import SectionHeading from '../components/marketing/section-heading.astro';
 import TerminalCard from '../components/marketing/terminal-card.astro';
 import reviewDemo from '../data/review-demo.json';
@@ -76,8 +77,6 @@ type TerminalTone = 'prompt' | 'plain' | 'muted' | 'info' | 'warn' | 'pass';
 const reviewLines = reviewDemo.display_lines as Array<{ text: string; tone: TerminalTone }>;
 
 const heroReviewLines = reviewLines.filter((_, index) => ![2, 3].includes(index));
-
-const reviewMetrics = reviewDemo.metrics;
 
 const problemSignals = [
   {
@@ -202,7 +201,7 @@ const performanceLayers = [
                 Set up with your agent
               </a>
               <a class="button button-secondary" href="#review-output" data-analytics-event="review_example_click">
-                See example output
+                See how rules apply
               </a>
             </div>
             <ul class="hero-facts" aria-label="Assura product strengths">
@@ -265,29 +264,18 @@ const performanceLayers = [
 
       <section id="review-output" class="section review-section" aria-labelledby="review-title">
         <SectionHeading
-          eyebrow="Show me the signal"
-          title="A compact project map agents can act on."
+          eyebrow="Config to feedback"
+          title="Define the project once. Make every path checkable."
           id="review-title"
           layout="split"
         >
           <p>
-            <code>assura review</code> compares the active branch or worktree to its
-            detected source branch, reports concrete file and line changes, rolls
-            signals up by area, and points to the next supported command.
+            Assura applies one language-agnostic project policy from the root down.
+            Agents see which paths fit, which rule failed, and the concrete threshold
+            they crossed while the repair is still small.
           </p>
         </SectionHeading>
-        <div class="review-layout">
-          <TerminalCard title="assura review · experimental" lines={reviewLines} className="large" />
-          <div class="metric-grid" aria-label="Assura review summary">
-            {reviewMetrics.map((metric) => (
-              <article class="metric-card">
-                <span>{metric.label}</span>
-                <strong>{metric.value}</strong>
-                <small>{metric.detail}</small>
-              </article>
-            ))}
-          </div>
-        </div>
+        <PolicyTreeDemo />
       </section>
 
       <section id="compare" class="section comparison-section" aria-labelledby="compare-title">

@@ -1,0 +1,63 @@
+---
+const configLines = [
+  { text: 'structure:', tone: 'key' },
+  { text: '  ./:', tone: 'key' },
+  { text: '    files:', tone: 'key' },
+  { text: '      required: [AGENTS.md]', tone: 'value', marker: '1' },
+  { text: '    directories:', tone: 'key' },
+  { text: '      allowed_names: [apps, docs]', tone: 'value', marker: '2' },
+  { text: '      allow_extra: false', tone: 'value' },
+  { text: '    children:', tone: 'key' },
+  { text: '      apps/web/src/:', tone: 'key' },
+  { text: '        files:', tone: 'key' },
+  { text: '          naming: kebab-case', tone: 'value', marker: '3' },
+  { text: '          max_lines: 400', tone: 'value', marker: '4' },
+] as const;
+---
+
+<div class="policy-tree-demo">
+  <section class="policy-panel" aria-labelledby="policy-config-title">
+    <header>
+      <span>Project contract</span>
+      <h3 id="policy-config-title">.assura/config.yml</h3>
+    </header>
+    <pre tabindex="0"><code>{configLines.map((line) => (
+      <span class:list={['config-line', line.tone]}>
+        <span>{line.text}</span>
+        {'marker' in line && <i class="rule-marker" aria-label={`Rule ${line.marker}`}>{line.marker}</i>}
+      </span>
+    ))}</code></pre>
+  </section>
+
+  <section class="tree-panel" aria-labelledby="policy-tree-title">
+    <header>
+      <span>Same rules, applied</span>
+      <h3 id="policy-tree-title">Project tree</h3>
+    </header>
+    <ul class="tree-root">
+      <li>
+        <div class="tree-row neutral">
+          <span class="tree-status" aria-label="Project scope">·</span>
+          <code>project/</code><small>top-down policy</small>
+        </div>
+        <ul>
+          <li><div class="tree-row pass"><span class="tree-status" aria-label="Pass">✓</span><code>AGENTS.md</code><small><i class="rule-marker">1</i> required file</small></div></li>
+          <li><div class="tree-row pass"><span class="tree-status" aria-label="Pass">✓</span><code>docs/</code><small><i class="rule-marker">2</i> allowed directory</small></div></li>
+          <li>
+            <div class="tree-row neutral"><span class="tree-status" aria-label="Configured scope">·</span><code>apps/web/src/</code><small>rules 3 + 4</small></div>
+            <ul>
+              <li><div class="tree-row pass"><span class="tree-status" aria-label="Pass">✓</span><code>user-menu.tsx</code><small><i class="rule-marker">4</i> 184 / 400 lines</small></div></li>
+              <li><div class="tree-row fail"><span class="tree-status" aria-label="Blocking violation">!</span><code>BadName.tsx</code><small><i class="rule-marker">3</i> expected kebab-case</small></div></li>
+              <li><div class="tree-row fail"><span class="tree-status" aria-label="Blocking violation">!</span><code>checkout-flow.tsx</code><small><i class="rule-marker">4</i> 537 / 400 lines</small></div></li>
+            </ul>
+          </li>
+          <li><div class="tree-row fail"><span class="tree-status" aria-label="Blocking violation">!</span><code>tmp-output/</code><small><i class="rule-marker">2</i> directory not allowed</small></div></li>
+        </ul>
+      </li>
+    </ul>
+    <footer>
+      <span><i class="legend-dot pass"></i> passes</span>
+      <span><i class="legend-dot fail"></i> blocking</span>
+    </footer>
+  </section>
+</div>
