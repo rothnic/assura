@@ -8,16 +8,16 @@ const warmRatio = performance.warm.aggregate_speedup_ratio.toFixed(2);
 <section class="performance-proof" aria-label="Current Assura performance evidence">
   <div>
     <span>Cold checks</span>
-    <strong>{performance.cold.assura_faster_count} / {performance.cold.measured_fixture_count}</strong>
-    <small>accepted comparisons faster · {coldRatio}× aggregate</small>
+    <strong>{coldRatio}× faster</strong>
+    <small>across {performance.cold.measured_fixture_count} LS-Lint comparison projects</small>
   </div>
   <div>
-    <span>Warm session</span>
-    <strong>{warmRatio}×</strong>
-    <small>aggregate · 2× target met in {performance.warm.two_x_pass_count} / {performance.warm.measured_fixture_count}</small>
+    <span>Warm agent loop</span>
+    <strong>{warmRatio}× faster</strong>
+    <small>across the same {performance.warm.measured_fixture_count} comparison projects</small>
   </div>
   <div class="proof-meta">
-    <span>Assura {performance.assura_version}</span>
-    <a href="/performance/" data-analytics-event="performance_methodology_click">Methodology</a>
+    <span>{performance.cold.measured_fixture_count + performance.warm.measured_fixture_count} measured results</span>
+    <a href="/performance/" data-analytics-event="performance_methodology_click">View test results</a>
   </div>
 </section>

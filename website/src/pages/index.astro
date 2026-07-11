@@ -193,16 +193,16 @@ const performanceLayers = [
               cleanup refactors.
             </p>
             <div class="hero-actions" aria-label="Primary actions">
-              <a class="button button-primary" href="#review-output" data-analytics-event="review_example_click">
-                See a project review
-              </a>
               <a
-                class="button button-secondary"
+                class="button button-primary"
                 href="#onboard"
                 data-open-setup
                 data-analytics-event="setup_open"
               >
-                Start with your agent
+                Set up with your agent
+              </a>
+              <a class="button button-secondary" href="#review-output" data-analytics-event="review_example_click">
+                See example output
               </a>
             </div>
             <ul class="hero-facts" aria-label="Assura product strengths">
@@ -211,7 +211,7 @@ const performanceLayers = [
           </div>
 
           <div class="hero-visual" aria-label="Generated Assura project review">
-            <TerminalCard title="assura review · experimental" lines={heroReviewLines} />
+            <TerminalCard title="example output" lines={heroReviewLines} />
           </div>
         </div>
       </section>
