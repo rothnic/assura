@@ -1,48 +1,286 @@
 ---
-import FocusedMarketingPage from '../../components/marketing/focused-marketing-page.astro';
-import performance from '../../data/performance-summary.json';
+import AgentSetupDialog from '../../components/marketing/agent-setup-dialog.astro';
+import MarketingLayout from '../../components/marketing/marketing-layout.astro';
+import { agentSetupPrompt, installCommand, marketingNav } from '../../data/marketing';
+import reportData from '../../../public/data/performance/current.json';
 
-const title = 'Assura Performance: Fast Repository Validation';
-const description = 'See current Assura cold CLI and warm persistent-session benchmark evidence, methodology, environments, and regression gates.';
+type ResultRow = {
+  fixture_id: string;
+  fixture_cohort?: string;
+  row_family?: string;
+  median_runtime_ms?: number | null;
+  checked_file_count?: number;
+  ignored_file_count?: number;
+  directory_count?: number;
+  rule_count?: number;
+  rule_surface_summary?: string;
+  status?: string;
+};
+
+type PerformanceReport = {
+  timestamp?: string;
+  environment?: {
+    os?: string;
+    arch?: string;
+    cpu_model?: string;
+    logical_cpu_count?: number;
+  };
+  claim_summary?: {
+    aggregate_speedup_ratio?: number;
+    fixture_count?: number;
+    measured_fixture_count?: number;
+    assura_faster_count?: number;
+    measured_iterations?: number;
+  };
+  warm_claim_summary?: {
+    aggregate_speedup_ratio?: number;
+    two_x_pass_count?: number;
+    fixture_count?: number;
+  };
+  results?: ResultRow[];
+};
+
+type FixtureDefinition = {
+  id: string;
+  label: string;
+  kind: string;
+  tree: string[];
+  tested: string;
+};
+
+const fixtures: FixtureDefinition[] = [
+  {
+    id: 'simple_library',
+    label: 'Small library',
+    kind: 'Rust package',
+    tree: ['README.md', 'src / lib.rs', 'tests / smoke_test.rs', 'target / ignored'],
+    tested: 'Source and test naming, Markdown counts, directory naming, and build-output pruning.',
+  },
+  {
+    id: 'web_app',
+    label: 'Web app',
+    kind: 'Frontend app',
+    tree: ['src / App.tsx', 'src / app.test.tsx', 'public / logo-icon.png', 'dist / ignored'],
+    tested: 'Components, tests, CSS modules, assets, directory names, and dist pruning.',
+  },
+  {
+    id: 'monorepo_packages',
+    label: 'Package monorepo',
+    kind: 'Two packages',
+    tree: ['packages / core / src + tests', 'packages / ui / src + tests', 'package README files', 'package dist / ignored'],
+    tested: 'Package-local TypeScript, TSX, tests, docs, directory scopes, and generated output.',
+  },
+  {
+    id: 'monorepo_policy',
+    label: 'Strict monorepo policy',
+    kind: 'Apps + packages',
+    tree: ['apps / web-dashboard + admin-console', 'packages / core + ui-kit', 'docs + scripts + infra + config', 'build output + node_modules / ignored'],
+    tested: 'Root allowlists, app and package scopes, source bans, docs, config exceptions, and pruning.',
+  },
+  {
+    id: 'rule_heavy_repo',
+    label: 'Rule-heavy project',
+    kind: 'Many file types',
+    tree: ['feature-00 ... feature-07', '24 files per feature', '36 multipart extensions', 'wildcard naming fallback'],
+    tested: 'A broad extension and subextension naming surface across a realistic feature tree.',
+  },
+  {
+    id: 'ignored_generated_heavy_repo',
+    label: 'Generated-heavy project',
+    kind: 'Large ignored areas',
+    tree: ['src / index-file.ts', 'generated / 384 files ignored', 'coverage / 384 files ignored', '52 directories in fixture'],
+    tested: 'Early pruning of large invalid generated and coverage trees before validation work.',
+  },
+  {
+    id: 'multipart_extension_regression',
+    label: 'Multipart extension scale',
+    kind: '1,500 source files',
+    tree: ['src', 'file-0000 ... file-1499', '*.a.b.c.d.e.f.g.h.i.j.k.js', 'one kebab-case naming policy'],
+    tested: 'Long multipart extensions at high file count without multiplying rule work.',
+  },
+  {
+    id: 'many_configured_scopes_regression',
+    label: 'Configured scope scale',
+    kind: '800 package scopes',
+    tree: ['pkg-0000 ... pkg-0799', 'file-name.js in every scope', 'one explicit rule per scope', 'root directory naming rule'],
+    tested: 'A large configuration with many explicit package scopes and root directory naming.',
+  },
+];
+
+const report = reportData as PerformanceReport;
+const rows = (report.results ?? []).filter((row) => row.status === 'pass');
+const cards = fixtures.map((fixture) => {
+  const fixtureRows = rows.filter((row) => row.fixture_id === fixture.id);
+  const cold = fixtureRows.find((row) => row.row_family === 'assura-cli');
+  const lslint = fixtureRows.find((row) => row.row_family === 'ls-lint-cli');
+  const warm = fixtureRows.find((row) => row.row_family === 'assura-check-dirty-project-session-cli');
+  return {
+    ...fixture,
+    cold,
+    lslint,
+    warm,
+    coldRatio: cold?.median_runtime_ms && lslint?.median_runtime_ms
+      ? lslint.median_runtime_ms / cold.median_runtime_ms
+      : null,
+  };
+});
+
+const title = 'Assura Performance: Project-by-Project Evidence';
+const description = 'See the eight project shapes, equivalent policy checks, cold CLI timings, and warm agent-loop timings behind Assura performance claims.';
 const canonicalPath = '/performance/';
+const coldRatio = report.claim_summary?.aggregate_speedup_ratio?.toFixed(2) ?? 'n/a';
+const warmRatio = report.warm_claim_summary?.aggregate_speedup_ratio?.toFixed(2) ?? 'n/a';
+const iterations = report.claim_summary?.measured_iterations ?? 0;
 const structuredData = { '@context': 'https://schema.org', '@type': 'TechArticle', headline: title, description, url: `https://assura.dev${canonicalPath}`, author: { '@type': 'Person', name: 'Nick Roth', url: 'https://www.nickroth.com/' } };
+
+function formatMs(value?: number | null): string {
+  if (typeof value !== 'number') return 'n/a';
+  return `${value.toFixed(value >= 10 ? 1 : 2)} ms`;
+}
+
+function formatCount(value?: number): string {
+  return (value ?? 0).toLocaleString('en-US');
+}
 ---
 
-<FocusedMarketingPage
+<MarketingLayout
   {title}
   {description}
   {canonicalPath}
   imagePath="/social/performance.webp"
-  eyebrow="Performance evidence"
-  heading="Fast enough for the check. Warm enough for the loop."
-  intro="Assura protects two different paths: the one-shot CLI developers already use and persistent sessions for repeated agent or editor feedback. The evidence keeps those claims separate."
-  artifactTitle="assura performance-report"
-  artifactLines={[
-    `release                  ${performance.assura_version}`,
-    `cold fixtures            ${performance.cold.fixture_count}`,
-    `cold faster              ${performance.cold.assura_faster_count} / ${performance.cold.fixture_count}`,
-    `cold aggregate           ${performance.cold.aggregate_speedup_ratio.toFixed(2)}x`,
-    `warm aggregate           ${performance.warm.aggregate_speedup_ratio.toFixed(2)}x`,
-    `warm 2x target           ${performance.warm.two_x_pass_count} / ${performance.warm.fixture_count}`,
-  ]}
-  highlights={[
-    { label: 'Cold CLI', body: 'Release-built process-to-process measurements protect the direct command path without promising a universal multiplier.' },
-    { label: 'Warm session', body: 'Persistent request handling measures the loop used by agents and editors without paying startup cost every time.' },
-    { label: 'Regression gates', body: 'Checked report history and strict comparison gates keep homepage claims tied to a promoted release.' },
-  ]}
-  sections={[
-    { label: 'Comparable work first', body: 'Accepted cold rows compare equivalent LS-Lint-style repository checks. Assura-only product surfaces are reported separately.' },
-    { label: 'Environment is part of the result', body: 'The technical report records tool versions, fixtures, commands, build profiles, and machine context needed to interpret a number.' },
-    { label: 'No universal cold 2x claim', body: 'Current evidence is shown as measured. Warm-session targets do not get relabeled as cold CLI performance.' },
-    { label: 'Product surfaces stay visible', body: 'Native rows cover content collections, references, context packs, agent queries, session requests, and daemon status where LS-Lint has no equivalent.' },
-  ]}
-  adjacentLinks={[
-    { label: 'Compare Assura with LS-Lint', href: '/compare/ls-lint/' },
-    { label: 'See the project review workflow', href: '/project-review/' },
-  ]}
-  docsLinks={[
-    { label: 'Read benchmark methodology', href: '/reference/performance/' },
-    { label: 'Inspect implementation details', href: '/reference/performance-implementation/' },
-  ]}
+  navItems={marketingNav}
   {structuredData}
-/>
+>
+  <main id="main-content" class="benchmark-page">
+    <section class="benchmark-hero" aria-labelledby="benchmark-title">
+      <div class="benchmark-hero-copy">
+        <p class="eyebrow">Benchmark evidence</p>
+        <h1 id="benchmark-title">See what we measured, project by project.</h1>
+        <p>
+          Eight generated project shapes run through equivalent Assura and LS-Lint policies.
+          The report keeps one-shot CLI speed separate from the warm session used for repeated agent feedback.
+        </p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="#benchmark-projects">Explore the 8 projects</a>
+          <a class="button button-secondary surface" href="/reference/performance/">Read technical methodology</a>
+        </div>
+      </div>
+
+      <div class="benchmark-summary" aria-label="Current benchmark summary">
+        <div class="benchmark-summary-head">
+          <span>Current checked cohort</span>
+          <strong>{report.claim_summary?.measured_fixture_count ?? 0} / {report.claim_summary?.fixture_count ?? cards.length} measured</strong>
+        </div>
+        <div class="benchmark-summary-results">
+          <div>
+            <span>Cold CLI</span>
+            <strong>{coldRatio}x</strong>
+            <small>faster aggregate</small>
+          </div>
+          <div>
+            <span>Warm session</span>
+            <strong>{warmRatio}x</strong>
+            <small>faster aggregate</small>
+          </div>
+        </div>
+        <div class="benchmark-comparison-flow" aria-label="Equivalent comparison flow">
+          <div class="benchmark-source">
+            <span>Same project tree</span>
+            <strong>Same accepted policy</strong>
+          </div>
+          <div class="benchmark-tool-paths">
+            <span><b>Assura</b> release CLI</span>
+            <span><b>LS-Lint</b> native CLI</span>
+          </div>
+          <p>Cold: {iterations} process-to-process samples. Warm: {iterations} persistent-session samples.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="benchmark-projects" class="benchmark-projects" aria-labelledby="projects-title">
+      <header class="benchmark-section-head">
+        <div>
+          <p class="eyebrow">The measured project shapes</p>
+          <h2 id="projects-title">From five checked files to 800 package scopes.</h2>
+        </div>
+        <p>
+          Every card shows the tree shape, policy surface, and medians recorded for that exact fixture.
+          Ignored paths remain visible because pruning them is part of the work.
+        </p>
+      </header>
+
+      <div class="benchmark-range" aria-label="Benchmark cohort range">
+        <span><b>5-1,501</b> checked files</span>
+        <span><b>2-801</b> directories</span>
+        <span><b>1-801</b> rules</span>
+        <span><b>{iterations}</b> samples each</span>
+      </div>
+
+      <div class="benchmark-card-grid">
+        {cards.map((card) => (
+          <article class="benchmark-card" id={card.id.replaceAll('_', '-')}>
+            <header>
+              <div>
+                <span>{card.kind}</span>
+                <h3>{card.label}</h3>
+              </div>
+              <strong>Assura {card.coldRatio?.toFixed(2) ?? 'n/a'}x</strong>
+            </header>
+
+            <div class="benchmark-shape" aria-label={`${card.label} project tree`}>
+              <div class="benchmark-tree-root">project/</div>
+              <ul>
+                {card.tree.map((item, index) => (
+                  <li class={item.includes('ignored') ? 'is-ignored' : ''}>
+                    <span aria-hidden="true">{index === card.tree.length - 1 ? '└─' : '├─'}</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <dl class="benchmark-scale">
+              <div><dt>Checked</dt><dd>{formatCount(card.cold?.checked_file_count)} files</dd></div>
+              <div><dt>Ignored</dt><dd>{formatCount(card.cold?.ignored_file_count)} files</dd></div>
+              <div><dt>Shape</dt><dd>{formatCount(card.cold?.directory_count)} dirs</dd></div>
+              <div><dt>Policy</dt><dd>{formatCount(card.cold?.rule_count)} rules</dd></div>
+            </dl>
+
+            <div class="benchmark-tested">
+              <span>What is tested</span>
+              <p>{card.tested}</p>
+            </div>
+
+            <dl class="benchmark-timings">
+              <div><dt>Assura cold</dt><dd>{formatMs(card.cold?.median_runtime_ms)}</dd></div>
+              <div><dt>LS-Lint cold</dt><dd>{formatMs(card.lslint?.median_runtime_ms)}</dd></div>
+              <div><dt>Assura warm</dt><dd>{formatMs(card.warm?.median_runtime_ms)}</dd></div>
+            </dl>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <section class="benchmark-method" aria-labelledby="method-title">
+      <header class="benchmark-section-head">
+        <div>
+          <p class="eyebrow">What the numbers mean</p>
+          <h2 id="method-title">Equivalent work first. Different execution paths kept separate.</h2>
+        </div>
+        <p>The aggregate is calculated from the same eight accepted fixtures shown above. Assura-only capabilities are not counted in the LS-Lint comparison.</p>
+      </header>
+      <ol class="benchmark-method-steps">
+        <li><span>01</span><div><strong>Materialize one project</strong><p>Each generated tree has a fixed shape, valid names, scoped rules, and explicit ignored output.</p></div></li>
+        <li><span>02</span><div><strong>Apply equivalent policy</strong><p>Matching Assura and LS-Lint configurations cover the same accepted naming, existence, scope, and ignore semantics.</p></div></li>
+        <li><span>03</span><div><strong>Measure cold commands</strong><p>Release binaries run process to process, including startup, config loading, traversal, validation, and exit.</p></div></li>
+        <li><span>04</span><div><strong>Measure the warm loop</strong><p>The persistent Assura session repeats checks without paying the full process startup cost on every agent turn.</p></div></li>
+      </ol>
+      <div class="benchmark-evidence-links">
+        <a href="/reference/performance-test-cases/">Inspect every test case <span aria-hidden="true">→</span></a>
+        <a href="/reference/performance/">Read the full report <span aria-hidden="true">→</span></a>
+        <a href="/data/performance/current.json">Download current JSON <span aria-hidden="true">→</span></a>
+      </div>
+    </section>
+  </main>
+  <AgentSetupDialog prompt={agentSetupPrompt} installCommand={installCommand} />
+</MarketingLayout>
