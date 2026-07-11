@@ -94,7 +94,7 @@ pub fn run_structure_check_cached(
     }
 
     let config_content = fs::read_to_string(&discovered_config_path).map_err(CheckError::Io)?;
-    let config_hash = stable_hash(config_content.as_bytes());
+    let config_hash = stable_config_hash(&config_content);
     if !fail_fast {
         if let Some(report) = fresh_cached_report(
             cached.as_ref(),
@@ -185,6 +185,10 @@ pub fn run_structure_check_cached(
 fn read_cache(cache_path: &Path) -> Option<CachedCheckReport> {
     let content = fs::read(cache_path).ok()?;
     serde_json::from_slice(&content).ok()
+}
+
+fn stable_config_hash(content: &str) -> u64 {
+    stable_hash(content.replace("\r\n", "\n").as_bytes())
 }
 
 fn fresh_cached_report(

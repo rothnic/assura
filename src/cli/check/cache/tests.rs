@@ -3,6 +3,14 @@
 use super::*;
 
 #[test]
+fn config_hash_is_stable_across_git_line_ending_conversion() {
+    assert_eq!(
+        stable_config_hash("structure: {}\n"),
+        stable_config_hash("structure: {}\r\n")
+    );
+}
+
+#[test]
 fn cached_report_requires_hash_even_when_config_fingerprint_matches() {
     let temp = tempfile::tempdir().unwrap();
     fs::create_dir(temp.path().join(".assura")).unwrap();
