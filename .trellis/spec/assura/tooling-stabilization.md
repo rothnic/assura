@@ -151,6 +151,12 @@ evidence.
   exact `assura check --quiet` tie-breaker, and accepted spillover rows all
   satisfy the thresholds in
   `docs/analysis/2026-07-05-performance-decision-matrix.md`.
+- Website warm-performance claims must name the asymmetric comparison:
+  persistent Assura session versus rerunning the native LS-Lint CLI. Do not
+  imply that Assura was compared with a warm LS-Lint session.
+- Keep agent-loop rationale separate from measured evidence. CPU utilization,
+  disk I/O, agent memory or token use, and avoided rework are unmeasured unless
+  the checked report includes those dimensions explicitly.
 
 ### Validation & Error Matrix
 

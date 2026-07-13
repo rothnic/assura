@@ -48,6 +48,14 @@ type FixtureDefinition = {
   tested: string;
 };
 
+type FeaturedFixture = {
+  id: string;
+  signal: string;
+  why: string;
+  configLabel: string;
+  config: string[];
+};
+
 const fixtures: FixtureDefinition[] = [
   {
     id: 'simple_library',
@@ -107,6 +115,70 @@ const fixtures: FixtureDefinition[] = [
   },
 ];
 
+const featuredFixtures: FeaturedFixture[] = [
+  {
+    id: 'monorepo_policy',
+    signal: 'Representative policy breadth',
+    why: 'Protects realistic root allowlists, nested app and package scopes, file-type rules, and generated-output exclusions in one project.',
+    configLabel: 'Performance fixture .assura/config.yml excerpt',
+    config: [
+      'structure:',
+      '  ./:',
+      '    directories:',
+      '      allowed_names: [apps, packages, docs, scripts, infra, config, tests]',
+      '    children:',
+      '      apps:',
+      '        directories:',
+      '          naming: kebab-case',
+      'exclude: ["node_modules/**", "apps/*/.next/**", "packages/*/dist/**"]',
+    ],
+  },
+  {
+    id: 'ignored_generated_heavy_repo',
+    signal: 'Filesystem pruning',
+    why: 'Proves large generated and coverage areas are excluded before they turn a small source check into unnecessary filesystem work.',
+    configLabel: 'LS-Lint source excerpt; converted Assura policy measured',
+    config: [
+      'ignore:',
+      '  - .assura/**',
+      '  - generated/**',
+      '  - coverage/**',
+      'ls:',
+      '  .dir: kebab-case',
+      '  .ts: kebab-case',
+    ],
+  },
+  {
+    id: 'multipart_extension_regression',
+    signal: 'High file count',
+    why: 'Guards the matcher against repeated work when one multipart extension is applied across 1,500 source files.',
+    configLabel: 'LS-Lint source excerpt; converted Assura policy measured',
+    config: [
+      'ignore:',
+      '  - .assura',
+      'ls:',
+      '  .a.b.c.d.e.f.g.h.i.j.k.js: kebabcase',
+    ],
+  },
+  {
+    id: 'many_configured_scopes_regression',
+    signal: 'High configuration count',
+    why: 'Guards config loading and scope lookup when a monorepo declares 800 explicit package policies.',
+    configLabel: 'LS-Lint source excerpt; converted Assura policy measured',
+    config: [
+      'ignore:',
+      '  - .assura',
+      'ls:',
+      '  .dir: kebab-case',
+      '  pkg-0000:',
+      '    .js: kebab-case',
+      '  # ... 798 equivalent scopes ...',
+      '  pkg-0799:',
+      '    .js: kebab-case',
+    ],
+  },
+];
+
 const report = reportData as PerformanceReport;
 const rows = (report.results ?? []).filter((row) => row.status === 'pass');
 const cards = fixtures.map((fixture) => {
@@ -124,9 +196,13 @@ const cards = fixtures.map((fixture) => {
       : null,
   };
 });
+const featuredCases = featuredFixtures.map((featured) => ({
+  ...cards.find((card) => card.id === featured.id)!,
+  ...featured,
+}));
 
-const title = 'Assura Performance: Project-by-Project Evidence';
-const description = 'See the eight project shapes, equivalent policy checks, cold CLI timings, and warm agent-loop timings behind Assura performance claims.';
+const title = 'Assura Performance: Fast Feedback for Agent Work';
+const description = 'See why low-latency validation matters for parallel coding agents, how Assura compares with native LS-Lint, and which project configurations protect performance.';
 const canonicalPath = '/performance/';
 const coldRatio = report.claim_summary?.aggregate_speedup_ratio?.toFixed(2) ?? 'n/a';
 const warmRatio = report.warm_claim_summary?.aggregate_speedup_ratio?.toFixed(2) ?? 'n/a';
@@ -154,15 +230,16 @@ function formatCount(value?: number): string {
   <main id="main-content" class="benchmark-page">
     <section class="benchmark-hero" aria-labelledby="benchmark-title">
       <div class="benchmark-hero-copy">
-        <p class="eyebrow">Benchmark evidence</p>
-        <h1 id="benchmark-title">See what we measured, project by project.</h1>
+        <p class="eyebrow">Performance for agentic work</p>
+        <h1 id="benchmark-title">Fast checks keep agent work moving.</h1>
         <p>
-          Eight generated project shapes run through equivalent Assura and LS-Lint policies.
-          The report keeps one-shot CLI speed separate from the warm session used for repeated agent feedback.
+          Assura keeps deterministic repository checks fast enough to run during the edit loop, not
+          only at commit time. Every tracked cold project beats native LS-Lint, and a persistent Assura
+          session widens the gap when checks repeat.
         </p>
         <div class="hero-actions">
-          <a class="button button-primary" href="#benchmark-projects">Explore the 8 projects</a>
-          <a class="button button-secondary surface" href="/reference/performance/">Read technical methodology</a>
+          <a class="button button-primary" href="#measured-comparison">See the measured comparison</a>
+          <a class="button button-secondary surface" href="#regression-cases">Inspect regression cases</a>
         </div>
       </div>
 
@@ -178,15 +255,15 @@ function formatCount(value?: number): string {
             <small>faster aggregate</small>
           </div>
           <div>
-            <span>Warm session</span>
+            <span>Repeated checks</span>
             <strong>{warmRatio}x</strong>
-            <small>faster aggregate</small>
+            <small>Assura session vs rerun native LS-Lint CLI</small>
           </div>
         </div>
         <div class="benchmark-comparison-flow" aria-label="Equivalent comparison flow">
           <div class="benchmark-source">
-            <span>Same project tree</span>
-            <strong>Same accepted policy</strong>
+            <span>8 project shapes</span>
+            <strong>Equivalent naming and structure policy</strong>
           </div>
           <div class="benchmark-tool-paths">
             <span><b>Assura</b> release CLI</span>
@@ -197,15 +274,57 @@ function formatCount(value?: number): string {
       </div>
     </section>
 
-    <section id="benchmark-projects" class="benchmark-projects" aria-labelledby="projects-title">
+    <section id="measured-comparison" class="measured-comparison" aria-labelledby="comparison-title">
       <header class="benchmark-section-head">
         <div>
-          <p class="eyebrow">The measured project shapes</p>
-          <h2 id="projects-title">From five checked files to 800 package scopes.</h2>
+          <p class="eyebrow">The measured takeaway</p>
+          <h2 id="comparison-title">Faster than native LS-Lint in all eight cold comparisons.</h2>
         </div>
         <p>
-          Every card shows the tree shape, policy surface, and medians recorded for that exact fixture.
-          Ignored paths remain visible because pruning them is part of the work.
+          The speed comparison isolates the policy surface both tools share. Assura-only checks such as
+          file contents, Markdown, references, and agent repair guidance are reported separately.
+        </p>
+      </header>
+
+      <div class="tool-comparison" role="table" aria-label="How Assura fits with existing validation options">
+        <div class="tool-comparison-row tool-comparison-head" role="row">
+          <span role="columnheader">Option</span>
+          <span role="columnheader">Best at</span>
+          <span role="columnheader">Agent-loop tradeoff</span>
+        </div>
+        <div class="tool-comparison-row is-assura" role="row">
+          <strong role="cell">Assura</strong>
+          <span role="cell">Fast repository-wide structure, content, and policy signals</span>
+          <span role="cell">Persistent sessions, bounded output, and repair guidance for early feedback</span>
+        </div>
+        <div class="tool-comparison-row" role="row">
+          <strong role="cell">LS-Lint</strong>
+          <span role="cell">Fast file and directory naming rules</span>
+          <span role="cell">One-shot filesystem checks; no content rules or rule-specific agent repair guidance</span>
+        </div>
+        <div class="tool-comparison-row" role="row">
+          <strong role="cell">Language linters</strong>
+          <span role="cell">Deep checks inside code for one language or runtime</span>
+          <span role="cell">Essential later layer, but not one language-agnostic project signal</span>
+        </div>
+        <div class="tool-comparison-row" role="row">
+          <strong role="cell">Custom scripts and hooks</strong>
+          <span role="cell">Project-specific checks and delivery gates</span>
+          <span role="cell">Performance and output vary; hooks often arrive after a larger batch of work</span>
+        </div>
+      </div>
+      <p class="comparison-scope-note">Only native LS-Lint is included in the numeric benchmark. Other options are shown for workflow context, not as measured speed claims.</p>
+    </section>
+
+    <section id="regression-cases" class="benchmark-projects" aria-labelledby="projects-title">
+      <header class="benchmark-section-head">
+        <div>
+          <p class="eyebrow">The configurations we protect</p>
+          <h2 id="projects-title">Four cases guard the performance risks that matter most.</h2>
+        </div>
+        <p>
+          The suite covers realistic policy breadth, ignored-output pruning, high file counts, and high
+          configuration counts. These condensed policy excerpts come from the generated fixtures used by the checked report.
         </p>
       </header>
 
@@ -217,11 +336,11 @@ function formatCount(value?: number): string {
       </div>
 
       <div class="benchmark-card-grid">
-        {cards.map((card) => (
+        {featuredCases.map((card) => (
           <article class="benchmark-card" id={card.id.replaceAll('_', '-')}>
             <header>
               <div>
-                <span>{card.kind}</span>
+                <span>{card.signal}</span>
                 <h3>{card.label}</h3>
               </div>
               <strong>Assura {card.coldRatio?.toFixed(2) ?? 'n/a'}x</strong>
@@ -239,6 +358,11 @@ function formatCount(value?: number): string {
               </ul>
             </div>
 
+            <div class="benchmark-config">
+              <span>{card.configLabel}</span>
+              <pre tabindex="0"><code>{card.config.join('\n')}</code></pre>
+            </div>
+
             <dl class="benchmark-scale">
               <div><dt>Checked</dt><dd>{formatCount(card.cold?.checked_file_count)} files</dd></div>
               <div><dt>Ignored</dt><dd>{formatCount(card.cold?.ignored_file_count)} files</dd></div>
@@ -247,8 +371,8 @@ function formatCount(value?: number): string {
             </dl>
 
             <div class="benchmark-tested">
-              <span>What is tested</span>
-              <p>{card.tested}</p>
+              <span>Why this case is tracked</span>
+              <p>{card.why}</p>
             </div>
 
             <dl class="benchmark-timings">
@@ -259,6 +383,67 @@ function formatCount(value?: number): string {
           </article>
         ))}
       </div>
+    </section>
+
+    <section class="agent-performance-impact" aria-labelledby="impact-title">
+      <header class="benchmark-section-head">
+        <div>
+          <p class="eyebrow">Why latency matters</p>
+          <h2 id="impact-title">Parallel waiting adds up. Late refactors cost more.</h2>
+        </div>
+        <p>
+          A check that feels small in one terminal repeats across every agent, worktree, and edit loop.
+          Fast local signals reduce interruption without turning every early warning into a hard gate.
+        </p>
+      </header>
+
+      <div class="agent-impact-grid">
+        <article>
+          <span>Parallel loops</span>
+          <h3>Keep feedback off the critical path.</h3>
+          <p>When several agents edit at once, repeated startup and full-tree scans compete for CPU, filesystem access, and wall-clock time.</p>
+        </article>
+        <article>
+          <span>Deterministic first pass</span>
+          <h3>Use rules before another model turn.</h3>
+          <p>Repository policy can answer structural questions locally, reserving agent context and reasoning for work that needs judgment.</p>
+        </article>
+        <article>
+          <span>Earlier correction</span>
+          <h3>Warn while the patch is still small.</h3>
+          <p>Assura can surface drift during the loop and reserve blocking behavior for rules explicitly configured as commit or CI gates.</p>
+        </article>
+      </div>
+      <p class="impact-scope-note">This benchmark measures elapsed runtime. CPU utilization, disk I/O, agent memory or token use, and avoided rework are product rationale for keeping checks fast, not measured outcomes in this report.</p>
+    </section>
+
+    <section id="benchmark-projects" class="benchmark-matrix-section" aria-labelledby="matrix-title">
+      <header class="benchmark-section-head">
+        <div>
+          <p class="eyebrow">The complete comparison cohort</p>
+          <h2 id="matrix-title">Eight shapes. Every result visible.</h2>
+        </div>
+        <p>Smaller startup-sensitive projects and broader realistic trees remain alongside the four focused regression cases.</p>
+      </header>
+      <details class="benchmark-matrix-disclosure">
+        <summary>View all eight project measurements</summary>
+        <div class="benchmark-matrix" role="table" aria-label="All benchmark projects and timings">
+          <div class="benchmark-matrix-row benchmark-matrix-head" role="row">
+            <span role="columnheader">Project</span>
+            <span role="columnheader">Measured shape</span>
+            <span role="columnheader">Cold comparison</span>
+            <span role="columnheader">Warm Assura session</span>
+          </div>
+          {cards.map((card) => (
+            <div class="benchmark-matrix-row" role="row">
+              <div role="cell"><strong>{card.label}</strong><small>{card.kind}</small></div>
+              <div role="cell"><strong>{formatCount(card.cold?.checked_file_count)} files · {formatCount(card.cold?.directory_count)} dirs</strong><small>{formatCount(card.cold?.rule_count)} rules · {formatCount(card.cold?.ignored_file_count)} ignored</small></div>
+              <div role="cell"><strong>Assura {formatMs(card.cold?.median_runtime_ms)}</strong><small>LS-Lint {formatMs(card.lslint?.median_runtime_ms)} · {card.coldRatio?.toFixed(2) ?? 'n/a'}x</small></div>
+              <div role="cell"><strong>{formatMs(card.warm?.median_runtime_ms)}</strong><small>persistent Assura session</small></div>
+            </div>
+          ))}
+        </div>
+      </details>
     </section>
 
     <section class="benchmark-method" aria-labelledby="method-title">

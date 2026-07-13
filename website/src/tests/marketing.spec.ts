@@ -6,7 +6,7 @@ const themes = ['light', 'dark'] as const;
 const marketingRoutes = [
   { path: '/', heading: 'Catch project drift before review.' },
   { path: '/compare/ls-lint/', heading: 'A faster path from naming checks to agent-ready project validation.' },
-  { path: '/performance/', heading: 'See what we measured, project by project.' },
+  { path: '/performance/', heading: 'Fast checks keep agent work moving.' },
   { path: '/ai-coding-agent-guardrails/', heading: 'Guide the repair before a late gate forces it.' },
   { path: '/about/', heading: 'Built to make AI-assisted work easier to trust.' },
   { path: '/project-review/', heading: 'See what this branch changed before review starts.' },
@@ -72,10 +72,12 @@ test('example output CTA connects project policy to pass and fail paths', async 
 test('performance CTA lands on the measured project cohort', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('link', { name: 'How we measured it' }).click();
-  await expect(page).toHaveURL(/\/performance\/#benchmark-projects$/);
-  await expect(page.getByRole('heading', { name: 'From five checked files to 800 package scopes.' })).toBeVisible();
-  await expect(page.locator('.benchmark-card')).toHaveCount(8);
-  await expect(page.getByText('1,501 files')).toBeVisible();
+  await expect(page).toHaveURL(/\/performance\/#measured-comparison$/);
+  await expect(page.getByRole('heading', { name: 'Faster than native LS-Lint in all eight cold comparisons.' })).toBeVisible();
+  await expect(page.locator('.benchmark-card')).toHaveCount(4);
+  await expect(page.locator('.benchmark-config')).toHaveCount(4);
+  await expect(page.locator('.benchmark-matrix-row:not(.benchmark-matrix-head)')).toHaveCount(8);
+  await expect(page.getByText('1,501 files', { exact: true })).toBeVisible();
   await expect(page.getByText('801 rules', { exact: true })).toBeVisible();
 });
 

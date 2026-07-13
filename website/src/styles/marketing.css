@@ -2380,6 +2380,9 @@
 
   .benchmark-hero,
   .benchmark-projects,
+  .agent-performance-impact,
+  .measured-comparison,
+  .benchmark-matrix-section,
   .benchmark-method {
     width: min(100% - 2rem, 1120px);
     margin-inline: auto;
@@ -2533,6 +2536,113 @@
     padding: clamp(4rem, 9vw, 7rem) 0;
   }
 
+  .agent-performance-impact,
+  .measured-comparison,
+  .benchmark-matrix-section {
+    scroll-margin-top: 5rem;
+    border-top: 1px solid var(--border-strong);
+    padding: clamp(4rem, 9vw, 7rem) 0;
+  }
+
+  .agent-impact-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-top: clamp(2rem, 5vw, 3.5rem);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .agent-impact-grid article {
+    min-width: 0;
+    border-right: 1px solid var(--border);
+    padding: clamp(1.15rem, 3vw, 1.75rem);
+  }
+
+  .agent-impact-grid article:last-child {
+    border-right: 0;
+  }
+
+  .agent-impact-grid span,
+  .benchmark-config > span {
+    color: var(--primary);
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 0.74rem;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .agent-impact-grid h3 {
+    margin: 0.7rem 0 0;
+    font-size: clamp(1.05rem, 2vw, 1.35rem);
+  }
+
+  .agent-impact-grid p {
+    margin: 0.6rem 0 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+
+
+  .impact-scope-note {
+    max-width: 70rem;
+    margin: 0.9rem 0 0;
+    color: var(--soft);
+    font-size: 0.76rem;
+    line-height: 1.55;
+  }
+
+  .tool-comparison {
+    margin-top: 1rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .tool-comparison-row {
+    display: grid;
+    grid-template-columns: minmax(8rem, 0.55fr) minmax(0, 1fr) minmax(0, 1.35fr);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tool-comparison-row > * {
+    min-width: 0;
+    border-right: 1px solid var(--border);
+    padding: 0.9rem 1rem;
+    color: var(--muted);
+    font-size: 0.86rem;
+    line-height: 1.5;
+  }
+
+  .tool-comparison-row > *:last-child {
+    border-right: 0;
+  }
+
+  .tool-comparison-row > strong {
+    color: var(--text);
+  }
+
+  .tool-comparison-head > * {
+    color: var(--soft);
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .tool-comparison-row.is-assura {
+    background: color-mix(in srgb, var(--primary-soft) 58%, transparent);
+  }
+
+  .tool-comparison-row.is-assura > strong {
+    color: var(--primary);
+  }
+
+  .comparison-scope-note {
+    margin: 0.9rem 0 0;
+    color: var(--soft);
+    font-size: 0.76rem;
+    line-height: 1.55;
+  }
+
   .benchmark-section-head {
     display: grid;
     grid-template-columns: minmax(0, 1.05fr) minmax(18rem, 0.65fr);
@@ -2663,6 +2773,28 @@
     color: #a1a1aa;
   }
 
+  .benchmark-config {
+    min-height: 15rem;
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 1.15rem 1.15rem;
+  }
+
+  .benchmark-config pre {
+    max-width: 100%;
+    margin: 0.65rem 0 0;
+    overflow: auto;
+    border: 1px solid var(--border);
+    border-radius: 0.4rem;
+    background: var(--surface-muted);
+    padding: 0.85rem;
+  }
+
+  .benchmark-config code {
+    color: var(--text);
+    font-size: 0.74rem;
+    line-height: 1.55;
+  }
+
   .benchmark-scale,
   .benchmark-timings {
     display: grid;
@@ -2714,6 +2846,76 @@
   .benchmark-timings {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     background: var(--surface-muted);
+  }
+
+  .benchmark-matrix {
+    margin-top: 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .benchmark-matrix-disclosure {
+    margin-top: clamp(2rem, 5vw, 3.5rem);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .benchmark-matrix-disclosure summary {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    border-top: 1px solid var(--border);
+    padding: 0.95rem 0.9rem;
+    font-weight: 750;
+    list-style: none;
+  }
+
+  .benchmark-matrix-disclosure summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .benchmark-matrix-disclosure summary::after {
+    color: var(--primary);
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    content: "+";
+  }
+
+  .benchmark-matrix-disclosure[open] summary::after {
+    content: "-";
+  }
+
+  .benchmark-matrix-row {
+    display: grid;
+    grid-template-columns: minmax(10rem, 0.8fr) minmax(0, 1.1fr) minmax(0, 1fr) minmax(7rem, 0.55fr);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .benchmark-matrix-row > * {
+    display: grid;
+    min-width: 0;
+    gap: 0.2rem;
+    align-content: center;
+    border-right: 1px solid var(--border);
+    padding: 0.85rem 0.9rem;
+    font-size: 0.82rem;
+  }
+
+  .benchmark-matrix-row > *:last-child {
+    border-right: 0;
+  }
+
+  .benchmark-matrix-row small {
+    color: var(--muted);
+    font-size: 0.72rem;
+    line-height: 1.4;
+  }
+
+  .benchmark-matrix-head > * {
+    color: var(--soft);
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
   }
 
   .benchmark-method {
@@ -2819,6 +3021,35 @@
       grid-template-columns: 1fr;
     }
 
+    .agent-impact-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .agent-impact-grid article {
+      border-right: 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .agent-impact-grid article:last-child {
+      border-bottom: 0;
+    }
+
+    .benchmark-matrix-row {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .benchmark-matrix-row > *:nth-child(2) {
+      border-right: 0;
+    }
+
+    .benchmark-matrix-row > *:nth-child(-n+2) {
+      border-bottom: 1px solid var(--border);
+    }
+
+    .benchmark-matrix-head {
+      display: none;
+    }
+
     .benchmark-method-steps {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -2891,5 +3122,50 @@
 
     .benchmark-method-steps li:nth-child(3) {
       border-bottom: 1px solid var(--border);
+    }
+
+    .tool-comparison-head {
+      display: none;
+    }
+
+    .tool-comparison-row {
+      grid-template-columns: 1fr;
+      padding: 0.85rem 0;
+    }
+
+    .tool-comparison-row > * {
+      border-right: 0;
+      padding: 0.3rem 0.85rem;
+    }
+
+    .tool-comparison-row > strong {
+      font-size: 0.92rem;
+    }
+
+    .benchmark-config {
+      min-height: 0;
+    }
+
+    .benchmark-config code {
+      font-size: 0.7rem;
+    }
+
+    .benchmark-matrix-row {
+      grid-template-columns: 1fr;
+      padding: 0.55rem 0;
+    }
+
+    .benchmark-matrix-row > * {
+      border-right: 0;
+      border-bottom: 0 !important;
+      padding: 0.3rem 0.85rem;
+    }
+
+    .benchmark-matrix-row > *:first-child {
+      padding-top: 0.55rem;
+    }
+
+    .benchmark-matrix-row > *:last-child {
+      padding-bottom: 0.55rem;
     }
   }
