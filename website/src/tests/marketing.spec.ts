@@ -74,12 +74,54 @@ test('performance CTA lands on the measured project cohort', async ({ page }) =>
   await page.getByRole('link', { name: 'How we measured it' }).click();
   await expect(page).toHaveURL(/\/performance\/#measured-comparison$/);
   await expect(page.getByRole('heading', { name: 'Faster than native LS-Lint in all eight cold comparisons.' })).toBeVisible();
-  await expect(page.locator('.benchmark-card')).toHaveCount(4);
-  await expect(page.locator('.benchmark-config')).toHaveCount(4);
+  await expect(page.locator('.policy-breadth-card')).toHaveCount(1);
+  await expect(page.locator('.policy-config-pane')).toHaveCount(2);
+  await expect(page.getByText('Built-in + project-defined', { exact: true })).toBeVisible();
+  await expect(page.getByText('One wildcard package scope', { exact: true })).toBeVisible();
+  await expect(page.getByText('Capability example · not timed', { exact: true })).toBeVisible();
+  await expect(page.locator('.benchmark-card')).toHaveCount(3);
+  await expect(page.locator('.benchmark-config')).toHaveCount(3);
   await expect(page.locator('.benchmark-matrix-row:not(.benchmark-matrix-head)')).toHaveCount(8);
   await expect(page.getByText('1,501 files', { exact: true })).toBeVisible();
   await expect(page.getByText('801 rules', { exact: true })).toBeVisible();
 });
+
+for (const colorScheme of themes) {
+  for (const width of [360, 390, 768, 1440]) {
+    test(`${colorScheme} performance policy at ${width}px stays contained`, async ({ page }, testInfo) => {
+      await page.emulateMedia({ colorScheme });
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/performance/#regression-cases');
+
+      const comparison = page.locator('.policy-breadth-card');
+      await expect(comparison).toBeVisible();
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      );
+      const codeOverflow = await comparison.locator('pre').evaluateAll((blocks) =>
+        blocks.map((block) => block.scrollWidth - block.clientWidth),
+      );
+      const panes = await comparison.locator('.policy-config-pane').evaluateAll((items) =>
+        items.map((item) => {
+          const rect = item.getBoundingClientRect();
+          return { x: Math.round(rect.x), y: Math.round(rect.y) };
+        }),
+      );
+      expect(overflow).toBe(0);
+      expect(codeOverflow).toEqual([0, 0]);
+      if (width <= 768) {
+        expect(panes[0].x).toBe(panes[1].x);
+        expect(panes[0].y).toBeLessThan(panes[1].y);
+      } else {
+        expect(panes[0].x).toBeLessThan(panes[1].x);
+        expect(panes[0].y).toBe(panes[1].y);
+      }
+      await comparison.screenshot({
+        path: testInfo.outputPath(`performance-policy-${colorScheme}-${width}.png`),
+      });
+    });
+  }
+}
 
 test('setup actions retain a no-JavaScript onboarding destination', async ({ page }) => {
   await page.goto('/');

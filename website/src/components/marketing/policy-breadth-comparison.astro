@@ -1,0 +1,139 @@
+---
+type Props = {
+  coldRatio: string;
+  assuraCold: string;
+  lsLintCold: string;
+  assuraWarm: string;
+};
+
+const { coldRatio, assuraCold, lsLintCold, assuraWarm } = Astro.props;
+
+const assuraConfig = `rules:
+  "@package-standard":
+    AGENTS.md: exists:1
+    package.json: exists:1
+    README.md: exists:0-1
+    tsconfig.json: exists:0-1
+    src/:
+      required: true
+      .ts: kebab-case
+    tests/:
+      required: false
+      .test.ts: kebab-case
+    fixtures/: exists:0-1
+    files:
+      max_lines: 200
+    extra: false
+
+structure:
+  ./:
+    use: "@agentic-project"
+    files:
+      max_lines: 300
+    package.json: exists:1
+    packages/: exists:1
+
+  packages/:
+    .dir: kebab-case
+    "{package}/":
+      use: "@package-standard"
+    ui-kit/:
+      use: "@package-standard"
+      stories/: exists:0-1`;
+
+const lsLintConfig = `ls:
+  .md: regex:^(AGENTS|README)$
+  .json: regex:^(package|tsconfig)$
+
+  packages:
+    .dir: kebab-case
+
+  packages/*:
+    .md: regex:^(AGENTS|README)$
+    .json: regex:^(package|tsconfig)$
+    src:
+      .ts: kebab-case
+    tests:
+      .test.ts: kebab-case`;
+---
+
+<article class="policy-breadth-card" id="monorepo-policy">
+  <header class="policy-breadth-head">
+    <div>
+      <span>Agentic monorepo policy</span>
+      <h3>One package contract, applied everywhere.</h3>
+      <p>
+        The shared benchmark covers equivalent naming and structure work. This policy shows the
+        additional controls Assura can enforce without repeating every package scope.
+      </p>
+    </div>
+    <strong>Capability example · not timed</strong>
+  </header>
+
+  <div class="policy-breadth-tree" aria-label="Agentic monorepo project policy">
+    <div class="policy-tree-title">
+      <span>Expected project shape</span>
+      <small>Required, optional, and overridden rules</small>
+    </div>
+    <ul class="policy-tree-lines">
+      <li class="policy-tree-line is-root"><code>project/</code><span>root contract · files max 300 lines</span></li>
+      <li class="policy-tree-line depth-1"><code><span aria-hidden="true">├─ </span>AGENTS.md</code><span class="is-required">required by built-in rule</span></li>
+      <li class="policy-tree-line depth-1"><code><span aria-hidden="true">├─ </span>package.json</code><span class="is-required">required</span></li>
+      <li class="policy-tree-line depth-1"><code><span aria-hidden="true">└─ </span>packages/</code><span>package names · kebab-case</span></li>
+      <li class="policy-tree-line depth-2"><code><span aria-hidden="true">├─ </span>core/</code><span class="is-reused">project-defined @package-standard</span></li>
+      <li class="policy-tree-line depth-3"><code><span aria-hidden="true">│  ├─ </span>AGENTS.md</code><span class="is-required">required · package files max 200</span></li>
+      <li class="policy-tree-line depth-3"><code><span aria-hidden="true">│  ├─ </span>package.json</code><span class="is-required">required</span></li>
+      <li class="policy-tree-line depth-3"><code><span aria-hidden="true">│  ├─ </span>README.md</code><span class="is-optional">optional</span></li>
+      <li class="policy-tree-line depth-3"><code><span aria-hidden="true">│  ├─ </span>src/</code><span class="is-required">required</span></li>
+      <li class="policy-tree-line depth-3"><code><span aria-hidden="true">│  └─ </span>tests/</code><span class="is-optional">optional</span></li>
+      <li class="policy-tree-line depth-2"><code><span aria-hidden="true">└─ </span>ui-kit/</code><span class="is-reused">same rule + override</span></li>
+      <li class="policy-tree-line depth-3"><code><span aria-hidden="true">   └─ </span>stories/</code><span class="is-optional">optional here</span></li>
+    </ul>
+  </div>
+
+  <div class="policy-config-comparison">
+    <section class="policy-config-pane is-assura" aria-labelledby="assura-policy-title">
+      <header>
+        <div>
+          <span>Assura</span>
+          <h4 id="assura-policy-title">Reusable project contract</h4>
+        </div>
+        <strong>Built-in + project-defined</strong>
+      </header>
+      <pre><code>{assuraConfig}</code></pre>
+      <ul aria-label="Assura-only policy controls">
+        <li>Predefined <code>@agentic-project</code> baseline</li>
+        <li>Project-defined reusable package contract</li>
+        <li>Exact required and optional files</li>
+        <li>Per-file and package-wide line limits</li>
+        <li>Closed package shape with local overrides</li>
+      </ul>
+    </section>
+
+    <section class="policy-config-pane is-lslint" aria-labelledby="lslint-policy-title">
+      <header>
+        <div>
+          <span>LS-Lint</span>
+          <h4 id="lslint-policy-title">Closest naming coverage</h4>
+        </div>
+        <strong>One wildcard package scope</strong>
+      </header>
+      <pre><code>{lsLintConfig}</code></pre>
+      <ul aria-label="LS-Lint policy boundaries">
+        <li>Names files and package directories</li>
+        <li>Shares naming policy with a wildcard scope</li>
+        <li>No exact required-file contract</li>
+        <li>No line limits or reusable content and agent guidance</li>
+      </ul>
+    </section>
+  </div>
+
+  <div class="policy-breadth-evidence">
+    <div><span>Measured strict fixture</span><strong>Assura {assuraCold}</strong><small>LS-Lint {lsLintCold} · {coldRatio}x</small></div>
+    <div><span>Repeated loop</span><strong>Assura {assuraWarm}</strong><small>persistent session</small></div>
+    <p>
+      Performance compares only the shared naming and structure surface. The richer Assura policy is
+      shown as product capability, not counted as extra work in the {coldRatio}x result.
+    </p>
+  </div>
+</article>

@@ -1,6 +1,7 @@
 ---
 import AgentSetupDialog from '../../components/marketing/agent-setup-dialog.astro';
 import MarketingLayout from '../../components/marketing/marketing-layout.astro';
+import PolicyBreadthComparison from '../../components/marketing/policy-breadth-comparison.astro';
 import { agentSetupPrompt, installCommand, marketingNav } from '../../data/marketing';
 import reportData from '../../../public/data/performance/current.json';
 
@@ -117,23 +118,6 @@ const fixtures: FixtureDefinition[] = [
 
 const featuredFixtures: FeaturedFixture[] = [
   {
-    id: 'monorepo_policy',
-    signal: 'Representative policy breadth',
-    why: 'Protects realistic root allowlists, nested app and package scopes, file-type rules, and generated-output exclusions in one project.',
-    configLabel: 'Performance fixture .assura/config.yml excerpt',
-    config: [
-      'structure:',
-      '  ./:',
-      '    directories:',
-      '      allowed_names: [apps, packages, docs, scripts, infra, config, tests]',
-      '    children:',
-      '      apps:',
-      '        directories:',
-      '          naming: kebab-case',
-      'exclude: ["node_modules/**", "apps/*/.next/**", "packages/*/dist/**"]',
-    ],
-  },
-  {
     id: 'ignored_generated_heavy_repo',
     signal: 'Filesystem pruning',
     why: 'Proves large generated and coverage areas are excluded before they turn a small source check into unnecessary filesystem work.',
@@ -200,6 +184,7 @@ const featuredCases = featuredFixtures.map((featured) => ({
   ...cards.find((card) => card.id === featured.id)!,
   ...featured,
 }));
+const monorepoPolicy = cards.find((card) => card.id === 'monorepo_policy')!;
 
 const title = 'Assura Performance: Fast Feedback for Agent Work';
 const description = 'See why low-latency validation matters for parallel coding agents, how Assura compares with native LS-Lint, and which project configurations protect performance.';
@@ -320,11 +305,11 @@ function formatCount(value?: number): string {
       <header class="benchmark-section-head">
         <div>
           <p class="eyebrow">The configurations we protect</p>
-          <h2 id="projects-title">Four cases guard the performance risks that matter most.</h2>
+          <h2 id="projects-title">Policy breadth first. Performance risks underneath.</h2>
         </div>
         <p>
-          The suite covers realistic policy breadth, ignored-output pruning, high file counts, and high
-          configuration counts. These condensed policy excerpts come from the generated fixtures used by the checked report.
+          Compare a reusable Assura monorepo contract with the closest LS-Lint coverage, then inspect
+          the generated fixtures that guard pruning, matcher scale, and configuration lookup.
         </p>
       </header>
 
@@ -334,6 +319,13 @@ function formatCount(value?: number): string {
         <span><b>1-801</b> rules</span>
         <span><b>{iterations}</b> samples each</span>
       </div>
+
+      <PolicyBreadthComparison
+        coldRatio={monorepoPolicy.coldRatio?.toFixed(2) ?? 'n/a'}
+        assuraCold={formatMs(monorepoPolicy.cold?.median_runtime_ms)}
+        lsLintCold={formatMs(monorepoPolicy.lslint?.median_runtime_ms)}
+        assuraWarm={formatMs(monorepoPolicy.warm?.median_runtime_ms)}
+      />
 
       <div class="benchmark-card-grid">
         {featuredCases.map((card) => (
