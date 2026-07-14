@@ -11,6 +11,7 @@ type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 const FIXTURE_SOURCE: &str = "tests/fixtures/real-project-agentic-feedback/valid";
 const OUTPUT_DIR: &str = "website/src/data";
 const CLAIMS_PATH: &str = "website/src/data/claims.yml";
+const CONFIG_EXAMPLES_DIR: &str = "website/src/data/config-examples";
 const FORBIDDEN_WEBSITE_COMMANDS: &[&str] = &["assura review --path"];
 
 #[derive(Deserialize)]
@@ -97,6 +98,134 @@ pub(crate) fn run(args: &[String]) -> Result<()> {
                 .into(),
         )
     }
+}
+
+pub(crate) fn validate_config_examples(args: &[String]) -> Result<()> {
+    if !args.is_empty() {
+        return Err("Usage: cargo xtask website-config-examples".into());
+    }
+    let root = std::env::current_dir()?.canonicalize()?;
+    if !root.join("Cargo.toml").is_file() || !root.join("website").is_dir() {
+        return Err("website-config-examples must run from the repository root".into());
+    }
+    build_assura(&root)?;
+    validate_project_contract_example(&root, &root.join("target/debug/assura-full"))?;
+    validate_agentic_monorepo_example(&root, &root.join("target/debug/assura-full"))?;
+    println!("Website Assura config examples are valid.");
+    Ok(())
+}
+
+fn validate_project_contract_example(root: &Path, binary: &Path) -> Result<()> {
+    let project = example_project(root, "project-contract")?;
+    install_example_config(root, &project, "project-contract.yml")?;
+    fs::write(project.join("AGENTS.md"), "# Agent guidance\n")?;
+    fs::create_dir_all(project.join("docs"))?;
+    fs::create_dir_all(project.join("apps/web/src"))?;
+    fs::write(
+        project.join("apps/web/src/user-menu.tsx"),
+        "export const userMenu = true;\n",
+    )?;
+    run_example_check(binary, &project, true)?;
+
+    fs::write(
+        project.join("apps/web/src/BadName.tsx"),
+        "export const badName = true;\n",
+    )?;
+    fs::write(
+        project.join("apps/web/src/checkout-flow.tsx"),
+        "export const value = true;\n".repeat(401),
+    )?;
+    fs::create_dir_all(project.join("tmp-output"))?;
+    let report = run_example_check(binary, &project, false)?;
+    require_example_violations(
+        "project-contract.yml",
+        &report,
+        &["BadName.tsx", "checkout-flow.tsx", "tmp-output"],
+    )?;
+    fs::remove_dir_all(project.parent().unwrap_or(&project))?;
+    Ok(())
+}
+
+fn validate_agentic_monorepo_example(root: &Path, binary: &Path) -> Result<()> {
+    let project = example_project(root, "agentic-monorepo")?;
+    install_example_config(root, &project, "agentic-monorepo.yml")?;
+    fs::write(project.join("AGENTS.md"), "# Root guidance\n")?;
+    fs::write(project.join("package.json"), "{}\n")?;
+    for package in ["core", "ui-kit"] {
+        let package_root = project.join("packages").join(package);
+        fs::create_dir_all(package_root.join("src"))?;
+        fs::write(package_root.join("AGENTS.md"), "# Package guidance\n")?;
+        fs::write(package_root.join("package.json"), "{}\n")?;
+        fs::write(
+            package_root.join("src").join(format!("{package}.ts")),
+            "export const value = true;\n",
+        )?;
+    }
+    fs::create_dir_all(project.join("packages/ui-kit/stories"))?;
+    fs::write(
+        project.join("packages/ui-kit/stories/Button.tsx"),
+        "export const Button = true;\n",
+    )?;
+    run_example_check(binary, &project, true)?;
+
+    fs::write(
+        project.join("packages/core/src/too-long.ts"),
+        "export const value = true;\n".repeat(201),
+    )?;
+    let report = run_example_check(binary, &project, false)?;
+    require_example_violations("agentic-monorepo.yml", &report, &["too-long.ts"])?;
+    fs::remove_dir_all(project.parent().unwrap_or(&project))?;
+    Ok(())
+}
+
+fn example_project(root: &Path, name: &str) -> Result<PathBuf> {
+    let work = root.join("target").join(format!(
+        "website-config-example-{name}-{}",
+        std::process::id()
+    ));
+    let _ = fs::remove_dir_all(&work);
+    let project = work.join("project");
+    fs::create_dir_all(&project)?;
+    Ok(project)
+}
+
+fn install_example_config(root: &Path, project: &Path, name: &str) -> Result<()> {
+    let config_dir = project.join(".assura");
+    fs::create_dir_all(&config_dir)?;
+    fs::copy(
+        root.join(CONFIG_EXAMPLES_DIR).join(name),
+        config_dir.join("config.yml"),
+    )?;
+    Ok(())
+}
+
+fn run_example_check(binary: &Path, project: &Path, expect_success: bool) -> Result<Value> {
+    let output = Command::new(binary)
+        .current_dir(project)
+        .args(["check", "--format", "json", "."])
+        .output()?;
+    if output.status.success() != expect_success {
+        return Err(command_error("validate website config example", &output).into());
+    }
+    serde_json::from_slice(&output.stdout).map_err(Into::into)
+}
+
+fn require_example_violations(name: &str, report: &Value, expected: &[&str]) -> Result<()> {
+    let paths = report["violations"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(|violation| violation["path"].as_str())
+        .collect::<Vec<_>>();
+    for needle in expected {
+        if !paths.iter().any(|path| path.contains(needle)) {
+            return Err(format!(
+                "website config example {name} did not report expected path `{needle}`; got {paths:?}"
+            )
+            .into());
+        }
+    }
+    Ok(())
 }
 
 fn build_assura(root: &Path) -> Result<()> {

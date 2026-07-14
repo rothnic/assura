@@ -1,0 +1,37 @@
+rules:
+  "@package-standard":
+    extra: false
+    AGENTS.md:
+      exists: 1
+      max_lines: 200
+    package.json: exists:1
+    README.md:
+      exists: 0-1
+      max_lines: 200
+    tsconfig.json: exists:0-1
+    src/:
+      required: true
+      .ts:
+        naming: kebab-case
+        max_lines: 200
+    tests/:
+      required: false
+      .test.ts: kebab-case
+    fixtures/: exists:0-1
+
+structure:
+  ./:
+    use: "@agentic-project"
+    AGENTS.md:
+      max_lines: 300
+    package.json: exists:1
+    packages/:
+      required: false
+      .dir: kebab-case
+      "{package}/":
+        use: "@package-standard"
+      ui-kit/:
+        use: "@package-standard"
+        stories/:
+          required: false
+          .tsx: PascalCase

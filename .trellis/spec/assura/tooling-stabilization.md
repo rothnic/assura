@@ -37,6 +37,69 @@ Do not run the full Rust suite just because any file changed. Do run it when a
 docs/workflow change alters a command contract, CI behavior, release process, or
 validation logic that Rust tests exercise.
 
+## Website Config Example Build Contract
+
+### 1. Scope / Trigger
+
+- Trigger: adding or changing an Assura config shown on the marketing site.
+- Rendered examples must come from YAML under
+  `website/src/data/config-examples/`; components must not maintain a second
+  hand-copied config string.
+
+### 2. Signatures
+
+- `cargo xtask website-config-examples`
+- `pnpm --dir website build` runs the command through `prebuild`.
+
+### 3. Contracts
+
+- The gate builds `assura-full`, installs each source YAML as
+  `.assura/config.yml` in a temporary representative project, and runs
+  `assura check --format json .`.
+- Each example needs a passing project shape. Examples that illustrate failures
+  must also assert the expected violation paths.
+- Astro imports the validated YAML with `?raw`, so the displayed config and the
+  checked config remain one source of truth.
+
+### 4. Validation & Error Matrix
+
+| Condition | Required behavior |
+| --- | --- |
+| Example YAML does not parse | Build exits nonzero before Astro runs. |
+| Passing representative project reports a violation | Build exits nonzero. |
+| Illustrated bad path no longer reports a violation | Build exits nonzero and names the missing path. |
+| All examples match current behavior | Print `Website Assura config examples are valid.` and continue the build. |
+
+### 5. Good / Base / Bad Cases
+
+- Good: the project-contract example passes with `user-menu.tsx` and reports
+  `BadName.tsx`, `checkout-flow.tsx`, and `tmp-output` after drift is added.
+- Base: the reusable monorepo policy passes for `core` and the `ui-kit` local
+  `stories/` override.
+- Bad: an Astro component displays legacy `directories:` or `children:` text
+  that is not imported from a checked example file.
+
+### 6. Tests Required
+
+- Run `cargo xtask website-config-examples` after changing example YAML or its
+  expected project shape.
+- Run `pnpm --dir website build` to prove the prebuild gate and Astro imports.
+- Keep Playwright assertions for the rendered hierarchy and pass/fail labels.
+
+### 7. Wrong vs Correct
+
+Wrong:
+
+```astro
+const configLines = ['structure:', '  directories:'];
+```
+
+Correct:
+
+```astro
+import projectContract from '../../data/config-examples/project-contract.yml?raw';
+```
+
 Assura owns this policy in `.assura/config.yml` under `quality.scopes`.
 `assura quality plan` is the config-backed command surface for planning checks
 from changed paths and workflow phase. Phases are cumulative for normal

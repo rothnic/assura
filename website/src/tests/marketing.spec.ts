@@ -65,6 +65,8 @@ test('example output CTA connects project policy to pass and fail paths', async 
   await page.getByRole('link', { name: 'See how rules apply' }).click();
   await expect(page.getByRole('heading', { name: '.assura/config.yml' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Project tree' })).toBeVisible();
+  await expect(page.getByText('AGENTS.md: exists:1', { exact: true })).toBeVisible();
+  await expect(page.getByText('apps/:', { exact: true })).toBeVisible();
   await expect(page.getByLabel('Pass').first()).toBeVisible();
   await expect(page.getByLabel('Blocking violation').first()).toBeVisible();
 });
@@ -75,15 +77,28 @@ test('performance CTA lands on the measured project cohort', async ({ page }) =>
   await expect(page).toHaveURL(/\/performance\/#measured-comparison$/);
   await expect(page.getByRole('heading', { name: 'Faster than native LS-Lint in all eight cold comparisons.' })).toBeVisible();
   await expect(page.locator('.policy-breadth-card')).toHaveCount(1);
-  await expect(page.locator('.policy-config-pane')).toHaveCount(2);
-  await expect(page.getByText('Built-in + project-defined', { exact: true })).toBeVisible();
-  await expect(page.getByText('One wildcard package scope', { exact: true })).toBeVisible();
-  await expect(page.getByText('Capability example · not timed', { exact: true })).toBeVisible();
+  await expect(page.locator('.policy-wipe-layer')).toHaveCount(2);
+  await expect(page.getByRole('slider', { name: /Reveal Assura configuration/ })).toHaveCount(1);
+  await expect(page.getByText('Drag to reveal what each config can express.', { exact: true })).toBeVisible();
+  await expect(page.getByText('Quality policy example', { exact: true })).toBeVisible();
   await expect(page.locator('.benchmark-card')).toHaveCount(3);
   await expect(page.locator('.benchmark-config')).toHaveCount(3);
   await expect(page.locator('.benchmark-matrix-row:not(.benchmark-matrix-head)')).toHaveCount(8);
   await expect(page.getByText('1,501 files', { exact: true })).toBeVisible();
   await expect(page.getByText('801 rules', { exact: true })).toBeVisible();
+  await expect(page.getByText('Download current JSON')).toHaveCount(0);
+});
+
+test('footer groups product, resources, and creator links on mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  const footer = page.locator('.site-footer');
+  await expect(footer.getByRole('heading', { name: 'Product' })).toBeVisible();
+  await expect(footer.getByRole('heading', { name: 'Resources' })).toBeVisible();
+  await expect(footer.getByRole('heading', { name: 'Connect' })).toBeVisible();
+  await expect(footer.getByRole('link', { name: 'Nick Roth' })).toHaveAttribute('href', 'https://nickroth.com/');
+  await expect(footer.getByRole('link', { name: 'LinkedIn' })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
 });
 
 for (const colorScheme of themes) {
@@ -98,10 +113,10 @@ for (const colorScheme of themes) {
       const overflow = await page.evaluate(
         () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
       );
-      const codeOverflow = await comparison.locator('pre').evaluateAll((blocks) =>
+      const codeOverflow = await comparison.locator('.policy-code').evaluateAll((blocks) =>
         blocks.map((block) => block.scrollWidth - block.clientWidth),
       );
-      const panes = await comparison.locator('.policy-config-pane').evaluateAll((items) =>
+      const layers = await comparison.locator('.policy-wipe-layer').evaluateAll((items) =>
         items.map((item) => {
           const rect = item.getBoundingClientRect();
           return { x: Math.round(rect.x), y: Math.round(rect.y) };
@@ -109,19 +124,42 @@ for (const colorScheme of themes) {
       );
       expect(overflow).toBe(0);
       expect(codeOverflow).toEqual([0, 0]);
-      if (width <= 768) {
-        expect(panes[0].x).toBe(panes[1].x);
-        expect(panes[0].y).toBeLessThan(panes[1].y);
-      } else {
-        expect(panes[0].x).toBeLessThan(panes[1].x);
-        expect(panes[0].y).toBe(panes[1].y);
-      }
+      expect(layers[0]).toEqual(layers[1]);
       await comparison.screenshot({
         path: testInfo.outputPath(`performance-policy-${colorScheme}-${width}.png`),
       });
     });
   }
 }
+
+test('performance policy wipe switches between complete configurations', async ({ page }) => {
+  await page.goto('/performance/#regression-cases');
+  const wipe = page.locator('[data-policy-wipe]');
+  const slider = wipe.getByRole('slider');
+  await slider.fill('0');
+  await expect(wipe.getByRole('button', { name: 'LS-Lint' })).toHaveAttribute('aria-pressed', 'true');
+  await wipe.getByRole('button', { name: 'Assura' }).click();
+  await expect(slider).toHaveValue('100');
+  await expect(wipe.getByRole('button', { name: 'Assura' })).toHaveAttribute('aria-pressed', 'true');
+});
+
+test('expanded performance cohort stays compact on mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/performance/#benchmark-projects');
+  await page.getByText('View all eight project measurements').click();
+  const firstRow = page.locator('.benchmark-matrix-row:not(.benchmark-matrix-head)').first();
+  await expect(firstRow).toBeVisible();
+  const cells = await firstRow.locator('[role="cell"]').evaluateAll((items) =>
+    items.map((item) => {
+      const rect = item.getBoundingClientRect();
+      return { x: Math.round(rect.x), y: Math.round(rect.y), width: Math.round(rect.width) };
+    }),
+  );
+  expect(cells[0].width).toBe(cells[1].width);
+  expect(cells[2].y).toBe(cells[3].y);
+  expect(cells[2].x).toBeLessThan(cells[3].x);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
+});
 
 test('setup actions retain a no-JavaScript onboarding destination', async ({ page }) => {
   await page.goto('/');

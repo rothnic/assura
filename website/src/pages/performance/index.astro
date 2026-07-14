@@ -184,8 +184,6 @@ const featuredCases = featuredFixtures.map((featured) => ({
   ...cards.find((card) => card.id === featured.id)!,
   ...featured,
 }));
-const monorepoPolicy = cards.find((card) => card.id === 'monorepo_policy')!;
-
 const title = 'Assura Performance: Fast Feedback for Agent Work';
 const description = 'See why low-latency validation matters for parallel coding agents, how Assura compares with native LS-Lint, and which project configurations protect performance.';
 const canonicalPath = '/performance/';
@@ -304,28 +302,31 @@ function formatCount(value?: number): string {
     <section id="regression-cases" class="benchmark-projects" aria-labelledby="projects-title">
       <header class="benchmark-section-head">
         <div>
-          <p class="eyebrow">The configurations we protect</p>
-          <h2 id="projects-title">Policy breadth first. Performance risks underneath.</h2>
+          <p class="eyebrow">Quality policy use case</p>
+          <h2 id="projects-title">A package contract agents cannot quietly drift from.</h2>
         </div>
         <p>
-          Compare a reusable Assura monorepo contract with the closest LS-Lint coverage, then inspect
-          the generated fixtures that guard pruning, matcher scale, and configuration lookup.
+          A fully featured Assura policy captures the project practices an agent should preserve.
+          LS-Lint covers the naming subset; the comparison below shows the remaining gap.
         </p>
       </header>
 
-      <div class="benchmark-range" aria-label="Benchmark cohort range">
-        <span><b>5-1,501</b> checked files</span>
-        <span><b>2-801</b> directories</span>
-        <span><b>1-801</b> rules</span>
-        <span><b>{iterations}</b> samples each</span>
+      <PolicyBreadthComparison />
+
+      <div class="benchmark-regression-intro">
+        <div>
+          <span>Performance regression suite</span>
+          <strong>Measured fixtures stay separate from the use case.</strong>
+        </div>
+        <p>These generated projects isolate pruning, matcher scale, and configuration lookup against equivalent LS-Lint work.</p>
       </div>
 
-      <PolicyBreadthComparison
-        coldRatio={monorepoPolicy.coldRatio?.toFixed(2) ?? 'n/a'}
-        assuraCold={formatMs(monorepoPolicy.cold?.median_runtime_ms)}
-        lsLintCold={formatMs(monorepoPolicy.lslint?.median_runtime_ms)}
-        assuraWarm={formatMs(monorepoPolicy.warm?.median_runtime_ms)}
-      />
+      <div class="benchmark-range" aria-label="Regression suite range">
+        <span><b>5-1,501</b> files per fixture</span>
+        <span><b>2-801</b> directories</span>
+        <span><b>1-801</b> effective rules</span>
+        <span><b>{iterations}</b> timed samples</span>
+      </div>
 
       <div class="benchmark-card-grid">
         {featuredCases.map((card) => (
@@ -428,10 +429,10 @@ function formatCount(value?: number): string {
           </div>
           {cards.map((card) => (
             <div class="benchmark-matrix-row" role="row">
-              <div role="cell"><strong>{card.label}</strong><small>{card.kind}</small></div>
-              <div role="cell"><strong>{formatCount(card.cold?.checked_file_count)} files · {formatCount(card.cold?.directory_count)} dirs</strong><small>{formatCount(card.cold?.rule_count)} rules · {formatCount(card.cold?.ignored_file_count)} ignored</small></div>
-              <div role="cell"><strong>Assura {formatMs(card.cold?.median_runtime_ms)}</strong><small>LS-Lint {formatMs(card.lslint?.median_runtime_ms)} · {card.coldRatio?.toFixed(2) ?? 'n/a'}x</small></div>
-              <div role="cell"><strong>{formatMs(card.warm?.median_runtime_ms)}</strong><small>persistent Assura session</small></div>
+              <div role="cell" data-label="Project"><strong>{card.label}</strong><small>{card.kind}</small></div>
+              <div role="cell" data-label="Shape"><strong>{formatCount(card.cold?.checked_file_count)} files · {formatCount(card.cold?.directory_count)} dirs</strong><small>{formatCount(card.cold?.rule_count)} rules · {formatCount(card.cold?.ignored_file_count)} ignored</small></div>
+              <div role="cell" data-label="Cold"><strong>Assura {formatMs(card.cold?.median_runtime_ms)}</strong><small>LS-Lint {formatMs(card.lslint?.median_runtime_ms)} · {card.coldRatio?.toFixed(2) ?? 'n/a'}x</small></div>
+              <div role="cell" data-label="Warm"><strong>{formatMs(card.warm?.median_runtime_ms)}</strong><small>persistent Assura session</small></div>
             </div>
           ))}
         </div>
@@ -441,21 +442,19 @@ function formatCount(value?: number): string {
     <section class="benchmark-method" aria-labelledby="method-title">
       <header class="benchmark-section-head">
         <div>
-          <p class="eyebrow">What the numbers mean</p>
-          <h2 id="method-title">Equivalent work first. Different execution paths kept separate.</h2>
+          <p class="eyebrow">Benchmark boundary</p>
+          <h2 id="method-title">The speed claim covers the rules both tools share.</h2>
         </div>
-        <p>The aggregate is calculated from the same eight accepted fixtures shown above. Assura-only capabilities are not counted in the LS-Lint comparison.</p>
+        <p>Each cold row runs the same generated project with an LS-Lint policy migrated into Assura. The aggregate uses all eight accepted fixtures shown above.</p>
       </header>
-      <ol class="benchmark-method-steps">
-        <li><span>01</span><div><strong>Materialize one project</strong><p>Each generated tree has a fixed shape, valid names, scoped rules, and explicit ignored output.</p></div></li>
-        <li><span>02</span><div><strong>Apply equivalent policy</strong><p>Matching Assura and LS-Lint configurations cover the same accepted naming, existence, scope, and ignore semantics.</p></div></li>
-        <li><span>03</span><div><strong>Measure cold commands</strong><p>Release binaries run process to process, including startup, config loading, traversal, validation, and exit.</p></div></li>
-        <li><span>04</span><div><strong>Measure the warm loop</strong><p>The persistent Assura session repeats checks without paying the full process startup cost on every agent turn.</p></div></li>
-      </ol>
+      <div class="benchmark-claim-boundary">
+        <div class="is-included"><span>Included in the cold comparison</span><strong>Naming · ignores · scopes · extensions</strong><p>Both release CLIs run process to process, including startup, config loading, traversal, validation, and exit.</p></div>
+        <div class="is-excluded"><span>Not counted against LS-Lint</span><strong>Line limits · content · references · repair guidance</strong><p>These Assura-only capabilities have no native LS-Lint equivalent and are measured separately.</p></div>
+        <div class="is-warm"><span>Separate warm result</span><strong>Persistent Assura session</strong><p>Repeated checks avoid paying the full process startup cost on every agent turn.</p></div>
+      </div>
       <div class="benchmark-evidence-links">
         <a href="/reference/performance-test-cases/">Inspect every test case <span aria-hidden="true">→</span></a>
         <a href="/reference/performance/">Read the full report <span aria-hidden="true">→</span></a>
-        <a href="/data/performance/current.json">Download current JSON <span aria-hidden="true">→</span></a>
       </div>
     </section>
   </main>

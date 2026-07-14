@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
+    "prebuild": "cd .. && cargo xtask website-config-examples",
     "build": "ASTRO_TELEMETRY_DISABLED=1 astro build",
     "test:marketing": "playwright test",
     "preview": "astro preview",

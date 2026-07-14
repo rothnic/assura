@@ -48,6 +48,7 @@ fn run() -> Result<()> {
         "warm-loop-benchmark" => run_warm_loop_benchmark(&rest),
         "warm-loop-no-regression" => run_warm_loop_no_regression(&rest),
         "website-demo-data" => website_demo::run(&rest),
+        "website-config-examples" => website_demo::validate_config_examples(&rest),
         "markdown-engine-probe" => run_markdown_engine_probe(&rest),
         "changed" => run_changed(&rest),
         "pr" => run_pr(),
@@ -68,7 +69,7 @@ fn run() -> Result<()> {
 
 fn print_usage() {
     eprintln!(
-        "Usage: cargo xtask <fast|check|test|evidence|target-state|hygiene|docs|release-size|release-smoke|release-live|release-readiness|perf-vps-ls-lint-compare|performance-no-slower|native-performance-no-regression|warm-loop-benchmark|warm-loop-no-regression|website-demo-data|markdown-engine-probe|changed|pr|full>"
+        "Usage: cargo xtask <fast|check|test|evidence|target-state|hygiene|docs|release-size|release-smoke|release-live|release-readiness|perf-vps-ls-lint-compare|performance-no-slower|native-performance-no-regression|warm-loop-benchmark|warm-loop-no-regression|website-demo-data|website-config-examples|markdown-engine-probe|changed|pr|full>"
     );
 }
 

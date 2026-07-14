@@ -1,0 +1,14 @@
+structure:
+  ./:
+    extra: false
+    AGENTS.md: exists:1
+    docs/: exists:0-1
+    apps/:
+      required: true
+      web/:
+        required: true
+        src/:
+          required: true
+          .tsx:
+            naming: kebab-case
+            max_lines: 400

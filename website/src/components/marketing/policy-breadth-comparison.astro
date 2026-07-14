@@ -1,139 +1,173 @@
 ---
-type Props = {
-  coldRatio: string;
-  assuraCold: string;
-  lsLintCold: string;
-  assuraWarm: string;
+import assuraPolicy from '../../data/config-examples/agentic-monorepo.yml?raw';
+
+type CodeLine = {
+  indent?: number;
+  key?: string;
+  value?: string;
+  comment?: string;
+  tone?: 'section' | 'scope' | 'definition' | 'directive' | 'required' | 'optional' | 'limit';
 };
 
-const { coldRatio, assuraCold, lsLintCold, assuraWarm } = Astro.props;
+const toneFor = (key: string, value?: string): CodeLine['tone'] => {
+  if (key === 'rules' || key === 'structure') return 'section';
+  if (key.includes('/') || key === './') return 'scope';
+  if (key.includes('@package-standard') || value?.includes('@package-standard')) return 'definition';
+  if (key === 'max_lines') return 'limit';
+  if (value === 'true' || value === '1' || value === 'exists:1') return 'required';
+  if (value === 'false' || value === '0-1' || value === 'exists:0-1') return 'optional';
+  return 'directive';
+};
 
-const assuraConfig = `rules:
-  "@package-standard":
-    AGENTS.md: exists:1
-    package.json: exists:1
-    README.md: exists:0-1
-    tsconfig.json: exists:0-1
-    src/:
-      required: true
-      .ts: kebab-case
-    tests/:
-      required: false
-      .test.ts: kebab-case
-    fixtures/: exists:0-1
-    files:
-      max_lines: 200
-    extra: false
+const assuraLines: CodeLine[] = assuraPolicy.trimEnd().split('\n').map((text) => {
+  if (!text.trim()) return {};
+  const indent = Math.floor((text.length - text.trimStart().length) / 2);
+  const content = text.trim();
+  const separator = content.indexOf(':');
+  const key = separator === -1 ? content : content.slice(0, separator);
+  const value = separator === -1 ? undefined : content.slice(separator + 1).trim() || undefined;
+  return { indent, key, value, tone: toneFor(key, value) };
+});
 
-structure:
-  ./:
-    use: "@agentic-project"
-    files:
-      max_lines: 300
-    package.json: exists:1
-    packages/: exists:1
-
-  packages/:
-    .dir: kebab-case
-    "{package}/":
-      use: "@package-standard"
-    ui-kit/:
-      use: "@package-standard"
-      stories/: exists:0-1`;
-
-const lsLintConfig = `ls:
-  .md: regex:^(AGENTS|README)$
-  .json: regex:^(package|tsconfig)$
-
-  packages:
-    .dir: kebab-case
-
-  packages/*:
-    .md: regex:^(AGENTS|README)$
-    .json: regex:^(package|tsconfig)$
-    src:
-      .ts: kebab-case
-    tests:
-      .test.ts: kebab-case`;
+const lsLintLines: CodeLine[] = [
+  { comment: 'Closest shared naming coverage.' },
+  { key: 'ls', tone: 'section' },
+  { indent: 1, key: 'packages', tone: 'scope' },
+  { indent: 2, key: '.dir', value: 'kebab-case', tone: 'directive' },
+  {},
+  { indent: 1, key: 'packages/*', tone: 'scope' },
+  { indent: 2, key: '.md', value: 'regex:^(AGENTS|README)$', tone: 'directive' },
+  { indent: 2, key: '.json', value: 'regex:^(package|tsconfig)$', tone: 'directive' },
+  { indent: 2, key: 'src', tone: 'scope' },
+  { indent: 3, key: '.ts', value: 'kebab-case', tone: 'directive' },
+  { indent: 2, key: 'tests', tone: 'scope' },
+  { indent: 3, key: '.test.ts', value: 'kebab-case', tone: 'directive' },
+];
 ---
 
 <article class="policy-breadth-card" id="monorepo-policy">
   <header class="policy-breadth-head">
     <div>
       <span>Agentic monorepo policy</span>
-      <h3>One package contract, applied everywhere.</h3>
+      <h3>One contract for every package.</h3>
       <p>
-        The shared benchmark covers equivalent naming and structure work. This policy shows the
-        additional controls Assura can enforce without repeating every package scope.
+        The packages directory is optional. Once it exists, every matching package receives the same
+        required guidance, manifest, naming, and size policy.
       </p>
     </div>
-    <strong>Capability example · not timed</strong>
+    <strong>Quality policy example</strong>
   </header>
 
-  <div class="policy-breadth-tree" aria-label="Agentic monorepo project policy">
-    <div class="policy-tree-title">
-      <span>Expected project shape</span>
-      <small>Required, optional, and overridden rules</small>
+  <section class="policy-scope-summary" aria-labelledby="policy-shape-title">
+    <header>
+      <span>Expected shape</span>
+      <h4 id="policy-shape-title">Two scopes, one clear inheritance path.</h4>
+    </header>
+    <div class="policy-scope-grid">
+      <div class="policy-scope is-root">
+        <div><strong>Project root</strong><span>Always checked</span></div>
+        <ul>
+          <li><code>AGENTS.md</code> required by <code>@agentic-project</code></li>
+          <li><code>package.json</code> required</li>
+          <li>Root <code>AGENTS.md</code> capped at 300 lines</li>
+        </ul>
+      </div>
+      <div class="policy-scope is-package">
+        <div><strong><code>{'packages/{package}/'}</code></strong><span>When present</span></div>
+        <ul>
+          <li><code>AGENTS.md</code>, <code>package.json</code>, and <code>src/</code> required</li>
+          <li><code>README.md</code>, tests, fixtures, and config optional</li>
+          <li>Guidance, docs, and TypeScript capped at 200 lines</li>
+        </ul>
+      </div>
     </div>
-    <ul class="policy-tree-lines">
-      <li class="policy-tree-line is-root"><code>project/</code><span>root contract · files max 300 lines</span></li>
-      <li class="policy-tree-line depth-1"><code><span aria-hidden="true">├─ </span>AGENTS.md</code><span class="is-required">required by built-in rule</span></li>
-      <li class="policy-tree-line depth-1"><code><span aria-hidden="true">├─ </span>package.json</code><span class="is-required">required</span></li>
-      <li class="policy-tree-line depth-1"><code><span aria-hidden="true">└─ </span>packages/</code><span>package names · kebab-case</span></li>
-      <li class="policy-tree-line depth-2"><code><span aria-hidden="true">├─ </span>core/</code><span class="is-reused">project-defined @package-standard</span></li>
-      <li class="policy-tree-line depth-3"><code><span aria-hidden="true">│  ├─ </span>AGENTS.md</code><span class="is-required">required · package files max 200</span></li>
-      <li class="policy-tree-line depth-3"><code><span aria-hidden="true">│  ├─ </span>package.json</code><span class="is-required">required</span></li>
-      <li class="policy-tree-line depth-3"><code><span aria-hidden="true">│  ├─ </span>README.md</code><span class="is-optional">optional</span></li>
-      <li class="policy-tree-line depth-3"><code><span aria-hidden="true">│  ├─ </span>src/</code><span class="is-required">required</span></li>
-      <li class="policy-tree-line depth-3"><code><span aria-hidden="true">│  └─ </span>tests/</code><span class="is-optional">optional</span></li>
-      <li class="policy-tree-line depth-2"><code><span aria-hidden="true">└─ </span>ui-kit/</code><span class="is-reused">same rule + override</span></li>
-      <li class="policy-tree-line depth-3"><code><span aria-hidden="true">   └─ </span>stories/</code><span class="is-optional">optional here</span></li>
-    </ul>
-  </div>
+    <p><code>ui-kit/</code> reuses the package contract and adds one local allowance: optional <code>stories/</code>.</p>
+  </section>
 
-  <div class="policy-config-comparison">
-    <section class="policy-config-pane is-assura" aria-labelledby="assura-policy-title">
-      <header>
-        <div>
-          <span>Assura</span>
-          <h4 id="assura-policy-title">Reusable project contract</h4>
+  <section class="policy-wipe" data-policy-wipe data-reveal="100" style="--reveal: 100%;" aria-labelledby="policy-compare-title">
+    <header class="policy-wipe-head">
+      <div>
+        <span>Configuration comparison</span>
+        <h4 id="policy-compare-title">Drag to reveal what each config can express.</h4>
+      </div>
+      <div class="policy-wipe-actions" aria-label="Configuration view">
+        <button type="button" data-wipe-value="100" aria-pressed="true">Assura</button>
+        <button type="button" data-wipe-value="0" aria-pressed="false">LS-Lint</button>
+      </div>
+    </header>
+
+    <div class="policy-wipe-control">
+      <span>LS-Lint</span>
+      <input
+        type="range"
+        min="0"
+        max="100"
+        value="100"
+        aria-label="Reveal Assura configuration. Zero shows LS-Lint; one hundred shows Assura."
+        data-wipe-range
+      />
+      <span>Assura</span>
+    </div>
+
+    <div class="policy-wipe-stage">
+      <section class="policy-wipe-layer is-lslint" aria-label="LS-Lint configuration">
+        <header><span>LS-Lint</span><strong>Filesystem naming</strong></header>
+        <div class="policy-code" role="code" aria-label="LS-Lint YAML example">
+          {lsLintLines.map((line) => (
+            <div class:list={['policy-code-line', line.tone && `is-${line.tone}`, !line.key && !line.comment && 'is-blank']} style={`--indent: ${line.indent ?? 0}`}>
+              {line.comment && !line.key ? <span class="policy-code-comment"># {line.comment}</span> : (
+                <><span class="policy-code-key">{line.key}</span>{line.key && <span class="policy-code-colon">:</span>} {line.value && <span class="policy-code-value">{line.value}</span>}{line.comment && <span class="policy-code-comment"> # {line.comment}</span>}</>
+              )}
+            </div>
+          ))}
         </div>
-        <strong>Built-in + project-defined</strong>
-      </header>
-      <pre><code>{assuraConfig}</code></pre>
-      <ul aria-label="Assura-only policy controls">
-        <li>Predefined <code>@agentic-project</code> baseline</li>
-        <li>Project-defined reusable package contract</li>
-        <li>Exact required and optional files</li>
-        <li>Per-file and package-wide line limits</li>
-        <li>Closed package shape with local overrides</li>
-      </ul>
-    </section>
-
-    <section class="policy-config-pane is-lslint" aria-labelledby="lslint-policy-title">
-      <header>
-        <div>
-          <span>LS-Lint</span>
-          <h4 id="lslint-policy-title">Closest naming coverage</h4>
+        <div class="policy-layer-summary is-limited">
+          <strong>Not expressible here</strong>
+          <span>Exact required files</span><span>Line limits</span><span>Reusable semantic rules</span><span>Agent guidance</span>
         </div>
-        <strong>One wildcard package scope</strong>
-      </header>
-      <pre><code>{lsLintConfig}</code></pre>
-      <ul aria-label="LS-Lint policy boundaries">
-        <li>Names files and package directories</li>
-        <li>Shares naming policy with a wildcard scope</li>
-        <li>No exact required-file contract</li>
-        <li>No line limits or reusable content and agent guidance</li>
-      </ul>
-    </section>
-  </div>
+      </section>
 
-  <div class="policy-breadth-evidence">
-    <div><span>Measured strict fixture</span><strong>Assura {assuraCold}</strong><small>LS-Lint {lsLintCold} · {coldRatio}x</small></div>
-    <div><span>Repeated loop</span><strong>Assura {assuraWarm}</strong><small>persistent session</small></div>
-    <p>
-      Performance compares only the shared naming and structure surface. The richer Assura policy is
-      shown as product capability, not counted as extra work in the {coldRatio}x result.
-    </p>
-  </div>
+      <section class="policy-wipe-layer is-assura" aria-label="Assura configuration">
+        <header><span>Assura</span><strong>Reusable project contract</strong></header>
+        <div class="policy-code" role="code" aria-label="Assura YAML example">
+          {assuraLines.map((line) => (
+            <div class:list={['policy-code-line', line.tone && `is-${line.tone}`, !line.key && !line.comment && 'is-blank']} style={`--indent: ${line.indent ?? 0}`}>
+              {line.comment && !line.key ? <span class="policy-code-comment"># {line.comment}</span> : (
+                <><span class="policy-code-key">{line.key}</span>{line.key && <span class="policy-code-colon">:</span>} {line.value && <span class="policy-code-value">{line.value}</span>}{line.comment && <span class="policy-code-comment"> # {line.comment}</span>}</>
+              )}
+            </div>
+          ))}
+        </div>
+        <div class="policy-layer-summary is-capable">
+          <strong>Added by Assura</strong>
+          <span>Built-in baseline</span><span>Required and optional paths</span><span>Scoped line limits</span><span>Local overrides</span>
+        </div>
+      </section>
+
+      <div class="policy-wipe-divider" aria-hidden="true"><span>↔</span></div>
+    </div>
+  </section>
+
 </article>
+
+<script>
+  const syncWipe = (root: HTMLElement, value: number) => {
+    const bounded = Math.max(0, Math.min(100, value));
+    root.style.setProperty('--reveal', `${bounded}%`);
+    root.dataset.reveal = String(bounded);
+    const range = root.querySelector<HTMLInputElement>('[data-wipe-range]');
+    if (range) range.value = String(bounded);
+    root.querySelectorAll<HTMLButtonElement>('[data-wipe-value]').forEach((button) => {
+      button.setAttribute('aria-pressed', String(Number(button.dataset.wipeValue) === bounded));
+    });
+  };
+
+  document.querySelectorAll<HTMLElement>('[data-policy-wipe]').forEach((root) => {
+    root.querySelector<HTMLInputElement>('[data-wipe-range]')?.addEventListener('input', (event) => {
+      syncWipe(root, Number((event.currentTarget as HTMLInputElement).value));
+    });
+    root.querySelectorAll<HTMLButtonElement>('[data-wipe-value]').forEach((button) => {
+      button.addEventListener('click', () => syncWipe(root, Number(button.dataset.wipeValue)));
+    });
+  });
+</script>

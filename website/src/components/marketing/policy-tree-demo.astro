@@ -1,18 +1,20 @@
 ---
-const configLines = [
-  { text: 'structure:', tone: 'key' },
-  { text: '  ./:', tone: 'key' },
-  { text: '    files:', tone: 'key' },
-  { text: '      required: [AGENTS.md]', tone: 'value', marker: '1' },
-  { text: '    directories:', tone: 'key' },
-  { text: '      allowed_names: [apps, docs]', tone: 'value', marker: '2' },
-  { text: '      allow_extra: false', tone: 'value' },
-  { text: '    children:', tone: 'key' },
-  { text: '      apps/web/src/:', tone: 'key' },
-  { text: '        files:', tone: 'key' },
-  { text: '          naming: kebab-case', tone: 'value', marker: '3' },
-  { text: '          max_lines: 400', tone: 'value', marker: '4' },
-] as const;
+import projectContract from '../../data/config-examples/project-contract.yml?raw';
+
+const markers = new Map([
+  ['extra: false', '2'],
+  ['AGENTS.md: exists:1', '1'],
+  ['naming: kebab-case', '3'],
+  ['max_lines: 400', '4'],
+]);
+const configLines = projectContract.trimEnd().split('\n').map((text) => {
+  const trimmed = text.trim();
+  return {
+    text,
+    tone: trimmed.endsWith(':') ? 'key' : 'value',
+    marker: markers.get(trimmed),
+  };
+});
 ---
 
 <div class="policy-tree-demo">
@@ -24,7 +26,7 @@ const configLines = [
     <pre tabindex="0"><code>{configLines.map((line) => (
       <span class:list={['config-line', line.tone]}>
         <span>{line.text}</span>
-        {'marker' in line && <i class="rule-marker" aria-label={`Rule ${line.marker}`}>{line.marker}</i>}
+        {line.marker && <i class="rule-marker" aria-label={`Rule ${line.marker}`}>{line.marker}</i>}
       </span>
     ))}</code></pre>
   </section>
@@ -42,7 +44,7 @@ const configLines = [
         </div>
         <ul>
           <li><div class="tree-row pass"><span class="tree-status" aria-label="Pass">✓</span><code>AGENTS.md</code><small><i class="rule-marker">1</i> required file</small></div></li>
-          <li><div class="tree-row pass"><span class="tree-status" aria-label="Pass">✓</span><code>docs/</code><small><i class="rule-marker">2</i> allowed directory</small></div></li>
+          <li><div class="tree-row pass"><span class="tree-status" aria-label="Pass">✓</span><code>docs/</code><small>declared optional path</small></div></li>
           <li>
             <div class="tree-row neutral"><span class="tree-status" aria-label="Configured scope">·</span><code>apps/web/src/</code><small>rules 3 + 4</small></div>
             <ul>
