@@ -165,15 +165,14 @@ fn validate_agentic_monorepo_example(root: &Path, binary: &Path) -> Result<()> {
             package_root.join("src").join(format!("{package}.ts")),
             "export const value = true;\n",
         )?;
+        fs::write(
+            package_root.join("src").join(format!("{package}-view.tsx")),
+            "export const value = true;\n",
+        )?;
     }
     fs::write(
         project.join("packages/core/README.md"),
         "Package documentation.\n".repeat(300),
-    )?;
-    fs::create_dir_all(project.join("packages/ui-kit/stories"))?;
-    fs::write(
-        project.join("packages/ui-kit/stories/Button.tsx"),
-        "export const Button = true;\n",
     )?;
     run_example_check(binary, &project, true)?;
 
@@ -181,8 +180,29 @@ fn validate_agentic_monorepo_example(root: &Path, binary: &Path) -> Result<()> {
         project.join("packages/core/src/too-long.ts"),
         "export const value = true;\n".repeat(501),
     )?;
+    fs::write(
+        project.join("packages/ui-kit/src/BadName.tsx"),
+        "export const value = true;\n",
+    )?;
+    fs::create_dir_all(project.join("packages/core/tests"))?;
+    fs::write(
+        project.join("packages/core/tests/BadName.test.ts"),
+        "export const value = true;\n",
+    )?;
     let report = run_example_check(binary, &project, false)?;
     require_example_violation("agentic-monorepo.yml", &report, "too-long.ts", "max_lines")?;
+    require_example_violation(
+        "agentic-monorepo.yml",
+        &report,
+        "BadName.tsx",
+        "file_naming",
+    )?;
+    require_example_violation(
+        "agentic-monorepo.yml",
+        &report,
+        "BadName.test.ts",
+        "file_naming",
+    )?;
     fs::remove_dir_all(project.parent().unwrap_or(&project))?;
     Ok(())
 }

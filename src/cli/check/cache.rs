@@ -21,10 +21,10 @@ mod status;
 use snapshot::{
     collect_directory_snapshot, collect_file_snapshot, DirectoryFingerprint, FileFingerprint,
 };
+pub use status::default_check_cache_dir;
 use status::{cache_root_for_entry, ensure_cache_root, set_private_permissions};
-pub use status::{
-    clean_check_cache, default_check_cache_dir, inspect_check_cache, CheckCacheStatus,
-};
+#[cfg(feature = "full-cli")]
+pub use status::{clean_check_cache, inspect_check_cache, CheckCacheStatus};
 
 const CACHE_SCHEMA_VERSION: u32 = 5;
 const CACHE_ROOT_SCHEMA: &str = "assura.check-cache-root.v1";

@@ -46,24 +46,45 @@ pub(super) fn compile_rule_scopes(config: &Config) -> Vec<RuleScope> {
         let base = normalize_config_dir(path);
         compile_scope_node(base, node, &EffectiveRules::default(), &mut scopes);
     }
-    scopes.sort_by_key(|scope| path_scope_specificity(&scope.path));
+    scopes.sort_by(|left, right| {
+        path_scope_specificity(&left.path)
+            .cmp(&path_scope_specificity(&right.path))
+            .then_with(|| left.path.cmp(&right.path))
+    });
     scopes
 }
 
 pub(super) fn rules_for_dir(dir_rel: &Path, scopes: &[RuleScope]) -> EffectiveRules {
     scopes
         .iter()
-        .rev()
         .filter_map(|scope| scope_match(scope, dir_rel).map(|exact| (scope, exact)))
-        .map(|scope| {
-            if scope.1 {
-                scope.0.exact.clone()
+        .fold(EffectiveRules::default(), |resolved, (scope, exact)| {
+            let selected = if exact {
+                &scope.exact
             } else {
-                scope.0.descendant.clone()
+                &scope.descendant
+            };
+            if scope.inherit {
+                merge_effective_rules(&resolved, selected)
+            } else {
+                selected.clone()
             }
         })
-        .next()
-        .unwrap_or_default()
+}
+
+fn merge_effective_rules(parent: &EffectiveRules, child: &EffectiveRules) -> EffectiveRules {
+    EffectiveRules {
+        files: merge_file_bundle(parent.files.as_ref(), child.files.as_deref()),
+        directories: merge_directory_bundle(
+            parent.directories.as_ref(),
+            child.directories.as_deref(),
+        ),
+        self_directory: merge_directory_bundle(
+            parent.self_directory.as_ref(),
+            child.self_directory.as_deref(),
+        ),
+        markdown: merge_markdown_bundle(parent.markdown.as_ref(), child.markdown.as_deref()),
+    }
 }
 
 pub(super) fn scope_match(scope: &RuleScope, dir_rel: &Path) -> Option<bool> {

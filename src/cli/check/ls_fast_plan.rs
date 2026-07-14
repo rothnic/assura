@@ -18,6 +18,7 @@ use std::sync::Arc;
 #[derive(Clone)]
 pub(super) struct FastScope {
     path: PathBuf,
+    inherit: bool,
     has_scope_magic: bool,
     scope_pattern: Option<CompiledScopePattern>,
     pub(super) exact: FastRules,
@@ -35,7 +36,7 @@ pub(super) struct FastRules {
 }
 
 pub(super) fn compile_lslint_fast_scopes(config: &Config) -> Option<Vec<FastScope>> {
-    if !config.patterns.is_empty() {
+    if !config.patterns.is_empty() || children_have_potential_overlap(&config.structure) {
         return None;
     }
     if config.extensions.as_ref().is_some_and(|extensions| {
@@ -72,6 +73,7 @@ pub(super) fn compile_lslint_fast_scopes(config: &Config) -> Option<Vec<FastScop
         )?;
     }
 
+    compose_static_ancestor_scopes(&mut scopes, &mut naming_cache);
     scopes.sort_by_key(|scope| Reverse(scope.specificity()));
     Some(scopes)
 }
@@ -170,11 +172,17 @@ impl FastScope {
         let scope_pattern = has_scope_magic.then(|| CompiledScopePattern::new(&path));
         Self {
             path,
+            inherit: true,
             has_scope_magic,
             scope_pattern,
             exact,
             descendant,
         }
+    }
+
+    fn with_inherit(mut self, inherit: bool) -> Self {
+        self.inherit = inherit;
+        self
     }
 
     pub(super) fn parts(&self) -> (&Path, &FastRules, &FastRules) {
@@ -331,11 +339,14 @@ fn compile_scope_node(
         }
     };
 
-    scopes.push(FastScope::new(
-        node_rel.clone(),
-        FastRules::new_with_cache(effective.clone(), naming_cache),
-        FastRules::new_with_cache(strip_direct_content_policy(effective.clone()), naming_cache),
-    ));
+    scopes.push(
+        FastScope::new(
+            node_rel.clone(),
+            FastRules::new_with_cache(effective.clone(), naming_cache),
+            FastRules::new_with_cache(strip_direct_content_policy(effective.clone()), naming_cache),
+        )
+        .with_inherit(node.inherit),
+    );
 
     if let Some(children) = &node.children {
         for (child_name, child) in children {
@@ -360,6 +371,8 @@ fn scope_match(scope: &FastScope, dir_rel: &Path) -> Option<bool> {
 
     dir_contains(&scope.path, dir_rel).then_some(dir_rel == scope.path)
 }
+
+include!("ls_fast_scope_composition.rs");
 
 fn has_direct_file_policy(effective: &EffectiveRules) -> bool {
     effective.files.as_ref().is_some_and(|files| {
@@ -424,15 +437,28 @@ fn is_fast_node(node: &DirectoryNode) -> bool {
             .directories
             .as_ref()
             .map_or(true, is_fast_directory_bundle)
-        && node
-            .children
-            .as_ref()
-            .map_or(true, |children| children.values().all(is_fast_node))
+        && node.children.as_ref().map_or(true, |children| {
+            !children_have_potential_overlap(children) && children.values().all(is_fast_node)
+        })
+}
+
+fn children_have_potential_overlap(children: &HashMap<String, DirectoryNode>) -> bool {
+    children.len() > 1
+        && children
+            .keys()
+            .any(|name| path_has_scope_magic(Path::new(name)))
 }
 
 fn is_fast_file_bundle(files: &FileBundle) -> bool {
     files.max_lines.is_none()
+        && files.max_lines_patterns.is_none()
         && files.max_size.is_none()
+        && files.max_size_patterns.is_none()
+        && files.naming_patterns.as_ref().map_or(true, |patterns| {
+            patterns
+                .keys()
+                .all(|pattern| is_lslint_extension_pattern(pattern))
+        })
         && files.require_docs.is_none()
         && files.extensions.is_none()
         && files.required.is_none()

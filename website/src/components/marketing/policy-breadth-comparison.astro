@@ -13,7 +13,7 @@ type CodeLine = {
 const toneFor = (key: string, value?: string): CodeLine['tone'] => {
   if (key === 'rules' || key === 'structure') return 'section';
   if (key.includes('/') || key === './') return 'scope';
-  if (key.includes('@package-standard') || value?.includes('@package-standard')) return 'definition';
+  if (key.includes('@') || value?.includes('@')) return 'definition';
   if (key === 'max_lines') return 'limit';
   if (value === 'true' || value === '1' || value === 'exists:1') return 'required';
   if (value === 'false' || value === '0-1' || value === 'exists:0-1') return 'optional';
@@ -59,7 +59,7 @@ const lsLintLines = parsePolicy(lsLintPolicy);
         <ul>
           <li><code>AGENTS.md</code> required by <code>@agentic-project</code></li>
           <li><code>package.json</code> required</li>
-          <li>One 500-line default inherited by project files</li>
+          <li>Built-in agent guidance baseline</li>
         </ul>
       </div>
       <div class="policy-scope is-package">
@@ -67,11 +67,12 @@ const lsLintLines = parsePolicy(lsLintPolicy);
         <ul>
           <li><code>AGENTS.md</code>, <code>package.json</code>, and <code>src/</code> required</li>
           <li><code>README.md</code>, tests, fixtures, and config optional</li>
-          <li>Package names and TypeScript follow scoped naming rules</li>
+          <li>One source-file rule sets naming and a 500-line limit</li>
+          <li>The <code>src/</code> scope carries it through inheriting descendants</li>
         </ul>
       </div>
     </div>
-    <p>The size default flows through every package. <code>ui-kit/</code> reuses the contract and adds only one local allowance: optional <code>stories/</code>.</p>
+    <p><code>@source-file</code> keeps each TypeScript directive to one line. The package contract reuses it for source and test extensions without repeating the attributes.</p>
   </section>
 
   <section class="policy-wipe" data-policy-wipe data-reveal="100" style="--reveal: 100%;" aria-labelledby="policy-compare-title">
@@ -130,7 +131,7 @@ const lsLintLines = parsePolicy(lsLintPolicy);
         </div>
         <div class="policy-layer-summary is-capable">
           <strong>Added by Assura</strong>
-          <span>Built-in baseline</span><span>Required and optional paths</span><span>Inherited size default</span><span>Local overrides</span>
+          <span>Built-in baseline</span><span>Required and optional paths</span><span>Reusable source directive</span><span>Scoped naming</span>
         </div>
       </section>
 

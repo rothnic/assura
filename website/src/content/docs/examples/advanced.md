@@ -59,14 +59,22 @@ Supported count forms include `exists:1`, `exists:0`, and inclusive ranges like
 
 ## Reusable Package Rules
 
-Use `rules:` and `use:` when the same policy repeats across package folders.
+Use a scalar rule reference when the same file attributes repeat, and `use:`
+when a whole tree fragment repeats across package folders.
 
 ```yaml
 rules:
+  "@source-file":
+    naming: kebab-case
+    max_lines: 500
+
   "@package-standard":
     README.md: exists:1
     package.json: exists:1
-    src/: exists:1
+    src/:
+      required: true
+      .ts: "@source-file"
+      .tsx: "@source-file"
 
 structure:
   packages/:
@@ -79,8 +87,28 @@ structure:
       provides: doc
 ```
 
-This keeps the package contract in one reusable fragment while each package and
-documentation provider still appears where it lives in the tree.
+This keeps simple file directives on one line and the package contract in one
+reusable tree fragment. The directives apply through inheriting descendants of
+`src/`; a more specific structure scope can merge an override or set
+`inherit: false` to reset them. Expand a file directive in place when one
+pattern needs a local override; use the containing node's `files:` mapping for
+scope-wide defaults. The [configuration reference](/reference/configuration/#concise-and-expanded-equivalents)
+shows both equivalent forms and glob scope controls.
+
+Use explicit file globs when depth matters instead of cascading extension
+shorthand:
+
+```yaml
+structure:
+  ./:
+    "./*.ts": "@source-file" # direct root files
+    "./**/*.tsx": "@source-file" # root and descendants
+  packages/*/src/:
+    "*.test.ts": "@source-file" # direct files in each matched src/
+```
+
+Run `assura explain path/to/file.ts` to see the matching hierarchy scopes and
+the normalized file pattern that supplies each effective attribute.
 
 ## Generated Output Exclusions
 

@@ -78,6 +78,7 @@ fn node_directive_from_mapping(mapping: Mapping) -> Result<NodeDirective, String
 fn apply_file_directive(
     output: &mut Mapping,
     filename: &str,
+    attribute_pattern: &str,
     directive: NodeDirective,
 ) -> Result<(), String> {
     if directive.naming.is_some() {
@@ -85,7 +86,7 @@ fn apply_file_directive(
             "Assura config exact file key '{filename}' only supports exists"
         ));
     }
-    apply_file_attributes(output, directive.attributes)?;
+    apply_file_pattern_attributes(output, attribute_pattern, directive.attributes)?;
     if let Some(exists) = directive.exists {
         set_nested_mapping(output, "files", "exists", mapping_entry(filename, exists));
         if filename_count_is_allowed(output, "files", filename) {
@@ -101,44 +102,56 @@ fn apply_file_directive(
 
 fn apply_file_pattern_directive(
     output: &mut Mapping,
-    pattern: &str,
+    local_pattern: &str,
+    attribute_pattern: &str,
     directive: NodeDirective,
 ) -> Result<(), String> {
-    apply_file_attributes(output, directive.attributes)?;
+    if directive.exists.is_some() && local_pattern.contains('/') {
+        return Err(format!(
+            "Assura config file glob '{local_pattern}' cannot use exists across directories; place a direct-child exists rule in the matching structure scope"
+        ));
+    }
+    apply_file_pattern_attributes(output, attribute_pattern, directive.attributes)?;
     let allows_by_count = directive.exists.is_some() && directive.naming.is_none();
     if let Some(naming) = directive.naming {
         set_nested_mapping(
             output,
             "files",
             "naming_patterns",
-            mapping_entry(pattern, naming),
+            mapping_entry(attribute_pattern, naming),
         );
     }
     if let Some(exists) = directive.exists {
-        set_nested_mapping(output, "files", "exists", mapping_entry(pattern, exists));
+        set_nested_mapping(
+            output,
+            "files",
+            "exists",
+            mapping_entry(local_pattern, exists),
+        );
     }
     if allows_by_count {
-        append_nested_sequence(output, "files", "allowed_patterns", pattern);
+        append_nested_sequence(output, "files", "allowed_patterns", local_pattern);
     }
     Ok(())
 }
 
 fn apply_captured_file_directive(
     output: &mut Mapping,
-    pattern: &str,
+    local_pattern: &str,
+    attribute_pattern: &str,
     directive: NodeDirective,
 ) -> Result<(), String> {
-    apply_file_attributes(output, directive.attributes)?;
+    apply_file_pattern_attributes(output, attribute_pattern, directive.attributes)?;
     if let Some(naming) = directive.naming {
         set_nested_mapping(
             output,
             "files",
             "naming_patterns",
-            mapping_entry(pattern, naming),
+            mapping_entry(attribute_pattern, naming),
         );
     }
     if directive.exists.as_deref() != Some("0") {
-        append_nested_sequence(output, "files", "allowed_patterns", pattern);
+        append_nested_sequence(output, "files", "allowed_patterns", local_pattern);
     }
     Ok(())
 }
@@ -248,6 +261,24 @@ fn apply_file_attributes(output: &mut Mapping, attributes: Mapping) -> Result<()
         }
     }
     Ok(())
+}
+
+fn apply_file_pattern_attributes(
+    output: &mut Mapping,
+    pattern: &str,
+    mut attributes: Mapping,
+) -> Result<(), String> {
+    for (attribute, target) in [
+        ("max_lines", "max_lines_patterns"),
+        ("max_size", "max_size_patterns"),
+    ] {
+        if let Some(value) = attributes.remove(string_value(attribute)) {
+            let mut entry = Mapping::new();
+            entry.insert(string_value(pattern), value);
+            set_nested_mapping(output, "files", target, Value::Mapping(entry));
+        }
+    }
+    apply_file_attributes(output, attributes)
 }
 
 fn apply_directory_attributes(output: &mut Mapping, attributes: Mapping) -> Result<(), String> {

@@ -37,6 +37,10 @@ pub struct FileBundle {
     #[cfg_attr(feature = "full-cli", validate(range(min = 1, max = 100000)))]
     pub max_lines: Option<usize>,
 
+    /// Maximum lines keyed by direct file glob pattern
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_lines_patterns: Option<HashMap<String, usize>>,
+
     /// Maximum file size (e.g., "100KB", "1MB", "10MB")
     #[serde(skip_serializing_if = "Option::is_none")]
     #[cfg_attr(
@@ -44,6 +48,10 @@ pub struct FileBundle {
         validate(custom(function = "validate_size_string"))
     )]
     pub max_size: Option<String>,
+
+    /// Maximum file size keyed by direct file glob pattern
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_size_patterns: Option<HashMap<String, String>>,
 
     /// Whether documentation is required
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -149,8 +157,12 @@ pub struct ResolvedFileBundle {
     pub naming_patterns: Option<HashMap<String, String>>,
     /// Maximum lines
     pub max_lines: Option<usize>,
+    /// Maximum lines keyed by direct file glob pattern
+    pub max_lines_patterns: Option<HashMap<String, usize>>,
     /// Maximum size
     pub max_size: Option<String>,
+    /// Maximum size keyed by direct file glob pattern
+    pub max_size_patterns: Option<HashMap<String, String>>,
     /// Documentation required
     pub require_docs: Option<bool>,
     /// Allowed extensions
@@ -178,7 +190,9 @@ impl FileBundle {
             naming: None,
             naming_patterns: None,
             max_lines: None,
+            max_lines_patterns: None,
             max_size: None,
+            max_size_patterns: None,
             require_docs: None,
             extensions: None,
             severity: None,
@@ -209,9 +223,21 @@ impl FileBundle {
         self
     }
 
+    /// Set maximum lines by direct file glob pattern
+    pub fn with_max_lines_patterns(mut self, max_lines_patterns: HashMap<String, usize>) -> Self {
+        self.max_lines_patterns = Some(max_lines_patterns);
+        self
+    }
+
     /// Set maximum size
     pub fn with_max_size(mut self, max_size: impl Into<String>) -> Self {
         self.max_size = Some(max_size.into());
+        self
+    }
+
+    /// Set maximum sizes by direct file glob pattern
+    pub fn with_max_size_patterns(mut self, max_size_patterns: HashMap<String, String>) -> Self {
+        self.max_size_patterns = Some(max_size_patterns);
         self
     }
 

@@ -3,12 +3,12 @@
 use super::case::{validate_file_stem_with_path, validate_name_with_path};
 use super::direct_contents::exists_patterns_allow_name;
 use super::patterns::{
-    best_lslint_suffix_match, is_lslint_extension_pattern, lslint_file_stem,
-    matches_any_compiled_pattern, matches_single_compiled_pattern,
+    best_file_pattern_match, file_pattern_uses_lslint_stem, lslint_file_stem,
+    matches_any_compiled_pattern,
 };
 use super::repository_references::{is_source_reference_file, SOURCE_REFERENCE_FILE_SIZE_LIMIT};
 use super::rules::{
-    count_satisfies, display_rel, file_matches_any_extension, parse_size, severity_for_bundle,
+    count_satisfies, display_rel, file_matches_any_extension, severity_for_bundle,
     severity_for_directory_bundle,
 };
 use super::{direct_contents::DirectFilePolicy, StructureCheckReport, StructureChecker};
@@ -188,6 +188,7 @@ impl StructureChecker {
         let needs_markdown = false;
         let needs_file_content = rules.files.as_ref().is_some_and(|files| {
             files.max_lines.is_some()
+                || files.max_lines_patterns.is_some()
                 || (files.require_docs == Some(true)
                     && path.extension().and_then(|ext| ext.to_str()) == Some("rs"))
         });
@@ -296,8 +297,8 @@ impl StructureChecker {
             allowed_by_name || allowed_by_pattern || allowed_by_exists,
             report,
         );
-        self.validate_file_size(path, rel, files, report);
-        self.validate_file_line_count(rel, files, content, report);
+        self.validate_file_size(path, rel, files, filename, report);
+        self.validate_file_line_count(rel, files, filename, content, report);
         self.validate_rust_docs(path, rel, files, content, report);
     }
 
@@ -338,20 +339,11 @@ impl StructureChecker {
         let parent_rel = rel.parent().unwrap_or_else(|| Path::new(""));
 
         if let Some(naming_patterns) = &files.naming_patterns {
-            let best_match = best_lslint_suffix_match(naming_patterns, filename).or_else(|| {
-                naming_patterns
-                    .iter()
-                    .filter(|(pattern, _)| {
-                        matches_single_compiled_pattern(pattern, filename, &self.glob_patterns)
-                    })
-                    .map(|(pattern, naming)| (pattern.as_str(), naming.as_str()))
-                    .max_by(|(left, _), (right, _)| {
-                        left.len().cmp(&right.len()).then_with(|| right.cmp(left))
-                    })
-            });
+            let best_match =
+                best_file_pattern_match(naming_patterns, filename, rel, &self.glob_patterns);
 
             if let Some((pattern, naming)) = best_match {
-                let stem = if is_lslint_extension_pattern(pattern) {
+                let stem = if file_pattern_uses_lslint_stem(pattern) {
                     lslint_file_stem(filename)
                 } else {
                     path.file_stem()
@@ -397,61 +389,6 @@ impl StructureChecker {
                     format!(
                         "File '{}' does not match naming convention '{}'",
                         filename, naming
-                    ),
-                    severity_for_bundle(files),
-                );
-            }
-        }
-    }
-
-    fn validate_file_size(
-        &self,
-        path: &Path,
-        rel: &Path,
-        files: &FileBundle,
-        report: &mut StructureCheckReport,
-    ) {
-        if let Some(max_size) = &files.max_size {
-            if let Some(max_bytes) = parse_size(max_size) {
-                if let Ok(metadata) = fs::metadata(path) {
-                    if metadata.len() > max_bytes {
-                        self.push_violation(
-                            report,
-                            rel.to_path_buf(),
-                            "max_size",
-                            format!(
-                                "File '{}' is {} bytes, exceeding limit {}",
-                                display_rel(rel),
-                                metadata.len(),
-                                max_size
-                            ),
-                            severity_for_bundle(files),
-                        );
-                    }
-                }
-            }
-        }
-    }
-
-    fn validate_file_line_count(
-        &self,
-        rel: &Path,
-        files: &FileBundle,
-        content: Option<&str>,
-        report: &mut StructureCheckReport,
-    ) {
-        if let (Some(max_lines), Some(content)) = (files.max_lines, content) {
-            let line_count = content.lines().count();
-            if line_count > max_lines {
-                self.push_violation(
-                    report,
-                    rel.to_path_buf(),
-                    "max_lines",
-                    format!(
-                        "File '{}' has {} lines, exceeding limit {}",
-                        display_rel(rel),
-                        line_count,
-                        max_lines
                     ),
                     severity_for_bundle(files),
                 );

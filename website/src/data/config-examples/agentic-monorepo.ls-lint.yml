@@ -9,6 +9,7 @@ ls:
 
   packages/*/src:
     .ts: kebab-case
+    .tsx: kebab-case
 
   packages/*/tests:
     .test.ts: kebab-case

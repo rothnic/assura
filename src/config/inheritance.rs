@@ -4,6 +4,7 @@
 //! by walking the structure tree and applying inheritance.
 
 use super::config::{Config, DirectoryNode, FileBundle, ResolvedFileBundle};
+use std::collections::HashMap;
 use std::path::Path;
 
 /// Resolves hierarchical rules into flat (path_pattern, bundle) pairs
@@ -65,7 +66,9 @@ impl<'a> RuleResolver<'a> {
                     naming: rule.bundle.naming.clone(),
                     naming_patterns: rule.bundle.naming_patterns.clone(),
                     max_lines: rule.bundle.max_lines,
+                    max_lines_patterns: rule.bundle.max_lines_patterns.clone(),
                     max_size: rule.bundle.max_size.clone(),
+                    max_size_patterns: rule.bundle.max_size_patterns.clone(),
                     require_docs: rule.bundle.require_docs,
                     extensions: rule.bundle.extensions.clone(),
                     severity: rule.bundle.severity.clone(),
@@ -134,7 +137,6 @@ impl<'a> RuleResolver<'a> {
             Some(c) => c,
             None => {
                 return FileBundle {
-                    naming_patterns: None,
                     required: None,
                     allowed_names: None,
                     allowed_patterns: None,
@@ -148,9 +150,20 @@ impl<'a> RuleResolver<'a> {
 
         FileBundle {
             naming: child.naming.clone().or_else(|| parent.naming.clone()),
-            naming_patterns: child.naming_patterns.clone(),
+            naming_patterns: merge_pattern_maps(
+                parent.naming_patterns.as_ref(),
+                child.naming_patterns.as_ref(),
+            ),
             max_lines: child.max_lines.or(parent.max_lines),
+            max_lines_patterns: merge_pattern_maps(
+                parent.max_lines_patterns.as_ref(),
+                child.max_lines_patterns.as_ref(),
+            ),
             max_size: child.max_size.clone().or_else(|| parent.max_size.clone()),
+            max_size_patterns: merge_pattern_maps(
+                parent.max_size_patterns.as_ref(),
+                child.max_size_patterns.as_ref(),
+            ),
             require_docs: child.require_docs.or(parent.require_docs),
             extensions: child
                 .extensions
@@ -217,6 +230,22 @@ impl<'a> RuleResolver<'a> {
 
         // Exact match
         path_str == pattern
+    }
+}
+
+fn merge_pattern_maps<T: Clone>(
+    parent: Option<&HashMap<String, T>>,
+    child: Option<&HashMap<String, T>>,
+) -> Option<HashMap<String, T>> {
+    match (parent, child) {
+        (None, None) => None,
+        (Some(parent), None) => Some(parent.clone()),
+        (None, Some(child)) => Some(child.clone()),
+        (Some(parent), Some(child)) => {
+            let mut merged = parent.clone();
+            merged.extend(child.clone());
+            Some(merged)
+        }
     }
 }
 

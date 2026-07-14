@@ -24,8 +24,11 @@ mod direct_contents;
 mod docs_lifecycle;
 #[cfg(feature = "yaml-config")]
 mod explain;
+#[cfg(feature = "yaml-config")]
+mod explain_rules;
 #[cfg(all(feature = "yaml-config", feature = "json-output"))]
 pub mod fast_cli;
+mod file_limits;
 mod ls_fast;
 mod ls_fast_counts;
 mod ls_fast_naming;
@@ -85,9 +88,11 @@ pub use compiled_artifact::CompiledStructureConfigArtifact;
 use compiled_config::CompiledStructureConfig;
 #[cfg(feature = "yaml-config")]
 pub use explain::{
-    explain_structure_path, PathExplainNextAction, PathExplainReport, PathExplainRules,
-    PathExplainScope, PathExplainSkip,
+    explain_structure_path, PathExplainNextAction, PathExplainReport, PathExplainScope,
+    PathExplainSkip,
 };
+#[cfg(feature = "yaml-config")]
+pub use explain_rules::{PathExplainFilePatternRule, PathExplainRules};
 use glob::Pattern;
 use ls_fast_plan::FastScope;
 #[cfg(feature = "yaml-config")]

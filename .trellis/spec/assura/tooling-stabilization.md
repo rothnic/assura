@@ -82,9 +82,9 @@ validation logic that Rust tests exercise.
 
 - Good: the project-contract example passes with `user-menu.tsx` and reports
   `BadName.tsx`, `checkout-flow.tsx`, and `tmp-output` after drift is added.
-- Base: the reusable monorepo policy applies one inherited 500-line ceiling,
-  passes a 300-line package README, and accepts the `ui-kit` local `stories/`
-  override.
+- Base: the reusable monorepo policy applies one `@source-file` directive to
+  `.ts`, `.tsx`, and `.test.ts` entries, passes a 300-line package README, and
+  accepts valid source files below the shared 500-line default.
 - Bad threshold: `packages/core/src/too-long.ts` reaches 501 lines and must
   report a `max_lines` violation.
 - Bad: an Astro component displays legacy `directories:` or `children:` text

@@ -164,10 +164,18 @@ fn normalize_path_key(
         return Ok(());
     }
 
+    if is_explicit_file_glob(key) {
+        let local_pattern = key.strip_prefix("./").unwrap_or(key);
+        let scoped_pattern = scoped_file_pattern(scope_path, key);
+        let directive = node_directive(value, rules, stack)?;
+        apply_file_pattern_directive(output, local_pattern, &scoped_pattern, directive)?;
+        return Ok(());
+    }
+
     if is_extension_key(key) {
         let pattern = format!("*{key}");
         let directive = node_directive(value, rules, stack)?;
-        apply_file_pattern_directive(output, &pattern, directive)?;
+        apply_file_pattern_directive(output, &pattern, &pattern, directive)?;
         return Ok(());
     }
 
@@ -202,9 +210,11 @@ fn normalize_path_key(
 
     let directive = node_directive(value, rules, stack)?;
     if key_has_captures {
-        apply_captured_file_directive(output, key, directive)?;
+        let scoped_pattern = scoped_direct_file_pattern(scope_path, key);
+        apply_captured_file_directive(output, key, &scoped_pattern, directive)?;
     } else {
-        apply_file_directive(output, key, directive)?;
+        let scoped_pattern = scoped_direct_file_pattern(scope_path, key);
+        apply_file_directive(output, key, &scoped_pattern, directive)?;
     }
     Ok(())
 }

@@ -47,6 +47,7 @@ struct AgentExplainReport {
     excluded: bool,
     applied_scopes: Vec<PathExplainScope>,
     effective_rules: PathExplainRules,
+    matched_file_patterns: Vec<crate::cli::check::PathExplainFilePatternRule>,
     skipped_checks: Vec<PathExplainSkip>,
     next_actions: Vec<PathExplainNextAction>,
 }
@@ -60,6 +61,7 @@ impl From<&PathExplainReport> for AgentExplainReport {
             excluded: report.excluded,
             applied_scopes: report.applied_scopes.clone(),
             effective_rules: report.effective_rules.clone(),
+            matched_file_patterns: report.matched_file_patterns.clone(),
             skipped_checks: report.skipped_checks.clone(),
             next_actions: report.next_actions.clone(),
         }

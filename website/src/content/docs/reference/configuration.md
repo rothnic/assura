@@ -71,7 +71,7 @@ Concise keys expand to the same internal model documented below:
 | `extra: false` | Rejects unrecognized direct files and directories in this scope. |
 | `README.md: exists:1` | Requires exactly one direct file named `README.md`. |
 | `src/: exists:1` | Requires exactly one direct child directory named `src`. |
-| `.rs: snake_case` | Applies `snake_case` naming to direct `*.rs` files. |
+| `.rs: snake_case` | Applies cascading `snake_case` naming to `.rs` files in this scope and inheriting descendants. |
 
 Use a mapping under the same path key when the directive needs more detail:
 
@@ -91,6 +91,75 @@ structure:
           - title: "?? Debug Mode"
             optional: false
 ```
+
+## Concise And Expanded Equivalents
+
+Prefer a scalar directive when one attribute is enough. When the same group of
+attributes applies to several file patterns, name it once and keep each use to
+one line:
+
+```yaml
+rules:
+  "@source-file":
+    naming: kebab-case
+    max_lines: 500
+
+structure:
+  src/:
+    .ts: "@source-file"
+    .tsx: "@source-file"
+```
+
+The reusable shorthand above normalizes to the same configuration as expanded
+attributes under each directive:
+
+```yaml
+structure:
+  src/:
+    .ts:
+      naming: kebab-case
+      max_lines: 500
+    .tsx:
+      naming: kebab-case
+      max_lines: 500
+```
+
+Use the expanded form for a one-off override or when the directive needs
+additional attributes. Directive-attached `naming`, `max_lines`, and `max_size`
+apply only to files matching that pattern in the configured directory scope and
+its inheriting descendants. Put `max_lines` or `max_size` under the containing
+node's `files:` mapping when the value should be the default for every file in
+that scope.
+
+Choose reach explicitly. Extension shorthand cascades like LS-Lint, while an
+explicit file glob preserves the depth you configure:
+
+| Notation | Reach |
+| --- | --- |
+| `.ts: "@source-file"` | `.ts` files in this scope and inheriting descendants. |
+| `"./*.ts": "@source-file"` under `./` | Direct root `.ts` files only. |
+| `"./**/*.ts": "@source-file"` under `./` | Root and descendant `.ts` files. |
+| `"*.ts": "@source-file"` under `src/` | Direct `.ts` files inside `src/`. |
+| `"**/*.ts": "@source-file"` under `src/` | `.ts` files anywhere below `src/`. |
+
+The structure key controls reach. `*` matches one directory segment and `**`
+crosses directory separators:
+
+```yaml
+structure:
+  packages/*/src/:
+    .ts: "@source-file"
+  packages/**/generated/:
+    inherit: false
+```
+
+More specific scopes merge their file patterns by default. Set
+`inherit: false` when a subtree should reset inherited policy. Run
+`assura explain path/to/file.ts` to see the applied directory scopes and the
+winning normalized naming, line, and size directives for that file. A file with
+no matching pattern reports `matched_file_patterns=none`; JSON reports an empty
+`matched_file_patterns` array. Text output marks scopes that discard inherited
+policy with `(reset)`.
 
 Captures use single braces such as `{topic}`. Removed alpha capture forms such
 as `${name}` and `{{name}}` are not supported in hand-authored structure
@@ -112,6 +181,7 @@ the project needs relationships or reusable contracts.
 | Captured source/test pair | `"{component}.tsx"` and `"{component}.test.tsx": exists:1` |
 | Package documentation need | `needs: doc` with `provides: doc` |
 | Reusable package policy | `rules:` plus `use: "@package-standard"` |
+| Reusable file directive | `.ts: "@source-file"` after defining a node rule |
 | Agentic project baseline | `use: "@agentic-project"` at the project root |
 | Markdown outline | `markdown.outline` with nested heading lists |
 
@@ -229,9 +299,11 @@ files:
 | Field | Behavior |
 | --- | --- |
 | `naming` | Naming convention for files in the scope. Supports built-in case names and `regex:<pattern>`. |
-| `naming_patterns` | Naming conventions keyed by direct file glob pattern. More specific matches win. |
-| `max_lines` | Fails when a direct file has more lines than the configured limit. |
-| `max_size` | Fails when a direct file exceeds a size such as `100KB` or `2MB`. |
+| `naming_patterns` | Naming conventions keyed by normalized file glob pattern. More specific matches win. Prefer concise tree notation for hand-authored config. |
+| `max_lines` | Default line limit for files in the scope and inheriting descendants. |
+| `max_lines_patterns` | Normalized pattern-specific line limits emitted by concise directives. |
+| `max_size` | Default size limit for files in the scope and inheriting descendants, using values such as `100KB` or `2MB`. |
+| `max_size_patterns` | Normalized pattern-specific size limits emitted by concise directives. |
 | `require_docs` | For Rust files, requires `//!` or `///` rustdoc text. |
 | `extensions` | Allows only the listed extensions when extension validation is configured. Multi-part extensions such as `tar.gz` are supported. |
 | `severity` | Severity assigned to violations from this file bundle. `low` is advisory; `medium`, `high`, and `critical` are blocking. |
@@ -241,6 +313,11 @@ files:
 | `forbidden_patterns` | Direct file glob patterns that are always rejected. Forbidden patterns override broad allowed patterns. |
 | `allow_extra` | When `false`, rejects direct files not covered by exact names, allowed patterns, or allowed extensions. |
 | `exists` | Direct child file count constraints keyed by glob or exact pattern. Values are `exists`, `0`, `1`, or ranges such as `1-4`. |
+
+`exists` does not count recursively. Use `"./*.ts": exists:1` at the root or
+`"*.ts": exists:1` inside the relevant directory scope. Assura rejects
+cross-directory forms such as `"./**/*.ts": exists:1` so a recursive-looking
+rule cannot silently count only direct children.
 
 ## Directory Rules
 

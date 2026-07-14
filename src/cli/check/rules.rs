@@ -209,7 +209,6 @@ pub(super) fn merge_file_bundle(
     match (parent, child) {
         (None, None) => None,
         (Some(parent), None) => Some(Arc::new(FileBundle {
-            naming_patterns: None,
             required: None,
             allowed_names: None,
             allowed_patterns: None,
@@ -221,9 +220,20 @@ pub(super) fn merge_file_bundle(
         (None, Some(child)) => Some(Arc::new(child.clone())),
         (Some(parent), Some(child)) => Some(Arc::new(FileBundle {
             naming: child.naming.clone().or_else(|| parent.naming.clone()),
-            naming_patterns: child.naming_patterns.clone(),
+            naming_patterns: merge_pattern_maps(
+                parent.naming_patterns.as_ref(),
+                child.naming_patterns.as_ref(),
+            ),
             max_lines: child.max_lines.or(parent.max_lines),
+            max_lines_patterns: merge_pattern_maps(
+                parent.max_lines_patterns.as_ref(),
+                child.max_lines_patterns.as_ref(),
+            ),
             max_size: child.max_size.clone().or_else(|| parent.max_size.clone()),
+            max_size_patterns: merge_pattern_maps(
+                parent.max_size_patterns.as_ref(),
+                child.max_size_patterns.as_ref(),
+            ),
             require_docs: child.require_docs.or(parent.require_docs),
             extensions: child
                 .extensions
@@ -237,6 +247,22 @@ pub(super) fn merge_file_bundle(
             allow_extra: child.allow_extra,
             exists: child.exists.clone(),
         })),
+    }
+}
+
+fn merge_pattern_maps<T: Clone>(
+    parent: Option<&HashMap<String, T>>,
+    child: Option<&HashMap<String, T>>,
+) -> Option<HashMap<String, T>> {
+    match (parent, child) {
+        (None, None) => None,
+        (Some(parent), None) => Some(parent.clone()),
+        (None, Some(child)) => Some(child.clone()),
+        (Some(parent), Some(child)) => {
+            let mut merged = parent.clone();
+            merged.extend(child.clone());
+            Some(merged)
+        }
     }
 }
 

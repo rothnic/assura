@@ -133,7 +133,7 @@ fn split_path_segments(path: &str) -> Vec<&str> {
         .collect()
 }
 
-fn literal_constraint_chars(segment: &str) -> usize {
+pub(super) fn literal_constraint_chars(segment: &str) -> usize {
     let mut count = 0;
     let mut in_capture = false;
     let mut in_character_class = false;

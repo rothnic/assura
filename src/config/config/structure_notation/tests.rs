@@ -238,6 +238,7 @@ structure:
 }
 
 mod built_in_rules;
+mod directive_shorthand;
 
 #[test]
 fn nested_captured_directory_use_expands_tree_rule_fragments() {

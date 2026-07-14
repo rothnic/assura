@@ -1,4 +1,8 @@
 rules:
+  "@source-file":
+    naming: kebab-case
+    max_lines: 500
+
   "@package-standard":
     extra: false
     AGENTS.md: exists:1
@@ -7,25 +11,19 @@ rules:
     tsconfig.json: exists:0-1
     src/:
       required: true
-      .ts: kebab-case
+      .ts: "@source-file"
+      .tsx: "@source-file"
     tests/:
       required: false
-      .test.ts: kebab-case
+      .test.ts: "@source-file"
     fixtures/: exists:0-1
 
 structure:
   ./:
     use: "@agentic-project"
-    files:
-      max_lines: 500
     package.json: exists:1
     packages/:
       required: false
       .dir: kebab-case
       "{package}/":
         use: "@package-standard"
-      ui-kit/:
-        use: "@package-standard"
-        stories/:
-          required: false
-          .tsx: PascalCase

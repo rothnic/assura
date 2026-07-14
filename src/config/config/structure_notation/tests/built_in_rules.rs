@@ -32,8 +32,23 @@ structure:
         files.allowed_names.as_deref(),
         Some(&["SKILL.md".to_string()][..])
     );
-    assert_eq!(files.max_lines, Some(600));
-    assert_eq!(files.max_size.as_deref(), Some("24KB"));
+    assert_eq!(files.max_lines, None);
+    assert_eq!(files.max_size, None);
+    assert_eq!(
+        files
+            .max_lines_patterns
+            .as_ref()
+            .and_then(|patterns| patterns.get(".agents/skills/{skill}/SKILL.md")),
+        Some(&600)
+    );
+    assert_eq!(
+        files
+            .max_size_patterns
+            .as_ref()
+            .and_then(|patterns| patterns.get(".agents/skills/{skill}/SKILL.md"))
+            .map(String::as_str),
+        Some("24KB")
+    );
     assert_eq!(files.allow_extra, Some(false));
     assert!(!skill.inherit);
 
@@ -107,15 +122,22 @@ structure:
             .and_then(|directory| directory.naming.as_deref()),
         Some("kebab-case")
     );
+    let skill_files = skill.files.as_ref().expect("skill file rules");
+    assert_eq!(skill_files.max_lines, None);
+    assert_eq!(skill_files.max_size, None);
     assert_eq!(
-        skill.files.as_ref().and_then(|files| files.max_lines),
-        Some(600)
+        skill_files
+            .max_lines_patterns
+            .as_ref()
+            .and_then(|patterns| patterns.get(".agents/skills/{skill}/SKILL.md")),
+        Some(&600)
     );
     assert_eq!(
-        skill
-            .files
+        skill_files
+            .max_size_patterns
             .as_ref()
-            .and_then(|files| files.max_size.as_deref()),
+            .and_then(|patterns| patterns.get(".agents/skills/{skill}/SKILL.md"))
+            .map(String::as_str),
         Some("24KB")
     );
 }

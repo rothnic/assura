@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-const COMPILED_CONFIG_SCHEMA_VERSION: u32 = 23;
+const COMPILED_CONFIG_SCHEMA_VERSION: u32 = 24;
 const ASSURA_VERSION_HASH: u64 = stable_hash_const(env!("CARGO_PKG_VERSION").as_bytes());
 
 /// Portable artifact containing a parsed Assura structure config.
@@ -223,7 +223,9 @@ pub(super) struct PortableFileBundle {
     naming: Option<String>,
     naming_patterns: Option<HashMap<String, String>>,
     max_lines: Option<usize>,
+    max_lines_patterns: Option<HashMap<String, usize>>,
     max_size: Option<String>,
+    max_size_patterns: Option<HashMap<String, String>>,
     require_docs: Option<bool>,
     extensions: Option<Vec<String>>,
     severity: Option<String>,
@@ -367,7 +369,9 @@ impl From<FileBundle> for PortableFileBundle {
             naming: bundle.naming,
             naming_patterns: bundle.naming_patterns,
             max_lines: bundle.max_lines,
+            max_lines_patterns: bundle.max_lines_patterns,
             max_size: bundle.max_size,
+            max_size_patterns: bundle.max_size_patterns,
             require_docs: bundle.require_docs,
             extensions: bundle.extensions,
             severity: bundle.severity,
@@ -387,7 +391,9 @@ impl From<PortableFileBundle> for FileBundle {
             naming: bundle.naming,
             naming_patterns: bundle.naming_patterns,
             max_lines: bundle.max_lines,
+            max_lines_patterns: bundle.max_lines_patterns,
             max_size: bundle.max_size,
+            max_size_patterns: bundle.max_size_patterns,
             require_docs: bundle.require_docs,
             extensions: bundle.extensions,
             severity: bundle.severity,

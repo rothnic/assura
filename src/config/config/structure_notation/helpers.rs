@@ -185,6 +185,27 @@ fn is_extension_key(key: &str) -> bool {
     token.chars().all(|char| char.is_ascii_alphanumeric())
 }
 
+fn is_explicit_file_glob(key: &str) -> bool {
+    !key.ends_with('/') && key.contains(['*', '?', '[', ']'])
+}
+
+fn scoped_file_pattern(scope: &str, pattern: &str) -> String {
+    let local = pattern.strip_prefix("./").unwrap_or(pattern);
+    if scope.is_empty() || scope == "." || scope == "./" {
+        format!("./{local}")
+    } else {
+        join_scope_path(scope, local)
+    }
+}
+
+fn scoped_direct_file_pattern(scope: &str, filename: &str) -> String {
+    if scope.is_empty() || scope == "." || scope == "./" {
+        format!("./{filename}")
+    } else {
+        join_scope_path(scope, filename)
+    }
+}
+
 fn is_common_dotfile_name(key: &str) -> bool {
     matches!(
         key,
