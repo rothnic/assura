@@ -48,6 +48,9 @@ routes and only aligning their color palette.
 - Use accessible semantic HTML, stable responsive dimensions, and no overlapping
   or overflowing text at common breakpoints.
 - Keep docs site behavior independent from the landing page.
+- Make the onboarding claim executable: detect the project, apply the broad
+  built-in agent baseline through a project-owned wrapper, and report which
+  project-specific policy remains undecided.
 
 ## Verification Checklist
 
@@ -67,6 +70,13 @@ routes and only aligning their color palette.
 - [x] Production build passes.
 - [x] Assura structure validation passes for changed files or any new paths are
       intentionally added to `.assura/config.yml`.
+- [x] Mobile performance proof uses two equal metric columns and a single-row
+      evidence footer at 390px.
+- [x] Mobile execution layers use aligned markers with no row over 150px.
+- [x] Footer navigation precedes a compact creator byline with no empty trailing
+      block at 390px.
+- [x] Onboarding report and generated config expose an applied project-owned
+      rule wrapper while leaving unsupported specialization inactive.
 
 ## Verification Evidence
 
@@ -105,7 +115,7 @@ routes and only aligning their color palette.
 
 - Rewriting docs content or restructuring the full Starlight docs tree.
 - Adding a marketing CMS, analytics, forms, backend routes, or hosted service.
-- Changing core Rust CLI behavior.
+- Unrelated Rust CLI behavior outside the onboarding recommendation contract.
 - Introducing a large frontend framework dependency for this static page.
 
 ## Technical Notes

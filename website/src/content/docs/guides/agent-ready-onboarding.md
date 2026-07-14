@@ -7,7 +7,7 @@ Use this path when a coding agent is entering a new or existing repository and
 needs a broad, truthful baseline before it starts adding project-specific
 rules.
 
-The current experimental local command is:
+The local command is:
 
 ```bash
 assura agent onboard . --agent auto --format json
@@ -25,8 +25,9 @@ specialized.
    [Installation guide](/guides/installation/).
 2. Run `assura agent onboard . --agent auto --format json` from the project
    root.
-3. Read the generated report sections: `installed`, `detected`, `verified`,
-   `inactive`, `lifecycle_profiles`, and `next_actions`.
+3. Read the generated report sections: `installed`, `detected`,
+   `rule_recommendations`, `verified`, `inactive`, `lifecycle_profiles`, and
+   `next_actions`.
 4. Open `.assura/onboarding/agent-next.md`.
 5. Ask the user only the remaining specialization questions.
 6. Specialize the config, content templates, or hooks only after those answers
@@ -42,8 +43,8 @@ not treat any remote bootstrap command as a current quickstart command.
 assura agent onboard . --agent auto --format json
 ```
 
-Use a concrete host-agent label only when you want Assura to generate an
-experimental, reviewable local integration bundle:
+Use a concrete host-agent label only when you want Assura to generate a
+reviewable local integration bundle:
 
 ```bash
 assura agent onboard . --agent codex --format json
@@ -62,8 +63,8 @@ Give the coding agent a short instruction like this when it enters a repository:
 Run Assura onboarding before changing project structure.
 
 1. Run: assura agent onboard . --agent auto --format json
-2. Read the report sections: installed, detected, verified, inactive,
-   lifecycle_profiles, and next_actions.
+2. Read the report sections: installed, detected, rule_recommendations,
+   verified, inactive, lifecycle_profiles, and next_actions.
 3. Open .assura/onboarding/agent-next.md.
 4. Treat inactive entries as unchecked, not as passing.
 5. Ask the user the remaining questions before adding language, layout,
@@ -96,6 +97,20 @@ look like this:
     "project_type": "rust",
     "agent_harness": "codex"
   },
+  "rule_recommendations": [
+    {
+      "preset": "@agentic-project",
+      "local_rule": "@project-agentic-baseline",
+      "status": "applied",
+      "reason": "rust project detected; broad agent-ready preset applied through a project-owned wrapper",
+      "includes": [
+        "@agents-dir",
+        "@agent-skill-dir",
+        "@agent-skill-file",
+        "@agent-skill-resource-dir"
+      ]
+    }
+  ],
   "content": {
     "template": "none",
     "status": "inactive"
@@ -148,6 +163,16 @@ look like this:
 capability is deliberately not configured yet. A clean `assura check` result is
 not the same thing as a fully onboarded repository.
 
+Recommended built-in policy is applied through a project-local wrapper such as
+`@project-agentic-baseline` when it does not replace existing root policy. The
+project owns that wrapper and can extend or override it without copying
+Assura's full preset into the config. Recommendation status is `applied` when
+the root uses the wrapper, `available` when existing root policy was preserved,
+`not-applied` when the selected config lacks the wrapper, and `conflict` when
+an existing wrapper with the same name needs review. Assura does not recommend
+language, framework, naming, or domain rules until the project provides enough
+evidence or a user confirms those choices.
+
 ## Generated Packet
 
 `assura agent onboard` writes a small packet under `.assura/onboarding/`:
@@ -155,6 +180,7 @@ not the same thing as a fully onboarded repository.
 | File | Purpose |
 | --- | --- |
 | `summary.md` | What Assura detected and installed. |
+| `rules.md` | Recommended presets, their project-local wrappers, and how to customize them. |
 | `questions.md` | The specialization questions the agent should ask. |
 | `agent-next.md` | The next handoff for coding agents. |
 | `lifecycle.md` | When to use nudge, warn, and gate feedback. |

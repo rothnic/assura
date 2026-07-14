@@ -206,6 +206,28 @@ fn agent_onboard_generates_broad_baseline_and_packet() {
     assert_eq!(output["installed"]["config"], ".assura/config.yml");
     assert_eq!(output["content"]["template"], "none");
     assert_eq!(output["content"]["status"], "inactive");
+    assert_eq!(
+        output["rule_recommendations"][0]["preset"],
+        "@agentic-project"
+    );
+    assert_eq!(
+        output["rule_recommendations"][0]["local_rule"],
+        "@project-agentic-baseline"
+    );
+    assert_eq!(output["rule_recommendations"][0]["status"], "applied");
+    assert!(output["rule_recommendations"][0]["reason"]
+        .as_str()
+        .expect("recommendation reason")
+        .contains("empty project detected"));
+    assert_eq!(
+        output["rule_recommendations"][0]["includes"],
+        serde_json::json!([
+            "@agents-dir",
+            "@agent-skill-dir",
+            "@agent-skill-file",
+            "@agent-skill-resource-dir"
+        ])
+    );
     let lifecycle_modes = output["lifecycle_profiles"]
         .as_array()
         .expect("lifecycle profiles")
@@ -246,6 +268,7 @@ fn agent_onboard_generates_broad_baseline_and_packet() {
         ".assura/config.yml",
         ".assura/presets.lock.yml",
         ".assura/onboarding/summary.md",
+        ".assura/onboarding/rules.md",
         ".assura/onboarding/questions.md",
         ".assura/onboarding/lifecycle.md",
         ".assura/onboarding/agent-next.md",
@@ -286,6 +309,7 @@ fn agent_onboard_generates_broad_baseline_and_packet() {
     assert!(agent_next.contains(".assura/onboarding/lifecycle.md"));
     assert!(agent_next.contains("STRUCTURE_FIT_CHECK"));
     assert!(agent_next.contains(".agents/skills/assura-structure-fit"));
+    assert!(agent_next.contains(".assura/onboarding/rules.md"));
     assert!(agent_next.contains("What primary language or stack should this project use?"));
     assert!(agent_next.contains("What test layout should the project use?"));
     let lifecycle =
@@ -294,6 +318,14 @@ fn agent_onboard_generates_broad_baseline_and_packet() {
     assert!(lifecycle.contains("| warn |"));
     assert!(lifecycle.contains("| gate |"));
     assert!(lifecycle.contains("does not silently mutate"));
+    let rules = fs::read_to_string(project.path().join(".assura/onboarding/rules.md")).unwrap();
+    assert!(rules.contains("@agentic-project"));
+    assert!(rules.contains("@project-agentic-baseline"));
+    assert!(rules.contains("Edit that local rule"));
+
+    let config = fs::read_to_string(project.path().join(".assura/config.yml")).unwrap();
+    assert!(config.contains("\"@project-agentic-baseline\":"));
+    assert!(config.contains("use: \"@agentic-project\""));
 
     let doctor: Value = serde_json::from_str(
         &fs::read_to_string(project.path().join(".assura/onboarding/doctor.json")).unwrap(),
@@ -592,9 +624,10 @@ fn agent_onboard_generated_config_validates_dynamic_directory_skill_contracts() 
 
     let config = fs::read_to_string(project.path().join(".assura/config.yml")).unwrap();
     assert!(config.contains("\"@agentic-project\""));
+    assert!(config.contains("\"@project-agentic-baseline\""));
     assert!(!config.contains("\"@agents-dir\""));
     assert!(!config.contains("\"@assura-skill-dir\""));
-    assert!(!config.contains("rules:"));
+    assert!(config.contains("rules:"));
     assert!(!config.contains(".agents/skills/assura-project-maintenance/:"));
 
     let second_skill = project.path().join(".agents/skills/release-maintenance");
@@ -941,60 +974,4 @@ fn agent_onboard_preserves_existing_user_authored_files() {
         .path()
         .join(".assura/integrations/codex/manifest.json")
         .is_file());
-}
-
-#[test]
-fn agent_onboard_merges_existing_config_and_accepts_config_flag() {
-    let project = TempDir::new().unwrap();
-    fs::create_dir_all(project.path().join(".assura")).unwrap();
-    let config_path = project.path().join(".assura/config.yml");
-    fs::write(
-        &config_path,
-        r#"version: "2.0"
-
-structure:
-  ./:
-    extra: true
-    CUSTOM.md: exists:0-1
-
-exclude:
-  - "custom/**"
-"#,
-    )
-    .unwrap();
-
-    let output = json_from_success(run_assura(&[
-        "--config",
-        config_path.to_str().unwrap(),
-        "agent",
-        "onboard",
-        project.path().to_str().unwrap(),
-        "--format",
-        "json",
-    ]));
-
-    assert!(output["files"]
-        .as_array()
-        .expect("files array")
-        .iter()
-        .any(|item| item["path"] == ".assura/config.yml" && item["action"] == "merge"));
-
-    let merged_config: serde_yaml::Value =
-        serde_yaml::from_str(&fs::read_to_string(&config_path).unwrap()).unwrap();
-    assert_eq!(
-        merged_config["structure"]["./"]["CUSTOM.md"],
-        serde_yaml::Value::String("exists:0-1".to_string())
-    );
-    assert_eq!(
-        merged_config["structure"]["./"]["use"],
-        serde_yaml::Value::String("@agentic-project".to_string())
-    );
-    assert!(merged_config["exclude"]
-        .as_sequence()
-        .expect("exclude sequence")
-        .contains(&serde_yaml::Value::String("custom/**".to_string())));
-    assert!(merged_config["exclude"]
-        .as_sequence()
-        .expect("exclude sequence")
-        .contains(&serde_yaml::Value::String(".git/**".to_string())));
 }

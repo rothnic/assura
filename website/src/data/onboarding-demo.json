@@ -114,6 +114,12 @@
     {
       "action": "write",
       "existed": false,
+      "path": ".assura/onboarding/rules.md",
+      "required": true
+    },
+    {
+      "action": "write",
+      "existed": false,
       "path": ".assura/onboarding/doctor.json",
       "required": true
     }

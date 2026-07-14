@@ -130,10 +130,10 @@ const lifecycleStages = [
   },
 ];
 
-const onboardingCreates = [
-  '.assura/config.yml',
-  'AGENTS.md guidance',
-  '.agents/skills/',
+const onboardingApplied = [
+  'project and agent harness detected',
+  '@project-agentic-baseline added locally',
+  'agent guidance and skills',
   'onboarding packet',
   'watch / warn / gate profile',
 ];
@@ -372,19 +372,20 @@ const performanceLayers = [
           <div class="command-panel">
             <code>$ assura agent onboard . --agent auto --format json</code>
             <p>
-              Create or preserve a broad baseline, generate an onboarding packet, run
-              local verification, and leave the next questions visible.
+              Detect the project, apply compatible built-in rules through a
+              project-owned wrapper, run local verification, and leave conflicts or
+              uncertain conventions as explicit questions.
             </p>
           </div>
           <div class="check-columns">
             <article>
-              <h3>Creates</h3>
+              <h3>Detects and applies</h3>
               <ul>
-                {onboardingCreates.map((item) => <li>{item}</li>)}
+                {onboardingApplied.map((item) => <li>{item}</li>)}
               </ul>
             </article>
             <article>
-              <h3>Does not guess</h3>
+              <h3>Leaves undecided</h3>
               <ul>
                 {onboardingOpen.map((item) => <li>{item}</li>)}
               </ul>

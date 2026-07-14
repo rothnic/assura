@@ -5,6 +5,9 @@ use super::agent_onboarding_content_templates as content;
 use super::agent_onboarding_structure_fit_templates as structure_fit;
 use super::AgentContentTemplate;
 
+pub(super) const AGENTIC_PROJECT_PRESET: &str = "@agentic-project";
+pub(super) const PROJECT_AGENTIC_BASELINE_RULE: &str = "@project-agentic-baseline";
+
 pub(super) fn baseline_files(
     detected: &DetectedSection,
     content_template: AgentContentTemplate,
@@ -62,6 +65,15 @@ pub(super) fn baseline_files(
     files
 }
 
+pub(super) fn rule_recommendations_file(detected: &DetectedSection, status: &str) -> GeneratedFile {
+    GeneratedFile {
+        path: ".assura/onboarding/rules.md",
+        contents: onboarding_rules(detected, status),
+        required: true,
+        executable: false,
+    }
+}
+
 #[derive(Clone)]
 pub(super) struct GeneratedFile {
     pub(super) path: &'static str,
@@ -90,6 +102,10 @@ fn agent_ready_config(content_template: AgentContentTemplate) -> String {
     let docs_structure = content::docs_structure(content_template);
     format!(
         r#"version: "2.0"
+
+rules:
+  "{PROJECT_AGENTIC_BASELINE_RULE}":
+    use: "{AGENTIC_PROJECT_PRESET}"
 
 extensions:
   agent_guidance:
@@ -135,7 +151,7 @@ extensions:
 
 structure:
   ./:
-    use: "@agentic-project"
+    use: "{PROJECT_AGENTIC_BASELINE_RULE}"
     extra: true
     README.md: exists:0-1
     ".gitignore": exists:0-1
@@ -157,6 +173,7 @@ structure:
   .assura/onboarding/:
     required: true
     summary.md: exists:1
+    rules.md: exists:1
     questions.md: exists:1
     lifecycle.md: exists:1
     agent-next.md: exists:1
@@ -193,13 +210,16 @@ fn presets_lock() -> &'static str {
 profile: agent-project
 version: 1
 generated_by: assura agent onboard
+source_rule: "@agentic-project"
+local_rule: "@project-agentic-baseline"
 "#
 }
 
 fn agents_md() -> &'static str {
     r#"# Agent Instructions
 
-Assura has installed a broad agent-ready baseline for this repository.
+Assura has installed an agent-ready onboarding packet for this repository.
+Read `.assura/onboarding/rules.md` for the project rule application status.
 
 ## Operating Rules
 
@@ -274,7 +294,7 @@ fn openai_agent_config() -> &'static str {
 }
 
 fn onboarding_reference() -> &'static str {
-    "# Assura Onboarding\n\nThe broad baseline is active. Specialize only after user answers.\n"
+    "# Assura Onboarding\n\nRead `.assura/onboarding/rules.md` for baseline status. Specialize only after user answers.\n"
 }
 
 fn agent_workflow_doc() -> &'static str {
@@ -364,11 +384,24 @@ Keep SKILL.md concise and put detailed references in subdirectories.
 
 fn onboarding_summary(detected: &DetectedSection) -> String {
     format!(
-        "# Assura Onboarding Summary\n\nProject type: `{}` ({})\nAgent harness: `{}` ({})\n\nBroad agent-ready baseline is active. Specialization is still pending.\n",
+        "# Assura Onboarding Summary\n\nProject type: `{}` ({})\nAgent harness: `{}` ({})\nRecommended preset: `@agentic-project`\nProject-owned rule: `@project-agentic-baseline`\n\nSee `rules.md` for application status. Specialization is still pending.\n",
         detected.project_type,
         detected.project_confidence,
         detected.agent_harness,
         detected.agent_confidence
+    )
+}
+
+fn onboarding_rules(detected: &DetectedSection, status: &str) -> String {
+    let status_detail = match status {
+        "applied" => "The built-in preset is active through the local wrapper.",
+        "available" => "The local wrapper is available, but existing root policy was preserved.",
+        "conflict" => "An existing local wrapper was preserved and needs manual review.",
+        _ => "The selected config does not contain the recommended local wrapper.",
+    };
+    format!(
+        "# Assura Rule Recommendations\n\nDetected project type: `{}`.\nRecommendation status: `{status}`.\n\n{status_detail}\n\nThe recommended built-in `@agentic-project` preset uses the local `@project-agentic-baseline` rule as its project-owned customization point. Edit that local rule to add or override project policy after resolving any reported conflict.\n\nIncluded preset layers:\n\n- `@agents-dir`\n- `@agent-skill-dir`\n- `@agent-skill-file`\n- `@agent-skill-resource-dir`\n\nLanguage, framework, naming, layout, and domain rules remain undecided until the project owner confirms them.\n",
+        detected.project_type,
     )
 }
 
@@ -409,11 +442,16 @@ manual host wiring.
 fn agent_next() -> &'static str {
     r#"# Agent Next
 
-Assura is installed and the broad agent-ready baseline is active.
+Assura is installed. Read `.assura/onboarding/rules.md` to confirm whether the
+recommended baseline is applied, available, not applied, or needs conflict
+resolution.
 
 Do not invent project conventions. Ask the user the remaining specialization
 questions before adding language, layout, naming, traceability, content-model,
 source-document, hook, or project-specific rules.
+
+Read `.assura/onboarding/rules.md` before editing the project-owned
+`@project-agentic-baseline` rule.
 
 Use `.assura/onboarding/lifecycle.md` to decide between nudge, warn, and gate
 feedback. Warn mode is advisory for draft work; gate mode is for pre-push,

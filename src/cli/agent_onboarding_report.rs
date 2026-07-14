@@ -25,11 +25,17 @@ impl RenderedOnboardingReport {
     fn render_text(&self) -> String {
         let report = &self.report;
         format!(
-            "Assura agent onboarding\ninstalled: assura {}\ndetected: project={} agent={} confidence={}\ncontent: {}={}\nlifecycle: {}\nverified: {}\nreview: {} blocking={} advisory={} inactive={}\ninactive: {}\nnext: {}\npacket: .assura/onboarding/agent-next.md",
+            "Assura agent onboarding\ninstalled: assura {}\ndetected: project={} agent={} confidence={}\nrules: {}\ncontent: {}={}\nlifecycle: {}\nverified: {}\nreview: {} blocking={} advisory={} inactive={}\ninactive: {}\nnext: {}\npacket: .assura/onboarding/agent-next.md",
             report.installed.assura_version,
             report.detected.project_type,
             report.detected.agent_harness,
             report.detected.agent_confidence,
+            report
+                .rule_recommendations
+                .iter()
+                .map(|item| format!("{}->{} ({})", item.preset, item.local_rule, item.status))
+                .collect::<Vec<_>>()
+                .join(", "),
             report.content.template,
             report.content.status,
             report
@@ -69,6 +75,7 @@ pub(super) struct OnboardingReport {
     pub(super) project_root: String,
     pub(super) installed: InstalledSection,
     pub(super) detected: DetectedSection,
+    pub(super) rule_recommendations: Vec<RuleRecommendation>,
     pub(super) integration: IntegrationSection,
     pub(super) content: ContentSection,
     pub(super) lifecycle_profiles: Vec<LifecycleProfile>,
@@ -77,6 +84,15 @@ pub(super) struct OnboardingReport {
     pub(super) review: OnboardingReview,
     pub(super) inactive: Vec<CheckItem>,
     pub(super) next_actions: Vec<RankedNextAction>,
+}
+
+#[derive(Serialize)]
+pub(super) struct RuleRecommendation {
+    pub(super) preset: &'static str,
+    pub(super) local_rule: &'static str,
+    pub(super) status: &'static str,
+    pub(super) reason: String,
+    pub(super) includes: Vec<&'static str>,
 }
 
 #[derive(Serialize)]

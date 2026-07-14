@@ -6,7 +6,8 @@ use super::agent_onboarding_report::{
     render_report, CheckItem, ContentSection, FileAction, InstalledSection, IntegrationSection,
     OnboardingReport, RenderedOnboardingReport,
 };
-use super::agent_onboarding_templates::{baseline_files, GeneratedFile};
+use super::agent_onboarding_rules::{preserve_existing_rule, recommended_rules};
+use super::agent_onboarding_templates::{baseline_files, rule_recommendations_file, GeneratedFile};
 use super::doctor::project_doctor_packet_json;
 use super::project_review::build_project_review;
 use super::{
@@ -64,14 +65,19 @@ fn run_agent_onboarding(
     fs::create_dir_all(&project_root).map_err(|error| error.to_string())?;
 
     let detected = detect_project(&project_root, options.agent);
+    let config_path = config.unwrap_or_else(|| project_root.join(".assura/config.yml"));
     let mut files = Vec::new();
     for file in baseline_files(&detected, options.content_template) {
         files.push(materialize_baseline_file(&project_root, file)?);
     }
+    let rule_recommendations = recommended_rules(&detected, &config_path)?;
+    files.push(materialize_managed_file(
+        &project_root,
+        rule_recommendations_file(&detected, rule_recommendations[0].status),
+    )?);
 
     let integration_target = integration_target(&detected);
     let integration = install_integration(&project_root, &detected, integration_target)?;
-    let config_path = config.unwrap_or_else(|| project_root.join(".assura/config.yml"));
     let (verified, review) = verify_project(&project_root, Some(config_path.clone()))?;
     let content = content_section(options.content_template);
     let inactive = inactive_capabilities(options.content_template);
@@ -98,6 +104,7 @@ fn run_agent_onboarding(
                 onboarding_packet: ".assura/onboarding/",
             },
             detected,
+            rule_recommendations,
             integration,
             content,
             lifecycle_profiles,
@@ -234,6 +241,38 @@ fn materialize_file(project_root: &Path, file: GeneratedFile) -> Result<FileActi
     })
 }
 
+fn materialize_managed_file(
+    project_root: &Path,
+    file: GeneratedFile,
+) -> Result<FileAction, String> {
+    let path = project_root.join(file.path);
+    let existed = path.exists();
+    let current = if existed {
+        Some(fs::read_to_string(&path).map_err(|error| error.to_string())?)
+    } else {
+        None
+    };
+    let changed = current.as_deref() != Some(file.contents.as_str());
+    if changed {
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent).map_err(|error| error.to_string())?;
+        }
+        fs::write(&path, &file.contents).map_err(|error| error.to_string())?;
+    }
+    Ok(FileAction {
+        path: file.path,
+        action: if !existed {
+            "write"
+        } else if changed {
+            "update"
+        } else {
+            "existing"
+        },
+        existed,
+        required: file.required,
+    })
+}
+
 #[cfg(unix)]
 fn set_executable_if_needed(path: &Path, executable: bool) -> Result<(), String> {
     if !executable {
@@ -263,8 +302,9 @@ fn materialize_config(project_root: &Path, file: GeneratedFile) -> Result<FileAc
     let existing_contents = fs::read_to_string(&path).map_err(|error| error.to_string())?;
     let mut existing: Value =
         serde_yaml::from_str(&existing_contents).map_err(|error| error.to_string())?;
-    let defaults: Value =
+    let mut defaults: Value =
         serde_yaml::from_str(&file.contents).map_err(|error| error.to_string())?;
+    preserve_existing_rule(&existing, &mut defaults);
     let changed = merge_missing_values(&mut existing, &defaults);
     if changed {
         let merged = serde_yaml::to_string(&existing).map_err(|error| error.to_string())?;

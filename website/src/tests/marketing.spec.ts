@@ -98,7 +98,62 @@ test('footer groups product, resources, and creator links on mobile', async ({ p
   await expect(footer.getByRole('heading', { name: 'Connect' })).toBeVisible();
   await expect(footer.getByRole('link', { name: 'Nick Roth' })).toHaveAttribute('href', 'https://nickroth.com/');
   await expect(footer.getByRole('link', { name: 'LinkedIn' })).toBeVisible();
+  const navigationBox = await footer.getByRole('navigation').boundingBox();
+  const bylineBox = await footer.locator('.footer-byline').boundingBox();
+  expect(bylineBox?.y).toBeGreaterThan((navigationBox?.y ?? 0) + (navigationBox?.height ?? 0));
   expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
+});
+
+test('mobile performance evidence stays compact and keeps its footer on one line', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  const proof = page.locator('.performance-proof');
+  const proofBox = await proof.boundingBox();
+  const metrics = await proof.locator(':scope > div:not(.proof-meta)').evaluateAll((items) =>
+    items.map((item) => {
+      const rect = item.getBoundingClientRect();
+      return { x: Math.round(rect.x), y: Math.round(rect.y), width: Math.round(rect.width) };
+    }),
+  );
+  const metaItems = await proof.locator('.proof-meta > *').evaluateAll((items) =>
+    items.map((item) => Math.round(item.getBoundingClientRect().y)),
+  );
+  expect(metrics[0].y).toBe(metrics[1].y);
+  expect(metrics[0].width).toBe(metrics[1].width);
+  expect(metaItems[0]).toBe(metaItems[1]);
+  expect(proofBox?.height).toBeLessThan(210);
+});
+
+test('onboarding distinguishes applied recommendations from undecided policy', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/#onboard');
+  const onboarding = page.locator('#onboard');
+  await expect(onboarding.getByRole('heading', { name: 'Detects and applies' })).toBeVisible();
+  await expect(onboarding.getByText('@project-agentic-baseline added locally')).toBeVisible();
+  await expect(onboarding.getByRole('heading', { name: 'Leaves undecided' })).toBeVisible();
+  await expect(onboarding.getByText('language and framework rules')).toBeVisible();
+});
+
+test('mobile execution layers use compact aligned markers', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  const rows = await page.locator('.layer-row').evaluateAll((items) =>
+    items.map((item) => {
+      const marker = item.firstElementChild?.getBoundingClientRect();
+      const content = item.lastElementChild?.getBoundingClientRect();
+      const row = item.getBoundingClientRect();
+      return {
+        markerX: Math.round(marker?.x ?? 0),
+        contentX: Math.round(content?.x ?? 0),
+        height: Math.round(row.height),
+      };
+    }),
+  );
+  expect(rows).toHaveLength(4);
+  expect(new Set(rows.map((row) => row.markerX)).size).toBe(1);
+  expect(new Set(rows.map((row) => row.contentX)).size).toBe(1);
+  expect(Math.max(...rows.map((row) => row.contentX - row.markerX))).toBeLessThan(45);
+  expect(Math.max(...rows.map((row) => row.height))).toBeLessThan(150);
 });
 
 for (const colorScheme of themes) {
