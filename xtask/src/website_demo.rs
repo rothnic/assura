@@ -41,6 +41,9 @@ pub(crate) fn run(args: &[String]) -> Result<()> {
     }
     build_assura(&root)?;
     let binary = root.join("target/debug/assura-full");
+    validate_project_contract_example(&root, &binary)?;
+    validate_agentic_monorepo_example(&root, &binary)?;
+    println!("Website Assura config examples are valid.");
     let (fixture, onboarding) = prepare_fixture(&root, &binary)?;
     validate_claims(&root, &binary, &fixture)?;
     validate_website_commands(&root)?;

@@ -49,7 +49,7 @@ validation logic that Rust tests exercise.
 ### 2. Signatures
 
 - `cargo xtask website-config-examples`
-- `pnpm --dir website build` runs the command through `prebuild`.
+- `cargo xtask docs` runs the example gate before invoking the Astro build.
 
 ### 3. Contracts
 
@@ -65,9 +65,9 @@ validation logic that Rust tests exercise.
 
 | Condition | Required behavior |
 | --- | --- |
-| Example YAML does not parse | Build exits nonzero before Astro runs. |
-| Passing representative project reports a violation | Build exits nonzero. |
-| Illustrated bad path no longer reports a violation | Build exits nonzero and names the missing path. |
+| Example YAML does not parse | The CI documentation build exits nonzero before Astro runs. |
+| Passing representative project reports a violation | The CI documentation build exits nonzero. |
+| Illustrated bad path no longer reports a violation | The CI documentation build exits nonzero and names the missing path. |
 | All examples match current behavior | Print `Website Assura config examples are valid.` and continue the build. |
 
 ### 5. Good / Base / Bad Cases
@@ -83,7 +83,8 @@ validation logic that Rust tests exercise.
 
 - Run `cargo xtask website-config-examples` after changing example YAML or its
   expected project shape.
-- Run `pnpm --dir website build` to prove the prebuild gate and Astro imports.
+- Run `cargo xtask docs` to prove the config gate runs before Astro and the raw
+  imports build successfully.
 - Keep Playwright assertions for the rendered hierarchy and pass/fail labels.
 
 ### 7. Wrong vs Correct
