@@ -79,7 +79,7 @@ test('performance CTA lands on the measured project cohort', async ({ page }) =>
   await expect(page.locator('.policy-breadth-card')).toHaveCount(1);
   await expect(page.locator('.policy-wipe-layer')).toHaveCount(2);
   await expect(page.getByRole('slider', { name: /Reveal Assura configuration/ })).toHaveCount(1);
-  await expect(page.getByText('Drag to reveal what each config can express.', { exact: true })).toBeVisible();
+  await expect(page.getByText('Drag or switch to compare what each config can express.', { exact: true })).toBeVisible();
   await expect(page.getByText('Quality policy example', { exact: true })).toBeVisible();
   await expect(page.locator('.benchmark-card')).toHaveCount(3);
   await expect(page.locator('.benchmark-config')).toHaveCount(3);
@@ -135,12 +135,47 @@ for (const colorScheme of themes) {
 test('performance policy wipe switches between complete configurations', async ({ page }) => {
   await page.goto('/performance/#regression-cases');
   const wipe = page.locator('[data-policy-wipe]');
-  const slider = wipe.getByRole('slider');
+  const slider = wipe.getByRole('slider', { name: 'Reveal Assura configuration.' });
   await slider.fill('0');
   await expect(wipe.getByRole('button', { name: 'LS-Lint' })).toHaveAttribute('aria-pressed', 'true');
   await wipe.getByRole('button', { name: 'Assura' }).click();
   await expect(slider).toHaveValue('100');
   await expect(wipe.getByRole('button', { name: 'Assura' })).toHaveAttribute('aria-pressed', 'true');
+});
+
+test('performance policy divider supports touch-sized drag and keyboard input', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/performance/#regression-cases');
+  const wipe = page.locator('[data-policy-wipe]');
+  const divider = wipe.getByRole('slider', { name: 'Drag configuration comparison' });
+  await wipe.getByRole('button', { name: 'Assura' }).click();
+  await divider.scrollIntoViewIfNeeded();
+
+  const dividerBox = await divider.boundingBox();
+  expect(dividerBox?.width).toBeGreaterThanOrEqual(44);
+  expect(dividerBox?.height).toBeGreaterThanOrEqual(44);
+  const client = await page.context().newCDPSession(page);
+  await client.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 1 });
+  const startX = (dividerBox?.x ?? 0) + (dividerBox?.width ?? 0) - 4;
+  const targetX = (dividerBox?.x ?? 0) + (dividerBox?.width ?? 0) * 0.35;
+  const touchY = (dividerBox?.y ?? 0) + (dividerBox?.height ?? 0) / 2;
+  await client.send('Input.dispatchTouchEvent', {
+    type: 'touchStart',
+    touchPoints: [{ x: startX, y: touchY }],
+  });
+  await client.send('Input.dispatchTouchEvent', {
+    type: 'touchMove',
+    touchPoints: [{ x: targetX, y: touchY }],
+  });
+  await client.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  expect(Number(await divider.inputValue())).toBeLessThan(50);
+  expect(Number(await wipe.getAttribute('data-reveal'))).toBeLessThan(50);
+
+  await divider.focus();
+  await page.keyboard.press('Home');
+  await expect(divider).toHaveValue('0');
+  await page.keyboard.press('ArrowRight');
+  await expect(divider).toHaveValue('1');
 });
 
 test('expanded performance cohort stays compact on mobile', async ({ page }) => {
@@ -192,6 +227,23 @@ test('marketing commands stay on the current public CLI surface', async ({ page 
   expect(text).toContain('assura explain');
   expect(text).not.toContain('assura review --base');
   expect(text).not.toContain('assura review --path');
+});
+
+test('review and check have distinct workflow roles without maturity badges', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  const model = page.getByLabel('Review and check command roles');
+  const review = model.getByRole('article').filter({ hasText: 'Review' });
+  const check = model.getByRole('article').filter({ hasText: 'Check' });
+
+  await expect(review).toContainText('During agent work');
+  await expect(review).toContainText('Advisory signal');
+  await expect(review).toContainText('Advisory result');
+  await expect(check).toContainText('Before commit or merge');
+  await expect(check).toContainText('Policy gate');
+  await expect(check).toContainText('Pass / fail exit');
+  await expect(page.locator('.journey-section')).not.toContainText('Experimental');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
 });
 
 test('technical docs remain reachable', async ({ page }) => {

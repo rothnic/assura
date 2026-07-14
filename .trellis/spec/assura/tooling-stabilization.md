@@ -58,6 +58,12 @@ validation logic that Rust tests exercise.
   `assura check --format json .`.
 - Each example needs a passing project shape. Examples that illustrate failures
   must also assert the expected violation paths.
+- Threshold examples must prove both sides of the boundary. If a parent scope
+  supplies an inherited default, a descendant fixture below the limit must pass
+  and a descendant fixture above the limit must fail.
+- Do not present a file-key attribute as filename-specific unless the runtime
+  check proves that specificity. Directory-level `files.max_lines` is the
+  current concise way to express an inherited general ceiling.
 - Astro imports the validated YAML with `?raw`, so the displayed config and the
   checked config remain one source of truth.
 
@@ -68,14 +74,19 @@ validation logic that Rust tests exercise.
 | Example YAML does not parse | The CI documentation build exits nonzero before Astro runs. |
 | Passing representative project reports a violation | The CI documentation build exits nonzero. |
 | Illustrated bad path no longer reports a violation | The CI documentation build exits nonzero and names the missing path. |
+| Inherited line ceiling rejects a below-limit descendant | The CI documentation build exits nonzero before Astro runs. |
+| Above-limit descendant stops producing `max_lines` | The CI documentation build exits nonzero and names the missing path. |
 | All examples match current behavior | Print `Website Assura config examples are valid.` and continue the build. |
 
 ### 5. Good / Base / Bad Cases
 
 - Good: the project-contract example passes with `user-menu.tsx` and reports
   `BadName.tsx`, `checkout-flow.tsx`, and `tmp-output` after drift is added.
-- Base: the reusable monorepo policy passes for `core` and the `ui-kit` local
-  `stories/` override.
+- Base: the reusable monorepo policy applies one inherited 500-line ceiling,
+  passes a 300-line package README, and accepts the `ui-kit` local `stories/`
+  override.
+- Bad threshold: `packages/core/src/too-long.ts` reaches 501 lines and must
+  report a `max_lines` violation.
 - Bad: an Astro component displays legacy `directories:` or `children:` text
   that is not imported from a checked example file.
 

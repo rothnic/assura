@@ -1,19 +1,13 @@
 rules:
   "@package-standard":
     extra: false
-    AGENTS.md:
-      exists: 1
-      max_lines: 200
+    AGENTS.md: exists:1
     package.json: exists:1
-    README.md:
-      exists: 0-1
-      max_lines: 200
+    README.md: exists:0-1
     tsconfig.json: exists:0-1
     src/:
       required: true
-      .ts:
-        naming: kebab-case
-        max_lines: 200
+      .ts: kebab-case
     tests/:
       required: false
       .test.ts: kebab-case
@@ -22,8 +16,8 @@ rules:
 structure:
   ./:
     use: "@agentic-project"
-    AGENTS.md:
-      max_lines: 300
+    files:
+      max_lines: 500
     package.json: exists:1
     packages/:
       required: false

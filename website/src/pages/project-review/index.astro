@@ -14,7 +14,7 @@ const structuredData = { '@context': 'https://schema.org', '@type': 'TechArticle
   eyebrow="Project review"
   heading="See what this branch changed before review starts."
   intro="Assura Review is a compact project-health radar. It separates branch and worktree change pressure, reports configured and inactive signals, and directs the agent to Explain or the authoritative Check gate."
-  artifactTitle="assura review · experimental"
+  artifactTitle="assura review · branch + worktree"
   artifactLines={review.display_lines.map((line) => line.text)}
   highlights={[
     { label: 'Branch', body: `${review.metrics.branch_files} changed file and concrete line churn compared with the detected source branch.` },
@@ -25,7 +25,7 @@ const structuredData = { '@context': 'https://schema.org', '@type': 'TechArticle
     { label: 'Review is the radar', body: 'Use a bounded diagnostic while work is in progress. Review summarizes project health and change context without replacing the final gate.' },
     { label: 'Explain one path', body: 'When a finding needs context, Explain shows the effective inherited structure policy for the path instead of repeating the entire project report.' },
     { label: 'Check is the gate', body: 'Before merge, Check enforces the configured blocking contract with stable exit behavior for hooks and CI.' },
-    { label: 'Current limits stay visible', body: 'Review labels experimental behavior and reports inactive capabilities, so a clean configured check is not presented as complete project coverage.' },
+    { label: 'Current limits stay visible', body: 'Review reports inactive capabilities, so a clean configured check is not presented as complete project coverage.' },
   ]}
   adjacentLinks={[
     { label: 'Add coding-agent guardrails', href: '/ai-coding-agent-guardrails/' },

@@ -1,0 +1,14 @@
+# Closest shared naming coverage.
+ls:
+  packages:
+    .dir: kebab-case
+
+  packages/*:
+    .md: regex:^(AGENTS|README)$
+    .json: regex:^(package|tsconfig)$
+
+  packages/*/src:
+    .ts: kebab-case
+
+  packages/*/tests:
+    .test.ts: kebab-case

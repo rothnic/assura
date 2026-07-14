@@ -41,6 +41,7 @@ pub(crate) fn run(args: &[String]) -> Result<()> {
     }
     build_assura(&root)?;
     let binary = root.join("target/debug/assura-full");
+    validate_lslint_config_example(&root, &binary)?;
     validate_project_contract_example(&root, &binary)?;
     validate_agentic_monorepo_example(&root, &binary)?;
     println!("Website Assura config examples are valid.");
@@ -112,6 +113,7 @@ pub(crate) fn validate_config_examples(args: &[String]) -> Result<()> {
         return Err("website-config-examples must run from the repository root".into());
     }
     build_assura(&root)?;
+    validate_lslint_config_example(&root, &root.join("target/debug/assura-full"))?;
     validate_project_contract_example(&root, &root.join("target/debug/assura-full"))?;
     validate_agentic_monorepo_example(&root, &root.join("target/debug/assura-full"))?;
     println!("Website Assura config examples are valid.");
@@ -164,6 +166,10 @@ fn validate_agentic_monorepo_example(root: &Path, binary: &Path) -> Result<()> {
             "export const value = true;\n",
         )?;
     }
+    fs::write(
+        project.join("packages/core/README.md"),
+        "Package documentation.\n".repeat(300),
+    )?;
     fs::create_dir_all(project.join("packages/ui-kit/stories"))?;
     fs::write(
         project.join("packages/ui-kit/stories/Button.tsx"),
@@ -173,11 +179,32 @@ fn validate_agentic_monorepo_example(root: &Path, binary: &Path) -> Result<()> {
 
     fs::write(
         project.join("packages/core/src/too-long.ts"),
-        "export const value = true;\n".repeat(201),
+        "export const value = true;\n".repeat(501),
     )?;
     let report = run_example_check(binary, &project, false)?;
-    require_example_violations("agentic-monorepo.yml", &report, &["too-long.ts"])?;
+    require_example_violation("agentic-monorepo.yml", &report, "too-long.ts", "max_lines")?;
     fs::remove_dir_all(project.parent().unwrap_or(&project))?;
+    Ok(())
+}
+
+fn validate_lslint_config_example(root: &Path, binary: &Path) -> Result<()> {
+    let input = root
+        .join(CONFIG_EXAMPLES_DIR)
+        .join("agentic-monorepo.ls-lint.yml");
+    let output = root
+        .join("target")
+        .join("website-agentic-monorepo-ls-lint-migration.yml");
+    let command = Command::new(binary)
+        .current_dir(root)
+        .arg("migrate")
+        .arg(&input)
+        .arg("--output")
+        .arg(&output)
+        .output()?;
+    if !command.status.success() {
+        return Err(command_error("validate website LS-Lint example", &command).into());
+    }
+    fs::remove_file(output)?;
     Ok(())
 }
 
@@ -227,6 +254,25 @@ fn require_example_violations(name: &str, report: &Value, expected: &[&str]) -> 
             )
             .into());
         }
+    }
+    Ok(())
+}
+
+fn require_example_violation(name: &str, report: &Value, path: &str, rule: &str) -> Result<()> {
+    let found = report["violations"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .any(|violation| {
+            violation["path"]
+                .as_str()
+                .is_some_and(|candidate| candidate.contains(path))
+                && violation["rule"].as_str() == Some(rule)
+        });
+    if !found {
+        return Err(
+            format!("website config example {name} did not report `{rule}` for `{path}`").into(),
+        );
     }
     Ok(())
 }
