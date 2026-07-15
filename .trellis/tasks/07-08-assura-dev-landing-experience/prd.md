@@ -227,6 +227,20 @@ commit before the next independent review.
   improved 1.1%, and config loading improved 23.0%. A 50-run alternating exact
   tie-breaker measured +1.27% for `assura` and -0.05% for `assura-check`, within
   normal runtime variance and with no material regression.
+- Iteration 3: Linux CI twice exposed a 2.3-3.0% cold-command miss on the
+  800-scope regression fixture. A canonical-first root-deserializer experiment
+  improved measured config-load, checker-init, and validation phases but lost
+  2.18% in a 100-run exact public-command tie-breaker, so it was rejected. The
+  retained change preserves the existing loader and replaces only its large
+  config marker scan with the already-resolved `memchr` byte search. The local
+  15-sample accepted-fixture gate passed 8/8 rows; the target fixture measured
+  45.52 ms for Assura and 47.13 ms for LS-Lint. A 100-run alternating full-repo
+  comparison was materially flat at +0.49% median with improved mean and p95.
+  Focused notation tests, all 488 library tests, every integration suite,
+  self-check over 1,645 files and 376 directories, 57 documentation examples,
+  Clippy, evidence/target-state checks, and the 48-page Astro build passed.
+  Independent review returned `RETAIN` with no correctness or configurability
+  findings; GitHub CI remains the final Linux performance confirmation.
 - Final closure review found no remaining actionable public-notation issue and
   declared the stop condition met. Scalar `$rule` references, ordered `use`
   sequences, and expanded mappings cover the retained concise and complex

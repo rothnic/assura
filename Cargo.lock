@@ -102,6 +102,7 @@ dependencies = [
  "jsonschema",
  "jwalk",
  "lazy_static",
+ "memchr",
  "mockall",
  "petgraph",
  "pico-args",

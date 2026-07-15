@@ -54,13 +54,14 @@ full-cli = [
 ]
 git-signals = ["dep:git2"]
 json-output = ["dep:serde_json"]
-yaml-config = ["dep:serde_yaml"]
+yaml-config = ["dep:memchr", "dep:serde_yaml"]
 
 [dependencies]
 assura-stable-hash = { path = "crates/assura-stable-hash" }
 tokio = { version = "1.0", features = ["full", "rt-multi-thread"], optional = true }
 serde = { version = "1.0", features = ["derive"] }
 serde_yaml = { version = "0.9", optional = true }
+memchr = { version = "2.7", optional = true }
 serde_json = { version = "1.0", optional = true }
 thiserror = "1.0"
 anyhow = { version = "1.0", optional = true }
