@@ -70,14 +70,23 @@ structure:
 
 Use a mapping when a path needs local composition or an override:
 
-```yaml config-fragment
+```yaml
+rules:
+  project-standard:
+    extra: false
+
 structure:
   ./:
-    packages/:
-      ui-kit/:
-        use: $package-standard
-        stories/: exists:0-1
+    use:
+      - $agentic-project
+      - $project-standard
+    extra: true
+    README.md: exists:0-1
 ```
+
+Rules in `use` are applied in order. Local attributes are applied last, so the
+root above reopens extra entries and adds an optional README after composing
+both reusable rules.
 
 ## Built-In Agent Policy
 

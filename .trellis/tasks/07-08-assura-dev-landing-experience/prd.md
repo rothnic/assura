@@ -154,7 +154,7 @@ support.
   cold LS-Lint comparisons and all eight warm session comparisons; the strict
   no-slower gate passed with 1.2463x aggregate cold and 16.0526x aggregate warm
   speedups on this machine.
-- `cargo xtask pr` passed on the completed implementation, including 487 library
+- `cargo xtask pr` passed on the completed implementation, including 488 library
   tests, all workspace integration suites, self-check, target-state, docs
   evidence, website fixture generation, and the 48-page production build.
 - Independent review identified optional subtree, capture count, unmatched
@@ -214,6 +214,19 @@ commit before the next independent review.
   varied by +17.9%, exact repeated command probes improved by 3.2% for `assura`
   and 4.0% for `assura-check`, so the controlled tie-breaker found no repeatable
   command-level regression.
+- Iteration 2: the stop-condition review retained hardening only. The marketing
+  renderer now preserves scalar YAML sequence rows exactly, and a browser test
+  reconstructs the displayed Assura policy byte-for-byte against its executable
+  fixture. Loader notation routing now detects the semantic top-level `rules`
+  key across plain, spaced, quoted, and root-indented YAML forms; each removed
+  `@` definition returns targeted migration guidance. Existing ordered `use`
+  composition is documented as executable YAML, and the final active
+  `use: @group-name` example was migrated. The loader split keeps the production
+  file at 487 lines under its 500-line contract. On the paired VPS, every
+  accepted fixture remained no slower than LS-Lint, aggregate Assura runtime
+  improved 1.1%, and config loading improved 23.0%. A 50-run alternating exact
+  tie-breaker measured +1.27% for `assura` and -0.05% for `assura-check`, within
+  normal runtime variance and with no material regression.
 
 ## Out of Scope
 

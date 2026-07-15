@@ -1,5 +1,11 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { readFileSync } from 'node:fs';
+
+const assuraPolicyFixture = readFileSync(
+  new URL('../data/config-examples/agentic-monorepo.yml', import.meta.url),
+  'utf8',
+).trimEnd();
 
 const widths = [360, 390, 430, 768, 1024, 1440];
 const themes = ['light', 'dark'] as const;
@@ -198,6 +204,17 @@ test('performance policy wipe switches between complete configurations', async (
   await wipe.getByRole('button', { name: 'Assura' }).click();
   await expect(slider).toHaveValue('100');
   await expect(wipe.getByRole('button', { name: 'Assura' })).toHaveAttribute('aria-pressed', 'true');
+});
+
+test('performance policy renders the checked Assura YAML fixture exactly', async ({ page }) => {
+  await page.goto('/performance/#regression-cases');
+  const rendered = await page
+    .locator('.policy-wipe-layer.is-assura .policy-code-line')
+    .evaluateAll((lines) => lines.map((line) => {
+      const indent = Number((line as HTMLElement).style.getPropertyValue('--indent'));
+      return `${'  '.repeat(indent)}${line.textContent?.trim() ?? ''}`;
+    }).join('\n'));
+  expect(rendered).toBe(assuraPolicyFixture);
 });
 
 test('performance policy divider supports touch-sized drag and keyboard input', async ({ page }) => {

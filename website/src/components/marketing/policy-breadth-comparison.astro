@@ -6,6 +6,7 @@ type CodeLine = {
   indent?: number;
   key?: string;
   value?: string;
+  hasSeparator?: boolean;
   comment?: string;
   tone?: 'section' | 'scope' | 'definition' | 'directive' | 'required' | 'optional' | 'limit';
 };
@@ -32,7 +33,7 @@ const parsePolicy = (policy: string): CodeLine[] => {
     const value = separator === -1 ? undefined : content.slice(separator + 1).trim() || undefined;
     if (indent === 0) section = key;
     const tone = section === 'rules' && indent === 1 ? 'definition' : toneFor(key, value);
-    return { indent, key, value, tone };
+    return { indent, key, value, hasSeparator: separator !== -1, tone };
   });
 };
 
@@ -112,7 +113,7 @@ const lsLintLines = parsePolicy(lsLintPolicy);
           {lsLintLines.map((line) => (
             <div class:list={['policy-code-line', line.tone && `is-${line.tone}`, !line.key && !line.comment && 'is-blank']} style={`--indent: ${line.indent ?? 0}`}>
               {line.comment && !line.key ? <span class="policy-code-comment"># {line.comment}</span> : (
-                <><span class="policy-code-key">{line.key}</span>{line.key && <span class="policy-code-colon">:</span>} {line.value && <span class="policy-code-value">{line.value}</span>}{line.comment && <span class="policy-code-comment"> # {line.comment}</span>}</>
+                <><span class="policy-code-key">{line.key}</span>{line.hasSeparator && <span class="policy-code-colon">:</span>}{line.value && <span class="policy-code-value"> {line.value}</span>}{line.comment && <span class="policy-code-comment"> # {line.comment}</span>}</>
               )}
             </div>
           ))}
@@ -129,7 +130,7 @@ const lsLintLines = parsePolicy(lsLintPolicy);
           {assuraLines.map((line) => (
             <div class:list={['policy-code-line', line.tone && `is-${line.tone}`, !line.key && !line.comment && 'is-blank']} style={`--indent: ${line.indent ?? 0}`}>
               {line.comment && !line.key ? <span class="policy-code-comment"># {line.comment}</span> : (
-                <><span class="policy-code-key">{line.key}</span>{line.key && <span class="policy-code-colon">:</span>} {line.value && <span class="policy-code-value">{line.value}</span>}{line.comment && <span class="policy-code-comment"> # {line.comment}</span>}</>
+                <><span class="policy-code-key">{line.key}</span>{line.hasSeparator && <span class="policy-code-colon">:</span>}{line.value && <span class="policy-code-value"> {line.value}</span>}{line.comment && <span class="policy-code-comment"> # {line.comment}</span>}</>
               )}
             </div>
           ))}

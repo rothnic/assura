@@ -4,8 +4,11 @@
 
 use super::config::Config;
 use crate::cli::config::{ConfigError, ConfigResult};
-use crate::config::config::{normalize_structure_config_value, validate_config_semantics};
+use crate::config::config::validate_config_semantics;
 use std::path::Path;
+
+mod notation;
+use notation::{has_top_level_rules, parse_normalized, parse_normalized_value, parse_yaml_value};
 
 /// Loader for structure configs
 #[derive(Debug)]
@@ -26,13 +29,22 @@ impl ConfigLoader {
 
     /// Parse config from YAML string
     pub fn parse(content: &str) -> ConfigResult<Config> {
-        if has_top_level_rules(content) {
-            return Self::parse_normalized(content);
-        }
+        let parsed_value = if content.contains("rules") {
+            let value = parse_yaml_value(content)?;
+            if has_top_level_rules(&value) {
+                return parse_normalized_value(value);
+            }
+            Some(value)
+        } else {
+            None
+        };
         if let Ok(config) = Self::parse_canonical(content) {
             return Ok(config);
         }
-        Self::parse_normalized(content)
+        match parsed_value {
+            Some(value) => parse_normalized_value(value),
+            None => parse_normalized(content),
+        }
     }
 
     /// Parse and semantically validate config from a YAML string.
@@ -47,16 +59,6 @@ impl ConfigLoader {
         Ok(config)
     }
 
-    fn parse_normalized(content: &str) -> ConfigResult<Config> {
-        let value: serde_yaml::Value =
-            serde_yaml::from_str(content).map_err(|error| ConfigError::Yaml(error.to_string()))?;
-        let value = normalize_structure_config_value(value).map_err(ConfigError::Invalid)?;
-        let config: Config =
-            serde_yaml::from_value(value).map_err(|error| ConfigError::Yaml(error.to_string()))?;
-        validate_config_semantics(&config).map_err(ConfigError::Invalid)?;
-        Ok(config)
-    }
-
     /// Save config to file
     pub fn save(config: &Config, path: &Path) -> ConfigResult<()> {
         let content = serde_yaml::to_string(config)
@@ -64,14 +66,6 @@ impl ConfigLoader {
         std::fs::write(path, content).map_err(ConfigError::Io)?;
         Ok(())
     }
-}
-
-fn has_top_level_rules(content: &str) -> bool {
-    content.lines().any(|line| {
-        line.strip_prefix("rules:").is_some()
-            || line.strip_prefix("\"rules\":").is_some()
-            || line.strip_prefix("'rules':").is_some()
-    })
 }
 
 #[cfg(test)]

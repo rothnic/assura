@@ -430,7 +430,7 @@ directory requirements.
 
 ### Phase 3: Nice to Have
 
-5. Rule groups - `use: @group-name`
+5. Rule groups - `use: $group-name`
 6. Verbose mode for exists - detailed error messages
 
 ---
