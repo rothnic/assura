@@ -179,6 +179,28 @@ support.
 - A review agent has reviewed the implementation before PR creation or final
   readiness.
 
+## Notation Ergonomics Review Loop
+
+The follow-up notation objective uses
+`.agents/skills/assura-notation-review/SKILL.md` as its durable review contract.
+Each syntax range must preserve the full project-shaped policy model, support
+single and multiple reusable rules, keep the detailed nested form available,
+and produce no material performance or configurability regression.
+
+The current visible costs are the YAML-required quotes around `@rule`
+references and the inline JSON-like mapping used for compact multi-attribute
+rules. Reviewers must inspect both canonical YAML examples and rendered mobile
+and desktop screenshots. Each retained range receives focused tests, regression
+tests, before/after performance evidence, screenshot verification, and its own
+commit before the next independent review.
+
+### Iteration Log
+
+- Iteration 0: current committed baseline is `ee0e28f`. The mobile performance
+  screenshot shows quoted `@rule` definitions/references and the project
+  contract uses an inline `{ naming: ..., max_lines: ... }` rule definition.
+  The review guide is being established before selecting a replacement syntax.
+
 ## Out of Scope
 
 - Replacing Starlight or redesigning the full docs information architecture.
