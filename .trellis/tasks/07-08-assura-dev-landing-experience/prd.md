@@ -227,6 +227,11 @@ commit before the next independent review.
   improved 1.1%, and config loading improved 23.0%. A 50-run alternating exact
   tie-breaker measured +1.27% for `assura` and -0.05% for `assura-check`, within
   normal runtime variance and with no material regression.
+- Final closure review found no remaining actionable public-notation issue and
+  declared the stop condition met. Scalar `$rule` references, ordered `use`
+  sequences, and expanded mappings cover the retained concise and complex
+  forms. Unsigiled references and unquoted-`@` preprocessing remain rejected
+  because they introduce scalar collisions or a second YAML parsing layer.
 
 ## Out of Scope
 
