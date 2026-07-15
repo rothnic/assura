@@ -1,19 +1,21 @@
 rules:
-  "@source-file": { naming: kebab-case, max_lines: 500 }
-  "@web-app":
+  source-file:
+    naming: kebab-case
+    max_lines: 500
+  web-app:
     .dir: kebab-case
     package.json: exists:1
     src/: exists:1
 
 structure:
   ./:
-    use: "@agentic-project"
+    use: $agentic-project
     extra: false
-    .ts: "@source-file"
-    .tsx: "@source-file"
+    .ts: $source-file
+    .tsx: $source-file
     docs/: exists:0-1
     apps/:
-      web/: "@web-app"
+      web/: $web-app
 
 exclude:
   - "**/generated/**"

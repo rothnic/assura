@@ -13,23 +13,28 @@ type CodeLine = {
 const toneFor = (key: string, value?: string): CodeLine['tone'] => {
   if (key === 'rules' || key === 'structure') return 'section';
   if (key.includes('/') || key === './') return 'scope';
-  if (key.includes('@') || value?.includes('@')) return 'definition';
+  if (value?.includes('$')) return 'definition';
   if (key === 'max_lines') return 'limit';
   if (value === 'true' || value === '1' || value === 'exists:1') return 'required';
   if (value === 'false' || value === '0-1' || value === 'exists:0-1') return 'optional';
   return 'directive';
 };
 
-const parsePolicy = (policy: string): CodeLine[] => policy.trimEnd().split('\n').map((text) => {
-  if (!text.trim()) return {};
-  if (text.trimStart().startsWith('#')) return { comment: text.trimStart().slice(1).trim() };
-  const indent = Math.floor((text.length - text.trimStart().length) / 2);
-  const content = text.trim();
-  const separator = content.indexOf(':');
-  const key = separator === -1 ? content : content.slice(0, separator);
-  const value = separator === -1 ? undefined : content.slice(separator + 1).trim() || undefined;
-  return { indent, key, value, tone: toneFor(key, value) };
-});
+const parsePolicy = (policy: string): CodeLine[] => {
+  let section = '';
+  return policy.trimEnd().split('\n').map((text) => {
+    if (!text.trim()) return {};
+    if (text.trimStart().startsWith('#')) return { comment: text.trimStart().slice(1).trim() };
+    const indent = Math.floor((text.length - text.trimStart().length) / 2);
+    const content = text.trim();
+    const separator = content.indexOf(':');
+    const key = separator === -1 ? content : content.slice(0, separator);
+    const value = separator === -1 ? undefined : content.slice(separator + 1).trim() || undefined;
+    if (indent === 0) section = key;
+    const tone = section === 'rules' && indent === 1 ? 'definition' : toneFor(key, value);
+    return { indent, key, value, tone };
+  });
+};
 
 const assuraLines = parsePolicy(assuraPolicy);
 const lsLintLines = parsePolicy(lsLintPolicy);
@@ -57,7 +62,7 @@ const lsLintLines = parsePolicy(lsLintPolicy);
       <div class="policy-scope is-root">
         <div><strong>Project root</strong><span>Always checked</span></div>
         <ul>
-          <li><code>AGENTS.md</code> required by <code>@agentic-project</code></li>
+          <li><code>AGENTS.md</code> required by <code>$agentic-project</code></li>
           <li><code>package.json</code> required</li>
           <li>Built-in agent guidance baseline</li>
         </ul>
@@ -72,7 +77,7 @@ const lsLintLines = parsePolicy(lsLintPolicy);
         </ul>
       </div>
     </div>
-    <p><code>@source-file</code> keeps each TypeScript directive to one line. The package contract reuses it for source and test extensions without repeating the attributes.</p>
+    <p><code>$source-file</code> keeps each TypeScript directive to one line. The package contract reuses it for source and test extensions without repeating the attributes.</p>
   </section>
 
   <section class="policy-wipe" data-policy-wipe data-reveal="100" style="--reveal: 100%;" aria-labelledby="policy-compare-title">

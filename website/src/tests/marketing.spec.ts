@@ -65,8 +65,9 @@ test('example output CTA connects project policy to pass and fail paths', async 
   await page.getByRole('link', { name: 'See how rules apply' }).click();
   await expect(page.getByRole('heading', { name: '.assura/config.yml' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Project tree' })).toBeVisible();
-  await expect(page.locator('.config-line').filter({ hasText: 'use: "@agentic-project"' })).toBeVisible();
-  await expect(page.locator('.config-line').filter({ hasText: '"@source-file": { naming: kebab-case, max_lines: 500 }' })).toBeVisible();
+  await expect(page.locator('.config-line').filter({ hasText: 'use: $agentic-project' })).toBeVisible();
+  await expect(page.locator('.config-line').filter({ hasText: 'source-file:' })).toBeVisible();
+  await expect(page.locator('.config-line').filter({ hasText: 'max_lines: 500' })).toBeVisible();
   await expect(page.getByText('apps/:', { exact: true })).toBeVisible();
   await expect(page.getByLabel('Pass').first()).toBeVisible();
   await expect(page.getByLabel('Blocking violation').first()).toBeVisible();
@@ -130,7 +131,7 @@ test('onboarding distinguishes applied recommendations from undecided policy', a
   await page.goto('/#onboard');
   const onboarding = page.locator('#onboard');
   await expect(onboarding.getByRole('heading', { name: 'Detects and applies' })).toBeVisible();
-  await expect(onboarding.getByText('@project-agentic-baseline added locally')).toBeVisible();
+  await expect(onboarding.getByText('$project-agentic-baseline added locally')).toBeVisible();
   await expect(onboarding.getByRole('heading', { name: 'Leaves undecided' })).toBeVisible();
   await expect(onboarding.getByText('language and framework rules')).toBeVisible();
 });

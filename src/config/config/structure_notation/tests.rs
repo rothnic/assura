@@ -211,17 +211,17 @@ structure:
 }
 
 #[test]
-fn rule_keys_with_at_prefix_resolve_from_use_references() {
+fn plain_rule_names_resolve_from_dollar_references() {
     let config = parse_config(
         r#"
 rules:
-  "@readme-standard":
+  readme-standard:
     exists: 1
-  "@project-docs":
-    README.md: "@readme-standard"
+  project-docs:
+    README.md: $readme-standard
 structure:
   ./:
-    use: "@project-docs"
+    use: $project-docs
 "#,
     )
     .unwrap();
@@ -246,7 +246,7 @@ fn nested_captured_directory_use_expands_tree_rule_fragments() {
     let config = parse_config(
         r#"
 rules:
-  "@agent-skill-dir":
+  agent-skill-dir:
     SKILL.md: exists:1
     agents/: exists:0-1
     references/: exists:0-1
@@ -257,7 +257,7 @@ structure:
   .agents/skills/:
     extra: true
     "{skill}/":
-      use: "@agent-skill-dir"
+      use: $agent-skill-dir
 "#,
     )
     .unwrap();
@@ -305,12 +305,12 @@ fn nested_literal_directory_use_expands_tree_rule_fragments() {
     let config = parse_config(
         r#"
 rules:
-  "@skill-dir":
+  skill-dir:
     SKILL.md: exists:1
 structure:
   .agents/skills/:
     demo/:
-      use: "@skill-dir"
+      use: $skill-dir
 "#,
     )
     .unwrap();
@@ -336,14 +336,14 @@ fn captured_directory_exact_child_providers_remain_explicit_relationships() {
     let config = parse_config(
         r#"
 rules:
-  "@package-dir":
+  package-dir:
     README.md:
       provides: doc
     src/: exists:1
 structure:
   packages/:
     "{package}/":
-      use: "@package-dir"
+      use: $package-dir
       needs: doc
 "#,
     )

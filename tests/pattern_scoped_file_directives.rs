@@ -14,20 +14,20 @@ fn write_config(project: &TempDir) {
         config_dir.join("config.yml"),
         r#"
 rules:
-  "@source-file":
+  source-file:
     naming: kebab-case
     max_lines: 3
     max_size: 64B
-  "@test-file":
+  test-file:
     naming: kebab-case
     max_lines: 1
 structure:
   src/:
-    .ts: "@source-file"
-    .tsx: "@source-file"
-    .test.ts: "@test-file"
+    .ts: $source-file
+    .tsx: $source-file
+    .test.ts: $test-file
     components/:
-      .test.ts: "@test-file"
+      .test.ts: $test-file
   "src/**/generated/":
     inherit: false
 "#,
@@ -133,16 +133,16 @@ fn explicit_file_globs_distinguish_direct_children_from_descendants() {
         config_dir.join("config.yml"),
         r#"
 rules:
-  "@direct-source":
+  direct-source:
     max_lines: 1
     max_size: 8B
-  "@recursive-source":
+  recursive-source:
     max_lines: 2
     max_size: 64B
 structure:
   ./:
-    "./**/*.ts": "@recursive-source"
-    "./*.ts": "@direct-source"
+    "./**/*.ts": $recursive-source
+    "./*.ts": $direct-source
 "#,
     )
     .unwrap();
@@ -215,13 +215,13 @@ fn independent_hierarchy_scopes_compose_and_can_reset() {
 
     let config = r#"
 rules:
-  "@source": { max_lines: 3 }
-  "@test": { max_lines: 1 }
+  source: { max_lines: 3 }
+  test: { max_lines: 1 }
 structure:
   ./:
-    .ts: "@source"
+    .ts: $source
   "packages/*/src/":
-    .test.ts: "@test"
+    .test.ts: $test
 "#;
     fs::write(config_dir.join("config.yml"), config).unwrap();
     let inherited = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();

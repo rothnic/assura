@@ -100,14 +100,14 @@ one line:
 
 ```yaml
 rules:
-  "@source-file":
+  source-file:
     naming: kebab-case
     max_lines: 500
 
 structure:
   src/:
-    .ts: "@source-file"
-    .tsx: "@source-file"
+    .ts: $source-file
+    .tsx: $source-file
 ```
 
 The reusable shorthand above normalizes to the same configuration as expanded
@@ -135,11 +135,11 @@ explicit file glob preserves the depth you configure:
 
 | Notation | Reach |
 | --- | --- |
-| `.ts: "@source-file"` | `.ts` files in this scope and inheriting descendants. |
-| `"./*.ts": "@source-file"` under `./` | Direct root `.ts` files only. |
-| `"./**/*.ts": "@source-file"` under `./` | Root and descendant `.ts` files. |
-| `"*.ts": "@source-file"` under `src/` | Direct `.ts` files inside `src/`. |
-| `"**/*.ts": "@source-file"` under `src/` | `.ts` files anywhere below `src/`. |
+| `.ts: $source-file` | `.ts` files in this scope and inheriting descendants. |
+| `"./*.ts": $source-file` under `./` | Direct root `.ts` files only. |
+| `"./**/*.ts": $source-file` under `./` | Root and descendant `.ts` files. |
+| `"*.ts": $source-file` under `src/` | Direct `.ts` files inside `src/`. |
+| `"**/*.ts": $source-file` under `src/` | `.ts` files anywhere below `src/`. |
 
 The structure key controls reach. `*` matches one directory segment and `**`
 crosses directory separators:
@@ -147,7 +147,7 @@ crosses directory separators:
 ```yaml config-fragment
 structure:
   packages/*/src/:
-    .ts: "@source-file"
+    .ts: $source-file
   packages/**/generated/:
     inherit: false
 ```
@@ -179,9 +179,9 @@ the project needs relationships or reusable contracts.
 | Generated output ignore | `exclude: ["target/**", "node_modules/**"]` |
 | Captured source/test pair | `"{component}.tsx"` and `"{component}.test.tsx": exists:1` |
 | Package documentation need | `needs: doc` with `provides: doc` |
-| Reusable package policy | `rules:` plus `use: "@package-standard"` |
-| Reusable file directive | `.ts: "@source-file"` after defining a node rule |
-| Agentic project baseline | `use: "@agentic-project"` at the project root |
+| Reusable package policy | `rules:` plus `use: $package-standard` |
+| Reusable file directive | `.ts: $source-file` after defining a node rule |
+| Agentic project baseline | `use: $agentic-project` at the project root |
 | Markdown outline | `markdown.outline` with nested heading lists |
 
 Use the detailed fields below when a rule needs extra attributes or when you
@@ -199,10 +199,10 @@ surfaces without listing every skill directory by name:
 ```yaml
 structure:
   ./:
-    use: "@agentic-project"
+    use: $agentic-project
 ```
 
-`@agentic-project` requires root `AGENTS.md`, allows optional `.agents/`,
+`$agentic-project` requires root `AGENTS.md`, allows optional `.agents/`,
 applies the `.agents/` best-practice rule below when that directory exists,
 and allows `.assura/` when root direct-content policies are closed.
 
@@ -212,10 +212,10 @@ directly:
 ```yaml
 structure:
   .agents/:
-    use: "@agents-dir"
+    use: $agents-dir
 ```
 
-`@agents-dir` allows optional `skills/` content and validates
+`$agents-dir` allows optional `skills/` content and validates
 `.agents/skills/{skill}/`,
 `.agents/skills/built-in/{skill}/`, and
 `.agents/skills/custom/{skill}/` directories. Skill directories must be
@@ -265,15 +265,15 @@ especially useful on captured or globbed package paths.
 
 ```yaml
 rules:
-  "@source-file":
+  source-file:
     naming: kebab-case
     max_lines: 500
     max_size: 100KB
 
 structure:
   ./:
-    .ts: "@source-file"
-    .tsx: "@source-file"
+    .ts: $source-file
+    .tsx: $source-file
     README.md: exists:1
     "*.tmp": exists:0
 ```
@@ -308,7 +308,7 @@ scalar rule reference:
 
 ```yaml
 rules:
-  "@package-standard":
+  package-standard:
     .dir: kebab-case
     package.json: exists:1
     README.md: exists:0-1
@@ -317,7 +317,7 @@ rules:
 structure:
   ./:
     packages/:
-      "{package}/": "@package-standard"
+      "{package}/": $package-standard
 ```
 
 ## Markdown Rules

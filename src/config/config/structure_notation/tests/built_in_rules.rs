@@ -9,7 +9,7 @@ fn built_in_agent_skill_dir_rule_expands_without_local_definition() {
 structure:
   .agents/skills/:
     "{skill}/":
-      use: "@agent-skill-dir"
+      use: $agent-skill-dir
 "#,
     )
     .unwrap();
@@ -88,7 +88,7 @@ fn built_in_agents_dir_rule_composes_skill_best_practices() {
         r#"
 structure:
   .agents/:
-    use: "@agents-dir"
+    use: $agents-dir
 "#,
     )
     .unwrap();
@@ -148,7 +148,7 @@ fn built_in_agentic_project_rule_composes_root_guidance_and_skills() {
         r#"
 structure:
   ./:
-    use: "@agentic-project"
+    use: $agentic-project
     extra: false
 "#,
     )
@@ -206,7 +206,7 @@ fn built_in_agentic_project_children_merge_with_local_children() {
         r#"
 structure:
   ./:
-    use: "@agentic-project"
+    use: $agentic-project
     children:
       docs/:
         README.md: exists:0-1

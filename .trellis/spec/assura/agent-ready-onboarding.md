@@ -30,7 +30,7 @@ The report includes `rule_recommendations[]` with:
 | `reason` | Concise explanation tied to detected project evidence. |
 | `includes` | Built-in rule layers composed by the selected preset. |
 
-The broad baseline maps `@project-agentic-baseline` to `@agentic-project` and
+The broad baseline maps `$project-agentic-baseline` to `$agentic-project` and
 uses the local wrapper at the project root. The wrapper is the customization
 point; onboarding must not expand and duplicate the full built-in preset.
 
@@ -60,7 +60,7 @@ evidence or a user decision exists.
   identifies Rust detection while leaving Rust-specific rules undecided.
 - Base: an empty repository receives the same broad wrapper without a false
   claim that language or framework policy was inferred.
-- Bad: onboarding references `@agentic-project` directly everywhere, leaving no
+- Bad: onboarding references `$agentic-project` directly everywhere, leaving no
   project-owned customization point.
 - Bad: onboarding copies a large built-in rule body into every project.
 
@@ -80,17 +80,17 @@ Wrong:
 ```yaml
 structure:
   ./:
-    use: "@agentic-project"
+    use: $agentic-project
 ```
 
 Correct:
 
 ```yaml
 rules:
-  "@project-agentic-baseline":
-    use: "@agentic-project"
+  project-agentic-baseline:
+    use: $agentic-project
 
 structure:
   ./:
-    use: "@project-agentic-baseline"
+    use: $project-agentic-baseline
 ```

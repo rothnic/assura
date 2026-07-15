@@ -22,14 +22,14 @@ assura check
 
 ```yaml
 rules:
-  "@source-file":
+  source-file:
     naming: kebab-case
     max_lines: 500
 
 structure:
   ./:
-    .ts: "@source-file"
-    .tsx: "@source-file"
+    .ts: $source-file
+    .tsx: $source-file
     src/: exists:1
 exclude:
   - "target/**"

@@ -702,7 +702,7 @@ collections:
 # All other root files must be standard project files
 structure:
   ./:
-    use: "@agentic-project"
+    use: $agentic-project
     files:
       # Standard project files are allowed
       allowed_names:

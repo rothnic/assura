@@ -221,7 +221,7 @@ Literal hierarchy is concise by default:
 
 - an exact literal file or directory mapping without `exists` means
   `exists:1`;
-- an exact literal directory scalar rule such as `web/: "@web-app"` also means
+- an exact literal directory scalar rule such as `web/: $web-app` also means
   `exists:1`;
 - extension, capture, and glob keys are match-only unless they declare an
   explicit direct-child `exists` count;
@@ -277,14 +277,14 @@ reference and the expanded in-place mapping must normalize equivalently:
 
 ```yaml
 rules:
-  "@source-file":
+  source-file:
     naming: kebab-case
     max_lines: 500
 
 structure:
   src/:
-    .ts: "@source-file"
-    .tsx: "@source-file"
+    .ts: $source-file
+    .tsx: $source-file
 ```
 
 ```yaml
@@ -316,7 +316,7 @@ Directory scope keys support LS-Lint-style hierarchy globs:
 ```yaml
 structure:
   packages/*/src/:
-    .ts: "@source-file"
+    .ts: $source-file
   packages/**/generated/:
     inherit: false
 ```
@@ -338,7 +338,7 @@ opinionated common domains.
 
 ```yaml
 rules:
-  "@readme-standard":
+  readme-standard:
     exists: 1
     markdown:
       outline:
@@ -349,7 +349,7 @@ rules:
         - Usage
         - ?? Troubleshooting
 
-  "@agents-standard":
+  agents-standard:
     exists: 1
     markdown:
       outline:
@@ -358,13 +358,13 @@ rules:
         - Validation
         - ?? Escalation
 
-  "@project-docs":
-    README.md: "@readme-standard"
-    AGENTS.md: "@agents-standard"
+  project-docs:
+    README.md: $readme-standard
+    AGENTS.md: $agents-standard
 
 structure:
   ./:
-    use: "@project-docs"
+    use: $project-docs
     Cargo.toml: exists:1
     src/: exists:1
 ```
@@ -377,18 +377,18 @@ reuse:
 
 ```yaml
 rules:
-  "@web-app":
+  web-app:
     package.json: exists:1
     src/: exists:1
 
 structure:
   ./:
     apps/:
-      web/: "@web-app"
+      web/: $web-app
 ```
 
-This is equivalent to `web/: { use: "@web-app" }`. Use the mapping form when
-local keys need to override or extend the reusable tree. A scalar rule used on
+This is equivalent to nesting `use: $web-app` under `web/`. Use the mapping
+form when local keys need to override or extend the reusable tree. A scalar rule used on
 a file/extension key must resolve to a node fragment, while a directory key
 requires a tree fragment. Unknown references, type mismatches, and cycles are
 rejected while loading the config.
@@ -406,11 +406,11 @@ root guidance files and every project-local skill:
 ```yaml
 structure:
   ./:
-    use: "@agentic-project"
+    use: $agentic-project
 ```
 
-The built-in `@agentic-project` requires root `AGENTS.md`, allows an optional
-`.agents/` directory, applies `@agents-dir` when that directory exists, and
+The built-in `$agentic-project` requires root `AGENTS.md`, allows an optional
+`.agents/` directory, applies `$agents-dir` when that directory exists, and
 allows the `.assura/` config directory when root direct-content policies are
 closed.
 
@@ -420,23 +420,23 @@ a `.agents/` subtree:
 ```yaml
 structure:
   .agents/:
-    use: "@agents-dir"
+    use: $agents-dir
 ```
 
-The built-in `@agents-dir` allows optional `skills/` content and composes
-`@agent-skill-dir` for each `.agents/skills/{skill}/`,
+The built-in `$agents-dir` allows optional `skills/` content and composes
+`$agent-skill-dir` for each `.agents/skills/{skill}/`,
 `.agents/skills/built-in/{skill}/`, and `.agents/skills/custom/{skill}/`
 directory that exists. Each skill directory is an inheritance boundary, must
 be kebab-case, must contain `SKILL.md`, and receives the standard skill file
 line/size limits. Optional resource subdirectories such as `agents/`,
 `references/`, `scripts/`, and `assets/` are validated when present with
 kebab-case naming and the same file size/line limits. Exact file rules can
-stay concise through rule references such as `SKILL.md: "@agent-skill-file"`;
+stay concise through rule references such as `SKILL.md: $agent-skill-file`;
 project configs should not repeat expanded file-bundle YAML for this common
 case.
 
 Global or user-level skills installed outside the checked repository are out of
-scope for `@agents-dir`. A third-party skill copied, vendored, or linked into
+scope for `$agents-dir`. A third-party skill copied, vendored, or linked into
 `.agents/skills/**` is project-local guidance for validation purposes: the
 project owns a bounded `SKILL.md` entrypoint there, even if the deeper content
 comes from upstream. If an upstream skill is too large or should remain
@@ -620,7 +620,7 @@ for the directory itself.
 structure:
   src/components/:
     "{component}.tsx":
-      use: "@react-component"
+      use: $react-component
     "{component}.test.tsx": exists:1
 ```
 
@@ -634,7 +634,7 @@ The target still lives where the target artifact appears in the project tree:
 structure:
   src/components/:
     "{component}.tsx":
-      use: "@react-component"
+      use: $react-component
 
   tests/components/:
     "{component}.test.tsx": exists:1
@@ -653,7 +653,7 @@ appears.
 
 ```yaml
 rules:
-  "@package-standard":
+  package-standard:
     README.md: exists:1
     AGENTS.md: exists:1
     src/: exists:1
@@ -661,7 +661,7 @@ rules:
 structure:
   packages/:
     "{package}/":
-      use: "@package-standard"
+      use: $package-standard
       needs: doc
 
   docs/packages/:

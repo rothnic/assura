@@ -103,15 +103,15 @@ look like this:
   },
   "rule_recommendations": [
     {
-      "preset": "@agentic-project",
-      "local_rule": "@project-agentic-baseline",
+      "preset": "$agentic-project",
+      "local_rule": "$project-agentic-baseline",
       "status": "applied",
       "reason": "rust project detected; broad agent-ready preset applied through a project-owned wrapper",
       "includes": [
-        "@agents-dir",
-        "@agent-skill-dir",
-        "@agent-skill-file",
-        "@agent-skill-resource-dir"
+        "$agents-dir",
+        "$agent-skill-dir",
+        "$agent-skill-file",
+        "$agent-skill-resource-dir"
       ]
     }
   ],
@@ -168,7 +168,7 @@ capability is deliberately not configured yet. A clean `assura check` result is
 not the same thing as a fully onboarded repository.
 
 Recommended built-in policy is applied through a project-local wrapper such as
-`@project-agentic-baseline` when it does not replace existing root policy. The
+`$project-agentic-baseline` when it does not replace existing root policy. The
 project owns that wrapper and can extend or override it without copying
 Assura's full preset into the config. Recommendation status is `applied` when
 the root uses the wrapper, `available` when existing root policy was preserved,

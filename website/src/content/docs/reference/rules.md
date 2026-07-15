@@ -5,18 +5,19 @@ description: Reusable structure, content, and agent policy in Assura
 
 Assura rules are mappings, not a list of plugin names. Define a reusable
 fragment once under `rules`, then apply it from the project-shaped `structure`
-tree.
+tree. Definitions use plain names; references add `$` so they remain distinct
+from ordinary scalar directives without requiring YAML quotes.
 
 ```yaml
 rules:
-  "@source-file":
+  source-file:
     naming: kebab-case
     max_lines: 500
 
 structure:
   ./:
-    .ts: "@source-file"
-    .tsx: "@source-file"
+    .ts: $source-file
+    .tsx: $source-file
 ```
 
 Run `assura explain path/to/file.ts` to see the scopes that apply and the
@@ -62,9 +63,9 @@ Use a scalar when one reusable rule or naming convention is enough:
 structure:
   ./:
     .rs: snake_case
-    .ts: "@source-file"
+    .ts: $source-file
     packages/:
-      "{package}/": "@package-standard"
+      "{package}/": $package-standard
 ```
 
 Use a mapping when a path needs local composition or an override:
@@ -74,24 +75,24 @@ structure:
   ./:
     packages/:
       ui-kit/:
-        use: "@package-standard"
+        use: $package-standard
         stories/: exists:0-1
 ```
 
 ## Built-In Agent Policy
 
-`@agentic-project` provides the broad repository-level baseline used by agent
+`$agentic-project` provides the broad repository-level baseline used by agent
 onboarding. It requires root agent guidance and composes the standard local
 skill structure without guessing language or domain rules.
 
 ```yaml
 rules:
-  "@project-baseline":
-    use: "@agentic-project"
+  project-baseline:
+    use: $agentic-project
 
 structure:
   ./:
-    use: "@project-baseline"
+    use: $project-baseline
 ```
 
 Use `extensions.agent_guidance` for deterministic checks inside `AGENTS.md`

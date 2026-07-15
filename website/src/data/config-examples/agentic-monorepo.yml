@@ -1,9 +1,9 @@
 rules:
-  "@source-file":
+  source-file:
     naming: kebab-case
     max_lines: 500
 
-  "@package-standard":
+  package-standard:
     .dir: kebab-case
     extra: false
     AGENTS.md: exists:1
@@ -13,20 +13,20 @@ rules:
     src/: exists:1
     tests/:
       exists: 0-1
-      .test.ts: "@source-file"
+      .test.ts: $source-file
     fixtures/: exists:0-1
 
 structure:
   ./:
-    use: "@agentic-project"
-    .ts: "@source-file"
-    .tsx: "@source-file"
+    use: $agentic-project
+    .ts: $source-file
+    .tsx: $source-file
     package.json: exists:1
     packages/:
       exists: 0-1
-      "{package}/": "@package-standard"
+      "{package}/": $package-standard
       ui-kit/:
-        use: "@package-standard"
+        use: $package-standard
         stories/: exists:0-1
 
 exclude:

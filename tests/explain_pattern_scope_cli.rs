@@ -28,12 +28,12 @@ fn explain_shows_inherited_scope_and_winning_file_directive() {
         project.path().join(".assura/config.yml"),
         r#"
 rules:
-  "@source-file":
+  source-file:
     naming: kebab-case
     max_lines: 500
 structure:
   ./:
-    .ts: "@source-file"
+    .ts: $source-file
   "vendor/**/generated/":
     inherit: false
 "#,
@@ -100,12 +100,12 @@ fn explain_distinguishes_direct_and_recursive_file_globs() {
         project.path().join(".assura/config.yml"),
         r#"
 rules:
-  "@direct": { max_lines: 1 }
-  "@recursive": { max_lines: 2 }
+  direct: { max_lines: 1 }
+  recursive: { max_lines: 2 }
 structure:
   ./:
-    "./**/*.tsx": "@recursive"
-    "./*.tsx": "@direct"
+    "./**/*.tsx": $recursive
+    "./*.tsx": $direct
 "#,
     )
     .unwrap();

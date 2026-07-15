@@ -34,7 +34,7 @@ fn agentic_project_builtin_rule_allows_optional_agents_and_constrains_skills() {
 
 structure:
   ./:
-    use: "@agentic-project"
+    use: $agentic-project
     extra: false
 
 exclude:

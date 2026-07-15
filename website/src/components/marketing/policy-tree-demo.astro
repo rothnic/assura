@@ -3,8 +3,9 @@ import projectContract from '../../data/config-examples/project-contract.yml?raw
 
 const markers = new Map([
   ['extra: false', '2'],
-  ['use: "@agentic-project"', '1'],
-  ['"@source-file": { naming: kebab-case, max_lines: 500 }', '3+4'],
+  ['use: $agentic-project', '1'],
+  ['naming: kebab-case', '3'],
+  ['max_lines: 500', '4'],
 ]);
 const configLines = projectContract.trimEnd().split('\n').map((text) => {
   const trimmed = text.trim();

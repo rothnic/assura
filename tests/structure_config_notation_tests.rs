@@ -66,7 +66,7 @@ exclude:
 fn first_time_package_project_config() -> &'static str {
     r#"
 rules:
-  "@package-standard":
+  package-standard:
     README.md: exists:1
     package.json: exists:1
     src/: exists:1
@@ -76,7 +76,7 @@ structure:
     extra: true
   packages/:
     "{package}/":
-      use: "@package-standard"
+      use: $package-standard
       needs: doc
   docs/packages/:
     exists: 0-1
@@ -115,19 +115,19 @@ fn nested_cardinality_and_scalar_tree_rules_enforce_the_displayed_contract() {
         &project,
         r#"
 rules:
-  "@source-file": { naming: kebab-case, max_lines: 5 }
-  "@web-app":
+  source-file: { naming: kebab-case, max_lines: 5 }
+  web-app:
     package.json: exists:1
     src/: exists:1
 structure:
   ./:
     extra: false
-    .ts: "@source-file"
-    .tsx: "@source-file"
+    .ts: $source-file
+    .tsx: $source-file
     docs/: exists:0-1
     apps/:
       .dir: kebab-case
-      web/: "@web-app"
+      web/: $web-app
 exclude:
   - "**/{generated,vendor,dist}/**"
 "#,
@@ -241,12 +241,12 @@ fn unmatched_captured_tree_rule_is_match_only() {
         &project,
         r#"
 rules:
-  "@package":
+  package:
     package.json: exists:1
 structure:
   ./:
     packages/:
-      "{package}/": "@package"
+      "{package}/": $package
 "#,
     );
     fs::create_dir_all(project.path().join("packages")).unwrap();

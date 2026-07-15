@@ -107,7 +107,7 @@ assura agent integration doctor codex .
 ```
 
 Generated agent-ready baselines include `AGENTS.md`, `.agents/skills/`, the
-root `@agentic-project` structure rule, and `extensions.agent_guidance`
+root `$agentic-project` structure rule, and `extensions.agent_guidance`
 checks. The default shape expects `AGENTS.md` sections named `Operating Rules`,
 `Process Docs vs Skills`, `Skills`, and `Anchors`; the `Skills` section
 includes a use-case table that names the project-local skill or skill-name

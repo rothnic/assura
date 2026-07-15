@@ -64,22 +64,22 @@ when a whole tree fragment repeats across package folders.
 
 ```yaml
 rules:
-  "@source-file":
+  source-file:
     naming: kebab-case
     max_lines: 500
 
-  "@package-standard":
+  package-standard:
     README.md: exists:1
     package.json: exists:1
     src/:
       exists: 1
-      .ts: "@source-file"
-      .tsx: "@source-file"
+      .ts: $source-file
+      .tsx: $source-file
 
 structure:
   packages/:
     "{package}/":
-      use: "@package-standard"
+      use: $package-standard
       needs: doc
   docs/packages/:
     exists: 0-1
@@ -100,10 +100,10 @@ shorthand:
 ```yaml config-fragment
 structure:
   ./:
-    "./*.ts": "@source-file" # direct root files
-    "./**/*.tsx": "@source-file" # root and descendants
+    "./*.ts": $source-file # direct root files
+    "./**/*.tsx": $source-file # root and descendants
   packages/*/src/:
-    "*.test.ts": "@source-file" # direct files in each matched src/
+    "*.test.ts": $source-file # direct files in each matched src/
 ```
 
 Run `assura explain path/to/file.ts` to see the matching hierarchy scopes and

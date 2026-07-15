@@ -9,8 +9,8 @@
 
 ### 2. Signatures
 
-- Cascading extension shorthand: `.ts: "@source-file"` or
-  `.ts: { naming: kebab-case, max_lines: 500 }`.
+- Cascading extension shorthand: `.ts: $source-file`; expand attributes below
+  `.ts` when the directive is local instead of reusable.
 - Explicit file-glob reach: `"./*.ts"` matches direct root files while
   `"./**/*.ts"` matches root files and descendants. Inside a nested structure
   scope, `"*.ts"` and `"**/*.ts"` are resolved relative to that scope.
@@ -81,7 +81,8 @@
 Wrong when every file in the scope should share the limit:
 
 ```yaml
-.ts: { max_lines: 500 }
+.ts:
+  max_lines: 500
 ```
 
 Correct scope-wide default:
@@ -96,7 +97,7 @@ Wrong when generated descendants should not inherit a source policy:
 ```yaml
 structure:
   ./:
-    .ts: "@source-file"
+    .ts: $source-file
 ```
 
 Correct explicit scope reset:
@@ -104,7 +105,7 @@ Correct explicit scope reset:
 ```yaml
 structure:
   ./:
-    .ts: "@source-file"
+    .ts: $source-file
   "**/generated/":
     inherit: false
 ```
@@ -114,7 +115,7 @@ Use the hierarchy instead of hiding reach inside a detached list:
 ```yaml
 structure:
   packages/*/src/:
-    .ts: "@source-file"
+    .ts: $source-file
   packages/**/generated/:
     inherit: false
 ```
@@ -124,9 +125,9 @@ Choose file depth explicitly when one directory scope needs both behaviors:
 ```yaml
 structure:
   ./:
-    "./*.ts": "@root-source"
-    "./**/*.ts": "@all-source"
+    "./*.ts": $root-source
+    "./**/*.ts": $all-source
 ```
 
-Use `.ts: "@source-file"` when cascading extension shorthand is the intended
+Use `.ts: $source-file` when cascading extension shorthand is the intended
 policy. Use an explicit glob when direct-versus-recursive reach matters.

@@ -63,11 +63,11 @@ exclude:
     );
     assert_eq!(
         merged_config["structure"]["./"]["use"],
-        serde_yaml::Value::String("@project-agentic-baseline".to_string())
+        serde_yaml::Value::String("$project-agentic-baseline".to_string())
     );
     assert_eq!(
-        merged_config["rules"]["@project-agentic-baseline"]["use"],
-        serde_yaml::Value::String("@agentic-project".to_string())
+        merged_config["rules"]["project-agentic-baseline"]["use"],
+        serde_yaml::Value::String("$agentic-project".to_string())
     );
     let exclude = merged_config["exclude"]
         .as_sequence()
@@ -86,13 +86,13 @@ fn agent_onboard_preserves_existing_root_rule_and_reports_wrapper_available() {
         r#"version: "2.0"
 
 rules:
-  "@existing-root":
+  existing-root:
     extra: true
 
 structure:
   ./:
     use:
-      - "@existing-root"
+      - $existing-root
 "#,
     )
     .unwrap();
@@ -117,10 +117,10 @@ structure:
 
     let merged: serde_yaml::Value =
         serde_yaml::from_str(&fs::read_to_string(&config_path).unwrap()).unwrap();
-    assert_eq!(merged["structure"]["./"]["use"][0], "@existing-root");
+    assert_eq!(merged["structure"]["./"]["use"][0], "$existing-root");
     assert_eq!(
-        merged["rules"]["@project-agentic-baseline"]["use"],
-        "@agentic-project"
+        merged["rules"]["project-agentic-baseline"]["use"],
+        "$agentic-project"
     );
 }
 
@@ -139,12 +139,12 @@ fn agent_onboard_preserves_colliding_local_wrapper_and_reports_conflict() {
         r#"version: "2.0"
 
 rules:
-  "@project-agentic-baseline":
+  project-agentic-baseline:
     extra: false
 
 structure:
   ./:
-    use: "@project-agentic-baseline"
+    use: $project-agentic-baseline
 "#,
     )
     .unwrap();
@@ -167,8 +167,8 @@ structure:
 
     let merged: serde_yaml::Value =
         serde_yaml::from_str(&fs::read_to_string(&config_path).unwrap()).unwrap();
-    assert_eq!(merged["rules"]["@project-agentic-baseline"]["extra"], false);
-    assert!(merged["rules"]["@project-agentic-baseline"]["use"].is_null());
+    assert_eq!(merged["rules"]["project-agentic-baseline"]["extra"], false);
+    assert!(merged["rules"]["project-agentic-baseline"]["use"].is_null());
 }
 
 #[test]
@@ -180,14 +180,14 @@ fn agent_onboard_recognizes_rule_lists_as_applied() {
         r#"version: "2.0"
 
 rules:
-  "@project-agentic-baseline":
+  project-agentic-baseline:
     use:
-      - "@agentic-project"
+      - $agentic-project
 
 structure:
   ./:
     use:
-      - "@project-agentic-baseline"
+      - $project-agentic-baseline
 "#,
     )
     .unwrap();
@@ -233,5 +233,5 @@ structure:
         .contains("selected config does not define"));
     assert!(!fs::read_to_string(&selected)
         .unwrap()
-        .contains("@project-agentic-baseline"));
+        .contains("$project-agentic-baseline"));
 }

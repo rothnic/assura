@@ -208,11 +208,11 @@ fn agent_onboard_generates_broad_baseline_and_packet() {
     assert_eq!(output["content"]["status"], "inactive");
     assert_eq!(
         output["rule_recommendations"][0]["preset"],
-        "@agentic-project"
+        "$agentic-project"
     );
     assert_eq!(
         output["rule_recommendations"][0]["local_rule"],
-        "@project-agentic-baseline"
+        "$project-agentic-baseline"
     );
     assert_eq!(output["rule_recommendations"][0]["status"], "applied");
     assert!(output["rule_recommendations"][0]["reason"]
@@ -222,10 +222,10 @@ fn agent_onboard_generates_broad_baseline_and_packet() {
     assert_eq!(
         output["rule_recommendations"][0]["includes"],
         serde_json::json!([
-            "@agents-dir",
-            "@agent-skill-dir",
-            "@agent-skill-file",
-            "@agent-skill-resource-dir"
+            "$agents-dir",
+            "$agent-skill-dir",
+            "$agent-skill-file",
+            "$agent-skill-resource-dir"
         ])
     );
     let lifecycle_modes = output["lifecycle_profiles"]
@@ -319,13 +319,13 @@ fn agent_onboard_generates_broad_baseline_and_packet() {
     assert!(lifecycle.contains("| gate |"));
     assert!(lifecycle.contains("does not silently mutate"));
     let rules = fs::read_to_string(project.path().join(".assura/onboarding/rules.md")).unwrap();
-    assert!(rules.contains("@agentic-project"));
-    assert!(rules.contains("@project-agentic-baseline"));
+    assert!(rules.contains("$agentic-project"));
+    assert!(rules.contains("$project-agentic-baseline"));
     assert!(rules.contains("Edit that local rule"));
 
     let config = fs::read_to_string(project.path().join(".assura/config.yml")).unwrap();
-    assert!(config.contains("\"@project-agentic-baseline\":"));
-    assert!(config.contains("use: \"@agentic-project\""));
+    assert!(config.contains("project-agentic-baseline:"));
+    assert!(config.contains("use: $agentic-project"));
 
     let doctor: Value = serde_json::from_str(
         &fs::read_to_string(project.path().join(".assura/onboarding/doctor.json")).unwrap(),
@@ -623,10 +623,10 @@ fn agent_onboard_generated_config_validates_dynamic_directory_skill_contracts() 
     ]));
 
     let config = fs::read_to_string(project.path().join(".assura/config.yml")).unwrap();
-    assert!(config.contains("\"@agentic-project\""));
-    assert!(config.contains("\"@project-agentic-baseline\""));
-    assert!(!config.contains("\"@agents-dir\""));
-    assert!(!config.contains("\"@assura-skill-dir\""));
+    assert!(config.contains("use: $agentic-project"));
+    assert!(config.contains("project-agentic-baseline:"));
+    assert!(!config.contains("use: $agents-dir"));
+    assert!(!config.contains("use: $assura-skill-dir"));
     assert!(config.contains("rules:"));
     assert!(!config.contains(".agents/skills/assura-project-maintenance/:"));
 
@@ -741,20 +741,20 @@ fn agent_project_dynamic_contracts_validate_repeated_project_structures() {
         r#"version: "2.0"
 
 rules:
-  "@package-dir":
+  package-dir:
     README.md: exists:1
     src/: exists:1
     docs/: exists:0-1
     extra: false
-  "@doc-section":
+  doc-section:
     README.md: exists:1
     assets/: exists:0-1
     extra: false
-  "@example-dir":
+  example-dir:
     README.md: exists:1
     fixtures/: exists:0-1
     extra: false
-  "@fixture-dir":
+  fixture-dir:
     README.md: exists:1
     input/: exists:0-1
     expected/: exists:0-1
@@ -770,21 +770,21 @@ structure:
   packages/:
     extra: true
     "{package}/":
-      use: "@package-dir"
+      use: $package-dir
   docs/:
     extra: true
     "{section}/":
-      use: "@doc-section"
+      use: $doc-section
   examples/:
     extra: true
     "{example}/":
-      use: "@example-dir"
+      use: $example-dir
   tests/:
     fixtures/: exists:1
   tests/fixtures/:
     extra: true
     "{fixture}/":
-      use: "@fixture-dir"
+      use: $fixture-dir
 "#,
     )
     .unwrap();

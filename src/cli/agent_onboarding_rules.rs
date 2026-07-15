@@ -2,7 +2,9 @@
 
 use super::agent_onboarding::DetectedSection;
 use super::agent_onboarding_report::RuleRecommendation;
-use super::agent_onboarding_templates::{AGENTIC_PROJECT_PRESET, PROJECT_AGENTIC_BASELINE_RULE};
+use super::agent_onboarding_templates::{
+    AGENTIC_PROJECT_PRESET, PROJECT_AGENTIC_BASELINE_REFERENCE, PROJECT_AGENTIC_BASELINE_RULE,
+};
 use serde_yaml::Value;
 use std::fs;
 use std::path::Path;
@@ -17,7 +19,7 @@ pub(super) fn recommended_rules(
     let local_uses_preset = uses_rule(&local_rule["use"], AGENTIC_PROJECT_PRESET);
     let root_uses_local = uses_rule(
         &config["structure"]["./"]["use"],
-        PROJECT_AGENTIC_BASELINE_RULE,
+        PROJECT_AGENTIC_BASELINE_REFERENCE,
     );
     let status = if local_uses_preset && root_uses_local {
         "applied"
@@ -49,14 +51,14 @@ pub(super) fn recommended_rules(
 
     Ok(vec![RuleRecommendation {
         preset: AGENTIC_PROJECT_PRESET,
-        local_rule: PROJECT_AGENTIC_BASELINE_RULE,
+        local_rule: PROJECT_AGENTIC_BASELINE_REFERENCE,
         status,
         reason,
         includes: vec![
-            "@agents-dir",
-            "@agent-skill-dir",
-            "@agent-skill-file",
-            "@agent-skill-resource-dir",
+            "$agents-dir",
+            "$agent-skill-dir",
+            "$agent-skill-file",
+            "$agent-skill-resource-dir",
         ],
     }])
 }

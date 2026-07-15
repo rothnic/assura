@@ -56,7 +56,7 @@ support.
   model while keeping literal hierarchy concise through implicit
   `exists:1` defaults.
 - Support nested directory cardinality plus child policy and scalar reusable
-  tree rules such as `web/: "@web-app"`.
+  tree rules such as `web/: $web-app`.
 - Make `assura explain` expose effective patterns, cardinality, inheritance,
   and the winning normalized policy needed to understand shorthand scope.
 - Render landing examples and command-output visuals from canonical fixtures
@@ -154,7 +154,7 @@ support.
   cold LS-Lint comparisons and all eight warm session comparisons; the strict
   no-slower gate passed with 1.2463x aggregate cold and 16.0526x aggregate warm
   speedups on this machine.
-- `cargo xtask pr` passed on the completed implementation, including 485 library
+- `cargo xtask pr` passed on the completed implementation, including 487 library
   tests, all workspace integration suites, self-check, target-state, docs
   evidence, website fixture generation, and the 48-page production build.
 - Independent review identified optional subtree, capture count, unmatched
@@ -200,6 +200,20 @@ commit before the next independent review.
   screenshot shows quoted `@rule` definitions/references and the project
   contract uses an inline `{ naming: ..., max_lines: ... }` rule definition.
   The review guide is being established before selecting a replacement syntax.
+- Iteration 1: independent review retained plain rule definitions, unquoted
+  `$rule` references, and block mappings for public examples. Unsigiled scalar
+  references remain deferred because they collide with ordinary directive
+  values; rewriting invalid unquoted `@rule` YAML before parsing was rejected
+  because it would require a second lexer. Runtime normalization, onboarding,
+  canonical website fixtures, docs, and specs now use the retained notation.
+  Focused verification passed 34 structure-notation unit tests, 17 public
+  notation integration tests, 57 executable docs YAML examples, 51 marketing
+  browser checks, and the repository self-check over 1,644 files and 376
+  directories. The paired same-host VPS comparison kept every accepted Assura
+  fixture no slower than LS-Lint. Although one aggregate high-scope fixture
+  varied by +17.9%, exact repeated command probes improved by 3.2% for `assura`
+  and 4.0% for `assura-check`, so the controlled tie-breaker found no repeatable
+  command-level regression.
 
 ## Out of Scope
 

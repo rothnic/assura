@@ -26,6 +26,9 @@ impl ConfigLoader {
 
     /// Parse config from YAML string
     pub fn parse(content: &str) -> ConfigResult<Config> {
+        if has_top_level_rules(content) {
+            return Self::parse_normalized(content);
+        }
         if let Ok(config) = Self::parse_canonical(content) {
             return Ok(config);
         }
@@ -61,6 +64,14 @@ impl ConfigLoader {
         std::fs::write(path, content).map_err(ConfigError::Io)?;
         Ok(())
     }
+}
+
+fn has_top_level_rules(content: &str) -> bool {
+    content.lines().any(|line| {
+        line.strip_prefix("rules:").is_some()
+            || line.strip_prefix("\"rules\":").is_some()
+            || line.strip_prefix("'rules':").is_some()
+    })
 }
 
 #[cfg(test)]

@@ -226,7 +226,7 @@ structure:
   .agents/skills/:
     extra: true
     "{skill}/":
-      use: "@agent-skill-dir"
+      use: $agent-skill-dir
 "#,
         )
         .unwrap();

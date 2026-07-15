@@ -14,12 +14,12 @@ fn compiled_config_preserves_direct_and_recursive_file_patterns() {
         config_dir.join("config.yml"),
         r#"
 rules:
-  "@direct": { max_lines: 1 }
-  "@recursive": { max_lines: 2 }
+  direct: { max_lines: 1 }
+  recursive: { max_lines: 2 }
 structure:
   ./:
-    "./**/*.ts": "@recursive"
-    "./*.ts": "@direct"
+    "./**/*.ts": $recursive
+    "./*.ts": $direct
 "#,
     )
     .unwrap();

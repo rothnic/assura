@@ -47,7 +47,7 @@ expanding into richer dependency and documentation constraints.
    closed-world structure contracts for this repo.
 5. Move future config ergonomics toward the compact tree-first notation in
    `config-notation.md`: direct children as keys, `exists` cardinality for
-   common presence checks, reusable `@rule` fragments, nested Markdown
+   common presence checks, reusable `$rule` fragments, nested Markdown
    outlines, and deterministic code-to-doc relations.
 
 ## Constraints

@@ -7,13 +7,13 @@ fn reusable_file_directive_shorthand_matches_expanded_attributes() {
     let shorthand = parse_config(
         r#"
 rules:
-  "@source-file":
+  source-file:
     naming: kebab-case
     max_lines: 500
 structure:
   src/:
-    .ts: "@source-file"
-    .tsx: "@source-file"
+    .ts: $source-file
+    .tsx: $source-file
 "#,
     )
     .unwrap();
@@ -107,7 +107,7 @@ fn literal_hierarchy_uses_exists_cardinality_and_scalar_tree_rules() {
     let config = parse_config(
         r#"
 rules:
-  "@web-app":
+  web-app:
     package.json: exists:1
     src/: exists:1
 structure:
@@ -117,7 +117,7 @@ structure:
       exists: 0-1
       README.md: exists:0-1
     apps/:
-      web/: "@web-app"
+      web/: $web-app
 "#,
     )
     .unwrap();
@@ -179,23 +179,23 @@ fn scalar_directory_rule_matches_expanded_use_form() {
     let shorthand = parse_config(
         r#"
 rules:
-  "@package":
+  package:
     AGENTS.md: exists:1
 structure:
   packages/:
-    core/: "@package"
+    core/: $package
 "#,
     )
     .unwrap();
     let expanded = parse_config(
         r#"
 rules:
-  "@package":
+  package:
     AGENTS.md: exists:1
 structure:
   packages/:
     core/:
-      use: "@package"
+      use: $package
 "#,
     )
     .unwrap();
@@ -220,55 +220,64 @@ structure:
 
 #[test]
 fn reusable_rule_references_reject_unknown_mismatched_and_cyclic_fragments() {
-    for (yaml, expected) in [
+    for (index, (yaml, expected)) in [
         (
             r#"
 structure:
   packages/:
-    core/: "@missing"
+    core/: $missing
 "#,
-            "unknown Assura config rule '@missing'",
+            "unknown Assura config rule '$missing'",
         ),
         (
             r#"
 rules:
-  "@source-file":
+  source-file:
     naming: kebab-case
 structure:
   packages/:
-    core/: "@source-file"
+    core/: $source-file
 "#,
             "node fragment but a tree fragment is required",
         ),
         (
             r#"
 rules:
-  "@package":
+  package:
     AGENTS.md: exists:1
 structure:
   src/:
-    .ts: "@package"
+    .ts: $package
 "#,
             "tree fragment but a node fragment is required",
         ),
         (
             r#"
 rules:
-  "@a":
+  a:
     child/:
-      use: "@b"
-  "@b":
+      use: $b
+  b:
     child/:
-      use: "@a"
+      use: $a
 structure:
   ./:
-    use: "@a"
+    use: $a
 "#,
             "Assura config rule cycle detected",
         ),
-    ] {
-        let error = parse_config(yaml).unwrap_err().to_string();
-        assert!(error.contains(expected), "unexpected error: {error}");
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        let error = parse_config(yaml)
+            .err()
+            .unwrap_or_else(|| panic!("reference case {index} unexpectedly parsed"))
+            .to_string();
+        assert!(
+            error.contains(expected),
+            "reference case {index} returned an unexpected error: {error}"
+        );
     }
 }
 
@@ -277,18 +286,106 @@ fn rule_reference_validation_ignores_relationship_labels() {
     let config = parse_config(
         r#"
 rules:
-  "@document":
-    needs: "@docs"
-    provides: "@document"
+  document:
+    needs: $docs
+    provides: $document
     max_lines: 500
 structure:
   docs/:
-    "{document}.md": "@document"
+    "{document}.md": $document
 "#,
     )
     .unwrap();
 
     assert!(config.structure.contains_key("docs/"));
+}
+
+#[test]
+fn dollar_references_compose_in_order_before_local_overrides() {
+    let config = parse_config(
+        r#"
+rules:
+  repository-files:
+    extra: false
+    AGENTS.md: exists:1
+  source-layout:
+    src/: exists:1
+structure:
+  ./:
+    use:
+      - $repository-files
+      - $source-layout
+    extra: true
+    README.md: exists:0-1
+"#,
+    )
+    .unwrap();
+
+    let root = config.structure.get("./").unwrap();
+    let files = root.files.as_ref().unwrap();
+    assert_eq!(files.allow_extra, Some(true));
+    assert_eq!(
+        files.exists.as_ref().unwrap().get("AGENTS.md"),
+        Some(&"1".to_string())
+    );
+    assert_eq!(
+        files.exists.as_ref().unwrap().get("README.md"),
+        Some(&"0-1".to_string())
+    );
+    assert_eq!(
+        root.directories
+            .as_ref()
+            .and_then(|directories| directories.exists.as_ref())
+            .and_then(|exists| exists.get("src")),
+        Some(&"1".to_string())
+    );
+}
+
+#[test]
+fn removed_rule_sigils_have_migration_guidance() {
+    for (index, (yaml, expected)) in [
+        (
+            r#"
+rules:
+  "@source-file":
+    naming: kebab-case
+structure: {}
+"#,
+            "replace '@source-file' with 'source-file'",
+        ),
+        (
+            r#"
+rules:
+  source-file:
+    naming: kebab-case
+structure:
+  ./:
+    .ts: "@source-file"
+"#,
+            "replace '@source-file' with '$source-file'",
+        ),
+        (
+            r#"
+rules:
+  $source-file:
+    naming: kebab-case
+structure: {}
+"#,
+            "replace '$source-file' with 'source-file'",
+        ),
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        let error = parse_config(yaml)
+            .err()
+            .unwrap_or_else(|| panic!("migration case {index} unexpectedly parsed"))
+            .to_string();
+        assert!(
+            error.contains(expected),
+            "migration case {index} returned an unexpected error: {error}"
+        );
+    }
 }
 
 #[test]

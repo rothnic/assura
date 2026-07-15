@@ -6033,7 +6033,7 @@ fn check_agent_onboarding_website(checks: &mut Checks) {
         "The local command is:",
         "reviewable local integration bundle",
         "\"rule_recommendations\"",
-        "\"local_rule\": \"@project-agentic-baseline\"",
+        "\"local_rule\": \"$project-agentic-baseline\"",
         "`not-applied` when the selected config lacks the wrapper",
         "assura agent onboard . --agent auto --format json",
         "assura agent onboard . --content-template agent-project --format json",

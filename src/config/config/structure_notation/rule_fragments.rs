@@ -25,19 +25,19 @@ extra: true
 const BUILTIN_AGENT_SKILL_DIR: &str = r#"
 inherit: false
 .dir: kebab-case
-SKILL.md: "@agent-skill-file"
+SKILL.md: $agent-skill-file
 agents/:
   exists: 0-1
-  use: "@agent-skill-resource-dir"
+  use: $agent-skill-resource-dir
 references/:
   exists: 0-1
-  use: "@agent-skill-resource-dir"
+  use: $agent-skill-resource-dir
 scripts/:
   exists: 0-1
-  use: "@agent-skill-resource-dir"
+  use: $agent-skill-resource-dir
 assets/:
   exists: 0-1
-  use: "@agent-skill-resource-dir"
+  use: $agent-skill-resource-dir
 extra: false
 "#;
 
@@ -59,7 +59,7 @@ skills/:
   built-in/:
     exists: 0-1
     "{skill}/":
-      use: "@agent-skill-dir"
+      use: $agent-skill-dir
     files:
       allow_extra: false
     directories:
@@ -67,13 +67,13 @@ skills/:
   custom/:
     exists: 0-1
     "{skill}/":
-      use: "@agent-skill-dir"
+      use: $agent-skill-dir
     files:
       allow_extra: false
     directories:
       allow_extra: true
   "{skill}/":
-    use: "@agent-skill-dir"
+    use: $agent-skill-dir
 extra: false
 "#;
 
@@ -81,7 +81,7 @@ const BUILTIN_AGENTIC_PROJECT: &str = r#"
 AGENTS.md: exists:1
 .agents/:
   exists: 0-1
-  use: "@agents-dir"
+  use: $agents-dir
 .assura/: exists:0-1
 "#;
 
@@ -101,7 +101,7 @@ impl RuleRegistry {
             let Some(name) = key.as_str() else {
                 return Err("Assura config rule names must be strings".to_string());
             };
-            let name = normalize_rule_name(name)?;
+            let name = normalize_rule_definition_name(name)?;
             rules.insert(name.to_string(), value);
         }
         let registry = Self { rules };
@@ -115,7 +115,7 @@ impl RuleRegistry {
         match classify_fragment(&value)? {
             FragmentKind::Node => Ok(value),
             FragmentKind::Tree => Err(format!(
-                "Assura config rule '@{name}' is a tree fragment but a node fragment is required"
+                "Assura config rule '${name}' is a tree fragment but a node fragment is required"
             )),
         }
     }
@@ -127,13 +127,13 @@ impl RuleRegistry {
             FragmentKind::Tree => {
                 let Value::Mapping(mapping) = value else {
                     return Err(format!(
-                        "Assura config rule '@{name}' must be a mapping when used through use"
+                        "Assura config rule '${name}' must be a mapping when used through use"
                     ));
                 };
                 Ok(mapping)
             }
             FragmentKind::Node => Err(format!(
-                "Assura config rule '@{name}' is a node fragment but a tree fragment is required"
+                "Assura config rule '${name}' is a node fragment but a tree fragment is required"
             )),
         }
     }
@@ -142,7 +142,7 @@ impl RuleRegistry {
         self.rules
             .get(name)
             .cloned()
-            .ok_or_else(|| format!("unknown Assura config rule '@{name}'"))
+            .ok_or_else(|| format!("unknown Assura config rule '${name}'"))
     }
 
     fn validate_references(&self) -> Result<(), String> {
@@ -168,7 +168,7 @@ impl RuleRegistry {
         let value = self
             .rules
             .get(name)
-            .ok_or_else(|| format!("unknown Assura config rule '@{name}'"))?;
+            .ok_or_else(|| format!("unknown Assura config rule '${name}'"))?;
         stack.push(name.to_string());
         let mut references = BTreeSet::new();
         collect_rule_references(value, &mut references)?;
@@ -227,7 +227,7 @@ fn builtin_rules() -> Result<HashMap<String, Value>, String> {
         rules.insert(
             name.to_string(),
             serde_yaml::from_str(source).map_err(|error| {
-                format!("invalid built-in Assura config rule '@{name}': {error}")
+                format!("invalid built-in Assura config rule '${name}': {error}")
             })?,
         );
     }
@@ -266,23 +266,43 @@ fn classify_fragment(value: &Value) -> Result<FragmentKind, String> {
 }
 
 fn parse_rule_reference(reference: &str) -> Result<&str, String> {
+    if reference.starts_with('@') {
+        return Err(format!(
+            "Assura config rule references no longer use '@'; replace '{reference}' with '${}'",
+            reference.trim_start_matches('@')
+        ));
+    }
     normalize_rule_name(reference).and_then(|name| {
-        if reference.starts_with('@') {
+        if reference.starts_with('$') {
             Ok(name)
         } else {
             Err(format!(
-                "Assura config rule reference must start with '@': {reference}"
+                "Assura config rule reference must start with '$': {reference}"
             ))
         }
     })
 }
 
 fn normalize_rule_name(name: &str) -> Result<&str, String> {
-    let name = name.strip_prefix('@').unwrap_or(name);
+    let name = name.strip_prefix('$').unwrap_or(name);
     if name.is_empty() {
         return Err("Assura config rule names must not be empty".to_string());
     }
     Ok(name)
+}
+
+fn normalize_rule_definition_name(name: &str) -> Result<&str, String> {
+    if let Some(name) = name.strip_prefix('@') {
+        return Err(format!(
+            "Assura config rule definitions no longer use '@'; replace '@{name}' with '{name}'"
+        ));
+    }
+    if let Some(name) = name.strip_prefix('$') {
+        return Err(format!(
+            "Assura config rule definitions are plain names; replace '${name}' with '{name}'"
+        ));
+    }
+    normalize_rule_name(name)
 }
 
 fn push_rule_stack(stack: &[String], name: &str) -> Result<(), String> {
@@ -298,5 +318,5 @@ fn push_rule_stack(stack: &[String], name: &str) -> Result<(), String> {
 }
 
 fn is_rule_reference(value: &str) -> bool {
-    value.starts_with('@')
+    value.starts_with('$') || value.starts_with('@')
 }
