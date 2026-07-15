@@ -4624,7 +4624,7 @@ const SUPPORT_MATRIX_ROWS: &[SupportMatrixRow] = &[
         surface: "assura review",
         command_surface_names: &["assura review"],
         support_policy_markers: &["`assura review`"],
-        compatibility_markers: &["| `assura review` | Experimental compact project review |"],
+        compatibility_markers: &["| `assura review` | Supported compact project review |"],
         source_markers: &["Commands::Review", "project_review_command"],
         test_markers: &[
             "tests/project_review_cli.rs",
@@ -4662,7 +4662,7 @@ const SUPPORT_MATRIX_ROWS: &[SupportMatrixRow] = &[
         command_surface_names: &["assura explain"],
         support_policy_markers: &["`assura explain`"],
         compatibility_markers: &[
-            "| `assura explain` | Experimental local path explanation |",
+            "| `assura explain` | Supported local path explanation |",
         ],
         source_markers: &["Commands::Explain", "explain_command"],
         test_markers: &[
@@ -4772,7 +4772,7 @@ const SUPPORT_MATRIX_ROWS: &[SupportMatrixRow] = &[
         support_policy_markers: &["`assura agent`"],
         compatibility_markers: &[
             "| `assura agent` | Supported local agent project-intelligence surface |",
-            "| `assura agent onboard` | Experimental local agent-ready onboarding surface |",
+            "| `assura agent onboard` | Supported local agent-ready onboarding surface |",
             "| `assura agent nudge` | Experimental local agent nudge payload |",
             "| `assura agent integration` | Experimental local agent integration lifecycle |",
             "| `assura agent session` | Supported local agent session alias |",

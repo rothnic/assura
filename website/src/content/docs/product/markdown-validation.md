@@ -86,5 +86,5 @@ Use `<!-- assura-ignore <markdown_rule>: <reason> -->` for intentional local
 exceptions. The rule ID must be supported and the reason must be non-empty;
 otherwise Assura reports `markdown_suppression`.
 
-See [Configuration](/docs/configuration/) for Markdown fields and
+See [Configuration](/reference/configuration/) for Markdown fields and
 [Content Models](/product/content-models/) for typed frontmatter validation.

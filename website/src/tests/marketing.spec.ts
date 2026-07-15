@@ -65,7 +65,8 @@ test('example output CTA connects project policy to pass and fail paths', async 
   await page.getByRole('link', { name: 'See how rules apply' }).click();
   await expect(page.getByRole('heading', { name: '.assura/config.yml' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Project tree' })).toBeVisible();
-  await expect(page.getByText('AGENTS.md: exists:1', { exact: true })).toBeVisible();
+  await expect(page.locator('.config-line').filter({ hasText: 'use: "@agentic-project"' })).toBeVisible();
+  await expect(page.locator('.config-line').filter({ hasText: '"@source-file": { naming: kebab-case, max_lines: 500 }' })).toBeVisible();
   await expect(page.getByText('apps/:', { exact: true })).toBeVisible();
   await expect(page.getByLabel('Pass').first()).toBeVisible();
   await expect(page.getByLabel('Blocking violation').first()).toBeVisible();
@@ -306,6 +307,29 @@ test('technical docs remain reachable', async ({ page }) => {
   expect(response?.status()).toBe(200);
   await expect(page.locator('main')).toBeVisible();
 });
+
+for (const colorScheme of themes) {
+  for (const width of [360, 390, 768, 1024, 1440]) {
+    test(`${colorScheme} canonical docs at ${width}px match the product shell`, async ({ page }, testInfo) => {
+      await page.emulateMedia({ colorScheme });
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/reference/configuration/');
+      await expect(page.getByRole('heading', { level: 1, name: 'Configuration Reference' })).toBeVisible();
+      await expect(page.locator('header img').first()).toBeVisible();
+      await expect(page.getByRole('heading', { level: 2, name: 'Concise Structure Notation' })).toBeVisible();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
+      const audit = await new AxeBuilder({ page })
+        // Expressive Code renders each scrollable code block as an unlabeled region.
+        .disableRules(['landmark-unique'])
+        .analyze();
+      expect(audit.violations).toEqual([]);
+      await page.screenshot({
+        path: testInfo.outputPath(`docs-${colorScheme}-${width}.png`),
+        fullPage: true,
+      });
+    });
+  }
+}
 
 test('P1 routes expose unique canonical metadata and structured data', async ({ page }) => {
   const titles = new Set<string>();

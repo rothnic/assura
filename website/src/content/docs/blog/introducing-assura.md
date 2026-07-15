@@ -21,12 +21,16 @@ assura check
 ## Structure-First Config
 
 ```yaml
+rules:
+  "@source-file":
+    naming: kebab-case
+    max_lines: 500
+
 structure:
   ./:
-    files:
-      naming: kebab-case
-    directories:
-      naming: kebab-case
+    .ts: "@source-file"
+    .tsx: "@source-file"
+    src/: exists:1
 exclude:
   - "target/**"
 ```

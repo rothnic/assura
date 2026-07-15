@@ -9,18 +9,11 @@ Assura config should look like the project, file, or document it validates. The
 common path should be compact enough to compete with LS-Lint, while richer
 attributes stay available in place when a rule needs more detail.
 
-This notation is designed to:
-
-- keep `structure:` as the project tree source of truth;
-- put policy where the artifact lives;
-- avoid a separate `contents:` layer for direct children;
-- avoid duplicate `required` and `allowed` declarations for the same item;
-- use `exists` cardinality for required, optional, forbidden, and bounded
-  direct contents;
-- support reusable rule fragments through `rules:` and `use:`;
-- validate Markdown outlines with the same visual hierarchy as the document;
-- express common source-to-test and code-to-doc relationships without detached
-  custom constraints.
+The notation keeps `structure:` as the project-tree source of truth, puts policy
+where the artifact lives, and avoids detached `contents:`, `required`, and
+`allowed` layers. It uses `exists` for direct-child cardinality, `rules:` and
+`use:` for reuse, nested Markdown outlines for document shape, and named
+relationships for source-to-test or code-to-doc contracts.
 
 ## Principles
 
@@ -41,18 +34,14 @@ This notation is designed to:
 Any future change to Assura-authored notation must update the whole user-facing
 surface in the same goal:
 
-- Update public docs and examples, website examples, generated examples,
-  fixture configs, and test-case `.assura/config.yml` files that teach or
-  exercise the changed notation.
+- Update public docs, website and generated examples, fixtures, and test-case
+  configs that teach or exercise the changed notation.
 - Remove superseded alpha notation rather than preserving backwards
   compatibility shims. Assura is pre-1.0, so compatibility exceptions require a
   documented support-policy reason and an explicit removal plan.
-- Run performance gates for notation changes that affect parsing,
-  normalization, compiled artifacts, traversal, relationship validation, or
-  fast-path eligibility.
-- If a notation improvement has inherent performance costs, record the limit,
-  explain why the user value justifies it, and prove the cost is bounded by
-  checked evidence.
+- Run performance gates for changes affecting parsing, normalization, compiled
+  artifacts, traversal, relationships, or fast-path eligibility. Record and
+  bound any justified cost with checked evidence.
 - Keep LS-Lint compatibility claims separate from Assura-authored notation
   robustness claims.
 
@@ -162,28 +151,14 @@ struct PortableConfig {
 
 with explicit `From` conversions between source and portable structs.
 
-with compiled CLI regression coverage for the new field.
-
 ## Notation Coverage Proof
 
-Before Iteration 02 notation work is called complete, Assura needs a checked
-coverage matrix that starts with LS-Lint-equivalent use cases and then extends
-into Assura-native notation.
-
-The matrix should prove:
-
-- LS-Lint-style naming, extension, closed-world, ignore, and direct-child
-  presence cases remain expressible without more ceremony than LS-Lint.
-- Assura-native `exists`, capture, relationship, Markdown outline, and
-  reusable `rules:` cases cover useful policies LS-Lint cannot model directly.
-- Reusable `@rule` fragments reduce duplication for repeated file, docs, and
-  package policies instead of introducing hidden behavior.
-- Equivalent LS-Lint-style checks stay effectively as efficient as LS-Lint in
-  measured CLI-to-CLI evidence, with any inherent notation cost bounded and
-  justified.
-- Independent review confirms LS-Lint-style cases are effectively as efficient
-  as LS-Lint and reusable rules make broader Assura policies more modular
-  without weakening the common LS-Lint-like path.
+The checked matrix starts with LS-Lint-equivalent naming, extension,
+closed-world, ignore, and direct-child presence cases, then covers Assura-native
+`exists`, captures, relationships, Markdown outlines, and reusable rules. It
+must prove equivalent checks remain comparably concise and efficient, while
+Assura-native reuse expands policy breadth without hidden behavior. Independent
+review confirms both claims from executable fixtures and measured evidence.
 
 ## Direct Structure
 
@@ -242,6 +217,21 @@ directories unless an `exists` rule explicitly requires a match.
 
 `exists` is the common-case presence and count model.
 
+Literal hierarchy is concise by default:
+
+- an exact literal file or directory mapping without `exists` means
+  `exists:1`;
+- an exact literal directory scalar rule such as `web/: "@web-app"` also means
+  `exists:1`;
+- extension, capture, and glob keys are match-only unless they declare an
+  explicit direct-child `exists` count;
+- the root `./` always exists and cannot declare its own cardinality.
+
+These are defaults for one cardinality model, not a separate `required`
+concept. Public structure notation rejects `required`. Replace
+`required: true` with an omitted literal default or `exists:1`, and replace
+`required: false` with `exists:0-1`.
+
 | Shorthand | Meaning |
 | --- | --- |
 | `exists:1` | Required exactly once and allowed. |
@@ -258,10 +248,18 @@ When concise direct-child `exists` keys and expanded `files:` or `directories:`
 bundles appear in the same node, Assura merges them. The expanded bundle must
 not erase the count/allow entries generated by the concise child keys.
 
-File `exists` remains a direct-child count. `"./*.ts": exists:1` is valid at
-the root, and `"*.ts": exists:1` is valid inside a nested structure scope.
-Globs that cross directories, such as `"./**/*.ts": exists:1`, are rejected;
-place the count in the directory scope whose direct children should be counted.
+Explicit file-glob `exists` is a direct-child count, so `"./*.ts": exists:1`
+is valid but `"./**/*.ts": exists:1` is rejected. Captured-file `exists:1`
+keeps its per-source counterpart meaning. Directory captures such as
+`"{package}/": exists:1-20` count direct children; multi-segment counts such
+as `packages/*/src/: exists:1` are rejected. Express that hierarchy as nested
+`packages/`, `{package}/`, and `src/` nodes so each count has one parent.
+
+Exact literal files and directories only accept `0`, `0-1`, or `1`. A literal
+cannot exist more than once. `exists:0` cannot carry child policy because a
+forbidden directory cannot also define active descendants. An optional
+`exists:0-1` directory may carry child policy, which is applied only when that
+directory exists.
 
 Detailed attributes remain available when shorthand is not enough:
 
@@ -373,6 +371,27 @@ structure:
 
 Rules are an authoring convenience. They compile into normal structure and
 relationship constraints before validation.
+
+A scalar rule reference on an exact or pattern directory key is concise tree
+reuse:
+
+```yaml
+rules:
+  "@web-app":
+    package.json: exists:1
+    src/: exists:1
+
+structure:
+  ./:
+    apps/:
+      web/: "@web-app"
+```
+
+This is equivalent to `web/: { use: "@web-app" }`. Use the mapping form when
+local keys need to override or extend the reusable tree. A scalar rule used on
+a file/extension key must resolve to a node fragment, while a directory key
+requires a tree fragment. Unknown references, type mismatches, and cycles are
+rejected while loading the config.
 
 Merge order should be deterministic:
 
@@ -646,7 +665,7 @@ structure:
       needs: doc
 
   docs/packages/:
-    required: false
+    exists: 0-1
     "{package}.md":
       provides: doc
       markdown:
@@ -656,7 +675,7 @@ structure:
           - ?? Examples
 
   docs/:
-    required: false
+    exists: 0-1
     packages.md:
       sections:
         "{package}":

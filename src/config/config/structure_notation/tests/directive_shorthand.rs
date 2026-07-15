@@ -101,3 +101,291 @@ structure:
         Some(&"1".to_string())
     );
 }
+
+#[test]
+fn literal_hierarchy_uses_exists_cardinality_and_scalar_tree_rules() {
+    let config = parse_config(
+        r#"
+rules:
+  "@web-app":
+    package.json: exists:1
+    src/: exists:1
+structure:
+  ./:
+    extra: false
+    docs/:
+      exists: 0-1
+      README.md: exists:0-1
+    apps/:
+      web/: "@web-app"
+"#,
+    )
+    .unwrap();
+
+    let root = config.structure.get("./").unwrap();
+    assert_eq!(
+        root.directories
+            .as_ref()
+            .and_then(|directories| directories.exists.as_ref())
+            .and_then(|exists| exists.get("apps")),
+        Some(&"1".to_string())
+    );
+    assert_eq!(
+        root.directories
+            .as_ref()
+            .and_then(|directories| directories.exists.as_ref())
+            .and_then(|exists| exists.get("docs")),
+        Some(&"0-1".to_string())
+    );
+
+    let apps = root
+        .children
+        .as_ref()
+        .and_then(|children| children.get("apps"))
+        .unwrap();
+    assert!(!apps.required);
+    assert_eq!(
+        apps.directories
+            .as_ref()
+            .and_then(|directories| directories.exists.as_ref())
+            .and_then(|exists| exists.get("web")),
+        Some(&"1".to_string())
+    );
+
+    let web = apps
+        .children
+        .as_ref()
+        .and_then(|children| children.get("web"))
+        .unwrap();
+    assert!(!web.required);
+    assert_eq!(
+        web.files
+            .as_ref()
+            .and_then(|files| files.exists.as_ref())
+            .and_then(|exists| exists.get("package.json")),
+        Some(&"1".to_string())
+    );
+    assert_eq!(
+        web.directories
+            .as_ref()
+            .and_then(|directories| directories.exists.as_ref())
+            .and_then(|exists| exists.get("src")),
+        Some(&"1".to_string())
+    );
+}
+
+#[test]
+fn scalar_directory_rule_matches_expanded_use_form() {
+    let shorthand = parse_config(
+        r#"
+rules:
+  "@package":
+    AGENTS.md: exists:1
+structure:
+  packages/:
+    core/: "@package"
+"#,
+    )
+    .unwrap();
+    let expanded = parse_config(
+        r#"
+rules:
+  "@package":
+    AGENTS.md: exists:1
+structure:
+  packages/:
+    core/:
+      use: "@package"
+"#,
+    )
+    .unwrap();
+
+    let shorthand_core = shorthand
+        .structure
+        .get("packages/")
+        .and_then(|node| node.children.as_ref())
+        .and_then(|children| children.get("core"))
+        .unwrap();
+    let expanded_core = expanded
+        .structure
+        .get("packages/")
+        .and_then(|node| node.children.as_ref())
+        .and_then(|children| children.get("core"))
+        .unwrap();
+    assert_eq!(
+        serde_yaml::to_value(shorthand_core).unwrap(),
+        serde_yaml::to_value(expanded_core).unwrap()
+    );
+}
+
+#[test]
+fn reusable_rule_references_reject_unknown_mismatched_and_cyclic_fragments() {
+    for (yaml, expected) in [
+        (
+            r#"
+structure:
+  packages/:
+    core/: "@missing"
+"#,
+            "unknown Assura config rule '@missing'",
+        ),
+        (
+            r#"
+rules:
+  "@source-file":
+    naming: kebab-case
+structure:
+  packages/:
+    core/: "@source-file"
+"#,
+            "node fragment but a tree fragment is required",
+        ),
+        (
+            r#"
+rules:
+  "@package":
+    AGENTS.md: exists:1
+structure:
+  src/:
+    .ts: "@package"
+"#,
+            "tree fragment but a node fragment is required",
+        ),
+        (
+            r#"
+rules:
+  "@a":
+    child/:
+      use: "@b"
+  "@b":
+    child/:
+      use: "@a"
+structure:
+  ./:
+    use: "@a"
+"#,
+            "Assura config rule cycle detected",
+        ),
+    ] {
+        let error = parse_config(yaml).unwrap_err().to_string();
+        assert!(error.contains(expected), "unexpected error: {error}");
+    }
+}
+
+#[test]
+fn rule_reference_validation_ignores_relationship_labels() {
+    let config = parse_config(
+        r#"
+rules:
+  "@document":
+    needs: "@docs"
+    provides: "@document"
+    max_lines: 500
+structure:
+  docs/:
+    "{document}.md": "@document"
+"#,
+    )
+    .unwrap();
+
+    assert!(config.structure.contains_key("docs/"));
+}
+
+#[test]
+fn exact_file_mapping_defaults_to_exists_one() {
+    let config = parse_config(
+        r#"
+structure:
+  ./:
+    AGENTS.md:
+      max_lines: 300
+"#,
+    )
+    .unwrap();
+
+    assert_eq!(
+        config
+            .structure
+            .get("./")
+            .and_then(|node| node.files.as_ref())
+            .and_then(|files| files.exists.as_ref())
+            .and_then(|exists| exists.get("AGENTS.md")),
+        Some(&"1".to_string())
+    );
+}
+
+#[test]
+fn direct_child_directory_patterns_accept_explicit_ranges() {
+    let config = parse_config(
+        r#"
+structure:
+  packages/:
+    "{package}/":
+      exists: 1-20
+      package.json: exists:1
+"#,
+    )
+    .unwrap();
+
+    assert_eq!(
+        config
+            .structure
+            .get("packages/")
+            .and_then(|node| node.directories.as_ref())
+            .and_then(|directories| directories.exists.as_ref())
+            .and_then(|exists| exists.get("{package}")),
+        Some(&"1-20".to_string())
+    );
+}
+
+#[test]
+fn removed_required_notation_has_cardinality_migration_guidance() {
+    let error = parse_config(
+        r#"
+structure:
+  ./:
+    docs/:
+      required: false
+"#,
+    )
+    .unwrap_err()
+    .to_string();
+
+    assert!(error.contains("no longer use 'required'"), "{error}");
+    assert!(error.contains("exists:0-1"), "{error}");
+}
+
+#[test]
+fn ambiguous_or_impossible_directory_cardinality_is_rejected() {
+    for (yaml, expected) in [
+        (
+            r#"
+structure:
+  ./:
+    packages/*/src/: exists:1
+"#,
+            "nested direct-child scopes",
+        ),
+        (
+            r#"
+structure:
+  ./:
+    docs/:
+      exists: 0
+      README.md: exists:1
+"#,
+            "cannot combine exists:0 with child policy",
+        ),
+        (
+            r#"
+structure:
+  ./:
+    docs/: exists:2
+"#,
+            "can only use exists:0",
+        ),
+    ] {
+        let error = parse_config(yaml).unwrap_err().to_string();
+        assert!(error.contains(expected), "unexpected error: {error}");
+    }
+}

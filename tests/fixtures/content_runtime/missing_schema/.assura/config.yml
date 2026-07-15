@@ -1,6 +1,4 @@
-structure:
-  ./:
-    required: false
+structure: {}
 
 collections:
   goals:

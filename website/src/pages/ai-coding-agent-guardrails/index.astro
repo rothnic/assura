@@ -12,6 +12,7 @@ const structuredData = { '@context': 'https://schema.org', '@type': 'TechArticle
   {title}
   {description}
   {canonicalPath}
+  releaseSurface="compact-review configured-policy-gate codex-agent-report"
   imagePath="/social/agent-guardrails.webp"
   eyebrow="AI coding agent guardrails"
   heading="Guide the repair before a late gate forces it."
@@ -19,7 +20,7 @@ const structuredData = { '@context': 'https://schema.org', '@type': 'TechArticle
   artifactTitle="assura review · advisory"
   artifactLines={review.display_lines.map((line) => line.text)}
   highlights={[
-    { label: 'While editing', body: 'Return bounded advisory context at supported agent events without blocking the current change.' },
+    { label: 'While editing', body: 'Return bounded advisory context in the agent loop without blocking the current change.' },
     { label: 'Before commit', body: 'Show branch, worktree, structure, and changed-path findings while the repair is still focused.' },
     { label: 'Before merge', body: 'Use the authoritative Check gate for serious configured policy that should not land.' },
   ]}

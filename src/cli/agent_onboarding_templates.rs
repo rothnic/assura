@@ -97,7 +97,6 @@ fn agent_ready_config(content_template: AgentContentTemplate) -> String {
     let repository_references = content::repository_reference_config(content_template);
     let requirements_traceability = content::requirements_traceability_config(content_template);
     let content_config = content::content_config(content_template);
-    let root_required_dirs = content::root_required_dirs(content_template);
     let root_structure = content::root_structure(content_template);
     let docs_structure = content::docs_structure(content_template);
     format!(
@@ -158,41 +157,12 @@ structure:
     Cargo.toml: exists:0-1
     package.json: exists:0-1
     pyproject.toml: exists:0-1
-    directories:
-      required:
-        - ".assura"
-        - "docs"
-{root_required_dirs}
-  .assura/:
-    required: true
-    config.yml: exists:1
-    presets.lock.yml: exists:1
-    onboarding/: exists:1
-    examples/: exists:1
-    integrations/: exists:0-1
-  .assura/onboarding/:
-    required: true
-    summary.md: exists:1
-    rules.md: exists:1
-    questions.md: exists:1
-    lifecycle.md: exists:1
-    agent-next.md: exists:1
-    doctor.json: exists:1
-  .assura/examples/agent-project/:
-    required: true
-    AGENTS.example.md: exists:1
-    SKILL.example.md: exists:1
-  docs/:
-    required: true
-    process/: exists:1
-    learnings/: exists:1
+    docs/:
+      process/:
+        agent-workflow.md: exists:1
+      learnings/:
+        README.md: exists:1
 {docs_structure}
-  docs/process/:
-    required: true
-    agent-workflow.md: exists:1
-  docs/learnings/:
-    required: true
-    README.md: exists:1
 {root_structure}
 
 exclude:

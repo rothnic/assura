@@ -72,7 +72,7 @@ rules:
     README.md: exists:1
     package.json: exists:1
     src/:
-      required: true
+      exists: 1
       .ts: "@source-file"
       .tsx: "@source-file"
 
@@ -82,7 +82,7 @@ structure:
       use: "@package-standard"
       needs: doc
   docs/packages/:
-    required: false
+    exists: 0-1
     "{package}.md":
       provides: doc
 ```
@@ -91,14 +91,13 @@ This keeps simple file directives on one line and the package contract in one
 reusable tree fragment. The directives apply through inheriting descendants of
 `src/`; a more specific structure scope can merge an override or set
 `inherit: false` to reset them. Expand a file directive in place when one
-pattern needs a local override; use the containing node's `files:` mapping for
-scope-wide defaults. The [configuration reference](/reference/configuration/#concise-and-expanded-equivalents)
+pattern needs a local override. The [configuration reference](/reference/configuration/#concise-and-expanded-equivalents)
 shows both equivalent forms and glob scope controls.
 
 Use explicit file globs when depth matters instead of cascading extension
 shorthand:
 
-```yaml
+```yaml config-fragment
 structure:
   ./:
     "./*.ts": "@source-file" # direct root files
@@ -114,7 +113,7 @@ the normalized file pattern that supplies each effective attribute.
 
 Keep generated or dependency-heavy paths outside validation:
 
-```yaml
+```yaml config-fragment
 exclude:
   - "target/**"
   - "node_modules/**"

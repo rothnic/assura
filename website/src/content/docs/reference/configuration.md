@@ -127,9 +127,8 @@ structure:
 Use the expanded form for a one-off override or when the directive needs
 additional attributes. Directive-attached `naming`, `max_lines`, and `max_size`
 apply only to files matching that pattern in the configured directory scope and
-its inheriting descendants. Put `max_lines` or `max_size` under the containing
-node's `files:` mapping when the value should be the default for every file in
-that scope.
+its inheriting descendants. Define one reusable directive and apply it to each
+extension or explicit glob that should share the default.
 
 Choose reach explicitly. Extension shorthand cascades like LS-Lint, while an
 explicit file glob preserves the depth you configure:
@@ -145,7 +144,7 @@ explicit file glob preserves the depth you configure:
 The structure key controls reach. `*` matches one directory segment and `**`
 crosses directory separators:
 
-```yaml
+```yaml config-fragment
 structure:
   packages/*/src/:
     .ts: "@source-file"
@@ -241,78 +240,52 @@ skill that tells agents where to find it.
 
 ## Directory Nodes
 
-Each key under `structure` is a directory scope. Use `./` for the project root.
+Each key under `structure` follows the project hierarchy. Use `./` for the
+project root. Exact literal paths are required by default, so the concise tree
+below requires `apps/web/src/` without a second `required` directive:
 
 ```yaml
 structure:
   ./:
-    required: true
-    inherit: true
-    files: {}
-    directories: {}
-    self_directory: {}
-    markdown: {}
-    exists: {}
-    children: {}
+    apps/:
+      web/:
+        src/:
+          .tsx: kebab-case
 ```
 
-| Field | Behavior |
-| --- | --- |
-| `required` | Whether this configured directory itself must exist. Defaults to `true`. |
-| `inherit` | Whether child scopes inherit parent file, directory, and markdown rules. Defaults to `true`. |
-| `files` | Rules for direct child files in this directory scope. |
-| `directories` | Rules for direct child directories in this directory scope. |
-| `self_directory` | Rules for the configured directory itself. This is primarily emitted by LS-Lint `.dir` migration. Hand-written policies usually use `directories` for direct children. |
-| `markdown` | Markdown checks for direct child `.md` files in this directory scope. |
-| `exists` | Legacy required file/directory lists. Prefer `files.required`, `directories.required`, or direct count rules for new config. |
-| `children` | Nested directory scopes. |
+Use `exists:0-1` when an exact directory is optional. A pattern directory such
+as `"{package}/"`, `"package-*/"`, or `"**/generated/"` is match-only by
+default. Add an explicit direct-child count only when cardinality matters.
+
+`inherit:false` resets policy inherited from less-specific scopes. The `.dir`
+directive validates the name of directories matched by that entry and is
+especially useful on captured or globbed package paths.
 
 ## File Rules
 
 ```yaml
-files:
-  naming: kebab-case
-  naming_patterns:
-    "*.rs": snake_case
-  max_lines: 500
-  max_size: 100KB
-  require_docs: true
-  extensions:
-    - rs
-    - md
-  severity: high
-  required:
-    - README.md
-  allowed_names:
-    - README.md
-    - Cargo.toml
-  allowed_patterns:
-    - "*.lock"
-  forbidden_patterns:
-    - "draft-*"
-  allow_extra: false
-  exists:
-    "README.md": "1"
-    "*.tmp": "0"
+rules:
+  "@source-file":
+    naming: kebab-case
+    max_lines: 500
+    max_size: 100KB
+
+structure:
+  ./:
+    .ts: "@source-file"
+    .tsx: "@source-file"
+    README.md: exists:1
+    "*.tmp": exists:0
 ```
 
 | Field | Behavior |
 | --- | --- |
-| `naming` | Naming convention for files in the scope. Supports built-in case names and `regex:<pattern>`. |
-| `naming_patterns` | Naming conventions keyed by normalized file glob pattern. More specific matches win. Prefer concise tree notation for hand-authored config. |
-| `max_lines` | Default line limit for files in the scope and inheriting descendants. |
-| `max_lines_patterns` | Normalized pattern-specific line limits emitted by concise directives. |
-| `max_size` | Default size limit for files in the scope and inheriting descendants, using values such as `100KB` or `2MB`. |
-| `max_size_patterns` | Normalized pattern-specific size limits emitted by concise directives. |
-| `require_docs` | For Rust files, requires `//!` or `///` rustdoc text. |
-| `extensions` | Allows only the listed extensions when extension validation is configured. Multi-part extensions such as `tar.gz` are supported. |
-| `severity` | Severity assigned to violations from this file bundle. `low` is advisory; `medium`, `high`, and `critical` are blocking. |
-| `required` | Exact direct files that must exist. |
-| `allowed_names` | Exact direct file names allowed by a closed-world policy. |
-| `allowed_patterns` | Direct file glob patterns allowed by a closed-world policy. |
-| `forbidden_patterns` | Direct file glob patterns that are always rejected. Forbidden patterns override broad allowed patterns. |
-| `allow_extra` | When `false`, rejects direct files not covered by exact names, allowed patterns, or allowed extensions. |
-| `exists` | Direct child file count constraints keyed by glob or exact pattern. Values are `exists`, `0`, `1`, or ranges such as `1-4`. |
+| `naming` | Built-in case name or `regex:<pattern>`. |
+| `max_lines` | Language-agnostic maximum line count. |
+| `max_size` | Maximum file size such as `100KB` or `2MB`. |
+| `require_docs` | Requires Rust documentation text for matching Rust files. |
+| `exists` | Direct-child count: `0`, `1`, `0-1`, or a bounded range. |
+| `markdown` | Markdown checks attached to matching `.md` files. |
 
 `exists` does not count recursively. Use `"./*.ts": exists:1` at the root or
 `"*.ts": exists:1` inside the relevant directory scope. Assura rejects
@@ -322,33 +295,30 @@ rule cannot silently count only direct children.
 ## Directory Rules
 
 ```yaml
-directories:
-  naming: kebab-case
-  severity: critical
-  required:
-    - src
-  allowed_names:
-    - src
-    - tests
-  allowed_patterns:
-    - "package-*"
-  forbidden_patterns:
-    - "tmp-*"
-  allow_extra: false
-  exists:
-    "package-*": "1-4"
+structure:
+  ./:
+    packages/:
+      "package-*/":
+        .dir: kebab-case
+    "tmp-*/": exists:0
 ```
 
-| Field | Behavior |
-| --- | --- |
-| `naming` | Naming convention for direct child directories. |
-| `severity` | Severity assigned to violations from this directory bundle. `low` is advisory; `medium`, `high`, and `critical` are blocking. |
-| `required` | Exact direct child directories that must exist. |
-| `allowed_names` | Exact direct child directory names allowed by a closed-world policy. |
-| `allowed_patterns` | Direct child directory glob patterns allowed by a closed-world policy. |
-| `forbidden_patterns` | Direct child directory glob patterns that are always rejected. |
-| `allow_extra` | When `false`, rejects direct child directories not covered by `children`, exact names, or allowed patterns. |
-| `exists` | Direct child directory count constraints keyed by glob or exact pattern. |
+For reusable directory contracts, define a tree fragment and apply it with a
+scalar rule reference:
+
+```yaml
+rules:
+  "@package-standard":
+    .dir: kebab-case
+    package.json: exists:1
+    README.md: exists:0-1
+    src/: exists:1
+
+structure:
+  ./:
+    packages/:
+      "{package}/": "@package-standard"
+```
 
 ## Markdown Rules
 
@@ -400,7 +370,7 @@ reason. Invalid suppressions are reported as `markdown_suppression`.
 Opt into experimental source/comment/docstring reference diagnostics with
 `extensions.repository_references`:
 
-```yaml
+```yaml config-fragment
 extensions:
   repository_references:
     - id: source_refs
@@ -428,7 +398,7 @@ lower-confidence references remain available as graph context through
 Opt into experimental agent guidance diagnostics with
 `extensions.agent_guidance`:
 
-```yaml
+```yaml config-fragment
 extensions:
   agent_guidance:
     - id: agent_project_guidance
@@ -484,7 +454,7 @@ host-agent-specific validation logic.
 Opt into experimental requirements, claims, evidence, source-document, and
 finding traceability diagnostics with `extensions.requirements_traceability`:
 
-```yaml
+```yaml config-fragment
 extensions:
   requirements_traceability:
     - id: document_project_traceability
@@ -524,7 +494,7 @@ reference checks, or add a public plugin API.
 Opt into experimental project-local computed findings with
 `extensions.computed_checks`:
 
-```yaml
+```yaml config-fragment
 extensions:
   computed_checks:
     - id: rollup_score
@@ -602,11 +572,11 @@ structure:
     "{package}/":
       needs: doc
   docs/packages/:
-    required: false
+    exists: 0-1
     "{package}.md":
       provides: doc
   docs/:
-    required: false
+    exists: 0-1
     packages.md:
       sections:
         "{package}":
@@ -666,13 +636,9 @@ Direct count rules apply only to direct children of the configured directory.
 ```yaml
 structure:
   ./:
-    files:
-      exists:
-        "README.md": "1"
-        "*.tmp": "0"
-    directories:
-      exists:
-        "package-*": "1-5"
+    README.md: exists:1
+    "*.tmp": exists:0
+    "package-*/": exists:1-5
 ```
 
 LS-Lint extension rules such as `.md: exists:1-2` map to direct file counts and

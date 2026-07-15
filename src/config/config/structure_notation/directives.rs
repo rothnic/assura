@@ -196,6 +196,14 @@ fn apply_captured_directory_directive(
         ));
     }
     apply_directory_attributes(output, directive.attributes)?;
+    if let Some(exists) = directive.exists.as_ref() {
+        set_nested_mapping(
+            output,
+            "directories",
+            "exists",
+            mapping_entry(directory, exists),
+        );
+    }
     if directive.exists.as_deref() != Some("0") {
         append_nested_sequence(output, "directories", "allowed_patterns", directory);
     }
@@ -230,12 +238,20 @@ fn is_tree_value(value: &Value) -> Result<bool, String> {
         let Some(key) = key.as_str() else {
             return Err("Assura config fragments must use string keys".to_string());
         };
-        if key == USE || key == EXTRA || !is_node_attr_key(key) {
+        if key == USE
+            || key == EXTRA
+            || (is_directory_node_attr_key(key) && key != "exists")
+            || !is_node_attr_key(key)
+        {
             return Ok(true);
         }
     }
 
     Ok(false)
+}
+
+fn is_rule_reference_value(value: &Value) -> bool {
+    value.as_str().is_some_and(is_rule_reference)
 }
 
 fn apply_file_attributes(output: &mut Mapping, attributes: Mapping) -> Result<(), String> {

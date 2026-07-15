@@ -22,8 +22,9 @@ browser verification, and Cloudflare published the refreshed preview.
 - `cargo xtask website-demo-data` builds the full CLI, creates a deterministic
   Git fixture, runs actual Onboard, Review, and Check commands, and writes the
   sanitized website JSON.
-- `website/src/data/claims.yml` smoke-tests the exact supported and
-  experimental public commands and their expected exit codes.
+- `docs/data/release-surfaces.json` records the promoted marketing claims,
+  evidence references, and smoke-tested public commands with their expected
+  exit codes.
 - `cargo xtask website-demo-data --check` proves the checked-in examples and
   promoted-release performance summary are current.
 - Website source validation rejects unsupported explicit-base and path-scoped

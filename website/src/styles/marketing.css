@@ -825,8 +825,9 @@
 
   .rule-marker {
     display: inline-flex;
-    width: 1.1rem;
+    min-width: 1.1rem;
     height: 1.1rem;
+    padding-inline: 0.18rem;
     flex: 0 0 auto;
     align-items: center;
     justify-content: center;

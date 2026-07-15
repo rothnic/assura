@@ -436,9 +436,7 @@ fn content_query_lists_all_and_unresolved_frontmatter_references() {
     fs::create_dir_all(project.path().join("docs")).expect("docs dir");
     fs::write(
         project.path().join(".assura/config.yml"),
-        r#"structure:
-  ./:
-    required: false
+        r#"structure: {}
 extensions:
   repository_references:
     - id: source_docs

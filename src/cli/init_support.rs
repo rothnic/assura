@@ -36,10 +36,10 @@ structure:
     tests/: exists:0-1
     .rs: snake_case
   src/:
-    required: false
+    exists: 0-1
     .rs: snake_case
   tests/:
-    required: false
+    exists: 0-1
     .rs: snake_case
 
 exclude:
@@ -170,15 +170,15 @@ structure:
     tests/: exists:0-1
     .rs: snake_case
   docs/goals/:
-    required: false
+    exists: 0-1
     .md:
       markdown:
         lint_trailing_spaces: true
   src/:
-    required: false
+    exists: 0-1
     .rs: snake_case
   tests/:
-    required: false
+    exists: 0-1
     .rs: snake_case
 
 models:

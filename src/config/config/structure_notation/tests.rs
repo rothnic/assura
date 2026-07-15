@@ -97,12 +97,13 @@ structure:
     "{package}/":
       needs: doc
   docs/packages/:
-    required: false
+    exists: 0-1
     "{package}.md":
       provides: doc
   docs/:
-    required: false
+    exists: 0-1
     packages.md:
+      exists: 0-1
       sections:
         "{package}":
           provides: doc

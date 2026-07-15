@@ -61,14 +61,6 @@ pub(super) fn content_config(template: AgentContentTemplate) -> String {
     }
 }
 
-pub(super) fn root_required_dirs(template: AgentContentTemplate) -> &'static str {
-    if matches!(template, AgentContentTemplate::DocumentProject) {
-        document_project::root_required_dirs()
-    } else {
-        ""
-    }
-}
-
 pub(super) fn root_structure(template: AgentContentTemplate) -> &'static str {
     if matches!(template, AgentContentTemplate::DocumentProject) {
         document_project::root_structure()

@@ -2,11 +2,12 @@
 
 ## Goal
 
-Create a polished standalone Assura landing page for `assura.dev` inside the
-existing Astro website, independent of the Starlight docs experience. The page
-should quickly explain that Assura makes repository structure and agent
-onboarding rules explicit, local, and checkable, while preserving existing docs
-routes and only aligning their color palette.
+Ship a polished standalone Assura landing experience whose configuration,
+command output, capability status, and performance claims are executable
+contracts with the Rust CLI. Keep the marketing page independent from
+Starlight, but align the public docs, canonical notation, and release-surface
+metadata so the site never demonstrates syntax or behavior Assura does not
+support.
 
 ## What I already know
 
@@ -51,6 +52,21 @@ routes and only aligning their color palette.
 - Make the onboarding claim executable: detect the project, apply the broad
   built-in agent baseline through a project-owned wrapper, and report which
   project-specific policy remains undecided.
+- Replace public `required` structure notation with one `exists` cardinality
+  model while keeping literal hierarchy concise through implicit
+  `exists:1` defaults.
+- Support nested directory cardinality plus child policy and scalar reusable
+  tree rules such as `web/: "@web-app"`.
+- Make `assura explain` expose effective patterns, cardinality, inheritance,
+  and the winning normalized policy needed to understand shorthand scope.
+- Render landing examples and command-output visuals from canonical fixtures
+  that the real CLI checks during docs and website evidence builds.
+- Make one release-surface manifest authoritative for support maturity and
+  evidence provenance; website claims must reference those surface IDs.
+- Replace stale or duplicate docs pages that teach unsupported rule names or
+  internal expanded config as the normal authored format.
+- Keep equivalent LS-Lint performance measurements separate from untimed
+  Assura-native capability examples.
 
 ## Verification Checklist
 
@@ -77,6 +93,31 @@ routes and only aligning their color palette.
       block at 390px.
 - [x] Onboarding report and generated config expose an applied project-owned
       rule wrapper while leaving unsupported specialization inactive.
+- [x] Exact literal files/directories share an implicit `exists:1` default;
+      optional, forbidden, and bounded cases use explicit `exists`.
+- [x] Direct-child file-glob and directory-capture cardinality works;
+      capture-based counterpart files retain per-match relationship semantics,
+      and multi-segment cardinality is rejected with hierarchy guidance.
+- [x] Public authored `required` receives a migration diagnostic and is absent
+      from all current examples, generated configs, and canonical docs.
+- [x] Scalar directory rule references normalize equivalently to `use:` and
+      reject node/tree type mismatches, cycles, and unknown rules.
+- [x] The compact project and agentic monorepo examples each have passing and
+      failing executable fixtures that prove naming, line limits, cardinality,
+      closed-world policy, inheritance, and local overrides.
+- [x] Every public YAML fence is classified; Assura config examples parse and
+      execute, expected-invalid examples assert their diagnostic, and
+      unclassified Assura-looking YAML fails CI.
+- [x] Every marketing capability claim maps to one or more specific
+      release-surface IDs with separate support and evidence status.
+- [x] `review`, `check`, `explain`, onboarding, branch/worktree signals, stable
+      agent feedback, configured docs/references, and measured performance have
+      support-grade tests and truthful public status.
+- [x] There are zero unsupported list-form `rules:` examples and zero public
+      structure-node `required:` examples.
+- [x] Canonical marketing and docs routes pass responsive light/dark checks at
+      360, 390, 768, 1024, and 1440 widths with no horizontal overflow and no
+      serious or critical accessibility findings.
 
 ## Verification Evidence
 
@@ -99,6 +140,33 @@ routes and only aligning their color palette.
 - Current CLI command-output shapes were checked against `cargo run --quiet --
   check` and `cargo run --quiet -- check --format agent --agent codex` before
   updating the terminal examples.
+- `cargo xtask website-demo-data --check` validates both executable marketing
+  configs, 12 bidirectional release-surface mappings, and 57 classified YAML
+  fences.
+- `cargo test --test structure_config_notation_tests` passed 17 public CLI
+  notation cases, including optional subtrees, captured directory counts, and
+  unmatched reusable capture scopes.
+- `cargo test --test ls_lint_parity_regression_tests` passed 11 parity cases
+  with one manual performance audit ignored by design.
+- `pnpm --dir website test:marketing` passed 51 browser checks across landing,
+  performance, canonical docs, themes, accessibility, metadata, and links.
+- `target/performance/landing-config-alignment.json` measured all eight accepted
+  cold LS-Lint comparisons and all eight warm session comparisons; the strict
+  no-slower gate passed with 1.2463x aggregate cold and 16.0526x aggregate warm
+  speedups on this machine.
+- `cargo xtask pr` passed on the completed implementation, including 485 library
+  tests, all workspace integration suites, self-check, target-state, docs
+  evidence, website fixture generation, and the 48-page production build.
+- Independent review identified optional subtree, capture count, unmatched
+  reusable capture, rule-reference scan, and support-status gaps; each accepted
+  finding has a regression or source-of-truth check in this change.
+- Follow-up review identified stale support-policy rows, one semantically loose
+  page marker, one-way claim validation, and overstated packet-health wording;
+  these now use explicit next-release status, capability-specific page markers,
+  bidirectional claim checks, and core-handoff presence language.
+- Tool-owned `.assura/onboarding/` state intentionally remains outside the user
+  structure contract; onboarding verification and `assura doctor` report core
+  handoff presence, and the canonical guide now states that boundary explicitly.
 
 ## Definition of Done
 
@@ -113,9 +181,10 @@ routes and only aligning their color palette.
 
 ## Out of Scope
 
-- Rewriting docs content or restructuring the full Starlight docs tree.
+- Replacing Starlight or redesigning the full docs information architecture.
 - Adding a marketing CMS, analytics, forms, backend routes, or hosted service.
-- Unrelated Rust CLI behavior outside the onboarding recommendation contract.
+- Code-symbol/dependency intelligence, autonomous semantic repair, MCP, or a
+  public plugin API beyond currently evidenced local surfaces.
 - Introducing a large frontend framework dependency for this static page.
 
 ## Technical Notes

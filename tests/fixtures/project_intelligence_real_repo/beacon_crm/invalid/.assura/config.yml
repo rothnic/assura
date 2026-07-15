@@ -1,13 +1,10 @@
 structure:
   ./:
-    required: false
-    children:
-      docs/:
-        required: false
-        children:
-          epics/:
-            markdown:
-              lint_trailing_spaces: true
+    docs/:
+      exists: 0-1
+      epics/:
+        markdown:
+          lint_trailing_spaces: true
 
 models:
   source: schemas/project-intelligence.linkml.yaml

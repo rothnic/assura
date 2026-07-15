@@ -144,7 +144,6 @@ pub(super) fn create_native_project(root: &Path, kind: FixtureKind) -> Result<()
 fn native_config_yaml(adapter_mix: bool) -> String {
     let mut config = r#"structure:
   ./:
-    required: false
     markdown:
       lint_common: true
       lint_trailing_spaces: true

@@ -10,7 +10,7 @@ Assura can convert an LS-Lint config into the supported structure-first
 
 Example `.ls-lint.yml`:
 
-```yaml
+```yaml ls-lint-config
 ls:
   .dir: kebab-case
   .ts: kebab-case
@@ -48,7 +48,7 @@ syntax, wildcard/subextension rules, glob and brace directory scopes, and
 
 Native LS-Lint parity examples:
 
-```yaml
+```yaml ls-lint-config
 ls:
   .dir: kebab-case
   .md: exists:1-2
@@ -58,7 +58,7 @@ ls:
 
 Assura native direct-count examples:
 
-```yaml
+```yaml ls-lint-config
 ls:
   README.md: exists:1
   docs/: exists:1

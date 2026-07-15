@@ -73,6 +73,58 @@ fn parse_exists_count(raw: &str) -> Result<String, String> {
     Ok(raw.to_string())
 }
 
+fn validate_literal_cardinality(path: &str, exists: Option<&str>) -> Result<(), String> {
+    let Some(exists) = exists else {
+        return Ok(());
+    };
+    if matches!(exists, "0" | "0-1" | "1") {
+        return Ok(());
+    }
+    Err(format!(
+        "Assura config exact path '{path}' can only use exists:0, exists:0-1, or exists:1"
+    ))
+}
+
+fn validate_directory_cardinality(
+    path: &str,
+    exists: Option<&str>,
+    has_child_policy: bool,
+) -> Result<(), String> {
+    let Some(exists) = exists else {
+        return Ok(());
+    };
+    let local = path.trim_end_matches('/');
+    if local.contains('/') {
+        return Err(format!(
+            "Assura config directory scope '{path}' cannot use exists across multiple path segments; express the hierarchy as nested direct-child scopes"
+        ));
+    }
+    if !path_has_scope_magic(path) {
+        validate_literal_cardinality(path, Some(exists))?;
+    }
+    if exists == "0" && has_child_policy {
+        return Err(format!(
+            "Assura config directory '{path}' cannot combine exists:0 with child policy"
+        ));
+    }
+    Ok(())
+}
+
+fn validate_top_level_scope_cardinality(path: &str, exists: Option<&str>) -> Result<(), String> {
+    let Some(exists) = exists else {
+        return Ok(());
+    };
+    if matches!(path, "." | "./") {
+        return Err("Assura config root './' always exists and cannot declare exists".to_string());
+    }
+    if path_has_scope_magic(path) {
+        return Err(format!(
+            "Assura config pattern scope '{path}' cannot declare exists; express cardinality on a nested direct-child pattern"
+        ));
+    }
+    validate_literal_cardinality(path, Some(exists))
+}
+
 fn filename_count_is_allowed(output: &Mapping, parent: &str, filename: &str) -> bool {
     count_for(output, parent, filename)
         .map(|count| count != "0")

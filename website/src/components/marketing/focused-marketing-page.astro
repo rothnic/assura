@@ -27,6 +27,7 @@ interface Props {
   sections: Item[];
   docsLinks: LinkItem[];
   adjacentLinks: LinkItem[];
+  releaseSurface?: string;
   structuredData?: Record<string, unknown> | Array<Record<string, unknown>>;
 }
 
@@ -41,7 +42,7 @@ const props = Astro.props;
   navItems={marketingNav}
   structuredData={props.structuredData}
 >
-  <main id="main-content" class="focused-page">
+  <main id="main-content" class="focused-page" data-release-surface={props.releaseSurface}>
     <section class="focused-hero" aria-labelledby="focused-title">
       <div class="focused-hero-copy">
         <p class="eyebrow">{props.eyebrow}</p>

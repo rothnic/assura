@@ -19,6 +19,10 @@ human answers. It does not silently wire global host-agent configuration, guess
 domain rules, or turn a green check into a claim that the project is fully
 specialized.
 
+The generated packet is Assura-owned operational state. `assura check` validates
+the user-authored project contract, while onboarding verification and
+`assura doctor` report whether the core handoff file is present.
+
 ## First-Run Phases
 
 1. Install Assura with the release installer from the

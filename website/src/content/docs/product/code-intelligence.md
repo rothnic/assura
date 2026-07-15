@@ -26,7 +26,7 @@ supported content collections/querying contract.
 
 Declare symbol-bearing fields with `code_symbols` keys:
 
-```yaml
+```yaml config-fragment
 code_symbols:
   components.implementation:
     provider: rust-token-baseline-v1
@@ -39,7 +39,7 @@ turning code intelligence into validation truth.
 Source comments, docstrings, and string-like local paths can also be checked
 without a provider:
 
-```yaml
+```yaml config-fragment
 extensions:
   repository_references:
     - id: source_refs

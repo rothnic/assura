@@ -118,7 +118,6 @@ fn assura_native_policy_catches_shell_artifact_files_and_glob_like_names() {
         r#"
 structure:
   ./:
-    required: false
     files:
       allowed_names:
         - ok-name.ts

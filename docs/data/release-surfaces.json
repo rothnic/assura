@@ -6,14 +6,26 @@
       "label": "Project Intelligence local surfaces",
       "status": "supported",
       "first_release": "v0.2.0",
-      "detail_path": "docs/release-notes.md"
+      "detail_path": "docs/release-notes.md",
+      "marketing_claim": true,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/agent_surface_cli.rs"],
+      "command": "assura agent --help",
+      "smoke_args": ["agent", "--help"],
+      "expected_exit": 0
     },
     {
       "id": "content-collections-querying",
       "label": "Content collections and querying",
       "status": "supported",
       "first_release": "v0.2.0",
-      "detail_path": "docs/goals/assura-beta-content-collections-querying.md"
+      "detail_path": "docs/goals/assura-beta-content-collections-querying.md",
+      "marketing_claim": true,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/content_query_cli.rs"],
+      "command": "assura content --help",
+      "smoke_args": ["content", "--help"],
+      "expected_exit": 0
     },
     {
       "id": "markdown-safe-fix-preview-apply",
@@ -48,7 +60,13 @@
       "label": "Repository reference facts and queries",
       "status": "supported",
       "first_release": "v0.2.0",
-      "detail_path": "docs/goals/assura-supported-document-graph.md"
+      "detail_path": "docs/goals/assura-supported-document-graph.md",
+      "marketing_claim": true,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/content_runtime_references.rs"],
+      "command": "assura content references --help",
+      "smoke_args": ["content", "references", "--help"],
+      "expected_exit": 0
     },
     {
       "id": "repository-reference-checks",
@@ -76,7 +94,13 @@
       "label": "Structure validation CLI",
       "status": "supported",
       "first_release": "v0.1.0",
-      "detail_path": "docs/release-notes.md"
+      "detail_path": "docs/release-notes.md",
+      "marketing_claim": true,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/structure_config_notation_tests.rs"],
+      "command": "assura check",
+      "smoke_args": ["check"],
+      "expected_exit": 1
     },
     {
       "id": "structure-severity-contract",
@@ -133,6 +157,130 @@
       "status": "experimental",
       "first_release": "v0.2.0",
       "detail_path": "docs/goals/assura-beta-agent-nudge-integrations.md"
+    },
+    {
+      "id": "agent-onboarding",
+      "label": "Agent-ready project onboarding",
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-agent-onboarding-bootstrap-command.md",
+      "marketing_claim": true,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/project_intelligence_onboarding.rs"],
+      "command": "assura agent onboard . --agent auto --format json",
+      "smoke_args": ["agent", "onboard", ".", "--agent", "auto", "--format", "json"],
+      "expected_exit": 1
+    },
+    {
+      "id": "compact-review",
+      "label": "Branch-aware compact project review",
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-compact-project-review-common-issues.md",
+      "marketing_claim": true,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/project_review_cli.rs"],
+      "command": "assura review",
+      "smoke_args": ["review"],
+      "expected_exit": 0
+    },
+    {
+      "id": "path-explanation",
+      "label": "Effective path policy explanation",
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-agent-doctor-explain-feedback.md",
+      "marketing_claim": true,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/explain_pattern_scope_cli.rs"],
+      "command": "assura explain apps/web/src",
+      "smoke_args": ["explain", "apps/web/src"],
+      "expected_exit": 0
+    },
+    {
+      "id": "configured-policy-gate",
+      "label": "Configured merge policy gate",
+      "status": "supported",
+      "first_release": "v0.1.0",
+      "detail_path": "docs/release-notes.md",
+      "marketing_claim": true,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/real_project_agentic_feedback_tests.rs"],
+      "command": "assura check",
+      "smoke_args": ["check"],
+      "expected_exit": 1
+    },
+    {
+      "id": "codex-agent-report",
+      "label": "Bounded Codex agent report",
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-agent-doctor-explain-feedback.md",
+      "marketing_claim": true,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/agent_surface_cli.rs"],
+      "command": "assura check --format agent --agent codex .",
+      "smoke_args": ["check", "--format", "agent", "--agent", "codex", "."],
+      "expected_exit": 1
+    },
+    {
+      "id": "explicit-review-base",
+      "label": "Explicit project review base",
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-compact-project-review-common-issues.md",
+      "marketing_claim": true,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/project_review_cli.rs"],
+      "command": "assura review --base main",
+      "smoke_args": ["review", "--base", "main"],
+      "expected_exit": 0
+    },
+    {
+      "id": "finding-history",
+      "label": "Project review finding history",
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-compact-project-review-common-issues.md",
+      "marketing_claim": false,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/project_review_cli.rs"],
+      "command": "assura review --format agent",
+      "smoke_args": ["review", "--format", "agent"],
+      "expected_exit": 0
+    },
+    {
+      "id": "cache-observability",
+      "label": "Review cache observability",
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-compact-project-review-common-issues.md",
+      "marketing_claim": false,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/project_review_cli.rs"],
+      "command": "assura cache status --format json",
+      "smoke_args": ["cache", "status", "--format", "json"],
+      "expected_exit": 0
+    },
+    {
+      "id": "cold-ls-lint-comparison",
+      "label": "Cold LS-Lint comparison cohort",
+      "status": "supported",
+      "first_release": "v0.3.0",
+      "detail_path": "docs/goals/assura-cli-to-cli-ls-lint-performance-verification.md",
+      "marketing_claim": true,
+      "evidence_status": "measured",
+      "evidence_refs": ["website/public/data/performance/current.json"]
+    },
+    {
+      "id": "warm-session-performance",
+      "label": "Persistent warm agent-loop performance",
+      "status": "supported",
+      "first_release": "v0.3.0",
+      "detail_path": "docs/goals/assura-performance-floor-and-fixture-gate.md",
+      "marketing_claim": true,
+      "evidence_status": "measured",
+      "evidence_refs": ["website/public/data/performance/current.json"]
     }
   ]
 }

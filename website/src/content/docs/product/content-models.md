@@ -19,7 +19,7 @@ while keeping the files as the source of truth.
 
 ## Model A Repository Collection
 
-```yaml
+```yaml config-fragment
 models:
   source: .assura/models/project/source.linkml.yaml
   validation_artifact: .assura/models/project/runtime.schema.json

@@ -50,15 +50,29 @@ fn normalize_structure(
         };
         reject_removed_capture_syntax(path)?;
         let mut stack = Vec::new();
-        let node = normalize_structure_node(
-            node_value,
+        let Value::Mapping(node_mapping) = node_value else {
+            return Err("Assura config structure nodes must be mappings".to_string());
+        };
+        let mut expanded = expand_tree_mapping(node_mapping, rules, &mut stack)?;
+        let scope_exists = take_scope_cardinality(&mut expanded)?;
+        validate_top_level_scope_cardinality(path, scope_exists.as_deref())?;
+        let node = normalize_expanded_structure_node(
+            expanded,
             rules,
             &mut stack,
             &normalize_scope_path(path),
             relationships,
         )?;
         let mut node_mapping = into_mapping(node, "structure node")?;
-        if path_has_scope_magic(path) {
+        if let Some(exists) = scope_exists {
+            node_mapping.insert(string_value("required"), Value::Bool(false));
+            set_nested_mapping(
+                &mut node_mapping,
+                "self_directory",
+                "exists",
+                mapping_entry("*", exists),
+            );
+        } else if path_has_scope_magic(path) {
             node_mapping
                 .entry(string_value("required"))
                 .or_insert(Value::Bool(false));
@@ -69,6 +83,18 @@ fn normalize_structure(
         );
     }
     Ok(Value::Mapping(normalized))
+}
+
+fn take_scope_cardinality(mapping: &mut Mapping) -> Result<Option<String>, String> {
+    let key = string_value("exists");
+    let Some(value) = mapping.get(&key) else {
+        return Ok(None);
+    };
+    if value.is_mapping() {
+        return Ok(None);
+    }
+    let value = mapping.remove(&key).expect("exists value was present");
+    parse_exists_value(value).map(Some)
 }
 
 fn normalize_structure_node(
@@ -82,6 +108,16 @@ fn normalize_structure_node(
         return Err("Assura config structure nodes must be mappings".to_string());
     };
     let expanded = expand_tree_mapping(mapping, rules, stack)?;
+    normalize_expanded_structure_node(expanded, rules, stack, scope_path, relationships)
+}
+
+fn normalize_expanded_structure_node(
+    expanded: Mapping,
+    rules: &RuleRegistry,
+    stack: &mut Vec<String>,
+    scope_path: &str,
+    relationships: &mut Vec<RelationshipSpec>,
+) -> Result<Value, String> {
     let mut output = Mapping::new();
 
     for (key, value) in expanded {
@@ -91,6 +127,12 @@ fn normalize_structure_node(
         reject_removed_capture_syntax(key)?;
         if matches!(key, USE | NEEDS | PROVIDES | SECTIONS) {
             continue;
+        }
+        if key == "required" {
+            return Err(
+                "Assura config structure nodes no longer use 'required'; omit it for an exact required path or use exists:0-1 for an optional path"
+                    .to_string(),
+            );
         }
         if key == EXTRA {
             let Some(allow_extra) = value.as_bool() else {
@@ -185,20 +227,40 @@ fn normalize_path_key(
 
     if key.ends_with('/') {
         let directory = key.trim_end_matches('/');
-        if is_tree_value(&value)? {
+        if is_rule_reference_value(&value) || is_tree_value(&value)? {
             let child_scope = join_scope_path(scope_path, directory);
+            let (expanded, exists) = expand_nested_directory_tree(value, key, rules, stack)?;
+            validate_directory_cardinality(key, exists.as_deref(), true)?;
             let mut child = into_mapping(
-                normalize_structure_node(value, rules, stack, &child_scope, relationships)?,
+                normalize_expanded_structure_node(
+                    expanded,
+                    rules,
+                    stack,
+                    &child_scope,
+                    relationships,
+                )?,
                 key,
             )?;
-            if path_has_scope_magic(key) {
-                child
-                    .entry(string_value("required"))
-                    .or_insert(Value::Bool(false));
+            child.insert(string_value("required"), Value::Bool(false));
+            mark_nested_scope_match_only(&mut child);
+            let exists = exists.or_else(|| (!path_has_scope_magic(key)).then(|| "1".to_string()));
+            if let Some(exists) = exists {
+                apply_directory_directive(
+                    output,
+                    directory,
+                    NodeDirective {
+                        exists: Some(exists),
+                        ..NodeDirective::default()
+                    },
+                )?;
             }
             set_nested_mapping(output, "children", directory, Value::Mapping(child));
         } else {
-            let directive = node_directive(value, rules, stack)?;
+            let mut directive = node_directive(value, rules, stack)?;
+            if directive.exists.is_none() && !path_has_scope_magic(key) {
+                directive.exists = Some("1".to_string());
+            }
+            validate_directory_cardinality(key, directive.exists.as_deref(), false)?;
             if key_has_captures {
                 apply_captured_directory_directive(output, directory, directive)?;
             } else {
@@ -208,15 +270,62 @@ fn normalize_path_key(
         return Ok(());
     }
 
-    let directive = node_directive(value, rules, stack)?;
+    let mut directive = node_directive(value, rules, stack)?;
     if key_has_captures {
         let scoped_pattern = scoped_direct_file_pattern(scope_path, key);
         apply_captured_file_directive(output, key, &scoped_pattern, directive)?;
     } else {
+        if directive.exists.is_none() && !path_has_scope_magic(key) {
+            directive.exists = Some("1".to_string());
+        }
+        validate_literal_cardinality(key, directive.exists.as_deref())?;
         let scoped_pattern = scoped_direct_file_pattern(scope_path, key);
         apply_file_directive(output, key, &scoped_pattern, directive)?;
     }
     Ok(())
+}
+
+fn mark_nested_scope_match_only(child: &mut Mapping) {
+    let has_self_count = child
+        .get(string_value("self_directory"))
+        .and_then(Value::as_mapping)
+        .and_then(|directory| directory.get(string_value("exists")))
+        .and_then(Value::as_mapping)
+        .is_some_and(|exists| !exists.is_empty());
+    if !has_self_count {
+        set_nested_mapping(child, "self_directory", "exists", mapping_entry("*", "0-1"));
+    }
+}
+
+fn expand_nested_directory_tree(
+    value: Value,
+    key: &str,
+    rules: &RuleRegistry,
+    stack: &mut Vec<String>,
+) -> Result<(Mapping, Option<String>), String> {
+    let mut expanded = match value {
+        Value::String(reference) if is_rule_reference(&reference) => {
+            let name = parse_rule_reference(&reference)?;
+            push_rule_stack(stack, name)?;
+            stack.push(name.to_string());
+            let tree = rules.resolve_tree(&reference)?;
+            let expanded = expand_tree_mapping(tree, rules, stack);
+            stack.pop();
+            expanded?
+        }
+        Value::Mapping(mapping) => expand_tree_mapping(mapping, rules, stack)?,
+        _ => {
+            return Err(format!(
+                "Assura config directory tree '{key}' must be a mapping or reusable tree rule"
+            ))
+        }
+    };
+
+    let exists = expanded
+        .remove(string_value("exists"))
+        .map(parse_exists_value)
+        .transpose()?;
+    Ok((expanded, exists))
 }
 
 fn insert_directory_node_attr(

@@ -27,16 +27,16 @@ inherit: false
 .dir: kebab-case
 SKILL.md: "@agent-skill-file"
 agents/:
-  required: false
+  exists: 0-1
   use: "@agent-skill-resource-dir"
 references/:
-  required: false
+  exists: 0-1
   use: "@agent-skill-resource-dir"
 scripts/:
-  required: false
+  exists: 0-1
   use: "@agent-skill-resource-dir"
 assets/:
-  required: false
+  exists: 0-1
   use: "@agent-skill-resource-dir"
 extra: false
 "#;
@@ -48,7 +48,7 @@ SKILL.md: exists:0-1
 TEMPLATE.md: exists:0-1
 prd.json: exists:0-1
 skills/:
-  required: false
+  exists: 0-1
   inherit: false
   README.md: exists:0-1
   TEMPLATE.md: exists:0-1
@@ -57,7 +57,7 @@ skills/:
   directories:
     allow_extra: true
   built-in/:
-    required: false
+    exists: 0-1
     "{skill}/":
       use: "@agent-skill-dir"
     files:
@@ -65,7 +65,7 @@ skills/:
     directories:
       allow_extra: true
   custom/:
-    required: false
+    exists: 0-1
     "{skill}/":
       use: "@agent-skill-dir"
     files:
@@ -80,7 +80,7 @@ extra: false
 const BUILTIN_AGENTIC_PROJECT: &str = r#"
 AGENTS.md: exists:1
 .agents/:
-  required: false
+  exists: 0-1
   use: "@agents-dir"
 .assura/: exists:0-1
 "#;
@@ -89,7 +89,9 @@ impl RuleRegistry {
     fn from_root(root: &mut Mapping) -> Result<Self, String> {
         let mut rules = builtin_rules()?;
         let Some(value) = root.remove(string_value("rules")) else {
-            return Ok(Self { rules });
+            let registry = Self { rules };
+            registry.validate_references()?;
+            return Ok(registry);
         };
         let Value::Mapping(mapping) = value else {
             return Err("Assura config rules must be a mapping".to_string());
@@ -102,7 +104,9 @@ impl RuleRegistry {
             let name = normalize_rule_name(name)?;
             rules.insert(name.to_string(), value);
         }
-        Ok(Self { rules })
+        let registry = Self { rules };
+        registry.validate_references()?;
+        Ok(registry)
     }
 
     fn resolve_node(&self, reference: &str) -> Result<Value, String> {
@@ -140,6 +144,75 @@ impl RuleRegistry {
             .cloned()
             .ok_or_else(|| format!("unknown Assura config rule '@{name}'"))
     }
+
+    fn validate_references(&self) -> Result<(), String> {
+        let mut names = self.rules.keys().cloned().collect::<Vec<_>>();
+        names.sort();
+        let mut complete = BTreeSet::new();
+        for name in names {
+            self.validate_rule_references(&name, &mut Vec::new(), &mut complete)?;
+        }
+        Ok(())
+    }
+
+    fn validate_rule_references(
+        &self,
+        name: &str,
+        stack: &mut Vec<String>,
+        complete: &mut BTreeSet<String>,
+    ) -> Result<(), String> {
+        if complete.contains(name) {
+            return Ok(());
+        }
+        push_rule_stack(stack, name)?;
+        let value = self
+            .rules
+            .get(name)
+            .ok_or_else(|| format!("unknown Assura config rule '@{name}'"))?;
+        stack.push(name.to_string());
+        let mut references = BTreeSet::new();
+        collect_rule_references(value, &mut references)?;
+        for reference in references {
+            self.validate_rule_references(&reference, stack, complete)?;
+        }
+        stack.pop();
+        complete.insert(name.to_string());
+        Ok(())
+    }
+}
+
+fn collect_rule_references(value: &Value, references: &mut BTreeSet<String>) -> Result<(), String> {
+    let Value::Mapping(mapping) = value else {
+        return Ok(());
+    };
+
+    for (key, value) in mapping {
+        let Some(key) = key.as_str() else {
+            continue;
+        };
+        if key == USE {
+            for reference in use_references(value)? {
+                references.insert(parse_rule_reference(&reference)?.to_string());
+            }
+            continue;
+        }
+
+        if is_node_attr_key(key) {
+            if key == "children" {
+                collect_rule_references(value, references)?;
+            }
+            continue;
+        }
+
+        if let Value::String(reference) = value {
+            if is_rule_reference(reference) {
+                references.insert(parse_rule_reference(reference)?.to_string());
+            }
+        } else {
+            collect_rule_references(value, references)?;
+        }
+    }
+    Ok(())
 }
 
 fn builtin_rules() -> Result<HashMap<String, Value>, String> {

@@ -3,9 +3,8 @@ import projectContract from '../../data/config-examples/project-contract.yml?raw
 
 const markers = new Map([
   ['extra: false', '2'],
-  ['AGENTS.md: exists:1', '1'],
-  ['naming: kebab-case', '3'],
-  ['max_lines: 400', '4'],
+  ['use: "@agentic-project"', '1'],
+  ['"@source-file": { naming: kebab-case, max_lines: 500 }', '3+4'],
 ]);
 const configLines = projectContract.trimEnd().split('\n').map((text) => {
   const trimmed = text.trim();
@@ -48,9 +47,9 @@ const configLines = projectContract.trimEnd().split('\n').map((text) => {
           <li>
             <div class="tree-row neutral"><span class="tree-status" aria-label="Configured scope">·</span><code>apps/web/src/</code><small>rules 3 + 4</small></div>
             <ul>
-              <li><div class="tree-row pass"><span class="tree-status" aria-label="Pass">✓</span><code>user-menu.tsx</code><small><i class="rule-marker">4</i> 184 / 400 lines</small></div></li>
+              <li><div class="tree-row pass"><span class="tree-status" aria-label="Pass">✓</span><code>user-menu.tsx</code><small><i class="rule-marker">4</i> 184 / 500 lines</small></div></li>
               <li><div class="tree-row fail"><span class="tree-status" aria-label="Blocking violation">!</span><code>BadName.tsx</code><small><i class="rule-marker">3</i> expected kebab-case</small></div></li>
-              <li><div class="tree-row fail"><span class="tree-status" aria-label="Blocking violation">!</span><code>checkout-flow.tsx</code><small><i class="rule-marker">4</i> 537 / 400 lines</small></div></li>
+              <li><div class="tree-row fail"><span class="tree-status" aria-label="Blocking violation">!</span><code>checkout-flow.tsx</code><small><i class="rule-marker">4</i> 537 / 500 lines</small></div></li>
             </ul>
           </li>
           <li><div class="tree-row fail"><span class="tree-status" aria-label="Blocking violation">!</span><code>tmp-output/</code><small><i class="rule-marker">2</i> directory not allowed</small></div></li>

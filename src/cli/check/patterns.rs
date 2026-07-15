@@ -273,20 +273,56 @@ fn collect_patterns<'a>(
         if simple_suffix_pattern(pattern).is_some() {
             continue;
         }
-        if let Ok(glob) = Pattern::new(pattern) {
+        let compiled_pattern = capture_pattern_as_glob(pattern).unwrap_or_else(|| pattern.clone());
+        if let Ok(glob) = Pattern::new(&compiled_pattern) {
             compiled.insert(pattern.clone(), glob);
         }
     }
 }
 
+fn capture_pattern_as_glob(pattern: &str) -> Option<String> {
+    if !pattern.contains('{') {
+        return None;
+    }
+
+    let mut glob = String::with_capacity(pattern.len());
+    let mut rest = pattern;
+    loop {
+        let Some(open) = rest.find('{') else {
+            glob.push_str(rest);
+            break;
+        };
+        glob.push_str(&rest[..open]);
+        let close = rest[open + 1..].find('}')? + open + 1;
+        let name = &rest[open + 1..close];
+        if name.is_empty() || name.contains(',') {
+            return None;
+        }
+        glob.push('*');
+        rest = &rest[close + 1..];
+    }
+    Some(glob)
+}
+
 #[cfg(test)]
 mod tests {
     use super::{
-        best_file_pattern_match, best_lslint_suffix_match, matches_single_compiled_pattern,
+        best_file_pattern_match, best_lslint_suffix_match, capture_pattern_as_glob,
+        matches_single_compiled_pattern,
     };
     use glob::Pattern;
     use std::collections::HashMap;
     use std::path::Path;
+
+    #[test]
+    fn direct_capture_patterns_compile_to_globs() {
+        assert_eq!(capture_pattern_as_glob("{package}"), Some("*".to_string()));
+        assert_eq!(
+            capture_pattern_as_glob("prefix-{package}-docs"),
+            Some("prefix-*-docs".to_string())
+        );
+        assert_eq!(capture_pattern_as_glob("{one,two}"), None);
+    }
 
     #[test]
     fn best_lslint_suffix_match_prefers_most_specific_suffix() {

@@ -33,12 +33,12 @@ The policy models a product platform with:
 The root and package guidance files use Assura's exact direct-count behavior:
 
 ```yaml
-files:
-  exists:
-    AGENTS.md: "1"
+structure:
+  ./:
+    AGENTS.md: exists:1
 ```
 
-Exact file counts such as `AGENTS.md: "1"` are Assura behavior. Extension
+Exact file counts such as `AGENTS.md: exists:1` are Assura behavior. Extension
 counts such as `*.md`-style direct file counts are the LS-Lint-compatible part
 of this policy family.
 

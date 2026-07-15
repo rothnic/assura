@@ -200,9 +200,7 @@ fn config_rejects_claim_traceability_without_evidence_collections() {
       priority_field: priority
       claim_collections:
         - claims
-structure:
-  ./:
-    required: false
+structure: {}
 "#,
     )
     .unwrap();
@@ -292,9 +290,7 @@ relations:
     target: evidence
     many: true
 
-structure:
-  ./:
-    required: false
+structure: {{}}
 exclude:
   - ".assura/**"
 "#,

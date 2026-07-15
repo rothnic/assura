@@ -2,37 +2,41 @@
 import FocusedMarketingPage from '../../components/marketing/focused-marketing-page.astro';
 
 const title = 'Local Project Intelligence for Coding Agents | Assura';
-const description = 'Understand Assura’s supported repository checks, experimental local content and query surfaces, and planned project-intelligence direction without conflating their status.';
+const description = 'Understand Assura’s supported repository checks, local content and query surfaces, and planned project-intelligence direction without conflating their status.';
 const canonicalPath = '/project-intelligence/';
 const structuredData = { '@context': 'https://schema.org', '@type': 'TechArticle', headline: title, description, url: `https://assura.dev${canonicalPath}`, author: { '@type': 'Person', name: 'Nick Roth', url: 'https://www.nickroth.com/' } };
 ---
 
 <FocusedMarketingPage
   {title} {description} {canonicalPath} {structuredData}
+  releaseSurface="project-intelligence-local-surfaces content-collections-querying repository-reference-facts compact-review path-explanation"
   imagePath="/social/project-intelligence.webp"
   eyebrow="Project intelligence"
   heading="Turn local project facts into better agent context."
-  intro="Assura’s first-run value is deterministic repository validation. Experimental content, query, reference, and context surfaces build on that base; broader semantic project intelligence remains an explicit roadmap direction."
+  intro="Assura’s first-run value is deterministic repository validation. Supported local content, query, reference, and context surfaces build on that base; broader semantic project intelligence remains an explicit roadmap direction."
   artifactTitle="capability status"
   artifactLines={[
     'SUPPORTED',
-    '  structure checks, reports, hooks, migration',
+    '  structure, review, explain, reports, migration',
+    '',
+    'SUPPORTED LOCAL',
+    '  content, query, references, context packs',
     '',
     'EXPERIMENTAL',
-    '  review, explain, content, query, context packs',
+    '  semantic and code-symbol candidates',
     '',
     'PLANNED',
     '  broader semantic and dependency intelligence',
   ]}
   highlights={[
-    { label: 'Supported base', body: 'Deterministic structure policy, automation formats, hooks, migration, and performance evidence.' },
-    { label: 'Experimental local layer', body: 'Review, Explain, content models, query/search, references, and context packs under active pre-1.0 refinement.' },
+    { label: 'Supported base', body: 'Deterministic structure policy, Review, Explain, automation formats, hooks, migration, and performance evidence.' },
+    { label: 'Supported local layer', body: 'Content models, deterministic query/search, references, and context packs stay local and inspectable.' },
     { label: 'Planned expansion', body: 'Deeper dependency and semantic intelligence only when it can preserve local, bounded, observable behavior.' },
   ]}
   sections={[
     { label: 'Facts before inference', body: 'Start from paths, configuration, documents, references, branch state, and verified content instead of asking an agent to infer project truth repeatedly.' },
     { label: 'Local by default', body: 'Project context stays close to the repository, can be regenerated, and can be inspected without requiring a hosted dashboard.' },
-    { label: 'Queryable when useful', body: 'Experimental query and context-pack surfaces organize project facts for specific workflows rather than dumping the whole repository.' },
+    { label: 'Queryable when useful', body: 'Query and context-pack surfaces organize project facts for specific workflows rather than dumping the whole repository.' },
     { label: 'Status is part of the product', body: 'Supported, experimental, inactive, and planned capabilities remain visibly separate so marketing does not outrun implementation.' },
   ]}
   adjacentLinks={[

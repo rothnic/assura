@@ -45,10 +45,13 @@ validation logic that Rust tests exercise.
 - Rendered examples must come from YAML under
   `website/src/data/config-examples/`; components must not maintain a second
   hand-copied config string.
+- Documentation YAML fences and promoted marketing claims are part of the same
+  build-time truth boundary.
 
 ### 2. Signatures
 
 - `cargo xtask website-config-examples`
+- `cargo xtask website-demo-data --check`
 - `cargo xtask docs` runs the example gate before invoking the Astro build.
 
 ### 3. Contracts
@@ -61,11 +64,20 @@ validation logic that Rust tests exercise.
 - Threshold examples must prove both sides of the boundary. If a parent scope
   supplies an inherited default, a descendant fixture below the limit must pass
   and a descendant fixture above the limit must fail.
-- Do not present a file-key attribute as filename-specific unless the runtime
-  check proves that specificity. Directory-level `files.max_lines` is the
-  current concise way to express an inherited general ceiling.
+- File-key directives such as `.ts: { naming, max_lines }` are pattern-specific
+  and inherit by scope. Use a directory-level `files.max_lines` only for a
+  general ceiling that should apply to every file in that scope.
 - Astro imports the validated YAML with `?raw`, so the displayed config and the
   checked config remain one source of truth.
+- Every `yaml` or `yml` fence in canonical docs must parse. Fences that look
+  like complete Assura configs must load through `assura status`; use
+  `config-fragment`, `data-yaml`, or `ls-lint-config` metadata only when the
+  fence is intentionally not a complete Assura config, and
+  `assura-config-invalid` only for an intentional rejection example.
+- `docs/data/release-surfaces.json` is the single marketing capability
+  manifest. Promoted rows set `marketing_claim`, use `verified` or `measured`
+  evidence status, name existing evidence files, and smoke-test public commands
+  with their expected exits when a command exists.
 
 ### 4. Validation & Error Matrix
 
@@ -76,6 +88,9 @@ validation logic that Rust tests exercise.
 | Illustrated bad path no longer reports a violation | The CI documentation build exits nonzero and names the missing path. |
 | Inherited line ceiling rejects a below-limit descendant | The CI documentation build exits nonzero before Astro runs. |
 | Above-limit descendant stops producing `max_lines` | The CI documentation build exits nonzero and names the missing path. |
+| Documentation YAML fence is malformed or a full config does not load | The documentation build exits nonzero with the source path and fence number. |
+| Intentional fragment is not labeled | The build treats it as a full config and rejects it; add the narrow metadata label. |
+| Marketing claim lacks evidence or its command exit changes | `website-demo-data --check` exits nonzero and names the claim. |
 | All examples match current behavior | Print `Website Assura config examples are valid.` and continue the build. |
 
 ### 5. Good / Base / Bad Cases
@@ -95,7 +110,9 @@ validation logic that Rust tests exercise.
 - Run `cargo xtask website-config-examples` after changing example YAML or its
   expected project shape.
 - Run `cargo xtask docs` to prove the config gate runs before Astro and the raw
-  imports build successfully.
+- `cargo xtask docs` must report the number of parsed documentation YAML fences
+  and prove release evidence plus generated website data remain current before
+  Astro builds.
 - Keep Playwright assertions for the rendered hierarchy and pass/fail labels.
 
 ### 7. Wrong vs Correct

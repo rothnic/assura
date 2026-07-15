@@ -1,8 +1,5 @@
 /* Custom CSS for Assura Documentation */
 
-/* Import Catppuccin palette for custom styling */
-@import url('@catppuccin/palette/css/catppuccin.css');
-
 /* Root variables for Assura branding */
 :root {
   /* Product palette shared with the standalone landing page. */
@@ -15,6 +12,28 @@
   --sl-color-bg-accent: rgba(15, 118, 110, 0.1);
 }
 
+:root[data-theme='light'] {
+  color-scheme: light;
+  --sl-color-accent-low: #dcefeb;
+  --sl-color-accent: #0f766e;
+  --sl-color-accent-high: #0a4f4a;
+  --sl-color-white: #0d1716;
+  --sl-color-gray-1: #1f2f2c;
+  --sl-color-gray-2: #41524f;
+  --sl-color-gray-3: #667370;
+  --sl-color-gray-4: #a7b4b1;
+  --sl-color-gray-5: #d5dfdc;
+  --sl-color-gray-6: #edf4f2;
+  --sl-color-gray-7: #f7faf9;
+  --sl-color-black: #ffffff;
+  --sl-color-bg: #f7faf9;
+  --sl-color-bg-nav: rgba(247, 250, 249, 0.94);
+  --sl-color-bg-sidebar: #f0f6f4;
+  --sl-color-hairline-light: rgba(13, 23, 22, 0.1);
+  --sl-color-hairline: rgba(13, 23, 22, 0.14);
+  --sl-color-hairline-shade: rgba(13, 23, 22, 0.2);
+}
+
 :root[data-theme='dark'] {
   --assura-primary: #5eead4;
   --assura-secondary: #a1a1aa;
@@ -22,6 +41,24 @@
   --assura-warn: #fbbf24;
   --sl-color-text-accent: #5eead4;
   --sl-color-bg-accent: rgba(94, 234, 212, 0.1);
+  --sl-color-accent-low: #12332f;
+  --sl-color-accent: #5eead4;
+  --sl-color-accent-high: #ccfbf1;
+  --sl-color-white: #f4f4f5;
+  --sl-color-gray-1: #e4e4e7;
+  --sl-color-gray-2: #a1a1aa;
+  --sl-color-gray-3: #8c8c96;
+  --sl-color-gray-4: #565d5d;
+  --sl-color-gray-5: #303536;
+  --sl-color-gray-6: #171a1b;
+  --sl-color-gray-7: #111314;
+  --sl-color-black: #0b0c0d;
+  --sl-color-bg: #0b0c0d;
+  --sl-color-bg-nav: rgba(11, 12, 13, 0.94);
+  --sl-color-bg-sidebar: #101213;
+  --sl-color-hairline-light: rgba(244, 244, 245, 0.08);
+  --sl-color-hairline: rgba(244, 244, 245, 0.13);
+  --sl-color-hairline-shade: rgba(244, 244, 245, 0.2);
 }
 
 /* Custom styling for Assura */

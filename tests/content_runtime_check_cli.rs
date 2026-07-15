@@ -65,8 +65,8 @@ fn copy_missing_model_frontmatter_fixture_with_markdown_lint() -> TempDir {
         .unwrap()
         .replace("\r\n", "\n");
     let config = config.replace(
-        "structure:\n  ./:\n    required: false\n",
-        "structure:\n  ./:\n    required: false\n    children:\n      docs/:\n        children:\n          goals/:\n            markdown:\n              lint_trailing_spaces: true\n",
+        "structure: {}\n",
+        "structure:\n  ./:\n    docs/:\n      goals/:\n        markdown:\n          lint_trailing_spaces: true\n",
     );
     fs::write(root.join(".assura/config.yml"), config).unwrap();
 

@@ -11,6 +11,8 @@ server, database, Rust build step, or authoring tool in the validation path.
 ## Model A Portable Project
 
 ```yaml
+structure: {}
+
 models:
   source: .assura/models/project/source.linkml.yaml
   validation_artifact: .assura/models/project/runtime.schema.json

@@ -1,7 +1,9 @@
 //! Deterministic product evidence for the public marketing site.
 
+use pulldown_cmark::{CodeBlockKind, Event, Options, Parser, Tag};
 use serde::Deserialize;
 use serde_json::{json, Value};
+use std::collections::BTreeSet;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
@@ -10,19 +12,23 @@ type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
 const FIXTURE_SOURCE: &str = "tests/fixtures/real-project-agentic-feedback/valid";
 const OUTPUT_DIR: &str = "website/src/data";
-const CLAIMS_PATH: &str = "website/src/data/claims.yml";
+const RELEASE_SURFACES_PATH: &str = "docs/data/release-surfaces.json";
 const CONFIG_EXAMPLES_DIR: &str = "website/src/data/config-examples";
 const FORBIDDEN_WEBSITE_COMMANDS: &[&str] = &["assura review --path"];
 
 #[derive(Deserialize)]
-struct ClaimManifest {
-    claims: Vec<Claim>,
+struct ReleaseSurfaceManifest {
+    surfaces: Vec<ReleaseSurface>,
 }
 
 #[derive(Deserialize)]
-struct Claim {
+struct ReleaseSurface {
     id: String,
     status: String,
+    #[serde(default)]
+    marketing_claim: bool,
+    evidence_status: Option<String>,
+    evidence_refs: Option<Vec<String>>,
     command: Option<String>,
     smoke_args: Option<Vec<String>>,
     expected_exit: Option<i32>,
@@ -48,6 +54,7 @@ pub(crate) fn run(args: &[String]) -> Result<()> {
     let (fixture, onboarding) = prepare_fixture(&root, &binary)?;
     validate_claims(&root, &binary, &fixture)?;
     validate_website_commands(&root)?;
+    validate_docs_config_examples(&root, &binary)?;
 
     let review = run_json(
         &binary,
@@ -116,7 +123,122 @@ pub(crate) fn validate_config_examples(args: &[String]) -> Result<()> {
     validate_lslint_config_example(&root, &root.join("target/debug/assura-full"))?;
     validate_project_contract_example(&root, &root.join("target/debug/assura-full"))?;
     validate_agentic_monorepo_example(&root, &root.join("target/debug/assura-full"))?;
+    validate_docs_config_examples(&root, &root.join("target/debug/assura-full"))?;
     println!("Website Assura config examples are valid.");
+    Ok(())
+}
+
+fn validate_docs_config_examples(root: &Path, binary: &Path) -> Result<()> {
+    let docs_root = root.join("website/src/content/docs");
+    let mut files = Vec::new();
+    collect_files(&docs_root, &mut files)?;
+    let mut checked = 0usize;
+
+    for path in files {
+        if !matches!(
+            path.extension().and_then(|value| value.to_str()),
+            Some("md" | "mdx")
+        ) {
+            continue;
+        }
+        let source = fs::read_to_string(&path)?;
+        let mut info = None::<String>;
+        let mut body = String::new();
+        let mut fence_index = 0usize;
+        for event in Parser::new_ext(&source, Options::all()) {
+            match event {
+                Event::Start(Tag::CodeBlock(CodeBlockKind::Fenced(value))) => {
+                    info = Some(value.to_string());
+                    body.clear();
+                }
+                Event::Text(value) if info.is_some() => body.push_str(&value),
+                Event::End(Tag::CodeBlock(CodeBlockKind::Fenced(_))) => {
+                    fence_index += 1;
+                    let metadata = info.take().unwrap_or_default();
+                    if is_yaml_fence(&metadata) {
+                        validate_yaml_fence(root, binary, &path, fence_index, &metadata, &body)?;
+                        checked += 1;
+                    }
+                    body.clear();
+                }
+                _ => {}
+            }
+        }
+    }
+
+    println!("Validated {checked} documentation YAML examples.");
+    Ok(())
+}
+
+fn is_yaml_fence(metadata: &str) -> bool {
+    matches!(metadata.split_whitespace().next(), Some("yaml" | "yml"))
+}
+
+fn validate_yaml_fence(
+    root: &Path,
+    binary: &Path,
+    source_path: &Path,
+    fence_index: usize,
+    metadata: &str,
+    body: &str,
+) -> Result<()> {
+    let parsed: serde_yaml::Value = serde_yaml::from_str(body).map_err(|error| {
+        format!(
+            "{} YAML fence #{fence_index} is invalid: {error}",
+            source_path.display()
+        )
+    })?;
+    if metadata.contains("config-fragment")
+        || metadata.contains("data-yaml")
+        || metadata.contains("ls-lint-config")
+    {
+        return Ok(());
+    }
+
+    let Some(mapping) = parsed.as_mapping() else {
+        return Ok(());
+    };
+    let looks_like_config = [
+        "structure",
+        "rules",
+        "exclude",
+        "extensions",
+        "models",
+        "collections",
+        "relations",
+        "code_symbols",
+        "quality",
+    ]
+    .iter()
+    .any(|key| mapping.contains_key(serde_yaml::Value::String((*key).to_string())));
+    if !looks_like_config {
+        return Ok(());
+    }
+
+    let work = root.join("target").join(format!(
+        "website-doc-example-{}-{fence_index}",
+        std::process::id()
+    ));
+    let _ = fs::remove_dir_all(&work);
+    fs::create_dir_all(work.join(".assura"))?;
+    fs::write(work.join(".assura/config.yml"), body)?;
+    let output = Command::new(binary)
+        .current_dir(&work)
+        .args(["status", ".", "--format", "json"])
+        .output()?;
+    let expected_invalid = metadata.contains("assura-config-invalid");
+    let valid = output.status.success();
+    let _ = fs::remove_dir_all(&work);
+
+    if valid == expected_invalid {
+        let expectation = if expected_invalid { "fail" } else { "load" };
+        return Err(format!(
+            "{} YAML fence #{fence_index} was expected to {expectation} as an Assura config: {}",
+            source_path.display(),
+            String::from_utf8_lossy(&output.stderr).trim()
+        )
+        .into());
+    }
     Ok(())
 }
 
@@ -126,6 +248,7 @@ fn validate_project_contract_example(root: &Path, binary: &Path) -> Result<()> {
     fs::write(project.join("AGENTS.md"), "# Agent guidance\n")?;
     fs::create_dir_all(project.join("docs"))?;
     fs::create_dir_all(project.join("apps/web/src"))?;
+    fs::write(project.join("apps/web/package.json"), "{}\n")?;
     fs::write(
         project.join("apps/web/src/user-menu.tsx"),
         "export const userMenu = true;\n",
@@ -138,7 +261,7 @@ fn validate_project_contract_example(root: &Path, binary: &Path) -> Result<()> {
     )?;
     fs::write(
         project.join("apps/web/src/checkout-flow.tsx"),
-        "export const value = true;\n".repeat(401),
+        "export const value = true;\n".repeat(501),
     )?;
     fs::create_dir_all(project.join("tmp-output"))?;
     let report = run_example_check(binary, &project, false)?;
@@ -170,6 +293,7 @@ fn validate_agentic_monorepo_example(root: &Path, binary: &Path) -> Result<()> {
             "export const value = true;\n",
         )?;
     }
+    fs::create_dir_all(project.join("packages/ui-kit/stories"))?;
     fs::write(
         project.join("packages/core/README.md"),
         "Package documentation.\n".repeat(300),
@@ -307,16 +431,77 @@ fn build_assura(root: &Path) -> Result<()> {
 }
 
 fn validate_claims(root: &Path, binary: &Path, fixture: &Path) -> Result<()> {
-    let manifest: ClaimManifest =
-        serde_yaml::from_str(&fs::read_to_string(root.join(CLAIMS_PATH))?)?;
-    for claim in manifest.claims {
-        if !matches!(claim.status.as_str(), "supported" | "experimental") {
+    let manifest: ReleaseSurfaceManifest =
+        serde_json::from_str(&fs::read_to_string(root.join(RELEASE_SURFACES_PATH))?)?;
+    let rendered_claim_ids = website_release_surface_ids(root)?;
+    let manifest_ids = manifest
+        .surfaces
+        .iter()
+        .map(|claim| claim.id.clone())
+        .collect::<BTreeSet<_>>();
+    let marketing_claim_ids = manifest
+        .surfaces
+        .iter()
+        .filter(|claim| claim.marketing_claim)
+        .map(|claim| claim.id.clone())
+        .collect::<BTreeSet<_>>();
+    validate_claim_id_mapping(&rendered_claim_ids, &manifest_ids, &marketing_claim_ids)?;
+    let marketing_claim_count = marketing_claim_ids.len();
+    for claim in manifest.surfaces {
+        if !claim.marketing_claim {
             continue;
         }
-        let command = claim
-            .command
+        if !rendered_claim_ids.contains(&claim.id) {
+            return Err(format!(
+                "marketing claim `{}` is not mapped from a website data-release-surface marker",
+                claim.id
+            )
+            .into());
+        }
+        if !matches!(claim.status.as_str(), "supported" | "experimental") {
+            return Err(format!(
+                "marketing claim `{}` has non-public status `{}`",
+                claim.id, claim.status
+            )
+            .into());
+        }
+        let evidence_status = claim
+            .evidence_status
             .as_deref()
-            .ok_or_else(|| format!("claim `{}` is missing its public command", claim.id))?;
+            .ok_or_else(|| format!("marketing claim `{}` is missing evidence_status", claim.id))?;
+        if !matches!(evidence_status, "verified" | "measured") {
+            return Err(format!(
+                "marketing claim `{}` has invalid evidence_status `{evidence_status}`",
+                claim.id
+            )
+            .into());
+        }
+        let evidence_refs = claim
+            .evidence_refs
+            .as_ref()
+            .ok_or_else(|| format!("marketing claim `{}` is missing evidence_refs", claim.id))?;
+        if evidence_refs.is_empty() {
+            return Err(format!("marketing claim `{}` has no evidence_refs", claim.id).into());
+        }
+        for path in evidence_refs {
+            if !root.join(path).exists() {
+                return Err(format!(
+                    "marketing claim `{}` references missing evidence `{path}`",
+                    claim.id
+                )
+                .into());
+            }
+        }
+        let Some(command) = claim.command.as_deref() else {
+            if evidence_status != "measured" {
+                return Err(format!(
+                    "marketing claim `{}` needs a public command or measured evidence",
+                    claim.id
+                )
+                .into());
+            }
+            continue;
+        };
         let smoke_args = claim
             .smoke_args
             .ok_or_else(|| format!("claim `{}` is missing smoke_args", claim.id))?;
@@ -335,7 +520,62 @@ fn validate_claims(root: &Path, binary: &Path, fixture: &Path) -> Result<()> {
             .into());
         }
     }
+    println!("Validated {marketing_claim_count} marketed release-surface mappings.");
     Ok(())
+}
+
+fn validate_claim_id_mapping(
+    rendered_claim_ids: &BTreeSet<String>,
+    manifest_ids: &BTreeSet<String>,
+    marketing_claim_ids: &BTreeSet<String>,
+) -> Result<()> {
+    for id in rendered_claim_ids {
+        if !manifest_ids.contains(id) {
+            return Err(format!(
+                "website data-release-surface marker references unknown claim `{id}`"
+            )
+            .into());
+        }
+        if !marketing_claim_ids.contains(id) {
+            return Err(format!(
+                "website data-release-surface marker references `{id}`, but its manifest row is not a marketing claim"
+            )
+            .into());
+        }
+    }
+    for id in marketing_claim_ids {
+        if !rendered_claim_ids.contains(id) {
+            return Err(format!(
+                "marketing claim `{id}` is not mapped from a website data-release-surface marker"
+            )
+            .into());
+        }
+    }
+    Ok(())
+}
+
+fn website_release_surface_ids(root: &Path) -> Result<BTreeSet<String>> {
+    let mut files = Vec::new();
+    collect_files(&root.join("website/src"), &mut files)?;
+    let mut ids = BTreeSet::new();
+    for path in files {
+        if !matches!(
+            path.extension().and_then(|value| value.to_str()),
+            Some("astro" | "md" | "mdx")
+        ) {
+            continue;
+        }
+        let text = fs::read_to_string(path)?;
+        for marker in ["data-release-surface=\"", "releaseSurface=\""] {
+            for suffix in text.split(marker).skip(1) {
+                let Some(value) = suffix.split('"').next() else {
+                    continue;
+                };
+                ids.extend(value.split_whitespace().map(str::to_string));
+            }
+        }
+    }
+    Ok(ids)
 }
 
 fn validate_website_commands(root: &Path) -> Result<()> {
@@ -726,5 +966,33 @@ mod tests {
         assert_eq!(summary["assura_version"], "0.3.0");
         assert_eq!(summary["cold"]["aggregate_speedup_ratio"], 1.5);
         assert_eq!(summary["warm"]["aggregate_speedup_ratio"], 20.0);
+    }
+
+    #[test]
+    fn release_surface_mapping_is_bidirectional() {
+        let rendered = BTreeSet::from(["verified".to_string()]);
+        let manifest = BTreeSet::from(["verified".to_string(), "internal".to_string()]);
+        let marketing = BTreeSet::from(["verified".to_string()]);
+        validate_claim_id_mapping(&rendered, &manifest, &marketing).unwrap();
+
+        let unknown = BTreeSet::from(["unknown".to_string()]);
+        assert!(validate_claim_id_mapping(&unknown, &manifest, &marketing)
+            .unwrap_err()
+            .to_string()
+            .contains("unknown claim"));
+
+        let non_marketed = BTreeSet::from(["internal".to_string()]);
+        assert!(
+            validate_claim_id_mapping(&non_marketed, &manifest, &marketing)
+                .unwrap_err()
+                .to_string()
+                .contains("not a marketing claim")
+        );
+
+        let missing = BTreeSet::new();
+        assert!(validate_claim_id_mapping(&missing, &manifest, &marketing)
+            .unwrap_err()
+            .to_string()
+            .contains("is not mapped"));
     }
 }

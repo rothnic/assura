@@ -195,9 +195,7 @@ fn temp_code_symbol_project(
     fs::write(
         project.path().join(".assura/config.yml"),
         format!(
-            r#"structure:
-  ./:
-    required: false
+            r#"structure: {{}}
 
 models:
   source: schemas/content-runtime.linkml.yaml

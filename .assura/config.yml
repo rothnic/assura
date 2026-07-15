@@ -443,7 +443,7 @@ extensions:
         - surface: "command:assura status --format json"
           status: supported
         - surface: "command:assura review"
-          status: experimental
+          status: supported
         - surface: "command:assura cache"
           status: experimental
         - surface: "command:assura cache status"
@@ -453,7 +453,7 @@ extensions:
         - surface: "command:assura doctor"
           status: experimental
         - surface: "command:assura explain"
-          status: experimental
+          status: supported
         - surface: "command:assura init"
           status: supported
         - surface: "command:assura watch"
@@ -485,7 +485,7 @@ extensions:
         - surface: "command:assura agent safe-fixes"
           status: supported
         - surface: "command:assura agent onboard"
-          status: experimental
+          status: supported
         - surface: "command:assura agent nudge"
           status: experimental
         - surface: "command:assura agent integration"

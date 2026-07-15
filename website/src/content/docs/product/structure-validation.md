@@ -26,5 +26,5 @@ scope-specific naming rules.
 assura check --format json .
 ```
 
-Start with [Configuration](/docs/configuration/) and the
+Start with [Configuration](/reference/configuration/) and the
 [LS-Lint Migration](/guides/ls-lint-migration/) guide.
