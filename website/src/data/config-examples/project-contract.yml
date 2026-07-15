@@ -3,7 +3,6 @@ rules:
     naming: kebab-case
     max_lines: 500
   web-app:
-    .dir: kebab-case
     package.json: exists:1
     src/: exists:1
 
@@ -11,13 +10,11 @@ structure:
   ./:
     use: $agentic-project
     extra: false
-    .ts: $source-file
-    .tsx: $source-file
+    "./**/*.{ts,tsx}": $source-file
     docs/: exists:0-1
     apps/:
+      .dir: kebab-case
       web/: $web-app
 
 exclude:
-  - "**/generated/**"
-  - "**/vendor/**"
-  - "**/dist/**"
+  - "**/{generated,vendor,dist}/**"

@@ -148,8 +148,13 @@ support.
   unmatched reusable capture scopes.
 - `cargo test --test ls_lint_parity_regression_tests` passed 11 parity cases
   with one manual performance audit ignored by design.
-- `pnpm --dir website test:marketing` passed 51 browser checks across landing,
+- `pnpm --dir website test:marketing` passed 52 browser checks across landing,
   performance, canonical docs, themes, accessibility, metadata, and links.
+- The compact project contract now groups TypeScript extensions with
+  `"./**/*.{ts,tsx}"`, groups generated-output exclusions with one brace glob,
+  and places `.dir` under `apps/` so its child-directory scope is visible.
+  The executable fixture, 360px/390px overflow checks, and mobile render all
+  pass with the shorter configuration.
 - `target/performance/landing-config-alignment.json` measured all eight accepted
   cold LS-Lint comparisons and all eight warm session comparisons; the strict
   no-slower gate passed with 1.2463x aggregate cold and 16.0526x aggregate warm
