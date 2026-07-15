@@ -483,7 +483,7 @@ jobs:
         mkdir -p target/performance
         target/release/assura performance-report \
           --output target/performance/ls-lint-comparison.json \
-          --iterations 5
+          --iterations 16
     - name: Enforce no-slower gate
       run: cargo xtask performance-no-slower target/performance/ls-lint-comparison.json
     - name: Generate native performance report

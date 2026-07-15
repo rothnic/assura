@@ -5609,7 +5609,7 @@ fn check_docs_release_performance(checks: &mut Checks) {
                 "performance:\n    name: Performance Report",
                 "- name: Generate comparison report",
                 "--output target/performance/ls-lint-comparison.json",
-                "--iterations 5",
+                "--iterations 16",
                 "- name: Enforce no-slower gate",
                 "run: cargo xtask performance-no-slower target/performance/ls-lint-comparison.json",
                 "- name: Summarize performance",
@@ -5618,7 +5618,7 @@ fn check_docs_release_performance(checks: &mut Checks) {
                 "if: always()",
             ],
         ),
-        ".github/workflows/ci.yml: Performance Report job must generate a 5-iteration report, enforce cargo xtask performance-no-slower on that report, and keep summary/artifact steps on failure",
+        ".github/workflows/ci.yml: Performance Report job must generate a 16-iteration report, enforce cargo xtask performance-no-slower on that report, and keep summary/artifact steps on failure",
     );
     checks.require(
         text_contains_ordered(

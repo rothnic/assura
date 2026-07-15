@@ -229,6 +229,7 @@ fn native_row(os: &str, fixture_id: &str, row_family: &str) -> PerformanceResult
         rule_cohort: "native-small-content-authoring".to_string(),
         row_family: row_family.to_string(),
         validation_execution_mode: "native-query-cli".to_string(),
+        measurement_order: None,
         evidence_role: "diagnostic".to_string(),
         diagnostic: true,
         fixture_acceptance: "assura-native-diagnostic".to_string(),

@@ -30,6 +30,7 @@ mod fixture_rows;
 #[cfg(test)]
 mod fixture_tests;
 mod fixtures;
+mod headline_pair;
 mod hot_cli;
 mod io;
 mod ls_lint;

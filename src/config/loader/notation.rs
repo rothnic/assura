@@ -4,11 +4,6 @@ use super::Config;
 use crate::cli::config::{ConfigError, ConfigResult};
 use crate::config::config::{normalize_structure_config_value, validate_config_semantics};
 
-pub(super) fn contains_rules_marker(content: &str) -> bool {
-    // Large generated configs make notation routing part of cold CLI latency.
-    memchr::memmem::find(content.as_bytes(), b"rules").is_some()
-}
-
 pub(super) fn parse_yaml_value(content: &str) -> ConfigResult<serde_yaml::Value> {
     serde_yaml::from_str(content).map_err(|error| ConfigError::Yaml(error.to_string()))
 }

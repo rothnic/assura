@@ -54,6 +54,8 @@ pub struct PerformanceResultRow {
     pub row_family: String,
     /// Execution model represented by this row.
     pub validation_execution_mode: String,
+    /// Ordering strategy used to collect samples for a paired comparison row.
+    pub measurement_order: Option<String>,
     /// Whether this row is headline-eligible evidence or diagnostic-only.
     pub evidence_role: String,
     /// True when this row must not drive public headline comparisons.
@@ -181,6 +183,7 @@ pub(in crate::cli::performance_report) struct RowMeasurement<'a> {
     pub(in crate::cli::performance_report) ls_lint_execution_mode: Option<&'a str>,
     pub(in crate::cli::performance_report) expected_assura_exit_status: Option<i32>,
     pub(in crate::cli::performance_report) expected_ls_lint_exit_status: Option<i32>,
+    pub(in crate::cli::performance_report) measurement_order: Option<&'a str>,
 }
 
 impl<'a> RowMeasurement<'a> {
@@ -194,6 +197,7 @@ impl<'a> RowMeasurement<'a> {
             ls_lint_execution_mode: None,
             expected_assura_exit_status: None,
             expected_ls_lint_exit_status: None,
+            measurement_order: None,
         }
     }
 
@@ -227,6 +231,16 @@ impl<'a> RowMeasurement<'a> {
     ) -> Self {
         Self {
             expected_assura_exit_status: Some(expected_status),
+            ..self
+        }
+    }
+
+    pub(in crate::cli::performance_report) fn with_measurement_order(
+        self,
+        measurement_order: &'a str,
+    ) -> Self {
+        Self {
+            measurement_order: Some(measurement_order),
             ..self
         }
     }
@@ -277,6 +291,7 @@ pub(in crate::cli::performance_report) fn row(
         rule_cohort: fixture.scenario.rule_cohort.to_string(),
         row_family: measurement.row_family.to_string(),
         validation_execution_mode: validation_execution_mode(measurement.row_family).to_string(),
+        measurement_order: measurement.measurement_order.map(str::to_string),
         evidence_role: if diagnostic {
             "diagnostic"
         } else {

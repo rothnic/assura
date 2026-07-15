@@ -8,10 +8,7 @@ use crate::config::config::validate_config_semantics;
 use std::path::Path;
 
 mod notation;
-use notation::{
-    contains_rules_marker, has_top_level_rules, parse_normalized, parse_normalized_value,
-    parse_yaml_value,
-};
+use notation::{has_top_level_rules, parse_normalized, parse_normalized_value, parse_yaml_value};
 
 /// Loader for structure configs
 #[derive(Debug)]
@@ -32,7 +29,7 @@ impl ConfigLoader {
 
     /// Parse config from YAML string
     pub fn parse(content: &str) -> ConfigResult<Config> {
-        let parsed_value = if contains_rules_marker(content) {
+        let parsed_value = if content.contains("rules") {
             let value = parse_yaml_value(content)?;
             if has_top_level_rules(&value) {
                 return parse_normalized_value(value);
