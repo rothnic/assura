@@ -30,6 +30,9 @@ and dark color schemes before claiming completion.
 - Smoke-test at least one existing docs route when changing `/` or shared docs
   palette CSS.
 - Keep static pages static unless an island adds clear product value.
+- In syntax-highlighted configuration examples, color keys consistently whether
+  they open a nested scope or assign an inline value. Apply secondary color to
+  the value token, not the entire line, so paths do not imply different states.
 
 ---
 

@@ -75,6 +75,10 @@ test('example output CTA connects project policy to pass and fail paths', async 
   await expect(page.locator('.config-line').filter({ hasText: 'source-file:' })).toBeVisible();
   await expect(page.locator('.config-line').filter({ hasText: 'max_lines: 500' })).toBeVisible();
   await expect(page.getByText('apps/:', { exact: true })).toBeVisible();
+  for (const path of ['docs/', 'apps/', 'web/']) {
+    await expect(page.locator('.config-key').filter({ hasText: new RegExp(`^${path}$`) })).toHaveCount(1);
+  }
+  await expect(page.locator('.config-value').filter({ hasText: 'exists:0-1' })).toHaveCount(1);
   await expect(page.getByLabel('Pass').first()).toBeVisible();
   await expect(page.getByLabel('Blocking violation').first()).toBeVisible();
 });

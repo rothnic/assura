@@ -7,11 +7,38 @@ const markers = new Map([
   ['naming: kebab-case', '3'],
   ['max_lines: 500', '4'],
 ]);
+
+const splitYamlLine = (text: string) => {
+  const content = text.trimStart();
+  const indent = text.slice(0, text.length - content.length);
+  let quote: '"' | "'" | null = null;
+
+  for (let index = 0; index < content.length; index += 1) {
+    const character = content[index];
+    if (quote) {
+      if (character === quote && content[index - 1] !== '\\') quote = null;
+      continue;
+    }
+    if (character === '"' || character === "'") {
+      quote = character;
+      continue;
+    }
+    if (character === ':') {
+      return {
+        indent,
+        key: content.slice(0, index),
+        value: content.slice(index + 1),
+      };
+    }
+  }
+
+  return { indent, key: null, value: content };
+};
+
 const configLines = projectContract.trimEnd().split('\n').map((text) => {
   const trimmed = text.trim();
   return {
-    text,
-    tone: trimmed.endsWith(':') ? 'key' : 'value',
+    ...splitYamlLine(text),
     marker: markers.get(trimmed),
   };
 });
@@ -24,10 +51,7 @@ const configLines = projectContract.trimEnd().split('\n').map((text) => {
       <h3 id="policy-config-title">.assura/config.yml</h3>
     </header>
     <pre tabindex="0"><code>{configLines.map((line) => (
-      <span class:list={['config-line', line.tone]}>
-        <span>{line.text}</span>
-        {line.marker && <i class="rule-marker" aria-label={`Rule ${line.marker}`}>{line.marker}</i>}
-      </span>
+      <span class="config-line"><span class="config-content"><span>{line.indent}</span>{line.key === null ? <span class="config-value">{line.value}</span> : <><span class="config-key">{line.key}</span><span class="config-separator">:</span><span class="config-value">{line.value}</span></>}</span>{line.marker && <i class="rule-marker" aria-label={`Rule ${line.marker}`}>{line.marker}</i>}</span>
     ))}</code></pre>
   </section>
 

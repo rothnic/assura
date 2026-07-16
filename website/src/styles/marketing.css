@@ -698,11 +698,15 @@
     gap: 1rem;
   }
 
-  .config-line.key {
+  .config-key {
     color: #9fc4ff;
   }
 
-  .config-line.value {
+  .config-separator {
+    color: #c6c8c9;
+  }
+
+  .config-value {
     color: #69e4d0;
   }
 
