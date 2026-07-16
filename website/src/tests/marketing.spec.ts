@@ -74,6 +74,8 @@ test('example output CTA connects project policy to pass and fail paths', async 
   await expect(page.locator('.config-line').filter({ hasText: 'use: $agentic-project' })).toBeVisible();
   await expect(page.locator('.config-line').filter({ hasText: 'source-file:' })).toBeVisible();
   await expect(page.locator('.config-line').filter({ hasText: 'max_lines: 500' })).toBeVisible();
+  await expect(page.locator('.config-line').filter({ hasText: '"**/*.{ts,tsx}": $source-file' })).toBeVisible();
+  await expect(page.locator('.config-line').filter({ hasText: '"./**/*.{ts,tsx}"' })).toHaveCount(0);
   await expect(page.getByText('apps/:', { exact: true })).toBeVisible();
   for (const path of ['docs/', 'apps/', 'web/']) {
     await expect(page.locator('.config-key').filter({ hasText: new RegExp(`^${path}$`) })).toHaveCount(1);

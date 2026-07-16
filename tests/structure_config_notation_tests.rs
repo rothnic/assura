@@ -122,7 +122,7 @@ rules:
 structure:
   ./:
     extra: false
-    "./**/*.{ts,tsx}": $source-file
+    "**/*.{ts,tsx}": $source-file
     docs/: exists:0-1
     apps/:
       .dir: kebab-case

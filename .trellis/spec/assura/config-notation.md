@@ -200,7 +200,7 @@ Path-like keys are first-class structure entries.
 | `.test.ts` | Cascading subextension rule in this scope and inheriting descendants. |
 | `"./*.ts"` | Explicit direct-root file glob. |
 | `"./**/*.ts"` | Explicit recursive file glob from the root. |
-| `"./**/*.{ts,tsx}"` | One recursive file glob for multiple extensions. |
+| `"**/*.{ts,tsx}"` inside `./` | One recursive file glob, relative to the root scope, for multiple extensions. |
 | `"*.ts"` inside `src/` | Explicit direct-file glob resolved relative to `src/`. |
 | `"**/*.ts"` inside `src/` | Explicit recursive file glob resolved relative to `src/`. |
 | `.dir` | Directory rule for the current directory scope. |
