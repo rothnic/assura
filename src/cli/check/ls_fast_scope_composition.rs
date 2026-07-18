@@ -1,5 +1,12 @@
 /// Precompose overlapping static hierarchy scopes for one-match fast lookup.
 fn compose_static_ancestor_scopes(scopes: &mut [FastScope], naming_cache: &mut FastNamingCache) {
+    let has_composable_target = scopes.iter().any(|scope| {
+        !scope.has_scope_magic && scope.inherit && scope.path.parent().is_some()
+    });
+    if !has_composable_target {
+        return;
+    }
+
     let by_path = scopes
         .iter()
         .enumerate()
