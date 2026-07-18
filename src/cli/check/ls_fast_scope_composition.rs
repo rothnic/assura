@@ -1,16 +1,31 @@
 /// Precompose overlapping static hierarchy scopes for one-match fast lookup.
 fn compose_static_ancestor_scopes(scopes: &mut [FastScope], naming_cache: &mut FastNamingCache) {
-    let original = scopes.to_vec();
-    let by_path = original
+    let by_path = scopes
         .iter()
         .enumerate()
         .filter(|(_, scope)| !scope.has_scope_magic)
         .map(|(index, scope)| (scope.path.clone(), index))
         .collect::<HashMap<_, _>>();
-    for target in scopes.iter_mut().filter(|scope| !scope.has_scope_magic) {
-        if !target.inherit {
-            continue;
-        }
+    let targets = scopes
+        .iter()
+        .enumerate()
+        .filter(|(_, target)| !target.has_scope_magic && target.inherit)
+        .filter(|(_, target)| {
+            target
+                .path
+                .ancestors()
+                .skip(1)
+                .any(|ancestor| by_path.contains_key(ancestor))
+        })
+        .map(|(index, _)| index)
+        .collect::<Vec<_>>();
+    if targets.is_empty() {
+        return;
+    }
+
+    let original = scopes.to_vec();
+    for target_index in targets {
+        let target = &mut scopes[target_index];
         let mut matching = target
             .path
             .ancestors()
