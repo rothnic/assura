@@ -69,9 +69,13 @@ impl<'a> RuleResolver<'a> {
                     max_lines_patterns: rule.bundle.max_lines_patterns.clone(),
                     max_size: rule.bundle.max_size.clone(),
                     max_size_patterns: rule.bundle.max_size_patterns.clone(),
+                    severity_patterns: rule.bundle.severity_patterns.clone(),
+                    message_patterns: rule.bundle.message_patterns.clone(),
+                    markdown_patterns: rule.bundle.markdown_patterns.clone(),
                     require_docs: rule.bundle.require_docs,
                     extensions: rule.bundle.extensions.clone(),
                     severity: rule.bundle.severity.clone(),
+                    message: rule.bundle.message.clone(),
                     required: rule.bundle.required.clone(),
                     allowed_names: rule.bundle.allowed_names.clone(),
                     allowed_patterns: rule.bundle.allowed_patterns.clone(),
@@ -164,12 +168,25 @@ impl<'a> RuleResolver<'a> {
                 parent.max_size_patterns.as_ref(),
                 child.max_size_patterns.as_ref(),
             ),
+            severity_patterns: merge_pattern_maps(
+                parent.severity_patterns.as_ref(),
+                child.severity_patterns.as_ref(),
+            ),
+            message_patterns: merge_pattern_maps(
+                parent.message_patterns.as_ref(),
+                child.message_patterns.as_ref(),
+            ),
+            markdown_patterns: merge_pattern_maps(
+                parent.markdown_patterns.as_ref(),
+                child.markdown_patterns.as_ref(),
+            ),
             require_docs: child.require_docs.or(parent.require_docs),
             extensions: child
                 .extensions
                 .clone()
                 .or_else(|| parent.extensions.clone()),
             severity: child.severity.clone().or_else(|| parent.severity.clone()),
+            message: child.message.clone().or_else(|| parent.message.clone()),
             required: child.required.clone(),
             allowed_names: child.allowed_names.clone(),
             allowed_patterns: child.allowed_patterns.clone(),

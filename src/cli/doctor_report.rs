@@ -19,6 +19,7 @@ pub(super) struct ProjectDoctorReport {
     pub(super) configured: Vec<DoctorItem>,
     pub(super) inactive: Vec<DoctorItem>,
     pub(super) gaps: Vec<DoctorItem>,
+    pub(super) config_quality: Vec<DoctorItem>,
     pub(super) binary_custody: DoctorItem,
     pub(super) blocking_violations: Vec<DoctorViolation>,
     pub(super) next_actions: Vec<DoctorNextAction>,
@@ -34,6 +35,7 @@ impl ProjectDoctorReport {
         let configured = configured_items(report, config);
         let inactive = inactive_items(&report.project_root, config);
         let gaps = gap_items(&report.project_root, config);
+        let config_quality = config_quality_items(&report.config_path);
         let binary_custody = binary_custody_item(&report.project_root);
         let blocking_violations = blocking_violations(report);
         let next_actions = next_actions(report, &inactive, &gaps);
@@ -51,6 +53,7 @@ impl ProjectDoctorReport {
             configured,
             inactive,
             gaps,
+            config_quality,
             binary_custody,
             blocking_violations,
             next_actions,
@@ -95,6 +98,16 @@ impl ProjectDoctorReport {
                     .join(", ")
             ));
         }
+        if !self.config_quality.is_empty() {
+            lines.push(format!(
+                "config-quality: {}",
+                self.config_quality
+                    .iter()
+                    .map(|item| format!("{}={}", item.name, item.status))
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            ));
+        }
         if let Some(violation) = self.blocking_violations.first() {
             lines.push(format!(
                 "top-violation: {} {} {}",
@@ -107,6 +120,21 @@ impl ProjectDoctorReport {
         }
         lines.join("\n")
     }
+}
+
+fn config_quality_items(config_path: &Path) -> Vec<DoctorItem> {
+    let Ok(source) = fs::read_to_string(config_path) else {
+        return Vec::new();
+    };
+    crate::config::loader::ConfigLoader::diagnostics(&source)
+        .unwrap_or_default()
+        .into_iter()
+        .map(|diagnostic| DoctorItem {
+            name: diagnostic.rule,
+            status: "advisory",
+            detail: diagnostic.message,
+        })
+        .collect()
 }
 
 #[derive(Debug, Clone, Serialize)]

@@ -93,7 +93,10 @@ fn validate_directory_cardinality(
     let Some(exists) = exists else {
         return Ok(());
     };
-    let local = path.trim_end_matches('/');
+    let local = path
+        .trim_end_matches('/')
+        .strip_prefix("./")
+        .unwrap_or_else(|| path.trim_end_matches('/'));
     if local.contains('/') {
         return Err(format!(
             "Assura config directory scope '{path}' cannot use exists across multiple path segments; express the hierarchy as nested direct-child scopes"
@@ -287,6 +290,8 @@ fn is_node_attr_key(key: &str) -> bool {
             | "require_docs"
             | "extensions"
             | "severity"
+            | "message"
+            | "limit_children"
             | "required"
             | "allowed_names"
             | "allowed_patterns"
@@ -313,6 +318,7 @@ fn is_file_bundle_attr_key(key: &str) -> bool {
             | "require_docs"
             | "extensions"
             | "severity"
+            | "message"
             | "required"
             | "allowed_names"
             | "allowed_patterns"
@@ -326,6 +332,7 @@ fn is_directory_bundle_attr_key(key: &str) -> bool {
         key,
         "naming"
             | "severity"
+            | "message"
             | "required"
             | "allowed_names"
             | "allowed_patterns"
@@ -352,6 +359,45 @@ fn path_has_scope_magic(path: &str) -> bool {
     path.contains('*') || path.contains('?') || path.contains('[') || path.contains('{')
 }
 
+fn expand_finite_selector(selector: &str) -> Result<Option<Vec<String>>, String> {
+    let Some(open) = selector.find('{') else {
+        return Ok(None);
+    };
+    let Some(close_offset) = selector[open + 1..].find('}') else {
+        return Ok(None);
+    };
+    let close = open + 1 + close_offset;
+    let body = &selector[open + 1..close];
+    if !body.contains(',') {
+        return Ok(None);
+    }
+
+    let options = body.split(',').map(str::trim).collect::<Vec<_>>();
+    if options.is_empty() || options.len() > 64 || options.iter().any(|item| item.is_empty()) {
+        return Err(format!(
+            "Assura config selector '{selector}' must contain 1-64 non-empty brace members"
+        ));
+    }
+
+    let prefix = &selector[..open];
+    let suffix = &selector[close + 1..];
+    let mut expanded = Vec::new();
+    for option in options {
+        let member = format!("{prefix}{option}{suffix}");
+        if let Some(nested) = expand_finite_selector(&member)? {
+            expanded.extend(nested);
+        } else {
+            expanded.push(member);
+        }
+        if expanded.len() > 64 {
+            return Err(format!(
+                "Assura config selector '{selector}' expands beyond the 64-member limit"
+            ));
+        }
+    }
+    Ok(Some(expanded))
+}
+
 fn normalize_scope_path(path: &str) -> String {
     path.trim_end_matches('/')
         .strip_prefix("./")
@@ -360,7 +406,10 @@ fn normalize_scope_path(path: &str) -> String {
 }
 
 fn join_scope_path(scope: &str, child: &str) -> String {
-    let child = child.trim_end_matches('/');
+    let child = child
+        .trim_end_matches('/')
+        .strip_prefix("./")
+        .unwrap_or_else(|| child.trim_end_matches('/'));
     if scope.is_empty() || scope == "." || scope == "./" {
         child.to_string()
     } else {

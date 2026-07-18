@@ -85,9 +85,9 @@ pub use agent_args::{
 pub use agent_query_args::AgentQueryArg;
 #[cfg(feature = "full-cli")]
 pub use args::{
-    AgentTarget, CacheCommands, CheckOutputFormat, Cli, Commands, ExitCode, FixCommands,
-    HookCommands, MarkdownFixRuleArg, OutputFormat, PerformanceReportFormat, QualityCommands,
-    QualityPhase, QualityPlanFormat,
+    AgentTarget, CacheCommands, CheckOutputFormat, Cli, Commands, ConfigCommands, ExitCode,
+    FixCommands, HookCommands, MarkdownFixRuleArg, MigrationSource, OutputFormat,
+    PerformanceReportFormat, QualityCommands, QualityPhase, QualityPlanFormat,
 };
 #[cfg(feature = "full-cli")]
 pub use cache_management::cache_command;
@@ -108,8 +108,8 @@ pub use check::{
 pub use command_options::CheckCommandOptions;
 #[cfg(feature = "full-cli")]
 pub use commands::{
-    check_command, fix_markdown_command, info_command, init_command, migrate_command,
-    status_command, watch_command,
+    add_recipe_command, check_command, fix_markdown_command, info_command, init_command,
+    migrate_command, status_command, watch_command,
 };
 #[cfg(feature = "full-cli")]
 pub use config::CliConfig;

@@ -4294,6 +4294,11 @@ const CLI_COMMAND_VARIANT_ROWS: &[CliCommandVariantRow] = &[
     },
     CliCommandVariantRow {
         enum_name: "Commands",
+        variant_name: "Config",
+        command_surface_names: &["assura config"],
+    },
+    CliCommandVariantRow {
+        enum_name: "Commands",
         variant_name: "Watch",
         command_surface_names: &["assura watch"],
     },
@@ -4604,6 +4609,20 @@ const SUPPORT_MATRIX_ROWS: &[SupportMatrixRow] = &[
             "tests/cli_command_surface_tests.rs",
             ".arg(\"init\")",
             "--no-git-hooks",
+        ],
+        exception_markers: &[],
+    },
+    SupportMatrixRow {
+        surface: "assura config add-recipe",
+        command_surface_names: &["assura config", "assura config add-recipe"],
+        support_policy_markers: &["`assura config add-recipe`"],
+        compatibility_markers: &[
+            "| `assura config add-recipe` | Supported project-owned policy authoring |",
+        ],
+        source_markers: &["Commands::Config", "ConfigCommands::AddRecipe"],
+        test_markers: &[
+            "tests/cli_command_surface_tests.rs",
+            "config_add_recipe_dry_run_materializes_project_owned_policy",
         ],
         exception_markers: &[],
     },
@@ -6033,8 +6052,8 @@ fn check_agent_onboarding_website(checks: &mut Checks) {
         "The local command is:",
         "reviewable local integration bundle",
         "\"rule_recommendations\"",
-        "\"local_rule\": \"$project-agentic-baseline\"",
-        "`not-applied` when the selected config lacks the wrapper",
+        "\"local_rule\": \"$agent-entrypoint\"",
+        "`not-applied` when the selected config lacks them",
         "assura agent onboard . --agent auto --format json",
         "assura agent onboard . --content-template agent-project --format json",
         "assura agent onboard . --content-template document-project --format json",

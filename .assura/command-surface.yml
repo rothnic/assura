@@ -167,6 +167,33 @@ commands:
       --project-intelligence: {}
       --force: {}
       --no-git-hooks: {}
+      --recipe:
+        takes_value: true
+        values: ["agentic-core", "structure-health"]
+  - name: "assura config"
+    allow_positionals: false
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+  - name: "assura config add-recipe"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --dry-run: {}
+      --force: {}
   - name: "assura watch"
     allow_positionals: true
     flags:
@@ -196,6 +223,9 @@ commands:
       --output:
         aliases: ["-o"]
         takes_value: true
+      --from:
+        takes_value: true
+        values: ["auto", "ls-lint", "assura-v1"]
   - name: "assura fix markdown"
     allow_positionals: true
     flags:

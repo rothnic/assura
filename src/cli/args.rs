@@ -136,6 +136,19 @@ pub enum Commands {
 
         #[arg(long)]
         no_git_hooks: bool,
+
+        #[arg(
+            long,
+            value_enum,
+            help = "Materialize an editable first-party policy recipe (repeatable)"
+        )]
+        recipe: Vec<InitRecipe>,
+    },
+
+    #[command(about = "Manage project-owned Assura configuration")]
+    Config {
+        #[command(subcommand)]
+        command: ConfigCommands,
     },
 
     #[command(about = "Watch for changes and validate")]
@@ -154,6 +167,14 @@ pub enum Commands {
     Migrate {
         #[arg(help = "LS-Lint configuration path(s); defaults to .ls-lint.yml")]
         input: Vec<PathBuf>,
+
+        #[arg(
+            long,
+            value_enum,
+            default_value = "auto",
+            help = "Input grammar to migrate"
+        )]
+        from: MigrationSource,
 
         #[arg(short, long, help = "Output path for generated Assura config")]
         output: Option<PathBuf>,
@@ -249,6 +270,44 @@ pub enum Commands {
     Quality {
         #[command(subcommand)]
         command: QualityCommands,
+    },
+}
+
+/// Project-owned policy recipes available during initialization.
+#[derive(ValueEnum, Clone, Copy, Debug, PartialEq, Eq)]
+pub enum InitRecipe {
+    /// Agent guidance and progressive-disclosure skill structure.
+    AgenticCore,
+    /// Advisory line-length and direct-child health defaults.
+    StructureHealth,
+}
+
+/// Configuration grammar accepted by `assura migrate`.
+#[derive(ValueEnum, Clone, Copy, Debug, PartialEq, Eq)]
+pub enum MigrationSource {
+    /// Detect LS-Lint or legacy Assura from top-level keys.
+    Auto,
+    /// LS-Lint 2.3 configuration.
+    LsLint,
+    /// Assura configuration authored before the Option A notation.
+    AssuraV1,
+}
+
+#[derive(Subcommand, Debug)]
+pub enum ConfigCommands {
+    #[command(about = "Merge an editable first-party policy recipe into a project config")]
+    AddRecipe {
+        #[arg(value_enum)]
+        recipe: InitRecipe,
+
+        #[arg(help = "Project root directory (defaults to current directory)")]
+        path: Option<PathBuf>,
+
+        #[arg(long, help = "Print the merged config without writing it")]
+        dry_run: bool,
+
+        #[arg(long, help = "Replace conflicting values with the selected recipe")]
+        force: bool,
     },
 }
 

@@ -1,5 +1,8 @@
 # Astro landing experience
 
+> Follow-up notation and site-alignment plan:
+> `docs/goals/assura-config-notation-rule-composition-and-site-alignment.md`.
+
 ## Goal
 
 Ship a polished standalone Assura landing experience whose configuration,
@@ -49,8 +52,8 @@ support.
 - Use accessible semantic HTML, stable responsive dimensions, and no overlapping
   or overflowing text at common breakpoints.
 - Keep docs site behavior independent from the landing page.
-- Make the onboarding claim executable: detect the project, apply the broad
-  built-in agent baseline through a project-owned wrapper, and report which
+- Make the onboarding claim executable: detect the project, materialize the
+  broad agent baseline as project-owned rules, and report which
   project-specific policy remains undecided.
 - Replace public `required` structure notation with one `exists` cardinality
   model while keeping literal hierarchy concise through implicit
@@ -141,7 +144,7 @@ support.
   check` and `cargo run --quiet -- check --format agent --agent codex` before
   updating the terminal examples.
 - `cargo xtask website-demo-data --check` validates both executable marketing
-  configs, 12 bidirectional release-surface mappings, and 57 classified YAML
+  configs, 12 bidirectional release-surface mappings, and 54 classified YAML
   fences.
 - `cargo test --test structure_config_notation_tests` passed 17 public CLI
   notation cases, including optional subtrees, captured directory counts, and
@@ -173,6 +176,11 @@ support.
 - Tool-owned `.assura/onboarding/` state intentionally remains outside the user
   structure contract; onboarding verification and `assura doctor` report core
   handoff presence, and the canonical guide now states that boundary explicitly.
+- The Option A notation program is complete: the 71-line canonical homepage
+  fixture, required-root and dot-directory negative cases, explicit v1 and
+  LS-Lint migrations, project-owned recipe support files, and build-time repair
+  link validation pass the current CLI.
+- Final independent notation and visual reviews report no release blockers.
 
 ## Definition of Done
 

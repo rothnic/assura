@@ -8,6 +8,7 @@ use super::explain_rules::{
 use super::report::CheckError;
 use super::rule_plan::{self, rules_for_dir};
 use super::rules::is_excluded_rel_with;
+use super::scope_patterns::CompiledScopePattern;
 use crate::config::loader::ConfigLoader;
 use serde::Serialize;
 use std::path::{Path, PathBuf};
@@ -39,6 +40,8 @@ pub struct PathExplainReport {
     pub effective_rules: PathExplainRules,
     /// Winning file-pattern directives for the requested file.
     pub matched_file_patterns: Vec<PathExplainFilePatternRule>,
+    /// Authored reusable rules contributing to this path after selector rebasing.
+    pub source_rules: Vec<PathExplainRuleSource>,
     /// Checks skipped for this path and why.
     pub skipped_checks: Vec<PathExplainSkip>,
     /// Suppression state for this path.
@@ -121,6 +124,19 @@ pub struct PathExplainScope {
     pub inheritance_reset: bool,
     /// Compact rule summary for this scope.
     pub rules: PathExplainRules,
+}
+
+/// Authored reusable rule contributing to the effective path policy.
+#[derive(Debug, Clone, Serialize)]
+pub struct PathExplainRuleSource {
+    /// Rule name without the `$` prefix.
+    pub rule: String,
+    /// Effective selector after tree-rule rebasing.
+    pub effective_selector: String,
+    /// Expected selector target kind.
+    pub target_kind: String,
+    /// Whether the selector was checked for the requested path.
+    pub status: &'static str,
 }
 
 /// Explanation of one skipped check class.
@@ -217,6 +233,27 @@ pub fn explain_structure_path(
     } else {
         Vec::new()
     };
+    let source_rules = std::fs::read_to_string(&config_path)
+        .ok()
+        .and_then(|source| ConfigLoader::provenance(&source).ok())
+        .unwrap_or_default()
+        .into_iter()
+        .filter(|source| {
+            let target = if source.target_kind == "file" {
+                rel.as_path()
+            } else {
+                effective_directory.as_path()
+            };
+            (source.selector == "." && target.as_os_str().is_empty())
+                || CompiledScopePattern::from_str(&source.selector).matches_path(target)
+        })
+        .map(|source| PathExplainRuleSource {
+            rule: source.rule,
+            effective_selector: source.selector,
+            target_kind: source.target_kind,
+            status: if excluded { "skipped" } else { "checked" },
+        })
+        .collect();
     let effective_rules = summarize_effective_rules(&effective);
     let skipped_checks = explain_skipped_checks(kind, excluded, rel.as_path(), &effective_rules);
     let mut next_actions = Vec::new();
@@ -260,6 +297,7 @@ pub fn explain_structure_path(
         applied_scopes,
         effective_rules,
         matched_file_patterns,
+        source_rules,
         skipped_checks,
         suppressions: vec![PathExplainSkip {
             name: "inline_suppressions",

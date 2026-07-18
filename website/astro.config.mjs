@@ -17,6 +17,9 @@ export default defineConfig({
 		sitemap(),
 		starlight({
 			title: 'Assura',
+			components: {
+				Head: './src/components/starlight-head.astro',
+			},
 			logo: {
 				src: './src/assets/assura-logo.svg',
 				alt: '',

@@ -4,7 +4,7 @@ use super::direct_contents::exists_patterns_allow_name;
 use super::ls_fast_counts::fast_rules_have_child_counts;
 use super::ls_fast_naming::{validate_fast_file_stem, validate_fast_name};
 use super::ls_fast_plan::{fast_rules_for_dir, fast_rules_for_dir_indexed, FastRules, FastScope};
-use super::patterns::{lslint_file_stem, matches_any_compiled_pattern};
+use super::patterns::{file_stem_for_pattern, matches_any_compiled_pattern};
 use super::rules::{
     display_rel, file_matches_any_extension, is_excluded_rel_with, rel_to_string,
     severity_for_bundle, severity_for_directory_bundle,
@@ -393,8 +393,8 @@ impl StructureChecker {
             return;
         };
         let naming = naming_match.naming;
-        let stem = if naming_match.lslint_extension_pattern {
-            lslint_file_stem(filename)
+        let stem = if let Some(pattern) = naming_match.lslint_extension_pattern {
+            file_stem_for_pattern(pattern, filename)
         } else {
             stem
         };

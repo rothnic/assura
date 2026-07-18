@@ -57,5 +57,9 @@ fn merge_fast_effective_rules(
             child.self_directory.as_deref(),
         ),
         markdown: merge_markdown_bundle(parent.markdown.as_ref(), child.markdown.as_deref()),
+        limit_children: child
+            .limit_children
+            .clone()
+            .or_else(|| parent.limit_children.clone()),
     }
 }

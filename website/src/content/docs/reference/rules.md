@@ -15,13 +15,14 @@ rules:
     max_lines: 500
 
 structure:
-  ./:
-    .ts: $source-file
-    .tsx: $source-file
+  ./**/:
+    .{ts,tsx}: $source-file
 ```
 
 Run `assura explain path/to/file.ts` to see the scopes that apply and the
-winning naming, line, and size thresholds.
+winning naming, line, and size thresholds. JSON output also includes
+`source_rules`, with each authored rule name, rebased selector, target kind,
+and whether it was checked or skipped.
 
 ## Structure Directives
 
@@ -31,7 +32,9 @@ winning naming, line, and size thresholds.
 | `max_lines` | Set a language-agnostic file line threshold. |
 | `max_size` | Set a language-agnostic file size threshold. |
 | `exists` | Require, allow, or forbid direct files and directories by count. |
-| `extra` | Close a scope to paths not represented by its policy tree. |
+| `limit_children` | Set a combined direct file and directory threshold. |
+| `severity` | Make the composed constraint advisory (`low`) or blocking. |
+| `message` | Append bounded project-owned repair guidance. |
 | `use` | Apply a reusable project rule. |
 | `inherit` | Keep or reset parent policy in a more specific scope. |
 | `needs` / `provides` | Connect captured paths to one or more valid providers. |
@@ -45,14 +48,13 @@ use `exists` ranges for direct-child counts.
 
 ```yaml
 structure:
-  ./:
-    AGENTS.md: exists:1
-    docs/: exists:0-1
-    packages/:
-      "{package}/":
-        .dir: kebab-case
-        package.json: exists:1
-        src/: exists:1
+  AGENTS.md: exists:1
+  docs/: exists:0-1
+  packages/:
+    ./*/:
+      ./: kebab-case
+      package.json: exists:1
+      src/: exists:1
 ```
 
 ## Scalar And Expanded Forms
@@ -61,52 +63,57 @@ Use a scalar when one reusable rule or naming convention is enough:
 
 ```yaml config-fragment
 structure:
-  ./:
+  ./**/:
     .rs: snake_case
     .ts: $source-file
-    packages/:
-      "{package}/": $package-standard
+  packages/:
+    ./*/: $package-standard
 ```
 
-Use a mapping when a path needs local composition or an override:
+Use ` | ` for compatible scalar composition. Use a mapping for a rule with
+several attributes:
 
 ```yaml
 rules:
-  project-standard:
-    extra: false
+  guidance:
+    max_lines: 160
+    severity: low
+    message: See docs/agent-guidance.md.
 
 structure:
-  ./:
-    use:
-      - $agentic-project
-      - $project-standard
-    extra: true
-    README.md: exists:0-1
+  AGENTS.md: exists:1 | $guidance
+  ./**/:
+    .md: kebab-case | exact:AGENTS | exact:README
 ```
 
-Rules in `use` are applied in order. Local attributes are applied last, so the
-root above reopens extra entries and adds an optional README after composing
-both reusable rules.
+Pipelines split only on a top-level ` | ` surrounded by spaces, so regex
+alternation remains intact. They apply left to right; a later value for the
+same attribute is an explicit local override. A rule mapping is either a node
+constraint or a child tree; mixing both is a configuration error.
 
-## Built-In Agent Policy
+## Agent Policy Recipes
 
-`$agentic-project` provides the broad repository-level baseline used by agent
-onboarding. It requires root agent guidance and composes the standard local
-skill structure without guessing language or domain rules.
+Generate editable agent policy into the repository:
 
-```yaml
-rules:
-  project-baseline:
-    use: $agentic-project
-
-structure:
-  ./:
-    use: $project-baseline
+```bash
+assura init --recipe agentic-core --recipe structure-health
 ```
 
-Use `extensions.agent_guidance` for deterministic checks inside `AGENTS.md`
+The generated rules are normal project YAML and remain available with the
+recipe catalog removed. Use `extensions.agent_guidance` for checks inside `AGENTS.md`
 and project-local `SKILL.md` files, including required sections, routing,
 frontmatter, and line limits.
+
+When adding a recipe to an existing project, use:
+
+```bash
+assura config add-recipe agentic-core . --dry-run
+assura config add-recipe agentic-core .
+```
+
+`assura doctor --format json` reports a low-severity `config_rule_reuse`
+diagnostic when a trivial named node rule is used once or not at all. Tree
+contracts and multi-directive rules remain valid even when they have one use.
 
 ## Relationships
 

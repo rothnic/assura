@@ -208,11 +208,11 @@ fn agent_onboard_generates_broad_baseline_and_packet() {
     assert_eq!(output["content"]["status"], "inactive");
     assert_eq!(
         output["rule_recommendations"][0]["preset"],
-        "$agentic-project"
+        "agentic-core + structure-health"
     );
     assert_eq!(
         output["rule_recommendations"][0]["local_rule"],
-        "$project-agentic-baseline"
+        "$agent-entrypoint"
     );
     assert_eq!(output["rule_recommendations"][0]["status"], "applied");
     assert!(output["rule_recommendations"][0]["reason"]
@@ -222,10 +222,11 @@ fn agent_onboard_generates_broad_baseline_and_packet() {
     assert_eq!(
         output["rule_recommendations"][0]["includes"],
         serde_json::json!([
-            "$agents-dir",
-            "$agent-skill-dir",
-            "$agent-skill-file",
-            "$agent-skill-resource-dir"
+            "$agent-entrypoint",
+            "$skill-entrypoint",
+            "$skill",
+            "$folder-health",
+            "$closed"
         ])
     );
     let lifecycle_modes = output["lifecycle_profiles"]
@@ -319,13 +320,14 @@ fn agent_onboard_generates_broad_baseline_and_packet() {
     assert!(lifecycle.contains("| gate |"));
     assert!(lifecycle.contains("does not silently mutate"));
     let rules = fs::read_to_string(project.path().join(".assura/onboarding/rules.md")).unwrap();
-    assert!(rules.contains("$agentic-project"));
-    assert!(rules.contains("$project-agentic-baseline"));
-    assert!(rules.contains("Edit that local rule"));
+    assert!(rules.contains("agentic-core"));
+    assert!(rules.contains("structure-health"));
+    assert!(rules.contains("project owns and can edit"));
 
     let config = fs::read_to_string(project.path().join(".assura/config.yml")).unwrap();
-    assert!(config.contains("project-agentic-baseline:"));
-    assert!(config.contains("use: $agentic-project"));
+    assert!(config.contains("agent-entrypoint:"));
+    assert!(config.contains("AGENTS.md: exists:1 | $agent-entrypoint"));
+    assert!(!config.contains("$agentic-project"));
 
     let doctor: Value = serde_json::from_str(
         &fs::read_to_string(project.path().join(".assura/onboarding/doctor.json")).unwrap(),
@@ -623,10 +625,9 @@ fn agent_onboard_generated_config_validates_dynamic_directory_skill_contracts() 
     ]));
 
     let config = fs::read_to_string(project.path().join(".assura/config.yml")).unwrap();
-    assert!(config.contains("use: $agentic-project"));
-    assert!(config.contains("project-agentic-baseline:"));
-    assert!(!config.contains("use: $agents-dir"));
-    assert!(!config.contains("use: $assura-skill-dir"));
+    assert!(config.contains("AGENTS.md: exists:1 | $agent-entrypoint"));
+    assert!(config.contains("skill-entrypoint:"));
+    assert!(!config.contains("$agentic-project"));
     assert!(config.contains("rules:"));
     assert!(!config.contains(".agents/skills/assura-project-maintenance/:"));
 
@@ -634,7 +635,39 @@ fn agent_onboard_generated_config_validates_dynamic_directory_skill_contracts() 
     fs::create_dir_all(second_skill.join("references")).unwrap();
     fs::create_dir_all(second_skill.join("scripts")).unwrap();
     fs::create_dir_all(second_skill.join("assets")).unwrap();
-    fs::write(second_skill.join("SKILL.md"), "# Release Maintenance\n").unwrap();
+    fs::write(
+        second_skill.join("SKILL.md"),
+        r#"---
+name: release-maintenance
+description: Maintain project releases.
+applies_when: Preparing or validating a release.
+---
+
+# Release Maintenance
+
+## Workflow
+
+Run the project release checks.
+
+## Read as needed
+
+Read `references/runbook.md` for the detailed procedure.
+
+## Outputs
+
+- A validated release.
+
+## Guardrails
+
+- Do not publish before validation passes.
+"#,
+    )
+    .unwrap();
+    let mut agents_md = fs::read_to_string(project.path().join("AGENTS.md")).unwrap();
+    agents_md.push_str(
+        "\n| Preparing a release | [`release-maintenance`](.agents/skills/release-maintenance/SKILL.md) |\n",
+    );
+    fs::write(project.path().join("AGENTS.md"), agents_md).unwrap();
     fs::write(second_skill.join("references/runbook.md"), "# Runbook\n").unwrap();
     fs::write(second_skill.join("scripts/check.sh"), "#!/bin/sh\n").unwrap();
     fs::write(second_skill.join("assets/template.txt"), "template\n").unwrap();
@@ -728,7 +761,10 @@ fn agent_onboard_generated_config_validates_dynamic_directory_skill_contracts() 
         .iter()
         .any(|item| {
             item["path"] == ".agents/skills/missing-skill-md/tmp"
-                && item["rule"] == "unexpected_directory"
+                && item["rule"] == "exists_count"
+                && item["message"]
+                    .as_str()
+                    .is_some_and(|message| message.contains("expected 0"))
         }));
 }
 

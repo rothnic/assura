@@ -219,6 +219,27 @@ structure:
 }
 
 #[test]
+fn scalar_composition_applies_explicit_overrides_left_to_right() {
+    let config = parse_config(
+        r#"
+structure:
+  .ts: max_lines:500 | max_lines:200
+  .tsx: max_lines:200 | max_lines:500
+"#,
+    )
+    .unwrap();
+
+    let files = config
+        .structure
+        .get("./")
+        .and_then(|node| node.files.as_ref())
+        .unwrap();
+    let limits = files.max_lines_patterns.as_ref().unwrap();
+    assert_eq!(limits.get("*.ts"), Some(&200));
+    assert_eq!(limits.get("*.tsx"), Some(&500));
+}
+
+#[test]
 fn reusable_rule_references_reject_unknown_mismatched_and_cyclic_fragments() {
     for (index, (yaml, expected)) in [
         (
@@ -234,11 +255,12 @@ structure:
 rules:
   source-file:
     naming: kebab-case
+    max_lines: 500
 structure:
   packages/:
     core/: $source-file
 "#,
-            "node fragment but a tree fragment is required",
+            "directory attribute 'max_lines' is not supported",
         ),
         (
             r#"
@@ -279,6 +301,82 @@ structure:
             "reference case {index} returned an unexpected error: {error}"
         );
     }
+}
+
+#[test]
+fn nested_current_directory_cardinality_controls_the_parent_path() {
+    let config = parse_config(
+        r#"
+rules:
+  closed-entry:
+    exists: 0
+  closed:
+    ./*/: $closed-entry
+    ./*: $closed-entry
+structure:
+  .agents/:
+    ./: exists:0-1 | $closed
+  packages/:
+    ./: $closed
+  AGENTS.md: exists:1
+"#,
+    )
+    .unwrap();
+
+    let root = config.structure.get("./").unwrap();
+    let exists = root
+        .directories
+        .as_ref()
+        .and_then(|directories| directories.exists.as_ref())
+        .unwrap();
+    assert_eq!(exists.get(".agents"), Some(&"0-1".to_string()));
+    assert_eq!(exists.get("packages"), Some(&"1".to_string()));
+}
+
+#[test]
+fn homepage_agentic_monorepo_config_is_valid_assura_notation() {
+    let source =
+        include_str!("../../../../../website/src/data/config-examples/agentic-monorepo.yml");
+    let config = parse_config(source).unwrap();
+
+    let root = config.structure.get("./").unwrap();
+    let root_files = root
+        .files
+        .as_ref()
+        .and_then(|files| files.exists.as_ref())
+        .unwrap();
+    assert_eq!(root_files.get("AGENTS.md"), Some(&"1".to_string()));
+    assert_eq!(root_files.get("README.md"), Some(&"1".to_string()));
+
+    let root_directories = root
+        .directories
+        .as_ref()
+        .and_then(|directories| directories.exists.as_ref())
+        .unwrap();
+    assert_eq!(root_directories.get(".agents"), Some(&"0-1".to_string()));
+    assert_eq!(root_directories.get("apps"), Some(&"0-1".to_string()));
+    assert_eq!(root_directories.get("packages"), Some(&"1".to_string()));
+}
+
+#[test]
+fn authored_rules_cannot_mix_node_directives_and_child_selectors() {
+    let error = parse_config(
+        r#"
+rules:
+  mixed:
+    max_lines: 500
+    src/: exists:1
+structure:
+  AGENTS.md: exists:1
+"#,
+    )
+    .unwrap_err()
+    .to_string();
+
+    assert!(
+        error.contains("mixes node directives with child selectors"),
+        "{error}"
+    );
 }
 
 #[test]

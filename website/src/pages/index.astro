@@ -38,6 +38,7 @@ ASSURA_INSTALL=${installScriptUrl}
 curl -fsSL "$ASSURA_INSTALL" | sh
 
 Then run:
+assura init . --recipe agentic-core --recipe structure-health --no-git-hooks
 assura agent onboard . --agent auto --format json
 assura check --format json .
 
@@ -132,7 +133,7 @@ const lifecycleStages = [
 
 const onboardingApplied = [
   'project and agent harness detected',
-  '$project-agentic-baseline added locally',
+  'editable policy added to the project',
   'agent guidance and skills',
   'onboarding packet',
   'watch / warn / gate profile',
@@ -377,8 +378,8 @@ const performanceLayers = [
           <div class="command-panel">
             <code>$ assura agent onboard . --agent auto --format json</code>
             <p>
-              Detect the project, apply compatible built-in rules through a
-              project-owned wrapper, run local verification, and leave conflicts or
+              Detect the project, materialize compatible rules into project-owned
+              configuration, run local verification, and leave conflicts or
               uncertain conventions as explicit questions.
             </p>
           </div>

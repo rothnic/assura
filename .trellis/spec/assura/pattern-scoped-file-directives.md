@@ -9,8 +9,8 @@
 
 ### 2. Signatures
 
-- Cascading extension shorthand: `.ts: $source-file`; expand attributes below
-  `.ts` when the directive is local instead of reusable.
+- Direct extension shorthand: `.ts: $source-file`; place it below `./**/` when
+  the policy should rebase onto every descendant directory.
 - Explicit file-glob reach: `"./*.ts"` matches direct root files while
   `"./**/*.ts"` matches root files and descendants. Inside a nested structure
   scope, `"*.ts"` and `"**/*.ts"` are resolved relative to that scope.
@@ -18,14 +18,15 @@
   `packages/*/src/`, or `packages/**/generated/`.
 - Normalized fields: `files.max_lines_patterns` and
   `files.max_size_patterns`, keyed by the normalized file glob.
-- Portable compiled artifacts use schema version 24 or newer.
+- Portable compiled artifacts use schema version 25 or newer.
 - Inspection: `assura explain <path>` reports applied directory scopes and the
   winning file-pattern attributes.
 
 ### 3. Contracts
 
-- Extension shorthand such as `.ts` follows LS-Lint-style cascading behavior:
-  it applies in the configured directory scope and descendants that inherit it.
+- Extension shorthand such as `.ts` applies to direct files at its current
+  anchor. Recursive reach is authored explicitly through `./**/` or a recursive
+  file selector.
 - Explicit file globs preserve user-selected depth. `*` matches one path
   segment and `**` crosses any number of directory separators.
 - A more specific structure scope can merge local patterns with `inherit: true`
@@ -52,7 +53,7 @@
 | Descendant has no configured reset | Keep inherited pattern directives. |
 | Inheriting descendant adds local patterns | Merge maps and replace duplicate keys locally. |
 | Descendant scope sets `inherit: false` | Remove ancestor pattern directives. |
-| Compiled artifact predates schema 24 | Reject it as incompatible. |
+| Compiled artifact predates schema 25 | Reject it as incompatible. |
 
 ### 5. Good / Base / Bad Cases
 
@@ -96,17 +97,16 @@ Wrong when generated descendants should not inherit a source policy:
 
 ```yaml
 structure:
-  ./:
-    .ts: $source-file
+  .ts: $source-file
 ```
 
 Correct explicit scope reset:
 
 ```yaml
 structure:
-  ./:
+  ./**/:
     .ts: $source-file
-  "**/generated/":
+  ./**/generated/:
     inherit: false
 ```
 
@@ -124,10 +124,10 @@ Choose file depth explicitly when one directory scope needs both behaviors:
 
 ```yaml
 structure:
-  ./:
-    "./*.ts": $root-source
-    "./**/*.ts": $all-source
+  ./*.ts: $root-source
+  ./**/*.ts: $all-source
 ```
 
-Use `.ts: $source-file` when cascading extension shorthand is the intended
-policy. Use an explicit glob when direct-versus-recursive reach matters.
+Use `.ts: $source-file` for direct files, or place it under `./**/` for the
+same direct rule rebased across all directories. Use an explicit file glob when
+one selector should carry the recursive reach itself.

@@ -6,7 +6,7 @@ use super::agent_onboarding_report::{
     render_report, CheckItem, ContentSection, FileAction, InstalledSection, IntegrationSection,
     OnboardingReport, RenderedOnboardingReport,
 };
-use super::agent_onboarding_rules::{preserve_existing_rule, recommended_rules};
+use super::agent_onboarding_rules::{normalize_existing_root, recommended_rules};
 use super::agent_onboarding_templates::{baseline_files, rule_recommendations_file, GeneratedFile};
 use super::doctor::project_doctor_packet_json;
 use super::project_review::build_project_review;
@@ -302,9 +302,9 @@ fn materialize_config(project_root: &Path, file: GeneratedFile) -> Result<FileAc
     let existing_contents = fs::read_to_string(&path).map_err(|error| error.to_string())?;
     let mut existing: Value =
         serde_yaml::from_str(&existing_contents).map_err(|error| error.to_string())?;
-    let mut defaults: Value =
+    normalize_existing_root(&mut existing);
+    let defaults: Value =
         serde_yaml::from_str(&file.contents).map_err(|error| error.to_string())?;
-    preserve_existing_rule(&existing, &mut defaults);
     let changed = merge_missing_values(&mut existing, &defaults);
     if changed {
         let merged = serde_yaml::to_string(&existing).map_err(|error| error.to_string())?;

@@ -23,17 +23,20 @@ entrypoint.
 Use `.assura/config.yml` to express project shape first:
 
 ```yaml
+rules:
+  closed-entry:
+    exists: 0
+  closed:
+    ./*/: $closed-entry
+    ./*: $closed-entry
+
 structure:
-  ./:
-    extra: false
-    README.md: exists:1
-    Cargo.toml: exists:1
-    src/: exists:1
-    tests/: exists:0-1
-  src/:
-    .rs: snake_case
-  tests/:
-    exists: 0-1
+  ./: $closed
+  README.md: exists:1
+  Cargo.toml: exists:1
+  src/: exists:1
+  tests/: exists:0-1
+  ./**/:
     .rs: snake_case
 exclude:
   - "target/**"
@@ -76,9 +79,7 @@ extensions:
       target: ".assura/command-surface.yml"
       severity: high
 
-structure:
-  ./:
-    extra: true
+structure: {}
 exclude:
   - "target/**"
 ```

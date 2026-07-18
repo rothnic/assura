@@ -3,7 +3,7 @@
 use super::case::{validate_file_stem_with_path, validate_name_with_path};
 use super::direct_contents::exists_patterns_allow_name;
 use super::patterns::{
-    best_file_pattern_match, file_pattern_uses_lslint_stem, lslint_file_stem,
+    best_file_pattern_match, file_pattern_uses_lslint_stem, file_stem_for_pattern,
     matches_any_compiled_pattern,
 };
 use super::repository_references::{is_source_reference_file, SOURCE_REFERENCE_FILE_SIZE_LIMIT};
@@ -30,10 +30,26 @@ impl StructureChecker {
             .file_name()
             .and_then(|name| name.to_str())
             .unwrap_or("");
+        let naming_target = name.strip_prefix('.').unwrap_or(name);
+        let parent_rules = self.resolve_rules(parent_rel);
         let self_rules = self.resolve_rules(&rel);
         if let Some(directory) = self_rules.self_directory.as_ref() {
             if let Some(exists) = directory.exists.as_ref() {
                 for expected in exists.values() {
+                    if expected == "0"
+                        && parent_rules
+                            .directories
+                            .as_ref()
+                            .is_some_and(|directories| {
+                                exists_patterns_allow_name(
+                                    directories.exists.as_ref(),
+                                    name,
+                                    &self.glob_patterns,
+                                )
+                            })
+                    {
+                        continue;
+                    }
                     if count_satisfies(1, expected) {
                         continue;
                     }
@@ -41,10 +57,13 @@ impl StructureChecker {
                         report,
                         rel.clone(),
                         "exists_count",
-                        format!(
-                            "Directory '{}' exists 1 times, expected {}",
-                            display_rel(&rel),
-                            expected
+                        append_directory_repair(
+                            format!(
+                                "Directory '{}' exists 1 times, expected {}",
+                                display_rel(&rel),
+                                expected
+                            ),
+                            directory.message.as_deref(),
                         ),
                         severity_for_directory_bundle(directory),
                     );
@@ -53,7 +72,7 @@ impl StructureChecker {
 
             if let Some(naming) = directory.naming.as_deref() {
                 if !validate_name_with_path(
-                    name,
+                    naming_target,
                     &super::rules::rel_to_string(&rel),
                     naming,
                     &self.naming_regexes,
@@ -62,9 +81,12 @@ impl StructureChecker {
                         report,
                         rel.clone(),
                         "directory_naming",
-                        format!(
-                            "Directory '{}' does not match naming convention '{}'",
-                            name, naming
+                        append_directory_repair(
+                            format!(
+                                "Directory '{}' does not match naming convention '{}'",
+                                name, naming
+                            ),
+                            directory.message.as_deref(),
                         ),
                         severity_for_directory_bundle(directory),
                     );
@@ -72,7 +94,7 @@ impl StructureChecker {
             }
         }
 
-        let rules = self.resolve_rules(parent_rel);
+        let rules = parent_rules;
         if let Some(directories) = rules.directories.as_ref() {
             let configured_child = self.is_configured_dir(&rel);
             let allowed_by_name = directories
@@ -125,7 +147,7 @@ impl StructureChecker {
             if !configured_child && !allowed_by_name && !allowed_by_pattern && !allowed_by_exists {
                 if let Some(naming) = directories.naming.as_deref() {
                     if !validate_name_with_path(
-                        name,
+                        naming_target,
                         &super::rules::rel_to_string(&rel),
                         naming,
                         &self.naming_regexes,
@@ -158,7 +180,7 @@ impl StructureChecker {
         };
 
         if !validate_name_with_path(
-            name,
+            naming_target,
             &super::rules::rel_to_string(&rel),
             naming,
             &self.naming_regexes,
@@ -181,14 +203,30 @@ impl StructureChecker {
         let parent_rel = rel.parent().unwrap_or_else(|| Path::new(""));
         let rules = self.resolve_rules(parent_rel);
 
+        let filename = path
+            .file_name()
+            .and_then(|name| name.to_str())
+            .unwrap_or("");
+        #[cfg(feature = "yaml-config")]
+        let markdown = rules
+            .files
+            .as_ref()
+            .and_then(|files| files.markdown_patterns.as_ref())
+            .and_then(|patterns| {
+                best_file_pattern_match(patterns, filename, &rel, &self.glob_patterns)
+                    .map(|(_, markdown)| markdown)
+            })
+            .or(rules.markdown.as_deref());
         #[cfg(feature = "yaml-config")]
         let needs_markdown =
-            path.extension().and_then(|ext| ext.to_str()) == Some("md") && rules.markdown.is_some();
+            path.extension().and_then(|ext| ext.to_str()) == Some("md") && markdown.is_some();
         #[cfg(not(feature = "yaml-config"))]
         let needs_markdown = false;
         let needs_file_content = rules.files.as_ref().is_some_and(|files| {
             files.max_lines.is_some()
-                || files.max_lines_patterns.is_some()
+                || files.max_lines_patterns.as_ref().is_some_and(|patterns| {
+                    best_file_pattern_match(patterns, filename, &rel, &self.glob_patterns).is_some()
+                })
                 || (files.require_docs == Some(true)
                     && path.extension().and_then(|ext| ext.to_str()) == Some("rs"))
         });
@@ -228,14 +266,14 @@ impl StructureChecker {
                 None
             };
 
-        if let Some(files) = rules.files {
-            self.validate_file_bundle(path, &rel, &files, content.as_deref(), report);
+        if let Some(files) = rules.files.as_ref() {
+            self.validate_file_bundle(path, &rel, files, content.as_deref(), report);
         }
 
         #[cfg(feature = "yaml-config")]
         if needs_markdown {
-            if let (Some(markdown), Some(content)) = (rules.markdown, content.as_deref()) {
-                self.validate_markdown(&rel, &markdown, content, report);
+            if let (Some(markdown), Some(content)) = (markdown, content.as_deref()) {
+                self.validate_markdown(&rel, markdown, content, report);
             }
         }
 
@@ -344,7 +382,7 @@ impl StructureChecker {
 
             if let Some((pattern, naming)) = best_match {
                 let stem = if file_pattern_uses_lslint_stem(pattern) {
-                    lslint_file_stem(filename)
+                    file_stem_for_pattern(pattern, filename)
                 } else {
                     path.file_stem()
                         .and_then(|stem| stem.to_str())
@@ -420,4 +458,13 @@ impl StructureChecker {
             }
         }
     }
+}
+
+fn append_directory_repair(mut message: String, repair: Option<&str>) -> String {
+    if let Some(repair) = repair {
+        message.push_str(". ");
+        message.push_str(repair.trim_end_matches('.'));
+        message.push('.');
+    }
+    message
 }

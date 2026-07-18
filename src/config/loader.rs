@@ -2,7 +2,7 @@
 //!
 //! Handles parsing and validation of configuration files.
 
-use super::config::Config;
+use super::config::{AuthoredRuleUse, Config, ConfigQualityDiagnostic};
 use crate::cli::config::{ConfigError, ConfigResult};
 use crate::config::config::validate_config_semantics;
 use std::path::Path;
@@ -50,6 +50,18 @@ impl ConfigLoader {
     /// Parse and semantically validate config from a YAML string.
     pub fn parse_validated(content: &str) -> ConfigResult<Config> {
         Self::parse(content)
+    }
+
+    /// Return non-blocking quality diagnostics for authored shorthand rules.
+    pub fn diagnostics(content: &str) -> ConfigResult<Vec<ConfigQualityDiagnostic>> {
+        let value = parse_yaml_value(content)?;
+        super::config::structure_config_diagnostics(&value).map_err(ConfigError::Invalid)
+    }
+
+    /// Expand authored rule references into effective rebased selectors.
+    pub fn provenance(content: &str) -> ConfigResult<Vec<AuthoredRuleUse>> {
+        let value = parse_yaml_value(content)?;
+        super::config::structure_rule_provenance(value).map_err(ConfigError::Invalid)
     }
 
     fn parse_canonical(content: &str) -> ConfigResult<Config> {

@@ -4,90 +4,9 @@ struct RuleRegistry {
     rules: HashMap<String, Value>,
 }
 
-const BUILTIN_AGENT_SKILL_FILE: &str = r#"
-exists: 1
-max_lines: 600
-max_size: "24KB"
-"#;
-
-const BUILTIN_AGENT_SKILL_RESOURCE_DIR: &str = r#"
-inherit: false
-.dir: kebab-case
-files:
-  naming: kebab-case
-  max_lines: 600
-  max_size: "24KB"
-directories:
-  naming: kebab-case
-extra: true
-"#;
-
-const BUILTIN_AGENT_SKILL_DIR: &str = r#"
-inherit: false
-.dir: kebab-case
-SKILL.md: $agent-skill-file
-agents/:
-  exists: 0-1
-  use: $agent-skill-resource-dir
-references/:
-  exists: 0-1
-  use: $agent-skill-resource-dir
-scripts/:
-  exists: 0-1
-  use: $agent-skill-resource-dir
-assets/:
-  exists: 0-1
-  use: $agent-skill-resource-dir
-extra: false
-"#;
-
-const BUILTIN_AGENTS_DIR: &str = r#"
-inherit: false
-README.md: exists:0-1
-SKILL.md: exists:0-1
-TEMPLATE.md: exists:0-1
-prd.json: exists:0-1
-skills/:
-  exists: 0-1
-  inherit: false
-  README.md: exists:0-1
-  TEMPLATE.md: exists:0-1
-  files:
-    allow_extra: false
-  directories:
-    allow_extra: true
-  built-in/:
-    exists: 0-1
-    "{skill}/":
-      use: $agent-skill-dir
-    files:
-      allow_extra: false
-    directories:
-      allow_extra: true
-  custom/:
-    exists: 0-1
-    "{skill}/":
-      use: $agent-skill-dir
-    files:
-      allow_extra: false
-    directories:
-      allow_extra: true
-  "{skill}/":
-    use: $agent-skill-dir
-extra: false
-"#;
-
-const BUILTIN_AGENTIC_PROJECT: &str = r#"
-AGENTS.md: exists:1
-.agents/:
-  exists: 0-1
-  use: $agents-dir
-.assura/: exists:0-1
-"#;
-
 impl RuleRegistry {
     fn from_root(root: &mut Mapping) -> Result<Self, String> {
-        let mut rules = builtin_rules()?;
+        let mut rules = HashMap::new();
         let Some(value) = root.remove(string_value("rules")) else {
             let registry = Self { rules };
             registry.validate_references()?;
@@ -102,6 +21,7 @@ impl RuleRegistry {
                 return Err("Assura config rule names must be strings".to_string());
             };
             let name = normalize_rule_definition_name(name)?;
+            validate_authored_rule_shape(name, &value)?;
             rules.insert(name.to_string(), value);
         }
         let registry = Self { rules };
@@ -145,6 +65,11 @@ impl RuleRegistry {
             .ok_or_else(|| format!("unknown Assura config rule '${name}'"))
     }
 
+    fn fragment_kind(&self, reference: &str) -> Result<FragmentKind, String> {
+        let name = parse_rule_reference(reference)?;
+        classify_fragment(&self.resolve(name)?)
+    }
+
     fn validate_references(&self) -> Result<(), String> {
         let mut names = self.rules.keys().cloned().collect::<Vec<_>>();
         names.sort();
@@ -181,6 +106,26 @@ impl RuleRegistry {
     }
 }
 
+fn validate_authored_rule_shape(name: &str, value: &Value) -> Result<(), String> {
+    let Value::Mapping(mapping) = value else {
+        return Ok(());
+    };
+    let has_node = mapping
+        .keys()
+        .filter_map(Value::as_str)
+        .any(is_node_attr_key);
+    let has_tree = mapping
+        .keys()
+        .filter_map(Value::as_str)
+        .any(|key| !is_node_attr_key(key));
+    if has_node && has_tree {
+        return Err(format!(
+            "Assura config rule '${name}' mixes node directives with child selectors; keep the node constraint and child tree as separate rules"
+        ));
+    }
+    Ok(())
+}
+
 fn collect_rule_references(value: &Value, references: &mut BTreeSet<String>) -> Result<(), String> {
     let Value::Mapping(mapping) = value else {
         return Ok(());
@@ -213,25 +158,6 @@ fn collect_rule_references(value: &Value, references: &mut BTreeSet<String>) -> 
         }
     }
     Ok(())
-}
-
-fn builtin_rules() -> Result<HashMap<String, Value>, String> {
-    let mut rules = HashMap::new();
-    for (name, source) in [
-        ("agent-skill-file", BUILTIN_AGENT_SKILL_FILE),
-        ("agent-skill-resource-dir", BUILTIN_AGENT_SKILL_RESOURCE_DIR),
-        ("agent-skill-dir", BUILTIN_AGENT_SKILL_DIR),
-        ("agents-dir", BUILTIN_AGENTS_DIR),
-        ("agentic-project", BUILTIN_AGENTIC_PROJECT),
-    ] {
-        rules.insert(
-            name.to_string(),
-            serde_yaml::from_str(source).map_err(|error| {
-                format!("invalid built-in Assura config rule '${name}': {error}")
-            })?,
-        );
-    }
-    Ok(rules)
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

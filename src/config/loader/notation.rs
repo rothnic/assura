@@ -52,4 +52,42 @@ mod tests {
             );
         }
     }
+
+    #[test]
+    fn trivial_one_use_rule_is_advisory_but_tree_contract_is_not() {
+        let yaml = r#"
+rules:
+  alias: kebab-case
+  workspace:
+    AGENTS.md: exists:1
+structure:
+  src/: $alias
+  packages/:
+    ./*/: $workspace
+"#;
+        let diagnostics = ConfigLoader::diagnostics(yaml).unwrap();
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].rule, "alias");
+        assert_eq!(diagnostics[0].severity, "low");
+    }
+
+    #[test]
+    fn tree_rule_provenance_rebases_nested_rule_selectors() {
+        let yaml = r#"
+rules:
+  guide:
+    max_lines: 160
+  workspace:
+    AGENTS.md: $guide
+structure:
+  packages/:
+    ./*/: $workspace
+"#;
+        let provenance = ConfigLoader::provenance(yaml).unwrap();
+        assert!(provenance.iter().any(|entry| {
+            entry.rule == "guide"
+                && entry.selector == "packages/*/AGENTS.md"
+                && entry.target_kind == "file"
+        }));
+    }
 }

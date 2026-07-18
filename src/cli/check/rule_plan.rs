@@ -2,12 +2,10 @@
 
 use super::rules::{
     dir_contains, join_config_child, merge_directory_bundle, merge_file_bundle,
-    merge_markdown_bundle, normalize_config_dir, strip_direct_content_policy, EffectiveRules,
+    merge_markdown_bundle, merge_matching_directory_bundle, merge_matching_file_bundle,
+    normalize_config_dir, strip_direct_content_policy, EffectiveRules,
 };
-use super::scope_patterns::{
-    path_has_matching_scope_ancestor, path_has_scope_magic, path_matches_scope_pattern,
-    path_scope_specificity,
-};
+use super::scope_patterns::{path_has_scope_magic, path_scope_specificity, CompiledScopePattern};
 use crate::config::config::{Config, DirectoryNode};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -15,6 +13,7 @@ use std::sync::Arc;
 #[derive(Debug, Clone)]
 pub(super) struct RuleScope {
     path: PathBuf,
+    scope_pattern: Option<CompiledScopePattern>,
     inherit: bool,
     exact: EffectiveRules,
     descendant: EffectiveRules,
@@ -27,8 +26,10 @@ impl RuleScope {
         exact: EffectiveRules,
         descendant: EffectiveRules,
     ) -> Self {
+        let scope_pattern = path_has_scope_magic(&path).then(|| CompiledScopePattern::new(&path));
         Self {
             path,
+            scope_pattern,
             inherit,
             exact,
             descendant,
@@ -55,24 +56,52 @@ pub(super) fn compile_rule_scopes(config: &Config) -> Vec<RuleScope> {
 }
 
 pub(super) fn rules_for_dir(dir_rel: &Path, scopes: &[RuleScope]) -> EffectiveRules {
-    scopes
+    let mut resolved = EffectiveRules::default();
+    let mut previous_exact_depth = None;
+    for (scope, exact) in scopes
         .iter()
         .filter_map(|scope| scope_match(scope, dir_rel).map(|exact| (scope, exact)))
-        .fold(EffectiveRules::default(), |resolved, (scope, exact)| {
-            let selected = if exact {
-                &scope.exact
-            } else {
-                &scope.descendant
-            };
-            if scope.inherit {
-                merge_effective_rules(&resolved, selected)
-            } else {
-                selected.clone()
-            }
-        })
+    {
+        let selected = if exact {
+            &scope.exact
+        } else {
+            &scope.descendant
+        };
+        let depth = scope.path.components().count();
+        resolved = if !scope.inherit {
+            selected.clone()
+        } else if exact && previous_exact_depth == Some(depth) {
+            merge_same_depth_rules(&resolved, selected)
+        } else {
+            merge_effective_rules(&resolved, selected)
+        };
+        if exact {
+            previous_exact_depth = Some(depth);
+        }
+    }
+    resolved
 }
 
 fn merge_effective_rules(parent: &EffectiveRules, child: &EffectiveRules) -> EffectiveRules {
+    EffectiveRules {
+        files: merge_matching_file_bundle(parent.files.as_ref(), child.files.as_deref()),
+        directories: merge_matching_directory_bundle(
+            parent.directories.as_ref(),
+            child.directories.as_deref(),
+        ),
+        self_directory: merge_matching_directory_bundle(
+            parent.self_directory.as_ref(),
+            child.self_directory.as_deref(),
+        ),
+        markdown: merge_markdown_bundle(parent.markdown.as_ref(), child.markdown.as_deref()),
+        limit_children: child
+            .limit_children
+            .clone()
+            .or_else(|| parent.limit_children.clone()),
+    }
+}
+
+fn merge_same_depth_rules(parent: &EffectiveRules, child: &EffectiveRules) -> EffectiveRules {
     EffectiveRules {
         files: merge_file_bundle(parent.files.as_ref(), child.files.as_deref()),
         directories: merge_directory_bundle(
@@ -84,15 +113,19 @@ fn merge_effective_rules(parent: &EffectiveRules, child: &EffectiveRules) -> Eff
             child.self_directory.as_deref(),
         ),
         markdown: merge_markdown_bundle(parent.markdown.as_ref(), child.markdown.as_deref()),
+        limit_children: child
+            .limit_children
+            .clone()
+            .or_else(|| parent.limit_children.clone()),
     }
 }
 
 pub(super) fn scope_match(scope: &RuleScope, dir_rel: &Path) -> Option<bool> {
-    if path_has_scope_magic(&scope.path) {
-        if path_matches_scope_pattern(&scope.path, dir_rel) {
+    if let Some(pattern) = &scope.scope_pattern {
+        if pattern.matches_path(dir_rel) {
             return Some(true);
         }
-        return path_has_matching_scope_ancestor(&scope.path, dir_rel).then_some(false);
+        return pattern.has_matching_ancestor(dir_rel).then_some(false);
     }
 
     dir_contains(&scope.path, dir_rel).then_some(dir_rel == scope.path)
@@ -116,6 +149,11 @@ fn compile_scope_node(
                 node.self_directory.as_ref(),
             ),
             markdown: merge_markdown_bundle(inherited.markdown.as_ref(), node.markdown.as_ref()),
+            limit_children: node
+                .limit_children
+                .clone()
+                .map(Arc::new)
+                .or_else(|| inherited.limit_children.clone()),
         }
     } else {
         EffectiveRules {
@@ -123,6 +161,7 @@ fn compile_scope_node(
             directories: node.directories.clone().map(Arc::new),
             self_directory: node.self_directory.clone().map(Arc::new),
             markdown: node.markdown.clone().map(Arc::new),
+            limit_children: node.limit_children.clone().map(Arc::new),
         }
     };
 
@@ -147,6 +186,9 @@ mod tests {
     use crate::config::config::{DirectoryBundle, DirectoryNode, FileBundle};
     use crate::config::loader::ConfigLoader;
     use std::collections::HashMap;
+
+    const HOMEPAGE_AGENTIC_MONOREPO_CONFIG: &str =
+        include_str!("../../../website/src/data/config-examples/agentic-monorepo.yml");
 
     #[test]
     fn compiled_scopes_inherit_parent_rules() {
@@ -177,6 +219,37 @@ mod tests {
                 .and_then(|files| files.naming.as_deref()),
             Some("snake_case")
         );
+    }
+
+    #[test]
+    fn recursive_homepage_defaults_rebase_once_per_directory() {
+        let config = ConfigLoader::parse(HOMEPAGE_AGENTIC_MONOREPO_CONFIG).unwrap();
+        let scopes = compile_rule_scopes(&config);
+
+        for path in ["", "apps", "apps/web", "apps/web/src"] {
+            let rules = rules_for_dir(Path::new(path), &scopes);
+            let files = rules.files.as_ref().unwrap();
+            assert_eq!(
+                files
+                    .max_lines_patterns
+                    .as_ref()
+                    .and_then(|patterns| patterns.get("*.ts")),
+                Some(&500),
+                "missing TypeScript line limit in {path:?}"
+            );
+            assert_eq!(
+                files
+                    .naming_patterns
+                    .as_ref()
+                    .and_then(|patterns| patterns.get("*.md")),
+                Some(&"kebab-case | exact:AGENTS | exact:README".to_string()),
+                "missing Markdown naming policy in {path:?}"
+            );
+            assert_eq!(
+                rules.limit_children.as_ref().and_then(|limit| limit.max),
+                Some(10)
+            );
+        }
     }
 
     #[test]
@@ -222,11 +295,26 @@ mod tests {
         let config = ConfigLoader::parse(
             r#"
 version: "2.0"
+rules:
+  skill-entrypoint:
+    max_lines: 600
+    max_size: "24KB"
+  closed-entry:
+    exists: 0
+  closed:
+    ./*/: $closed-entry
+    ./*: $closed-entry
+  skill:
+    ./: $closed
+    ./{agents,assets,references,scripts}/:
+      ./: exists:0-1
+      inherit: false
+    SKILL.md: exists:1 | $skill-entrypoint
 structure:
   .agents/skills/:
     extra: true
     "{skill}/":
-      use: $agent-skill-dir
+      use: $skill
 "#,
         )
         .unwrap();
@@ -277,27 +365,19 @@ structure:
             rules
                 .directories
                 .as_ref()
-                .and_then(|directories| directories.allow_extra),
-            Some(false)
+                .and_then(|directories| directories.exists.as_ref())
+                .and_then(|exists| exists.get("*")),
+            Some(&"0".to_string())
         );
         let reference_rules = rules_for_dir(
             Path::new(".agents/skills/assura-project-maintenance/references"),
             &scopes,
         );
-        assert_eq!(
-            reference_rules
-                .files
-                .as_ref()
-                .and_then(|files| files.naming.as_deref()),
-            Some("kebab-case")
-        );
-        assert_eq!(
-            reference_rules
-                .files
-                .as_ref()
-                .and_then(|files| files.max_lines),
-            Some(600)
-        );
+        assert!(reference_rules
+            .files
+            .as_ref()
+            .and_then(|files| files.max_lines)
+            .is_none());
     }
 
     #[test]

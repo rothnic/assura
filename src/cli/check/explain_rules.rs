@@ -21,6 +21,14 @@ pub struct PathExplainFilePatternRule {
     /// Maximum file size for this pattern.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub max_size: Option<String>,
+    /// Effective severity for this matcher.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub severity: Option<String>,
+    /// Project-owned repair guidance for this matcher.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub message: Option<String>,
+    /// Whether this winning matcher is checked for the requested file.
+    pub status: &'static str,
 }
 
 #[cfg(feature = "full-cli")]
@@ -36,6 +44,13 @@ impl PathExplainFilePatternRule {
         if let Some(max_size) = &self.max_size {
             attributes.push(format!("max_size={max_size}"));
         }
+        if let Some(severity) = &self.severity {
+            attributes.push(format!("severity={severity}"));
+        }
+        if let Some(message) = &self.message {
+            attributes.push(format!("message={message}"));
+        }
+        attributes.push(format!("status={}", self.status));
         format!("{}[{}]", self.pattern, attributes.join(","))
     }
 }
@@ -109,6 +124,15 @@ pub struct PathExplainRules {
     /// Effective Markdown rule severities.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub markdown_rule_severities: Vec<String>,
+    /// Maximum allowed direct children in this directory.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub limit_children_max: Option<usize>,
+    /// Severity for the direct-child limit.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub limit_children_severity: Option<String>,
+    /// Repair guidance for the direct-child limit.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub limit_children_message: Option<String>,
 }
 
 pub(super) fn summarize_effective_rules(rules: &EffectiveRules) -> PathExplainRules {
@@ -167,6 +191,17 @@ pub(super) fn summarize_effective_rules(rules: &EffectiveRules) -> PathExplainRu
             .map(markdown_rule_severities)
             .unwrap_or_default();
     }
+    if let Some(limit) = rules.limit_children.as_ref() {
+        summary.limit_children_max = limit.max;
+        summary.limit_children_severity = Some(
+            limit
+                .severity
+                .as_ref()
+                .map(|severity| format!("{severity:?}").to_lowercase())
+                .unwrap_or_else(|| "medium".to_string()),
+        );
+        summary.limit_children_message = limit.message.clone();
+    }
     summary
 }
 
@@ -203,6 +238,25 @@ pub(super) fn matched_file_pattern_rules(
     {
         matched.entry(pattern.into()).or_default().pattern = pattern.into();
         matched.get_mut(pattern).unwrap().max_size = Some(max_size.clone());
+    }
+    if let Some((pattern, severity)) = files
+        .severity_patterns
+        .as_ref()
+        .and_then(|patterns| best_file_pattern_match(patterns, filename, rel, compiled))
+    {
+        matched.entry(pattern.into()).or_default().pattern = pattern.into();
+        matched.get_mut(pattern).unwrap().severity = Some(severity.clone());
+    }
+    if let Some((pattern, message)) = files
+        .message_patterns
+        .as_ref()
+        .and_then(|patterns| best_file_pattern_match(patterns, filename, rel, compiled))
+    {
+        matched.entry(pattern.into()).or_default().pattern = pattern.into();
+        matched.get_mut(pattern).unwrap().message = Some(message.clone());
+    }
+    for rule in matched.values_mut() {
+        rule.status = "checked";
     }
     matched.into_values().collect()
 }
@@ -245,6 +299,17 @@ fn all_file_patterns(files: &crate::config::config::FileBundle) -> Vec<PathExpla
                 .as_ref()
                 .and_then(|map| map.get(&pattern))
                 .cloned(),
+            severity: files
+                .severity_patterns
+                .as_ref()
+                .and_then(|map| map.get(&pattern))
+                .cloned(),
+            message: files
+                .message_patterns
+                .as_ref()
+                .and_then(|map| map.get(&pattern))
+                .cloned(),
+            status: "configured",
             pattern,
         })
         .collect()

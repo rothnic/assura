@@ -103,15 +103,16 @@ look like this:
   },
   "rule_recommendations": [
     {
-      "preset": "$agentic-project",
-      "local_rule": "$project-agentic-baseline",
+      "preset": "agentic-core + structure-health",
+      "local_rule": "$agent-entrypoint",
       "status": "applied",
-      "reason": "rust project detected; broad agent-ready preset applied through a project-owned wrapper",
+      "reason": "rust project detected; editable agentic-core and structure-health policy is active",
       "includes": [
-        "$agents-dir",
-        "$agent-skill-dir",
-        "$agent-skill-file",
-        "$agent-skill-resource-dir"
+        "$agent-entrypoint",
+        "$skill-entrypoint",
+        "$skill",
+        "$folder-health",
+        "$closed"
       ]
     }
   ],
@@ -167,13 +168,13 @@ look like this:
 capability is deliberately not configured yet. A clean `assura check` result is
 not the same thing as a fully onboarded repository.
 
-Recommended built-in policy is applied through a project-local wrapper such as
-`$project-agentic-baseline` when it does not replace existing root policy. The
-project owns that wrapper and can extend or override it without copying
-Assura's full preset into the config. Recommendation status is `applied` when
-the root uses the wrapper, `available` when existing root policy was preserved,
-`not-applied` when the selected config lacks the wrapper, and `conflict` when
-an existing wrapper with the same name needs review. Assura does not recommend
+Assura materializes the `agentic-core` and `structure-health` recipes as normal
+YAML in `.assura/config.yml`. The project owns every generated rule and can
+edit or remove it without relying on hidden runtime presets. Recommendation
+status is `applied` when the generated entrypoint rule is active, `available`
+when recipe rules exist without replacing the selected root policy,
+`not-applied` when the selected config lacks them, and `conflict` when an
+existing project value was preserved for review. Assura does not recommend
 language, framework, naming, or domain rules until the project provides enough
 evidence or a user confirms those choices.
 
@@ -184,7 +185,7 @@ evidence or a user confirms those choices.
 | File | Purpose |
 | --- | --- |
 | `summary.md` | What Assura detected and installed. |
-| `rules.md` | Recommended presets, their project-local wrappers, and how to customize them. |
+| `rules.md` | Materialized recipes, active project rules, and how to customize them. |
 | `questions.md` | The specialization questions the agent should ask. |
 | `agent-next.md` | The next handoff for coding agents. |
 | `lifecycle.md` | When to use nudge, warn, and gate feedback. |

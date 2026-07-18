@@ -394,9 +394,5 @@ fn ls_file_pattern_to_glob(pattern: &str) -> String {
         return "*.*".to_string();
     }
 
-    if pattern.starts_with('.') {
-        return format!("*{}", pattern);
-    }
-
     pattern.to_string()
 }

@@ -29,7 +29,8 @@ plugin APIs.
 | `assura review [path]` | Run a compact first diagnostic over check, doctor, and content gaps |
 | `assura cache status|clean [path]` | Inspect or remove correctness-checked local cache namespaces |
 | `assura init [path]` | Create a starter `.assura/config.yml` |
-| `assura migrate [.ls-lint.yml ...]` | Convert LS-Lint 2.3 rule config |
+| `assura config add-recipe <recipe> [path]` | Add one editable recipe to an existing project config |
+| `assura migrate [config ...] --from auto|ls-lint|assura-v1` | Convert LS-Lint 2.3 or normalize legacy Assura config |
 | `assura agent ...` | Run local project-intelligence commands for coding agents |
 | `assura editor ...` | Run local project-intelligence commands for editor integrations |
 | `assura content ...` | Query project-intelligence facts and context |
@@ -54,8 +55,28 @@ outside a checkout.
 | Option | Purpose |
 | --- | --- |
 | `--project-intelligence` | Create starter project-intelligence schema, collections, modeled records, and a broken-state example |
+| `--recipe agentic-core|structure-health` | Materialize an editable project-owned policy recipe; repeatable |
 | `--force` | Overwrite an existing starter config and starter files |
 | `--no-git-hooks` | Skip the optional hook setup message |
+
+For an existing project, preview or merge one recipe without replacing
+unrelated config:
+
+```bash
+assura config add-recipe agentic-core . --dry-run
+assura config add-recipe agentic-core .
+```
+
+Conflicting project values are preserved and reported unless `--force` is
+explicitly supplied.
+
+Migration auto-detects LS-Lint from a top-level `ls` key and legacy Assura from
+`structure` or `rules`. Use an explicit selector in automation:
+
+```bash
+assura migrate .ls-lint.yml --from ls-lint --output .assura/config.yml
+assura migrate .assura/config-v1.yml --from assura-v1 --output .assura/config.yml
+```
 
 ## Check Options
 
@@ -107,7 +128,7 @@ assura agent integration doctor codex .
 ```
 
 Generated agent-ready baselines include `AGENTS.md`, `.agents/skills/`, the
-root `$agentic-project` structure rule, and `extensions.agent_guidance`
+project-owned `agentic-core` structure recipe, and `extensions.agent_guidance`
 checks. The default shape expects `AGENTS.md` sections named `Operating Rules`,
 `Process Docs vs Skills`, `Skills`, and `Anchors`; the `Skills` section
 includes a use-case table that names the project-local skill or skill-name

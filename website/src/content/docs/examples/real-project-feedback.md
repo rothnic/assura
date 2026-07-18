@@ -34,8 +34,7 @@ The root and package guidance files use Assura's exact direct-count behavior:
 
 ```yaml
 structure:
-  ./:
-    AGENTS.md: exists:1
+  AGENTS.md: exists:1
 ```
 
 Exact file counts such as `AGENTS.md: exists:1` are Assura behavior. Extension

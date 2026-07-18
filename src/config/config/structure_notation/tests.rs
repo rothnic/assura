@@ -238,8 +238,22 @@ structure:
     );
 }
 
-mod built_in_rules;
 mod directive_shorthand;
+
+#[test]
+fn former_agent_built_ins_must_be_materialized_in_project_rules() {
+    let error = parse_config(
+        r#"
+structure:
+  ./: $agentic-project
+"#,
+    )
+    .expect_err("hidden agentic rule aliases must not resolve");
+
+    assert!(error
+        .to_string()
+        .contains("unknown Assura config rule '$agentic-project'"));
+}
 
 #[test]
 fn nested_captured_directory_use_expands_tree_rule_fragments() {
@@ -363,7 +377,7 @@ structure:
 }
 
 #[test]
-fn detailed_file_directive_merges_markdown_attributes_in_place() {
+fn detailed_file_directive_keeps_markdown_attributes_on_its_pattern() {
     let config = parse_config(
         r#"
 structure:
@@ -384,8 +398,11 @@ structure:
         &vec!["{topic}.md".to_string()]
     );
     assert_eq!(
-        docs.markdown
+        files
+            .markdown_patterns
             .as_ref()
+            .unwrap()
+            .get("docs/{topic}.md")
             .unwrap()
             .required_sections
             .as_ref()
@@ -416,7 +433,18 @@ structure:
     .unwrap();
 
     let docs = config.structure.get("docs/").unwrap();
-    let outline = docs.markdown.as_ref().unwrap().outline.as_ref().unwrap();
+    let outline = docs
+        .files
+        .as_ref()
+        .unwrap()
+        .markdown_patterns
+        .as_ref()
+        .unwrap()
+        .get("docs/guide.md")
+        .unwrap()
+        .outline
+        .as_ref()
+        .unwrap();
     assert_eq!(outline.len(), 5);
 }
 

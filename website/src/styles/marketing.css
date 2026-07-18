@@ -677,8 +677,9 @@
   }
 
   .policy-panel pre {
+    max-height: 38rem;
     margin: 0;
-    overflow-x: auto;
+    overflow: auto;
     padding: 1rem;
   }
 
@@ -796,6 +797,16 @@
     color: #ff9ba5;
   }
 
+  .tree-row.warn {
+    border-color: #8a6a22;
+    background: #302711;
+  }
+
+  .tree-row.warn .tree-status {
+    background: #5f4b17;
+    color: #ffd76a;
+  }
+
   .tree-panel footer {
     display: flex;
     flex-wrap: wrap;
@@ -821,6 +832,10 @@
 
   .legend-dot.pass {
     background: var(--primary);
+  }
+
+  .legend-dot.warn {
+    background: #f5bd36;
   }
 
   .legend-dot.fail {
@@ -3127,7 +3142,7 @@
   }
 
   .policy-code-comment {
-    color: #71717a;
+    color: #a1a1aa;
     font-style: italic;
   }
 

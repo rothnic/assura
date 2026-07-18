@@ -58,26 +58,29 @@ exclude:
     let merged_config: serde_yaml::Value =
         serde_yaml::from_str(&fs::read_to_string(&config_path).unwrap()).unwrap();
     assert_eq!(
-        merged_config["structure"]["./"]["CUSTOM.md"],
+        merged_config["structure"]["CUSTOM.md"],
         serde_yaml::Value::String("exists:0-1".to_string())
     );
     assert_eq!(
-        merged_config["structure"]["./"]["use"],
-        serde_yaml::Value::String("$project-agentic-baseline".to_string())
+        merged_config["structure"]["AGENTS.md"],
+        serde_yaml::Value::String("exists:1 | $agent-entrypoint".to_string())
     );
     assert_eq!(
-        merged_config["rules"]["project-agentic-baseline"]["use"],
-        serde_yaml::Value::String("$agentic-project".to_string())
+        merged_config["rules"]["agent-entrypoint"]["max_lines"],
+        serde_yaml::Value::Number(160.into())
     );
     let exclude = merged_config["exclude"]
         .as_sequence()
         .expect("exclude sequence");
     assert!(exclude.contains(&serde_yaml::Value::String("custom/**".to_string())));
     assert!(exclude.contains(&serde_yaml::Value::String(".git/**".to_string())));
+    assert!(!fs::read_to_string(&config_path)
+        .unwrap()
+        .contains("$agentic-project"));
 }
 
 #[test]
-fn agent_onboard_preserves_existing_root_rule_and_reports_wrapper_available() {
+fn agent_onboard_preserves_existing_root_rule_and_applies_project_owned_recipes() {
     let project = TempDir::new().unwrap();
     fs::create_dir_all(project.path().join(".assura")).unwrap();
     let config_path = project.path().join(".assura/config.yml");
@@ -104,28 +107,28 @@ structure:
         "--format",
         "json",
     ]));
-    assert_eq!(output["rule_recommendations"][0]["status"], "available");
+    assert_eq!(output["rule_recommendations"][0]["status"], "applied");
     assert!(output["rule_recommendations"][0]["reason"]
         .as_str()
         .expect("recommendation reason")
-        .contains("without replacing the existing root rule"));
+        .contains("editable agentic-core"));
     assert!(
         fs::read_to_string(project.path().join(".assura/onboarding/rules.md"))
             .unwrap()
-            .contains("Recommendation status: `available`")
+            .contains("Recommendation status: `applied`")
     );
 
     let merged: serde_yaml::Value =
         serde_yaml::from_str(&fs::read_to_string(&config_path).unwrap()).unwrap();
-    assert_eq!(merged["structure"]["./"]["use"][0], "$existing-root");
+    assert_eq!(merged["structure"]["use"][0], "$existing-root");
     assert_eq!(
-        merged["rules"]["project-agentic-baseline"]["use"],
-        "$agentic-project"
+        merged["structure"]["AGENTS.md"],
+        "exists:1 | $agent-entrypoint"
     );
 }
 
 #[test]
-fn agent_onboard_preserves_colliding_local_wrapper_and_reports_conflict() {
+fn agent_onboard_preserves_colliding_recipe_value_and_reports_conflict() {
     let project = TempDir::new().unwrap();
     fs::create_dir_all(project.path().join(".assura/onboarding")).unwrap();
     let config_path = project.path().join(".assura/config.yml");
@@ -139,12 +142,11 @@ fn agent_onboard_preserves_colliding_local_wrapper_and_reports_conflict() {
         r#"version: "2.0"
 
 rules:
-  project-agentic-baseline:
-    extra: false
+  agent-entrypoint:
+    max_lines: 999
 
 structure:
-  ./:
-    use: $project-agentic-baseline
+  AGENTS.md: $agent-entrypoint
 "#,
     )
     .unwrap();
@@ -167,27 +169,20 @@ structure:
 
     let merged: serde_yaml::Value =
         serde_yaml::from_str(&fs::read_to_string(&config_path).unwrap()).unwrap();
-    assert_eq!(merged["rules"]["project-agentic-baseline"]["extra"], false);
-    assert!(merged["rules"]["project-agentic-baseline"]["use"].is_null());
+    assert_eq!(merged["rules"]["agent-entrypoint"]["max_lines"], 999);
+    assert!(merged["rules"]["skill-entrypoint"].is_mapping());
 }
 
 #[test]
-fn agent_onboard_recognizes_rule_lists_as_applied() {
+fn agent_onboard_recognizes_composed_entrypoint_as_applied() {
     let project = TempDir::new().unwrap();
     fs::create_dir_all(project.path().join(".assura")).unwrap();
     fs::write(
         project.path().join(".assura/config.yml"),
         r#"version: "2.0"
 
-rules:
-  project-agentic-baseline:
-    use:
-      - $agentic-project
-
 structure:
-  ./:
-    use:
-      - $project-agentic-baseline
+  AGENTS.md: exists:1 | $agent-entrypoint
 "#,
     )
     .unwrap();

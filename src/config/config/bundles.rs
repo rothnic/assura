@@ -53,6 +53,18 @@ pub struct FileBundle {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub max_size_patterns: Option<HashMap<String, String>>,
 
+    /// Severity keyed by direct file glob pattern
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub severity_patterns: Option<HashMap<String, String>>,
+
+    /// Custom repair message keyed by direct file glob pattern
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub message_patterns: Option<HashMap<String, String>>,
+
+    /// Markdown policy keyed by direct or path-aware file pattern
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub markdown_patterns: Option<HashMap<String, MarkdownBundle>>,
+
     /// Whether documentation is required
     #[serde(skip_serializing_if = "Option::is_none")]
     pub require_docs: Option<bool>,
@@ -64,6 +76,10 @@ pub struct FileBundle {
     /// Severity level for violations in this node
     #[serde(skip_serializing_if = "Option::is_none")]
     pub severity: Option<String>,
+
+    /// Custom repair message for this file policy
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub message: Option<String>,
 
     /// Required files in this directory
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -127,6 +143,17 @@ pub struct DirectoryBundle {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub severity: Option<String>,
 
+    /// Custom repair message for this directory policy
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub message: Option<String>,
+
+    /// Severity keyed by direct directory glob pattern
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub severity_patterns: Option<HashMap<String, String>>,
+
+    /// Custom repair message keyed by direct directory glob pattern
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub message_patterns: Option<HashMap<String, String>>,
     /// Direct child directory count constraints keyed by glob pattern
     #[serde(skip_serializing_if = "Option::is_none")]
     pub exists: Option<HashMap<String, String>>,
@@ -163,12 +190,20 @@ pub struct ResolvedFileBundle {
     pub max_size: Option<String>,
     /// Maximum size keyed by direct file glob pattern
     pub max_size_patterns: Option<HashMap<String, String>>,
+    /// Severity keyed by direct file glob pattern
+    pub severity_patterns: Option<HashMap<String, String>>,
+    /// Custom repair message keyed by direct file glob pattern
+    pub message_patterns: Option<HashMap<String, String>>,
+    /// Markdown policy keyed by direct or path-aware file pattern
+    pub markdown_patterns: Option<HashMap<String, MarkdownBundle>>,
     /// Documentation required
     pub require_docs: Option<bool>,
     /// Allowed extensions
     pub extensions: Option<Vec<String>>,
     /// Severity level
     pub severity: Option<String>,
+    /// Custom repair message
+    pub message: Option<String>,
     /// Required file names
     pub required: Option<Vec<String>>,
     /// Allowed file names
@@ -193,9 +228,13 @@ impl FileBundle {
             max_lines_patterns: None,
             max_size: None,
             max_size_patterns: None,
+            severity_patterns: None,
+            message_patterns: None,
+            markdown_patterns: None,
             require_docs: None,
             extensions: None,
             severity: None,
+            message: None,
             required: None,
             allowed_names: None,
             allowed_patterns: None,
@@ -313,6 +352,9 @@ impl DirectoryBundle {
             forbidden_patterns: None,
             allow_extra: None,
             severity: None,
+            message: None,
+            severity_patterns: None,
+            message_patterns: None,
             exists: None,
         }
     }

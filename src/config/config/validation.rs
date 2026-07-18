@@ -360,6 +360,16 @@ fn validate_naming_convention_text(conv: &str) -> Result<(), String> {
         return Ok(());
     }
 
+    if let Some(exact) = conv.strip_prefix("exact:") {
+        if !exact.is_empty() && !exact.contains(['/', '\\']) {
+            return Ok(());
+        }
+        return Err(
+            "exact naming alternatives require one filename stem without path separators"
+                .to_string(),
+        );
+    }
+
     let valid_conventions = [
         "snake_case",
         "snakecase",

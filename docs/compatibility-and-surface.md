@@ -33,6 +33,7 @@ publishes and verifies a `.sha256` file next to every archive.
 | `assura check --format agent` | Supported | Agent feedback tests and real-project feedback fixtures. |
 | `assura check --format agent --agent codex` | Supported adapter | Codex delivery fixture under the shared agent format. |
 | `assura init` | Supported | Installable adoption smoke. |
+| `assura config add-recipe` | Supported project-owned policy authoring | CLI tests prove dry-run output, conflict handling, and validated atomic writes. |
 | `assura status --format json` | Supported | Installable adoption smoke. |
 | `assura review` | Supported compact project review | Project-review CLI tests prove clean/inactive guidance, blocking structure mismatches, unmodeled path pressure, noisy reference classification, actionable content gaps, and bounded agent JSON over existing check/doctor/content-query surfaces. |
 | `assura cache status|clean` | Experimental correctness-checked cache | Cache CLI tests prove observable worktree/shared namespaces, bounded diagnostics, marker-protected cleanup, and refusal to remove project or unrecognized roots. |

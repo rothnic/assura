@@ -24,7 +24,7 @@ pub(super) struct FastPatternNaming {
 
 pub(super) struct FastFileNamingMatch<'a> {
     pub(super) naming: &'a FastNaming,
-    pub(super) lslint_extension_pattern: bool,
+    pub(super) lslint_extension_pattern: Option<&'a str>,
 }
 
 #[derive(Clone)]
@@ -66,11 +66,15 @@ pub(super) fn validate_fast_file_stem(
     naming: &FastNaming,
     regexes: &HashMap<String, Regex>,
 ) -> bool {
-    validate_fast_name(stem, path, naming, regexes)
-        || stem
-            .split_once('.')
-            .map(|(base, _)| validate_fast_name(base, path, naming, regexes))
-            .unwrap_or(false)
+    match naming {
+        FastNaming::Static { validate, .. } => stem
+            .split('.')
+            .all(|segment| !segment.is_empty() && validate(segment)),
+        FastNaming::Alternatives { alternatives, .. } => alternatives
+            .iter()
+            .any(|alternative| validate_fast_file_stem(stem, path, alternative, regexes)),
+        _ => validate_fast_name(stem, path, naming, regexes),
+    }
 }
 
 pub(super) fn validate_fast_name(
@@ -173,33 +177,35 @@ impl FastFileNaming {
                 if glob.pattern.len() > suffix.len() {
                     Some(FastFileNamingMatch {
                         naming: &glob.naming,
-                        lslint_extension_pattern: false,
+                        lslint_extension_pattern: None,
                     })
                 } else {
                     Some(FastFileNamingMatch {
                         naming: suffix_naming,
-                        lslint_extension_pattern: true,
+                        lslint_extension_pattern: Some(suffix),
                     })
                 }
             }
-            (Some((_, suffix_naming)), None) => Some(FastFileNamingMatch {
+            (Some((suffix, suffix_naming)), None) => Some(FastFileNamingMatch {
                 naming: suffix_naming,
-                lslint_extension_pattern: true,
+                lslint_extension_pattern: Some(suffix),
             }),
             (None, Some(glob)) => Some(FastFileNamingMatch {
                 naming: &glob.naming,
-                lslint_extension_pattern: false,
+                lslint_extension_pattern: None,
             }),
             (None, None) => self.default.as_ref().map(|naming| FastFileNamingMatch {
                 naming,
-                lslint_extension_pattern: false,
+                lslint_extension_pattern: None,
             }),
         }
     }
 }
 
 fn exact_lslint_extension_key(pattern: &str) -> Option<String> {
-    let suffix = pattern.strip_prefix("*.")?;
+    let suffix = pattern
+        .strip_prefix("*.")
+        .or_else(|| pattern.strip_prefix('.'))?;
     let mut segments = suffix.split('.').peekable();
     segments.peek()?;
     let mut key = String::new();

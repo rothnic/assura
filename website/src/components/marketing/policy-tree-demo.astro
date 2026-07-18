@@ -1,11 +1,11 @@
 ---
-import projectContract from '../../data/config-examples/project-contract.yml?raw';
+import projectContract from '../../data/config-examples/agentic-monorepo.yml?raw';
 
 const markers = new Map([
-  ['extra: false', '2'],
-  ['use: $agentic-project', '1'],
-  ['naming: kebab-case', '3'],
-  ['max_lines: 500', '4'],
+  ['AGENTS.md: exists:1 | $agent-entrypoint', '1'],
+  ['./*: $closed-entry', '2'],
+  ['.md: kebab-case | exact:AGENTS | exact:README', '3'],
+  ['.{md,js,jsx,ts,tsx}: max_lines:500 | severity:low', '4'],
 ]);
 
 const splitYamlLine = (text: string) => {
@@ -68,21 +68,34 @@ const configLines = projectContract.trimEnd().split('\n').map((text) => {
         </div>
         <ul>
           <li><div class="tree-row pass"><span class="tree-status" aria-label="Pass">✓</span><code>AGENTS.md</code><small><i class="rule-marker">1</i> required file</small></div></li>
-          <li><div class="tree-row pass"><span class="tree-status" aria-label="Pass">✓</span><code>docs/</code><small>declared optional path</small></div></li>
           <li>
-            <div class="tree-row neutral"><span class="tree-status" aria-label="Configured scope">·</span><code>apps/web/src/</code><small>rules 3 + 4</small></div>
+            <div class="tree-row neutral"><span class="tree-status" aria-label="Configured scope">·</span><code>packages/core/</code><small>workspace contract</small></div>
             <ul>
-              <li><div class="tree-row pass"><span class="tree-status" aria-label="Pass">✓</span><code>user-menu.tsx</code><small><i class="rule-marker">4</i> 184 / 500 lines</small></div></li>
-              <li><div class="tree-row fail"><span class="tree-status" aria-label="Blocking violation">!</span><code>BadName.tsx</code><small><i class="rule-marker">3</i> expected kebab-case</small></div></li>
-              <li><div class="tree-row fail"><span class="tree-status" aria-label="Blocking violation">!</span><code>checkout-flow.tsx</code><small><i class="rule-marker">4</i> 537 / 500 lines</small></div></li>
+              <li><div class="tree-row pass"><span class="tree-status" aria-label="Pass">✓</span><code>AGENTS.md</code><small><i class="rule-marker">1</i> required guidance</small></div></li>
+              <li><div class="tree-row pass"><span class="tree-status" aria-label="Pass">✓</span><code>package.json</code><small>required manifest</small></div></li>
+              <li>
+                <div class="tree-row neutral"><span class="tree-status" aria-label="Configured scope">·</span><code>src/</code><small>recursive defaults</small></div>
+                <ul>
+                  <li><div class="tree-row pass"><span class="tree-status" aria-label="Pass">✓</span><code>user-menu.tsx</code><small><i class="rule-marker">4</i> 184 / 500 lines</small></div></li>
+                  <li><div class="tree-row fail"><span class="tree-status" aria-label="Blocking violation">!</span><code>BadName.tsx</code><small><i class="rule-marker">3</i> expected kebab-case</small></div></li>
+                  <li><div class="tree-row warn"><span class="tree-status" aria-label="Advisory warning">!</span><code>checkout-flow.tsx</code><small><i class="rule-marker">4</i> 537 / 500 lines</small></div></li>
+                </ul>
+              </li>
             </ul>
           </li>
-          <li><div class="tree-row fail"><span class="tree-status" aria-label="Blocking violation">!</span><code>tmp-output/</code><small><i class="rule-marker">2</i> directory not allowed</small></div></li>
+          <li>
+            <div class="tree-row neutral"><span class="tree-status" aria-label="Configured scope">·</span><code>.agents/skills/release-check/</code><small>strict skill root</small></div>
+            <ul>
+              <li><div class="tree-row pass"><span class="tree-status" aria-label="Pass">✓</span><code>SKILL.md</code><small>required entrypoint</small></div></li>
+              <li><div class="tree-row fail"><span class="tree-status" aria-label="Blocking violation">!</span><code>notes.md</code><small><i class="rule-marker">2</i> undeclared entry</small></div></li>
+            </ul>
+          </li>
         </ul>
       </li>
     </ul>
     <footer>
       <span><i class="legend-dot pass"></i> passes</span>
+      <span><i class="legend-dot warn"></i> advisory</span>
       <span><i class="legend-dot fail"></i> blocking</span>
     </footer>
   </section>

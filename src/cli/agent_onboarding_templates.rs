@@ -5,9 +5,8 @@ use super::agent_onboarding_content_templates as content;
 use super::agent_onboarding_structure_fit_templates as structure_fit;
 use super::AgentContentTemplate;
 
-pub(super) const AGENTIC_PROJECT_PRESET: &str = "$agentic-project";
-pub(super) const PROJECT_AGENTIC_BASELINE_RULE: &str = "project-agentic-baseline";
-pub(super) const PROJECT_AGENTIC_BASELINE_REFERENCE: &str = "$project-agentic-baseline";
+pub(super) const AGENTIC_RECIPE: &str = "agentic-core + structure-health";
+pub(super) const AGENT_ENTRYPOINT_REFERENCE: &str = "$agent-entrypoint";
 
 pub(super) fn baseline_files(
     detected: &DetectedSection,
@@ -22,6 +21,7 @@ pub(super) fn baseline_files(
         },
         GeneratedFile::static_file(".assura/presets.lock.yml", presets_lock()),
         GeneratedFile::static_file("AGENTS.md", agents_md()),
+        GeneratedFile::static_file("README.md", project_readme()),
         GeneratedFile::static_file(
             ".agents/skills/assura-project-maintenance/SKILL.md",
             project_maintenance_skill(),
@@ -101,11 +101,40 @@ fn agent_ready_config(content_template: AgentContentTemplate) -> String {
     let root_structure = content::root_structure(content_template);
     let docs_structure = content::docs_structure(content_template);
     format!(
-        r#"version: "2.0"
+        r#"rules:
+  # Progressive-disclosure entrypoints.
+  agent-entrypoint:
+    max_lines: 160
+    severity: low
+    message: See docs/process/agent-workflow.md.
 
-rules:
-  {PROJECT_AGENTIC_BASELINE_RULE}:
-    use: {AGENTIC_PROJECT_PRESET}
+  skill-entrypoint:
+    max_lines: 500
+    markdown:
+      require_frontmatter: true
+    message: See docs/process/agent-workflow.md#skills.
+
+  # Shared non-blocking directory health.
+  folder-health:
+    limit_children: 10
+    severity: low
+    message: See docs/process/agent-workflow.md#structure.
+
+  # Strict skill directories with declared resources.
+  closed-entry:
+    exists: 0
+    message: See docs/process/agent-workflow.md#skills.
+
+  closed:
+    ./*/: $closed-entry
+    ./*: $closed-entry
+
+  skill:
+    ./: $closed
+    ./{{agents,assets,references,scripts}}/:
+      ./: exists:0-1
+      inherit: false
+    SKILL.md: exists:1 | $skill-entrypoint
 
 extensions:
   agent_guidance:
@@ -150,23 +179,37 @@ extensions:
 {content_config}
 
 structure:
-  ./:
-    use: {PROJECT_AGENTIC_BASELINE_REFERENCE}
-    extra: true
-    README.md: exists:0-1
-    ".gitignore": exists:0-1
-    Cargo.toml: exists:0-1
-    package.json: exists:0-1
-    pyproject.toml: exists:0-1
-    docs/:
-      process/:
-        agent-workflow.md: exists:1
-      learnings/:
-        README.md: exists:1
+  # Agent entrypoints and project-owned skills.
+  .agents/:
+    ./: exists:0-1 | $closed
+    skills/:
+      ./: exists:0-1
+      ./*/: kebab-case | $skill
+      ./*: $closed-entry
+
+  docs/:
+    process/:
+      agent-workflow.md: exists:1
+    learnings/:
+      README.md: exists:1
 {docs_structure}
 {root_structure}
 
+  # Root files are explicit; project-specific manifests stay optional.
+  .gitignore: exists:0-1
+  AGENTS.md: exists:1 | $agent-entrypoint
+  Cargo.toml: exists:0-1
+  package.json: exists:0-1
+  pyproject.toml: exists:0-1
+  README.md: exists:1
+
+  # Recursive advisory defaults.
+  ./**/:
+    ./: $folder-health
+    .{{md,js,jsx,ts,tsx}}: max_lines:500 | severity:low
+
 exclude:
+  - ".assura/**"
   - ".git/**"
   - "target/**"
   - "node_modules/**"
@@ -181,9 +224,15 @@ fn presets_lock() -> &'static str {
 profile: agent-project
 version: 1
 generated_by: assura agent onboard
-source_rule: $agentic-project
-local_rule: $project-agentic-baseline
+recipes:
+  - agentic-core
+  - structure-health
+policy: project-owned
 "#
+}
+
+fn project_readme() -> &'static str {
+    "# Project\n\nProject guidance is in `AGENTS.md`.\n"
 }
 
 fn agents_md() -> &'static str {
@@ -355,7 +404,7 @@ Keep SKILL.md concise and put detailed references in subdirectories.
 
 fn onboarding_summary(detected: &DetectedSection) -> String {
     format!(
-        "# Assura Onboarding Summary\n\nProject type: `{}` ({})\nAgent harness: `{}` ({})\nRecommended preset: `$agentic-project`\nProject-owned rule: `$project-agentic-baseline`\n\nSee `rules.md` for application status. Specialization is still pending.\n",
+        "# Assura Onboarding Summary\n\nProject type: `{}` ({})\nAgent harness: `{}` ({})\nMaterialized recipes: `agentic-core`, `structure-health`\nPolicy ownership: `.assura/config.yml`\n\nSee `rules.md` for application status. Specialization is still pending.\n",
         detected.project_type,
         detected.project_confidence,
         detected.agent_harness,
@@ -365,13 +414,15 @@ fn onboarding_summary(detected: &DetectedSection) -> String {
 
 fn onboarding_rules(detected: &DetectedSection, status: &str) -> String {
     let status_detail = match status {
-        "applied" => "The built-in preset is active through the local wrapper.",
-        "available" => "The local wrapper is available, but existing root policy was preserved.",
-        "conflict" => "An existing local wrapper was preserved and needs manual review.",
-        _ => "The selected config does not contain the recommended local wrapper.",
+        "applied" => "The project-owned agentic recipes are active.",
+        "available" => {
+            "Recipe rules are present, but the selected root policy does not apply all entrypoints."
+        }
+        "conflict" => "Existing project-owned recipe values were preserved and need manual review.",
+        _ => "The selected config does not contain the recommended project-owned recipes.",
     };
     format!(
-        "# Assura Rule Recommendations\n\nDetected project type: `{}`.\nRecommendation status: `{status}`.\n\n{status_detail}\n\nThe recommended built-in `$agentic-project` preset uses the local `$project-agentic-baseline` rule as its project-owned customization point. Edit that local rule to add or override project policy after resolving any reported conflict.\n\nIncluded preset layers:\n\n- `$agents-dir`\n- `$agent-skill-dir`\n- `$agent-skill-file`\n- `$agent-skill-resource-dir`\n\nLanguage, framework, naming, layout, and domain rules remain undecided until the project owner confirms them.\n",
+        "# Assura Rule Recommendations\n\nDetected project type: `{}`.\nRecommendation status: `{status}`.\n\n{status_detail}\n\nThe `agentic-core` and `structure-health` recipes are copied into `.assura/config.yml`; the project owns and can edit every selected rule.\n\nIncluded policy layers:\n\n- `$agent-entrypoint`\n- `$skill-entrypoint`\n- `$skill`\n- `$folder-health`\n- `$closed`\n\nLanguage, framework, naming, layout, and domain rules remain undecided until the project owner confirms them.\n",
         detected.project_type,
     )
 }
@@ -421,8 +472,8 @@ Do not invent project conventions. Ask the user the remaining specialization
 questions before adding language, layout, naming, traceability, content-model,
 source-document, hook, or project-specific rules.
 
-Read `.assura/onboarding/rules.md` before editing the project-owned
-`$project-agentic-baseline` rule.
+Read `.assura/onboarding/rules.md` before editing the project-owned recipe
+rules in `.assura/config.yml`.
 
 Use `.assura/onboarding/lifecycle.md` to decide between nudge, warn, and gate
 feedback. Warn mode is advisory for draft work; gate mode is for pre-push,

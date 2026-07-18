@@ -9,6 +9,7 @@ use super::markdown_required_sections_fix::{
     fix_missing_required_sections, required_section_fix_id, required_section_fix_record,
     REQUIRED_SECTION_OPERATION,
 };
+use super::patterns::best_file_pattern_match;
 use super::{discover_project, CheckError, CompiledStructureConfig, StructureChecker};
 use crate::config::loader::ConfigLoader;
 use crate::stable_hash::stable_hash;
@@ -171,7 +172,20 @@ impl StructureChecker {
 
         let parent_rel = rel.parent().unwrap_or_else(|| Path::new(""));
         let rules = self.resolve_rules(parent_rel);
-        let Some(markdown) = rules.markdown else {
+        let filename = path
+            .file_name()
+            .and_then(|name| name.to_str())
+            .unwrap_or("");
+        let markdown = rules
+            .files
+            .as_ref()
+            .and_then(|files| files.markdown_patterns.as_ref())
+            .and_then(|patterns| {
+                best_file_pattern_match(patterns, filename, &rel, &self.glob_patterns)
+                    .map(|(_, markdown)| markdown)
+            })
+            .or(rules.markdown.as_deref());
+        let Some(markdown) = markdown else {
             self.push_markdown_skip_if_fixable(
                 path,
                 rel,

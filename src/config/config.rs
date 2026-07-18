@@ -6,6 +6,7 @@
 //! - Top-level file patterns
 //! - Required file/directory existence checks
 
+use crate::config::types::ChildrenLimitConfig;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 #[cfg(feature = "full-cli")]
@@ -45,11 +46,39 @@ pub use extensions::{
 pub use quality::{QualityConfig, QualityScopeConfig};
 #[cfg(feature = "yaml-config")]
 pub(crate) use structure_notation::normalize_structure_config_value;
+#[cfg(feature = "yaml-config")]
+pub(crate) use structure_notation::structure_config_diagnostics;
+#[cfg(feature = "yaml-config")]
+pub(crate) use structure_notation::structure_rule_provenance;
 pub(crate) use validation::split_naming_conventions;
 #[cfg(feature = "yaml-config")]
 pub(crate) use validation::validate_config_semantics;
 #[cfg(test)]
 pub(super) use validation::{validate_naming_convention, validate_size_string};
+
+/// Advisory issue found in authored configuration without invalidating it.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct ConfigQualityDiagnostic {
+    /// Stable diagnostic identifier.
+    pub code: String,
+    /// Non-blocking diagnostic severity.
+    pub severity: String,
+    /// Authored rule associated with the issue.
+    pub rule: String,
+    /// Actionable explanation.
+    pub message: String,
+}
+
+/// One authored reusable-rule application after selector rebasing.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
+pub struct AuthoredRuleUse {
+    /// Rule name without the `$` prefix.
+    pub rule: String,
+    /// Effective project-relative selector after tree-rule rebasing.
+    pub selector: String,
+    /// Expected target kind: `file` or `directory`.
+    pub target_kind: String,
+}
 
 /// Root configuration struct
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -137,6 +166,10 @@ pub struct DirectoryNode {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[cfg_attr(feature = "full-cli", validate(nested))]
     pub children: Option<HashMap<String, DirectoryNode>>,
+
+    /// Aggregate direct-child health policy for this directory.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub limit_children: Option<ChildrenLimitConfig>,
 
     /// Whether to inherit rules from parent (default: true)
     #[serde(default = "default_true")]
@@ -265,6 +298,7 @@ impl DirectoryNode {
             markdown: None,
             exists: None,
             children: None,
+            limit_children: None,
             inherit: true,
             required: true,
         }

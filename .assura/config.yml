@@ -1,5 +1,66 @@
 version: "2.0"
 
+# Project-owned agentic baseline. These rules replace the former hidden
+# runtime preset and can be changed with the rest of this repository policy.
+rules:
+  agent-entrypoint:
+    exists: 1
+    max_lines: 160
+    severity: low
+    message: See AGENTS.md.
+
+  skill-entrypoint:
+    exists: 1
+    max_lines: 500
+    max_size: "24KB"
+    severity: low
+    markdown:
+      require_frontmatter: true
+    message: See AGENTS.md#skills.
+
+  closed-entry: exists:0
+
+  closed:
+    ./*/: $closed-entry
+    ./*: $closed-entry
+
+  skill-resource-directory:
+    ./*/: kebab-case
+    ./*: kebab-case | max_lines:600 | max_size:24KB
+
+  skill:
+    ./: $closed
+    SKILL.md: $skill-entrypoint
+    ./{agents,assets,references,scripts}/:
+      ./: exists:0-1
+      inherit: false
+      use: $skill-resource-directory
+
+  agents-directory:
+    ./: $closed
+    README.md: exists:0-1
+    TEMPLATE.md: exists:0-1
+    skills/:
+      ./: exists:0-1 | $closed
+      inherit: false
+      README.md: exists:0-1
+      TEMPLATE.md: exists:0-1
+      built-in/:
+        ./: exists:0-1 | $closed
+        ./*/: kebab-case | $skill
+      custom/:
+        ./: exists:0-1 | $closed
+        ./*/: kebab-case | $skill
+      ./*/: kebab-case | $skill
+
+  agentic-core:
+    AGENTS.md: $agent-entrypoint
+    .agents/:
+      ./: exists:0-1
+      inherit: false
+      use: $agents-directory
+    .assura/: exists:0-1
+
 project:
   name: "assura"
   description: "Structure-first repository validation CLI"
@@ -456,6 +517,10 @@ extensions:
           status: supported
         - surface: "command:assura init"
           status: supported
+        - surface: "command:assura config"
+          status: supported
+        - surface: "command:assura config add-recipe"
+          status: supported
         - surface: "command:assura watch"
           status: experimental
         - surface: "command:assura migrate"
@@ -702,7 +767,7 @@ collections:
 # All other root files must be standard project files
 structure:
   ./:
-    use: $agentic-project
+    use: $agentic-core
     files:
       # Standard project files are allowed
       allowed_names:
@@ -1132,6 +1197,7 @@ structure:
         files:
           naming: "snake_case"
           max_lines: 500
+          severity: low
           require_docs: true
         directories:
           allowed_names:
@@ -1297,6 +1363,7 @@ structure:
         files:
           naming: "snake_case"
           max_lines: 1000
+          severity: low
         directories:
           allowed_names:
             - "fixtures"

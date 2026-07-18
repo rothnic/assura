@@ -126,7 +126,7 @@ const configLines = ['structure:', '  directories:'];
 Correct:
 
 ```astro
-import projectContract from '../../data/config-examples/project-contract.yml?raw';
+import projectContract from '../../data/config-examples/agentic-monorepo.yml?raw';
 ```
 
 Assura owns this policy in `.assura/config.yml` under `quality.scopes`.

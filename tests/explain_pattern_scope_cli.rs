@@ -68,7 +68,7 @@ structure:
     let text = run_assura(&["explain", source.to_str().unwrap(), "--format", "text"]);
     assert!(text.status.success());
     assert!(String::from_utf8_lossy(&text.stdout)
-        .contains("matched_file_patterns=*.ts[naming=kebab-case,max_lines=500]"));
+        .contains("matched_file_patterns=*.ts[naming=kebab-case,max_lines=500,status=checked]"));
 
     let reset = json_from_success(run_assura(&[
         "explain",

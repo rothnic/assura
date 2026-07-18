@@ -48,7 +48,7 @@ for (const colorScheme of themes) {
 test('agent setup dialog is keyboard dismissible and restores focus', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
-  const trigger = page.getByRole('link', { name: 'Start with your agent' }).first();
+  const trigger = page.getByRole('link', { name: /with your agent/ }).first();
   await trigger.click();
 
   const dialog = page.getByRole('dialog', { name: 'Start with one agent instruction.' });
@@ -71,17 +71,15 @@ test('example output CTA connects project policy to pass and fail paths', async 
   await page.getByRole('link', { name: 'See how rules apply' }).click();
   await expect(page.getByRole('heading', { name: '.assura/config.yml' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Project tree' })).toBeVisible();
-  await expect(page.locator('.config-line').filter({ hasText: 'use: $agentic-project' })).toBeVisible();
-  await expect(page.locator('.config-line').filter({ hasText: 'source-file:' })).toBeVisible();
-  await expect(page.locator('.config-line').filter({ hasText: 'max_lines: 500' })).toBeVisible();
-  await expect(page.locator('.config-line').filter({ hasText: '"**/*.{ts,tsx}": $source-file' })).toBeVisible();
-  await expect(page.locator('.config-line').filter({ hasText: '"./**/*.{ts,tsx}"' })).toHaveCount(0);
-  await expect(page.getByText('apps/:', { exact: true })).toBeVisible();
-  for (const path of ['docs/', 'apps/', 'web/']) {
-    await expect(page.locator('.config-key').filter({ hasText: new RegExp(`^${path}$`) })).toHaveCount(1);
-  }
-  await expect(page.locator('.config-value').filter({ hasText: 'exists:0-1' })).toHaveCount(1);
+  await expect(page.locator('.config-line').filter({ hasText: 'agent-entrypoint:' })).toBeVisible();
+  await expect(page.locator('.config-line').filter({ hasText: './**/:' })).toBeVisible();
+  await expect(page.locator('.config-line').filter({ hasText: '.md: kebab-case | exact:AGENTS | exact:README' })).toBeVisible();
+  await expect(page.locator('.config-line').filter({ hasText: 'AGENTS.md: exists:1 | $agent-entrypoint' }).first()).toBeVisible();
+  const configMarkers = await page.locator('.policy-panel .rule-marker').allTextContents();
+  const treeMarkers = await page.locator('.tree-panel .rule-marker').allTextContents();
+  expect(new Set(configMarkers)).toEqual(new Set(treeMarkers));
   await expect(page.getByLabel('Pass').first()).toBeVisible();
+  await expect(page.getByLabel('Advisory warning').first()).toBeVisible();
   await expect(page.getByLabel('Blocking violation').first()).toBeVisible();
 });
 
@@ -143,7 +141,7 @@ test('onboarding distinguishes applied recommendations from undecided policy', a
   await page.goto('/#onboard');
   const onboarding = page.locator('#onboard');
   await expect(onboarding.getByRole('heading', { name: 'Detects and applies' })).toBeVisible();
-  await expect(onboarding.getByText('$project-agentic-baseline added locally')).toBeVisible();
+  await expect(onboarding.getByText('editable policy added to the project')).toBeVisible();
   await expect(onboarding.getByRole('heading', { name: 'Leaves undecided' })).toBeVisible();
   await expect(onboarding.getByText('language and framework rules')).toBeVisible();
 });
@@ -205,8 +203,15 @@ test('performance policy wipe switches between complete configurations', async (
   await page.goto('/performance/#regression-cases');
   const wipe = page.locator('[data-policy-wipe]');
   const slider = wipe.getByRole('slider', { name: 'Reveal Assura configuration.' });
+  await expect(wipe.locator('.policy-wipe-layer.is-lslint')).toHaveAttribute('aria-hidden', 'true');
+  await expect(wipe.locator('.policy-wipe-layer.is-assura')).toHaveAttribute('aria-hidden', 'false');
   await slider.fill('0');
   await expect(wipe.getByRole('button', { name: 'LS-Lint' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(wipe.locator('.policy-wipe-layer.is-lslint')).toHaveAttribute('aria-hidden', 'false');
+  await expect(wipe.locator('.policy-wipe-layer.is-assura')).toHaveAttribute('aria-hidden', 'true');
+  await slider.fill('50');
+  await expect(wipe.locator('.policy-wipe-layer.is-lslint')).toHaveAttribute('aria-hidden', 'false');
+  await expect(wipe.locator('.policy-wipe-layer.is-assura')).toHaveAttribute('aria-hidden', 'false');
   await wipe.getByRole('button', { name: 'Assura' }).click();
   await expect(slider).toHaveValue('100');
   await expect(wipe.getByRole('button', { name: 'Assura' })).toHaveAttribute('aria-pressed', 'true');

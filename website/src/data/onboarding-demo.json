@@ -34,6 +34,12 @@
       "required": true
     },
     {
+      "action": "existing",
+      "existed": true,
+      "path": "README.md",
+      "required": true
+    },
+    {
       "action": "write",
       "existed": false,
       "path": ".agents/skills/assura-project-maintenance/SKILL.md",

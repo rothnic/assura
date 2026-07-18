@@ -8,8 +8,8 @@ use super::{
     agent_command, cache_command, check_command, content_command, daemon_command, editor_command,
     explain_command, fix_markdown_command, info_command, init_command, migrate_command,
     performance_report_command, project_review_command, quality_plan_command, status_command,
-    watch_command, CacheCommands, CheckCommandOptions, Cli, Commands, ExitCode, FixCommands,
-    HookCommands, PerformanceReportCommandOptions, QualityCommands,
+    watch_command, CacheCommands, CheckCommandOptions, Cli, Commands, ConfigCommands, ExitCode,
+    FixCommands, HookCommands, PerformanceReportCommandOptions, QualityCommands,
 };
 
 /// Run the complete Clap/Tokio-powered CLI for non-check commands and fallbacks.
@@ -108,13 +108,26 @@ async fn run_full_cli(cli: Cli) -> ExitCode {
             project_intelligence,
             force,
             no_git_hooks,
-        } => init_command(path, force, no_git_hooks, project_intelligence).await,
+            recipe,
+        } => init_command(path, force, no_git_hooks, project_intelligence, recipe).await,
+        Commands::Config { command } => match command {
+            ConfigCommands::AddRecipe {
+                recipe,
+                path,
+                dry_run,
+                force,
+            } => super::add_recipe_command(path, config_path, recipe, dry_run, force).await,
+        },
         Commands::Watch {
             path,
             debounce,
             no_git,
         } => watch_command(path, config_path, debounce, no_git).await,
-        Commands::Migrate { input, output } => migrate_command(input, output).await,
+        Commands::Migrate {
+            input,
+            from,
+            output,
+        } => migrate_command(input, from, output).await,
         Commands::Fix { command } => match command {
             FixCommands::Markdown {
                 path,

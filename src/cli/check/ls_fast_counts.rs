@@ -2,7 +2,9 @@
 
 use super::ls_fast::join_rel;
 use super::ls_fast_plan::FastRules;
-use super::patterns::{best_lslint_suffix_pair, matches_single_compiled_pattern};
+use super::patterns::{
+    best_lslint_suffix_pair, is_lslint_extension_pattern, matches_single_compiled_pattern,
+};
 use super::rules::{
     count_satisfies, display_rel, is_excluded_rel_with, severity_for_bundle,
     severity_for_directory_bundle,
@@ -40,7 +42,7 @@ impl StructureChecker {
 
         let lslint_patterns = exists
             .iter()
-            .filter(|(pattern, _)| pattern.starts_with("*."))
+            .filter(|(pattern, _)| is_lslint_extension_pattern(pattern))
             .map(|(pattern, expected)| (pattern.clone(), expected.clone()))
             .collect::<Vec<_>>();
         let Some((pattern, expected)) = best_lslint_suffix_pair(&lslint_patterns, filename) else {

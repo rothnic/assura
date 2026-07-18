@@ -25,8 +25,8 @@ const parsePolicy = (policy: string): CodeLine[] => {
   let section = '';
   return policy.trimEnd().split('\n').map((text) => {
     if (!text.trim()) return {};
-    if (text.trimStart().startsWith('#')) return { comment: text.trimStart().slice(1).trim() };
     const indent = Math.floor((text.length - text.trimStart().length) / 2);
+    if (text.trimStart().startsWith('#')) return { indent, comment: text.trimStart().slice(1).trim() };
     const content = text.trim();
     const separator = content.indexOf(':');
     const key = separator === -1 ? content : content.slice(0, separator);
@@ -47,8 +47,8 @@ const lsLintLines = parsePolicy(lsLintPolicy);
       <span>Agentic monorepo policy</span>
       <h3>One contract for every package.</h3>
       <p>
-        The packages directory is optional. Once it exists, every matching package receives the same
-        required guidance, manifest, naming, and size policy.
+        The package tree is required while apps remain optional. Every workspace that exists receives
+        the same guidance, manifest, naming, size, and directory-health policy.
       </p>
     </div>
     <strong>Quality policy example</strong>
@@ -57,28 +57,28 @@ const lsLintLines = parsePolicy(lsLintPolicy);
   <section class="policy-scope-summary" aria-labelledby="policy-shape-title">
     <header>
       <span>Expected shape</span>
-      <h4 id="policy-shape-title">Two scopes, one clear inheritance path.</h4>
+      <h4 id="policy-shape-title">Broad defaults, exact project contracts.</h4>
     </header>
     <div class="policy-scope-grid">
       <div class="policy-scope is-root">
         <div><strong>Project root</strong><span>Always checked</span></div>
         <ul>
-          <li><code>AGENTS.md</code> required by <code>$agentic-project</code></li>
-          <li><code>package.json</code> required</li>
-          <li>Built-in agent guidance baseline</li>
+          <li><code>AGENTS.md</code>, <code>README.md</code>, and workspace files required</li>
+          <li>Selected policy is visible and project-owned</li>
+          <li>Dot directories and generated output are bounded</li>
         </ul>
       </div>
       <div class="policy-scope is-package">
-        <div><strong><code>{'packages/{package}/'}</code></strong><span>When present</span></div>
+        <div><strong><code>{'packages/*/'}</code></strong><span>Every package</span></div>
         <ul>
-          <li><code>AGENTS.md</code>, <code>package.json</code>, and <code>src/</code> required</li>
-          <li><code>README.md</code>, tests, fixtures, and config optional</li>
-          <li>One source-file rule sets naming and a 500-line limit</li>
-          <li>The <code>src/</code> scope carries it through inheriting descendants</li>
+          <li><code>AGENTS.md</code> and <code>package.json</code> required</li>
+          <li>Recursive defaults cover nested source and docs</li>
+          <li>Line and child-count thresholds stay advisory</li>
+          <li>Exact declarations refine closed wildcard rules</li>
         </ul>
       </div>
     </div>
-    <p><code>$source-file</code> keeps each TypeScript directive to one line. The package contract reuses it for source and test extensions without repeating the attributes.</p>
+    <p><code>$workspace</code> and <code>$skill</code> rebase the repeated hierarchy, while <code>./**/</code> applies one compact health layer to every authored directory.</p>
   </section>
 
   <section class="policy-wipe" data-policy-wipe data-reveal="100" style="--reveal: 100%;" aria-labelledby="policy-compare-title">
@@ -107,7 +107,7 @@ const lsLintLines = parsePolicy(lsLintPolicy);
     </div>
 
     <div class="policy-wipe-stage">
-      <section class="policy-wipe-layer is-lslint" aria-label="LS-Lint configuration">
+      <section class="policy-wipe-layer is-lslint" aria-label="LS-Lint configuration" aria-hidden="true">
         <header><span>LS-Lint</span><strong>Filesystem naming</strong></header>
         <div class="policy-code" role="code" aria-label="LS-Lint YAML example">
           {lsLintLines.map((line) => (
@@ -124,7 +124,7 @@ const lsLintLines = parsePolicy(lsLintPolicy);
         </div>
       </section>
 
-      <section class="policy-wipe-layer is-assura" aria-label="Assura configuration">
+      <section class="policy-wipe-layer is-assura" aria-label="Assura configuration" aria-hidden="false">
         <header><span>Assura</span><strong>Reusable project contract</strong></header>
         <div class="policy-code" role="code" aria-label="Assura YAML example">
           {assuraLines.map((line) => (
@@ -137,7 +137,7 @@ const lsLintLines = parsePolicy(lsLintPolicy);
         </div>
         <div class="policy-layer-summary is-capable">
           <strong>Added by Assura</strong>
-          <span>Built-in baseline</span><span>Required and optional paths</span><span>Reusable source directive</span><span>Scoped naming</span>
+          <span>Project-owned rules</span><span>Required and optional paths</span><span>Reusable hierarchy</span><span>Scoped naming</span>
         </div>
       </section>
 
@@ -167,6 +167,10 @@ const lsLintLines = parsePolicy(lsLintPolicy);
     root.querySelectorAll<HTMLButtonElement>('[data-wipe-value]').forEach((button) => {
       button.setAttribute('aria-pressed', String(Number(button.dataset.wipeValue) === bounded));
     });
+    const lsLintLayer = root.querySelector<HTMLElement>('.policy-wipe-layer.is-lslint');
+    const assuraLayer = root.querySelector<HTMLElement>('.policy-wipe-layer.is-assura');
+    lsLintLayer?.setAttribute('aria-hidden', String(bounded === 100));
+    assuraLayer?.setAttribute('aria-hidden', String(bounded === 0));
   };
 
   document.querySelectorAll<HTMLElement>('[data-policy-wipe]').forEach((root) => {

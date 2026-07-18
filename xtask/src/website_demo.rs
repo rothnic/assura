@@ -48,7 +48,6 @@ pub(crate) fn run(args: &[String]) -> Result<()> {
     build_assura(&root)?;
     let binary = root.join("target/debug/assura-full");
     validate_lslint_config_example(&root, &binary)?;
-    validate_project_contract_example(&root, &binary)?;
     validate_agentic_monorepo_example(&root, &binary)?;
     println!("Website Assura config examples are valid.");
     let (fixture, onboarding) = prepare_fixture(&root, &binary)?;
@@ -121,7 +120,6 @@ pub(crate) fn validate_config_examples(args: &[String]) -> Result<()> {
     }
     build_assura(&root)?;
     validate_lslint_config_example(&root, &root.join("target/debug/assura-full"))?;
-    validate_project_contract_example(&root, &root.join("target/debug/assura-full"))?;
     validate_agentic_monorepo_example(&root, &root.join("target/debug/assura-full"))?;
     validate_docs_config_examples(&root, &root.join("target/debug/assura-full"))?;
     println!("Website Assura config examples are valid.");
@@ -242,43 +240,25 @@ fn validate_yaml_fence(
     Ok(())
 }
 
-fn validate_project_contract_example(root: &Path, binary: &Path) -> Result<()> {
-    let project = example_project(root, "project-contract")?;
-    install_example_config(root, &project, "project-contract.yml")?;
-    fs::write(project.join("AGENTS.md"), "# Agent guidance\n")?;
-    fs::create_dir_all(project.join("docs"))?;
-    fs::create_dir_all(project.join("apps/web/src"))?;
-    fs::write(project.join("apps/web/package.json"), "{}\n")?;
-    fs::write(
-        project.join("apps/web/src/user-menu.tsx"),
-        "export const userMenu = true;\n",
-    )?;
-    run_example_check(binary, &project, true)?;
-
-    fs::write(
-        project.join("apps/web/src/BadName.tsx"),
-        "export const badName = true;\n",
-    )?;
-    fs::write(
-        project.join("apps/web/src/checkout-flow.tsx"),
-        "export const value = true;\n".repeat(501),
-    )?;
-    fs::create_dir_all(project.join("tmp-output"))?;
-    let report = run_example_check(binary, &project, false)?;
-    require_example_violations(
-        "project-contract.yml",
-        &report,
-        &["BadName.tsx", "checkout-flow.tsx", "tmp-output"],
-    )?;
-    fs::remove_dir_all(project.parent().unwrap_or(&project))?;
-    Ok(())
-}
-
 fn validate_agentic_monorepo_example(root: &Path, binary: &Path) -> Result<()> {
     let project = example_project(root, "agentic-monorepo")?;
     install_example_config(root, &project, "agentic-monorepo.yml")?;
+    fs::create_dir_all(project.join("docs"))?;
+    fs::write(
+        project.join("docs/agent-guidance.md"),
+        "# Agent Guidance\n\n## Skills\n\n## Layout\n",
+    )?;
+    fs::write(project.join("docs/structure.md"), "# Project Structure\n")?;
+    validate_repair_document_references(&project)?;
     fs::write(project.join("AGENTS.md"), "# Root guidance\n")?;
     fs::write(project.join("package.json"), "{}\n")?;
+    fs::write(project.join("pnpm-lock.yaml"), "lockfileVersion: 9\n")?;
+    fs::write(
+        project.join("pnpm-workspace.yaml"),
+        "packages:\n  - packages/*\n",
+    )?;
+    fs::write(project.join("README.md"), "# Project\n")?;
+    fs::write(project.join("turbo.json"), "{}\n")?;
     for package in ["core", "ui-kit"] {
         let package_root = project.join("packages").join(package);
         fs::create_dir_all(package_root.join("src"))?;
@@ -329,6 +309,77 @@ fn validate_agentic_monorepo_example(root: &Path, binary: &Path) -> Result<()> {
     )?;
     fs::remove_dir_all(project.parent().unwrap_or(&project))?;
     Ok(())
+}
+
+fn validate_repair_document_references(project: &Path) -> Result<()> {
+    let config_path = project.join(".assura/config.yml");
+    let config: serde_yaml::Value = serde_yaml::from_str(&fs::read_to_string(&config_path)?)?;
+    let mut references = Vec::new();
+    collect_repair_document_references(&config, &mut references);
+    for reference in references {
+        let (path, fragment) = reference
+            .split_once('#')
+            .map_or((reference.as_str(), None), |(path, fragment)| {
+                (path, Some(fragment))
+            });
+        let target = project.join(path);
+        if !target.is_file() {
+            return Err(format!(
+                "{} repair message references missing project document {path}",
+                config_path.display()
+            )
+            .into());
+        }
+        if let Some(fragment) = fragment {
+            let expected_heading = fragment
+                .split('-')
+                .map(|word| {
+                    let mut characters = word.chars();
+                    characters.next().map_or_else(String::new, |first| {
+                        first.to_uppercase().collect::<String>() + characters.as_str()
+                    })
+                })
+                .collect::<Vec<_>>()
+                .join(" ");
+            let contents = fs::read_to_string(&target)?;
+            if !contents
+                .lines()
+                .any(|line| line.trim_start_matches('#').trim() == expected_heading)
+            {
+                return Err(format!(
+                    "{} repair message references missing heading #{fragment} in {path}",
+                    config_path.display()
+                )
+                .into());
+            }
+        }
+    }
+    Ok(())
+}
+
+fn collect_repair_document_references(value: &serde_yaml::Value, references: &mut Vec<String>) {
+    match value {
+        serde_yaml::Value::Mapping(mapping) => {
+            for (key, value) in mapping {
+                if key.as_str() == Some("message") {
+                    if let Some(reference) = value
+                        .as_str()
+                        .and_then(|message| message.strip_prefix("See "))
+                        .map(|reference| reference.trim_end_matches('.'))
+                    {
+                        references.push(reference.to_string());
+                    }
+                }
+                collect_repair_document_references(value, references);
+            }
+        }
+        serde_yaml::Value::Sequence(values) => {
+            for value in values {
+                collect_repair_document_references(value, references);
+            }
+        }
+        _ => {}
+    }
 }
 
 fn validate_lslint_config_example(root: &Path, binary: &Path) -> Result<()> {
@@ -382,24 +433,6 @@ fn run_example_check(binary: &Path, project: &Path, expect_success: bool) -> Res
         return Err(command_error("validate website config example", &output).into());
     }
     serde_json::from_slice(&output.stdout).map_err(Into::into)
-}
-
-fn require_example_violations(name: &str, report: &Value, expected: &[&str]) -> Result<()> {
-    let paths = report["violations"]
-        .as_array()
-        .into_iter()
-        .flatten()
-        .filter_map(|violation| violation["path"].as_str())
-        .collect::<Vec<_>>();
-    for needle in expected {
-        if !paths.iter().any(|path| path.contains(needle)) {
-            return Err(format!(
-                "website config example {name} did not report expected path `{needle}`; got {paths:?}"
-            )
-            .into());
-        }
-    }
-    Ok(())
 }
 
 fn require_example_violation(name: &str, report: &Value, path: &str, rule: &str) -> Result<()> {

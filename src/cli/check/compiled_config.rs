@@ -136,10 +136,12 @@ fn compile_exclusions<'a>(configured: impl Iterator<Item = &'a str>) -> Vec<Comp
 }
 
 fn node_has_direct_count_constraints(node: &crate::config::config::DirectoryNode) -> bool {
-    node.files
-        .as_ref()
-        .and_then(|files| files.exists.as_ref())
-        .is_some()
+    node.limit_children.is_some()
+        || node
+            .files
+            .as_ref()
+            .and_then(|files| files.exists.as_ref())
+            .is_some()
         || node
             .directories
             .as_ref()

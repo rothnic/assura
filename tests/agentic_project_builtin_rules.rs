@@ -25,24 +25,27 @@ fn json_from_success(output: Output) -> Value {
 }
 
 #[test]
-fn agentic_project_builtin_rule_allows_optional_agents_and_constrains_skills() {
+fn project_owned_agentic_recipe_allows_optional_agents_and_constrains_skills() {
     let project = TempDir::new().unwrap();
     fs::create_dir_all(project.path().join(".assura")).unwrap();
-    fs::write(
-        project.path().join(".assura/config.yml"),
-        r#"version: "2.0"
-
-structure:
-  ./:
-    use: $agentic-project
-    extra: false
-
-exclude:
-  - ".git/**"
-"#,
-    )
-    .unwrap();
+    fs::write(project.path().join(".assura/config.yml"), "structure: {}\n").unwrap();
+    let add_recipe = run_assura(&[
+        "config",
+        "add-recipe",
+        "agentic-core",
+        project.path().to_str().unwrap(),
+    ]);
+    assert!(
+        add_recipe.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&add_recipe.stdout),
+        String::from_utf8_lossy(&add_recipe.stderr)
+    );
+    let config = fs::read_to_string(project.path().join(".assura/config.yml")).unwrap();
+    assert!(config.contains("agent-entrypoint:"));
+    assert!(!config.contains("$agentic-project"));
     fs::write(project.path().join("AGENTS.md"), "# Agent Guidance\n").unwrap();
+    fs::write(project.path().join("README.md"), "# Project\n").unwrap();
 
     let valid_without_agents = json_from_success(run_assura(&[
         "check",
@@ -66,7 +69,13 @@ exclude:
         project
             .path()
             .join(".agents/skills/release-maintenance/SKILL.md"),
-        "# Release Maintenance\n",
+        r#"---
+name: release-maintenance
+description: Maintain releases.
+---
+
+# Release Maintenance
+"#,
     )
     .unwrap();
 

@@ -60,6 +60,30 @@ fn companion_help_can_render_primary_command_name() {
 }
 
 #[test]
+fn config_add_recipe_dry_run_materializes_project_owned_policy() {
+    let project = structure_project("version: \"2.0\"\nstructure: {}\n");
+    let output = Command::new(assura_full_bin())
+        .args(["config", "add-recipe", "agentic-core"])
+        .arg(project.path())
+        .arg("--dry-run")
+        .output()
+        .unwrap();
+
+    assert!(
+        output.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(
+        stdout.contains("agent-entrypoint:"),
+        "stdout was:\n{stdout}"
+    );
+    assert!(stdout.contains("AGENTS.md:"), "stdout was:\n{stdout}");
+}
+
+#[test]
 fn cache_status_and_clean_report_observable_namespaces() {
     let project = TempDir::new().unwrap();
     let cache = project.path().join("explicit-cache");

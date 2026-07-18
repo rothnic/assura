@@ -17,12 +17,31 @@ pub fn resolve_project_root(path: Option<PathBuf>) -> std::io::Result<PathBuf> {
 }
 
 /// Starter structure config written by `assura init`.
-pub fn starter_config(project_intelligence: bool) -> &'static str {
+pub fn starter_config(
+    project_intelligence: bool,
+    recipes: &[crate::cli::args::InitRecipe],
+) -> Result<&'static str, StarterInitError> {
     if project_intelligence {
-        return project_intelligence_starter_config();
+        if !recipes.is_empty() {
+            return Err(StarterInitError::Configuration(
+                "--project-intelligence cannot currently be combined with --recipe".to_string(),
+            ));
+        }
+        return Ok(project_intelligence_starter_config());
     }
 
-    r#"version: "2.0"
+    let agentic = recipes.contains(&crate::cli::args::InitRecipe::AgenticCore);
+    let health = recipes.contains(&crate::cli::args::InitRecipe::StructureHealth);
+    if agentic || health {
+        return Ok(match (agentic, health) {
+            (true, true) => AGENTIC_HEALTH_STARTER_CONFIG,
+            (true, false) => AGENTIC_CORE_STARTER_CONFIG,
+            (false, true) => STRUCTURE_HEALTH_STARTER_CONFIG,
+            (false, false) => unreachable!(),
+        });
+    }
+
+    Ok(r#"version: "2.0"
 
 structure:
   ./:
@@ -48,7 +67,15 @@ exclude:
   - "node_modules/**"
   - "dist/**"
   - "**/dist/**"
-"#
+"#)
+}
+
+/// Return the project-owned YAML fragment for one first-party recipe.
+pub fn recipe_config(recipe: crate::cli::args::InitRecipe) -> &'static str {
+    match recipe {
+        crate::cli::args::InitRecipe::AgenticCore => AGENTIC_CORE_STARTER_CONFIG,
+        crate::cli::args::InitRecipe::StructureHealth => STRUCTURE_HEALTH_STARTER_CONFIG,
+    }
 }
 
 /// One project-intelligence starter file materialized by `assura init`.
@@ -60,6 +87,7 @@ pub struct StarterFile {
 }
 
 /// Error returned while materializing starter files.
+#[derive(Debug)]
 pub enum StarterInitError {
     /// User-correctable configuration or overwrite problem.
     Configuration(String),
@@ -81,11 +109,40 @@ pub fn project_intelligence_starter_files() -> &'static [StarterFile] {
     PROJECT_INTELLIGENCE_STARTER_FILES
 }
 
+/// Materialize missing support files referenced by selected project-owned recipes.
+pub fn materialize_recipe_starter_files(
+    project_root: &Path,
+    recipes: &[crate::cli::args::InitRecipe],
+) -> Result<Vec<PathBuf>, StarterInitError> {
+    let mut created = Vec::new();
+    for file in recipe_starter_files(recipes) {
+        let path = project_root.join(file.path);
+        if path.exists() {
+            continue;
+        }
+        if let Some(parent) = path.parent() {
+            std::fs::create_dir_all(parent).map_err(|error| {
+                StarterInitError::Runtime(format!(
+                    "failed to create {}: {}",
+                    parent.display(),
+                    error
+                ))
+            })?;
+        }
+        std::fs::write(&path, file.contents).map_err(|error| {
+            StarterInitError::Runtime(format!("failed to write {}: {}", path.display(), error))
+        })?;
+        created.push(path);
+    }
+    Ok(created)
+}
+
 /// Materialize the selected `assura init` starter files.
 pub fn materialize_starter(
     path: Option<PathBuf>,
     force: bool,
     project_intelligence: bool,
+    recipes: &[crate::cli::args::InitRecipe],
 ) -> Result<Vec<PathBuf>, StarterInitError> {
     let project_root =
         resolve_project_root(path).map_err(|error| StarterInitError::Runtime(error.to_string()))?;
@@ -113,7 +170,11 @@ pub fn materialize_starter(
             error
         ))
     })?;
-    std::fs::write(&config_path, starter_config(project_intelligence)).map_err(|error| {
+    let config = starter_config(project_intelligence, recipes)?;
+    crate::config::config::ConfigLoader::parse(config).map_err(|error| {
+        StarterInitError::Configuration(format!("starter recipe is invalid: {error}"))
+    })?;
+    std::fs::write(&config_path, config).map_err(|error| {
         StarterInitError::Runtime(format!(
             "failed to write {}: {}",
             config_path.display(),
@@ -139,10 +200,174 @@ pub fn materialize_starter(
             })?;
             created.push(path);
         }
+    } else {
+        created.extend(materialize_recipe_starter_files(&project_root, recipes)?);
     }
 
     Ok(created)
 }
+
+fn recipe_starter_files(recipes: &[crate::cli::args::InitRecipe]) -> Vec<&'static StarterFile> {
+    let mut files = Vec::new();
+    if recipes.contains(&crate::cli::args::InitRecipe::AgenticCore) {
+        files.extend(AGENTIC_CORE_STARTER_FILES);
+    }
+    if recipes.contains(&crate::cli::args::InitRecipe::StructureHealth) {
+        files.extend(STRUCTURE_HEALTH_STARTER_FILES);
+    }
+    files
+}
+
+const AGENTIC_CORE_STARTER_CONFIG: &str = r#"rules:
+  agent-entrypoint:
+    max_lines: 160
+    severity: low
+    message: See docs/agent-guidance.md.
+
+  skill-entrypoint:
+    max_lines: 500
+    markdown:
+      require_frontmatter: true
+    message: See docs/agent-guidance.md#skills.
+
+  closed-entry:
+    exists: 0
+    message: See docs/agent-guidance.md#layout.
+
+  closed:
+    ./*/: $closed-entry
+    ./*: $closed-entry
+
+  skill:
+    ./: $closed
+    ./{agents,assets,references,scripts}/:
+      ./: exists:0-1
+      inherit: false
+    SKILL.md: exists:1 | $skill-entrypoint
+
+structure:
+  .agents/:
+    ./: exists:0-1 | $closed
+    skills/:
+      ./: exists:0-1
+      ./*/: kebab-case | $skill
+      ./*: $closed-entry
+
+  AGENTS.md: exists:1 | $agent-entrypoint
+  README.md: exists:1
+
+exclude:
+  - "**/{.git,node_modules,target,dist,coverage}/**"
+"#;
+
+const STRUCTURE_HEALTH_STARTER_CONFIG: &str = r#"rules:
+  folder-health:
+    limit_children: 10
+    severity: low
+    message: See docs/structure.md.
+
+structure:
+  ./**/:
+    ./: $folder-health
+    .{md,js,jsx,ts,tsx}: max_lines:500 | severity:low
+
+exclude:
+  - "**/{.git,node_modules,target,dist,coverage}/**"
+"#;
+
+const AGENTIC_HEALTH_STARTER_CONFIG: &str = r#"rules:
+  agent-entrypoint:
+    max_lines: 160
+    severity: low
+    message: See docs/agent-guidance.md.
+
+  skill-entrypoint:
+    max_lines: 500
+    markdown:
+      require_frontmatter: true
+    message: See docs/agent-guidance.md#skills.
+
+  folder-health:
+    limit_children: 10
+    severity: low
+    message: See docs/structure.md.
+
+  closed-entry:
+    exists: 0
+    message: See docs/agent-guidance.md#layout.
+
+  closed:
+    ./*/: $closed-entry
+    ./*: $closed-entry
+
+  skill:
+    ./: $closed
+    ./{agents,assets,references,scripts}/:
+      ./: exists:0-1
+      inherit: false
+    SKILL.md: exists:1 | $skill-entrypoint
+
+structure:
+  .agents/:
+    ./: exists:0-1 | $closed
+    skills/:
+      ./: exists:0-1
+      ./*/: kebab-case | $skill
+      ./*: $closed-entry
+
+  AGENTS.md: exists:1 | $agent-entrypoint
+  README.md: exists:1
+
+  ./**/:
+    ./: $folder-health
+    .{md,js,jsx,ts,tsx}: max_lines:500 | severity:low
+
+exclude:
+  - "**/{.git,node_modules,target,dist,coverage}/**"
+"#;
+
+const AGENTIC_CORE_STARTER_FILES: &[&StarterFile] = &[
+    &StarterFile {
+        path: "README.md",
+        contents: "# Project\n",
+    },
+    &StarterFile {
+        path: "AGENTS.md",
+        contents: r#"# Agent Guidance
+
+Read [docs/agent-guidance.md](docs/agent-guidance.md) before changing project
+structure or adding project-local skills.
+"#,
+    },
+    &StarterFile {
+        path: "docs/agent-guidance.md",
+        contents: r#"# Agent Guidance
+
+Keep root and package guidance concise. Link to durable project documentation
+instead of copying large instructions into every agent context.
+
+## Skills
+
+Each directory under `.agents/skills/` must contain `SKILL.md`. Keep detailed
+examples and references beside that entrypoint for progressive disclosure.
+
+## Layout
+
+Add new paths to the project-owned Assura policy before creating them. Prefer an
+existing directory when it already owns the concern.
+"#,
+    },
+];
+
+const STRUCTURE_HEALTH_STARTER_FILES: &[&StarterFile] = &[&StarterFile {
+    path: "docs/structure.md",
+    contents: r#"# Project Structure
+
+When a directory approaches the configured direct-child limit, group related
+files by responsibility while the change is still small. Update the project-owned
+Assura policy when a larger directory is intentional.
+"#,
+}];
 
 /// Check whether any project-intelligence starter file would be overwritten.
 pub fn existing_project_intelligence_starter_paths(project_root: &Path) -> Vec<PathBuf> {
@@ -334,3 +559,24 @@ Copy this file into `docs/goals/` to see
 "#,
     },
 ];
+
+#[cfg(test)]
+mod recipe_tests {
+    use super::starter_config;
+    use crate::cli::args::InitRecipe;
+    use crate::config::config::ConfigLoader;
+
+    #[test]
+    fn selected_recipes_materialize_valid_project_owned_yaml() {
+        for recipes in [
+            vec![InitRecipe::AgenticCore],
+            vec![InitRecipe::StructureHealth],
+            vec![InitRecipe::AgenticCore, InitRecipe::StructureHealth],
+        ] {
+            let source = starter_config(false, &recipes).unwrap();
+            let config = ConfigLoader::parse(source).unwrap();
+            assert!(config.structure.contains_key("./"));
+            assert!(!source.contains("$agentic-project"));
+        }
+    }
+}

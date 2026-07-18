@@ -88,8 +88,8 @@ pub use compiled_artifact::CompiledStructureConfigArtifact;
 use compiled_config::CompiledStructureConfig;
 #[cfg(feature = "yaml-config")]
 pub use explain::{
-    explain_structure_path, PathExplainNextAction, PathExplainReport, PathExplainScope,
-    PathExplainSkip,
+    explain_structure_path, PathExplainNextAction, PathExplainReport, PathExplainRuleSource,
+    PathExplainScope, PathExplainSkip,
 };
 #[cfg(feature = "yaml-config")]
 pub use explain_rules::{PathExplainFilePatternRule, PathExplainRules};
