@@ -1,11 +1,10 @@
 ---
-import projectContract from '../../data/config-examples/agentic-monorepo.yml?raw';
+import projectContract from '../../data/config-examples/homepage-agentic-project.yml?raw';
 
 const markers = new Map([
-  ['AGENTS.md: exists:1 | $agent-entrypoint', '1'],
-  ['./*: $closed-entry', '2'],
-  ['.md: kebab-case | exact:AGENTS | exact:README', '3'],
-  ['.{md,js,jsx,ts,tsx}: max_lines:500 | severity:low', '4'],
+  ['AGENTS.md: exists:1 | $agent-doc', '1'],
+  ['./*/: $workspace', '2'],
+  ['.ts: kebab-case | max_lines:500', '3'],
 ]);
 
 const splitYamlLine = (text: string) => {
@@ -50,7 +49,7 @@ const configLines = projectContract.trimEnd().split('\n').map((text) => {
       <span>Project contract</span>
       <h3 id="policy-config-title">.assura/config.yml</h3>
     </header>
-    <pre tabindex="0"><code>{configLines.map((line) => (
+    <pre><code>{configLines.map((line) => (
       <span class="config-line"><span class="config-content"><span>{line.indent}</span>{line.key === null ? <span class="config-value">{line.value}</span> : <><span class="config-key">{line.key}</span><span class="config-separator">:</span><span class="config-value">{line.value}</span></>}</span>{line.marker && <i class="rule-marker" aria-label={`Rule ${line.marker}`}>{line.marker}</i>}</span>
     ))}</code></pre>
   </section>
@@ -69,25 +68,18 @@ const configLines = projectContract.trimEnd().split('\n').map((text) => {
         <ul>
           <li><div class="tree-row pass"><span class="tree-status" aria-label="Pass">✓</span><code>AGENTS.md</code><small><i class="rule-marker">1</i> required file</small></div></li>
           <li>
-            <div class="tree-row neutral"><span class="tree-status" aria-label="Configured scope">·</span><code>packages/core/</code><small>workspace contract</small></div>
+            <div class="tree-row neutral"><span class="tree-status" aria-label="Configured scope">·</span><code>packages/core/</code><small><i class="rule-marker">2</i> workspace contract</small></div>
             <ul>
               <li><div class="tree-row pass"><span class="tree-status" aria-label="Pass">✓</span><code>AGENTS.md</code><small><i class="rule-marker">1</i> required guidance</small></div></li>
               <li><div class="tree-row pass"><span class="tree-status" aria-label="Pass">✓</span><code>package.json</code><small>required manifest</small></div></li>
               <li>
                 <div class="tree-row neutral"><span class="tree-status" aria-label="Configured scope">·</span><code>src/</code><small>recursive defaults</small></div>
                 <ul>
-                  <li><div class="tree-row pass"><span class="tree-status" aria-label="Pass">✓</span><code>user-menu.tsx</code><small><i class="rule-marker">4</i> 184 / 500 lines</small></div></li>
-                  <li><div class="tree-row fail"><span class="tree-status" aria-label="Blocking violation">!</span><code>BadName.tsx</code><small><i class="rule-marker">3</i> expected kebab-case</small></div></li>
-                  <li><div class="tree-row warn"><span class="tree-status" aria-label="Advisory warning">!</span><code>checkout-flow.tsx</code><small><i class="rule-marker">4</i> 537 / 500 lines</small></div></li>
+                  <li><div class="tree-row pass"><span class="tree-status" aria-label="Pass">✓</span><code>user-menu.ts</code><small><i class="rule-marker">3</i> 184 / 500 lines</small></div></li>
+                  <li><div class="tree-row fail"><span class="tree-status" aria-label="Blocking violation">!</span><code>BadName.ts</code><small><i class="rule-marker">3</i> expected kebab-case</small></div></li>
+                  <li><div class="tree-row fail"><span class="tree-status" aria-label="Blocking violation">!</span><code>checkout-flow.ts</code><small><i class="rule-marker">3</i> 537 / 500 lines</small></div></li>
                 </ul>
               </li>
-            </ul>
-          </li>
-          <li>
-            <div class="tree-row neutral"><span class="tree-status" aria-label="Configured scope">·</span><code>.agents/skills/release-check/</code><small>strict skill root</small></div>
-            <ul>
-              <li><div class="tree-row pass"><span class="tree-status" aria-label="Pass">✓</span><code>SKILL.md</code><small>required entrypoint</small></div></li>
-              <li><div class="tree-row fail"><span class="tree-status" aria-label="Blocking violation">!</span><code>notes.md</code><small><i class="rule-marker">2</i> undeclared entry</small></div></li>
             </ul>
           </li>
         </ul>
@@ -95,7 +87,6 @@ const configLines = projectContract.trimEnd().split('\n').map((text) => {
     </ul>
     <footer>
       <span><i class="legend-dot pass"></i> passes</span>
-      <span><i class="legend-dot warn"></i> advisory</span>
       <span><i class="legend-dot fail"></i> blocking</span>
     </footer>
   </section>

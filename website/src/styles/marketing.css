@@ -677,15 +677,14 @@
   }
 
   .policy-panel pre {
-    max-height: 38rem;
     margin: 0;
-    overflow: auto;
+    overflow: hidden;
     padding: 1rem;
   }
 
   .policy-panel code {
     display: grid;
-    min-width: max-content;
+    min-width: 0;
     font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
     font-size: 0.78rem;
     line-height: 1.55;
@@ -693,7 +692,8 @@
 
   .config-line {
     display: flex;
-    min-width: max-content;
+    position: relative;
+    min-width: 0;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
@@ -1875,6 +1875,25 @@
   }
 
   @media (max-width: 720px) {
+    .policy-panel pre {
+      padding: 0.85rem 0.75rem;
+    }
+
+    .policy-panel code {
+      font-size: 0.7rem;
+    }
+
+    .config-line {
+      gap: 0.5rem;
+    }
+
+    .config-line > .rule-marker {
+      position: absolute;
+      top: 50%;
+      right: 0;
+      transform: translateY(-50%);
+    }
+
     .header-inner,
     .hero-content,
     .section {

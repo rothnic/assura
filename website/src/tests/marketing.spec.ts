@@ -7,6 +7,11 @@ const assuraPolicyFixture = readFileSync(
   'utf8',
 ).trimEnd();
 
+const homepagePolicyFixture = readFileSync(
+  new URL('../data/config-examples/homepage-agentic-project.yml', import.meta.url),
+  'utf8',
+).trimEnd();
+
 const widths = [360, 390, 430, 768, 1024, 1440];
 const themes = ['light', 'dark'] as const;
 const marketingRoutes = [
@@ -71,17 +76,40 @@ test('example output CTA connects project policy to pass and fail paths', async 
   await page.getByRole('link', { name: 'See how rules apply' }).click();
   await expect(page.getByRole('heading', { name: '.assura/config.yml' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Project tree' })).toBeVisible();
-  await expect(page.locator('.config-line').filter({ hasText: 'agent-entrypoint:' })).toBeVisible();
+  await expect(page.locator('.config-line').filter({ hasText: 'agent-doc:' })).toBeVisible();
   await expect(page.locator('.config-line').filter({ hasText: './**/:' })).toBeVisible();
-  await expect(page.locator('.config-line').filter({ hasText: '.md: kebab-case | exact:AGENTS | exact:README' })).toBeVisible();
-  await expect(page.locator('.config-line').filter({ hasText: 'AGENTS.md: exists:1 | $agent-entrypoint' }).first()).toBeVisible();
+  await expect(page.locator('.config-line').filter({ hasText: '.ts: kebab-case | max_lines:500' })).toBeVisible();
+  await expect(page.locator('.config-line').filter({ hasText: 'AGENTS.md: exists:1 | $agent-doc' }).first()).toBeVisible();
   const configMarkers = await page.locator('.policy-panel .rule-marker').allTextContents();
   const treeMarkers = await page.locator('.tree-panel .rule-marker').allTextContents();
   expect(new Set(configMarkers)).toEqual(new Set(treeMarkers));
   await expect(page.getByLabel('Pass').first()).toBeVisible();
-  await expect(page.getByLabel('Advisory warning').first()).toBeVisible();
   await expect(page.getByLabel('Blocking violation').first()).toBeVisible();
 });
+
+for (const width of [320, 360, 390]) {
+  test(`homepage policy is fully visible without nested scrolling at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto('/#review-output');
+    const policy = page.locator('.policy-panel');
+    await expect(policy).toBeVisible();
+    const overflow = await policy.locator('pre').evaluate((element) => ({
+      horizontal: element.scrollWidth - element.clientWidth,
+      vertical: element.scrollHeight - element.clientHeight,
+    }));
+    expect(overflow).toEqual({ horizontal: 0, vertical: 0 });
+    const markerGaps = await policy.locator('.config-line:has(> .rule-marker)').evaluateAll((lines) =>
+      lines.map((line) => {
+        const content = line.querySelector('.config-content')?.getBoundingClientRect();
+        const marker = line.querySelector(':scope > .rule-marker')?.getBoundingClientRect();
+        return Math.round((marker?.left ?? 0) - (content?.right ?? 0));
+      }),
+    );
+    expect(Math.min(...markerGaps)).toBeGreaterThanOrEqual(4);
+    const rendered = await policy.locator('.config-content').allTextContents();
+    expect(rendered.join('\n')).toBe(homepagePolicyFixture);
+  });
+}
 
 test('performance CTA lands on the measured project cohort', async ({ page }) => {
   await page.goto('/');

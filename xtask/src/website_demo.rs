@@ -48,6 +48,7 @@ pub(crate) fn run(args: &[String]) -> Result<()> {
     build_assura(&root)?;
     let binary = root.join("target/debug/assura-full");
     validate_lslint_config_example(&root, &binary)?;
+    validate_homepage_policy_example(&root, &binary)?;
     validate_agentic_monorepo_example(&root, &binary)?;
     println!("Website Assura config examples are valid.");
     let (fixture, onboarding) = prepare_fixture(&root, &binary)?;
@@ -120,6 +121,7 @@ pub(crate) fn validate_config_examples(args: &[String]) -> Result<()> {
     }
     build_assura(&root)?;
     validate_lslint_config_example(&root, &root.join("target/debug/assura-full"))?;
+    validate_homepage_policy_example(&root, &root.join("target/debug/assura-full"))?;
     validate_agentic_monorepo_example(&root, &root.join("target/debug/assura-full"))?;
     validate_docs_config_examples(&root, &root.join("target/debug/assura-full"))?;
     println!("Website Assura config examples are valid.");
@@ -311,6 +313,64 @@ fn validate_agentic_monorepo_example(root: &Path, binary: &Path) -> Result<()> {
     Ok(())
 }
 
+fn validate_homepage_policy_example(root: &Path, binary: &Path) -> Result<()> {
+    let project = example_project(root, "homepage-agentic-project")?;
+    install_example_config(root, &project, "homepage-agentic-project.yml")?;
+    fs::create_dir_all(project.join("docs"))?;
+    fs::write(project.join("docs/agents.md"), "# Agent Guidance\n")?;
+    fs::write(project.join("AGENTS.md"), "# Root guidance\n")?;
+    fs::write(project.join("README.md"), "# Project\n")?;
+    let package = project.join("packages/core");
+    fs::create_dir_all(package.join("src"))?;
+    fs::write(package.join("AGENTS.md"), "# Package guidance\n")?;
+    fs::write(package.join("package.json"), "{}\n")?;
+    fs::write(
+        package.join("src/user-menu.ts"),
+        "export const UserMenu = () => null;\n",
+    )?;
+    run_example_check(binary, &project, true)?;
+
+    fs::remove_file(package.join("AGENTS.md"))?;
+    fs::remove_file(package.join("package.json"))?;
+    let report = run_example_check(binary, &project, false)?;
+    require_example_violation_message(
+        "homepage-agentic-project.yml",
+        &report,
+        "packages/core",
+        "exists_count",
+        "AGENTS.md",
+    )?;
+    require_example_violation_message(
+        "homepage-agentic-project.yml",
+        &report,
+        "packages/core",
+        "exists_count",
+        "package.json",
+    )?;
+    fs::write(package.join("AGENTS.md"), "# Package guidance\n")?;
+    fs::write(package.join("package.json"), "{}\n")?;
+
+    fs::write(
+        package.join("src/BadName.ts"),
+        "export const value = true;\n".repeat(501),
+    )?;
+    let report = run_example_check(binary, &project, false)?;
+    require_example_violation(
+        "homepage-agentic-project.yml",
+        &report,
+        "BadName.ts",
+        "file_naming",
+    )?;
+    require_example_violation(
+        "homepage-agentic-project.yml",
+        &report,
+        "BadName.ts",
+        "max_lines",
+    )?;
+    fs::remove_dir_all(project.parent().unwrap_or(&project))?;
+    Ok(())
+}
+
 fn validate_repair_document_references(project: &Path) -> Result<()> {
     let config_path = project.join(".assura/config.yml");
     let config: serde_yaml::Value = serde_yaml::from_str(&fs::read_to_string(&config_path)?)?;
@@ -450,6 +510,35 @@ fn require_example_violation(name: &str, report: &Value, path: &str, rule: &str)
         return Err(
             format!("website config example {name} did not report `{rule}` for `{path}`").into(),
         );
+    }
+    Ok(())
+}
+
+fn require_example_violation_message(
+    name: &str,
+    report: &Value,
+    path: &str,
+    rule: &str,
+    message: &str,
+) -> Result<()> {
+    let found = report["violations"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .any(|violation| {
+            violation["path"]
+                .as_str()
+                .is_some_and(|candidate| candidate.contains(path))
+                && violation["rule"].as_str() == Some(rule)
+                && violation["message"]
+                    .as_str()
+                    .is_some_and(|candidate| candidate.contains(message))
+        });
+    if !found {
+        return Err(format!(
+            "website config example {name} did not report `{rule}` for `{path}` with `{message}`"
+        )
+        .into());
     }
     Ok(())
 }
