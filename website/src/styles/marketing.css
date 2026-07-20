@@ -645,6 +645,61 @@
     color: var(--terminal-text);
   }
 
+  .policy-demo-more {
+    grid-column: 1 / -1;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .policy-demo-more summary {
+    display: flex;
+    min-height: 2.9rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.7rem 0;
+    cursor: pointer;
+    font-weight: 760;
+    list-style: none;
+  }
+
+  .policy-demo-more summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .policy-demo-more summary::after {
+    content: "+";
+    color: var(--primary-strong);
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 1rem;
+  }
+
+  .policy-demo-more[open] summary::after {
+    content: "-";
+  }
+
+  .policy-demo-more > div {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 0 0 1rem;
+  }
+
+  .policy-demo-more p {
+    max-width: 46rem;
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .policy-demo-more a {
+    flex: 0 0 auto;
+    color: var(--primary-strong);
+    font-weight: 760;
+    text-underline-offset: 0.22em;
+  }
+
   .policy-panel > header,
   .tree-panel > header {
     display: flex;
@@ -1318,7 +1373,12 @@
 
   .lifecycle-card {
     display: grid;
-    gap: 1rem;
+    align-content: start;
+    gap: 0.75rem;
+  }
+
+  .lifecycle-card p {
+    margin-top: 0;
   }
 
   .lifecycle-card:nth-child(2) span {
@@ -1551,6 +1611,7 @@
     font-variant-numeric: tabular-nums;
     line-height: 1.1;
     text-align: left;
+    white-space: nowrap;
   }
 
   .performance-proof small {
@@ -1894,6 +1955,15 @@
       transform: translateY(-50%);
     }
 
+    .policy-demo-more > div {
+      display: grid;
+      gap: 0.75rem;
+    }
+
+    .policy-demo-more a {
+      justify-self: start;
+    }
+
     .header-inner,
     .hero-content,
     .section {
@@ -2034,7 +2104,18 @@
 
     .performance-proof > div {
       border-bottom: 1px solid var(--border);
-      padding: 0.78rem 0.72rem;
+      padding: 0.82rem 0.62rem 0.76rem;
+    }
+
+    .performance-proof > div:not(.proof-meta) {
+      grid-template-rows: auto auto 1fr;
+      align-content: start;
+    }
+
+    .performance-proof small {
+      font-size: 0.72rem;
+      line-height: 1.4;
+      text-wrap: balance;
     }
 
     .performance-proof > div:nth-child(2) {
@@ -2045,10 +2126,12 @@
       grid-column: 1 / -1;
       border-right: 0;
       border-bottom: 0;
-      padding-block: 0.62rem;
+      min-height: 2.75rem;
+      padding: 0.55rem 0.62rem;
     }
 
     .performance-proof .proof-meta {
+      align-items: baseline;
       justify-content: space-between;
     }
 

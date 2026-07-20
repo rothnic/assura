@@ -87,6 +87,19 @@ test('example output CTA connects project policy to pass and fail paths', async 
   await expect(page.getByLabel('Blocking violation').first()).toBeVisible();
 });
 
+test('compact policy links to the complete monorepo example through optional disclosure', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 844 });
+  await page.goto('/#review-output');
+  const disclosure = page.locator('.policy-demo-more');
+  const link = disclosure.getByRole('link', { name: 'Open the complete monorepo policy' });
+  await expect(disclosure).not.toHaveAttribute('open', '');
+  await expect(link).toBeHidden();
+  await disclosure.getByText('What the compact example leaves out').click();
+  await expect(link).toBeVisible();
+  await expect(link).toHaveAttribute('href', '/performance/#monorepo-policy');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
+});
+
 for (const width of [320, 360, 390]) {
   test(`homepage policy is fully visible without nested scrolling at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 844 });
@@ -144,25 +157,64 @@ test('footer groups product, resources, and creator links on mobile', async ({ p
   expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
 });
 
-test('mobile performance evidence stays compact and keeps its footer on one line', async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto('/');
-  const proof = page.locator('.performance-proof');
-  const proofBox = await proof.boundingBox();
-  const metrics = await proof.locator(':scope > div:not(.proof-meta)').evaluateAll((items) =>
-    items.map((item) => {
-      const rect = item.getBoundingClientRect();
-      return { x: Math.round(rect.x), y: Math.round(rect.y), width: Math.round(rect.width) };
-    }),
-  );
-  const metaItems = await proof.locator('.proof-meta > *').evaluateAll((items) =>
-    items.map((item) => Math.round(item.getBoundingClientRect().y)),
-  );
-  expect(metrics[0].y).toBe(metrics[1].y);
-  expect(metrics[0].width).toBe(metrics[1].width);
-  expect(metaItems[0]).toBe(metaItems[1]);
-  expect(proofBox?.height).toBeLessThan(210);
-});
+for (const width of [320, 360, 390]) {
+  test(`mobile performance evidence stays aligned at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto('/');
+    const proof = page.locator('.performance-proof');
+    const proofBox = await proof.boundingBox();
+    const metrics = await proof.locator(':scope > div:not(.proof-meta)').evaluateAll((items) =>
+      items.map((item) => {
+        const rect = item.getBoundingClientRect();
+        return { x: Math.round(rect.x), y: Math.round(rect.y), width: Math.round(rect.width) };
+      }),
+    );
+    const metaItems = await proof.locator('.proof-meta > *').evaluateAll((items) =>
+      items.map((item) => Math.round(item.getBoundingClientRect().y)),
+    );
+    const metricText = await proof.locator(':scope > div:not(.proof-meta)').evaluateAll((items) =>
+      items.map((item) => {
+        const label = item.querySelector('span')?.getBoundingClientRect();
+        const value = item.querySelector('strong')?.getBoundingClientRect();
+        const description = item.querySelector('small')?.getBoundingClientRect();
+        return {
+          labelY: Math.round(label?.y ?? 0),
+          valueY: Math.round(value?.y ?? 0),
+          descriptionHeight: Math.round(description?.height ?? 0),
+        };
+      }),
+    );
+    expect(metrics[0].y).toBe(metrics[1].y);
+    expect(metrics[0].width).toBe(metrics[1].width);
+    expect(metaItems[0]).toBe(metaItems[1]);
+    expect(metricText[0].labelY).toBe(metricText[1].labelY);
+    expect(metricText[0].valueY).toBe(metricText[1].valueY);
+    expect(metricText[0].descriptionHeight).toBe(metricText[1].descriptionHeight);
+    expect(metricText[0].descriptionHeight).toBeLessThanOrEqual(width < 390 ? 52 : 34);
+    expect(proofBox?.height).toBeLessThan(width === 320 ? 230 : 210);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
+  });
+
+  test(`mobile lifecycle cards stay grouped at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto('/');
+    const cards = await page.locator('.lifecycle-card').evaluateAll((items) =>
+      items.map((item) => {
+        const heading = item.querySelector('div')?.getBoundingClientRect();
+        const body = item.querySelector('p')?.getBoundingClientRect();
+        const card = item.getBoundingClientRect();
+        return {
+          gap: Math.round((body?.top ?? 0) - (heading?.bottom ?? 0)),
+          height: Math.round(card.height),
+        };
+      }),
+    );
+    expect(cards).toHaveLength(3);
+    expect(Math.max(...cards.map((card) => card.gap))).toBeLessThanOrEqual(16);
+    expect(Math.max(...cards.map((card) => card.height))).toBeLessThan(190);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
+  });
+}
 
 test('onboarding distinguishes applied recommendations from undecided policy', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
