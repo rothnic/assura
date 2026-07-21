@@ -8,21 +8,36 @@ ls:
         .dir: kebab-case
         "{agents,assets,references,scripts}":
           .dir: kebab-case
-        "*":
-          .dir: exists:0
-        .*: exists:0
-        .md: regex:SKILL | exists:1
+        .md: regex:SKILL
+      # ASSURA GAP: SKILL.md content and length remain unchecked.
+      # LIMIT: SKILL.md is not required; extra dirs and file types remain allowed.
 
-  # App and package naming repeats at each scoped tree.
-  "{apps,packages}":
-    .dir: kebab-case
+  # Optional app workspaces repeat the complete naming contract.
+  apps:
+    .dir: kebab-case | exists:0-1
     "*":
       .dir: kebab-case
       .js: kebab-case
       .jsx: kebab-case
+      .json: regex:(package|tsconfig)
       .md: kebab-case | regex:(AGENTS|README)
       .ts: kebab-case
       .tsx: kebab-case
+  # LIMIT: optional apps cannot safely require children when absent.
+
+  # Required package workspaces repeat the same naming contract.
+  packages:
+    .dir: kebab-case | exists:1
+    "*":
+      .dir: kebab-case
+      .js: kebab-case
+      .jsx: kebab-case
+      .json: regex:(package|tsconfig)
+      .md: kebab-case | regex:(AGENTS|README)
+      .ts: kebab-case
+      .tsx: kebab-case
+  # ASSURA GAP: package.json and AGENTS.md cannot each be required by name.
+  # ASSURA GAP: no named contracts with scoped repair metadata.
 
   # Global directory and authored-file naming.
   .dir: kebab-case
@@ -32,6 +47,8 @@ ls:
   .ts: kebab-case
   .tsx: kebab-case
   .yaml: kebab-case
+  # ASSURA GAP: root guides, manifests, and workspace files are not required.
+  # ASSURA GAP: no line or aggregate child limit, severity, or message.
 
 ignore:
   - .assura

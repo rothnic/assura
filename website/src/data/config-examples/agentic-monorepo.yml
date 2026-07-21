@@ -48,6 +48,7 @@ structure:
     ./: exists:0-1
     ./*/: $workspace
   packages/:
+    ./: exists:1
     ./*/: $workspace
 
   # Required root files, alphabetically.

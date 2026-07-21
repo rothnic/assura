@@ -9,6 +9,8 @@ use tempfile::TempDir;
 mod shell_artifacts;
 
 static LS_LINT_BINARY: OnceLock<PathBuf> = OnceLock::new();
+const MARKETING_LS_LINT_POLICY: &str =
+    include_str!("../../website/src/data/config-examples/agentic-monorepo.ls-lint.yml");
 
 fn native_ls_lint_binary() -> &'static Path {
     LS_LINT_BINARY
@@ -102,6 +104,63 @@ fn run_native_ls_lint(project: &TempDir) -> (bool, Vec<String>) {
 fn run_assura_paths(project: &TempDir) -> (bool, Vec<String>) {
     let report = super::run_json_check(project);
     paths_from_assura_report(&report)
+}
+
+fn write_marketing_lslint_fixture(project: &TempDir, include_skill: bool) {
+    fs::write(
+        project.path().join(".ls-lint.yml"),
+        MARKETING_LS_LINT_POLICY,
+    )
+    .unwrap();
+    fs::create_dir_all(project.path().join("packages/core")).unwrap();
+    fs::write(project.path().join("packages/core/AGENTS.md"), "").unwrap();
+    fs::write(project.path().join("packages/core/package.json"), "{}").unwrap();
+
+    if include_skill {
+        fs::create_dir_all(project.path().join(".agents/skills/review")).unwrap();
+        fs::write(project.path().join(".agents/skills/review/SKILL.md"), "").unwrap();
+    }
+}
+
+#[test]
+fn marketing_lslint_fixture_accepts_absent_optional_scopes() {
+    let project = TempDir::new().unwrap();
+    write_marketing_lslint_fixture(&project, false);
+
+    let (success, paths) = run_native_ls_lint(&project);
+    assert!(
+        success,
+        "native LS-Lint rejected optional scopes: {paths:?}"
+    );
+}
+
+#[test]
+fn marketing_lslint_fixture_accepts_representative_project_shape() {
+    let project = TempDir::new().unwrap();
+    write_marketing_lslint_fixture(&project, true);
+
+    let (success, paths) = run_native_ls_lint(&project);
+    assert!(
+        success,
+        "native LS-Lint rejected representative shape: {paths:?}"
+    );
+}
+
+#[test]
+fn marketing_lslint_fixture_accepts_empty_required_package_directory() {
+    let project = TempDir::new().unwrap();
+    fs::write(
+        project.path().join(".ls-lint.yml"),
+        MARKETING_LS_LINT_POLICY,
+    )
+    .unwrap();
+    fs::create_dir(project.path().join("packages")).unwrap();
+
+    let (success, paths) = run_native_ls_lint(&project);
+    assert!(
+        success,
+        "native LS-Lint over-constrained empty packages: {paths:?}"
+    );
 }
 
 fn paths_from_assura_report(report: &serde_json::Value) -> (bool, Vec<String>) {

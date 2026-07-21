@@ -8,7 +8,7 @@ type CodeLine = {
   value?: string;
   hasSeparator?: boolean;
   comment?: string;
-  tone?: 'section' | 'scope' | 'definition' | 'directive' | 'required' | 'optional' | 'limit';
+  tone?: 'section' | 'scope' | 'definition' | 'directive' | 'required' | 'optional' | 'limit' | 'gap';
 };
 
 const toneFor = (key: string, value?: string): CodeLine['tone'] => {
@@ -26,7 +26,11 @@ const parsePolicy = (policy: string): CodeLine[] => {
   return policy.trimEnd().split('\n').map((text) => {
     if (!text.trim()) return {};
     const indent = Math.floor((text.length - text.trimStart().length) / 2);
-    if (text.trimStart().startsWith('#')) return { indent, comment: text.trimStart().slice(1).trim() };
+    if (text.trimStart().startsWith('#')) {
+      const comment = text.trimStart().slice(1).trim();
+      const tone = /^(ASSURA GAP|LIMIT):/.test(comment) ? 'gap' : undefined;
+      return { indent, comment, tone };
+    }
     const content = text.trim();
     const separator = content.indexOf(':');
     const key = separator === -1 ? content : content.slice(0, separator);
@@ -39,14 +43,15 @@ const parsePolicy = (policy: string): CodeLine[] => {
 
 const assuraLines = parsePolicy(assuraPolicy);
 const lsLintLines = parsePolicy(lsLintPolicy);
+const policyLineCount = (policy: string) => policy.split('\n').filter((line) => line.trim() && !line.trimStart().startsWith('#')).length;
 const coverageRows = [
-  { capability: 'Directory and authored-file naming', assura: 'Reusable defaults', lsLint: 'Repeated scoped rules', shared: true },
+  { capability: 'File and directory naming', assura: 'Recursive defaults + reusable rules', lsLint: 'Supported with cascading scopes', shared: true },
   { capability: 'Generated-output ignores', assura: 'Supported', lsLint: 'Supported', shared: true },
-  { capability: 'Exact root and workspace files', assura: 'Required by name', lsLint: 'Extension counts only' },
-  { capability: 'Line and child limits', assura: 'Advisory thresholds', lsLint: 'Not supported' },
-  { capability: 'Markdown frontmatter', assura: 'Required for skills', lsLint: 'Not supported' },
-  { capability: 'Reusable hierarchy contracts', assura: '$workspace + $skill', lsLint: 'Repeat each scope' },
-  { capability: 'Repair guidance for agents', assura: 'Severity + message', lsLint: 'Not supported' },
+  { capability: 'Required project shape', assura: 'Exact folders, guides, and manifests', lsLint: 'Type counts cannot cover every named path' },
+  { capability: 'Line and aggregate child limits', assura: 'Advisory thresholds', lsLint: 'Per-selector counts only' },
+  { capability: 'Markdown content', assura: 'Required skill frontmatter', lsLint: 'Filename only' },
+  { capability: 'Named hierarchy contracts', assura: '$workspace + $skill', lsLint: 'Cascades or YAML aliases' },
+  { capability: 'Agent repair context', assura: 'Severity + fix document', lsLint: 'No native rule' },
 ];
 ---
 
@@ -94,25 +99,38 @@ const coverageRows = [
     <header class="policy-wipe-head">
       <div>
         <span>Configuration comparison</span>
-        <h4 id="policy-compare-title">Compare shared filesystem rules first, then the policy Assura adds.</h4>
-      </div>
-      <div class="policy-wipe-actions" role="tablist" aria-label="Configuration view">
-        <button type="button" id="policy-tab-assura" role="tab" aria-selected="true" aria-controls="policy-panel-assura" data-policy-tab="assura">Assura</button>
-        <button type="button" id="policy-tab-lslint" role="tab" aria-selected="false" aria-controls="policy-panel-lslint" data-policy-tab="lslint" tabindex="-1">LS-Lint</button>
+        <h4 id="policy-compare-title">The extra lines define quality policies LS-Lint cannot express.</h4>
       </div>
     </header>
+
+    <div class="policy-size-explainer">
+      <div class="is-assura">
+        <span>{policyLineCount(assuraPolicy)} policy lines</span>
+        <strong>Shared filesystem checks plus five project-quality policies.</strong>
+      </div>
+      <div class="is-lslint">
+        <span>{policyLineCount(lsLintPolicy)} policy lines</span>
+        <strong>Closest naming, scope, count, and ignore coverage.</strong>
+      </div>
+      <p>These are intentionally not equivalent-size configs. Assura is larger because it also defines exact project shape, thresholds, content checks, reusable contracts, and repair context.</p>
+    </div>
 
     <div class="policy-coverage" role="table" aria-label="Assura and LS-Lint capability coverage">
       <div class="policy-coverage-row is-heading" role="row">
         <span role="columnheader">Capability</span><strong role="columnheader">Assura</strong><strong role="columnheader">LS-Lint</strong>
       </div>
       {coverageRows.map((row) => (
-        <div class:list={['policy-coverage-row', row.shared && 'is-shared']} role="row">
+        <div class:list={['policy-coverage-row', row.shared ? 'is-shared' : 'is-gap']} role="row">
           <span role="cell">{row.capability}</span><strong role="cell" data-tool="Assura">{row.assura}</strong><strong role="cell" data-tool="LS-Lint">{row.lsLint}</strong>
         </div>
       ))}
     </div>
     <p class="policy-coverage-note">The cold benchmark measures only shared naming, ignore, scope, and cardinality work. Assura-only capabilities are shown here as product coverage, not counted as LS-Lint performance work.</p>
+
+    <div class="policy-wipe-actions" role="tablist" aria-label="Configuration view">
+      <button type="button" id="policy-tab-assura" role="tab" aria-selected="true" aria-controls="policy-panel-assura" data-policy-tab="assura"><span>Assura</span><small>Full policy</small></button>
+      <button type="button" id="policy-tab-lslint" role="tab" aria-selected="false" aria-controls="policy-panel-lslint" data-policy-tab="lslint" tabindex="-1"><span>LS-Lint</span><small>Closest coverage</small></button>
+    </div>
 
     <div class="policy-wipe-stage">
       <section class="policy-wipe-layer is-assura" id="policy-panel-assura" role="tabpanel" aria-labelledby="policy-tab-assura" aria-label="Assura configuration" aria-hidden="false">

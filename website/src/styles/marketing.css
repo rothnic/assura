@@ -3123,13 +3123,66 @@
     font-size: 1.05rem;
   }
 
+  .policy-size-explainer {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border-top: 1px solid var(--border);
+    background: var(--surface-muted);
+  }
+
+  .policy-size-explainer > div {
+    display: grid;
+    gap: 0.32rem;
+    border-left: 3px solid var(--border-strong);
+    padding: 0.9rem 1.15rem;
+  }
+
+  .policy-size-explainer > div.is-assura {
+    border-left-color: var(--primary);
+  }
+
+  .policy-size-explainer > div.is-lslint {
+    border-left-color: var(--soft);
+  }
+
+  .policy-size-explainer span {
+    color: var(--soft);
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .policy-size-explainer strong {
+    max-width: 28rem;
+    color: var(--foreground);
+    font-size: 0.78rem;
+    line-height: 1.45;
+  }
+
+  .policy-size-explainer > p {
+    grid-column: 1 / -1;
+    margin: 0;
+    border-top: 1px solid var(--border);
+    padding: 0.75rem 1.15rem;
+    color: var(--muted);
+    font-size: 0.74rem;
+    line-height: 1.5;
+  }
+
   .policy-wipe-actions {
     display: flex;
     flex: 0 0 auto;
     gap: 0.35rem;
+    border-top: 1px solid var(--border);
+    padding: 0.65rem 1.15rem;
+    background: var(--surface);
   }
 
   .policy-wipe-actions button {
+    display: grid;
+    flex: 1;
+    gap: 0.12rem;
     cursor: pointer;
     min-height: 2.75rem;
     border: 1px solid var(--border-strong);
@@ -3140,12 +3193,27 @@
     font: inherit;
     font-size: 0.74rem;
     font-weight: 750;
+    text-align: left;
+  }
+
+  .policy-wipe-actions button small {
+    color: var(--soft);
+    font-size: 0.62rem;
+    font-weight: 650;
   }
 
   .policy-wipe-actions button[aria-selected="true"],
   .policy-wipe-actions button:hover {
     border-color: color-mix(in srgb, var(--primary) 55%, var(--border));
     background: var(--primary-soft);
+    color: var(--primary);
+  }
+
+  .policy-wipe-actions button[aria-selected="true"] {
+    box-shadow: inset 0 -2px 0 var(--primary);
+  }
+
+  .policy-wipe-actions button[aria-selected="true"] small {
     color: var(--primary);
   }
 
@@ -3186,6 +3254,14 @@
 
   .policy-coverage-row.is-shared > strong {
     color: var(--primary);
+  }
+
+  .policy-coverage-row.is-gap > strong:first-of-type {
+    color: var(--primary);
+  }
+
+  .policy-coverage-row.is-gap > strong:last-of-type {
+    color: var(--danger);
   }
 
   .policy-coverage-note {
@@ -3276,6 +3352,19 @@
   .policy-code-comment {
     color: #a1a1aa;
     font-style: italic;
+  }
+
+  .policy-code-line.is-gap {
+    margin: 0.3rem 0;
+    border-left: 2px solid #f87171;
+    background: rgba(248, 113, 113, 0.09);
+    padding: 0.35rem 0.5rem 0.35rem calc(var(--indent) * 1.15rem + 0.5rem);
+  }
+
+  .policy-code-line.is-gap .policy-code-comment {
+    color: #fca5a5;
+    font-style: normal;
+    font-weight: 750;
   }
 
   .policy-code-line.is-section .policy-code-key {
@@ -3824,8 +3913,22 @@
       align-items: start;
     }
 
+    .policy-size-explainer {
+      grid-template-columns: 1fr;
+    }
+
+    .policy-size-explainer > div {
+      padding-inline: 0.8rem;
+    }
+
+    .policy-size-explainer > p {
+      grid-column: auto;
+      padding-inline: 0.8rem;
+    }
+
     .policy-wipe-actions {
       width: 100%;
+      padding-inline: 0.8rem;
     }
 
     .policy-wipe-actions button {
@@ -3884,6 +3987,10 @@
 
     .policy-code-line {
       padding-left: calc(var(--indent) * 0.85rem);
+    }
+
+    .policy-code-line.is-gap {
+      padding-left: calc(var(--indent) * 0.85rem + 0.45rem);
     }
 
     .policy-code-comment {

@@ -285,8 +285,8 @@ for (const colorScheme of themes) {
 test('performance policy tabs distinguish full and filesystem configurations', async ({ page }) => {
   await page.goto('/performance/#regression-cases');
   const comparison = page.locator('[data-policy-switch]');
-  const assuraTab = comparison.getByRole('tab', { name: 'Assura' });
-  const lsLintTab = comparison.getByRole('tab', { name: 'LS-Lint' });
+  const assuraTab = comparison.getByRole('tab', { name: /^Assura/ });
+  const lsLintTab = comparison.getByRole('tab', { name: /^LS-Lint/ });
   await expect(assuraTab).toHaveAttribute('aria-selected', 'true');
   await expect(comparison.locator('.policy-wipe-layer.is-assura')).toBeVisible();
   await expect(comparison.locator('.policy-wipe-layer.is-lslint')).toBeHidden();
@@ -294,6 +294,17 @@ test('performance policy tabs distinguish full and filesystem configurations', a
   await expect(lsLintTab).toHaveAttribute('aria-selected', 'true');
   await expect(comparison.locator('.policy-wipe-layer.is-lslint')).toBeVisible();
   await expect(comparison.locator('.policy-wipe-layer.is-assura')).toBeHidden();
+  await expect(comparison.locator('.policy-wipe-actions + .policy-wipe-stage')).toBeVisible();
+  await expect(comparison.locator('.policy-code-line.is-gap')).toHaveCount(7);
+  await expect(comparison.locator('.policy-code-line.is-gap')).toContainText([
+    'SKILL.md content and length remain unchecked',
+    'SKILL.md is not required; extra dirs and file types remain allowed',
+    'optional apps cannot safely require children when absent',
+    'package.json and AGENTS.md cannot each be required by name',
+    'no named contracts with scoped repair metadata',
+    'root guides, manifests, and workspace files are not required',
+    'no line or aggregate child limit, severity, or message',
+  ]);
 });
 
 test('performance policy renders the checked Assura YAML fixture exactly', async ({ page }) => {
@@ -322,8 +333,8 @@ test('performance policy tabs are touch-sized and support arrow-key switching', 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/performance/#regression-cases');
   const comparison = page.locator('[data-policy-switch]');
-  const assuraTab = comparison.getByRole('tab', { name: 'Assura' });
-  const lsLintTab = comparison.getByRole('tab', { name: 'LS-Lint' });
+  const assuraTab = comparison.getByRole('tab', { name: /^Assura/ });
+  const lsLintTab = comparison.getByRole('tab', { name: /^LS-Lint/ });
   for (const tab of [assuraTab, lsLintTab]) {
     const box = await tab.boundingBox();
     expect(box?.height).toBeGreaterThanOrEqual(44);

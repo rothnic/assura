@@ -33,6 +33,14 @@ and dark color schemes before claiming completion.
 - In syntax-highlighted configuration examples, color keys consistently whether
   they open a nested scope or assign an inline value. Apply secondary color to
   the value token, not the entire line, so paths do not imply different states.
+- For tool comparisons, render checked configuration fixtures exactly and keep
+  the view selector directly adjacent to the content it changes. Separate the
+  shared benchmark surface from Assura-only capabilities before showing code.
+- When a comparison fixture cannot express a marketed Assura guarantee, mark
+  the limitation beside the relevant valid YAML as a comment and style it as an
+  annotation. Do not present unsupported behavior as equivalent coverage.
+- Keep marketing claims executable: if copy says a path is required, the
+  checked fixture must include the corresponding required-path directive.
 
 ---
 
@@ -53,3 +61,5 @@ For landing-page work, collect:
 - Do existing Starlight docs routes still build and render?
 - Do text, buttons, and navigation avoid wrapping overflow on mobile?
 - Do light and dark palettes preserve contrast for small text?
+- Can a reader distinguish shared coverage, unsupported behavior, and the
+  currently selected configuration without reading both files end to end?
