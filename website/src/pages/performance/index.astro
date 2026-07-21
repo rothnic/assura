@@ -15,11 +15,14 @@ type ResultRow = {
   directory_count?: number;
   rule_count?: number;
   rule_surface_summary?: string;
+  native_ls_lint_parity?: boolean;
+  shared_config_id?: string;
   status?: string;
 };
 
 type PerformanceReport = {
   timestamp?: string;
+  ls_lint_package?: string;
   environment?: {
     os?: string;
     arch?: string;
@@ -45,8 +48,8 @@ type FixtureDefinition = {
   id: string;
   label: string;
   kind: string;
+  variable: string;
   tree: string[];
-  tested: string;
 };
 
 type FeaturedFixture = {
@@ -62,57 +65,57 @@ const fixtures: FixtureDefinition[] = [
     id: 'simple_library',
     label: 'Small library',
     kind: 'Rust package',
+    variable: 'Small startup-sensitive tree',
     tree: ['README.md', 'src / lib.rs', 'tests / smoke_test.rs', 'target / ignored'],
-    tested: 'Source and test naming, Markdown counts, directory naming, and build-output pruning.',
   },
   {
     id: 'web_app',
     label: 'Web app',
     kind: 'Frontend app',
+    variable: 'Frontend extensions and assets',
     tree: ['src / App.tsx', 'src / app.test.tsx', 'public / logo-icon.png', 'dist / ignored'],
-    tested: 'Components, tests, CSS modules, assets, directory names, and dist pruning.',
   },
   {
     id: 'monorepo_packages',
     label: 'Package monorepo',
     kind: 'Two packages',
+    variable: 'Nested package scopes',
     tree: ['packages / core / src + tests', 'packages / ui / src + tests', 'package README files', 'package dist / ignored'],
-    tested: 'Package-local TypeScript, TSX, tests, docs, directory scopes, and generated output.',
   },
   {
     id: 'monorepo_policy',
     label: 'Strict monorepo policy',
     kind: 'Apps + packages',
+    variable: 'Broad root and workspace policy',
     tree: ['apps / web-dashboard + admin-console', 'packages / core + ui-kit', 'docs + scripts + infra + config', 'build output + node_modules / ignored'],
-    tested: 'Root allowlists, app and package scopes, source bans, docs, config exceptions, and pruning.',
   },
   {
     id: 'rule_heavy_repo',
     label: 'Rule-heavy project',
     kind: 'Many file types',
+    variable: 'Many extension rules',
     tree: ['feature-00 ... feature-07', '24 files per feature', '36 multipart extensions', 'wildcard naming fallback'],
-    tested: 'A broad extension and subextension naming surface across a realistic feature tree.',
   },
   {
     id: 'ignored_generated_heavy_repo',
     label: 'Generated-heavy project',
     kind: 'Large ignored areas',
+    variable: 'Large ignored trees',
     tree: ['src / index-file.ts', 'generated / 384 files ignored', 'coverage / 384 files ignored', '52 directories in fixture'],
-    tested: 'Early pruning of large invalid generated and coverage trees before validation work.',
   },
   {
     id: 'multipart_extension_regression',
     label: 'Multipart extension scale',
     kind: '1,500 source files',
+    variable: 'Long multipart filenames',
     tree: ['src', 'file-0000 ... file-1499', '*.a.b.c.d.e.f.g.h.i.j.k.js', 'one kebab-case naming policy'],
-    tested: 'Long multipart extensions at high file count without multiplying rule work.',
   },
   {
     id: 'many_configured_scopes_regression',
     label: 'Configured scope scale',
     kind: '800 package scopes',
+    variable: 'Many explicit scopes',
     tree: ['pkg-0000 ... pkg-0799', 'file-name.js in every scope', 'one explicit rule per scope', 'root directory naming rule'],
-    tested: 'A large configuration with many explicit package scopes and root directory naming.',
   },
 ];
 
@@ -178,6 +181,9 @@ const cards = fixtures.map((fixture) => {
     coldRatio: cold?.median_runtime_ms && lslint?.median_runtime_ms
       ? lslint.median_runtime_ms / cold.median_runtime_ms
       : null,
+    warmRatio: warm?.median_runtime_ms && lslint?.median_runtime_ms
+      ? lslint.median_runtime_ms / warm.median_runtime_ms
+      : null,
   };
 });
 const featuredCases = featuredFixtures.map((featured) => ({
@@ -222,7 +228,7 @@ function formatCount(value?: number): string {
         </p>
         <div class="hero-actions">
           <a class="button button-primary" href="#measured-comparison">See the measured comparison</a>
-          <a class="button button-secondary surface" href="#regression-cases">Inspect regression cases</a>
+          <a class="button button-secondary surface" href="#benchmark-projects">Compare all eight cases</a>
         </div>
       </div>
 
@@ -328,16 +334,53 @@ function formatCount(value?: number): string {
         <span><b>{iterations}</b> timed samples</span>
       </div>
 
+      <div class="benchmark-cohort-head" id="benchmark-projects">
+        <div>
+          <span>All eight measured cases</span>
+          <strong>See what changes and how the speed changes with it.</strong>
+        </div>
+        <p>Each row runs equivalent naming, scope, count, and ignore work through both cold release CLIs. Warm timing is the persistent Assura agent loop. Report: <code>{report.ls_lint_package ?? 'LS-Lint'}</code> · {report.timestamp?.slice(0, 10) ?? 'date unavailable'} UTC.</p>
+      </div>
+
+      <div class="benchmark-matrix" role="table" aria-label="All benchmark project differences and timings">
+        <div class="benchmark-matrix-row benchmark-matrix-head" role="row">
+          <span role="columnheader">Test case</span>
+          <span role="columnheader">Difference tested</span>
+          <span role="columnheader">Cold CLI time</span>
+          <span role="columnheader">Measured difference</span>
+        </div>
+        {cards.map((card) => (
+          <div
+            class="benchmark-matrix-row"
+            role="row"
+            data-fixture-id={card.id}
+            data-fixture-cohort={card.cold?.fixture_cohort}
+            data-shared-config-id={card.cold?.shared_config_id}
+            data-native-parity={String(card.cold?.native_ls_lint_parity === true)}
+          >
+            <div role="cell" data-label="Test case"><strong>{card.label}</strong><small>{card.kind}</small></div>
+            <div role="cell" data-label="Test focus"><strong>{card.variable}</strong><small>{formatCount(card.cold?.checked_file_count)} checked · {formatCount(card.cold?.directory_count)} dirs · {formatCount(card.cold?.rule_count)} rules</small></div>
+            <div role="cell" data-label="Cold time"><strong>Assura {formatMs(card.cold?.median_runtime_ms)}</strong><small>LS-Lint {formatMs(card.lslint?.median_runtime_ms)}</small></div>
+            <div role="cell" data-label="Speed"><strong>{card.coldRatio?.toFixed(2) ?? 'n/a'}x faster cold</strong><small>{formatMs(card.warm?.median_runtime_ms)} warm · {card.warmRatio?.toFixed(1) ?? 'n/a'}x faster</small></div>
+          </div>
+        ))}
+      </div>
+
+      <div class="benchmark-detail-head">
+        <span>Three diagnostic fixtures</span>
+        <strong>Open a case to inspect its generated tree, source policy, and measured scale.</strong>
+      </div>
+
       <div class="benchmark-card-grid">
         {featuredCases.map((card) => (
-          <article class="benchmark-card" id={card.id.replaceAll('_', '-')}>
-            <header>
+          <details class="benchmark-card" id={card.id.replaceAll('_', '-')}>
+            <summary>
               <div>
                 <span>{card.signal}</span>
                 <h3>{card.label}</h3>
               </div>
-              <strong>Assura {card.coldRatio?.toFixed(2) ?? 'n/a'}x</strong>
-            </header>
+              <strong>{card.coldRatio?.toFixed(2) ?? 'n/a'}x faster</strong>
+            </summary>
 
             <div class="benchmark-shape" aria-label={`${card.label} project tree`}>
               <div class="benchmark-tree-root">project/</div>
@@ -373,7 +416,7 @@ function formatCount(value?: number): string {
               <div><dt>LS-Lint cold</dt><dd>{formatMs(card.lslint?.median_runtime_ms)}</dd></div>
               <div><dt>Assura warm</dt><dd>{formatMs(card.warm?.median_runtime_ms)}</dd></div>
             </dl>
-          </article>
+          </details>
         ))}
       </div>
     </section>
@@ -408,35 +451,6 @@ function formatCount(value?: number): string {
         </article>
       </div>
       <p class="impact-scope-note">This benchmark measures elapsed runtime. CPU utilization, disk I/O, agent memory or token use, and avoided rework are product rationale for keeping checks fast, not measured outcomes in this report.</p>
-    </section>
-
-    <section id="benchmark-projects" class="benchmark-matrix-section" aria-labelledby="matrix-title">
-      <header class="benchmark-section-head">
-        <div>
-          <p class="eyebrow">The complete comparison cohort</p>
-          <h2 id="matrix-title">Eight shapes. Every result visible.</h2>
-        </div>
-        <p>Smaller startup-sensitive projects and broader realistic trees remain alongside the four focused regression cases.</p>
-      </header>
-      <details class="benchmark-matrix-disclosure">
-        <summary>View all eight project measurements</summary>
-        <div class="benchmark-matrix" role="table" aria-label="All benchmark projects and timings">
-          <div class="benchmark-matrix-row benchmark-matrix-head" role="row">
-            <span role="columnheader">Project</span>
-            <span role="columnheader">Measured shape</span>
-            <span role="columnheader">Cold comparison</span>
-            <span role="columnheader">Warm Assura session</span>
-          </div>
-          {cards.map((card) => (
-            <div class="benchmark-matrix-row" role="row">
-              <div role="cell" data-label="Project"><strong>{card.label}</strong><small>{card.kind}</small></div>
-              <div role="cell" data-label="Shape"><strong>{formatCount(card.cold?.checked_file_count)} files · {formatCount(card.cold?.directory_count)} dirs</strong><small>{formatCount(card.cold?.rule_count)} rules · {formatCount(card.cold?.ignored_file_count)} ignored</small></div>
-              <div role="cell" data-label="Cold"><strong>Assura {formatMs(card.cold?.median_runtime_ms)}</strong><small>LS-Lint {formatMs(card.lslint?.median_runtime_ms)} · {card.coldRatio?.toFixed(2) ?? 'n/a'}x</small></div>
-              <div role="cell" data-label="Warm"><strong>{formatMs(card.warm?.median_runtime_ms)}</strong><small>persistent Assura session</small></div>
-            </div>
-          ))}
-        </div>
-      </details>
     </section>
 
     <section class="benchmark-method" aria-labelledby="method-title">

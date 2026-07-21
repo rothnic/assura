@@ -39,6 +39,14 @@ and dark color schemes before claiming completion.
 - When a comparison fixture cannot express a marketed Assura guarantee, mark
   the limitation beside the relevant valid YAML as a comment and style it as an
   annotation. Do not present unsupported behavior as equivalent coverage.
+- Map every displayed competitor limitation one-to-one to an executable native
+  tool scenario. The test must compare the exact displayed claim list with the
+  proof registry so copy cannot be added, removed, or reworded without updating
+  its behavioral evidence.
+- Present multi-fixture performance evidence as a visible comparison table
+  before verbose fixture internals. Each row should identify the variable under
+  test, workload scale, both cold timings, the cold speed ratio, and the warm
+  timing; keep generated trees and source policies in optional disclosures.
 - Keep marketing claims executable: if copy says a path is required, the
   checked fixture must include the corresponding required-path directive.
 

@@ -43,14 +43,15 @@ const parsePolicy = (policy: string): CodeLine[] => {
 
 const assuraLines = parsePolicy(assuraPolicy);
 const lsLintLines = parsePolicy(lsLintPolicy);
+const lsLintLimitationCount = lsLintLines.filter((line) => line.tone === 'gap').length;
 const policyLineCount = (policy: string) => policy.split('\n').filter((line) => line.trim() && !line.trimStart().startsWith('#')).length;
 const coverageRows = [
   { capability: 'File and directory naming', assura: 'Recursive defaults + reusable rules', lsLint: 'Supported with cascading scopes', shared: true },
   { capability: 'Generated-output ignores', assura: 'Supported', lsLint: 'Supported', shared: true },
-  { capability: 'Required project shape', assura: 'Exact folders, guides, and manifests', lsLint: 'Type counts cannot cover every named path' },
+  { capability: 'Required project shape', assura: 'Independent required and optional paths', lsLint: 'Exact counts; optional peers excluded' },
   { capability: 'Line and aggregate child limits', assura: 'Advisory thresholds', lsLint: 'Per-selector counts only' },
   { capability: 'Markdown content', assura: 'Required skill frontmatter', lsLint: 'Filename only' },
-  { capability: 'Named hierarchy contracts', assura: '$workspace + $skill', lsLint: 'Cascades or YAML aliases' },
+  { capability: 'Named hierarchy contracts', assura: '$workspace + $skill with rule metadata', lsLint: 'Cascades or YAML aliases' },
   { capability: 'Agent repair context', assura: 'Severity + fix document', lsLint: 'No native rule' },
 ];
 ---
@@ -125,7 +126,7 @@ const coverageRows = [
         </div>
       ))}
     </div>
-    <p class="policy-coverage-note">The cold benchmark measures only shared naming, ignore, scope, and cardinality work. Assura-only capabilities are shown here as product coverage, not counted as LS-Lint performance work.</p>
+    <p class="policy-coverage-note">The cold benchmark measures only shared naming, ignore, scope, and cardinality work. Assura-only capabilities are shown here as product coverage, not counted as LS-Lint performance work. All {lsLintLimitationCount} red limitations are exercised against the same pinned native LS-Lint 2.3.0 package used by the performance report.</p>
 
     <div class="policy-wipe-actions" role="tablist" aria-label="Configuration view">
       <button type="button" id="policy-tab-assura" role="tab" aria-selected="true" aria-controls="policy-panel-assura" data-policy-tab="assura"><span>Assura</span><small>Full policy</small></button>

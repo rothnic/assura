@@ -9,8 +9,8 @@ ls:
         "{agents,assets,references,scripts}":
           .dir: kebab-case
         .md: regex:SKILL
-      # ASSURA GAP: SKILL.md content and length remain unchecked.
-      # LIMIT: SKILL.md is not required; extra dirs and file types remain allowed.
+      # ASSURA GAP: SKILL.md content and file line count remain unchecked.
+      # LIMIT: SKILL.md is named when present, not required by this absent-safe config.
 
   # Optional app workspaces repeat the complete naming contract.
   apps:
@@ -23,34 +23,35 @@ ls:
       .md: kebab-case | regex:(AGENTS|README)
       .ts: kebab-case
       .tsx: kebab-case
-  # LIMIT: optional apps cannot safely require children when absent.
+  # ASSURA GAP: optional trees cannot require nested files without failing when absent.
 
-  # Required package workspaces repeat the same naming contract.
+  # Required package workspaces repeat naming and add exact required counts.
   packages:
     .dir: kebab-case | exists:1
     "*":
       .dir: kebab-case
       .js: kebab-case
       .jsx: kebab-case
-      .json: regex:(package|tsconfig)
-      .md: kebab-case | regex:(AGENTS|README)
+      .json: regex:^package$ | exists:1
+      .md: regex:^AGENTS$ | exists:1
       .ts: kebab-case
       .tsx: kebab-case
-  # ASSURA GAP: package.json and AGENTS.md cannot each be required by name.
-  # ASSURA GAP: no named contracts with scoped repair metadata.
+  # ASSURA GAP: optional package peers must be ignored to preserve exact required counts.
 
-  # Global directory and authored-file naming.
+  # Global naming plus the exact required root file counts.
   .dir: kebab-case
   .js: kebab-case
   .jsx: kebab-case
-  .md: kebab-case | regex:(AGENTS|README)
+  .json: regex:^(package|turbo)$ | exists:2
+  .md: kebab-case | regex:^(AGENTS|README)$ | exists:2
   .ts: kebab-case
   .tsx: kebab-case
-  .yaml: kebab-case
-  # ASSURA GAP: root guides, manifests, and workspace files are not required.
-  # ASSURA GAP: no line or aggregate child limit, severity, or message.
+  .yaml: regex:^pnpm-(lock|workspace)$ | exists:2
+  # ASSURA GAP: no aggregate child total across mixed files and directories.
+  # ASSURA GAP: no file line limit, severity, or rule-specific repair message.
 
 ignore:
   - .assura
   - .git
+  - "packages/*/{README.md,tsconfig.json}"
   - "**/{node_modules,.next,.turbo,dist,coverage}/**"

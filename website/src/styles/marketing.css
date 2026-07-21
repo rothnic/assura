@@ -3453,15 +3453,21 @@
     background: var(--surface);
   }
 
-  .benchmark-card > header {
+  .benchmark-card > summary {
     display: flex;
     gap: 1rem;
     align-items: start;
     justify-content: space-between;
+    cursor: pointer;
     padding: 1.1rem 1.15rem;
+    list-style: none;
   }
 
-  .benchmark-card > header span,
+  .benchmark-card > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .benchmark-card > summary span,
   .benchmark-tested > span {
     color: var(--soft);
     font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
@@ -3475,7 +3481,7 @@
     font-size: 1.18rem;
   }
 
-  .benchmark-card > header > strong {
+  .benchmark-card > summary > strong {
     flex: 0 0 auto;
     border: 1px solid color-mix(in srgb, var(--primary) 36%, var(--border));
     border-radius: 999px;
@@ -3483,6 +3489,19 @@
     padding: 0.35rem 0.55rem;
     color: var(--primary);
     font-size: 0.72rem;
+  }
+
+  .benchmark-card > summary > strong::after {
+    margin-left: 0.4rem;
+    content: "+";
+  }
+
+  .benchmark-card[open] > summary {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .benchmark-card[open] > summary > strong::after {
+    content: "-";
   }
 
   .benchmark-shape {
@@ -3607,35 +3626,48 @@
     border-top: 1px solid var(--border);
   }
 
-  .benchmark-matrix-disclosure {
-    margin-top: clamp(2rem, 5vw, 3.5rem);
-    border-bottom: 1px solid var(--border);
-  }
-
-  .benchmark-matrix-disclosure summary {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-    justify-content: space-between;
-    cursor: pointer;
+  .benchmark-cohort-head,
+  .benchmark-detail-head {
+    display: grid;
+    grid-template-columns: minmax(14rem, 0.7fr) minmax(0, 1fr);
+    gap: 1.5rem;
+    align-items: end;
     border-top: 1px solid var(--border);
-    padding: 0.95rem 0.9rem;
-    font-weight: 750;
-    list-style: none;
+    padding: 1.1rem 0;
   }
 
-  .benchmark-matrix-disclosure summary::-webkit-details-marker {
-    display: none;
-  }
-
-  .benchmark-matrix-disclosure summary::after {
-    color: var(--primary);
+  .benchmark-cohort-head span,
+  .benchmark-detail-head span {
+    color: var(--soft);
     font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-    content: "+";
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
   }
 
-  .benchmark-matrix-disclosure[open] summary::after {
-    content: "-";
+  .benchmark-cohort-head strong,
+  .benchmark-detail-head strong {
+    display: block;
+    margin-top: 0.3rem;
+  }
+
+  .benchmark-cohort-head p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.84rem;
+    line-height: 1.55;
+  }
+
+  .benchmark-detail-head {
+    margin-top: clamp(2rem, 5vw, 3.5rem);
+  }
+
+  .benchmark-detail-head > strong {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.84rem;
+    font-weight: 500;
+    line-height: 1.55;
   }
 
   .benchmark-matrix-row {
@@ -3784,6 +3816,8 @@
     }
 
     .benchmark-regression-intro,
+    .benchmark-cohort-head,
+    .benchmark-detail-head,
     .benchmark-claim-boundary {
       grid-template-columns: 1fr;
     }
@@ -3823,7 +3857,16 @@
     }
 
     .benchmark-matrix-head {
-      display: none;
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      clip-path: inset(50%);
+      margin: -1px;
+      border: 0;
+      padding: 0;
+      white-space: nowrap;
     }
 
   }
@@ -3886,7 +3929,7 @@
       border-bottom: 1px solid var(--border);
     }
 
-    .benchmark-card > header {
+    .benchmark-card > summary {
       align-items: center;
     }
 

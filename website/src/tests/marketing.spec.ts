@@ -17,6 +17,23 @@ const homepagePolicyFixture = readFileSync(
   'utf8',
 ).trimEnd();
 
+const performanceReport = JSON.parse(
+  readFileSync(new URL('../../public/data/performance/current.json', import.meta.url), 'utf8'),
+) as {
+  ls_lint_package: string;
+  results: Array<{
+    fixture_id: string;
+    fixture_cohort: string;
+    row_family: string;
+    median_runtime_ms: number;
+    native_ls_lint_parity: boolean;
+    shared_config_id: string;
+    status: string;
+  }>;
+};
+
+const formatMeasuredMs = (value: number) => `${value.toFixed(value >= 10 ? 1 : 2)} ms`;
+
 const widths = [360, 390, 430, 768, 1024, 1440];
 const themes = ['light', 'dark'] as const;
 const marketingRoutes = [
@@ -137,14 +154,14 @@ test('performance CTA lands on the measured project cohort', async ({ page }) =>
   await expect(page.locator('.policy-breadth-card')).toHaveCount(1);
   await expect(page.locator('.policy-wipe-layer')).toHaveCount(2);
   await expect(page.getByRole('slider')).toHaveCount(0);
-  await expect(page.getByText('Compare shared filesystem rules first, then the policy Assura adds.', { exact: true })).toBeVisible();
+  await expect(page.getByText('The extra lines define quality policies LS-Lint cannot express.', { exact: true })).toBeVisible();
   await expect(page.locator('.policy-coverage-row')).toHaveCount(8);
   await expect(page.getByText('Quality policy example', { exact: true })).toBeVisible();
   await expect(page.locator('.benchmark-card')).toHaveCount(3);
   await expect(page.locator('.benchmark-config')).toHaveCount(3);
   await expect(page.locator('.benchmark-matrix-row:not(.benchmark-matrix-head)')).toHaveCount(8);
-  await expect(page.getByText('1,501 files', { exact: true })).toBeVisible();
-  await expect(page.getByText('801 rules', { exact: true })).toBeVisible();
+  await expect(page.locator('.benchmark-matrix-row').filter({ hasText: 'Multipart extension scale' })).toContainText('1,501 checked');
+  await expect(page.locator('.benchmark-matrix-row').filter({ hasText: 'Configured scope scale' })).toContainText('801 rules');
   await expect(page.getByText('Download current JSON')).toHaveCount(0);
 });
 
@@ -295,15 +312,17 @@ test('performance policy tabs distinguish full and filesystem configurations', a
   await expect(comparison.locator('.policy-wipe-layer.is-lslint')).toBeVisible();
   await expect(comparison.locator('.policy-wipe-layer.is-assura')).toBeHidden();
   await expect(comparison.locator('.policy-wipe-actions + .policy-wipe-stage')).toBeVisible();
-  await expect(comparison.locator('.policy-code-line.is-gap')).toHaveCount(7);
+  await expect(comparison.locator('.policy-coverage-note')).toContainText(
+    'All 6 red limitations are exercised against the same pinned native LS-Lint 2.3.0 package',
+  );
+  await expect(comparison.locator('.policy-code-line.is-gap')).toHaveCount(6);
   await expect(comparison.locator('.policy-code-line.is-gap')).toContainText([
-    'SKILL.md content and length remain unchecked',
-    'SKILL.md is not required; extra dirs and file types remain allowed',
-    'optional apps cannot safely require children when absent',
-    'package.json and AGENTS.md cannot each be required by name',
-    'no named contracts with scoped repair metadata',
-    'root guides, manifests, and workspace files are not required',
-    'no line or aggregate child limit, severity, or message',
+    'SKILL.md content and file line count remain unchecked',
+    'SKILL.md is named when present, not required by this absent-safe config',
+    'optional trees cannot require nested files without failing when absent',
+    'optional package peers must be ignored to preserve exact required counts',
+    'no aggregate child total across mixed files and directories',
+    'no file line limit, severity, or rule-specific repair message',
   ]);
 });
 
@@ -348,12 +367,50 @@ test('performance policy tabs are touch-sized and support arrow-key switching', 
   await expect(assuraTab).toHaveAttribute('aria-selected', 'true');
 });
 
-test('expanded performance cohort stays compact on mobile', async ({ page }) => {
+test('performance cohort compares all eight variables and timings on mobile', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/performance/#benchmark-projects');
-  await page.getByText('View all eight project measurements').click();
-  const firstRow = page.locator('.benchmark-matrix-row:not(.benchmark-matrix-head)').first();
+  const rows = page.locator('.benchmark-matrix-row:not(.benchmark-matrix-head)');
+  await expect(rows).toHaveCount(8);
+  for (const row of await rows.all()) {
+    await expect(row).not.toContainText('n/a');
+    await expect(row).toContainText('Assura');
+    await expect(row).toContainText('LS-Lint');
+    await expect(row).toContainText('faster cold');
+    await expect(row).toContainText('warm');
+    const fixtureId = await row.getAttribute('data-fixture-id');
+    const fixtureRows = performanceReport.results.filter(
+      (result) => result.fixture_id === fixtureId && result.status === 'pass',
+    );
+    const assura = fixtureRows.find((result) => result.row_family === 'assura-cli');
+    const lsLint = fixtureRows.find((result) => result.row_family === 'ls-lint-cli');
+    const warm = fixtureRows.find(
+      (result) => result.row_family === 'assura-check-dirty-project-session-cli',
+    );
+    expect(assura).toBeDefined();
+    expect(lsLint).toBeDefined();
+    expect(warm).toBeDefined();
+    await expect(row).toHaveAttribute('data-fixture-cohort', assura!.fixture_cohort);
+    await expect(row).toHaveAttribute('data-shared-config-id', assura!.shared_config_id);
+    await expect(row).toHaveAttribute('data-native-parity', 'true');
+    expect(lsLint!.shared_config_id).toBe(assura!.shared_config_id);
+    expect(lsLint!.native_ls_lint_parity).toBe(true);
+    await expect(row).toContainText(`Assura ${formatMeasuredMs(assura!.median_runtime_ms)}`);
+    await expect(row).toContainText(`LS-Lint ${formatMeasuredMs(lsLint!.median_runtime_ms)}`);
+    await expect(row).toContainText(`${formatMeasuredMs(warm!.median_runtime_ms)} warm`);
+    await expect(row).toContainText(
+      `${(lsLint!.median_runtime_ms / assura!.median_runtime_ms).toFixed(2)}x faster cold`,
+    );
+    await expect(row).toContainText(
+      `${(lsLint!.median_runtime_ms / warm!.median_runtime_ms).toFixed(1)}x faster`,
+    );
+  }
+  const firstRow = rows.first();
   await expect(firstRow).toBeVisible();
+  await expect(firstRow).toContainText('Small startup-sensitive tree');
+  await expect(firstRow).toContainText('Assura');
+  await expect(firstRow).toContainText('LS-Lint');
+  await expect(firstRow).toContainText('faster cold');
   const cells = await firstRow.locator('[role="cell"]').evaluateAll((items) =>
     items.map((item) => {
       const rect = item.getBoundingClientRect();
@@ -364,6 +421,16 @@ test('expanded performance cohort stays compact on mobile', async ({ page }) => 
   expect(cells[2].y).toBe(cells[3].y);
   expect(cells[2].x).toBeLessThan(cells[3].x);
   expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
+});
+
+test('diagnostic fixture internals stay collapsed until requested', async ({ page }) => {
+  await page.goto('/performance/#benchmark-projects');
+  const fixture = page.locator('details.benchmark-card').first();
+  await expect(fixture).not.toHaveAttribute('open', '');
+  await expect(fixture.locator('.benchmark-config')).toBeHidden();
+  await fixture.locator('summary').click();
+  await expect(fixture).toHaveAttribute('open', '');
+  await expect(fixture.locator('.benchmark-config')).toBeVisible();
 });
 
 test('setup actions retain a no-JavaScript onboarding destination', async ({ page }) => {

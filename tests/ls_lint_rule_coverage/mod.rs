@@ -12,6 +12,35 @@ static LS_LINT_BINARY: OnceLock<PathBuf> = OnceLock::new();
 const MARKETING_LS_LINT_POLICY: &str =
     include_str!("../../website/src/data/config-examples/agentic-monorepo.ls-lint.yml");
 
+type MarketingLimitationProof = (&'static str, fn(&str));
+
+const MARKETING_LIMITATION_PROOFS: &[MarketingLimitationProof] = &[
+    (
+        "SKILL.md content and file line count remain unchecked.",
+        prove_skill_content_and_length_are_unchecked,
+    ),
+    (
+        "SKILL.md is named when present, not required by this absent-safe config.",
+        prove_skill_is_not_required_by_absent_safe_config,
+    ),
+    (
+        "optional trees cannot require nested files without failing when absent.",
+        prove_optional_parent_cannot_require_children,
+    ),
+    (
+        "optional package peers must be ignored to preserve exact required counts.",
+        prove_optional_peers_require_ignore_workaround,
+    ),
+    (
+        "no aggregate child total across mixed files and directories.",
+        prove_selector_counts_do_not_enforce_aggregate_children,
+    ),
+    (
+        "no file line limit, severity, or rule-specific repair message.",
+        prove_line_limit_and_repair_metadata_are_not_supported,
+    ),
+];
+
 fn native_ls_lint_binary() -> &'static Path {
     LS_LINT_BINARY
         .get_or_init(|| {
@@ -27,7 +56,7 @@ fn native_ls_lint_binary() -> &'static Path {
                     "--silent",
                     "--no-audit",
                     "--no-fund",
-                    "@ls-lint/ls-lint@2.3.1",
+                    "@ls-lint/ls-lint@2.3.0",
                 ])
                 .status()
                 .expect("npm install for native LS-Lint should run");
@@ -101,6 +130,16 @@ fn run_native_ls_lint(project: &TempDir) -> (bool, Vec<String>) {
     (success, paths)
 }
 
+fn run_native_ls_lint_status(project: &TempDir) -> bool {
+    Command::new(native_ls_lint_binary())
+        .current_dir(project.path())
+        .args(["--error-output-format", "json"])
+        .output()
+        .expect("native LS-Lint should run")
+        .status
+        .success()
+}
+
 fn run_assura_paths(project: &TempDir) -> (bool, Vec<String>) {
     let report = super::run_json_check(project);
     paths_from_assura_report(&report)
@@ -112,6 +151,7 @@ fn write_marketing_lslint_fixture(project: &TempDir, include_skill: bool) {
         MARKETING_LS_LINT_POLICY,
     )
     .unwrap();
+    write_marketing_required_root_files(project.path());
     fs::create_dir_all(project.path().join("packages/core")).unwrap();
     fs::write(project.path().join("packages/core/AGENTS.md"), "").unwrap();
     fs::write(project.path().join("packages/core/package.json"), "{}").unwrap();
@@ -119,6 +159,247 @@ fn write_marketing_lslint_fixture(project: &TempDir, include_skill: bool) {
     if include_skill {
         fs::create_dir_all(project.path().join(".agents/skills/review")).unwrap();
         fs::write(project.path().join(".agents/skills/review/SKILL.md"), "").unwrap();
+    }
+}
+
+fn write_marketing_required_root_files(root: &Path) {
+    for (path, contents) in [
+        ("AGENTS.md", "# Agents"),
+        ("README.md", "# Project"),
+        ("package.json", "{}"),
+        ("turbo.json", "{}"),
+        ("pnpm-lock.yaml", "lockfileVersion: 9"),
+        ("pnpm-workspace.yaml", "packages: []"),
+    ] {
+        fs::write(root.join(path), contents).unwrap();
+    }
+}
+
+fn write_native_lslint_policy(project: &TempDir, policy: &str) {
+    fs::write(project.path().join(".ls-lint.yml"), policy).unwrap();
+}
+
+fn assert_native_marketing_policy_accepts(claim: &str, project: &TempDir) {
+    let (success, paths) = run_native_ls_lint(project);
+    assert!(
+        success,
+        "{claim}: native LS-Lint rejected fixture: {paths:?}"
+    );
+}
+
+fn prove_skill_content_and_length_are_unchecked(claim: &str) {
+    let project = TempDir::new().unwrap();
+    write_marketing_lslint_fixture(&project, true);
+    let oversized_without_frontmatter = "plain instruction\n".repeat(600);
+    fs::write(
+        project.path().join(".agents/skills/review/SKILL.md"),
+        oversized_without_frontmatter,
+    )
+    .unwrap();
+    assert_native_marketing_policy_accepts(claim, &project);
+}
+
+fn prove_skill_is_not_required_by_absent_safe_config(claim: &str) {
+    let project = TempDir::new().unwrap();
+    write_marketing_lslint_fixture(&project, false);
+    fs::create_dir_all(project.path().join(".agents/skills/review")).unwrap();
+    assert_native_marketing_policy_accepts(claim, &project);
+}
+
+fn prove_optional_parent_cannot_require_children(claim: &str) {
+    let project = TempDir::new().unwrap();
+    write_native_lslint_policy(
+        &project,
+        r#"ls:
+  apps:
+    .dir: exists:0-1
+    "*":
+      .json: regex:package | exists:1
+"#,
+    );
+    let (success, paths) = run_native_ls_lint(&project);
+    assert!(
+        !success,
+        "{claim}: native LS-Lint unexpectedly accepted an absent optional parent with a required child; paths={paths:?}"
+    );
+}
+
+fn prove_optional_peers_require_ignore_workaround(claim: &str) {
+    let substituted = TempDir::new().unwrap();
+    write_native_lslint_policy(
+        &substituted,
+        r#"ls:
+  packages:
+    .dir: exists:1
+    "*":
+      .json: regex:^(package|tsconfig)$ | exists:1-2
+      .md: regex:^(AGENTS|README)$ | exists:1-2
+"#,
+    );
+    fs::create_dir_all(substituted.path().join("packages/core")).unwrap();
+    fs::write(substituted.path().join("packages/core/tsconfig.json"), "{}").unwrap();
+    fs::write(substituted.path().join("packages/core/README.md"), "# Core").unwrap();
+    assert_native_marketing_policy_accepts(claim, &substituted);
+    let exact_count_rejects_optional_peers = TempDir::new().unwrap();
+    write_native_lslint_policy(
+        &exact_count_rejects_optional_peers,
+        r#"ls:
+  packages:
+    .dir: exists:1
+    "*":
+      .json: regex:^(package|tsconfig)$ | exists:1
+      .md: regex:^(AGENTS|README)$ | exists:1
+"#,
+    );
+    fs::create_dir_all(
+        exact_count_rejects_optional_peers
+            .path()
+            .join("packages/core"),
+    )
+    .unwrap();
+    for path in ["package.json", "tsconfig.json"] {
+        fs::write(
+            exact_count_rejects_optional_peers
+                .path()
+                .join("packages/core")
+                .join(path),
+            "{}",
+        )
+        .unwrap();
+    }
+    for path in ["AGENTS.md", "README.md"] {
+        fs::write(
+            exact_count_rejects_optional_peers
+                .path()
+                .join("packages/core")
+                .join(path),
+            "# Guide",
+        )
+        .unwrap();
+    }
+    let (success, paths) = run_native_ls_lint(&exact_count_rejects_optional_peers);
+    assert!(
+        !success,
+        "{claim}: native LS-Lint unexpectedly counted required and optional peers independently; paths={paths:?}"
+    );
+    let ignored_optional_peers = TempDir::new().unwrap();
+    write_native_lslint_policy(
+        &ignored_optional_peers,
+        r#"ignore:
+  - "packages/*/{README.md,tsconfig.json}"
+ls:
+  packages:
+    .dir: exists:1
+    "*":
+      .json: regex:^package$ | exists:1
+      .md: regex:^AGENTS$ | exists:1
+"#,
+    );
+    fs::create_dir_all(ignored_optional_peers.path().join("packages/core")).unwrap();
+    for (path, contents) in [
+        ("package.json", "{}"),
+        ("tsconfig.json", "{}"),
+        ("AGENTS.md", "# Agents"),
+        ("README.md", "# Core"),
+    ] {
+        fs::write(
+            ignored_optional_peers
+                .path()
+                .join("packages/core")
+                .join(path),
+            contents,
+        )
+        .unwrap();
+    }
+    assert_native_marketing_policy_accepts(claim, &ignored_optional_peers);
+    fs::remove_file(
+        ignored_optional_peers
+            .path()
+            .join("packages/core/package.json"),
+    )
+    .unwrap();
+    let (success, paths) = run_native_ls_lint(&ignored_optional_peers);
+    assert!(
+        !success,
+        "{claim}: ignored optional peer incorrectly satisfied the exact required count; paths={paths:?}"
+    );
+}
+
+fn prove_selector_counts_do_not_enforce_aggregate_children(claim: &str) {
+    let project = TempDir::new().unwrap();
+    write_native_lslint_policy(
+        &project,
+        r#"ls:
+  .dir: kebab-case | exists:0-10
+  .ts: kebab-case | exists:0-10
+"#,
+    );
+    for index in 0..6 {
+        fs::create_dir(project.path().join(format!("child-{index:02}"))).unwrap();
+    }
+    for index in 0..5 {
+        fs::write(project.path().join(format!("file-{index:02}.ts")), "").unwrap();
+    }
+    assert_native_marketing_policy_accepts(claim, &project);
+    let unsupported_policy = TempDir::new().unwrap();
+    write_native_lslint_policy(
+        &unsupported_policy,
+        "ls:\n  .dir:\n    limit_children: 10\n",
+    );
+    assert!(
+        !run_native_ls_lint_status(&unsupported_policy),
+        "{claim}: native LS-Lint unexpectedly accepted `limit_children`"
+    );
+}
+
+fn prove_line_limit_and_repair_metadata_are_not_supported(claim: &str) {
+    let project = TempDir::new().unwrap();
+    write_marketing_lslint_fixture(&project, false);
+    fs::write(
+        project.path().join("oversized-file.ts"),
+        "line\n".repeat(600),
+    )
+    .unwrap();
+    assert_native_marketing_policy_accepts(claim, &project);
+    for (directive, value) in [
+        ("max_lines", "500"),
+        ("severity", "low"),
+        ("message", "See docs/structure.md."),
+    ] {
+        let unsupported_policy = TempDir::new().unwrap();
+        write_native_lslint_policy(
+            &unsupported_policy,
+            &format!("ls:\n  .ts:\n    {directive}: {value}\n"),
+        );
+        assert!(
+            !run_native_ls_lint_status(&unsupported_policy),
+            "{claim}: native LS-Lint unexpectedly accepted `{directive}`"
+        );
+    }
+}
+
+#[test]
+fn every_marketing_lslint_limitation_has_native_behavioral_proof() {
+    let displayed_claims = MARKETING_LS_LINT_POLICY
+        .lines()
+        .filter_map(|line| {
+            let comment = line.trim().strip_prefix('#')?.trim();
+            comment
+                .strip_prefix("ASSURA GAP:")
+                .or_else(|| comment.strip_prefix("LIMIT:"))
+                .map(str::trim)
+        })
+        .collect::<Vec<_>>();
+    let proved_claims = MARKETING_LIMITATION_PROOFS
+        .iter()
+        .map(|(claim, _)| *claim)
+        .collect::<Vec<_>>();
+    assert_eq!(
+        displayed_claims, proved_claims,
+        "every red marketing limitation must map one-to-one to a native proof"
+    );
+    for (claim, prove) in MARKETING_LIMITATION_PROOFS {
+        prove(claim);
     }
 }
 
@@ -147,19 +428,33 @@ fn marketing_lslint_fixture_accepts_representative_project_shape() {
 }
 
 #[test]
-fn marketing_lslint_fixture_accepts_empty_required_package_directory() {
+fn marketing_lslint_fixture_rejects_a_missing_required_root_file() {
+    let project = TempDir::new().unwrap();
+    write_marketing_lslint_fixture(&project, false);
+    fs::remove_file(project.path().join("turbo.json")).unwrap();
+
+    let (success, paths) = run_native_ls_lint(&project);
+    assert!(
+        !success,
+        "native LS-Lint did not enforce the displayed exact root counts: {paths:?}"
+    );
+}
+
+#[test]
+fn marketing_lslint_fixture_rejects_empty_required_package_directory() {
     let project = TempDir::new().unwrap();
     fs::write(
         project.path().join(".ls-lint.yml"),
         MARKETING_LS_LINT_POLICY,
     )
     .unwrap();
+    write_marketing_required_root_files(project.path());
     fs::create_dir(project.path().join("packages")).unwrap();
 
     let (success, paths) = run_native_ls_lint(&project);
     assert!(
-        success,
-        "native LS-Lint over-constrained empty packages: {paths:?}"
+        !success,
+        "native LS-Lint did not require a package workspace: {paths:?}"
     );
 }
 
