@@ -1,15 +1,39 @@
-# Closest shared naming coverage.
+# Closest valid LS-Lint filesystem coverage.
 ls:
-  packages:
+  # Project-local skill directories.
+  .agents:
+    skills:
+      .dir: kebab-case
+      "*":
+        .dir: kebab-case
+        "{agents,assets,references,scripts}":
+          .dir: kebab-case
+        "*":
+          .dir: exists:0
+        .*: exists:0
+        .md: regex:SKILL | exists:1
+
+  # App and package naming repeats at each scoped tree.
+  "{apps,packages}":
     .dir: kebab-case
+    "*":
+      .dir: kebab-case
+      .js: kebab-case
+      .jsx: kebab-case
+      .md: kebab-case | regex:(AGENTS|README)
+      .ts: kebab-case
+      .tsx: kebab-case
 
-  packages/*:
-    .md: regex:^(AGENTS|README)$
-    .json: regex:^(package|tsconfig)$
+  # Global directory and authored-file naming.
+  .dir: kebab-case
+  .js: kebab-case
+  .jsx: kebab-case
+  .md: kebab-case | regex:(AGENTS|README)
+  .ts: kebab-case
+  .tsx: kebab-case
+  .yaml: kebab-case
 
-  packages/*/src:
-    .ts: kebab-case
-    .tsx: kebab-case
-
-  packages/*/tests:
-    .test.ts: kebab-case
+ignore:
+  - .assura
+  - .git
+  - "**/{node_modules,.next,.turbo,dist,coverage}/**"

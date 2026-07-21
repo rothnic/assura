@@ -7,6 +7,11 @@ const assuraPolicyFixture = readFileSync(
   'utf8',
 ).trimEnd();
 
+const lsLintPolicyFixture = readFileSync(
+  new URL('../data/config-examples/agentic-monorepo.ls-lint.yml', import.meta.url),
+  'utf8',
+).trimEnd();
+
 const homepagePolicyFixture = readFileSync(
   new URL('../data/config-examples/homepage-agentic-project.yml', import.meta.url),
   'utf8',
@@ -131,8 +136,9 @@ test('performance CTA lands on the measured project cohort', async ({ page }) =>
   await expect(page.getByRole('heading', { name: 'Faster than native LS-Lint in all eight cold comparisons.' })).toBeVisible();
   await expect(page.locator('.policy-breadth-card')).toHaveCount(1);
   await expect(page.locator('.policy-wipe-layer')).toHaveCount(2);
-  await expect(page.getByRole('slider', { name: /Reveal Assura configuration/ })).toHaveCount(1);
-  await expect(page.getByText('Drag or switch to compare what each config can express.', { exact: true })).toBeVisible();
+  await expect(page.getByRole('slider')).toHaveCount(0);
+  await expect(page.getByText('Compare shared filesystem rules first, then the policy Assura adds.', { exact: true })).toBeVisible();
+  await expect(page.locator('.policy-coverage-row')).toHaveCount(8);
   await expect(page.getByText('Quality policy example', { exact: true })).toBeVisible();
   await expect(page.locator('.benchmark-card')).toHaveCount(3);
   await expect(page.locator('.benchmark-config')).toHaveCount(3);
@@ -249,7 +255,7 @@ test('mobile execution layers use compact aligned markers', async ({ page }) => 
 });
 
 for (const colorScheme of themes) {
-  for (const width of [360, 390, 768, 1440]) {
+  for (const width of [320, 360, 390, 768, 1440]) {
     test(`${colorScheme} performance policy at ${width}px stays contained`, async ({ page }, testInfo) => {
       await page.emulateMedia({ colorScheme });
       await page.setViewportSize({ width, height: 900 });
@@ -260,18 +266,15 @@ for (const colorScheme of themes) {
       const overflow = await page.evaluate(
         () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
       );
-      const codeOverflow = await comparison.locator('.policy-code').evaluateAll((blocks) =>
-        blocks.map((block) => block.scrollWidth - block.clientWidth),
-      );
-      const layers = await comparison.locator('.policy-wipe-layer').evaluateAll((items) =>
-        items.map((item) => {
-          const rect = item.getBoundingClientRect();
-          return { x: Math.round(rect.x), y: Math.round(rect.y) };
-        }),
-      );
       expect(overflow).toBe(0);
-      expect(codeOverflow).toEqual([0, 0]);
-      expect(layers[0]).toEqual(layers[1]);
+      for (const view of ['Assura', 'LS-Lint']) {
+        await comparison.getByRole('tab', { name: view }).click();
+        const codeOverflow = await comparison
+          .locator('.policy-wipe-layer:not([hidden]) .policy-code')
+          .evaluate((block) => block.scrollWidth - block.clientWidth);
+        expect(codeOverflow).toBe(0);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
+      }
       await comparison.screenshot({
         path: testInfo.outputPath(`performance-policy-${colorScheme}-${width}.png`),
       });
@@ -279,22 +282,18 @@ for (const colorScheme of themes) {
   }
 }
 
-test('performance policy wipe switches between complete configurations', async ({ page }) => {
+test('performance policy tabs distinguish full and filesystem configurations', async ({ page }) => {
   await page.goto('/performance/#regression-cases');
-  const wipe = page.locator('[data-policy-wipe]');
-  const slider = wipe.getByRole('slider', { name: 'Reveal Assura configuration.' });
-  await expect(wipe.locator('.policy-wipe-layer.is-lslint')).toHaveAttribute('aria-hidden', 'true');
-  await expect(wipe.locator('.policy-wipe-layer.is-assura')).toHaveAttribute('aria-hidden', 'false');
-  await slider.fill('0');
-  await expect(wipe.getByRole('button', { name: 'LS-Lint' })).toHaveAttribute('aria-pressed', 'true');
-  await expect(wipe.locator('.policy-wipe-layer.is-lslint')).toHaveAttribute('aria-hidden', 'false');
-  await expect(wipe.locator('.policy-wipe-layer.is-assura')).toHaveAttribute('aria-hidden', 'true');
-  await slider.fill('50');
-  await expect(wipe.locator('.policy-wipe-layer.is-lslint')).toHaveAttribute('aria-hidden', 'false');
-  await expect(wipe.locator('.policy-wipe-layer.is-assura')).toHaveAttribute('aria-hidden', 'false');
-  await wipe.getByRole('button', { name: 'Assura' }).click();
-  await expect(slider).toHaveValue('100');
-  await expect(wipe.getByRole('button', { name: 'Assura' })).toHaveAttribute('aria-pressed', 'true');
+  const comparison = page.locator('[data-policy-switch]');
+  const assuraTab = comparison.getByRole('tab', { name: 'Assura' });
+  const lsLintTab = comparison.getByRole('tab', { name: 'LS-Lint' });
+  await expect(assuraTab).toHaveAttribute('aria-selected', 'true');
+  await expect(comparison.locator('.policy-wipe-layer.is-assura')).toBeVisible();
+  await expect(comparison.locator('.policy-wipe-layer.is-lslint')).toBeHidden();
+  await lsLintTab.click();
+  await expect(lsLintTab).toHaveAttribute('aria-selected', 'true');
+  await expect(comparison.locator('.policy-wipe-layer.is-lslint')).toBeVisible();
+  await expect(comparison.locator('.policy-wipe-layer.is-assura')).toBeHidden();
 });
 
 test('performance policy renders the checked Assura YAML fixture exactly', async ({ page }) => {
@@ -308,39 +307,34 @@ test('performance policy renders the checked Assura YAML fixture exactly', async
   expect(rendered).toBe(assuraPolicyFixture);
 });
 
-test('performance policy divider supports touch-sized drag and keyboard input', async ({ page }) => {
+test('performance policy renders the checked LS-Lint fixture exactly', async ({ page }) => {
+  await page.goto('/performance/#regression-cases');
+  const rendered = await page
+    .locator('.policy-wipe-layer.is-lslint .policy-code-line')
+    .evaluateAll((lines) => lines.map((line) => {
+      const indent = Number((line as HTMLElement).style.getPropertyValue('--indent'));
+      return `${'  '.repeat(indent)}${line.textContent?.trim() ?? ''}`;
+    }).join('\n'));
+  expect(rendered).toBe(lsLintPolicyFixture);
+});
+
+test('performance policy tabs are touch-sized and support arrow-key switching', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/performance/#regression-cases');
-  const wipe = page.locator('[data-policy-wipe]');
-  const divider = wipe.getByRole('slider', { name: 'Drag configuration comparison' });
-  await wipe.getByRole('button', { name: 'Assura' }).click();
-  await divider.scrollIntoViewIfNeeded();
-
-  const dividerBox = await divider.boundingBox();
-  expect(dividerBox?.width).toBeGreaterThanOrEqual(44);
-  expect(dividerBox?.height).toBeGreaterThanOrEqual(44);
-  const client = await page.context().newCDPSession(page);
-  await client.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 1 });
-  const startX = (dividerBox?.x ?? 0) + (dividerBox?.width ?? 0) - 4;
-  const targetX = (dividerBox?.x ?? 0) + (dividerBox?.width ?? 0) * 0.35;
-  const touchY = (dividerBox?.y ?? 0) + (dividerBox?.height ?? 0) / 2;
-  await client.send('Input.dispatchTouchEvent', {
-    type: 'touchStart',
-    touchPoints: [{ x: startX, y: touchY }],
-  });
-  await client.send('Input.dispatchTouchEvent', {
-    type: 'touchMove',
-    touchPoints: [{ x: targetX, y: touchY }],
-  });
-  await client.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-  expect(Number(await divider.inputValue())).toBeLessThan(50);
-  expect(Number(await wipe.getAttribute('data-reveal'))).toBeLessThan(50);
-
-  await divider.focus();
-  await page.keyboard.press('Home');
-  await expect(divider).toHaveValue('0');
+  const comparison = page.locator('[data-policy-switch]');
+  const assuraTab = comparison.getByRole('tab', { name: 'Assura' });
+  const lsLintTab = comparison.getByRole('tab', { name: 'LS-Lint' });
+  for (const tab of [assuraTab, lsLintTab]) {
+    const box = await tab.boundingBox();
+    expect(box?.height).toBeGreaterThanOrEqual(44);
+  }
+  await assuraTab.focus();
   await page.keyboard.press('ArrowRight');
-  await expect(divider).toHaveValue('1');
+  await expect(lsLintTab).toBeFocused();
+  await expect(lsLintTab).toHaveAttribute('aria-selected', 'true');
+  await page.keyboard.press('ArrowLeft');
+  await expect(assuraTab).toBeFocused();
+  await expect(assuraTab).toHaveAttribute('aria-selected', 'true');
 });
 
 test('expanded performance cohort stays compact on mobile', async ({ page }) => {

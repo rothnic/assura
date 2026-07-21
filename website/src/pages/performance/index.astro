@@ -307,7 +307,7 @@ function formatCount(value?: number): string {
         </div>
         <p>
           A fully featured Assura policy captures the project practices an agent should preserve.
-          LS-Lint covers the naming subset; the comparison below shows the remaining gap.
+          LS-Lint covers the naming and cardinality subset; the comparison below shows the remaining gap.
         </p>
       </header>
 
@@ -448,7 +448,7 @@ function formatCount(value?: number): string {
         <p>Each cold row runs the same generated project with an LS-Lint policy migrated into Assura. The aggregate uses all eight accepted fixtures shown above.</p>
       </header>
       <div class="benchmark-claim-boundary">
-        <div class="is-included"><span>Included in the cold comparison</span><strong>Naming · ignores · scopes · extensions</strong><p>Both release CLIs run process to process, including startup, config loading, traversal, validation, and exit.</p></div>
+        <div class="is-included"><span>Included in the cold comparison</span><strong>Naming · ignores · scopes · cardinality</strong><p>Both release CLIs run process to process, including startup, config loading, traversal, validation, and exit.</p></div>
         <div class="is-excluded"><span>Not counted against LS-Lint</span><strong>Line limits · content · references · repair guidance</strong><p>These Assura-only capabilities have no native LS-Lint equivalent and are measured separately.</p></div>
         <div class="is-warm"><span>Separate warm result</span><strong>Persistent Assura session</strong><p>Repeated checks avoid paying the full process startup cost on every agent turn.</p></div>
       </div>

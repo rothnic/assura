@@ -184,6 +184,12 @@ fn collect_report_counts(
         let Some(key) = key.as_str() else {
             return Err("Unsupported LS-Lint YAML shape: 'ls' keys must be strings".to_string());
         };
+        if let Some(child) = value.as_mapping() {
+            report.path_rules += 1;
+            collect_report_counts(child, report)?;
+            continue;
+        }
+
         if key.starts_with('.') {
             if key != ".dir" {
                 report.extension_rules += 1;
@@ -199,10 +205,7 @@ fn collect_report_counts(
             continue;
         }
 
-        if let Some(child) = value.as_mapping() {
-            report.path_rules += 1;
-            collect_report_counts(child, report)?;
-        } else if let Some(rule) = value.as_str() {
+        if let Some(rule) = value.as_str() {
             for token in split_rule_tokens(rule)? {
                 if parse_exists_token(token)?.is_some() {
                     report.exists_rules += 1;

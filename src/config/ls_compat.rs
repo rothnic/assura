@@ -255,6 +255,16 @@ fn parse_ls_directory(mapping: &serde_yaml::Mapping) -> Result<DirectoryNode, St
             continue;
         }
 
+        if let Some(child_mapping) = value.as_mapping() {
+            children.insert(
+                normalize_child_key(key),
+                parse_ls_directory(child_mapping)?
+                    .with_required(false)
+                    .with_inherit(false),
+            );
+            continue;
+        }
+
         if key.starts_with('.') {
             let rule = value.as_str().ok_or_else(|| {
                 format!("Unsupported LS-Lint YAML shape: rule for '{key}' must be a string")
@@ -263,14 +273,7 @@ fn parse_ls_directory(mapping: &serde_yaml::Mapping) -> Result<DirectoryNode, St
             continue;
         }
 
-        if let Some(child_mapping) = value.as_mapping() {
-            children.insert(
-                normalize_child_key(key),
-                parse_ls_directory(child_mapping)?
-                    .with_required(false)
-                    .with_inherit(false),
-            );
-        } else if let Some(rule) = value.as_str() {
+        if let Some(rule) = value.as_str() {
             apply_scalar_rule(key, rule, &mut file_exists, &mut directory_exists)?;
         } else {
             return Err(format!(

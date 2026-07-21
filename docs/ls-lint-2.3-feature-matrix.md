@@ -21,6 +21,7 @@ LS-Lint command-line flags.
 | Subextensions such as `.test.js`, `.d.ts` | Converted to most-specific glob patterns | Glob naming patterns | `native_lslint_golden_subextension_rules_match_assura` | `docs/ls-lint-capability-comparison.md` |
 | `.dir` rules | Converted to directory self-rules and directory counts | `self_directory` / `directories.exists` | `native_lslint_golden_directory_scopes_globs_braces_and_dir_rules_match_assura` | `docs/ls-lint-capability-comparison.md` |
 | Nested directory scopes | Converted to nested structure children | Structure children | `converted_ls_lint_rules_cover_core_parity_surface` | `docs/ls-lint-capability-comparison.md` |
+| Dot-directory scopes | Dot-prefixed mappings such as `.agents:` convert as directory scopes; dot-prefixed scalar rules remain extensions | Structure children | `lslint_migration_accepts_dot_directory_scopes` | `website/src/content/docs/guides/ls-lint-migration.md` |
 | Glob directory scopes | Preserved as matcher-backed scopes | Compiled scope patterns | `native_lslint_golden_directory_scopes_globs_braces_and_dir_rules_match_assura` | `docs/ls-lint-capability-comparison.md` |
 | Brace/alternative directory scopes | Preserved as matcher-backed scopes | Compiled scope patterns | `native_lslint_golden_directory_scopes_globs_braces_and_dir_rules_match_assura` | `docs/ls-lint-capability-comparison.md` |
 | Multiple rules with ` | ` | Strictly split on LS-Lint separator | Naming alternatives and count checks | `native_lslint_golden_regex_negation_substitutions_and_exists_match_assura` | This document |

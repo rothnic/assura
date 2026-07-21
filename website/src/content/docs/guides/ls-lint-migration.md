@@ -46,6 +46,10 @@ The migration path targets LS-Lint 2.3 naming, regex, `.dir`, ignore, OR
 syntax, wildcard/subextension rules, glob and brace directory scopes, and
 `exists` behavior.
 
+Dot-prefixed keys are disambiguated by their YAML shape. A mapping such as
+`.agents:` is a directory scope, while a scalar such as `.ts: kebab-case`
+remains a file-extension rule.
+
 Native LS-Lint parity examples:
 
 ```yaml ls-lint-config

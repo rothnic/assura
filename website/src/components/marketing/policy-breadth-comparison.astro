@@ -39,6 +39,15 @@ const parsePolicy = (policy: string): CodeLine[] => {
 
 const assuraLines = parsePolicy(assuraPolicy);
 const lsLintLines = parsePolicy(lsLintPolicy);
+const coverageRows = [
+  { capability: 'Directory and authored-file naming', assura: 'Reusable defaults', lsLint: 'Repeated scoped rules', shared: true },
+  { capability: 'Generated-output ignores', assura: 'Supported', lsLint: 'Supported', shared: true },
+  { capability: 'Exact root and workspace files', assura: 'Required by name', lsLint: 'Extension counts only' },
+  { capability: 'Line and child limits', assura: 'Advisory thresholds', lsLint: 'Not supported' },
+  { capability: 'Markdown frontmatter', assura: 'Required for skills', lsLint: 'Not supported' },
+  { capability: 'Reusable hierarchy contracts', assura: '$workspace + $skill', lsLint: 'Repeat each scope' },
+  { capability: 'Repair guidance for agents', assura: 'Severity + message', lsLint: 'Not supported' },
+];
 ---
 
 <article class="policy-breadth-card" id="monorepo-policy">
@@ -81,51 +90,33 @@ const lsLintLines = parsePolicy(lsLintPolicy);
     <p><code>$workspace</code> and <code>$skill</code> rebase the repeated hierarchy, while <code>./**/</code> applies one compact health layer to every authored directory.</p>
   </section>
 
-  <section class="policy-wipe" data-policy-wipe data-reveal="100" style="--reveal: 100%;" aria-labelledby="policy-compare-title">
+  <section class="policy-wipe" data-policy-switch data-view="assura" aria-labelledby="policy-compare-title">
     <header class="policy-wipe-head">
       <div>
         <span>Configuration comparison</span>
-        <h4 id="policy-compare-title">Drag or switch to compare what each config can express.</h4>
+        <h4 id="policy-compare-title">Compare shared filesystem rules first, then the policy Assura adds.</h4>
       </div>
-      <div class="policy-wipe-actions" aria-label="Configuration view">
-        <button type="button" data-wipe-value="100" aria-pressed="true">Assura</button>
-        <button type="button" data-wipe-value="0" aria-pressed="false">LS-Lint</button>
+      <div class="policy-wipe-actions" role="tablist" aria-label="Configuration view">
+        <button type="button" id="policy-tab-assura" role="tab" aria-selected="true" aria-controls="policy-panel-assura" data-policy-tab="assura">Assura</button>
+        <button type="button" id="policy-tab-lslint" role="tab" aria-selected="false" aria-controls="policy-panel-lslint" data-policy-tab="lslint" tabindex="-1">LS-Lint</button>
       </div>
     </header>
 
-    <div class="policy-wipe-control">
-      <span>LS-Lint</span>
-      <input
-        type="range"
-        min="0"
-        max="100"
-        value="100"
-        aria-label="Reveal Assura configuration. Zero shows LS-Lint; one hundred shows Assura."
-        data-wipe-range
-      />
-      <span>Assura</span>
+    <div class="policy-coverage" role="table" aria-label="Assura and LS-Lint capability coverage">
+      <div class="policy-coverage-row is-heading" role="row">
+        <span role="columnheader">Capability</span><strong role="columnheader">Assura</strong><strong role="columnheader">LS-Lint</strong>
+      </div>
+      {coverageRows.map((row) => (
+        <div class:list={['policy-coverage-row', row.shared && 'is-shared']} role="row">
+          <span role="cell">{row.capability}</span><strong role="cell" data-tool="Assura">{row.assura}</strong><strong role="cell" data-tool="LS-Lint">{row.lsLint}</strong>
+        </div>
+      ))}
     </div>
+    <p class="policy-coverage-note">The cold benchmark measures only shared naming, ignore, scope, and cardinality work. Assura-only capabilities are shown here as product coverage, not counted as LS-Lint performance work.</p>
 
     <div class="policy-wipe-stage">
-      <section class="policy-wipe-layer is-lslint" aria-label="LS-Lint configuration" aria-hidden="true">
-        <header><span>LS-Lint</span><strong>Filesystem naming</strong></header>
-        <div class="policy-code" role="code" aria-label="LS-Lint YAML example">
-          {lsLintLines.map((line) => (
-            <div class:list={['policy-code-line', line.tone && `is-${line.tone}`, !line.key && !line.comment && 'is-blank']} style={`--indent: ${line.indent ?? 0}`}>
-              {line.comment && !line.key ? <span class="policy-code-comment"># {line.comment}</span> : (
-                <><span class="policy-code-key">{line.key}</span>{line.hasSeparator && <span class="policy-code-colon">:</span>}{line.value && <span class="policy-code-value"> {line.value}</span>}{line.comment && <span class="policy-code-comment"> # {line.comment}</span>}</>
-              )}
-            </div>
-          ))}
-        </div>
-        <div class="policy-layer-summary is-limited">
-          <strong>Not expressible here</strong>
-          <span>Exact required files</span><span>Line limits</span><span>Reusable semantic rules</span><span>Agent guidance</span>
-        </div>
-      </section>
-
-      <section class="policy-wipe-layer is-assura" aria-label="Assura configuration" aria-hidden="false">
-        <header><span>Assura</span><strong>Reusable project contract</strong></header>
+      <section class="policy-wipe-layer is-assura" id="policy-panel-assura" role="tabpanel" aria-labelledby="policy-tab-assura" aria-label="Assura configuration" aria-hidden="false">
+        <header><span>Assura</span><strong>Full reusable project contract</strong></header>
         <div class="policy-code" role="code" aria-label="Assura YAML example">
           {assuraLines.map((line) => (
             <div class:list={['policy-code-line', line.tone && `is-${line.tone}`, !line.key && !line.comment && 'is-blank']} style={`--indent: ${line.indent ?? 0}`}>
@@ -136,52 +127,59 @@ const lsLintLines = parsePolicy(lsLintPolicy);
           ))}
         </div>
         <div class="policy-layer-summary is-capable">
-          <strong>Added by Assura</strong>
-          <span>Project-owned rules</span><span>Required and optional paths</span><span>Reusable hierarchy</span><span>Scoped naming</span>
+          <strong>Beyond naming</strong>
+          <span>Project-owned rules</span><span>Required and optional paths</span><span>Reusable hierarchy</span><span>Agent repair guidance</span>
         </div>
       </section>
 
-      <div class="policy-wipe-divider" aria-hidden="true"><span>↔</span></div>
-      <input
-        class="policy-wipe-stage-control"
-        type="range"
-        min="0"
-        max="100"
-        value="100"
-        aria-label="Drag configuration comparison"
-        data-wipe-stage-range
-      />
+      <section class="policy-wipe-layer is-lslint" id="policy-panel-lslint" role="tabpanel" aria-labelledby="policy-tab-lslint" aria-label="LS-Lint configuration" aria-hidden="true" hidden>
+        <header><span>LS-Lint</span><strong>Closest filesystem coverage</strong></header>
+        <div class="policy-code" role="code" aria-label="LS-Lint YAML example">
+          {lsLintLines.map((line) => (
+            <div class:list={['policy-code-line', line.tone && `is-${line.tone}`, !line.key && !line.comment && 'is-blank']} style={`--indent: ${line.indent ?? 0}`}>
+              {line.comment && !line.key ? <span class="policy-code-comment"># {line.comment}</span> : (
+                <><span class="policy-code-key">{line.key}</span>{line.hasSeparator && <span class="policy-code-colon">:</span>}{line.value && <span class="policy-code-value"> {line.value}</span>}{line.comment && <span class="policy-code-comment"> # {line.comment}</span>}</>
+              )}
+            </div>
+          ))}
+        </div>
+        <div class="policy-layer-summary is-limited">
+          <strong>Closest available coverage</strong>
+          <span>Directory naming</span><span>Authored-file naming</span><span>Scoped skill names</span><span>Generated-output ignores</span>
+        </div>
+      </section>
     </div>
   </section>
 
 </article>
 
 <script>
-  const syncWipe = (root: HTMLElement, value: number) => {
-    const bounded = Math.max(0, Math.min(100, value));
-    root.style.setProperty('--reveal', `${bounded}%`);
-    root.dataset.reveal = String(bounded);
-    root.querySelectorAll<HTMLInputElement>('[data-wipe-range], [data-wipe-stage-range]').forEach((range) => {
-      range.value = String(bounded);
+  const selectPolicy = (root: HTMLElement, view: string) => {
+    root.dataset.view = view;
+    root.querySelectorAll<HTMLButtonElement>('[data-policy-tab]').forEach((button) => {
+      const selected = button.dataset.policyTab === view;
+      button.setAttribute('aria-selected', String(selected));
+      button.tabIndex = selected ? 0 : -1;
     });
-    root.querySelectorAll<HTMLButtonElement>('[data-wipe-value]').forEach((button) => {
-      button.setAttribute('aria-pressed', String(Number(button.dataset.wipeValue) === bounded));
+    root.querySelectorAll<HTMLElement>('.policy-wipe-layer').forEach((panel) => {
+      const selected = panel.classList.contains(`is-${view}`);
+      panel.hidden = !selected;
+      panel.setAttribute('aria-hidden', String(!selected));
     });
-    const lsLintLayer = root.querySelector<HTMLElement>('.policy-wipe-layer.is-lslint');
-    const assuraLayer = root.querySelector<HTMLElement>('.policy-wipe-layer.is-assura');
-    lsLintLayer?.setAttribute('aria-hidden', String(bounded === 100));
-    assuraLayer?.setAttribute('aria-hidden', String(bounded === 0));
   };
 
-  document.querySelectorAll<HTMLElement>('[data-policy-wipe]').forEach((root) => {
-    root.querySelectorAll<HTMLInputElement>('[data-wipe-range], [data-wipe-stage-range]').forEach((range) => {
-      range.addEventListener('input', (event) => {
-        syncWipe(root, Number((event.currentTarget as HTMLInputElement).value));
+  document.querySelectorAll<HTMLElement>('[data-policy-switch]').forEach((root) => {
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('[data-policy-tab]')];
+    tabs.forEach((button, index) => {
+      button.addEventListener('click', () => selectPolicy(root, button.dataset.policyTab ?? 'assura'));
+      button.addEventListener('keydown', (event) => {
+        if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+        event.preventDefault();
+        const offset = event.key === 'ArrowRight' ? 1 : -1;
+        const next = tabs[(index + offset + tabs.length) % tabs.length];
+        selectPolicy(root, next.dataset.policyTab ?? 'assura');
+        next.focus();
       });
     });
-    root.querySelectorAll<HTMLButtonElement>('[data-wipe-value]').forEach((button) => {
-      button.addEventListener('click', () => syncWipe(root, Number(button.dataset.wipeValue)));
-    });
-
   });
 </script>
