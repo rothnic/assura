@@ -3636,6 +3636,10 @@
     padding: 1.1rem 0;
   }
 
+  .benchmark-cohort-head {
+    scroll-margin-top: 5.25rem;
+  }
+
   .benchmark-cohort-head span,
   .benchmark-detail-head span {
     color: var(--soft);
@@ -3672,7 +3676,7 @@
 
   .benchmark-matrix-row {
     display: grid;
-    grid-template-columns: minmax(10rem, 0.8fr) minmax(0, 1.1fr) minmax(0, 1fr) minmax(7rem, 0.55fr);
+    grid-template-columns: minmax(10rem, 0.78fr) minmax(0, 1.12fr) minmax(0, 0.9fr) minmax(11.5rem, 0.72fr);
     border-bottom: 1px solid var(--border);
   }
 
@@ -3694,6 +3698,20 @@
     color: var(--muted);
     font-size: 0.72rem;
     line-height: 1.4;
+  }
+
+  .benchmark-matrix-row:not(.benchmark-matrix-head) {
+    background: var(--surface);
+  }
+
+  .benchmark-timing-cell strong span,
+  .benchmark-speed-cell strong span,
+  .benchmark-speed-cell small span {
+    color: var(--primary);
+  }
+
+  .benchmark-speed-cell {
+    background: color-mix(in srgb, var(--primary) 7%, var(--surface));
   }
 
   .benchmark-matrix-head > * {
@@ -3786,6 +3804,12 @@
     color: var(--primary);
   }
 
+  @media (min-width: 861px) {
+    .benchmark-speed-cell small {
+      white-space: nowrap;
+    }
+  }
+
   @media (max-width: 860px) {
     .benchmark-hero,
     .benchmark-section-head {
@@ -3842,18 +3866,6 @@
 
     .agent-impact-grid article:last-child {
       border-bottom: 0;
-    }
-
-    .benchmark-matrix-row {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .benchmark-matrix-row > *:nth-child(2) {
-      border-right: 0;
-    }
-
-    .benchmark-matrix-row > *:nth-child(-n+2) {
-      border-bottom: 1px solid var(--border);
     }
 
     .benchmark-matrix-head {
@@ -4075,6 +4087,10 @@
       font-size: 0.7rem;
     }
 
+  }
+
+  @media (max-width: 860px) {
+
     .benchmark-matrix {
       display: grid;
       gap: 0.75rem;
@@ -4084,42 +4100,136 @@
 
     .benchmark-matrix-row:not(.benchmark-matrix-head) {
       overflow: hidden;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      border: 1px solid var(--border);
-      border-radius: 0.4rem;
+      grid-template-areas:
+        "case case"
+        "focus speed"
+        "timing timing";
+      grid-template-columns: minmax(0, 1fr) minmax(7.5rem, 0.72fr);
+      border: 1px solid color-mix(in srgb, var(--primary) 22%, var(--border));
+      border-radius: 0.5rem;
       background: var(--surface);
+      box-shadow: 0 0.75rem 1.75rem color-mix(in srgb, var(--shadow) 55%, transparent);
     }
 
     .benchmark-matrix-row > * {
       position: relative;
       border-right: 0;
       border-bottom: 0 !important;
-      padding: 1.45rem 0.75rem 0.7rem;
+      padding: 1.55rem 0.85rem 0.85rem;
     }
 
-    .benchmark-matrix-row > *:first-child {
-      grid-column: 1 / -1;
+    .benchmark-case-cell {
+      grid-area: case;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 0.75rem;
       border-bottom: 1px solid var(--border) !important;
-      background: var(--surface-muted);
-      padding: 0.75rem;
+      border-left: 0.2rem solid var(--primary);
+      background: color-mix(in srgb, var(--primary) 6%, var(--surface-muted));
+      padding: 0.85rem 0.9rem 0.85rem 0.75rem;
     }
 
-    .benchmark-matrix-row > *:nth-child(2) {
-      grid-column: 1 / -1;
-      border-bottom: 1px solid var(--border) !important;
+    .benchmark-case-cell > strong {
+      font-size: 0.96rem;
     }
 
-    .benchmark-matrix-row > *:nth-child(3) {
+    .benchmark-case-cell > small {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.2rem 0.45rem;
+      background: var(--surface);
+      font-size: 0.68rem;
+      white-space: nowrap;
+    }
+
+    .benchmark-focus-cell {
+      grid-area: focus;
       border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border) !important;
     }
 
-    .benchmark-matrix-row > *:not(:first-child)::before {
+    .benchmark-focus-cell > strong {
+      font-size: 0.88rem;
+      line-height: 1.35;
+    }
+
+    .benchmark-focus-cell > small {
+      margin-top: 0.15rem;
+      color: var(--info);
+      font-size: 0.7rem;
+    }
+
+    .benchmark-speed-cell {
+      grid-area: speed;
+      align-content: center;
+      border-bottom: 1px solid var(--border) !important;
+      background: color-mix(in srgb, var(--primary) 11%, var(--surface));
+    }
+
+    .benchmark-speed-cell > strong {
+      color: var(--muted);
+      font-size: 0.72rem;
+      line-height: 1.3;
+    }
+
+    .benchmark-speed-cell > strong span {
+      display: block;
+      margin-bottom: 0.16rem;
+      font-size: 1.25rem;
+      line-height: 1;
+    }
+
+    .benchmark-speed-cell > small {
+      margin-top: 0.45rem;
+      font-size: 0.68rem;
+    }
+
+    .benchmark-timing-cell {
+      grid-area: timing;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.55rem;
+      padding: 1.6rem 0.85rem 0.85rem;
+    }
+
+    .benchmark-timing-cell > strong,
+    .benchmark-timing-cell > small {
+      display: flex;
+      min-width: 0;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.4rem;
+      border: 1px solid var(--border);
+      border-radius: 0.35rem;
+      padding: 0.55rem 0.6rem;
+      background: var(--surface-muted);
+      color: var(--text);
+      font-size: 0.75rem;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .benchmark-timing-cell > strong {
+      border-color: color-mix(in srgb, var(--primary) 32%, var(--border));
+      background: var(--primary-soft);
+    }
+
+    .benchmark-timing-cell > strong span,
+    .benchmark-timing-cell > small span {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 0.65rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .benchmark-focus-cell::before,
+    .benchmark-speed-cell::before,
+    .benchmark-timing-cell::before {
       position: absolute;
-      top: 0.42rem;
-      left: 0.75rem;
+      top: 0.48rem;
+      left: 0.85rem;
       color: var(--soft);
       font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-      font-size: 0.6rem;
+      font-size: 0.65rem;
       font-weight: 800;
       text-transform: uppercase;
       content: attr(data-label);

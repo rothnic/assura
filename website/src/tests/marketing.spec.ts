@@ -406,21 +406,64 @@ test('performance cohort compares all eight variables and timings on mobile', as
     );
   }
   const firstRow = rows.first();
-  await expect(firstRow).toBeVisible();
   await expect(firstRow).toContainText('Small startup-sensitive tree');
   await expect(firstRow).toContainText('Assura');
   await expect(firstRow).toContainText('LS-Lint');
   await expect(firstRow).toContainText('faster cold');
-  const cells = await firstRow.locator('[role="cell"]').evaluateAll((items) =>
-    items.map((item) => {
-      const rect = item.getBoundingClientRect();
-      return { x: Math.round(rect.x), y: Math.round(rect.y), width: Math.round(rect.width) };
-    }),
-  );
-  expect(cells[0].width).toBe(cells[1].width);
-  expect(cells[2].y).toBe(cells[3].y);
-  expect(cells[2].x).toBeLessThan(cells[3].x);
-  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
+
+  for (const colorScheme of themes) {
+    await page.emulateMedia({ colorScheme });
+    for (const width of [320, 390, 768]) {
+      await page.setViewportSize({ width, height: 844 });
+      await expect(firstRow).toBeVisible();
+      const cells = await firstRow.locator('[role="cell"]').evaluateAll((items) =>
+        items.map((item) => {
+          const rect = item.getBoundingClientRect();
+          return {
+            x: Math.round(rect.x),
+            y: Math.round(rect.y),
+            width: Math.round(rect.width),
+          };
+        }),
+      );
+      expect(cells[0].width).toBe(cells[2].width);
+      expect(cells[1].y).toBe(cells[3].y);
+      expect(cells[1].x).toBeLessThan(cells[3].x);
+      expect(cells[2].y).toBeGreaterThan(cells[1].y);
+      const visualHierarchy = await firstRow.evaluate((row) => {
+        const focus = row.querySelector<HTMLElement>('.benchmark-focus-cell')!;
+        const speed = row.querySelector<HTMLElement>('.benchmark-speed-cell')!;
+        const ratio = speed.querySelector<HTMLElement>('strong span')!;
+        return {
+          focusBackground: getComputedStyle(focus).backgroundColor,
+          speedBackground: getComputedStyle(speed).backgroundColor,
+          ratioColor: getComputedStyle(ratio).color,
+          bodyColor: getComputedStyle(row).color,
+          ratioSize: Number.parseFloat(getComputedStyle(ratio).fontSize),
+        };
+      });
+      expect(visualHierarchy.speedBackground).not.toBe(visualHierarchy.focusBackground);
+      expect(visualHierarchy.ratioColor).not.toBe(visualHierarchy.bodyColor);
+      expect(visualHierarchy.ratioSize).toBeGreaterThanOrEqual(20);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
+      const rowOverflows = await rows.evaluateAll((items) =>
+        items.map((item) => item.scrollWidth - item.clientWidth),
+      );
+      expect(rowOverflows).toEqual(Array(8).fill(0));
+    }
+  }
+});
+
+test('benchmark cohort anchor clears the sticky header', async ({ page }) => {
+  for (const width of [390, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/performance/');
+    await page.getByRole('link', { name: 'Compare all eight cases' }).click();
+    await expect(page).toHaveURL(/#benchmark-projects$/);
+    const header = await page.locator('.site-header').boundingBox();
+    const cohort = await page.locator('#benchmark-projects').boundingBox();
+    expect(cohort?.y).toBeGreaterThanOrEqual((header?.y ?? 0) + (header?.height ?? 0) + 8);
+  }
 });
 
 test('diagnostic fixture internals stay collapsed until requested', async ({ page }) => {

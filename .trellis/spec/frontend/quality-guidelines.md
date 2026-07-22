@@ -47,6 +47,10 @@ and dark color schemes before claiming completion.
   before verbose fixture internals. Each row should identify the variable under
   test, workload scale, both cold timings, the cold speed ratio, and the warm
   timing; keep generated trees and source policies in optional disclosures.
+- On mobile, do not render desktop comparison columns as equally weighted
+  stacked bands. Give each benchmark case a compact identity header, pair the
+  test focus with a visually primary result, and align Assura and competitor
+  timings as an equal comparison row beneath it.
 - Keep marketing claims executable: if copy says a path is required, the
   checked fixture must include the corresponding required-path directive.
 
@@ -59,6 +63,8 @@ For landing-page work, collect:
 - `pnpm build` or `cargo xtask docs`
 - `cargo run --quiet -- check --format json .`
 - browser screenshots and DOM overflow checks at representative breakpoints
+- light/dark hierarchy and overflow assertions for dense comparison cards at
+  320px, 390px, and a representative tablet width
 - a docs-route smoke check
 
 ---

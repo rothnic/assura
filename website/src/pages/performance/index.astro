@@ -358,10 +358,22 @@ function formatCount(value?: number): string {
             data-shared-config-id={card.cold?.shared_config_id}
             data-native-parity={String(card.cold?.native_ls_lint_parity === true)}
           >
-            <div role="cell" data-label="Test case"><strong>{card.label}</strong><small>{card.kind}</small></div>
-            <div role="cell" data-label="Test focus"><strong>{card.variable}</strong><small>{formatCount(card.cold?.checked_file_count)} checked · {formatCount(card.cold?.directory_count)} dirs · {formatCount(card.cold?.rule_count)} rules</small></div>
-            <div role="cell" data-label="Cold time"><strong>Assura {formatMs(card.cold?.median_runtime_ms)}</strong><small>LS-Lint {formatMs(card.lslint?.median_runtime_ms)}</small></div>
-            <div role="cell" data-label="Speed"><strong>{card.coldRatio?.toFixed(2) ?? 'n/a'}x faster cold</strong><small>{formatMs(card.warm?.median_runtime_ms)} warm · {card.warmRatio?.toFixed(1) ?? 'n/a'}x faster</small></div>
+            <div class="benchmark-case-cell" role="cell" data-label="Test case">
+              <strong>{card.label}</strong>
+              <small>{card.kind}</small>
+            </div>
+            <div class="benchmark-focus-cell" role="cell" data-label="Test focus">
+              <strong>{card.variable}</strong>
+              <small>{formatCount(card.cold?.checked_file_count)} checked · {formatCount(card.cold?.directory_count)} dirs · {formatCount(card.cold?.rule_count)} rules</small>
+            </div>
+            <div class="benchmark-timing-cell" role="cell" data-label="Cold time">
+              <strong><span>Assura</span> {formatMs(card.cold?.median_runtime_ms)}</strong>
+              <small><span>LS-Lint</span> {formatMs(card.lslint?.median_runtime_ms)}</small>
+            </div>
+            <div class="benchmark-speed-cell" role="cell" data-label="Speed">
+              <strong><span>{card.coldRatio?.toFixed(2) ?? 'n/a'}x</span> faster cold</strong>
+              <small>{formatMs(card.warm?.median_runtime_ms)} warm · <span>{card.warmRatio?.toFixed(1) ?? 'n/a'}x</span> faster</small>
+            </div>
           </div>
         ))}
       </div>
