@@ -460,9 +460,12 @@ test('benchmark cohort anchor clears the sticky header', async ({ page }) => {
     await page.goto('/performance/');
     await page.getByRole('link', { name: 'Compare all eight cases' }).click();
     await expect(page).toHaveURL(/#benchmark-projects$/);
-    const header = await page.locator('.site-header').boundingBox();
-    const cohort = await page.locator('#benchmark-projects').boundingBox();
-    expect(cohort?.y).toBeGreaterThanOrEqual((header?.y ?? 0) + (header?.height ?? 0) + 8);
+    await expect.poll(async () => {
+      const header = await page.locator('.site-header').boundingBox();
+      const cohort = await page.locator('#benchmark-projects').boundingBox();
+      const gap = (cohort?.y ?? 0) - ((header?.y ?? 0) + (header?.height ?? 0));
+      return gap >= 8 && gap <= 48;
+    }, { timeout: 15_000 }).toBe(true);
   }
 });
 
