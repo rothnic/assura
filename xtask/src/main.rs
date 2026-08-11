@@ -3252,8 +3252,8 @@ fn check_trellis_state(checks: &mut Checks) {
     let task_files = direct_task_files();
     let mut active_task_goals = BTreeSet::new();
     for task_file in &task_files {
-        let Ok(task) = serde_json::from_str::<Value>(&read(&task_file)) else {
-            checks.add(format!("{}: task JSON is invalid", rel(&task_file)));
+        let Ok(task) = serde_json::from_str::<Value>(&read(task_file)) else {
+            checks.add(format!("{}: task JSON is invalid", rel(task_file)));
             continue;
         };
         let status = task.get("status").and_then(Value::as_str).unwrap_or("");
@@ -3261,7 +3261,7 @@ fn check_trellis_state(checks: &mut Checks) {
             allowed_task_statuses.contains(&status),
             format!(
                 "{}: active task status {status:?} should be archived or in progress/planning",
-                rel(&task_file)
+                rel(task_file)
             ),
         );
         if allowed_task_statuses.contains(&status) {
@@ -3270,14 +3270,14 @@ fn check_trellis_state(checks: &mut Checks) {
                     goal_path.starts_with("docs/goals/") && goal_path.ends_with(".md"),
                     format!(
                         "{}: meta.goal_path must reference a Markdown goal under docs/goals",
-                        rel(&task_file)
+                        rel(task_file)
                     ),
                 );
                 checks.require(
                     exists(goal_path),
                     format!(
                         "{}: meta.goal_path {goal_path} does not exist",
-                        rel(&task_file)
+                        rel(task_file)
                     ),
                 );
                 active_task_goals.insert(goal_path.to_string());
