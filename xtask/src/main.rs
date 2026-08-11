@@ -354,6 +354,7 @@ fn release_readiness_report_from_inputs(
         "cargo fmt --all -- --check",
         "cargo test --all-targets --quiet",
         "cargo clippy --all-targets --all-features -- -D warnings",
+        "cargo xtask website-demo-data --check --released",
         "cargo xtask release-readiness --format json",
         "cargo xtask release-smoke",
         "cargo xtask release-live",
@@ -392,18 +393,13 @@ fn release_readiness_report_from_inputs(
             "latest GitHub release could not be checked: {error}"
         ));
     }
-    let latest_tag = latest_release
-        .get("tagName")
-        .and_then(Value::as_str)
-        .unwrap_or_default();
-    if latest_tag == local_tag
-        && unreleased_user_facing_changes
-            .as_array()
-            .map(|changes| !changes.is_empty())
-            .unwrap_or(false)
+    if unreleased_user_facing_changes
+        .as_array()
+        .map(|changes| !changes.is_empty())
+        .unwrap_or(false)
     {
         reasons.push(format!(
-            "{local_tag} is already the latest GitHub release but current branch release notes describe unreleased user-facing changes"
+            "{local_tag} cannot publish while supported or experimental user-facing surfaces remain unreleased"
         ));
     }
 
@@ -444,14 +440,10 @@ fn latest_github_release() -> Value {
 
 fn release_notes_version(text: &str) -> Option<String> {
     let after_marker = text.split_once("Assura v")?.1;
-    let version = after_marker
-        .chars()
-        .take_while(|ch| ch.is_ascii_digit() || *ch == '.')
-        .collect::<String>();
-    if version.is_empty() {
-        return None;
-    }
-    Some(version)
+    let version = after_marker.split_whitespace().next()?;
+    semver::Version::parse(version)
+        .ok()
+        .map(|_| version.to_string())
 }
 
 fn release_surfaces_report(path: &str, current_tag: Option<&str>) -> Value {
@@ -486,6 +478,10 @@ fn release_surfaces_report(path: &str, current_tag: Option<&str>) -> Value {
             .get("detail_path")
             .and_then(Value::as_str)
             .unwrap_or_default();
+        let marketing_claim = surface
+            .get("marketing_claim")
+            .and_then(Value::as_bool)
+            .unwrap_or(false);
         if id.is_empty() {
             errors.push("surface missing id".to_string());
         }
@@ -494,6 +490,11 @@ fn release_surfaces_report(path: &str, current_tag: Option<&str>) -> Value {
             "supported" | "experimental" | "internal" | "roadmap" | "unsupported"
         ) {
             errors.push(format!("{id}: invalid status {status:?}"));
+        }
+        if marketing_claim && status != "supported" {
+            errors.push(format!(
+                "{id}: marketing claims must be supported, found {status:?}"
+            ));
         }
         if first_release.is_empty() {
             errors.push(format!("{id}: missing first_release"));
@@ -504,10 +505,21 @@ fn release_surfaces_report(path: &str, current_tag: Option<&str>) -> Value {
                     "{id}: supported or experimental surface has invalid first_release {first_release:?}"
                 ));
             } else if let Some(current_tag) = current_tag {
-                if release_tag_tuple(first_release) > release_tag_tuple(current_tag) {
-                    errors.push(format!(
-                        "{id}: first_release {first_release:?} is after local release tag {current_tag:?}"
-                    ));
+                match (
+                    release_tag_version(first_release),
+                    release_tag_version(current_tag),
+                ) {
+                    (Some(first_version), Some(current_version))
+                        if first_version > current_version =>
+                    {
+                        errors.push(format!(
+                            "{id}: first_release {first_release:?} is after local release tag {current_tag:?}"
+                        ));
+                    }
+                    (_, None) => errors.push(format!(
+                        "local release tag {current_tag:?} is not valid SemVer"
+                    )),
+                    _ => {}
                 }
             }
         }
@@ -537,16 +549,12 @@ fn release_surfaces_report(path: &str, current_tag: Option<&str>) -> Value {
 }
 
 fn release_tag_like(value: &str) -> bool {
-    release_tag_tuple(value).is_some()
+    release_tag_version(value).is_some()
 }
 
-fn release_tag_tuple(value: &str) -> Option<(u64, u64, u64)> {
+fn release_tag_version(value: &str) -> Option<semver::Version> {
     let version = value.strip_prefix('v')?;
-    let mut parts = version.split('.');
-    let major = parts.next()?.parse().ok()?;
-    let minor = parts.next()?.parse().ok()?;
-    let patch = parts.next()?.parse().ok()?;
-    parts.next().is_none().then_some((major, minor, patch))
+    semver::Version::parse(version).ok()
 }
 
 fn run_release_bundle() -> Result<PathBuf> {
@@ -3241,7 +3249,9 @@ fn collect_files_inner(path: &Path, suffix: Option<&str>, files: &mut Vec<PathBu
 
 fn check_trellis_state(checks: &mut Checks) {
     let allowed_task_statuses = ["planning", "in_progress"];
-    for task_file in direct_task_files() {
+    let task_files = direct_task_files();
+    let mut active_task_goals = BTreeSet::new();
+    for task_file in &task_files {
         let Ok(task) = serde_json::from_str::<Value>(&read(&task_file)) else {
             checks.add(format!("{}: task JSON is invalid", rel(&task_file)));
             continue;
@@ -3254,6 +3264,25 @@ fn check_trellis_state(checks: &mut Checks) {
                 rel(&task_file)
             ),
         );
+        if allowed_task_statuses.contains(&status) {
+            if let Some(goal_path) = task.pointer("/meta/goal_path").and_then(Value::as_str) {
+                checks.require(
+                    goal_path.starts_with("docs/goals/") && goal_path.ends_with(".md"),
+                    format!(
+                        "{}: meta.goal_path must reference a Markdown goal under docs/goals",
+                        rel(&task_file)
+                    ),
+                );
+                checks.require(
+                    exists(goal_path),
+                    format!(
+                        "{}: meta.goal_path {goal_path} does not exist",
+                        rel(&task_file)
+                    ),
+                );
+                active_task_goals.insert(goal_path.to_string());
+            }
+        }
     }
 
     let mut goal_statuses = BTreeMap::new();
@@ -3322,9 +3351,13 @@ fn check_trellis_state(checks: &mut Checks) {
             }
         }
         for (file_name, status) in &goal_statuses {
-            if status == "active" && !allowed_active.contains(file_name) {
+            let goal_path = format!("docs/goals/{file_name}");
+            if status == "active"
+                && !allowed_active.contains(file_name)
+                && !active_task_goals.contains(&goal_path)
+            {
                 checks.add(format!(
-                    "docs/goals/{file_name}: active status is not listed as active in the Phase 01 ledger"
+                    "{goal_path}: active status is not referenced by a live Trellis task"
                 ));
             }
         }
@@ -5415,6 +5448,13 @@ fn check_docs_release_performance(checks: &mut Checks) {
         "release workflows must upload checksum sidecars for every archive",
     );
     checks.require(
+        release_workflow.contains("validate-release-contract:")
+            && release_workflow.contains("cargo xtask website-demo-data --check --released")
+            && release_workflow.contains("cargo xtask release-readiness --format json")
+            && release_workflow.contains("needs: validate-release-contract"),
+        "release workflow must block asset builds on strict claim and readiness gates",
+    );
+    checks.require(
         release_text.contains("`.sha256` checksum file next to every archive")
             && compatibility_text.contains(".sha256"),
         "release docs must describe checksum sidecars for every archive",
@@ -7028,7 +7068,16 @@ mod tests {
             release_notes_version("# Assura v0.2.0 Current Branch Release Notes"),
             Some("0.2.0".to_string())
         );
+        assert_eq!(
+            release_notes_version("# Assura v0.4.0-rc.1 Release Notes"),
+            Some("0.4.0-rc.1".to_string())
+        );
         assert_eq!(release_notes_version("# No version here"), None);
+        assert_eq!(
+            release_tag_version("v0.4.0-rc.1"),
+            semver::Version::parse("0.4.0-rc.1").ok()
+        );
+        assert_eq!(release_tag_version("0.4.0"), None);
 
         let report = release_surfaces_report("docs/data/release-surfaces.json", Some("v0.2.0"));
         assert_eq!(
@@ -7101,7 +7150,7 @@ mod tests {
     }
 
     #[test]
-    fn release_readiness_report_fails_when_latest_tag_has_unreleased_surfaces() {
+    fn release_readiness_report_fails_for_any_candidate_with_unreleased_surfaces() {
         let report = release_readiness_report_from_inputs(
             "0.2.0",
             "0.2.0",
@@ -7119,7 +7168,7 @@ mod tests {
                     "detail_path": "docs/release-notes.md"
                 }]
             }),
-            serde_json::json!({ "tagName": "v0.2.0" }),
+            serde_json::json!({ "tagName": "v0.1.0" }),
         );
         assert_eq!(report.get("ready").and_then(Value::as_bool), Some(false));
         assert_eq!(report.get("verdict").and_then(Value::as_str), Some("fail"));
@@ -7128,7 +7177,7 @@ mod tests {
             .and_then(Value::as_array)
             .is_some_and(|reasons| reasons.iter().any(|reason| reason
                 .as_str()
-                .is_some_and(|reason| reason.contains("already the latest GitHub release")))));
+                .is_some_and(|reason| reason.contains("cannot publish")))));
     }
 
     #[test]
@@ -7190,6 +7239,38 @@ mod tests {
             .and_then(Value::as_str)
             .expect("surface validation error");
         assert!(error.contains("after local release tag"));
+        let _ = fs::remove_file(path);
+    }
+
+    #[test]
+    fn release_surfaces_report_rejects_non_supported_marketing_claims() {
+        let path = env::temp_dir().join(format!(
+            "assura-release-surfaces-marketing-{}.json",
+            std::process::id()
+        ));
+        fs::write(
+            &path,
+            r#"{
+              "schema_version": "assura.release-surfaces.v1",
+              "surfaces": [
+                {
+                  "id": "experimental-homepage-claim",
+                  "status": "experimental",
+                  "first_release": "v0.2.0",
+                  "detail_path": "docs/release-notes.md",
+                  "marketing_claim": true
+                }
+              ]
+            }"#,
+        )
+        .expect("write release surface fixture");
+        let report =
+            release_surfaces_report(path.to_str().expect("utf-8 temp path"), Some("v0.3.0"));
+        let error = report
+            .get("error")
+            .and_then(Value::as_str)
+            .expect("surface validation error");
+        assert!(error.contains("marketing claims must be supported"));
         let _ = fs::remove_file(path);
     }
 
@@ -7263,6 +7344,7 @@ mod tests {
         "cargo fmt --all -- --check\n\
          cargo test --all-targets --quiet\n\
          cargo clippy --all-targets --all-features -- -D warnings\n\
+         cargo xtask website-demo-data --check --released\n\
          cargo xtask release-readiness --format json\n\
          cargo xtask release-smoke\n\
          cargo xtask release-live"

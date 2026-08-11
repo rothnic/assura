@@ -49,6 +49,7 @@ release until a newer release process replaces it.
 | Self-check | `cargo run --quiet -- check --format json .` | Any Assura violation. |
 | Fast gate | `cargo xtask fast` | Any local fast gate failure. |
 | Docs | `cargo xtask docs` | Website build fails or docs links break. |
+| Marketed release claims | `cargo xtask website-demo-data --check --released` | A core website claim is not supported, lacks verified/measured evidence, is absent from the candidate release, or its public command smoke fails. |
 | Release readiness | `cargo xtask release-readiness --format json` | Version, release notes, latest GitHub release, support policy, checklist, or unreleased public-surface state is inconsistent. |
 | Release smoke | `cargo xtask release-smoke` | Local archive install or first-run smoke fails. |
 | Daemon surface | `cargo test --test daemon_cli_tests --quiet` | Daemon lifecycle, stale-state, or IPC fallback behavior regresses. |

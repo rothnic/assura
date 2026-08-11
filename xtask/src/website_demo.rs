@@ -25,6 +25,7 @@ struct ReleaseSurfaceManifest {
 struct ReleaseSurface {
     id: String,
     status: String,
+    first_release: String,
     #[serde(default)]
     marketing_claim: bool,
     evidence_status: Option<String>,
@@ -35,11 +36,7 @@ struct ReleaseSurface {
 }
 
 pub(crate) fn run(args: &[String]) -> Result<()> {
-    let check_only = match args {
-        [] => false,
-        [flag] if flag == "--check" => true,
-        _ => return Err("Usage: cargo xtask website-demo-data [--check]".into()),
-    };
+    let (check_only, require_released) = execution_mode(args)?;
 
     let root = std::env::current_dir()?.canonicalize()?;
     if !root.join("Cargo.toml").is_file() || !root.join("website").is_dir() {
@@ -52,7 +49,7 @@ pub(crate) fn run(args: &[String]) -> Result<()> {
     validate_agentic_monorepo_example(&root, &binary)?;
     println!("Website Assura config examples are valid.");
     let (fixture, onboarding) = prepare_fixture(&root, &binary)?;
-    validate_claims(&root, &binary, &fixture)?;
+    validate_claims(&root, &binary, &fixture, require_released)?;
     validate_website_commands(&root)?;
     validate_docs_config_examples(&root, &binary)?;
 
@@ -109,6 +106,20 @@ pub(crate) fn run(args: &[String]) -> Result<()> {
                 .into(),
         )
     }
+}
+
+fn execution_mode(args: &[String]) -> Result<(bool, bool)> {
+    let require_released = args.iter().any(|arg| arg == "--released");
+    if args
+        .iter()
+        .any(|arg| !matches!(arg.as_str(), "--check" | "--released"))
+    {
+        return Err("Usage: cargo xtask website-demo-data [--check] [--released]".into());
+    }
+    Ok((
+        require_released || args.iter().any(|arg| arg == "--check"),
+        require_released,
+    ))
 }
 
 pub(crate) fn validate_config_examples(args: &[String]) -> Result<()> {
@@ -552,7 +563,12 @@ fn build_assura(root: &Path) -> Result<()> {
     )
 }
 
-fn validate_claims(root: &Path, binary: &Path, fixture: &Path) -> Result<()> {
+fn validate_claims(
+    root: &Path,
+    binary: &Path,
+    fixture: &Path,
+    require_released: bool,
+) -> Result<()> {
     let manifest: ReleaseSurfaceManifest =
         serde_json::from_str(&fs::read_to_string(root.join(RELEASE_SURFACES_PATH))?)?;
     let rendered_claim_ids = website_release_surface_ids(root)?;
@@ -569,6 +585,7 @@ fn validate_claims(root: &Path, binary: &Path, fixture: &Path) -> Result<()> {
         .collect::<BTreeSet<_>>();
     validate_claim_id_mapping(&rendered_claim_ids, &manifest_ids, &marketing_claim_ids)?;
     let marketing_claim_count = marketing_claim_ids.len();
+    let package_version = package_version(&root.join("Cargo.toml"))?;
     for claim in manifest.surfaces {
         if !claim.marketing_claim {
             continue;
@@ -580,13 +597,7 @@ fn validate_claims(root: &Path, binary: &Path, fixture: &Path) -> Result<()> {
             )
             .into());
         }
-        if !matches!(claim.status.as_str(), "supported" | "experimental") {
-            return Err(format!(
-                "marketing claim `{}` has non-public status `{}`",
-                claim.id, claim.status
-            )
-            .into());
-        }
+        validate_marketing_claim_release(&claim, &package_version, require_released)?;
         let evidence_status = claim
             .evidence_status
             .as_deref()
@@ -643,6 +654,46 @@ fn validate_claims(root: &Path, binary: &Path, fixture: &Path) -> Result<()> {
         }
     }
     println!("Validated {marketing_claim_count} marketed release-surface mappings.");
+    Ok(())
+}
+
+fn validate_marketing_claim_release(
+    claim: &ReleaseSurface,
+    package_version: &str,
+    require_released: bool,
+) -> Result<()> {
+    if claim.status != "supported" {
+        return Err(format!(
+            "marketing claim `{}` must be supported, found `{}`",
+            claim.id, claim.status
+        )
+        .into());
+    }
+    if !require_released {
+        return Ok(());
+    }
+    if claim.first_release == "unreleased" {
+        return Err(format!(
+            "marketing claim `{}` is not available in release v{package_version}",
+            claim.id
+        )
+        .into());
+    }
+    let first_release = super::release_tag_version(&claim.first_release).ok_or_else(|| {
+        format!(
+            "marketing claim `{}` has invalid first_release `{}`",
+            claim.id, claim.first_release
+        )
+    })?;
+    let package_release = semver::Version::parse(package_version)
+        .map_err(|_| format!("Cargo package version `{package_version}` is not valid SemVer"))?;
+    if first_release > package_release {
+        return Err(format!(
+            "marketing claim `{}` first ships in {} after local release v{package_version}",
+            claim.id, claim.first_release
+        )
+        .into());
+    }
     Ok(())
 }
 
@@ -1116,5 +1167,81 @@ mod tests {
             .unwrap_err()
             .to_string()
             .contains("is not mapped"));
+    }
+
+    fn release_surface(id: &str, status: &str, first_release: &str) -> ReleaseSurface {
+        ReleaseSurface {
+            id: id.to_string(),
+            status: status.to_string(),
+            first_release: first_release.to_string(),
+            marketing_claim: true,
+            evidence_status: Some("verified".to_string()),
+            evidence_refs: Some(vec!["tests/example.rs".to_string()]),
+            command: None,
+            smoke_args: None,
+            expected_exit: None,
+        }
+    }
+
+    #[test]
+    fn marketing_claims_require_supported_status() {
+        for (id, status) in [
+            ("experimental-watch", "experimental"),
+            ("planned-search", "planned"),
+        ] {
+            let claim = release_surface(id, status, "v0.3.0");
+            let error = validate_marketing_claim_release(&claim, "0.3.0", false)
+                .expect_err("non-supported claim must fail")
+                .to_string();
+            assert!(error.contains(id), "error did not name {id}: {error}");
+            assert!(error.contains("must be supported"));
+        }
+    }
+
+    #[test]
+    fn released_mode_is_always_read_only() {
+        assert_eq!(execution_mode(&[]).unwrap(), (false, false));
+        assert_eq!(
+            execution_mode(&["--check".to_string()]).unwrap(),
+            (true, false)
+        );
+        assert_eq!(
+            execution_mode(&["--released".to_string()]).unwrap(),
+            (true, true)
+        );
+        assert!(execution_mode(&["--unknown".to_string()]).is_err());
+    }
+
+    #[test]
+    fn released_marketing_claims_must_ship_by_the_local_version() {
+        validate_marketing_claim_release(
+            &release_surface("check", "supported", "v0.1.0"),
+            "0.3.0",
+            true,
+        )
+        .expect("older supported surface");
+
+        validate_marketing_claim_release(
+            &release_surface("check-rc", "supported", "v0.4.0-rc.1"),
+            "0.4.0-rc.1",
+            true,
+        )
+        .expect("matching release candidate");
+
+        let unreleased = validate_marketing_claim_release(
+            &release_surface("review", "supported", "unreleased"),
+            "0.3.0",
+            true,
+        )
+        .expect_err("unreleased claim must fail strict release validation");
+        assert!(unreleased.to_string().contains("not available"));
+
+        let future = validate_marketing_claim_release(
+            &release_surface("review", "supported", "v0.4.0"),
+            "0.3.0",
+            true,
+        )
+        .expect_err("future claim must fail strict release validation");
+        assert!(future.to_string().contains("after local release"));
     }
 }

@@ -48,18 +48,18 @@ healthy, and what should I fix or configure next?"
 
 ## Acceptance Criteria
 
-- [ ] One compact review path exists for humans and local agents.
-- [ ] JSON output is bounded, stable, and points to detailed evidence when
+- [x] One compact review path exists for humans and local agents.
+- [x] JSON output is bounded, stable, and points to detailed evidence when
       needed.
-- [ ] Text/agent output prioritizes fix-now, configure-intentionally,
+- [x] Text/agent output prioritizes fix-now, configure-intentionally,
       inspect-before-changing, and informational items.
-- [ ] Structure-fit guidance tells agents to inspect the nearby project shape
+- [x] Structure-fit guidance tells agents to inspect the nearby project shape
       before adding directories or editing config.
-- [ ] Generated/archive/log/benchmark reference noise is filtered, classified,
+- [x] Generated/archive/log/benchmark reference noise is filtered, classified,
       or explicitly omitted.
-- [ ] Tests cover clean repo, structure mismatch, duplicated/unmodeled path
+- [x] Tests cover clean repo, structure mismatch, duplicated/unmodeled path
       pressure, inactive guidance, noisy gap, and actionable gap scenarios.
-- [ ] Docs show before-new-path, before-PR, and onboarding usage.
+- [x] Docs show before-new-path, before-PR, and onboarding usage.
 
 ## Validation Commands
 

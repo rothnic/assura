@@ -2835,6 +2835,7 @@ name = "xtask"
 version = "0.3.0"
 dependencies = [
  "pulldown-cmark",
+ "semver",
  "serde",
  "serde_json",
  "serde_yaml",

@@ -174,15 +174,23 @@ validation evidence behind compatibility claims.
 Release PRs run:
 
 ```bash
+cargo xtask website-demo-data --check --released
 cargo xtask release-readiness --format json
 ```
+
+The marketed-release gate rejects a core site claim unless its manifest row is
+supported, carries verified or measured evidence, and ships no later than the
+local candidate version. Preview evidence uses the non-strict `--check` mode so
+candidate capabilities can be reviewed before version preparation.
 
 The command emits `assura.release-readiness.v1` with the latest GitHub release,
 local package version, release-notes version, unreleased public-surface entries
 from `docs/data/release-surfaces.json`, missing checklist gates, and a pass/fail
 verdict. It exits nonzero when the current branch describes installable
-surfaces that have not been cut into a new pre-1.0 release. Automation should
-parse JSON from stdout and treat stderr as diagnostics.
+surfaces that have not been assigned to the candidate or an earlier release.
+The tag workflow runs both checks before building archives, so publication
+cannot bypass this contract. Automation should parse JSON from stdout and treat
+stderr as diagnostics.
 
 Maintainer-facing details live in the repository:
 

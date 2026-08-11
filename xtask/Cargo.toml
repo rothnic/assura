@@ -9,6 +9,8 @@ publish = false
 
 [dependencies]
 pulldown-cmark = "0.9"
+# Release gates compare stable and release-candidate versions with SemVer precedence.
+semver = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 serde_yaml = "0.9"

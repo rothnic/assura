@@ -1,6 +1,6 @@
 {
   "schema_version": "assura.public-roadmap.v1",
-  "updated": "2026-07-04",
+  "updated": "2026-08-11",
   "source": ".trellis/spec/assura/roadmap.md",
   "groups": [
     {
@@ -181,6 +181,12 @@
       "status": "now",
       "title": "Now",
       "items": [
+        {
+          "label": "Claim-Complete Release",
+          "summary": "Stabilize every marketed capability, publish v0.4, and collect the explicit v1 soak evidence.",
+          "detail_path": "docs/goals/assura-claim-complete-v0-4-and-v1.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-claim-complete-v0-4-and-v1.md"
+        },
         {
           "label": "CLI Floor",
           "summary": "Reduce startup and config/walk costs that keep small or many-scope rows from stronger performance targets.",

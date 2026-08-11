@@ -23,8 +23,14 @@ GitHub artifacts.
 Run the release-readiness command before opening a release PR:
 
 ```bash
+cargo xtask website-demo-data --check --released
 cargo xtask release-readiness --format json
 ```
+
+The first command is the marketed-release gate. It rejects every core website
+claim that is not `supported`, lacks verified or measured evidence, or first
+ships after the local candidate version. Ordinary preview builds use
+`website-demo-data --check` so unreleased candidate work can still be reviewed.
 
 It emits `assura.release-readiness.v1` with:
 
@@ -46,7 +52,11 @@ Cargo or from the failing readiness verdict.
 
 `docs/data/release-surfaces.json` is the structured source for release-surface
 state. Supported or experimental surfaces with `"first_release": "unreleased"`
-block readiness when the local tag is already the latest GitHub release.
+block every release candidate, regardless of the latest GitHub release.
+
+Rows marked `"marketing_claim": true` must use `"status": "supported"`. A
+release candidate must also assign each marketed row to the candidate tag or an
+earlier release; `unreleased` is never valid at publication time.
 
 Roadmap-only surfaces stay in the manifest as `"status": "roadmap"` with a
 future release marker until their own beta goals prove installable support. When

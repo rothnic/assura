@@ -35,56 +35,36 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 21 | Markdown Reference Intelligence | Completed | Completed for beta in PR #112; post-beta Markdown, graph, daemon, agent, and editor hardening now routes through Post-Beta Capabilities |
 | 22 | Beta Code-Agnostic Capabilities | Completed | PR #112 merged; `v0.2.0` tag and GitHub release published with live release evidence |
 | 23 | Post-Beta Capabilities | Completed | `v0.3.0` beta increment published and live-verified with self-config hardening, supported document graph, true daemon mode, Markdown engine/safe fixes, performance floor, agent installers, VS Code support, extension API clarity, LS-Lint reassessment, and release hardening |
-| 24 | Performance Polish | Planned / Separate Lane | Kickoff goal `docs/goals/assura-performance-polish-program.md`; PR #139 landed the first native performance report/gate slice, but the broader optimization and product-grade native regression system remains the next core lane |
+| 24 | Performance Polish | Active / Release Proof | PR #140 carries the product-grade report, LS-Lint comparison fixtures, and claim evidence; release closure is owned by `.trellis/tasks/08-11-assura-claim-complete-release-program` |
 | 25 | Agent-Ready Project Onboarding | Completed | Parent program and all twelve child goals merged in PR #139 at `0020278066bc7498627ae9ef5a32bec54296ce73`; final audit in `docs/analysis/2026-07-03-agent-ready-onboarding-final-audit.md` |
+| 26 | Claim-Complete Release | Active | Stabilize every marketed surface, publish a claim-complete v0.4, then complete the explicit v1 soak defined in `docs/goals/assura-claim-complete-v0-4-and-v1.md` |
 
 ## Active Roadmap Iteration
 
-Agent-Ready Project Onboarding completed the adoption iteration after the
-`v0.3.0` beta increment and merged through PR #139 on 2026-07-04. It made
-Assura the default scaffold, doctor, and feedback loop for agent-ready
-repositories, starting with a broad first-run baseline and then asking only
-the specialization questions needed to avoid invented project conventions.
+Claim-Complete Release is the active iteration. PR #140 already contains the
+landing experience, compact project review, onboarding, performance evidence,
+and configuration examples. The remaining work is to make every promoted
+claim a released support contract rather than a preview-only capability.
 
-Completion audit:
-`docs/analysis/2026-07-03-agent-ready-onboarding-final-audit.md`.
+Active branch: `codex/assura-landing-experience`.
 
-Current cleanup branch:
-`codex/post-merge-backlog-truth-pass`.
+Owning task: `.trellis/tasks/08-11-assura-claim-complete-release-program`.
+
+Owning goal: `docs/goals/assura-claim-complete-v0-4-and-v1.md`.
 
 Current recommended goal:
-`docs/goals/assura-performance-polish-program.md`.
+`docs/goals/assura-claim-complete-v0-4-and-v1.md`.
 
-Adjacent planned proof:
-`docs/goals/assura-compact-project-review-common-issues.md`.
+The compact review implementation is complete in this branch and remains open
+only until PR #140 supplies hosted proof and merges. Performance polish is now
+part of the same release-proof lane because its public claims and generated
+evidence must close against the candidate release together.
 
-Performance lane:
-`docs/goals/assura-performance-polish-program.md`.
+Public roadmap artifact: `docs/data/public-roadmap.json`.
 
-Completed support-hardening details from the prior beta increment remain
-routed through `docs/goals/assura-post-beta-support-release-hardening.md`.
-
-Public roadmap artifact:
-`docs/data/public-roadmap.json`.
-
-Triggering evidence:
-A new-project dogfood run exposed a broad adoption gap: Assura can make a
-configured policy pass while the repository still does not feel scaffolded,
-discoverable, queryable, or self-explaining to a coding agent. That backlog is
-not "more intelligence" in the abstract; the product milestone is to make
-Assura the default scaffold, doctor, and feedback loop for agent-ready
-repositories.
-
-North-star outcome:
-A coding agent can enter a new project and reliably answer: what rules apply
-here, what guidance should I follow, which skills exist, what project facts are
-modeled, what references are broken, what is checked versus unchecked, what
-should I fix next, and whether the feedback is a nudge, warning, or merge gate.
-The detailed backlog lives in
-`docs/goals/assura-agent-ready-project-onboarding-program.md`.
-
-Performance polish remains a separate planned lane. Its detailed kickoff
-criteria live in `docs/goals/assura-performance-polish-program.md`.
+Prior support-hardening evidence remains available at
+`docs/goals/assura-post-beta-support-release-hardening.md`; the active release
+program supersedes it for new work without erasing its historical proof.
 
 Direction lock, clarified on 2026-05-31: do not create or revive
 `assura-codex-feedback`, do not add one CLI entrypoint per agent, and do not add
@@ -93,17 +73,12 @@ that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
 ## Recommended Next Action
 
-Agent-ready onboarding is complete for this increment and PR #139 is merged.
-Execute `docs/goals/assura-performance-polish-program.md` next for native
-performance evidence, no-slower gates, checked native regression history, and
-CLI-floor optimization. Keep
-`docs/goals/assura-compact-project-review-common-issues.md` as the adjacent
-common-issue review proof so the next implementation lane improves both speed
-and the first diagnostic path users and agents hit.
-
-Priority rule: performance work remains separate from the completed
-agent-ready onboarding program. Reopen onboarding only for follow-up product
-decisions, regressions, or post-merge review findings.
+Execute the claim-complete release children in order: enforce the claim/release
+contract, replace the one-shot watch placeholder with a support-grade runtime,
+add explicit managed activation for the four documented agent hosts, promote
+the deterministic policy depth used by the site, publish v0.4, and then collect
+the required v1 soak evidence. Do not mark v1 complete before the 30-day,
+50-session, three-repository, four-host proof gate passes.
 
 ## Roadmap Rules
 

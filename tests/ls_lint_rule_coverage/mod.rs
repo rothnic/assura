@@ -56,7 +56,7 @@ fn native_ls_lint_binary() -> &'static Path {
                     "--silent",
                     "--no-audit",
                     "--no-fund",
-                    "@ls-lint/ls-lint@2.3.0",
+                    "@ls-lint/ls-lint@2.3.1",
                 ])
                 .status()
                 .expect("npm install for native LS-Lint should run");
