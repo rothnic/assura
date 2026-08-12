@@ -8,6 +8,8 @@ mod management;
 mod process;
 #[path = "daemon_process_spawn.rs"]
 mod process_spawn;
+#[path = "daemon_ready.rs"]
+mod ready;
 #[path = "daemon_references.rs"]
 mod references;
 #[path = "daemon_render.rs"]

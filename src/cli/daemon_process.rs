@@ -1,5 +1,9 @@
 //! Managed local daemon process and IPC helpers.
 
+use super::ready::{
+    cleanup_ready_files, publish_daemon_address, ready_file_for, ready_file_from_env,
+    wait_for_daemon_address, DAEMON_READY_FILE_ENV,
+};
 use super::references::{
     DaemonMovedReferenceIpcOutput, DaemonReferenceIpcOutput, DaemonReferenceIpcRequest,
     DaemonReferenceRequest,
@@ -10,12 +14,13 @@ use crate::daemon::{DaemonCoreError, DaemonHealth, LocalDaemonCore};
 use serde::Serialize;
 use serde_json::Value;
 use std::fs::{self, OpenOptions};
-use std::io::{BufRead, BufReader, Write};
+use std::io::Write;
 use std::path::{Path, PathBuf};
-use std::process::{Child, Command, Stdio};
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::process::{Command, Stdio};
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 pub(super) const DAEMON_PROTOCOL_VERSION: &str = "assura.daemon.v1";
+const DAEMON_START_TIMEOUT: Duration = Duration::from_secs(10);
 
 pub(super) struct SpawnedDaemon {
     pub(super) pid: u32,
@@ -47,6 +52,8 @@ pub(super) fn spawn_daemon(
         .append(true)
         .open(log_file)
         .map_err(|error| format!("open daemon log: {error}"))?;
+    let ready_file = ready_file_for(log_file);
+    let _ = cleanup_ready_files(&ready_file);
 
     let mut command = Command::new(std::env::current_exe().map_err(|error| error.to_string())?);
     if let Some(config) = config {
@@ -58,45 +65,56 @@ pub(super) fn spawn_daemon(
         .arg(project_root)
         .arg("--listen")
         .arg(listen_addr)
+        .env(DAEMON_READY_FILE_ENV, &ready_file)
         .stdin(Stdio::null())
-        .stdout(Stdio::piped())
+        .stdout(Stdio::null())
         .stderr(Stdio::from(log));
 
-    let mut child = super::process_spawn::without_inherited_parent_stdio(&mut command)
-        .map_err(|error| format!("start daemon process: {error}"))?;
+    let mut child =
+        super::process_spawn::without_inherited_parent_stdio(&mut command).map_err(|error| {
+            let _ = cleanup_ready_files(&ready_file);
+            format!("start daemon process: {error}")
+        })?;
 
-    let listen_addr = read_daemon_address(&mut child).map_err(|error| {
+    let pid = child.id();
+    let listen_addr = wait_for_daemon_address(
+        &mut child,
+        &ready_file,
+        DAEMON_START_TIMEOUT,
+        DAEMON_PROTOCOL_VERSION,
+        pid,
+    )
+    .map_err(|error| {
         let _ = child.kill();
         let _ = child.wait();
+        let _ = cleanup_ready_files(&ready_file);
         error
     })?;
-    let pid = child.id();
+    let startup_health = probe_health(&listen_addr).map_err(|error| {
+        let _ = child.kill();
+        let _ = child.wait();
+        let _ = cleanup_ready_files(&ready_file);
+        format!("probe started daemon: {error}")
+    })?;
+    let config_matches = config
+        .map(|expected| paths_match(expected, &startup_health.config_path))
+        .unwrap_or(true);
+    if !paths_match(project_root, &startup_health.project_root) || !config_matches {
+        let _ = child.kill();
+        let _ = child.wait();
+        let _ = cleanup_ready_files(&ready_file);
+        return Err("started daemon identity did not match the requested project".to_string());
+    }
+    if let Err(error) = cleanup_ready_files(&ready_file) {
+        let _ = child.kill();
+        let _ = child.wait();
+        return Err(error);
+    }
     Ok(SpawnedDaemon {
         pid,
         socket_path: socket_path_from_addr(&listen_addr),
         listen_addr,
     })
-}
-
-fn read_daemon_address(child: &mut Child) -> Result<String, String> {
-    let stdout = child
-        .stdout
-        .take()
-        .ok_or_else(|| "daemon stdout was not captured".to_string())?;
-    let mut reader = BufReader::new(stdout);
-    let mut line = String::new();
-    loop {
-        line.clear();
-        let read = reader
-            .read_line(&mut line)
-            .map_err(|error| format!("read daemon address: {error}"))?;
-        if read == 0 {
-            return Err("daemon exited before publishing an IPC address".to_string());
-        }
-        if let Some(addr) = line.trim().strip_prefix("ASSURA_DAEMON_ADDR\t") {
-            return Ok(addr.to_string());
-        }
-    }
 }
 
 pub(super) fn probe_health(listen_addr: &str) -> Result<DaemonHealth, String> {
@@ -197,11 +215,16 @@ pub(super) fn serve_daemon(
     config: Option<PathBuf>,
     listen_addr: String,
 ) -> Result<(), String> {
+    let ready_file = ready_file_from_env();
     let mut core =
-        LocalDaemonCore::load(project_root, config).map_err(|error| error.to_string())?;
+        LocalDaemonCore::load(project_root.clone(), config).map_err(|error| error.to_string())?;
     let listener = Listener::bind(&listen_addr)?;
-    println!("ASSURA_DAEMON_ADDR\t{}", listener.addr());
-    let _ = std::io::stdout().flush();
+    publish_daemon_address(
+        ready_file.as_deref(),
+        &project_root,
+        &listener.addr(),
+        DAEMON_PROTOCOL_VERSION,
+    )?;
 
     while let Some(mut stream) = listener.accept()? {
         let request = stream.read_line()?;

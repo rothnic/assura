@@ -1,7 +1,12 @@
 use serde_json::Value;
 use std::fs;
+use std::io::{Read, Write};
+use std::net::TcpStream;
 use std::path::Path;
-use std::process::Command;
+use std::process::{Command, Output, Stdio};
+use std::sync::mpsc::{self, Receiver};
+use std::thread;
+use std::time::{Duration, Instant};
 use tempfile::TempDir;
 
 #[test]
@@ -112,6 +117,74 @@ fn daemon_start_stop_json_are_idempotent_and_status_reflects_runtime() {
     );
     assert_eq!(repeat_stop["changed"], false);
     assert_eq!(repeat_stop["runtime"]["state"], "stopped");
+}
+
+#[test]
+#[cfg_attr(tarpaulin, ignore = "managed subprocess lifecycle is not instrumented")]
+fn daemon_serve_publishes_ready_file_without_stdout() {
+    let project = daemon_project();
+    let ready_file = project.path().join(".assura/daemon/ready-test.json");
+    fs::create_dir_all(ready_file.parent().unwrap()).unwrap();
+
+    let mut child = Command::new(env!("CARGO_BIN_EXE_assura-full"))
+        .args([
+            "daemon",
+            "serve",
+            project.path_str(),
+            "--listen",
+            "127.0.0.1:0",
+        ])
+        .env("ASSURA_DAEMON_READY_FILE", &ready_file)
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .spawn()
+        .unwrap();
+
+    let deadline = Instant::now() + Duration::from_secs(5);
+    while !ready_file.is_file() && Instant::now() < deadline {
+        if let Some(status) = child.try_wait().unwrap() {
+            panic!("daemon exited before readiness with status {status}");
+        }
+        thread::sleep(Duration::from_millis(10));
+    }
+    assert!(ready_file.is_file(), "daemon did not publish readiness");
+
+    let ready: Value = serde_json::from_slice(&fs::read(&ready_file).unwrap()).unwrap();
+    assert_eq!(ready["schema"], "assura.daemon.ready.v1");
+    assert_eq!(ready["protocol_version"], "assura.daemon.v1");
+    assert_eq!(ready["pid"], child.id());
+    let listen_addr = ready["listen_addr"].as_str().unwrap();
+
+    let mut stream = TcpStream::connect(listen_addr).unwrap();
+    stream.write_all(b"SHUTDOWN\n").unwrap();
+    stream.flush().unwrap();
+    let mut response = String::new();
+    stream.read_to_string(&mut response).unwrap();
+    assert!(response.contains("assura.daemon.pong.v1"));
+    assert!(child.wait().unwrap().success());
+}
+
+#[test]
+#[cfg_attr(tarpaulin, ignore = "managed subprocess lifecycle is not instrumented")]
+fn daemon_start_releases_captured_launcher_output_while_daemon_stays_running() {
+    let project = daemon_project();
+
+    let output = assura_output(
+        &project,
+        &["daemon", "start", project.path_str(), "--format", "json"],
+    );
+
+    assert!(output.status.success());
+    let start: Value = serde_json::from_slice(&output.stdout).unwrap();
+    let pid = start["runtime"]["pid"].as_u64().unwrap() as u32;
+    assert!(pid_is_running(pid));
+
+    let stop = assura_json(
+        &project,
+        &["daemon", "stop", project.path_str(), "--format", "json"],
+    );
+    assert_eq!(stop["runtime"]["state"], "stopped");
+    wait_for_pid_to_exit(pid);
 }
 
 #[test]
@@ -663,10 +736,7 @@ fn daemon_health_json_reports_unavailable_when_project_cannot_load() {
 }
 
 fn assura_json(project: &DaemonProject, args: &[&str]) -> Value {
-    let output = Command::new(env!("CARGO_BIN_EXE_assura"))
-        .args(args)
-        .output()
-        .unwrap();
+    let output = assura_output(project, args);
     assert!(
         output.status.success(),
         "project: {}\nstdout:\n{}\nstderr:\n{}",
@@ -675,6 +745,79 @@ fn assura_json(project: &DaemonProject, args: &[&str]) -> Value {
         String::from_utf8_lossy(&output.stderr)
     );
     serde_json::from_slice(&output.stdout).unwrap()
+}
+
+fn assura_output(project: &DaemonProject, args: &[&str]) -> Output {
+    let mut command = Command::new(env!("CARGO_BIN_EXE_assura"));
+    command
+        .args(args)
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    let mut child = command.spawn().unwrap();
+    let stdout = capture_pipe(child.stdout.take().unwrap());
+    let stderr = capture_pipe(child.stderr.take().unwrap());
+    let deadline = Instant::now() + Duration::from_secs(15);
+    let status = loop {
+        if let Some(status) = child.try_wait().unwrap() {
+            break status;
+        }
+        if Instant::now() >= deadline {
+            cleanup_managed_daemon(project);
+            let _ = child.kill();
+            let _ = child.wait();
+            panic!("assura command did not exit within 15 seconds: {args:?}");
+        }
+        thread::sleep(Duration::from_millis(10));
+    };
+    let stdout = receive_pipe(project, args, "stdout", stdout);
+    let stderr = receive_pipe(project, args, "stderr", stderr);
+    Output {
+        status,
+        stdout,
+        stderr,
+    }
+}
+
+fn capture_pipe(mut pipe: impl Read + Send + 'static) -> Receiver<Vec<u8>> {
+    let (sender, receiver) = mpsc::channel();
+    thread::spawn(move || {
+        let mut output = Vec::new();
+        let _ = pipe.read_to_end(&mut output);
+        let _ = sender.send(output);
+    });
+    receiver
+}
+
+fn receive_pipe(
+    project: &DaemonProject,
+    args: &[&str],
+    name: &str,
+    receiver: Receiver<Vec<u8>>,
+) -> Vec<u8> {
+    receiver
+        .recv_timeout(Duration::from_secs(5))
+        .unwrap_or_else(|_| {
+            cleanup_managed_daemon(project);
+            panic!("assura {name} remained open after command exit: {args:?}")
+        })
+}
+
+fn cleanup_managed_daemon(project: &DaemonProject) {
+    let status_file = project.path().join(".assura/daemon/status.json");
+    let pid = fs::read(&status_file)
+        .ok()
+        .and_then(|raw| serde_json::from_slice::<Value>(&raw).ok())
+        .and_then(|status| status["pid"].as_u64())
+        .map(|pid| pid as u32);
+    if let Some(pid) = pid {
+        #[cfg(unix)]
+        let _ = Command::new("kill").arg(pid.to_string()).status();
+
+        #[cfg(windows)]
+        let _ = Command::new("taskkill")
+            .args(["/PID", &pid.to_string(), "/T", "/F"])
+            .status();
+    }
 }
 
 fn daemon_project() -> DaemonProject {
