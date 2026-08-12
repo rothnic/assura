@@ -47,6 +47,7 @@ full-cli = [
     "dep:tracing",
     "dep:tracing-subscriber",
     "dep:validator",
+    "dep:windows-sys",
     "watch-events",
     "dep:jwalk",
     "dep:jsonschema",
@@ -96,6 +97,12 @@ jwalk = { version = "0.8.1", optional = true }
 # into Rust validators; authoring tools remain build-time only.
 jsonschema = { version = "=0.26.2", optional = true }
 notify = { version = "6.0", optional = true }
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61.2", optional = true, features = [
+  "Win32_Foundation",
+  "Win32_System_Console",
+] }
 
 [dev-dependencies]
 tempfile = "3.0"

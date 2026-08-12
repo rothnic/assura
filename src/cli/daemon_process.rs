@@ -62,8 +62,7 @@ pub(super) fn spawn_daemon(
         .stdout(Stdio::piped())
         .stderr(Stdio::from(log));
 
-    let mut child = command
-        .spawn()
+    let mut child = super::process_spawn::without_inherited_parent_stdio(&mut command)
         .map_err(|error| format!("start daemon process: {error}"))?;
 
     let listen_addr = read_daemon_address(&mut child).map_err(|error| {

@@ -6,6 +6,8 @@ mod lifecycle;
 mod management;
 #[path = "daemon_process.rs"]
 mod process;
+#[path = "daemon_process_spawn.rs"]
+mod process_spawn;
 #[path = "daemon_references.rs"]
 mod references;
 #[path = "daemon_render.rs"]
