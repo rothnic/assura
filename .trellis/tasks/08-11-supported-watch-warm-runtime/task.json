@@ -33,6 +33,6 @@
     "tests/watch_cli.rs",
     "tests/daemon_cli_tests.rs"
   ],
-  "notes": "Local implementation and cross-compilation proof are complete. Keep in progress until hosted Windows executes the unskipped managed-daemon lifecycle and watch Ctrl-Break tests.",
+  "notes": "Complete. Hosted Rust CI run 31616404517 executed the unskipped Windows managed-daemon lifecycle and watch Ctrl-Break tests successfully; Linux, macOS, performance, installer, and adoption jobs also passed.",
   "meta": {}
 }

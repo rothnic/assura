@@ -54,6 +54,10 @@ step that the page omitted.
   public API.
 - Core marketing claims may reference only `supported` release surfaces with
   verified or measured evidence available in the promoted release.
+- Product examples on the landing site and in docs must be generated from the
+  supported CLI renderer and schemas. Styling may adapt those semantics to the
+  page, but text hierarchy, states, labels, and command behavior must not invent
+  a parallel experience.
 - Agent activation is explicit and managed, not silently inferred.
 - Agent onboarding gains an explicit managed-activation flag; it remains out of
   public command examples until the flag is implemented and tested.
@@ -69,7 +73,7 @@ step that the page omitted.
 | Claim and release contract | Public claims, support metadata, release availability, and Windows evidence agree | Zero core claims mapped to non-supported or unreleased surfaces; Windows golden tests pass |
 | Watch and warm runtime | Continuous watch, daemon, cache, and bounded warm feedback are support-grade | Real change-triggered watch test; all five warm p95 budgets pass; fallback is observable |
 | Managed host activation | Four harnesses install, activate, diagnose, update, and remove safely | Golden config and event tests for Codex, Claude Code, OpenCode, and Pi |
-| Supported policy depth | Marketed deterministic project signals are supported and future intelligence is routed to roadmap | Every core page claim has a supported surface and behavioral evidence |
+| Supported policy depth | Marketed deterministic project signals are supported and future intelligence is routed to roadmap | Every core page claim has a supported surface and behavioral evidence; generated CLI examples match the supported renderer at six breakpoints in both themes |
 | v0.4 publication | The current binary, docs, website, checksums, and release notes are one release | Release smoke passes on Linux, macOS, and Windows; live artifact commands pass |
 | v1.0 proof | The v0.4 CLI contract survives real agent work without incompatible change | 30 days, 50 sessions, 3 repos, 4 hosts, final 14-day freeze, zero unresolved release blockers |
 
@@ -103,6 +107,9 @@ step that the page omitted.
   and observable.
 - Managed activation passes lifecycle and payload tests for all four hosts.
 - Core pages contain no planned/experimental fallback language.
+- Landing and docs terminal examples are renderer-derived, distinguish
+  advisory review from blocking check output, fail the build when stale, and
+  pass light/dark mobile and desktop wrap/overflow checks.
 - Future capabilities appear only on roadmap-oriented surfaces.
 - Current release binaries, checksums, notes, version metadata, and website
   examples agree on v0.4.
@@ -145,7 +152,8 @@ git diff --check
 Block release if a core claim is not available in the promoted binary, a
 command is still a one-shot placeholder, host activation changes unmanaged
 configuration, repeated feedback is unbounded, fallback behavior is hidden,
-the website teaches non-executable syntax, Windows differs from Unix contract
+the website teaches non-executable syntax or a visually different output
+hierarchy, Windows differs from Unix contract
 behavior, or v1.0 evidence does not meet every stated count and duration.
 
 ## Trellis Tasks
@@ -166,6 +174,7 @@ behavior, or v1.0 evidence does not meet every stated count and duration.
 | 2026-08-11 | 1 | Implemented and independently reviewed the local claim/release contract. Native behavioral tests use LS-Lint 2.3.1 with its Windows path fix; core marketing claims require supported status; strict candidate validation is read-only and rejects unreleased/future claims; tag publication is blocked on the strict claim and readiness gates; stable and release-candidate versions share SemVer parsing; active goals require structured Trellis ownership; and roadmap/task state is current. Hosted Windows proof remains open before this child can close. | `cargo test --test ls_lint_rule_coverage_tests --quiet`; `cargo test -p xtask --quiet`; `cargo xtask website-demo-data --check`; expected failures from `cargo xtask website-demo-data --released` and `cargo xtask release-readiness --format json` on unreleased v0.3.0 claims; `cargo xtask evidence`; `cargo xtask target-state`; `cargo xtask docs`; `cargo run --quiet -- check --format json .` |
 | 2026-08-11 | 2 | Closed the claim/release-contract child after hosted Windows run `31539326739` passed all native LS-Lint golden cases, including the four prior path-semantics failures. The run exposed an unrelated dirty-status race in `assura-checkd`; that defect is carried into the support-grade watch and warm-runtime child rather than weakening the completed cross-platform claim proof. Context level: not exposed. | Windows job `93937933614`; `ls_lint_rule_coverage_tests` all passed; `native_lslint_golden_explicit_directory_target_*` and `native_lslint_golden_explicit_file_target_*` passed |
 | 2026-08-11 | 3 | Implemented the continuous watch and warm-runtime child through its local proof boundary. Watch now stays resident, preserves requested file or directory scope, survives atomic file replacement, bounds edit bursts, reloads external config, exposes fallback and actionable findings, and terminates visibly on watcher failure. Changed-path checks conservatively fall back for cross-path policy. Public managed-daemon IPC now preserves validation exit codes and one schema. Internal status publication is ordered in both race directions and uses cross-platform atomic replacement. Context level: not exposed. Hosted Windows execution remains open. | 12 watch integration tests; 16 public daemon tests; 15 shared-state tests; 3 internal status tests; five warm budgets; successful `x86_64-pc-windows-gnu` full-CLI and companion-daemon cross-checks |
+| 2026-08-12 | 4 | Closed the watch and warm-runtime child after hosted Windows exposed and verified fixes for inherited daemon handles and platform-specific atomic-replacement events. The full matrix now executes the managed daemon and cancellation paths on Windows and passes Linux, macOS, performance, installer, coverage, and adoption jobs. Added renderer-derived visual parity to the release contract so marketing output cannot diverge from the supported CLI experience. Context level: not exposed. | Rust CI run `31616404517`; Windows test job `94180233780`; performance job `94180233746`; Windows installer job `94180233801`; Linux job `94180233710`; macOS job `94180233865` |
 
 ### Iteration 3 Context Review
 

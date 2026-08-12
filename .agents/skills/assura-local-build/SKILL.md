@@ -63,6 +63,27 @@ npm ping
 The website build disables Astro telemetry through `package.json` so the build
 does not need to create `~/.config/astro` in sandboxed validation.
 
+## macOS Uninterruptible Tool Processes
+
+On the always-on macOS development host, Homebrew-managed `cargo`, `git`, `gh`,
+or Node processes can occasionally enter uninterruptible `U` state. Do not
+interpret a silent command as a product failure or keep spawning retries.
+
+Inspect the process state first. For Git and Trellis bookkeeping, use system
+tools explicitly:
+
+```bash
+/usr/bin/git status --short --branch
+/usr/bin/env PATH=/usr/bin:/bin:/usr/sbin:/sbin \
+  /usr/bin/python3 ./.trellis/scripts/workflow_gate.py --platform codex
+```
+
+When Cargo or website validation is affected, copy the current commit or patch
+to `vps` and run the same validation there. Use a temporary npm cache such as
+`NPM_CONFIG_CACHE=/tmp/assura-npm-cache` so validation does not depend on a
+possibly blocked home-directory cache. Keep hosted Linux, macOS, and Windows CI
+as the final cross-platform proof.
+
 ## Validation Pattern
 
 After resolving local build prerequisites, run:

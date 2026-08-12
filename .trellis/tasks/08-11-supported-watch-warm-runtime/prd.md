@@ -55,7 +55,7 @@ observable.
   overwrite a later clean validation result.
 - [x] Managed-daemon check-path reports validation failure through process exit
   and local/managed responses share one versioned schema.
-- [ ] Windows CI executes managed-daemon lifecycle and watch cancellation tests
+- [x] Windows CI executes managed-daemon lifecycle and watch cancellation tests
   rather than compiling or skipping those paths only.
 - [x] All five warm-loop p95 budgets pass.
 - [x] Watch, daemon, and cache support rows have support-grade evidence.
