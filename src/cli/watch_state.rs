@@ -17,6 +17,34 @@ pub(super) fn display_paths(root: &Path, paths: &[PathBuf]) -> Vec<String> {
         .collect()
 }
 
+pub(super) fn normalize_config_event(
+    event: &mut Event,
+    config_path: &Path,
+    content_changed: impl FnOnce() -> bool,
+) -> bool {
+    let directly_touches_config = event.paths.iter().any(|path| path == config_path);
+    let may_be_config_replacement = !directly_touches_config
+        && config_path.parent().is_some_and(|parent| {
+            event.paths.iter().any(|path| {
+                path == parent || path.parent().is_some_and(|candidate| candidate == parent)
+            })
+        });
+    if !directly_touches_config && !may_be_config_replacement {
+        return true;
+    }
+
+    let changed = content_changed();
+    if directly_touches_config && !changed {
+        event.paths.retain(|path| path != config_path);
+        return !event.paths.is_empty();
+    }
+    if may_be_config_replacement && changed {
+        event.paths.clear();
+        event.paths.push(config_path.to_path_buf());
+    }
+    true
+}
+
 pub(super) fn normalize_known_file_removal(
     event: &mut Event,
     watch_scope: &Path,

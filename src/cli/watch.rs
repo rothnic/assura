@@ -8,7 +8,8 @@ use super::watch_event::{
 };
 use super::watch_signal::shutdown_signal;
 use super::watch_state::{
-    display_paths, normalize_known_file_removal, DirtyProject, DirtyState, DirtyTake,
+    display_paths, normalize_config_event, normalize_known_file_removal, DirtyProject, DirtyState,
+    DirtyTake,
 };
 use notify::{Config, Event, EventKind, RecommendedWatcher, RecursiveMode, Watcher};
 use std::path::{Path, PathBuf};
@@ -240,17 +241,10 @@ fn record_message(
 ) {
     match message {
         WatchMessage::Event(mut event) => {
-            let directly_touches_config =
-                event.paths.iter().any(|path| path == &context.config_path);
-            let may_be_config_replacement = !directly_touches_config
-                && context.config_path.parent().is_some_and(|parent| {
-                    event.paths.iter().any(|path| {
-                        path == parent || path.parent().is_some_and(|candidate| candidate == parent)
-                    })
-                });
-            if may_be_config_replacement && prepared.config_content_changed().unwrap_or(true) {
-                event.paths.clear();
-                event.paths.push(context.config_path.clone());
+            if !normalize_config_event(&mut event, &context.config_path, || {
+                prepared.config_content_changed().unwrap_or(true)
+            }) {
+                return;
             }
             event.paths.retain(|path| {
                 path == &context.config_path

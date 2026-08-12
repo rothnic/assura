@@ -143,6 +143,34 @@ fn assura_parent_events_only_invalidate_when_config_content_changed() {
 }
 
 #[test]
+fn unchanged_direct_config_event_does_not_invalidate() {
+    let project = tempfile::tempdir().unwrap();
+    fs::create_dir(project.path().join(".assura")).unwrap();
+    let config_path = project.path().join(".assura/config.yml");
+    fs::write(&config_path, config_with_naming("kebab-case")).unwrap();
+    let prepared =
+        PreparedStructureCheck::load_for_path(Some(project.path().to_path_buf()), None, false)
+            .unwrap();
+    let context = test_watch_context(project.path());
+    let dirty = DirtyState::new();
+    dirty.take();
+    let mut batch = WatchBatch::default();
+
+    record_message(
+        WatchMessage::Event(
+            Event::new(EventKind::Modify(notify::event::ModifyKind::Any)).add_path(config_path),
+        ),
+        &context,
+        &prepared,
+        &dirty,
+        &mut batch,
+    );
+
+    assert_eq!(batch.invalidating_events, 0);
+    assert_eq!(dirty.take().project, DirtyProject::Clean);
+}
+
+#[test]
 fn watcher_backend_error_marks_terminal_full_rescan() {
     let project = tempfile::tempdir().unwrap();
     fs::create_dir(project.path().join(".assura")).unwrap();
