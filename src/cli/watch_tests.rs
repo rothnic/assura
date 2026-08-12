@@ -1,6 +1,7 @@
 //! Unit tests for watch batching, invalidation, and fallback decisions.
 
 use super::*;
+use notify::event::RemoveKind;
 use std::fs;
 
 #[test]
@@ -175,10 +176,50 @@ fn watcher_backend_error_marks_terminal_full_rescan() {
     assert_eq!(dirty.take().project, DirtyProject::Full);
 }
 
+#[test]
+fn ambiguous_remove_of_explicit_file_scope_stays_incremental() {
+    let project = tempfile::tempdir().unwrap();
+    fs::create_dir(project.path().join(".assura")).unwrap();
+    fs::write(
+        project.path().join(".assura/config.yml"),
+        config_with_naming("kebab-case"),
+    )
+    .unwrap();
+    let source = project.path().join("entry.ts");
+    fs::write(&source, "export {};\n").unwrap();
+    let prepared =
+        PreparedStructureCheck::load_for_path(Some(source.clone()), None, false).unwrap();
+    let context = WatchContext {
+        root: project.path().to_path_buf(),
+        watch_scope: source.clone(),
+        watch_scope_is_file: true,
+        config_path: project.path().join(".assura/config.yml"),
+        config_watch_parent: Some(project.path().join(".assura")),
+        no_git: false,
+    };
+    let dirty = DirtyState::new();
+    dirty.take();
+    let mut batch = WatchBatch::default();
+
+    record_message(
+        WatchMessage::Event(
+            Event::new(EventKind::Remove(RemoveKind::Any)).add_path(source.clone()),
+        ),
+        &context,
+        &prepared,
+        &dirty,
+        &mut batch,
+    );
+
+    assert_eq!(batch.invalidating_events, 1);
+    assert_eq!(dirty.take().project, DirtyProject::Paths(vec![source]));
+}
+
 fn test_watch_context(root: &Path) -> WatchContext {
     WatchContext {
         root: root.to_path_buf(),
         watch_scope: root.to_path_buf(),
+        watch_scope_is_file: false,
         config_path: root.join(".assura/config.yml"),
         config_watch_parent: None,
         no_git: false,

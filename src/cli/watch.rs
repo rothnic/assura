@@ -7,7 +7,9 @@ use super::watch_event::{
     emit_event, event_from_result, CacheState, RuntimeMode, WatchEvent, WatchTrigger,
 };
 use super::watch_signal::shutdown_signal;
-use super::watch_state::{DirtyProject, DirtyState, DirtyTake};
+use super::watch_state::{
+    display_paths, normalize_known_file_removal, DirtyProject, DirtyState, DirtyTake,
+};
 use notify::{Config, Event, EventKind, RecommendedWatcher, RecursiveMode, Watcher};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -62,6 +64,7 @@ async fn run_watch(
     let config_watch_parent = separate_config_watch_parent(&watch_scope, &config_path);
     let context = WatchContext {
         root,
+        watch_scope_is_file: watch_scope.is_file(),
         watch_scope,
         config_path,
         config_watch_parent,
@@ -255,6 +258,11 @@ fn record_message(
                         && !ignored_runtime_path(&context.root, path, context.no_git)
                         && !prepared.is_excluded_path(path))
             });
+            normalize_known_file_removal(
+                &mut event,
+                &context.watch_scope,
+                context.watch_scope_is_file,
+            );
             if event.paths.is_empty() && !event.need_rescan() {
                 return;
             }
@@ -448,18 +456,6 @@ fn ignored_runtime_path(root: &Path, path: &Path, no_git: bool) -> bool {
     }
 }
 
-fn display_paths(root: &Path, paths: &[PathBuf]) -> Vec<String> {
-    paths
-        .iter()
-        .map(|path| {
-            path.strip_prefix(root)
-                .unwrap_or(path)
-                .to_string_lossy()
-                .replace('\\', "/")
-        })
-        .collect()
-}
-
 #[derive(Default)]
 struct WatchBatch {
     invalidating_events: usize,
@@ -471,6 +467,7 @@ struct WatchBatch {
 struct WatchContext {
     root: PathBuf,
     watch_scope: PathBuf,
+    watch_scope_is_file: bool,
     config_path: PathBuf,
     config_watch_parent: Option<PathBuf>,
     no_git: bool,
