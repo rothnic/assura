@@ -36,7 +36,7 @@ publishes and verifies a `.sha256` file next to every archive.
 | `assura config add-recipe` | Supported project-owned policy authoring | CLI tests prove dry-run output, conflict handling, and validated atomic writes. |
 | `assura status --format json` | Supported | Installable adoption smoke. |
 | `assura review` | Supported compact project review | Project-review CLI tests prove clean/inactive guidance, blocking structure mismatches, unmodeled path pressure, noisy reference classification, actionable content gaps, and bounded agent JSON over existing check/doctor/content-query surfaces. |
-| `assura cache status|clean` | Experimental correctness-checked cache | Cache CLI tests prove observable worktree/shared namespaces, bounded diagnostics, marker-protected cleanup, and refusal to remove project or unrecognized roots. |
+| `assura cache status|clean` | Supported next-release correctness-checked cache | Cache CLI tests prove observable worktree/shared namespaces, bounded diagnostics, marker-protected cleanup, and refusal to remove project or unrecognized roots. |
 | `assura doctor` | Experimental local project doctor | Doctor/explain CLI tests prove clean configured checks still report inactive capabilities, unwired draft model files, recommended preset gaps, and ranked next actions. |
 | `assura explain` | Supported local path explanation | Doctor/explain CLI tests prove path explanations expose inherited scopes, skipped checks, excluded generated/binary paths, and agent-oriented output. |
 | `assura migrate` | Supported for complete LS-Lint 2.3 config semantics | LS-Lint feature matrix, native golden parity tests, migration tests, and adoption smoke. |
@@ -80,15 +80,15 @@ publishes and verifies a `.sha256` file next to every archive.
 | `assura content missing-relations` | Supported relation query | Content query CLI fixture tests. |
 | `assura content expand` | Supported bounded graph expansion | Content query CLI fixture tests. |
 | `assura content references` | Supported repository-reference graph query | Content query CLI tests prove bounded inbound references by target path, outbound references by source path, all-reference listing, unresolved-reference listing, and configured frontmatter reference edges. |
-| `assura daemon` | Experimental local daemon process | Daemon CLI tests prove JSON status, start, stop, restart, doctor, logs, health, changed-path, and reference-context contracts over local daemon-ready state. Lifecycle commands manage a real local process with versioned health, check-path, and repository-reference IPC. |
-| `assura daemon status` | Experimental local daemon status | Daemon CLI tests prove JSON health, protocol, process metadata, crashed-process detection, and management command hints. |
-| `assura daemon start` | Experimental local daemon lifecycle | Daemon CLI tests prove idempotent process-backed JSON start behavior with PID and IPC address metadata. |
-| `assura daemon stop` | Experimental local daemon lifecycle | Daemon CLI tests prove idempotent process-backed JSON stop behavior. |
-| `assura daemon restart` | Experimental local daemon lifecycle | Daemon CLI tests prove process replacement, JSON restart behavior, and runtime log updates. |
-| `assura daemon doctor` | Experimental local daemon doctor | Daemon CLI tests prove JSON diagnostics and remediation commands for loaded, unavailable, stopped, running, and crashed project state. |
-| `assura daemon logs` | Experimental local daemon logs preview | Daemon CLI tests prove bounded JSON log output from `.assura/daemon/daemon.log`. |
+| `assura daemon` | Supported next-release local daemon process | Public daemon CLI tests prove JSON status, start, stop, restart, doctor, logs, health, changed-path, and reference-context contracts over local daemon-ready state. Internal `assura-checkd` watcher/status behavior is tested separately and is not used as evidence for the public daemon command. |
+| `assura daemon status` | Supported next-release local daemon status | Daemon CLI tests prove JSON health, protocol, process metadata, crashed-process detection, and management command hints. |
+| `assura daemon start` | Supported next-release local daemon lifecycle | Daemon CLI tests prove idempotent process-backed JSON start behavior with PID and IPC address metadata. |
+| `assura daemon stop` | Supported next-release local daemon lifecycle | Daemon CLI tests prove idempotent process-backed JSON stop behavior. |
+| `assura daemon restart` | Supported next-release local daemon lifecycle | Daemon CLI tests prove process replacement, JSON restart behavior, and runtime log updates. |
+| `assura daemon doctor` | Supported next-release local daemon doctor | Daemon CLI tests prove JSON diagnostics and remediation commands for loaded, unavailable, stopped, running, and crashed project state. |
+| `assura daemon logs` | Supported next-release local daemon logs | Daemon CLI tests prove bounded JSON log output from `.assura/daemon/daemon.log`. |
 | `assura info` | Experimental diagnostic | CLI exists, but text output is not an automation contract. |
-| `assura watch` | Experimental | CLI exists, but release-grade watch behavior is not claimed. |
+| `assura watch` | Supported next-release continuous validation | Watch lifecycle tests prove requested-path scope, initial full validation, safe warm changed-path checks, project-wide-policy fallback, bounded burst coalescing, project-local and external config reload, atomic replacement of file scopes, configured exclusions, runtime-output suppression, actionable text and JSON event metadata, clean interrupt shutdown during sustained edits, and visible termination on watcher failure. |
 
 ## Editor Adapter Compatibility
 

@@ -17,8 +17,8 @@ plugin APIs.
 > **Current scope**
 >
 > Build automation against `assura check`, `assura status`, `assura review`,
-> `assura agent`, `assura editor`, `assura content`, and the JSON/YAML report
-> fields documented here.
+> `assura watch`, `assura daemon`, `assura agent`, `assura editor`,
+> `assura content`, and the documented report fields.
 
 ## Command Surface
 
@@ -35,7 +35,7 @@ plugin APIs.
 | `assura editor ...` | Run local project-intelligence commands for editor integrations |
 | `assura content ...` | Query project-intelligence facts and context |
 | `assura info [path]` | Print text configuration details |
-| `assura watch [path]` | Run one check as a current watch wrapper |
+| `assura watch [path]` | Continuously validate coalesced project changes with a prepared policy |
 
 Supported check and review formats are `text`, `json`, `yaml`, `advice`,
 `status`, and `agent`. Supported status formats are `text`, `json`, and
@@ -91,6 +91,41 @@ assura migrate .assura/config-v1.yml --from assura-v1 --output .assura/config.ym
 | `--agent generic|codex` | Select a delivery adapter for `--format agent`; Codex wraps feedback for `UserPromptSubmit` |
 | `--cache` | Reuse a Git-aware default cache only when correctness fingerprints match |
 | `--cache-dir <path>` | Reuse an explicit cache root |
+
+## Watch Options And Events
+
+`assura watch [path]` emits an initial result for the requested path, then
+remains resident and validates coalesced filesystem changes inside that scope.
+It keeps the parsed policy prepared, respects `exclude` patterns, watches an
+explicit configuration even when it lives outside the project, and falls back
+to a full requested-scope check when policy depends on other paths, multiple
+paths change, the edit stream reaches its bounded batch window, or the prior
+result was not clean. A file scope watches its containing directory and filters
+events back to that file so editor-style atomic replacement does not silently
+detach the subscription.
+
+| Option | Purpose |
+| --- | --- |
+| `--debounce <milliseconds>` | Wait for a quiet period before validating an edit burst; defaults to `300`, with a bounded maximum batch window |
+| `--format text|json` | Emit actionable bounded text or one complete JSON object per event |
+| `--no-git` | Ignore `.git/` events in addition to Assura runtime paths |
+
+JSON events use `assura.watch.event.v1`. Important fields are:
+
+| Field | Meaning |
+| --- | --- |
+| `runtime_mode` | `cold_full`, `warm_incremental`, or `warm_full` |
+| `report_scope` | `requested_path` or `affected_path`; an affected-path pass is not proof for the complete requested path |
+| `cache_state` | `prepared`, `reloaded`, or `degraded` |
+| `fallback_reason` | Why a warm event required a complete requested-scope check |
+| `changed_paths` | Project-relative paths represented by an incremental batch |
+| `coalesced_events` | Number of invalidating filesystem notifications in the batch |
+| `duration_ms` | Validation time for this event |
+| `report` / `error` | The structure report, or a recoverable watch error such as invalid changed config |
+
+Interrupting the command exits cleanly. An unrecoverable watcher-backend error
+emits one degraded event and exits instead of leaving a stale resident process.
+Watch does not write a persistent runtime artifact.
 
 ## Agent Surface
 
@@ -255,7 +290,8 @@ one `assura.project-intelligence.session.response.v1` JSON response per stdout
 line. Use it when an agent, editor wrapper, or local integration needs repeated
 diagnostics, context-pack, graph, search, relation, or safe-fix preview queries
 without restarting the CLI process. The session reloads conservatively when the
-project fingerprint changes; `assura watch` remains experimental.
+project fingerprint changes. Use `assura watch` for continuous structure
+feedback rather than modeled content-query sessions.
 
 Safe-fix previews returned by `safe-fixes` include an `audit_id` that matches
 `assura fix markdown --dry-run --format json` `fixes[].id`. Apply still happens

@@ -21,7 +21,7 @@ beta.
 | `assura check --format json` and `--format yaml` | Supported | Schema changes must be called out in release notes before 1.0. |
 | `assura check --format advice` and `--format status` | Supported | Guided and compact output must stay deterministic enough for local hooks and agent tools. |
 | `assura check --format agent` | Supported | Agent JSON shape must remain deterministic and documented. |
-| `assura check --cache`, `assura cache status`, and `assura cache clean` | Experimental correctness-checked cache | Reuse is allowed only when version, config, project/worktree, directory fingerprints, or clean Git identity prove it safe. Status must expose worktree/shared mode and fallback reason; clean removes only the selected cache root. |
+| `assura check --cache`, `assura cache status`, and `assura cache clean` | Supported next-release correctness-checked cache | Reuse is allowed only when version, config, project/worktree, directory fingerprints, or clean Git identity prove it safe. Status exposes worktree/shared mode and fallback reason; clean removes only a marker-protected selected cache root. |
 | `--agent codex` delivery | Supported adapter | Delivery may depend on user-approved Codex hooks, but it must not require a separate CLI. |
 | `assura init` | Supported | Starter config output must be valid and self-checkable. |
 | `assura config add-recipe` | Supported | Recipes are materialized into project-owned YAML, preserve non-conflicting policy, and report conflicts before writing. |
@@ -47,7 +47,7 @@ beta.
 | `assura content semantic-search`, `symbols`, and `symbol-refs` | Experimental candidate enrichment | Optional local semantic and code-symbol candidate outputs are useful context only. They do not decide validation correctness, are not required for modeled collection validation/querying, and must remain separable from the supported collection contract. |
 | `.assura/models/**` model artifact layout | Supported project-intelligence layout policy | Model artifacts stored under `.assura/` must live under `.assura/models/**`; projects may still keep artifacts outside `.assura/` when that better fits their repository. |
 | `assura content session` | Supported local project-intelligence session | JSON-line request/response loop for repeated local agent/editor queries. It reloads conservatively when project files change and does not apply fixes or require a hosted daemon. |
-| `assura daemon` | Experimental local daemon process | Status, start, stop, restart, doctor, logs, health, changed-path, and reference-context commands expose local JSON contracts over daemon-ready state. Lifecycle commands now manage a local process with versioned health, check-path, and repository-reference IPC; broader editor and agent daemon workflows remain experimental follow-up work. |
+| `assura daemon` | Supported next-release local daemon process | Status, start, stop, restart, doctor, logs, health, changed-path, and reference-context commands expose local JSON contracts over daemon-ready state. Lifecycle commands manage a project-local process with versioned health, check-path, and repository-reference IPC; support evidence is scoped to this public process rather than the separate internal hot-check server. |
 | `integrations/editors/vscode` | Supported beta local VS Code package | The package shells out to shared Assura CLI, daemon, and editor-session JSON contracts for diagnostics, daemon health, daemon lifecycle commands, logs, one-shot fallback, and safe-fix previews. Package metadata, doctor, build, test, and package-smoke scripts are release-gated. It is not a marketplace release and must not implement editor-specific validation logic or apply fixes implicitly. |
 | `assura info` | Experimental diagnostic | Text output can change before a documented automation contract exists. |
 | Extension/API boundary policy | Supported documentation contract | [`docs/extension-api-boundaries.md`](extension-api-boundaries.md) is the canonical pre-1.0 boundary between first-party `extensions.*` config policies, supported local CLI JSON contracts, internal Rust APIs, and deferred public plugin APIs. |
@@ -62,7 +62,7 @@ beta.
 | `extensions.requirements_traceability` | Experimental first-party | Content-runtime-backed checks that high-priority requirements have configured coverage, claims link to evidence, evidence links to source documents, and findings carry owner/status metadata. It does not provide domain-specific scoring, remote evidence custody, or lightweight compiled-check enforcement. |
 | `extensions.computed_checks` | Experimental first-party | Explicit project-local script-backed checks that emit versioned JSON findings into normal reports, doctor, agent-query gaps, hooks, and merge gates. Scripts must be allowlisted by config, bounded by timeout, and local to the project; `windows_script` may provide a Windows-specific local script path. This is not a public plugin API, remote execution surface, marketplace, or domain-specific scoring preset. |
 | `extensions.relationships` | Internal generated first-party | Capture relationships normalized from concise `structure` notation. Users should author captures, `exists:1`, `needs`, and `provides` instead of hand-writing this generated policy family. |
-| `assura watch` | Experimental | Do not advertise as release-grade until watch-mode tests and docs exist. |
+| `assura watch` | Supported next-release continuous validation | Runs an initial full requested-scope check, coalesces filesystem bursts within a bounded reporting window, reuses a prepared validation plan, reloads project-local or external config, respects requested path scope and configured exclusions, survives atomic replacement for file scopes, uses changed-path checks only for path-local policy, falls back to full-scope checks for repository-wide policy, exposes actionable text plus cold/warm/cache/fallback metadata through `assura.watch.event.v1`, exits cleanly on interrupt even during sustained edits, and terminates visibly if its watcher backend fails. |
 | Internal Rust APIs | Unstable | Public Rust module visibility in `src/lib.rs` is for binaries, tests, and benchmark harnesses unless a row explicitly promotes the API. No compatibility guarantee before 1.0. |
 | Public plugin API or SDK | Roadmap only | Remote plugin loading, shell-executed validation plugins, TypeScript plugin APIs, plugin marketplaces, and semver-stable Rust library APIs require a future goal with sandboxing, versioning, distribution, security, and performance proof gates. |
 
@@ -94,8 +94,8 @@ Use these labels or equivalent GitHub issue language:
   documented platform mismatch.
 - `docs`: stale command, unclear limitation, broken example, or missing
   release-note disclosure.
-- `experimental`: custom constraint or watch-mode behavior that is not yet a
-  supported release contract.
+- `experimental`: behavior that is intentionally outside the supported release
+  contract.
 - `roadmap`: accepted idea that needs a future goal before implementation.
 
 ## Response Targets

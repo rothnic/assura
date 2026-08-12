@@ -134,11 +134,27 @@ pub(super) fn request_check_path(listen_addr: &str, changed: &Path) -> Result<Ip
     )?;
     let value: Value =
         serde_json::from_str(&response).map_err(|error| format!("parse daemon check: {error}"))?;
-    let exit_code = if value.get("schema").and_then(Value::as_str) == Some("assura.daemon.error.v1")
-    {
-        3
-    } else {
-        0
+    let schema = value.get("schema").and_then(Value::as_str);
+    let protocol = value.get("protocol_version").and_then(Value::as_str);
+    if protocol != Some(DAEMON_PROTOCOL_VERSION) {
+        return Err(format!(
+            "daemon protocol mismatch: expected {DAEMON_PROTOCOL_VERSION}, got {}",
+            protocol.unwrap_or("missing")
+        ));
+    }
+    let exit_code = match schema {
+        Some("assura.daemon.error.v1") => 3,
+        Some("assura.daemon.check_path.v1") => match value
+            .get("report")
+            .and_then(|report| report.get("success"))
+            .and_then(Value::as_bool)
+        {
+            Some(true) => 0,
+            Some(false) => 1,
+            None => return Err("daemon check response omitted report.success".to_string()),
+        },
+        Some(schema) => return Err(format!("unexpected daemon check schema: {schema}")),
+        None => return Err("daemon check response omitted schema".to_string()),
     };
     Ok(IpcResponse { value, exit_code })
 }

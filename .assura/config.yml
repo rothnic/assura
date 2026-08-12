@@ -225,6 +225,16 @@ extensions:
           description_required_terms:
             - Internal
             - stable hash
+        - path: crates/assura-watch-state/Cargo.toml
+          package: assura-watch-state
+          role: internal
+          version: "0.3.0"
+          rust_version: "1.70.0"
+          license: "MIT OR Apache-2.0"
+          publish: internal
+          description_required_terms:
+            - Internal
+            - filesystem invalidation
         - path: xtask/Cargo.toml
           package: xtask
           role: internal
@@ -499,6 +509,8 @@ extensions:
           status: supported
         - surface: "command:assura check --format agent --agent codex"
           status: supported
+        - surface: "command:assura check --cache"
+          status: supported
         - surface: "command:assura status"
           status: supported
         - surface: "command:assura status --format json"
@@ -506,11 +518,11 @@ extensions:
         - surface: "command:assura review"
           status: supported
         - surface: "command:assura cache"
-          status: experimental
+          status: supported
         - surface: "command:assura cache status"
-          status: experimental
+          status: supported
         - surface: "command:assura cache clean"
-          status: experimental
+          status: supported
         - surface: "command:assura doctor"
           status: experimental
         - surface: "command:assura explain"
@@ -522,7 +534,7 @@ extensions:
         - surface: "command:assura config add-recipe"
           status: supported
         - surface: "command:assura watch"
-          status: experimental
+          status: supported
         - surface: "command:assura migrate"
           status: supported
         - surface: "command:assura fix markdown"
@@ -602,25 +614,25 @@ extensions:
         - surface: "command:assura content expand"
           status: supported
         - surface: "command:assura daemon"
-          status: experimental
+          status: supported
         - surface: "command:assura daemon status"
-          status: experimental
+          status: supported
         - surface: "command:assura daemon start"
-          status: experimental
+          status: supported
         - surface: "command:assura daemon stop"
-          status: experimental
+          status: supported
         - surface: "command:assura daemon restart"
-          status: experimental
+          status: supported
         - surface: "command:assura daemon doctor"
-          status: experimental
+          status: supported
         - surface: "command:assura daemon logs"
-          status: experimental
+          status: supported
         - surface: "command:assura daemon health"
-          status: experimental
+          status: supported
         - surface: "command:assura daemon check-path"
-          status: experimental
+          status: supported
         - surface: "command:assura daemon references"
-          status: experimental
+          status: supported
         - surface: "command:assura info"
           status: experimental
         - surface: "command:assura performance-report"
@@ -688,6 +700,8 @@ extensions:
         - surface: "package:assura-check-cli"
           status: internal
         - surface: "package:assura-stable-hash"
+          status: internal
+        - surface: "package:assura-watch-state"
           status: internal
         - surface: "package:xtask"
           status: internal
@@ -958,6 +972,7 @@ structure:
           allowed_names:
             - "assura-check-cli"
             - "assura-stable-hash"
+            - "assura-watch-state"
         children:
           assura-check-cli/:
             files:
@@ -994,6 +1009,25 @@ structure:
                 files:
                   naming: "snake_case"
                   allowed_names:
+                    - "lib.rs"
+                  allow_extra: false
+          assura-watch-state/:
+            files:
+              naming: "kebab-case"
+              allowed_names:
+                - "Cargo.toml"
+              allow_extra: false
+            directories:
+              allowed_names:
+                - "src"
+              allow_extra: false
+            children:
+              src/:
+                files:
+                  naming: "snake_case"
+                  max_lines: 500
+                  allowed_names:
+                    - "concurrency_tests.rs"
                     - "lib.rs"
                   allow_extra: false
 

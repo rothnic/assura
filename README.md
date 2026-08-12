@@ -39,6 +39,7 @@ successful builds.
 - **Reusable policy layers** - Start language-agnostic, reuse shared rules, then attach language or domain checks where deeper validation belongs.
 - **LS-Lint migration** - Convert supported LS-Lint 2.3 configuration and extend beyond filesystem naming.
 - **Cold and warm performance evidence** - Protect the one-shot CLI path and measure persistent sessions separately for agent/editor loops.
+- **Continuous local validation** - Keep one prepared policy warm, coalesce edit bursts, and report whether feedback covers one affected path or the complete project.
 
 ## Install
 
@@ -63,6 +64,7 @@ cargo build --release
 assura agent onboard . --agent auto --format json
 assura review
 assura explain src
+assura watch --format json
 assura check
 ```
 
@@ -100,7 +102,7 @@ exclude:
 | `assura check` | Supported structure validation command |
 | `assura check --format json`, `yaml`, `advice`, `status`, `agent` | Supported automation output |
 | `assura check --format agent --agent codex` | Supported Codex adapter on the shared agent format |
-| `assura check --cache` / `assura cache status|clean` | Experimental correctness-checked cache and diagnostics |
+| `assura check --cache` / `assura cache status|clean` | Supported next-release correctness-checked cache and diagnostics |
 | `assura init` | Supported starter config creation |
 | `assura status --format json` | Supported project/config/rule summary |
 | `assura review` | Experimental compact project-health radar |
@@ -113,9 +115,11 @@ exclude:
 | `assura hooks` | Supported local git-hook workflow |
 | `assura quality plan` | Supported config-backed quality planning |
 | `assura performance-report` | Supported performance evidence command |
+| `assura watch` | Supported next-release continuous warm validation |
+| `assura daemon` | Supported next-release project-local daemon lifecycle and JSON IPC |
 
-`assura info`, `assura watch`, Markdown safe fixes, first-party `extensions.*`
-policy families, and local daemon lifecycle are experimental before 1.0.
+`assura info`, Markdown safe fixes, and first-party `extensions.*` policy
+families remain experimental before 1.0.
 Hosted dashboards, automatic broad repair, remote plugin loading, plugin
 marketplaces, and per-agent validation engines are not supported release
 surfaces.

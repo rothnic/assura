@@ -165,3 +165,19 @@ behavior, or v1.0 evidence does not meet every stated count and duration.
 | 2026-08-11 | 0 | Revalidated the plan against the live branch, release metadata, site claims, CLI implementation, warm budgets, agent bundles, and pull-request CI. Split execution into six measurable child tasks. Context level: not exposed. | PR 140; `cargo xtask release-readiness --format json`; `docs/data/release-surfaces.json`; `benches/history/warm-loop-current.json` |
 | 2026-08-11 | 1 | Implemented and independently reviewed the local claim/release contract. Native behavioral tests use LS-Lint 2.3.1 with its Windows path fix; core marketing claims require supported status; strict candidate validation is read-only and rejects unreleased/future claims; tag publication is blocked on the strict claim and readiness gates; stable and release-candidate versions share SemVer parsing; active goals require structured Trellis ownership; and roadmap/task state is current. Hosted Windows proof remains open before this child can close. | `cargo test --test ls_lint_rule_coverage_tests --quiet`; `cargo test -p xtask --quiet`; `cargo xtask website-demo-data --check`; expected failures from `cargo xtask website-demo-data --released` and `cargo xtask release-readiness --format json` on unreleased v0.3.0 claims; `cargo xtask evidence`; `cargo xtask target-state`; `cargo xtask docs`; `cargo run --quiet -- check --format json .` |
 | 2026-08-11 | 2 | Closed the claim/release-contract child after hosted Windows run `31539326739` passed all native LS-Lint golden cases, including the four prior path-semantics failures. The run exposed an unrelated dirty-status race in `assura-checkd`; that defect is carried into the support-grade watch and warm-runtime child rather than weakening the completed cross-platform claim proof. Context level: not exposed. | Windows job `93937933614`; `ls_lint_rule_coverage_tests` all passed; `native_lslint_golden_explicit_directory_target_*` and `native_lslint_golden_explicit_file_target_*` passed |
+| 2026-08-11 | 3 | Implemented the continuous watch and warm-runtime child through its local proof boundary. Watch now stays resident, preserves requested file or directory scope, survives atomic file replacement, bounds edit bursts, reloads external config, exposes fallback and actionable findings, and terminates visibly on watcher failure. Changed-path checks conservatively fall back for cross-path policy. Public managed-daemon IPC now preserves validation exit codes and one schema. Internal status publication is ordered in both race directions and uses cross-platform atomic replacement. Context level: not exposed. Hosted Windows execution remains open. | 12 watch integration tests; 16 public daemon tests; 15 shared-state tests; 3 internal status tests; five warm budgets; successful `x86_64-pc-windows-gnu` full-CLI and companion-daemon cross-checks |
+
+### Iteration 3 Context Review
+
+- The active user request is implementation of the claim-complete release plan,
+  with no reduction in marketed behavior to make support metadata pass.
+- Independent review found false-success daemon exits, divergent schemas, both
+  status-publication race directions, replaceable file subscriptions, and
+  missing Windows execution evidence; the implementation now addresses each
+  local defect.
+- The core watch implementation and shared watcher-state module were split to
+  satisfy their own 500-line project-health policy.
+- Existing goal-execution, local-build, and performance-reporting skills cover
+  the repeatable workflow; no new project skill is warranted for this slice.
+- The next decision boundary is hosted Windows execution, followed by managed
+  four-host activation rather than further watch-surface expansion.

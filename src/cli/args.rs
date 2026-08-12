@@ -151,13 +151,16 @@ pub enum Commands {
         command: ConfigCommands,
     },
 
-    #[command(about = "Watch for changes and validate")]
+    #[command(about = "Continuously validate project changes with a warm runtime")]
     Watch {
         #[arg(help = "Path to watch (defaults to current directory)")]
         path: Option<PathBuf>,
 
         #[arg(short, long)]
         debounce: Option<u64>,
+
+        #[arg(short, long, value_enum, default_value = "text")]
+        format: WatchOutputFormat,
 
         #[arg(long)]
         no_git: bool,
@@ -425,6 +428,15 @@ pub enum CheckOutputFormat {
     Advice,
     Status,
     Agent,
+}
+
+/// Streaming output formats supported by `assura watch`.
+#[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]
+pub enum WatchOutputFormat {
+    /// Human-readable event summaries.
+    Text,
+    /// One compact JSON object per validation event.
+    Json,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]

@@ -57,10 +57,7 @@ fn daemon_status_json_reports_git_dirty_paths() {
 }
 
 #[test]
-#[cfg_attr(
-    any(windows, tarpaulin),
-    ignore = "managed daemon subprocess lifecycle is covered by normal Unix CI"
-)]
+#[cfg_attr(tarpaulin, ignore = "managed subprocess lifecycle is not instrumented")]
 fn daemon_start_stop_json_are_idempotent_and_status_reflects_runtime() {
     let project = daemon_project();
 
@@ -118,10 +115,7 @@ fn daemon_start_stop_json_are_idempotent_and_status_reflects_runtime() {
 }
 
 #[test]
-#[cfg_attr(
-    any(windows, tarpaulin),
-    ignore = "managed daemon subprocess lifecycle is covered by normal Unix CI"
-)]
+#[cfg_attr(tarpaulin, ignore = "managed subprocess lifecycle is not instrumented")]
 fn daemon_restart_and_logs_json_use_runtime_area() {
     let project = daemon_project();
 
@@ -334,15 +328,64 @@ fn daemon_check_path_json_wraps_structure_report_with_health() {
     );
 
     assert_eq!(json["schema"], "assura.daemon.check_path.v1");
+    assert_eq!(json["protocol_version"], "assura.daemon.v1");
     assert_eq!(json["health"]["state"], "running");
     assert_eq!(json["report"]["success"], true);
 }
 
 #[test]
-#[cfg_attr(
-    any(windows, tarpaulin),
-    ignore = "managed daemon subprocess lifecycle is covered by normal Unix CI"
-)]
+fn daemon_check_path_does_not_incrementally_skip_cross_path_policy() {
+    let project = daemon_project();
+    fs::create_dir_all(project.path().join("tests")).unwrap();
+    fs::write(
+        project.path().join(".assura/config.yml"),
+        r#"
+extensions:
+  custom_constraints:
+    - id: source_test_pair
+      type: paired_file_exists
+      source: "src/*.ts"
+      target: "tests/{stem}_test.rs"
+structure:
+  ./:
+    files:
+      allow_extra: true
+    directories:
+      allow_extra: true
+"#,
+    )
+    .unwrap();
+    fs::write(project.path().join("src/new-source.ts"), "export {};\n").unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_assura"))
+        .args([
+            "daemon",
+            "check-path",
+            project.path_str(),
+            "--changed",
+            "src/new-source.ts",
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(1));
+    let json: Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(json["report"]["success"], false);
+    let checked_path = Path::new(json["report"]["checked_path"].as_str().unwrap())
+        .canonicalize()
+        .unwrap();
+    assert_eq!(checked_path, project.path().canonicalize().unwrap());
+    assert!(json["report"]["violations"]
+        .as_array()
+        .is_some_and(|violations| violations
+            .iter()
+            .any(|violation| violation["rule"] == "custom:source_test_pair")));
+}
+
+#[test]
+#[cfg_attr(tarpaulin, ignore = "managed subprocess lifecycle is not instrumented")]
 fn daemon_check_path_json_uses_running_ipc_process() {
     let project = daemon_project();
 
@@ -378,10 +421,63 @@ fn daemon_check_path_json_uses_running_ipc_process() {
 }
 
 #[test]
-#[cfg_attr(
-    any(windows, tarpaulin),
-    ignore = "managed daemon subprocess lifecycle is covered by normal Unix CI"
-)]
+#[cfg_attr(tarpaulin, ignore = "managed subprocess lifecycle is not instrumented")]
+fn daemon_check_path_running_ipc_returns_validation_failure_exit() {
+    let project = daemon_project();
+    fs::create_dir_all(project.path().join("tests")).unwrap();
+    fs::write(
+        project.path().join(".assura/config.yml"),
+        r#"
+extensions:
+  custom_constraints:
+    - id: source_test_pair
+      type: paired_file_exists
+      source: "src/*.ts"
+      target: "tests/{stem}_test.rs"
+structure:
+  ./:
+    files:
+      allow_extra: true
+    directories:
+      allow_extra: true
+"#,
+    )
+    .unwrap();
+    fs::write(project.path().join("src/new-source.ts"), "export {};\n").unwrap();
+    let start = assura_json(
+        &project,
+        &["daemon", "start", project.path_str(), "--format", "json"],
+    );
+    assert_eq!(start["runtime"]["running"], true);
+
+    let output = Command::new(env!("CARGO_BIN_EXE_assura"))
+        .args([
+            "daemon",
+            "check-path",
+            project.path_str(),
+            "--changed",
+            "src/new-source.ts",
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(1));
+    let json: Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(json["schema"], "assura.daemon.check_path.v1");
+    assert_eq!(json["protocol_version"], "assura.daemon.v1");
+    assert_eq!(json["report"]["success"], false);
+
+    let stop = assura_json(
+        &project,
+        &["daemon", "stop", project.path_str(), "--format", "json"],
+    );
+    assert_eq!(stop["runtime"]["state"], "stopped");
+}
+
+#[test]
+#[cfg_attr(tarpaulin, ignore = "managed subprocess lifecycle is not instrumented")]
 fn daemon_check_path_json_reports_stale_config_from_running_ipc_process() {
     let project = daemon_project();
 
@@ -446,10 +542,7 @@ structure:
 }
 
 #[test]
-#[cfg_attr(
-    any(windows, tarpaulin),
-    ignore = "managed daemon subprocess lifecycle is covered by normal Unix CI"
-)]
+#[cfg_attr(tarpaulin, ignore = "managed subprocess lifecycle is not instrumented")]
 fn daemon_stop_ignores_stale_metadata_for_unverified_pid() {
     let project = daemon_project();
 
@@ -510,10 +603,7 @@ fn daemon_stop_ignores_stale_metadata_for_unverified_pid() {
 }
 
 #[test]
-#[cfg_attr(
-    any(windows, tarpaulin),
-    ignore = "managed daemon subprocess lifecycle is covered by normal Unix CI"
-)]
+#[cfg_attr(tarpaulin, ignore = "managed subprocess lifecycle is not instrumented")]
 fn daemon_status_reports_crashed_process_without_fresh_running_state() {
     let project = daemon_project();
 

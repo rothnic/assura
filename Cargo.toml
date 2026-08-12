@@ -18,8 +18,8 @@ readme = "README.md"
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(tarpaulin)'] }
 
 [workspace]
-members = [".", "crates/assura-check-cli", "crates/assura-stable-hash", "xtask"]
-default-members = [".", "crates/assura-check-cli", "crates/assura-stable-hash", "xtask"]
+members = [".", "crates/assura-check-cli", "crates/assura-stable-hash", "crates/assura-watch-state", "xtask"]
+default-members = [".", "crates/assura-check-cli", "crates/assura-stable-hash", "crates/assura-watch-state", "xtask"]
 
 [[bin]]
 name = "assura"
@@ -47,6 +47,7 @@ full-cli = [
     "dep:tracing",
     "dep:tracing-subscriber",
     "dep:validator",
+    "watch-events",
     "dep:jwalk",
     "dep:jsonschema",
     "json-output",
@@ -54,10 +55,12 @@ full-cli = [
 ]
 git-signals = ["dep:git2"]
 json-output = ["dep:serde_json"]
+watch-events = ["dep:assura-watch-state", "dep:notify"]
 yaml-config = ["dep:serde_yaml"]
 
 [dependencies]
 assura-stable-hash = { path = "crates/assura-stable-hash" }
+assura-watch-state = { path = "crates/assura-watch-state", optional = true }
 tokio = { version = "1.0", features = ["full", "rt-multi-thread"], optional = true }
 serde = { version = "1.0", features = ["derive"] }
 serde_yaml = { version = "0.9", optional = true }
@@ -92,12 +95,20 @@ jwalk = { version = "0.8.1", optional = true }
 # Runtime content-object validation compiles checked-in JSON Schema artifacts
 # into Rust validators; authoring tools remain build-time only.
 jsonschema = { version = "=0.26.2", optional = true }
+notify = { version = "6.0", optional = true }
 
 [dev-dependencies]
 tempfile = "3.0"
 criterion = { version = "0.5", features = ["html_reports"] }
 pretty_assertions = "1.0"
 mockall = "0.11"
+
+[target.'cfg(windows)'.dev-dependencies]
+windows-sys = { version = "0.61.2", features = [
+  "Win32_Storage_FileSystem",
+  "Win32_System_Console",
+  "Win32_System_Threading",
+] }
 
 [[bench]]
 name = "graph_benchmarks"

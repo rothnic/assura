@@ -93,6 +93,7 @@ version = "0.3.0"
 dependencies = [
  "anyhow",
  "assura-stable-hash",
+ "assura-watch-state",
  "bincode",
  "clap",
  "criterion",
@@ -103,6 +104,7 @@ dependencies = [
  "jwalk",
  "lazy_static",
  "mockall",
+ "notify",
  "petgraph",
  "pico-args",
  "pretty_assertions",
@@ -122,6 +124,7 @@ dependencies = [
  "tracing-subscriber",
  "validator",
  "walkdir",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -130,17 +133,27 @@ version = "0.3.0"
 dependencies = [
  "assura",
  "assura-stable-hash",
+ "assura-watch-state",
  "lexopt",
  "notify",
  "pico-args",
  "postcard",
  "serde_json",
  "tempfile",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
 name = "assura-stable-hash"
 version = "0.3.0"
+
+[[package]]
+name = "assura-watch-state"
+version = "0.3.0"
+dependencies = [
+ "notify",
+ "tempfile",
+]
 
 [[package]]
 name = "atomic-waker"

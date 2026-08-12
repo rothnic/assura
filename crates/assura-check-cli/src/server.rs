@@ -1,9 +1,13 @@
 mod server_dirty;
 mod server_io;
+mod server_status;
 mod status_file;
 
 use crate::server_dirty::{dirty_project_paths, DirtyProject, DirtyState};
 use crate::server_io::{ClientStream, Listener};
+use crate::server_status::{
+    publish_dirty_status, publish_status_after_generation, record_event_and_publish_dirty,
+};
 use assura::cli::{CheckError, PreparedStructureCheck};
 use lexopt::prelude::*;
 use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
@@ -103,9 +107,9 @@ fn serve(options: Options) -> Result<(), String> {
 
     let mut cached_exit = None;
     if let Some(status_file) = &options.status_file {
+        let initial_dirty = dirty.take();
         let exit_code = run_check(&mut prepared_check, &root, false);
-        dirty.mark_clean_after_initial_check();
-        write_status(status_file, exit_code, false);
+        publish_status_after_generation(&dirty, status_file, exit_code, initial_dirty.generation);
         cached_exit = Some(exit_code);
     }
 
@@ -183,7 +187,7 @@ fn handle_client_request(
         Err(error) => {
             let exit_code = exit_code_for_check_error(&error);
             if let Some(status_file) = status_file {
-                write_status(status_file, exit_code, true);
+                publish_dirty_status(dirty, status_file, exit_code);
             }
             *cached_exit = Some(exit_code);
             return (exit_code, request_compact_response);
@@ -192,13 +196,14 @@ fn handle_client_request(
     if config_changed_by_fingerprint {
         *cached_exit = None;
         if let Some(status_file) = status_file {
-            write_status(status_file, 3, true);
+            publish_dirty_status(dirty, status_file, 3);
         }
     }
 
     match request {
         ClientRequest::Project { compact_response } => {
             let dirty_state = dirty.take();
+            let generation = dirty_state.generation;
             let config_changed = dirty_state.config_changed || config_changed_by_fingerprint;
             if config_changed
                 || matches!(dirty_state.project, DirtyProject::Full)
@@ -206,7 +211,7 @@ fn handle_client_request(
             {
                 let exit_code = run_check(prepared_check, root, dirty_state.config_changed);
                 if let Some(status_file) = status_file {
-                    write_status(status_file, exit_code, false);
+                    publish_status_after_generation(dirty, status_file, exit_code, generation);
                 }
                 *cached_exit = Some(exit_code);
             } else if let DirtyProject::Paths(paths) = dirty_state.project {
@@ -216,7 +221,7 @@ fn handle_client_request(
                     run_check(prepared_check, root, false)
                 };
                 if let Some(status_file) = status_file {
-                    write_status(status_file, exit_code, false);
+                    publish_status_after_generation(dirty, status_file, exit_code, generation);
                 }
                 *cached_exit = Some(exit_code);
             }
@@ -231,6 +236,7 @@ fn handle_client_request(
             compact_response,
         } => {
             let dirty_state = dirty.take();
+            let generation = dirty_state.generation;
             let config_changed = dirty_state.config_changed || config_changed_by_fingerprint;
             let exit_code = match (config_changed, dirty_state.project) {
                 (true, _) | (_, DirtyProject::Full) => {
@@ -245,7 +251,7 @@ fn handle_client_request(
                 ),
             };
             if let Some(status_file) = status_file {
-                write_status(status_file, exit_code, false);
+                publish_status_after_generation(dirty, status_file, exit_code, generation);
             }
             *cached_exit = Some(exit_code);
             (exit_code, compact_response)
@@ -271,32 +277,17 @@ fn watch_root(
     std::thread::spawn(move || {
         while let Ok(event) = rx.recv() {
             if let Ok(event) = event {
-                if status_file
-                    .as_deref()
-                    .is_some_and(|path| event_touches_status_file(&event, path))
-                {
-                    continue;
-                }
-                dirty.record_event(&event, &config_path);
-                if let Some(status_file) = &status_file {
-                    write_status(status_file, 3, true);
-                }
+                record_event_and_publish_dirty(
+                    &dirty,
+                    &event,
+                    &config_path,
+                    status_file.as_deref(),
+                );
             }
         }
     });
 
     Ok(watcher)
-}
-
-fn event_touches_status_file(event: &notify::Event, status_file: &Path) -> bool {
-    event
-        .paths
-        .iter()
-        .any(|path| status_file::is_status_artifact(path, status_file))
-}
-
-fn write_status(status_file: &Path, exit_code: i32, dirty: bool) {
-    let _ = status_file::write_status(status_file, status_file::CheckStatus { exit_code, dirty });
 }
 
 fn run_check(prepared_check: &mut PreparedStructureCheck, root: &Path, reload_config: bool) -> i32 {
@@ -342,6 +333,9 @@ fn run_incremental_project_check(
     root: &Path,
     paths: Vec<PathBuf>,
 ) -> i32 {
+    if !prepared_check.supports_incremental_path_checks() {
+        return run_check(prepared_check, root, false);
+    }
     for path in paths {
         let exit_code = run_path_check(prepared_check, root, path, false);
         if exit_code != 0 {

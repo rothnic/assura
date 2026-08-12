@@ -121,8 +121,9 @@ async fn run_full_cli(cli: Cli) -> ExitCode {
         Commands::Watch {
             path,
             debounce,
+            format,
             no_git,
-        } => watch_command(path, config_path, debounce, no_git).await,
+        } => watch_command(path, config_path, debounce, format, no_git).await,
         Commands::Migrate {
             input,
             from,

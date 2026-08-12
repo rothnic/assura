@@ -12,6 +12,35 @@ maintainer pushes an intentional `v*` tag after the release checklist in
 [`docs/release-candidate-checklist.md`](./release-candidate-checklist.md)
 passes.
 
+## Unreleased Next-Release Delta
+
+- `assura watch` now performs continuous validation: one initial requested-path
+  report followed by coalesced warm checks over affected paths or conservative
+  full-scope fallbacks.
+- `assura.watch.event.v1` exposes runtime mode, report scope, cache/reload
+  state, changed paths, coalesced event count, duration, and fallback reason.
+- Watch respects requested path scope and configured exclusions, reloads local
+  or external policy changes even when a platform reports only an adjacent
+  filesystem event, survives editor-style atomic file replacement, bounds
+  sustained edit batches, and exits cleanly on interrupt without leaving
+  runtime state. Backend watcher failure emits a final degraded event and
+  terminates instead of remaining alive with a stale subscription.
+- Warm changed-path checks now run only for path-local policy. Repository-wide
+  extensions and content relationships keep the prepared plan but fall back to
+  a full requested-scope report so a partial check cannot produce a false pass.
+- The internal hot-check server now ignores non-invalidating access events and
+  publishes status under the same generation lock used by watcher callbacks,
+  so a validation result cannot overwrite a newer edit as clean and a delayed
+  dirty publication cannot overwrite a later clean result. Status replacement
+  is atomic on supported Unix and Windows platforms. This is separate from the
+  public `assura daemon` process contract.
+- Managed `assura daemon check-path` now returns validation exit `1` when its
+  versioned IPC report fails, matching the local fallback schema and exit
+  behavior.
+- The correctness-checked cache, project-local daemon lifecycle, and continuous
+  watch command are supported next-release contracts. They remain absent from
+  the already-published `v0.3.0` contract.
+
 ## Supported Commands
 
 The current pre-1.0 command surface supports these public commands:
@@ -51,10 +80,9 @@ The current pre-1.0 command surface supports these public commands:
 - `.assura/models/**` as the supported project-intelligence layout for model
   artifacts stored under `.assura/`.
 
-`assura info` and `assura watch` remain present in the CLI, but the release
-support policy treats `assura info` as an experimental diagnostic and
-long-running watch behavior as experimental until dedicated goals add
-release-grade tests and docs.
+`assura info` remains present as an experimental text diagnostic. Continuous
+watch behavior is a supported next-release contract and is not retroactively
+part of the published `v0.3.0` release.
 
 The `integrations/editors/vscode` package is a supported beta local VS Code
 adapter over the shared Assura CLI, daemon, and editor-session JSON contracts.

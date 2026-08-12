@@ -288,33 +288,6 @@ fn merge_recipe_value(
     }
 }
 
-/// Watch for file changes and validate
-pub async fn watch_command(
-    path: Option<PathBuf>,
-    config: Option<PathBuf>,
-    debounce: Option<u64>,
-    no_git: bool,
-) -> ExitCode {
-    let debounce = debounce.unwrap_or(300);
-    println!(
-        "Running one-shot validation for watch mode (debounce: {}ms, git events ignored: {}).",
-        debounce, no_git
-    );
-    check_command(CheckCommandOptions {
-        path,
-        config,
-        format: crate::cli::args::CheckOutputFormat::Text,
-        agent: crate::cli::args::AgentTarget::Generic,
-        min_severity: None,
-        max_issues: None,
-        output: None,
-        fail_fast: false,
-        warn: false,
-        ls_lint_target_semantics: false,
-    })
-    .await
-}
-
 /// Migrate an LS-Lint configuration to Assura structure config.
 pub async fn migrate_command(
     input: Vec<PathBuf>,

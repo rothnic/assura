@@ -74,10 +74,12 @@ Use another tool alongside Assura when you need:
 - deep security scanning
 - code formatting
 - custom runtime plugins
-- continuous file watching that stays resident and reacts to every change
+- hosted monitoring or remote policy execution
 
-The `assura watch` command in this release is a truthful one-shot wrapper over
-`assura check`; it is not a long-running file watcher yet.
+`assura watch` stays resident, coalesces edit bursts, respects configured
+exclusions, and reuses a prepared policy. Its JSON stream identifies cold full,
+warm affected-path, and warm full-project runs so an agent can distinguish a
+fast local signal from a complete project result.
 
 ## Agent Feedback Direction
 

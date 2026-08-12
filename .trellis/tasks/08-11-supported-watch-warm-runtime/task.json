@@ -3,7 +3,7 @@
   "name": "supported-watch-warm-runtime",
   "title": "Support-grade watch and warm runtime",
   "description": "",
-  "status": "planning",
+  "status": "in_progress",
   "dev_type": null,
   "scope": "cross-layer",
   "package": null,
@@ -20,7 +20,19 @@
   "subtasks": [],
   "children": [],
   "parent": "08-11-assura-claim-complete-release-program",
-  "relatedFiles": [],
-  "notes": "",
+  "relatedFiles": [
+    "src/cli/watch.rs",
+    "src/cli/watch_event.rs",
+    "src/cli/watch_signal.rs",
+    "src/cli/check/prepared.rs",
+    "src/cli/daemon.rs",
+    "src/cli/daemon_process.rs",
+    "crates/assura-watch-state/src/lib.rs",
+    "crates/assura-check-cli/src/server_status.rs",
+    "crates/assura-check-cli/src/status_file.rs",
+    "tests/watch_cli.rs",
+    "tests/daemon_cli_tests.rs"
+  ],
+  "notes": "Local implementation and cross-compilation proof are complete. Keep in progress until hosted Windows executes the unskipped managed-daemon lifecycle and watch Ctrl-Break tests.",
   "meta": {}
 }

@@ -393,35 +393,22 @@ fn agent_help_lists_onboarding_surface() {
 }
 
 #[test]
-fn watch_returns_check_failure_for_invalid_project() {
-    let project = TempDir::new().unwrap();
-    let assura_dir = project.path().join(".assura");
-    fs::create_dir(&assura_dir).unwrap();
-    fs::write(
-        assura_dir.join("config.yml"),
-        r#"
-structure:
-  ./:
-    files:
-      naming: kebab-case
-"#,
-    )
-    .unwrap();
-    fs::write(project.path().join("BadName.rs"), "fn main() {}\n").unwrap();
-
-    let output = Command::new(assura_bin())
-        .arg("watch")
-        .arg(project.path())
+fn watch_help_exposes_continuous_runtime_options() {
+    let output = Command::new(assura_full_bin())
+        .args(["watch", "--help"])
         .output()
         .unwrap();
 
-    assert_eq!(output.status.code(), Some(1));
-    let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(
-        stdout.contains("one-shot validation"),
-        "stdout was:\n{stdout}"
+        output.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
     );
-    assert!(stdout.contains("file_naming"), "stdout was:\n{stdout}");
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(stdout.contains("Continuously"), "stdout was:\n{stdout}");
+    assert!(stdout.contains("--debounce"), "stdout was:\n{stdout}");
+    assert!(stdout.contains("--format"), "stdout was:\n{stdout}");
 }
 
 #[test]

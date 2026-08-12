@@ -4051,10 +4051,7 @@ fn enum_variant_names<'a>(text: &'a str, enum_name: &str) -> BTreeSet<&'a str> {
 }
 
 fn check_public_support_claim_consistency(checks: &mut Checks) {
-    let experimental_surfaces = [
-        ("assura info", "experimental diagnostic"),
-        ("assura watch", "experimental"),
-    ];
+    let experimental_surfaces = [("assura info", "experimental diagnostic")];
     for path in public_claim_files() {
         let text = read(&path);
         for (line_index, line) in text.lines().enumerate() {
@@ -4204,7 +4201,7 @@ fn check_post_beta_release_hardening(checks: &mut Checks) {
         );
     }
     for marker in [
-        "\"id\": \"daemon-mode\",\n      \"label\": \"Daemon mode\",\n      \"status\": \"experimental\",\n      \"first_release\": \"v0.3.0\"",
+        "\"id\": \"daemon-mode\",\n      \"label\": \"Daemon mode\",\n      \"status\": \"supported\",\n      \"first_release\": \"unreleased\"",
         "\"id\": \"vscode-extension\",\n      \"label\": \"VS Code beta local package\",\n      \"status\": \"supported\",\n      \"first_release\": \"v0.3.0\"",
         "\"id\": \"extension-api-boundaries\",\n      \"label\": \"Extension API boundaries\",\n      \"status\": \"supported\",\n      \"first_release\": \"v0.3.0\"",
         "\"id\": \"agent-integration-lifecycle\",\n      \"label\": \"Agent integration lifecycle\",\n      \"status\": \"experimental\",\n      \"first_release\": \"v0.3.0\"",
@@ -4688,7 +4685,7 @@ const SUPPORT_MATRIX_ROWS: &[SupportMatrixRow] = &[
         surface: "assura cache",
         command_surface_names: &["assura cache", "assura cache status", "assura cache clean"],
         support_policy_markers: &["`assura check --cache`, `assura cache status`, and `assura cache clean`"],
-        compatibility_markers: &["| `assura cache status|clean` | Experimental correctness-checked cache |"],
+        compatibility_markers: &["| `assura cache status|clean` | Supported next-release correctness-checked cache |"],
         source_markers: &["Commands::Cache", "cache_command"],
         test_markers: &[
             "tests/cli_command_surface_tests.rs",
@@ -4912,15 +4909,15 @@ const SUPPORT_MATRIX_ROWS: &[SupportMatrixRow] = &[
             "assura daemon check-path",
             "assura daemon references",
         ],
-        support_policy_markers: &["| `assura daemon` | Experimental local daemon process |"],
+        support_policy_markers: &["| `assura daemon` | Supported next-release local daemon process |"],
         compatibility_markers: &[
-            "| `assura daemon` | Experimental local daemon process |",
-            "| `assura daemon status` | Experimental local daemon status |",
-            "| `assura daemon start` | Experimental local daemon lifecycle |",
-            "| `assura daemon stop` | Experimental local daemon lifecycle |",
-            "| `assura daemon restart` | Experimental local daemon lifecycle |",
-            "| `assura daemon doctor` | Experimental local daemon doctor |",
-            "| `assura daemon logs` | Experimental local daemon logs preview |",
+            "| `assura daemon` | Supported next-release local daemon process |",
+            "| `assura daemon status` | Supported next-release local daemon status |",
+            "| `assura daemon start` | Supported next-release local daemon lifecycle |",
+            "| `assura daemon stop` | Supported next-release local daemon lifecycle |",
+            "| `assura daemon restart` | Supported next-release local daemon lifecycle |",
+            "| `assura daemon doctor` | Supported next-release local daemon doctor |",
+            "| `assura daemon logs` | Supported next-release local daemon logs |",
         ],
         source_markers: &[
             "Commands::Daemon",
@@ -4960,10 +4957,16 @@ const SUPPORT_MATRIX_ROWS: &[SupportMatrixRow] = &[
         surface: "assura watch",
         command_surface_names: &["assura watch"],
         support_policy_markers: &["`assura watch`"],
-        compatibility_markers: &["| `assura watch` | Experimental |"],
+        compatibility_markers: &["| `assura watch` | Supported next-release continuous validation |"],
         source_markers: &["Commands::Watch"],
-        test_markers: &[],
-        exception_markers: &["Experimental"],
+        test_markers: &[
+            "tests/watch_cli.rs",
+            "watch_emits_initial_and_warm_edit_reports",
+            "watch_coalesces_bursts_into_one_full_report",
+            "watch_reloads_changed_configuration_before_reporting",
+            "watch_stops_cleanly_without_runtime_artifacts",
+        ],
+        exception_markers: &[],
     },
     SupportMatrixRow {
         surface: "internal Rust APIs",
@@ -5220,6 +5223,23 @@ const MANIFEST_MATRIX_ROWS: &[ManifestMatrixRow] = &[
     },
     ManifestMatrixRow {
         manifest: "crates/assura-stable-hash/Cargo.toml",
+        classification: "internal support",
+        required_package_fields: &[
+            "name",
+            "version",
+            "edition",
+            "description",
+            "license",
+            "rust_version",
+        ],
+        semver_version: true,
+        version_matches_root: true,
+        rust_version_matches_root: true,
+        publish: Some(false),
+        default_run: None,
+    },
+    ManifestMatrixRow {
+        manifest: "crates/assura-watch-state/Cargo.toml",
         classification: "internal support",
         required_package_fields: &[
             "name",

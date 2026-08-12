@@ -208,6 +208,10 @@ commands:
       --debounce:
         aliases: ["-d"]
         takes_value: true
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json"]
       --no-git: {}
   - name: "assura migrate"
     allow_positionals: true

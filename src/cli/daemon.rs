@@ -324,14 +324,23 @@ fn run_daemon_command(
                 }
             }
             match core.check_changed_path(changed) {
-                Ok(report) => render_success(
-                    DaemonCheckPathOutput {
-                        schema: "assura.daemon.check_path.v1",
-                        health: core.health(),
-                        report,
-                    },
-                    format,
-                ),
+                Ok(report) => {
+                    let exit_code = if report.success {
+                        ExitCode::Success
+                    } else {
+                        ExitCode::ValidationFailed
+                    };
+                    render_success_with_exit(
+                        DaemonCheckPathOutput {
+                            schema: "assura.daemon.check_path.v1",
+                            protocol_version: process::DAEMON_PROTOCOL_VERSION,
+                            health: core.health(),
+                            report,
+                        },
+                        format,
+                        exit_code,
+                    )
+                }
                 Err(error) => render_error(error, format, Some(core.health())),
             }
         }
@@ -472,6 +481,7 @@ impl DaemonTextRender for DaemonMovedReferenceOutput {
 #[derive(Debug, Serialize)]
 struct DaemonCheckPathOutput {
     schema: &'static str,
+    protocol_version: &'static str,
     health: DaemonHealth,
     report: StructureCheckReport,
 }

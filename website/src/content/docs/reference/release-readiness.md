@@ -41,7 +41,7 @@ checksums reachable. Assura remains pre-1.0 beta.
 | `assura editor session` | Supported local JSON-line editor protocol with LSP-shaped methods. |
 | `integrations/editors/vscode` | Supported beta local VS Code package over shared Assura CLI, daemon, and editor-session contracts. |
 | `.assura/models/**` | Supported layout for project-intelligence model artifacts stored under `.assura/`. |
-| `assura watch` | Experimental until watch-mode tests and docs are added. |
+| `assura watch` | Supported next-release continuous validation with tested warm and fallback behavior. |
 
 ## Project Intelligence Schemas
 

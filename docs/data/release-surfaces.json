@@ -78,16 +78,22 @@
     {
       "id": "daemon-core-probe",
       "label": "Daemon core probe commands",
-      "status": "experimental",
-      "first_release": "v0.2.0",
-      "detail_path": "docs/goals/assura-reference-daemon-readiness.md"
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-reference-daemon-readiness.md",
+      "marketing_claim": false,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/daemon_cli_tests.rs"]
     },
     {
       "id": "daemon-management-cli-preview",
       "label": "Daemon management CLI",
-      "status": "experimental",
-      "first_release": "v0.2.0",
-      "detail_path": "docs/goals/assura-daemon-management-cli.md"
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-daemon-management-cli.md",
+      "marketing_claim": false,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/daemon_cli_tests.rs"]
     },
     {
       "id": "structure-validation-cli",
@@ -119,9 +125,12 @@
     {
       "id": "daemon-mode",
       "label": "Daemon mode",
-      "status": "experimental",
-      "first_release": "v0.3.0",
-      "detail_path": "docs/goals/assura-true-daemon-mode.md"
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-true-daemon-mode.md",
+      "marketing_claim": false,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/daemon_cli_tests.rs"]
     },
     {
       "id": "vscode-extension",
@@ -260,6 +269,25 @@
       "evidence_refs": ["tests/project_review_cli.rs"],
       "command": "assura cache status --format json",
       "smoke_args": ["cache", "status", "--format", "json"],
+      "expected_exit": 0
+    },
+    {
+      "id": "continuous-watch",
+      "label": "Continuous prepared-policy validation",
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "website/src/content/docs/reference/api.md",
+      "marketing_claim": true,
+      "evidence_status": "verified",
+      "evidence_refs": [
+        "tests/watch_cli.rs",
+        "src/cli/watch_tests.rs",
+        "crates/assura-watch-state/src/lib.rs",
+        "crates/assura-watch-state/src/concurrency_tests.rs",
+        "crates/assura-check-cli/src/server_status.rs"
+      ],
+      "command": "assura watch --format json",
+      "smoke_args": ["watch", "--help"],
       "expected_exit": 0
     },
     {

@@ -131,7 +131,7 @@ assura check --format json . > assura-report.json
 The report contains `success`, `project_root`, `config_path`, `checked_path`,
 `files_checked`, `dirs_checked`, and `violations`.
 
-> **Future work**
->
-> Long-running watch mode, plugin APIs, and agent feedback are planned separately
-> from the v0.1 onboarding release.
+For continuous local feedback, run `assura watch --format json`. The event
+stream reports whether each result covers the complete project or one affected
+path, plus prepared-plan, reload, and fallback state. Public plugin APIs remain
+roadmap work.

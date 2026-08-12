@@ -70,6 +70,14 @@ pub mod performance_report;
 mod project_review;
 #[cfg(feature = "full-cli")]
 pub mod quality;
+#[cfg(feature = "full-cli")]
+mod watch;
+#[cfg(feature = "full-cli")]
+mod watch_event;
+#[cfg(feature = "watch-events")]
+mod watch_signal;
+#[cfg(feature = "watch-events")]
+pub mod watch_state;
 
 #[cfg(feature = "full-cli")]
 pub use agent::agent_command;
@@ -87,7 +95,7 @@ pub use agent_query_args::AgentQueryArg;
 pub use args::{
     AgentTarget, CacheCommands, CheckOutputFormat, Cli, Commands, ConfigCommands, ExitCode,
     FixCommands, HookCommands, MarkdownFixRuleArg, MigrationSource, OutputFormat,
-    PerformanceReportFormat, QualityCommands, QualityPhase, QualityPlanFormat,
+    PerformanceReportFormat, QualityCommands, QualityPhase, QualityPlanFormat, WatchOutputFormat,
 };
 #[cfg(feature = "full-cli")]
 pub use cache_management::cache_command;
@@ -109,7 +117,7 @@ pub use command_options::CheckCommandOptions;
 #[cfg(feature = "full-cli")]
 pub use commands::{
     add_recipe_command, check_command, fix_markdown_command, info_command, init_command,
-    migrate_command, status_command, watch_command,
+    migrate_command, status_command,
 };
 #[cfg(feature = "full-cli")]
 pub use config::CliConfig;
@@ -139,3 +147,5 @@ pub use performance_report::{
 pub use project_review::project_review_command;
 #[cfg(feature = "full-cli")]
 pub use quality::{quality_plan_command, QualityPlan, QualityPlanCommandOptions};
+#[cfg(feature = "full-cli")]
+pub use watch::watch_command;
