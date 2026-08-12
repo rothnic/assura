@@ -215,7 +215,11 @@ mod tests {
         )
         .unwrap_err();
 
-        assert!(error.contains(".assura/daemon"));
+        let expected_parent = project.path().join(".assura").join("daemon");
+        assert!(
+            error.contains(&expected_parent.display().to_string()),
+            "unexpected error: {error}"
+        );
         assert!(!outside.exists());
     }
 }
