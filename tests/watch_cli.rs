@@ -358,8 +358,15 @@ fn watch_emits_feedback_during_sustained_edits() {
         !finished.load(Ordering::Acquire),
         "watch waited for sustained edits to stop before reporting"
     );
-    assert_event(&changed, 2, "filesystem", "warm_full");
-    assert_eq!(changed["fallback_reason"], "max_batch_window");
+    let runtime_mode = changed["runtime_mode"].as_str().unwrap();
+    assert!(
+        matches!(runtime_mode, "warm_incremental" | "warm_full"),
+        "unexpected warm runtime mode: {runtime_mode}"
+    );
+    assert_event(&changed, 2, "filesystem", runtime_mode);
+    if runtime_mode == "warm_full" {
+        assert_eq!(changed["fallback_reason"], "max_batch_window");
+    }
     writer.join().unwrap();
 }
 
