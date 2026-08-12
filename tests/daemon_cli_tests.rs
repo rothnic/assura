@@ -126,19 +126,20 @@ fn daemon_serve_publishes_ready_file_without_stdout() {
     let ready_file = project.path().join(".assura/daemon/ready-test.json");
     fs::create_dir_all(ready_file.parent().unwrap()).unwrap();
 
-    let mut child = Command::new(env!("CARGO_BIN_EXE_assura-full"))
+    let mut command = Command::new(env!("CARGO_BIN_EXE_assura-full"));
+    command
         .args([
             "daemon",
             "serve",
             project.path_str(),
             "--listen",
             "127.0.0.1:0",
+            "--ready-file",
         ])
-        .env("ASSURA_DAEMON_READY_FILE", &ready_file)
+        .arg(&ready_file)
         .stdout(Stdio::null())
-        .stderr(Stdio::null())
-        .spawn()
-        .unwrap();
+        .stderr(Stdio::null());
+    let mut child = command.spawn().unwrap();
 
     let deadline = Instant::now() + Duration::from_secs(5);
     while !ready_file.is_file() && Instant::now() < deadline {
@@ -167,7 +168,7 @@ fn daemon_serve_publishes_ready_file_without_stdout() {
 #[test]
 #[cfg_attr(tarpaulin, ignore = "managed subprocess lifecycle is not instrumented")]
 fn daemon_start_releases_captured_launcher_output_while_daemon_stays_running() {
-    let project = daemon_project();
+    let project = daemon_project_named("project with spaces");
 
     let output = assura_output(
         &project,
@@ -821,12 +822,21 @@ fn cleanup_managed_daemon(project: &DaemonProject) {
 }
 
 fn daemon_project() -> DaemonProject {
-    let project = TempDir::new().unwrap();
-    fs::create_dir_all(project.path().join(".assura")).unwrap();
-    fs::create_dir_all(project.path().join("docs")).unwrap();
-    fs::create_dir_all(project.path().join("src")).unwrap();
+    daemon_project_at(None)
+}
+
+fn daemon_project_named(name: &str) -> DaemonProject {
+    daemon_project_at(Some(name))
+}
+
+fn daemon_project_at(name: Option<&str>) -> DaemonProject {
+    let temp = TempDir::new().unwrap();
+    let root = name.map_or_else(|| temp.path().to_path_buf(), |name| temp.path().join(name));
+    fs::create_dir_all(root.join(".assura")).unwrap();
+    fs::create_dir_all(root.join("docs")).unwrap();
+    fs::create_dir_all(root.join("src")).unwrap();
     fs::write(
-        project.path().join(".assura/config.yml"),
+        root.join(".assura/config.yml"),
         r#"
 structure:
   docs/:
@@ -841,30 +851,27 @@ structure:
     )
     .unwrap();
     fs::write(
-        project.path().join("docs/note.md"),
+        root.join("docs/note.md"),
         "# Note\n\nSee [guide](guide.md#install) and [code](../src/lib.rs#L1-L2).\n",
     )
     .unwrap();
-    fs::write(
-        project.path().join("docs/guide.md"),
-        "# Guide\n\n## Install\n",
-    )
-    .unwrap();
-    fs::write(project.path().join("src/lib.rs"), "fn one() {}\n").unwrap();
-    DaemonProject { project }
+    fs::write(root.join("docs/guide.md"), "# Guide\n\n## Install\n").unwrap();
+    fs::write(root.join("src/lib.rs"), "fn one() {}\n").unwrap();
+    DaemonProject { _temp: temp, root }
 }
 
 struct DaemonProject {
-    project: TempDir,
+    _temp: TempDir,
+    root: std::path::PathBuf,
 }
 
 impl DaemonProject {
     fn path(&self) -> &Path {
-        self.project.path()
+        &self.root
     }
 
     fn path_str(&self) -> &str {
-        self.project.path().to_str().unwrap()
+        self.root.to_str().unwrap()
     }
 }
 

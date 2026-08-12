@@ -2,7 +2,7 @@
 
 use super::ready::{
     cleanup_ready_files, publish_daemon_address, ready_file_for, ready_file_from_env,
-    wait_for_daemon_address, DAEMON_READY_FILE_ENV,
+    wait_for_daemon_address,
 };
 use super::references::{
     DaemonMovedReferenceIpcOutput, DaemonReferenceIpcOutput, DaemonReferenceIpcRequest,
@@ -16,7 +16,9 @@ use serde_json::Value;
 use std::fs::{self, OpenOptions};
 use std::io::Write;
 use std::path::{Path, PathBuf};
-use std::process::{Command, Stdio};
+use std::process::Command;
+#[cfg(not(windows))]
+use std::process::Stdio;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 pub(super) const DAEMON_PROTOCOL_VERSION: &str = "assura.daemon.v1";
@@ -65,13 +67,21 @@ pub(super) fn spawn_daemon(
         .arg(project_root)
         .arg("--listen")
         .arg(listen_addr)
-        .env(DAEMON_READY_FILE_ENV, &ready_file)
+        .arg("--ready-file")
+        .arg(&ready_file)
+        .arg("--log-file")
+        .arg(log_file);
+
+    #[cfg(not(windows))]
+    command
         .stdin(Stdio::null())
         .stdout(Stdio::null())
         .stderr(Stdio::from(log));
+    #[cfg(windows)]
+    drop(log);
 
     let mut child =
-        super::process_spawn::without_inherited_parent_stdio(&mut command).map_err(|error| {
+        super::process_spawn::spawn_without_inherited_handles(&mut command).map_err(|error| {
             let _ = cleanup_ready_files(&ready_file);
             format!("start daemon process: {error}")
         })?;
@@ -214,8 +224,9 @@ pub(super) fn serve_daemon(
     project_root: PathBuf,
     config: Option<PathBuf>,
     listen_addr: String,
+    ready_file: Option<PathBuf>,
 ) -> Result<(), String> {
-    let ready_file = ready_file_from_env();
+    let ready_file = ready_file.or_else(ready_file_from_env);
     let mut core =
         LocalDaemonCore::load(project_root.clone(), config).map_err(|error| error.to_string())?;
     let listener = Listener::bind(&listen_addr)?;

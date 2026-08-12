@@ -30,7 +30,8 @@ use lifecycle::{
     daemon_logs_output, daemon_restart_output, daemon_start_output, daemon_stop_output,
 };
 use management::{daemon_doctor_output, daemon_status_output, health_for_path};
-use process::{request_check_path, request_references, serve_daemon};
+use process::{request_check_path, request_references};
+use process_spawn::serve_managed_daemon;
 use references::{reference_request, DaemonReferenceRequest};
 pub(crate) use render::DaemonTextRender;
 use render::{
@@ -160,19 +161,22 @@ pub enum DaemonCommands {
         #[arg(short, long, value_enum, default_value = "text")]
         format: OutputFormat,
     },
-
     /// Run the local daemon server process.
     #[command(hide = true)]
     Serve {
         /// Project root directory.
         path: PathBuf,
-
         /// IPC listen address.
         #[arg(long)]
         listen: String,
+        /// Project-local readiness artifact used by the managed launcher.
+        #[arg(long, hide = true)]
+        ready_file: Option<PathBuf>,
+        /// Project-local runtime log used when the detached server exits with an error.
+        #[arg(long, hide = true)]
+        log_file: Option<PathBuf>,
     },
 }
-
 /// Run a daemon-ready probe command.
 pub async fn daemon_command(command: DaemonCommands, config: Option<PathBuf>) -> ExitCode {
     match run_daemon_command(command, config) {
@@ -195,17 +199,22 @@ fn run_daemon_command(
 ) -> Result<DaemonCommandOutcome, DaemonCommandError> {
     let format = command.format();
     let path = command.path();
-    if let DaemonCommands::Serve { path, listen } = command {
-        return match serve_daemon(path, config, listen) {
-            Ok(()) => Ok(DaemonCommandOutcome {
+    if let DaemonCommands::Serve {
+        path,
+        listen,
+        ready_file,
+        log_file,
+    } = command
+    {
+        return serve_managed_daemon(path, config, listen, ready_file, log_file)
+            .map(|()| DaemonCommandOutcome {
                 rendered: String::new(),
                 exit_code: ExitCode::Success,
-            }),
-            Err(message) => Err(DaemonCommandError {
+            })
+            .map_err(|message| DaemonCommandError {
                 message,
                 exit_code: ExitCode::RuntimeError,
-            }),
-        };
+            });
     }
     let reference_request = match &command {
         DaemonCommands::References {

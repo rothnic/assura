@@ -4,7 +4,6 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::io::Write;
 use std::path::{Path, PathBuf};
-use std::process::Child;
 use std::thread;
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
@@ -46,7 +45,7 @@ pub(super) fn cleanup_ready_files(ready_file: &Path) -> Result<(), String> {
 }
 
 pub(super) fn wait_for_daemon_address(
-    child: &mut Child,
+    child: &mut super::process_spawn::DaemonChild,
     ready_file: &Path,
     timeout: Duration,
     protocol_version: &str,
