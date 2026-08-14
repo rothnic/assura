@@ -57,10 +57,10 @@ Distribution rule of thumb:
 
 | Harness | Native mechanism | Strongest currently known events | Assura support target | Verification source |
 | --- | --- | --- | --- | --- |
-| Codex | `.codex/hooks.json` command hooks | `UserPromptSubmit`, `PostToolUse` | Native hook adapter plus managed wrapper under `.assura/integrations/codex/` | Official Codex hooks docs and repo-local proof tests. |
-| OpenCode | TypeScript plugin hooks | Tool execute hooks and event hooks | Generate wrapper plus plugin instructions or adapter files; use plugin APIs when available. | Local `create-opencode-plugin` skill and generated SDK reference. |
-| Claude | `.claude/settings*.json` command hooks | Prompt submit and tool-use hooks where enabled | Generate wrapper plus Claude settings snippet; keep user approval explicit. | Official Claude Code hooks docs or local Claude config docs. |
-| Pi | Extension or command-wrapper integration | Depends on `pi_agent_rust` extension/runtime surface | Generate wrapper and extension guidance; mark unsupported native events explicitly. | Local `pi-agent-rust` skill and current Pi runtime source/docs. |
+| Codex | `.codex/hooks.json` command hooks | `SessionStart`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse` | Managed Python adapter plus exact Assura matcher groups; project trust and `/hooks` approval remain host-owned. | Official Codex hooks docs verified 2026-08-14; `codex_post_tool_event_injects_bounded_assura_context`. |
+| OpenCode | `.opencode/plugins/*.js` project plugin | `session.created`, `session.idle`, `session.error`, `tool.execute.after` | Managed JavaScript plugin; session events log and after-tool appends bounded context. | Official OpenCode plugin docs verified 2026-08-14; `opencode_after_tool_event_appends_bounded_assura_context`. |
+| Claude | `.claude/settings.json` command hooks | `SessionStart`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `PostToolUseFailure` | Managed Python adapter plus exact Assura matcher groups; preserve unrelated settings and hooks. | Official Claude Code hooks docs verified 2026-08-14; `claude_pre_tool_event_injects_bounded_assura_context`. |
+| Pi | `.pi/extensions/*.ts` project extension | `session_start`, `before_agent_start`, `tool_result` | Managed TypeScript-compatible extension; project trust remains host-owned. | Current Pi extension docs/source verified 2026-08-14; `pi_tool_result_event_appends_bounded_assura_context`. |
 | OpenClaw | OpenClaw plugin/gateway/harness surface | Verify from current OpenClaw source before claiming native hooks | Generate wrapper and best available plugin/command integration; warn when native after-tool support is unknown. | Current OpenClaw checkout or official OpenClaw docs. |
 
 ## Research Checklist
@@ -98,6 +98,56 @@ When verifying a harness behavior, add or update a compact note with this shape:
 
 Keep records factual and source-backed. If a behavior is inferred from source,
 say so; do not promote it to supported until an adapter or proof test exists.
+
+## Verified Records
+
+### Codex - 2026-08-14
+
+- Source: `https://learn.chatgpt.com/docs/hooks`
+- Hook surface: project-local `.codex/hooks.json` command hooks
+- Install/update path: `.assura/integrations/codex/` plus exact Assura groups in `.codex/hooks.json`
+- Events verified: `PostToolUse` to `after-tool`; manifest also maps the other installed groups
+- Payload fields: `cwd`, `session_id`, `hook_event_name`, `tool_name`, and nested path fields in `tool_input`
+- Context return: `hookSpecificOutput.additionalContext`
+- Drift handling: exact-group patch/unpatch; reject edited Assura groups; preserve unrelated JSON
+- Proof: `codex_post_tool_event_injects_bounded_assura_context`
+- Gaps: project trust and exact hook approval remain host-owned; hosted tools can bypass local tool hooks
+
+### Claude Code - 2026-08-14
+
+- Source: `https://code.claude.com/docs/en/hooks`
+- Hook surface: project-local `.claude/settings.json` command hooks
+- Install/update path: `.assura/integrations/claude/` plus exact Assura groups in `.claude/settings.json`
+- Events verified: `PreToolUse` to `before-tool`; manifest maps prompt, session, post-tool, and failure groups
+- Payload fields: common hook fields plus nested `tool_input` path fields
+- Context return: `hookSpecificOutput.additionalContext`
+- Drift handling: exact-group patch/unpatch; reject edited Assura groups; preserve unrelated settings
+- Proof: `claude_pre_tool_event_injects_bounded_assura_context`
+- Gaps: no separate `file-read` lifecycle mapping; host trust remains outside Assura verification
+
+### OpenCode - 2026-08-14
+
+- Source: `https://opencode.ai/docs/plugins/`
+- Hook surface: project-local JavaScript plugin
+- Install/update path: `.opencode/plugins/assura.js`
+- Events verified: `tool.execute.after` to `after-tool`
+- Payload fields: plugin directory, session ID, and recursive path fields from tool args
+- Context return: bounded context appended to tool output; session event mappings are log-only
+- Drift handling: managed-marker update; reject unmanaged plugin replacement
+- Proof: `opencode_after_tool_event_appends_bounded_assura_context`
+- Gaps: no model-context delivery is claimed for session event callbacks
+
+### Pi - 2026-08-14
+
+- Source: `https://raw.githubusercontent.com/badlogic/pi-mono/main/packages/coding-agent/docs/extensions.md`
+- Hook surface: project-local TypeScript extension
+- Install/update path: `.pi/extensions/assura.ts`
+- Events verified: `tool_result` to `after-tool`
+- Payload fields: extension context cwd plus recursive path fields from tool input
+- Context return: bounded text item appended to tool-result content; `before_agent_start` returns a custom message
+- Drift handling: managed-marker update; reject unmanaged extension replacement
+- Proof: `pi_tool_result_event_appends_bounded_assura_context`
+- Gaps: project trust remains host-owned; no dedicated recovery event is claimed
 
 ## Drift Policy
 

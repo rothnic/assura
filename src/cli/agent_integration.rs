@@ -2,6 +2,10 @@
 
 #[path = "agent_integration_bundle.rs"]
 mod bundle;
+#[path = "agent_integration_host.rs"]
+mod host;
+#[path = "agent_integration_templates.rs"]
+mod templates;
 
 use super::{
     AgentIntegrationCommands, AgentIntegrationLifecycleArgs, AgentIntegrationStatusArgs,
@@ -39,12 +43,20 @@ pub async fn agent_integration_command(command: AgentIntegrationCommands) -> Exi
     }
 }
 
-pub(super) fn install_agent_integration_bundle(
+pub(super) struct ManagedIntegrationState {
+    pub(super) generated: bool,
+    pub(super) activated: bool,
+    pub(super) verified: bool,
+    pub(super) conflicted: bool,
+}
+
+pub(super) fn configure_agent_integration_bundle(
     agent: AgentIntegrationTarget,
     project_root: PathBuf,
-) -> Result<bool, String> {
+    activate: bool,
+) -> Result<ManagedIntegrationState, String> {
     let report = lifecycle_command(
-        "install",
+        if activate { "activate" } else { "install" },
         AgentIntegrationLifecycleArgs {
             agent,
             path: Some(project_root),
@@ -52,17 +64,28 @@ pub(super) fn install_agent_integration_bundle(
             force: false,
             format: OutputFormat::Json,
         },
+        activate,
         false,
     )?;
-    Ok(report.report.installed)
+    let activation = report.report.activation;
+    Ok(ManagedIntegrationState {
+        generated: activation.generated,
+        activated: activation.activated,
+        verified: activation.verified,
+        conflicted: activation.conflicted,
+    })
 }
 
 fn run_agent_integration_command(
     command: AgentIntegrationCommands,
 ) -> Result<RenderedIntegrationReport, String> {
     match command {
-        AgentIntegrationCommands::Install(args) => lifecycle_command("install", args, false),
-        AgentIntegrationCommands::Update(args) => lifecycle_command("update", args, true),
+        AgentIntegrationCommands::Install(args) => lifecycle_command("install", args, false, false),
+        AgentIntegrationCommands::Activate(args) => {
+            lifecycle_command("activate", args, true, false)
+        }
+        AgentIntegrationCommands::Update(args) => lifecycle_command("update", args, false, true),
+        AgentIntegrationCommands::Deactivate(args) => deactivate_command(args),
         AgentIntegrationCommands::Remove(args) => remove_command(args),
         AgentIntegrationCommands::Status(args) => status_command("status", args),
         AgentIntegrationCommands::Doctor(args) => status_command("doctor", args),
@@ -72,10 +95,12 @@ fn run_agent_integration_command(
 fn lifecycle_command(
     action: &'static str,
     args: AgentIntegrationLifecycleArgs,
+    activate: bool,
     update: bool,
 ) -> Result<RenderedIntegrationReport, String> {
     let project_root = resolve_project_root(args.path)?;
     let bundle = IntegrationBundle::new(args.agent, project_root);
+    let initial_activation = host::status(&bundle)?;
     let manifest = bundle.manifest();
     let files = bundle.expected_files(&manifest);
     let mut actions = Vec::new();
@@ -86,7 +111,7 @@ fn lifecycle_command(
         let content_changed = status.as_ref().map_or(true, |status| {
             !status.managed || status.content.as_deref() != Some(&file.content)
         });
-        let write = args.force || update || content_changed;
+        let write = args.force || content_changed;
         if write
             && !args.force
             && !args.dry_run
@@ -104,7 +129,7 @@ fn lifecycle_command(
         let content_changed = status.as_ref().map_or(true, |status| {
             !status.managed || status.content.as_deref() != Some(&file.content)
         });
-        let write = args.force || update || content_changed;
+        let write = args.force || content_changed;
         let action_name = if write { "write" } else { "unchanged" };
         changed |= write;
         actions.push(FileAction {
@@ -129,6 +154,18 @@ fn lifecycle_command(
         }
     }
 
+    let should_refresh_activation = activate || (update && initial_activation.activated);
+    let activation = if should_refresh_activation {
+        let mutation = host::activate(&bundle, args.dry_run)?;
+        changed |= mutation.changed;
+        actions.extend(mutation.files);
+        mutation.state
+    } else if args.dry_run {
+        initial_activation
+    } else {
+        host::status(&bundle)?
+    };
+
     Ok(RenderedIntegrationReport {
         report: IntegrationReport {
             schema: OUTPUT_SCHEMA,
@@ -142,6 +179,34 @@ fn lifecycle_command(
             manifest: Some(manifest),
             files: actions,
             checks: Vec::new(),
+            activation,
+            host: host_guidance(args.agent),
+        },
+        format: args.format,
+    })
+}
+
+fn deactivate_command(
+    args: AgentIntegrationLifecycleArgs,
+) -> Result<RenderedIntegrationReport, String> {
+    let project_root = resolve_project_root(args.path)?;
+    let bundle = IntegrationBundle::new(args.agent, project_root);
+    let mutation = host::deactivate(&bundle, args.dry_run)?;
+
+    Ok(RenderedIntegrationReport {
+        report: IntegrationReport {
+            schema: OUTPUT_SCHEMA,
+            action: "deactivate",
+            agent: args.agent.as_str(),
+            dry_run: args.dry_run,
+            changed: mutation.changed,
+            installed: bundle.is_installed(),
+            project_root: path_string(&bundle.project_root),
+            integration_dir: path_string(&bundle.integration_dir),
+            manifest: Some(bundle.manifest()),
+            files: mutation.files,
+            checks: Vec::new(),
+            activation: mutation.state,
             host: host_guidance(args.agent),
         },
         format: args.format,
@@ -155,8 +220,9 @@ fn remove_command(
     let bundle = IntegrationBundle::new(args.agent, project_root);
     let manifest = bundle.manifest();
     let files = bundle.expected_files(&manifest);
-    let mut actions = Vec::new();
-    let mut changed = false;
+    let activation_mutation = host::deactivate(&bundle, args.dry_run)?;
+    let mut actions = activation_mutation.files;
+    let mut changed = activation_mutation.changed;
 
     for file in files {
         let status = file_status(&file.path);
@@ -186,6 +252,11 @@ fn remove_command(
     if !args.dry_run {
         remove_empty_dir(&bundle.integration_dir)?;
     }
+    let activation = if args.dry_run {
+        activation_mutation.state
+    } else {
+        host::status(&bundle)?
+    };
 
     Ok(RenderedIntegrationReport {
         report: IntegrationReport {
@@ -200,6 +271,7 @@ fn remove_command(
             manifest: None,
             files: actions,
             checks: Vec::new(),
+            activation,
             host: host_guidance(args.agent),
         },
         format: args.format,
@@ -232,6 +304,7 @@ fn status_command(
         })
         .collect::<Vec<_>>();
     let installed = bundle.is_installed();
+    let activation = host::status(&bundle)?;
     let checks = if action == "doctor" {
         doctor_checks(&bundle, &files)
     } else {
@@ -251,6 +324,7 @@ fn status_command(
             manifest: Some(manifest),
             files,
             checks,
+            activation,
             host: host_guidance(args.agent),
         },
         format: args.format,
@@ -293,7 +367,10 @@ fn doctor_checks(bundle: &IntegrationBundle, files: &[FileAction]) -> Vec<Doctor
         },
         DoctorCheck {
             name: "shared_nudge_contract",
-            status: check_status(wrapper_contains(&wrapper_path, "assura agent nudge")),
+            status: check_status(wrapper_contains(
+                &wrapper_path,
+                "\"$ASSURA_BIN\" agent nudge",
+            )),
             message: "wrapper delegates to assura agent nudge",
         },
         DoctorCheck {
@@ -307,7 +384,7 @@ fn doctor_checks(bundle: &IntegrationBundle, files: &[FileAction]) -> Vec<Doctor
         DoctorCheck {
             name: "shared_check_contract",
             status: check_status(
-                wrapper_contains(&wrapper_path, "assura check")
+                wrapper_contains(&wrapper_path, "\"$ASSURA_BIN\" check")
                     && wrapper_contains(&wrapper_path, "--format agent"),
             ),
             message: "wrapper delegates to assura check --format agent",
@@ -315,8 +392,8 @@ fn doctor_checks(bundle: &IntegrationBundle, files: &[FileAction]) -> Vec<Doctor
         DoctorCheck {
             name: "shared_daemon_contract",
             status: check_status(
-                wrapper_contains(&wrapper_path, "assura daemon status")
-                    && wrapper_contains(&wrapper_path, "assura daemon doctor"),
+                wrapper_contains(&wrapper_path, "\"$ASSURA_BIN\" daemon status")
+                    && wrapper_contains(&wrapper_path, "\"$ASSURA_BIN\" daemon doctor"),
             ),
             message: "wrapper delegates to assura daemon status/doctor",
         },

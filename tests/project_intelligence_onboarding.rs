@@ -318,7 +318,8 @@ fn agent_onboard_generates_broad_baseline_and_packet() {
     assert!(lifecycle.contains("| nudge |"));
     assert!(lifecycle.contains("| warn |"));
     assert!(lifecycle.contains("| gate |"));
-    assert!(lifecycle.contains("does not silently mutate"));
+    assert!(lifecycle.contains("integration activate <agent>"));
+    assert!(lifecycle.contains("Host trust remains under user control"));
     let rules = fs::read_to_string(project.path().join(".assura/onboarding/rules.md")).unwrap();
     assert!(rules.contains("agentic-core"));
     assert!(rules.contains("structure-health"));
@@ -957,7 +958,10 @@ fn agent_onboard_preserves_existing_user_authored_files() {
 
     assert_eq!(output["detected"]["project_type"], "rust");
     assert_eq!(output["detected"]["agent_harness"], "codex");
-    assert_eq!(output["integration"]["status"], "installed");
+    assert_eq!(output["integration"]["status"], "generated");
+    assert_eq!(output["integration"]["generated"], true);
+    assert_eq!(output["integration"]["activated"], false);
+    assert_eq!(output["integration"]["verified"], false);
     assert!(output["lifecycle_profiles"]
         .as_array()
         .expect("lifecycle profiles")

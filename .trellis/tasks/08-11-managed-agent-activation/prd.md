@@ -25,14 +25,23 @@ Assura commands and schemas.
 
 ## Acceptance Criteria
 
-- [ ] Codex lifecycle and event fixture pass.
-- [ ] Claude Code lifecycle and event fixture pass.
-- [ ] OpenCode lifecycle and event fixture pass.
-- [ ] Pi lifecycle and event fixture pass.
-- [ ] Repeated activation is idempotent.
-- [ ] Update repairs stale managed files and rejects unmanaged drift.
-- [ ] Removal deletes only Assura-owned configuration and files.
-- [ ] Onboarding JSON distinguishes generated, activated, verified, and conflicted.
+- [x] Codex lifecycle and event fixture pass.
+- [x] Claude Code lifecycle and event fixture pass.
+- [x] OpenCode lifecycle and event fixture pass.
+- [x] Pi lifecycle and event fixture pass.
+- [x] Repeated activation is idempotent.
+- [x] Update repairs stale managed files and rejects unmanaged drift.
+- [x] Removal deletes only Assura-owned configuration and files.
+- [x] Onboarding JSON distinguishes generated, activated, verified, and conflicted.
+
+## Evidence
+
+Validated on 2026-08-14 against the isolated VPS worktree snapshot:
+
+- `cargo test --test agent_integration_cli`: 9 passed.
+- `cargo test --test agent_surface_cli`: 18 passed.
+- `cargo test --test project_intelligence_onboarding --test agent_onboarding_config_merge`: 16 passed.
+- `cargo fmt --all -- --check`: passed.
 
 ## Validation
 

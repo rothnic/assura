@@ -455,9 +455,10 @@ Use these modes consistently:
 | gate | Before push, merge, or CI | yes | `assura check --format agent --min-severity medium --max-issues 20 .` |
 
 Host-agent integrations are reviewable local bundles under
-`.assura/integrations/<agent>/`. Assura does not silently mutate global or
-host-agent configuration. Run `assura agent integration doctor <agent> .` after
-manual host wiring.
+`.assura/integrations/<agent>/`. Installation does not change host settings.
+Run `assura agent integration activate <agent> .` to patch only Assura-owned
+project host configuration, then `assura agent integration doctor <agent> .`
+to verify the managed files. Host trust remains under user control.
 "#
 }
 

@@ -25,7 +25,7 @@ impl RenderedOnboardingReport {
     fn render_text(&self) -> String {
         let report = &self.report;
         format!(
-            "Assura agent onboarding\ninstalled: assura {}\ndetected: project={} agent={} confidence={}\nrules: {}\ncontent: {}={}\nlifecycle: {}\nverified: {}\nreview: {} blocking={} advisory={} inactive={}\ninactive: {}\nnext: {}\npacket: .assura/onboarding/agent-next.md",
+            "Assura agent onboarding\ninstalled: assura {}\ndetected: project={} agent={} confidence={}\nrules: {}\nintegration: {} generated={} activated={} verified={} conflicted={}\ncontent: {}={}\nlifecycle: {}\nverified: {}\nreview: {} blocking={} advisory={} inactive={}\ninactive: {}\nnext: {}\npacket: .assura/onboarding/agent-next.md",
             report.installed.assura_version,
             report.detected.project_type,
             report.detected.agent_harness,
@@ -36,6 +36,11 @@ impl RenderedOnboardingReport {
                 .map(|item| format!("{}->{} ({})", item.preset, item.local_rule, item.status))
                 .collect::<Vec<_>>()
                 .join(", "),
+            report.integration.agent,
+            report.integration.generated,
+            report.integration.activated,
+            report.integration.verified,
+            report.integration.conflicted,
             report.content.template,
             report.content.status,
             report
@@ -107,6 +112,10 @@ pub(super) struct IntegrationSection {
     pub(super) status: &'static str,
     pub(super) agent: &'static str,
     pub(super) mode: &'static str,
+    pub(super) generated: bool,
+    pub(super) activated: bool,
+    pub(super) verified: bool,
+    pub(super) conflicted: bool,
     pub(super) detail: &'static str,
 }
 

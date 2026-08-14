@@ -35,10 +35,12 @@ Each managed bundle must declare:
 - `assura_version` and `minimum_assura_version`
 - `adapter_contract_version`
 - `adapter_version`
-- `harness` and known `harness_version_range`
+- the target harness contract and any known version boundary
 - `runtime` such as `python3`, `node`, `shell`, or `native`
 - `managed_files` with path, content hash, executable bit, and ownership marker
-- `update_channel`: `core-binary`, `harness-package`, or `manual`
+- host-event-to-Assura-event mappings, delivery mode, and unsupported events
+- whether the host still requires project trust or hook approval
+- the exact `assura agent integration update <host>` update channel
 
 Manifests should be deterministic so `status`, `doctor`, and tests can compare
 expected files without timestamp noise.
@@ -47,8 +49,12 @@ expected files without timestamp noise.
 
 - `install` writes missing managed files and refuses to overwrite unmanaged
   files unless the command explicitly supports and receives a force option.
+- `activate` explicitly writes or patches only Assura-owned project-local host
+  configuration. Bundle generation alone never implies activation.
 - `update` refreshes stale managed files when the marker and manifest ownership
-  match.
+  match, including an already-active host adapter.
+- `deactivate` removes only Assura-owned host configuration while retaining the
+  reviewable bundle; `remove` deactivates first and then removes the bundle.
 - `status` reports missing, present, unmanaged, and outdated files in a compact
   machine-readable shape.
 - `doctor` fails missing or outdated managed files that would make hook behavior
@@ -59,7 +65,7 @@ expected files without timestamp noise.
 
 - Codex and Claude command hooks may use Python or shell adapters, but policy
   must remain in the Assura binary.
-- OpenCode TypeScript plugins may be generated or packaged, but should only
+- OpenCode JavaScript or TypeScript plugins may be generated or packaged, but should only
   translate plugin events and call Assura.
 - Pi and OpenClaw support must be based on current runtime source or official
   docs before claiming native hook coverage.
@@ -71,7 +77,11 @@ expected files without timestamp noise.
 - Golden tests for generated manifests and adapter files.
 - Stale managed-file detection and update tests.
 - Unmanaged-file protection tests.
-- At least one payload fixture per supported native hook event.
+- At least one real payload fixture per supported host. Every claimed mapping
+  must be listed in the deterministic manifest, including whether it injects
+  model context, appends tool context, or records a session log only.
+- Site and docs examples must be generated from these command/report contracts;
+  visual styling may adapt layout but cannot invent states, labels, or behavior.
 - Matrix entry in
   `.agents/skills/assura-agent-harness-hooks/references/harness-hook-matrix.md`
   with source, proof, and gaps.

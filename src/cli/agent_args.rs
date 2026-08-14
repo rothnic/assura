@@ -11,6 +11,8 @@ pub enum AgentCommands {
         path: Option<PathBuf>,
         #[arg(long, value_enum, default_value = "auto")]
         agent: AgentOnboardingTarget,
+        #[arg(long, help = "Activate the detected or selected host integration")]
+        activate: bool,
         #[arg(long, value_enum, default_value = "none")]
         content_template: AgentContentTemplate,
         #[arg(short, long, value_enum, default_value = "json")]
@@ -133,8 +135,12 @@ pub enum AgentCommands {
 pub enum AgentIntegrationCommands {
     /// Generate reviewable wrapper files for one host agent.
     Install(AgentIntegrationLifecycleArgs),
+    /// Activate Assura in one host's project-local configuration.
+    Activate(AgentIntegrationLifecycleArgs),
     /// Regenerate an existing wrapper bundle.
     Update(AgentIntegrationLifecycleArgs),
+    /// Remove Assura-owned host activation while retaining the bundle.
+    Deactivate(AgentIntegrationLifecycleArgs),
     /// Remove an Assura-managed wrapper bundle.
     Remove(AgentIntegrationLifecycleArgs),
     /// Report whether an Assura-managed wrapper bundle is present.
