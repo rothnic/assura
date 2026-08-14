@@ -44,6 +44,8 @@ Validated on 2026-08-14 against the isolated VPS worktree snapshot:
 - `cargo test --test agent_surface_cli`: 18 passed.
 - `cargo test --test project_intelligence_onboarding --test agent_onboarding_config_merge`: 16 passed.
 - `cargo fmt --all -- --check`: passed.
+- `cargo xtask target-state`, `cargo xtask evidence`, and `cargo xtask docs`:
+  passed after regenerating the onboarding demo contract.
 
 ## Validation
 

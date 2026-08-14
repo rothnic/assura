@@ -149,10 +149,14 @@
     "onboarding_packet": ".assura/onboarding/"
   },
   "integration": {
+    "activated": false,
     "agent": "generic",
+    "conflicted": false,
     "detail": "no supported host-agent harness detected; use AGENTS.md and assura check --format agent --warn",
+    "generated": false,
     "mode": "manual-shell",
-    "status": "generic-guidance"
+    "status": "generic-guidance",
+    "verified": false
   },
   "lifecycle_profiles": [
     {
