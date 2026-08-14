@@ -19,6 +19,12 @@ future intelligence to roadmap surfaces.
   or removing it from the core story.
 - Route semantic search, symbols, deeper dependency intelligence, plugin SDK,
   MCP, full LSP, marketplace, and automatic repair to the roadmap.
+- Generate landing and documentation examples from executable fixtures and the
+  supported CLI renderers. Visual styling may adapt the same semantics, but
+  labels, hierarchy, states, values, and interactions must not invent a second
+  product experience.
+- Keep review visually advisory and check visibly blocking, with the same
+  distinction in the real CLI output.
 
 ## Acceptance Criteria
 
@@ -30,6 +36,10 @@ future intelligence to roadmap surfaces.
 - [ ] Core pages do not label a marketed capability experimental or planned.
 - [ ] Future capabilities are discoverable on roadmap pages without reading as current.
 - [ ] Website examples remain generated from executable fixtures.
+- [ ] Hero and focused-page output lines are selected from the exact supported
+  renderer output; fixture-backed policy-tree values match the files checked.
+- [ ] Stale generated examples fail the build, and light/dark screenshots pass
+  wrap and horizontal-overflow checks at 360, 390, 430, 768, 1024, and 1440 px.
 
 ## Validation
 

@@ -1,1 +1,9 @@
-{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file":".trellis/spec/assura/compact-project-review.md","reason":"Preserve the supported review command, compact signal hierarchy, and advisory semantics."}
+{"file":".trellis/spec/assura/agent-ready-onboarding.md","reason":"Align onboarding claims and generated examples with explicit managed activation state."}
+{"file":".trellis/spec/assura/config-notation.md","reason":"Keep executable policy examples concise, valid, and consistent with the supported notation."}
+{"file":".trellis/spec/assura/pattern-scoped-file-directives.md","reason":"Validate glob-scoped file examples and renderer-backed policy demonstrations."}
+{"file":".trellis/spec/assura/structure-enforcement.md","reason":"Keep check output and blocking structure behavior aligned with the implementation."}
+{"file":".trellis/spec/frontend/component-guidelines.md","reason":"Apply the existing frontend component and responsive interaction conventions."}
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"Require accessible, responsive, testable light and dark marketing surfaces."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Coordinate CLI schemas, generated data, Astro rendering, and documentation contracts."}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Prefer shared renderer-derived data and components over hand-authored duplicate examples."}

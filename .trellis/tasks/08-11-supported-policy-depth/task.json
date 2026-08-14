@@ -3,7 +3,7 @@
   "name": "supported-policy-depth",
   "title": "Promote deterministic policy depth",
   "description": "",
-  "status": "planning",
+  "status": "in_progress",
   "dev_type": null,
   "scope": "cross-layer",
   "package": null,
