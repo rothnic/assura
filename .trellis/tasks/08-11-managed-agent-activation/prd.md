@@ -38,7 +38,9 @@ Assura commands and schemas.
 
 Validated on 2026-08-14 against the isolated VPS worktree snapshot:
 
-- `cargo test --test agent_integration_cli`: 9 passed.
+- `cargo test --test agent_integration_cli`: 13 passed, including non-Git
+  Codex execution, transactional restoration, drift-safe removal, and
+  symlink-boundary refusal.
 - `cargo test --test agent_surface_cli`: 18 passed.
 - `cargo test --test project_intelligence_onboarding --test agent_onboarding_config_merge`: 16 passed.
 - `cargo fmt --all -- --check`: passed.
@@ -58,3 +60,9 @@ cargo run --quiet -- check --format json .
 
 Block on whole-file host config replacement, false auto-detection, host-specific
 policy logic, missing rollback, unbounded feedback, or undocumented event gaps.
+
+Independent review found and the implementation corrected three blocking
+defects: Codex assumed every project was a Git repository, lifecycle failure
+could leave newly written bundle files behind, and marker-preserving user edits
+could be removed as managed content. A follow-up safety pass also rejects
+managed paths that escape the project boundary through symbolic links.

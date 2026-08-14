@@ -430,3 +430,142 @@ fn onboarding_auto_activation_refuses_ambiguous_or_missing_host_evidence() {
     assert!(String::from_utf8_lossy(&output.stderr)
         .contains("no supported agent host detected; choose --agent"));
 }
+
+#[test]
+fn codex_host_command_runs_outside_a_git_repository() {
+    let project = adapter_fixture();
+    activate(project.path(), "codex");
+    assert!(!project.path().join(".git").exists());
+
+    let hooks: Value = serde_json::from_slice(
+        &fs::read(project.path().join(".codex/hooks.json")).expect("Codex hooks"),
+    )
+    .expect("Codex hooks JSON");
+    let command = hooks["hooks"]["PostToolUse"][0]["hooks"][0]["command"]
+        .as_str()
+        .expect("Codex command");
+    assert!(command.contains("|| pwd"));
+
+    let mut child = Command::new("sh")
+        .args(["-c", command])
+        .current_dir(project.path())
+        .env("ASSURA_BIN", assura_bin())
+        .env("ASSURA_AGENT_LOG", "0")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .expect("Codex command starts");
+    write!(
+        child.stdin.as_mut().expect("Codex command stdin"),
+        "{}",
+        serde_json::json!({
+            "session_id": "codex-non-git",
+            "cwd": project.path(),
+            "hook_event_name": "PostToolUse",
+            "tool_name": "Write",
+            "tool_input": {"file_path": "src/BadName.rs"}
+        })
+    )
+    .expect("write Codex event");
+    let output = child.wait_with_output().expect("Codex command exits");
+    assert!(
+        output.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let context: Value = serde_json::from_slice(&output.stdout).expect("Codex context JSON");
+    assert!(context["hookSpecificOutput"]["additionalContext"]
+        .as_str()
+        .unwrap()
+        .contains("src/BadName.rs"));
+}
+
+#[test]
+fn activation_failure_rolls_back_bundle_changes() {
+    let fresh = project_fixture();
+    let plugin = activation_path(fresh.path(), "opencode");
+    fs::create_dir_all(plugin.parent().unwrap()).expect("OpenCode plugin dir");
+    fs::write(&plugin, "export const custom = true;\n").expect("unmanaged plugin");
+    let output = run_agent(fresh.path(), &["integration", "activate", "opencode"]);
+    assert!(!output.status.success());
+    assert!(!fresh
+        .path()
+        .join(".assura/integrations/opencode/manifest.json")
+        .exists());
+    assert_eq!(
+        fs::read_to_string(&plugin).unwrap(),
+        "export const custom = true;\n"
+    );
+
+    let installed = project_fixture();
+    agent_json(installed.path(), &["integration", "install", "opencode"]);
+    let readme = installed
+        .path()
+        .join(".assura/integrations/opencode/README.md");
+    let drifted_readme = format!("{}\nUser note.\n", fs::read_to_string(&readme).unwrap());
+    fs::write(&readme, &drifted_readme).expect("drift managed README");
+    let plugin = activation_path(installed.path(), "opencode");
+    fs::create_dir_all(plugin.parent().unwrap()).expect("OpenCode plugin dir");
+    fs::write(&plugin, "export const custom = true;\n").expect("unmanaged plugin");
+    let output = run_agent(installed.path(), &["integration", "activate", "opencode"]);
+    assert!(!output.status.success());
+    assert_eq!(fs::read_to_string(readme).unwrap(), drifted_readme);
+    assert_eq!(
+        fs::read_to_string(plugin).unwrap(),
+        "export const custom = true;\n"
+    );
+}
+
+#[test]
+fn deactivate_and_remove_refuse_marker_preserving_drift() {
+    let project = project_fixture();
+    activate(project.path(), "opencode");
+    let plugin = activation_path(project.path(), "opencode");
+    let drifted_plugin = format!("{}\n// user edit\n", fs::read_to_string(&plugin).unwrap());
+    fs::write(&plugin, &drifted_plugin).expect("drift managed plugin");
+
+    let deactivate = run_agent(project.path(), &["integration", "deactivate", "opencode"]);
+    assert!(!deactivate.status.success());
+    assert!(String::from_utf8_lossy(&deactivate.stderr)
+        .contains("refusing to remove drifted or non-Assura-managed host activation"));
+    assert_eq!(fs::read_to_string(&plugin).unwrap(), drifted_plugin);
+
+    agent_json(project.path(), &["integration", "update", "opencode"]);
+    let readme = project
+        .path()
+        .join(".assura/integrations/opencode/README.md");
+    let drifted_readme = format!("{}\nUser note.\n", fs::read_to_string(&readme).unwrap());
+    fs::write(&readme, &drifted_readme).expect("drift managed README");
+
+    let remove = run_agent(project.path(), &["integration", "remove", "opencode"]);
+    assert!(!remove.status.success());
+    assert!(String::from_utf8_lossy(&remove.stderr)
+        .contains("refusing to remove drifted or non-Assura-managed bundle file"));
+    assert_eq!(fs::read_to_string(readme).unwrap(), drifted_readme);
+    assert!(
+        plugin.exists(),
+        "host activation must remain after refused removal"
+    );
+}
+
+#[cfg(unix)]
+#[test]
+fn activation_refuses_symlinked_managed_paths() {
+    use std::os::unix::fs::symlink;
+
+    let project = project_fixture();
+    let outside = TempDir::new().expect("outside temp dir");
+    symlink(outside.path(), project.path().join(".opencode")).expect("symlink host directory");
+
+    let output = run_agent(project.path(), &["integration", "activate", "opencode"]);
+    assert!(!output.status.success());
+    assert!(String::from_utf8_lossy(&output.stderr)
+        .contains("refusing lifecycle mutation through symbolic link"));
+    assert!(!outside.path().join("plugins/assura.js").exists());
+    assert!(!project
+        .path()
+        .join(".assura/integrations/opencode/manifest.json")
+        .exists());
+}

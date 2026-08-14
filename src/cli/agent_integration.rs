@@ -4,8 +4,12 @@
 mod bundle;
 #[path = "agent_integration_host.rs"]
 mod host;
+#[path = "agent_integration_host_json.rs"]
+mod host_json;
 #[path = "agent_integration_templates.rs"]
 mod templates;
+#[path = "agent_integration_transaction.rs"]
+mod transaction;
 
 use super::{
     AgentIntegrationCommands, AgentIntegrationLifecycleArgs, AgentIntegrationStatusArgs,
@@ -103,87 +107,100 @@ fn lifecycle_command(
     let initial_activation = host::status(&bundle)?;
     let manifest = bundle.manifest();
     let files = bundle.expected_files(&manifest);
-    let mut actions = Vec::new();
-    let mut changed = false;
+    let transaction_paths = files
+        .iter()
+        .map(|file| file.path.clone())
+        .chain(host::managed_paths(&bundle))
+        .collect::<Vec<_>>();
 
-    for file in &files {
-        let status = file_status(&file.path);
-        let content_changed = status.as_ref().map_or(true, |status| {
-            !status.managed || status.content.as_deref() != Some(&file.content)
-        });
-        let write = args.force || content_changed;
-        if write
-            && !args.force
-            && !args.dry_run
-            && status.as_ref().is_some_and(|status| !status.managed)
-        {
-            return Err(format!(
-                "refusing to overwrite non-Assura-managed file: {}; rerun with --force to replace it",
-                path_string(&file.path)
-            ));
-        }
-    }
+    transaction::run(
+        transaction_paths,
+        &bundle.project_root,
+        args.dry_run,
+        || {
+            let mut actions = Vec::new();
+            let mut changed = false;
 
-    for file in files {
-        let status = file_status(&file.path);
-        let content_changed = status.as_ref().map_or(true, |status| {
-            !status.managed || status.content.as_deref() != Some(&file.content)
-        });
-        let write = args.force || content_changed;
-        let action_name = if write { "write" } else { "unchanged" };
-        changed |= write;
-        actions.push(FileAction {
-            path: path_string(&file.path),
-            kind: file.kind,
-            action: if args.dry_run && write {
-                "would_write"
-            } else if args.dry_run {
-                "unchanged"
-            } else {
-                action_name
-            },
-            existed: status.is_some(),
-            managed: status.as_ref().is_some_and(|status| status.managed),
-        });
-        if write && !args.dry_run {
-            if let Some(parent) = file.path.parent() {
-                fs::create_dir_all(parent).map_err(|error| error.to_string())?;
+            for file in &files {
+                let status = file_status(&file.path);
+                let content_changed = status.as_ref().map_or(true, |status| {
+                    !status.managed || status.content.as_deref() != Some(&file.content)
+                });
+                let write = args.force || content_changed;
+                if write
+                    && !args.force
+                    && !args.dry_run
+                    && status.as_ref().is_some_and(|status| !status.managed)
+                {
+                    return Err(format!(
+                        "refusing to overwrite non-Assura-managed file: {}; rerun with --force to replace it",
+                        path_string(&file.path)
+                    ));
+                }
             }
-            fs::write(&file.path, file.content).map_err(|error| error.to_string())?;
-            set_executable_if_script(&file.path, file.kind)?;
-        }
-    }
 
-    let should_refresh_activation = activate || (update && initial_activation.activated);
-    let activation = if should_refresh_activation {
-        let mutation = host::activate(&bundle, args.dry_run)?;
-        changed |= mutation.changed;
-        actions.extend(mutation.files);
-        mutation.state
-    } else if args.dry_run {
-        initial_activation
-    } else {
-        host::status(&bundle)?
-    };
+            for file in files {
+                let status = file_status(&file.path);
+                let content_changed = status.as_ref().map_or(true, |status| {
+                    !status.managed || status.content.as_deref() != Some(&file.content)
+                });
+                let write = args.force || content_changed;
+                let action_name = if write { "write" } else { "unchanged" };
+                changed |= write;
+                actions.push(FileAction {
+                    path: path_string(&file.path),
+                    kind: file.kind,
+                    action: if args.dry_run && write {
+                        "would_write"
+                    } else if args.dry_run {
+                        "unchanged"
+                    } else {
+                        action_name
+                    },
+                    existed: status.is_some(),
+                    managed: status.as_ref().is_some_and(|status| status.managed),
+                });
+                if write && !args.dry_run {
+                    if let Some(parent) = file.path.parent() {
+                        fs::create_dir_all(parent).map_err(|error| error.to_string())?;
+                    }
+                    fs::write(&file.path, file.content).map_err(|error| error.to_string())?;
+                    set_executable_if_script(&file.path, file.kind)?;
+                }
+            }
 
-    Ok(RenderedIntegrationReport {
-        report: IntegrationReport {
-            schema: OUTPUT_SCHEMA,
-            action,
-            agent: args.agent.as_str(),
-            dry_run: args.dry_run,
-            changed,
-            installed: bundle.is_installed(),
-            project_root: path_string(&bundle.project_root),
-            integration_dir: path_string(&bundle.integration_dir),
-            manifest: Some(manifest),
-            files: actions,
-            checks: Vec::new(),
-            activation,
-            host: host_guidance(args.agent),
+            let should_refresh_activation = activate || (update && initial_activation.activated);
+            let activation = if should_refresh_activation {
+                let mutation = host::activate(&bundle, args.dry_run)?;
+                changed |= mutation.changed;
+                actions.extend(mutation.files);
+                mutation.state
+            } else if args.dry_run {
+                initial_activation
+            } else {
+                host::status(&bundle)?
+            };
+
+            Ok(RenderedIntegrationReport {
+                report: IntegrationReport {
+                    schema: OUTPUT_SCHEMA,
+                    action,
+                    agent: args.agent.as_str(),
+                    dry_run: args.dry_run,
+                    changed,
+                    installed: bundle.is_installed(),
+                    project_root: path_string(&bundle.project_root),
+                    integration_dir: path_string(&bundle.integration_dir),
+                    manifest: Some(manifest),
+                    files: actions,
+                    checks: Vec::new(),
+                    activation,
+                    host: host_guidance(args.agent),
+                },
+                format: args.format,
+            })
         },
-        format: args.format,
-    })
+    )
 }
 
 fn deactivate_command(
@@ -191,26 +208,32 @@ fn deactivate_command(
 ) -> Result<RenderedIntegrationReport, String> {
     let project_root = resolve_project_root(args.path)?;
     let bundle = IntegrationBundle::new(args.agent, project_root);
-    let mutation = host::deactivate(&bundle, args.dry_run)?;
-
-    Ok(RenderedIntegrationReport {
-        report: IntegrationReport {
-            schema: OUTPUT_SCHEMA,
-            action: "deactivate",
-            agent: args.agent.as_str(),
-            dry_run: args.dry_run,
-            changed: mutation.changed,
-            installed: bundle.is_installed(),
-            project_root: path_string(&bundle.project_root),
-            integration_dir: path_string(&bundle.integration_dir),
-            manifest: Some(bundle.manifest()),
-            files: mutation.files,
-            checks: Vec::new(),
-            activation: mutation.state,
-            host: host_guidance(args.agent),
+    transaction::run(
+        host::managed_paths(&bundle),
+        &bundle.project_root,
+        args.dry_run,
+        || {
+            let mutation = host::deactivate(&bundle, args.dry_run)?;
+            Ok(RenderedIntegrationReport {
+                report: IntegrationReport {
+                    schema: OUTPUT_SCHEMA,
+                    action: "deactivate",
+                    agent: args.agent.as_str(),
+                    dry_run: args.dry_run,
+                    changed: mutation.changed,
+                    installed: bundle.is_installed(),
+                    project_root: path_string(&bundle.project_root),
+                    integration_dir: path_string(&bundle.integration_dir),
+                    manifest: Some(bundle.manifest()),
+                    files: mutation.files,
+                    checks: Vec::new(),
+                    activation: mutation.state,
+                    host: host_guidance(args.agent),
+                },
+                format: args.format,
+            })
         },
-        format: args.format,
-    })
+    )
 }
 
 fn remove_command(
@@ -220,62 +243,86 @@ fn remove_command(
     let bundle = IntegrationBundle::new(args.agent, project_root);
     let manifest = bundle.manifest();
     let files = bundle.expected_files(&manifest);
-    let activation_mutation = host::deactivate(&bundle, args.dry_run)?;
-    let mut actions = activation_mutation.files;
-    let mut changed = activation_mutation.changed;
+    let transaction_paths = files
+        .iter()
+        .map(|file| file.path.clone())
+        .chain(host::managed_paths(&bundle))
+        .collect::<Vec<_>>();
 
-    for file in files {
-        let status = file_status(&file.path);
-        let remove = status.as_ref().is_some_and(|status| status.managed);
-        changed |= remove;
-        actions.push(FileAction {
-            path: path_string(&file.path),
-            kind: file.kind,
-            action: if args.dry_run {
-                if remove {
-                    "would_remove"
-                } else {
-                    "unchanged"
+    transaction::run(
+        transaction_paths,
+        &bundle.project_root,
+        args.dry_run,
+        || {
+            for file in &files {
+                if let Some(status) = file_status(&file.path) {
+                    if status.content.as_deref() != Some(file.content.as_str()) {
+                        return Err(format!(
+                            "refusing to remove drifted or non-Assura-managed bundle file: {}",
+                            path_string(&file.path)
+                        ));
+                    }
                 }
-            } else if remove {
-                "remove"
-            } else {
-                "unchanged"
-            },
-            existed: status.is_some(),
-            managed: status.as_ref().is_some_and(|status| status.managed),
-        });
-        if remove && !args.dry_run {
-            fs::remove_file(&file.path).map_err(|error| error.to_string())?;
-        }
-    }
-    if !args.dry_run {
-        remove_empty_dir(&bundle.integration_dir)?;
-    }
-    let activation = if args.dry_run {
-        activation_mutation.state
-    } else {
-        host::status(&bundle)?
-    };
+            }
 
-    Ok(RenderedIntegrationReport {
-        report: IntegrationReport {
-            schema: OUTPUT_SCHEMA,
-            action: "remove",
-            agent: args.agent.as_str(),
-            dry_run: args.dry_run,
-            changed,
-            installed: bundle.is_installed(),
-            project_root: path_string(&bundle.project_root),
-            integration_dir: path_string(&bundle.integration_dir),
-            manifest: None,
-            files: actions,
-            checks: Vec::new(),
-            activation,
-            host: host_guidance(args.agent),
+            let activation_mutation = host::deactivate(&bundle, args.dry_run)?;
+            let mut actions = activation_mutation.files;
+            let mut changed = activation_mutation.changed;
+
+            for file in files {
+                let status = file_status(&file.path);
+                let remove = status.is_some();
+                changed |= remove;
+                actions.push(FileAction {
+                    path: path_string(&file.path),
+                    kind: file.kind,
+                    action: if args.dry_run {
+                        if remove {
+                            "would_remove"
+                        } else {
+                            "unchanged"
+                        }
+                    } else if remove {
+                        "remove"
+                    } else {
+                        "unchanged"
+                    },
+                    existed: status.is_some(),
+                    managed: remove,
+                });
+                if remove && !args.dry_run {
+                    fs::remove_file(&file.path).map_err(|error| error.to_string())?;
+                }
+            }
+            if !args.dry_run {
+                remove_empty_dir(&bundle.integration_dir)?;
+            }
+            let activation = if args.dry_run {
+                activation_mutation.state
+            } else {
+                host::status(&bundle)?
+            };
+
+            Ok(RenderedIntegrationReport {
+                report: IntegrationReport {
+                    schema: OUTPUT_SCHEMA,
+                    action: "remove",
+                    agent: args.agent.as_str(),
+                    dry_run: args.dry_run,
+                    changed,
+                    installed: bundle.is_installed(),
+                    project_root: path_string(&bundle.project_root),
+                    integration_dir: path_string(&bundle.integration_dir),
+                    manifest: None,
+                    files: actions,
+                    checks: Vec::new(),
+                    activation,
+                    host: host_guidance(args.agent),
+                },
+                format: args.format,
+            })
         },
-        format: args.format,
-    })
+    )
 }
 
 fn status_command(
