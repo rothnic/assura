@@ -1074,17 +1074,17 @@
   }
 
   .terminal-token-label {
-    color: color-mix(in srgb, var(--terminal-primary) 72%, var(--terminal-muted));
-    font-weight: 650;
+    color: color-mix(in srgb, var(--terminal-text) 70%, var(--terminal-muted));
+    font-weight: 700;
   }
 
   .terminal-token-title {
-    color: var(--terminal-primary);
+    color: color-mix(in srgb, var(--terminal-text) 92%, var(--terminal-muted));
     font-weight: 760;
   }
 
   .terminal-token-metric-key {
-    color: color-mix(in srgb, var(--terminal-muted) 88%, transparent);
+    color: color-mix(in srgb, var(--terminal-muted) 76%, transparent);
     font-weight: 450;
   }
 

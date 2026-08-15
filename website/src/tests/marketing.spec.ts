@@ -229,7 +229,15 @@ test('terminal output uses ANSI-like text emphasis without per-line panels', asy
   const commandColor = await page.locator('.terminal-token-command').first().evaluate(
     (item) => getComputedStyle(item).color,
   );
+  const titleColor = await page.locator('.terminal-token-title').first().evaluate(
+    (item) => getComputedStyle(item).color,
+  );
+  const labelColor = await page.locator('.terminal-token-label').first().evaluate(
+    (item) => getComputedStyle(item).color,
+  );
   expect(failureColor).not.toBe(commandColor);
+  expect(titleColor).not.toBe(commandColor);
+  expect(labelColor).not.toBe(commandColor);
 
   await page.goto('/project-review/');
   const infoColor = await page.locator('.terminal-line.info').first().evaluate(
