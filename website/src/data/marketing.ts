@@ -1,17 +1,16 @@
-export const installScriptUrl = 'https://assura.dev/install.sh';
-export const installCommand = `curl -fsSL ${installScriptUrl} | sh`;
+export const sourceRepositoryUrl = 'https://github.com/rothnic/assura';
+export const sourcePreviewRevision = 'b8f8375835095ce4f83b872c33b9d4e163ab283a';
+export const installCommand = `cargo install --git ${sourceRepositoryUrl} --rev ${sourcePreviewRevision} --locked --bin assura assura`;
 
-export const agentSetupPrompt = `Install Assura in this repository and set it up for agent-ready checks.
-If assura is not installed, run:
-ASSURA_INSTALL=${installScriptUrl}
-curl -fsSL "$ASSURA_INSTALL" | sh
+export const agentSetupPrompt = `Install the exact Assura revision used to generate and verify the examples on assura.dev:
+${installCommand}
 
 Then run:
-identify the active host as codex, claude, opencode, or pi; do not guess if the evidence is ambiguous
-assura agent onboard . --agent codex --activate --format json
+identify the active host as codex, claude, opencode, or pi; ask if the evidence is ambiguous
+assura agent onboard . --agent <host> --activate --format json
 assura check --format json .
 
-If the active host is not Codex, replace codex with the detected host before running the command. Read .assura/onboarding/agent-next.md, summarize what is active, what is inactive, and what questions need human answers before adding project-specific rules.`;
+Replace <host> with the detected host. Read .assura/onboarding/agent-next.md, summarize what is active, what is inactive, and what questions need human answers before adding project-specific rules.`;
 
 export const marketingNav = [
   { label: 'Review', href: '/project-review/' },

@@ -39,13 +39,13 @@ const configLines = policyDemo.config.trimEnd().split('\n').map((text) => {
 });
 
 const statusLabel = {
-  verified: 'Check passed',
+  observed: 'Observed fixture path',
   violation: 'Check violation',
-  context: 'Policy context',
+  context: 'Policy scope',
 } as const;
 
 const statusSymbol = {
-  verified: '✓',
+  observed: '•',
   violation: '!',
   context: '·',
 } as const;
@@ -69,8 +69,8 @@ const treeRows = policyDemo.tree.map((row) => ({
 
   <section class="tree-panel" aria-labelledby="policy-tree-title">
     <header>
-      <span>Executable fixture</span>
-      <h3 id="policy-tree-title">Config and check result</h3>
+      <span>Fixture explorer</span>
+      <h3 id="policy-tree-title">Policy, paths, and violations</h3>
     </header>
     <ul class="tree-root tree-flat">
       {treeRows.map((row) => (
@@ -80,7 +80,7 @@ const treeRows = policyDemo.tree.map((row) => ({
           data-policy-status={row.status}
           data-policy-detail={row.detail}
         >
-          <div class:list={['tree-row', row.status === 'context' ? 'neutral' : row.status === 'verified' ? 'pass' : 'fail']} title={'message' in row ? row.message : undefined}>
+          <div class:list={['tree-row', row.status === 'context' ? 'neutral' : row.status === 'observed' ? 'observed' : 'fail']} title={'message' in row ? row.message : undefined}>
             <span class="tree-status" aria-label={statusLabel[row.status]}>{statusSymbol[row.status]}</span>
             <code>{row.path}</code>
             <small>{'marker' in row && row.marker && <i class="rule-marker">{row.marker}</i>}{row.detail}</small>
@@ -89,13 +89,14 @@ const treeRows = policyDemo.tree.map((row) => ({
       ))}
     </ul>
     <footer>
-      <span><i class="legend-dot pass"></i> check passed</span>
+      <span><i class="legend-dot observed"></i> observed fixture path</span>
       <span><i class="legend-dot fail"></i> check violation</span>
       <span>{policyDemo.summary.files_checked} files · {policyDemo.summary.dirs_checked} dirs</span>
     </footer>
     <p class="policy-evidence-note">
-      Fixture explanation generated from the checked config and its real
-      <code>{policyDemo.command}</code> result. This tree is not a separate CLI format.
+      The tree organizes policy scopes and observed fixture paths. Only red rows
+      are violations emitted by <code>{policyDemo.command}</code>; observed paths
+      are not per-path pass records or a separate CLI format.
     </p>
   </section>
 

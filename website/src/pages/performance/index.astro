@@ -2,7 +2,12 @@
 import AgentSetupDialog from '../../components/marketing/agent-setup-dialog.astro';
 import MarketingLayout from '../../components/marketing/marketing-layout.astro';
 import PolicyBreadthComparison from '../../components/marketing/policy-breadth-comparison.astro';
-import { agentSetupPrompt, installCommand, marketingNav } from '../../data/marketing';
+import {
+  agentSetupPrompt,
+  installCommand,
+  marketingNav,
+  sourcePreviewRevision,
+} from '../../data/marketing';
 import reportData from '../../../public/data/performance/current.json';
 
 type ResultRow = {
@@ -488,5 +493,9 @@ function formatCount(value?: number): string {
       </div>
     </section>
   </main>
-  <AgentSetupDialog prompt={agentSetupPrompt} installCommand={installCommand} />
+  <AgentSetupDialog
+    prompt={agentSetupPrompt}
+    installCommand={installCommand}
+    sourceRevision={sourcePreviewRevision}
+  />
 </MarketingLayout>

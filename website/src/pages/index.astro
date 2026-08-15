@@ -8,7 +8,7 @@ import PerformanceProof from '../components/marketing/performance-proof.astro';
 import PolicyTreeDemo from '../components/marketing/policy-tree-demo.astro';
 import SectionHeading from '../components/marketing/section-heading.astro';
 import TerminalCard from '../components/marketing/terminal-card.astro';
-import { agentSetupPrompt, installCommand } from '../data/marketing';
+import { agentSetupPrompt, installCommand, sourcePreviewRevision } from '../data/marketing';
 import onboardingDemo from '../data/onboarding-demo.json';
 import reviewDemo from '../data/review-demo.json';
 
@@ -25,7 +25,6 @@ const structuredData = {
   description: pageDescription,
   url: 'https://assura.dev/',
   codeRepository: 'https://github.com/rothnic/assura',
-  downloadUrl: 'https://github.com/rothnic/assura/releases/latest',
   license: ['https://opensource.org/license/mit', 'https://www.apache.org/licenses/LICENSE-2.0'],
   author: { '@type': 'Person', name: 'Nick Roth', url: 'https://www.nickroth.com/' },
   offers: { '@type': 'Offer', price: 0, priceCurrency: 'USD' },
@@ -438,5 +437,9 @@ const performanceLayers = [
         </div>
       </section>
   </main>
-  <AgentSetupDialog prompt={agentSetupPrompt} installCommand={installCommand} />
+  <AgentSetupDialog
+    prompt={agentSetupPrompt}
+    installCommand={installCommand}
+    sourceRevision={sourcePreviewRevision}
+  />
 </MarketingLayout>

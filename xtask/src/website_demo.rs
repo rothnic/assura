@@ -15,6 +15,13 @@ const INTELLIGENCE_FIXTURE_SOURCE: &str = "tests/fixtures/content_runtime/valid"
 const OUTPUT_DIR: &str = "website/src/data";
 const RELEASE_SURFACES_PATH: &str = "docs/data/release-surfaces.json";
 const CONFIG_EXAMPLES_DIR: &str = "website/src/data/config-examples";
+const MARKETING_DATA_PATH: &str = "website/src/data/marketing.ts";
+const PINNED_RENDERER_ARTIFACTS: &[&str] = &[
+    "website/src/data/review-demo.json",
+    "website/src/data/check-demo.json",
+    "website/src/data/onboarding-demo.json",
+    "website/src/data/intelligence-demo.json",
+];
 const FORBIDDEN_WEBSITE_COMMANDS: &[&str] = &["assura review --path"];
 
 #[derive(Deserialize)]
@@ -53,6 +60,7 @@ pub(crate) fn run(args: &[String]) -> Result<()> {
     let (onboarding_work, onboarding, onboarding_text) =
         prepare_onboarding_evidence(&root, &binary)?;
     validate_claims(&root, &binary, &claims_fixture, require_released)?;
+    validate_setup_delivery(&root, require_released)?;
     validate_website_commands(&root)?;
     validate_docs_config_examples(&root, &binary)?;
 
@@ -463,12 +471,12 @@ fn validate_homepage_policy_example(root: &Path, binary: &Path) -> Result<Value>
         ],
         "tree": [
             {"path": "project/", "depth": 0, "status": "context", "detail": "top-down policy"},
-            {"path": "AGENTS.md", "depth": 1, "status": "verified", "detail": "required file", "marker": "1"},
+            {"path": "AGENTS.md", "depth": 1, "status": "observed", "detail": "present in passing fixture", "marker": "1"},
             {"path": "packages/core/", "depth": 1, "status": "context", "detail": "workspace contract", "marker": "2"},
-            {"path": "AGENTS.md", "full_path": "packages/core/AGENTS.md", "depth": 2, "status": "verified", "detail": "required guidance", "marker": "1"},
-            {"path": "package.json", "full_path": "packages/core/package.json", "depth": 2, "status": "verified", "detail": "required manifest"},
+            {"path": "AGENTS.md", "full_path": "packages/core/AGENTS.md", "depth": 2, "status": "observed", "detail": "present in passing fixture", "marker": "1"},
+            {"path": "package.json", "full_path": "packages/core/package.json", "depth": 2, "status": "observed", "detail": "present in passing fixture"},
             {"path": "src/", "full_path": "packages/core/src/", "depth": 2, "status": "context", "detail": "recursive defaults"},
-            {"path": "user-menu.ts", "full_path": "packages/core/src/user-menu.ts", "depth": 3, "status": "verified", "detail": format!("{user_menu_lines} / {SOURCE_LINE_LIMIT} lines"), "marker": "3"},
+            {"path": "user-menu.ts", "full_path": "packages/core/src/user-menu.ts", "depth": 3, "status": "observed", "detail": format!("{user_menu_lines} / {SOURCE_LINE_LIMIT} lines in passing fixture"), "marker": "3"},
             {"path": "BadName.ts", "full_path": "packages/core/src/BadName.ts", "depth": 3, "status": "violation", "detail": "expected kebab-case", "message": naming_violation["message"], "marker": "3"},
             {"path": "checkout-flow.ts", "full_path": "packages/core/src/checkout-flow.ts", "depth": 3, "status": "violation", "detail": format!("{checkout_lines} / {SOURCE_LINE_LIMIT} lines"), "message": line_violation["message"], "marker": "3"}
         ],
@@ -817,6 +825,121 @@ fn validate_marketing_claim_release(
             claim.id, claim.first_release
         )
         .into());
+    }
+    Ok(())
+}
+
+fn validate_setup_delivery(root: &Path, require_released: bool) -> Result<()> {
+    let manifest: ReleaseSurfaceManifest =
+        serde_json::from_str(&fs::read_to_string(root.join(RELEASE_SURFACES_PATH))?)?;
+    let package_version = package_version(&root.join("Cargo.toml"))?;
+    let package_release = semver::Version::parse(&package_version)
+        .map_err(|_| format!("Cargo package version `{package_version}` is not valid SemVer"))?;
+    let needs_source_preview = manifest
+        .surfaces
+        .iter()
+        .filter(|surface| surface.marketing_claim)
+        .try_fold(false, |needs_source_preview, surface| {
+            if surface.first_release == "unreleased" {
+                return Ok::<bool, Box<dyn std::error::Error>>(true);
+            }
+            let first_release =
+                super::release_tag_version(&surface.first_release).ok_or_else(|| {
+                    format!(
+                        "marketing claim `{}` has invalid first_release `{}`",
+                        surface.id, surface.first_release
+                    )
+                })?;
+            Ok(needs_source_preview || first_release > package_release)
+        })?;
+    let source = fs::read_to_string(root.join(MARKETING_DATA_PATH))?;
+    validate_setup_delivery_source(&source, needs_source_preview, require_released)?;
+    if needs_source_preview && !require_released {
+        validate_pinned_artifact_provenance(root, source_preview_revision(&source)?)?;
+    }
+    println!("Validated marketing setup delivery boundary.");
+    Ok(())
+}
+
+fn source_preview_revision(source: &str) -> Result<&str> {
+    const REVISION_PREFIX: &str = "export const sourcePreviewRevision = '";
+    source
+        .split_once(REVISION_PREFIX)
+        .and_then(|(_, suffix)| suffix.split_once("';"))
+        .map(|(revision, _)| revision)
+        .ok_or_else(|| "marketing setup must declare a pinned sourcePreviewRevision".into())
+}
+
+fn validate_pinned_artifact_provenance(root: &Path, revision: &str) -> Result<()> {
+    run_status(
+        Command::new("git").current_dir(root).args([
+            "merge-base",
+            "--is-ancestor",
+            revision,
+            "HEAD",
+        ]),
+        "verify the marketing implementation revision is in repository history",
+    )?;
+
+    for path in PINNED_RENDERER_ARTIFACTS {
+        let pinned = Command::new("git")
+            .current_dir(root)
+            .args(["show", &format!("{revision}:{path}")])
+            .output()?;
+        if !pinned.status.success() {
+            return Err(format!(
+                "cannot read `{path}` from pinned revision `{revision}`; website validation requires full Git history"
+            )
+            .into());
+        }
+        if pinned.stdout != fs::read(root.join(path))? {
+            return Err(format!(
+                "renderer artifact `{path}` differs from pinned implementation revision `{revision}`"
+            )
+            .into());
+        }
+    }
+    Ok(())
+}
+
+fn validate_setup_delivery_source(
+    source: &str,
+    needs_source_preview: bool,
+    require_released: bool,
+) -> Result<()> {
+    const PINNED_INSTALL: &str = "cargo install --git ${sourceRepositoryUrl} --rev ${sourcePreviewRevision} --locked --bin assura assura";
+
+    if require_released && needs_source_preview {
+        return Err("released marketing cannot include capabilities newer than the package".into());
+    }
+
+    if needs_source_preview {
+        let revision = source_preview_revision(source)?;
+        if revision.len() != 40 || !revision.bytes().all(|byte| byte.is_ascii_hexdigit()) {
+            return Err(
+                "marketing sourcePreviewRevision must be a full 40-character Git SHA".into(),
+            );
+        }
+        if !source.contains(PINNED_INSTALL) || !source.contains("${installCommand}") {
+            return Err(
+                "marketing agent and manual setup must share the pinned source install command"
+                    .into(),
+            );
+        }
+        if source.contains("assura.dev/install.sh") {
+            return Err(
+                "marketing setup cannot use the public installer for unreleased capabilities"
+                    .into(),
+            );
+        }
+        return Ok(());
+    }
+
+    if source.contains("sourcePreviewRevision") || source.contains("cargo install --git") {
+        return Err("released marketing setup must not remain pinned to a source revision".into());
+    }
+    if !source.contains("assura.dev/install.sh") {
+        return Err("released marketing setup must use the public installer".into());
     }
     Ok(())
 }
@@ -1635,5 +1758,31 @@ mod tests {
         )
         .expect_err("future claim must fail strict release validation");
         assert!(future.to_string().contains("after local release"));
+    }
+
+    #[test]
+    fn unreleased_marketing_requires_one_shared_pinned_source_install() {
+        let source = r#"
+export const sourceRepositoryUrl = 'https://github.com/rothnic/assura';
+export const sourcePreviewRevision = 'b8f8375835095ce4f83b872c33b9d4e163ab283a';
+export const installCommand = `cargo install --git ${sourceRepositoryUrl} --rev ${sourcePreviewRevision} --locked --bin assura assura`;
+export const agentSetupPrompt = `${installCommand}`;
+"#;
+        validate_setup_delivery_source(source, true, false).expect("pinned source setup");
+
+        let public_installer = source.replace(
+            "export const sourceRepositoryUrl = 'https://github.com/rothnic/assura';",
+            "export const installScriptUrl = 'https://assura.dev/install.sh';",
+        );
+        assert!(validate_setup_delivery_source(&public_installer, true, false).is_err());
+    }
+
+    #[test]
+    fn released_marketing_rejects_source_preview_delivery() {
+        let pinned = "export const sourcePreviewRevision = 'b8f8375835095ce4f83b872c33b9d4e163ab283a';\nexport const installCommand = `cargo install --git repo --rev sha`;";
+        assert!(validate_setup_delivery_source(pinned, false, true).is_err());
+
+        let released = "export const installScriptUrl = 'https://assura.dev/install.sh';";
+        validate_setup_delivery_source(released, false, true).expect("public release installer");
     }
 }

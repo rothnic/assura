@@ -2,9 +2,11 @@
 interface Props {
   prompt: string;
   installCommand: string;
+  sourceRevision: string;
 }
 
-const { prompt, installCommand } = Astro.props;
+const { prompt, installCommand, sourceRevision } = Astro.props;
+const shortRevision = sourceRevision.slice(0, 7);
 ---
 
 <dialog id="agent-setup-dialog" class="setup-dialog" aria-labelledby="setup-dialog-title">
@@ -18,9 +20,14 @@ const { prompt, installCommand } = Astro.props;
     </header>
     <p class="dialog-copy">
       Give this prompt to the coding agent already working in your project. It
-      installs Assura, establishes a broad baseline, verifies the setup, and
-      leaves unresolved project decisions visible.
+      installs the matched Assura implementation, establishes a broad baseline,
+      verifies the setup, and leaves unresolved project decisions visible.
     </p>
+    <div class="setup-contract" aria-label={`Matched implementation revision ${shortRevision}`}>
+      <span>Matched implementation</span>
+      <code>{shortRevision}</code>
+      <p>The same revision generates the output shown across this preview.</p>
+    </div>
     <div class="dialog-command">
       <div>
         <span>Recommended</span>
@@ -32,13 +39,17 @@ const { prompt, installCommand } = Astro.props;
       </button>
     </div>
     <div class="install-row">
-      <span>Manual install</span>
-      <code id="install-command">{installCommand}</code>
+      <span>Pinned install</span>
+      <code
+        id="install-command"
+        tabindex="0"
+        aria-label="Pinned Assura install command"
+      >{installCommand}</code>
       <button class="copy-inline" type="button" data-copy-target="install-command" data-copied-label="Copied" data-analytics-event="install_command_copy">
         Copy
       </button>
     </div>
-    <span id="copy-status" class="sr-only" role="status" aria-live="polite"></span>
+    <p id="copy-status" class="copy-status" role="status" aria-live="polite"></p>
   </div>
 </dialog>
 
@@ -66,16 +77,21 @@ const { prompt, installCommand } = Astro.props;
       const value = target?.textContent?.trim();
       if (!value) return;
 
-      await navigator.clipboard.writeText(value);
+      const status = document.getElementById('copy-status');
       const originalLabel = button.getAttribute('data-original-label') || button.textContent || '';
       button.setAttribute('data-original-label', originalLabel);
-      button.textContent = button.getAttribute('data-copied-label') || 'Copied';
-      const status = document.getElementById('copy-status');
-      if (status) status.textContent = `${button.textContent}.`;
+      try {
+        await navigator.clipboard.writeText(value);
+        button.textContent = button.getAttribute('data-copied-label') || 'Copied';
+        if (status) status.textContent = `${button.textContent}.`;
+      } catch {
+        button.textContent = 'Copy failed';
+        if (status) status.textContent = 'Copy failed. Select the text and copy it manually.';
+      }
       window.setTimeout(() => {
         button.textContent = button.getAttribute('data-original-label') || originalLabel;
         if (status) status.textContent = '';
-      }, 1600);
+      }, 2400);
     });
   }
 </script>

@@ -2,7 +2,12 @@
 import AgentSetupDialog from './agent-setup-dialog.astro';
 import MarketingLayout from './marketing-layout.astro';
 import TerminalCard from './terminal-card.astro';
-import { agentSetupPrompt, installCommand, marketingNav } from '../../data/marketing';
+import {
+  agentSetupPrompt,
+  installCommand,
+  marketingNav,
+  sourcePreviewRevision,
+} from '../../data/marketing';
 
 interface Item {
   label: string;
@@ -115,5 +120,9 @@ const artifactLines = props.artifactLines.map((line) => {
       </nav>
     </section>
   </main>
-  <AgentSetupDialog prompt={agentSetupPrompt} installCommand={installCommand} />
+  <AgentSetupDialog
+    prompt={agentSetupPrompt}
+    installCommand={installCommand}
+    sourceRevision={sourcePreviewRevision}
+  />
 </MarketingLayout>

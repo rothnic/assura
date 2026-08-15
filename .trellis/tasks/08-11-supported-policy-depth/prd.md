@@ -28,17 +28,17 @@ future intelligence to roadmap surfaces.
 
 ## Acceptance Criteria
 
-- [ ] Home, Project Review, Agent Onboarding, Agent Guardrails, Repository
+- [x] Home, Project Review, Agent Onboarding, Agent Guardrails, Repository
   Validation, Project Intelligence, Performance, and LS-Lint Comparison have
   zero unsupported capability claims.
-- [ ] Markdown/local-link, reference, severity/suppression, agent guidance, and
+- [x] Markdown/local-link, reference, severity/suppression, agent guidance, and
   computed deterministic claims each have behavioral proof where promoted.
-- [ ] Core pages do not label a marketed capability experimental or planned.
-- [ ] Future capabilities are discoverable on roadmap pages without reading as current.
-- [ ] Website examples remain generated from executable fixtures.
-- [ ] Hero and focused-page output lines are selected from the exact supported
+- [x] Core pages do not label a marketed capability experimental or planned.
+- [x] Future capabilities are discoverable on roadmap pages without reading as current.
+- [x] Website examples remain generated from executable fixtures.
+- [x] Hero and focused-page output lines are selected from the exact supported
   renderer output; fixture-backed policy-tree values match the files checked.
-- [ ] Stale generated examples fail the build, and light/dark screenshots pass
+- [x] Stale generated examples fail the build, and light/dark screenshots pass
   wrap and horizontal-overflow checks at 360, 390, 430, 768, 1024, and 1440 px.
 
 ## Validation

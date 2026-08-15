@@ -41,10 +41,10 @@
     },
     {
       "depth": 1,
-      "detail": "required file",
+      "detail": "present in passing fixture",
       "marker": "1",
       "path": "AGENTS.md",
-      "status": "verified"
+      "status": "observed"
     },
     {
       "depth": 1,
@@ -55,18 +55,18 @@
     },
     {
       "depth": 2,
-      "detail": "required guidance",
+      "detail": "present in passing fixture",
       "full_path": "packages/core/AGENTS.md",
       "marker": "1",
       "path": "AGENTS.md",
-      "status": "verified"
+      "status": "observed"
     },
     {
       "depth": 2,
-      "detail": "required manifest",
+      "detail": "present in passing fixture",
       "full_path": "packages/core/package.json",
       "path": "package.json",
-      "status": "verified"
+      "status": "observed"
     },
     {
       "depth": 2,
@@ -77,11 +77,11 @@
     },
     {
       "depth": 3,
-      "detail": "184 / 500 lines",
+      "detail": "184 / 500 lines in passing fixture",
       "full_path": "packages/core/src/user-menu.ts",
       "marker": "3",
       "path": "user-menu.ts",
-      "status": "verified"
+      "status": "observed"
     },
     {
       "depth": 3,

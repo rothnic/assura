@@ -1,6 +1,11 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { readFileSync } from 'node:fs';
+import {
+  agentSetupPrompt,
+  installCommand,
+  sourcePreviewRevision,
+} from '../data/marketing';
 
 const assuraPolicyFixture = readFileSync(
   new URL('../data/config-examples/agentic-monorepo.yml', import.meta.url),
@@ -118,6 +123,64 @@ test('agent setup dialog is keyboard dismissible and restores focus', async ({ p
   await expect(trigger).toBeFocused();
 });
 
+for (const colorScheme of themes) {
+  for (const width of [320, 360, 390]) {
+    test(
+      `${colorScheme} setup at ${width}px installs the exact displayed implementation`,
+      async ({ page }, testInfo) => {
+        await page.emulateMedia({ colorScheme });
+        await page.setViewportSize({ width, height: width < 390 ? 640 : 844 });
+        await page.goto('/');
+        await page.getByRole('link', { name: /with your agent/ }).first().click();
+
+        const dialog = page.getByRole('dialog', { name: 'Start with one agent instruction.' });
+        await expect(
+          dialog.getByLabel(
+            `Matched implementation revision ${sourcePreviewRevision.slice(0, 7)}`,
+          ),
+        ).toBeVisible();
+        await expect(dialog.locator('#install-command')).toHaveText(installCommand);
+        await expect(dialog.locator('#agent-prompt')).toHaveText(agentSetupPrompt);
+        await expect(dialog.locator('#agent-prompt')).toContainText(sourcePreviewRevision);
+        await expect(dialog).not.toContainText('assura.dev/install.sh');
+        expect(await dialog.evaluate((element) => element.scrollWidth - element.clientWidth)).toBe(0);
+        expect(
+          await dialog.locator('#install-command').evaluate(
+            (element) => element.scrollWidth - element.clientWidth,
+          ),
+        ).toBe(0);
+        for (const control of [
+          dialog.getByRole('button', { name: 'Close setup dialog' }),
+          dialog.getByRole('button', { name: 'Copy agent prompt' }),
+          dialog.getByRole('button', { name: 'Copy', exact: true }),
+        ]) {
+          const box = await control.boundingBox();
+          expect(box?.height).toBeGreaterThanOrEqual(44);
+        }
+        await dialog.screenshot({
+          path: testInfo.outputPath(`setup-dialog-${colorScheme}-${width}.png`),
+        });
+      },
+    );
+  }
+}
+
+test('setup reports clipboard failures without hiding the fallback', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: () => Promise.reject(new Error('clipboard unavailable')) },
+    });
+  });
+  await page.goto('/');
+  await page.getByRole('link', { name: /with your agent/ }).first().click();
+  const dialog = page.getByRole('dialog', { name: 'Start with one agent instruction.' });
+  await dialog.getByRole('button', { name: 'Copy agent prompt' }).click();
+  await expect(dialog.getByRole('status')).toHaveText(
+    'Copy failed. Select the text and copy it manually.',
+  );
+});
+
 test('short mobile view keeps the project review visible', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 640 });
   await page.goto('/');
@@ -143,7 +206,7 @@ test('example output CTA connects project policy to pass and fail paths', async 
   await page.goto('/');
   await page.getByRole('link', { name: 'See how rules apply' }).click();
   await expect(page.getByRole('heading', { name: '.assura/config.yml' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Config and check result' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Policy, paths, and violations' })).toBeVisible();
   await expect(page.locator('.config-line').filter({ hasText: 'agent-doc:' })).toBeVisible();
   await expect(page.locator('.config-line').filter({ hasText: './**/:' })).toBeVisible();
   await expect(page.locator('.config-line').filter({ hasText: '.ts: kebab-case | max_lines:500' })).toBeVisible();
@@ -151,7 +214,7 @@ test('example output CTA connects project policy to pass and fail paths', async 
   const configMarkers = await page.locator('.policy-panel .rule-marker').allTextContents();
   const treeMarkers = await page.locator('.tree-panel .rule-marker').allTextContents();
   expect(new Set(configMarkers)).toEqual(new Set(treeMarkers));
-  await expect(page.getByLabel('Check passed').first()).toBeVisible();
+  await expect(page.getByLabel('Observed fixture path').first()).toBeVisible();
   await expect(page.getByLabel('Check violation').first()).toBeVisible();
 });
 
@@ -209,8 +272,8 @@ test('policy tree paths, states, and measured values come from the executable fi
   })));
   expect(rows).toContainEqual({
     path: 'packages/core/src/user-menu.ts',
-    status: 'verified',
-    detail: '184 / 500 lines',
+    status: 'observed',
+    detail: '184 / 500 lines in passing fixture',
   });
   expect(rows).toContainEqual({
     path: 'packages/core/src/checkout-flow.ts',
@@ -624,6 +687,7 @@ test('setup actions retain a no-JavaScript onboarding destination', async ({ pag
 
 test('landing and setup dialog pass automated accessibility checks', async ({ page }) => {
   await page.goto('/');
+  await page.waitForLoadState('networkidle');
   const landing = await new AxeBuilder({ page }).analyze();
   expect(landing.violations).toEqual([]);
 
