@@ -63,6 +63,9 @@ const performanceReport = JSON.parse(
     fixture_cohort: string;
     row_family: string;
     median_runtime_ms: number;
+    checked_file_count: number;
+    directory_count: number;
+    rule_count: number;
     native_ls_lint_parity: boolean;
     shared_config_id: string;
     status: string;
@@ -70,6 +73,7 @@ const performanceReport = JSON.parse(
 };
 
 const formatMeasuredMs = (value: number) => `${value.toFixed(value >= 10 ? 1 : 2)} ms`;
+const formatCount = (value: number) => value.toLocaleString('en-US');
 
 const widths = [360, 390, 430, 768, 1024, 1440];
 const themes = ['light', 'dark'] as const;
@@ -201,6 +205,36 @@ test('homepage output is an exact selection of the supported review renderer', a
   )).toEqual(reviewDemo.hero_lines.map((line) => line.tone));
 });
 
+test('terminal output uses ANSI-like text emphasis without per-line panels', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await page.goto('/');
+  const lines = page.locator('[data-terminal-variant="review"] [data-terminal-line]');
+  await expect(lines.first()).toBeVisible();
+  const styles = await lines.evaluateAll((items) => items.map((item) => {
+    const style = getComputedStyle(item);
+    return {
+      background: style.backgroundColor,
+      boxShadow: style.boxShadow,
+      paddingLeft: Number.parseFloat(style.paddingLeft),
+      color: style.color,
+    };
+  }));
+
+  expect(styles.every((style) => style.background === 'rgba(0, 0, 0, 0)')).toBe(true);
+  expect(styles.every((style) => style.boxShadow === 'none')).toBe(true);
+  expect(Math.max(...styles.map((style) => style.paddingLeft))).toBeLessThanOrEqual(1);
+  expect(styles.at(-1)?.color).not.toBe(styles[1]?.color);
+
+  await page.goto('/project-review/');
+  const infoColor = await page.locator('.terminal-line.info').first().evaluate(
+    (item) => getComputedStyle(item).color,
+  );
+  const plainColor = await page.locator('.terminal-line.plain').first().evaluate(
+    (item) => getComputedStyle(item).color,
+  );
+  expect(infoColor).toBe(plainColor);
+});
+
 test('example output CTA connects project policy to pass and fail paths', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
@@ -280,6 +314,37 @@ test('policy tree paths, states, and measured values come from the executable fi
     status: 'violation',
     detail: '537 / 500 lines',
   });
+});
+
+test('policy tree keeps file paths readable before mobile details wrap', async ({ page }) => {
+  for (const width of [320, 360, 390]) {
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto('/#review-output');
+    const row = page.locator('[data-policy-path="packages/core/src/user-menu.ts"]');
+    const layout = await row.evaluate((item) => {
+      const path = item.querySelector('code')!;
+      const detail = item.querySelector('small')!;
+      const pathRect = path.getBoundingClientRect();
+      const detailRect = detail.getBoundingClientRect();
+      const style = getComputedStyle(path);
+      const fontSize = Number.parseFloat(style.fontSize);
+      const lineHeight = Number.parseFloat(style.lineHeight);
+      return {
+        path: path.textContent,
+        whiteSpace: style.whiteSpace,
+        pathHeight: Math.round(pathRect.height),
+        lineHeight: Number.isFinite(lineHeight) ? lineHeight : fontSize * 1.4,
+        detailTop: Math.round(detailRect.top),
+        pathBottom: Math.round(pathRect.bottom),
+      };
+    });
+
+    expect(layout.path).toBe('user-menu.ts');
+    expect(layout.whiteSpace).toBe('nowrap');
+    expect(layout.pathHeight).toBeLessThanOrEqual(Math.ceil(layout.lineHeight * 1.25));
+    expect(layout.detailTop).toBeGreaterThanOrEqual(layout.pathBottom);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
+  }
 });
 
 const rendererPages = [
@@ -364,6 +429,32 @@ test('performance CTA lands on the measured project cohort', async ({ page }) =>
   await expect(page.locator('.benchmark-matrix-row').filter({ hasText: 'Multipart extension scale' })).toContainText('1,501 checked');
   await expect(page.locator('.benchmark-matrix-row').filter({ hasText: 'Configured scope scale' })).toContainText('801 rules');
   await expect(page.getByText('Download current JSON')).toHaveCount(0);
+});
+
+test('performance ranges use labeled report-derived minimum and maximum values', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/performance/#regression-cases');
+  const displayedFixtureIds = new Set(
+    await page.locator('.benchmark-matrix-row:not(.benchmark-matrix-head)').evaluateAll((rows) =>
+      rows.map((row) => (row as HTMLElement).dataset.fixtureId),
+    ),
+  );
+  const coldRows = performanceReport.results.filter(
+    (result) => result.status === 'pass'
+      && result.row_family === 'assura-cli'
+      && displayedFixtureIds.has(result.fixture_id),
+  );
+  const expectedRange = (field: 'checked_file_count' | 'directory_count' | 'rule_count') => {
+    const values = coldRows.map((row) => row[field]);
+    return `${formatCount(Math.min(...values))} to ${formatCount(Math.max(...values))}`;
+  };
+
+  const range = page.locator('.benchmark-range');
+  await expect(range.locator('[data-range="files"]')).toContainText('Checked files');
+  await expect(range.locator('[data-range="files"] strong')).toHaveText(expectedRange('checked_file_count'));
+  await expect(range.locator('[data-range="directories"] strong')).toHaveText(expectedRange('directory_count'));
+  await expect(range.locator('[data-range="rules"] strong')).toHaveText(expectedRange('rule_count'));
+  expect(await range.innerText()).not.toMatch(/\d-\d/);
 });
 
 test('footer groups product, resources, and creator links on mobile', async ({ page }) => {

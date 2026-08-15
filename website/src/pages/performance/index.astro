@@ -211,6 +211,21 @@ function formatMs(value?: number | null): string {
 function formatCount(value?: number): string {
   return (value ?? 0).toLocaleString('en-US');
 }
+
+function countRange(values: Array<number | undefined>): { min: string; max: string } {
+  const measured = values.filter((value): value is number => typeof value === 'number');
+  if (measured.length === 0) {
+    throw new Error('Performance range cannot be rendered without measured evidence.');
+  }
+  return {
+    min: formatCount(Math.min(...measured)),
+    max: formatCount(Math.max(...measured)),
+  };
+}
+
+const fileRange = countRange(cards.map((card) => card.cold?.checked_file_count));
+const directoryRange = countRange(cards.map((card) => card.cold?.directory_count));
+const ruleRange = countRange(cards.map((card) => card.cold?.rule_count));
 ---
 
 <MarketingLayout
@@ -337,10 +352,26 @@ function formatCount(value?: number): string {
       </div>
 
       <div class="benchmark-range" aria-label="Regression suite range">
-        <span><b>5-1,501</b> files per fixture</span>
-        <span><b>2-801</b> directories</span>
-        <span><b>1-801</b> effective rules</span>
-        <span><b>{iterations}</b> timed samples</span>
+        <div data-range="files">
+          <span>Checked files</span>
+          <strong>{fileRange.min} <em>to</em> {fileRange.max}</strong>
+          <small>per fixture</small>
+        </div>
+        <div data-range="directories">
+          <span>Directories</span>
+          <strong>{directoryRange.min} <em>to</em> {directoryRange.max}</strong>
+          <small>per fixture</small>
+        </div>
+        <div data-range="rules">
+          <span>Effective rules</span>
+          <strong>{ruleRange.min} <em>to</em> {ruleRange.max}</strong>
+          <small>per fixture</small>
+        </div>
+        <div data-range="samples">
+          <span>Timed samples</span>
+          <strong>{iterations}</strong>
+          <small>per case</small>
+        </div>
       </div>
 
       <div class="benchmark-cohort-head" id="benchmark-projects">

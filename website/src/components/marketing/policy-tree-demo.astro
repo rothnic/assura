@@ -82,7 +82,7 @@ const treeRows = policyDemo.tree.map((row) => ({
         >
           <div class:list={['tree-row', row.status === 'context' ? 'neutral' : row.status === 'observed' ? 'observed' : 'fail']} title={'message' in row ? row.message : undefined}>
             <span class="tree-status" aria-label={statusLabel[row.status]}>{statusSymbol[row.status]}</span>
-            <code>{row.path}</code>
+            <code title={'full_path' in row ? row.full_path : row.path}>{row.path}</code>
             <small>{'marker' in row && row.marker && <i class="rule-marker">{row.marker}</i>}{row.detail}</small>
           </div>
         </li>
