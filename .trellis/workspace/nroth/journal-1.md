@@ -347,3 +347,37 @@ Added native performance regression metadata and gates, refreshed checked perfor
 ### Next Steps
 
 - None - task complete
+
+
+## Session 11: Align supported product and marketing experience
+
+**Date**: 2026-08-14
+**Task**: Align supported product and marketing experience
+**Branch**: `codex/assura-landing-experience`
+
+### Summary
+
+Aligned generated landing and docs examples with supported CLI renderers, pinned preview setup to the exact implementation revision, and added provenance, responsive, accessibility, and release delivery gates.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `b8f8375` | (see git log) |
+| `6d4e270` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
