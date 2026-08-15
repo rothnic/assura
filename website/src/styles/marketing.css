@@ -1068,6 +1068,52 @@
     font-weight: 700;
   }
 
+  .review-terminal[data-terminal-variant="review"] .terminal-line {
+    color: color-mix(in srgb, var(--terminal-text) 88%, transparent);
+    font-weight: 450;
+  }
+
+  .terminal-token-label {
+    color: color-mix(in srgb, var(--terminal-primary) 72%, var(--terminal-muted));
+    font-weight: 650;
+  }
+
+  .terminal-token-title {
+    color: var(--terminal-primary);
+    font-weight: 760;
+  }
+
+  .terminal-token-metric-key {
+    color: color-mix(in srgb, var(--terminal-muted) 88%, transparent);
+    font-weight: 450;
+  }
+
+  .terminal-token-metric-value {
+    color: var(--terminal-text);
+    font-weight: 760;
+  }
+
+  .terminal-token-metric-value.is-danger,
+  .terminal-token-status.is-danger {
+    color: var(--terminal-danger);
+  }
+
+  .terminal-token-metric-value.is-warning,
+  .terminal-token-status.is-warning {
+    color: var(--terminal-warning);
+  }
+
+  .terminal-token-status:not(.is-danger, .is-warning),
+  .terminal-token-command {
+    color: var(--terminal-primary);
+    font-weight: 760;
+  }
+
+  .terminal-token-path {
+    color: var(--terminal-info);
+    font-weight: 650;
+  }
+
   .section {
     padding: clamp(3.25rem, 7vw, 5.7rem) 0;
   }

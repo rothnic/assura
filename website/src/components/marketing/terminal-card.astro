@@ -4,6 +4,22 @@ interface TerminalLine {
   tone?: 'prompt' | 'plain' | 'muted' | 'info' | 'warn' | 'pass' | 'fail';
 }
 
+type TerminalSegmentKind =
+  | 'command'
+  | 'label'
+  | 'metric-key'
+  | 'metric-value'
+  | 'path'
+  | 'status'
+  | 'text'
+  | 'title';
+
+interface TerminalSegment {
+  text: string;
+  kind: TerminalSegmentKind;
+  emphasis?: 'danger' | 'warning';
+}
+
 interface Props {
   title: string;
   lines: TerminalLine[];
@@ -12,6 +28,87 @@ interface Props {
 }
 
 const { title, lines, className = '', variant = 'neutral' } = Astro.props;
+
+const reviewLabelWidth = 10;
+const dangerMetrics = new Set(['blocking', 'violations', 'v']);
+const worktreeChangeMetrics = new Set([
+  'conflicts',
+  'deleted',
+  'modified',
+  'staged',
+  'unstaged',
+  'untracked',
+]);
+function metricEmphasis(label: string, key: string, value: string): TerminalSegment['emphasis'] {
+  const ratio = value.match(/^(\d+)\/(\d+)$/);
+  if (ratio && Number(ratio[2]) > 0 && Number(ratio[1]) >= Number(ratio[2])) return 'danger';
+
+  const numericValue = Number(value.replace(/^[+!-]/, '').split(/[+/,]/)[0]);
+  if (!Number.isFinite(numericValue) || numericValue === 0) return undefined;
+  if (dangerMetrics.has(key)) return 'danger';
+  if (label === 'Findings' && key === 'fix') return 'danger';
+  if (label === 'Findings' && ['config', 'inspect'].includes(key)) return 'warning';
+  if (label === 'Branch' && ['files', 'commits'].includes(key)) return 'warning';
+  if (label === 'Worktree' && worktreeChangeMetrics.has(key)) return 'warning';
+  if (label === 'Hot dirs' && key === 'files') return 'warning';
+  return undefined;
+}
+
+function tokenizeBody(body: string, label: string): TerminalSegment[] {
+  if (label === 'Run') return [{ text: body, kind: 'command' }];
+  if (label === 'Fix now') return [{ text: body, kind: 'status', emphasis: 'danger' }];
+  if (label === 'Configure' || label === 'Inspect') {
+    return [{ text: body, kind: 'status', emphasis: 'warning' }];
+  }
+
+  return (body.match(/\s+|[^\s]+/g) ?? []).flatMap((token, index) => {
+    if (/^\s+$/.test(token)) return [{ text: token, kind: 'text' as const }];
+
+    const separator = token.indexOf('=');
+    if (separator > 0) {
+      const key = token.slice(0, separator);
+      const value = token.slice(separator + 1);
+      return [
+        { text: `${key}=`, kind: 'metric-key' as const },
+        { text: value, kind: 'metric-value' as const, emphasis: metricEmphasis(label, key, value) },
+      ];
+    }
+
+    if (['attention', 'needs-review'].includes(token)) {
+      return [{ text: token, kind: 'status', emphasis: 'warning' }];
+    }
+    if (token === 'fail') return [{ text: token, kind: 'status', emphasis: 'danger' }];
+    if (token === 'pass' || token === 'clear') return [{ text: token, kind: 'status' }];
+    if (label === 'Branch' && index === 0) return [{ text: token, kind: 'path' }];
+    if (label === 'Hot dirs' && !['|-', '`-'].includes(token)) return [{ text: token, kind: 'path' }];
+    return [{ text: token, kind: 'text' }];
+  });
+}
+
+function reviewSegments(text: string): TerminalSegment[] {
+  if (/^\s/.test(text)) return tokenizeBody(text, '');
+
+  if (text.startsWith('Assura review  ')) {
+    return [
+      { text: 'Assura review', kind: 'title' },
+      { text: '  ', kind: 'text' },
+      ...tokenizeBody(text.slice('Assura review  '.length), 'Assura review'),
+    ];
+  }
+
+  const label = text.slice(0, reviewLabelWidth).trimEnd();
+  if (!label || text[reviewLabelWidth] !== ' ') return [{ text, kind: 'text' }];
+  return [
+    { text: label, kind: 'label' },
+    { text: text.slice(label.length, reviewLabelWidth + 1), kind: 'text' },
+    ...tokenizeBody(text.slice(reviewLabelWidth + 1), label),
+  ];
+}
+
+const renderedLines = lines.map((line) => ({
+  ...line,
+  segments: variant === 'review' ? reviewSegments(line.text) : [{ text: line.text, kind: 'text' as const }],
+}));
 ---
 
 <div
@@ -25,7 +122,14 @@ const { title, lines, className = '', variant = 'neutral' } = Astro.props;
     <span aria-hidden="true"></span>
     <strong>{title}</strong>
   </div>
-  <pre><code>{lines.map((line) => (
-    <span class:list={['terminal-line', line.tone ?? 'plain']} data-terminal-line>{line.text}</span>
+  <pre><code>{renderedLines.map((line) => (
+    <span class:list={['terminal-line', line.tone ?? 'plain']} data-terminal-line>{line.segments.map((segment) => (
+      <span
+        class:list={['terminal-token', `terminal-token-${segment.kind}`, segment.emphasis && `is-${segment.emphasis}`]}
+        data-terminal-label={segment.kind === 'label' || segment.kind === 'title' ? true : undefined}
+        data-terminal-metric-key={segment.kind === 'metric-key' ? true : undefined}
+        data-terminal-metric-value={segment.kind === 'metric-value' ? segment.emphasis ?? 'default' : undefined}
+      >{segment.text}</span>
+    ))}</span>
   ))}</code></pre>
 </div>

@@ -223,7 +223,13 @@ test('terminal output uses ANSI-like text emphasis without per-line panels', asy
   expect(styles.every((style) => style.background === 'rgba(0, 0, 0, 0)')).toBe(true);
   expect(styles.every((style) => style.boxShadow === 'none')).toBe(true);
   expect(Math.max(...styles.map((style) => style.paddingLeft))).toBeLessThanOrEqual(1);
-  expect(styles.at(-1)?.color).not.toBe(styles[1]?.color);
+  const failureColor = await page.locator('.terminal-token-status.is-danger').first().evaluate(
+    (item) => getComputedStyle(item).color,
+  );
+  const commandColor = await page.locator('.terminal-token-command').first().evaluate(
+    (item) => getComputedStyle(item).color,
+  );
+  expect(failureColor).not.toBe(commandColor);
 
   await page.goto('/project-review/');
   const infoColor = await page.locator('.terminal-line.info').first().evaluate(
@@ -233,6 +239,34 @@ test('terminal output uses ANSI-like text emphasis without per-line panels', asy
     (item) => getComputedStyle(item).color,
   );
   expect(infoColor).toBe(plainColor);
+});
+
+test('review output separates row labels, metric names, and summarized values', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await page.goto('/');
+
+  const terminal = page.locator('[data-terminal-variant="review"]').first();
+  const thresholds = terminal.locator('[data-terminal-line]').filter({ hasText: /^Thresholds/ });
+  const rowLabel = thresholds.locator('[data-terminal-label]');
+  const metricKey = thresholds.locator('[data-terminal-metric-key]').first();
+  const metricValue = thresholds.locator('[data-terminal-metric-value]').first();
+
+  await expect(rowLabel).toHaveText('Thresholds');
+  await expect(metricKey).toHaveText('blocking=');
+  await expect(metricValue).toHaveText('1/1');
+
+  const hierarchy = await Promise.all([rowLabel, metricKey, metricValue].map((item) =>
+    item.evaluate((element) => {
+      const style = getComputedStyle(element);
+      return { color: style.color, weight: Number.parseInt(style.fontWeight, 10) };
+    }),
+  ));
+  expect(new Set(hierarchy.map((item) => item.color)).size).toBe(3);
+  expect(hierarchy[2].weight).toBeGreaterThan(hierarchy[1].weight);
+
+  const crossedThreshold = thresholds.locator('[data-terminal-metric-value="danger"]');
+  await expect(crossedThreshold).toHaveCount(1);
+  await expect(crossedThreshold).toHaveText('1/1');
 });
 
 test('example output CTA connects project policy to pass and fail paths', async ({ page }) => {
