@@ -7,10 +7,11 @@ ASSURA_INSTALL=${installScriptUrl}
 curl -fsSL "$ASSURA_INSTALL" | sh
 
 Then run:
-assura agent onboard . --agent auto --format json
+identify the active host as codex, claude, opencode, or pi; do not guess if the evidence is ambiguous
+assura agent onboard . --agent codex --activate --format json
 assura check --format json .
 
-Read .assura/onboarding/agent-next.md, summarize what is active, what is inactive, and what questions need human answers before adding project-specific rules.`;
+If the active host is not Codex, replace codex with the detected host before running the command. Read .assura/onboarding/agent-next.md, summarize what is active, what is inactive, and what questions need human answers before adding project-specific rules.`;
 
 export const marketingNav = [
   { label: 'Review', href: '/project-review/' },

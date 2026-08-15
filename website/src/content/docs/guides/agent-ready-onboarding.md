@@ -47,17 +47,19 @@ not treat any remote bootstrap command as a current quickstart command.
 assura agent onboard . --agent auto --format json
 ```
 
-Use a concrete host-agent label only when you want Assura to generate a
-reviewable local integration bundle:
+Use a concrete host-agent label plus `--activate` when you want Assura to
+generate the reviewable bundle and explicitly activate its project-local host
+integration:
 
 ```bash
-assura agent onboard . --agent codex --format json
+assura agent onboard . --agent codex --activate --format json
 assura agent integration doctor codex .
 ```
 
-The bundle lives under `.assura/integrations/<agent>/`. Assura leaves host
-configuration as manual opt-in so the generated files can be reviewed and
-removed.
+The bundle lives under `.assura/integrations/<agent>/`. Explicit activation
+patches only Assura-owned project-local host entries, verifies the result, and
+preserves unmanaged configuration. Use `assura agent integration deactivate`
+to remove the host entries while retaining the bundle.
 
 ## Agent Prompt
 
@@ -287,8 +289,8 @@ After the user answers the generated questions:
    strictness rules.
 2. Activate `agent-project` or `document-project` when the user wants modeled
    facts.
-3. Add host-agent integration bundles only for supported adapters the user
-   wants to wire manually.
+3. Activate a supported project-local host integration only when the user wants
+   Assura feedback in that harness.
 4. Rerun:
 
    ```bash

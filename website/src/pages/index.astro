@@ -8,6 +8,8 @@ import PerformanceProof from '../components/marketing/performance-proof.astro';
 import PolicyTreeDemo from '../components/marketing/policy-tree-demo.astro';
 import SectionHeading from '../components/marketing/section-heading.astro';
 import TerminalCard from '../components/marketing/terminal-card.astro';
+import { agentSetupPrompt, installCommand } from '../data/marketing';
+import onboardingDemo from '../data/onboarding-demo.json';
 import reviewDemo from '../data/review-demo.json';
 
 const pageTitle = 'Assura | Catch project drift before review';
@@ -28,21 +30,6 @@ const structuredData = {
   author: { '@type': 'Person', name: 'Nick Roth', url: 'https://www.nickroth.com/' },
   offers: { '@type': 'Offer', price: 0, priceCurrency: 'USD' },
 };
-
-const installScriptUrl = 'https://assura.dev/install.sh';
-const installCommand = `curl -fsSL ${installScriptUrl} | sh`;
-
-const agentSetupPrompt = `Install Assura in this repository and set it up for agent-ready checks.
-If assura is not installed, run:
-ASSURA_INSTALL=${installScriptUrl}
-curl -fsSL "$ASSURA_INSTALL" | sh
-
-Then run:
-assura init . --recipe agentic-core --recipe structure-health --no-git-hooks
-assura agent onboard . --agent auto --format json
-assura check --format json .
-
-Read .assura/onboarding/agent-next.md, summarize what is active, what is inactive, and what questions need human answers before adding project-specific rules.`;
 
 const navItems = [
   { label: 'How it works', href: '#review-output' },
@@ -74,10 +61,8 @@ const earlyWorkflow = [
   'Review stays focused',
 ];
 
-type TerminalTone = 'prompt' | 'plain' | 'muted' | 'info' | 'warn' | 'pass';
-const reviewLines = reviewDemo.display_lines as Array<{ text: string; tone: TerminalTone }>;
-
-const heroReviewLines = reviewLines.filter((_, index) => ![2, 3].includes(index));
+type TerminalTone = 'prompt' | 'plain' | 'muted' | 'info' | 'warn' | 'pass' | 'fail';
+const heroReviewLines = reviewDemo.hero_lines as Array<{ text: string; tone: TerminalTone }>;
 
 const problemSignals = [
   {
@@ -180,7 +165,11 @@ const performanceLayers = [
   structuredData={structuredData}
 >
   <main id="main-content">
-      <section class="hero" aria-labelledby="hero-title">
+      <section
+        class="hero"
+        aria-labelledby="hero-title"
+        data-release-surface="compact-review explicit-review-base"
+      >
         <div class="hero-grid" aria-hidden="true"></div>
         <div class="hero-content">
           <div class="hero-copy-block">
@@ -211,7 +200,7 @@ const performanceLayers = [
           </div>
 
           <div class="hero-visual" aria-label="Generated Assura project review">
-            <TerminalCard title="example output" lines={heroReviewLines} />
+            <TerminalCard title={reviewDemo.command} lines={heroReviewLines} variant="review" />
           </div>
         </div>
       </section>
@@ -263,7 +252,12 @@ const performanceLayers = [
 
       <CommandJourney />
 
-      <section id="review-output" class="section review-section" aria-labelledby="review-title">
+      <section
+        id="review-output"
+        class="section review-section"
+        aria-labelledby="review-title"
+        data-release-surface="structure-validation-cli configured-policy-gate markdown-common-lints markdown-local-link-checks markdown-rule-severity-suppression repository-reference-checks agent-guidance-contracts"
+      >
         <SectionHeading
           eyebrow="Config to feedback"
           title="Define the project once. Make every path checkable."
@@ -338,7 +332,7 @@ const performanceLayers = [
       <section
         class="section lifecycle-section"
         aria-labelledby="lifecycle-title"
-        data-release-surface="continuous-watch"
+        data-release-surface="continuous-watch agent-daemon-nudges configured-policy-gate"
       >
         <div class="section-head compact">
           <p class="eyebrow">Watch, warn, gate</p>
@@ -365,7 +359,7 @@ const performanceLayers = [
         id="onboard"
         class="section onboarding-section"
         aria-labelledby="onboard-title"
-        data-release-surface="agent-onboarding"
+        data-release-surface="agent-onboarding agent-integration-lifecycle agent-guidance-contracts"
       >
         <div class="section-head split">
           <div>
@@ -380,7 +374,7 @@ const performanceLayers = [
         </div>
         <div class="onboarding-layout">
           <div class="command-panel">
-            <code>$ assura agent onboard . --agent auto --format json</code>
+            <code>$ {onboardingDemo.command}</code>
             <p>
               Detect the project, materialize compatible rules into project-owned
               configuration, run local verification, and leave conflicts or
@@ -404,7 +398,11 @@ const performanceLayers = [
         </div>
       </section>
 
-      <section class="section performance-section" aria-labelledby="performance-title">
+      <section
+        class="section performance-section"
+        aria-labelledby="performance-title"
+        data-release-surface="cold-ls-lint-comparison warm-session-performance"
+      >
         <div class="section-head">
           <p class="eyebrow">Fast enough for the loop</p>
           <h2 id="performance-title">Cheap signals early. Deeper checks near gates.</h2>

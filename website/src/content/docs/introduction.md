@@ -6,16 +6,17 @@ sidebar:
   order: 1
 ---
 
-Assura is a pre-1.0 structure validation CLI written in Rust. It checks that a
-repository matches the shape described in `.assura/config.yml`.
+Assura is a pre-1.0 local project validation CLI written in Rust. It turns the
+project shape described in `.assura/config.yml` into fast deterministic checks,
+an advisory branch review, and bounded feedback for coding agents.
 
 - **Structure-First Config**: Describe allowed files, directories, naming
   rules, and existence checks in one config.
 - **LS-Lint Migration**: Convert LS-Lint 2.3 naming, regex, exists, ignore,
   wildcard extension, and directory-scope rules into Assura config.
 - **CI-Friendly Reports**: Use text locally and JSON or YAML for automation.
-- **Guided Feedback**: Use `assura check --format advice` or `--format status`
-  for concise repair guidance.
+- **Agent-Ready Feedback**: Use Review while work is changing, Check as the
+  configured gate, and managed project-local integrations for supported hosts.
 
 ## Quick Start
 
@@ -29,16 +30,18 @@ assura check
 
 ## Current Scope
 
-Assura currently focuses on truthful CLI validation, structure-first project
-shape checks, LS-Lint migration, and reproducible benchmark evidence.
+The current source and next-release contract covers deterministic structure,
+Markdown, references, severity, suppressions, and agent-guidance checks. Review
+summarizes branch and worktree pressure without replacing the authoritative
+Check gate.
 
-> **Agent feedback MVP**
+> **Agent workflow**
 >
-> `assura check` can render guided advice, one-line status output, and stable
-> agent feedback JSON. Codex `UserPromptSubmit` hooks can use
-> `assura check --format agent --agent codex` when users wire that command into
-> Codex manually. Automatic Codex hook installation, daemon/editor support, and
-> complete agent orchestration remain future work.
+> `assura agent onboard . --agent codex --activate --format json` creates the
+> project-owned baseline and explicitly activates the managed Codex integration.
+> OpenCode, Claude, and Pi use the same lifecycle. Full autonomous orchestration,
+> remote execution, and inference-based validation remain outside the local
+> deterministic contract.
 
 ## Help
 

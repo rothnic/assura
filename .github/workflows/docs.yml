@@ -82,6 +82,9 @@ jobs:
       run: pnpm exec playwright install --with-deps chromium
     - name: Verify generated marketing evidence and build
       run: cargo xtask docs
+    - name: Verify production claims are in the candidate release
+      if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
+      run: cargo xtask website-demo-data --check --released
     - name: Verify responsive marketing experience
       run: pnpm --dir website test:marketing
     - name: Upload visual verification

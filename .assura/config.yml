@@ -524,7 +524,7 @@ extensions:
         - surface: "command:assura cache clean"
           status: supported
         - surface: "command:assura doctor"
-          status: experimental
+          status: supported
         - surface: "command:assura explain"
           status: supported
         - surface: "command:assura init"
@@ -564,19 +564,23 @@ extensions:
         - surface: "command:assura agent onboard"
           status: supported
         - surface: "command:assura agent nudge"
-          status: experimental
+          status: supported
         - surface: "command:assura agent integration"
-          status: experimental
+          status: supported
         - surface: "command:assura agent integration install"
-          status: experimental
+          status: supported
+        - surface: "command:assura agent integration activate"
+          status: supported
         - surface: "command:assura agent integration update"
-          status: experimental
+          status: supported
+        - surface: "command:assura agent integration deactivate"
+          status: supported
         - surface: "command:assura agent integration remove"
-          status: experimental
+          status: supported
         - surface: "command:assura agent integration status"
-          status: experimental
+          status: supported
         - surface: "command:assura agent integration doctor"
-          status: experimental
+          status: supported
         - surface: "command:assura agent session"
           status: supported
         - surface: "command:assura editor"
@@ -638,7 +642,9 @@ extensions:
         - surface: "command:assura performance-report"
           status: supported
         - surface: "config:markdown.lint_common"
-          status: experimental
+          status: supported
+        - surface: "config:markdown.check_links"
+          status: supported
         - surface: "config:extensions.custom_constraints"
           status: experimental
         - surface: "config:extensions.release_contracts"
@@ -654,9 +660,9 @@ extensions:
         - surface: "config:extensions.docs_lifecycles"
           status: experimental
         - surface: "config:extensions.repository_references"
-          status: experimental
+          status: supported
         - surface: "config:extensions.agent_guidance"
-          status: experimental
+          status: supported
         - surface: "config:extensions.requirements_traceability"
           status: experimental
         - surface: "config:extensions.computed_checks"

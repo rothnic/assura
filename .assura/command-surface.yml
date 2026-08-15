@@ -405,6 +405,7 @@ commands:
       --agent:
         takes_value: true
         values: ["auto", "generic", "codex", "opencode", "claude", "pi"]
+      --activate: {}
       --content-template:
         takes_value: true
         values: ["none", "agent-project", "document-project"]
@@ -438,6 +439,8 @@ commands:
         takes_value: true
       --reference-limit:
         takes_value: true
+      --cooldown-seconds:
+        takes_value: true
       --format:
         aliases: ["-f"]
         takes_value: true
@@ -470,7 +473,41 @@ commands:
         aliases: ["-f"]
         takes_value: true
         values: ["text", "json", "yaml", "advice", "status"]
+  - name: "assura agent integration activate"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --dry-run: {}
+      --force: {}
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status"]
   - name: "assura agent integration update"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --dry-run: {}
+      --force: {}
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status"]
+  - name: "assura agent integration deactivate"
     allow_positionals: true
     flags:
       --config:

@@ -17,6 +17,38 @@ const homepagePolicyFixture = readFileSync(
   'utf8',
 ).trimEnd();
 
+type DemoLine = {
+  text: string;
+  tone: 'prompt' | 'plain' | 'muted' | 'info' | 'warn' | 'pass' | 'fail';
+};
+
+const reviewDemo = JSON.parse(
+  readFileSync(new URL('../data/review-demo.json', import.meta.url), 'utf8'),
+) as { command: string; hero_lines: DemoLine[]; display_lines: DemoLine[]; artifact_lines: DemoLine[] };
+
+const checkDemo = JSON.parse(
+  readFileSync(new URL('../data/check-demo.json', import.meta.url), 'utf8'),
+) as { command: string; artifact_lines: DemoLine[] };
+
+const onboardingDemo = JSON.parse(
+  readFileSync(new URL('../data/onboarding-demo.json', import.meta.url), 'utf8'),
+) as {
+  command: string;
+  artifact_lines: DemoLine[];
+  integration: { generated: boolean; activated: boolean; verified: boolean; conflicted: boolean };
+};
+
+const intelligenceDemo = JSON.parse(
+  readFileSync(new URL('../data/intelligence-demo.json', import.meta.url), 'utf8'),
+) as { command: string; artifact_lines: DemoLine[] };
+
+const policyDemo = JSON.parse(
+  readFileSync(new URL('../data/policy-demo.json', import.meta.url), 'utf8'),
+) as {
+  config: string;
+  tree: Array<{ path: string; full_path?: string; status: string; detail: string }>;
+};
+
 const performanceReport = JSON.parse(
   readFileSync(new URL('../../public/data/performance/current.json', import.meta.url), 'utf8'),
 ) as {
@@ -89,7 +121,21 @@ test('agent setup dialog is keyboard dismissible and restores focus', async ({ p
 test('short mobile view keeps the project review visible', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 640 });
   await page.goto('/');
-  await expect(page.getByText('$ assura review').first()).toBeVisible();
+  const review = page.locator('[data-terminal-variant="review"]').first();
+  await expect(review.locator('.terminal-bar strong')).toHaveText(reviewDemo.command);
+  await expect(review.locator('[data-terminal-line]').first()).toBeVisible();
+});
+
+test('homepage output is an exact selection of the supported review renderer', async ({ page }) => {
+  await page.goto('/');
+  const terminal = page.locator('[data-terminal-variant="review"]').first();
+  await expect(terminal.locator('.terminal-bar strong')).toHaveText(reviewDemo.command);
+  expect(await terminal.locator('[data-terminal-line]').allTextContents()).toEqual(
+    reviewDemo.hero_lines.map((line) => line.text),
+  );
+  expect(await terminal.locator('[data-terminal-line]').evaluateAll((lines) =>
+    lines.map((line) => [...line.classList].find((name) => name !== 'terminal-line')),
+  )).toEqual(reviewDemo.hero_lines.map((line) => line.tone));
 });
 
 test('example output CTA connects project policy to pass and fail paths', async ({ page }) => {
@@ -97,7 +143,7 @@ test('example output CTA connects project policy to pass and fail paths', async 
   await page.goto('/');
   await page.getByRole('link', { name: 'See how rules apply' }).click();
   await expect(page.getByRole('heading', { name: '.assura/config.yml' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Project tree' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Config and check result' })).toBeVisible();
   await expect(page.locator('.config-line').filter({ hasText: 'agent-doc:' })).toBeVisible();
   await expect(page.locator('.config-line').filter({ hasText: './**/:' })).toBeVisible();
   await expect(page.locator('.config-line').filter({ hasText: '.ts: kebab-case | max_lines:500' })).toBeVisible();
@@ -105,8 +151,8 @@ test('example output CTA connects project policy to pass and fail paths', async 
   const configMarkers = await page.locator('.policy-panel .rule-marker').allTextContents();
   const treeMarkers = await page.locator('.tree-panel .rule-marker').allTextContents();
   expect(new Set(configMarkers)).toEqual(new Set(treeMarkers));
-  await expect(page.getByLabel('Pass').first()).toBeVisible();
-  await expect(page.getByLabel('Blocking violation').first()).toBeVisible();
+  await expect(page.getByLabel('Check passed').first()).toBeVisible();
+  await expect(page.getByLabel('Check violation').first()).toBeVisible();
 });
 
 test('compact policy links to the complete monorepo example through optional disclosure', async ({ page }) => {
@@ -142,9 +188,101 @@ for (const width of [320, 360, 390]) {
     );
     expect(Math.min(...markerGaps)).toBeGreaterThanOrEqual(4);
     const rendered = await policy.locator('.config-content').allTextContents();
-    expect(rendered.join('\n')).toBe(homepagePolicyFixture);
+    expect(policyDemo.config).toBe(homepagePolicyFixture);
+    expect(rendered.join('\n')).toBe(policyDemo.config);
   });
 }
+
+test('policy tree paths, states, and measured values come from the executable fixture', async ({ page }) => {
+  await page.goto('/#review-output');
+  const rows = await page.locator('[data-policy-path]').evaluateAll((items) =>
+    items.map((item) => ({
+      path: (item as HTMLElement).dataset.policyPath,
+      status: (item as HTMLElement).dataset.policyStatus,
+      detail: (item as HTMLElement).dataset.policyDetail,
+    })),
+  );
+  expect(rows).toEqual(policyDemo.tree.map((row) => ({
+    path: row.full_path ?? row.path,
+    status: row.status,
+    detail: row.detail,
+  })));
+  expect(rows).toContainEqual({
+    path: 'packages/core/src/user-menu.ts',
+    status: 'verified',
+    detail: '184 / 500 lines',
+  });
+  expect(rows).toContainEqual({
+    path: 'packages/core/src/checkout-flow.ts',
+    status: 'violation',
+    detail: '537 / 500 lines',
+  });
+});
+
+const rendererPages = [
+  { path: '/project-review/', variant: 'review', title: reviewDemo.command, lines: reviewDemo.artifact_lines },
+  { path: '/ai-coding-agent-guardrails/', variant: 'review', title: reviewDemo.command, lines: reviewDemo.artifact_lines },
+  { path: '/repository-validation/', variant: 'check', title: checkDemo.command, lines: checkDemo.artifact_lines },
+  { path: '/agent-onboarding/', variant: 'onboarding', title: onboardingDemo.command, lines: onboardingDemo.artifact_lines },
+  { path: '/project-intelligence/', variant: 'neutral', title: intelligenceDemo.command, lines: intelligenceDemo.artifact_lines },
+] as const;
+
+for (const rendererPage of rendererPages) {
+  test(`${rendererPage.path} renders the supported CLI artifact exactly`, async ({ page }) => {
+    await page.goto(rendererPage.path);
+    const terminal = page.locator(`[data-terminal-variant="${rendererPage.variant}"]`).first();
+    await expect(terminal.locator('.terminal-bar strong')).toHaveText(rendererPage.title);
+    expect(await terminal.locator('[data-terminal-line]').allTextContents()).toEqual(
+      rendererPage.lines.map((line) => line.text),
+    );
+    expect(await terminal.locator('[data-terminal-line]').evaluateAll((lines) =>
+      lines.map((line) => [...line.classList].find((name) => name !== 'terminal-line')),
+    )).toEqual(rendererPage.lines.map((line) => line.tone));
+  });
+}
+
+for (const colorScheme of themes) {
+  for (const width of widths) {
+    test(`${colorScheme} renderer artifacts at ${width}px wrap without changing product state`, async ({ page }, testInfo) => {
+      await page.emulateMedia({ colorScheme });
+      await page.setViewportSize({ width, height: 900 });
+      for (const rendererPage of rendererPages) {
+        await page.goto(rendererPage.path);
+        const terminal = page.locator(`[data-terminal-variant="${rendererPage.variant}"]`).first();
+        await expect(terminal).toBeVisible();
+        expect(await terminal.locator('pre').evaluate((element) => element.scrollWidth - element.clientWidth)).toBe(0);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
+        await terminal.screenshot({
+          path: testInfo.outputPath(`${rendererPage.variant}-${rendererPage.path.split('/').filter(Boolean).join('-')}-${colorScheme}-${width}.png`),
+        });
+      }
+    });
+  }
+}
+
+test('review, check, and onboarding retain distinct real product states', async ({ page }) => {
+  await page.goto('/project-review/');
+  const review = page.locator('[data-terminal-variant="review"]').first();
+  await expect(review.locator('[data-terminal-line]').first()).toContainText('attention');
+  await expect(review.locator('[data-terminal-line]').filter({ hasText: /^Check/ })).toContainText('fail');
+
+  await page.goto('/repository-validation/');
+  const check = page.locator('[data-terminal-variant="check"]').first();
+  await expect(check.locator('[data-terminal-line]').filter({ hasText: 'Blocking: true' })).toBeVisible();
+  await expect(check.locator('[data-terminal-line]').filter({ hasText: 'Fix:' })).toBeVisible();
+
+  await page.goto('/agent-onboarding/');
+  const onboarding = page.locator('[data-terminal-variant="onboarding"]').first();
+  expect(onboardingDemo.integration).toMatchObject({
+    generated: true,
+    activated: true,
+    verified: true,
+    conflicted: false,
+  });
+  await expect(onboarding.locator('[data-terminal-line]').filter({ hasText: /^Host/ })).toContainText(
+    'generated=true activated=true verified=true conflicted=false',
+  );
+});
 
 test('performance CTA lands on the measured project cohort', async ({ page }) => {
   await page.goto('/');
@@ -536,7 +674,7 @@ test('technical docs remain reachable', async ({ page }) => {
 });
 
 for (const colorScheme of themes) {
-  for (const width of [360, 390, 768, 1024, 1440]) {
+  for (const width of [360, 390, 430, 768, 1024, 1440]) {
     test(`${colorScheme} canonical docs at ${width}px match the product shell`, async ({ page }, testInfo) => {
       await page.emulateMedia({ colorScheme });
       await page.setViewportSize({ width, height: 900 });
@@ -559,6 +697,7 @@ for (const colorScheme of themes) {
 }
 
 test('P1 routes expose unique canonical metadata and structured data', async ({ page }) => {
+  test.setTimeout(90_000);
   const titles = new Set<string>();
   const descriptions = new Set<string>();
 

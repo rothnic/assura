@@ -12,7 +12,7 @@ pub(super) fn render_project_review_text(report: &ProjectReviewReport) -> String
         format!(
             "{}  {}",
             style.title("Assura review"),
-            style.status(report.status)
+            style.review_status(report.status)
         ),
         row(
             &style,
@@ -279,6 +279,14 @@ impl TextStyle {
             "pass" => self.paint("32;1", value),
             "fail" => self.paint("31;1", value),
             "needs-review" => self.paint("33;1", value),
+            _ => value.to_string(),
+        }
+    }
+
+    fn review_status(&self, value: &str) -> String {
+        match value {
+            "pass" => self.paint("32;1", "clear"),
+            "fail" | "needs-review" => self.paint("33;1", "attention"),
             _ => value.to_string(),
         }
     }

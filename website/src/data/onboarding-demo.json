@@ -1,23 +1,123 @@
 {
-  "command": "assura agent onboard . --agent auto --format json",
+  "artifact_lines": [
+    {
+      "text": "Assura agent onboarding",
+      "tone": "prompt"
+    },
+    {
+      "text": "Project      node confidence=high",
+      "tone": "info"
+    },
+    {
+      "text": "Agent        codex confidence=explicit",
+      "tone": "info"
+    },
+    {
+      "text": "Policy       agentic-core + structure-health -> $agent-entrypoint (applied)",
+      "tone": "info"
+    },
+    {
+      "text": "Host         codex generated=true activated=true verified=true conflicted=false",
+      "tone": "pass"
+    },
+    {
+      "text": "Lifecycle    agent-working-loop=nudge pre-commit-warning=warn pre-push-or-ci-gate=gate",
+      "tone": "info"
+    },
+    {
+      "text": "Verified     structure_config=pass onboarding_packet=pass",
+      "tone": "pass"
+    },
+    {
+      "text": "Review       needs-review blocking=0 advisory=0 inactive_signals=5",
+      "tone": "warn"
+    },
+    {
+      "text": "Deferred     project_specialization, content_models",
+      "tone": "warn"
+    },
+    {
+      "text": "Next         Read the onboarding handoff",
+      "tone": "pass"
+    },
+    {
+      "text": "Packet       .assura/onboarding/agent-next.md",
+      "tone": "pass"
+    }
+  ],
+  "command": "assura agent onboard . --agent codex --activate --format text",
   "content": {
     "detail": "content runtime activation was not requested",
     "status": "inactive",
     "template": "none"
   },
   "detected": {
-    "agent_confidence": "low",
-    "agent_harness": "generic",
+    "agent_confidence": "explicit",
+    "agent_harness": "codex",
     "existing_source_files": true,
     "git_repository": false,
     "project_confidence": "high",
-    "project_type": "monorepo",
-    "requested_agent": "auto"
+    "project_type": "node",
+    "requested_agent": "codex"
   },
+  "display_lines": [
+    {
+      "text": "Assura agent onboarding",
+      "tone": "prompt"
+    },
+    {
+      "text": "Version      assura 0.3.0",
+      "tone": "muted"
+    },
+    {
+      "text": "Project      node confidence=high",
+      "tone": "info"
+    },
+    {
+      "text": "Agent        codex confidence=explicit",
+      "tone": "info"
+    },
+    {
+      "text": "Policy       agentic-core + structure-health -> $agent-entrypoint (applied)",
+      "tone": "info"
+    },
+    {
+      "text": "Host         codex generated=true activated=true verified=true conflicted=false",
+      "tone": "pass"
+    },
+    {
+      "text": "Content      none=inactive",
+      "tone": "muted"
+    },
+    {
+      "text": "Lifecycle    agent-working-loop=nudge pre-commit-warning=warn pre-push-or-ci-gate=gate",
+      "tone": "info"
+    },
+    {
+      "text": "Verified     structure_config=pass onboarding_packet=pass",
+      "tone": "pass"
+    },
+    {
+      "text": "Review       needs-review blocking=0 advisory=0 inactive_signals=5",
+      "tone": "warn"
+    },
+    {
+      "text": "Deferred     project_specialization, content_models",
+      "tone": "warn"
+    },
+    {
+      "text": "Next         Read the onboarding handoff",
+      "tone": "pass"
+    },
+    {
+      "text": "Packet       .assura/onboarding/agent-next.md",
+      "tone": "pass"
+    }
+  ],
   "files": [
     {
-      "action": "merge",
-      "existed": true,
+      "action": "write",
+      "existed": false,
       "path": ".assura/config.yml",
       "required": true
     },
@@ -28,14 +128,14 @@
       "required": true
     },
     {
-      "action": "existing",
-      "existed": true,
+      "action": "write",
+      "existed": false,
       "path": "AGENTS.md",
       "required": true
     },
     {
-      "action": "existing",
-      "existed": true,
+      "action": "write",
+      "existed": false,
       "path": "README.md",
       "required": true
     },
@@ -149,14 +249,14 @@
     "onboarding_packet": ".assura/onboarding/"
   },
   "integration": {
-    "activated": false,
-    "agent": "generic",
+    "activated": true,
+    "agent": "codex",
     "conflicted": false,
-    "detail": "no supported host-agent harness detected; use AGENTS.md and assura check --format agent --warn",
-    "generated": false,
-    "mode": "manual-shell",
-    "status": "generic-guidance",
-    "verified": false
+    "detail": "managed project-local host wiring written and structurally verified; host trust may still be required",
+    "generated": true,
+    "mode": "managed-project-activation",
+    "status": "verified",
+    "verified": true
   },
   "lifecycle_profiles": [
     {
@@ -216,6 +316,15 @@
       "reason": "Gate mode preserves the configured severity contract before merge."
     },
     {
+      "action": "Review host-agent integration bundle",
+      "affected_paths": [
+        ".assura/integrations/"
+      ],
+      "follow_up": "assura agent integration doctor codex .",
+      "priority": 5,
+      "reason": "Host wiring remains manual opt-in and should be reviewed before use."
+    },
+    {
       "action": "Choose whether to activate content models",
       "affected_paths": [
         ".assura/onboarding/questions.md"
@@ -225,6 +334,7 @@
       "reason": "Content facts stay inactive until a template is selected deliberately."
     }
   ],
+  "rendered_text": "Assura agent onboarding\nVersion      assura 0.3.0\nProject      node confidence=high\nAgent        codex confidence=explicit\nPolicy       agentic-core + structure-health -> $agent-entrypoint (applied)\nHost         codex generated=true activated=true verified=true conflicted=false\nContent      none=inactive\nLifecycle    agent-working-loop=nudge pre-commit-warning=warn pre-push-or-ci-gate=gate\nVerified     structure_config=pass onboarding_packet=pass\nReview       needs-review blocking=0 advisory=0 inactive_signals=5\nDeferred     project_specialization, content_models\nNext         Read the onboarding handoff\nPacket       .assura/onboarding/agent-next.md",
   "schema": "assura.website-onboarding-demo.v1",
   "verified": [
     {

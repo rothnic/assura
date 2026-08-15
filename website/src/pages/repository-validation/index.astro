@@ -10,20 +10,14 @@ const structuredData = { '@context': 'https://schema.org', '@type': 'TechArticle
 
 <FocusedMarketingPage
   {title} {description} {canonicalPath} {structuredData}
-  releaseSurface="structure-validation-cli configured-policy-gate codex-agent-report"
+  releaseSurface="structure-validation-cli configured-policy-gate codex-agent-report markdown-common-lints markdown-local-link-checks markdown-rule-severity-suppression repository-reference-checks agent-guidance-contracts"
   imagePath="/social/repository-validation.webp"
   eyebrow="Repository validation"
   heading="Validate the project from the top down."
   intro="Assura starts with stable, language-agnostic repository policy: where files belong, how paths are named, what must exist, how large structures can grow, and which content-level rules apply across file types."
-  artifactTitle="assura check · supported"
-  artifactLines={[
-    `$ ${check.command}`,
-    `files checked     ${check.files_checked}`,
-    `dirs checked      ${check.dirs_checked}`,
-    `violations        ${check.violation_count}`,
-    '',
-    ...check.violations.slice(0, 3).map((item) => `! ${item.path}  ${item.rule}`),
-  ]}
+  artifactTitle={check.command}
+  artifactLines={check.artifact_lines}
+  artifactKind="check"
   highlights={[
     { label: 'Filesystem shape', body: 'File and directory naming, allowed and required paths, forbidden entries, child counts, and generated-output boundaries.' },
     { label: 'Inside every file type', body: 'Language-agnostic line limits, Markdown sections, frontmatter, references, and content rules beyond filesystem operations.' },

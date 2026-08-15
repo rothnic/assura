@@ -1,11 +1,128 @@
 {
+  "artifact_lines": [
+    {
+      "text": "Assura structure check",
+      "tone": "prompt"
+    },
+    {
+      "text": "======================",
+      "tone": "plain"
+    },
+    {
+      "text": "Project root: .",
+      "tone": "muted"
+    },
+    {
+      "text": "Config: ./.assura/config.yml",
+      "tone": "muted"
+    },
+    {
+      "text": "Checked path: .",
+      "tone": "muted"
+    },
+    {
+      "text": "Files checked: 21",
+      "tone": "info"
+    },
+    {
+      "text": "Directories checked: 11",
+      "tone": "info"
+    },
+    {
+      "text": "Violations: 1",
+      "tone": "fail"
+    },
+    {
+      "text": "",
+      "tone": "plain"
+    },
+    {
+      "text": "Violations",
+      "tone": "plain"
+    },
+    {
+      "text": "----------",
+      "tone": "plain"
+    },
+    {
+      "text": "apps/web/src/BadName.tsx [medium:file_naming] File 'BadName.tsx' does not match naming convention 'kebab-case'",
+      "tone": "fail"
+    },
+    {
+      "text": "  Blocking: true",
+      "tone": "fail"
+    },
+    {
+      "text": "  Fix: Rename the file to match the effective naming rule, or update files.naming/naming_patterns when the policy is stale.",
+      "tone": "warn"
+    }
+  ],
   "command": "assura check",
-  "dirs_checked": 20,
-  "files_checked": 28,
+  "dirs_checked": 11,
+  "display_lines": [
+    {
+      "text": "Assura structure check",
+      "tone": "prompt"
+    },
+    {
+      "text": "======================",
+      "tone": "plain"
+    },
+    {
+      "text": "Project root: .",
+      "tone": "muted"
+    },
+    {
+      "text": "Config: ./.assura/config.yml",
+      "tone": "muted"
+    },
+    {
+      "text": "Checked path: .",
+      "tone": "muted"
+    },
+    {
+      "text": "Files checked: 21",
+      "tone": "info"
+    },
+    {
+      "text": "Directories checked: 11",
+      "tone": "info"
+    },
+    {
+      "text": "Violations: 1",
+      "tone": "fail"
+    },
+    {
+      "text": "",
+      "tone": "plain"
+    },
+    {
+      "text": "Violations",
+      "tone": "plain"
+    },
+    {
+      "text": "----------",
+      "tone": "plain"
+    },
+    {
+      "text": "apps/web/src/BadName.tsx [medium:file_naming] File 'BadName.tsx' does not match naming convention 'kebab-case'",
+      "tone": "fail"
+    },
+    {
+      "text": "  Blocking: true",
+      "tone": "fail"
+    },
+    {
+      "text": "  Fix: Rename the file to match the effective naming rule, or update files.naming/naming_patterns when the policy is stale.",
+      "tone": "warn"
+    }
+  ],
+  "files_checked": 21,
   "generated_from": "assura check --format json",
+  "rendered_text": "Assura structure check\n======================\nProject root: .\nConfig: ./.assura/config.yml\nChecked path: .\nFiles checked: 21\nDirectories checked: 11\nViolations: 1\n\nViolations\n----------\napps/web/src/BadName.tsx [medium:file_naming] File 'BadName.tsx' does not match naming convention 'kebab-case'\n  Blocking: true\n  Fix: Rename the file to match the effective naming rule, or update files.naming/naming_patterns when the policy is stale.",
   "schema": "assura.website-check-demo.v1",
   "success": false,
-  "violation_count": 6,
+  "violation_count": 1,
   "violations": [
     {
       "blocking": true,
@@ -13,27 +130,6 @@
       "path": "apps/web/src/BadName.tsx",
       "rule": "file_naming",
       "severity": "medium"
-    },
-    {
-      "blocking": false,
-      "message": "Agent guidance `agent_project_guidance` AGENTS.md `AGENTS.md` is missing required section `Operating Rules`",
-      "path": "AGENTS.md",
-      "rule": "agent_guidance:agent_project_guidance",
-      "severity": "low"
-    },
-    {
-      "blocking": false,
-      "message": "Agent guidance `agent_project_guidance` AGENTS.md `AGENTS.md` is missing required section `Process Docs vs Skills`",
-      "path": "AGENTS.md",
-      "rule": "agent_guidance:agent_project_guidance",
-      "severity": "low"
-    },
-    {
-      "blocking": false,
-      "message": "Agent guidance `agent_project_guidance` AGENTS.md `AGENTS.md` is missing required section `Skills`",
-      "path": "AGENTS.md",
-      "rule": "agent_guidance:agent_project_guidance",
-      "severity": "low"
     }
   ]
 }

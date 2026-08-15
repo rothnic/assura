@@ -1,4 +1,50 @@
 {
+  "artifact_lines": [
+    {
+      "text": "Assura review  attention",
+      "tone": "prompt"
+    },
+    {
+      "text": "Check      fail  files=21 dirs=11 violations=1",
+      "tone": "fail"
+    },
+    {
+      "text": "Thresholds blocking=1/1 worktree=2/10 untracked=1/5 churn=5/1000 commits=1/10",
+      "tone": "info"
+    },
+    {
+      "text": "Branch     feature/agent-review files=1 lines=+3/-0 commits=1",
+      "tone": "info"
+    },
+    {
+      "text": "Worktree   staged=0 unstaged=1 modified=1 untracked=1 deleted=0 conflicts=0 lines=+2/-0",
+      "tone": "info"
+    },
+    {
+      "text": "Hot dirs   |- apps v=1 files=b1/m1/u1 lines=b+3/-0,w+2/-0 blocking=1",
+      "tone": "info"
+    },
+    {
+      "text": "Findings   fix=1 config=9 inspect=1 info=2 omitted=4",
+      "tone": "info"
+    },
+    {
+      "text": "Fix now    blocking:file_naming",
+      "tone": "fail"
+    },
+    {
+      "text": "Configure  gap:skill_directory, gap:process_docs, gap:learnings_docs, +more",
+      "tone": "warn"
+    },
+    {
+      "text": "Next       Fix blocking configured check violations first.",
+      "tone": "plain"
+    },
+    {
+      "text": "Run        assura check --format agent .",
+      "tone": "pass"
+    }
+  ],
   "branch": {
     "base": "origin/main",
     "commits": 1,
@@ -10,48 +56,76 @@
   "command": "assura review",
   "display_lines": [
     {
-      "text": "$ assura review",
+      "text": "Assura review  attention",
       "tone": "prompt"
     },
     {
-      "text": "Project status: fail",
-      "tone": "plain"
+      "text": "Check      fail  files=21 dirs=11 violations=1",
+      "tone": "fail"
     },
     {
-      "text": "Compared with origin/main",
-      "tone": "muted"
-    },
-    {
-      "text": "",
-      "tone": "plain"
-    },
-    {
-      "text": "Branch    1 file | +3/-0 lines | 1 commit",
+      "text": "Heat       !1 hot_dirs=4 risks=1",
       "tone": "info"
     },
     {
-      "text": "Worktree  1 modified | 1 untracked | +2/-0",
+      "text": "Thresholds blocking=1/1 worktree=2/10 untracked=1/5 churn=5/1000 commits=1/10",
       "tone": "info"
     },
     {
-      "text": "",
+      "text": "Branch     feature/agent-review files=1 lines=+3/-0 commits=1",
+      "tone": "info"
+    },
+    {
+      "text": "Worktree   staged=0 unstaged=1 modified=1 untracked=1 deleted=0 conflicts=0 lines=+2/-0",
+      "tone": "info"
+    },
+    {
+      "text": "Hot dirs   |- apps v=1 files=b1/m1/u1 lines=b+3/-0,w+2/-0 blocking=1",
+      "tone": "info"
+    },
+    {
+      "text": "           |  |- web v=1 files=b1/m1/u1 lines=b+3/-0,w+2/-0 blocking=1",
       "tone": "plain"
     },
     {
-      "text": "Needs attention",
+      "text": "           |  |  `- src v=1 files=b0/m1/u1 lines=b+0/-0,w+2/-0 blocking=1",
       "tone": "plain"
     },
     {
-      "text": "! apps/web/src/   file naming   1 violation",
+      "text": "Content    diag=0 missing=0 refs=3 fixes=0",
+      "tone": "info"
+    },
+    {
+      "text": "Findings   fix=1 config=9 inspect=1 info=2 omitted=4",
+      "tone": "info"
+    },
+    {
+      "text": "Fix now    blocking:file_naming",
+      "tone": "fail"
+    },
+    {
+      "text": "Configure  gap:skill_directory, gap:process_docs, gap:learnings_docs, +more",
       "tone": "warn"
     },
     {
-      "text": "",
+      "text": "Inspect    structure-fit:inspect-before-changing",
+      "tone": "warn"
+    },
+    {
+      "text": "Policy     inspect shape first; edit .assura/config.yml only intentionally",
+      "tone": "muted"
+    },
+    {
+      "text": "Next       Fix blocking configured check violations first.",
       "tone": "plain"
     },
     {
-      "text": "Next  assura check --format agent .",
+      "text": "Run        assura check --format agent .",
       "tone": "pass"
+    },
+    {
+      "text": "Details    assura check --format json . | assura doctor --format json . | assura content agent-query gaps --format json . | assura explain <path> --format json",
+      "tone": "muted"
     }
   ],
   "findings": [
@@ -63,6 +137,40 @@
     }
   ],
   "generated_from": "assura.project-review.v2",
+  "hero_lines": [
+    {
+      "text": "Assura review  attention",
+      "tone": "prompt"
+    },
+    {
+      "text": "Check      fail  files=21 dirs=11 violations=1",
+      "tone": "fail"
+    },
+    {
+      "text": "Thresholds blocking=1/1 worktree=2/10 untracked=1/5 churn=5/1000 commits=1/10",
+      "tone": "info"
+    },
+    {
+      "text": "Branch     feature/agent-review files=1 lines=+3/-0 commits=1",
+      "tone": "info"
+    },
+    {
+      "text": "Worktree   staged=0 unstaged=1 modified=1 untracked=1 deleted=0 conflicts=0 lines=+2/-0",
+      "tone": "info"
+    },
+    {
+      "text": "Hot dirs   |- apps v=1 files=b1/m1/u1 lines=b+3/-0,w+2/-0 blocking=1",
+      "tone": "info"
+    },
+    {
+      "text": "Fix now    blocking:file_naming",
+      "tone": "fail"
+    },
+    {
+      "text": "Run        assura check --format agent .",
+      "tone": "pass"
+    }
+  ],
   "metrics": [
     {
       "detail": "blocking violation",
@@ -82,10 +190,11 @@
     {
       "detail": "reported, not passed",
       "label": "Inactive",
-      "value": "5"
+      "value": "6"
     }
   ],
   "next_command": "assura check --format agent .",
+  "rendered_text": "Assura review  attention\nCheck      fail  files=21 dirs=11 violations=1\nHeat       !1 hot_dirs=4 risks=1\nThresholds blocking=1/1 worktree=2/10 untracked=1/5 churn=5/1000 commits=1/10\nBranch     feature/agent-review files=1 lines=+3/-0 commits=1\nWorktree   staged=0 unstaged=1 modified=1 untracked=1 deleted=0 conflicts=0 lines=+2/-0\nHot dirs   |- apps v=1 files=b1/m1/u1 lines=b+3/-0,w+2/-0 blocking=1\n           |  |- web v=1 files=b1/m1/u1 lines=b+3/-0,w+2/-0 blocking=1\n           |  |  `- src v=1 files=b0/m1/u1 lines=b+0/-0,w+2/-0 blocking=1\nContent    diag=0 missing=0 refs=3 fixes=0\nFindings   fix=1 config=9 inspect=1 info=2 omitted=4\nFix now    blocking:file_naming\nConfigure  gap:skill_directory, gap:process_docs, gap:learnings_docs, +more\nInspect    structure-fit:inspect-before-changing\nPolicy     inspect shape first; edit .assura/config.yml only intentionally\nNext       Fix blocking configured check violations first.\nRun        assura check --format agent .\nDetails    assura check --format json . | assura doctor --format json . | assura content agent-query gaps --format json . | assura explain <path> --format json",
   "schema": "assura.website-review-demo.v1",
   "signals": [
     {
@@ -123,15 +232,15 @@
   ],
   "status": "fail",
   "structure": {
-    "dirs_checked": 20,
-    "files_checked": 28,
+    "dirs_checked": 11,
+    "files_checked": 21,
     "status": "fail",
-    "violations": 6
+    "violations": 1
   },
   "summary": {
-    "advisory": 0,
+    "advisory": 3,
     "blocking": 1,
-    "inactive": 5,
+    "inactive": 6,
     "informational": 2,
     "omitted_noise": 4
   },

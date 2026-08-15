@@ -374,8 +374,10 @@ fn agent_onboard_text_keeps_verification_and_review_fields_aligned() {
     ]);
     assert!(output.status.success());
     let text = String::from_utf8_lossy(&output.stdout);
-    assert!(text.contains("verified: structure_config=pass, onboarding_packet=pass"));
-    assert!(text.contains("review: needs-review blocking=0"));
+    assert!(text.contains("Verified     structure_config=pass onboarding_packet=pass"));
+    assert!(text.contains("Review       needs-review blocking=0 advisory="));
+    assert!(text.contains("inactive_signals="));
+    assert!(text.contains("Deferred     project_specialization, content_models"));
 }
 
 #[test]

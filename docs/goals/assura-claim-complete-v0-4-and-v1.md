@@ -176,6 +176,8 @@ behavior, or v1.0 evidence does not meet every stated count and duration.
 | 2026-08-11 | 3 | Implemented the continuous watch and warm-runtime child through its local proof boundary. Watch now stays resident, preserves requested file or directory scope, survives atomic file replacement, bounds edit bursts, reloads external config, exposes fallback and actionable findings, and terminates visibly on watcher failure. Changed-path checks conservatively fall back for cross-path policy. Public managed-daemon IPC now preserves validation exit codes and one schema. Internal status publication is ordered in both race directions and uses cross-platform atomic replacement. Context level: not exposed. Hosted Windows execution remains open. | 12 watch integration tests; 16 public daemon tests; 15 shared-state tests; 3 internal status tests; five warm budgets; successful `x86_64-pc-windows-gnu` full-CLI and companion-daemon cross-checks |
 | 2026-08-12 | 4 | Closed the watch and warm-runtime child after hosted Windows exposed and verified fixes for inherited daemon handles and platform-specific atomic-replacement events. The full matrix now executes the managed daemon and cancellation paths on Windows and passes Linux, macOS, performance, installer, coverage, and adoption jobs. Added renderer-derived visual parity to the release contract so marketing output cannot diverge from the supported CLI experience. Context level: not exposed. | Rust CI run `31616404517`; Windows test job `94180233780`; performance job `94180233746`; Windows installer job `94180233801`; Linux job `94180233710`; macOS job `94180233865` |
 | 2026-08-14 | 5 | Implemented explicit managed activation for Codex, Claude Code, OpenCode, and Pi. Independent review found and prompted fixes for non-Git Codex projects, partial lifecycle writes, and unsafe removal of marker-preserving user edits. Activation mutations are now transactional, reject symlink path escapes, preserve unmanaged host configuration, and expose generated, activated, verified, and conflicted states. Context level: not exposed. | 13 integration lifecycle and event tests; 18 agent-surface tests; 16 onboarding/config-merge tests; `cargo fmt --all -- --check` |
+| 2026-08-14 | 6 | Aligned the product presentation with executable behavior. Homepage and focused examples now select exact Review, Check, and onboarding renderer lines from reproducible fixtures; Review is advisory, Check is blocking, and onboarding exposes generated, activated, verified, and conflicted state. Promoted the marketed deterministic Markdown, local-link, reference, severity/suppression, agent-guidance, event-nudge, doctor, and managed-integration contracts only after focused behavioral proof. Updated current docs, release metadata, command inventory, and target-state guards to the same support model. Context level: not exposed. | 75 focused policy/integration tests; 8 doctor/explain tests; 20 command-surface tests; `cargo xtask website-demo-data --check` validated 20 marketed surfaces and 54 YAML examples; `cargo xtask target-state` |
+| 2026-08-14 | 7 | Resolved independent review findings at the product boundary. Project Intelligence now uses a real deterministic context-pack renderer, the policy tree is explicitly a fixture explanation backed by passing and failing checks, onboarding distinguishes inactive signals from deferred specialization, nested agent commands are release-inventoried, and production docs builds reject unreleased marketing surfaces. The browser may adapt spacing and container treatment, but it consumes the same renderer labels, hierarchy, states, thresholds, and actions as the CLI. Context level: not exposed. | `cargo test --workspace --all-features --quiet`; `cargo clippy --workspace --all-targets --all-features -- -D warnings`; 88 responsive light/dark browser checks; `cargo xtask website-demo-data --check`; `cargo xtask docs`; independent review agent `01a0028e-b00b-7a11-95b6-b0b2adc8efc7` |
 
 ### Iteration 3 Context Review
 
@@ -191,3 +193,21 @@ behavior, or v1.0 evidence does not meet every stated count and duration.
   the repeatable workflow; no new project skill is warranted for this slice.
 - The next decision boundary is hosted Windows execution, followed by managed
   four-host activation rather than further watch-surface expansion.
+
+### Iteration 6 Context Review
+
+- The active request remains implementation of the claim-complete plan, with
+  visual presentation treated as an executable product contract rather than a
+  separate marketing mockup.
+- The landing site may adapt spacing, color, and responsive composition, but
+  renderer labels, hierarchy, states, values, and command behavior must come
+  from supported CLI fixtures and stale generated artifacts must fail the docs
+  build.
+- Review remains the advisory branch/worktree radar, Check remains the blocking
+  configured policy gate, Explain remains scoped policy evidence, and Doctor
+  remains setup and inactive-capability diagnosis.
+- Automatic repair, hosted orchestration, semantic inference as validation
+  truth, a public plugin SDK, and full marketplace/LSP promises remain outside
+  the core marketed contract.
+- The next boundary is full local proof and independent review of this policy
+  depth slice before publishing the refreshed PR preview.

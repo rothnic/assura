@@ -37,23 +37,41 @@
     {
       "id": "markdown-common-lints",
       "label": "Markdown common lint bundle",
-      "status": "experimental",
-      "first_release": "v0.2.0",
-      "detail_path": "docs/goals/assura-markdown-lint-link-reference-engine.md"
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-markdown-lint-link-reference-engine.md",
+      "marketing_claim": true,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/markdown_common_lint_tests.rs"],
+      "command": "assura check --format json .",
+      "smoke_args": ["check", "--format", "json", "."],
+      "expected_exit": 1
     },
     {
       "id": "markdown-local-link-checks",
       "label": "Markdown local link checks",
-      "status": "experimental",
-      "first_release": "v0.2.0",
-      "detail_path": "docs/goals/assura-markdown-lint-link-reference-engine.md"
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-markdown-lint-link-reference-engine.md",
+      "marketing_claim": true,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/markdown_link_reference_tests.rs"],
+      "command": "assura check --format json .",
+      "smoke_args": ["check", "--format", "json", "."],
+      "expected_exit": 1
     },
     {
       "id": "markdown-rule-severity-suppression",
       "label": "Markdown rule severity and suppressions",
-      "status": "experimental",
-      "first_release": "v0.2.0",
-      "detail_path": "docs/goals/assura-markdown-lint-link-reference-engine.md"
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-markdown-lint-link-reference-engine.md",
+      "marketing_claim": true,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/markdown_suppression_severity_tests.rs"],
+      "command": "assura check --format json .",
+      "smoke_args": ["check", "--format", "json", "."],
+      "expected_exit": 1
     },
     {
       "id": "repository-reference-facts",
@@ -71,9 +89,15 @@
     {
       "id": "repository-reference-checks",
       "label": "Repository reference checks",
-      "status": "experimental",
-      "first_release": "v0.2.0",
-      "detail_path": "docs/goals/assura-code-doc-reference-validation.md"
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-code-doc-reference-validation.md",
+      "marketing_claim": true,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/repository_reference_check_tests.rs"],
+      "command": "assura check --format json .",
+      "smoke_args": ["check", "--format", "json", "."],
+      "expected_exit": 1
     },
     {
       "id": "daemon-core-probe",
@@ -149,23 +173,51 @@
     {
       "id": "agent-integration-lifecycle",
       "label": "Agent integration lifecycle",
-      "status": "experimental",
-      "first_release": "v0.3.0",
-      "detail_path": "docs/goals/assura-agent-integration-lifecycle.md"
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-agent-integration-lifecycle.md",
+      "marketing_claim": true,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/agent_integration_cli.rs"],
+      "command": "assura agent integration activate codex . --dry-run --format json",
+      "smoke_args": ["agent", "integration", "activate", "codex", ".", "--dry-run", "--format", "json"],
+      "expected_exit": 0
     },
     {
       "id": "agent-ready-doctor-explain",
       "label": "Agent-ready doctor and explain",
-      "status": "experimental",
+      "status": "supported",
       "first_release": "unreleased",
-      "detail_path": "docs/goals/assura-agent-doctor-explain-feedback.md"
+      "detail_path": "docs/goals/assura-agent-doctor-explain-feedback.md",
+      "marketing_claim": false,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/doctor_explain_cli.rs"]
     },
     {
       "id": "agent-daemon-nudges",
       "label": "Agent daemon nudges",
-      "status": "experimental",
-      "first_release": "v0.2.0",
-      "detail_path": "docs/goals/assura-beta-agent-nudge-integrations.md"
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-beta-agent-nudge-integrations.md",
+      "marketing_claim": true,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/agent_surface_cli.rs"],
+      "command": "assura agent nudge . --agent codex --cooldown-seconds 0 --format json",
+      "smoke_args": ["agent", "nudge", ".", "--agent", "codex", "--cooldown-seconds", "0", "--format", "json"],
+      "expected_exit": 0
+    },
+    {
+      "id": "agent-guidance-contracts",
+      "label": "Agent guidance and skill contracts",
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "website/src/content/docs/reference/configuration.md",
+      "marketing_claim": true,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/agents_md.rs", "tests/skill_contract.rs"],
+      "command": "assura check --format json .",
+      "smoke_args": ["check", "--format", "json", "."],
+      "expected_exit": 1
     },
     {
       "id": "agent-onboarding",

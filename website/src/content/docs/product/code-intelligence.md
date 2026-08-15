@@ -15,7 +15,7 @@ facts; code-symbol providers are not required.
 | Imported provider facts | Roadmap | Provider output may enrich the graph when available. |
 | Symbol edges from modeled instances | Experimental candidate enrichment | Configured content fields create resolved or unresolved symbol references. |
 | Symbol queries | Experimental candidate enrichment | `assura content symbols` and `assura content symbol-refs` expose model-to-symbol and symbol-to-model relationships as inspection hints. |
-| Repository reference checks | Experimental | `extensions.repository_references` can report locally provable missing source/comment/docstring file targets, Markdown anchors, and line anchors during `assura check`. |
+| Repository reference checks | Supported next-release | `extensions.repository_references` reports locally provable missing source/comment/docstring file targets, Markdown anchors, and line anchors during `assura check`. |
 | Required standalone code service | Unsupported | Core validation must not require CKB, LIP, Codanna, CQS, Glean, SCIP, LSP, or hosted services. |
 
 Code intelligence can explain code context; it does not replace structure,

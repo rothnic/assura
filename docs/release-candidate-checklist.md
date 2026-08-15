@@ -5,23 +5,24 @@ status: active
 
 # Release Candidate Checklist
 
-Use this checklist for the v0.3.0 release candidate and any later pre-1.0
-release until a newer release process replaces it.
+Use this checklist for the next pre-1.0 release candidate. The candidate version
+must come from `Cargo.toml`; do not copy a previous release tag into these steps.
 
 ## Release Scope
 
-- Public CLI surface: `assura check`, `init`, `status`, `migrate`, `hooks`,
-  `quality plan`, `performance-report`, `agent`, `content`, and
-  `editor session`.
-- Experimental daemon surface: `assura daemon status`, `assura daemon start`,
+- Public CLI surface: `assura check`, `review`, `doctor`, `explain`, `init`,
+  `status`, `migrate`, `hooks`, `watch`, `quality plan`,
+  `performance-report`, `agent`, `content`, and `editor session`.
+- Supported next-release daemon surface: `assura daemon status`, `assura daemon start`,
   `assura daemon stop`, `assura daemon restart`, `assura daemon doctor`,
   `assura daemon logs`, `assura daemon health`, `assura daemon check-path`,
   and `assura daemon references`.
 - Stable agent feedback surface: `assura check --format agent`.
 - Codex adapter: `assura check --format agent --agent codex`.
-- Experimental local agent integration lifecycle: `assura agent integration`
-  for Codex, OpenCode, Claude, and Pi bundles. Host-agent configuration remains
-  manual opt-in.
+- Supported next-release managed agent integration lifecycle:
+  `assura agent integration` installs, activates, updates, deactivates, removes,
+  inspects, and diagnoses Assura-owned project-local Codex, OpenCode, Claude,
+  and Pi state.
 - Project Intelligence local surfaces: `assura init --project-intelligence`,
   `assura content context-pack`, `assura content session`, `assura agent ...`,
   `assura editor session`, and `.assura/models/**` model artifacts.
@@ -33,8 +34,8 @@ release until a newer release process replaces it.
   public third-party plugin APIs remain roadmap-only.
 - Relationship notation: `structure` captures, `exists:1`, `needs`, and
   `provides`.
-- Experimental extension surface: first-party specialized
-  `extensions.custom_constraints`.
+- Outside this candidate: first-party specialized
+  `extensions.custom_constraints` and public third-party plugin APIs.
 - Installable artifacts: GitHub release archives consumed by
   `website/public/install.sh` and `website/public/install.ps1`.
 
@@ -89,11 +90,13 @@ maintainer-owned exception recorded in the PR.
 
 1. Confirm `Cargo.toml` has the intended version.
 2. Confirm `docs/release-notes.md` names the same version.
-3. Create an annotated tag:
+3. Set `VERSION` to the exact `Cargo.toml` package version, then create an
+   annotated tag:
 
    ```bash
-   git tag -a v0.3.0 -m "Release v0.3.0"
-   git push origin v0.3.0
+   VERSION="x.y.z"
+   git tag -a "v${VERSION}" -m "Release v${VERSION}"
+   git push origin "v${VERSION}"
    ```
 
 4. Wait for `.github/workflows/release.yml` to publish release assets.
@@ -114,7 +117,8 @@ Run the live public URL gate after the release exists:
 
 ```bash
 cargo xtask release-live
-ASSURA_VERSION=v0.3.0 cargo xtask release-live
+VERSION="x.y.z"
+ASSURA_VERSION="v${VERSION}" cargo xtask release-live
 ```
 
 The live gate verifies unauthenticated access to the install scripts, all

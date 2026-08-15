@@ -1,6 +1,7 @@
 ---
 import AgentSetupDialog from './agent-setup-dialog.astro';
 import MarketingLayout from './marketing-layout.astro';
+import TerminalCard from './terminal-card.astro';
 import { agentSetupPrompt, installCommand, marketingNav } from '../../data/marketing';
 
 interface Item {
@@ -13,6 +14,13 @@ interface LinkItem {
   href: string;
 }
 
+interface ArtifactLine {
+  text: string;
+  tone?: string;
+}
+
+type ArtifactTone = 'prompt' | 'plain' | 'muted' | 'info' | 'warn' | 'pass' | 'fail';
+
 interface Props {
   title: string;
   description: string;
@@ -22,7 +30,8 @@ interface Props {
   heading: string;
   intro: string;
   artifactTitle: string;
-  artifactLines: string[];
+  artifactLines: Array<string | ArtifactLine>;
+  artifactKind?: 'review' | 'check' | 'onboarding' | 'neutral';
   highlights: Item[];
   sections: Item[];
   docsLinks: LinkItem[];
@@ -32,6 +41,12 @@ interface Props {
 }
 
 const props = Astro.props;
+const artifactTones = new Set<ArtifactTone>(['prompt', 'plain', 'muted', 'info', 'warn', 'pass', 'fail']);
+const artifactLines = props.artifactLines.map((line) => {
+  if (typeof line === 'string') return { text: line, tone: 'plain' as const };
+  const tone = artifactTones.has(line.tone as ArtifactTone) ? line.tone as ArtifactTone : 'plain';
+  return { text: line.text, tone };
+});
 ---
 
 <MarketingLayout
@@ -57,13 +72,12 @@ const props = Astro.props;
           </a>
         </div>
       </div>
-      <div class="focused-artifact" aria-label={props.artifactTitle}>
-        <header>
-          <span></span><span></span><span></span>
-          <strong>{props.artifactTitle}</strong>
-        </header>
-        <pre tabindex="0"><code>{props.artifactLines.join('\n')}</code></pre>
-      </div>
+      <TerminalCard
+        title={props.artifactTitle}
+        lines={artifactLines}
+        className="focused-artifact"
+        variant={props.artifactKind ?? 'neutral'}
+      />
     </section>
 
     <section class="focused-band" aria-label="Key points">

@@ -1,11 +1,7 @@
 ---
-import projectContract from '../../data/config-examples/homepage-agentic-project.yml?raw';
+import policyDemo from '../../data/policy-demo.json';
 
-const markers = new Map([
-  ['AGENTS.md: exists:1 | $agent-doc', '1'],
-  ['./*/: $workspace', '2'],
-  ['.ts: kebab-case | max_lines:500', '3'],
-]);
+const markers = new Map(policyDemo.markers.map((marker) => [marker.match, marker.id]));
 
 const splitYamlLine = (text: string) => {
   const content = text.trimStart();
@@ -34,13 +30,30 @@ const splitYamlLine = (text: string) => {
   return { indent, key: null, value: content };
 };
 
-const configLines = projectContract.trimEnd().split('\n').map((text) => {
+const configLines = policyDemo.config.trimEnd().split('\n').map((text) => {
   const trimmed = text.trim();
   return {
     ...splitYamlLine(text),
     marker: markers.get(trimmed),
   };
 });
+
+const statusLabel = {
+  verified: 'Check passed',
+  violation: 'Check violation',
+  context: 'Policy context',
+} as const;
+
+const statusSymbol = {
+  verified: '✓',
+  violation: '!',
+  context: '·',
+} as const;
+
+const treeRows = policyDemo.tree.map((row) => ({
+  ...row,
+  status: row.status as keyof typeof statusLabel,
+}));
 ---
 
 <div class="policy-tree-demo">
@@ -56,39 +69,34 @@ const configLines = projectContract.trimEnd().split('\n').map((text) => {
 
   <section class="tree-panel" aria-labelledby="policy-tree-title">
     <header>
-      <span>Same rules, applied</span>
-      <h3 id="policy-tree-title">Project tree</h3>
+      <span>Executable fixture</span>
+      <h3 id="policy-tree-title">Config and check result</h3>
     </header>
-    <ul class="tree-root">
-      <li>
-        <div class="tree-row neutral">
-          <span class="tree-status" aria-label="Project scope">·</span>
-          <code>project/</code><small>top-down policy</small>
-        </div>
-        <ul>
-          <li><div class="tree-row pass"><span class="tree-status" aria-label="Pass">✓</span><code>AGENTS.md</code><small><i class="rule-marker">1</i> required file</small></div></li>
-          <li>
-            <div class="tree-row neutral"><span class="tree-status" aria-label="Configured scope">·</span><code>packages/core/</code><small><i class="rule-marker">2</i> workspace contract</small></div>
-            <ul>
-              <li><div class="tree-row pass"><span class="tree-status" aria-label="Pass">✓</span><code>AGENTS.md</code><small><i class="rule-marker">1</i> required guidance</small></div></li>
-              <li><div class="tree-row pass"><span class="tree-status" aria-label="Pass">✓</span><code>package.json</code><small>required manifest</small></div></li>
-              <li>
-                <div class="tree-row neutral"><span class="tree-status" aria-label="Configured scope">·</span><code>src/</code><small>recursive defaults</small></div>
-                <ul>
-                  <li><div class="tree-row pass"><span class="tree-status" aria-label="Pass">✓</span><code>user-menu.ts</code><small><i class="rule-marker">3</i> 184 / 500 lines</small></div></li>
-                  <li><div class="tree-row fail"><span class="tree-status" aria-label="Blocking violation">!</span><code>BadName.ts</code><small><i class="rule-marker">3</i> expected kebab-case</small></div></li>
-                  <li><div class="tree-row fail"><span class="tree-status" aria-label="Blocking violation">!</span><code>checkout-flow.ts</code><small><i class="rule-marker">3</i> 537 / 500 lines</small></div></li>
-                </ul>
-              </li>
-            </ul>
-          </li>
-        </ul>
-      </li>
+    <ul class="tree-root tree-flat">
+      {treeRows.map((row) => (
+        <li
+          style={`--tree-depth: ${row.depth}`}
+          data-policy-path={'full_path' in row ? row.full_path : row.path}
+          data-policy-status={row.status}
+          data-policy-detail={row.detail}
+        >
+          <div class:list={['tree-row', row.status === 'context' ? 'neutral' : row.status === 'verified' ? 'pass' : 'fail']} title={'message' in row ? row.message : undefined}>
+            <span class="tree-status" aria-label={statusLabel[row.status]}>{statusSymbol[row.status]}</span>
+            <code>{row.path}</code>
+            <small>{'marker' in row && row.marker && <i class="rule-marker">{row.marker}</i>}{row.detail}</small>
+          </div>
+        </li>
+      ))}
     </ul>
     <footer>
-      <span><i class="legend-dot pass"></i> passes</span>
-      <span><i class="legend-dot fail"></i> blocking</span>
+      <span><i class="legend-dot pass"></i> check passed</span>
+      <span><i class="legend-dot fail"></i> check violation</span>
+      <span>{policyDemo.summary.files_checked} files · {policyDemo.summary.dirs_checked} dirs</span>
     </footer>
+    <p class="policy-evidence-note">
+      Fixture explanation generated from the checked config and its real
+      <code>{policyDemo.command}</code> result. This tree is not a separate CLI format.
+    </p>
   </section>
 
   <details class="policy-demo-more">

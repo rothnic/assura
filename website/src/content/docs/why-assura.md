@@ -6,25 +6,27 @@ sidebar:
   order: 2
 ---
 
-Assura v0.1 is a structure-first repository validator. It is useful when you
-want a repository shape to be explicit, checked locally, and enforced in CI.
+Assura is a structure-first project validator for AI-assisted development. It
+is useful when project shape, content expectations, and agent guidance should
+be explicit, checked locally, and enforced consistently before merge.
 
-The current supported workflow is intentionally small:
+The supported workflow has distinct jobs:
 
 - create `.assura/config.yml` with `assura init`
-- validate with `assura check`
+- inspect branch and worktree pressure with `assura review`
+- enforce configured policy with `assura check`
+- onboard and explicitly activate supported project-local agent integrations
+  with `assura agent onboard --activate`
 - migrate LS-Lint 2.3 projects with `assura migrate`
-- consume `text`, `json`, or `yaml` reports in local scripts and CI
+- consume human, JSON, YAML, and agent reports in local tools and CI
 
 > **Pre-1.0 scope**
 >
-> This release focuses on truthful onboarding and LS-Lint-compatible structure
-> checks. Advisory guided output and stable agent feedback are supported through
-> `assura check` formats. Optional Codex hook feedback is available only when
-> users wire `assura check --format agent --agent codex` into Codex hooks.
-> Automatic Codex hook installation, custom plugin APIs, role profiles,
-> daemon/editor support, and quality scoring are roadmap items, not supported
-> v0.1 features.
+> The current source contract keeps deterministic validation separate from
+> advisory review and inferred context. Managed Codex, OpenCode, Claude, and Pi
+> activation is explicit and project-local. Remote orchestration, public plugin
+> APIs, hosted execution, and automatic repair remain outside the supported
+> core product.
 
 ## The Problem
 
@@ -47,6 +49,8 @@ Assura turns those expectations into a checked project shape.
   wildcard extension, and directory-scope rules into `.assura/config.yml`.
 - **Automation Output**: Use text output for people and JSON/YAML reports for
   scripts, CI jobs, and release evidence.
+- **Agent Workflow**: Use bounded event feedback while editing, compact Review
+  before handoff, and Check as the configured merge gate.
 - **Benchmark Evidence**: The checked benchmark report compares the current
   `assura check` path against `@ls-lint/ls-lint@2.3.0` on the
   `realistic-equivalent` LS-Lint-compatible fixture cohort. Optional pinned
@@ -58,12 +62,14 @@ Assura turns those expectations into a checked project shape.
 Use Assura now when you need:
 
 - repository naming and structure rules to be executable
+- Markdown, local links, references, severity, suppressions, and agent guidance
+  to use the same deterministic report path
 - CI to reject files that do not match the allowed project shape
 - migration from LS-Lint configuration into a more explicit Assura config
 - JSON output that can be inspected by scripts or uploaded as a CI artifact
 
-Assura is especially useful for projects that want to define the allowed
-repository shape before adding more agent- or quality-oriented feedback.
+Assura is especially useful when multiple coding agents need timely shared
+project constraints without repeatedly inferring them from prose.
 
 ## When Another Tool May Fit Better
 
@@ -83,13 +89,12 @@ fast local signal from a complete project result.
 
 ## Agent Feedback Direction
 
-`assura check --format advice`, `--format status`, and `--format agent` provide
-the supported guided and agent feedback paths. Codex `UserPromptSubmit` hooks
-can inject feedback through `assura check --format agent --agent codex` when
-users wire that command manually. The lower-level integration package is a
-library helper for wrappers that already have JSON reports; it does not expose
-a separate feedback CLI. Automatic Codex hook installation, daemon/editor
-support, and complete agent orchestration remain future work.
+`assura agent nudge` provides bounded event-aware feedback, `assura review`
+summarizes advisory branch and worktree state, and
+`assura check --format agent` remains the authoritative policy report for
+agents. Managed project-local integrations activate those shared commands for
+Codex, OpenCode, Claude, and Pi without creating host-specific validation
+engines.
 
 ## Start Here
 

@@ -11,10 +11,10 @@ hosted service in the validation path.
 
 | Capability | Status | Notes |
 | --- | --- | --- |
-| Structure-first config | Shipped | `structure`, `files`, `directories`, `children`, `exists`, and `exclude` are the current foundation. |
+| Structure-first config | Shipped | `structure`, reusable `rules`, path selectors, `exists`, naming, line/size limits, child limits, and `exclude` are the current foundation. |
 | LS-Lint migration | Shipped | `assura migrate` converts supported LS-Lint 2.3 shape rules into Assura config. |
 | JSON/YAML/text reports | Shipped | `assura check` emits local and CI-friendly reports. |
-| Guided feedback formats | Experimental | Advice, status, and agent JSON reuse the same check pipeline. |
+| Guided feedback formats | Supported | Advice, status, and agent JSON reuse the same check pipeline. |
 
 ## When To Use It
 

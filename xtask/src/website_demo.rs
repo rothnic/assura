@@ -11,6 +11,7 @@ use std::process::{Command, Output};
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
 const FIXTURE_SOURCE: &str = "tests/fixtures/real-project-agentic-feedback/valid";
+const INTELLIGENCE_FIXTURE_SOURCE: &str = "tests/fixtures/content_runtime/valid";
 const OUTPUT_DIR: &str = "website/src/data";
 const RELEASE_SURFACES_PATH: &str = "docs/data/release-surfaces.json";
 const CONFIG_EXAMPLES_DIR: &str = "website/src/data/config-examples";
@@ -45,28 +46,77 @@ pub(crate) fn run(args: &[String]) -> Result<()> {
     build_assura(&root)?;
     let binary = root.join("target/debug/assura-full");
     validate_lslint_config_example(&root, &binary)?;
-    validate_homepage_policy_example(&root, &binary)?;
+    let policy_demo = validate_homepage_policy_example(&root, &binary)?;
     validate_agentic_monorepo_example(&root, &binary)?;
     println!("Website Assura config examples are valid.");
-    let (fixture, onboarding) = prepare_fixture(&root, &binary)?;
-    validate_claims(&root, &binary, &fixture, require_released)?;
+    let claims_fixture = prepare_fixture(&root, "claims")?;
+    let (onboarding_work, onboarding, onboarding_text) =
+        prepare_onboarding_evidence(&root, &binary)?;
+    validate_claims(&root, &binary, &claims_fixture, require_released)?;
     validate_website_commands(&root)?;
     validate_docs_config_examples(&root, &binary)?;
 
-    let review = run_json(
+    let review_json_fixture = prepare_fixture(&root, "review-json")?;
+    let review_text_fixture = prepare_fixture(&root, "review-text")?;
+    let check_json_fixture = prepare_fixture(&root, "check-json")?;
+    let check_text_fixture = prepare_fixture(&root, "check-text")?;
+    let review = run_json_at(
         &binary,
-        &["review", "--format", "json", path_text(&fixture)?],
+        &["review", "--format", "json", "."],
+        &review_json_fixture,
     )?;
-    let check = run_json(
+    let review_text = normalize_project_path(
+        &run_text_at(
+            &binary,
+            &["review", "--format", "text", "."],
+            &review_text_fixture,
+        )?,
+        &review_text_fixture,
+    );
+    let check = run_json_at(
         &binary,
-        &["check", "--format", "json", path_text(&fixture)?],
+        &["check", "--format", "json", "."],
+        &check_json_fixture,
     )?;
+    let check_text = normalize_project_path(
+        &run_text_at(
+            &binary,
+            &["check", "--format", "text", "."],
+            &check_text_fixture,
+        )?,
+        &check_text_fixture,
+    );
+    let intelligence_fixture = root.join(INTELLIGENCE_FIXTURE_SOURCE);
+    let intelligence_args = [
+        "content",
+        "context-pack",
+        ".",
+        "--collection",
+        "goals",
+        "--id",
+        "goal-portable-structure",
+        "--format",
+    ];
+    let mut intelligence_json_args = intelligence_args.to_vec();
+    intelligence_json_args.push("json");
+    let intelligence = run_json_at(&binary, &intelligence_json_args, &intelligence_fixture)?;
+    let mut intelligence_text_args = intelligence_args.to_vec();
+    intelligence_text_args.push("text");
+    let intelligence_text = run_text_at(&binary, &intelligence_text_args, &intelligence_fixture)?;
     let performance = read_json(root.join("website/public/data/performance/current.json"))?;
 
     let outputs = [
-        ("review-demo.json", compact_review(&review)),
-        ("check-demo.json", compact_check(&check)),
-        ("onboarding-demo.json", compact_onboarding(&onboarding)),
+        ("review-demo.json", compact_review(&review, &review_text)?),
+        ("check-demo.json", compact_check(&check, &check_text)?),
+        (
+            "onboarding-demo.json",
+            compact_onboarding(&onboarding, &onboarding_text)?,
+        ),
+        (
+            "intelligence-demo.json",
+            compact_intelligence(&intelligence, &intelligence_text)?,
+        ),
+        ("policy-demo.json", policy_demo),
         (
             "performance-summary.json",
             compact_performance(&root, &performance)?,
@@ -89,7 +139,16 @@ pub(crate) fn run(args: &[String]) -> Result<()> {
         }
     }
 
-    let _ = fs::remove_dir_all(fixture.parent().unwrap_or(&fixture));
+    for fixture in [
+        claims_fixture,
+        review_json_fixture,
+        review_text_fixture,
+        check_json_fixture,
+        check_text_fixture,
+    ] {
+        let _ = fs::remove_dir_all(fixture.parent().unwrap_or(&fixture));
+    }
+    let _ = fs::remove_dir_all(onboarding_work);
     if stale.is_empty() {
         if check_only {
             println!("Website demo data is current.");
@@ -324,7 +383,8 @@ fn validate_agentic_monorepo_example(root: &Path, binary: &Path) -> Result<()> {
     Ok(())
 }
 
-fn validate_homepage_policy_example(root: &Path, binary: &Path) -> Result<()> {
+fn validate_homepage_policy_example(root: &Path, binary: &Path) -> Result<Value> {
+    const SOURCE_LINE_LIMIT: usize = 500;
     let project = example_project(root, "homepage-agentic-project")?;
     install_example_config(root, &project, "homepage-agentic-project.yml")?;
     fs::create_dir_all(project.join("docs"))?;
@@ -337,9 +397,9 @@ fn validate_homepage_policy_example(root: &Path, binary: &Path) -> Result<()> {
     fs::write(package.join("package.json"), "{}\n")?;
     fs::write(
         package.join("src/user-menu.ts"),
-        "export const UserMenu = () => null;\n",
+        "export const userMenuPart = true;\n".repeat(184),
     )?;
-    run_example_check(binary, &project, true)?;
+    let baseline_report = run_example_check(binary, &project, true)?;
 
     fs::remove_file(package.join("AGENTS.md"))?;
     fs::remove_file(package.join("package.json"))?;
@@ -363,7 +423,11 @@ fn validate_homepage_policy_example(root: &Path, binary: &Path) -> Result<()> {
 
     fs::write(
         package.join("src/BadName.ts"),
-        "export const value = true;\n".repeat(501),
+        "export const badName = true;\n",
+    )?;
+    fs::write(
+        package.join("src/checkout-flow.ts"),
+        "export const checkoutFlowPart = true;\n".repeat(537),
     )?;
     let report = run_example_check(binary, &project, false)?;
     require_example_violation(
@@ -375,11 +439,71 @@ fn validate_homepage_policy_example(root: &Path, binary: &Path) -> Result<()> {
     require_example_violation(
         "homepage-agentic-project.yml",
         &report,
-        "BadName.ts",
+        "checkout-flow.ts",
         "max_lines",
     )?;
+    let naming_violation = find_example_violation(&report, "BadName.ts", "file_naming")?;
+    let line_violation = find_example_violation(&report, "checkout-flow.ts", "max_lines")?;
+    let config = fs::read_to_string(project.join(".assura/config.yml"))?;
+    if !config.contains(&format!("max_lines:{SOURCE_LINE_LIMIT}")) {
+        return Err("homepage policy source line limit is not represented in its config".into());
+    }
+    let user_menu_lines = file_line_count(&package.join("src/user-menu.ts"))?;
+    let checkout_lines = file_line_count(&package.join("src/checkout-flow.ts"))?;
+    let artifact = json!({
+        "schema": "assura.website-policy-demo.v1",
+        "generated_from": "assura check --format json .",
+        "presentation": "fixture_explanation",
+        "command": "assura check --format json .",
+        "config": config.trim_end(),
+        "markers": [
+            {"id": "1", "match": "AGENTS.md: exists:1 | $agent-doc", "label": "required agent guidance"},
+            {"id": "2", "match": "./*/: $workspace", "label": "reused workspace contract"},
+            {"id": "3", "match": ".ts: kebab-case | max_lines:500", "label": "source naming and line limit"}
+        ],
+        "tree": [
+            {"path": "project/", "depth": 0, "status": "context", "detail": "top-down policy"},
+            {"path": "AGENTS.md", "depth": 1, "status": "verified", "detail": "required file", "marker": "1"},
+            {"path": "packages/core/", "depth": 1, "status": "context", "detail": "workspace contract", "marker": "2"},
+            {"path": "AGENTS.md", "full_path": "packages/core/AGENTS.md", "depth": 2, "status": "verified", "detail": "required guidance", "marker": "1"},
+            {"path": "package.json", "full_path": "packages/core/package.json", "depth": 2, "status": "verified", "detail": "required manifest"},
+            {"path": "src/", "full_path": "packages/core/src/", "depth": 2, "status": "context", "detail": "recursive defaults"},
+            {"path": "user-menu.ts", "full_path": "packages/core/src/user-menu.ts", "depth": 3, "status": "verified", "detail": format!("{user_menu_lines} / {SOURCE_LINE_LIMIT} lines"), "marker": "3"},
+            {"path": "BadName.ts", "full_path": "packages/core/src/BadName.ts", "depth": 3, "status": "violation", "detail": "expected kebab-case", "message": naming_violation["message"], "marker": "3"},
+            {"path": "checkout-flow.ts", "full_path": "packages/core/src/checkout-flow.ts", "depth": 3, "status": "violation", "detail": format!("{checkout_lines} / {SOURCE_LINE_LIMIT} lines"), "message": line_violation["message"], "marker": "3"}
+        ],
+        "evidence": {
+            "baseline_success": baseline_report["success"],
+            "baseline_files_checked": baseline_report["files_checked"],
+            "baseline_dirs_checked": baseline_report["dirs_checked"],
+            "violation_success": report["success"]
+        },
+        "summary": {
+            "files_checked": report["files_checked"],
+            "dirs_checked": report["dirs_checked"],
+            "violations": report["violations"].as_array().map_or(0, Vec::len)
+        }
+    });
     fs::remove_dir_all(project.parent().unwrap_or(&project))?;
-    Ok(())
+    Ok(artifact)
+}
+
+fn find_example_violation<'a>(report: &'a Value, path: &str, rule: &str) -> Result<&'a Value> {
+    report["violations"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .find(|violation| {
+            violation["path"]
+                .as_str()
+                .is_some_and(|candidate| candidate.contains(path))
+                && violation["rule"].as_str() == Some(rule)
+        })
+        .ok_or_else(|| format!("missing `{rule}` website example violation for `{path}`").into())
+}
+
+fn file_line_count(path: &Path) -> Result<usize> {
+    Ok(fs::read_to_string(path)?.lines().count())
 }
 
 fn validate_repair_document_references(project: &Path) -> Result<()> {
@@ -776,10 +900,10 @@ fn validate_website_commands(root: &Path) -> Result<()> {
     Ok(())
 }
 
-fn prepare_fixture(root: &Path, binary: &Path) -> Result<(PathBuf, Value)> {
+fn prepare_fixture(root: &Path, name: &str) -> Result<PathBuf> {
     let work = root
         .join("target")
-        .join(format!("website-demo-{}", std::process::id()));
+        .join(format!("website-demo-{name}-{}", std::process::id()));
     let project = work.join("project");
     let remote = work.join("remote.git");
     let _ = fs::remove_dir_all(&work);
@@ -788,15 +912,8 @@ fn prepare_fixture(root: &Path, binary: &Path) -> Result<(PathBuf, Value)> {
     let mut config_text = fs::read_to_string(&config)?;
     config_text.push_str("  - .git/**\n");
     fs::write(config, config_text)?;
-    let onboarding = run_json_at(
-        binary,
-        &[
-            "agent", "onboard", ".", "--agent", "auto", "--format", "json",
-        ],
-        &project,
-    )?;
-
     git(&project, &["init"])?;
+    fs::write(project.join(".git/info/exclude"), ".assura/cache/\n")?;
     git(
         &project,
         &["config", "user.email", "website-evidence@assura.dev"],
@@ -834,10 +951,84 @@ fn prepare_fixture(root: &Path, binary: &Path) -> Result<(PathBuf, Value)> {
         project.join("apps/web/src/BadName.tsx"),
         "export const rushedHelper = true;\n",
     )?;
-    Ok((project, onboarding))
+    Ok(project)
 }
 
-fn compact_review(report: &Value) -> Value {
+fn prepare_onboarding_evidence(root: &Path, binary: &Path) -> Result<(PathBuf, Value, String)> {
+    let work = root
+        .join("target")
+        .join(format!("website-onboarding-demo-{}", std::process::id()));
+    let _ = fs::remove_dir_all(&work);
+    let json_project = work.join("json-project");
+    let text_project = work.join("text-project");
+    prepare_onboarding_project(&json_project)?;
+    prepare_onboarding_project(&text_project)?;
+    let args = [
+        "agent",
+        "onboard",
+        ".",
+        "--agent",
+        "codex",
+        "--activate",
+        "--format",
+    ];
+    let mut json_args = args.to_vec();
+    json_args.push("json");
+    let onboarding = run_json_at(binary, &json_args, &json_project)?;
+    let mut text_args = args.to_vec();
+    text_args.push("text");
+    let text = run_text_at(binary, &text_args, &text_project)?;
+    Ok((
+        work,
+        onboarding,
+        normalize_project_path(&text, &text_project),
+    ))
+}
+
+fn prepare_onboarding_project(project: &Path) -> Result<()> {
+    fs::create_dir_all(project.join("src"))?;
+    fs::write(
+        project.join("package.json"),
+        "{\n  \"name\": \"agent-ready-project\"\n}\n",
+    )?;
+    fs::write(project.join("src/index.ts"), "export const ready = true;\n")?;
+    Ok(())
+}
+
+fn compact_review(report: &Value, rendered_text: &str) -> Result<Value> {
+    let rendered_text = rendered_text.trim_end();
+    let display_lines = terminal_lines(rendered_text, review_tone);
+    let hero_lines = select_terminal_lines(
+        rendered_text,
+        &[
+            "Assura review",
+            "Check",
+            "Thresholds",
+            "Branch",
+            "Worktree",
+            "Hot dirs",
+            "Fix now",
+            "Run",
+        ],
+        review_tone,
+    )?;
+    let artifact_lines = select_terminal_lines(
+        rendered_text,
+        &[
+            "Assura review",
+            "Check",
+            "Thresholds",
+            "Branch",
+            "Worktree",
+            "Hot dirs",
+            "Findings",
+            "Fix now",
+            "Configure",
+            "Next",
+            "Run",
+        ],
+        review_tone,
+    )?;
     let totals = &report["heatmap"]["totals"];
     let signals = report["heatmap"]["hot_dirs"]
         .as_array()
@@ -884,47 +1075,11 @@ fn compact_review(report: &Value) -> Value {
             })
         })
         .collect::<Vec<_>>();
-    let source_signal = signals
-        .iter()
-        .find(|signal| signal["path"] == "apps/web/src");
-    let source_violations = source_signal
-        .and_then(|signal| signal["violations"].as_u64())
-        .unwrap_or_else(|| {
-            report["structure"]["violations"]
-                .as_u64()
-                .unwrap_or_default()
-        });
-    let branch = &report["heatmap"]["branch"];
     let next_command = report["next_actions"]
         .as_array()
         .and_then(|actions| actions.first())
         .and_then(|action| action["command"].as_str())
         .unwrap_or("assura explain apps/web/src");
-    let display_lines = json!([
-        {"text": "$ assura review", "tone": "prompt"},
-        {"text": format!("Project status: {}", report["status"].as_str().unwrap_or("unknown")), "tone": "plain"},
-        {"text": format!("Compared with {}", branch["base"].as_str().unwrap_or("detected base")), "tone": "muted"},
-        {"text": "", "tone": "plain"},
-        {"text": format!(
-            "Branch    {} file | +{}/-{} lines | {} commit",
-            totals["branch_changed_files"].as_u64().unwrap_or_default(),
-            totals["branch_line_additions"].as_u64().unwrap_or_default(),
-            totals["branch_line_deletions"].as_u64().unwrap_or_default(),
-            branch["commits_on_branch"].as_u64().unwrap_or_default()
-        ), "tone": "info"},
-        {"text": format!(
-            "Worktree  {} modified | {} untracked | +{}/-{}",
-            totals["modified_files"].as_u64().unwrap_or_default(),
-            totals["untracked_files"].as_u64().unwrap_or_default(),
-            totals["worktree_line_additions"].as_u64().unwrap_or_default(),
-            totals["worktree_line_deletions"].as_u64().unwrap_or_default()
-        ), "tone": "info"},
-        {"text": "", "tone": "plain"},
-        {"text": "Needs attention", "tone": "plain"},
-        {"text": format!("! apps/web/src/   file naming   {source_violations} violation"), "tone": "warn"},
-        {"text": "", "tone": "plain"},
-        {"text": format!("Next  {next_command}"), "tone": "pass"}
-    ]);
     let metrics = json!([
         {"label": "Policy", "value": report["summary"]["blocking"].to_string(), "detail": "blocking violation"},
         {"label": "Branch", "value": format!("{} file", totals["branch_changed_files"].as_u64().unwrap_or_default()), "detail": format!("+{} / -{} lines", totals["branch_line_additions"].as_u64().unwrap_or_default(), totals["branch_line_deletions"].as_u64().unwrap_or_default())},
@@ -932,7 +1087,7 @@ fn compact_review(report: &Value) -> Value {
         {"label": "Inactive", "value": report["summary"]["inactive"].to_string(), "detail": "reported, not passed"}
     ]);
 
-    json!({
+    Ok(json!({
         "schema": "assura.website-review-demo.v1",
         "generated_from": report["schema"],
         "command": "assura review",
@@ -956,12 +1111,37 @@ fn compact_review(report: &Value) -> Value {
         "signals": signals,
         "findings": findings,
         "next_command": next_command,
+        "rendered_text": rendered_text,
         "display_lines": display_lines,
+        "hero_lines": hero_lines,
+        "artifact_lines": artifact_lines,
         "metrics": metrics
-    })
+    }))
 }
 
-fn compact_check(report: &Value) -> Value {
+fn compact_check(report: &Value, rendered_text: &str) -> Result<Value> {
+    let rendered_text = rendered_text.trim_end();
+    let display_lines = terminal_lines(rendered_text, check_tone);
+    let first_fix = rendered_text
+        .lines()
+        .position(|line| line.starts_with("  Fix:"))
+        .ok_or("check text renderer did not include corrective context")?;
+    let artifact_text = rendered_text
+        .lines()
+        .take(first_fix + 1)
+        .collect::<Vec<_>>()
+        .join("\n");
+    for required in [
+        "Assura structure check",
+        "Violations",
+        "  Blocking: true",
+        "  Fix:",
+    ] {
+        if !artifact_text.contains(required) {
+            return Err(format!("check text renderer did not include `{required}`").into());
+        }
+    }
+    let artifact_lines = terminal_lines(&artifact_text, check_tone);
     let violations = report["violations"]
         .as_array()
         .into_iter()
@@ -977,7 +1157,7 @@ fn compact_check(report: &Value) -> Value {
             })
         })
         .collect::<Vec<_>>();
-    json!({
+    Ok(json!({
         "schema": "assura.website-check-demo.v1",
         "generated_from": "assura check --format json",
         "command": "assura check",
@@ -985,15 +1165,31 @@ fn compact_check(report: &Value) -> Value {
         "files_checked": report["files_checked"],
         "dirs_checked": report["dirs_checked"],
         "violation_count": report["violations"].as_array().map_or(0, Vec::len),
-        "violations": violations
-    })
+        "violations": violations,
+        "rendered_text": rendered_text,
+        "display_lines": display_lines,
+        "artifact_lines": artifact_lines
+    }))
 }
 
-fn compact_onboarding(report: &Value) -> Value {
-    json!({
+fn compact_onboarding(report: &Value, rendered_text: &str) -> Result<Value> {
+    let rendered_text = rendered_text.trim_end();
+    for required in [
+        "Assura agent onboarding",
+        "Host",
+        "Lifecycle",
+        "Review",
+        "Deferred",
+        "Packet",
+    ] {
+        if !rendered_text.lines().any(|line| line.starts_with(required)) {
+            return Err(format!("onboarding text renderer did not include `{required}`").into());
+        }
+    }
+    Ok(json!({
         "schema": "assura.website-onboarding-demo.v1",
         "generated_from": report["schema"],
-        "command": "assura agent onboard . --agent auto --format json",
+        "command": "assura agent onboard . --agent codex --activate --format text",
         "installed": report["installed"],
         "detected": report["detected"],
         "integration": report["integration"],
@@ -1007,8 +1203,189 @@ fn compact_onboarding(report: &Value) -> Value {
             "trigger": profile["trigger"],
             "blocking": profile["blocking"]
         })).collect::<Vec<_>>(),
-        "next_actions": report["next_actions"]
-    })
+        "next_actions": report["next_actions"],
+        "rendered_text": rendered_text,
+        "display_lines": terminal_lines(rendered_text, onboarding_tone),
+        "artifact_lines": select_terminal_lines(
+            rendered_text,
+            &[
+                "Assura agent onboarding",
+                "Project",
+                "Agent",
+                "Policy",
+                "Host",
+                "Lifecycle",
+                "Verified",
+                "Review",
+                "Deferred",
+                "Next",
+                "Packet",
+            ],
+            onboarding_tone,
+        )?
+    }))
+}
+
+fn compact_intelligence(report: &Value, rendered_text: &str) -> Result<Value> {
+    let rendered_text = rendered_text.trim_end();
+    for required in [
+        "Context pack: object",
+        "diagnostics:",
+        "instance:",
+        "omissions:",
+    ] {
+        if !rendered_text.lines().any(|line| line.starts_with(required)) {
+            return Err(format!("context-pack text renderer did not include `{required}`").into());
+        }
+    }
+    Ok(json!({
+        "schema": "assura.website-intelligence-demo.v1",
+        "generated_from": report["schema"],
+        "command": "assura content context-pack . --collection goals --id goal-portable-structure --format text",
+        "request": report["request"],
+        "bounds": report["bounds"],
+        "diagnostics": report["diagnostics"],
+        "instance": report["instance"],
+        "related": report["related"],
+        "repository_references": report["repository_references"],
+        "rendered_text": rendered_text,
+        "artifact_lines": terminal_lines(rendered_text, intelligence_tone)
+    }))
+}
+
+fn terminal_lines(text: &str, tone: fn(&str) -> &'static str) -> Vec<Value> {
+    text.lines()
+        .map(|line| json!({"text": line, "tone": tone(line)}))
+        .collect()
+}
+
+fn select_terminal_lines(
+    rendered_text: &str,
+    prefixes: &[&str],
+    tone: fn(&str) -> &'static str,
+) -> Result<Vec<Value>> {
+    let lines = rendered_text.lines().collect::<Vec<_>>();
+    prefixes
+        .iter()
+        .map(|prefix| {
+            let line = lines
+                .iter()
+                .find(|line| line.starts_with(prefix))
+                .ok_or_else(|| format!("text renderer did not include `{prefix}`"))?;
+            Ok(json!({"text": line, "tone": tone(line)}))
+        })
+        .collect()
+}
+
+fn review_tone(line: &str) -> &'static str {
+    if line.starts_with("Assura review") {
+        "prompt"
+    } else if line.starts_with("Check") {
+        if line.contains(" fail") {
+            "fail"
+        } else {
+            "pass"
+        }
+    } else if line.starts_with("Fix now") {
+        if line.ends_with("none") {
+            "muted"
+        } else {
+            "fail"
+        }
+    } else if line.starts_with("Configure") || line.starts_with("Inspect") {
+        if line.ends_with("none") {
+            "muted"
+        } else {
+            "warn"
+        }
+    } else if line.starts_with("Run") {
+        "pass"
+    } else if [
+        "Heat",
+        "Thresholds",
+        "Branch",
+        "Worktree",
+        "Hot dirs",
+        "Content",
+        "Findings",
+    ]
+    .iter()
+    .any(|prefix| line.starts_with(prefix))
+    {
+        "info"
+    } else if line.starts_with("Policy") || line.starts_with("Details") {
+        "muted"
+    } else {
+        "plain"
+    }
+}
+
+fn check_tone(line: &str) -> &'static str {
+    if line == "Assura structure check" {
+        "prompt"
+    } else if line.starts_with("Violations: ") {
+        if line.ends_with(" 0") {
+            "pass"
+        } else {
+            "fail"
+        }
+    } else if line.starts_with("  Blocking: true") || line.contains(" [") {
+        "fail"
+    } else if line.starts_with("  Fix:") {
+        "warn"
+    } else if line.starts_with("Project root:")
+        || line.starts_with("Config:")
+        || line.starts_with("Checked path:")
+    {
+        "muted"
+    } else if line.starts_with("Files checked:") || line.starts_with("Directories checked:") {
+        "info"
+    } else {
+        "plain"
+    }
+}
+
+fn onboarding_tone(line: &str) -> &'static str {
+    if line == "Assura agent onboarding" {
+        "prompt"
+    } else if line.starts_with("Host") {
+        if line.contains("activated=true")
+            && line.contains("verified=true")
+            && line.contains("conflicted=false")
+        {
+            "pass"
+        } else {
+            "warn"
+        }
+    } else if line.starts_with("Verified") {
+        "pass"
+    } else if line.starts_with("Review") || line.starts_with("Deferred") {
+        "warn"
+    } else if line.starts_with("Next") || line.starts_with("Packet") {
+        "pass"
+    } else if line.starts_with("Version") || line.starts_with("Content") {
+        "muted"
+    } else {
+        "info"
+    }
+}
+
+fn intelligence_tone(line: &str) -> &'static str {
+    if line.starts_with("Context pack:") {
+        "prompt"
+    } else if line.starts_with("diagnostics:") {
+        if line.starts_with("diagnostics: 0;") {
+            "pass"
+        } else {
+            "warn"
+        }
+    } else if line.starts_with("instance:") {
+        "info"
+    } else if line.starts_with("omissions:") {
+        "muted"
+    } else {
+        "plain"
+    }
 }
 
 fn compact_performance(root: &Path, report: &Value) -> Result<Value> {
@@ -1034,11 +1411,6 @@ fn compact_performance(root: &Path, report: &Value) -> Result<Value> {
     }))
 }
 
-fn run_json(binary: &Path, args: &[&str]) -> Result<Value> {
-    let current_dir = std::env::current_dir()?;
-    run_json_at(binary, args, &current_dir)
-}
-
 fn run_json_at(binary: &Path, args: &[&str], current_dir: &Path) -> Result<Value> {
     let output = Command::new(binary)
         .current_dir(current_dir)
@@ -1048,6 +1420,26 @@ fn run_json_at(binary: &Path, args: &[&str], current_dir: &Path) -> Result<Value
         return Err(command_error("run Assura website evidence command", &output).into());
     }
     serde_json::from_slice(&output.stdout).map_err(Into::into)
+}
+
+fn run_text_at(binary: &Path, args: &[&str], current_dir: &Path) -> Result<String> {
+    let output = Command::new(binary)
+        .current_dir(current_dir)
+        .env("NO_COLOR", "1")
+        .args(args)
+        .output()?;
+    if !output.status.success() && output.status.code() != Some(1) {
+        return Err(command_error("run Assura website text evidence command", &output).into());
+    }
+    String::from_utf8(output.stdout).map_err(Into::into)
+}
+
+fn normalize_project_path(text: &str, project: &Path) -> String {
+    let mut normalized = text.replace(&project.display().to_string(), ".");
+    if let Ok(canonical) = project.canonicalize() {
+        normalized = normalized.replace(&canonical.display().to_string(), ".");
+    }
+    normalized
 }
 
 fn package_version(path: &Path) -> Result<String> {

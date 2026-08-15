@@ -722,6 +722,7 @@ exclude:
     let stdout = String::from_utf8_lossy(&text.stdout);
     assert!(stdout.contains("\x1b["));
     assert!(stdout.contains("Assura review"));
+    assert!(stdout.contains("attention"));
     assert!(stdout.contains("Check"));
     assert!(stdout.contains("Details"));
 }

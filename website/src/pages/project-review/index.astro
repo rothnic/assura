@@ -15,12 +15,13 @@ const structuredData = { '@context': 'https://schema.org', '@type': 'TechArticle
   eyebrow="Project review"
   heading="See what this branch changed before review starts."
   intro="Assura Review is a compact project-health radar. It separates branch and worktree change pressure, reports configured and inactive signals, and directs the agent to Explain or the authoritative Check gate."
-  artifactTitle="assura review · branch + worktree"
-  artifactLines={review.display_lines.map((line) => line.text)}
+  artifactTitle={review.command}
+  artifactLines={review.artifact_lines}
+  artifactKind="review"
   highlights={[
-    { label: 'Branch', body: `${review.metrics.branch_files} changed file and concrete line churn compared with the detected source branch.` },
-    { label: 'Worktree', body: `${review.metrics.worktree_modified} modified and ${review.metrics.worktree_untracked} untracked path kept separate from committed work.` },
-    { label: 'Policy', body: `${review.metrics.blocking} blocking violation and ${review.metrics.inactive} inactive capabilities, without treating unchecked behavior as passing.` },
+    { label: 'Branch', body: `${review.branch.files} changed file and concrete line churn compared with the detected source branch.` },
+    { label: 'Worktree', body: `${review.worktree.modified} modified and ${review.worktree.untracked} untracked path kept separate from committed work.` },
+    { label: 'Policy', body: `${review.summary.blocking} blocking violation and ${review.summary.inactive} inactive capabilities, without treating unchecked behavior as passing.` },
   ]}
   sections={[
     { label: 'Review is the radar', body: 'Use a bounded diagnostic while work is in progress. Review summarizes project health and change context without replacing the final gate.' },

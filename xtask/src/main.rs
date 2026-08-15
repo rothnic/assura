@@ -3939,6 +3939,7 @@ fn check_command_surface_support(checks: &mut Checks) {
     let compatibility_text = read("docs/compatibility-and-surface.md");
     let args_text = [
         read("src/cli/args.rs"),
+        read("src/cli/agent_args.rs"),
         read("src/cli/content_args.rs"),
         read("src/cli/daemon.rs"),
     ]
@@ -4012,7 +4013,7 @@ fn check_cli_command_inventory(checks: &mut Checks, args_text: &str) {
         checks.require(
             actual_variants == expected_variants,
             format!(
-                "src/cli/args.rs: {enum_name} variants {actual_variants:?} do not match support matrix inventory {expected_variants:?}"
+                "CLI argument enums: {enum_name} variants {actual_variants:?} do not match support matrix inventory {expected_variants:?}"
             ),
         );
     }
@@ -4204,7 +4205,7 @@ fn check_post_beta_release_hardening(checks: &mut Checks) {
         "\"id\": \"daemon-mode\",\n      \"label\": \"Daemon mode\",\n      \"status\": \"supported\",\n      \"first_release\": \"unreleased\"",
         "\"id\": \"vscode-extension\",\n      \"label\": \"VS Code beta local package\",\n      \"status\": \"supported\",\n      \"first_release\": \"v0.3.0\"",
         "\"id\": \"extension-api-boundaries\",\n      \"label\": \"Extension API boundaries\",\n      \"status\": \"supported\",\n      \"first_release\": \"v0.3.0\"",
-        "\"id\": \"agent-integration-lifecycle\",\n      \"label\": \"Agent integration lifecycle\",\n      \"status\": \"experimental\",\n      \"first_release\": \"v0.3.0\"",
+        "\"id\": \"agent-integration-lifecycle\",\n      \"label\": \"Agent integration lifecycle\",\n      \"status\": \"supported\",\n      \"first_release\": \"unreleased\"",
     ] {
         checks.require(
             release_surfaces.contains(marker),
@@ -4228,12 +4229,12 @@ fn check_post_beta_release_hardening(checks: &mut Checks) {
         ".trellis/spec/assura/roadmap.md: support hardening is not routed",
     );
     for marker in [
-        "Experimental daemon surface",
+        "Supported next-release daemon surface",
         "assura daemon status",
         "assura daemon check-path",
-        "Experimental local agent integration lifecycle",
+        "Supported next-release managed agent integration lifecycle",
         "assura agent integration",
-        "Codex, OpenCode, Claude, and Pi",
+        "Assura-owned project-local Codex",
         "Supported beta local editor package",
         "integrations/editors/vscode",
         "pnpm --dir integrations/editors/vscode test",
@@ -4411,6 +4412,101 @@ const CLI_COMMAND_VARIANT_ROWS: &[CliCommandVariantRow] = &[
         enum_name: "FixCommands",
         variant_name: "Markdown",
         command_surface_names: &["assura fix markdown"],
+    },
+    CliCommandVariantRow {
+        enum_name: "AgentCommands",
+        variant_name: "Onboard",
+        command_surface_names: &["assura agent onboard"],
+    },
+    CliCommandVariantRow {
+        enum_name: "AgentCommands",
+        variant_name: "Context",
+        command_surface_names: &["assura agent"],
+    },
+    CliCommandVariantRow {
+        enum_name: "AgentCommands",
+        variant_name: "Diagnostics",
+        command_surface_names: &["assura agent"],
+    },
+    CliCommandVariantRow {
+        enum_name: "AgentCommands",
+        variant_name: "ContextPack",
+        command_surface_names: &["assura agent"],
+    },
+    CliCommandVariantRow {
+        enum_name: "AgentCommands",
+        variant_name: "Show",
+        command_surface_names: &["assura agent"],
+    },
+    CliCommandVariantRow {
+        enum_name: "AgentCommands",
+        variant_name: "Search",
+        command_surface_names: &["assura agent"],
+    },
+    CliCommandVariantRow {
+        enum_name: "AgentCommands",
+        variant_name: "MissingRelations",
+        command_surface_names: &["assura agent"],
+    },
+    CliCommandVariantRow {
+        enum_name: "AgentCommands",
+        variant_name: "Expand",
+        command_surface_names: &["assura agent"],
+    },
+    CliCommandVariantRow {
+        enum_name: "AgentCommands",
+        variant_name: "SafeFixes",
+        command_surface_names: &["assura agent"],
+    },
+    CliCommandVariantRow {
+        enum_name: "AgentCommands",
+        variant_name: "Nudge",
+        command_surface_names: &["assura agent nudge"],
+    },
+    CliCommandVariantRow {
+        enum_name: "AgentCommands",
+        variant_name: "Integration",
+        command_surface_names: &["assura agent integration"],
+    },
+    CliCommandVariantRow {
+        enum_name: "AgentCommands",
+        variant_name: "Session",
+        command_surface_names: &["assura agent"],
+    },
+    CliCommandVariantRow {
+        enum_name: "AgentIntegrationCommands",
+        variant_name: "Install",
+        command_surface_names: &["assura agent integration install"],
+    },
+    CliCommandVariantRow {
+        enum_name: "AgentIntegrationCommands",
+        variant_name: "Activate",
+        command_surface_names: &["assura agent integration activate"],
+    },
+    CliCommandVariantRow {
+        enum_name: "AgentIntegrationCommands",
+        variant_name: "Update",
+        command_surface_names: &["assura agent integration update"],
+    },
+    CliCommandVariantRow {
+        enum_name: "AgentIntegrationCommands",
+        variant_name: "Deactivate",
+        command_surface_names: &["assura agent integration deactivate"],
+    },
+    CliCommandVariantRow {
+        enum_name: "AgentIntegrationCommands",
+        variant_name: "Remove",
+        command_surface_names: &["assura agent integration remove"],
+    },
+    CliCommandVariantRow {
+        enum_name: "AgentIntegrationCommands",
+        variant_name: "Status",
+        command_surface_names: &["assura agent integration status"],
+    },
+    CliCommandVariantRow {
+        enum_name: "AgentIntegrationCommands",
+        variant_name: "Doctor",
+        command_surface_names: &["assura agent integration doctor"],
     },
     CliCommandVariantRow {
         enum_name: "ContentCommands",
@@ -4698,7 +4794,7 @@ const SUPPORT_MATRIX_ROWS: &[SupportMatrixRow] = &[
         surface: "assura doctor",
         command_surface_names: &["assura doctor"],
         support_policy_markers: &["`assura doctor`"],
-        compatibility_markers: &["| `assura doctor` | Experimental local project doctor |"],
+        compatibility_markers: &["| `assura doctor` | Supported next-release project doctor |"],
         source_markers: &["Commands::Doctor", "doctor_command"],
         test_markers: &[
             "tests/doctor_explain_cli.rs",
@@ -4812,7 +4908,9 @@ const SUPPORT_MATRIX_ROWS: &[SupportMatrixRow] = &[
             "assura agent nudge",
             "assura agent integration",
             "assura agent integration install",
+            "assura agent integration activate",
             "assura agent integration update",
+            "assura agent integration deactivate",
             "assura agent integration remove",
             "assura agent integration status",
             "assura agent integration doctor",
@@ -4822,8 +4920,8 @@ const SUPPORT_MATRIX_ROWS: &[SupportMatrixRow] = &[
         compatibility_markers: &[
             "| `assura agent` | Supported local agent project-intelligence surface |",
             "| `assura agent onboard` | Supported local agent-ready onboarding surface |",
-            "| `assura agent nudge` | Experimental local agent nudge payload |",
-            "| `assura agent integration` | Experimental local agent integration lifecycle |",
+            "| `assura agent nudge` | Supported next-release local agent event payload |",
+            "| `assura agent integration` | Supported next-release managed project-local lifecycle |",
             "| `assura agent session` | Supported local agent session alias |",
         ],
         source_markers: &[
@@ -5385,14 +5483,22 @@ fn check_docs_release_performance(checks: &mut Checks) {
         read("docs/release-notes.md").contains(&format!("v{version}")),
         "docs/release-notes.md: release version must match Cargo.toml",
     );
+    let release_candidate_checklist = read("docs/release-candidate-checklist.md");
     checks.require(
-        read("docs/release-candidate-checklist.md").contains(&format!("v{version}")),
-        "docs/release-candidate-checklist.md: tag version must match Cargo.toml",
+        release_candidate_checklist.contains("VERSION=\"x.y.z\"")
+            && !release_candidate_checklist.contains(&format!("git tag -a v{version}")),
+        "docs/release-candidate-checklist.md: tag commands must derive the candidate version instead of copying the current release tag",
+    );
+    let docs_workflow = read(".github/workflows/docs.yml");
+    checks.require(
+        docs_workflow.contains("Verify production claims are in the candidate release")
+            && docs_workflow.contains("cargo xtask website-demo-data --check --released"),
+        ".github/workflows/docs.yml: production website pushes must enforce released marketing claims",
     );
 
     let release_text = read("docs/release-notes.md");
     let compatibility_text = read("docs/compatibility-and-surface.md");
-    let release_checklist_text = read("docs/release-candidate-checklist.md");
+    let release_checklist_text = release_candidate_checklist;
     let release_train_text = read("docs/release-train.md");
     let release_surfaces_text = read("docs/data/release-surfaces.json");
     let code_intelligence_text = read("website/src/content/docs/product/code-intelligence.md");
@@ -6110,7 +6216,7 @@ fn check_agent_onboarding_website(checks: &mut Checks) {
         "\"action\": \"Ask remaining specialization questions\"",
         "\"affected_paths\": [\".assura/onboarding/questions.md\"]",
         "The local command is:",
-        "reviewable local integration bundle",
+        "reviewable bundle and explicitly activate its project-local host",
         "\"rule_recommendations\"",
         "\"local_rule\": \"$agent-entrypoint\"",
         "`not-applied` when the selected config lacks them",

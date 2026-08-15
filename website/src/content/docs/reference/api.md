@@ -145,7 +145,7 @@ the lower-level content-query commands.
 | `assura agent safe-fixes` | Preview safe fixes through the shared agent envelope |
 | `assura agent onboard` | Create a broad agent-ready baseline and onboarding packet |
 | `assura agent nudge` | Emit bounded event-aware nudge JSON for local host wrappers |
-| `assura agent integration install|update|remove|status|doctor` | Manage reviewable local Codex, OpenCode, Claude, and Pi integration bundles |
+| `assura agent integration install|activate|update|deactivate|remove|status|doctor` | Manage generated and Assura-owned project-local Codex, OpenCode, Claude, and Pi activation state |
 | `assura agent session` | Run a persistent JSON-line local query session |
 
 Examples:
@@ -159,6 +159,7 @@ assura agent onboard . --agent auto
 assura agent onboard . --content-template agent-project
 assura agent onboard . --content-template document-project
 assura agent integration install codex .
+assura agent integration activate codex .
 assura agent integration doctor codex .
 ```
 

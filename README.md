@@ -18,9 +18,10 @@ merge.** Review is the radar; Check is the gate.
 
 Assura is pre-1.0. The current public release is
 [`v0.3.0`](https://github.com/rothnic/assura/releases/tag/v0.3.0), published
-and live-verified on 2026-07-02. Assura remains a pre-1.0 beta: supported
-surfaces are release-gated, while experimental surfaces may change as the
-agent workflow is refined.
+and live-verified on 2026-07-02. The current source tree contains the supported
+next-release Review, Explain, onboarding, event-feedback, and managed host
+activation contracts. They remain marked `unreleased` in the release-surface
+manifest until a new version passes the strict release gate and is published.
 
 CI builds run on pull requests and `master` pushes, including release-style
 smoke builds. Those artifacts are verification evidence, not durable product
@@ -58,7 +59,14 @@ Build from source when working on Assura itself:
 cargo build --release
 ```
 
-## Agent-Ready Start
+The public installer above installs `v0.3.0`. To exercise the next-release
+source surface from a checkout, install that exact checkout instead:
+
+```bash
+cargo install --path . --locked
+```
+
+## Agent-Ready Source Start
 
 ```bash
 assura agent onboard . --agent auto --format json
@@ -68,10 +76,9 @@ assura watch --format json
 assura check
 ```
 
-`agent onboard`, `review`, and `explain` are experimental local beta surfaces.
-They are designed to expose active, inactive, and unresolved setup state rather
-than imply that unchecked capabilities passed. `assura check` remains the
-authoritative configured-policy gate.
+These current-source commands expose active, inactive, and unresolved setup
+state rather than imply that unchecked capabilities passed. `assura review` is
+advisory; `assura check` remains the authoritative configured-policy gate.
 
 For a minimal supported structure-only start:
 
@@ -97,26 +104,15 @@ exclude:
 
 ## Supported Surface
 
-| Surface | Status |
-| --- | --- |
-| `assura check` | Supported structure validation command |
-| `assura check --format json`, `yaml`, `advice`, `status`, `agent` | Supported automation output |
-| `assura check --format agent --agent codex` | Supported Codex adapter on the shared agent format |
-| `assura check --cache` / `assura cache status|clean` | Supported next-release correctness-checked cache and diagnostics |
-| `assura init` | Supported starter config creation |
-| `assura status --format json` | Supported project/config/rule summary |
-| `assura review` | Experimental compact project-health radar |
-| `assura doctor` | Experimental configured/inactive capability diagnosis |
-| `assura explain` | Experimental path and inherited-rule explanation |
-| `assura agent onboard` | Experimental local agent-ready onboarding |
-| `assura agent nudge` | Experimental bounded lifecycle feedback |
-| `assura agent integration` | Experimental Codex, OpenCode, Claude Code, and Pi integration bundles |
-| `assura migrate` | Supported LS-Lint 2.3 config migration path |
-| `assura hooks` | Supported local git-hook workflow |
-| `assura quality plan` | Supported config-backed quality planning |
-| `assura performance-report` | Supported performance evidence command |
-| `assura watch` | Supported next-release continuous warm validation |
-| `assura daemon` | Supported next-release project-local daemon lifecycle and JSON IPC |
+| Surface | Contract | Availability |
+| --- | --- | --- |
+| `assura check` and text/JSON/YAML/advice/status/agent formats | Supported configured-policy gate | `v0.3.0` and current source |
+| `assura init`, `status`, `migrate`, hooks, quality planning, performance report | Supported setup and automation | `v0.3.0` and current source |
+| `assura review`, `doctor`, and `explain` | Supported advisory, diagnosis, and policy-evidence workflow | Current source; next release |
+| `assura agent onboard` and `assura agent nudge` | Supported onboarding and bounded event feedback | Current source; next release |
+| `assura agent integration install|activate|update|deactivate|remove|status|doctor` | Supported Assura-owned project-local host lifecycle | Current source; next release |
+| Markdown/link/reference/guidance checks and local content/query/context packs | Supported deterministic policy and context layer | Current source; next release |
+| `assura watch`, cache, daemon, and local sessions | Supported warm local execution | Current source; next release |
 
 `assura info`, Markdown safe fixes, and first-party `extensions.*` policy
 families remain experimental before 1.0.

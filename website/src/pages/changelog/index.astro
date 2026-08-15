@@ -2,7 +2,7 @@
 import FocusedMarketingPage from '../../components/marketing/focused-marketing-page.astro';
 
 const title = 'Assura Changelog and Releases';
-const description = 'Follow Assura release milestones, supported and experimental command surfaces, performance evidence, and migration notes.';
+const description = 'Follow Assura release milestones, source-supported next-release contracts, performance evidence, and migration notes.';
 const canonicalPath = '/changelog/';
 const structuredData = { '@context': 'https://schema.org', '@type': 'CollectionPage', name: title, description, url: `https://assura.dev${canonicalPath}` };
 ---
@@ -12,7 +12,7 @@ const structuredData = { '@context': 'https://schema.org', '@type': 'CollectionP
   imagePath="/social/changelog.webp"
   eyebrow="Changelog"
   heading="Release evidence, not just release notes."
-  intro="Assura is pre-1.0. Each promoted release distinguishes supported contracts from experimental workflow surfaces and carries current install, performance, and compatibility evidence."
+  intro="Assura is pre-1.0. Published releases stay distinct from supported next-release source contracts, and promotion requires current install, performance, compatibility, and command evidence."
   artifactTitle="current release"
   artifactLines={[
     'v0.3.0',
@@ -23,11 +23,11 @@ const structuredData = { '@context': 'https://schema.org', '@type': 'CollectionP
   ]}
   highlights={[
     { label: 'Current v0.3', body: 'Structure checks, reports, initialization, status, LS-Lint migration, hooks, and performance evidence.' },
-    { label: 'Next release', body: 'Review, Explain, and agent onboarding are supported in checked source and remain marked unreleased until the next published version.' },
-    { label: 'Experimental', body: 'Lifecycle feedback, integration bundles, semantic candidates, and local daemon surfaces.' },
+    { label: 'Next release', body: 'Review, Explain, onboarding, bounded event feedback, managed host activation, deterministic content checks, and local context surfaces are supported in checked source and remain marked unreleased until publication.' },
+    { label: 'Roadmap boundary', body: 'Automatic broad repair, hosted orchestration, semantic inference as policy, and public third-party plugin APIs are not part of the supported core contract.' },
   ]}
   sections={[
-    { label: '0.3.0', body: 'Current public beta with the expanded agent workflow, project-review, content, query, integration, and performance surfaces documented by support status.' },
+    { label: '0.3.0', body: 'Current public beta for structure checks, reports, initialization, status, LS-Lint migration, hooks, and recorded performance evidence.' },
     { label: 'Compatibility policy', body: 'Before 1.0, Assura favors direct replacement of superseded internal contracts over long-lived compatibility shims.' },
     { label: 'Installation evidence', body: 'Release readiness verifies public install scripts and platform assets before a version is presented as current.' },
     { label: 'Performance evidence', body: 'Checked cold and warm reports retain their environment, fixture cohort, and version instead of carrying numbers forward manually.' },

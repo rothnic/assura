@@ -42,7 +42,7 @@ ls: null
 | --- | --- |
 | `structure` | Directory-shaped policy tree used by `assura check`. |
 | `exclude` | Glob-like paths excluded from validation and direct-child counts. |
-| `rules` | Optional reusable authoring fragments referenced from `structure` with `use:`. Rules compile into the normal structure model before validation. |
+| `rules` | Optional reusable authoring fragments referenced from `structure` as `$rule-name`. Rules compile into the normal structure model before validation. |
 | `ls` | Compatibility input used by migration and tests, not the public `assura check` policy surface. Prefer `assura migrate` so LS-Lint rules are converted into `structure`. |
 | `patterns` | Library resolver field from the older config model. It is accepted by the config type but is not the public `assura check` policy surface. Use `structure` instead. |
 
@@ -367,7 +367,7 @@ reason. Invalid suppressions are reported as `markdown_suppression`.
 
 ## Repository References
 
-Opt into experimental source/comment/docstring reference diagnostics with
+Configure deterministic source/comment/docstring reference diagnostics with
 `extensions.repository_references`:
 
 ```yaml config-fragment
@@ -395,7 +395,7 @@ lower-confidence references remain available as graph context through
 
 ## Agent Guidance
 
-Opt into experimental agent guidance diagnostics with
+Configure deterministic agent guidance diagnostics with
 `extensions.agent_guidance`:
 
 ```yaml config-fragment
@@ -533,8 +533,8 @@ cross-file policy does not fit ordinary `structure` notation.
 | `extensions.test_relationships` | Experimental first-party | Source/test evidence, manual-test exceptions, and fixture-family ownership. |
 | `extensions.module_topologies` | Experimental first-party | Rust module-family ownership, roots, export classification, and internal visibility. |
 | `extensions.docs_lifecycles` | Experimental first-party | Documentation lifecycle, frontmatter status, historical exceptions, and deterministic claim evidence. |
-| `extensions.repository_references` | Experimental first-party | Locally provable repository-reference diagnostics. |
-| `extensions.agent_guidance` | Experimental first-party | `AGENTS.md` and project-local `SKILL.md` routing contracts. |
+| `extensions.repository_references` | Supported next-release deterministic policy | Locally provable repository-reference diagnostics. |
+| `extensions.agent_guidance` | Supported next-release deterministic policy | `AGENTS.md` and project-local `SKILL.md` routing contracts. |
 | `extensions.requirements_traceability` | Experimental first-party | Content-runtime-backed requirement, claim, evidence, source-document, and finding traceability checks. |
 | `extensions.computed_checks` | Experimental first-party | Project-local script-backed computed findings with versioned JSON contracts. |
 | `extensions.relationships` | Internal generated first-party | Relationships normalized from `structure` captures, `exists:1`, `needs`, and `provides`. |

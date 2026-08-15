@@ -1,19 +1,24 @@
 ---
 interface TerminalLine {
   text: string;
-  tone?: 'prompt' | 'plain' | 'muted' | 'info' | 'warn' | 'pass';
+  tone?: 'prompt' | 'plain' | 'muted' | 'info' | 'warn' | 'pass' | 'fail';
 }
 
 interface Props {
   title: string;
   lines: TerminalLine[];
   className?: string;
+  variant?: 'review' | 'check' | 'onboarding' | 'neutral';
 }
 
-const { title, lines, className = '' } = Astro.props;
+const { title, lines, className = '', variant = 'neutral' } = Astro.props;
 ---
 
-<div class:list={['review-terminal', className]}>
+<div
+  class:list={['review-terminal', className]}
+  aria-label={title}
+  data-terminal-variant={variant}
+>
   <div class="terminal-bar">
     <span aria-hidden="true"></span>
     <span aria-hidden="true"></span>
@@ -21,6 +26,6 @@ const { title, lines, className = '' } = Astro.props;
     <strong>{title}</strong>
   </div>
   <pre><code>{lines.map((line) => (
-    <span class:list={['terminal-line', line.tone ?? 'plain']}>{line.text || ' '}</span>
+    <span class:list={['terminal-line', line.tone ?? 'plain']} data-terminal-line>{line.text}</span>
   ))}</code></pre>
 </div>

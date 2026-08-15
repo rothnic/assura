@@ -24,54 +24,104 @@ pub(super) struct RenderedOnboardingReport {
 impl RenderedOnboardingReport {
     fn render_text(&self) -> String {
         let report = &self.report;
-        format!(
-            "Assura agent onboarding\ninstalled: assura {}\ndetected: project={} agent={} confidence={}\nrules: {}\nintegration: {} generated={} activated={} verified={} conflicted={}\ncontent: {}={}\nlifecycle: {}\nverified: {}\nreview: {} blocking={} advisory={} inactive={}\ninactive: {}\nnext: {}\npacket: .assura/onboarding/agent-next.md",
-            report.installed.assura_version,
-            report.detected.project_type,
-            report.detected.agent_harness,
-            report.detected.agent_confidence,
-            report
-                .rule_recommendations
-                .iter()
-                .map(|item| format!("{}->{} ({})", item.preset, item.local_rule, item.status))
-                .collect::<Vec<_>>()
-                .join(", "),
-            report.integration.agent,
-            report.integration.generated,
-            report.integration.activated,
-            report.integration.verified,
-            report.integration.conflicted,
-            report.content.template,
-            report.content.status,
-            report
-                .lifecycle_profiles
-                .iter()
-                .map(|item| format!("{}={}", item.name, item.mode))
-                .collect::<Vec<_>>()
-                .join(", "),
-            report
-                .verified
-                .iter()
-                .map(|item| format!("{}={}", item.name, item.status))
-                .collect::<Vec<_>>()
-                .join(", "),
-            report.review.status,
-            report.review.blocking,
-            report.review.advisory,
-            report.review.inactive,
-            report
-                .inactive
-                .iter()
-                .map(|item| item.name)
-                .collect::<Vec<_>>()
-                .join(", "),
-            report
-                .next_actions
-                .first()
-                .map(|action| action.action)
-                .unwrap_or("read agent-next.md")
-        )
+        [
+            "Assura agent onboarding".to_string(),
+            onboarding_row(
+                "Version",
+                format!("assura {}", report.installed.assura_version),
+            ),
+            onboarding_row(
+                "Project",
+                format!(
+                    "{} confidence={}",
+                    report.detected.project_type, report.detected.project_confidence
+                ),
+            ),
+            onboarding_row(
+                "Agent",
+                format!(
+                    "{} confidence={}",
+                    report.detected.agent_harness, report.detected.agent_confidence
+                ),
+            ),
+            onboarding_row(
+                "Policy",
+                report
+                    .rule_recommendations
+                    .iter()
+                    .map(|item| format!("{} -> {} ({})", item.preset, item.local_rule, item.status))
+                    .collect::<Vec<_>>()
+                    .join(", "),
+            ),
+            onboarding_row(
+                "Host",
+                format!(
+                    "{} generated={} activated={} verified={} conflicted={}",
+                    report.integration.agent,
+                    report.integration.generated,
+                    report.integration.activated,
+                    report.integration.verified,
+                    report.integration.conflicted
+                ),
+            ),
+            onboarding_row(
+                "Content",
+                format!("{}={}", report.content.template, report.content.status),
+            ),
+            onboarding_row(
+                "Lifecycle",
+                report
+                    .lifecycle_profiles
+                    .iter()
+                    .map(|item| format!("{}={}", item.name, item.mode))
+                    .collect::<Vec<_>>()
+                    .join(" "),
+            ),
+            onboarding_row(
+                "Verified",
+                report
+                    .verified
+                    .iter()
+                    .map(|item| format!("{}={}", item.name, item.status))
+                    .collect::<Vec<_>>()
+                    .join(" "),
+            ),
+            onboarding_row(
+                "Review",
+                format!(
+                    "{} blocking={} advisory={} inactive_signals={}",
+                    report.review.status,
+                    report.review.blocking,
+                    report.review.advisory,
+                    report.review.inactive
+                ),
+            ),
+            onboarding_row(
+                "Deferred",
+                report
+                    .inactive
+                    .iter()
+                    .map(|item| item.name)
+                    .collect::<Vec<_>>()
+                    .join(", "),
+            ),
+            onboarding_row(
+                "Next",
+                report
+                    .next_actions
+                    .first()
+                    .map(|action| action.action)
+                    .unwrap_or("read agent-next.md")
+                    .to_string(),
+            ),
+            onboarding_row("Packet", ".assura/onboarding/agent-next.md".to_string()),
+        ]
+        .join("\n")
     }
+}
+
+fn onboarding_row(label: &str, value: String) -> String {
+    format!("{label:<12} {value}")
 }
 
 #[derive(Serialize)]

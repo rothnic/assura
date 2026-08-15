@@ -1,0 +1,96 @@
+{
+  "artifact_lines": [
+    {
+      "text": "Context pack: object",
+      "tone": "prompt"
+    },
+    {
+      "text": "diagnostics: 0; missing relations: 0; repository refs: 0; safe fixes: 0",
+      "tone": "pass"
+    },
+    {
+      "text": "instance: goals:goal-portable-structure (docs/goals/goal_portable_structure.md)",
+      "tone": "info"
+    },
+    {
+      "text": "omissions: 1",
+      "tone": "muted"
+    }
+  ],
+  "bounds": {
+    "limit": 20,
+    "omissions": [
+      {
+        "field": "search",
+        "reason": "provide --text for keyword search context"
+      }
+    ],
+    "truncated": []
+  },
+  "command": "assura content context-pack . --collection goals --id goal-portable-structure --format text",
+  "diagnostics": [],
+  "generated_from": "assura.project-intelligence.context-pack.v1",
+  "instance": {
+    "collection": "goals",
+    "data": {
+      "id": "goal-portable-structure",
+      "specs": [
+        "spec-portable-structure"
+      ],
+      "status": "active",
+      "title": "Portable Structure Policy"
+    },
+    "diagnostics": [],
+    "id": "goal-portable-structure",
+    "incoming_relations": [],
+    "object_type": "Goal",
+    "outgoing_relations": [
+      {
+        "field": "specs",
+        "missing": false,
+        "source_id": "instance:4e78e4a53e9087e4",
+        "target_collections": [
+          "specs"
+        ],
+        "target_id": "instance:d2a61adf1fa7cae4",
+        "target_instance_id": "spec-portable-structure"
+      }
+    ],
+    "path": "docs/goals/goal_portable_structure.md",
+    "sections": [
+      {
+        "level": 1,
+        "line_number": 1,
+        "title": "Portable Structure Policy"
+      }
+    ]
+  },
+  "related": {
+    "related": [
+      {
+        "id": "instance:d2a61adf1fa7cae4",
+        "kind": "model_instance",
+        "path": "specs/spec_portable_structure.json",
+        "relationship": "outgoing_relation"
+      }
+    ],
+    "root_id": "instance:4e78e4a53e9087e4"
+  },
+  "rendered_text": "Context pack: object\ndiagnostics: 0; missing relations: 0; repository refs: 0; safe fixes: 0\ninstance: goals:goal-portable-structure (docs/goals/goal_portable_structure.md)\nomissions: 1",
+  "repository_references": {
+    "inbound": [],
+    "outbound": [],
+    "path": "docs/goals/goal_portable_structure.md"
+  },
+  "request": {
+    "cli": "assura content context-pack",
+    "collection": "goals",
+    "config_path": "./.assura/config.yml",
+    "id": "goal-portable-structure",
+    "limit": 20,
+    "mode": "object",
+    "project_root": ".",
+    "text": null
+  },
+  "schema": "assura.website-intelligence-demo.v1"
+}

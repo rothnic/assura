@@ -12,13 +12,14 @@ const structuredData = { '@context': 'https://schema.org', '@type': 'TechArticle
   {title}
   {description}
   {canonicalPath}
-  releaseSurface="compact-review configured-policy-gate codex-agent-report"
+  releaseSurface="compact-review configured-policy-gate codex-agent-report agent-daemon-nudges agent-integration-lifecycle"
   imagePath="/social/agent-guardrails.webp"
   eyebrow="AI coding agent guardrails"
   heading="Guide the repair before a late gate forces it."
   intro="Hooks and CI are necessary, but they arrive after an agent has built on top of early drift. Assura adds bounded project signals during the working loop and reserves hard failure for configured merge policy."
-  artifactTitle="assura review · advisory"
-  artifactLines={review.display_lines.map((line) => line.text)}
+  artifactTitle={review.command}
+  artifactLines={review.artifact_lines}
+  artifactKind="review"
   highlights={[
     { label: 'While editing', body: 'Return bounded advisory context in the agent loop without blocking the current change.' },
     { label: 'Before commit', body: 'Show branch, worktree, structure, and changed-path findings while the repair is still focused.' },

@@ -1,8 +1,9 @@
 ---
 import FocusedMarketingPage from '../../components/marketing/focused-marketing-page.astro';
+import intelligenceDemo from '../../data/intelligence-demo.json';
 
 const title = 'Local Project Intelligence for Coding Agents | Assura';
-const description = 'Understand Assura’s supported repository checks, local content and query surfaces, and planned project-intelligence direction without conflating their status.';
+const description = 'Build bounded, local project context from deterministic repository facts that coding agents can inspect and reuse.';
 const canonicalPath = '/project-intelligence/';
 const structuredData = { '@context': 'https://schema.org', '@type': 'TechArticle', headline: title, description, url: `https://assura.dev${canonicalPath}`, author: { '@type': 'Person', name: 'Nick Roth', url: 'https://www.nickroth.com/' } };
 ---
@@ -13,31 +14,20 @@ const structuredData = { '@context': 'https://schema.org', '@type': 'TechArticle
   imagePath="/social/project-intelligence.webp"
   eyebrow="Project intelligence"
   heading="Turn local project facts into better agent context."
-  intro="Assura’s first-run value is deterministic repository validation. Supported local content, query, reference, and context surfaces build on that base; broader semantic project intelligence remains an explicit roadmap direction."
-  artifactTitle="capability status"
-  artifactLines={[
-    'SUPPORTED',
-    '  structure, review, explain, reports, migration',
-    '',
-    'SUPPORTED LOCAL',
-    '  content, query, references, context packs',
-    '',
-    'EXPERIMENTAL',
-    '  semantic and code-symbol candidates',
-    '',
-    'PLANNED',
-    '  broader semantic and dependency intelligence',
-  ]}
+  intro="Assura starts from deterministic paths, documents, modeled relations, and repository references, then returns a bounded context pack through the same local CLI an agent can call."
+  artifactTitle={intelligenceDemo.command}
+  artifactLines={intelligenceDemo.artifact_lines}
+  artifactKind="neutral"
   highlights={[
-    { label: 'Supported base', body: 'Deterministic structure policy, Review, Explain, automation formats, hooks, migration, and performance evidence.' },
-    { label: 'Supported local layer', body: 'Content models, deterministic query/search, references, and context packs stay local and inspectable.' },
-    { label: 'Planned expansion', body: 'Deeper dependency and semantic intelligence only when it can preserve local, bounded, observable behavior.' },
+    { label: 'Deterministic input', body: 'Paths, documents, configured models, relations, and repository references provide inspectable source facts.' },
+    { label: 'Bounded output', body: 'Context packs report their limit, omissions, diagnostics, related records, and unresolved relationships.' },
+    { label: 'Local execution', body: 'The CLI produces the same context without requiring a hosted dashboard or a separate agent-specific index.' },
   ]}
   sections={[
     { label: 'Facts before inference', body: 'Start from paths, configuration, documents, references, branch state, and verified content instead of asking an agent to infer project truth repeatedly.' },
     { label: 'Local by default', body: 'Project context stays close to the repository, can be regenerated, and can be inspected without requiring a hosted dashboard.' },
     { label: 'Queryable when useful', body: 'Query and context-pack surfaces organize project facts for specific workflows rather than dumping the whole repository.' },
-    { label: 'Status is part of the product', body: 'Supported, experimental, inactive, and planned capabilities remain visibly separate so marketing does not outrun implementation.' },
+    { label: 'Evidence stays visible', body: 'The response names diagnostics, omissions, relation gaps, and source paths instead of hiding them behind a summary score.' },
   ]}
   adjacentLinks={[
     { label: 'Start with repository validation', href: '/repository-validation/' },

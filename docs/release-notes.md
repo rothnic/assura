@@ -65,9 +65,9 @@ The current pre-1.0 command surface supports these public commands:
 - `assura agent` for local coding-agent project-intelligence commands with
   JSON defaults for context, diagnostics, context packs, search/show/expand,
   missing relations, safe-fix previews, and local sessions.
-- `assura agent integration` for experimental local install, update, remove,
-  status, and doctor workflows that generate reviewable Codex, OpenCode,
-  Claude, and Pi bundles over shared Assura commands.
+- `assura agent integration` for supported next-release install, activate,
+  update, deactivate, remove, status, and doctor workflows that manage only
+  Assura-owned project-local Codex, OpenCode, Claude, and Pi configuration.
 - `assura editor session` for a local JSON-line editor protocol with
   LSP-shaped diagnostics, context, code-action preview requests, and
   conservative reload metadata.
@@ -133,10 +133,10 @@ for every archive and checksum file.
 
 ### Markdown Validation
 
-- `markdown.lint_common` is an experimental Rust-native common lint bundle for
+- `markdown.lint_common` is a supported next-release Rust-native common lint bundle for
   skipped heading levels, malformed heading marker spacing, duplicate headings,
   and multiple consecutive blank lines.
-- `markdown.check_links` is experimental local validation for relative
+- `markdown.check_links` is supported next-release local validation for relative
   Markdown file links, heading anchors, line anchors, and unrendered local file
   references.
 - Markdown lint findings use stable `markdown_*` rule IDs and can use
@@ -147,7 +147,7 @@ for every archive and checksum file.
 
 ### Agent Nudges
 
-- `assura agent nudge` is an experimental shared event-aware payload for local
+- `assura agent nudge` is a supported next-release shared event-aware payload for local
   Codex, OpenCode, Claude, and Pi wrappers. It reports compact daemon health,
   changed-path findings, affected-reference context, and performance-gate
   reminders without adding per-agent validation commands.

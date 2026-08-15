@@ -2,17 +2,21 @@
 
 ## Project Overview
 
-**Assura** is currently a structure-first repository validation CLI written in
-Rust. The supported v0.1 onboarding surface provides:
+**Assura** is a structure-first repository validation CLI written in Rust. The
+current supported source surface provides:
 
-- `assura check` for project structure validation
-- `assura init` for starter `.assura/config.yml` creation
-- `assura migrate` for supported LS-Lint configuration migration
-- `assura status --format json` for project/config/rule summaries
-- text, JSON, and YAML reports for local and CI automation
+- `assura check` as the configured-policy gate and `assura review` as advisory
+  project/branch/worktree radar
+- `assura doctor` and `assura explain` for setup and scoped policy evidence
+- `assura agent onboard`, bounded event nudges, and managed project-local Codex,
+  OpenCode, Claude, and Pi activation lifecycles
+- deterministic Markdown, local-link, repository-reference, agent-guidance,
+  content-model, and query/context-pack behavior
+- `assura init`, `status`, `migrate`, hooks, watch, daemon/session, performance,
+  and text/JSON/YAML/agent automation surfaces
 
-Dependency graph validation, long-running watch mode, agent feedback, quality
-measurement, and plugin APIs are roadmap items until implemented and tested.
+Automatic broad repair, hosted orchestration, semantic inference as policy, and
+public third-party plugin APIs remain outside the supported core contract.
 
 ### Key Dependencies
 - `tokio` - Async runtime used by CLI and validation flows
@@ -20,7 +24,7 @@ measurement, and plugin APIs are roadmap items until implemented and tested.
 - `serde`/`serde_yaml` - Configuration file parsing
 - `clap` - CLI interface
 - `regex`/`glob` - Pattern matching for file discovery
-- `notify` - File system event support for future long-running watch work
+- `notify` - File system event support for continuous local watch workflows
 
 ## Agent Coordination Guidelines
 
