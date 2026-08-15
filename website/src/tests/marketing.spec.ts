@@ -127,6 +127,27 @@ test('agent setup dialog is keyboard dismissible and restores focus', async ({ p
   await expect(trigger).toBeFocused();
 });
 
+test('header setup entry stays visually secondary to the hero action', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await page.goto('/');
+
+  const start = page.locator('.nav-start');
+  const primaryAction = page.locator('.hero-actions .button-primary');
+  const [startStyle, primaryStyle] = await Promise.all([
+    start.evaluate((element) => {
+      const style = getComputedStyle(element);
+      return { background: style.backgroundColor, color: style.color };
+    }),
+    primaryAction.evaluate((element) => {
+      const style = getComputedStyle(element);
+      return { background: style.backgroundColor, color: style.color };
+    }),
+  ]);
+
+  expect(startStyle.background).not.toBe(primaryStyle.background);
+  expect(startStyle.color).not.toBe(primaryStyle.color);
+});
+
 for (const colorScheme of themes) {
   for (const width of [320, 360, 390]) {
     test(
@@ -222,7 +243,6 @@ test('terminal output uses ANSI-like text emphasis without per-line panels', asy
 
   expect(styles.every((style) => style.background === 'rgba(0, 0, 0, 0)')).toBe(true);
   expect(styles.every((style) => style.boxShadow === 'none')).toBe(true);
-  expect(Math.max(...styles.map((style) => style.paddingLeft))).toBeLessThanOrEqual(1);
   const failureColor = await page.locator('.terminal-token-status.is-danger').first().evaluate(
     (item) => getComputedStyle(item).color,
   );
@@ -275,6 +295,50 @@ test('review output separates row labels, metric names, and summarized values', 
   const crossedThreshold = thresholds.locator('[data-terminal-metric-value="danger"]');
   await expect(crossedThreshold).toHaveCount(1);
   await expect(crossedThreshold).toHaveText('1/1');
+});
+
+test('review rows use hanging indents and semantic section breaks', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await page.goto('/');
+
+  const terminal = page.locator('[data-terminal-variant="review"]').first();
+  const branch = terminal.locator('[data-terminal-line]').filter({ hasText: /^Branch/ });
+  const summary = terminal.locator('[data-terminal-line]').first();
+  const fixNow = terminal.locator('[data-terminal-line]').filter({ hasText: /^Fix now/ });
+
+  await expect(branch).toHaveAttribute('data-terminal-labelled', 'true');
+  await expect(branch).toHaveAttribute('data-terminal-section-start', 'true');
+  await expect(summary).toHaveAttribute('data-terminal-summary', 'true');
+  await expect(fixNow).toHaveAttribute('data-terminal-section-start', 'true');
+
+  const layout = await branch.evaluate((element) => {
+    const style = getComputedStyle(element);
+    return {
+      paddingInlineStart: Number.parseFloat(style.paddingInlineStart),
+      textIndent: Number.parseFloat(style.textIndent),
+    };
+  });
+  expect(layout.paddingInlineStart).toBeGreaterThan(0);
+  expect(layout.textIndent).toBeLessThan(0);
+  const fontSize = await terminal.locator('pre').evaluate(
+    (element) => Number.parseFloat(getComputedStyle(element).fontSize),
+  );
+  expect(fontSize).toBeGreaterThanOrEqual(12);
+});
+
+test('review output reserves warning color for actual warnings', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await page.goto('/');
+
+  const terminal = page.locator('[data-terminal-variant="review"]').first();
+  for (const label of ['Branch', 'Worktree', 'Hot dirs']) {
+    const row = terminal.locator('[data-terminal-line]').filter({ hasText: new RegExp(`^${label}`) });
+    await expect(row.locator('[data-terminal-metric-value="warning"]')).toHaveCount(0);
+  }
+
+  await expect(terminal.locator('.terminal-token-status.is-warning')).toHaveText('attention');
+  await expect(terminal.locator('.terminal-token-status.is-danger').first()).toHaveText('fail');
 });
 
 test('example output CTA connects project policy to pass and fail paths', async ({ page }) => {

@@ -31,26 +31,21 @@ const { title, lines, className = '', variant = 'neutral' } = Astro.props;
 
 const reviewLabelWidth = 10;
 const dangerMetrics = new Set(['blocking', 'violations', 'v']);
-const worktreeChangeMetrics = new Set([
-  'conflicts',
-  'deleted',
-  'modified',
-  'staged',
-  'unstaged',
-  'untracked',
-]);
+const reviewSectionStarts = new Set(['Branch', 'Findings', 'Fix now']);
 function metricEmphasis(label: string, key: string, value: string): TerminalSegment['emphasis'] {
   const ratio = value.match(/^(\d+)\/(\d+)$/);
-  if (ratio && Number(ratio[2]) > 0 && Number(ratio[1]) >= Number(ratio[2])) return 'danger';
+  if (
+    label === 'Thresholds'
+    && ratio
+    && Number(ratio[2]) > 0
+    && Number(ratio[1]) >= Number(ratio[2])
+  ) return 'danger';
 
   const numericValue = Number(value.replace(/^[+!-]/, '').split(/[+/,]/)[0]);
   if (!Number.isFinite(numericValue) || numericValue === 0) return undefined;
   if (dangerMetrics.has(key)) return 'danger';
   if (label === 'Findings' && key === 'fix') return 'danger';
   if (label === 'Findings' && ['config', 'inspect'].includes(key)) return 'warning';
-  if (label === 'Branch' && ['files', 'commits'].includes(key)) return 'warning';
-  if (label === 'Worktree' && worktreeChangeMetrics.has(key)) return 'warning';
-  if (label === 'Hot dirs' && key === 'files') return 'warning';
   return undefined;
 }
 
@@ -105,10 +100,24 @@ function reviewSegments(text: string): TerminalSegment[] {
   ];
 }
 
-const renderedLines = lines.map((line) => ({
-  ...line,
-  segments: variant === 'review' ? reviewSegments(line.text) : [{ text: line.text, kind: 'text' as const }],
-}));
+function reviewLineLabel(text: string): string | undefined {
+  if (/^\s/.test(text) || text.startsWith('Assura review  ')) return undefined;
+
+  const label = text.slice(0, reviewLabelWidth).trimEnd();
+  if (!label || text[reviewLabelWidth] !== ' ') return undefined;
+  return label;
+}
+
+const renderedLines = lines.map((line) => {
+  const label = variant === 'review' ? reviewLineLabel(line.text) : undefined;
+  return {
+    ...line,
+    segments: variant === 'review' ? reviewSegments(line.text) : [{ text: line.text, kind: 'text' as const }],
+    labelled: Boolean(label),
+    sectionStart: Boolean(label && reviewSectionStarts.has(label)),
+    summary: variant === 'review' && line.text.startsWith('Assura review  '),
+  };
+});
 ---
 
 <div
@@ -123,7 +132,13 @@ const renderedLines = lines.map((line) => ({
     <strong>{title}</strong>
   </div>
   <pre><code>{renderedLines.map((line) => (
-    <span class:list={['terminal-line', line.tone ?? 'plain']} data-terminal-line>{line.segments.map((segment) => (
+    <span
+      class:list={['terminal-line', line.tone ?? 'plain']}
+      data-terminal-line
+      data-terminal-labelled={line.labelled ? 'true' : undefined}
+      data-terminal-section-start={line.sectionStart ? 'true' : undefined}
+      data-terminal-summary={line.summary ? 'true' : undefined}
+    >{line.segments.map((segment) => (
       <span
         class:list={['terminal-token', `terminal-token-${segment.kind}`, segment.emphasis && `is-${segment.emphasis}`]}
         data-terminal-label={segment.kind === 'label' || segment.kind === 'title' ? true : undefined}

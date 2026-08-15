@@ -34,6 +34,9 @@ and dark color schemes before claiming completion.
   row labels, metric names, and metric values visually distinct; reserve strong
   semantic color for statuses, crossed thresholds, actionable findings, and
   commands. Preserve the exact supported CLI text beneath that presentation.
+  Use hanging indentation for compact labeled rows so wrapped values remain
+  under the value column, and separate summary, context, and action groups with
+  whitespace rather than additional boxes.
 - In syntax-highlighted configuration examples, color keys consistently whether
   they open a nested scope or assign an inline value. Apply secondary color to
   the value token, not the entire line, so paths do not imply different states.

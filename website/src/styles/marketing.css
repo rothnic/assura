@@ -224,9 +224,9 @@
     align-items: center;
     border: 1px solid var(--border-strong);
     border-radius: 0.45rem;
-    background: var(--text);
+    background: var(--surface);
     padding: 0.5rem 0.72rem;
-    color: var(--page-bg);
+    color: var(--text);
     font: inherit;
     font-size: 0.82rem;
     font-weight: 760;
@@ -236,8 +236,9 @@
   }
 
   .nav-links .nav-start:hover {
-    background: var(--primary);
-    color: #ffffff;
+    border-color: color-mix(in srgb, var(--primary) 55%, var(--border-strong));
+    background: var(--surface-muted);
+    color: var(--text);
   }
 
   .hero {
@@ -1071,6 +1072,20 @@
   .review-terminal[data-terminal-variant="review"] .terminal-line {
     color: color-mix(in srgb, var(--terminal-text) 88%, transparent);
     font-weight: 450;
+  }
+
+  .review-terminal[data-terminal-variant="review"] .terminal-line[data-terminal-labelled] {
+    padding-inline-start: 11ch;
+    text-indent: -11ch;
+  }
+
+  .review-terminal[data-terminal-variant="review"] .terminal-line[data-terminal-summary] {
+    margin-bottom: 0.16rem;
+    color: color-mix(in srgb, var(--terminal-text) 96%, transparent);
+  }
+
+  .review-terminal[data-terminal-variant="review"] .terminal-line[data-terminal-section-start] {
+    margin-top: 0.28rem;
   }
 
   .terminal-token-label {
@@ -2457,7 +2472,7 @@
 
     .review-terminal pre {
       padding: 0.64rem;
-      font-size: 0.68rem;
+      font-size: 0.75rem;
       line-height: 1.36;
     }
 
