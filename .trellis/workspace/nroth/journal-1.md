@@ -381,3 +381,36 @@ Aligned generated landing and docs examples with supported CLI renderers, pinned
 ### Next Steps
 
 - None - task complete
+
+
+## Session 12: Lock landing setup modal background scroll
+
+**Date**: 2026-08-16
+**Task**: Lock landing setup modal background scroll
+**Branch**: `codex/assura-landing-experience`
+
+### Summary
+
+Locked the document behind the agent setup modal, restored exact scroll position on every dismissal path, and added mobile Playwright coverage plus frontend quality guidance.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `413a149` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

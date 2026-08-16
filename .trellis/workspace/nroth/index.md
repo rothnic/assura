@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 11
-- **Last Active**: 2026-08-14
+- **Total Sessions**: 12
+- **Last Active**: 2026-08-16
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~383 | Active |
+| `journal-1.md` | ~416 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 12 | 2026-08-16 | Lock landing setup modal background scroll | `413a149` | `codex/assura-landing-experience` |
 | 11 | 2026-08-14 | Align supported product and marketing experience | `b8f8375`, `6d4e270` | `codex/assura-landing-experience` |
 | 10 | 2026-07-05 | Performance polish gates and stop policy | `cdeae4c` | `codex/post-merge-backlog-truth-pass` |
 | 9 | 2026-07-02 | Agent reference discovery PR review | `e3dedea`, `b63eb5a` | `codex/agent-ready-onboarding-backlog` |
