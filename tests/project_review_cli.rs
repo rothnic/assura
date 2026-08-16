@@ -229,9 +229,20 @@ exclude:
 
     let text = run_review(&[project.path().to_str().unwrap(), "--format", "text"]);
     let stdout = String::from_utf8_lossy(&text.stdout);
-    assert!(stdout.contains("assura explain <path> --format json"));
-    assert!(stdout.contains(".assura/config.yml"));
+    assert!(stdout.contains("Fix first"));
+    assert!(stdout.contains("experiments"));
+    assert!(stdout.contains("assura check --format agent ."));
     assert!(!stdout.contains("\x1b["));
+
+    let verbose = run_review(&[
+        "--verbose",
+        project.path().to_str().unwrap(),
+        "--format",
+        "text",
+    ]);
+    let verbose_stdout = String::from_utf8_lossy(&verbose.stdout);
+    assert!(verbose_stdout.contains("assura explain <path> --format json"));
+    assert!(verbose_stdout.contains(".assura/config.yml"));
 
     let experiment_heat = review["heatmap"]["hot_dirs"]
         .as_array()
@@ -406,18 +417,45 @@ exclude:
 
     let text = run_review(&[project.path().to_str().unwrap(), "--format", "text"]);
     let stdout = String::from_utf8_lossy(&text.stdout);
-    assert!(stdout.contains("Heat"));
-    assert!(stdout.contains("!1 hot_dirs=2 risks=1"));
-    assert!(stdout.contains("Thresholds"));
-    assert!(stdout.contains("worktree=2/10"));
+    assert!(stdout.starts_with("Assura review\n\n"));
+    assert!(stdout.contains("Status     needs attention"));
+    assert!(stdout.contains("Scope      feature/heat -> origin/main"));
+    assert!(stdout.contains("Findings   blocking=1"));
     assert!(stdout.contains("Branch"));
     assert!(stdout.contains("feature/heat files=1 lines=+1/-0 commits=1"));
     assert!(stdout.contains("Worktree"));
-    assert!(stdout
-        .contains("staged=0 unstaged=1 modified=1 untracked=1 deleted=0 conflicts=0 lines=+1/-0"));
-    assert!(stdout.contains("Hot dirs"));
-    assert!(stdout.contains("|- docs v=0 files=b1/m0/u0 lines=b+1/-0,w+0/-0"));
-    assert!(stdout.contains("`- src v=1 files=b0/m1/u1 lines=b+0/-0,w+1/-0 blocking=1"));
+    assert!(stdout.contains("files=2 modified=1 untracked=1 lines=+1/-0"));
+    assert!(stdout.contains("Watch      blocking-validation=1/1"));
+    assert!(stdout.contains("Hot path   src violations=1 changed=2 lines=+1/-0"));
+    assert!(stdout.contains("Fix first"));
+    assert!(stdout.contains("BadName.rs"));
+    assert!(stdout.contains("Next"));
+    assert!(stdout.contains("Run        assura check --format agent ."));
+    assert!(!stdout.contains("Check      "));
+    assert!(!stdout.contains("Heat       "));
+    assert!(!stdout.contains("Content    "));
+    assert!(!stdout.contains("Configure  "));
+    assert!(!stdout.contains("Inspect    "));
+    assert!(!stdout.contains("Policy     "));
+    assert!(!stdout.contains("Details    "));
+    assert!(!stdout.contains("worktree=2/10"));
+
+    let verbose = run_review(&[
+        "--verbose",
+        project.path().to_str().unwrap(),
+        "--format",
+        "text",
+    ]);
+    let verbose_stdout = String::from_utf8_lossy(&verbose.stdout);
+    assert!(verbose_stdout.contains("Diagnostics"));
+    assert!(verbose_stdout.contains("Check      "));
+    assert!(verbose_stdout.contains("Heat       !1 hot_dirs=2 risks=1"));
+    assert!(verbose_stdout.contains("Thresholds"));
+    assert!(verbose_stdout.contains("worktree=2/10"));
+    assert!(verbose_stdout.contains("Hot dirs"));
+    assert!(verbose_stdout.contains("|- docs v=0 files=b1/m0/u0 lines=b+1/-0,w+0/-0"));
+    assert!(verbose_stdout.contains("`- src v=1 files=b0/m1/u1 lines=b+0/-0,w+1/-0 blocking=1"));
+    assert!(verbose_stdout.contains("Details    "));
 
     let explicit = run_review(&[
         project.path().to_str().unwrap(),
@@ -493,8 +531,17 @@ exclude:
 
     let text = run_review(&[project.path().to_str().unwrap(), "--format", "text"]);
     let stdout = String::from_utf8_lossy(&text.stdout);
-    assert!(stdout.contains("|- src"), "{stdout}");
-    assert!(stdout.contains("|  `- cli"), "{stdout}");
+    assert!(stdout.contains("Hot path   src/cli"), "{stdout}");
+
+    let verbose = run_review(&[
+        "--verbose",
+        project.path().to_str().unwrap(),
+        "--format",
+        "text",
+    ]);
+    let verbose_stdout = String::from_utf8_lossy(&verbose.stdout);
+    assert!(verbose_stdout.contains("|- src"), "{verbose_stdout}");
+    assert!(verbose_stdout.contains("|  `- cli"), "{verbose_stdout}");
 }
 
 #[test]
@@ -622,6 +669,19 @@ exclude:
             .expect("unchanged")
             > 0
     );
+    let second_text = run_review(&[project.path().to_str().unwrap(), "--format", "text"]);
+    let second_stdout = String::from_utf8_lossy(&second_text.stdout);
+    assert!(second_stdout.contains("Fix first"));
+    assert!(second_stdout.contains("README.md"));
+    let second_agent = json_from_output(&run_review(&[
+        project.path().to_str().unwrap(),
+        "--format",
+        "agent",
+    ]));
+    assert_eq!(
+        finding(&second_agent, "blocking:exists_count")["state"],
+        "unchanged"
+    );
 
     fs::write(project.path().join("README.md"), "# Project\n").expect("README");
     let third = json_from_success(run_review(&[
@@ -722,7 +782,8 @@ exclude:
     let stdout = String::from_utf8_lossy(&text.stdout);
     assert!(stdout.contains("\x1b["));
     assert!(stdout.contains("Assura review"));
-    assert!(stdout.contains("attention"));
-    assert!(stdout.contains("Check"));
-    assert!(stdout.contains("Details"));
+    assert!(stdout.contains("needs attention"));
+    assert!(stdout.contains("Status"));
+    assert!(stdout.contains("Findings"));
+    assert!(!stdout.contains("Details"));
 }

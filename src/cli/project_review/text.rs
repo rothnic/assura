@@ -6,16 +6,45 @@ use std::io::IsTerminal;
 const LABEL_WIDTH: usize = 10;
 const FINDING_LIMIT: usize = 3;
 
-pub(super) fn render_project_review_text(report: &ProjectReviewReport) -> String {
+pub(super) fn render_project_review_text(report: &ProjectReviewReport, verbose: bool) -> String {
     let style = TextStyle::detect();
     let mut lines = vec![
-        format!(
-            "{}  {}",
-            style.title("Assura review"),
-            style.review_status(report.status)
-        ),
+        style.title("Assura review"),
+        String::new(),
+        row(&style, "Status", style.review_status(report.status)),
+        row(&style, "Scope", render_scope(report)),
+        row(&style, "Findings", render_finding_summary(report, &style)),
+        row(&style, "Branch", render_branch_signal(report, &style)),
+        row(&style, "Worktree", render_worktree_summary(report, &style)),
+    ];
+
+    if !report.heatmap.risk_flags.is_empty() {
+        lines.push(row(&style, "Watch", render_watch(report, &style)));
+    }
+    if let Some(hot_path) = render_hot_path(report, &style) {
+        lines.push(row(&style, "Hot path", hot_path));
+    }
+    if let Some(finding) = primary_finding(report) {
+        lines.push(row(&style, "Fix first", style.danger(&finding.detail)));
+    }
+    if let Some(action) = report.next_actions.first() {
+        lines.push(row(&style, "Next", action.action.clone()));
+        lines.push(row(&style, "Run", style.command(&action.command)));
+    }
+
+    if verbose {
+        lines.extend(verbose_diagnostics(report, &style));
+    }
+    lines.join("\n")
+}
+
+fn verbose_diagnostics(report: &ProjectReviewReport, style: &TextStyle) -> Vec<String> {
+    vec![
+        String::new(),
+        style.title("Diagnostics"),
+        String::new(),
         row(
-            &style,
+            style,
             "Check",
             format!(
                 "{}  files={} dirs={} violations={}",
@@ -25,13 +54,11 @@ pub(super) fn render_project_review_text(report: &ProjectReviewReport) -> String
                 style.issue_count(report.structure.violations)
             ),
         ),
-        row(&style, "Heat", render_heat(report, &style)),
-        row(&style, "Thresholds", render_thresholds(report)),
-        row(&style, "Branch", render_branch_signal(report, &style)),
-        row(&style, "Worktree", render_worktree_signal(report, &style)),
-        row(&style, "Hot dirs", render_hot_dirs(report, &style)),
+        row(style, "Heat", render_heat(report, style)),
+        row(style, "Thresholds", render_thresholds(report)),
+        row(style, "Hot dirs", render_hot_dirs(report, style)),
         row(
-            &style,
+            style,
             "Content",
             format!(
                 "diag={} missing={} refs={} fixes={}",
@@ -42,7 +69,7 @@ pub(super) fn render_project_review_text(report: &ProjectReviewReport) -> String
             ),
         ),
         row(
-            &style,
+            style,
             "Findings",
             format!(
                 "fix={} config={} inspect={} info={} omitted={}",
@@ -53,39 +80,140 @@ pub(super) fn render_project_review_text(report: &ProjectReviewReport) -> String
                 report.summary.omitted_noise
             ),
         ),
-        action_row(&style, "Fix now", report.findings_by_action("fix-now")),
+        action_row(style, "Fix now", report.findings_by_action("fix-now")),
         action_row(
-            &style,
+            style,
             "Configure",
             report.findings_by_action("configure-intentionally"),
         ),
         action_row(
-            &style,
+            style,
             "Inspect",
             report.findings_by_action("inspect-before-changing"),
         ),
         row(
-            &style,
+            style,
             "Policy",
             "inspect shape first; edit .assura/config.yml only intentionally".to_string(),
         ),
-    ];
+        row(
+            style,
+            "Details",
+            report
+                .lower_level_commands
+                .iter()
+                .map(|command| style.command(command))
+                .collect::<Vec<_>>()
+                .join(" | "),
+        ),
+    ]
+}
 
-    if let Some(action) = report.next_actions.first() {
-        lines.push(row(&style, "Next", action.action.clone()));
-        lines.push(row(&style, "Run", style.command(&action.command)));
+fn render_scope(report: &ProjectReviewReport) -> String {
+    if !report.heatmap.git_available {
+        return "whole project (git unavailable)".to_string();
     }
-    lines.push(row(
-        &style,
-        "Details",
-        report
-            .lower_level_commands
-            .iter()
-            .map(|command| style.command(command))
-            .collect::<Vec<_>>()
-            .join(" | "),
-    ));
-    lines.join("\n")
+    let branch = report.heatmap.branch.name.as_deref().unwrap_or("detached");
+    report
+        .heatmap
+        .branch
+        .base
+        .as_deref()
+        .map(|base| format!("{branch} -> {base}"))
+        .unwrap_or_else(|| branch.to_string())
+}
+
+fn render_finding_summary(report: &ProjectReviewReport, style: &TextStyle) -> String {
+    let mut parts = vec![
+        format!("blocking={}", style.issue_count(report.summary.blocking)),
+        format!("advisory={}", report.summary.advisory),
+    ];
+    for (state, count) in [
+        ("new", actionable_state_count(report, "new")),
+        ("worsened", actionable_state_count(report, "worsened")),
+        ("resolved", report.finding_history.resolved),
+    ] {
+        if count > 0 {
+            parts.push(format!("{state}={}", style.change_count(count)));
+        }
+    }
+    parts.join(" ")
+}
+
+fn actionable_state_count(report: &ProjectReviewReport, state: &str) -> usize {
+    report
+        .findings
+        .iter()
+        .filter(|finding| {
+            finding.state == state && matches!(finding.severity, "blocking" | "advisory")
+        })
+        .count()
+}
+
+fn render_worktree_summary(report: &ProjectReviewReport, style: &TextStyle) -> String {
+    let totals = &report.heatmap.totals;
+    let files = totals.modified_files + totals.untracked_files + totals.deleted_files;
+    format!(
+        "files={} modified={} untracked={} lines={}",
+        style.change_count(files),
+        style.change_count(totals.modified_files),
+        style.change_count(totals.untracked_files),
+        line_delta(
+            totals.worktree_line_additions,
+            totals.worktree_line_deletions
+        )
+    )
+}
+
+fn render_watch(report: &ProjectReviewReport, style: &TextStyle) -> String {
+    report
+        .heatmap
+        .risk_flags
+        .iter()
+        .map(|flag| {
+            let value = format!("{}/{}", flag.value, flag.threshold);
+            if flag.severity == "blocking" {
+                format!("{}={}", flag.id, style.danger(&value))
+            } else {
+                format!("{}={}", flag.id, style.warning(&value))
+            }
+        })
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
+fn render_hot_path(report: &ProjectReviewReport, style: &TextStyle) -> Option<String> {
+    let dir = report.heatmap.hot_dirs.iter().max_by_key(|dir| {
+        (
+            dir.blocking_violations,
+            dir.validation_violations,
+            dir.path.matches('/').count(),
+        )
+    })?;
+    let changed =
+        dir.branch_changed_files + dir.modified_files + dir.untracked_files + dir.deleted_files;
+    Some(format!(
+        "{} violations={} changed={} lines={}",
+        dir.path,
+        style.issue_count(dir.validation_violations),
+        style.change_count(changed),
+        line_delta(
+            dir.branch_line_additions + dir.worktree_line_additions,
+            dir.branch_line_deletions + dir.worktree_line_deletions
+        )
+    ))
+}
+
+fn primary_finding(report: &ProjectReviewReport) -> Option<&ProjectReviewFinding> {
+    report
+        .findings
+        .iter()
+        .find(|finding| finding.severity == "blocking" && finding.state != "resolved")
+        .or_else(|| {
+            report.findings.iter().find(|finding| {
+                finding.action_kind == "fix-now" && matches!(finding.state, "new" | "worsened")
+            })
+        })
 }
 
 fn render_heat(report: &ProjectReviewReport, style: &TextStyle) -> String {
@@ -107,23 +235,6 @@ fn render_branch_signal(report: &ProjectReviewReport, style: &TextStyle) -> Stri
             report.heatmap.totals.branch_line_deletions
         ),
         optional_usize(report.heatmap.branch.commits_on_branch)
-    )
-}
-
-fn render_worktree_signal(report: &ProjectReviewReport, style: &TextStyle) -> String {
-    let totals = &report.heatmap.totals;
-    format!(
-        "staged={} unstaged={} modified={} untracked={} deleted={} conflicts={} lines={}",
-        style.change_count(totals.staged_files),
-        style.change_count(totals.unstaged_files),
-        style.change_count(totals.modified_files),
-        style.change_count(totals.untracked_files),
-        style.change_count(totals.deleted_files),
-        style.change_count(totals.conflicted_files),
-        line_delta(
-            totals.worktree_line_additions,
-            totals.worktree_line_deletions
-        )
     )
 }
 
@@ -258,6 +369,14 @@ impl TextStyle {
         self.paint("36", value)
     }
 
+    fn danger(&self, value: &str) -> String {
+        self.paint("31;1", value)
+    }
+
+    fn warning(&self, value: &str) -> String {
+        self.paint("33;1", value)
+    }
+
     fn issue_count(&self, value: usize) -> String {
         if value == 0 {
             self.paint("32", "0")
@@ -286,7 +405,7 @@ impl TextStyle {
     fn review_status(&self, value: &str) -> String {
         match value {
             "pass" => self.paint("32;1", "clear"),
-            "fail" | "needs-review" => self.paint("33;1", "attention"),
+            "fail" | "needs-review" => self.paint("33;1", "needs attention"),
             _ => value.to_string(),
         }
     }

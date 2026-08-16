@@ -41,6 +41,19 @@ The primary DX is `assura check`. The package is a lower-level bridge for
 wrappers that already have an Assura JSON report or cannot shell out to the Rust
 CLI directly.
 
+## Review Before Check
+
+Use `assura review .` while work is changing. It summarizes the branch and
+worktree scope, actionable findings, crossed advisory thresholds, the most
+specific hot path, and the first concrete repair. A successfully assembled
+review is advisory and exits zero even when it reports `needs attention`.
+
+Use `assura check --format agent .` when the configured project contract must
+make the final pass/fail decision. Check preserves blocking exit behavior for
+hooks and CI. Add global `--verbose` to Review only when a human needs the full
+diagnostic inventory; integrations should prefer Review JSON or agent output
+instead of scraping verbose text.
+
 ## Current Check Output
 
 Use guided output when a human or agent should fix the result:

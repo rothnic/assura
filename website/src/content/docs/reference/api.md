@@ -26,7 +26,7 @@ plugin APIs.
 | --- | --- |
 | `assura check [path]` | Validate a project or subpath |
 | `assura status [path]` | Print discovered config and rule summary |
-| `assura review [path]` | Run a compact first diagnostic over check, doctor, and content gaps |
+| `assura review [path]` | Summarize change pressure and the first repair without acting as a policy gate |
 | `assura cache status|clean [path]` | Inspect or remove correctness-checked local cache namespaces |
 | `assura init [path]` | Create a starter `.assura/config.yml` |
 | `assura config add-recipe <recipe> [path]` | Add one editable recipe to an existing project config |
@@ -42,13 +42,18 @@ Supported check and review formats are `text`, `json`, `yaml`, `advice`,
 `yaml`.
 
 Use `assura review . --format text` before adding a new top-level path or
-opening a PR. The text format uses aligned, concise rows with terminal color
-when interactive and plain output when piped. Use `--format agent` when a local
-coding agent needs the compact JSON packet with blocking, advisory, inactive,
-informational, and omitted-noise classification. Review JSON also includes an
-advisory `heatmap` with compact totals and top hot directories for validation,
-worktree, branch, and churn signals; Git fields are best-effort and non-fatal
-outside a checkout.
+opening a PR. The default text report shows the advisory status, Git comparison
+scope, actionable finding counts, branch and worktree changes, crossed
+thresholds, the most specific hot path, the first concrete repair, and one next
+command. Add global `--verbose` for exhaustive diagnostic counters and
+lower-level commands. Use `--format agent` when a local coding agent needs the
+compact JSON packet with blocking, advisory, inactive, informational, and
+omitted-noise classification. Review JSON also includes the complete advisory
+`heatmap`; Git fields are best-effort and non-fatal outside a checkout.
+
+`assura review` is the radar and exits successfully when it can assemble a
+report. `assura check` is the deterministic gate and owns blocking exit behavior
+for hooks and CI.
 
 ## Init Options
 

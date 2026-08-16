@@ -12,6 +12,8 @@
 ### 2. Signatures
 
 - `assura review [path] --format text|json|yaml|agent --base <auto|ref>`
+- Global `--verbose` adds diagnostic inventory to text output without changing
+  structured formats, findings, or exit behavior.
 - Default path is the current directory.
 - Default format is `text`.
 - Default base is `auto`; explicit refs must resolve to a Git commit.
@@ -65,12 +67,21 @@
   checks.
 - Generated, archive, log, and benchmark reference noise must be filtered,
   classified, or explicitly listed as omitted from blocking review policy.
-- Text output must stay compact, row-aligned, and scan-first for humans:
-  header/status, check, heat, hot dirs, content, finding counts, action
-  buckets, policy, next command, and detail commands.
-- Text output renders hot directories as a compact tree with concrete
-  violation, file, and line values. Unchanged findings are hidden from default
-  action rows and bounded agent output while remaining available in full JSON.
+- Default text output is an advisory decision summary, not a dump of the report
+  schema. It presents a standalone heading followed by status, comparison
+  scope, actionable finding counts, branch change, worktree change, crossed
+  thresholds, the most specific hot path, the first concrete repair, and one
+  next command. Rows that have no useful signal may be omitted.
+- Default text output omits exhaustive check counts, all threshold denominators,
+  content counters, action buckets, policy prose, and lower-level command lists.
+  `--verbose` adds these diagnostic details; JSON and agent output retain the
+  complete structured packet.
+- The default hot path selects the most specific high-pressure directory and
+  reports concrete violation, changed-file, and line values. Verbose text may
+  render the bounded hot-directory tree.
+- Unchanged non-blocking findings are hidden from default action rows and
+  bounded agent output. Unchanged blocking findings remain visible until fixed,
+  and full JSON retains every finding state.
 - Text output may use ANSI color only when stdout is a terminal or
   `ASSURA_FORCE_COLOR=1`/`CLICOLOR_FORCE` is set. Piped/captured output must
   remain plain text, and `NO_COLOR`/`CLICOLOR=0` must disable automatic color.
@@ -87,10 +98,10 @@
 | Content runtime has configured blocking diagnostics | Exit `0`; content gaps also point to content-query details. `assura check` remains nonzero. |
 | Unresolved repository-reference candidates exist only as raw candidates | Exit `0` when no blocking checks fail; finding is informational. |
 | Project is not a Git checkout | Exit follows normal review; `heatmap.git_available=false`; Git counters stay zero/unknown. |
-| Git checkout has branch/worktree pressure | Review includes compact aligned heat/hot-dir rows plus JSON `heatmap` totals and directory rollups. |
+| Git checkout has branch/worktree pressure | Review includes compact branch/worktree rows and the most specific hot path; JSON retains totals and directory rollups. |
 | Explicit `--base <ref>` resolves | Branch metrics compare against that ref and report it in `heatmap.branch.base`. |
 | Explicit `--base <ref>` is invalid | Exit with configuration error and name the invalid ref. |
-| Review repeats without changes | Stable fingerprints remain `unchanged` and repeated agent/action output is hidden. |
+| Review repeats without changes | Stable fingerprints remain `unchanged`; repeated non-blocking output is hidden while an unresolved blocker remains visible. |
 | A prior finding disappears | The next review emits a bounded `resolved` history item. |
 | Text output is captured or piped | Output contains no ANSI escapes by default. |
 | Text output is forced with `ASSURA_FORCE_COLOR=1` | Output contains ANSI styling without changing text content or JSON/agent output. |
@@ -99,10 +110,10 @@
 
 ### 5. Good/Base/Bad Cases
 
-- Good: Before a PR, a user runs `assura review . --format text`, sees aligned
-  status/heat/action rows with terminal color when interactive, sees no
-  blockers, sees advisory/inactive follow-up, and can jump to lower-level
-  commands for evidence.
+- Good: Before a PR, a user runs `assura review . --format text`, sees the
+  advisory state, comparison scope, relevant change pressure, first concrete
+  repair, and authoritative Check command. `--verbose` exposes diagnostic
+  inventory only when requested.
 - Base: During onboarding, an agent runs `assura review . --format agent` and
   receives bounded JSON without scraping text.
 - Bad: A review implementation reruns independent structure logic, treats raw
@@ -122,8 +133,9 @@
   findings and lower-level content-query commands.
 - Agent format test: schema `assura.project-review.agent.v2` and bounded
   finding/action arrays.
-- Text format test: captured output stays plain, aligned rows preserve the
-  structure-fit policy, and forced color emits ANSI styling.
+- Text format test: captured output stays plain, the default stays bounded,
+  `--verbose` exposes diagnostic inventory, unresolved blockers remain visible
+  across repeated reviews, and forced color emits ANSI styling.
 
 ### 7. Wrong vs Correct
 

@@ -14,6 +14,7 @@ const PROJECT_REVIEW_AGENT_SCHEMA: &str = "assura.project-review.agent.v2";
 pub(super) fn render_project_review(
     report: &ProjectReviewReport,
     format: CheckOutputFormat,
+    verbose: bool,
 ) -> String {
     match format {
         CheckOutputFormat::Json => serde_json::to_string_pretty(report).unwrap_or_default(),
@@ -23,7 +24,7 @@ pub(super) fn render_project_review(
                 .unwrap_or_default()
         }
         CheckOutputFormat::Text | CheckOutputFormat::Advice | CheckOutputFormat::Status => {
-            render_project_review_text(report)
+            render_project_review_text(report, verbose)
         }
     }
 }
@@ -118,7 +119,8 @@ impl ProjectReviewReport {
             .iter()
             .filter(|finding| {
                 finding.action_kind == action_kind
-                    && !matches!(finding.state, "unchanged" | "resolved")
+                    && finding.state != "resolved"
+                    && (finding.state != "unchanged" || finding.severity == "blocking")
             })
             .take(4)
             .collect()
@@ -230,7 +232,7 @@ impl From<&ProjectReviewReport> for ProjectReviewAgentReport {
             findings: report
                 .findings
                 .iter()
-                .filter(|finding| finding.state != "unchanged")
+                .filter(|finding| finding.state != "unchanged" || finding.severity == "blocking")
                 .take(12)
                 .cloned()
                 .collect(),

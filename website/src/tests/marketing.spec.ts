@@ -263,10 +263,7 @@ test('terminal output uses ANSI-like text emphasis without per-line panels', asy
   const infoColor = await page.locator('.terminal-line.info').first().evaluate(
     (item) => getComputedStyle(item).color,
   );
-  const plainColor = await page.locator('.terminal-line.plain').first().evaluate(
-    (item) => getComputedStyle(item).color,
-  );
-  expect(infoColor).toBe(plainColor);
+  expect(infoColor).not.toBe(commandColor);
 });
 
 test('review output separates row labels, metric names, and summarized values', async ({ page }) => {
@@ -274,13 +271,13 @@ test('review output separates row labels, metric names, and summarized values', 
   await page.goto('/');
 
   const terminal = page.locator('[data-terminal-variant="review"]').first();
-  const thresholds = terminal.locator('[data-terminal-line]').filter({ hasText: /^Thresholds/ });
-  const rowLabel = thresholds.locator('[data-terminal-label]');
-  const metricKey = thresholds.locator('[data-terminal-metric-key]').first();
-  const metricValue = thresholds.locator('[data-terminal-metric-value]').first();
+  const watch = terminal.locator('[data-terminal-line]').filter({ hasText: /^Watch/ });
+  const rowLabel = watch.locator('[data-terminal-label]');
+  const metricKey = watch.locator('[data-terminal-metric-key]').first();
+  const metricValue = watch.locator('[data-terminal-metric-value]').first();
 
-  await expect(rowLabel).toHaveText('Thresholds');
-  await expect(metricKey).toHaveText('blocking=');
+  await expect(rowLabel).toHaveText('Watch');
+  await expect(metricKey).toHaveText('blocking-validation=');
   await expect(metricValue).toHaveText('1/1');
 
   const hierarchy = await Promise.all([rowLabel, metricKey, metricValue].map((item) =>
@@ -292,7 +289,7 @@ test('review output separates row labels, metric names, and summarized values', 
   expect(new Set(hierarchy.map((item) => item.color)).size).toBe(3);
   expect(hierarchy[2].weight).toBeGreaterThan(hierarchy[1].weight);
 
-  const crossedThreshold = thresholds.locator('[data-terminal-metric-value="danger"]');
+  const crossedThreshold = watch.locator('[data-terminal-metric-value="danger"]');
   await expect(crossedThreshold).toHaveCount(1);
   await expect(crossedThreshold).toHaveText('1/1');
 });
@@ -305,12 +302,13 @@ test('review rows use hanging indents and semantic section breaks', async ({ pag
   const terminal = page.locator('[data-terminal-variant="review"]').first();
   const branch = terminal.locator('[data-terminal-line]').filter({ hasText: /^Branch/ });
   const summary = terminal.locator('[data-terminal-line]').first();
-  const fixNow = terminal.locator('[data-terminal-line]').filter({ hasText: /^Fix now/ });
+  const findings = terminal.locator('[data-terminal-line]').filter({ hasText: /^Findings/ });
+  const fixFirst = terminal.locator('[data-terminal-line]').filter({ hasText: /^Fix first/ });
 
   await expect(branch).toHaveAttribute('data-terminal-labelled', 'true');
-  await expect(branch).toHaveAttribute('data-terminal-section-start', 'true');
+  await expect(findings).toHaveAttribute('data-terminal-section-start', 'true');
   await expect(summary).toHaveAttribute('data-terminal-summary', 'true');
-  await expect(fixNow).toHaveAttribute('data-terminal-section-start', 'true');
+  await expect(fixFirst).toHaveAttribute('data-terminal-section-start', 'true');
 
   const layout = await branch.evaluate((element) => {
     const style = getComputedStyle(element);
@@ -332,13 +330,13 @@ test('review output reserves warning color for actual warnings', async ({ page }
   await page.goto('/');
 
   const terminal = page.locator('[data-terminal-variant="review"]').first();
-  for (const label of ['Branch', 'Worktree', 'Hot dirs']) {
+  for (const label of ['Branch', 'Worktree', 'Hot path']) {
     const row = terminal.locator('[data-terminal-line]').filter({ hasText: new RegExp(`^${label}`) });
     await expect(row.locator('[data-terminal-metric-value="warning"]')).toHaveCount(0);
   }
 
-  await expect(terminal.locator('.terminal-token-status.is-warning')).toHaveText('attention');
-  await expect(terminal.locator('.terminal-token-status.is-danger').first()).toHaveText('fail');
+  await expect(terminal.locator('.terminal-token-status.is-warning')).toHaveText('needs attention');
+  await expect(terminal.locator('.terminal-token-status.is-danger')).toContainText('BadName.tsx');
 });
 
 test('example output CTA connects project policy to pass and fail paths', async ({ page }) => {
@@ -497,8 +495,8 @@ for (const colorScheme of themes) {
 test('review, check, and onboarding retain distinct real product states', async ({ page }) => {
   await page.goto('/project-review/');
   const review = page.locator('[data-terminal-variant="review"]').first();
-  await expect(review.locator('[data-terminal-line]').first()).toContainText('attention');
-  await expect(review.locator('[data-terminal-line]').filter({ hasText: /^Check/ })).toContainText('fail');
+  await expect(review.locator('[data-terminal-line]').filter({ hasText: /^Status/ })).toContainText('needs attention');
+  await expect(review.locator('[data-terminal-line]').filter({ hasText: /^Fix first/ })).toContainText('BadName.tsx');
 
   await page.goto('/repository-validation/');
   const check = page.locator('[data-terminal-variant="check"]').first();

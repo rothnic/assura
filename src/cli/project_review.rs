@@ -21,10 +21,11 @@ pub async fn project_review_command(
     config: Option<PathBuf>,
     format: CheckOutputFormat,
     base: String,
+    verbose: bool,
 ) -> ExitCode {
     match build_project_review(path, config, requested_base(&base), true) {
         Ok(report) => {
-            println!("{}", render_project_review(&report, format));
+            println!("{}", render_project_review(&report, format, verbose));
             ExitCode::Success
         }
         Err(error) => {

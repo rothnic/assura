@@ -1125,12 +1125,14 @@ fn compact_review(report: &Value, rendered_text: &str) -> Result<Value> {
         rendered_text,
         &[
             "Assura review",
-            "Check",
-            "Thresholds",
+            "Status",
+            "Scope",
+            "Findings",
             "Branch",
             "Worktree",
-            "Hot dirs",
-            "Fix now",
+            "Watch",
+            "Hot path",
+            "Fix first",
             "Run",
         ],
         review_tone,
@@ -1139,14 +1141,14 @@ fn compact_review(report: &Value, rendered_text: &str) -> Result<Value> {
         rendered_text,
         &[
             "Assura review",
-            "Check",
-            "Thresholds",
+            "Status",
+            "Scope",
+            "Findings",
             "Branch",
             "Worktree",
-            "Hot dirs",
-            "Findings",
-            "Fix now",
-            "Configure",
+            "Watch",
+            "Hot path",
+            "Fix first",
             "Next",
             "Run",
         ],
@@ -1401,42 +1403,26 @@ fn select_terminal_lines(
 }
 
 fn review_tone(line: &str) -> &'static str {
-    if line.starts_with("Assura review") {
+    if line == "Assura review" {
         "prompt"
-    } else if line.starts_with("Check") {
-        if line.contains(" fail") {
-            "fail"
+    } else if line.starts_with("Status") {
+        if line.contains("needs attention") {
+            "warn"
         } else {
             "pass"
         }
-    } else if line.starts_with("Fix now") {
-        if line.ends_with("none") {
-            "muted"
-        } else {
-            "fail"
-        }
-    } else if line.starts_with("Configure") || line.starts_with("Inspect") {
-        if line.ends_with("none") {
-            "muted"
-        } else {
-            "warn"
-        }
+    } else if line.starts_with("Fix first") {
+        "fail"
+    } else if line.starts_with("Watch") {
+        "warn"
     } else if line.starts_with("Run") {
         "pass"
-    } else if [
-        "Heat",
-        "Thresholds",
-        "Branch",
-        "Worktree",
-        "Hot dirs",
-        "Content",
-        "Findings",
-    ]
-    .iter()
-    .any(|prefix| line.starts_with(prefix))
+    } else if ["Scope", "Findings", "Branch", "Worktree", "Hot path"]
+        .iter()
+        .any(|prefix| line.starts_with(prefix))
     {
         "info"
-    } else if line.starts_with("Policy") || line.starts_with("Details") {
+    } else if line.starts_with("Next") {
         "muted"
     } else {
         "plain"

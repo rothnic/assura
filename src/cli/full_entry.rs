@@ -56,6 +56,7 @@ async fn run_full_cli(cli: Cli) -> ExitCode {
 
     info!("Starting Assura CLI");
     let config_path = cli.config.clone();
+    let verbose = cli.verbose;
 
     let exit_code = match cli.command {
         Commands::Check {
@@ -88,7 +89,7 @@ async fn run_full_cli(cli: Cli) -> ExitCode {
         Commands::Status { path, format } => status_command(path, config_path, format).await,
         Commands::Doctor { path, format } => super::doctor_command(path, config_path, format).await,
         Commands::Review { path, format, base } => {
-            project_review_command(path, config_path, format, base).await
+            project_review_command(path, config_path, format, base, verbose).await
         }
         Commands::Cache { command } => match command {
             CacheCommands::Status {
