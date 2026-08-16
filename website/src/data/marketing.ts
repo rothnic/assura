@@ -1,5 +1,5 @@
 export const sourceRepositoryUrl = 'https://github.com/rothnic/assura';
-export const sourcePreviewRevision = '5dcd7d702da5cd46f729fb737e8e472031e402fd';
+export const sourcePreviewRevision = 'cbcd2b4855a7ac958e27d962371dcbe97f4ff625';
 export const installCommand = `cargo install --git ${sourceRepositoryUrl} --rev ${sourcePreviewRevision} --locked --bin assura assura`;
 
 export const onboardingCommand = 'assura agent onboard .';
