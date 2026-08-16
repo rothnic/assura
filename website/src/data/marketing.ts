@@ -1,5 +1,5 @@
 export const sourceRepositoryUrl = 'https://github.com/rothnic/assura';
-export const sourcePreviewRevision = 'b8f8375835095ce4f83b872c33b9d4e163ab283a';
+export const sourcePreviewRevision = '5dcd7d702da5cd46f729fb737e8e472031e402fd';
 export const installCommand = `cargo install --git ${sourceRepositoryUrl} --rev ${sourcePreviewRevision} --locked --bin assura assura`;
 
 export const agentSetupPrompt = `Install the exact Assura revision used to generate and verify the examples on assura.dev:
