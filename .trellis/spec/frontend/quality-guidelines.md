@@ -60,6 +60,9 @@ and dark color schemes before claiming completion.
   timings as an equal comparison row beneath it.
 - Keep marketing claims executable: if copy says a path is required, the
   checked fixture must include the corresponding required-path directive.
+- Modal dialogs must lock the background document while preserving scrolling
+  inside the dialog. Every dismissal path must release the lock and restore the
+  exact page offset captured before opening.
 
 ---
 
@@ -73,6 +76,8 @@ For landing-page work, collect:
 - light/dark hierarchy and overflow assertions for dense comparison cards at
   320px, 390px, and a representative tablet width
 - a docs-route smoke check
+- a mobile modal regression that attempts background scrolling and verifies
+  scroll-position restoration after dismissal
 
 ---
 

@@ -127,6 +127,33 @@ test('agent setup dialog is keyboard dismissible and restores focus', async ({ p
   await expect(trigger).toBeFocused();
 });
 
+test('agent setup dialog locks and restores background scroll on mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/', { waitUntil: 'networkidle' });
+  await page.locator('#problem-title').scrollIntoViewIfNeeded();
+  const initialScrollY = await page.evaluate(() => window.scrollY);
+  expect(initialScrollY).toBeGreaterThan(0);
+
+  await page.locator('.nav-start').click();
+  const dialog = page.getByRole('dialog', { name: 'Set up this project with Assura.' });
+  await expect(dialog).toBeVisible();
+  await expect(page.locator('html')).toHaveClass(/setup-modal-open/);
+  await expect(page.locator('body')).toHaveCSS('position', 'fixed');
+  await expect(page.locator('body')).toHaveCSS('top', `-${initialScrollY}px`);
+
+  const backgroundHeading = page.locator('#problem-title');
+  const beforeWheel = await backgroundHeading.boundingBox();
+  await page.mouse.wheel(0, 900);
+  const afterWheel = await backgroundHeading.boundingBox();
+  expect(afterWheel?.y).toBe(beforeWheel?.y);
+
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeHidden();
+  await expect(page.locator('html')).not.toHaveClass(/setup-modal-open/);
+  await expect(page.locator('body')).not.toHaveCSS('position', 'fixed');
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(initialScrollY);
+});
+
 test('header setup entry stays visually secondary to the hero action', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'dark' });
   await page.goto('/');

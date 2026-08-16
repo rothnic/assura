@@ -61,10 +61,31 @@ const shortRevision = sourceRevision.slice(0, 7);
 <script is:inline>
   const setupDialog = document.getElementById('agent-setup-dialog');
   if (setupDialog instanceof HTMLDialogElement) {
+    let lockedScrollY = null;
+
+    const lockBackgroundScroll = () => {
+      if (lockedScrollY !== null) return;
+      lockedScrollY = window.scrollY;
+      document.documentElement.classList.add('setup-modal-open');
+      document.body.classList.add('setup-modal-open');
+      document.body.style.setProperty('--setup-scroll-y', `${lockedScrollY}px`);
+    };
+
+    const unlockBackgroundScroll = () => {
+      if (lockedScrollY === null) return;
+      const restoreScrollY = lockedScrollY;
+      lockedScrollY = null;
+      document.documentElement.classList.remove('setup-modal-open');
+      document.body.classList.remove('setup-modal-open');
+      document.body.style.removeProperty('--setup-scroll-y');
+      window.scrollTo(0, restoreScrollY);
+    };
+
     for (const trigger of document.querySelectorAll('[data-open-setup]')) {
       trigger.addEventListener('click', (event) => {
         event.preventDefault();
         setupDialog.showModal();
+        lockBackgroundScroll();
       });
     }
     for (const trigger of setupDialog.querySelectorAll('[data-close-setup]')) {
@@ -73,6 +94,7 @@ const shortRevision = sourceRevision.slice(0, 7);
     setupDialog.addEventListener('click', (event) => {
       if (event.target === setupDialog) setupDialog.close();
     });
+    setupDialog.addEventListener('close', unlockBackgroundScroll);
   }
 
   for (const button of document.querySelectorAll('[data-copy-target]')) {
