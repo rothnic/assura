@@ -2,6 +2,7 @@
 
 use super::agent_onboarding::DetectedSection;
 use super::agent_onboarding_content_templates as content;
+use super::agent_onboarding_handoff_templates as handoff;
 use super::agent_onboarding_structure_fit_templates as structure_fit;
 use super::AgentContentTemplate;
 
@@ -58,9 +59,9 @@ pub(super) fn baseline_files(
             required: true,
             executable: false,
         },
-        GeneratedFile::static_file(".assura/onboarding/questions.md", onboarding_questions()),
-        GeneratedFile::static_file(".assura/onboarding/lifecycle.md", onboarding_lifecycle()),
-        GeneratedFile::static_file(".assura/onboarding/agent-next.md", agent_next()),
+        GeneratedFile::static_file(".assura/onboarding/questions.md", handoff::questions()),
+        GeneratedFile::static_file(".assura/onboarding/lifecycle.md", handoff::lifecycle()),
+        GeneratedFile::static_file(".assura/onboarding/agent-next.md", handoff::agent_next()),
     ];
     files.extend(content::content_template_files(content_template));
     files
@@ -244,9 +245,9 @@ Read `.assura/onboarding/rules.md` for the project rule application status.
 ## Operating Rules
 
 Before adding project-specific conventions, read
-`.assura/onboarding/agent-next.md` and ask the user the remaining
-specialization questions. Do not invent language, layout, naming, traceability,
-or domain conventions.
+`.assura/onboarding/agent-next.md`. Use manifests, tooling, documentation, and
+established paths as evidence for the expected project shape. Ask the user only
+where that evidence is ambiguous or a rule would reject existing content.
 
 Use `assura check --format agent --warn .` for advisory feedback while working.
 Use gate-mode checks before push or CI by omitting `--warn`.
@@ -299,12 +300,12 @@ Use `assura check --format agent --warn .` for advisory feedback while working.
 
 - Updated Assura baseline files or a concise explanation that no baseline
   update was needed.
-- Clear remaining specialization questions for the user.
+- Evidence-backed project-owned rules and clear remaining questions for the user.
 
 ## Guardrails
 
-- Do not invent project conventions before the user answers specialization
-  questions.
+- Do not treat every observed path as intended. Close stable scopes from
+  converging evidence and ask before making ambiguous or destructive choices.
 - Keep longer examples and runbooks in `references/` or `docs/process/`.
 "#
 }
@@ -314,7 +315,7 @@ fn openai_agent_config() -> &'static str {
 }
 
 fn onboarding_reference() -> &'static str {
-    "# Assura Onboarding\n\nRead `.assura/onboarding/rules.md` for baseline status. Specialize only after user answers.\n"
+    "# Assura Onboarding\n\nRead `.assura/onboarding/rules.md`, inspect project evidence, specialize stable scopes, and ask only about unresolved choices.\n"
 }
 
 fn agent_workflow_doc() -> &'static str {
@@ -328,7 +329,8 @@ related_requirements:
 
 # Agent Workflow
 
-Run Assura checks, read agent-next.md, ask before specializing.
+Run Assura checks, read agent-next.md, specialize from project evidence, and
+ask only where the intended shape is ambiguous.
 "#
 }
 
@@ -404,7 +406,7 @@ Keep SKILL.md concise and put detailed references in subdirectories.
 
 fn onboarding_summary(detected: &DetectedSection) -> String {
     format!(
-        "# Assura Onboarding Summary\n\nProject type: `{}` ({})\nAgent harness: `{}` ({})\nMaterialized recipes: `agentic-core`, `structure-health`\nPolicy ownership: `.assura/config.yml`\n\nSee `rules.md` for application status. Specialization is still pending.\n",
+        "# Assura Onboarding Summary\n\nProject type: `{}` ({})\nAgent harness: `{}` ({})\nMaterialized recipes: `agentic-core`, `structure-health`\nPolicy ownership: `.assura/config.yml`\n\nSee `rules.md` for application status, then specialize the expected shape from project evidence.\n",
         detected.project_type,
         detected.project_confidence,
         detected.agent_harness,
@@ -422,84 +424,7 @@ fn onboarding_rules(detected: &DetectedSection, status: &str) -> String {
         _ => "The selected config does not contain the recommended project-owned recipes.",
     };
     format!(
-        "# Assura Rule Recommendations\n\nDetected project type: `{}`.\nRecommendation status: `{status}`.\n\n{status_detail}\n\nThe `agentic-core` and `structure-health` recipes are copied into `.assura/config.yml`; the project owns and can edit every selected rule.\n\nIncluded policy layers:\n\n- `$agent-entrypoint`\n- `$skill-entrypoint`\n- `$skill`\n- `$folder-health`\n- `$closed`\n\nLanguage, framework, naming, layout, and domain rules remain undecided until the project owner confirms them.\n",
+        "# Assura Rule Recommendations\n\nDetected project type: `{}`.\nRecommendation status: `{status}`.\n\n{status_detail}\n\nThe `agentic-core` and `structure-health` recipes are copied into `.assura/config.yml`; the project owns and can edit every selected rule.\n\nIncluded policy layers:\n\n- `$agent-entrypoint`\n- `$skill-entrypoint`\n- `$skill`\n- `$folder-health`\n- `$closed`\n\nUse project evidence to define language, framework, naming, layout, and generated-output rules. Ask the project owner only where the intended policy remains ambiguous.\n",
         detected.project_type,
     )
-}
-
-fn onboarding_questions() -> &'static str {
-    r#"# Assura Onboarding Questions
-
-1. What primary language or stack should this project use?
-2. What project type is this: library, app, docs site, research-authoring project, data project, monorepo, or other?
-3. What file naming convention should apply: kebab-case, snake_case, PascalCase, or mixed by folder?
-4. What source layout should the project use?
-5. What test layout should the project use?
-6. Should docs be strict from day one or advisory until the first milestone?
-7. Should agent hooks be advisory only while working and blocking only in CI?
-8. Are there required files or folders specific to this project?
-9. Are there binary or source documents that should be tracked by manifest instead of read as text?
-10. Should Assura create typed content models for tasks, decisions, requirements, evidence, or source documents?
-"#
-}
-
-fn onboarding_lifecycle() -> &'static str {
-    r#"# Assura Lifecycle Profiles
-
-Use these modes consistently:
-
-| Mode | When | Blocking | Command |
-| --- | --- | --- | --- |
-| nudge | During agent working loops, path-aware tool events, and idle reviews | no | `assura agent nudge --event before-tool --changed <path> --format json .` |
-| warn | Before local commits or while drafting | no | `assura check --format agent --warn --min-severity low --max-issues 10 .` |
-| gate | Before push, merge, or CI | yes | `assura check --format agent --min-severity medium --max-issues 20 .` |
-
-Host-agent integrations are reviewable local bundles under
-`.assura/integrations/<agent>/`. Installation does not change host settings.
-Run `assura agent integration activate <agent> .` to patch only Assura-owned
-project host configuration, then `assura agent integration doctor <agent> .`
-to verify the managed files. Host trust remains under user control.
-"#
-}
-
-fn agent_next() -> &'static str {
-    r#"# Agent Next
-
-Assura is installed. Read `.assura/onboarding/rules.md` to confirm whether the
-recommended baseline is applied, available, not applied, or needs conflict
-resolution.
-
-Do not invent project conventions. Ask the user the remaining specialization
-questions before adding language, layout, naming, traceability, content-model,
-source-document, hook, or project-specific rules.
-
-Read `.assura/onboarding/rules.md` before editing the project-owned recipe
-rules in `.assura/config.yml`.
-
-Use `.assura/onboarding/lifecycle.md` to decide between nudge, warn, and gate
-feedback. Warn mode is advisory for draft work; gate mode is for pre-push,
-merge, or CI checks.
-
-For structure mismatches, apply `STRUCTURE_FIT_CHECK` from
-`.agents/skills/assura-structure-fit/references/structure-fit-check.md` before
-editing `.assura/config.yml`.
-
-## Ask The User
-
-1. What primary language or stack should this project use?
-2. What project type is this: library, app, docs site, research-authoring project, data project, monorepo, or other?
-3. What file naming convention should apply: kebab-case, snake_case, PascalCase, or mixed by folder?
-4. What source layout should the project use?
-5. What test layout should the project use?
-6. Should docs be strict from day one or advisory until the first milestone?
-7. Should agent hooks be advisory only while working and blocking only in CI?
-8. Are there required files or folders specific to this project?
-9. Are there binary or source documents that should be tracked by manifest instead of read as text?
-10. Should Assura create typed content models for tasks, decisions, requirements, evidence, or source documents?
-
-## After The User Answers
-
-Record answers in `.assura/onboarding/answers.yml` or equivalent project notes,
-then run the later specialization flow when it exists.
-"#
 }

@@ -1,11 +1,13 @@
 ---
 interface Props {
+  steps: string[];
   prompt: string;
+  onboardingCommand: string;
   installCommand: string;
   sourceRevision: string;
 }
 
-const { prompt, installCommand, sourceRevision } = Astro.props;
+const { steps, prompt, onboardingCommand, installCommand, sourceRevision } = Astro.props;
 const shortRevision = sourceRevision.slice(0, 7);
 ---
 
@@ -14,41 +16,44 @@ const shortRevision = sourceRevision.slice(0, 7);
     <header class="dialog-head">
       <div>
         <span>Agent setup</span>
-        <h2 id="setup-dialog-title">Start with one agent instruction.</h2>
+        <h2 id="setup-dialog-title">Set up this project with Assura.</h2>
       </div>
       <button class="dialog-close" type="button" data-close-setup aria-label="Close setup dialog">×</button>
     </header>
     <p class="dialog-copy">
-      Give this prompt to the coding agent already working in your project. It
-      installs the matched Assura implementation, establishes a broad baseline,
-      verifies the setup, and leaves unresolved project decisions visible.
+      Copy one instruction to the coding agent already working in your project.
+      It will establish the baseline, define the expected shape, and verify it.
     </p>
-    <div class="setup-contract" aria-label={`Matched implementation revision ${shortRevision}`}>
-      <span>Matched implementation</span>
-      <code>{shortRevision}</code>
-      <p>The same revision generates the output shown across this preview.</p>
+    <div class="setup-command" aria-label="Assura onboarding command">
+      <span>One command</span>
+      <code>{onboardingCommand}</code>
     </div>
     <div class="dialog-command">
       <div>
-        <span>Recommended</span>
-        <strong>Agent prompt</strong>
+        <span>Agent goal</span>
+        <strong>Inspect, constrain, verify</strong>
       </div>
-      <pre><code id="agent-prompt">{prompt}</code></pre>
-      <button class="button button-primary" type="button" data-copy-target="agent-prompt" data-copied-label="Prompt copied" data-analytics-event="setup_prompt_copy">
-        Copy agent prompt
+      <textarea id="agent-prompt" class="copy-source" tabindex="-1" aria-hidden="true">{prompt}</textarea>
+      <button class="button button-primary" type="button" data-copy-target="agent-prompt" data-copied-label="Instruction copied" data-analytics-event="setup_prompt_copy">
+        Copy setup instruction
       </button>
+      <ol id="agent-instruction" class="agent-instruction">
+        {steps.map((step) => <li>{step}</li>)}
+      </ol>
     </div>
-    <div class="install-row">
-      <span>Pinned install</span>
-      <code
-        id="install-command"
-        tabindex="0"
-        aria-label="Pinned Assura install command"
-      >{installCommand}</code>
-      <button class="copy-inline" type="button" data-copy-target="install-command" data-copied-label="Copied" data-analytics-event="install_command_copy">
-        Copy
-      </button>
-    </div>
+    <details class="install-details" aria-label={`Installation details for revision ${shortRevision}`}>
+      <summary>
+        <span>Installation details</span>
+        <code>{shortRevision}</code>
+      </summary>
+      <div class="install-row">
+        <code id="install-command" tabindex="0" aria-label="Pinned Assura install command">{installCommand}</code>
+        <button class="copy-inline" type="button" data-copy-target="install-command" data-copied-label="Copied" data-analytics-event="install_command_copy">
+          Copy
+        </button>
+      </div>
+      <p>The copied setup instruction includes this pinned command.</p>
+    </details>
     <p id="copy-status" class="copy-status" role="status" aria-live="polite"></p>
   </div>
 </dialog>
@@ -86,7 +91,16 @@ const shortRevision = sourceRevision.slice(0, 7);
         if (status) status.textContent = `${button.textContent}.`;
       } catch {
         button.textContent = 'Copy failed';
-        if (status) status.textContent = 'Copy failed. Select the text and copy it manually.';
+        if (target instanceof HTMLTextAreaElement) {
+          target.classList.remove('copy-source');
+          target.classList.add('copy-fallback');
+          target.removeAttribute('aria-hidden');
+          target.removeAttribute('tabindex');
+          target.readOnly = true;
+          target.focus();
+          target.select();
+        }
+        if (status) status.textContent = 'Copy failed. The setup instruction is selected for manual copy.';
       }
       window.setTimeout(() => {
         button.textContent = button.getAttribute('data-original-label') || originalLabel;

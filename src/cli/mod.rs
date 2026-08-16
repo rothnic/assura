@@ -16,6 +16,8 @@ mod agent_onboarding_content_templates;
 #[cfg(feature = "full-cli")]
 mod agent_onboarding_document_project_templates;
 #[cfg(feature = "full-cli")]
+mod agent_onboarding_handoff_templates;
+#[cfg(feature = "full-cli")]
 mod agent_onboarding_report;
 #[cfg(feature = "full-cli")]
 mod agent_onboarding_rules;

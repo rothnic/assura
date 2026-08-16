@@ -4,8 +4,10 @@ import MarketingLayout from './marketing-layout.astro';
 import TerminalCard from './terminal-card.astro';
 import {
   agentSetupPrompt,
+  agentSetupSteps,
   installCommand,
   marketingNav,
+  onboardingCommand,
   sourcePreviewRevision,
 } from '../../data/marketing';
 
@@ -121,7 +123,9 @@ const artifactLines = props.artifactLines.map((line) => {
     </section>
   </main>
   <AgentSetupDialog
+    steps={agentSetupSteps}
     prompt={agentSetupPrompt}
+    onboardingCommand={onboardingCommand}
     installCommand={installCommand}
     sourceRevision={sourcePreviewRevision}
   />

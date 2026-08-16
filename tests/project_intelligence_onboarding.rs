@@ -192,13 +192,13 @@ fn project_intelligence_onboarding_starter_refuses_to_overwrite_files_without_fo
 fn agent_onboard_generates_broad_baseline_and_packet() {
     let project = TempDir::new().unwrap();
 
-    let output = json_from_success(run_assura(&[
-        "agent",
-        "onboard",
-        project.path().to_str().unwrap(),
-        "--format",
-        "json",
-    ]));
+    let output = json_from_success(
+        Command::new(assura_bin())
+            .current_dir(project.path())
+            .args(["agent", "onboard", "."])
+            .output()
+            .expect("minimal onboarding command runs"),
+    );
 
     assert_eq!(output["schema"], "assura.agent-onboarding.v1");
     assert_eq!(output["detected"]["project_type"], "empty");
@@ -306,13 +306,20 @@ fn agent_onboard_generates_broad_baseline_and_packet() {
 
     let agent_next =
         fs::read_to_string(project.path().join(".assura/onboarding/agent-next.md")).unwrap();
-    assert!(agent_next.contains("Do not invent project conventions"));
+    assert!(agent_next.contains("Inspect Project Evidence First"));
+    assert!(agent_next.contains("package and workspace manifests"));
+    assert!(agent_next.contains("expected stack and intentional layout"));
+    assert!(agent_next.contains("Close stable scopes"));
+    assert!(agent_next.contains("unexpected files and directories fail"));
+    assert!(agent_next.contains("Ask only where the evidence is ambiguous"));
     assert!(agent_next.contains(".assura/onboarding/lifecycle.md"));
     assert!(agent_next.contains("STRUCTURE_FIT_CHECK"));
     assert!(agent_next.contains(".agents/skills/assura-structure-fit"));
     assert!(agent_next.contains(".assura/onboarding/rules.md"));
     assert!(agent_next.contains("What primary language or stack should this project use?"));
     assert!(agent_next.contains("What test layout should the project use?"));
+    assert!(agent_next.contains("assura review"));
+    assert!(agent_next.contains("assura check --format agent"));
     let lifecycle =
         fs::read_to_string(project.path().join(".assura/onboarding/lifecycle.md")).unwrap();
     assert!(lifecycle.contains("| nudge |"));

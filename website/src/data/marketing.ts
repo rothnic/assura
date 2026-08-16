@@ -2,15 +2,22 @@ export const sourceRepositoryUrl = 'https://github.com/rothnic/assura';
 export const sourcePreviewRevision = '5dcd7d702da5cd46f729fb737e8e472031e402fd';
 export const installCommand = `cargo install --git ${sourceRepositoryUrl} --rev ${sourcePreviewRevision} --locked --bin assura assura`;
 
-export const agentSetupPrompt = `Install the exact Assura revision used to generate and verify the examples on assura.dev:
+export const onboardingCommand = 'assura agent onboard .';
+
+export const agentSetupSteps = [
+  'Inspect manifests, tooling, generated output, and the intentional layout.',
+  'Define project-owned rules for the expected stack. Close stable scopes so unexpected paths fail; preserve legitimate paths and ask only where evidence is ambiguous.',
+  'Verify with assura review and assura check --format agent.',
+];
+
+export const agentSetupInstruction = `Set up Assura for this project. Run \`${onboardingCommand}\`. ${agentSetupSteps.join(' ')}`;
+
+export const agentSetupPrompt = `Install the exact Assura revision used to verify assura.dev:
 ${installCommand}
 
-Then run:
-identify the active host as codex, claude, opencode, or pi; ask if the evidence is ambiguous
-assura agent onboard . --agent <host> --activate --format json
-assura check --format json .
+${agentSetupInstruction}
 
-Replace <host> with the detected host. Read .assura/onboarding/agent-next.md, summarize what is active, what is inactive, and what questions need human answers before adding project-specific rules.`;
+Read .assura/onboarding/agent-next.md and follow its evidence-first handoff. If one supported agent host is clear, activate its project-local integration; otherwise leave activation as an explicit next step.`;
 
 export const marketingNav = [
   { label: 'Review', href: '/project-review/' },

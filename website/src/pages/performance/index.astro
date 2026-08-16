@@ -4,8 +4,10 @@ import MarketingLayout from '../../components/marketing/marketing-layout.astro';
 import PolicyBreadthComparison from '../../components/marketing/policy-breadth-comparison.astro';
 import {
   agentSetupPrompt,
+  agentSetupSteps,
   installCommand,
   marketingNav,
+  onboardingCommand,
   sourcePreviewRevision,
 } from '../../data/marketing';
 import reportData from '../../../public/data/performance/current.json';
@@ -525,7 +527,9 @@ const ruleRange = countRange(cards.map((card) => card.cold?.rule_count));
     </section>
   </main>
   <AgentSetupDialog
+    steps={agentSetupSteps}
     prompt={agentSetupPrompt}
+    onboardingCommand={onboardingCommand}
     installCommand={installCommand}
     sourceRevision={sourcePreviewRevision}
   />

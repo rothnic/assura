@@ -8,7 +8,13 @@ import PerformanceProof from '../components/marketing/performance-proof.astro';
 import PolicyTreeDemo from '../components/marketing/policy-tree-demo.astro';
 import SectionHeading from '../components/marketing/section-heading.astro';
 import TerminalCard from '../components/marketing/terminal-card.astro';
-import { agentSetupPrompt, installCommand, sourcePreviewRevision } from '../data/marketing';
+import {
+  agentSetupPrompt,
+  agentSetupSteps,
+  installCommand,
+  onboardingCommand,
+  sourcePreviewRevision,
+} from '../data/marketing';
 import onboardingDemo from '../data/onboarding-demo.json';
 import reviewDemo from '../data/review-demo.json';
 
@@ -438,7 +444,9 @@ const performanceLayers = [
       </section>
   </main>
   <AgentSetupDialog
+    steps={agentSetupSteps}
     prompt={agentSetupPrompt}
+    onboardingCommand={onboardingCommand}
     installCommand={installCommand}
     sourceRevision={sourcePreviewRevision}
   />

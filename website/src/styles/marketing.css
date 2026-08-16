@@ -1977,10 +1977,10 @@
     line-height: 1.6;
   }
 
-  .setup-contract {
+  .setup-command {
     display: grid;
-    grid-template-columns: auto auto minmax(0, 1fr);
-    gap: 0.55rem;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.75rem;
     align-items: center;
     border: 1px solid color-mix(in srgb, var(--primary) 38%, var(--border));
     border-radius: 0.46rem;
@@ -1988,7 +1988,8 @@
     padding: 0.72rem 0.8rem;
   }
 
-  .setup-contract span {
+  .setup-command span,
+  .install-details summary span {
     color: var(--primary);
     font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
     font-size: 0.68rem;
@@ -1996,18 +1997,11 @@
     text-transform: uppercase;
   }
 
-  .setup-contract code {
+  .setup-command code {
     color: var(--text);
     font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-    font-size: 0.76rem;
+    font-size: 0.82rem;
     font-weight: 760;
-  }
-
-  .setup-contract p {
-    margin: 0;
-    color: var(--muted);
-    font-size: 0.78rem;
-    line-height: 1.4;
     text-align: right;
   }
 
@@ -2023,18 +2017,89 @@
     gap: 1rem;
   }
 
-  .dialog-command pre {
-    max-height: 18rem;
+  .agent-instruction {
+    display: grid;
+    gap: 0.7rem;
     margin: 0;
-    overflow: auto;
     border: 1px solid var(--terminal-border);
     border-radius: 0.46rem;
     background: var(--terminal-bg);
     padding: 0.9rem;
     color: var(--terminal-text);
+    font-size: 0.86rem;
+    line-height: 1.62;
+    list-style: none;
+    counter-reset: setup-step;
+  }
+
+  .agent-instruction li {
+    display: grid;
+    grid-template-columns: 1.35rem minmax(0, 1fr);
+    gap: 0.55rem;
+    counter-increment: setup-step;
+  }
+
+  .agent-instruction li::before {
+    color: var(--primary);
+    content: counter(setup-step, decimal-leading-zero);
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 0.68rem;
+    font-weight: 800;
+    line-height: 1.9;
+  }
+
+  .copy-source {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .copy-fallback {
+    width: 100%;
+    min-height: 10rem;
+    resize: vertical;
+    border: 1px solid var(--warning);
+    border-radius: 0.46rem;
+    background: var(--terminal-bg);
+    padding: 0.8rem;
+    color: var(--terminal-text);
+    font: 0.74rem/1.5 "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  }
+
+  .install-details {
+    border-top: 1px solid var(--border);
+  }
+
+  .install-details summary {
+    display: flex;
+    min-height: 2.75rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-top: 0.2rem;
+    cursor: pointer;
+  }
+
+  .install-details summary code {
+    color: var(--soft);
+    font-size: 0.72rem;
+  }
+
+  .install-details .install-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    border-top: 0;
+    padding-top: 0.35rem;
+  }
+
+  .install-details > p {
+    margin: 0.55rem 0 0;
+    color: var(--soft);
     font-size: 0.74rem;
-    line-height: 1.5;
-    white-space: pre-wrap;
+    line-height: 1.45;
   }
 
   .copy-status {
@@ -2336,13 +2401,12 @@
       padding: 0.9rem;
     }
 
-    .setup-contract {
-      grid-template-columns: 1fr auto;
+    .setup-command {
+      align-items: start;
     }
 
-    .setup-contract p {
-      grid-column: 1 / -1;
-      text-align: left;
+    .setup-command code {
+      overflow-wrap: anywhere;
     }
 
     .comparison-table-wrap {

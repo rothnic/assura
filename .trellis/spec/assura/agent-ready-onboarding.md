@@ -12,6 +12,10 @@ machine-readable onboarding report.
 assura agent onboard [PATH] --agent <auto|codex|opencode|claude|pi|generic> --format <text|json|yaml>
 ```
 
+The default first-run form is `assura agent onboard .`; `--agent auto` and
+`--format json` are implicit. Host activation remains explicit because an
+unknown or ambiguous host must not be guessed.
+
 Implementation surfaces:
 
 - `src/cli/agent_onboarding.rs` detects the project and merges generated files.
@@ -35,9 +39,12 @@ The report includes `rule_recommendations[]` with:
 | `includes` | Project-owned reusable rules installed by onboarding. |
 
 Onboarding writes `.assura/onboarding/rules.md` so an agent can inspect the
-active policy and its customization point. Language, framework, naming,
-layout, and domain policy remain undecided until supported evidence or a user
-decision exists.
+active policy and its customization point. The generated handoff tells the
+agent to inspect manifests, tooling, documentation, generated outputs, and
+established paths before specializing the contract. Evidence-backed language,
+framework, naming, and layout policy should be materialized as project-owned
+rules; only ambiguous or potentially destructive choices require a user
+decision.
 
 ## 4. Validation & Error Matrix
 
@@ -51,11 +58,16 @@ decision exists.
 | Existing recipe collision | Preserve user policy and report `conflict`. |
 | Alternate `--config` | Derive status from the selected config. |
 | Generated baseline fails verification | Return validation failure. |
+| Project evidence identifies stable paths | Tell the agent to model those paths and close the stable scope against unexpected entries. |
+| Current tree conflicts with expected tech | Keep the conflict visible; do not treat every observed path as intended policy. |
+| Evidence is ambiguous | Leave the scope open and ask a focused question instead of guessing. |
 
 ## 5. Good / Base / Bad Cases
 
 - Good: the project receives editable `agent-entrypoint`, `skill`,
   `folder-health`, and closed-directory rules plus explicit structure uses.
+- Good: the handoff directs the agent to turn detected stack evidence into an
+  explicit expected shape and verify it with `review` and `check`.
 - Base: an empty repository receives the same broad rules without invented
   language, naming, or framework policy.
 - Bad: current onboarding references hidden `$agentic-project` or
@@ -70,6 +82,8 @@ decision exists.
 - Generated config verification through `assura check`.
 - Binary source-document custody coverage.
 - Landing-page coverage separating applied policy from undecided policy.
+- Generated handoff coverage for evidence inspection, stable-scope closure,
+  focused questions, and final `review` plus `check` verification.
 
 ## 7. Canonical Shape
 
@@ -84,3 +98,13 @@ structure:
   AGENTS.md: exists:1 | $agent-entrypoint
   README.md: exists:1
 ```
+
+## 7. Wrong vs Correct
+
+Wrong: ask every specialization question before inspecting the repository, or
+copy every observed path into policy as though existing means intentional.
+
+Correct: inspect manifests, framework and workspace configuration, generated
+output settings, documentation, and established paths; model the expected
+stack and intentional shape; close stable scopes; ask only where evidence is
+ambiguous or a proposed rule would reject existing content.

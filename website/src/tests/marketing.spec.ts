@@ -119,7 +119,7 @@ test('agent setup dialog is keyboard dismissible and restores focus', async ({ p
   const trigger = page.getByRole('link', { name: /with your agent/ }).first();
   await trigger.click();
 
-  const dialog = page.getByRole('dialog', { name: 'Start with one agent instruction.' });
+  const dialog = page.getByRole('dialog', { name: 'Set up this project with Assura.' });
   await expect(dialog).toBeVisible();
   await expect(page.getByRole('button', { name: 'Close setup dialog' })).toBeFocused();
   await page.keyboard.press('Escape');
@@ -151,19 +151,34 @@ test('header setup entry stays visually secondary to the hero action', async ({ 
 for (const colorScheme of themes) {
   for (const width of [320, 360, 390]) {
     test(
-      `${colorScheme} setup at ${width}px installs the exact displayed implementation`,
+      `${colorScheme} setup at ${width}px keeps onboarding simple and installation inspectable`,
       async ({ page }, testInfo) => {
         await page.emulateMedia({ colorScheme });
         await page.setViewportSize({ width, height: width < 390 ? 640 : 844 });
         await page.goto('/');
         await page.getByRole('link', { name: /with your agent/ }).first().click();
 
-        const dialog = page.getByRole('dialog', { name: 'Start with one agent instruction.' });
+        const dialog = page.getByRole('dialog', { name: 'Set up this project with Assura.' });
         await expect(
-          dialog.getByLabel(
-            `Matched implementation revision ${sourcePreviewRevision.slice(0, 7)}`,
-          ),
+          dialog.getByText('assura agent onboard .', { exact: true }),
         ).toBeVisible();
+        await expect(dialog.locator('#agent-instruction')).toContainText(
+          'Define project-owned rules for the expected stack',
+        );
+        const primaryCopy = dialog.getByRole('button', { name: 'Copy setup instruction' });
+        const primaryCopyBox = await primaryCopy.boundingBox();
+        expect(primaryCopyBox?.y).toBeGreaterThanOrEqual(0);
+        expect((primaryCopyBox?.y ?? 0) + (primaryCopyBox?.height ?? 0)).toBeLessThanOrEqual(
+          width < 390 ? 640 : 844,
+        );
+        const installation = dialog.getByRole('group', {
+          name: `Installation details for revision ${sourcePreviewRevision.slice(0, 7)}`,
+        });
+        await expect(installation).not.toHaveAttribute('open', '');
+        await dialog.screenshot({
+          path: testInfo.outputPath(`setup-dialog-${colorScheme}-${width}.png`),
+        });
+        await installation.locator('summary').click();
         await expect(dialog.locator('#install-command')).toHaveText(installCommand);
         await expect(dialog.locator('#agent-prompt')).toHaveText(agentSetupPrompt);
         await expect(dialog.locator('#agent-prompt')).toContainText(sourcePreviewRevision);
@@ -176,19 +191,36 @@ for (const colorScheme of themes) {
         ).toBe(0);
         for (const control of [
           dialog.getByRole('button', { name: 'Close setup dialog' }),
-          dialog.getByRole('button', { name: 'Copy agent prompt' }),
+          primaryCopy,
           dialog.getByRole('button', { name: 'Copy', exact: true }),
         ]) {
           const box = await control.boundingBox();
           expect(box?.height).toBeGreaterThanOrEqual(44);
         }
-        await dialog.screenshot({
-          path: testInfo.outputPath(`setup-dialog-${colorScheme}-${width}.png`),
-        });
       },
     );
   }
 }
+
+test('setup copies the complete pinned evidence-first instruction', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: {
+        writeText: (value: string) => {
+          (window as Window & { copiedSetup?: string }).copiedSetup = value;
+          return Promise.resolve();
+        },
+      },
+    });
+  });
+  await page.goto('/');
+  await page.getByRole('link', { name: /with your agent/ }).first().click();
+  await page.getByRole('button', { name: 'Copy setup instruction' }).click();
+  expect(
+    await page.evaluate(() => (window as Window & { copiedSetup?: string }).copiedSetup),
+  ).toBe(agentSetupPrompt);
+});
 
 test('setup reports clipboard failures without hiding the fallback', async ({ page }) => {
   await page.addInitScript(() => {
@@ -199,11 +231,13 @@ test('setup reports clipboard failures without hiding the fallback', async ({ pa
   });
   await page.goto('/');
   await page.getByRole('link', { name: /with your agent/ }).first().click();
-  const dialog = page.getByRole('dialog', { name: 'Start with one agent instruction.' });
-  await dialog.getByRole('button', { name: 'Copy agent prompt' }).click();
+  const dialog = page.getByRole('dialog', { name: 'Set up this project with Assura.' });
+  await dialog.getByRole('button', { name: 'Copy setup instruction' }).click();
   await expect(dialog.getByRole('status')).toHaveText(
-    'Copy failed. Select the text and copy it manually.',
+    'Copy failed. The setup instruction is selected for manual copy.',
   );
+  await expect(dialog.locator('#agent-prompt')).toBeVisible();
+  await expect(dialog.locator('#agent-prompt')).toBeFocused();
 });
 
 test('short mobile view keeps the project review visible', async ({ page }) => {
@@ -887,7 +921,7 @@ test('landing and setup dialog pass automated accessibility checks', async ({ pa
   expect(landing.violations).toEqual([]);
 
   await page.getByRole('link', { name: 'Start with your agent' }).first().click();
-  const dialog = page.getByRole('dialog', { name: 'Start with one agent instruction.' });
+  const dialog = page.getByRole('dialog', { name: 'Set up this project with Assura.' });
   await expect(dialog).toBeVisible();
   const dialogAudit = await new AxeBuilder({ page }).include('#agent-setup-dialog').analyze();
   expect(dialogAudit.violations).toEqual([]);

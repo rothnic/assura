@@ -16,11 +16,13 @@ const OUTPUT_DIR: &str = "website/src/data";
 const RELEASE_SURFACES_PATH: &str = "docs/data/release-surfaces.json";
 const CONFIG_EXAMPLES_DIR: &str = "website/src/data/config-examples";
 const MARKETING_DATA_PATH: &str = "website/src/data/marketing.ts";
-const PINNED_RENDERER_ARTIFACTS: &[&str] = &[
+const PINNED_SOURCE_PREVIEW_FILES: &[&str] = &[
     "website/src/data/review-demo.json",
     "website/src/data/check-demo.json",
     "website/src/data/onboarding-demo.json",
     "website/src/data/intelligence-demo.json",
+    "src/cli/agent_onboarding_templates.rs",
+    "src/cli/agent_onboarding_handoff_templates.rs",
 ];
 const FORBIDDEN_WEBSITE_COMMANDS: &[&str] = &["assura review --path"];
 
@@ -881,7 +883,7 @@ fn validate_pinned_artifact_provenance(root: &Path, revision: &str) -> Result<()
         "verify the marketing implementation revision is in repository history",
     )?;
 
-    for path in PINNED_RENDERER_ARTIFACTS {
+    for path in PINNED_SOURCE_PREVIEW_FILES {
         let pinned = Command::new("git")
             .current_dir(root)
             .args(["show", &format!("{revision}:{path}")])
@@ -894,7 +896,7 @@ fn validate_pinned_artifact_provenance(root: &Path, revision: &str) -> Result<()
         }
         if pinned.stdout != fs::read(root.join(path))? {
             return Err(format!(
-                "renderer artifact `{path}` differs from pinned implementation revision `{revision}`"
+                "source-preview file `{path}` differs from pinned implementation revision `{revision}`"
             )
             .into());
         }
@@ -1748,6 +1750,9 @@ mod tests {
 
     #[test]
     fn unreleased_marketing_requires_one_shared_pinned_source_install() {
+        assert!(
+            PINNED_SOURCE_PREVIEW_FILES.contains(&"src/cli/agent_onboarding_handoff_templates.rs")
+        );
         let source = r#"
 export const sourceRepositoryUrl = 'https://github.com/rothnic/assura';
 export const sourcePreviewRevision = 'b8f8375835095ce4f83b872c33b9d4e163ab283a';
