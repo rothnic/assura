@@ -414,3 +414,36 @@ Locked the document behind the agent setup modal, restored exact scroll position
 ### Next Steps
 
 - None - task complete
+
+
+## Session 13: Improve landing review output spacing
+
+**Date**: 2026-08-22
+**Task**: Improve landing review output spacing
+**Branch**: `codex/assura-landing-experience`
+
+### Summary
+
+Grouped the review terminal into summary, findings, branch context, watch state, and action blocks with tested mobile spacing and preserved hanging indents.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `4ccba71` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
