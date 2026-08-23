@@ -14,7 +14,7 @@ by `assura check`. They are not a public third-party plugin API.
 
 | Category | Status | Use it for |
 | --- | --- | --- |
-| `extensions.*` config policies | Supported or experimental by family | Deterministic local repository policies that do not fit ordinary directory-tree validation. Repository references and agent guidance are supported next-release families; each remaining family keeps its explicit status. |
+| `extensions.*` config policies | Supported or experimental by family | Deterministic local repository policies that do not fit ordinary directory-tree validation. Repository references and agent guidance are supported families; each remaining family keeps its explicit status. |
 | CLI, daemon, content, agent, and editor JSON contracts | Supported or experimental by command | Local automation, CI, editor adapters, and agent hooks. |
 | Rust modules exported from `src/lib.rs` | Internal/unstable | Assura binaries, tests, and benchmarks before a separate API stabilization decision. |
 | Public plugin API or SDK | Roadmap only | Future work that still needs sandboxing, versioning, distribution, security, and performance proof gates. |

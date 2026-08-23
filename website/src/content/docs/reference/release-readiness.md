@@ -11,9 +11,11 @@ agent handoffs, editor wrappers, a beta local VS Code package, and safe-fix
 previews. It does not require MCP, remote access, hosted services, or editor
 marketplace publication.
 
-This page describes the current `v0.3.0` beta-increment surface. `v0.3.0` was
-published and live-verified on 2026-07-02 with all expected archives and
-checksums reachable. Assura remains pre-1.0 beta.
+This page describes the checked `v0.4.0` beta candidate. `v0.3.0` remains the
+latest published release, live-verified on 2026-07-02 with all expected
+archives and checksums reachable. The `v0.4.0` surfaces become publicly
+installable only when its tag completes release verification. Assura remains
+pre-1.0 beta.
 
 ## Supported Commands
 
@@ -24,9 +26,9 @@ checksums reachable. Assura remains pre-1.0 beta.
 | `assura check --format yaml` | Supported automation output. |
 | `assura check --format agent` | Supported agent feedback output. |
 | `assura check --format agent --agent codex` | Supported Codex delivery adapter. |
-| `assura review` | Supported next-release advisory branch and worktree review. |
-| `assura doctor` | Supported next-release setup and inactive-capability diagnosis. |
-| `assura explain` | Supported next-release effective path-policy explanation. |
+| `assura review` | Supported advisory branch and worktree review. |
+| `assura doctor` | Supported setup and inactive-capability diagnosis. |
+| `assura explain` | Supported effective path-policy explanation. |
 | `assura init` | Supported starter config creation. |
 | `assura status --format json` | Supported project/config summary. |
 | `assura migrate` | Supported LS-Lint migration for documented rules. |
@@ -36,9 +38,9 @@ checksums reachable. Assura remains pre-1.0 beta.
 | `assura fix markdown --dry-run --format json` | Experimental safe-fix preview contract. |
 | `assura fix markdown --apply --format json` | Experimental safe-fix apply/audit contract. |
 | `assura agent` | Supported local project-intelligence command group for coding agents. |
-| `assura agent onboard` | Supported next-release agent-ready baseline and explicit host activation. |
-| `assura agent nudge` | Supported next-release bounded event feedback. |
-| `assura agent integration` | Supported next-release managed project-local lifecycle for Codex, OpenCode, Claude, and Pi. |
+| `assura agent onboard` | Supported agent-ready baseline and explicit host activation. |
+| `assura agent nudge` | Supported bounded event feedback. |
+| `assura agent integration` | Supported managed project-local lifecycle for Codex, OpenCode, Claude, and Pi. |
 | `assura content` | Supported local project-intelligence query surface. |
 | `assura content context-pack` | Supported bounded project-intelligence handoff packet. |
 | `assura content references` | Supported repository-reference graph query. |
@@ -46,7 +48,7 @@ checksums reachable. Assura remains pre-1.0 beta.
 | `assura editor session` | Supported local JSON-line editor protocol with LSP-shaped methods. |
 | `integrations/editors/vscode` | Supported beta local VS Code package over shared Assura CLI, daemon, and editor-session contracts. |
 | `.assura/models/**` | Supported layout for project-intelligence model artifacts stored under `.assura/`. |
-| `assura watch` | Supported next-release continuous validation with tested warm and fallback behavior. |
+| `assura watch` | Supported continuous validation with tested warm and fallback behavior. |
 
 ## Project Intelligence Schemas
 
@@ -128,7 +130,7 @@ handoffs. Editors should use `assura editor session` or wrap lower-level
 `assura content ...` contracts. MCP may be added later as an optional adapter,
 but it is not part of the required local workflow.
 
-`assura agent integration` is a supported next-release project-local lifecycle
+`assura agent integration` is a supported project-local lifecycle
 surface. Install and update generate reviewable bundles; explicit activate and
 deactivate commands patch only Assura-owned host entries, preserve unmanaged
 configuration, and call shared Assura commands rather than embedding per-agent

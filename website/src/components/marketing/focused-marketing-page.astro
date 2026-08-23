@@ -8,7 +8,6 @@ import {
   installCommand,
   marketingNav,
   onboardingCommand,
-  sourcePreviewRevision,
 } from '../../data/marketing';
 
 interface Item {
@@ -127,6 +126,5 @@ const artifactLines = props.artifactLines.map((line) => {
     prompt={agentSetupPrompt}
     onboardingCommand={onboardingCommand}
     installCommand={installCommand}
-    sourceRevision={sourcePreviewRevision}
   />
 </MarketingLayout>

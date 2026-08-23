@@ -13,6 +13,12 @@ The local command is:
 assura agent onboard .
 ```
 
+For a coding-agent handoff that needs explicit machine-readable output, use:
+
+```bash
+assura agent onboard . --agent auto --format json
+```
+
 That command creates or preserves a broad baseline, writes an onboarding
 packet, runs local verification, and tells the agent how to inspect the detected
 stack and intentional layout before defining project-owned rules. It does not

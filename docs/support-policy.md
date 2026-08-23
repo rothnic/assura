@@ -9,8 +9,9 @@ This policy applies to Assura pre-1.0 releases.
 
 The policy describes the current checked source surface. `v0.3.0` was published
 and live-verified on 2026-07-02 with all expected archives and checksums
-reachable. Rows whose release manifest says `unreleased` are supported for the
-next release but are not retroactively part of `v0.3.0`. Assura remains pre-1.0
+reachable. The checked `v0.4.0` candidate assigns its supported additions in
+the release manifest; they are not retroactively part of `v0.3.0` and are not
+publicly installable until the release tag publishes. Assura remains pre-1.0
 beta.
 
 ## Support Levels

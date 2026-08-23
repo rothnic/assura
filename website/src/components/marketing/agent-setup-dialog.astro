@@ -4,11 +4,9 @@ interface Props {
   prompt: string;
   onboardingCommand: string;
   installCommand: string;
-  sourceRevision: string;
 }
 
-const { steps, prompt, onboardingCommand, installCommand, sourceRevision } = Astro.props;
-const shortRevision = sourceRevision.slice(0, 7);
+const { steps, prompt, onboardingCommand, installCommand } = Astro.props;
 ---
 
 <dialog id="agent-setup-dialog" class="setup-dialog" aria-labelledby="setup-dialog-title">
@@ -41,18 +39,18 @@ const shortRevision = sourceRevision.slice(0, 7);
         {steps.map((step) => <li>{step}</li>)}
       </ol>
     </div>
-    <details class="install-details" aria-label={`Installation details for revision ${shortRevision}`}>
+    <details class="install-details" aria-label="Public installation details">
       <summary>
         <span>Installation details</span>
-        <code>{shortRevision}</code>
+        <code>public release</code>
       </summary>
       <div class="install-row">
-        <code id="install-command" tabindex="0" aria-label="Pinned Assura install command">{installCommand}</code>
+        <code id="install-command" tabindex="0" aria-label="Assura install command">{installCommand}</code>
         <button class="copy-inline" type="button" data-copy-target="install-command" data-copied-label="Copied" data-analytics-event="install_command_copy">
           Copy
         </button>
       </div>
-      <p>The copied setup instruction includes this pinned command.</p>
+      <p>The copied setup instruction includes this command.</p>
     </details>
     <p id="copy-status" class="copy-status" role="status" aria-live="polite"></p>
   </div>

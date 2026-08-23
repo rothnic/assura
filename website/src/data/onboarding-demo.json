@@ -66,7 +66,7 @@
       "tone": "prompt"
     },
     {
-      "text": "Version      assura 0.3.0",
+      "text": "Version      assura 0.4.0",
       "tone": "muted"
     },
     {
@@ -244,7 +244,7 @@
     }
   ],
   "installed": {
-    "assura_version": "0.3.0",
+    "assura_version": "0.4.0",
     "config": ".assura/config.yml",
     "onboarding_packet": ".assura/onboarding/"
   },
@@ -334,7 +334,7 @@
       "reason": "Content facts stay inactive until a template is selected deliberately."
     }
   ],
-  "rendered_text": "Assura agent onboarding\nVersion      assura 0.3.0\nProject      node confidence=high\nAgent        codex confidence=explicit\nPolicy       agentic-core + structure-health -> $agent-entrypoint (applied)\nHost         codex generated=true activated=true verified=true conflicted=false\nContent      none=inactive\nLifecycle    agent-working-loop=nudge pre-commit-warning=warn pre-push-or-ci-gate=gate\nVerified     structure_config=pass onboarding_packet=pass\nReview       needs-review blocking=0 advisory=0 inactive_signals=5\nDeferred     project_specialization, content_models\nNext         Read the onboarding handoff\nPacket       .assura/onboarding/agent-next.md",
+  "rendered_text": "Assura agent onboarding\nVersion      assura 0.4.0\nProject      node confidence=high\nAgent        codex confidence=explicit\nPolicy       agentic-core + structure-health -> $agent-entrypoint (applied)\nHost         codex generated=true activated=true verified=true conflicted=false\nContent      none=inactive\nLifecycle    agent-working-loop=nudge pre-commit-warning=warn pre-push-or-ci-gate=gate\nVerified     structure_config=pass onboarding_packet=pass\nReview       needs-review blocking=0 advisory=0 inactive_signals=5\nDeferred     project_specialization, content_models\nNext         Read the onboarding handoff\nPacket       .assura/onboarding/agent-next.md",
   "schema": "assura.website-onboarding-demo.v1",
   "verified": [
     {
