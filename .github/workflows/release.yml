@@ -14,9 +14,35 @@ permissions:
   contents: write
 
 jobs:
+  validate-release-contract:
+    name: Validate Release Contract
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Match tag to package version
+        shell: bash
+        run: |
+          package_version="$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[] | select(.name == "assura") | .version')"
+          test "v${package_version}" = "${GITHUB_REF_NAME}"
+
+      - name: Validate marketed release claims
+        run: cargo xtask website-demo-data --check --released
+
+      - name: Validate release readiness
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: cargo xtask release-readiness --format json
+
   build-release:
     name: Build Release Assets
     runs-on: ${{ matrix.os }}
+    needs: validate-release-contract
     strategy:
       matrix:
         include:

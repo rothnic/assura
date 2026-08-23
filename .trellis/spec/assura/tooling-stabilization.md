@@ -37,6 +37,103 @@ Do not run the full Rust suite just because any file changed. Do run it when a
 docs/workflow change alters a command contract, CI behavior, release process, or
 validation logic that Rust tests exercise.
 
+## Website Config Example Build Contract
+
+### 1. Scope / Trigger
+
+- Trigger: adding or changing an Assura config shown on the marketing site.
+- Rendered examples must come from YAML under
+  `website/src/data/config-examples/`; components must not maintain a second
+  hand-copied config string.
+- Documentation YAML fences and promoted marketing claims are part of the same
+  build-time truth boundary.
+
+### 2. Signatures
+
+- `cargo xtask website-config-examples`
+- `cargo xtask website-demo-data --check`
+- `cargo xtask docs` runs the example gate before invoking the Astro build.
+
+### 3. Contracts
+
+- The gate builds `assura-full`, installs each source YAML as
+  `.assura/config.yml` in a temporary representative project, and runs
+  `assura check --format json .`.
+- Each example needs a passing project shape. Examples that illustrate failures
+  must also assert the expected violation paths.
+- Threshold examples must prove both sides of the boundary. If a parent scope
+  supplies an inherited default, a descendant fixture below the limit must pass
+  and a descendant fixture above the limit must fail.
+- File-key directives such as `.ts: { naming, max_lines }` are pattern-specific
+  and inherit by scope. Use a directory-level `files.max_lines` only for a
+  general ceiling that should apply to every file in that scope.
+- Astro imports the validated YAML with `?raw`, so the displayed config and the
+  checked config remain one source of truth.
+- Every `yaml` or `yml` fence in canonical docs must parse. Fences that look
+  like complete Assura configs must load through `assura status`; use
+  `config-fragment`, `data-yaml`, or `ls-lint-config` metadata only when the
+  fence is intentionally not a complete Assura config, and
+  `assura-config-invalid` only for an intentional rejection example.
+- `docs/data/release-surfaces.json` is the single marketing capability
+  manifest. Promoted rows set `marketing_claim`, use `supported` status, use
+  `verified` or `measured` evidence status, name existing evidence files, and
+  smoke-test public commands with their expected exits when a command exists.
+- Preview evidence runs `cargo xtask website-demo-data --check`. Release
+  candidates run `cargo xtask website-demo-data --check --released`, which
+  also rejects promoted rows that are unreleased or first ship after the local
+  package version.
+
+### 4. Validation & Error Matrix
+
+| Condition | Required behavior |
+| --- | --- |
+| Example YAML does not parse | The CI documentation build exits nonzero before Astro runs. |
+| Passing representative project reports a violation | The CI documentation build exits nonzero. |
+| Illustrated bad path no longer reports a violation | The CI documentation build exits nonzero and names the missing path. |
+| Inherited line ceiling rejects a below-limit descendant | The CI documentation build exits nonzero before Astro runs. |
+| Above-limit descendant stops producing `max_lines` | The CI documentation build exits nonzero and names the missing path. |
+| Documentation YAML fence is malformed or a full config does not load | The documentation build exits nonzero with the source path and fence number. |
+| Intentional fragment is not labeled | The build treats it as a full config and rejects it; add the narrow metadata label. |
+| Marketing claim lacks evidence or its command exit changes | `website-demo-data --check` exits nonzero and names the claim. |
+| Marketing claim is experimental, planned, unreleased, or newer than the candidate | `website-demo-data --check --released` exits nonzero and names the claim. |
+| All examples match current behavior | Print `Website Assura config examples are valid.` and continue the build. |
+
+### 5. Good / Base / Bad Cases
+
+- Good: the project-contract example passes with `user-menu.tsx` and reports
+  `BadName.tsx`, `checkout-flow.tsx`, and `tmp-output` after drift is added.
+- Base: the reusable monorepo policy applies one `$source-file` directive to
+  `.ts`, `.tsx`, and `.test.ts` entries, passes a 300-line package README, and
+  accepts valid source files below the shared 500-line default.
+- Bad threshold: `packages/core/src/too-long.ts` reaches 501 lines and must
+  report a `max_lines` violation.
+- Bad: an Astro component displays legacy `directories:` or `children:` text
+  that is not imported from a checked example file.
+
+### 6. Tests Required
+
+- Run `cargo xtask website-config-examples` after changing example YAML or its
+  expected project shape.
+- Run `cargo xtask docs` to prove the config gate runs before Astro and the raw
+- `cargo xtask docs` must report the number of parsed documentation YAML fences
+  and prove release evidence plus generated website data remain current before
+  Astro builds.
+- Keep Playwright assertions for the rendered hierarchy and pass/fail labels.
+
+### 7. Wrong vs Correct
+
+Wrong:
+
+```astro
+const configLines = ['structure:', '  directories:'];
+```
+
+Correct:
+
+```astro
+import projectContract from '../../data/config-examples/agentic-monorepo.yml?raw';
+```
+
 Assura owns this policy in `.assura/config.yml` under `quality.scopes`.
 `assura quality plan` is the config-backed command surface for planning checks
 from changed paths and workflow phase. Phases are cumulative for normal
@@ -94,6 +191,8 @@ evidence.
 ### Signatures
 
 - `assura performance-report --output <path> [--history <path>]`
+- `cargo xtask perf-vps-ls-lint-compare -- <label> <repo-path>
+  [<repo-path>...]`
 - `cargo xtask performance-no-slower [report.json] [--cohort <name>]
   [--assura-row <row>] [--ls-lint-row <row>]`
 - Criterion benchmark: `cargo bench --bench ls_lint_comparison -- --noplot`
@@ -132,6 +231,29 @@ evidence.
 - Native LS-Lint metadata is part of the no-slower gate: selected LS-Lint rows
   must use `tool_name=ls-lint-native-cli` and
   `ls_lint_execution_mode=native-binary-from-pinned-npm-package`.
+- VPS comparison helper: `cargo xtask perf-vps-ls-lint-compare` snapshots the
+  current worktree to the remote `after` copy, reverses the requested patch into
+  a remote `before` copy, builds the same release bundle on both sides, runs
+  `performance-report --suite ls-lint`, and enforces
+  `cargo xtask performance-no-slower` on the candidate.
+- VPS helper environment: default host is `vps`; callers may override with
+  `--host`, `--remote-root`, `ASSURA_PERF_VPS_HOST`, or
+  `ASSURA_PERF_VPS_REMOTE_ROOT`.
+- VPS helper output: the final summary must include the target fixture phase
+  deltas, an `accepted_fixture_delta` table for every accepted
+  LS-Lint-equivalent fixture, and exact public-command deltas when the shared
+  fixture is available.
+- Cold optimization stop policy: keep strict no-slower as the release gate.
+  Retain a cold optimization only when the public `assura-cli` target row, the
+  exact `assura check --quiet` tie-breaker, and accepted spillover rows all
+  satisfy the thresholds in
+  `docs/analysis/2026-07-05-performance-decision-matrix.md`.
+- Website warm-performance claims must name the asymmetric comparison:
+  persistent Assura session versus rerunning the native LS-Lint CLI. Do not
+  imply that Assura was compared with a warm LS-Lint session.
+- Keep agent-loop rationale separate from measured evidence. CPU utilization,
+  disk I/O, agent memory or token use, and avoided rework are unmeasured unless
+  the checked report includes those dimensions explicitly.
 
 ### Validation & Error Matrix
 
@@ -142,6 +264,8 @@ evidence.
 | Website copy mentions a winner | Derive the winner from current generated data, not from prior run assumptions. |
 | Any headline fixture has Assura median runtime greater than native LS-Lint | `cargo xtask performance-no-slower` exits nonzero and prints the fixture ID. |
 | A headline fixture is missing either paired row | `cargo xtask performance-no-slower` exits nonzero and identifies the missing row. |
+| `--no-exact` is passed to the VPS helper | Skip exact public-command timing even if the default shared fixture exists. |
+| A cold candidate improves only phase, in-process, or check-only rows | Reject or keep investigating; do not count it as product progress. |
 
 ### Good / Base / Bad Cases
 
@@ -159,6 +283,9 @@ evidence.
 - Website build after checked-in report data changes.
 - A regenerated report proving the checked-in JSON uses the native execution
   mode.
+- `bash -n scripts/perf-vps-ls-lint-compare.sh` after helper changes.
+- `cargo xtask perf-vps-ls-lint-compare -- --help` after helper signature or
+  summary-output changes.
 
 ### Wrong vs Correct
 

@@ -4,7 +4,7 @@ use glob::Pattern;
 use std::path::{Path, PathBuf};
 
 #[derive(Debug, Clone)]
-pub(super) struct CompiledScopePattern {
+pub(crate) struct CompiledScopePattern {
     alternatives: Vec<Vec<CompiledPathSegment>>,
 }
 
@@ -17,11 +17,11 @@ enum CompiledPathSegment {
 }
 
 impl CompiledScopePattern {
-    pub(super) fn new(pattern: &Path) -> Self {
+    pub(crate) fn new(pattern: &Path) -> Self {
         Self::from_str(&path_to_string(pattern))
     }
 
-    pub(super) fn from_str(pattern: &str) -> Self {
+    pub(crate) fn from_str(pattern: &str) -> Self {
         let alternatives = expand_braces(pattern)
             .into_iter()
             .map(|pattern| {
@@ -34,11 +34,11 @@ impl CompiledScopePattern {
         Self { alternatives }
     }
 
-    pub(super) fn matches_path(&self, target: &Path) -> bool {
+    pub(crate) fn matches_path(&self, target: &Path) -> bool {
         self.matches_str(&path_to_string(target))
     }
 
-    pub(super) fn matches_str(&self, target: &str) -> bool {
+    pub(crate) fn matches_str(&self, target: &str) -> bool {
         let target = split_path_segments(target);
         self.alternatives
             .iter()
@@ -87,6 +87,7 @@ pub(super) fn path_matches_scope_pattern(pattern: &Path, target: &Path) -> bool 
     CompiledScopePattern::new(pattern).matches_path(target)
 }
 
+#[cfg(test)]
 pub(super) fn path_has_matching_scope_ancestor(pattern: &Path, target: &Path) -> bool {
     CompiledScopePattern::new(pattern).has_matching_ancestor(target)
 }
@@ -133,7 +134,7 @@ fn split_path_segments(path: &str) -> Vec<&str> {
         .collect()
 }
 
-fn literal_constraint_chars(segment: &str) -> usize {
+pub(super) fn literal_constraint_chars(segment: &str) -> usize {
     let mut count = 0;
     let mut in_capture = false;
     let mut in_character_class = false;

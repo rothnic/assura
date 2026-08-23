@@ -27,6 +27,12 @@ pub(super) fn event_policy(event: AgentNudgeEvent, has_changed_paths: bool) -> E
             inject_when: "the read path has structure, content, or reference context",
             changed_paths_required: !has_changed_paths,
         },
+        AgentNudgeEvent::Idle => EventPolicy {
+            timing: "idle",
+            inject_when:
+                "idle session has changed-path findings, daemon drift, or queued review context",
+            changed_paths_required: false,
+        },
         AgentNudgeEvent::Recovery => EventPolicy {
             timing: "recovery",
             inject_when: "daemon state is stale, unavailable, or recent tool context needs repair",
@@ -79,6 +85,7 @@ pub(super) fn event_name(event: AgentNudgeEvent) -> &'static str {
         AgentNudgeEvent::BeforeTool => "before_tool",
         AgentNudgeEvent::AfterTool => "after_tool",
         AgentNudgeEvent::FileRead => "file_read",
+        AgentNudgeEvent::Idle => "idle",
         AgentNudgeEvent::Recovery => "recovery",
     }
 }

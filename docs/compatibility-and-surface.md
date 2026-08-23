@@ -33,9 +33,12 @@ publishes and verifies a `.sha256` file next to every archive.
 | `assura check --format agent` | Supported | Agent feedback tests and real-project feedback fixtures. |
 | `assura check --format agent --agent codex` | Supported adapter | Codex delivery fixture under the shared agent format. |
 | `assura init` | Supported | Installable adoption smoke. |
+| `assura config add-recipe` | Supported project-owned policy authoring | CLI tests prove dry-run output, conflict handling, and validated atomic writes. |
 | `assura status --format json` | Supported | Installable adoption smoke. |
-| `assura doctor` | Experimental local project doctor | Doctor/explain CLI tests prove clean configured checks still report inactive capabilities, unwired draft model files, recommended preset gaps, and ranked next actions. |
-| `assura explain` | Experimental local path explanation | Doctor/explain CLI tests prove path explanations expose inherited scopes, skipped checks, excluded generated/binary paths, and agent-oriented output. |
+| `assura review` | Supported compact project review | Project-review CLI tests prove clean/inactive guidance, blocking structure mismatches, unmodeled path pressure, noisy reference classification, actionable content gaps, and bounded agent JSON over existing check/doctor/content-query surfaces. |
+| `assura cache status|clean` | Supported next-release correctness-checked cache | Cache CLI tests prove observable worktree/shared namespaces, bounded diagnostics, marker-protected cleanup, and refusal to remove project or unrecognized roots. |
+| `assura doctor` | Supported next-release project doctor | Doctor/explain CLI tests prove clean configured checks still report inactive capabilities, unwired draft model files, recommended preset gaps, and ranked next actions. |
+| `assura explain` | Supported local path explanation | Doctor/explain CLI tests prove path explanations expose inherited scopes, skipped checks, excluded generated/binary paths, and agent-oriented output. |
 | `assura migrate` | Supported for complete LS-Lint 2.3 config semantics | LS-Lint feature matrix, native golden parity tests, migration tests, and adoption smoke. |
 | `assura hooks` | Supported for local git hooks | CLI help and local hook behavior. |
 | `assura quality plan` | Supported for local quality planning | `.assura/config.yml`, `docs/validation.md`, and changed-check scripts. |
@@ -51,14 +54,16 @@ publishes and verifies a `.sha256` file next to every archive.
 | `assura agent missing-relations` | Supported local agent relation query | Agent-surface CLI tests compare output with `assura content missing-relations`. |
 | `assura agent expand` | Supported local agent graph expansion | Agent-surface CLI tests compare output with `assura content expand`. |
 | `assura agent safe-fixes` | Supported local agent safe-fix preview | Agent-surface CLI tests compare output with `assura content agent-query safe-fixes`. |
-| `assura agent onboard` | Experimental local agent-ready onboarding surface | Project-intelligence onboarding tests prove the command generates a broad baseline, project-local maintenance and structure-fit skills, onboarding packet, checked/unchecked report, reusable dynamic skill-directory contract, explicit nudge/warn/gate lifecycle profiles, ranked next actions, optional `--content-template agent-project` and `document-project` activation, source-document custody metadata, generic document-project topics/drafts/final-doc records, and non-destructive existing-file behavior. |
-| `assura agent nudge` | Experimental local agent nudge payload | Agent-surface CLI tests prove bounded event-aware JSON for session start, before/after tool events, daemon fallback, and performance-gate path hints without per-agent validation commands. |
-| `assura agent integration` | Experimental local agent integration lifecycle | Agent-surface CLI tests prove install, update, remove, status, and doctor workflows generate reviewable `.assura/integrations/<agent>/` bundles for Codex, OpenCode, Claude, and Pi without embedding validation logic. |
-| `assura agent integration install` | Experimental local agent integration lifecycle | Generates manifest, wrapper, and README files under `.assura/integrations/<agent>/`; `--dry-run` previews writes. |
-| `assura agent integration update` | Experimental local agent integration lifecycle | Regenerates an existing Assura-managed bundle over the same shared nudge/check/daemon commands. |
-| `assura agent integration remove` | Experimental local agent integration lifecycle | Removes only Assura-managed bundle files and leaves host-agent configuration to the user. |
-| `assura agent integration status` | Experimental local agent integration lifecycle | Reports expected files, managed status, and host wiring guidance. |
-| `assura agent integration doctor` | Experimental local agent integration lifecycle | Checks config presence, managed bundle state, and shared nudge/check/daemon command delegation. |
+| `assura agent onboard` | Supported local agent-ready onboarding surface | Project-intelligence onboarding tests prove the command generates a broad baseline, project-local maintenance and structure-fit skills, onboarding packet, checked/unchecked report, reusable dynamic skill-directory contract, explicit nudge/warn/gate lifecycle profiles, ranked next actions, optional `--content-template agent-project` and `document-project` activation, source-document custody metadata, generic document-project topics/drafts/final-doc records, and non-destructive existing-file behavior. |
+| `assura agent nudge` | Supported next-release local agent event payload | Agent-surface CLI tests prove bounded event-aware JSON for session start, before/after tool events, daemon fallback, cooldown suppression, and performance-gate path hints without per-agent validation commands. |
+| `assura agent integration` | Supported next-release managed project-local lifecycle | Integration CLI tests prove install, activate, update, deactivate, remove, status, and doctor workflows for Codex, OpenCode, Claude, and Pi without embedding validation logic. |
+| `assura agent integration install` | Supported next-release lifecycle | Generates manifest, wrapper, and README files under `.assura/integrations/<agent>/`; `--dry-run` previews writes. |
+| `assura agent integration activate` | Supported next-release lifecycle | Explicitly patches only Assura-owned project-local host entries, verifies activation, rejects path escapes and conflicting unmanaged edits, and rolls back partial mutations. |
+| `assura agent integration update` | Supported next-release lifecycle | Regenerates an existing Assura-managed bundle and refreshes an already active host integration over the shared nudge/check/daemon commands. |
+| `assura agent integration deactivate` | Supported next-release lifecycle | Removes only Assura-owned host entries while retaining the generated integration bundle and unmanaged host configuration. |
+| `assura agent integration remove` | Supported next-release lifecycle | Deactivates Assura-owned host entries and removes only the managed bundle. |
+| `assura agent integration status` | Supported next-release lifecycle | Reports generated, activated, verified, conflicted, and managed-file state. |
+| `assura agent integration doctor` | Supported next-release lifecycle | Checks config presence, managed bundle and activation state, and shared nudge/check/daemon command delegation. |
 | `assura agent session` | Supported local agent session alias | Agent-surface CLI tests prove the alias emits the same JSON-line session envelope as `assura content session`. |
 | `assura editor` | Supported local editor project-intelligence surface | Editor-surface CLI tests prove help output and local session availability. |
 | `assura editor session` | Supported local editor session | Editor-surface CLI tests prove LSP-shaped diagnostics, context, safe-fix code-action previews, invalid-method errors, and conservative reload metadata. |
@@ -77,15 +82,15 @@ publishes and verifies a `.sha256` file next to every archive.
 | `assura content missing-relations` | Supported relation query | Content query CLI fixture tests. |
 | `assura content expand` | Supported bounded graph expansion | Content query CLI fixture tests. |
 | `assura content references` | Supported repository-reference graph query | Content query CLI tests prove bounded inbound references by target path, outbound references by source path, all-reference listing, unresolved-reference listing, and configured frontmatter reference edges. |
-| `assura daemon` | Experimental local daemon process | Daemon CLI tests prove JSON status, start, stop, restart, doctor, logs, health, changed-path, and reference-context contracts over local daemon-ready state. Lifecycle commands manage a real local process with versioned health, check-path, and repository-reference IPC. |
-| `assura daemon status` | Experimental local daemon status | Daemon CLI tests prove JSON health, protocol, process metadata, crashed-process detection, and management command hints. |
-| `assura daemon start` | Experimental local daemon lifecycle | Daemon CLI tests prove idempotent process-backed JSON start behavior with PID and IPC address metadata. |
-| `assura daemon stop` | Experimental local daemon lifecycle | Daemon CLI tests prove idempotent process-backed JSON stop behavior. |
-| `assura daemon restart` | Experimental local daemon lifecycle | Daemon CLI tests prove process replacement, JSON restart behavior, and runtime log updates. |
-| `assura daemon doctor` | Experimental local daemon doctor | Daemon CLI tests prove JSON diagnostics and remediation commands for loaded, unavailable, stopped, running, and crashed project state. |
-| `assura daemon logs` | Experimental local daemon logs preview | Daemon CLI tests prove bounded JSON log output from `.assura/daemon/daemon.log`. |
+| `assura daemon` | Supported next-release local daemon process | Public daemon CLI tests prove JSON status, start, stop, restart, doctor, logs, health, changed-path, and reference-context contracts over local daemon-ready state. Internal `assura-checkd` watcher/status behavior is tested separately and is not used as evidence for the public daemon command. |
+| `assura daemon status` | Supported next-release local daemon status | Daemon CLI tests prove JSON health, protocol, process metadata, crashed-process detection, and management command hints. |
+| `assura daemon start` | Supported next-release local daemon lifecycle | Daemon CLI tests prove idempotent process-backed JSON start behavior with PID and IPC address metadata. |
+| `assura daemon stop` | Supported next-release local daemon lifecycle | Daemon CLI tests prove idempotent process-backed JSON stop behavior. |
+| `assura daemon restart` | Supported next-release local daemon lifecycle | Daemon CLI tests prove process replacement, JSON restart behavior, and runtime log updates. |
+| `assura daemon doctor` | Supported next-release local daemon doctor | Daemon CLI tests prove JSON diagnostics and remediation commands for loaded, unavailable, stopped, running, and crashed project state. |
+| `assura daemon logs` | Supported next-release local daemon logs | Daemon CLI tests prove bounded JSON log output from `.assura/daemon/daemon.log`. |
 | `assura info` | Experimental diagnostic | CLI exists, but text output is not an automation contract. |
-| `assura watch` | Experimental | CLI exists, but release-grade watch behavior is not claimed. |
+| `assura watch` | Supported next-release continuous validation | Watch lifecycle tests prove requested-path scope, initial full validation, safe warm changed-path checks, project-wide-policy fallback, bounded burst coalescing, project-local and external config reload, atomic replacement of file scopes, configured exclusions, runtime-output suppression, actionable text and JSON event metadata, clean interrupt shutdown during sustained edits, and visible termination on watcher failure. |
 
 ## Editor Adapter Compatibility
 
@@ -97,8 +102,9 @@ publishes and verifies a `.sha256` file next to every archive.
 
 | Surface | Status | Evidence |
 | --- | --- | --- |
-| `config:markdown.lint_common` | Experimental | Common-lint CLI tests prove stable findings for heading increments, heading marker spacing, duplicate headings, multiple blank lines, suppressions, and severity overrides. |
-| `config:extensions.repository_references` | Experimental | Repository-reference check tests prove opt-in source/comment/docstring diagnostics for missing targets, missing Markdown anchors, and invalid line anchors. |
+| `config:markdown.lint_common` | Supported next-release deterministic policy | Common-lint CLI tests prove stable findings for heading increments, heading marker spacing, duplicate headings, multiple blank lines, suppressions, and severity overrides. |
+| `config:markdown.check_links` | Supported next-release deterministic policy | Link/reference tests prove local file, heading-anchor, line-anchor, and unrendered local-reference diagnostics. |
+| `config:extensions.repository_references` | Supported next-release deterministic policy | Repository-reference check tests prove opt-in source/comment/docstring diagnostics for missing targets, missing Markdown anchors, and invalid line anchors. |
 | `config:extensions.requirements_traceability` | Experimental full-CLI policy | Requirements traceability tests prove content-runtime-backed diagnostics for high-priority requirement coverage, claim-to-evidence links, evidence-to-source-document links, finding owner/status metadata, and agent-query gap exposure. Lightweight compiled check artifacts preserve config shape but do not enforce this content-runtime policy. |
 | `project-intelligence:repository-reference-facts` | Supported | Repository-reference graph tests prove Markdown, source-comment, docstring, and string-literal path candidates become bounded `RepositoryReference` edges with confidence labels. Object-mode context-pack tests prove those edges are available as bounded inbound/outbound document-graph context. |
 
@@ -192,8 +198,8 @@ SDK, or semver-stable Rust library API.
 | `config:extensions.test_relationships` | Experimental first-party | Test relationship checks prove configured source/test evidence, fixture-family ownership, and accepted manual-test exceptions. |
 | `config:extensions.module_topologies` | Experimental first-party | Module topology checks prove configured Rust module-family ownership, roots, public export classification, and internal visibility boundaries. |
 | `config:extensions.docs_lifecycles` | Experimental first-party | Docs lifecycle checks prove configured active/historical docs, frontmatter status, stale-claim evidence, and historical exceptions. |
-| `config:extensions.repository_references` | Experimental first-party | Repository-reference check tests prove opt-in source/comment/docstring diagnostics for missing targets, missing Markdown anchors, and invalid line anchors. |
-| `config:extensions.agent_guidance` | Experimental first-party | Agent guidance contract tests prove opt-in `AGENTS.md` and project-local `SKILL.md` checks for required sections, frontmatter fields, skill index links, use-case skill routing tables, allowed skill-name patterns, progressive-disclosure references, SKILL doc-routing tables, supporting reference links, and concise entrypoint remediation. |
+| `config:extensions.repository_references` | Supported next-release deterministic policy | Repository-reference check tests prove opt-in source/comment/docstring diagnostics for missing targets, missing Markdown anchors, and invalid line anchors. |
+| `config:extensions.agent_guidance` | Supported next-release deterministic policy | Agent guidance contract tests prove opt-in `AGENTS.md` and project-local `SKILL.md` checks for required sections, frontmatter fields, skill index links, use-case skill routing tables, allowed skill-name patterns, progressive-disclosure references, SKILL doc-routing tables, supporting reference links, and concise entrypoint remediation. |
 | `config:extensions.computed_checks` | Experimental first-party | Computed-check tests prove opt-in project-local scripts emit versioned JSON findings, handle missing/invalid/timeout/nonzero behavior, support optional Windows-specific script paths, appear in doctor and agent-query gaps, and round-trip through compiled check artifacts without becoming a public plugin API. |
 | `config:extensions.relationships` | Internal generated first-party | Structure notation tests prove capture relationships are normalized from `structure` captures, `exists:1`, `needs`, and `provides`. |
 | Public plugin API or SDK | Roadmap only | No current command, package, Rust module, or docs surface provides remote plugin loading, shell-executed validators, a plugin marketplace, TypeScript plugin APIs, or semver-stable Rust APIs. |

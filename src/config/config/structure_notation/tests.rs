@@ -97,12 +97,13 @@ structure:
     "{package}/":
       needs: doc
   docs/packages/:
-    required: false
+    exists: 0-1
     "{package}.md":
       provides: doc
   docs/:
-    required: false
+    exists: 0-1
     packages.md:
+      exists: 0-1
       sections:
         "{package}":
           provides: doc
@@ -210,17 +211,17 @@ structure:
 }
 
 #[test]
-fn rule_keys_with_at_prefix_resolve_from_use_references() {
+fn plain_rule_names_resolve_from_dollar_references() {
     let config = parse_config(
         r#"
 rules:
-  "@readme-standard":
+  readme-standard:
     exists: 1
-  "@project-docs":
-    README.md: "@readme-standard"
+  project-docs:
+    README.md: $readme-standard
 structure:
   ./:
-    use: "@project-docs"
+    use: $project-docs
 "#,
     )
     .unwrap();
@@ -237,12 +238,29 @@ structure:
     );
 }
 
+mod directive_shorthand;
+
+#[test]
+fn former_agent_built_ins_must_be_materialized_in_project_rules() {
+    let error = parse_config(
+        r#"
+structure:
+  ./: $agentic-project
+"#,
+    )
+    .expect_err("hidden agentic rule aliases must not resolve");
+
+    assert!(error
+        .to_string()
+        .contains("unknown Assura config rule '$agentic-project'"));
+}
+
 #[test]
 fn nested_captured_directory_use_expands_tree_rule_fragments() {
     let config = parse_config(
         r#"
 rules:
-  "@assura-skill-dir":
+  agent-skill-dir:
     SKILL.md: exists:1
     agents/: exists:0-1
     references/: exists:0-1
@@ -253,7 +271,7 @@ structure:
   .agents/skills/:
     extra: true
     "{skill}/":
-      use: "@assura-skill-dir"
+      use: $agent-skill-dir
 "#,
     )
     .unwrap();
@@ -301,12 +319,12 @@ fn nested_literal_directory_use_expands_tree_rule_fragments() {
     let config = parse_config(
         r#"
 rules:
-  "@skill-dir":
+  skill-dir:
     SKILL.md: exists:1
 structure:
   .agents/skills/:
     demo/:
-      use: "@skill-dir"
+      use: $skill-dir
 "#,
     )
     .unwrap();
@@ -332,14 +350,14 @@ fn captured_directory_exact_child_providers_remain_explicit_relationships() {
     let config = parse_config(
         r#"
 rules:
-  "@package-dir":
+  package-dir:
     README.md:
       provides: doc
     src/: exists:1
 structure:
   packages/:
     "{package}/":
-      use: "@package-dir"
+      use: $package-dir
       needs: doc
 "#,
     )
@@ -359,7 +377,7 @@ structure:
 }
 
 #[test]
-fn detailed_file_directive_merges_markdown_attributes_in_place() {
+fn detailed_file_directive_keeps_markdown_attributes_on_its_pattern() {
     let config = parse_config(
         r#"
 structure:
@@ -380,8 +398,11 @@ structure:
         &vec!["{topic}.md".to_string()]
     );
     assert_eq!(
-        docs.markdown
+        files
+            .markdown_patterns
             .as_ref()
+            .unwrap()
+            .get("docs/{topic}.md")
             .unwrap()
             .required_sections
             .as_ref()
@@ -412,7 +433,18 @@ structure:
     .unwrap();
 
     let docs = config.structure.get("docs/").unwrap();
-    let outline = docs.markdown.as_ref().unwrap().outline.as_ref().unwrap();
+    let outline = docs
+        .files
+        .as_ref()
+        .unwrap()
+        .markdown_patterns
+        .as_ref()
+        .unwrap()
+        .get("docs/guide.md")
+        .unwrap()
+        .outline
+        .as_ref()
+        .unwrap();
     assert_eq!(outline.len(), 5);
 }
 

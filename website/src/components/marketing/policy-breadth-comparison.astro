@@ -1,0 +1,204 @@
+---
+import assuraPolicy from '../../data/config-examples/agentic-monorepo.yml?raw';
+import lsLintPolicy from '../../data/config-examples/agentic-monorepo.ls-lint.yml?raw';
+
+type CodeLine = {
+  indent?: number;
+  key?: string;
+  value?: string;
+  hasSeparator?: boolean;
+  comment?: string;
+  tone?: 'section' | 'scope' | 'definition' | 'directive' | 'required' | 'optional' | 'limit' | 'gap';
+};
+
+const toneFor = (key: string, value?: string): CodeLine['tone'] => {
+  if (key === 'rules' || key === 'structure') return 'section';
+  if (key.includes('/') || key === './') return 'scope';
+  if (value?.includes('$')) return 'definition';
+  if (key === 'max_lines') return 'limit';
+  if (value === 'true' || value === '1' || value === 'exists:1') return 'required';
+  if (value === 'false' || value === '0-1' || value === 'exists:0-1') return 'optional';
+  return 'directive';
+};
+
+const parsePolicy = (policy: string): CodeLine[] => {
+  let section = '';
+  return policy.trimEnd().split('\n').map((text) => {
+    if (!text.trim()) return {};
+    const indent = Math.floor((text.length - text.trimStart().length) / 2);
+    if (text.trimStart().startsWith('#')) {
+      const comment = text.trimStart().slice(1).trim();
+      const tone = /^(ASSURA GAP|LIMIT):/.test(comment) ? 'gap' : undefined;
+      return { indent, comment, tone };
+    }
+    const content = text.trim();
+    const separator = content.indexOf(':');
+    const key = separator === -1 ? content : content.slice(0, separator);
+    const value = separator === -1 ? undefined : content.slice(separator + 1).trim() || undefined;
+    if (indent === 0) section = key;
+    const tone = section === 'rules' && indent === 1 ? 'definition' : toneFor(key, value);
+    return { indent, key, value, hasSeparator: separator !== -1, tone };
+  });
+};
+
+const assuraLines = parsePolicy(assuraPolicy);
+const lsLintLines = parsePolicy(lsLintPolicy);
+const lsLintLimitationCount = lsLintLines.filter((line) => line.tone === 'gap').length;
+const policyLineCount = (policy: string) => policy.split('\n').filter((line) => line.trim() && !line.trimStart().startsWith('#')).length;
+const coverageRows = [
+  { capability: 'File and directory naming', assura: 'Recursive defaults + reusable rules', lsLint: 'Supported with cascading scopes', shared: true },
+  { capability: 'Generated-output ignores', assura: 'Supported', lsLint: 'Supported', shared: true },
+  { capability: 'Required project shape', assura: 'Independent required and optional paths', lsLint: 'Exact counts; optional peers excluded' },
+  { capability: 'Line and aggregate child limits', assura: 'Advisory thresholds', lsLint: 'Per-selector counts only' },
+  { capability: 'Markdown content', assura: 'Required skill frontmatter', lsLint: 'Filename only' },
+  { capability: 'Named hierarchy contracts', assura: '$workspace + $skill with rule metadata', lsLint: 'Cascades or YAML aliases' },
+  { capability: 'Agent repair context', assura: 'Severity + fix document', lsLint: 'No native rule' },
+];
+---
+
+<article class="policy-breadth-card" id="monorepo-policy">
+  <header class="policy-breadth-head">
+    <div>
+      <span>Agentic monorepo policy</span>
+      <h3>One contract for every package.</h3>
+      <p>
+        The package tree is required while apps remain optional. Every workspace that exists receives
+        the same guidance, manifest, naming, size, and directory-health policy.
+      </p>
+    </div>
+    <strong>Quality policy example</strong>
+  </header>
+
+  <section class="policy-scope-summary" aria-labelledby="policy-shape-title">
+    <header>
+      <span>Expected shape</span>
+      <h4 id="policy-shape-title">Broad defaults, exact project contracts.</h4>
+    </header>
+    <div class="policy-scope-grid">
+      <div class="policy-scope is-root">
+        <div><strong>Project root</strong><span>Always checked</span></div>
+        <ul>
+          <li><code>AGENTS.md</code>, <code>README.md</code>, and workspace files required</li>
+          <li>Selected policy is visible and project-owned</li>
+          <li>Dot directories and generated output are bounded</li>
+        </ul>
+      </div>
+      <div class="policy-scope is-package">
+        <div><strong><code>{'packages/*/'}</code></strong><span>Every package</span></div>
+        <ul>
+          <li><code>AGENTS.md</code> and <code>package.json</code> required</li>
+          <li>Recursive defaults cover nested source and docs</li>
+          <li>Line and child-count thresholds stay advisory</li>
+          <li>Exact declarations refine closed wildcard rules</li>
+        </ul>
+      </div>
+    </div>
+    <p><code>$workspace</code> and <code>$skill</code> rebase the repeated hierarchy, while <code>./**/</code> applies one compact health layer to every authored directory.</p>
+  </section>
+
+  <section class="policy-wipe" data-policy-switch data-view="assura" aria-labelledby="policy-compare-title">
+    <header class="policy-wipe-head">
+      <div>
+        <span>Configuration comparison</span>
+        <h4 id="policy-compare-title">The extra lines define quality policies LS-Lint cannot express.</h4>
+      </div>
+    </header>
+
+    <div class="policy-size-explainer">
+      <div class="is-assura">
+        <span>{policyLineCount(assuraPolicy)} policy lines</span>
+        <strong>Shared filesystem checks plus five project-quality policies.</strong>
+      </div>
+      <div class="is-lslint">
+        <span>{policyLineCount(lsLintPolicy)} policy lines</span>
+        <strong>Closest naming, scope, count, and ignore coverage.</strong>
+      </div>
+      <p>These are intentionally not equivalent-size configs. Assura is larger because it also defines exact project shape, thresholds, content checks, reusable contracts, and repair context.</p>
+    </div>
+
+    <div class="policy-coverage" role="table" aria-label="Assura and LS-Lint capability coverage">
+      <div class="policy-coverage-row is-heading" role="row">
+        <span role="columnheader">Capability</span><strong role="columnheader">Assura</strong><strong role="columnheader">LS-Lint</strong>
+      </div>
+      {coverageRows.map((row) => (
+        <div class:list={['policy-coverage-row', row.shared ? 'is-shared' : 'is-gap']} role="row">
+          <span role="cell">{row.capability}</span><strong role="cell" data-tool="Assura">{row.assura}</strong><strong role="cell" data-tool="LS-Lint">{row.lsLint}</strong>
+        </div>
+      ))}
+    </div>
+    <p class="policy-coverage-note">The cold benchmark measures only shared naming, ignore, scope, and cardinality work. Assura-only capabilities are shown here as product coverage, not counted as LS-Lint performance work. All {lsLintLimitationCount} red limitations are exercised against the same pinned native LS-Lint 2.3.0 package used by the performance report.</p>
+
+    <div class="policy-wipe-actions" role="tablist" aria-label="Configuration view">
+      <button type="button" id="policy-tab-assura" role="tab" aria-selected="true" aria-controls="policy-panel-assura" data-policy-tab="assura"><span>Assura</span><small>Full policy</small></button>
+      <button type="button" id="policy-tab-lslint" role="tab" aria-selected="false" aria-controls="policy-panel-lslint" data-policy-tab="lslint" tabindex="-1"><span>LS-Lint</span><small>Closest coverage</small></button>
+    </div>
+
+    <div class="policy-wipe-stage">
+      <section class="policy-wipe-layer is-assura" id="policy-panel-assura" role="tabpanel" aria-labelledby="policy-tab-assura" aria-label="Assura configuration" aria-hidden="false">
+        <header><span>Assura</span><strong>Full reusable project contract</strong></header>
+        <div class="policy-code" role="code" aria-label="Assura YAML example">
+          {assuraLines.map((line) => (
+            <div class:list={['policy-code-line', line.tone && `is-${line.tone}`, !line.key && !line.comment && 'is-blank']} style={`--indent: ${line.indent ?? 0}`}>
+              {line.comment && !line.key ? <span class="policy-code-comment"># {line.comment}</span> : (
+                <><span class="policy-code-key">{line.key}</span>{line.hasSeparator && <span class="policy-code-colon">:</span>}{line.value && <span class="policy-code-value"> {line.value}</span>}{line.comment && <span class="policy-code-comment"> # {line.comment}</span>}</>
+              )}
+            </div>
+          ))}
+        </div>
+        <div class="policy-layer-summary is-capable">
+          <strong>Beyond naming</strong>
+          <span>Project-owned rules</span><span>Required and optional paths</span><span>Reusable hierarchy</span><span>Agent repair guidance</span>
+        </div>
+      </section>
+
+      <section class="policy-wipe-layer is-lslint" id="policy-panel-lslint" role="tabpanel" aria-labelledby="policy-tab-lslint" aria-label="LS-Lint configuration" aria-hidden="true" hidden>
+        <header><span>LS-Lint</span><strong>Closest filesystem coverage</strong></header>
+        <div class="policy-code" role="code" aria-label="LS-Lint YAML example">
+          {lsLintLines.map((line) => (
+            <div class:list={['policy-code-line', line.tone && `is-${line.tone}`, !line.key && !line.comment && 'is-blank']} style={`--indent: ${line.indent ?? 0}`}>
+              {line.comment && !line.key ? <span class="policy-code-comment"># {line.comment}</span> : (
+                <><span class="policy-code-key">{line.key}</span>{line.hasSeparator && <span class="policy-code-colon">:</span>}{line.value && <span class="policy-code-value"> {line.value}</span>}{line.comment && <span class="policy-code-comment"> # {line.comment}</span>}</>
+              )}
+            </div>
+          ))}
+        </div>
+        <div class="policy-layer-summary is-limited">
+          <strong>Closest available coverage</strong>
+          <span>Directory naming</span><span>Authored-file naming</span><span>Scoped skill names</span><span>Generated-output ignores</span>
+        </div>
+      </section>
+    </div>
+  </section>
+
+</article>
+
+<script>
+  const selectPolicy = (root: HTMLElement, view: string) => {
+    root.dataset.view = view;
+    root.querySelectorAll<HTMLButtonElement>('[data-policy-tab]').forEach((button) => {
+      const selected = button.dataset.policyTab === view;
+      button.setAttribute('aria-selected', String(selected));
+      button.tabIndex = selected ? 0 : -1;
+    });
+    root.querySelectorAll<HTMLElement>('.policy-wipe-layer').forEach((panel) => {
+      const selected = panel.classList.contains(`is-${view}`);
+      panel.hidden = !selected;
+      panel.setAttribute('aria-hidden', String(!selected));
+    });
+  };
+
+  document.querySelectorAll<HTMLElement>('[data-policy-switch]').forEach((root) => {
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('[data-policy-tab]')];
+    tabs.forEach((button, index) => {
+      button.addEventListener('click', () => selectPolicy(root, button.dataset.policyTab ?? 'assura'));
+      button.addEventListener('keydown', (event) => {
+        if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+        event.preventDefault();
+        const offset = event.key === 'ArrowRight' ? 1 : -1;
+        const next = tabs[(index + offset + tabs.length) % tabs.length];
+        selectPolicy(root, next.dataset.policyTab ?? 'assura');
+        next.focus();
+      });
+    });
+  });
+</script>

@@ -1,36 +1,42 @@
 ---
 title: Agent-Ready Onboarding
-description: Bootstrap a broad Assura baseline, inspect what is checked, and hand specialization back to the user.
+description: Bootstrap Assura, inspect project evidence, and define a project-owned repository shape.
 ---
 
 Use this path when a coding agent is entering a new or existing repository and
 needs a broad, truthful baseline before it starts adding project-specific
 rules.
 
-The current experimental local command is:
+The local command is:
 
 ```bash
-assura agent onboard . --agent auto --format json
+assura agent onboard .
 ```
 
 That command creates or preserves a broad baseline, writes an onboarding
-packet, runs local verification, and tells the agent which questions still need
-human answers. It does not silently wire global host-agent configuration, guess
-domain rules, or turn a green check into a claim that the project is fully
+packet, runs local verification, and tells the agent how to inspect the detected
+stack and intentional layout before defining project-owned rules. It does not
+silently wire global host-agent configuration, treat every observed path as
+intentional, or turn a green check into a claim that the project is fully
 specialized.
+
+The generated packet is Assura-owned operational state. `assura check` validates
+the user-authored project contract, while onboarding verification and
+`assura doctor` report whether the core handoff file is present.
 
 ## First-Run Phases
 
 1. Install Assura with the release installer from the
    [Installation guide](/guides/installation/).
-2. Run `assura agent onboard . --agent auto --format json` from the project
-   root.
-3. Read the generated report sections: `installed`, `detected`, `verified`,
-   `inactive`, `lifecycle_profiles`, and `next_actions`.
+2. Run `assura agent onboard .` from the project root.
+3. Read the generated report sections: `installed`, `detected`,
+   `rule_recommendations`, `verified`, `inactive`, `lifecycle_profiles`, and
+   `next_actions`.
 4. Open `.assura/onboarding/agent-next.md`.
-5. Ask the user only the remaining specialization questions.
-6. Specialize the config, content templates, or hooks only after those answers
-   are recorded.
+5. Inspect manifests, tooling, generated outputs, project docs, and established
+   paths; define the expected stack and intended shape from converging evidence.
+6. Close stable scopes against unexpected files and ask only where the evidence
+   is ambiguous or a choice would reject existing content.
 
 Roadmap note: a future remote bootstrap wrapper may install Assura and delegate
 to the installed CLI. Today, use the installer plus `assura agent onboard`; do
@@ -39,36 +45,40 @@ not treat any remote bootstrap command as a current quickstart command.
 ## Current Command
 
 ```bash
-assura agent onboard . --agent auto --format json
+assura agent onboard .
 ```
 
-Use a concrete host-agent label only when you want Assura to generate an
-experimental, reviewable local integration bundle:
+Use a concrete host-agent label plus `--activate` when you want Assura to
+generate the reviewable bundle and explicitly activate its project-local host
+integration:
 
 ```bash
-assura agent onboard . --agent codex --format json
+assura agent onboard . --agent codex --activate --format json
 assura agent integration doctor codex .
 ```
 
-The bundle lives under `.assura/integrations/<agent>/`. Assura leaves host
-configuration as manual opt-in so the generated files can be reviewed and
-removed.
+The bundle lives under `.assura/integrations/<agent>/`. Explicit activation
+patches only Assura-owned project-local host entries, verifies the result, and
+preserves unmanaged configuration. Use `assura agent integration deactivate`
+to remove the host entries while retaining the bundle.
 
 ## Agent Prompt
 
 Give the coding agent a short instruction like this when it enters a repository:
 
 ```text
-Run Assura onboarding before changing project structure.
+Set up Assura for this project.
 
-1. Run: assura agent onboard . --agent auto --format json
-2. Read the report sections: installed, detected, verified, inactive,
-   lifecycle_profiles, and next_actions.
+1. Run: assura agent onboard .
+2. Read the report sections: installed, detected, rule_recommendations,
+   verified, inactive, lifecycle_profiles, and next_actions.
 3. Open .assura/onboarding/agent-next.md.
 4. Treat inactive entries as unchecked, not as passing.
-5. Ask the user the remaining questions before adding language, layout,
-   naming, source-document, hook, or content-model rules.
-6. Use warn mode while drafting and gate mode before push or CI.
+5. Inspect manifests, tooling, generated output, and established paths. Define
+   project-owned rules for the expected stack and intentional layout.
+6. Close stable scopes so unexpected files fail. Preserve legitimate paths and
+   ask only where evidence is ambiguous.
+7. Verify with assura review and assura check --format agent.
 ```
 
 The flow is intentionally simple:
@@ -78,8 +88,9 @@ The flow is intentionally simple:
 | 1 | Run onboarding | `.assura/config.yml` and `.assura/onboarding/` |
 | 2 | Read checked state | `verified`, `inactive`, and `doctor.json` |
 | 3 | Read handoff | `.assura/onboarding/agent-next.md` |
-| 4 | Ask before specializing | User-backed answers, not invented conventions |
-| 5 | Validate again | `assura check` and `assura doctor` |
+| 4 | Specialize from evidence | Project-owned expected shape and stable closed scopes |
+| 5 | Ask focused questions | Only unresolved or potentially destructive choices |
+| 6 | Validate again | `assura review`, `assura check`, and `assura doctor` |
 
 ## Report Shape
 
@@ -96,6 +107,21 @@ look like this:
     "project_type": "rust",
     "agent_harness": "codex"
   },
+  "rule_recommendations": [
+    {
+      "preset": "agentic-core + structure-health",
+      "local_rule": "$agent-entrypoint",
+      "status": "applied",
+      "reason": "rust project detected; editable agentic-core and structure-health policy is active",
+      "includes": [
+        "$agent-entrypoint",
+        "$skill-entrypoint",
+        "$skill",
+        "$folder-health",
+        "$closed"
+      ]
+    }
+  ],
   "content": {
     "template": "none",
     "status": "inactive"
@@ -148,6 +174,16 @@ look like this:
 capability is deliberately not configured yet. A clean `assura check` result is
 not the same thing as a fully onboarded repository.
 
+Assura materializes the `agentic-core` and `structure-health` recipes as normal
+YAML in `.assura/config.yml`. The project owns every generated rule and can
+edit or remove it without relying on hidden runtime presets. Recommendation
+status is `applied` when the generated entrypoint rule is active, `available`
+when recipe rules exist without replacing the selected root policy,
+`not-applied` when the selected config lacks them, and `conflict` when an
+existing project value was preserved for review. Assura does not recommend
+language, framework, naming, or domain rules until the project provides enough
+evidence or a user confirms those choices.
+
 ## Generated Packet
 
 `assura agent onboard` writes a small packet under `.assura/onboarding/`:
@@ -155,13 +191,16 @@ not the same thing as a fully onboarded repository.
 | File | Purpose |
 | --- | --- |
 | `summary.md` | What Assura detected and installed. |
+| `rules.md` | Materialized recipes, active project rules, and how to customize them. |
 | `questions.md` | The specialization questions the agent should ask. |
 | `agent-next.md` | The next handoff for coding agents. |
 | `lifecycle.md` | When to use nudge, warn, and gate feedback. |
 | `doctor.json` | A project doctor snapshot showing checked and unchecked state. |
 
-The agent should read `agent-next.md` before it changes language, layout,
-naming, traceability, source-document, hook, or domain conventions.
+The agent should read `agent-next.md`, inspect repository evidence, and
+materialize supported language, layout, and naming decisions into the
+project-owned config. It should ask before making ambiguous choices or closing
+a scope that rejects existing content.
 
 ## Project-Local Skills
 
@@ -178,8 +217,8 @@ new config rule only for a durable non-duplicative project role.
 
 ## Agent-Next Questions
 
-The generated `agent-next.md` asks for the missing choices that Assura should
-not invent:
+The generated `agent-next.md` tells the agent to answer these from repository
+evidence first, then ask only for unresolved choices:
 
 - primary language or stack;
 - project type;
@@ -256,8 +295,8 @@ After the user answers the generated questions:
    strictness rules.
 2. Activate `agent-project` or `document-project` when the user wants modeled
    facts.
-3. Add host-agent integration bundles only for supported adapters the user
-   wants to wire manually.
+3. Activate a supported project-local host integration only when the user wants
+   Assura feedback in that harness.
 4. Rerun:
 
    ```bash

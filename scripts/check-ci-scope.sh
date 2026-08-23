@@ -62,7 +62,7 @@ release=true
 performance=true
 rustdoc=true
 evidence=false
-website=false
+website=true
 security=false'
 
 check_scope "Cargo metadata" \
@@ -72,7 +72,7 @@ release=true
 performance=true
 rustdoc=true
 evidence=false
-website=false
+website=true
 security=true'
 
 check_scope "installer" \

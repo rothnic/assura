@@ -1,0 +1,14 @@
+{"file":".trellis/spec/assura/index.md","reason":"Review against project-level constraints and no-parallel-validator expectations."}
+{"file":".trellis/spec/assura/tooling-stabilization.md","reason":"Validation-scope and evidence-gate expectations for command/docs changes."}
+{"file":".trellis/spec/assura/workflow-status.md","reason":"Ensure handoff includes the expected workflow status snapshot."}
+{"file":"docs/goals/assura-compact-project-review-common-issues.md","reason":"Review against acceptance criteria and reviewer blocking criteria."}
+{"file":"docs/analysis/2026-07-05-compact-project-review-revalidation.md","reason":"Confirm implementation answers the live check/doctor/content-gap evidence."}
+{"file":"tests/project_review_cli.rs","reason":"Integration coverage for clean repo, blocking structure mismatch, unmodeled path pressure, inactive guidance, noisy refs, actionable content gaps, and bounded agent JSON."}
+{"file":"src/cli/project_review/heatmap.rs","reason":"Review advisory heat-map scoring, compact text, risk flags, and non-blocking aggregation behavior."}
+{"file":"src/cli/project_review/heatmap/git.rs","reason":"Review Git status parsing, branch-base fallback, churn collection, and non-fatal behavior outside Git checkouts."}
+{"file":"src/cli/project_review/text.rs","reason":"Review aligned human output, color gating, action bucket truncation, and preserved structure-fit policy wording."}
+{"file":"src/cli/doctor_report.rs","reason":"Confirm the natural doctor line-limit split preserves report fields, text output, and next-action assembly."}
+{"file":".trellis/spec/assura/compact-project-review.md","reason":"Review against the new executable command/schema contract."}
+{"file":"docs/support-policy.md","reason":"Ensure support classification states experimental read-only review behavior and noise policy."}
+{"file":"docs/compatibility-and-surface.md","reason":"Ensure release surface matrix cites project-review CLI test evidence."}
+{"file":"docs/validation.md","reason":"Ensure user workflow docs cover before-new-path, before-PR, and onboarding usage."}

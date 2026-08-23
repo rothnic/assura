@@ -1,0 +1,20 @@
+---
+import DefaultHead from '@astrojs/starlight/components/Head.astro';
+---
+
+<DefaultHead {...Astro.props} />
+
+<script is:inline>
+  const updateScrollableRegions = () => {
+    document.querySelectorAll('pre').forEach((region) => {
+      if (region.scrollWidth > region.clientWidth) {
+        region.tabIndex = 0;
+      } else {
+        region.removeAttribute('tabindex');
+      }
+    });
+  };
+
+  document.addEventListener('DOMContentLoaded', updateScrollableRegions, { once: true });
+  window.addEventListener('resize', updateScrollableRegions, { passive: true });
+</script>

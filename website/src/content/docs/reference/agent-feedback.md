@@ -41,6 +41,19 @@ The primary DX is `assura check`. The package is a lower-level bridge for
 wrappers that already have an Assura JSON report or cannot shell out to the Rust
 CLI directly.
 
+## Review Before Check
+
+Use `assura review .` while work is changing. It summarizes the branch and
+worktree scope, actionable findings, crossed advisory thresholds, the most
+specific hot path, and the first concrete repair. A successfully assembled
+review is advisory and exits zero even when it reports `needs attention`.
+
+Use `assura check --format agent .` when the configured project contract must
+make the final pass/fail decision. Check preserves blocking exit behavior for
+hooks and CI. Add global `--verbose` to Review only when a human needs the full
+diagnostic inventory; integrations should prefer Review JSON or agent output
+instead of scraping verbose text.
+
 ## Current Check Output
 
 Use guided output when a human or agent should fix the result:
@@ -97,7 +110,9 @@ parse human prose.
 ## Event-Aware Nudges
 
 Use `assura agent nudge` when a wrapper can observe session or tool events and
-needs a concise decision about whether Assura context should be injected:
+needs a concise decision about whether Assura context should be injected.
+Identical messages are suppressed during the default 300-second cooldown;
+wrappers can set `--cooldown-seconds 0` for measurement or deliberate replay:
 
 ```bash
 assura agent nudge --event session-start --agent codex .
@@ -223,7 +238,7 @@ integrations:
 - Performance evidence includes hot daemon and warm editor-session rows to
   measure repeated checks without paying full process startup every time.
 
-A future editor or post-tool agent integration should use that shape:
+Managed editor and post-tool agent integrations use that shape:
 
 ```text
 startup or config change -> load policy and build prepared checker
@@ -239,17 +254,19 @@ step, while still giving the agent fresh feedback after edits.
 
 | Integration | Supported now | Expected delivery |
 | --- | --- | --- |
-| `assura agent integration install <agent>` | Experimental | Generates a reviewable `.assura/integrations/<agent>/` manifest, wrapper, and README for Codex, OpenCode, Claude, or Pi. |
-| `assura agent integration update <agent>` | Experimental | Regenerates the same managed files when Assura changes the shared wrapper contract. |
-| `assura agent integration remove <agent>` | Experimental | Removes only Assura-managed bundle files; host-agent config remains a manual opt-in step. |
-| `assura agent integration status <agent>` | Experimental | Reports expected files, managed status, and host wiring guidance. |
-| `assura agent integration doctor <agent>` | Experimental | Checks project config, managed bundle state, and delegation to nudge/check/daemon commands. |
+| `assura agent integration install <agent>` | Supported next-release | Generates a reviewable `.assura/integrations/<agent>/` manifest, wrapper, and README for Codex, OpenCode, Claude, or Pi. |
+| `assura agent integration activate <agent>` | Supported next-release | Explicitly patches only Assura-owned project-local host entries, verifies the result, and rolls back partial writes. |
+| `assura agent integration update <agent>` | Supported next-release | Regenerates managed files and refreshes an already active integration when the shared wrapper contract changes. |
+| `assura agent integration deactivate <agent>` | Supported next-release | Removes only Assura-owned host entries while retaining the reviewable bundle. |
+| `assura agent integration remove <agent>` | Supported next-release | Deactivates Assura-owned entries and removes only the managed bundle. |
+| `assura agent integration status <agent>` | Supported next-release | Reports generated, activated, verified, conflicted, and managed-file state. |
+| `assura agent integration doctor <agent>` | Supported next-release | Checks project config, bundle and activation state, and delegation to nudge/check/daemon commands. |
 | Codex package library | Lower-level only | Wrapper code can use library helpers when it already has JSON. |
 | Codex `UserPromptSubmit` hook | Yes | A hook runs `assura check --format agent --agent codex` before Codex processes a prompt. |
-| Codex event nudges | Experimental | A hook or wrapper calls `assura agent nudge --agent codex` around relevant session and tool events. |
-| OpenCode event nudges | Experimental | A thin plugin or hook calls `assura agent nudge --agent opencode` and generic `assura check --format agent --warn` for detail. |
-| Claude event nudges | Experimental | A local command hook or wrapper calls `assura agent nudge --agent claude` around path-aware tool events. |
-| Pi event nudges | Experimental | A local extension or hook wrapper calls `assura agent nudge --agent pi`, including performance-gate nudges for structure hot paths. |
+| Codex event nudges | Supported next-release | The managed hook calls `assura agent nudge --agent codex` around relevant session and tool events. |
+| OpenCode event nudges | Supported next-release | The managed plugin calls `assura agent nudge --agent opencode` and shared agent-format checks for detail. |
+| Claude event nudges | Supported next-release | Managed project hooks call `assura agent nudge --agent claude` around path-aware tool events. |
+| Pi event nudges | Supported next-release | The managed local extension calls `assura agent nudge --agent pi`, including performance-gate nudges for structure hot paths. |
 | Other agents with shell access | Yes | They can call `assura agent ...` for project-intelligence context and `assura check --format agent` for structure feedback. |
 | Project-intelligence session | Yes | Local wrappers can keep `assura content session` open for repeated context/query requests. |
 | Project-intelligence editor session | Yes | Local editor wrappers can keep `assura editor session` open for LSP-shaped diagnostics, context, and code-action previews. |

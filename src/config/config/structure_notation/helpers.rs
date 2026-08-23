@@ -73,6 +73,61 @@ fn parse_exists_count(raw: &str) -> Result<String, String> {
     Ok(raw.to_string())
 }
 
+fn validate_literal_cardinality(path: &str, exists: Option<&str>) -> Result<(), String> {
+    let Some(exists) = exists else {
+        return Ok(());
+    };
+    if matches!(exists, "0" | "0-1" | "1") {
+        return Ok(());
+    }
+    Err(format!(
+        "Assura config exact path '{path}' can only use exists:0, exists:0-1, or exists:1"
+    ))
+}
+
+fn validate_directory_cardinality(
+    path: &str,
+    exists: Option<&str>,
+    has_child_policy: bool,
+) -> Result<(), String> {
+    let Some(exists) = exists else {
+        return Ok(());
+    };
+    let local = path
+        .trim_end_matches('/')
+        .strip_prefix("./")
+        .unwrap_or_else(|| path.trim_end_matches('/'));
+    if local.contains('/') {
+        return Err(format!(
+            "Assura config directory scope '{path}' cannot use exists across multiple path segments; express the hierarchy as nested direct-child scopes"
+        ));
+    }
+    if !path_has_scope_magic(path) {
+        validate_literal_cardinality(path, Some(exists))?;
+    }
+    if exists == "0" && has_child_policy {
+        return Err(format!(
+            "Assura config directory '{path}' cannot combine exists:0 with child policy"
+        ));
+    }
+    Ok(())
+}
+
+fn validate_top_level_scope_cardinality(path: &str, exists: Option<&str>) -> Result<(), String> {
+    let Some(exists) = exists else {
+        return Ok(());
+    };
+    if matches!(path, "." | "./") {
+        return Err("Assura config root './' always exists and cannot declare exists".to_string());
+    }
+    if path_has_scope_magic(path) {
+        return Err(format!(
+            "Assura config pattern scope '{path}' cannot declare exists; express cardinality on a nested direct-child pattern"
+        ));
+    }
+    validate_literal_cardinality(path, Some(exists))
+}
+
 fn filename_count_is_allowed(output: &Mapping, parent: &str, filename: &str) -> bool {
     count_for(output, parent, filename)
         .map(|count| count != "0")
@@ -185,6 +240,27 @@ fn is_extension_key(key: &str) -> bool {
     token.chars().all(|char| char.is_ascii_alphanumeric())
 }
 
+fn is_explicit_file_glob(key: &str) -> bool {
+    !key.ends_with('/') && key.contains(['*', '?', '[', ']'])
+}
+
+fn scoped_file_pattern(scope: &str, pattern: &str) -> String {
+    let local = pattern.strip_prefix("./").unwrap_or(pattern);
+    if scope.is_empty() || scope == "." || scope == "./" {
+        format!("./{local}")
+    } else {
+        join_scope_path(scope, local)
+    }
+}
+
+fn scoped_direct_file_pattern(scope: &str, filename: &str) -> String {
+    if scope.is_empty() || scope == "." || scope == "./" {
+        format!("./{filename}")
+    } else {
+        join_scope_path(scope, filename)
+    }
+}
+
 fn is_common_dotfile_name(key: &str) -> bool {
     matches!(
         key,
@@ -214,6 +290,8 @@ fn is_node_attr_key(key: &str) -> bool {
             | "require_docs"
             | "extensions"
             | "severity"
+            | "message"
+            | "limit_children"
             | "required"
             | "allowed_names"
             | "allowed_patterns"
@@ -240,6 +318,7 @@ fn is_file_bundle_attr_key(key: &str) -> bool {
             | "require_docs"
             | "extensions"
             | "severity"
+            | "message"
             | "required"
             | "allowed_names"
             | "allowed_patterns"
@@ -253,6 +332,7 @@ fn is_directory_bundle_attr_key(key: &str) -> bool {
         key,
         "naming"
             | "severity"
+            | "message"
             | "required"
             | "allowed_names"
             | "allowed_patterns"
@@ -279,6 +359,45 @@ fn path_has_scope_magic(path: &str) -> bool {
     path.contains('*') || path.contains('?') || path.contains('[') || path.contains('{')
 }
 
+fn expand_finite_selector(selector: &str) -> Result<Option<Vec<String>>, String> {
+    let Some(open) = selector.find('{') else {
+        return Ok(None);
+    };
+    let Some(close_offset) = selector[open + 1..].find('}') else {
+        return Ok(None);
+    };
+    let close = open + 1 + close_offset;
+    let body = &selector[open + 1..close];
+    if !body.contains(',') {
+        return Ok(None);
+    }
+
+    let options = body.split(',').map(str::trim).collect::<Vec<_>>();
+    if options.is_empty() || options.len() > 64 || options.iter().any(|item| item.is_empty()) {
+        return Err(format!(
+            "Assura config selector '{selector}' must contain 1-64 non-empty brace members"
+        ));
+    }
+
+    let prefix = &selector[..open];
+    let suffix = &selector[close + 1..];
+    let mut expanded = Vec::new();
+    for option in options {
+        let member = format!("{prefix}{option}{suffix}");
+        if let Some(nested) = expand_finite_selector(&member)? {
+            expanded.extend(nested);
+        } else {
+            expanded.push(member);
+        }
+        if expanded.len() > 64 {
+            return Err(format!(
+                "Assura config selector '{selector}' expands beyond the 64-member limit"
+            ));
+        }
+    }
+    Ok(Some(expanded))
+}
+
 fn normalize_scope_path(path: &str) -> String {
     path.trim_end_matches('/')
         .strip_prefix("./")
@@ -287,7 +406,10 @@ fn normalize_scope_path(path: &str) -> String {
 }
 
 fn join_scope_path(scope: &str, child: &str) -> String {
-    let child = child.trim_end_matches('/');
+    let child = child
+        .trim_end_matches('/')
+        .strip_prefix("./")
+        .unwrap_or_else(|| child.trim_end_matches('/'));
     if scope.is_empty() || scope == "." || scope == "./" {
         child.to_string()
     } else {

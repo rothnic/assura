@@ -5,7 +5,7 @@ mod artifact_check;
 #[cfg(feature = "yaml-config")]
 mod batch;
 #[cfg(all(feature = "yaml-config", feature = "json-output"))]
-mod cache;
+pub(crate) mod cache;
 mod case;
 mod command_surface_docs;
 mod compiled_artifact;
@@ -15,6 +15,7 @@ mod compiled_config;
 mod compiled_fingerprint;
 mod compiled_plan_artifact;
 mod computed_checks;
+mod configured_dirs;
 mod configured_structure;
 #[cfg(feature = "full-cli")]
 mod content_runtime;
@@ -23,8 +24,11 @@ mod direct_contents;
 mod docs_lifecycle;
 #[cfg(feature = "yaml-config")]
 mod explain;
+#[cfg(feature = "yaml-config")]
+mod explain_rules;
 #[cfg(all(feature = "yaml-config", feature = "json-output"))]
 pub mod fast_cli;
+mod file_limits;
 mod ls_fast;
 mod ls_fast_counts;
 mod ls_fast_naming;
@@ -84,9 +88,11 @@ pub use compiled_artifact::CompiledStructureConfigArtifact;
 use compiled_config::CompiledStructureConfig;
 #[cfg(feature = "yaml-config")]
 pub use explain::{
-    explain_structure_path, PathExplainNextAction, PathExplainReport, PathExplainRules,
+    explain_structure_path, PathExplainNextAction, PathExplainReport, PathExplainRuleSource,
     PathExplainScope, PathExplainSkip,
 };
+#[cfg(feature = "yaml-config")]
+pub use explain_rules::{PathExplainFilePatternRule, PathExplainRules};
 use glob::Pattern;
 use ls_fast_plan::FastScope;
 #[cfg(feature = "yaml-config")]
@@ -114,6 +120,7 @@ pub struct StructureCheckTimings {
     /// Time spent sorting report violations.
     pub report_sort_ms: f64,
 }
+use configured_dirs::ConfiguredDirSet;
 use regex_lite::Regex;
 use rule_plan::{rules_for_dir, RuleScope};
 use rules::{is_excluded_rel_with, normalize_config_dir, CompiledExclusion, EffectiveRules};
@@ -274,7 +281,7 @@ pub(in crate::cli::check) struct StructureChecker {
     project_root: PathBuf,
     config: Config,
     fail_fast: bool,
-    configured_dirs: Vec<PathBuf>,
+    configured_dirs: ConfiguredDirSet,
     exclude_patterns: Vec<CompiledExclusion>,
     naming_regexes: HashMap<String, Regex>,
     glob_patterns: HashMap<String, Pattern>,
@@ -305,7 +312,7 @@ impl StructureChecker {
             project_root,
             config: compiled.config.clone(),
             fail_fast,
-            configured_dirs: compiled.configured_dirs.clone(),
+            configured_dirs: ConfiguredDirSet::new(compiled.configured_dirs.clone()),
             exclude_patterns: compiled.exclude_patterns.clone(),
             naming_regexes: compiled.naming_regexes.clone(),
             glob_patterns: compiled.glob_patterns.clone(),
@@ -330,7 +337,7 @@ impl StructureChecker {
             project_root,
             config: compiled.config,
             fail_fast,
-            configured_dirs: compiled.configured_dirs,
+            configured_dirs: ConfiguredDirSet::new(compiled.configured_dirs),
             exclude_patterns: compiled.exclude_patterns,
             naming_regexes: compiled.naming_regexes,
             glob_patterns: compiled.glob_patterns,
@@ -449,9 +456,7 @@ impl StructureChecker {
     }
 
     pub(super) fn is_configured_dir(&self, rel: &Path) -> bool {
-        self.configured_dirs
-            .binary_search_by(|configured| configured.as_path().cmp(rel))
-            .is_ok()
+        self.configured_dirs.contains(rel)
     }
 
     pub(super) fn push_violation(

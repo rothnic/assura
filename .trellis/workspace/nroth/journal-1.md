@@ -314,3 +314,136 @@ Completed agent search/reference discovery, fixed the Windows context-pack fixtu
 ### Next Steps
 
 - None - task complete
+
+
+## Session 10: Performance polish gates and stop policy
+
+**Date**: 2026-07-05
+**Task**: Performance polish gates and stop policy
+**Branch**: `codex/post-merge-backlog-truth-pass`
+
+### Summary
+
+Added native performance regression metadata and gates, refreshed checked performance evidence, added VPS comparison helper output, and recorded the stop policy that pauses cold CLI micro-optimization in favor of core structure validation work.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `cdeae4c` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
+
+
+## Session 11: Align supported product and marketing experience
+
+**Date**: 2026-08-14
+**Task**: Align supported product and marketing experience
+**Branch**: `codex/assura-landing-experience`
+
+### Summary
+
+Aligned generated landing and docs examples with supported CLI renderers, pinned preview setup to the exact implementation revision, and added provenance, responsive, accessibility, and release delivery gates.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `b8f8375` | (see git log) |
+| `6d4e270` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
+
+
+## Session 12: Lock landing setup modal background scroll
+
+**Date**: 2026-08-16
+**Task**: Lock landing setup modal background scroll
+**Branch**: `codex/assura-landing-experience`
+
+### Summary
+
+Locked the document behind the agent setup modal, restored exact scroll position on every dismissal path, and added mobile Playwright coverage plus frontend quality guidance.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `413a149` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
+
+
+## Session 13: Improve landing review output spacing
+
+**Date**: 2026-08-22
+**Task**: Improve landing review output spacing
+**Branch**: `codex/assura-landing-experience`
+
+### Summary
+
+Grouped the review terminal into summary, findings, branch context, watch state, and action blocks with tested mobile spacing and preserved hanging indents.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `4ccba71` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

@@ -16,21 +16,11 @@ pub(super) fn content_config() -> String {
     )
 }
 
-pub(super) fn root_required_dirs() -> &'static str {
-    r#"        - "library"
-        - "source-documents"
-"#
-}
-
 pub(super) fn root_structure() -> &'static str {
     r#"  library/:
-    required: true
-    topics/: exists:1
-  library/topics/:
-    required: true
-    topic-document-project-baseline.md: exists:1
+    topics/:
+      topic-document-project-baseline.md: exists:1
   source-documents/:
-    required: true
     manifest.md: exists:1
     files/: exists:1
 "#

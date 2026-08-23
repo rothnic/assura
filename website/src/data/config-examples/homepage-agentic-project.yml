@@ -1,0 +1,24 @@
+rules:
+  # Reused at root and package level.
+  agent-doc:
+    max_lines: 160
+    severity: low
+    message: See docs/agents.md.
+
+  # Applied to every package.
+  workspace:
+    AGENTS.md: exists:1 | $agent-doc
+    package.json: exists:1
+
+structure:
+  # Project entrypoints.
+  AGENTS.md: exists:1 | $agent-doc
+  README.md: exists:1
+
+  # Repeat the package contract.
+  packages/:
+    ./*/: $workspace
+
+  # Source defaults at every depth.
+  ./**/:
+    .ts: kebab-case | max_lines:500

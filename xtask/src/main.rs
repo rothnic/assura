@@ -1,5 +1,7 @@
 //! Rust-first repository maintenance entrypoint.
 
+mod website_demo;
+
 use serde_json::Value;
 use std::collections::{BTreeMap, BTreeSet};
 use std::env;
@@ -40,8 +42,13 @@ fn run() -> Result<()> {
         "release-smoke" => run_release_smoke(),
         "release-live" => run_release_live(),
         "release-readiness" => run_release_readiness(&rest),
+        "perf-vps-ls-lint-compare" => run_perf_vps_ls_lint_compare(&rest),
         "performance-no-slower" => run_performance_no_slower(&rest),
         "native-performance-no-regression" => run_native_performance_no_regression(&rest),
+        "warm-loop-benchmark" => run_warm_loop_benchmark(&rest),
+        "warm-loop-no-regression" => run_warm_loop_no_regression(&rest),
+        "website-demo-data" => website_demo::run(&rest),
+        "website-config-examples" => website_demo::validate_config_examples(&rest),
         "markdown-engine-probe" => run_markdown_engine_probe(&rest),
         "changed" => run_changed(&rest),
         "pr" => run_pr(),
@@ -62,7 +69,7 @@ fn run() -> Result<()> {
 
 fn print_usage() {
     eprintln!(
-        "Usage: cargo xtask <fast|check|test|evidence|target-state|hygiene|docs|release-size|release-smoke|release-live|release-readiness|performance-no-slower|native-performance-no-regression|markdown-engine-probe|changed|pr|full>"
+        "Usage: cargo xtask <fast|check|test|evidence|target-state|hygiene|docs|release-size|release-smoke|release-live|release-readiness|perf-vps-ls-lint-compare|performance-no-slower|native-performance-no-regression|warm-loop-benchmark|warm-loop-no-regression|website-demo-data|website-config-examples|markdown-engine-probe|changed|pr|full>"
     );
 }
 
@@ -137,6 +144,7 @@ fn run_hygiene() -> Result<()> {
 }
 
 fn run_docs() -> Result<()> {
+    website_demo::run(&["--check".to_string()])?;
     if command_exists("pnpm") {
         run_command("pnpm", ["--dir", "website", "build"])
     } else if command_exists("npm") {
@@ -291,6 +299,27 @@ fn run_release_readiness(args: &[String]) -> Result<()> {
     }
 }
 
+fn run_perf_vps_ls_lint_compare(args: &[String]) -> Result<()> {
+    let args = if args.first().is_some_and(|arg| arg == "--") {
+        &args[1..]
+    } else {
+        args
+    };
+
+    if args.is_empty() {
+        eprintln!(
+            "Usage: cargo xtask perf-vps-ls-lint-compare -- <label> <repo-path> [<repo-path>...]"
+        );
+        eprintln!("       cargo xtask perf-vps-ls-lint-compare -- --help");
+        std::process::exit(2);
+    }
+
+    run_command(
+        "./scripts/perf-vps-ls-lint-compare.sh",
+        args.iter().map(String::as_str),
+    )
+}
+
 fn release_readiness_report() -> Value {
     let local_version = toml_string_value(&read("Cargo.toml"), "version").unwrap_or_default();
     let release_notes_text = read("docs/release-notes.md");
@@ -325,6 +354,7 @@ fn release_readiness_report_from_inputs(
         "cargo fmt --all -- --check",
         "cargo test --all-targets --quiet",
         "cargo clippy --all-targets --all-features -- -D warnings",
+        "cargo xtask website-demo-data --check --released",
         "cargo xtask release-readiness --format json",
         "cargo xtask release-smoke",
         "cargo xtask release-live",
@@ -363,18 +393,13 @@ fn release_readiness_report_from_inputs(
             "latest GitHub release could not be checked: {error}"
         ));
     }
-    let latest_tag = latest_release
-        .get("tagName")
-        .and_then(Value::as_str)
-        .unwrap_or_default();
-    if latest_tag == local_tag
-        && unreleased_user_facing_changes
-            .as_array()
-            .map(|changes| !changes.is_empty())
-            .unwrap_or(false)
+    if unreleased_user_facing_changes
+        .as_array()
+        .map(|changes| !changes.is_empty())
+        .unwrap_or(false)
     {
         reasons.push(format!(
-            "{local_tag} is already the latest GitHub release but current branch release notes describe unreleased user-facing changes"
+            "{local_tag} cannot publish while supported or experimental user-facing surfaces remain unreleased"
         ));
     }
 
@@ -415,14 +440,10 @@ fn latest_github_release() -> Value {
 
 fn release_notes_version(text: &str) -> Option<String> {
     let after_marker = text.split_once("Assura v")?.1;
-    let version = after_marker
-        .chars()
-        .take_while(|ch| ch.is_ascii_digit() || *ch == '.')
-        .collect::<String>();
-    if version.is_empty() {
-        return None;
-    }
-    Some(version)
+    let version = after_marker.split_whitespace().next()?;
+    semver::Version::parse(version)
+        .ok()
+        .map(|_| version.to_string())
 }
 
 fn release_surfaces_report(path: &str, current_tag: Option<&str>) -> Value {
@@ -457,6 +478,10 @@ fn release_surfaces_report(path: &str, current_tag: Option<&str>) -> Value {
             .get("detail_path")
             .and_then(Value::as_str)
             .unwrap_or_default();
+        let marketing_claim = surface
+            .get("marketing_claim")
+            .and_then(Value::as_bool)
+            .unwrap_or(false);
         if id.is_empty() {
             errors.push("surface missing id".to_string());
         }
@@ -465,6 +490,11 @@ fn release_surfaces_report(path: &str, current_tag: Option<&str>) -> Value {
             "supported" | "experimental" | "internal" | "roadmap" | "unsupported"
         ) {
             errors.push(format!("{id}: invalid status {status:?}"));
+        }
+        if marketing_claim && status != "supported" {
+            errors.push(format!(
+                "{id}: marketing claims must be supported, found {status:?}"
+            ));
         }
         if first_release.is_empty() {
             errors.push(format!("{id}: missing first_release"));
@@ -475,10 +505,21 @@ fn release_surfaces_report(path: &str, current_tag: Option<&str>) -> Value {
                     "{id}: supported or experimental surface has invalid first_release {first_release:?}"
                 ));
             } else if let Some(current_tag) = current_tag {
-                if release_tag_tuple(first_release) > release_tag_tuple(current_tag) {
-                    errors.push(format!(
-                        "{id}: first_release {first_release:?} is after local release tag {current_tag:?}"
-                    ));
+                match (
+                    release_tag_version(first_release),
+                    release_tag_version(current_tag),
+                ) {
+                    (Some(first_version), Some(current_version))
+                        if first_version > current_version =>
+                    {
+                        errors.push(format!(
+                            "{id}: first_release {first_release:?} is after local release tag {current_tag:?}"
+                        ));
+                    }
+                    (_, None) => errors.push(format!(
+                        "local release tag {current_tag:?} is not valid SemVer"
+                    )),
+                    _ => {}
                 }
             }
         }
@@ -508,16 +549,12 @@ fn release_surfaces_report(path: &str, current_tag: Option<&str>) -> Value {
 }
 
 fn release_tag_like(value: &str) -> bool {
-    release_tag_tuple(value).is_some()
+    release_tag_version(value).is_some()
 }
 
-fn release_tag_tuple(value: &str) -> Option<(u64, u64, u64)> {
+fn release_tag_version(value: &str) -> Option<semver::Version> {
     let version = value.strip_prefix('v')?;
-    let mut parts = version.split('.');
-    let major = parts.next()?.parse().ok()?;
-    let minor = parts.next()?.parse().ok()?;
-    let patch = parts.next()?.parse().ok()?;
-    parts.next().is_none().then_some((major, minor, patch))
+    semver::Version::parse(version).ok()
 }
 
 fn run_release_bundle() -> Result<PathBuf> {
@@ -1039,6 +1076,534 @@ fn parse_native_performance_report_path(args: &[String]) -> Result<String> {
         }
     }
     Ok(report_path)
+}
+
+const WARM_LOOP_BUDGETS: &str = "benches/history/warm-loop-budgets.v1.json";
+const WARM_LOOP_CURRENT: &str = "target/performance/warm-loop-current.json";
+const WARM_LOOP_MIN_ITERATIONS: usize = 20;
+
+#[derive(Debug)]
+struct WarmLoopOptions {
+    binary: PathBuf,
+    budgets: PathBuf,
+    output: PathBuf,
+    history: Option<PathBuf>,
+    iterations: usize,
+}
+
+fn run_warm_loop_benchmark(args: &[String]) -> Result<()> {
+    let options = parse_warm_loop_options(args)?;
+    if options.iterations < WARM_LOOP_MIN_ITERATIONS {
+        return Err(format!(
+            "warm-loop benchmark requires at least {WARM_LOOP_MIN_ITERATIONS} iterations"
+        )
+        .into());
+    }
+    let binary = fs::canonicalize(&options.binary).map_err(|error| {
+        format!(
+            "warm-loop binary {} is unavailable: {error}",
+            options.binary.display()
+        )
+    })?;
+    let budgets = load_warm_loop_budgets(&options.budgets)?;
+    let started_at = command_output_lossy("date", ["-u", "+%Y-%m-%dT%H:%M:%SZ"])
+        .unwrap_or_else(|| "unknown".to_string());
+    let mut rows = Vec::new();
+
+    for scenario in warm_loop_scenarios() {
+        let budget_ms = budgets
+            .get(scenario.id)
+            .copied()
+            .ok_or_else(|| format!("missing warm-loop budget row {}", scenario.id))?;
+        rows.push(measure_warm_loop_scenario(
+            &binary,
+            scenario,
+            options.iterations,
+            budget_ms,
+        )?);
+    }
+
+    let report = serde_json::json!({
+        "schema_version": "assura.warm-loop-performance.v1",
+        "timestamp": started_at,
+        "commit_sha": command_output_lossy("git", ["rev-parse", "HEAD"]).unwrap_or_else(|| "unknown".to_string()),
+        "branch": command_output_lossy("git", ["branch", "--show-current"]).unwrap_or_else(|| "unknown".to_string()),
+        "source_worktree_dirty": command_output_lossy("git", ["status", "--porcelain"])
+            .is_some_and(|status| !status.trim().is_empty()),
+        "environment": {
+            "os": std::env::consts::OS,
+            "arch": std::env::consts::ARCH,
+            "rust_version": command_output_lossy("rustc", ["--version"]).unwrap_or_else(|| "unknown".to_string()),
+        },
+        "binary": options.binary,
+        "iterations": options.iterations,
+        "budget_source": options.budgets,
+        "rows": rows,
+    });
+    write_pretty_json(&options.output, &report)?;
+    if let Some(history) = &options.history {
+        append_json_line(history, &report)?;
+    }
+
+    println!(
+        "Warm-loop benchmark wrote {} measured rows to {}.",
+        warm_loop_scenarios().len(),
+        options.output.display()
+    );
+    Ok(())
+}
+
+fn run_warm_loop_no_regression(args: &[String]) -> Result<()> {
+    let (report_path, budget_path) = parse_warm_loop_gate_options(args)?;
+    let report = serde_json::from_str::<Value>(&fs::read_to_string(&report_path)?)?;
+    let budgets = load_warm_loop_budgets(&budget_path)?;
+    let failures = warm_loop_regression_failures(&report, &budgets)?;
+    if failures.is_empty() {
+        println!(
+            "Warm-loop p95 gate passed for all {} budget rows.",
+            budgets.len()
+        );
+        return Ok(());
+    }
+    eprintln!("Warm-loop p95 gate failed:");
+    for failure in failures {
+        eprintln!("- {failure}");
+    }
+    Err("warm-loop performance gate failed".into())
+}
+
+fn parse_warm_loop_options(args: &[String]) -> Result<WarmLoopOptions> {
+    let mut options = WarmLoopOptions {
+        binary: PathBuf::from("target/release/assura-full"),
+        budgets: PathBuf::from(WARM_LOOP_BUDGETS),
+        output: PathBuf::from(WARM_LOOP_CURRENT),
+        history: None,
+        iterations: WARM_LOOP_MIN_ITERATIONS,
+    };
+    let mut index = 0;
+    while index < args.len() {
+        let value = args
+            .get(index + 1)
+            .ok_or_else(|| format!("{} requires a value", args[index]))?;
+        match args[index].as_str() {
+            "--binary" => options.binary = PathBuf::from(value),
+            "--budgets" => options.budgets = PathBuf::from(value),
+            "--output" => options.output = PathBuf::from(value),
+            "--history" => options.history = Some(PathBuf::from(value)),
+            "--iterations" => options.iterations = value.parse()?,
+            unknown => return Err(format!("unknown warm-loop benchmark option: {unknown}").into()),
+        }
+        index += 2;
+    }
+    Ok(options)
+}
+
+fn parse_warm_loop_gate_options(args: &[String]) -> Result<(PathBuf, PathBuf)> {
+    let mut report = PathBuf::from(WARM_LOOP_CURRENT);
+    let mut budgets = PathBuf::from(WARM_LOOP_BUDGETS);
+    let mut index = 0;
+    while index < args.len() {
+        match args[index].as_str() {
+            "--budgets" => {
+                budgets = PathBuf::from(args.get(index + 1).ok_or("--budgets requires a value")?);
+                index += 2;
+            }
+            value if value.starts_with("--") => {
+                return Err(format!("unknown warm-loop gate option: {value}").into());
+            }
+            value => {
+                report = PathBuf::from(value);
+                index += 1;
+            }
+        }
+    }
+    Ok((report, budgets))
+}
+
+struct WarmLoopScenario {
+    id: &'static str,
+    label: &'static str,
+    kind: WarmLoopScenarioKind,
+}
+
+#[derive(Clone, Copy)]
+enum WarmLoopScenarioKind {
+    NoChangeReview,
+    OneFileChange,
+    DirectoryCreateDelete,
+    ConfigChange,
+    AgentNudge,
+}
+
+fn warm_loop_scenarios() -> &'static [WarmLoopScenario] {
+    &[
+        WarmLoopScenario {
+            id: "no-change-warm-review",
+            label: "No-change warm review",
+            kind: WarmLoopScenarioKind::NoChangeReview,
+        },
+        WarmLoopScenario {
+            id: "one-file-change",
+            label: "One-file change",
+            kind: WarmLoopScenarioKind::OneFileChange,
+        },
+        WarmLoopScenario {
+            id: "directory-create-delete",
+            label: "Directory create/delete",
+            kind: WarmLoopScenarioKind::DirectoryCreateDelete,
+        },
+        WarmLoopScenario {
+            id: "config-change",
+            label: "Config change",
+            kind: WarmLoopScenarioKind::ConfigChange,
+        },
+        WarmLoopScenario {
+            id: "agent-nudge",
+            label: "Agent nudge",
+            kind: WarmLoopScenarioKind::AgentNudge,
+        },
+    ]
+}
+
+fn measure_warm_loop_scenario(
+    binary: &Path,
+    scenario: &WarmLoopScenario,
+    iterations: usize,
+    budget_ms: f64,
+) -> Result<Value> {
+    let fixture = create_warm_loop_fixture(scenario.kind)?;
+    let args = warm_loop_command(scenario.kind, &fixture);
+    mutate_warm_loop_fixture(scenario.kind, &fixture, 0)?;
+    run_measured_command(binary, &args)
+        .map_err(|error| format!("{} warmup: {error}", scenario.id))?;
+    let mut samples = Vec::with_capacity(iterations);
+    for iteration in 0..iterations {
+        mutate_warm_loop_fixture(scenario.kind, &fixture, iteration + 1)?;
+        samples.push(run_measured_command(binary, &args)?);
+    }
+    samples.sort_by(|left, right| left.total_cmp(right));
+    let p95_ms = percentile(&samples, 0.95).ok_or("warm-loop scenario emitted no samples")?;
+    let median_ms = percentile(&samples, 0.50).ok_or("warm-loop scenario emitted no samples")?;
+    let row = serde_json::json!({
+        "id": scenario.id,
+        "label": scenario.label,
+        "command": warm_loop_display_command(scenario.kind),
+        "fixture_profile": warm_loop_kind_name(scenario.kind),
+        "iterations": iterations,
+        "median_ms": median_ms,
+        "p95_ms": p95_ms,
+        "budget_ms": budget_ms,
+        "within_budget": p95_ms <= budget_ms,
+        "samples_ms": samples,
+    });
+    let _ = fs::remove_dir_all(&fixture);
+    Ok(row)
+}
+
+fn create_warm_loop_fixture(kind: WarmLoopScenarioKind) -> Result<PathBuf> {
+    let root = std::env::temp_dir().join(format!(
+        "assura-warm-loop-{}-{}",
+        std::process::id(),
+        warm_loop_kind_name(kind)
+    ));
+    let _ = fs::remove_dir_all(&root);
+    fs::create_dir_all(root.join(".assura"))?;
+    fs::create_dir_all(root.join("src"))?;
+    fs::create_dir_all(root.join("old"))?;
+    fs::write(
+        root.join(".assura/config.yml"),
+        "structure:\n  ./:\n    required: false\n",
+    )?;
+    fs::write(root.join("src/lib.rs"), "pub fn value() -> usize { 1 }\n")?;
+    fs::write(root.join("old/README.md"), "# Existing directory\n")?;
+    run_in(&root, "git", ["init", "--quiet"])?;
+    run_in(
+        &root,
+        "git",
+        ["config", "user.email", "benchmark@assura.dev"],
+    )?;
+    run_in(&root, "git", ["config", "user.name", "Assura Benchmark"])?;
+    run_in(&root, "git", ["add", "."])?;
+    run_in(&root, "git", ["commit", "--quiet", "-m", "baseline"])?;
+
+    Ok(root)
+}
+
+fn mutate_warm_loop_fixture(
+    kind: WarmLoopScenarioKind,
+    root: &Path,
+    iteration: usize,
+) -> Result<()> {
+    let variant = iteration % 2;
+    match kind {
+        WarmLoopScenarioKind::NoChangeReview => {}
+        WarmLoopScenarioKind::OneFileChange | WarmLoopScenarioKind::AgentNudge => {
+            fs::write(
+                root.join("src/lib.rs"),
+                format!("pub fn value() -> usize {{ {} }}\n", variant + 2),
+            )?;
+        }
+        WarmLoopScenarioKind::DirectoryCreateDelete => {
+            let _ = fs::remove_dir_all(root.join("old"));
+            let _ = fs::remove_dir_all(root.join("new"));
+            let directory = if variant == 0 {
+                root.join("new/nested")
+            } else {
+                root.join("old")
+            };
+            fs::create_dir_all(&directory)?;
+            fs::write(directory.join("README.md"), "# Changed directory\n")?;
+        }
+        WarmLoopScenarioKind::ConfigChange => {
+            fs::write(
+                root.join(".assura/config.yml"),
+                format!(
+                    "structure:\n  ./:\n    required: false\n# warm-loop config variant {variant}\n"
+                ),
+            )?;
+        }
+    }
+    Ok(())
+}
+
+fn warm_loop_command(kind: WarmLoopScenarioKind, fixture: &Path) -> Vec<String> {
+    let path = fixture.to_string_lossy().into_owned();
+    match kind {
+        WarmLoopScenarioKind::AgentNudge => vec![
+            "agent".to_string(),
+            "nudge".to_string(),
+            path,
+            "--event".to_string(),
+            "after-tool".to_string(),
+            "--changed".to_string(),
+            "src/lib.rs".to_string(),
+            "--agent".to_string(),
+            "codex".to_string(),
+            "--cooldown-seconds".to_string(),
+            "0".to_string(),
+            "--format".to_string(),
+            "json".to_string(),
+        ],
+        _ => vec![
+            "review".to_string(),
+            "--format".to_string(),
+            "json".to_string(),
+            "--base".to_string(),
+            "HEAD".to_string(),
+            path,
+        ],
+    }
+}
+
+fn warm_loop_kind_name(kind: WarmLoopScenarioKind) -> &'static str {
+    match kind {
+        WarmLoopScenarioKind::NoChangeReview => "no-change",
+        WarmLoopScenarioKind::OneFileChange => "one-file",
+        WarmLoopScenarioKind::DirectoryCreateDelete => "directory-change",
+        WarmLoopScenarioKind::ConfigChange => "config-change",
+        WarmLoopScenarioKind::AgentNudge => "agent-nudge",
+    }
+}
+
+fn warm_loop_display_command(kind: WarmLoopScenarioKind) -> &'static str {
+    match kind {
+        WarmLoopScenarioKind::AgentNudge => {
+            "assura-full agent nudge <fixture> --event after-tool --changed src/lib.rs --agent codex --cooldown-seconds 0 --format json"
+        }
+        _ => "assura-full review --format json --base HEAD <fixture>",
+    }
+}
+
+fn run_measured_command(binary: &Path, args: &[String]) -> Result<f64> {
+    let started = Instant::now();
+    let output = Command::new(binary).args(args).output()?;
+    let elapsed = started.elapsed().as_secs_f64() * 1000.0;
+    if !output.status.success() {
+        return Err(format!(
+            "{} exited {:?}: {}",
+            shell_join(binary, args),
+            output.status.code(),
+            String::from_utf8_lossy(&output.stderr).trim()
+        )
+        .into());
+    }
+    Ok(elapsed)
+}
+
+fn run_in<const N: usize>(directory: &Path, program: &str, args: [&str; N]) -> Result<()> {
+    let output = Command::new(program)
+        .current_dir(directory)
+        .args(args)
+        .output()?;
+    if output.status.success() {
+        return Ok(());
+    }
+    Err(format!(
+        "{program} failed in {}: {}",
+        directory.display(),
+        String::from_utf8_lossy(&output.stderr).trim()
+    )
+    .into())
+}
+
+fn shell_join(binary: &Path, args: &[String]) -> String {
+    std::iter::once(binary.to_string_lossy().into_owned())
+        .chain(args.iter().cloned())
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
+fn load_warm_loop_budgets(path: &Path) -> Result<BTreeMap<String, f64>> {
+    let value = serde_json::from_str::<Value>(&fs::read_to_string(path)?)?;
+    if value.get("schema_version").and_then(Value::as_str) != Some("assura.warm-loop-budgets.v1") {
+        return Err(format!("{}: unexpected warm-loop budget schema", path.display()).into());
+    }
+    if value.get("minimum_iterations").and_then(Value::as_u64)
+        != Some(WARM_LOOP_MIN_ITERATIONS as u64)
+    {
+        return Err(format!(
+            "{}: minimum_iterations must be {WARM_LOOP_MIN_ITERATIONS}",
+            path.display()
+        )
+        .into());
+    }
+    let rows = value
+        .get("rows")
+        .and_then(Value::as_array)
+        .ok_or("warm-loop budgets must contain rows")?;
+    let mut budgets = BTreeMap::new();
+    for row in rows {
+        let id = row
+            .get("id")
+            .and_then(Value::as_str)
+            .ok_or("budget row missing id")?;
+        let budget = row
+            .get("p95_budget_ms")
+            .and_then(Value::as_f64)
+            .filter(|value| *value > 0.0)
+            .ok_or_else(|| format!("{id}: invalid p95_budget_ms"))?;
+        if budgets.insert(id.to_string(), budget).is_some() {
+            return Err(format!("duplicate warm-loop budget row: {id}").into());
+        }
+    }
+    Ok(budgets)
+}
+
+fn warm_loop_regression_failures(
+    report: &Value,
+    budgets: &BTreeMap<String, f64>,
+) -> Result<Vec<String>> {
+    if report.get("schema_version").and_then(Value::as_str)
+        != Some("assura.warm-loop-performance.v1")
+    {
+        return Err("unexpected warm-loop report schema".into());
+    }
+    let rows = report
+        .get("rows")
+        .and_then(Value::as_array)
+        .ok_or("warm-loop report must contain rows")?;
+    let mut failures = Vec::new();
+    let mut seen = BTreeSet::new();
+    if rows.len() != budgets.len() {
+        failures.push(format!(
+            "row count {} does not match budget count {}",
+            rows.len(),
+            budgets.len()
+        ));
+    }
+    for row in rows {
+        if let Some(id) = row.get("id").and_then(Value::as_str) {
+            if !seen.insert(id) {
+                failures.push(format!("{id}: duplicate measured row"));
+            }
+        }
+    }
+    for (id, budget) in budgets {
+        let Some(row) = rows
+            .iter()
+            .find(|row| row.get("id").and_then(Value::as_str) == Some(id))
+        else {
+            failures.push(format!("{id}: missing measured row"));
+            continue;
+        };
+        let Some(p95) = row.get("p95_ms").and_then(Value::as_f64) else {
+            failures.push(format!("{id}: missing p95_ms"));
+            continue;
+        };
+        let iterations = row.get("iterations").and_then(Value::as_u64).unwrap_or(0);
+        if iterations < WARM_LOOP_MIN_ITERATIONS as u64 {
+            failures.push(format!(
+                "{id}: fewer than {WARM_LOOP_MIN_ITERATIONS} measured iterations"
+            ));
+        }
+        let samples = row
+            .get("samples_ms")
+            .and_then(Value::as_array)
+            .map(|samples| samples.iter().filter_map(Value::as_f64).collect::<Vec<_>>())
+            .unwrap_or_default();
+        if samples.len() != iterations as usize {
+            failures.push(format!(
+                "{id}: sample count {} does not match iterations {iterations}",
+                samples.len()
+            ));
+        } else {
+            let mut sorted = samples;
+            sorted.sort_by(|left, right| left.total_cmp(right));
+            let derived_p95 = percentile(&sorted, 0.95).unwrap_or_default();
+            let derived_median = percentile(&sorted, 0.50).unwrap_or_default();
+            let reported_median = row
+                .get("median_ms")
+                .and_then(Value::as_f64)
+                .unwrap_or(f64::NAN);
+            if (derived_p95 - p95).abs() > 0.000_001 {
+                failures.push(format!(
+                    "{id}: reported p95 {p95:.6} does not match samples {derived_p95:.6}"
+                ));
+            }
+            if !reported_median.is_finite() || (derived_median - reported_median).abs() > 0.000_001
+            {
+                failures.push(format!(
+                    "{id}: reported median does not match samples {derived_median:.6}"
+                ));
+            }
+        }
+        if let Some(scenario) = warm_loop_scenarios()
+            .iter()
+            .find(|scenario| scenario.id == id)
+        {
+            let expected = warm_loop_display_command(scenario.kind);
+            if row.get("command").and_then(Value::as_str) != Some(expected) {
+                failures.push(format!("{id}: command does not match `{expected}`"));
+            }
+        }
+        if p95 > *budget {
+            failures.push(format!(
+                "{id}: p95 {p95:.3} ms exceeds budget {budget:.3} ms"
+            ));
+        }
+    }
+    Ok(failures)
+}
+
+fn write_pretty_json(path: &Path, value: &Value) -> Result<()> {
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent)?;
+    }
+    fs::write(path, format!("{}\n", serde_json::to_string_pretty(value)?))?;
+    Ok(())
+}
+
+fn append_json_line(path: &Path, value: &Value) -> Result<()> {
+    use std::io::Write;
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent)?;
+    }
+    let mut file = fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(path)?;
+    writeln!(file, "{}", serde_json::to_string(value)?)?;
+    Ok(())
 }
 
 #[derive(Default)]
@@ -2315,6 +2880,8 @@ const NATIVE_PERFORMANCE_ROW_FAMILIES: &[&str] = &[
 ];
 
 fn native_performance_failures(report: &Value) -> Result<Vec<String>> {
+    const EPSILON_MS: f64 = 0.000_001;
+
     if report.get("schema_version").and_then(Value::as_str) != Some("assura.performance.v1") {
         return Ok(vec![
             "schema_version must be assura.performance.v1".to_string()
@@ -2393,6 +2960,7 @@ fn native_performance_failures(report: &Value) -> Result<Vec<String>> {
         {
             failures.push(format!("{label}: missing median_runtime_ms"));
         }
+        let median_runtime_ms = row.get("median_runtime_ms").and_then(Value::as_f64);
         let samples = row
             .pointer("/distribution/samples")
             .and_then(Value::as_u64)
@@ -2408,6 +2976,125 @@ fn native_performance_failures(report: &Value) -> Result<Vec<String>> {
             .is_some_and(|met| !met)
         {
             failures.push(format!("{label}: latency threshold was not met"));
+        }
+        let native_regression_status = row
+            .get("native_regression_status")
+            .and_then(Value::as_str)
+            .unwrap_or("<missing>");
+        let native_regression_threshold_ms = row
+            .get("native_regression_threshold_ms")
+            .and_then(Value::as_f64);
+        let native_regression_baseline_median_ms = row
+            .get("native_regression_baseline_median_ms")
+            .and_then(Value::as_f64);
+        let native_regression_baseline_report_count = row
+            .get("native_regression_baseline_report_count")
+            .and_then(Value::as_u64);
+        let native_regression_baseline_sample_count = row
+            .get("native_regression_baseline_sample_count")
+            .and_then(Value::as_u64);
+        let native_regression_delta_ms = row
+            .get("native_regression_delta_ms")
+            .and_then(Value::as_f64);
+        if native_regression_baseline_report_count == Some(0) {
+            failures.push(format!(
+                "{label}: native_regression_baseline_report_count must be greater than zero when present"
+            ));
+        }
+        if native_regression_baseline_sample_count == Some(0) {
+            failures.push(format!(
+                "{label}: native_regression_baseline_sample_count must be greater than zero when present"
+            ));
+        }
+        let baseline_scope_note = match (
+            native_regression_baseline_report_count,
+            native_regression_baseline_sample_count,
+        ) {
+            (Some(report_count), Some(sample_count)) => {
+                format!(" (baseline reports={report_count}, samples={sample_count})")
+            }
+            (Some(report_count), None) => format!(" (baseline reports={report_count})"),
+            (None, Some(sample_count)) => format!(" (baseline samples={sample_count})"),
+            (None, None) => String::new(),
+        };
+        match native_regression_status {
+            "within-calibrated-baseline" | "within-provisional-baseline" => {
+                if native_regression_threshold_ms.is_none() {
+                    failures.push(format!("{label}: missing native_regression_threshold_ms"));
+                }
+                if native_regression_baseline_median_ms.is_none() {
+                    failures.push(format!(
+                        "{label}: missing native_regression_baseline_median_ms"
+                    ));
+                }
+                if native_regression_delta_ms.is_none() {
+                    failures.push(format!("{label}: missing native_regression_delta_ms"));
+                }
+                if let (Some(median_ms), Some(threshold_ms)) =
+                    (median_runtime_ms, native_regression_threshold_ms)
+                {
+                    if median_ms > threshold_ms + EPSILON_MS {
+                        failures.push(format!(
+                            "{label}: native_regression_status {native_regression_status} disagrees with median_runtime_ms ({median_ms}) > native_regression_threshold_ms ({threshold_ms})"
+                        ));
+                    }
+                }
+                if let (Some(median_ms), Some(baseline_ms), Some(delta_ms)) = (
+                    median_runtime_ms,
+                    native_regression_baseline_median_ms,
+                    native_regression_delta_ms,
+                ) {
+                    let expected_delta_ms = median_ms - baseline_ms;
+                    if (expected_delta_ms - delta_ms).abs() > EPSILON_MS {
+                        failures.push(format!(
+                            "{label}: native_regression_delta_ms ({delta_ms}) does not match median_runtime_ms - native_regression_baseline_median_ms ({expected_delta_ms})"
+                        ));
+                    }
+                }
+            }
+            "regressed-vs-calibrated-baseline" | "regressed-vs-provisional-baseline" => {
+                if native_regression_threshold_ms.is_none() {
+                    failures.push(format!("{label}: missing native_regression_threshold_ms"));
+                }
+                if native_regression_baseline_median_ms.is_none() {
+                    failures.push(format!(
+                        "{label}: missing native_regression_baseline_median_ms"
+                    ));
+                }
+                if native_regression_delta_ms.is_none() {
+                    failures.push(format!("{label}: missing native_regression_delta_ms"));
+                }
+                if let (Some(median_ms), Some(threshold_ms)) =
+                    (median_runtime_ms, native_regression_threshold_ms)
+                {
+                    if median_ms <= threshold_ms + EPSILON_MS {
+                        failures.push(format!(
+                            "{label}: native_regression_status {native_regression_status} disagrees with median_runtime_ms ({median_ms}) <= native_regression_threshold_ms ({threshold_ms})"
+                        ));
+                    }
+                }
+                let baseline_kind =
+                    if native_regression_status == "regressed-vs-provisional-baseline" {
+                        "provisional checked baseline"
+                    } else {
+                        "checked baseline"
+                    };
+                failures.push(format!(
+                    "{label}: native regression gate failed versus {baseline_kind}{baseline_scope_note}"
+                ));
+            }
+            "baseline-missing" => {
+                failures.push(format!("{label}: missing checked native baseline report"))
+            }
+            "baseline-row-missing" => failures.push(format!(
+                "{label}: missing matching row in checked native baseline"
+            )),
+            "baseline-row-unusable" => {
+                failures.push(format!("{label}: checked native baseline row was unusable"))
+            }
+            other => failures.push(format!(
+                "{label}: unsupported native_regression_status {other}"
+            )),
         }
     }
 
@@ -2562,9 +3249,11 @@ fn collect_files_inner(path: &Path, suffix: Option<&str>, files: &mut Vec<PathBu
 
 fn check_trellis_state(checks: &mut Checks) {
     let allowed_task_statuses = ["planning", "in_progress"];
-    for task_file in direct_task_files() {
-        let Ok(task) = serde_json::from_str::<Value>(&read(&task_file)) else {
-            checks.add(format!("{}: task JSON is invalid", rel(&task_file)));
+    let task_files = direct_task_files();
+    let mut active_task_goals = BTreeSet::new();
+    for task_file in &task_files {
+        let Ok(task) = serde_json::from_str::<Value>(&read(task_file)) else {
+            checks.add(format!("{}: task JSON is invalid", rel(task_file)));
             continue;
         };
         let status = task.get("status").and_then(Value::as_str).unwrap_or("");
@@ -2572,9 +3261,28 @@ fn check_trellis_state(checks: &mut Checks) {
             allowed_task_statuses.contains(&status),
             format!(
                 "{}: active task status {status:?} should be archived or in progress/planning",
-                rel(&task_file)
+                rel(task_file)
             ),
         );
+        if allowed_task_statuses.contains(&status) {
+            if let Some(goal_path) = task.pointer("/meta/goal_path").and_then(Value::as_str) {
+                checks.require(
+                    goal_path.starts_with("docs/goals/") && goal_path.ends_with(".md"),
+                    format!(
+                        "{}: meta.goal_path must reference a Markdown goal under docs/goals",
+                        rel(task_file)
+                    ),
+                );
+                checks.require(
+                    exists(goal_path),
+                    format!(
+                        "{}: meta.goal_path {goal_path} does not exist",
+                        rel(task_file)
+                    ),
+                );
+                active_task_goals.insert(goal_path.to_string());
+            }
+        }
     }
 
     let mut goal_statuses = BTreeMap::new();
@@ -2643,9 +3351,13 @@ fn check_trellis_state(checks: &mut Checks) {
             }
         }
         for (file_name, status) in &goal_statuses {
-            if status == "active" && !allowed_active.contains(file_name) {
+            let goal_path = format!("docs/goals/{file_name}");
+            if status == "active"
+                && !allowed_active.contains(file_name)
+                && !active_task_goals.contains(&goal_path)
+            {
                 checks.add(format!(
-                    "docs/goals/{file_name}: active status is not listed as active in the Phase 01 ledger"
+                    "{goal_path}: active status is not referenced by a live Trellis task"
                 ));
             }
         }
@@ -3227,6 +3939,7 @@ fn check_command_surface_support(checks: &mut Checks) {
     let compatibility_text = read("docs/compatibility-and-surface.md");
     let args_text = [
         read("src/cli/args.rs"),
+        read("src/cli/agent_args.rs"),
         read("src/cli/content_args.rs"),
         read("src/cli/daemon.rs"),
     ]
@@ -3300,7 +4013,7 @@ fn check_cli_command_inventory(checks: &mut Checks, args_text: &str) {
         checks.require(
             actual_variants == expected_variants,
             format!(
-                "src/cli/args.rs: {enum_name} variants {actual_variants:?} do not match support matrix inventory {expected_variants:?}"
+                "CLI argument enums: {enum_name} variants {actual_variants:?} do not match support matrix inventory {expected_variants:?}"
             ),
         );
     }
@@ -3339,10 +4052,7 @@ fn enum_variant_names<'a>(text: &'a str, enum_name: &str) -> BTreeSet<&'a str> {
 }
 
 fn check_public_support_claim_consistency(checks: &mut Checks) {
-    let experimental_surfaces = [
-        ("assura info", "experimental diagnostic"),
-        ("assura watch", "experimental"),
-    ];
+    let experimental_surfaces = [("assura info", "experimental diagnostic")];
     for path in public_claim_files() {
         let text = read(&path);
         for (line_index, line) in text.lines().enumerate() {
@@ -3492,10 +4202,10 @@ fn check_post_beta_release_hardening(checks: &mut Checks) {
         );
     }
     for marker in [
-        "\"id\": \"daemon-mode\",\n      \"label\": \"Daemon mode\",\n      \"status\": \"experimental\",\n      \"first_release\": \"v0.3.0\"",
+        "\"id\": \"daemon-mode\",\n      \"label\": \"Daemon mode\",\n      \"status\": \"supported\",\n      \"first_release\": \"unreleased\"",
         "\"id\": \"vscode-extension\",\n      \"label\": \"VS Code beta local package\",\n      \"status\": \"supported\",\n      \"first_release\": \"v0.3.0\"",
         "\"id\": \"extension-api-boundaries\",\n      \"label\": \"Extension API boundaries\",\n      \"status\": \"supported\",\n      \"first_release\": \"v0.3.0\"",
-        "\"id\": \"agent-integration-lifecycle\",\n      \"label\": \"Agent integration lifecycle\",\n      \"status\": \"experimental\",\n      \"first_release\": \"v0.3.0\"",
+        "\"id\": \"agent-integration-lifecycle\",\n      \"label\": \"Agent integration lifecycle\",\n      \"status\": \"supported\",\n      \"first_release\": \"unreleased\"",
     ] {
         checks.require(
             release_surfaces.contains(marker),
@@ -3519,12 +4229,12 @@ fn check_post_beta_release_hardening(checks: &mut Checks) {
         ".trellis/spec/assura/roadmap.md: support hardening is not routed",
     );
     for marker in [
-        "Experimental daemon surface",
+        "Supported next-release daemon surface",
         "assura daemon status",
         "assura daemon check-path",
-        "Experimental local agent integration lifecycle",
+        "Supported next-release managed agent integration lifecycle",
         "assura agent integration",
-        "Codex, OpenCode, Claude, and Pi",
+        "Assura-owned project-local Codex",
         "Supported beta local editor package",
         "integrations/editors/vscode",
         "pnpm --dir integrations/editors/vscode test",
@@ -3595,6 +4305,16 @@ const CLI_COMMAND_VARIANT_ROWS: &[CliCommandVariantRow] = &[
     },
     CliCommandVariantRow {
         enum_name: "Commands",
+        variant_name: "Review",
+        command_surface_names: &["assura review"],
+    },
+    CliCommandVariantRow {
+        enum_name: "Commands",
+        variant_name: "Cache",
+        command_surface_names: &["assura cache"],
+    },
+    CliCommandVariantRow {
+        enum_name: "Commands",
         variant_name: "Explain",
         command_surface_names: &["assura explain"],
     },
@@ -3602,6 +4322,11 @@ const CLI_COMMAND_VARIANT_ROWS: &[CliCommandVariantRow] = &[
         enum_name: "Commands",
         variant_name: "Init",
         command_surface_names: &["assura init"],
+    },
+    CliCommandVariantRow {
+        enum_name: "Commands",
+        variant_name: "Config",
+        command_surface_names: &["assura config"],
     },
     CliCommandVariantRow {
         enum_name: "Commands",
@@ -3687,6 +4412,101 @@ const CLI_COMMAND_VARIANT_ROWS: &[CliCommandVariantRow] = &[
         enum_name: "FixCommands",
         variant_name: "Markdown",
         command_surface_names: &["assura fix markdown"],
+    },
+    CliCommandVariantRow {
+        enum_name: "AgentCommands",
+        variant_name: "Onboard",
+        command_surface_names: &["assura agent onboard"],
+    },
+    CliCommandVariantRow {
+        enum_name: "AgentCommands",
+        variant_name: "Context",
+        command_surface_names: &["assura agent"],
+    },
+    CliCommandVariantRow {
+        enum_name: "AgentCommands",
+        variant_name: "Diagnostics",
+        command_surface_names: &["assura agent"],
+    },
+    CliCommandVariantRow {
+        enum_name: "AgentCommands",
+        variant_name: "ContextPack",
+        command_surface_names: &["assura agent"],
+    },
+    CliCommandVariantRow {
+        enum_name: "AgentCommands",
+        variant_name: "Show",
+        command_surface_names: &["assura agent"],
+    },
+    CliCommandVariantRow {
+        enum_name: "AgentCommands",
+        variant_name: "Search",
+        command_surface_names: &["assura agent"],
+    },
+    CliCommandVariantRow {
+        enum_name: "AgentCommands",
+        variant_name: "MissingRelations",
+        command_surface_names: &["assura agent"],
+    },
+    CliCommandVariantRow {
+        enum_name: "AgentCommands",
+        variant_name: "Expand",
+        command_surface_names: &["assura agent"],
+    },
+    CliCommandVariantRow {
+        enum_name: "AgentCommands",
+        variant_name: "SafeFixes",
+        command_surface_names: &["assura agent"],
+    },
+    CliCommandVariantRow {
+        enum_name: "AgentCommands",
+        variant_name: "Nudge",
+        command_surface_names: &["assura agent nudge"],
+    },
+    CliCommandVariantRow {
+        enum_name: "AgentCommands",
+        variant_name: "Integration",
+        command_surface_names: &["assura agent integration"],
+    },
+    CliCommandVariantRow {
+        enum_name: "AgentCommands",
+        variant_name: "Session",
+        command_surface_names: &["assura agent"],
+    },
+    CliCommandVariantRow {
+        enum_name: "AgentIntegrationCommands",
+        variant_name: "Install",
+        command_surface_names: &["assura agent integration install"],
+    },
+    CliCommandVariantRow {
+        enum_name: "AgentIntegrationCommands",
+        variant_name: "Activate",
+        command_surface_names: &["assura agent integration activate"],
+    },
+    CliCommandVariantRow {
+        enum_name: "AgentIntegrationCommands",
+        variant_name: "Update",
+        command_surface_names: &["assura agent integration update"],
+    },
+    CliCommandVariantRow {
+        enum_name: "AgentIntegrationCommands",
+        variant_name: "Deactivate",
+        command_surface_names: &["assura agent integration deactivate"],
+    },
+    CliCommandVariantRow {
+        enum_name: "AgentIntegrationCommands",
+        variant_name: "Remove",
+        command_surface_names: &["assura agent integration remove"],
+    },
+    CliCommandVariantRow {
+        enum_name: "AgentIntegrationCommands",
+        variant_name: "Status",
+        command_surface_names: &["assura agent integration status"],
+    },
+    CliCommandVariantRow {
+        enum_name: "AgentIntegrationCommands",
+        variant_name: "Doctor",
+        command_surface_names: &["assura agent integration doctor"],
     },
     CliCommandVariantRow {
         enum_name: "ContentCommands",
@@ -3919,6 +4739,20 @@ const SUPPORT_MATRIX_ROWS: &[SupportMatrixRow] = &[
         exception_markers: &[],
     },
     SupportMatrixRow {
+        surface: "assura config add-recipe",
+        command_surface_names: &["assura config", "assura config add-recipe"],
+        support_policy_markers: &["`assura config add-recipe`"],
+        compatibility_markers: &[
+            "| `assura config add-recipe` | Supported project-owned policy authoring |",
+        ],
+        source_markers: &["Commands::Config", "ConfigCommands::AddRecipe"],
+        test_markers: &[
+            "tests/cli_command_surface_tests.rs",
+            "config_add_recipe_dry_run_materializes_project_owned_policy",
+        ],
+        exception_markers: &[],
+    },
+    SupportMatrixRow {
         surface: "assura status --format json",
         command_surface_names: &["assura status"],
         support_policy_markers: &["`assura status --format json`"],
@@ -3932,10 +4766,35 @@ const SUPPORT_MATRIX_ROWS: &[SupportMatrixRow] = &[
         exception_markers: &[],
     },
     SupportMatrixRow {
+        surface: "assura review",
+        command_surface_names: &["assura review"],
+        support_policy_markers: &["`assura review`"],
+        compatibility_markers: &["| `assura review` | Supported compact project review |"],
+        source_markers: &["Commands::Review", "project_review_command"],
+        test_markers: &[
+            "tests/project_review_cli.rs",
+            "review_clean_repo_reports_inactive_guidance_without_blocking",
+        ],
+        exception_markers: &[],
+    },
+    SupportMatrixRow {
+        surface: "assura cache",
+        command_surface_names: &["assura cache", "assura cache status", "assura cache clean"],
+        support_policy_markers: &["`assura check --cache`, `assura cache status`, and `assura cache clean`"],
+        compatibility_markers: &["| `assura cache status|clean` | Supported next-release correctness-checked cache |"],
+        source_markers: &["Commands::Cache", "cache_command"],
+        test_markers: &[
+            "tests/cli_command_surface_tests.rs",
+            "cache_status_and_clean_report_observable_namespaces",
+            "cache_clean_refuses_an_unrecognized_or_project_root",
+        ],
+        exception_markers: &[],
+    },
+    SupportMatrixRow {
         surface: "assura doctor",
         command_surface_names: &["assura doctor"],
         support_policy_markers: &["`assura doctor`"],
-        compatibility_markers: &["| `assura doctor` | Experimental local project doctor |"],
+        compatibility_markers: &["| `assura doctor` | Supported next-release project doctor |"],
         source_markers: &["Commands::Doctor", "doctor_command"],
         test_markers: &[
             "tests/doctor_explain_cli.rs",
@@ -3948,7 +4807,7 @@ const SUPPORT_MATRIX_ROWS: &[SupportMatrixRow] = &[
         command_surface_names: &["assura explain"],
         support_policy_markers: &["`assura explain`"],
         compatibility_markers: &[
-            "| `assura explain` | Experimental local path explanation |",
+            "| `assura explain` | Supported local path explanation |",
         ],
         source_markers: &["Commands::Explain", "explain_command"],
         test_markers: &[
@@ -4049,7 +4908,9 @@ const SUPPORT_MATRIX_ROWS: &[SupportMatrixRow] = &[
             "assura agent nudge",
             "assura agent integration",
             "assura agent integration install",
+            "assura agent integration activate",
             "assura agent integration update",
+            "assura agent integration deactivate",
             "assura agent integration remove",
             "assura agent integration status",
             "assura agent integration doctor",
@@ -4058,9 +4919,9 @@ const SUPPORT_MATRIX_ROWS: &[SupportMatrixRow] = &[
         support_policy_markers: &["`assura agent`"],
         compatibility_markers: &[
             "| `assura agent` | Supported local agent project-intelligence surface |",
-            "| `assura agent onboard` | Experimental local agent-ready onboarding surface |",
-            "| `assura agent nudge` | Experimental local agent nudge payload |",
-            "| `assura agent integration` | Experimental local agent integration lifecycle |",
+            "| `assura agent onboard` | Supported local agent-ready onboarding surface |",
+            "| `assura agent nudge` | Supported next-release local agent event payload |",
+            "| `assura agent integration` | Supported next-release managed project-local lifecycle |",
             "| `assura agent session` | Supported local agent session alias |",
         ],
         source_markers: &[
@@ -4146,15 +5007,15 @@ const SUPPORT_MATRIX_ROWS: &[SupportMatrixRow] = &[
             "assura daemon check-path",
             "assura daemon references",
         ],
-        support_policy_markers: &["| `assura daemon` | Experimental local daemon process |"],
+        support_policy_markers: &["| `assura daemon` | Supported next-release local daemon process |"],
         compatibility_markers: &[
-            "| `assura daemon` | Experimental local daemon process |",
-            "| `assura daemon status` | Experimental local daemon status |",
-            "| `assura daemon start` | Experimental local daemon lifecycle |",
-            "| `assura daemon stop` | Experimental local daemon lifecycle |",
-            "| `assura daemon restart` | Experimental local daemon lifecycle |",
-            "| `assura daemon doctor` | Experimental local daemon doctor |",
-            "| `assura daemon logs` | Experimental local daemon logs preview |",
+            "| `assura daemon` | Supported next-release local daemon process |",
+            "| `assura daemon status` | Supported next-release local daemon status |",
+            "| `assura daemon start` | Supported next-release local daemon lifecycle |",
+            "| `assura daemon stop` | Supported next-release local daemon lifecycle |",
+            "| `assura daemon restart` | Supported next-release local daemon lifecycle |",
+            "| `assura daemon doctor` | Supported next-release local daemon doctor |",
+            "| `assura daemon logs` | Supported next-release local daemon logs |",
         ],
         source_markers: &[
             "Commands::Daemon",
@@ -4194,10 +5055,16 @@ const SUPPORT_MATRIX_ROWS: &[SupportMatrixRow] = &[
         surface: "assura watch",
         command_surface_names: &["assura watch"],
         support_policy_markers: &["`assura watch`"],
-        compatibility_markers: &["| `assura watch` | Experimental |"],
+        compatibility_markers: &["| `assura watch` | Supported next-release continuous validation |"],
         source_markers: &["Commands::Watch"],
-        test_markers: &[],
-        exception_markers: &["Experimental"],
+        test_markers: &[
+            "tests/watch_cli.rs",
+            "watch_emits_initial_and_warm_edit_reports",
+            "watch_coalesces_bursts_into_one_full_report",
+            "watch_reloads_changed_configuration_before_reporting",
+            "watch_stops_cleanly_without_runtime_artifacts",
+        ],
+        exception_markers: &[],
     },
     SupportMatrixRow {
         surface: "internal Rust APIs",
@@ -4470,6 +5337,23 @@ const MANIFEST_MATRIX_ROWS: &[ManifestMatrixRow] = &[
         default_run: None,
     },
     ManifestMatrixRow {
+        manifest: "crates/assura-watch-state/Cargo.toml",
+        classification: "internal support",
+        required_package_fields: &[
+            "name",
+            "version",
+            "edition",
+            "description",
+            "license",
+            "rust_version",
+        ],
+        semver_version: true,
+        version_matches_root: true,
+        rust_version_matches_root: true,
+        publish: Some(false),
+        default_run: None,
+    },
+    ManifestMatrixRow {
         manifest: "xtask/Cargo.toml",
         classification: "internal maintenance",
         required_package_fields: &[
@@ -4599,14 +5483,22 @@ fn check_docs_release_performance(checks: &mut Checks) {
         read("docs/release-notes.md").contains(&format!("v{version}")),
         "docs/release-notes.md: release version must match Cargo.toml",
     );
+    let release_candidate_checklist = read("docs/release-candidate-checklist.md");
     checks.require(
-        read("docs/release-candidate-checklist.md").contains(&format!("v{version}")),
-        "docs/release-candidate-checklist.md: tag version must match Cargo.toml",
+        release_candidate_checklist.contains("VERSION=\"x.y.z\"")
+            && !release_candidate_checklist.contains(&format!("git tag -a v{version}")),
+        "docs/release-candidate-checklist.md: tag commands must derive the candidate version instead of copying the current release tag",
+    );
+    let docs_workflow = read(".github/workflows/docs.yml");
+    checks.require(
+        docs_workflow.contains("Verify production claims are in the candidate release")
+            && docs_workflow.contains("cargo xtask website-demo-data --check --released"),
+        ".github/workflows/docs.yml: production website pushes must enforce released marketing claims",
     );
 
     let release_text = read("docs/release-notes.md");
     let compatibility_text = read("docs/compatibility-and-surface.md");
-    let release_checklist_text = read("docs/release-candidate-checklist.md");
+    let release_checklist_text = release_candidate_checklist;
     let release_train_text = read("docs/release-train.md");
     let release_surfaces_text = read("docs/data/release-surfaces.json");
     let code_intelligence_text = read("website/src/content/docs/product/code-intelligence.md");
@@ -4680,6 +5572,13 @@ fn check_docs_release_performance(checks: &mut Checks) {
         release_workflow.contains("target/${{ matrix.archive_name }}.sha256")
             && ci_workflow.contains("target/${{ matrix.archive_name }}.sha256"),
         "release workflows must upload checksum sidecars for every archive",
+    );
+    checks.require(
+        release_workflow.contains("validate-release-contract:")
+            && release_workflow.contains("cargo xtask website-demo-data --check --released")
+            && release_workflow.contains("cargo xtask release-readiness --format json")
+            && release_workflow.contains("needs: validate-release-contract"),
+        "release workflow must block asset builds on strict claim and readiness gates",
     );
     checks.require(
         release_text.contains("`.sha256` checksum file next to every archive")
@@ -4806,8 +5705,9 @@ fn check_docs_release_performance(checks: &mut Checks) {
             .get("source_worktree_dirty")
             .and_then(Value::as_bool)
             == Some(false),
-        "performance current.json: source_worktree_dirty must be false",
+        "performance current.json: source_worktree_dirty must be false for the checked in-place report",
     );
+    check_source_provenance_contract(checks, &bench_current, "performance current.json");
     checks.require(
         bench_current
             .pointer("/claim_summary/two_x_claim_verdict")
@@ -4894,7 +5794,7 @@ fn check_docs_release_performance(checks: &mut Checks) {
                 "performance:\n    name: Performance Report",
                 "- name: Generate comparison report",
                 "--output target/performance/ls-lint-comparison.json",
-                "--iterations 5",
+                "--iterations 16",
                 "- name: Enforce no-slower gate",
                 "run: cargo xtask performance-no-slower target/performance/ls-lint-comparison.json",
                 "- name: Summarize performance",
@@ -4903,7 +5803,7 @@ fn check_docs_release_performance(checks: &mut Checks) {
                 "if: always()",
             ],
         ),
-        ".github/workflows/ci.yml: Performance Report job must generate a 5-iteration report, enforce cargo xtask performance-no-slower on that report, and keep summary/artifact steps on failure",
+        ".github/workflows/ci.yml: Performance Report job must generate a 16-iteration report, enforce cargo xtask performance-no-slower on that report, and keep summary/artifact steps on failure",
     );
     checks.require(
         text_contains_ordered(
@@ -5077,12 +5977,13 @@ fn check_native_performance_artifacts(
         bench_native.get("schema_version").and_then(Value::as_str) == Some("assura.performance.v1"),
         "native performance current.json: unexpected schema_version",
     );
+    check_source_provenance_contract(checks, &bench_native, "native performance current.json");
     checks.require(
         bench_native
             .get("source_worktree_dirty")
             .and_then(Value::as_bool)
-            == Some(false),
-        "native performance current.json: source_worktree_dirty must be false",
+            == Some(true),
+        "native performance current.json: source_worktree_dirty must describe the dirty source lane behind the materialized snapshot",
     );
     checks.require(
         bench_native.get("ls_lint_package").and_then(Value::as_str) == Some("not-applicable"),
@@ -5314,8 +6215,11 @@ fn check_agent_onboarding_website(checks: &mut Checks) {
         "\"blocking\": true",
         "\"action\": \"Ask remaining specialization questions\"",
         "\"affected_paths\": [\".assura/onboarding/questions.md\"]",
-        "current experimental local command",
-        "experimental, reviewable local integration bundle",
+        "The local command is:",
+        "reviewable bundle and explicitly activate its project-local host",
+        "\"rule_recommendations\"",
+        "\"local_rule\": \"$agent-entrypoint\"",
+        "`not-applied` when the selected config lacks them",
         "assura agent onboard . --agent auto --format json",
         "assura agent onboard . --content-template agent-project --format json",
         "assura agent onboard . --content-template document-project --format json",
@@ -5399,6 +6303,48 @@ fn command_option_value<'a>(command_line: &'a str, option: &str) -> Option<&'a s
         }
     }
     None
+}
+
+fn check_source_provenance_contract(checks: &mut Checks, report: &Value, label: &str) {
+    let source_commit_sha = report.get("source_commit_sha").and_then(Value::as_str);
+    let source_branch = report.get("source_branch").and_then(Value::as_str);
+    let source_patch_id = report.get("source_patch_id").and_then(Value::as_str);
+    let present_fields = [source_commit_sha, source_branch, source_patch_id]
+        .into_iter()
+        .filter(Option::is_some)
+        .count();
+
+    checks.require(
+        present_fields == 0 || present_fields == 3,
+        format!("{label}: source provenance fields must be all present or all absent"),
+    );
+    if present_fields == 3 {
+        checks.require(
+            source_commit_sha.is_some_and(is_full_hex_sha),
+            format!("{label}: source_commit_sha must be a full hex SHA"),
+        );
+        checks.require(
+            source_branch.is_some_and(|value| !value.is_empty()),
+            format!("{label}: source_branch must be non-empty"),
+        );
+        checks.require(
+            source_patch_id.is_some_and(is_full_hex_sha),
+            format!("{label}: source_patch_id must be a full hex SHA"),
+        );
+        checks.require(
+            report
+                .get("source_worktree_dirty")
+                .and_then(Value::as_bool)
+                .is_some(),
+            format!(
+                "{label}: source_worktree_dirty must be a bool when source provenance is present"
+            ),
+        );
+    }
+}
+
+fn is_full_hex_sha(value: &str) -> bool {
+    value.len() == 40 && value.bytes().all(|byte| byte.is_ascii_hexdigit())
 }
 
 fn text_contains_option_value(text: &str, option: &str, value: &str) -> bool {
@@ -5915,12 +6861,93 @@ mod tests {
                     "expected_assura_exit_status": expected_assura_exit_status,
                     "status": "pass",
                     "median_runtime_ms": 1.0,
+                    "native_regression_baseline_median_ms": 1.0,
+                    "native_regression_threshold_ms": 1.0,
+                    "native_regression_delta_ms": 0.0,
+                    "native_regression_status": "within-calibrated-baseline",
                     "distribution": {
                         "samples": 1
                     }
                 }));
             }
         }
+        let report = json!({
+            "schema_version": "assura.performance.v1",
+            "ls_lint_package": "not-applicable",
+            "command_line": "assura performance-report --suite native",
+            "results": rows
+        });
+
+        let failures = native_performance_failures(&report).expect("report is valid");
+
+        assert!(failures.is_empty());
+    }
+
+    #[test]
+    fn native_performance_gate_rejects_inconsistent_regression_numbers() {
+        let report = json!({
+            "schema_version": "assura.performance.v1",
+            "ls_lint_package": "not-applicable",
+            "command_line": "assura performance-report --suite native",
+            "results": [
+                {
+                    "fixture_cohort": "assura-native",
+                    "fixture_id": "native_small",
+                    "fixture_acceptance": "assura-native-diagnostic",
+                    "row_family": "native:content-check-cli",
+                    "expected_assura_exit_status": 0,
+                    "status": "pass",
+                    "median_runtime_ms": 2.0,
+                    "native_regression_baseline_median_ms": 1.0,
+                    "native_regression_threshold_ms": 1.5,
+                    "native_regression_delta_ms": 1.0,
+                    "native_regression_status": "within-calibrated-baseline",
+                    "distribution": {
+                        "samples": 1
+                    }
+                }
+            ]
+        });
+
+        let failures = native_performance_failures(&report).expect("report is valid");
+
+        assert!(failures.iter().any(|failure| failure
+            .contains("native_regression_status within-calibrated-baseline disagrees")));
+    }
+
+    #[test]
+    fn native_performance_gate_accepts_provisional_baseline_status() {
+        let mut rows = Vec::new();
+        for fixture_id in NATIVE_PERFORMANCE_FIXTURES {
+            for row_family in NATIVE_PERFORMANCE_ROW_FAMILIES {
+                let expected_assura_exit_status =
+                    expected_native_assura_exit_status(fixture_id, row_family);
+                rows.push(json!({
+                    "fixture_cohort": "assura-native",
+                    "fixture_id": fixture_id,
+                    "fixture_acceptance": "assura-native-diagnostic",
+                    "row_family": row_family,
+                    "expected_assura_exit_status": expected_assura_exit_status,
+                    "status": "pass",
+                    "median_runtime_ms": 1.0,
+                    "native_regression_baseline_median_ms": 1.0,
+                    "native_regression_baseline_report_count": 2,
+                    "native_regression_baseline_sample_count": 10,
+                    "native_regression_threshold_ms": 1.0,
+                    "native_regression_delta_ms": 0.0,
+                    "native_regression_status": "within-calibrated-baseline",
+                    "distribution": {
+                        "samples": 1
+                    }
+                }));
+            }
+        }
+        rows[0]["median_runtime_ms"] = json!(1.2);
+        rows[0]["native_regression_baseline_report_count"] = json!(1);
+        rows[0]["native_regression_baseline_sample_count"] = json!(5);
+        rows[0]["native_regression_threshold_ms"] = json!(1.25);
+        rows[0]["native_regression_delta_ms"] = json!(0.2);
+        rows[0]["native_regression_status"] = json!("within-provisional-baseline");
         let report = json!({
             "schema_version": "assura.performance.v1",
             "ls_lint_package": "not-applicable",
@@ -6167,7 +7194,16 @@ mod tests {
             release_notes_version("# Assura v0.2.0 Current Branch Release Notes"),
             Some("0.2.0".to_string())
         );
+        assert_eq!(
+            release_notes_version("# Assura v0.4.0-rc.1 Release Notes"),
+            Some("0.4.0-rc.1".to_string())
+        );
         assert_eq!(release_notes_version("# No version here"), None);
+        assert_eq!(
+            release_tag_version("v0.4.0-rc.1"),
+            semver::Version::parse("0.4.0-rc.1").ok()
+        );
+        assert_eq!(release_tag_version("0.4.0"), None);
 
         let report = release_surfaces_report("docs/data/release-surfaces.json", Some("v0.2.0"));
         assert_eq!(
@@ -6240,7 +7276,7 @@ mod tests {
     }
 
     #[test]
-    fn release_readiness_report_fails_when_latest_tag_has_unreleased_surfaces() {
+    fn release_readiness_report_fails_for_any_candidate_with_unreleased_surfaces() {
         let report = release_readiness_report_from_inputs(
             "0.2.0",
             "0.2.0",
@@ -6258,7 +7294,7 @@ mod tests {
                     "detail_path": "docs/release-notes.md"
                 }]
             }),
-            serde_json::json!({ "tagName": "v0.2.0" }),
+            serde_json::json!({ "tagName": "v0.1.0" }),
         );
         assert_eq!(report.get("ready").and_then(Value::as_bool), Some(false));
         assert_eq!(report.get("verdict").and_then(Value::as_str), Some("fail"));
@@ -6267,7 +7303,7 @@ mod tests {
             .and_then(Value::as_array)
             .is_some_and(|reasons| reasons.iter().any(|reason| reason
                 .as_str()
-                .is_some_and(|reason| reason.contains("already the latest GitHub release")))));
+                .is_some_and(|reason| reason.contains("cannot publish")))));
     }
 
     #[test]
@@ -6332,10 +7368,109 @@ mod tests {
         let _ = fs::remove_file(path);
     }
 
+    #[test]
+    fn release_surfaces_report_rejects_non_supported_marketing_claims() {
+        let path = env::temp_dir().join(format!(
+            "assura-release-surfaces-marketing-{}.json",
+            std::process::id()
+        ));
+        fs::write(
+            &path,
+            r#"{
+              "schema_version": "assura.release-surfaces.v1",
+              "surfaces": [
+                {
+                  "id": "experimental-homepage-claim",
+                  "status": "experimental",
+                  "first_release": "v0.2.0",
+                  "detail_path": "docs/release-notes.md",
+                  "marketing_claim": true
+                }
+              ]
+            }"#,
+        )
+        .expect("write release surface fixture");
+        let report =
+            release_surfaces_report(path.to_str().expect("utf-8 temp path"), Some("v0.3.0"));
+        let error = report
+            .get("error")
+            .and_then(Value::as_str)
+            .expect("surface validation error");
+        assert!(error.contains("marketing claims must be supported"));
+        let _ = fs::remove_file(path);
+    }
+
+    #[test]
+    fn warm_loop_gate_checks_every_budget_row() {
+        let budgets = BTreeMap::from([
+            ("fast".to_string(), 10.0),
+            ("slow".to_string(), 20.0),
+            ("missing".to_string(), 30.0),
+        ]);
+        let report = json!({
+            "schema_version": "assura.warm-loop-performance.v1",
+            "rows": [
+                {"id": "fast", "p95_ms": 9.5, "median_ms": 9.5, "iterations": WARM_LOOP_MIN_ITERATIONS, "samples_ms": vec![9.5; WARM_LOOP_MIN_ITERATIONS]},
+                {"id": "slow", "p95_ms": 20.5, "median_ms": 20.5, "iterations": WARM_LOOP_MIN_ITERATIONS, "samples_ms": vec![20.5; WARM_LOOP_MIN_ITERATIONS]}
+            ]
+        });
+
+        let failures = warm_loop_regression_failures(&report, &budgets).unwrap();
+
+        assert_eq!(failures.len(), 3);
+        assert!(failures.iter().any(|failure| failure.contains("row count")));
+        assert!(failures.iter().any(|failure| failure.contains("slow: p95")));
+        assert!(failures
+            .iter()
+            .any(|failure| failure == "missing: missing measured row"));
+    }
+
+    #[test]
+    fn warm_loop_gate_rejects_missing_or_inconsistent_samples() {
+        let budgets = BTreeMap::from([("no-change-warm-review".to_string(), 10.0)]);
+        let report = json!({
+            "schema_version": "assura.warm-loop-performance.v1",
+            "rows": [{
+                "id": "no-change-warm-review",
+                "command": warm_loop_display_command(WarmLoopScenarioKind::NoChangeReview),
+                "iterations": WARM_LOOP_MIN_ITERATIONS,
+                "median_ms": 1.0,
+                "p95_ms": 1.0,
+                "samples_ms": []
+            }]
+        });
+
+        let failures = warm_loop_regression_failures(&report, &budgets).unwrap();
+
+        assert!(failures
+            .iter()
+            .any(|failure| failure.contains("sample count 0")));
+    }
+
+    #[test]
+    fn warm_loop_scenarios_match_the_versioned_product_budget_lane() {
+        let ids = warm_loop_scenarios()
+            .iter()
+            .map(|scenario| scenario.id)
+            .collect::<Vec<_>>();
+
+        assert_eq!(
+            ids,
+            vec![
+                "no-change-warm-review",
+                "one-file-change",
+                "directory-create-delete",
+                "config-change",
+                "agent-nudge"
+            ]
+        );
+    }
+
     fn release_checklist_fixture() -> &'static str {
         "cargo fmt --all -- --check\n\
          cargo test --all-targets --quiet\n\
          cargo clippy --all-targets --all-features -- -D warnings\n\
+         cargo xtask website-demo-data --check --released\n\
          cargo xtask release-readiness --format json\n\
          cargo xtask release-smoke\n\
          cargo xtask release-live"

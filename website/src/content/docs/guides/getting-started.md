@@ -32,7 +32,7 @@ checked capabilities from choices that still need user answers.
    From your project root:
 
    ```bash
-   assura init
+   assura init --recipe agentic-core --recipe structure-health
    ```
 
    `init` creates `.assura/config.yml` and refuses to overwrite an existing
@@ -44,14 +44,20 @@ checked capabilities from choices that still need user answers.
    you want to keep:
 
    ```yaml
+   rules:
+     closed-entry:
+       exists: 0
+     closed:
+       ./*/: $closed-entry
+       ./*: $closed-entry
+
    structure:
-     ./:
-       extra: false
-       README.md: exists:1
-       Cargo.toml: exists:1
-       src/: exists:1
-       "*.lock": exists:0-1
-     src/:
+     ./: $closed
+     README.md: exists:1
+     Cargo.toml: exists:1
+     src/: exists:1
+     ./*.lock: exists:0-1
+     ./**/:
        .rs: snake_case
    exclude:
      - "target/**"
@@ -59,7 +65,7 @@ checked capabilities from choices that still need user answers.
 
    Use `exists:1` for required direct children, `exists:0-1` for optional
    singletons, extension keys such as `.rs` for direct file naming, and
-   `extra: false` when unexpected root files should fail the check.
+   a project-owned `$closed` rule when unexpected direct children should fail.
 
 4. **Run validation**
 

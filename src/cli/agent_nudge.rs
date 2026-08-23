@@ -1,11 +1,16 @@
 //! Bounded event-aware nudges for local coding agents.
 
+#[path = "agent_nudge_cooldown.rs"]
+mod cooldown;
 #[path = "agent_nudge_helpers.rs"]
 mod helpers;
+#[path = "agent_nudge_log.rs"]
+mod log;
 
 use super::{AgentNudgeEvent, AgentNudgeTarget, ExitCode, OutputFormat};
 use crate::cli::check::{StructureCheckReport, StructureViolation};
 use crate::daemon::{DaemonAffectedReferences, DaemonHealth, LocalDaemonCore};
+use cooldown::CachePolicy;
 use helpers::{
     agent_name, category_for_rule, event_name, event_policy, health_state_name,
     meets_minimum_severity, path_string, performance_sensitive_path, quote_path, severity_static,
@@ -30,6 +35,8 @@ pub struct AgentNudgeOptions {
     pub max_issues: usize,
     /// Maximum repository-reference edges to inspect per changed path.
     pub reference_limit: usize,
+    /// Duration for suppressing identical event messages.
+    pub cooldown_seconds: u64,
     /// Output format.
     pub format: OutputFormat,
 }
@@ -38,6 +45,9 @@ pub struct AgentNudgeOptions {
 pub async fn agent_nudge_command(options: AgentNudgeOptions, config: Option<PathBuf>) -> ExitCode {
     match build_agent_nudge(options, config) {
         Ok(output) => {
+            if let Err(error) = log::maybe_write(&output.project_root, &output.output) {
+                eprintln!("Warning: failed to write Assura nudge log: {error}");
+            }
             println!("{}", output.render());
             ExitCode::Success
         }
@@ -152,6 +162,14 @@ fn build_agent_nudge(
         }
     }
 
+    let cooldown = cooldown::apply(
+        &project_path,
+        event_name(options.event),
+        agent_name(options.agent),
+        &mut nudges,
+        options.cooldown_seconds,
+    );
+    omitted += cooldown.suppressed;
     let affected_paths = unique(
         nudges
             .iter()
@@ -166,6 +184,7 @@ fn build_agent_nudge(
     );
     let should_inject = nudges.iter().any(|nudge| nudge.inject);
     let event = event_name(options.event);
+    let project_root_for_log = health.project_root.clone();
     let output = AgentNudgeOutput {
         schema: "assura.agent-nudge.v1",
         target_agent: agent_name(options.agent),
@@ -173,8 +192,9 @@ fn build_agent_nudge(
         event_policy: event_policy(options.event, !options.changed_paths.is_empty()),
         cache_policy: CachePolicy {
             stable_by_default: true,
-            volatile_fields: Vec::new(),
+            volatile_fields: vec!["cache_policy.cooldown.suppressed"],
             default_detail: "bounded summary; use suggested commands for full diagnostics",
+            cooldown,
         },
         daemon: DaemonNudgeHealth {
             state: health_state_name(health.state),
@@ -205,6 +225,7 @@ fn build_agent_nudge(
     Ok(RenderedNudge {
         output,
         format: options.format,
+        project_root: project_root_for_log,
     })
 }
 
@@ -288,13 +309,6 @@ struct EventPolicy {
     timing: &'static str,
     inject_when: &'static str,
     changed_paths_required: bool,
-}
-
-#[derive(Debug, Serialize)]
-struct CachePolicy {
-    stable_by_default: bool,
-    volatile_fields: Vec<&'static str>,
-    default_detail: &'static str,
 }
 
 #[derive(Debug, Serialize)]
@@ -439,6 +453,7 @@ struct Findings {
 struct RenderedNudge {
     output: AgentNudgeOutput,
     format: OutputFormat,
+    project_root: PathBuf,
 }
 
 impl RenderedNudge {

@@ -38,7 +38,7 @@ fn test_to_structure_nodes() {
         .naming_patterns
         .as_ref()
         .unwrap();
-    assert_eq!(naming_patterns.get("*.rs"), Some(&"snake_case".to_string()));
+    assert_eq!(naming_patterns.get(".rs"), Some(&"snake_case".to_string()));
 }
 
 #[test]
@@ -62,7 +62,7 @@ ls:
         .naming_patterns
         .as_ref()
         .unwrap();
-    assert_eq!(patterns.get("*.rs"), Some(&"snake_case".to_string()));
+    assert_eq!(patterns.get(".rs"), Some(&"snake_case".to_string()));
 }
 
 #[test]
@@ -101,9 +101,9 @@ ls:
         .naming_patterns
         .as_ref()
         .unwrap();
-    assert_eq!(patterns.get("*.js"), Some(&"camelCase".to_string()));
-    assert_eq!(patterns.get("*.ts"), Some(&"kebab-case".to_string()));
-    assert_eq!(patterns.get("*.rs"), Some(&"snake_case".to_string()));
+    assert_eq!(patterns.get(".js"), Some(&"camelCase".to_string()));
+    assert_eq!(patterns.get(".ts"), Some(&"kebab-case".to_string()));
+    assert_eq!(patterns.get(".rs"), Some(&"snake_case".to_string()));
 
     let src = root.children.as_ref().unwrap().get("src").unwrap();
     let src_patterns = src
@@ -113,8 +113,8 @@ ls:
         .naming_patterns
         .as_ref()
         .unwrap();
-    assert_eq!(src_patterns.get("*.js"), None);
-    assert_eq!(src_patterns.get("*.ts"), Some(&"kebab-case".to_string()));
+    assert_eq!(src_patterns.get(".js"), None);
+    assert_eq!(src_patterns.get(".ts"), Some(&"kebab-case".to_string()));
 
     let components = src.children.as_ref().unwrap().get("components").unwrap();
     let component_patterns = components
@@ -124,9 +124,9 @@ ls:
         .naming_patterns
         .as_ref()
         .unwrap();
-    assert_eq!(component_patterns.get("*.tsx"), None);
+    assert_eq!(component_patterns.get(".tsx"), None);
     assert_eq!(
-        component_patterns.get("*.test.tsx"),
+        component_patterns.get(".test.tsx"),
         Some(&"kebab-case".to_string())
     );
 }
@@ -181,7 +181,7 @@ ls:
         Some(&"0".to_string())
     );
     assert_eq!(
-        files.exists.as_ref().unwrap().get("*.ts"),
+        files.exists.as_ref().unwrap().get(".ts"),
         Some(&"1".to_string())
     );
 }

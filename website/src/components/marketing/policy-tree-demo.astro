@@ -1,0 +1,113 @@
+---
+import policyDemo from '../../data/policy-demo.json';
+
+const markers = new Map(policyDemo.markers.map((marker) => [marker.match, marker.id]));
+
+const splitYamlLine = (text: string) => {
+  const content = text.trimStart();
+  const indent = text.slice(0, text.length - content.length);
+  let quote: '"' | "'" | null = null;
+
+  for (let index = 0; index < content.length; index += 1) {
+    const character = content[index];
+    if (quote) {
+      if (character === quote && content[index - 1] !== '\\') quote = null;
+      continue;
+    }
+    if (character === '"' || character === "'") {
+      quote = character;
+      continue;
+    }
+    if (character === ':') {
+      return {
+        indent,
+        key: content.slice(0, index),
+        value: content.slice(index + 1),
+      };
+    }
+  }
+
+  return { indent, key: null, value: content };
+};
+
+const configLines = policyDemo.config.trimEnd().split('\n').map((text) => {
+  const trimmed = text.trim();
+  return {
+    ...splitYamlLine(text),
+    marker: markers.get(trimmed),
+  };
+});
+
+const statusLabel = {
+  observed: 'Observed fixture path',
+  violation: 'Check violation',
+  context: 'Policy scope',
+} as const;
+
+const statusSymbol = {
+  observed: '•',
+  violation: '!',
+  context: '·',
+} as const;
+
+const treeRows = policyDemo.tree.map((row) => ({
+  ...row,
+  status: row.status as keyof typeof statusLabel,
+}));
+---
+
+<div class="policy-tree-demo">
+  <section class="policy-panel" aria-labelledby="policy-config-title">
+    <header>
+      <span>Project contract</span>
+      <h3 id="policy-config-title">.assura/config.yml</h3>
+    </header>
+    <pre><code>{configLines.map((line) => (
+      <span class="config-line"><span class="config-content"><span>{line.indent}</span>{line.key === null ? <span class="config-value">{line.value}</span> : <><span class="config-key">{line.key}</span><span class="config-separator">:</span><span class="config-value">{line.value}</span></>}</span>{line.marker && <i class="rule-marker" aria-label={`Rule ${line.marker}`}>{line.marker}</i>}</span>
+    ))}</code></pre>
+  </section>
+
+  <section class="tree-panel" aria-labelledby="policy-tree-title">
+    <header>
+      <span>Fixture explorer</span>
+      <h3 id="policy-tree-title">Policy, paths, and violations</h3>
+    </header>
+    <ul class="tree-root tree-flat">
+      {treeRows.map((row) => (
+        <li
+          style={`--tree-depth: ${row.depth}`}
+          data-policy-path={'full_path' in row ? row.full_path : row.path}
+          data-policy-status={row.status}
+          data-policy-detail={row.detail}
+        >
+          <div class:list={['tree-row', row.status === 'context' ? 'neutral' : row.status === 'observed' ? 'observed' : 'fail']} title={'message' in row ? row.message : undefined}>
+            <span class="tree-status" aria-label={statusLabel[row.status]}>{statusSymbol[row.status]}</span>
+            <code title={'full_path' in row ? row.full_path : row.path}>{row.path}</code>
+            <small>{'marker' in row && row.marker && <i class="rule-marker">{row.marker}</i>}{row.detail}</small>
+          </div>
+        </li>
+      ))}
+    </ul>
+    <footer>
+      <span><i class="legend-dot observed"></i> observed fixture path</span>
+      <span><i class="legend-dot fail"></i> check violation</span>
+      <span>{policyDemo.summary.files_checked} files · {policyDemo.summary.dirs_checked} dirs</span>
+    </footer>
+    <p class="policy-evidence-note">
+      The tree organizes policy scopes and observed fixture paths. Only red rows
+      are violations emitted by <code>{policyDemo.command}</code>; observed paths
+      are not per-path pass records or a separate CLI format.
+    </p>
+  </section>
+
+  <details class="policy-demo-more">
+    <summary>What the compact example leaves out</summary>
+    <div>
+      <p>
+        The complete policy adds project-local skills, closed-directory boundaries,
+        directory-health limits, optional apps, and generated-output exclusions.
+      </p>
+      <a href="/performance/#monorepo-policy">Open the complete monorepo policy <span aria-hidden="true">→</span></a>
+    </div>
+  </details>
+</div>

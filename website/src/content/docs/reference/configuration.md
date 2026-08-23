@@ -42,7 +42,7 @@ ls: null
 | --- | --- |
 | `structure` | Directory-shaped policy tree used by `assura check`. |
 | `exclude` | Glob-like paths excluded from validation and direct-child counts. |
-| `rules` | Optional reusable authoring fragments referenced from `structure` with `use:`. Rules compile into the normal structure model before validation. |
+| `rules` | Optional reusable authoring fragments referenced from `structure` as `$rule-name`. Rules compile into the normal structure model before validation. |
 | `ls` | Compatibility input used by migration and tests, not the public `assura check` policy surface. Prefer `assura migrate` so LS-Lint rules are converted into `structure`. |
 | `patterns` | Library resolver field from the older config model. It is accepted by the config type but is not the public `assura check` policy surface. Use `structure` instead. |
 
@@ -56,11 +56,10 @@ Simple policy should stay in the tree:
 
 ```yaml
 structure:
-  ./:
-    extra: false
-    README.md: exists:1
-    AGENTS.md: exists:1
-    src/: exists:1
+  README.md: exists:1
+  AGENTS.md: exists:1
+  src/: exists:1
+  ./**/:
     .rs: snake_case
 ```
 
@@ -68,10 +67,13 @@ Concise keys expand to the same internal model documented below:
 
 | Notation | Behavior |
 | --- | --- |
-| `extra: false` | Rejects unrecognized direct files and directories in this scope. |
 | `README.md: exists:1` | Requires exactly one direct file named `README.md`. |
 | `src/: exists:1` | Requires exactly one direct child directory named `src`. |
-| `.rs: snake_case` | Applies `snake_case` naming to direct `*.rs` files. |
+| `./: $rule` | Applies a node rule to the current matched directory. |
+| `./*` | Targets direct child files. |
+| `./*/` | Targets direct child directories. |
+| `./**/` | Matches the current directory and every descendant directory. Nested selectors rebase at each match. |
+| `.rs: snake_case` under `./**/` | Applies `snake_case` to direct Rust files in every matched directory. |
 
 Use a mapping under the same path key when the directive needs more detail:
 
@@ -92,6 +94,73 @@ structure:
             optional: false
 ```
 
+## Concise And Expanded Equivalents
+
+Prefer a scalar directive when one attribute is enough. When the same group of
+attributes applies to several file patterns, name it once and keep each use to
+one line:
+
+```yaml
+rules:
+  source-file:
+    naming: kebab-case
+    max_lines: 500
+
+structure:
+  ./**/:
+    .{ts,tsx}: $source-file
+```
+
+The reusable shorthand above normalizes to the same configuration as expanded
+attributes under each directive:
+
+```yaml
+structure:
+  ./**/:
+    .ts:
+      naming: kebab-case
+      max_lines: 500
+    .tsx:
+      naming: kebab-case
+      max_lines: 500
+```
+
+Use the expanded form for a one-off override or when the directive needs
+additional attributes. Directive-attached `naming`, `max_lines`, and `max_size`
+apply only to files matching that pattern in the configured directory scope and
+its inheriting descendants. Define one reusable directive and apply it to each
+extension or explicit glob that should share the default.
+
+Choose reach explicitly. Extension shorthand is direct to its current anchor;
+put it under `./**/` when it should rebase at every directory:
+
+| Notation | Reach |
+| --- | --- |
+| `.ts: $source-file` at root | Direct root `.ts` files. |
+| `./*.ts: $source-file` | Direct files from the current rule or structure anchor. |
+| `./**/*.ts: $source-file` | Root and descendant `.ts` files from the current anchor. |
+| `.ts: $source-file` under `src/` | Direct `.ts` files inside `src/`. |
+| `.ts: $source-file` under `./**/` | Direct `.ts` files in root and each descendant. |
+
+The structure key controls reach. `*` matches one directory segment and `**`
+crosses directory separators:
+
+```yaml config-fragment
+structure:
+  packages/*/src/:
+    .ts: $source-file
+  packages/**/generated/:
+    inherit: false
+```
+
+More specific scopes merge their file patterns by default. Set
+`inherit: false` when a subtree should reset inherited policy. Run
+`assura explain path/to/file.ts` to see the applied directory scopes and the
+winning normalized naming, line, and size directives for that file. A file with
+no matching pattern reports `matched_file_patterns=none`; JSON reports an empty
+`matched_file_patterns` array. Text output marks scopes that discard inherited
+policy with `(reset)`.
+
 Captures use single braces such as `{topic}`. Removed alpha capture forms such
 as `${name}` and `{{name}}` are not supported in hand-authored structure
 notation.
@@ -107,123 +176,149 @@ the project needs relationships or reusable contracts.
 | Direct file count | `README.md: exists:1` |
 | Optional singleton | `"*.lock": exists:0-1` |
 | Forbidden direct children | `draft-*: exists:0` |
-| Closed-world scope | `extra: false` |
+| Closed direct-content scope | `$closed` composed from `./*: exists:0` and `./*/: exists:0` |
 | Generated output ignore | `exclude: ["target/**", "node_modules/**"]` |
 | Captured source/test pair | `"{component}.tsx"` and `"{component}.test.tsx": exists:1` |
 | Package documentation need | `needs: doc` with `provides: doc` |
-| Reusable package policy | `rules:` plus `use: "@package-standard"` |
+| Reusable package policy | `rules:` plus `use: $package-standard` |
+| Reusable file directive | `.ts: $source-file` after defining a node rule |
+| Agentic project baseline | `assura init --recipe agentic-core --recipe structure-health` |
 | Markdown outline | `markdown.outline` with nested heading lists |
 
 Use the detailed fields below when a rule needs extra attributes or when you
 are reading generated migration output.
 
+Generated LS-Lint migrations preserve dot selectors such as `.js` and
+`.test.js` as exact extension combinations. In native structure shorthand,
+use `*.js` when one final-extension default should also cover compound stems
+such as `next.config.js`; a more-specific `*.test.js` rule can override it.
+This distinction keeps migration behavior equivalent without limiting the
+broader defaults available to new Assura policies.
+
 Markdown outline notation validates ordered heading structure without separate
 heading-depth fields. It is for Assura-specific document structure checks, not
 a replacement for generic Markdown linting or link validation.
 
+## Project-Owned Agentic Recipes
+
+Materialize the standard language-agnostic guidance and structure-health layers:
+
+```bash
+assura init --recipe agentic-core --recipe structure-health
+```
+
+Assura copies ordinary commented `rules:`, `structure:`, and `exclude:` YAML
+into the project. Checks use only that project-owned file; there is no hidden
+recipe lookup at runtime. `agentic-core` requires root `AGENTS.md` and
+`README.md`, constrains optional project-local skills, and provides repair
+links. `structure-health` adds advisory line and direct-child thresholds plus
+recursive coverage. It deliberately does not guess project naming. Edit or
+remove any generated policy to match the project.
+
+For a project that already has `.assura/config.yml`, preview the additive merge
+before writing it:
+
+```bash
+assura config add-recipe structure-health . --dry-run
+assura config add-recipe structure-health .
+```
+
+Existing values win by default. `--force` replaces only conflicting recipe
+values while preserving unrelated project policy.
+
+Project-local skill directories are intentionally strict. Once a repository
+adds `.agents/skills/<skill>/`, `.agents/skills/built-in/<skill>/`, or
+`.agents/skills/custom/<skill>/`, that directory is treated as a skill and must
+provide a bounded `SKILL.md` entrypoint. The entrypoint should route agents to
+deeper `references/`, `scripts/`, `assets/`, or process docs instead of
+compressing a large skill into one file.
+
+Global or user-level skills installed outside the repository are not validated
+by this project rule. If a third-party skill is copied, vendored, or linked
+under `.agents/skills/**`, treat that checked project-facing path as owned by
+the project: keep a concise local `SKILL.md`, preserve upstream content in
+deeper references when useful, or keep the skill global and add a small wrapper
+skill that tells agents where to find it.
+
 ## Directory Nodes
 
-Each key under `structure` is a directory scope. Use `./` for the project root.
+Each key under `structure` follows the project hierarchy. `structure:` is the
+project root. Exact literal paths are required by default, so the concise tree
+below requires `apps/web/src/` without a second `required` directive:
 
 ```yaml
 structure:
-  ./:
-    required: true
-    inherit: true
-    files: {}
-    directories: {}
-    self_directory: {}
-    markdown: {}
-    exists: {}
-    children: {}
+  apps/:
+    web/:
+      src/:
+        .tsx: kebab-case
 ```
 
-| Field | Behavior |
-| --- | --- |
-| `required` | Whether this configured directory itself must exist. Defaults to `true`. |
-| `inherit` | Whether child scopes inherit parent file, directory, and markdown rules. Defaults to `true`. |
-| `files` | Rules for direct child files in this directory scope. |
-| `directories` | Rules for direct child directories in this directory scope. |
-| `self_directory` | Rules for the configured directory itself. This is primarily emitted by LS-Lint `.dir` migration. Hand-written policies usually use `directories` for direct children. |
-| `markdown` | Markdown checks for direct child `.md` files in this directory scope. |
-| `exists` | Legacy required file/directory lists. Prefer `files.required`, `directories.required`, or direct count rules for new config. |
-| `children` | Nested directory scopes. |
+Use `exists:0-1` when an exact directory is optional. A pattern directory such
+as `"{package}/"`, `"package-*/"`, or `"**/generated/"` is match-only by
+default. Add an explicit direct-child count only when cardinality matters.
+
+Use `./` only inside a reusable or nested tree when a node rule applies to the
+current matched directory. `./*/` names direct child directories, while
+`./**/*/` names every descendant directory. Exact and more-specific selectors
+refine broader wildcard policy independently of YAML source order.
+
+Inside one scalar composition, ` | ` applies directives left to right. A later
+directive for the same attribute is the intentional local override.
 
 ## File Rules
 
 ```yaml
-files:
-  naming: kebab-case
-  naming_patterns:
-    "*.rs": snake_case
-  max_lines: 500
-  max_size: 100KB
-  require_docs: true
-  extensions:
-    - rs
-    - md
-  severity: high
-  required:
-    - README.md
-  allowed_names:
-    - README.md
-    - Cargo.toml
-  allowed_patterns:
-    - "*.lock"
-  forbidden_patterns:
-    - "draft-*"
-  allow_extra: false
-  exists:
-    "README.md": "1"
-    "*.tmp": "0"
+rules:
+  source-file:
+    naming: kebab-case
+    max_lines: 500
+    max_size: 100KB
+
+structure:
+  README.md: exists:1
+  ./**/:
+    .{ts,tsx}: $source-file
+    ./*.tmp: exists:0
 ```
 
 | Field | Behavior |
 | --- | --- |
-| `naming` | Naming convention for files in the scope. Supports built-in case names and `regex:<pattern>`. |
-| `naming_patterns` | Naming conventions keyed by direct file glob pattern. More specific matches win. |
-| `max_lines` | Fails when a direct file has more lines than the configured limit. |
-| `max_size` | Fails when a direct file exceeds a size such as `100KB` or `2MB`. |
-| `require_docs` | For Rust files, requires `//!` or `///` rustdoc text. |
-| `extensions` | Allows only the listed extensions when extension validation is configured. Multi-part extensions such as `tar.gz` are supported. |
-| `severity` | Severity assigned to violations from this file bundle. `low` is advisory; `medium`, `high`, and `critical` are blocking. |
-| `required` | Exact direct files that must exist. |
-| `allowed_names` | Exact direct file names allowed by a closed-world policy. |
-| `allowed_patterns` | Direct file glob patterns allowed by a closed-world policy. |
-| `forbidden_patterns` | Direct file glob patterns that are always rejected. Forbidden patterns override broad allowed patterns. |
-| `allow_extra` | When `false`, rejects direct files not covered by exact names, allowed patterns, or allowed extensions. |
-| `exists` | Direct child file count constraints keyed by glob or exact pattern. Values are `exists`, `0`, `1`, or ranges such as `1-4`. |
+| `naming` | Built-in case name or `regex:<pattern>`. |
+| `max_lines` | Language-agnostic maximum line count. |
+| `max_size` | Maximum file size such as `100KB` or `2MB`. |
+| `require_docs` | Requires Rust documentation text for matching Rust files. |
+| `exists` | Direct-child count: `0`, `1`, `0-1`, or a bounded range. |
+| `markdown` | Markdown checks attached to matching `.md` files. |
+
+`exists` does not count recursively. Use `"./*.ts": exists:1` at the root or
+`"*.ts": exists:1` inside the relevant directory scope. Assura rejects
+cross-directory forms such as `"./**/*.ts": exists:1` so a recursive-looking
+rule cannot silently count only direct children.
 
 ## Directory Rules
 
 ```yaml
-directories:
-  naming: kebab-case
-  severity: critical
-  required:
-    - src
-  allowed_names:
-    - src
-    - tests
-  allowed_patterns:
-    - "package-*"
-  forbidden_patterns:
-    - "tmp-*"
-  allow_extra: false
-  exists:
-    "package-*": "1-4"
+structure:
+  packages/:
+    ./package-*/: kebab-case
+  ./tmp-*/: exists:0
 ```
 
-| Field | Behavior |
-| --- | --- |
-| `naming` | Naming convention for direct child directories. |
-| `severity` | Severity assigned to violations from this directory bundle. `low` is advisory; `medium`, `high`, and `critical` are blocking. |
-| `required` | Exact direct child directories that must exist. |
-| `allowed_names` | Exact direct child directory names allowed by a closed-world policy. |
-| `allowed_patterns` | Direct child directory glob patterns allowed by a closed-world policy. |
-| `forbidden_patterns` | Direct child directory glob patterns that are always rejected. |
-| `allow_extra` | When `false`, rejects direct child directories not covered by `children`, exact names, or allowed patterns. |
-| `exists` | Direct child directory count constraints keyed by glob or exact pattern. |
+For reusable directory contracts, define a tree fragment and apply it with a
+scalar rule reference:
+
+```yaml
+rules:
+  package-standard:
+    package.json: exists:1
+    README.md: exists:0-1
+    src/: exists:1
+
+structure:
+  packages/:
+    ./*/: kebab-case | $package-standard
+```
 
 ## Markdown Rules
 
@@ -272,10 +367,10 @@ reason. Invalid suppressions are reported as `markdown_suppression`.
 
 ## Repository References
 
-Opt into experimental source/comment/docstring reference diagnostics with
+Configure deterministic source/comment/docstring reference diagnostics with
 `extensions.repository_references`:
 
-```yaml
+```yaml config-fragment
 extensions:
   repository_references:
     - id: source_refs
@@ -300,10 +395,10 @@ lower-confidence references remain available as graph context through
 
 ## Agent Guidance
 
-Opt into experimental agent guidance diagnostics with
+Configure deterministic agent guidance diagnostics with
 `extensions.agent_guidance`:
 
-```yaml
+```yaml config-fragment
 extensions:
   agent_guidance:
     - id: agent_project_guidance
@@ -359,7 +454,7 @@ host-agent-specific validation logic.
 Opt into experimental requirements, claims, evidence, source-document, and
 finding traceability diagnostics with `extensions.requirements_traceability`:
 
-```yaml
+```yaml config-fragment
 extensions:
   requirements_traceability:
     - id: document_project_traceability
@@ -399,7 +494,7 @@ reference checks, or add a public plugin API.
 Opt into experimental project-local computed findings with
 `extensions.computed_checks`:
 
-```yaml
+```yaml config-fragment
 extensions:
   computed_checks:
     - id: rollup_score
@@ -438,8 +533,8 @@ cross-file policy does not fit ordinary `structure` notation.
 | `extensions.test_relationships` | Experimental first-party | Source/test evidence, manual-test exceptions, and fixture-family ownership. |
 | `extensions.module_topologies` | Experimental first-party | Rust module-family ownership, roots, export classification, and internal visibility. |
 | `extensions.docs_lifecycles` | Experimental first-party | Documentation lifecycle, frontmatter status, historical exceptions, and deterministic claim evidence. |
-| `extensions.repository_references` | Experimental first-party | Locally provable repository-reference diagnostics. |
-| `extensions.agent_guidance` | Experimental first-party | `AGENTS.md` and project-local `SKILL.md` routing contracts. |
+| `extensions.repository_references` | Supported next-release deterministic policy | Locally provable repository-reference diagnostics. |
+| `extensions.agent_guidance` | Supported next-release deterministic policy | `AGENTS.md` and project-local `SKILL.md` routing contracts. |
 | `extensions.requirements_traceability` | Experimental first-party | Content-runtime-backed requirement, claim, evidence, source-document, and finding traceability checks. |
 | `extensions.computed_checks` | Experimental first-party | Project-local script-backed computed findings with versioned JSON contracts. |
 | `extensions.relationships` | Internal generated first-party | Relationships normalized from `structure` captures, `exists:1`, `needs`, and `provides`. |
@@ -477,11 +572,11 @@ structure:
     "{package}/":
       needs: doc
   docs/packages/:
-    required: false
+    ./: exists:0-1
     "{package}.md":
       provides: doc
   docs/:
-    required: false
+    ./: exists:0-1
     packages.md:
       sections:
         "{package}":
@@ -503,17 +598,23 @@ This policy rejects stray files and directories at the project root while
 allowing generated output to stay outside the source contract.
 
 ```yaml
+rules:
+  closed-entry:
+    exists: 0
+  closed:
+    ./*/: $closed-entry
+    ./*: $closed-entry
+
 structure:
-  ./:
-    extra: false
-    README.md: exists:1
-    Cargo.toml: exists:1
-    "*.lock": exists:0-1
-    src/: exists:1
-    docs/: exists:1
-    "package-*/": exists:0-20
-    draft-*: exists:0
-    tmp-*/: exists:0
+  ./: $closed
+  README.md: exists:1
+  Cargo.toml: exists:1
+  ./*.lock: exists:0-1
+  src/: exists:1
+  docs/: exists:1
+  ./package-*/: exists:0-20
+  ./draft-*: exists:0
+  ./tmp-*/: exists:0
 exclude:
   - "target/**"
   - "generated/**"
@@ -540,14 +641,9 @@ Direct count rules apply only to direct children of the configured directory.
 
 ```yaml
 structure:
-  ./:
-    files:
-      exists:
-        "README.md": "1"
-        "*.tmp": "0"
-    directories:
-      exists:
-        "package-*": "1-5"
+  README.md: exists:1
+  ./*.tmp: exists:0
+  ./package-*/: exists:1-5
 ```
 
 LS-Lint extension rules such as `.md: exists:1-2` map to direct file counts and

@@ -60,6 +60,97 @@ fn companion_help_can_render_primary_command_name() {
 }
 
 #[test]
+fn config_add_recipe_dry_run_materializes_project_owned_policy() {
+    let project = structure_project("version: \"2.0\"\nstructure: {}\n");
+    let output = Command::new(assura_full_bin())
+        .args(["config", "add-recipe", "agentic-core"])
+        .arg(project.path())
+        .arg("--dry-run")
+        .output()
+        .unwrap();
+
+    assert!(
+        output.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(
+        stdout.contains("agent-entrypoint:"),
+        "stdout was:\n{stdout}"
+    );
+    assert!(stdout.contains("AGENTS.md:"), "stdout was:\n{stdout}");
+}
+
+#[test]
+fn cache_status_and_clean_report_observable_namespaces() {
+    let project = TempDir::new().unwrap();
+    let cache = project.path().join("explicit-cache");
+    fs::create_dir_all(cache.join("worktrees/example")).unwrap();
+    fs::write(
+        cache.join(".assura-cache-root.json"),
+        "{\"schema\":\"assura.check-cache-root.v1\"}\n",
+    )
+    .unwrap();
+    fs::write(cache.join("worktrees/example/report.json"), "{}\n").unwrap();
+
+    let status = Command::new(assura_full_bin())
+        .args(["cache", "status"])
+        .arg(project.path())
+        .arg("--cache-dir")
+        .arg(&cache)
+        .args(["--format", "json"])
+        .output()
+        .unwrap();
+    assert!(status.status.success());
+    let status: Value = serde_json::from_slice(&status.stdout).unwrap();
+    assert_eq!(status["action"], "status");
+    assert_eq!(status["status"]["schema"], "assura.check-cache-status.v1");
+    assert_eq!(status["status"]["entries"], 1);
+    assert!(status["status"]["worktree_namespace"]
+        .as_str()
+        .is_some_and(|value| value.starts_with("worktrees/")));
+    assert!(status["status"]["fallback_reason"].is_string());
+
+    let clean = Command::new(assura_full_bin())
+        .args(["cache", "clean"])
+        .arg(project.path())
+        .arg("--cache-dir")
+        .arg(&cache)
+        .args(["--format", "json"])
+        .output()
+        .unwrap();
+    assert!(clean.status.success());
+    let clean: Value = serde_json::from_slice(&clean.stdout).unwrap();
+    assert_eq!(clean["removed_entries"], 1);
+    assert_eq!(clean["status"]["entries"], 0);
+}
+
+#[test]
+fn cache_clean_refuses_an_unrecognized_or_project_root() {
+    let project = TempDir::new().unwrap();
+    fs::write(project.path().join("keep.txt"), "keep\n").unwrap();
+    fs::write(
+        project.path().join(".assura-cache-root.json"),
+        "{\"schema\":\"assura.check-cache-root.v1\"}\n",
+    )
+    .unwrap();
+
+    let output = Command::new(assura_full_bin())
+        .args(["cache", "clean"])
+        .arg(project.path())
+        .arg("--cache-dir")
+        .arg(project.path())
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(3));
+    assert!(project.path().join("keep.txt").is_file());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("refusing to remove"));
+}
+
+#[test]
 fn init_creates_supported_structure_config() {
     let project = TempDir::new().unwrap();
 
@@ -302,35 +393,22 @@ fn agent_help_lists_onboarding_surface() {
 }
 
 #[test]
-fn watch_returns_check_failure_for_invalid_project() {
-    let project = TempDir::new().unwrap();
-    let assura_dir = project.path().join(".assura");
-    fs::create_dir(&assura_dir).unwrap();
-    fs::write(
-        assura_dir.join("config.yml"),
-        r#"
-structure:
-  ./:
-    files:
-      naming: kebab-case
-"#,
-    )
-    .unwrap();
-    fs::write(project.path().join("BadName.rs"), "fn main() {}\n").unwrap();
-
-    let output = Command::new(assura_bin())
-        .arg("watch")
-        .arg(project.path())
+fn watch_help_exposes_continuous_runtime_options() {
+    let output = Command::new(assura_full_bin())
+        .args(["watch", "--help"])
         .output()
         .unwrap();
 
-    assert_eq!(output.status.code(), Some(1));
-    let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(
-        stdout.contains("one-shot validation"),
-        "stdout was:\n{stdout}"
+        output.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
     );
-    assert!(stdout.contains("file_naming"), "stdout was:\n{stdout}");
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(stdout.contains("Continuously"), "stdout was:\n{stdout}");
+    assert!(stdout.contains("--debounce"), "stdout was:\n{stdout}");
+    assert!(stdout.contains("--format"), "stdout was:\n{stdout}");
 }
 
 #[test]

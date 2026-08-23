@@ -16,6 +16,7 @@ mod semantic;
 mod session;
 
 use self::agent_query::{agent_query, AgentQueryRequest};
+pub(crate) use self::agent_query::{content_gap_summary, AgentQueryGapsOutput};
 use self::code_symbols::{symbol_refs, symbols_for_instance};
 use self::context::{ContentQueryError, QueryContext};
 use self::context_pack::{context_pack, ContextPackRequest};

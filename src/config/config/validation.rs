@@ -2,7 +2,7 @@
 
 #[cfg(feature = "yaml-config")]
 use super::{
-    Config, CustomConstraintConfig, DirectoryBundle, DirectoryNode, ExtensionConfig, FileBundle,
+    Config, CustomConstraintConfig, DirectoryBundle, DirectoryNode, ExtensionConfig,
     MarkdownBundle, RelationshipConstraintConfig,
 };
 #[cfg(feature = "yaml-config")]
@@ -15,6 +15,8 @@ use std::path::{Component, Path};
 mod computed_checks;
 #[cfg(feature = "yaml-config")]
 mod docs_lifecycles;
+#[cfg(feature = "yaml-config")]
+mod file_bundles;
 #[cfg(feature = "yaml-config")]
 mod manifest_semantics;
 #[cfg(feature = "yaml-config")]
@@ -34,7 +36,7 @@ mod test_relationships;
 #[cfg(feature = "yaml-config")]
 pub(crate) fn validate_config_semantics(config: &Config) -> Result<(), String> {
     for (pattern, bundle) in &config.patterns {
-        validate_file_bundle(bundle, &format!("patterns.{pattern}"))?;
+        file_bundles::validate_file_bundle(bundle, &format!("patterns.{pattern}"))?;
     }
     for (path, node) in &config.structure {
         validate_directory_node(node, &format!("structure.{path}"))?;
@@ -51,7 +53,7 @@ pub(crate) fn validate_config_semantics(config: &Config) -> Result<(), String> {
 #[cfg(feature = "yaml-config")]
 fn validate_directory_node(node: &DirectoryNode, context: &str) -> Result<(), String> {
     if let Some(files) = &node.files {
-        validate_file_bundle(files, &format!("{context}.files"))?;
+        file_bundles::validate_file_bundle(files, &format!("{context}.files"))?;
     }
     if let Some(directories) = &node.directories {
         validate_directory_bundle(directories, &format!("{context}.directories"))?;
@@ -66,29 +68,6 @@ fn validate_directory_node(node: &DirectoryNode, context: &str) -> Result<(), St
         for (child_name, child) in children {
             validate_directory_node(child, &format!("{context}.children.{child_name}"))?;
         }
-    }
-
-    Ok(())
-}
-
-#[cfg(feature = "yaml-config")]
-fn validate_file_bundle(bundle: &FileBundle, context: &str) -> Result<(), String> {
-    if let Some(naming) = &bundle.naming {
-        validate_naming_convention_text(naming)
-            .map_err(|error| format!("{context}.naming: {error}"))?;
-    }
-    if let Some(patterns) = &bundle.naming_patterns {
-        for (pattern, naming) in patterns {
-            validate_naming_convention_text(naming)
-                .map_err(|error| format!("{context}.naming_patterns.{pattern}: {error}"))?;
-        }
-    }
-    if let Some(max_lines) = bundle.max_lines {
-        validate_range(max_lines, 1, 100_000, &format!("{context}.max_lines"))?;
-    }
-    if let Some(max_size) = &bundle.max_size {
-        validate_size_string_text(max_size)
-            .map_err(|error| format!("{context}.max_size: {error}"))?;
     }
 
     Ok(())
@@ -379,6 +358,16 @@ fn validate_naming_convention_text(conv: &str) -> Result<(), String> {
             validate_naming_convention_text(part)?;
         }
         return Ok(());
+    }
+
+    if let Some(exact) = conv.strip_prefix("exact:") {
+        if !exact.is_empty() && !exact.contains(['/', '\\']) {
+            return Ok(());
+        }
+        return Err(
+            "exact naming alternatives require one filename stem without path separators"
+                .to_string(),
+        );
     }
 
     let valid_conventions = [

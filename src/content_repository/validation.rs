@@ -34,37 +34,22 @@ pub(super) fn validate_placement(
 
 pub(super) fn validate_object_data(
     collection: &CollectionSpec,
-    object: &RepoObject,
+    object: &mut RepoObject,
     schema_validator: Option<&Validator>,
     findings: &mut Vec<ContentFinding>,
 ) {
-    for field in &collection.fields {
-        match object.data.get(&field.name) {
-            Some(value) if field.kind.validate(value) => {}
-            Some(_) => findings.push(ContentFinding::new(
-                "invalid_field_type",
-                Some(object.rel_path.clone()),
-                format!(
-                    "Field '{}' on '{}:{}' has the wrong type",
-                    field.name, object.collection, object.id
-                ),
-            )),
-            None if field.required => findings.push(ContentFinding::new(
-                "missing_field",
-                Some(object.rel_path.clone()),
-                format!(
-                    "Object '{}:{}' is missing required field '{}'",
-                    object.collection, object.id, field.name
-                ),
-            )),
-            None => {}
-        }
-    }
+    validate_declared_fields(collection, object, &object.data, findings);
 
     let Some(validator) = schema_validator else {
         return;
     };
-    let value = Value::Object(object.data.clone());
+
+    let value = Value::Object(std::mem::take(&mut object.data));
+    if validator.is_valid(&value) {
+        object.data = object_data_from_value(value);
+        return;
+    }
+
     for error in validator.iter_errors(&value) {
         let field = schema_error_field(&error);
         let mut finding = ContentFinding::new(
@@ -87,6 +72,44 @@ pub(super) fn validate_object_data(
             finding = finding.with_field(field);
         }
         findings.push(finding);
+    }
+    object.data = object_data_from_value(value);
+}
+
+fn validate_declared_fields(
+    collection: &CollectionSpec,
+    object: &RepoObject,
+    data: &serde_json::Map<String, Value>,
+    findings: &mut Vec<ContentFinding>,
+) {
+    for field in &collection.fields {
+        match data.get(&field.name) {
+            Some(value) if field.kind.validate(value) => {}
+            Some(_) => findings.push(ContentFinding::new(
+                "invalid_field_type",
+                Some(object.rel_path.clone()),
+                format!(
+                    "Field '{}' on '{}:{}' has the wrong type",
+                    field.name, object.collection, object.id
+                ),
+            )),
+            None if field.required => findings.push(ContentFinding::new(
+                "missing_field",
+                Some(object.rel_path.clone()),
+                format!(
+                    "Object '{}:{}' is missing required field '{}'",
+                    object.collection, object.id, field.name
+                ),
+            )),
+            None => {}
+        }
+    }
+}
+
+fn object_data_from_value(value: Value) -> serde_json::Map<String, Value> {
+    match value {
+        Value::Object(data) => data,
+        _ => unreachable!("content object validation must retain object data"),
     }
 }
 

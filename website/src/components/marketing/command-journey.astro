@@ -1,0 +1,74 @@
+---
+const primaryCommands = [
+  {
+    label: 'Review',
+    phase: 'During agent work',
+    role: 'Advisory signal',
+    command: 'assura review',
+    body: 'Compare the branch and worktree, rank attention, and show the next useful action without blocking the loop.',
+    facts: ['Changed work', 'Hot directories', 'Advisory result'],
+    tone: 'review',
+  },
+  {
+    label: 'Check',
+    phase: 'Before commit or merge',
+    role: 'Policy gate',
+    command: 'assura check',
+    body: 'Evaluate the configured project contract and return a deterministic pass or fail for hooks and CI.',
+    facts: ['Configured rules', 'Exact violations', 'Pass / fail exit'],
+    tone: 'check',
+  },
+];
+
+const supportingCommands = [
+  {
+    label: 'Set up the baseline',
+    command: 'assura agent onboard',
+  },
+  {
+    label: 'Investigate one path',
+    command: 'assura explain <path>',
+  },
+];
+---
+
+<section
+  class="section journey-section"
+  aria-labelledby="journey-title"
+  data-release-surface="compact-review configured-policy-gate agent-onboarding path-explanation"
+>
+  <div class="section-head compact">
+    <p class="eyebrow">The command model</p>
+    <h2 id="journey-title">Review the change. Check the contract.</h2>
+    <p>Review keeps agents informed while work is moving. Check makes the final policy decision.</p>
+  </div>
+
+  <div class="command-model" aria-label="Review and check command roles">
+    {primaryCommands.map((item, index) => (
+      <article class:list={['command-role', `command-role-${item.tone}`]}>
+        <header>
+          <div>
+            <span class="command-phase">{item.phase}</span>
+            <h3>{item.label}</h3>
+          </div>
+          <span class="command-role-label">{item.role}</span>
+        </header>
+        <code>{item.command}</code>
+        <p>{item.body}</p>
+        <ul aria-label={`${item.label} output characteristics`}>
+          {item.facts.map((fact) => <li>{fact}</li>)}
+        </ul>
+        {index === 0 && <span class="command-flow" aria-hidden="true">then</span>}
+      </article>
+    ))}
+  </div>
+
+  <div class="supporting-commands" aria-label="Supporting Assura commands">
+    {supportingCommands.map((item) => (
+      <div>
+        <span>{item.label}</span>
+        <code>{item.command}</code>
+      </div>
+    ))}
+  </div>
+</section>

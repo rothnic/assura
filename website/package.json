@@ -8,15 +8,19 @@
     "dev": "astro dev",
     "start": "astro dev",
     "build": "ASTRO_TELEMETRY_DISABLED=1 astro build",
+    "test:marketing": "playwright test",
     "preview": "astro preview",
     "astro": "astro"
   },
   "dependencies": {
+    "@astrojs/sitemap": "^3.7.3",
     "@astrojs/starlight": "^0.38.1",
-    "@catppuccin/palette": "^1.7.1",
-    "@catppuccin/starlight": "^2.0.1",
     "astro": "^6.0.1",
     "sharp": "^0.34.2"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
+    "@playwright/test": "^1.61.1"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

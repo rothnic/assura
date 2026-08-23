@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-const COMPILED_CONFIG_SCHEMA_VERSION: u32 = 23;
+const COMPILED_CONFIG_SCHEMA_VERSION: u32 = 26;
 const ASSURA_VERSION_HASH: u64 = stable_hash_const(env!("CARGO_PKG_VERSION").as_bytes());
 
 /// Portable artifact containing a parsed Assura structure config.
@@ -214,6 +214,7 @@ pub(super) struct PortableDirectoryNode {
     markdown: Option<PortableMarkdownBundle>,
     exists: Option<PortableExistsValidation>,
     children: Option<HashMap<String, PortableDirectoryNode>>,
+    limit_children: Option<crate::config::types::ChildrenLimitConfig>,
     inherit: bool,
     required: bool,
 }
@@ -223,10 +224,16 @@ pub(super) struct PortableFileBundle {
     naming: Option<String>,
     naming_patterns: Option<HashMap<String, String>>,
     max_lines: Option<usize>,
+    max_lines_patterns: Option<HashMap<String, usize>>,
     max_size: Option<String>,
+    max_size_patterns: Option<HashMap<String, String>>,
+    severity_patterns: Option<HashMap<String, String>>,
+    message_patterns: Option<HashMap<String, String>>,
+    markdown_patterns: Option<HashMap<String, PortableMarkdownBundle>>,
     require_docs: Option<bool>,
     extensions: Option<Vec<String>>,
     severity: Option<String>,
+    message: Option<String>,
     required: Option<Vec<String>>,
     allowed_names: Option<Vec<String>>,
     allowed_patterns: Option<Vec<String>>,
@@ -244,6 +251,9 @@ pub(super) struct PortableDirectoryBundle {
     forbidden_patterns: Option<Vec<String>>,
     allow_extra: Option<bool>,
     severity: Option<String>,
+    message: Option<String>,
+    severity_patterns: Option<HashMap<String, String>>,
+    message_patterns: Option<HashMap<String, String>>,
     exists: Option<HashMap<String, String>>,
 }
 
@@ -335,6 +345,7 @@ impl From<DirectoryNode> for PortableDirectoryNode {
                     .map(|(name, child)| (name, child.into()))
                     .collect()
             }),
+            limit_children: node.limit_children,
             inherit: node.inherit,
             required: node.required,
         }
@@ -355,6 +366,7 @@ impl From<PortableDirectoryNode> for DirectoryNode {
                     .map(|(name, child)| (name, child.into()))
                     .collect()
             }),
+            limit_children: node.limit_children,
             inherit: node.inherit,
             required: node.required,
         }
@@ -367,10 +379,21 @@ impl From<FileBundle> for PortableFileBundle {
             naming: bundle.naming,
             naming_patterns: bundle.naming_patterns,
             max_lines: bundle.max_lines,
+            max_lines_patterns: bundle.max_lines_patterns,
             max_size: bundle.max_size,
+            max_size_patterns: bundle.max_size_patterns,
+            severity_patterns: bundle.severity_patterns,
+            message_patterns: bundle.message_patterns,
+            markdown_patterns: bundle.markdown_patterns.map(|patterns| {
+                patterns
+                    .into_iter()
+                    .map(|(pattern, markdown)| (pattern, markdown.into()))
+                    .collect()
+            }),
             require_docs: bundle.require_docs,
             extensions: bundle.extensions,
             severity: bundle.severity,
+            message: bundle.message,
             required: bundle.required,
             allowed_names: bundle.allowed_names,
             allowed_patterns: bundle.allowed_patterns,
@@ -387,10 +410,21 @@ impl From<PortableFileBundle> for FileBundle {
             naming: bundle.naming,
             naming_patterns: bundle.naming_patterns,
             max_lines: bundle.max_lines,
+            max_lines_patterns: bundle.max_lines_patterns,
             max_size: bundle.max_size,
+            max_size_patterns: bundle.max_size_patterns,
+            severity_patterns: bundle.severity_patterns,
+            message_patterns: bundle.message_patterns,
+            markdown_patterns: bundle.markdown_patterns.map(|patterns| {
+                patterns
+                    .into_iter()
+                    .map(|(pattern, markdown)| (pattern, markdown.into()))
+                    .collect()
+            }),
             require_docs: bundle.require_docs,
             extensions: bundle.extensions,
             severity: bundle.severity,
+            message: bundle.message,
             required: bundle.required,
             allowed_names: bundle.allowed_names,
             allowed_patterns: bundle.allowed_patterns,
@@ -411,6 +445,9 @@ impl From<DirectoryBundle> for PortableDirectoryBundle {
             forbidden_patterns: bundle.forbidden_patterns,
             allow_extra: bundle.allow_extra,
             severity: bundle.severity,
+            message: bundle.message,
+            severity_patterns: bundle.severity_patterns,
+            message_patterns: bundle.message_patterns,
             exists: bundle.exists,
         }
     }
@@ -426,6 +463,9 @@ impl From<PortableDirectoryBundle> for DirectoryBundle {
             forbidden_patterns: bundle.forbidden_patterns,
             allow_extra: bundle.allow_extra,
             severity: bundle.severity,
+            message: bundle.message,
+            severity_patterns: bundle.severity_patterns,
+            message_patterns: bundle.message_patterns,
             exists: bundle.exists,
         }
     }

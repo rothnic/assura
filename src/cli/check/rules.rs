@@ -5,6 +5,7 @@ use crate::config::config::{
     merge_markdown_rule_configs, split_naming_conventions, DirectoryBundle, DirectoryNode,
     FileBundle, MarkdownBundle,
 };
+use crate::config::types::ChildrenLimitConfig;
 use glob::Pattern;
 use regex_lite::Regex;
 use std::collections::HashMap;
@@ -17,6 +18,7 @@ pub(super) struct EffectiveRules {
     pub(super) directories: Option<Arc<DirectoryBundle>>,
     pub(super) self_directory: Option<Arc<DirectoryBundle>>,
     pub(super) markdown: Option<Arc<MarkdownBundle>>,
+    pub(super) limit_children: Option<Arc<ChildrenLimitConfig>>,
 }
 
 #[derive(Debug, Clone)]
@@ -209,7 +211,6 @@ pub(super) fn merge_file_bundle(
     match (parent, child) {
         (None, None) => None,
         (Some(parent), None) => Some(Arc::new(FileBundle {
-            naming_patterns: None,
             required: None,
             allowed_names: None,
             allowed_patterns: None,
@@ -221,15 +222,39 @@ pub(super) fn merge_file_bundle(
         (None, Some(child)) => Some(Arc::new(child.clone())),
         (Some(parent), Some(child)) => Some(Arc::new(FileBundle {
             naming: child.naming.clone().or_else(|| parent.naming.clone()),
-            naming_patterns: child.naming_patterns.clone(),
+            naming_patterns: merge_pattern_maps(
+                parent.naming_patterns.as_ref(),
+                child.naming_patterns.as_ref(),
+            ),
             max_lines: child.max_lines.or(parent.max_lines),
+            max_lines_patterns: merge_pattern_maps(
+                parent.max_lines_patterns.as_ref(),
+                child.max_lines_patterns.as_ref(),
+            ),
             max_size: child.max_size.clone().or_else(|| parent.max_size.clone()),
+            max_size_patterns: merge_pattern_maps(
+                parent.max_size_patterns.as_ref(),
+                child.max_size_patterns.as_ref(),
+            ),
+            severity_patterns: merge_pattern_maps(
+                parent.severity_patterns.as_ref(),
+                child.severity_patterns.as_ref(),
+            ),
+            message_patterns: merge_pattern_maps(
+                parent.message_patterns.as_ref(),
+                child.message_patterns.as_ref(),
+            ),
+            markdown_patterns: merge_pattern_maps(
+                parent.markdown_patterns.as_ref(),
+                child.markdown_patterns.as_ref(),
+            ),
             require_docs: child.require_docs.or(parent.require_docs),
             extensions: child
                 .extensions
                 .clone()
                 .or_else(|| parent.extensions.clone()),
             severity: child.severity.clone().or_else(|| parent.severity.clone()),
+            message: child.message.clone().or_else(|| parent.message.clone()),
             required: child.required.clone(),
             allowed_names: child.allowed_names.clone(),
             allowed_patterns: child.allowed_patterns.clone(),
@@ -237,6 +262,55 @@ pub(super) fn merge_file_bundle(
             allow_extra: child.allow_extra,
             exists: child.exists.clone(),
         })),
+    }
+}
+
+/// Merge two scopes that both match the same directory without dropping the
+/// direct-content policy contributed by the more literal scope.
+pub(super) fn merge_matching_file_bundle(
+    parent: Option<&Arc<FileBundle>>,
+    child: Option<&FileBundle>,
+) -> Option<Arc<FileBundle>> {
+    let mut merged = merge_file_bundle(parent, child)?;
+    let Some(parent) = parent else {
+        return Some(merged);
+    };
+    let merged_bundle = Arc::make_mut(&mut merged);
+    merged_bundle.required = child
+        .and_then(|bundle| bundle.required.clone())
+        .or_else(|| parent.required.clone());
+    merged_bundle.allowed_names = child
+        .and_then(|bundle| bundle.allowed_names.clone())
+        .or_else(|| parent.allowed_names.clone());
+    merged_bundle.allowed_patterns = child
+        .and_then(|bundle| bundle.allowed_patterns.clone())
+        .or_else(|| parent.allowed_patterns.clone());
+    merged_bundle.forbidden_patterns = child
+        .and_then(|bundle| bundle.forbidden_patterns.clone())
+        .or_else(|| parent.forbidden_patterns.clone());
+    merged_bundle.allow_extra = child
+        .and_then(|bundle| bundle.allow_extra)
+        .or(parent.allow_extra);
+    merged_bundle.exists = merge_pattern_maps(
+        parent.exists.as_ref(),
+        child.and_then(|bundle| bundle.exists.as_ref()),
+    );
+    Some(merged)
+}
+
+fn merge_pattern_maps<T: Clone>(
+    parent: Option<&HashMap<String, T>>,
+    child: Option<&HashMap<String, T>>,
+) -> Option<HashMap<String, T>> {
+    match (parent, child) {
+        (None, None) => None,
+        (Some(parent), None) => Some(parent.clone()),
+        (None, Some(child)) => Some(child.clone()),
+        (Some(parent), Some(child)) => {
+            let mut merged = parent.clone();
+            merged.extend(child.clone());
+            Some(merged)
+        }
     }
 }
 
@@ -264,9 +338,51 @@ pub(super) fn merge_directory_bundle(
             forbidden_patterns: child.forbidden_patterns.clone(),
             allow_extra: child.allow_extra,
             severity: child.severity.clone().or_else(|| parent.severity.clone()),
+            message: child.message.clone().or_else(|| parent.message.clone()),
+            severity_patterns: merge_pattern_maps(
+                parent.severity_patterns.as_ref(),
+                child.severity_patterns.as_ref(),
+            ),
+            message_patterns: merge_pattern_maps(
+                parent.message_patterns.as_ref(),
+                child.message_patterns.as_ref(),
+            ),
             exists: child.exists.clone(),
         })),
     }
+}
+
+/// Merge two matching directory scopes while retaining literal cardinality
+/// alongside broader naming and health defaults.
+pub(super) fn merge_matching_directory_bundle(
+    parent: Option<&Arc<DirectoryBundle>>,
+    child: Option<&DirectoryBundle>,
+) -> Option<Arc<DirectoryBundle>> {
+    let mut merged = merge_directory_bundle(parent, child)?;
+    let Some(parent) = parent else {
+        return Some(merged);
+    };
+    let merged_bundle = Arc::make_mut(&mut merged);
+    merged_bundle.required = child
+        .and_then(|bundle| bundle.required.clone())
+        .or_else(|| parent.required.clone());
+    merged_bundle.allowed_names = child
+        .and_then(|bundle| bundle.allowed_names.clone())
+        .or_else(|| parent.allowed_names.clone());
+    merged_bundle.allowed_patterns = child
+        .and_then(|bundle| bundle.allowed_patterns.clone())
+        .or_else(|| parent.allowed_patterns.clone());
+    merged_bundle.forbidden_patterns = child
+        .and_then(|bundle| bundle.forbidden_patterns.clone())
+        .or_else(|| parent.forbidden_patterns.clone());
+    merged_bundle.allow_extra = child
+        .and_then(|bundle| bundle.allow_extra)
+        .or(parent.allow_extra);
+    merged_bundle.exists = merge_pattern_maps(
+        parent.exists.as_ref(),
+        child.and_then(|bundle| bundle.exists.as_ref()),
+    );
+    Some(merged)
 }
 
 pub(super) fn merge_markdown_bundle(
@@ -425,6 +541,7 @@ pub(super) fn severity_for_directory_bundle(directories: &DirectoryBundle) -> St
 }
 
 pub(super) fn strip_direct_content_policy(mut rules: EffectiveRules) -> EffectiveRules {
+    rules.limit_children = None;
     if let Some(files) = rules.files.as_mut() {
         let files = Arc::make_mut(files);
         files.required = None;

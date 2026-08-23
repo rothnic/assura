@@ -210,7 +210,7 @@ fn fast_plan_supports_captured_directory_scopes() {
 }
 
 #[test]
-fn fast_plan_literal_scopes_override_captured_scopes_at_same_depth() {
+fn fast_plan_rejects_overlapping_literal_and_captured_scopes() {
     let mut skill_children = HashMap::new();
     skill_children.insert(
         "{skill}".to_string(),
@@ -254,27 +254,11 @@ fn fast_plan_literal_scopes_override_captured_scopes_at_same_depth() {
         },
     );
 
-    let scopes = compile_lslint_fast_scopes(&config).unwrap();
-    let rules = fast_rules_for_dir(
-        std::path::Path::new(".agents/skills/special-skill"),
-        &scopes,
-    )
-    .expect("literal skill scope should match");
-    let exists = rules
-        .effective
-        .files
-        .as_ref()
-        .and_then(|files| files.exists.as_ref())
-        .expect("literal scope should carry file count rules");
-    assert_eq!(exists.get("README.md"), Some(&"1".to_string()));
-    assert!(
-        !exists.contains_key("SKILL.md"),
-        "literal same-depth scope should win over the captured default"
-    );
+    assert!(compile_lslint_fast_scopes(&config).is_none());
 }
 
 #[test]
-fn fast_plan_constrained_patterns_override_long_capture_names_at_same_depth() {
+fn fast_plan_rejects_overlapping_constrained_and_captured_scopes() {
     let mut skill_children = HashMap::new();
     skill_children.insert(
         "{very_long_capture_name}".to_string(),
@@ -318,23 +302,120 @@ fn fast_plan_constrained_patterns_override_long_capture_names_at_same_depth() {
         },
     );
 
+    assert!(compile_lslint_fast_scopes(&config).is_none());
+}
+
+#[test]
+fn fast_plan_rejects_non_lslint_file_globs() {
+    let config = Config::new().with_node(
+        "./",
+        DirectoryNode::new().with_files(FileBundle {
+            naming_patterns: Some(HashMap::from([(
+                "????????.ts".to_string(),
+                "kebab-case".to_string(),
+            )])),
+            ..FileBundle::default()
+        }),
+    );
+
+    assert!(compile_lslint_fast_scopes(&config).is_none());
+}
+
+#[test]
+fn fast_plan_composes_static_prefix_overlapping_siblings() {
+    let config = Config::new().with_node(
+        "./",
+        DirectoryNode {
+            children: Some(HashMap::from([
+                (
+                    "packages".to_string(),
+                    DirectoryNode::new().with_files(FileBundle::new().with_naming_patterns(
+                        HashMap::from([("*.ts".to_string(), "kebab-case".to_string())]),
+                    )),
+                ),
+                (
+                    "packages/core".to_string(),
+                    DirectoryNode::new().with_files(FileBundle::new().with_naming_patterns(
+                        HashMap::from([("*.test.ts".to_string(), "snake_case".to_string())]),
+                    )),
+                ),
+            ])),
+            ..DirectoryNode::default()
+        },
+    );
+
     let scopes = compile_lslint_fast_scopes(&config).unwrap();
-    let rules = fast_rules_for_dir(
-        std::path::Path::new(".agents/skills/release-maintenance"),
-        &scopes,
-    )
-    .expect("constrained pattern skill scope should match");
-    let exists = rules
+    let rules = fast_rules_for_dir(std::path::Path::new("packages/core"), &scopes).unwrap();
+    let naming = rules
         .effective
         .files
         .as_ref()
-        .and_then(|files| files.exists.as_ref())
-        .expect("pattern scope should carry file count rules");
-    assert_eq!(exists.get("README.md"), Some(&"1".to_string()));
-    assert!(
-        !exists.contains_key("SKILL.md"),
-        "capture variable names should not add literal specificity"
+        .and_then(|files| files.naming_patterns.as_ref())
+        .unwrap();
+    assert_eq!(naming.get("*.ts"), Some(&"kebab-case".to_string()));
+    assert_eq!(naming.get("*.test.ts"), Some(&"snake_case".to_string()));
+}
+
+#[test]
+fn fast_plan_composes_static_prefix_top_level_scopes() {
+    let mut config = Config::new();
+    config.structure.insert(
+        "./".to_string(),
+        DirectoryNode::new().with_files(FileBundle::new().with_naming_patterns(HashMap::from([(
+            "*.ts".to_string(),
+            "kebab-case".to_string(),
+        )]))),
     );
+    config.structure.insert(
+        "packages/core".to_string(),
+        DirectoryNode::new().with_files(FileBundle::new().with_naming_patterns(HashMap::from([(
+            "*.test.ts".to_string(),
+            "snake_case".to_string(),
+        )]))),
+    );
+
+    let scopes = compile_lslint_fast_scopes(&config).unwrap();
+    let rules = fast_rules_for_dir(std::path::Path::new("packages/core"), &scopes).unwrap();
+    let naming = rules
+        .effective
+        .files
+        .as_ref()
+        .and_then(|files| files.naming_patterns.as_ref())
+        .unwrap();
+    assert_eq!(naming.get("*.ts"), Some(&"kebab-case".to_string()));
+    assert_eq!(naming.get("*.test.ts"), Some(&"snake_case".to_string()));
+}
+
+#[test]
+fn fast_plan_preserves_static_top_level_inheritance_resets() {
+    let mut config = Config::new();
+    config.structure.insert(
+        "./".to_string(),
+        DirectoryNode::new().with_files(FileBundle::new().with_naming_patterns(HashMap::from([(
+            "*.ts".to_string(),
+            "kebab-case".to_string(),
+        )]))),
+    );
+    config.structure.insert(
+        "packages/core".to_string(),
+        DirectoryNode::new().with_inherit(false).with_files(
+            FileBundle::new().with_naming_patterns(HashMap::from([(
+                "*.test.ts".to_string(),
+                "snake_case".to_string(),
+            )])),
+        ),
+    );
+
+    let scopes = compile_lslint_fast_scopes(&config).unwrap();
+    let rules = fast_rules_for_dir(std::path::Path::new("packages/core"), &scopes).unwrap();
+    let naming = rules
+        .effective
+        .files
+        .as_ref()
+        .and_then(|files| files.naming_patterns.as_ref())
+        .unwrap();
+    assert_eq!(naming.get("*.ts"), None);
+    assert_eq!(naming.get("*.test.ts"), Some(&"snake_case".to_string()));
 }
 
 #[test]

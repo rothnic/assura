@@ -65,8 +65,15 @@ It writes `benches/history/native-current.json`,
 Native rows use `fixture_acceptance=assura-native-diagnostic` because they do
 not have LS-Lint equivalents. They are still merge-gated by
 `cargo xtask native-performance-no-regression`, which checks the full fixture
-matrix, pass status, sample presence, expected Assura exit status, and native
-report metadata.
+matrix, pass status, sample presence, expected Assura exit status, native
+report metadata, and each row's calibrated `native_regression_*` baseline
+envelope.
+
+For LS-Lint-equivalent cold optimization experiments, `cargo perf-vps` prints an
+`accepted_fixture_delta` table across the accepted fixture set. Use that table
+to decide whether a candidate has real product value: the target fixture, all
+spillover fixtures, and the exact public-command tie-breaker must agree before
+the change is retained.
 
 Current native fixtures:
 
@@ -421,7 +428,7 @@ the shape of a TypeScript/Next-style monorepo:
 
 Representative excerpt:
 
-```yaml
+```yaml ls-lint-config
 ls:
   .dir: regex:(apps|packages|config|scripts|docs|specs|tests|infra|src|\.github)
   .md: regex:(README|AGENTS|CONTRIBUTING|CHANGELOG|LICENSE) | kebab-case

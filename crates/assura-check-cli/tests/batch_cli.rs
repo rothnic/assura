@@ -2,7 +2,6 @@ use std::fs;
 use std::io::{BufRead, BufReader, Read};
 use std::path::Path;
 use std::process::{Child, Command, Stdio};
-use std::time::Duration;
 
 fn write_project(root: &Path, file_name: &str) {
     fs::create_dir_all(root.join(".assura")).unwrap();
@@ -34,6 +33,24 @@ exclude:
         ),
     )
     .unwrap();
+}
+
+fn first_json_file(root: &Path) -> Option<std::path::PathBuf> {
+    for entry in fs::read_dir(root).ok()? {
+        let path = entry.ok()?.path();
+        if path.is_dir() {
+            if let Some(found) = first_json_file(&path) {
+                return Some(found);
+            }
+        } else if path.extension().is_some_and(|value| value == "json")
+            && path
+                .file_name()
+                .is_some_and(|name| name != ".assura-cache-root.json")
+        {
+            return Some(path);
+        }
+    }
+    None
 }
 
 fn daemon_listen_arg(temp: &tempfile::TempDir, name: &str) -> String {
@@ -171,40 +188,102 @@ fn batch_cli_fails_when_any_project_fails() {
 }
 
 #[test]
-fn cache_dir_reuses_report_but_invalidates_on_directory_change() {
+fn cache_dir_reuses_clean_immutable_results_across_git_worktrees() {
     let temp = tempfile::tempdir().unwrap();
-    let project = temp.path().join("cached-project");
+    let project = temp.path().join("project");
+    let sibling = temp.path().join("sibling");
     let cache = temp.path().join("cache");
     write_project(&project, "valid-file.ts");
+    for args in [
+        vec!["init"],
+        vec!["config", "user.email", "assura@example.test"],
+        vec!["config", "user.name", "Assura Test"],
+        vec!["add", "."],
+        vec!["commit", "-m", "baseline"],
+    ] {
+        let output = Command::new("git")
+            .arg("-C")
+            .arg(&project)
+            .args(args)
+            .output()
+            .unwrap();
+        assert!(
+            output.status.success(),
+            "{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+    }
+    let worktree = Command::new("git")
+        .arg("-C")
+        .arg(&project)
+        .args(["worktree", "add", "--detach"])
+        .arg(&sibling)
+        .arg("HEAD")
+        .output()
+        .unwrap();
+    assert!(worktree.status.success());
 
     let first = Command::new(env!("CARGO_BIN_EXE_assura-check"))
         .arg("--cache-dir")
         .arg(&cache)
         .arg("--quiet")
-        .arg(&project)
+        .arg(project.join("src"))
         .output()
         .unwrap();
-    assert!(
-        first.status.success(),
-        "stdout:\n{}\nstderr:\n{}",
-        String::from_utf8_lossy(&first.stdout),
-        String::from_utf8_lossy(&first.stderr)
-    );
-
-    std::thread::sleep(Duration::from_millis(20));
-    fs::write(project.join("bad_name.ts"), "").unwrap();
+    assert!(first.status.success());
+    assert!(cache.join("shared").is_dir());
+    fs::remove_dir_all(cache.join("worktrees")).unwrap();
 
     let second = Command::new(env!("CARGO_BIN_EXE_assura-check"))
         .arg("--cache-dir")
         .arg(&cache)
         .arg("--quiet")
-        .arg(&project)
+        .arg(sibling.join("src"))
+        .output()
+        .unwrap();
+    assert!(second.status.success());
+    assert!(
+        !cache.join("worktrees").exists(),
+        "a clean sibling worktree should return the shared immutable report"
+    );
+}
+
+#[test]
+fn cache_dir_does_not_publish_shared_results_when_ignored_files_exist() {
+    let temp = tempfile::tempdir().unwrap();
+    let project = temp.path().join("ignored-project");
+    let cache = temp.path().join("cache");
+    write_project(&project, "valid-file.ts");
+    fs::write(project.join(".gitignore"), "ignored/\n").unwrap();
+    for args in [
+        vec!["init"],
+        vec!["config", "user.email", "assura@example.test"],
+        vec!["config", "user.name", "Assura Test"],
+        vec!["add", "."],
+        vec!["commit", "-m", "baseline"],
+    ] {
+        let output = Command::new("git")
+            .arg("-C")
+            .arg(&project)
+            .args(args)
+            .output()
+            .unwrap();
+        assert!(output.status.success());
+    }
+    fs::create_dir_all(project.join("ignored")).unwrap();
+    fs::write(project.join("ignored/generated.ts"), "generated\n").unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_assura-check"))
+        .arg("--cache-dir")
+        .arg(&cache)
+        .arg("--quiet")
+        .arg(project.join("src"))
         .output()
         .unwrap();
 
-    assert_eq!(second.status.code(), Some(1));
-    let stdout = String::from_utf8_lossy(&second.stdout);
-    assert!(stdout.contains("bad_name.ts"));
+    assert!(output.status.success());
+    assert!(cache.join("worktrees").is_dir());
+    assert!(!cache.join("shared").exists());
 }
 
 #[test]
@@ -306,12 +385,7 @@ fn cache_dir_ignores_corrupt_cache_entry() {
         String::from_utf8_lossy(&first.stderr)
     );
 
-    let cache_entry = fs::read_dir(&cache)
-        .unwrap()
-        .next()
-        .expect("expected cache entry")
-        .unwrap()
-        .path();
+    let cache_entry = first_json_file(&cache).expect("expected cache entry");
     fs::write(cache_entry, b"not json").unwrap();
 
     let second = Command::new(env!("CARGO_BIN_EXE_assura-check"))

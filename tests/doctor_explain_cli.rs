@@ -417,7 +417,14 @@ fn explain_reports_skill_path_scope_without_special_cases() {
         .as_array()
         .expect("applied scopes")
         .iter()
-        .any(|scope| scope["scope"] == ".agents/skills/{skill}" && scope["match_kind"] == "exact"));
+        .any(|scope| scope["scope"] == ".agents/skills/*" && scope["match_kind"] == "exact"));
+    assert!(explain["source_rules"]
+        .as_array()
+        .expect("source rules")
+        .iter()
+        .any(|rule| rule["rule"] == "skill-entrypoint"
+            && rule["effective_selector"] == ".agents/skills/*/SKILL.md"
+            && rule["status"] == "checked"));
     assert!(explain["next_actions"]
         .as_array()
         .expect("next actions")

@@ -1,0 +1,27 @@
+---
+import performance from '../../data/performance-summary.json';
+
+const coldRatio = performance.cold.aggregate_speedup_ratio.toFixed(2);
+const warmRatio = performance.warm.aggregate_speedup_ratio.toFixed(2);
+---
+
+<section
+  class="performance-proof"
+  aria-label="Current Assura performance evidence"
+  data-release-surface="cold-ls-lint-comparison warm-session-performance"
+>
+  <div>
+    <span>Cold checks</span>
+    <strong>{coldRatio}× faster</strong>
+    <small>across {performance.cold.measured_fixture_count} LS-Lint comparison projects</small>
+  </div>
+  <div>
+    <span>Warm agent loop</span>
+    <strong>{warmRatio}× faster</strong>
+    <small>Assura session vs rerunning native LS-Lint CLI</small>
+  </div>
+  <div class="proof-meta">
+    <span>Benchmark evidence</span>
+    <a href="/performance/#measured-comparison" data-analytics-event="performance_methodology_click">How we measured it</a>
+  </div>
+</section>

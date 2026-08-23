@@ -19,7 +19,7 @@ Use this path for a first local check.
 2. **Initialize configuration**
 
    ```bash
-   assura init
+   assura init --recipe agentic-core --recipe structure-health
    ```
 
    This creates `.assura/config.yml` if one does not already exist.
@@ -31,20 +31,19 @@ Use this path for a first local check.
 
    ```yaml
    structure:
-     ./:
-       extra: false
-       README.md: exists:1
-       Cargo.toml: exists:1
-       src/: exists:1
-       "*.lock": exists:0-1
-     src/:
+     README.md: exists:1
+     Cargo.toml: exists:1
+     src/: exists:1
+     ./*.lock: exists:0-1
+     ./**/:
        .rs: snake_case
    exclude:
      - "target/**"
    ```
 
-   This keeps the project root closed, requires the core files, allows one
-   optional lockfile, and checks direct Rust files under `src/`.
+   This requires the core files, allows one optional root lockfile, and checks
+   Rust file names at every directory depth. Assura remains open to undeclared
+   paths until the project explicitly composes a closed direct-content rule.
 
 4. **Run the supported validation command**
 
@@ -70,7 +69,7 @@ Use this path for a first local check.
 - Read the full [Getting Started guide](/guides/getting-started/).
 - Follow the [Adoption Walkthrough](/guides/adoption-walkthrough/) for the
   empty-project and LS-Lint migration paths.
-- See [Configuration](/docs/configuration/) for the supported structure-first
+- See [Configuration](/reference/configuration/) for the supported structure-first
   config shape.
 - See [LS-Lint Migration](/guides/ls-lint-migration/) when adopting Assura from
   an existing `.ls-lint.yml`.

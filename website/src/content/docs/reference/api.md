@@ -16,9 +16,9 @@ plugin APIs.
 
 > **Current scope**
 >
-> Build automation against `assura check`, `assura status`, `assura agent`,
-> `assura editor`, `assura content`, and the JSON/YAML report fields
-> documented here.
+> Build automation against `assura check`, `assura status`, `assura review`,
+> `assura watch`, `assura daemon`, `assura agent`, `assura editor`,
+> `assura content`, and the documented report fields.
 
 ## Command Surface
 
@@ -26,24 +26,62 @@ plugin APIs.
 | --- | --- |
 | `assura check [path]` | Validate a project or subpath |
 | `assura status [path]` | Print discovered config and rule summary |
+| `assura review [path]` | Summarize change pressure and the first repair without acting as a policy gate |
+| `assura cache status|clean [path]` | Inspect or remove correctness-checked local cache namespaces |
 | `assura init [path]` | Create a starter `.assura/config.yml` |
-| `assura migrate [.ls-lint.yml ...]` | Convert LS-Lint 2.3 rule config |
+| `assura config add-recipe <recipe> [path]` | Add one editable recipe to an existing project config |
+| `assura migrate [config ...] --from auto|ls-lint|assura-v1` | Convert LS-Lint 2.3 or normalize legacy Assura config |
 | `assura agent ...` | Run local project-intelligence commands for coding agents |
 | `assura editor ...` | Run local project-intelligence commands for editor integrations |
 | `assura content ...` | Query project-intelligence facts and context |
 | `assura info [path]` | Print text configuration details |
-| `assura watch [path]` | Run one check as a current watch wrapper |
+| `assura watch [path]` | Continuously validate coalesced project changes with a prepared policy |
 
-Supported check formats are `text`, `json`, `yaml`, `advice`, and `status`.
-Supported status formats are `text`, `json`, and `yaml`.
+Supported check and review formats are `text`, `json`, `yaml`, `advice`,
+`status`, and `agent`. Supported status formats are `text`, `json`, and
+`yaml`.
+
+Use `assura review . --format text` before adding a new top-level path or
+opening a PR. The default text report shows the advisory status, Git comparison
+scope, actionable finding counts, branch and worktree changes, crossed
+thresholds, the most specific hot path, the first concrete repair, and one next
+command. Add global `--verbose` for exhaustive diagnostic counters and
+lower-level commands. Use `--format agent` when a local coding agent needs the
+compact JSON packet with blocking, advisory, inactive, informational, and
+omitted-noise classification. Review JSON also includes the complete advisory
+`heatmap`; Git fields are best-effort and non-fatal outside a checkout.
+
+`assura review` is the radar and exits successfully when it can assemble a
+report. `assura check` is the deterministic gate and owns blocking exit behavior
+for hooks and CI.
 
 ## Init Options
 
 | Option | Purpose |
 | --- | --- |
 | `--project-intelligence` | Create starter project-intelligence schema, collections, modeled records, and a broken-state example |
+| `--recipe agentic-core|structure-health` | Materialize an editable project-owned policy recipe; repeatable |
 | `--force` | Overwrite an existing starter config and starter files |
 | `--no-git-hooks` | Skip the optional hook setup message |
+
+For an existing project, preview or merge one recipe without replacing
+unrelated config:
+
+```bash
+assura config add-recipe agentic-core . --dry-run
+assura config add-recipe agentic-core .
+```
+
+Conflicting project values are preserved and reported unless `--force` is
+explicitly supplied.
+
+Migration auto-detects LS-Lint from a top-level `ls` key and legacy Assura from
+`structure` or `rules`. Use an explicit selector in automation:
+
+```bash
+assura migrate .ls-lint.yml --from ls-lint --output .assura/config.yml
+assura migrate .assura/config-v1.yml --from assura-v1 --output .assura/config.yml
+```
 
 ## Check Options
 
@@ -56,6 +94,43 @@ Supported status formats are `text`, `json`, and `yaml`.
 | `--min-severity low|medium|high|critical` | Hide lower-severity feedback items without changing what is checked |
 | `--max-issues <count>` | Cap displayed feedback items without changing what is checked |
 | `--agent generic|codex` | Select a delivery adapter for `--format agent`; Codex wraps feedback for `UserPromptSubmit` |
+| `--cache` | Reuse a Git-aware default cache only when correctness fingerprints match |
+| `--cache-dir <path>` | Reuse an explicit cache root |
+
+## Watch Options And Events
+
+`assura watch [path]` emits an initial result for the requested path, then
+remains resident and validates coalesced filesystem changes inside that scope.
+It keeps the parsed policy prepared, respects `exclude` patterns, watches an
+explicit configuration even when it lives outside the project, and falls back
+to a full requested-scope check when policy depends on other paths, multiple
+paths change, the edit stream reaches its bounded batch window, or the prior
+result was not clean. A file scope watches its containing directory and filters
+events back to that file so editor-style atomic replacement does not silently
+detach the subscription.
+
+| Option | Purpose |
+| --- | --- |
+| `--debounce <milliseconds>` | Wait for a quiet period before validating an edit burst; defaults to `300`, with a bounded maximum batch window |
+| `--format text|json` | Emit actionable bounded text or one complete JSON object per event |
+| `--no-git` | Ignore `.git/` events in addition to Assura runtime paths |
+
+JSON events use `assura.watch.event.v1`. Important fields are:
+
+| Field | Meaning |
+| --- | --- |
+| `runtime_mode` | `cold_full`, `warm_incremental`, or `warm_full` |
+| `report_scope` | `requested_path` or `affected_path`; an affected-path pass is not proof for the complete requested path |
+| `cache_state` | `prepared`, `reloaded`, or `degraded` |
+| `fallback_reason` | Why a warm event required a complete requested-scope check |
+| `changed_paths` | Project-relative paths represented by an incremental batch |
+| `coalesced_events` | Number of invalidating filesystem notifications in the batch |
+| `duration_ms` | Validation time for this event |
+| `report` / `error` | The structure report, or a recoverable watch error such as invalid changed config |
+
+Interrupting the command exits cleanly. An unrecoverable watcher-backend error
+emits one degraded event and exits instead of leaving a stale resident process.
+Watch does not write a persistent runtime artifact.
 
 ## Agent Surface
 
@@ -75,7 +150,7 @@ the lower-level content-query commands.
 | `assura agent safe-fixes` | Preview safe fixes through the shared agent envelope |
 | `assura agent onboard` | Create a broad agent-ready baseline and onboarding packet |
 | `assura agent nudge` | Emit bounded event-aware nudge JSON for local host wrappers |
-| `assura agent integration install|update|remove|status|doctor` | Manage reviewable local Codex, OpenCode, Claude, and Pi integration bundles |
+| `assura agent integration install|activate|update|deactivate|remove|status|doctor` | Manage generated and Assura-owned project-local Codex, OpenCode, Claude, and Pi activation state |
 | `assura agent session` | Run a persistent JSON-line local query session |
 
 Examples:
@@ -89,14 +164,16 @@ assura agent onboard . --agent auto
 assura agent onboard . --content-template agent-project
 assura agent onboard . --content-template document-project
 assura agent integration install codex .
+assura agent integration activate codex .
 assura agent integration doctor codex .
 ```
 
-Generated agent-ready baselines include `AGENTS.md`, `.agents/skills/`, and
-`extensions.agent_guidance` checks. The default shape expects `AGENTS.md`
-sections named `Operating Rules`, `Process Docs vs Skills`, `Skills`, and
-`Anchors`; the `Skills` section includes a use-case table that names the
-project-local skill or skill-name pattern to load first. The generated
+Generated agent-ready baselines include `AGENTS.md`, `.agents/skills/`, the
+project-owned `agentic-core` structure recipe, and `extensions.agent_guidance`
+checks. The default shape expects `AGENTS.md` sections named `Operating Rules`,
+`Process Docs vs Skills`, `Skills`, and `Anchors`; the `Skills` section
+includes a use-case table that names the project-local skill or skill-name
+pattern to load first. The generated
 `assura-structure-fit` skill installs under `.agents/skills/` and provides the
 `STRUCTURE_FIT_CHECK` anchor for deciding whether a structure mismatch should
 be fixed by moving/renaming a path or by changing config. Each project-local
@@ -219,7 +296,8 @@ one `assura.project-intelligence.session.response.v1` JSON response per stdout
 line. Use it when an agent, editor wrapper, or local integration needs repeated
 diagnostics, context-pack, graph, search, relation, or safe-fix preview queries
 without restarting the CLI process. The session reloads conservatively when the
-project fingerprint changes; `assura watch` remains experimental.
+project fingerprint changes. Use `assura watch` for continuous structure
+feedback rather than modeled content-query sessions.
 
 Safe-fix previews returned by `safe-fixes` include an `audit_id` that matches
 `assura fix markdown --dry-run --format json` `fixes[].id`. Apply still happens

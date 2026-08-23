@@ -22,9 +22,27 @@ fn node_directive(
             directive
         }
         Value::String(text) => {
+            let parts = split_composition(&text)?;
+            if parts.len() > 1 {
+                let mut directive = NodeDirective::default();
+                for part in parts {
+                    merge_node_directive(
+                        &mut directive,
+                        node_directive(Value::String(part.to_string()), rules, stack)?,
+                    )?;
+                }
+                return Ok(directive);
+            }
             if let Some(exists) = parse_exists_shorthand(&text)? {
                 Ok(NodeDirective {
                     exists: Some(exists),
+                    ..NodeDirective::default()
+                })
+            } else if let Some((name, value)) = parse_parameterized_directive(&text)? {
+                let mut attributes = Mapping::new();
+                attributes.insert(string_value(name), value);
+                Ok(NodeDirective {
+                    attributes,
                     ..NodeDirective::default()
                 })
             } else {
@@ -43,6 +61,109 @@ fn node_directive(
             "Assura config node directives must be strings or mappings, got {other:?}"
         )),
     }
+}
+
+fn parse_parameterized_directive(value: &str) -> Result<Option<(&str, Value)>, String> {
+    let Some((name, raw)) = value.split_once(':') else {
+        return Ok(None);
+    };
+    let name = name.trim();
+    let raw = raw.trim();
+    match name {
+        "max_lines" | "limit_children" => {
+            let parsed = raw.parse::<u64>().map_err(|error| {
+                format!("Assura config {name} value '{raw}' is invalid: {error}")
+            })?;
+            Ok(Some((name, Value::Number(parsed.into()))))
+        }
+        "max_size" | "severity" | "message" => {
+            if raw.is_empty() {
+                return Err(format!("Assura config {name} value must not be empty"));
+            }
+            Ok(Some((name, Value::String(raw.to_string()))))
+        }
+        "exact" | "regex" => Ok(None),
+        _ => Ok(None),
+    }
+}
+
+fn merge_node_directive(
+    target: &mut NodeDirective,
+    source: NodeDirective,
+) -> Result<(), String> {
+    merge_optional_directive(&mut target.exists, source.exists, "exists")?;
+    match (&mut target.naming, source.naming) {
+        (None, naming) => target.naming = naming,
+        (Some(current), Some(naming)) if current != &naming => {
+            current.push_str(" | ");
+            current.push_str(&naming);
+        }
+        _ => {}
+    }
+    merge_mapping(&mut target.attributes, source.attributes);
+    Ok(())
+}
+
+fn merge_optional_directive(
+    target: &mut Option<String>,
+    source: Option<String>,
+    name: &str,
+) -> Result<(), String> {
+    match (target.as_ref(), source) {
+        (_, None) => Ok(()),
+        (None, Some(value)) => {
+            *target = Some(value);
+            Ok(())
+        }
+        (Some(current), Some(value)) if current == &value => Ok(()),
+        (Some(current), Some(value)) => Err(format!(
+            "Assura config composition defines conflicting {name} values '{current}' and '{value}'"
+        )),
+    }
+}
+
+fn split_composition(value: &str) -> Result<Vec<&str>, String> {
+    let bytes = value.as_bytes();
+    let mut parts = Vec::new();
+    let mut start = 0;
+    let mut depth = 0usize;
+    let mut escaped = false;
+
+    for (index, byte) in bytes.iter().copied().enumerate() {
+        if escaped {
+            escaped = false;
+            continue;
+        }
+        if byte == b'\\' {
+            escaped = true;
+            continue;
+        }
+        match byte {
+            b'(' | b'[' | b'{' => depth += 1,
+            b')' | b']' | b'}' => depth = depth.saturating_sub(1),
+            b'|' if depth == 0
+                && index > 0
+                && index + 1 < bytes.len()
+                && bytes[index - 1].is_ascii_whitespace()
+                && bytes[index + 1].is_ascii_whitespace() =>
+            {
+                let part = value[start..index].trim();
+                if part.is_empty() {
+                    return Err("Assura config composition contains an empty directive".to_string());
+                }
+                parts.push(part);
+                start = index + 1;
+            }
+            _ => {}
+        }
+    }
+
+    let part = value[start..].trim();
+    if part.is_empty() {
+        return Err("Assura config composition contains an empty directive".to_string());
+    }
+    parts.push(part);
+    Ok(parts)
 }
 
 fn node_directive_from_mapping(mapping: Mapping) -> Result<NodeDirective, String> {
@@ -78,6 +199,7 @@ fn node_directive_from_mapping(mapping: Mapping) -> Result<NodeDirective, String
 fn apply_file_directive(
     output: &mut Mapping,
     filename: &str,
+    attribute_pattern: &str,
     directive: NodeDirective,
 ) -> Result<(), String> {
     if directive.naming.is_some() {
@@ -85,7 +207,7 @@ fn apply_file_directive(
             "Assura config exact file key '{filename}' only supports exists"
         ));
     }
-    apply_file_attributes(output, directive.attributes)?;
+    apply_file_pattern_attributes(output, attribute_pattern, directive.attributes)?;
     if let Some(exists) = directive.exists {
         set_nested_mapping(output, "files", "exists", mapping_entry(filename, exists));
         if filename_count_is_allowed(output, "files", filename) {
@@ -101,44 +223,56 @@ fn apply_file_directive(
 
 fn apply_file_pattern_directive(
     output: &mut Mapping,
-    pattern: &str,
+    local_pattern: &str,
+    attribute_pattern: &str,
     directive: NodeDirective,
 ) -> Result<(), String> {
-    apply_file_attributes(output, directive.attributes)?;
-    let allows_by_count = directive.exists.is_some() && directive.naming.is_none();
+    if directive.exists.is_some() && local_pattern.contains('/') {
+        return Err(format!(
+            "Assura config file glob '{local_pattern}' cannot use exists across directories; place a direct-child exists rule in the matching structure scope"
+        ));
+    }
+    apply_file_pattern_attributes(output, attribute_pattern, directive.attributes)?;
     if let Some(naming) = directive.naming {
         set_nested_mapping(
             output,
             "files",
             "naming_patterns",
-            mapping_entry(pattern, naming),
+            mapping_entry(attribute_pattern, naming),
         );
     }
     if let Some(exists) = directive.exists {
-        set_nested_mapping(output, "files", "exists", mapping_entry(pattern, exists));
-    }
-    if allows_by_count {
-        append_nested_sequence(output, "files", "allowed_patterns", pattern);
+        let allows_child = exists != "0";
+        set_nested_mapping(
+            output,
+            "files",
+            "exists",
+            mapping_entry(local_pattern, exists),
+        );
+        if allows_child {
+            append_nested_sequence(output, "files", "allowed_patterns", local_pattern);
+        }
     }
     Ok(())
 }
 
 fn apply_captured_file_directive(
     output: &mut Mapping,
-    pattern: &str,
+    local_pattern: &str,
+    attribute_pattern: &str,
     directive: NodeDirective,
 ) -> Result<(), String> {
-    apply_file_attributes(output, directive.attributes)?;
+    apply_file_pattern_attributes(output, attribute_pattern, directive.attributes)?;
     if let Some(naming) = directive.naming {
         set_nested_mapping(
             output,
             "files",
             "naming_patterns",
-            mapping_entry(pattern, naming),
+            mapping_entry(attribute_pattern, naming),
         );
     }
     if directive.exists.as_deref() != Some("0") {
-        append_nested_sequence(output, "files", "allowed_patterns", pattern);
+        append_nested_sequence(output, "files", "allowed_patterns", local_pattern);
     }
     Ok(())
 }
@@ -183,6 +317,14 @@ fn apply_captured_directory_directive(
         ));
     }
     apply_directory_attributes(output, directive.attributes)?;
+    if let Some(exists) = directive.exists.as_ref() {
+        set_nested_mapping(
+            output,
+            "directories",
+            "exists",
+            mapping_entry(directory, exists),
+        );
+    }
     if directive.exists.as_deref() != Some("0") {
         append_nested_sequence(output, "directories", "allowed_patterns", directory);
     }
@@ -191,8 +333,34 @@ fn apply_captured_directory_directive(
 
 fn apply_self_directory_directive(
     output: &mut Mapping,
-    directive: NodeDirective,
+    mut directive: NodeDirective,
 ) -> Result<(), String> {
+    if let Some(limit) = directive.attributes.remove(string_value("limit_children")) {
+        let mut limit = match limit {
+            Value::Number(max) => {
+                let mut mapping = Mapping::new();
+                mapping.insert(string_value("max"), Value::Number(max));
+                mapping
+            }
+            Value::Mapping(mapping) => mapping,
+            other => {
+                return Err(format!(
+                    "Assura config limit_children must be a number or mapping, got {other:?}"
+                ))
+            }
+        };
+        for key in ["severity", "message"] {
+            if let Some(value) = directive.attributes.remove(string_value(key)) {
+                limit.insert(string_value(key), value);
+            }
+        }
+        merge_top_level_attr(output, "limit_children", Value::Mapping(limit))?;
+    }
+    for key in ["severity", "message"] {
+        if let Some(value) = directive.attributes.remove(string_value(key)) {
+            set_nested_value(output, "self_directory", key, value);
+        }
+    }
     apply_directory_attributes(output, directive.attributes)?;
     if let Some(exists) = directive.exists {
         set_nested_mapping(
@@ -217,12 +385,20 @@ fn is_tree_value(value: &Value) -> Result<bool, String> {
         let Some(key) = key.as_str() else {
             return Err("Assura config fragments must use string keys".to_string());
         };
-        if key == USE || key == EXTRA || !is_node_attr_key(key) {
+        if key == USE
+            || key == EXTRA
+            || (is_directory_node_attr_key(key) && key != "exists")
+            || !is_node_attr_key(key)
+        {
             return Ok(true);
         }
     }
 
     Ok(false)
+}
+
+fn is_rule_reference_value(value: &Value) -> bool {
+    value.as_str().is_some_and(is_rule_reference)
 }
 
 fn apply_file_attributes(output: &mut Mapping, attributes: Mapping) -> Result<(), String> {
@@ -248,6 +424,44 @@ fn apply_file_attributes(output: &mut Mapping, attributes: Mapping) -> Result<()
         }
     }
     Ok(())
+}
+
+fn apply_file_pattern_attributes(
+    output: &mut Mapping,
+    pattern: &str,
+    mut attributes: Mapping,
+) -> Result<(), String> {
+    if let Some(value) = attributes.remove(string_value("markdown")) {
+        let mut entry = Mapping::new();
+        entry.insert(string_value(pattern), value);
+        set_nested_mapping(
+            output,
+            "files",
+            "markdown_patterns",
+            Value::Mapping(entry),
+        );
+    }
+    for (attribute, target) in [
+        ("max_lines", "max_lines_patterns"),
+        ("max_size", "max_size_patterns"),
+    ] {
+        if let Some(value) = attributes.remove(string_value(attribute)) {
+            let mut entry = Mapping::new();
+            entry.insert(string_value(pattern), value);
+            set_nested_mapping(output, "files", target, Value::Mapping(entry));
+        }
+    }
+    for (attribute, target) in [
+        ("severity", "severity_patterns"),
+        ("message", "message_patterns"),
+    ] {
+        if let Some(value) = attributes.remove(string_value(attribute)) {
+            let mut entry = Mapping::new();
+            entry.insert(string_value(pattern), value);
+            set_nested_mapping(output, "files", target, Value::Mapping(entry));
+        }
+    }
+    apply_file_attributes(output, attributes)
 }
 
 fn apply_directory_attributes(output: &mut Mapping, attributes: Mapping) -> Result<(), String> {

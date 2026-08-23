@@ -1,0 +1,18 @@
+---
+interface Props {
+  eyebrow: string;
+  title: string;
+  id: string;
+  layout?: 'default' | 'split' | 'compact';
+}
+
+const { eyebrow, title, id, layout = 'default' } = Astro.props;
+---
+
+<div class:list={['section-head', layout !== 'default' && layout]}>
+  <div>
+    <p class="eyebrow">{eyebrow}</p>
+    <h2 id={id}>{title}</h2>
+  </div>
+  <slot />
+</div>

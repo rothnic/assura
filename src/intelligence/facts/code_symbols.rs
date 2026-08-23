@@ -26,6 +26,7 @@ pub struct CodeSymbol {
     /// Provider evidence quality, for example `baseline` or `provider`.
     pub evidence: String,
     /// Source location when known.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub location: Option<SourceLocation>,
 }
 
@@ -60,10 +61,13 @@ pub struct SymbolRef {
     /// Symbol text or provider ID.
     pub symbol: String,
     /// Source field that carried the symbol reference when known.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub field: Option<String>,
     /// Resolved code symbol fact ID when available.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub target_id: Option<FactId>,
     /// Provider name when known.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub provider: Option<String>,
 }
 

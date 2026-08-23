@@ -23,17 +23,20 @@ entrypoint.
 Use `.assura/config.yml` to express project shape first:
 
 ```yaml
+rules:
+  closed-entry:
+    exists: 0
+  closed:
+    ./*/: $closed-entry
+    ./*: $closed-entry
+
 structure:
-  ./:
-    extra: false
-    README.md: exists:1
-    Cargo.toml: exists:1
-    src/: exists:1
-    tests/: exists:0-1
-  src/:
-    .rs: snake_case
-  tests/:
-    required: false
+  ./: $closed
+  README.md: exists:1
+  Cargo.toml: exists:1
+  src/: exists:1
+  tests/: exists:0-1
+  ./**/:
     .rs: snake_case
 exclude:
   - "target/**"
@@ -67,7 +70,7 @@ surface for specialized checks that cannot yet be expressed by structure
 notation. It is not the preferred authoring surface for ordinary source/test or
 package/doc relationships.
 
-```yaml
+```yaml config-fragment
 extensions:
   custom_constraints:
     - id: command_surface_docs
@@ -76,9 +79,7 @@ extensions:
       target: ".assura/command-surface.yml"
       severity: high
 
-structure:
-  ./:
-    extra: true
+structure: {}
 exclude:
   - "target/**"
 ```

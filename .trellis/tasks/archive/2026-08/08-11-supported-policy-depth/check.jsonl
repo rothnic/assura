@@ -1,0 +1,5 @@
+{"file":".trellis/spec/assura/roadmap.md","reason":"Ensure future intelligence remains visibly separate from supported core claims."}
+{"file":".trellis/spec/assura/tooling-stabilization.md","reason":"Check that promoted command and output contracts are release-grade rather than provisional."}
+{"file":".trellis/spec/assura/compact-project-review.md","reason":"Verify review examples preserve the supported advisory hierarchy and bounded output."}
+{"file":".trellis/spec/assura/structure-enforcement.md","reason":"Verify check examples preserve real blocking behavior and corrective context."}
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"Verify accessibility, breakpoint coverage, visual consistency, and overflow behavior."}

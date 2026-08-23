@@ -324,10 +324,7 @@ impl ConfigDiscovery {
                 return Some(current);
             }
 
-            match current.parent() {
-                Some(parent) => current = parent.to_path_buf(),
-                None => return None,
-            }
+            current = current.parent()?.to_path_buf();
         }
     }
 
@@ -349,10 +346,7 @@ impl ConfigDiscovery {
                 return Some(git_dir);
             }
 
-            match current.parent() {
-                Some(parent) => current = parent.to_path_buf(),
-                None => return None,
-            }
+            current = current.parent()?.to_path_buf();
         }
     }
 }

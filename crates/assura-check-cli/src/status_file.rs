@@ -10,12 +10,14 @@ use assura_stable_hash::stable_hash_const;
 use std::fs;
 use std::io::{self, Read};
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicU64, Ordering};
 
 const MAGIC: &[u8; 4] = b"AS2\0";
 const STATUS_LEN: usize = 4 + 8 + 1 + 1;
 const CLEAN: u8 = 0;
 const DIRTY: u8 = 1;
 const VERSION_HASH: u64 = stable_hash_const(env!("CARGO_PKG_VERSION").as_bytes());
+static TEMP_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) struct CheckStatus {
@@ -34,9 +36,13 @@ pub(crate) fn write_status(path: &Path, status: CheckStatus) -> io::Result<()> {
     bytes.push(if status.dirty { DIRTY } else { CLEAN });
     bytes.push(status.exit_code.clamp(0, u8::MAX as i32) as u8);
 
-    let temp_path = path.with_extension(format!("tmp-{}", std::process::id()));
+    let temp_path = temp_status_path(path);
     fs::write(&temp_path, bytes)?;
-    fs::rename(temp_path, path)
+    if let Err(error) = replace_status_file(&temp_path, path) {
+        let _ = fs::remove_file(&temp_path);
+        return Err(error);
+    }
+    Ok(())
 }
 
 pub(crate) fn read_status(path: &Path) -> io::Result<CheckStatus> {
@@ -65,11 +71,64 @@ pub(crate) fn read_status(path: &Path) -> io::Result<CheckStatus> {
 }
 
 pub(crate) fn is_status_artifact(path: &Path, status_file: &Path) -> bool {
-    path == status_file || path == temp_status_path(status_file)
+    if path == status_file || path.parent() != status_file.parent() {
+        return path == status_file;
+    }
+    let Some(file_name) = path.file_name() else {
+        return false;
+    };
+    file_name
+        .to_string_lossy()
+        .starts_with(&temp_status_prefix(status_file))
 }
 
 fn temp_status_path(path: &Path) -> PathBuf {
-    path.with_extension(format!("tmp-{}", std::process::id()))
+    let sequence = TEMP_SEQUENCE.fetch_add(1, Ordering::Relaxed);
+    path.with_file_name(format!("{}{sequence}", temp_status_prefix(path)))
+}
+
+fn temp_status_prefix(path: &Path) -> String {
+    format!(
+        ".{}.tmp-{}-",
+        path.file_name().unwrap_or_default().to_string_lossy(),
+        std::process::id()
+    )
+}
+
+#[cfg(not(windows))]
+fn replace_status_file(source: &Path, destination: &Path) -> io::Result<()> {
+    fs::rename(source, destination)
+}
+
+#[cfg(windows)]
+fn replace_status_file(source: &Path, destination: &Path) -> io::Result<()> {
+    use std::os::windows::ffi::OsStrExt;
+    use windows_sys::Win32::Storage::FileSystem::{
+        MoveFileExW, MOVEFILE_REPLACE_EXISTING, MOVEFILE_WRITE_THROUGH,
+    };
+
+    let source = source
+        .as_os_str()
+        .encode_wide()
+        .chain(std::iter::once(0))
+        .collect::<Vec<_>>();
+    let destination = destination
+        .as_os_str()
+        .encode_wide()
+        .chain(std::iter::once(0))
+        .collect::<Vec<_>>();
+    let result = unsafe {
+        MoveFileExW(
+            source.as_ptr(),
+            destination.as_ptr(),
+            MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH,
+        )
+    };
+    if result == 0 {
+        Err(io::Error::last_os_error())
+    } else {
+        Ok(())
+    }
 }
 
 fn invalid_data(message: &'static str) -> io::Error {

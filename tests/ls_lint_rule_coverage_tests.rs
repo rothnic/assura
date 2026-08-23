@@ -90,7 +90,7 @@ fn lslint_migration_rejects_unsupported_yaml_shapes() {
         ("ignore:\n  - 1\n", "'ignore' entries must be strings"),
         ("ls: []\n", "'ls' must be a mapping"),
         (
-            "ls:\n  .js:\n    nested: nope\n",
+            "ls:\n  .js:\n    - nested\n",
             "rule for '.js' must be a string",
         ),
     ] {
@@ -100,6 +100,32 @@ fn lslint_migration_rejects_unsupported_yaml_shapes() {
             "expected {expected:?} in error {error:?}"
         );
     }
+}
+
+#[test]
+fn lslint_migration_accepts_dot_directory_scopes() {
+    let config = convert_ls_lint_to_config(
+        r#"
+ls:
+  .agents:
+    skills:
+      .dir: kebab-case
+      "*":
+        .md: regex:SKILL | exists:1
+"#,
+    )
+    .unwrap();
+
+    let root = config.structure.get("./").expect("root scope");
+    let agents = root
+        .children
+        .as_ref()
+        .and_then(|children| children.get(".agents"))
+        .expect("dot-directory scope");
+    assert!(agents
+        .children
+        .as_ref()
+        .is_some_and(|children| children.contains_key("skills")));
 }
 
 #[test]

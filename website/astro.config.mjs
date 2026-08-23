@@ -1,20 +1,31 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
-import catppuccin from '@catppuccin/starlight';
+import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
+	site: 'https://assura.dev',
+	redirects: {
+		'/docs/configuration': '/reference/configuration',
+		'/docs/rules': '/reference/rules',
+		'/reference/config-v2': '/reference/configuration',
+		'/docs/api': '/reference/api',
+		'/examples/basic': '/examples/basic-setup',
+	},
 	integrations: [
+		sitemap(),
 		starlight({
 			title: 'Assura',
+			components: {
+				Head: './src/components/starlight-head.astro',
+			},
+			logo: {
+				src: './src/assets/assura-logo.svg',
+				alt: '',
+			},
 			description: 'Structure-first repository validation and project intelligence',
 			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/rothnic/assura' }],
-			plugins: [
-				catppuccin({
-					flavor: 'mocha',
-				}),
-			],
 			customCss: [
 				'./src/styles/custom.css',
 			],
@@ -50,16 +61,10 @@ export default defineConfig({
 					],
 				},
 				{
-					label: 'Guides',
-					items: [
-						{ label: 'Configuration', slug: 'docs/configuration' },
-						{ label: 'Rules', slug: 'docs/rules' },
-					],
-				},
-				{
 					label: 'Reference',
 					items: [
 						{ label: 'Configuration Reference', slug: 'reference/configuration' },
+						{ label: 'Rules Reference', slug: 'reference/rules' },
 						{ label: 'API Reference', slug: 'reference/api' },
 						{ label: 'Agent Feedback Delivery', slug: 'reference/agent-feedback' },
 						{ label: 'Release Readiness', slug: 'reference/release-readiness' },

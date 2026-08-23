@@ -2,8 +2,12 @@
 
 use super::agent_onboarding::DetectedSection;
 use super::agent_onboarding_content_templates as content;
+use super::agent_onboarding_handoff_templates as handoff;
 use super::agent_onboarding_structure_fit_templates as structure_fit;
 use super::AgentContentTemplate;
+
+pub(super) const AGENTIC_RECIPE: &str = "agentic-core + structure-health";
+pub(super) const AGENT_ENTRYPOINT_REFERENCE: &str = "$agent-entrypoint";
 
 pub(super) fn baseline_files(
     detected: &DetectedSection,
@@ -18,6 +22,7 @@ pub(super) fn baseline_files(
         },
         GeneratedFile::static_file(".assura/presets.lock.yml", presets_lock()),
         GeneratedFile::static_file("AGENTS.md", agents_md()),
+        GeneratedFile::static_file("README.md", project_readme()),
         GeneratedFile::static_file(
             ".agents/skills/assura-project-maintenance/SKILL.md",
             project_maintenance_skill(),
@@ -54,12 +59,21 @@ pub(super) fn baseline_files(
             required: true,
             executable: false,
         },
-        GeneratedFile::static_file(".assura/onboarding/questions.md", onboarding_questions()),
-        GeneratedFile::static_file(".assura/onboarding/lifecycle.md", onboarding_lifecycle()),
-        GeneratedFile::static_file(".assura/onboarding/agent-next.md", agent_next()),
+        GeneratedFile::static_file(".assura/onboarding/questions.md", handoff::questions()),
+        GeneratedFile::static_file(".assura/onboarding/lifecycle.md", handoff::lifecycle()),
+        GeneratedFile::static_file(".assura/onboarding/agent-next.md", handoff::agent_next()),
     ];
     files.extend(content::content_template_files(content_template));
     files
+}
+
+pub(super) fn rule_recommendations_file(detected: &DetectedSection, status: &str) -> GeneratedFile {
+    GeneratedFile {
+        path: ".assura/onboarding/rules.md",
+        contents: onboarding_rules(detected, status),
+        required: true,
+        executable: false,
+    }
 }
 
 #[derive(Clone)]
@@ -85,11 +99,43 @@ fn agent_ready_config(content_template: AgentContentTemplate) -> String {
     let repository_references = content::repository_reference_config(content_template);
     let requirements_traceability = content::requirements_traceability_config(content_template);
     let content_config = content::content_config(content_template);
-    let root_required_dirs = content::root_required_dirs(content_template);
     let root_structure = content::root_structure(content_template);
     let docs_structure = content::docs_structure(content_template);
     format!(
-        r#"version: "2.0"
+        r#"rules:
+  # Progressive-disclosure entrypoints.
+  agent-entrypoint:
+    max_lines: 160
+    severity: low
+    message: See docs/process/agent-workflow.md.
+
+  skill-entrypoint:
+    max_lines: 500
+    markdown:
+      require_frontmatter: true
+    message: See docs/process/agent-workflow.md#skills.
+
+  # Shared non-blocking directory health.
+  folder-health:
+    limit_children: 10
+    severity: low
+    message: See docs/process/agent-workflow.md#structure.
+
+  # Strict skill directories with declared resources.
+  closed-entry:
+    exists: 0
+    message: See docs/process/agent-workflow.md#skills.
+
+  closed:
+    ./*/: $closed-entry
+    ./*: $closed-entry
+
+  skill:
+    ./: $closed
+    ./{{agents,assets,references,scripts}}/:
+      ./: exists:0-1
+      inherit: false
+    SKILL.md: exists:1 | $skill-entrypoint
 
 extensions:
   agent_guidance:
@@ -133,70 +179,38 @@ extensions:
 {requirements_traceability}
 {content_config}
 
-rules:
-  "@assura-skill-dir":
-    SKILL.md: exists:1
-    agents/: exists:0-1
-    references/: exists:0-1
-    scripts/: exists:0-1
-    assets/: exists:0-1
-    extra: false
-
 structure:
-  ./:
-    extra: true
-    AGENTS.md: exists:1
-    README.md: exists:0-1
-    ".gitignore": exists:0-1
-    Cargo.toml: exists:0-1
-    package.json: exists:0-1
-    pyproject.toml: exists:0-1
-    directories:
-      required:
-        - ".assura"
-        - ".agents"
-        - "docs"
-{root_required_dirs}
-  .assura/:
-    required: true
-    config.yml: exists:1
-    presets.lock.yml: exists:1
-    onboarding/: exists:1
-    examples/: exists:1
-    integrations/: exists:0-1
-  .assura/onboarding/:
-    required: true
-    summary.md: exists:1
-    questions.md: exists:1
-    lifecycle.md: exists:1
-    agent-next.md: exists:1
-    doctor.json: exists:1
-  .assura/examples/agent-project/:
-    required: true
-    AGENTS.example.md: exists:1
-    SKILL.example.md: exists:1
+  # Agent entrypoints and project-owned skills.
   .agents/:
-    required: true
-    skills/: exists:1
-  .agents/skills/:
-    required: true
-    extra: true
-    "{{skill}}/":
-      use: "@assura-skill-dir"
+    ./: exists:0-1 | $closed
+    skills/:
+      ./: exists:0-1
+      ./*/: kebab-case | $skill
+      ./*: $closed-entry
+
   docs/:
-    required: true
-    process/: exists:1
-    learnings/: exists:1
+    process/:
+      agent-workflow.md: exists:1
+    learnings/:
+      README.md: exists:1
 {docs_structure}
-  docs/process/:
-    required: true
-    agent-workflow.md: exists:1
-  docs/learnings/:
-    required: true
-    README.md: exists:1
 {root_structure}
 
+  # Root files are explicit; project-specific manifests stay optional.
+  .gitignore: exists:0-1
+  AGENTS.md: exists:1 | $agent-entrypoint
+  Cargo.toml: exists:0-1
+  package.json: exists:0-1
+  pyproject.toml: exists:0-1
+  README.md: exists:1
+
+  # Recursive advisory defaults.
+  ./**/:
+    ./: $folder-health
+    .{{md,js,jsx,ts,tsx}}: max_lines:500 | severity:low
+
 exclude:
+  - ".assura/**"
   - ".git/**"
   - "target/**"
   - "node_modules/**"
@@ -211,20 +225,29 @@ fn presets_lock() -> &'static str {
 profile: agent-project
 version: 1
 generated_by: assura agent onboard
+recipes:
+  - agentic-core
+  - structure-health
+policy: project-owned
 "#
+}
+
+fn project_readme() -> &'static str {
+    "# Project\n\nProject guidance is in `AGENTS.md`.\n"
 }
 
 fn agents_md() -> &'static str {
     r#"# Agent Instructions
 
-Assura has installed a broad agent-ready baseline for this repository.
+Assura has installed an agent-ready onboarding packet for this repository.
+Read `.assura/onboarding/rules.md` for the project rule application status.
 
 ## Operating Rules
 
 Before adding project-specific conventions, read
-`.assura/onboarding/agent-next.md` and ask the user the remaining
-specialization questions. Do not invent language, layout, naming, traceability,
-or domain conventions.
+`.assura/onboarding/agent-next.md`. Use manifests, tooling, documentation, and
+established paths as evidence for the expected project shape. Ask the user only
+where that evidence is ambiguous or a rule would reject existing content.
 
 Use `assura check --format agent --warn .` for advisory feedback while working.
 Use gate-mode checks before push or CI by omitting `--warn`.
@@ -277,12 +300,12 @@ Use `assura check --format agent --warn .` for advisory feedback while working.
 
 - Updated Assura baseline files or a concise explanation that no baseline
   update was needed.
-- Clear remaining specialization questions for the user.
+- Evidence-backed project-owned rules and clear remaining questions for the user.
 
 ## Guardrails
 
-- Do not invent project conventions before the user answers specialization
-  questions.
+- Do not treat every observed path as intended. Close stable scopes from
+  converging evidence and ask before making ambiguous or destructive choices.
 - Keep longer examples and runbooks in `references/` or `docs/process/`.
 "#
 }
@@ -292,7 +315,7 @@ fn openai_agent_config() -> &'static str {
 }
 
 fn onboarding_reference() -> &'static str {
-    "# Assura Onboarding\n\nThe broad baseline is active. Specialize only after user answers.\n"
+    "# Assura Onboarding\n\nRead `.assura/onboarding/rules.md`, inspect project evidence, specialize stable scopes, and ask only about unresolved choices.\n"
 }
 
 fn agent_workflow_doc() -> &'static str {
@@ -306,7 +329,8 @@ related_requirements:
 
 # Agent Workflow
 
-Run Assura checks, read agent-next.md, ask before specializing.
+Run Assura checks, read agent-next.md, specialize from project evidence, and
+ask only where the intended shape is ambiguous.
 "#
 }
 
@@ -382,7 +406,7 @@ Keep SKILL.md concise and put detailed references in subdirectories.
 
 fn onboarding_summary(detected: &DetectedSection) -> String {
     format!(
-        "# Assura Onboarding Summary\n\nProject type: `{}` ({})\nAgent harness: `{}` ({})\n\nBroad agent-ready baseline is active. Specialization is still pending.\n",
+        "# Assura Onboarding Summary\n\nProject type: `{}` ({})\nAgent harness: `{}` ({})\nMaterialized recipes: `agentic-core`, `structure-health`\nPolicy ownership: `.assura/config.yml`\n\nSee `rules.md` for application status, then specialize the expected shape from project evidence.\n",
         detected.project_type,
         detected.project_confidence,
         detected.agent_harness,
@@ -390,73 +414,17 @@ fn onboarding_summary(detected: &DetectedSection) -> String {
     )
 }
 
-fn onboarding_questions() -> &'static str {
-    r#"# Assura Onboarding Questions
-
-1. What primary language or stack should this project use?
-2. What project type is this: library, app, docs site, research-authoring project, data project, monorepo, or other?
-3. What file naming convention should apply: kebab-case, snake_case, PascalCase, or mixed by folder?
-4. What source layout should the project use?
-5. What test layout should the project use?
-6. Should docs be strict from day one or advisory until the first milestone?
-7. Should agent hooks be advisory only while working and blocking only in CI?
-8. Are there required files or folders specific to this project?
-9. Are there binary or source documents that should be tracked by manifest instead of read as text?
-10. Should Assura create typed content models for tasks, decisions, requirements, evidence, or source documents?
-"#
-}
-
-fn onboarding_lifecycle() -> &'static str {
-    r#"# Assura Lifecycle Profiles
-
-Use these modes consistently:
-
-| Mode | When | Blocking | Command |
-| --- | --- | --- | --- |
-| nudge | During agent working loops and path-aware tool events | no | `assura agent nudge --event before-tool --changed <path> --format json .` |
-| warn | Before local commits or while drafting | no | `assura check --format agent --warn --min-severity low --max-issues 10 .` |
-| gate | Before push, merge, or CI | yes | `assura check --format agent --min-severity medium --max-issues 20 .` |
-
-Host-agent integrations are reviewable local bundles under
-`.assura/integrations/<agent>/`. Assura does not silently mutate global or
-host-agent configuration. Run `assura agent integration doctor <agent> .` after
-manual host wiring.
-"#
-}
-
-fn agent_next() -> &'static str {
-    r#"# Agent Next
-
-Assura is installed and the broad agent-ready baseline is active.
-
-Do not invent project conventions. Ask the user the remaining specialization
-questions before adding language, layout, naming, traceability, content-model,
-source-document, hook, or project-specific rules.
-
-Use `.assura/onboarding/lifecycle.md` to decide between nudge, warn, and gate
-feedback. Warn mode is advisory for draft work; gate mode is for pre-push,
-merge, or CI checks.
-
-For structure mismatches, apply `STRUCTURE_FIT_CHECK` from
-`.agents/skills/assura-structure-fit/references/structure-fit-check.md` before
-editing `.assura/config.yml`.
-
-## Ask The User
-
-1. What primary language or stack should this project use?
-2. What project type is this: library, app, docs site, research-authoring project, data project, monorepo, or other?
-3. What file naming convention should apply: kebab-case, snake_case, PascalCase, or mixed by folder?
-4. What source layout should the project use?
-5. What test layout should the project use?
-6. Should docs be strict from day one or advisory until the first milestone?
-7. Should agent hooks be advisory only while working and blocking only in CI?
-8. Are there required files or folders specific to this project?
-9. Are there binary or source documents that should be tracked by manifest instead of read as text?
-10. Should Assura create typed content models for tasks, decisions, requirements, evidence, or source documents?
-
-## After The User Answers
-
-Record answers in `.assura/onboarding/answers.yml` or equivalent project notes,
-then run the later specialization flow when it exists.
-"#
+fn onboarding_rules(detected: &DetectedSection, status: &str) -> String {
+    let status_detail = match status {
+        "applied" => "The project-owned agentic recipes are active.",
+        "available" => {
+            "Recipe rules are present, but the selected root policy does not apply all entrypoints."
+        }
+        "conflict" => "Existing project-owned recipe values were preserved and need manual review.",
+        _ => "The selected config does not contain the recommended project-owned recipes.",
+    };
+    format!(
+        "# Assura Rule Recommendations\n\nDetected project type: `{}`.\nRecommendation status: `{status}`.\n\n{status_detail}\n\nThe `agentic-core` and `structure-health` recipes are copied into `.assura/config.yml`; the project owns and can edit every selected rule.\n\nIncluded policy layers:\n\n- `$agent-entrypoint`\n- `$skill-entrypoint`\n- `$skill`\n- `$folder-health`\n- `$closed`\n\nUse project evidence to define language, framework, naming, layout, and generated-output rules. Ask the project owner only where the intended policy remains ambiguous.\n",
+        detected.project_type,
+    )
 }

@@ -91,6 +91,25 @@ median for the same fixture. Assura CLI rows also include
 field explains whether a miss is an implementation gap or a measured
 subprocess-floor limit.
 
+## Cold Optimization Keep Bar
+
+Cold LS-Lint optimization work must prove progress on product-facing rows, not
+only on internal diagnostics. Retain a cold structure optimization only when a
+same-host `cargo perf-vps` comparison shows all of these:
+
+- the target public `assura-cli` row improves by at least `5%` and `0.75 ms`;
+- the exact public `assura check --quiet` tie-breaker improves by at least
+  `3%`;
+- no accepted fixture regresses by more than `5%` or `0.25 ms`;
+- `cargo xtask performance-no-slower` passes on the candidate report.
+
+The helper's `accepted_fixture_delta` table is the minimum review surface for a
+candidate. Phase rows, traversal rows, in-process rows, hot daemon rows, and
+`assura-check-cli` rows explain cause, but they do not justify keeping a change
+when the ordinary public command is flat or slower. The current stop/keep
+matrix is tracked in
+`docs/analysis/2026-07-05-performance-decision-matrix.md`.
+
 ## Assura-Native Gate
 
 The native report suite is generated with `assura performance-report --suite
@@ -103,7 +122,8 @@ cold `assura check` versus LS-Lint claim.
 CI and local release checks use
 `cargo xtask native-performance-no-regression` to reject native reports that
 drop matrix rows, publish non-passing rows, omit samples, lose expected Assura
-exit-status metadata, or stop identifying the report as `--suite native`.
+exit-status metadata, stop identifying the report as `--suite native`, or
+regress past the checked baseline envelope for a native row.
 The native matrix also requires `native:phase:*` attribution rows so content
 runtime costs cannot be reported only as full CLI latency. Those rows identify
 whether cost is owned by schema compilation, file indexing, object validation
@@ -116,6 +136,38 @@ The current checked native artifacts are:
 - `benches/history/native-history.jsonl`
 - `website/public/data/performance/native-current.json`
 - `website/public/data/performance/native-history.jsonl`
+
+Each native row now carries:
+
+- `commit_sha` and `branch` for the exact measured git snapshot; when checked
+  artifacts are regenerated from a materialized clean snapshot of a dirty lane,
+  those fields identify the temporary measured snapshot rather than the
+  original lane tip;
+- `source_commit_sha`, `source_branch`, and `source_patch_id` when the
+  measured snapshot was materialized from another source lane, so reviewers can
+  trace the checked artifact back to the real branch/base commit plus the exact
+  diff envelope that was measured;
+- `source_worktree_dirty` on the report envelope, which now describes the
+  source lane that was materialized into the measured snapshot. For ordinary
+  in-place runs without `source_*` provenance, it still describes the executing
+  checkout directly;
+
+- `native_regression_baseline_median_ms` from the checked native baseline,
+  scoped to matching row metadata: operating system, architecture, toolchain,
+  Assura version, and build profile;
+- `native_regression_threshold_ms`, which stays strict once a row has at least
+  two checked reports and otherwise uses a provisional single-report envelope
+  derived from the checked row's observed spread;
+- `native_regression_delta_ms` for quick review;
+- `native_regression_status`, which must stay
+  `within-calibrated-baseline` once a row has at least two checked reports.
+  Single-report native rows may remain checked as
+  `within-provisional-baseline` until that history exists.
+
+The gate uses the row median against that calibrated threshold. `p95` remains
+review evidence in the report, but the merge gate is intentionally about
+material row regressions and cross-checks the row median, threshold, and delta
+fields instead of trusting a status string alone.
 
 The report envelope also includes `claim_summary`, a machine-readable verdict
 for the public headline row set. `two_x_claim_verdict=complete` is only valid

@@ -92,6 +92,28 @@ pub enum Commands {
         format: CheckOutputFormat,
     },
 
+    #[command(about = "Run a compact project health review over existing Assura checks")]
+    Review {
+        #[arg(help = "Path to inspect (defaults to current directory)")]
+        path: Option<PathBuf>,
+
+        #[arg(short, long, value_enum, default_value = "text")]
+        format: CheckOutputFormat,
+
+        #[arg(
+            long,
+            default_value = "auto",
+            help = "Git comparison base: auto or an explicit ref"
+        )]
+        base: String,
+    },
+
+    #[command(about = "Inspect or clean Assura's correctness-checked local cache")]
+    Cache {
+        #[command(subcommand)]
+        command: CacheCommands,
+    },
+
     #[command(about = "Explain why structure rules apply or skip one path")]
     Explain {
         #[arg(help = "Path to explain (defaults to current directory)")]
@@ -114,15 +136,31 @@ pub enum Commands {
 
         #[arg(long)]
         no_git_hooks: bool,
+
+        #[arg(
+            long,
+            value_enum,
+            help = "Materialize an editable first-party policy recipe (repeatable)"
+        )]
+        recipe: Vec<InitRecipe>,
     },
 
-    #[command(about = "Watch for changes and validate")]
+    #[command(about = "Manage project-owned Assura configuration")]
+    Config {
+        #[command(subcommand)]
+        command: ConfigCommands,
+    },
+
+    #[command(about = "Continuously validate project changes with a warm runtime")]
     Watch {
         #[arg(help = "Path to watch (defaults to current directory)")]
         path: Option<PathBuf>,
 
         #[arg(short, long)]
         debounce: Option<u64>,
+
+        #[arg(short, long, value_enum, default_value = "text")]
+        format: WatchOutputFormat,
 
         #[arg(long)]
         no_git: bool,
@@ -132,6 +170,14 @@ pub enum Commands {
     Migrate {
         #[arg(help = "LS-Lint configuration path(s); defaults to .ls-lint.yml")]
         input: Vec<PathBuf>,
+
+        #[arg(
+            long,
+            value_enum,
+            default_value = "auto",
+            help = "Input grammar to migrate"
+        )]
+        from: MigrationSource,
 
         #[arg(short, long, help = "Output path for generated Assura config")]
         output: Option<PathBuf>,
@@ -230,6 +276,66 @@ pub enum Commands {
     },
 }
 
+/// Project-owned policy recipes available during initialization.
+#[derive(ValueEnum, Clone, Copy, Debug, PartialEq, Eq)]
+pub enum InitRecipe {
+    /// Agent guidance and progressive-disclosure skill structure.
+    AgenticCore,
+    /// Advisory line-length and direct-child health defaults.
+    StructureHealth,
+}
+
+/// Configuration grammar accepted by `assura migrate`.
+#[derive(ValueEnum, Clone, Copy, Debug, PartialEq, Eq)]
+pub enum MigrationSource {
+    /// Detect LS-Lint or legacy Assura from top-level keys.
+    Auto,
+    /// LS-Lint 2.3 configuration.
+    LsLint,
+    /// Assura configuration authored before the Option A notation.
+    AssuraV1,
+}
+
+#[derive(Subcommand, Debug)]
+pub enum ConfigCommands {
+    #[command(about = "Merge an editable first-party policy recipe into a project config")]
+    AddRecipe {
+        #[arg(value_enum)]
+        recipe: InitRecipe,
+
+        #[arg(help = "Project root directory (defaults to current directory)")]
+        path: Option<PathBuf>,
+
+        #[arg(long, help = "Print the merged config without writing it")]
+        dry_run: bool,
+
+        #[arg(long, help = "Replace conflicting values with the selected recipe")]
+        force: bool,
+    },
+}
+
+#[derive(Subcommand, Debug)]
+pub enum CacheCommands {
+    #[command(about = "Report cache namespaces, fallback mode, entries, and size")]
+    Status {
+        #[arg(help = "Project or worktree path (defaults to current directory)")]
+        path: Option<PathBuf>,
+        #[arg(long, help = "Inspect an explicit cache root")]
+        cache_dir: Option<PathBuf>,
+        #[arg(short, long, value_enum, default_value = "text")]
+        format: OutputFormat,
+    },
+    #[command(about = "Remove all entries from a cache root")]
+    Clean {
+        #[arg(help = "Project or worktree path (defaults to current directory)")]
+        path: Option<PathBuf>,
+        #[arg(long, help = "Clean an explicit cache root")]
+        cache_dir: Option<PathBuf>,
+        #[arg(short, long, value_enum, default_value = "text")]
+        format: OutputFormat,
+    },
+}
+
 #[derive(Subcommand, Debug)]
 pub enum QualityCommands {
     #[command(about = "Plan required quality gates for changed files")]
@@ -322,6 +428,15 @@ pub enum CheckOutputFormat {
     Advice,
     Status,
     Agent,
+}
+
+/// Streaming output formats supported by `assura watch`.
+#[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]
+pub enum WatchOutputFormat {
+    /// Human-readable event summaries.
+    Text,
+    /// One compact JSON object per validation event.
+    Json,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]

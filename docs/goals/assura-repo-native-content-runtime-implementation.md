@@ -2,7 +2,7 @@
 id: goal-assura-repo-native-content-runtime-implementation
 type: goal
 title: Repo-native content runtime implementation
-status: planned
+status: completed
 created: 2026-06-27
 owners:
   - assura-maintainers
@@ -15,6 +15,15 @@ related:
 ---
 
 # Repo-Native Content Runtime Implementation
+
+## Post-Merge Revalidation
+
+Completed by the content runtime implementation and release-readiness sequence.
+Current evidence: `docs/analysis/2026-06-28-content-runtime-release-readiness-audit.md`
+maps the runtime scope to implementation PRs #96-#105, production modules under
+`src/content_repository/`, runtime validation/check/create/update/adapter/
+reference tests, docs, and performance evidence. This file's older progress log
+is historical; do not execute it as a fresh planned goal.
 
 ## Objective
 

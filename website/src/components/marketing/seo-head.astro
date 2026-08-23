@@ -1,0 +1,48 @@
+---
+interface Props {
+  title: string;
+  description: string;
+  canonicalPath?: string;
+  imagePath?: string;
+  noindex?: boolean;
+  structuredData?: Record<string, unknown> | Array<Record<string, unknown>>;
+}
+
+const {
+  title,
+  description,
+  canonicalPath = '/',
+  imagePath = '/favicon.svg',
+  noindex = false,
+  structuredData,
+} = Astro.props;
+const site = Astro.site ?? new URL('https://assura.dev/');
+const canonical = new URL(canonicalPath, site);
+const image = new URL(imagePath, site);
+---
+
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+<meta id="robots-policy" name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow'} />
+<link rel="sitemap" href="/sitemap-index.xml" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+<meta property="og:image" content={image} />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={image} />
+<meta name="theme-color" content="#0b0c0d" media="(prefers-color-scheme: dark)" />
+<meta name="theme-color" content="#f7faf9" media="(prefers-color-scheme: light)" />
+<title>{title}</title>
+<link rel="icon" href="/favicon.svg" />
+{structuredData && (
+  <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+)}
+<script is:inline>
+  if (window.location.hostname.endsWith('.workers.dev')) {
+    document.getElementById('robots-policy')?.setAttribute('content', 'noindex, nofollow');
+  }
+</script>

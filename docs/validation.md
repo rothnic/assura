@@ -46,6 +46,44 @@ remain under `.trellis/tasks/` instead of the archive, when goal frontmatter
 uses a status outside `planned`, `active`, `completed`, or `archived`, or when
 the Phase 01 ledger and `assura-goal-01..08` frontmatter statuses disagree.
 
+## Compact Project Review
+
+Use `assura review` when the question is broader than "does this exact check
+pass?":
+
+```bash
+assura review . --format text
+assura review . --format json
+assura review . --format agent
+```
+
+The review command is a read-only first diagnostic over existing
+`check`, `doctor`, and `content agent-query gaps` truth. It reports blocking,
+advisory, inactive, and informational findings, then points to lower-level
+commands for evidence.
+
+The same report includes an advisory `heatmap` packet. It rolls structure
+violations, content-gap counts, and best-effort Git state into compact totals
+and top hot directories. Git is optional: outside a checkout,
+`heatmap.git_available=false` and review still completes.
+
+The default text format is optimized for humans: aligned rows, concise action
+buckets, and terminal color when interactive. Piped output stays plain; use
+`ASSURA_FORCE_COLOR=1` when a script or screenshot needs ANSI color.
+
+Use it in three common places:
+
+| Moment | Command | What to look for |
+| --- | --- | --- |
+| Before adding a new top-level directory or module family | `assura review . --format text` | The structure-fit line: inspect nearby shape first, change `.assura/config.yml` only when the path is intentional. |
+| Before opening a PR | `assura review . --format json` | `summary.blocking == 0`; use `heatmap.hot_dirs` to spot large changed/untracked/violating areas before review. |
+| While onboarding an existing repository | `assura review . --format agent` | Stable agent JSON with next actions, heat-map signals, and lower-level commands, without scraping text output. |
+
+Raw unresolved repository-reference counts are informational in this review
+unless a configured validation policy promotes concrete findings through normal
+checks. Generated, archive, log, and benchmark reference noise is explicitly
+omitted from blocking review policy.
+
 ## Targeted Gates
 
 Use focused commands when the change is narrow:
@@ -58,6 +96,7 @@ cargo xtask docs
 cargo xtask release-size
 cargo xtask release-smoke
 cargo xtask release-live
+cargo perf-vps -- --help
 ```
 
 Run the website build for docs or frontend changes. Run the release smoke for
@@ -98,6 +137,43 @@ cargo xtask evidence
 This checks review evidence templates, goal frontmatter metadata, local
 markdown links in goal/review/spec docs, and stale forbidden user-facing command
 surfaces such as per-agent feedback CLIs or per-agent check formats.
+
+For the repeated `vps` LS-Lint structure lane, use the repo-native wrapper
+instead of rebuilding the remote rsync/patch/build command sequence:
+
+```bash
+cargo perf-vps fast-rules-cache \
+  src/cli/check/ls_fast_plan.rs \
+  src/cli/check/ls_fast_rules_cache.rs
+```
+
+`cargo perf-vps` is a short alias for the `vps` LS-Lint comparison harness. It
+defaults to `vps` and `<remote-home>/data/projects`, so the normal structure
+lane does not need a remembered SSH/rsync recipe anymore. Pass `-- --help` to
+see the underlying script options for host, remote root, iterations, fixture
+selection, or exact-command tie-breakers.
+
+The helper prints an `accepted_fixture_delta` section for every accepted
+LS-Lint-equivalent fixture. Treat that table as required evidence for any
+retained cold optimization: the target row, spillover rows, and exact
+`assura check --quiet` tie-breaker need to agree. The current stop policy lives
+in `docs/analysis/2026-07-05-performance-decision-matrix.md`; strict cold 2x
+is a stretch diagnostic, not a reason to keep tuning when the no-slower gate is
+green and the remaining miss is floor-dominated.
+
+Plain one-shot `assura check` still reparses `.assura/config.yml` in each new
+process. If you want to skip YAML parse/semantic validation across processes,
+use the explicit compiled-config path instead:
+
+```bash
+cargo run -p assura-check-cli --bin assura-check-compile-config -- \
+  --config .assura/config.yml \
+  --output .assura/check-config.bin
+assura-check-compiled --quiet
+```
+
+The `--cache-dir` result cache is separate: it can reuse prior reports, but it
+still rereads and hashes YAML before it does so.
 
 ## CI Scope Gate
 

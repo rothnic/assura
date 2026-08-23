@@ -71,6 +71,9 @@ fn cli_row_carries_fixture_metadata_and_headline_label() {
         "row_family",
         "validation_execution_mode",
         "evidence_role",
+        "source_commit_sha",
+        "source_branch",
+        "source_patch_id",
         "fixture_source_revision",
         "source_type",
         "checked_file_count",
@@ -93,6 +96,12 @@ fn cli_row_carries_fixture_metadata_and_headline_label() {
         "rust_cli_floor_runtime_ms",
         "rust_cli_floor_to_two_x_target_ratio",
         "rust_cli_floor_blocks_two_x",
+        "native_regression_baseline_median_ms",
+        "native_regression_baseline_report_count",
+        "native_regression_baseline_sample_count",
+        "native_regression_threshold_ms",
+        "native_regression_delta_ms",
+        "native_regression_status",
     ] {
         assert!(serialized.get(field).is_some(), "missing field {field}");
     }

@@ -259,6 +259,35 @@
     "changed_path_count": { "type": ["integer", "null"], "minimum": 1 },
     "latency_threshold_ms": { "type": ["number", "null"], "minimum": 0 },
     "latency_threshold_met": { "type": ["boolean", "null"] },
+    "native_regression_baseline_median_ms": {
+      "type": ["number", "null"],
+      "minimum": 0
+    },
+    "native_regression_baseline_report_count": {
+      "type": ["integer", "null"],
+      "minimum": 0
+    },
+    "native_regression_baseline_sample_count": {
+      "type": ["integer", "null"],
+      "minimum": 0
+    },
+    "native_regression_threshold_ms": {
+      "type": ["number", "null"],
+      "minimum": 0
+    },
+    "native_regression_delta_ms": { "type": ["number", "null"] },
+    "native_regression_status": {
+      "enum": [
+        "within-calibrated-baseline",
+        "regressed-vs-calibrated-baseline",
+        "within-provisional-baseline",
+        "regressed-vs-provisional-baseline",
+        "baseline-missing",
+        "baseline-row-missing",
+        "baseline-row-unusable",
+        null
+      ]
+    },
     "distribution": {
       "type": "object",
       "required": ["samples", "samples_ms", "min_ms", "max_ms"],

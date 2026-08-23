@@ -1,0 +1,105 @@
+{
+  "command": "assura check --format json .",
+  "config": "rules:\n  # Reused at root and package level.\n  agent-doc:\n    max_lines: 160\n    severity: low\n    message: See docs/agents.md.\n\n  # Applied to every package.\n  workspace:\n    AGENTS.md: exists:1 | $agent-doc\n    package.json: exists:1\n\nstructure:\n  # Project entrypoints.\n  AGENTS.md: exists:1 | $agent-doc\n  README.md: exists:1\n\n  # Repeat the package contract.\n  packages/:\n    ./*/: $workspace\n\n  # Source defaults at every depth.\n  ./**/:\n    .ts: kebab-case | max_lines:500",
+  "evidence": {
+    "baseline_dirs_checked": 4,
+    "baseline_files_checked": 6,
+    "baseline_success": true,
+    "violation_success": false
+  },
+  "generated_from": "assura check --format json .",
+  "markers": [
+    {
+      "id": "1",
+      "label": "required agent guidance",
+      "match": "AGENTS.md: exists:1 | $agent-doc"
+    },
+    {
+      "id": "2",
+      "label": "reused workspace contract",
+      "match": "./*/: $workspace"
+    },
+    {
+      "id": "3",
+      "label": "source naming and line limit",
+      "match": ".ts: kebab-case | max_lines:500"
+    }
+  ],
+  "presentation": "fixture_explanation",
+  "schema": "assura.website-policy-demo.v1",
+  "summary": {
+    "dirs_checked": 4,
+    "files_checked": 8,
+    "violations": 2
+  },
+  "tree": [
+    {
+      "depth": 0,
+      "detail": "top-down policy",
+      "path": "project/",
+      "status": "context"
+    },
+    {
+      "depth": 1,
+      "detail": "present in passing fixture",
+      "marker": "1",
+      "path": "AGENTS.md",
+      "status": "observed"
+    },
+    {
+      "depth": 1,
+      "detail": "workspace contract",
+      "marker": "2",
+      "path": "packages/core/",
+      "status": "context"
+    },
+    {
+      "depth": 2,
+      "detail": "present in passing fixture",
+      "full_path": "packages/core/AGENTS.md",
+      "marker": "1",
+      "path": "AGENTS.md",
+      "status": "observed"
+    },
+    {
+      "depth": 2,
+      "detail": "present in passing fixture",
+      "full_path": "packages/core/package.json",
+      "path": "package.json",
+      "status": "observed"
+    },
+    {
+      "depth": 2,
+      "detail": "recursive defaults",
+      "full_path": "packages/core/src/",
+      "path": "src/",
+      "status": "context"
+    },
+    {
+      "depth": 3,
+      "detail": "184 / 500 lines in passing fixture",
+      "full_path": "packages/core/src/user-menu.ts",
+      "marker": "3",
+      "path": "user-menu.ts",
+      "status": "observed"
+    },
+    {
+      "depth": 3,
+      "detail": "expected kebab-case",
+      "full_path": "packages/core/src/BadName.ts",
+      "marker": "3",
+      "message": "File 'BadName.ts' does not match naming convention 'kebab-case'",
+      "path": "BadName.ts",
+      "status": "violation"
+    },
+    {
+      "depth": 3,
+      "detail": "537 / 500 lines",
+      "full_path": "packages/core/src/checkout-flow.ts",
+      "marker": "3",
+      "message": "File 'packages/core/src/checkout-flow.ts' has 537 lines, exceeding limit 500",
+      "path": "checkout-flow.ts",
+      "status": "violation"
+    }
+  ]
+}

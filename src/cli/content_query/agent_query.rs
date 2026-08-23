@@ -249,17 +249,21 @@ fn capability(
     }
 }
 
-#[derive(Debug, Serialize)]
-struct AgentQueryGapsOutput {
-    diagnostics: usize,
-    safe_fixes: usize,
-    missing_relations: usize,
-    unresolved_repository_references: usize,
-    requirements_traceability: usize,
-    computed_checks: usize,
+#[derive(Debug, Clone, Serialize)]
+pub(crate) struct AgentQueryGapsOutput {
+    pub(crate) diagnostics: usize,
+    pub(crate) safe_fixes: usize,
+    pub(crate) missing_relations: usize,
+    pub(crate) unresolved_repository_references: usize,
+    pub(crate) requirements_traceability: usize,
+    pub(crate) computed_checks: usize,
 }
 
 fn gaps(context: &QueryContext) -> AgentQueryGapsOutput {
+    content_gap_summary(context)
+}
+
+pub(crate) fn content_gap_summary(context: &QueryContext) -> AgentQueryGapsOutput {
     let diagnostics = diagnostics(context);
     AgentQueryGapsOutput {
         requirements_traceability: diagnostics

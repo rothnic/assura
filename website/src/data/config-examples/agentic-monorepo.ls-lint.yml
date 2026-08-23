@@ -1,0 +1,57 @@
+# Closest valid LS-Lint filesystem coverage.
+ls:
+  # Project-local skill directories.
+  .agents:
+    skills:
+      .dir: kebab-case
+      "*":
+        .dir: kebab-case
+        "{agents,assets,references,scripts}":
+          .dir: kebab-case
+        .md: regex:SKILL
+      # ASSURA GAP: SKILL.md content and file line count remain unchecked.
+      # LIMIT: SKILL.md is named when present, not required by this absent-safe config.
+
+  # Optional app workspaces repeat the complete naming contract.
+  apps:
+    .dir: kebab-case | exists:0-1
+    "*":
+      .dir: kebab-case
+      .js: kebab-case
+      .jsx: kebab-case
+      .json: regex:(package|tsconfig)
+      .md: kebab-case | regex:(AGENTS|README)
+      .ts: kebab-case
+      .tsx: kebab-case
+  # ASSURA GAP: optional trees cannot require nested files without failing when absent.
+
+  # Required package workspaces repeat naming and add exact required counts.
+  packages:
+    .dir: kebab-case | exists:1
+    "*":
+      .dir: kebab-case
+      .js: kebab-case
+      .jsx: kebab-case
+      .json: regex:^package$ | exists:1
+      .md: regex:^AGENTS$ | exists:1
+      .ts: kebab-case
+      .tsx: kebab-case
+  # ASSURA GAP: optional package peers must be ignored to preserve exact required counts.
+
+  # Global naming plus the exact required root file counts.
+  .dir: kebab-case
+  .js: kebab-case
+  .jsx: kebab-case
+  .json: regex:^(package|turbo)$ | exists:2
+  .md: kebab-case | regex:^(AGENTS|README)$ | exists:2
+  .ts: kebab-case
+  .tsx: kebab-case
+  .yaml: regex:^pnpm-(lock|workspace)$ | exists:2
+  # ASSURA GAP: no aggregate child total across mixed files and directories.
+  # ASSURA GAP: no file line limit, severity, or rule-specific repair message.
+
+ignore:
+  - .assura
+  - .git
+  - "packages/*/{README.md,tsconfig.json}"
+  - "**/{node_modules,.next,.turbo,dist,coverage}/**"

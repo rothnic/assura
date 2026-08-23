@@ -1,0 +1,4 @@
+{"file":".trellis/spec/assura/index.md","reason":"Quality bar and evidence expectations for validating Assura changes before handoff."}
+{"file":".trellis/spec/assura/roadmap.md","reason":"Ensures review keeps this work within the Performance Polish lane and does not reopen completed onboarding scope."}
+{"file":"docs/goals/assura-performance-polish-program.md","reason":"Review against the live goal requirements and non-goals."}
+{"file":"docs/analysis/2026-07-04-performance-polish-program-revalidation.md","reason":"Review uses the same live-state revalidation rationale and next-target framing as implementation."}

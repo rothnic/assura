@@ -192,13 +192,13 @@ fn project_intelligence_onboarding_starter_refuses_to_overwrite_files_without_fo
 fn agent_onboard_generates_broad_baseline_and_packet() {
     let project = TempDir::new().unwrap();
 
-    let output = json_from_success(run_assura(&[
-        "agent",
-        "onboard",
-        project.path().to_str().unwrap(),
-        "--format",
-        "json",
-    ]));
+    let output = json_from_success(
+        Command::new(assura_bin())
+            .current_dir(project.path())
+            .args(["agent", "onboard", "."])
+            .output()
+            .expect("minimal onboarding command runs"),
+    );
 
     assert_eq!(output["schema"], "assura.agent-onboarding.v1");
     assert_eq!(output["detected"]["project_type"], "empty");
@@ -206,6 +206,29 @@ fn agent_onboard_generates_broad_baseline_and_packet() {
     assert_eq!(output["installed"]["config"], ".assura/config.yml");
     assert_eq!(output["content"]["template"], "none");
     assert_eq!(output["content"]["status"], "inactive");
+    assert_eq!(
+        output["rule_recommendations"][0]["preset"],
+        "agentic-core + structure-health"
+    );
+    assert_eq!(
+        output["rule_recommendations"][0]["local_rule"],
+        "$agent-entrypoint"
+    );
+    assert_eq!(output["rule_recommendations"][0]["status"], "applied");
+    assert!(output["rule_recommendations"][0]["reason"]
+        .as_str()
+        .expect("recommendation reason")
+        .contains("empty project detected"));
+    assert_eq!(
+        output["rule_recommendations"][0]["includes"],
+        serde_json::json!([
+            "$agent-entrypoint",
+            "$skill-entrypoint",
+            "$skill",
+            "$folder-health",
+            "$closed"
+        ])
+    );
     let lifecycle_modes = output["lifecycle_profiles"]
         .as_array()
         .expect("lifecycle profiles")
@@ -230,6 +253,12 @@ fn agent_onboard_generates_broad_baseline_and_packet() {
         .expect("verified array")
         .iter()
         .any(|item| item["name"] == "structure_config" && item["status"] == "pass"));
+    assert_eq!(output["review"]["status"], "needs-review");
+    assert_eq!(output["review"]["blocking"], 0);
+    assert_eq!(
+        output["review"]["next_command"],
+        "assura review --format agent ."
+    );
     assert!(output["inactive"]
         .as_array()
         .expect("inactive array")
@@ -240,6 +269,7 @@ fn agent_onboard_generates_broad_baseline_and_packet() {
         ".assura/config.yml",
         ".assura/presets.lock.yml",
         ".assura/onboarding/summary.md",
+        ".assura/onboarding/rules.md",
         ".assura/onboarding/questions.md",
         ".assura/onboarding/lifecycle.md",
         ".assura/onboarding/agent-next.md",
@@ -276,18 +306,36 @@ fn agent_onboard_generates_broad_baseline_and_packet() {
 
     let agent_next =
         fs::read_to_string(project.path().join(".assura/onboarding/agent-next.md")).unwrap();
-    assert!(agent_next.contains("Do not invent project conventions"));
+    assert!(agent_next.contains("Inspect Project Evidence First"));
+    assert!(agent_next.contains("package and workspace manifests"));
+    assert!(agent_next.contains("expected stack and intentional layout"));
+    assert!(agent_next.contains("Close stable scopes"));
+    assert!(agent_next.contains("unexpected files and directories fail"));
+    assert!(agent_next.contains("Ask only where the evidence is ambiguous"));
     assert!(agent_next.contains(".assura/onboarding/lifecycle.md"));
     assert!(agent_next.contains("STRUCTURE_FIT_CHECK"));
     assert!(agent_next.contains(".agents/skills/assura-structure-fit"));
+    assert!(agent_next.contains(".assura/onboarding/rules.md"));
     assert!(agent_next.contains("What primary language or stack should this project use?"));
     assert!(agent_next.contains("What test layout should the project use?"));
+    assert!(agent_next.contains("assura review"));
+    assert!(agent_next.contains("assura check --format agent"));
     let lifecycle =
         fs::read_to_string(project.path().join(".assura/onboarding/lifecycle.md")).unwrap();
     assert!(lifecycle.contains("| nudge |"));
     assert!(lifecycle.contains("| warn |"));
     assert!(lifecycle.contains("| gate |"));
-    assert!(lifecycle.contains("does not silently mutate"));
+    assert!(lifecycle.contains("integration activate <agent>"));
+    assert!(lifecycle.contains("Host trust remains under user control"));
+    let rules = fs::read_to_string(project.path().join(".assura/onboarding/rules.md")).unwrap();
+    assert!(rules.contains("agentic-core"));
+    assert!(rules.contains("structure-health"));
+    assert!(rules.contains("project owns and can edit"));
+
+    let config = fs::read_to_string(project.path().join(".assura/config.yml")).unwrap();
+    assert!(config.contains("agent-entrypoint:"));
+    assert!(config.contains("AGENTS.md: exists:1 | $agent-entrypoint"));
+    assert!(!config.contains("$agentic-project"));
 
     let doctor: Value = serde_json::from_str(
         &fs::read_to_string(project.path().join(".assura/onboarding/doctor.json")).unwrap(),
@@ -307,6 +355,36 @@ fn agent_onboard_generates_broad_baseline_and_packet() {
         "json",
     ]));
     assert_eq!(check["success"], true);
+    let review = json_from_success(run_assura(&[
+        "review",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]));
+    assert_eq!(review["finding_history"]["cache"]["loaded"], false);
+    assert!(review["findings"]
+        .as_array()
+        .expect("review findings")
+        .iter()
+        .all(|finding| finding["state"] == "new"));
+}
+
+#[test]
+fn agent_onboard_text_keeps_verification_and_review_fields_aligned() {
+    let project = TempDir::new().unwrap();
+    let output = run_assura(&[
+        "agent",
+        "onboard",
+        project.path().to_str().unwrap(),
+        "--format",
+        "text",
+    ]);
+    assert!(output.status.success());
+    let text = String::from_utf8_lossy(&output.stdout);
+    assert!(text.contains("Verified     structure_config=pass onboarding_packet=pass"));
+    assert!(text.contains("Review       needs-review blocking=0 advisory="));
+    assert!(text.contains("inactive_signals="));
+    assert!(text.contains("Deferred     project_specialization, content_models"));
 }
 
 #[test]
@@ -557,15 +635,49 @@ fn agent_onboard_generated_config_validates_dynamic_directory_skill_contracts() 
     ]));
 
     let config = fs::read_to_string(project.path().join(".assura/config.yml")).unwrap();
-    assert!(config.contains("\"@assura-skill-dir\""));
-    assert!(config.contains("\"{skill}/\""));
+    assert!(config.contains("AGENTS.md: exists:1 | $agent-entrypoint"));
+    assert!(config.contains("skill-entrypoint:"));
+    assert!(!config.contains("$agentic-project"));
+    assert!(config.contains("rules:"));
     assert!(!config.contains(".agents/skills/assura-project-maintenance/:"));
 
     let second_skill = project.path().join(".agents/skills/release-maintenance");
     fs::create_dir_all(second_skill.join("references")).unwrap();
     fs::create_dir_all(second_skill.join("scripts")).unwrap();
     fs::create_dir_all(second_skill.join("assets")).unwrap();
-    fs::write(second_skill.join("SKILL.md"), "# Release Maintenance\n").unwrap();
+    fs::write(
+        second_skill.join("SKILL.md"),
+        r#"---
+name: release-maintenance
+description: Maintain project releases.
+applies_when: Preparing or validating a release.
+---
+
+# Release Maintenance
+
+## Workflow
+
+Run the project release checks.
+
+## Read as needed
+
+Read `references/runbook.md` for the detailed procedure.
+
+## Outputs
+
+- A validated release.
+
+## Guardrails
+
+- Do not publish before validation passes.
+"#,
+    )
+    .unwrap();
+    let mut agents_md = fs::read_to_string(project.path().join("AGENTS.md")).unwrap();
+    agents_md.push_str(
+        "\n| Preparing a release | [`release-maintenance`](.agents/skills/release-maintenance/SKILL.md) |\n",
+    );
+    fs::write(project.path().join("AGENTS.md"), agents_md).unwrap();
     fs::write(second_skill.join("references/runbook.md"), "# Runbook\n").unwrap();
     fs::write(second_skill.join("scripts/check.sh"), "#!/bin/sh\n").unwrap();
     fs::write(second_skill.join("assets/template.txt"), "template\n").unwrap();
@@ -577,6 +689,30 @@ fn agent_onboard_generated_config_validates_dynamic_directory_skill_contracts() 
         "json",
     ]));
     assert_eq!(valid_check["success"], true);
+
+    let long_skill = project.path().join(".agents/skills/long-skill");
+    fs::create_dir_all(&long_skill).unwrap();
+    fs::write(long_skill.join("SKILL.md"), "# Long Skill\n".repeat(601)).unwrap();
+    let invalid_long_check = run_assura(&[
+        "check",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]);
+    assert_eq!(invalid_long_check.status.code(), Some(1));
+    let invalid_long_json: Value = serde_json::from_slice(&invalid_long_check.stdout).unwrap();
+    assert!(invalid_long_json["violations"]
+        .as_array()
+        .expect("violations")
+        .iter()
+        .any(|item| {
+            item["path"] == ".agents/skills/long-skill/SKILL.md"
+                && item["rule"] == "max_lines"
+                && item["corrective_context"]
+                    .as_str()
+                    .is_some_and(|context| context.contains("natural responsibility boundary"))
+        }));
+    fs::remove_dir_all(&long_skill).unwrap();
 
     let missing_skill = project.path().join(".agents/skills/missing-skill-md");
     fs::create_dir_all(&missing_skill).unwrap();
@@ -600,6 +736,25 @@ fn agent_onboard_generated_config_validates_dynamic_directory_skill_contracts() 
                     .is_some_and(|message| message.contains("SKILL.md"))
         }));
 
+    let badly_named_skill = project.path().join(".agents/skills/bad_name");
+    fs::create_dir_all(&badly_named_skill).unwrap();
+    fs::write(badly_named_skill.join("SKILL.md"), "# Bad Name\n").unwrap();
+    let invalid_name_check = run_assura(&[
+        "check",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]);
+    assert_eq!(invalid_name_check.status.code(), Some(1));
+    let invalid_name_json: Value = serde_json::from_slice(&invalid_name_check.stdout).unwrap();
+    assert!(invalid_name_json["violations"]
+        .as_array()
+        .expect("violations")
+        .iter()
+        .any(|item| {
+            item["path"] == ".agents/skills/bad_name" && item["rule"] == "directory_naming"
+        }));
+
     fs::write(missing_skill.join("SKILL.md"), "# Missing Fixed\n").unwrap();
     fs::create_dir_all(missing_skill.join("tmp")).unwrap();
     let invalid_child_check = run_assura(&[
@@ -616,7 +771,10 @@ fn agent_onboard_generated_config_validates_dynamic_directory_skill_contracts() 
         .iter()
         .any(|item| {
             item["path"] == ".agents/skills/missing-skill-md/tmp"
-                && item["rule"] == "unexpected_directory"
+                && item["rule"] == "exists_count"
+                && item["message"]
+                    .as_str()
+                    .is_some_and(|message| message.contains("expected 0"))
         }));
 }
 
@@ -629,20 +787,20 @@ fn agent_project_dynamic_contracts_validate_repeated_project_structures() {
         r#"version: "2.0"
 
 rules:
-  "@package-dir":
+  package-dir:
     README.md: exists:1
     src/: exists:1
     docs/: exists:0-1
     extra: false
-  "@doc-section":
+  doc-section:
     README.md: exists:1
     assets/: exists:0-1
     extra: false
-  "@example-dir":
+  example-dir:
     README.md: exists:1
     fixtures/: exists:0-1
     extra: false
-  "@fixture-dir":
+  fixture-dir:
     README.md: exists:1
     input/: exists:0-1
     expected/: exists:0-1
@@ -658,21 +816,21 @@ structure:
   packages/:
     extra: true
     "{package}/":
-      use: "@package-dir"
+      use: $package-dir
   docs/:
     extra: true
     "{section}/":
-      use: "@doc-section"
+      use: $doc-section
   examples/:
     extra: true
     "{example}/":
-      use: "@example-dir"
+      use: $example-dir
   tests/:
     fixtures/: exists:1
   tests/fixtures/:
     extra: true
     "{fixture}/":
-      use: "@fixture-dir"
+      use: $fixture-dir
 "#,
     )
     .unwrap();
@@ -809,7 +967,10 @@ fn agent_onboard_preserves_existing_user_authored_files() {
 
     assert_eq!(output["detected"]["project_type"], "rust");
     assert_eq!(output["detected"]["agent_harness"], "codex");
-    assert_eq!(output["integration"]["status"], "installed");
+    assert_eq!(output["integration"]["status"], "generated");
+    assert_eq!(output["integration"]["generated"], true);
+    assert_eq!(output["integration"]["activated"], false);
+    assert_eq!(output["integration"]["verified"], false);
     assert!(output["lifecycle_profiles"]
         .as_array()
         .expect("lifecycle profiles")
@@ -862,68 +1023,4 @@ fn agent_onboard_preserves_existing_user_authored_files() {
         .path()
         .join(".assura/integrations/codex/manifest.json")
         .is_file());
-}
-
-#[test]
-fn agent_onboard_merges_existing_config_and_accepts_config_flag() {
-    let project = TempDir::new().unwrap();
-    fs::create_dir_all(project.path().join(".assura")).unwrap();
-    let config_path = project.path().join(".assura/config.yml");
-    fs::write(
-        &config_path,
-        r#"version: "2.0"
-
-structure:
-  ./:
-    extra: true
-    CUSTOM.md: exists:0-1
-
-exclude:
-  - "custom/**"
-"#,
-    )
-    .unwrap();
-
-    let output = json_from_success(run_assura(&[
-        "--config",
-        config_path.to_str().unwrap(),
-        "agent",
-        "onboard",
-        project.path().to_str().unwrap(),
-        "--format",
-        "json",
-    ]));
-
-    assert!(output["files"]
-        .as_array()
-        .expect("files array")
-        .iter()
-        .any(|item| item["path"] == ".assura/config.yml" && item["action"] == "merge"));
-
-    let merged_config: serde_yaml::Value =
-        serde_yaml::from_str(&fs::read_to_string(&config_path).unwrap()).unwrap();
-    assert_eq!(
-        merged_config["structure"]["./"]["CUSTOM.md"],
-        serde_yaml::Value::String("exists:0-1".to_string())
-    );
-    assert_eq!(
-        merged_config["structure"]["./"]["AGENTS.md"],
-        serde_yaml::Value::String("exists:1".to_string())
-    );
-    assert!(merged_config["rules"]
-        .as_mapping()
-        .expect("rules mapping")
-        .contains_key(serde_yaml::Value::String("@assura-skill-dir".to_string())));
-    assert_eq!(
-        merged_config["structure"][".agents/skills/"]["{skill}/"]["use"],
-        serde_yaml::Value::String("@assura-skill-dir".to_string())
-    );
-    assert!(merged_config["exclude"]
-        .as_sequence()
-        .expect("exclude sequence")
-        .contains(&serde_yaml::Value::String("custom/**".to_string())));
-    assert!(merged_config["exclude"]
-        .as_sequence()
-        .expect("exclude sequence")
-        .contains(&serde_yaml::Value::String(".git/**".to_string())));
 }

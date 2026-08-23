@@ -1,17 +1,18 @@
 //! First-run local onboarding for agent-ready repositories.
 
-use super::agent_integration::install_agent_integration_bundle;
+use super::agent_integration::configure_agent_integration_bundle;
 use super::agent_lifecycle::{lifecycle_profiles, ranked_next_actions};
 use super::agent_onboarding_report::{
     render_report, CheckItem, ContentSection, FileAction, InstalledSection, IntegrationSection,
     OnboardingReport, RenderedOnboardingReport,
 };
-use super::agent_onboarding_templates::{baseline_files, GeneratedFile};
+use super::agent_onboarding_rules::{normalize_existing_root, recommended_rules};
+use super::agent_onboarding_templates::{baseline_files, rule_recommendations_file, GeneratedFile};
 use super::doctor::project_doctor_packet_json;
+use super::project_review::build_project_review;
 use super::{
     AgentContentTemplate, AgentIntegrationTarget, AgentOnboardingTarget, ExitCode, OutputFormat,
 };
-use crate::cli::check::{run_structure_check_with_target_mode, CheckTargetMode};
 use serde::Serialize;
 use serde_yaml::Value;
 use std::fs;
@@ -24,6 +25,8 @@ pub struct AgentOnboardingOptions {
     pub path: Option<PathBuf>,
     /// Requested host-agent profile.
     pub agent: AgentOnboardingTarget,
+    /// Whether to activate the selected host integration.
+    pub activate: bool,
     /// Optional content runtime activation template.
     pub content_template: AgentContentTemplate,
     /// Output format.
@@ -63,16 +66,26 @@ fn run_agent_onboarding(
     let project_root = resolve_project_root(options.path)?;
     fs::create_dir_all(&project_root).map_err(|error| error.to_string())?;
 
-    let detected = detect_project(&project_root, options.agent);
+    let detected = detect_project(&project_root, options.agent, options.activate)?;
+    let config_path = config.unwrap_or_else(|| project_root.join(".assura/config.yml"));
     let mut files = Vec::new();
     for file in baseline_files(&detected, options.content_template) {
         files.push(materialize_baseline_file(&project_root, file)?);
     }
+    let rule_recommendations = recommended_rules(&detected, &config_path)?;
+    files.push(materialize_managed_file(
+        &project_root,
+        rule_recommendations_file(&detected, rule_recommendations[0].status),
+    )?);
 
     let integration_target = integration_target(&detected);
-    let integration = install_integration(&project_root, &detected, integration_target)?;
-    let config_path = config.unwrap_or_else(|| project_root.join(".assura/config.yml"));
-    let verified = verify_project(&project_root, Some(config_path.clone()))?;
+    let integration = install_integration(
+        &project_root,
+        &detected,
+        integration_target,
+        options.activate,
+    )?;
+    let (verified, review) = verify_project(&project_root, Some(config_path.clone()))?;
     let content = content_section(options.content_template);
     let inactive = inactive_capabilities(options.content_template);
     let lifecycle_profiles = lifecycle_profiles(&project_root, integration_target);
@@ -98,11 +111,13 @@ fn run_agent_onboarding(
                 onboarding_packet: ".assura/onboarding/",
             },
             detected,
+            rule_recommendations,
             integration,
             content,
             lifecycle_profiles,
             files,
             verified,
+            review,
             inactive,
             next_actions,
         },
@@ -122,7 +137,11 @@ fn resolve_project_root(path: Option<PathBuf>) -> Result<PathBuf, String> {
     }
 }
 
-fn detect_project(project_root: &Path, requested_agent: AgentOnboardingTarget) -> DetectedSection {
+fn detect_project(
+    project_root: &Path,
+    requested_agent: AgentOnboardingTarget,
+    activate: bool,
+) -> Result<DetectedSection, String> {
     let git_repository = project_root.join(".git").exists();
     let has_cargo = project_root.join("Cargo.toml").is_file();
     let has_package_json = project_root.join("package.json").is_file();
@@ -151,9 +170,9 @@ fn detect_project(project_root: &Path, requested_agent: AgentOnboardingTarget) -
     } else {
         "high"
     };
-    let agent = detect_agent(project_root, requested_agent);
+    let agent = detect_agent(project_root, requested_agent, activate)?;
 
-    DetectedSection {
+    Ok(DetectedSection {
         project_type,
         project_confidence,
         requested_agent: requested_agent.as_str(),
@@ -161,7 +180,7 @@ fn detect_project(project_root: &Path, requested_agent: AgentOnboardingTarget) -
         agent_confidence: agent.confidence,
         git_repository,
         existing_source_files,
-    }
+    })
 }
 
 struct DetectedAgent {
@@ -169,30 +188,59 @@ struct DetectedAgent {
     confidence: &'static str,
 }
 
-fn detect_agent(project_root: &Path, requested_agent: AgentOnboardingTarget) -> DetectedAgent {
+fn detect_agent(
+    project_root: &Path,
+    requested_agent: AgentOnboardingTarget,
+    activate: bool,
+) -> Result<DetectedAgent, String> {
     if requested_agent != AgentOnboardingTarget::Auto {
-        return DetectedAgent {
+        if activate && requested_agent == AgentOnboardingTarget::Generic {
+            return Err(
+                "no supported agent host selected; choose --agent codex, claude, opencode, or pi"
+                    .to_string(),
+            );
+        }
+        return Ok(DetectedAgent {
             target: requested_agent,
             confidence: "explicit",
-        };
+        });
     }
-    for (path, target) in [
+    let detected = [
         (".codex", AgentOnboardingTarget::Codex),
         (".opencode", AgentOnboardingTarget::Opencode),
         (".claude", AgentOnboardingTarget::Claude),
         (".pi", AgentOnboardingTarget::Pi),
-    ] {
-        if project_root.join(path).exists() {
-            return DetectedAgent {
-                target,
-                confidence: "high",
-            };
-        }
+    ]
+    .into_iter()
+    .filter(|(path, _)| project_root.join(path).exists())
+    .map(|(_, target)| target)
+    .collect::<Vec<_>>();
+    if activate && detected.len() > 1 {
+        return Err(
+            "multiple agent hosts detected; choose --agent codex, claude, opencode, or pi"
+                .to_string(),
+        );
     }
-    DetectedAgent {
+    if let Some(target) = detected.first().copied() {
+        return Ok(DetectedAgent {
+            target,
+            confidence: if detected.len() == 1 {
+                "high"
+            } else {
+                "ambiguous"
+            },
+        });
+    }
+    if activate {
+        return Err(
+            "no supported agent host detected; choose --agent codex, claude, opencode, or pi"
+                .to_string(),
+        );
+    }
+    Ok(DetectedAgent {
         target: AgentOnboardingTarget::Generic,
         confidence: "low",
-    }
+    })
 }
 
 fn is_empty_project(project_root: &Path) -> bool {
@@ -233,6 +281,38 @@ fn materialize_file(project_root: &Path, file: GeneratedFile) -> Result<FileActi
     })
 }
 
+fn materialize_managed_file(
+    project_root: &Path,
+    file: GeneratedFile,
+) -> Result<FileAction, String> {
+    let path = project_root.join(file.path);
+    let existed = path.exists();
+    let current = if existed {
+        Some(fs::read_to_string(&path).map_err(|error| error.to_string())?)
+    } else {
+        None
+    };
+    let changed = current.as_deref() != Some(file.contents.as_str());
+    if changed {
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent).map_err(|error| error.to_string())?;
+        }
+        fs::write(&path, &file.contents).map_err(|error| error.to_string())?;
+    }
+    Ok(FileAction {
+        path: file.path,
+        action: if !existed {
+            "write"
+        } else if changed {
+            "update"
+        } else {
+            "existing"
+        },
+        existed,
+        required: file.required,
+    })
+}
+
 #[cfg(unix)]
 fn set_executable_if_needed(path: &Path, executable: bool) -> Result<(), String> {
     if !executable {
@@ -262,6 +342,7 @@ fn materialize_config(project_root: &Path, file: GeneratedFile) -> Result<FileAc
     let existing_contents = fs::read_to_string(&path).map_err(|error| error.to_string())?;
     let mut existing: Value =
         serde_yaml::from_str(&existing_contents).map_err(|error| error.to_string())?;
+    normalize_existing_root(&mut existing);
     let defaults: Value =
         serde_yaml::from_str(&file.contents).map_err(|error| error.to_string())?;
     let changed = merge_missing_values(&mut existing, &defaults);
@@ -310,25 +391,48 @@ fn install_integration(
     project_root: &Path,
     detected: &DetectedSection,
     target: Option<AgentIntegrationTarget>,
+    activate: bool,
 ) -> Result<IntegrationSection, String> {
     if let Some(agent) = target {
-        let installed = install_agent_integration_bundle(agent, project_root.to_path_buf())?;
+        let state =
+            configure_agent_integration_bundle(agent, project_root.to_path_buf(), activate)?;
         Ok(IntegrationSection {
-            status: if installed {
-                "installed"
+            status: if state.conflicted {
+                "conflicted"
+            } else if state.verified {
+                "verified"
+            } else if state.activated {
+                "activated"
+            } else if state.generated {
+                "generated"
             } else {
-                "not-installed"
+                "not-generated"
             },
             agent: detected.agent_harness,
-            mode: "reviewable-local-bundle",
-            detail:
-                ".assura/integrations/<agent>/ generated; host-agent wiring remains manual opt-in",
+            mode: if activate {
+                "managed-project-activation"
+            } else {
+                "reviewable-local-bundle"
+            },
+            generated: state.generated,
+            activated: state.activated,
+            verified: state.verified,
+            conflicted: state.conflicted,
+            detail: if activate {
+                "managed project-local host wiring written and structurally verified; host trust may still be required"
+            } else {
+                ".assura/integrations/<agent>/ generated; activation remains explicit"
+            },
         })
     } else {
         Ok(IntegrationSection {
             status: "generic-guidance",
             agent: "generic",
             mode: "manual-shell",
+            generated: false,
+            activated: false,
+            verified: false,
+            conflicted: false,
             detail: "no supported host-agent harness detected; use AGENTS.md and assura check --format agent --warn",
         })
     }
@@ -344,19 +448,28 @@ fn integration_target(detected: &DetectedSection) -> Option<AgentIntegrationTarg
     }
 }
 
-fn verify_project(project_root: &Path, config: Option<PathBuf>) -> Result<Vec<CheckItem>, String> {
+fn verify_project(
+    project_root: &Path,
+    config: Option<PathBuf>,
+) -> Result<(Vec<CheckItem>, OnboardingReview), String> {
     let config_path = config.unwrap_or_else(|| project_root.join(".assura/config.yml"));
-    let report = run_structure_check_with_target_mode(
+    let report = build_project_review(
         Some(project_root.to_path_buf()),
         Some(config_path),
+        None,
         false,
-        CheckTargetMode::Recursive,
     )
     .map_err(|error| error.to_string())?;
-    Ok(vec![
+    let (structure_status, review_status, blocking, advisory, inactive) =
+        report.onboarding_summary();
+    let verified = vec![
         CheckItem {
             name: "structure_config",
-            status: if report.success { "pass" } else { "fail" },
+            status: if structure_status == "pass" {
+                "pass"
+            } else {
+                "fail"
+            },
             detail: ".assura/config.yml loaded and checked",
         },
         CheckItem {
@@ -371,7 +484,15 @@ fn verify_project(project_root: &Path, config: Option<PathBuf>) -> Result<Vec<Ch
             },
             detail: ".assura/onboarding/agent-next.md exists",
         },
-    ])
+    ];
+    let review = OnboardingReview {
+        status: review_status,
+        blocking,
+        advisory,
+        inactive,
+        next_command: "assura review --format agent .",
+    };
+    Ok((verified, review))
 }
 
 fn content_section(template: AgentContentTemplate) -> ContentSection {
@@ -415,4 +536,13 @@ pub(super) struct DetectedSection {
     pub(super) agent_confidence: &'static str,
     pub(super) git_repository: bool,
     pub(super) existing_source_files: bool,
+}
+
+#[derive(Serialize)]
+pub(super) struct OnboardingReview {
+    pub(super) status: &'static str,
+    pub(super) blocking: usize,
+    pub(super) advisory: usize,
+    pub(super) inactive: usize,
+    pub(super) next_command: &'static str,
 }

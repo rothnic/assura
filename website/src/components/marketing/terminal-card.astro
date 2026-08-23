@@ -1,0 +1,143 @@
+---
+interface TerminalLine {
+  text: string;
+  tone?: 'prompt' | 'plain' | 'muted' | 'info' | 'warn' | 'pass' | 'fail';
+}
+
+type TerminalSegmentKind =
+  | 'command'
+  | 'label'
+  | 'metric-key'
+  | 'metric-value'
+  | 'path'
+  | 'status'
+  | 'text'
+  | 'title';
+
+interface TerminalSegment {
+  text: string;
+  kind: TerminalSegmentKind;
+  emphasis?: 'danger' | 'warning';
+}
+
+interface Props {
+  title: string;
+  lines: TerminalLine[];
+  className?: string;
+  variant?: 'review' | 'check' | 'onboarding' | 'neutral';
+}
+
+const { title, lines, className = '', variant = 'neutral' } = Astro.props;
+
+const reviewLabelWidth = 10;
+const dangerMetrics = new Set(['blocking', 'violations', 'v']);
+const reviewSectionStarts = new Set(['Findings', 'Branch', 'Watch', 'Fix first', 'Run']);
+function metricEmphasis(label: string, key: string, value: string): TerminalSegment['emphasis'] {
+  const ratio = value.match(/^(\d+)\/(\d+)$/);
+  if (
+    label === 'Watch'
+    && ratio
+    && Number(ratio[2]) > 0
+    && Number(ratio[1]) >= Number(ratio[2])
+  ) return 'danger';
+
+  const numericValue = Number(value.replace(/^[+!-]/, '').split(/[+/,]/)[0]);
+  if (!Number.isFinite(numericValue) || numericValue === 0) return undefined;
+  if (dangerMetrics.has(key)) return 'danger';
+  if (label === 'Findings' && key === 'blocking') return 'danger';
+  if (label === 'Findings' && ['new', 'worsened'].includes(key)) return 'warning';
+  return undefined;
+}
+
+function tokenizeBody(body: string, label: string): TerminalSegment[] {
+  if (label === 'Run') return [{ text: body, kind: 'command' }];
+  if (label === 'Fix first') return [{ text: body, kind: 'status', emphasis: 'danger' }];
+  if (label === 'Status') return [{ text: body, kind: 'status', emphasis: body.includes('attention') ? 'warning' : undefined }];
+  if (label === 'Scope') return [{ text: body, kind: 'path' }];
+
+  return (body.match(/\s+|[^\s]+/g) ?? []).flatMap((token, index) => {
+    if (/^\s+$/.test(token)) return [{ text: token, kind: 'text' as const }];
+
+    const separator = token.indexOf('=');
+    if (separator > 0) {
+      const key = token.slice(0, separator);
+      const value = token.slice(separator + 1);
+      return [
+        { text: `${key}=`, kind: 'metric-key' as const },
+        { text: value, kind: 'metric-value' as const, emphasis: metricEmphasis(label, key, value) },
+      ];
+    }
+
+    if (['attention', 'needs-review'].includes(token)) {
+      return [{ text: token, kind: 'status', emphasis: 'warning' }];
+    }
+    if (token === 'fail') return [{ text: token, kind: 'status', emphasis: 'danger' }];
+    if (token === 'pass' || token === 'clear') return [{ text: token, kind: 'status' }];
+    if (label === 'Branch' && index === 0) return [{ text: token, kind: 'path' }];
+    if (label === 'Hot path' && index === 0) return [{ text: token, kind: 'path' }];
+    return [{ text: token, kind: 'text' }];
+  });
+}
+
+function reviewSegments(text: string): TerminalSegment[] {
+  if (/^\s/.test(text)) return tokenizeBody(text, '');
+
+  if (text === 'Assura review') return [{ text, kind: 'title' }];
+
+  const label = text.slice(0, reviewLabelWidth).trimEnd();
+  if (!label || text[reviewLabelWidth] !== ' ') return [{ text, kind: 'text' }];
+  return [
+    { text: label, kind: 'label' },
+    { text: text.slice(label.length, reviewLabelWidth + 1), kind: 'text' },
+    ...tokenizeBody(text.slice(reviewLabelWidth + 1), label),
+  ];
+}
+
+function reviewLineLabel(text: string): string | undefined {
+  if (/^\s/.test(text) || text === 'Assura review') return undefined;
+
+  const label = text.slice(0, reviewLabelWidth).trimEnd();
+  if (!label || text[reviewLabelWidth] !== ' ') return undefined;
+  return label;
+}
+
+const renderedLines = lines.map((line) => {
+  const label = variant === 'review' ? reviewLineLabel(line.text) : undefined;
+  return {
+    ...line,
+    segments: variant === 'review' ? reviewSegments(line.text) : [{ text: line.text, kind: 'text' as const }],
+    labelled: Boolean(label),
+    sectionStart: Boolean(label && reviewSectionStarts.has(label)),
+    summary: variant === 'review' && line.text === 'Assura review',
+  };
+});
+---
+
+<div
+  class:list={['review-terminal', className]}
+  aria-label={title}
+  data-terminal-variant={variant}
+>
+  <div class="terminal-bar">
+    <span aria-hidden="true"></span>
+    <span aria-hidden="true"></span>
+    <span aria-hidden="true"></span>
+    <strong>{title}</strong>
+  </div>
+  <pre><code>{renderedLines.map((line) => (
+    <span
+      class:list={['terminal-line', line.tone ?? 'plain']}
+      data-terminal-line
+      data-terminal-labelled={line.labelled ? 'true' : undefined}
+      data-terminal-section-start={line.sectionStart ? 'true' : undefined}
+      data-terminal-summary={line.summary ? 'true' : undefined}
+    >{line.segments.map((segment) => (
+      <span
+        class:list={['terminal-token', `terminal-token-${segment.kind}`, segment.emphasis && `is-${segment.emphasis}`]}
+        data-terminal-label={segment.kind === 'label' || segment.kind === 'title' ? true : undefined}
+        data-terminal-metric-key={segment.kind === 'metric-key' ? true : undefined}
+        data-terminal-metric-value={segment.kind === 'metric-value' ? segment.emphasis ?? 'default' : undefined}
+      >{segment.text}</span>
+    ))}</span>
+  ))}</code></pre>
+</div>

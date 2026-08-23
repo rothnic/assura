@@ -10,7 +10,7 @@ Assura can convert an LS-Lint config into the supported structure-first
 
 Example `.ls-lint.yml`:
 
-```yaml
+```yaml ls-lint-config
 ls:
   .dir: kebab-case
   .ts: kebab-case
@@ -46,9 +46,13 @@ The migration path targets LS-Lint 2.3 naming, regex, `.dir`, ignore, OR
 syntax, wildcard/subextension rules, glob and brace directory scopes, and
 `exists` behavior.
 
+Dot-prefixed keys are disambiguated by their YAML shape. A mapping such as
+`.agents:` is a directory scope, while a scalar such as `.ts: kebab-case`
+remains a file-extension rule.
+
 Native LS-Lint parity examples:
 
-```yaml
+```yaml ls-lint-config
 ls:
   .dir: kebab-case
   .md: exists:1-2
@@ -58,7 +62,7 @@ ls:
 
 Assura native direct-count examples:
 
-```yaml
+```yaml ls-lint-config
 ls:
   README.md: exists:1
   docs/: exists:1

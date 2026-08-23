@@ -2,7 +2,7 @@
 id: goal-assura-project-intelligence-content-model-validation-demo
 type: goal
 title: Assura project intelligence content model validation demo
-status: planned
+status: completed
 created: 2026-06-30
 owners:
   - assura-maintainers
@@ -13,6 +13,16 @@ related:
 ---
 
 # Assura Project Intelligence Content Model Validation Demo
+
+## Post-Merge Revalidation
+
+Closed as superseded on 2026-07-04. The content-runtime implementation,
+release-readiness audit, docs, website example, and fixture tests already prove
+the validation mechanics this demo depended on. The remaining higher-value
+authoring examples now belong in
+`docs/goals/assura-llm-wiki-personal-knowledge-base-starters.md`, where
+research authoring, LLM-wiki, OKF, and query examples can be validated together
+without maintaining a parallel demo-only goal.
 
 ## Objective
 

@@ -1,5 +1,4 @@
 //! Lightweight `assura check` entrypoint optimized for validation latency.
-
 use super::{
     run_structure_check_cached, run_structure_check_with_target_mode, run_structure_checks,
     CheckError, CheckTargetMode, StructureCheckReport,
@@ -12,7 +11,9 @@ use serde::Serialize;
 use std::ffi::{OsStr, OsString};
 use std::fmt::Write as _;
 use std::path::PathBuf;
-
+#[path = "fast_cli_options.rs"]
+mod option_helpers;
+use option_helpers::reject_unknown_option;
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 #[derive(Debug)]
 struct Options {
@@ -24,6 +25,7 @@ struct Options {
     max_issues: Option<usize>,
     output: Option<PathBuf>,
     cache_dir: Option<PathBuf>,
+    cache: bool,
     fail_fast: bool,
     warn: bool,
     ls_lint_target_semantics: bool,
@@ -72,7 +74,6 @@ where
 }
 
 /// Try to handle `assura check` before the full CLI stack starts.
-///
 /// Returns `None` when the invocation needs the complete Clap/Tokio command
 /// path, preserving the rest of the product CLI while keeping common checks on
 /// the low-overhead path.
@@ -158,6 +159,7 @@ where
     let cache_dir = args
         .opt_value_from_os_str("--cache-dir", path_from_os_str)
         .map_err(|error| error.to_string())?;
+    let cache = args.contains("--cache");
     let fail_fast = args.contains("--fail-fast");
     let warn = args.contains("--warn");
     let _no_parallel = args.contains("--no-parallel");
@@ -179,6 +181,7 @@ where
         max_issues,
         output,
         cache_dir,
+        cache,
         fail_fast,
         warn,
         ls_lint_target_semantics,
@@ -221,18 +224,18 @@ fn parse_min_severity(value: &str) -> Result<String, String> {
     }
 }
 
-fn reject_unknown_option(value: &OsString) -> Result<(), String> {
-    let Some(value) = value.to_str() else {
-        return Ok(());
-    };
-    if value.starts_with('-') {
-        return Err(format!("unexpected argument {value:?}"));
-    }
-    Ok(())
-}
-
 fn run(options: Options) -> Result<bool, CheckError> {
-    if options.cache_dir.is_none() && options.paths.len() <= 1 {
+    let cache_dir = if options.cache {
+        let path = options
+            .paths
+            .first()
+            .cloned()
+            .unwrap_or(std::env::current_dir()?);
+        Some(super::cache::default_check_cache_dir(&path))
+    } else {
+        options.cache_dir.clone()
+    };
+    if cache_dir.is_none() && options.paths.len() <= 1 {
         let path = options.paths.first().cloned();
         let target_mode = if options.ls_lint_target_semantics {
             CheckTargetMode::LsLint
@@ -269,7 +272,7 @@ fn run(options: Options) -> Result<bool, CheckError> {
             ),
         ));
     }
-    let reports = if let Some(cache_dir) = &options.cache_dir {
+    let reports = if let Some(cache_dir) = &cache_dir {
         let mut reports = Vec::with_capacity(paths.len());
         for path in paths {
             reports.push(run_structure_check_cached(
@@ -476,6 +479,7 @@ Options:
                           Maximum feedback items to show
   -o, --output <PATH>    Write report to a file
       --cache-dir <PATH> Reuse hot check results from this cache directory
+      --cache            Reuse correctness-checked results in the default Git-aware cache
       --fail-fast        Stop after the first violation
       --warn             Report violations but exit successfully
       --ls-lint-target-semantics

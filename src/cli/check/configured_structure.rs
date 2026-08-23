@@ -39,32 +39,34 @@ impl StructureChecker {
                 path_has_scope_magic(node_rel) && self.has_matching_directory_scope(node_rel);
             if !pattern_has_matches {
                 self.validate_self_directory_exists(node_rel, node, 0, report);
-                self.validate_missing_direct_counts(node_rel, node, report);
             }
 
-            if !node.required {
-                self.validate_child_node_requirements(node_rel, node, report);
+            if node_allows_absence(node) {
                 return;
             }
-            self.push_violation(
-                report,
-                node_rel.to_path_buf(),
-                "required_directory",
-                format!(
-                    "Configured directory '{}' is missing",
-                    display_rel(node_rel)
-                ),
-                severity_for_node(node),
-            );
+            if !pattern_has_matches {
+                self.validate_missing_direct_counts(node_rel, node, report);
+            }
+            if node.required {
+                self.push_violation(
+                    report,
+                    node_rel.to_path_buf(),
+                    "required_directory",
+                    format!(
+                        "Configured directory '{}' is missing",
+                        display_rel(node_rel)
+                    ),
+                    severity_for_node(node),
+                );
+            }
             return;
         }
 
         self.validate_required_file_names(node_rel, node, report);
         self.validate_required_directory_names(node_rel, node, report);
         self.validate_legacy_exists_lists(node_rel, node, report);
-        if node_rel.as_os_str().is_empty() {
-            self.validate_self_directory_exists(node_rel, node, 0, report);
-        }
+        let self_count = usize::from(!node_rel.as_os_str().is_empty());
+        self.validate_self_directory_exists(node_rel, node, self_count, report);
         self.validate_child_node_requirements(node_rel, node, report);
     }
 
@@ -295,6 +297,13 @@ impl StructureChecker {
         }
         false
     }
+}
+
+fn node_allows_absence(node: &DirectoryNode) -> bool {
+    node.self_directory
+        .as_ref()
+        .and_then(|directory| directory.exists.as_ref())
+        .is_some_and(|exists| exists.values().all(|expected| count_satisfies(0, expected)))
 }
 
 fn node_has_configured_requirements(node: &DirectoryNode) -> bool {

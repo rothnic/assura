@@ -47,6 +47,7 @@ struct PortableEffectiveRules {
     directories: Option<PortableDirectoryBundle>,
     self_directory: Option<PortableDirectoryBundle>,
     markdown: Option<PortableMarkdownBundle>,
+    limit_children: Option<crate::config::types::ChildrenLimitConfig>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -204,6 +205,10 @@ impl From<&EffectiveRules> for PortableEffectiveRules {
                 .markdown
                 .as_ref()
                 .map(|markdown| markdown.as_ref().clone().into()),
+            limit_children: rules
+                .limit_children
+                .as_ref()
+                .map(|limit| limit.as_ref().clone()),
         }
     }
 }
@@ -218,6 +223,7 @@ impl From<PortableEffectiveRules> for EffectiveRules {
                 .map(DirectoryBundle::from)
                 .map(Arc::new),
             markdown: rules.markdown.map(MarkdownBundle::from).map(Arc::new),
+            limit_children: rules.limit_children.map(Arc::new),
         }
     }
 }
@@ -317,10 +323,12 @@ impl From<PortableFastFileNaming> for FastFileNaming {
 }
 
 fn node_has_direct_count_constraints(node: &DirectoryNode) -> bool {
-    node.files
-        .as_ref()
-        .and_then(|files| files.exists.as_ref())
-        .is_some()
+    node.limit_children.is_some()
+        || node
+            .files
+            .as_ref()
+            .and_then(|files| files.exists.as_ref())
+            .is_some()
         || node
             .directories
             .as_ref()

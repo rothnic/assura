@@ -17,16 +17,16 @@ lane and folds in three product questions:
 
 ## Live Snapshot
 
-Checked on 2026-07-04 from branch
-`codex/agent-ready-onboarding-backlog`.
+Checked on 2026-07-04 after PR #139 merged, from cleanup branch
+`codex/post-merge-backlog-truth-pass`.
 
 | Surface | Current Signal | Backlog Implication |
 | --- | --- | --- |
-| PR #139 | Open, mergeable, and checks green on head `2922ea9f6e4556be12e4c847e617ec1724a5d450`. | Finish the PR handoff before opening new implementation lanes. |
+| PR #139 | Merged on 2026-07-04 at `0020278066bc7498627ae9ef5a32bec54296ce73`; the delivery branch was cleaned up after merge. | Treat agent-ready onboarding as delivered; keep only post-merge truth cleanup in this pass. |
 | `assura doctor . --format json` | Passes with no violations; reports inactive optional repository reference and onboarding packet gaps. | Users need one compact "where am I and what matters next?" review flow. |
 | `assura content agent-query gaps . --format json` | Reports 1,089 unresolved repository references. Manual inspection shows many low-confidence hits from generated JSON, archived task logs, and benchmark history. | Improve reference-graph signal quality before making unresolved references more prominent or blocking. |
 | Roadmap | Agent-ready onboarding is complete locally; current ordered lane is performance polish. | Keep performance as the next core delivery lane. |
-| Planned goals | Several older `status: planned` goals are superseded by completed project-intelligence work. | Add a cleanup pass that marks stale goals completed, superseded, or merged into current goals. |
+| Planned goals | Several older `status: planned` goals are superseded by completed project-intelligence work. | Mark stale goals `completed` with a short revalidation note when the meaning is "completed by later work" or "superseded by a narrower goal." |
 
 ## Priority Scoring
 
@@ -34,7 +34,6 @@ Score = `reach + pain + differentiation + confidence - effort`.
 
 | Score | Item | Why It Matters | Done Signal |
 | ---: | --- | --- | --- |
-| 16 | Close PR #139 and preserve handoff truth | The current branch is the delivery vehicle for completed onboarding work. Starting new implementation before PR truth is stable creates review drift. | PR #139 includes the latest docs, checks are green, and local branch is clean. |
 | 15 | Performance polish and native report gates | Every user hits CLI latency, install confidence, and validation runtime before advanced content modeling matters. | LS-Lint parity and Assura-native suites have checked history, website data, and no-regression gates. |
 | 14 | Compact project review surface | The common user question is not "what command exists?" but "is this repo healthy, and what should I fix next?" | A single documented flow combines doctor, self-check, next actions, and high-signal content gaps. |
 | 13 | Reference graph signal-quality cleanup | Current unresolved-reference counts are useful discovery but too noisy to drive agent behavior without filtering. | Generated artifacts, archives, logs, and low-confidence tokens are classified or filtered; fixtures prove fewer false positives. |
@@ -46,16 +45,16 @@ Score = `reach + pain + differentiation + confidence - effort`.
 
 ## Recommended Roadmap
 
-### P0: Merge-Ready Onboarding Closure
+### P0: Post-Merge Truth Closure
 
-Keep the current branch focused. Do not reopen agent-ready onboarding unless PR
-review, CI, or a current product regression proves it is necessary.
+Keep the current cleanup branch focused. Do not reopen agent-ready onboarding
+unless current product regression evidence proves it is necessary.
 
 Outputs:
 
-- PR #139 green on latest head;
-- local workspace clean;
-- handoff comment or docs pointing to the next executable goal.
+- PR #139 merged evidence recorded in roadmap/current-state docs;
+- stale planned goals revalidated and marked completed where appropriate;
+- local workspace clean with a next executable goal prompt.
 
 ### P1: Performance And Common-Issue Review
 
@@ -209,12 +208,13 @@ When cleaning goal status, apply these rules:
 ## Proposed Next Goal Prompt
 
 ```text
-Execute a backlog cleanup and roadmap prioritization pass for Assura.
+Execute a post-merge backlog cleanup and roadmap prioritization pass for Assura.
 
 Start from live state, not stale goal frontmatter: run the Trellis workflow
-gate, inspect git status, verify PR #139, inspect .trellis/spec/assura/roadmap.md,
-docs/data/public-roadmap.json, docs/support-policy.md, and the planned goal
-list under docs/goals.
+gate, inspect git status, verify PR #139 merged at
+0020278066bc7498627ae9ef5a32bec54296ce73, inspect
+.trellis/spec/assura/roadmap.md, docs/data/public-roadmap.json,
+docs/support-policy.md, and the planned goal list under docs/goals.
 
 Produce a reviewed cleanup commit that:
 1. marks stale or superseded goals completed/superseded with short evidence;

@@ -122,13 +122,13 @@ impl ContentRepository {
 
         let content = serialize_record(collection, &rel_path, &data, request.body.as_deref())
             .map_err(|finding| vec![*finding])?;
-        let object =
+        let mut object =
             parse_object(collection, &rel_path, &content).map_err(|finding| vec![*finding])?;
 
         validate_placement(&self.model, &object, &mut findings);
         validate_object_data(
             collection,
-            &object,
+            &mut object,
             schema_validator_for(collection, &self.schema_validators),
             &mut findings,
         );
@@ -256,7 +256,7 @@ impl ContentRepository {
             current_object.body.as_deref(),
         )
         .map_err(|finding| vec![*finding])?;
-        let updated_object = parse_object(collection, &current_object.rel_path, &content)
+        let mut updated_object = parse_object(collection, &current_object.rel_path, &content)
             .map_err(|finding| vec![*finding])?;
         if updated_object.id != current_object.id {
             return Err(vec![ContentFinding::new(
@@ -272,7 +272,7 @@ impl ContentRepository {
         validate_placement(&self.model, &updated_object, &mut findings);
         validate_object_data(
             collection,
-            &updated_object,
+            &mut updated_object,
             schema_validator_for(collection, &self.schema_validators),
             &mut findings,
         );

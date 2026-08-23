@@ -16,18 +16,18 @@ should call the same contracts rather than invent parallel validation.
 | `assura check --format agent` | Supported | Stable JSON shape for wrappers and agent integrations. |
 | `assura check --format agent --agent codex` | Supported adapter | Optional Codex `UserPromptSubmit` delivery adapter. |
 | `assura agent` | Supported | Local coding-agent command group with JSON defaults for diagnostics, context packs, graph/search queries, relation checks, and safe-fix previews. |
-| `assura agent integration` | Experimental | Local install/update/remove/status/doctor commands that generate reviewable Codex, OpenCode, Claude, and Pi wrapper bundles under `.assura/integrations/<agent>/`. |
+| `assura agent integration` | Supported next-release | Managed project-local install/activate/update/deactivate/remove/status/doctor lifecycle for Codex, OpenCode, Claude, and Pi. |
 | `assura editor session` | Supported | Local JSON-line editor protocol with LSP-shaped diagnostics, context, code-action preview methods, and conservative reload metadata. |
 | `integrations/editors/vscode` | Supported beta local package | Local VS Code adapter over shared CLI, daemon, and editor-session contracts. Package tests and smoke scripts gate metadata, daemon visibility, one-shot fallback, and preview-only safe fixes. Marketplace publication is deferred. |
 | `assura content agent-context` | Supported | Generic project-intelligence capability schema for wrappers; not agent-specific. |
 | `assura content agent-query` | Supported | Generic request/response envelope over diagnostics, graph/search, semantic candidates, and code-symbol queries. |
-| Git hook feedback | Experimental | Hooks can call the CLI and render bounded status or advice. |
+| Git hook feedback | Supported local opt-in | Hooks call the shared CLI and render bounded status, advice, or agent output. |
 | Full LSP server and marketplace editor packages | Roadmap only | `Content-Length` framed language-server transport and marketplace publication are not part of the current supported surface. |
 | MCP adapter | Roadmap only | Optional future stdio adapter over the same local contracts; no remote access is required for current agent usability. |
 | Automatic agent orchestration | Unsupported | Assura can generate local wrapper bundles, but it does not own full agent workflow orchestration or silently mutate host-agent configuration. |
 
 See [Agent Feedback Delivery](/reference/agent-feedback/) for current CLI output
-formats and future integration direction.
+formats, managed integrations, and deferred adapter boundaries.
 
 Local coding agents should start with:
 
@@ -47,20 +47,21 @@ assura agent diagnostics .
 assura agent safe-fixes .
 ```
 
-Maintainers can create reviewable local integration bundles for supported host
-agents:
+Maintainers can create, activate, and inspect project-local integrations for
+supported host agents:
 
 ```bash
-assura agent integration install codex .
-assura agent integration install opencode .
-assura agent integration install claude .
-assura agent integration install pi .
+assura agent integration activate codex .
+assura agent integration activate opencode .
+assura agent integration activate claude .
+assura agent integration activate pi .
 assura agent integration doctor codex .
 ```
 
-These commands write only under `.assura/integrations/<agent>/`. The generated
-wrappers call `assura agent nudge`, `assura check --format agent`, and
-`assura daemon` commands; host-agent config remains an explicit manual opt-in.
+Activation generates the reviewable bundle and patches only Assura-owned
+project-local host entries. The generated wrappers call `assura agent nudge`,
+`assura check --format agent`, and `assura daemon`; deactivation removes those
+owned entries while retaining unmanaged host configuration.
 
 The query envelope uses `assura.project-intelligence.agent-query.v1` and wraps
 the same content-query results used by human CLI commands. For direct project

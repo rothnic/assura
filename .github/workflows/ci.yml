@@ -483,7 +483,7 @@ jobs:
         mkdir -p target/performance
         target/release/assura performance-report \
           --output target/performance/ls-lint-comparison.json \
-          --iterations 5
+          --iterations 16
     - name: Enforce no-slower gate
       run: cargo xtask performance-no-slower target/performance/ls-lint-comparison.json
     - name: Generate native performance report
@@ -495,6 +495,17 @@ jobs:
           --iterations 5
     - name: Enforce native performance gate
       run: cargo xtask native-performance-no-regression target/performance/native-current.json
+    - name: Generate warm-loop performance report
+      run: |
+        cargo xtask warm-loop-benchmark \
+          --binary target/release/assura-full \
+          --iterations 20 \
+          --output target/performance/warm-loop-current.json \
+          --history target/performance/warm-loop-history.jsonl
+    - name: Validate checked warm-loop contract
+      run: cargo xtask warm-loop-no-regression benches/history/warm-loop-current.json
+    - name: Enforce warm-loop p95 budgets
+      run: cargo xtask warm-loop-no-regression target/performance/warm-loop-current.json
     - name: Summarize performance
       if: always()
       run: |
@@ -589,6 +600,21 @@ jobs:
                     key=lambda row: row["median_runtime_ms"] or 0,
                 )
                 print(f"| `{fixture}` | {len(fixture_rows)} | {median(slowest)} `{slowest['row_family']}` |")
+
+        warm_loop_path = Path("target/performance/warm-loop-current.json")
+        if warm_loop_path.exists():
+            warm_loop = json.loads(warm_loop_path.read_text())
+            print()
+            print("## Agent Warm-Loop Performance")
+            print()
+            print("| Scenario | Median | p95 | Budget | Result |")
+            print("| --- | ---: | ---: | ---: | --- |")
+            for row in warm_loop["rows"]:
+                result = "pass" if row["within_budget"] else "fail"
+                print(
+                    f"| `{row['id']}` | {row['median_ms']:.3f} ms | "
+                    f"{row['p95_ms']:.3f} ms | {row['budget_ms']:.3f} ms | `{result}` |"
+                )
         PY
     - name: Upload performance artifact
       if: always()
@@ -606,5 +632,15 @@ jobs:
         path: |
           target/performance/native-current.json
           target/performance/native-history.jsonl
+        if-no-files-found: error
+        retention-days: 30
+    - name: Upload warm-loop performance artifact
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: warm-loop-performance-report
+        path: |
+          target/performance/warm-loop-current.json
+          target/performance/warm-loop-history.jsonl
         if-no-files-found: error
         retention-days: 30

@@ -14,19 +14,22 @@ described in `.assura/config.yml`.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sh
-assura init
+assura init --recipe agentic-core --recipe structure-health
 assura check
 ```
 
 ## Structure-First Config
 
 ```yaml
+rules:
+  source-file:
+    naming: kebab-case
+    max_lines: 500
+
 structure:
-  ./:
-    files:
-      naming: kebab-case
-    directories:
-      naming: kebab-case
+  src/: exists:1
+  ./**/:
+    .{ts,tsx}: $source-file
 exclude:
   - "target/**"
 ```
@@ -54,5 +57,5 @@ jobs:
 
 ## Roadmap
 
-Agent feedback, richer quality measurement, and editor/agent integrations are
-future work. They are not required for the current pre-1.0 onboarding release.
+Project review, agent feedback formats, and editor integrations build on the
+same deterministic structure policy. The CLI remains local and pre-1.0.

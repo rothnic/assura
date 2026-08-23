@@ -1,0 +1,133 @@
+---
+interface Props {
+  steps: string[];
+  prompt: string;
+  onboardingCommand: string;
+  installCommand: string;
+  sourceRevision: string;
+}
+
+const { steps, prompt, onboardingCommand, installCommand, sourceRevision } = Astro.props;
+const shortRevision = sourceRevision.slice(0, 7);
+---
+
+<dialog id="agent-setup-dialog" class="setup-dialog" aria-labelledby="setup-dialog-title">
+  <div class="dialog-shell">
+    <header class="dialog-head">
+      <div>
+        <span>Agent setup</span>
+        <h2 id="setup-dialog-title">Set up this project with Assura.</h2>
+      </div>
+      <button class="dialog-close" type="button" data-close-setup aria-label="Close setup dialog">×</button>
+    </header>
+    <p class="dialog-copy">
+      Copy one instruction to the coding agent already working in your project.
+      It will establish the baseline, define the expected shape, and verify it.
+    </p>
+    <div class="setup-command" aria-label="Assura onboarding command">
+      <span>One command</span>
+      <code>{onboardingCommand}</code>
+    </div>
+    <div class="dialog-command">
+      <div>
+        <span>Agent goal</span>
+        <strong>Inspect, constrain, verify</strong>
+      </div>
+      <textarea id="agent-prompt" class="copy-source" tabindex="-1" aria-hidden="true">{prompt}</textarea>
+      <button class="button button-primary" type="button" data-copy-target="agent-prompt" data-copied-label="Instruction copied" data-analytics-event="setup_prompt_copy">
+        Copy setup instruction
+      </button>
+      <ol id="agent-instruction" class="agent-instruction">
+        {steps.map((step) => <li>{step}</li>)}
+      </ol>
+    </div>
+    <details class="install-details" aria-label={`Installation details for revision ${shortRevision}`}>
+      <summary>
+        <span>Installation details</span>
+        <code>{shortRevision}</code>
+      </summary>
+      <div class="install-row">
+        <code id="install-command" tabindex="0" aria-label="Pinned Assura install command">{installCommand}</code>
+        <button class="copy-inline" type="button" data-copy-target="install-command" data-copied-label="Copied" data-analytics-event="install_command_copy">
+          Copy
+        </button>
+      </div>
+      <p>The copied setup instruction includes this pinned command.</p>
+    </details>
+    <p id="copy-status" class="copy-status" role="status" aria-live="polite"></p>
+  </div>
+</dialog>
+
+<script is:inline>
+  const setupDialog = document.getElementById('agent-setup-dialog');
+  if (setupDialog instanceof HTMLDialogElement) {
+    let lockedScrollY = null;
+
+    const lockBackgroundScroll = () => {
+      if (lockedScrollY !== null) return;
+      lockedScrollY = window.scrollY;
+      document.documentElement.classList.add('setup-modal-open');
+      document.body.classList.add('setup-modal-open');
+      document.body.style.setProperty('--setup-scroll-y', `${lockedScrollY}px`);
+    };
+
+    const unlockBackgroundScroll = () => {
+      if (lockedScrollY === null) return;
+      const restoreScrollY = lockedScrollY;
+      lockedScrollY = null;
+      document.documentElement.classList.remove('setup-modal-open');
+      document.body.classList.remove('setup-modal-open');
+      document.body.style.removeProperty('--setup-scroll-y');
+      window.scrollTo(0, restoreScrollY);
+    };
+
+    for (const trigger of document.querySelectorAll('[data-open-setup]')) {
+      trigger.addEventListener('click', (event) => {
+        event.preventDefault();
+        setupDialog.showModal();
+        lockBackgroundScroll();
+      });
+    }
+    for (const trigger of setupDialog.querySelectorAll('[data-close-setup]')) {
+      trigger.addEventListener('click', () => setupDialog.close());
+    }
+    setupDialog.addEventListener('click', (event) => {
+      if (event.target === setupDialog) setupDialog.close();
+    });
+    setupDialog.addEventListener('close', unlockBackgroundScroll);
+  }
+
+  for (const button of document.querySelectorAll('[data-copy-target]')) {
+    button.addEventListener('click', async () => {
+      const targetId = button.getAttribute('data-copy-target');
+      const target = targetId ? document.getElementById(targetId) : null;
+      const value = target?.textContent?.trim();
+      if (!value) return;
+
+      const status = document.getElementById('copy-status');
+      const originalLabel = button.getAttribute('data-original-label') || button.textContent || '';
+      button.setAttribute('data-original-label', originalLabel);
+      try {
+        await navigator.clipboard.writeText(value);
+        button.textContent = button.getAttribute('data-copied-label') || 'Copied';
+        if (status) status.textContent = `${button.textContent}.`;
+      } catch {
+        button.textContent = 'Copy failed';
+        if (target instanceof HTMLTextAreaElement) {
+          target.classList.remove('copy-source');
+          target.classList.add('copy-fallback');
+          target.removeAttribute('aria-hidden');
+          target.removeAttribute('tabindex');
+          target.readOnly = true;
+          target.focus();
+          target.select();
+        }
+        if (status) status.textContent = 'Copy failed. The setup instruction is selected for manual copy.';
+      }
+      window.setTimeout(() => {
+        button.textContent = button.getAttribute('data-original-label') || originalLabel;
+        if (status) status.textContent = '';
+      }, 2400);
+    });
+  }
+</script>

@@ -1,0 +1,27 @@
+{
+  "schema_version": "assura.warm-loop-budgets.v1",
+  "description": "Release-binary p95 latency budgets for agent-facing warm-loop commands on the deterministic CI fixture.",
+  "minimum_iterations": 20,
+  "rows": [
+    {
+      "id": "no-change-warm-review",
+      "p95_budget_ms": 150.0
+    },
+    {
+      "id": "one-file-change",
+      "p95_budget_ms": 175.0
+    },
+    {
+      "id": "directory-create-delete",
+      "p95_budget_ms": 200.0
+    },
+    {
+      "id": "config-change",
+      "p95_budget_ms": 200.0
+    },
+    {
+      "id": "agent-nudge",
+      "p95_budget_ms": 150.0
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+rules:
+  # Progressive-disclosure entrypoints.
+  agent-entrypoint:
+    max_lines: 160
+    severity: low
+    message: See docs/agent-guidance.md.
+
+  skill-entrypoint:
+    max_lines: 500
+    markdown:
+      require_frontmatter: true
+    message: See docs/agent-guidance.md#skills.
+  # Shared non-blocking directory health.
+  folder-health:
+    limit_children: 10
+    severity: low
+    message: See docs/structure.md.
+
+  # Closed-directory building blocks.
+  closed-entry:
+    exists: 0
+    message: See docs/agent-guidance.md#layout.
+
+  closed:
+    ./*/: $closed-entry
+    ./*: $closed-entry
+  # Repeated directory contracts.
+  skill:
+    ./: $closed
+    ./{agents,assets,references,scripts}/:
+      ./: exists:0-1
+      inherit: false
+    SKILL.md: exists:1 | $skill-entrypoint
+
+  workspace:
+    AGENTS.md: exists:1 | $agent-entrypoint
+    package.json: exists:1
+
+structure:
+  # Directories, as shown by an IDE explorer.
+  .agents/:
+    ./: exists:0-1 | $closed
+    skills/:
+      ./: exists:0-1
+      ./*/: kebab-case | $skill
+      ./*: $closed-entry
+  apps/:
+    ./: exists:0-1
+    ./*/: $workspace
+  packages/:
+    ./: exists:1
+    ./*/: $workspace
+
+  # Required root files, alphabetically.
+  AGENTS.md: exists:1 | $agent-entrypoint
+  package.json: exists:1
+  pnpm-{lock,workspace}.yaml: exists:1
+  README.md: exists:1
+  turbo.json: exists:1
+
+  # Direct root dot directories.
+  ./.*/: kebab-case | exists:0-10
+
+  # Defaults inside every directory, including root.
+  ./**/:
+    ./: $folder-health
+    ./*/: kebab-case
+    .{md,js,jsx,ts,tsx}: max_lines:500 | severity:low
+    .md: kebab-case | exact:AGENTS | exact:README
+    .{js,jsx,ts,tsx}: kebab-case
+
+exclude: ["**/{node_modules,.next,.turbo,dist,coverage}/**"]

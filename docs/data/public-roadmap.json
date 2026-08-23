@@ -1,6 +1,6 @@
 {
   "schema_version": "assura.public-roadmap.v1",
-  "updated": "2026-07-03",
+  "updated": "2026-08-11",
   "source": ".trellis/spec/assura/roadmap.md",
   "groups": [
     {
@@ -168,6 +168,12 @@
           "summary": "Reassess row-by-row LS-Lint performance and explain any CLI-floor cost.",
           "detail_path": "docs/goals/assura-ls-lint-performance-reassessment.md",
           "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-ls-lint-performance-reassessment.md"
+        },
+        {
+          "label": "PR Handoff",
+          "summary": "Merged the agent-ready onboarding follow-up and native performance evidence in PR #139.",
+          "detail_path": "docs/goals/assura-post-onboarding-backlog-execution-sequence.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-post-onboarding-backlog-execution-sequence.md"
         }
       ]
     },
@@ -176,10 +182,10 @@
       "title": "Now",
       "items": [
         {
-          "label": "PR Handoff",
-          "summary": "Publish and revalidate the local agent-ready onboarding follow-up commits before starting the performance lane.",
-          "detail_path": "docs/goals/assura-post-onboarding-backlog-execution-sequence.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-post-onboarding-backlog-execution-sequence.md"
+          "label": "Claim-Complete Release",
+          "summary": "Stabilize every marketed capability, publish v0.4, and collect the explicit v1 soak evidence.",
+          "detail_path": "docs/goals/assura-claim-complete-v0-4-and-v1.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-claim-complete-v0-4-and-v1.md"
         },
         {
           "label": "CLI Floor",
@@ -192,6 +198,12 @@
           "summary": "Track content collection validation/querying, document graph, context pack, Markdown, reference, and daemon/session performance.",
           "detail_path": "docs/goals/assura-performance-polish-program.md",
           "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-performance-polish-program.md"
+        },
+        {
+          "label": "Compact Review",
+          "summary": "Combine doctor, self-check, next actions, and high-signal content gaps into one first diagnostic flow.",
+          "detail_path": "docs/goals/assura-compact-project-review-common-issues.md",
+          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-compact-project-review-common-issues.md"
         }
       ]
     },

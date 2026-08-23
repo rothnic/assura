@@ -45,6 +45,7 @@ commands:
       --no-parallel: {}
       --ls-lint-target-semantics: {}
       --watch: {}
+      --cache: {}
   - name: "assura status"
     allow_positionals: true
     flags:
@@ -71,6 +72,68 @@ commands:
       --quiet: {}
       --help:
         aliases: ["-h"]
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status", "agent"]
+  - name: "assura review"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status", "agent"]
+      --base:
+        takes_value: true
+  - name: "assura cache"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+  - name: "assura cache status"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --cache-dir:
+        takes_value: true
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status", "agent"]
+  - name: "assura cache clean"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --cache-dir:
+        takes_value: true
       --format:
         aliases: ["-f"]
         takes_value: true
@@ -104,6 +167,33 @@ commands:
       --project-intelligence: {}
       --force: {}
       --no-git-hooks: {}
+      --recipe:
+        takes_value: true
+        values: ["agentic-core", "structure-health"]
+  - name: "assura config"
+    allow_positionals: false
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+  - name: "assura config add-recipe"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --dry-run: {}
+      --force: {}
   - name: "assura watch"
     allow_positionals: true
     flags:
@@ -118,6 +208,10 @@ commands:
       --debounce:
         aliases: ["-d"]
         takes_value: true
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json"]
       --no-git: {}
   - name: "assura migrate"
     allow_positionals: true
@@ -133,6 +227,9 @@ commands:
       --output:
         aliases: ["-o"]
         takes_value: true
+      --from:
+        takes_value: true
+        values: ["auto", "ls-lint", "assura-v1"]
   - name: "assura fix markdown"
     allow_positionals: true
     flags:
@@ -308,6 +405,7 @@ commands:
       --agent:
         takes_value: true
         values: ["auto", "generic", "codex", "opencode", "claude", "pi"]
+      --activate: {}
       --content-template:
         takes_value: true
         values: ["none", "agent-project", "document-project"]
@@ -328,7 +426,7 @@ commands:
         aliases: ["-h"]
       --event:
         takes_value: true
-        values: ["session-start", "before-tool", "after-tool", "file-read", "recovery"]
+        values: ["session-start", "before-tool", "after-tool", "file-read", "idle", "recovery"]
       --changed:
         takes_value: true
       --agent:
@@ -340,6 +438,8 @@ commands:
       --max-issues:
         takes_value: true
       --reference-limit:
+        takes_value: true
+      --cooldown-seconds:
         takes_value: true
       --format:
         aliases: ["-f"]
@@ -373,7 +473,41 @@ commands:
         aliases: ["-f"]
         takes_value: true
         values: ["text", "json", "yaml", "advice", "status"]
+  - name: "assura agent integration activate"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --dry-run: {}
+      --force: {}
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status"]
   - name: "assura agent integration update"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
+      --dry-run: {}
+      --force: {}
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json", "yaml", "advice", "status"]
+  - name: "assura agent integration deactivate"
     allow_positionals: true
     flags:
       --config:

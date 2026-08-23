@@ -1,23 +1,69 @@
 /* Custom CSS for Assura Documentation */
 
-/* Import Catppuccin palette for custom styling */
-@import url('@catppuccin/palette/css/catppuccin.css');
-
 /* Root variables for Assura branding */
 :root {
-  /* Primary accent colors - Teal/Cyan mix */
-  --assura-primary: #7dd3fc;
-  --assura-secondary: #94a3b8;
-  --assura-accent: #2dd4bf;
+  /* Product palette shared with the standalone landing page. */
+  --assura-primary: #0f766e;
+  --assura-secondary: #52525b;
+  --assura-accent: #16a34a;
+  --assura-warn: #b45309;
   
-  /* Dark mode (Mocha) adjustments */
-  --sl-color-text-accent: #7dd3fc;
-  --sl-color-bg-accent: rgba(125, 211, 252, 0.1);
+  --sl-color-text-accent: #0f766e;
+  --sl-color-bg-accent: rgba(15, 118, 110, 0.1);
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+  --sl-color-accent-low: #dcefeb;
+  --sl-color-accent: #0f766e;
+  --sl-color-accent-high: #0a4f4a;
+  --sl-color-white: #0d1716;
+  --sl-color-gray-1: #1f2f2c;
+  --sl-color-gray-2: #41524f;
+  --sl-color-gray-3: #667370;
+  --sl-color-gray-4: #a7b4b1;
+  --sl-color-gray-5: #d5dfdc;
+  --sl-color-gray-6: #edf4f2;
+  --sl-color-gray-7: #f7faf9;
+  --sl-color-black: #ffffff;
+  --sl-color-bg: #f7faf9;
+  --sl-color-bg-nav: rgba(247, 250, 249, 0.94);
+  --sl-color-bg-sidebar: #f0f6f4;
+  --sl-color-hairline-light: rgba(13, 23, 22, 0.1);
+  --sl-color-hairline: rgba(13, 23, 22, 0.14);
+  --sl-color-hairline-shade: rgba(13, 23, 22, 0.2);
+}
+
+:root[data-theme='dark'] {
+  --assura-primary: #5eead4;
+  --assura-secondary: #a1a1aa;
+  --assura-accent: #86efac;
+  --assura-warn: #fbbf24;
+  --sl-color-text-accent: #5eead4;
+  --sl-color-bg-accent: rgba(94, 234, 212, 0.1);
+  --sl-color-accent-low: #12332f;
+  --sl-color-accent: #5eead4;
+  --sl-color-accent-high: #ccfbf1;
+  --sl-color-white: #f4f4f5;
+  --sl-color-gray-1: #e4e4e7;
+  --sl-color-gray-2: #a1a1aa;
+  --sl-color-gray-3: #8c8c96;
+  --sl-color-gray-4: #565d5d;
+  --sl-color-gray-5: #303536;
+  --sl-color-gray-6: #171a1b;
+  --sl-color-gray-7: #111314;
+  --sl-color-black: #0b0c0d;
+  --sl-color-bg: #0b0c0d;
+  --sl-color-bg-nav: rgba(11, 12, 13, 0.94);
+  --sl-color-bg-sidebar: #101213;
+  --sl-color-hairline-light: rgba(244, 244, 245, 0.08);
+  --sl-color-hairline: rgba(244, 244, 245, 0.13);
+  --sl-color-hairline-shade: rgba(244, 244, 245, 0.2);
 }
 
 /* Custom styling for Assura */
 .hero-title {
-  background: linear-gradient(135deg, #7dd3fc 0%, #2dd4bf 100%);
+  background: linear-gradient(135deg, var(--assura-primary) 0%, var(--assura-accent) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -26,12 +72,12 @@
 /* Code block styling */
 .astro-code {
   border-radius: 0.5rem;
-  border: 1px solid rgba(125, 211, 252, 0.2);
+  border: 1px solid color-mix(in srgb, var(--assura-primary) 28%, transparent);
 }
 
 /* Button styling */
 button.action.primary {
-  background: linear-gradient(135deg, #7dd3fc 0%, #2dd4bf 100%);
+  background: linear-gradient(135deg, var(--assura-primary) 0%, var(--assura-accent) 100%);
   color: #0f172a;
   font-weight: 600;
   border: none;
@@ -40,7 +86,7 @@ button.action.primary {
 
 button.action.primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(125, 211, 252, 0.3);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--assura-primary) 30%, transparent);
 }
 
 /* Table styling */
@@ -56,7 +102,7 @@ th {
 
 /* Card/grid styling */
 .sl-markdown-content .card {
-  border: 1px solid rgba(125, 211, 252, 0.2);
+  border: 1px solid color-mix(in srgb, var(--assura-primary) 28%, transparent);
   border-radius: 0.5rem;
   padding: 1rem;
   transition: all 0.2s ease;
@@ -64,7 +110,7 @@ th {
 
 .sl-markdown-content .card:hover {
   border-color: var(--assura-primary);
-  box-shadow: 0 2px 8px rgba(125, 211, 252, 0.1);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--assura-primary) 16%, transparent);
 }
 
 /* Severity badge colors */

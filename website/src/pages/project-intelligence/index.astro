@@ -1,0 +1,40 @@
+---
+import FocusedMarketingPage from '../../components/marketing/focused-marketing-page.astro';
+import intelligenceDemo from '../../data/intelligence-demo.json';
+
+const title = 'Local Project Intelligence for Coding Agents | Assura';
+const description = 'Build bounded, local project context from deterministic repository facts that coding agents can inspect and reuse.';
+const canonicalPath = '/project-intelligence/';
+const structuredData = { '@context': 'https://schema.org', '@type': 'TechArticle', headline: title, description, url: `https://assura.dev${canonicalPath}`, author: { '@type': 'Person', name: 'Nick Roth', url: 'https://www.nickroth.com/' } };
+---
+
+<FocusedMarketingPage
+  {title} {description} {canonicalPath} {structuredData}
+  releaseSurface="project-intelligence-local-surfaces content-collections-querying repository-reference-facts compact-review path-explanation"
+  imagePath="/social/project-intelligence.webp"
+  eyebrow="Project intelligence"
+  heading="Turn local project facts into better agent context."
+  intro="Assura starts from deterministic paths, documents, modeled relations, and repository references, then returns a bounded context pack through the same local CLI an agent can call."
+  artifactTitle={intelligenceDemo.command}
+  artifactLines={intelligenceDemo.artifact_lines}
+  artifactKind="neutral"
+  highlights={[
+    { label: 'Deterministic input', body: 'Paths, documents, configured models, relations, and repository references provide inspectable source facts.' },
+    { label: 'Bounded output', body: 'Context packs report their limit, omissions, diagnostics, related records, and unresolved relationships.' },
+    { label: 'Local execution', body: 'The CLI produces the same context without requiring a hosted dashboard or a separate agent-specific index.' },
+  ]}
+  sections={[
+    { label: 'Facts before inference', body: 'Start from paths, configuration, documents, references, branch state, and verified content instead of asking an agent to infer project truth repeatedly.' },
+    { label: 'Local by default', body: 'Project context stays close to the repository, can be regenerated, and can be inspected without requiring a hosted dashboard.' },
+    { label: 'Queryable when useful', body: 'Query and context-pack surfaces organize project facts for specific workflows rather than dumping the whole repository.' },
+    { label: 'Evidence stays visible', body: 'The response names diagnostics, omissions, relation gaps, and source paths instead of hiding them behind a summary score.' },
+  ]}
+  adjacentLinks={[
+    { label: 'Start with repository validation', href: '/repository-validation/' },
+    { label: 'See a compact project review', href: '/project-review/' },
+  ]}
+  docsLinks={[
+    { label: 'Read query and search docs', href: '/product/query-search/' },
+    { label: 'Explore the intelligence demo', href: '/examples/project-intelligence-demo/' },
+  ]}
+/>

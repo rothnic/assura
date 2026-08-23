@@ -6,14 +6,26 @@
       "label": "Project Intelligence local surfaces",
       "status": "supported",
       "first_release": "v0.2.0",
-      "detail_path": "docs/release-notes.md"
+      "detail_path": "docs/release-notes.md",
+      "marketing_claim": true,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/agent_surface_cli.rs"],
+      "command": "assura agent --help",
+      "smoke_args": ["agent", "--help"],
+      "expected_exit": 0
     },
     {
       "id": "content-collections-querying",
       "label": "Content collections and querying",
       "status": "supported",
       "first_release": "v0.2.0",
-      "detail_path": "docs/goals/assura-beta-content-collections-querying.md"
+      "detail_path": "docs/goals/assura-beta-content-collections-querying.md",
+      "marketing_claim": true,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/content_query_cli.rs"],
+      "command": "assura content --help",
+      "smoke_args": ["content", "--help"],
+      "expected_exit": 0
     },
     {
       "id": "markdown-safe-fix-preview-apply",
@@ -25,58 +37,100 @@
     {
       "id": "markdown-common-lints",
       "label": "Markdown common lint bundle",
-      "status": "experimental",
-      "first_release": "v0.2.0",
-      "detail_path": "docs/goals/assura-markdown-lint-link-reference-engine.md"
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-markdown-lint-link-reference-engine.md",
+      "marketing_claim": true,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/markdown_common_lint_tests.rs"],
+      "command": "assura check --format json .",
+      "smoke_args": ["check", "--format", "json", "."],
+      "expected_exit": 1
     },
     {
       "id": "markdown-local-link-checks",
       "label": "Markdown local link checks",
-      "status": "experimental",
-      "first_release": "v0.2.0",
-      "detail_path": "docs/goals/assura-markdown-lint-link-reference-engine.md"
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-markdown-lint-link-reference-engine.md",
+      "marketing_claim": true,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/markdown_link_reference_tests.rs"],
+      "command": "assura check --format json .",
+      "smoke_args": ["check", "--format", "json", "."],
+      "expected_exit": 1
     },
     {
       "id": "markdown-rule-severity-suppression",
       "label": "Markdown rule severity and suppressions",
-      "status": "experimental",
-      "first_release": "v0.2.0",
-      "detail_path": "docs/goals/assura-markdown-lint-link-reference-engine.md"
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-markdown-lint-link-reference-engine.md",
+      "marketing_claim": true,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/markdown_suppression_severity_tests.rs"],
+      "command": "assura check --format json .",
+      "smoke_args": ["check", "--format", "json", "."],
+      "expected_exit": 1
     },
     {
       "id": "repository-reference-facts",
       "label": "Repository reference facts and queries",
       "status": "supported",
       "first_release": "v0.2.0",
-      "detail_path": "docs/goals/assura-supported-document-graph.md"
+      "detail_path": "docs/goals/assura-supported-document-graph.md",
+      "marketing_claim": true,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/content_runtime_references.rs"],
+      "command": "assura content references --help",
+      "smoke_args": ["content", "references", "--help"],
+      "expected_exit": 0
     },
     {
       "id": "repository-reference-checks",
       "label": "Repository reference checks",
-      "status": "experimental",
-      "first_release": "v0.2.0",
-      "detail_path": "docs/goals/assura-code-doc-reference-validation.md"
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-code-doc-reference-validation.md",
+      "marketing_claim": true,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/repository_reference_check_tests.rs"],
+      "command": "assura check --format json .",
+      "smoke_args": ["check", "--format", "json", "."],
+      "expected_exit": 1
     },
     {
       "id": "daemon-core-probe",
       "label": "Daemon core probe commands",
-      "status": "experimental",
-      "first_release": "v0.2.0",
-      "detail_path": "docs/goals/assura-reference-daemon-readiness.md"
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-reference-daemon-readiness.md",
+      "marketing_claim": false,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/daemon_cli_tests.rs"]
     },
     {
       "id": "daemon-management-cli-preview",
       "label": "Daemon management CLI",
-      "status": "experimental",
-      "first_release": "v0.2.0",
-      "detail_path": "docs/goals/assura-daemon-management-cli.md"
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-daemon-management-cli.md",
+      "marketing_claim": false,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/daemon_cli_tests.rs"]
     },
     {
       "id": "structure-validation-cli",
       "label": "Structure validation CLI",
       "status": "supported",
       "first_release": "v0.1.0",
-      "detail_path": "docs/release-notes.md"
+      "detail_path": "docs/release-notes.md",
+      "marketing_claim": true,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/structure_config_notation_tests.rs"],
+      "command": "assura check",
+      "smoke_args": ["check"],
+      "expected_exit": 1
     },
     {
       "id": "structure-severity-contract",
@@ -95,9 +149,12 @@
     {
       "id": "daemon-mode",
       "label": "Daemon mode",
-      "status": "experimental",
-      "first_release": "v0.3.0",
-      "detail_path": "docs/goals/assura-true-daemon-mode.md"
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-true-daemon-mode.md",
+      "marketing_claim": false,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/daemon_cli_tests.rs"]
     },
     {
       "id": "vscode-extension",
@@ -116,23 +173,194 @@
     {
       "id": "agent-integration-lifecycle",
       "label": "Agent integration lifecycle",
-      "status": "experimental",
-      "first_release": "v0.3.0",
-      "detail_path": "docs/goals/assura-agent-integration-lifecycle.md"
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-agent-integration-lifecycle.md",
+      "marketing_claim": true,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/agent_integration_cli.rs"],
+      "command": "assura agent integration activate codex . --dry-run --format json",
+      "smoke_args": ["agent", "integration", "activate", "codex", ".", "--dry-run", "--format", "json"],
+      "expected_exit": 0
     },
     {
       "id": "agent-ready-doctor-explain",
       "label": "Agent-ready doctor and explain",
-      "status": "experimental",
+      "status": "supported",
       "first_release": "unreleased",
-      "detail_path": "docs/goals/assura-agent-doctor-explain-feedback.md"
+      "detail_path": "docs/goals/assura-agent-doctor-explain-feedback.md",
+      "marketing_claim": false,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/doctor_explain_cli.rs"]
     },
     {
       "id": "agent-daemon-nudges",
       "label": "Agent daemon nudges",
-      "status": "experimental",
-      "first_release": "v0.2.0",
-      "detail_path": "docs/goals/assura-beta-agent-nudge-integrations.md"
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-beta-agent-nudge-integrations.md",
+      "marketing_claim": true,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/agent_surface_cli.rs"],
+      "command": "assura agent nudge . --agent codex --cooldown-seconds 0 --format json",
+      "smoke_args": ["agent", "nudge", ".", "--agent", "codex", "--cooldown-seconds", "0", "--format", "json"],
+      "expected_exit": 0
+    },
+    {
+      "id": "agent-guidance-contracts",
+      "label": "Agent guidance and skill contracts",
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "website/src/content/docs/reference/configuration.md",
+      "marketing_claim": true,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/agents_md.rs", "tests/skill_contract.rs"],
+      "command": "assura check --format json .",
+      "smoke_args": ["check", "--format", "json", "."],
+      "expected_exit": 1
+    },
+    {
+      "id": "agent-onboarding",
+      "label": "Agent-ready project onboarding",
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-agent-onboarding-bootstrap-command.md",
+      "marketing_claim": true,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/project_intelligence_onboarding.rs"],
+      "command": "assura agent onboard . --agent auto --format json",
+      "smoke_args": ["agent", "onboard", ".", "--agent", "auto", "--format", "json"],
+      "expected_exit": 1
+    },
+    {
+      "id": "compact-review",
+      "label": "Branch-aware compact project review",
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-compact-project-review-common-issues.md",
+      "marketing_claim": true,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/project_review_cli.rs"],
+      "command": "assura review",
+      "smoke_args": ["review"],
+      "expected_exit": 0
+    },
+    {
+      "id": "path-explanation",
+      "label": "Effective path policy explanation",
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-agent-doctor-explain-feedback.md",
+      "marketing_claim": true,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/explain_pattern_scope_cli.rs"],
+      "command": "assura explain apps/web/src",
+      "smoke_args": ["explain", "apps/web/src"],
+      "expected_exit": 0
+    },
+    {
+      "id": "configured-policy-gate",
+      "label": "Configured merge policy gate",
+      "status": "supported",
+      "first_release": "v0.1.0",
+      "detail_path": "docs/release-notes.md",
+      "marketing_claim": true,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/real_project_agentic_feedback_tests.rs"],
+      "command": "assura check",
+      "smoke_args": ["check"],
+      "expected_exit": 1
+    },
+    {
+      "id": "codex-agent-report",
+      "label": "Bounded Codex agent report",
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-agent-doctor-explain-feedback.md",
+      "marketing_claim": true,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/agent_surface_cli.rs"],
+      "command": "assura check --format agent --agent codex .",
+      "smoke_args": ["check", "--format", "agent", "--agent", "codex", "."],
+      "expected_exit": 1
+    },
+    {
+      "id": "explicit-review-base",
+      "label": "Explicit project review base",
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-compact-project-review-common-issues.md",
+      "marketing_claim": true,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/project_review_cli.rs"],
+      "command": "assura review --base main",
+      "smoke_args": ["review", "--base", "main"],
+      "expected_exit": 0
+    },
+    {
+      "id": "finding-history",
+      "label": "Project review finding history",
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-compact-project-review-common-issues.md",
+      "marketing_claim": false,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/project_review_cli.rs"],
+      "command": "assura review --format agent",
+      "smoke_args": ["review", "--format", "agent"],
+      "expected_exit": 0
+    },
+    {
+      "id": "cache-observability",
+      "label": "Review cache observability",
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "docs/goals/assura-compact-project-review-common-issues.md",
+      "marketing_claim": false,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/project_review_cli.rs"],
+      "command": "assura cache status --format json",
+      "smoke_args": ["cache", "status", "--format", "json"],
+      "expected_exit": 0
+    },
+    {
+      "id": "continuous-watch",
+      "label": "Continuous prepared-policy validation",
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "website/src/content/docs/reference/api.md",
+      "marketing_claim": true,
+      "evidence_status": "verified",
+      "evidence_refs": [
+        "tests/watch_cli.rs",
+        "src/cli/watch_tests.rs",
+        "crates/assura-watch-state/src/lib.rs",
+        "crates/assura-watch-state/src/concurrency_tests.rs",
+        "crates/assura-check-cli/src/server_status.rs"
+      ],
+      "command": "assura watch --format json",
+      "smoke_args": ["watch", "--help"],
+      "expected_exit": 0
+    },
+    {
+      "id": "cold-ls-lint-comparison",
+      "label": "Cold LS-Lint comparison cohort",
+      "status": "supported",
+      "first_release": "v0.3.0",
+      "detail_path": "docs/goals/assura-cli-to-cli-ls-lint-performance-verification.md",
+      "marketing_claim": true,
+      "evidence_status": "measured",
+      "evidence_refs": ["website/public/data/performance/current.json"]
+    },
+    {
+      "id": "warm-session-performance",
+      "label": "Persistent warm agent-loop performance",
+      "status": "supported",
+      "first_release": "v0.3.0",
+      "detail_path": "docs/goals/assura-performance-floor-and-fixture-gate.md",
+      "marketing_claim": true,
+      "evidence_status": "measured",
+      "evidence_refs": ["website/public/data/performance/current.json"]
     }
   ]
 }

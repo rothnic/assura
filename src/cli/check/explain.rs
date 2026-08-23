@@ -1,12 +1,16 @@
 //! Path explanation reports backed by the structure-check rule plan.
 
 use super::compiled_config::CompiledStructureConfig;
+use super::explain_rules::{
+    matched_file_pattern_rules, summarize_effective_rules, PathExplainFilePatternRule,
+    PathExplainRules,
+};
 use super::report::CheckError;
 use super::rule_plan::{self, rules_for_dir};
-use super::rules::{is_excluded_rel_with, EffectiveRules};
+use super::rules::is_excluded_rel_with;
+use super::scope_patterns::CompiledScopePattern;
 use crate::config::loader::ConfigLoader;
 use serde::Serialize;
-use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
 /// Read-only explanation of the structure rules affecting one path.
@@ -34,6 +38,10 @@ pub struct PathExplainReport {
     pub applied_scopes: Vec<PathExplainScope>,
     /// Effective rules that apply to the path's containing directory.
     pub effective_rules: PathExplainRules,
+    /// Winning file-pattern directives for the requested file.
+    pub matched_file_patterns: Vec<PathExplainFilePatternRule>,
+    /// Authored reusable rules contributing to this path after selector rebasing.
+    pub source_rules: Vec<PathExplainRuleSource>,
     /// Checks skipped for this path and why.
     pub skipped_checks: Vec<PathExplainSkip>,
     /// Suppression state for this path.
@@ -42,6 +50,7 @@ pub struct PathExplainReport {
     pub next_actions: Vec<PathExplainNextAction>,
 }
 
+#[cfg(feature = "full-cli")]
 impl PathExplainReport {
     pub(crate) fn render_text(&self) -> String {
         let mut lines = vec![
@@ -55,7 +64,18 @@ impl PathExplainReport {
                 "applied_scopes={}",
                 self.applied_scopes
                     .iter()
-                    .map(|scope| format!("{}:{}", scope.scope, scope.match_kind))
+                    .map(|scope| {
+                        format!(
+                            "{}:{}{}",
+                            scope.scope,
+                            scope.match_kind,
+                            if scope.inheritance_reset {
+                                "(reset)"
+                            } else {
+                                ""
+                            }
+                        )
+                    })
                     .collect::<Vec<_>>()
                     .join(", ")
             ),
@@ -68,6 +88,20 @@ impl PathExplainReport {
                     .map(|skip| format!("{}={}", skip.name, skip.status))
                     .collect::<Vec<_>>()
                     .join(", ")
+            ));
+        }
+        if self.kind == "file" {
+            lines.push(format!(
+                "matched_file_patterns={}",
+                if self.matched_file_patterns.is_empty() {
+                    "none".to_string()
+                } else {
+                    self.matched_file_patterns
+                        .iter()
+                        .map(PathExplainFilePatternRule::render_compact)
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                }
             ));
         }
         if let Some(action) = self.next_actions.first() {
@@ -92,69 +126,17 @@ pub struct PathExplainScope {
     pub rules: PathExplainRules,
 }
 
-/// Compact summary of effective rules.
-#[derive(Debug, Clone, Default, Serialize)]
-pub struct PathExplainRules {
-    /// File naming rule.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub file_naming: Option<String>,
-    /// File naming patterns.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub file_naming_patterns: Vec<String>,
-    /// Direct file count constraints.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub file_exists: Vec<String>,
-    /// Allowed direct file names.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub file_allowed_names: Vec<String>,
-    /// Allowed direct file patterns.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub file_allowed_patterns: Vec<String>,
-    /// Forbidden direct file patterns.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub file_forbidden_patterns: Vec<String>,
-    /// Whether extra direct files are allowed.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub file_allow_extra: Option<bool>,
-    /// Effective file-rule severity.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub file_severity: Option<String>,
-    /// Direct directory naming rule.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub directory_naming: Option<String>,
-    /// Direct directory count constraints.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub directory_exists: Vec<String>,
-    /// Allowed direct directory names.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub directory_allowed_names: Vec<String>,
-    /// Allowed direct directory patterns.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub directory_allowed_patterns: Vec<String>,
-    /// Forbidden direct directory patterns.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub directory_forbidden_patterns: Vec<String>,
-    /// Whether extra direct directories are allowed.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub directory_allow_extra: Option<bool>,
-    /// Effective direct-child directory severity.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub directory_severity: Option<String>,
-    /// Effective self-directory severity.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub self_directory_severity: Option<String>,
-    /// Whether Markdown frontmatter is required.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub markdown_require_frontmatter: Option<bool>,
-    /// Markdown required sections.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub markdown_required_sections: Vec<String>,
-    /// Whether trailing-space lint is enabled.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub markdown_lint_trailing_spaces: Option<bool>,
-    /// Effective Markdown rule severities as `rule:severity` entries.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub markdown_rule_severities: Vec<String>,
+/// Authored reusable rule contributing to the effective path policy.
+#[derive(Debug, Clone, Serialize)]
+pub struct PathExplainRuleSource {
+    /// Rule name without the `$` prefix.
+    pub rule: String,
+    /// Effective selector after tree-rule rebasing.
+    pub effective_selector: String,
+    /// Expected selector target kind.
+    pub target_kind: String,
+    /// Whether the selector was checked for the requested path.
+    pub status: &'static str,
 }
 
 /// Explanation of one skipped check class.
@@ -240,8 +222,39 @@ pub fn explain_structure_path(
             })
         })
         .collect::<Vec<_>>();
-    let effective_rules =
-        summarize_effective_rules(&rules_for_dir(&effective_directory, &compiled.rule_scopes));
+    let effective = rules_for_dir(&effective_directory, &compiled.rule_scopes);
+    let matched_file_patterns = if kind == "file" {
+        rel.file_name()
+            .and_then(|name| name.to_str())
+            .map(|filename| {
+                matched_file_pattern_rules(&effective, filename, &rel, &compiled.glob_patterns)
+            })
+            .unwrap_or_default()
+    } else {
+        Vec::new()
+    };
+    let source_rules = std::fs::read_to_string(&config_path)
+        .ok()
+        .and_then(|source| ConfigLoader::provenance(&source).ok())
+        .unwrap_or_default()
+        .into_iter()
+        .filter(|source| {
+            let target = if source.target_kind == "file" {
+                rel.as_path()
+            } else {
+                effective_directory.as_path()
+            };
+            (source.selector == "." && target.as_os_str().is_empty())
+                || CompiledScopePattern::from_str(&source.selector).matches_path(target)
+        })
+        .map(|source| PathExplainRuleSource {
+            rule: source.rule,
+            effective_selector: source.selector,
+            target_kind: source.target_kind,
+            status: if excluded { "skipped" } else { "checked" },
+        })
+        .collect();
+    let effective_rules = summarize_effective_rules(&effective);
     let skipped_checks = explain_skipped_checks(kind, excluded, rel.as_path(), &effective_rules);
     let mut next_actions = Vec::new();
     if excluded {
@@ -283,6 +296,8 @@ pub fn explain_structure_path(
         effective_directory: path_display(&effective_directory),
         applied_scopes,
         effective_rules,
+        matched_file_patterns,
+        source_rules,
         skipped_checks,
         suppressions: vec![PathExplainSkip {
             name: "inline_suppressions",
@@ -291,72 +306,6 @@ pub fn explain_structure_path(
         }],
         next_actions,
     })
-}
-
-fn summarize_effective_rules(rules: &EffectiveRules) -> PathExplainRules {
-    let mut summary = PathExplainRules::default();
-    if let Some(files) = rules.files.as_ref() {
-        summary.file_naming = files.naming.clone();
-        summary.file_naming_patterns = files
-            .naming_patterns
-            .as_ref()
-            .map(sorted_keys)
-            .unwrap_or_default();
-        summary.file_exists = files
-            .exists
-            .as_ref()
-            .map(sorted_count_entries)
-            .unwrap_or_default();
-        summary.file_allowed_names = files.allowed_names.clone().unwrap_or_default();
-        summary.file_allowed_patterns = files.allowed_patterns.clone().unwrap_or_default();
-        summary.file_forbidden_patterns = files.forbidden_patterns.clone().unwrap_or_default();
-        summary.file_allow_extra = files.allow_extra;
-        summary.file_severity = Some(
-            files
-                .severity
-                .clone()
-                .unwrap_or_else(|| "medium".to_string()),
-        );
-    }
-    if let Some(directories) = rules.directories.as_ref() {
-        summary.directory_naming = directories.naming.clone();
-        summary.directory_exists = directories
-            .exists
-            .as_ref()
-            .map(sorted_count_entries)
-            .unwrap_or_default();
-        summary.directory_allowed_names = directories.allowed_names.clone().unwrap_or_default();
-        summary.directory_allowed_patterns =
-            directories.allowed_patterns.clone().unwrap_or_default();
-        summary.directory_forbidden_patterns =
-            directories.forbidden_patterns.clone().unwrap_or_default();
-        summary.directory_allow_extra = directories.allow_extra;
-        summary.directory_severity = Some(
-            directories
-                .severity
-                .clone()
-                .unwrap_or_else(|| "medium".to_string()),
-        );
-    }
-    if let Some(directory) = rules.self_directory.as_ref() {
-        summary.self_directory_severity = Some(
-            directory
-                .severity
-                .clone()
-                .unwrap_or_else(|| "medium".to_string()),
-        );
-    }
-    if let Some(markdown) = rules.markdown.as_ref() {
-        summary.markdown_require_frontmatter = markdown.require_frontmatter;
-        summary.markdown_required_sections = markdown.required_sections.clone().unwrap_or_default();
-        summary.markdown_lint_trailing_spaces = markdown.lint_trailing_spaces;
-        summary.markdown_rule_severities = markdown
-            .rules
-            .as_ref()
-            .map(markdown_rule_severities)
-            .unwrap_or_default();
-    }
-    summary
 }
 
 fn explain_skipped_checks(
@@ -406,7 +355,7 @@ fn explain_skipped_checks(
 
     if kind == "file"
         && rules.file_naming.is_none()
-        && rules.file_naming_patterns.is_empty()
+        && rules.file_patterns.is_empty()
         && rules.file_exists.is_empty()
         && rules.file_allowed_names.is_empty()
         && rules.file_allowed_patterns.is_empty()
@@ -436,37 +385,6 @@ fn explain_skipped_checks(
     });
 
     skipped
-}
-
-fn sorted_keys(map: &HashMap<String, String>) -> Vec<String> {
-    let mut keys = map.keys().cloned().collect::<Vec<_>>();
-    keys.sort();
-    keys
-}
-
-fn markdown_rule_severities(
-    rules: &HashMap<String, crate::config::config::MarkdownRuleConfig>,
-) -> Vec<String> {
-    let mut severities = rules
-        .iter()
-        .filter_map(|(rule, config)| {
-            config
-                .severity
-                .as_ref()
-                .map(|severity| format!("{rule}:{severity}"))
-        })
-        .collect::<Vec<_>>();
-    severities.sort();
-    severities
-}
-
-fn sorted_count_entries(map: &HashMap<String, String>) -> Vec<String> {
-    let mut entries = map
-        .iter()
-        .map(|(pattern, count)| format!("{pattern}:{count}"))
-        .collect::<Vec<_>>();
-    entries.sort();
-    entries
 }
 
 fn path_display(path: &Path) -> String {

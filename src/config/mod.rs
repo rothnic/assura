@@ -21,7 +21,6 @@ mod ls_compat_tests;
 pub mod parser;
 #[cfg(feature = "full-cli")]
 pub mod preprocessor;
-#[cfg(feature = "full-cli")]
 pub mod types;
 #[cfg(feature = "full-cli")]
 pub mod validator;

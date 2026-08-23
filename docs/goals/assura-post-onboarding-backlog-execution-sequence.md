@@ -2,7 +2,7 @@
 id: goal-assura-post-onboarding-backlog-execution-sequence
 type: goal
 title: Assura post-onboarding backlog execution sequence
-status: planned
+status: completed
 created: 2026-07-03
 owners:
   - assura-maintainers
@@ -15,6 +15,18 @@ related:
 
 # Assura Post-Onboarding Backlog Execution Sequence
 
+## Post-Merge Revalidation
+
+Completed on 2026-07-04 after PR #139 merged at
+`0020278066bc7498627ae9ef5a32bec54296ce73`. This goal delivered the
+agent-ready onboarding handoff, native performance report/gate baseline,
+checked native website data, attribution rows, and release-gate closure
+recorded below. Remaining performance optimization and product-grade native
+regression work now routes to
+`docs/goals/assura-performance-polish-program.md`; the compact common-issues
+review path routes to
+`docs/goals/assura-compact-project-review-common-issues.md`.
+
 ## Objective
 
 Close the agent-ready onboarding branch cleanly, then execute the next roadmap
@@ -25,18 +37,17 @@ work without calibrated proof gates.
 
 ## Current Live State
 
-- Branch: `codex/agent-ready-onboarding-backlog`.
-- PR: `#139` (`docs: add agent-ready onboarding backlog`) is open and green on
-  remote head `3d62c00791200543bda55c3da89fb742accca99b`, checked on
-  2026-07-03.
-- Local branch state: clean and aligned with
-  `origin/codex/agent-ready-onboarding-backlog` after the Subgoal 1 CI fixes.
+- PR: `#139` (`docs: add agent-ready onboarding backlog`) merged on
+  2026-07-04 at `0020278066bc7498627ae9ef5a32bec54296ce73`.
+- Delivery branch state: local and remote
+  `codex/agent-ready-onboarding-backlog` branches were removed after merge.
+- Cleanup branch: `codex/post-merge-backlog-truth-pass`.
 - Completed local onboarding follow-ups include:
   - generic research/content-authoring framing for `document-project`;
   - removal of overfit domain-specific pack references;
   - `assura-structure-fit` skill and `STRUCTURE_FIT_CHECK` onboarding routing.
-- Roadmap state: Agent-Ready Project Onboarding is completed locally; the
-  separate planned lane is `docs/goals/assura-performance-polish-program.md`.
+- Roadmap state: Agent-Ready Project Onboarding is merged; the separate
+  planned core lane is `docs/goals/assura-performance-polish-program.md`.
 
 ## User Certainty Bar
 
@@ -51,6 +62,9 @@ The answer must point to current PR state, local branch state, exact validation
 commands, checked artifacts, and an ordered set of subgoals.
 
 ## Subgoal Sequence
+
+Historical execution plan. Do not execute this sequence again unless a future
+revalidation explicitly reopens it.
 
 ### 1. Publish And Revalidate PR #139
 
@@ -245,6 +259,9 @@ git diff --check
 
 ## Reviewer Blocking Criteria
 
+These criteria applied while this sequence was active. Do not use them to route
+new work unless a future revalidation explicitly reopens this completed goal.
+
 Block execution if:
 
 - PR #139 is not updated to include local follow-up commits before new product
@@ -256,7 +273,13 @@ Block execution if:
 - Native Assura rows lack cold/warm and phase attribution.
 - Docs, website data, and checked JSON disagree.
 
-## Copy/Paste Goal Prompt
+## Historical Copy/Paste Goal Prompt
+
+Preserved for execution history only. Do not reuse this prompt for current
+work; the current next core prompt lives in
+`docs/goals/assura-performance-polish-program.md`, and the adjacent
+common-issues prompt lives in
+`docs/goals/assura-compact-project-review-common-issues.md`.
 
 ```text
 Execute docs/goals/assura-post-onboarding-backlog-execution-sequence.md.

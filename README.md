@@ -6,18 +6,22 @@
 [![Latest Release](https://img.shields.io/github/v/release/rothnic/assura?include_prereleases)](https://github.com/rothnic/assura/releases/latest)
 [![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue)](#license)
 
-Assura is a structure-first repository validation CLI written in Rust. It
-checks whether a project matches the shape declared in `.assura/config.yml`:
-file names, directory names, required files, forbidden entries, direct-child
-limits, and supported markdown conventions.
+Assura catches project drift while the fix is still small. It gives AI coding
+agents one fast local signal layer for repository structure, naming, file and
+section limits, Markdown, references, branch/worktree change pressure, and
+project-specific policy.
+
+**Onboard once. Review while working. Explain when needed. Check before
+merge.** Review is the radar; Check is the gate.
 
 ## Status
 
 Assura is pre-1.0. The current public release is
-[`v0.1.0`](https://github.com/rothnic/assura/releases/tag/v0.1.0), published
-on 2026-05-24. The Rust package version is still `0.1.0`; there is no newer
-version until the repository intentionally bumps `Cargo.toml` and pushes a new
-`v*` tag.
+[`v0.3.0`](https://github.com/rothnic/assura/releases/tag/v0.3.0), published
+and live-verified on 2026-07-02. The current source tree contains the supported
+next-release Review, Explain, onboarding, event-feedback, and managed host
+activation contracts. They remain marked `unreleased` in the release-surface
+manifest until a new version passes the strict release gate and is published.
 
 CI builds run on pull requests and `master` pushes, including release-style
 smoke builds. Those artifacts are verification evidence, not durable product
@@ -27,19 +31,21 @@ tag is pushed. Maintainers cut a new release when an intentional version bump
 is ready and the release checklist passes, not merely because CI produced
 successful builds.
 
-## Features
+## What Assura Does
 
-- **Structure-first configuration** - Define the allowed project shape in one config file
-- **LS-Lint migration** - Convert supported LS-Lint 2.3 configs into Assura structure config
-- **Naming conventions** - Support common case styles and `regex:<pattern>` naming
-- **Markdown checks** - Validate supported markdown rules when configured
-- **Automation output** - Emit text, JSON, YAML, advice, status, and agent-oriented reports
-- **Local quality planning** - Use `.assura/config.yml` to plan scoped project checks
+- **Project-level validation** - Define naming, placement, required/forbidden paths, child limits, file limits, Markdown, references, and generated-output boundaries in one local policy.
+- **Compact project review** - See configured checks, inactive capabilities, branch/worktree changes, hot directories, and ranked next actions without turning every signal into a gate.
+- **Repairable agent feedback** - Emit bounded text, JSON, YAML, advice, status, and agent reports with rule-specific context.
+- **Agent-ready onboarding** - Establish a broad baseline, install project-local guidance, verify what is active, and leave human decisions visible.
+- **Reusable policy layers** - Start language-agnostic, reuse shared rules, then attach language or domain checks where deeper validation belongs.
+- **LS-Lint migration** - Convert supported LS-Lint 2.3 configuration and extend beyond filesystem naming.
+- **Cold and warm performance evidence** - Protect the one-shot CLI path and measure persistent sessions separately for agent/editor loops.
+- **Continuous local validation** - Keep one prepared policy warm, coalesce edit bursts, and report whether feedback covers one affected path or the complete project.
 
 ## Install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sh
+curl -fsSL https://assura.dev/install.sh | sh
 ```
 
 Manual release archives are available for Linux, macOS, and Windows from
@@ -53,12 +59,32 @@ Build from source when working on Assura itself:
 cargo build --release
 ```
 
-## Quick Start
+The public installer above installs `v0.3.0`. To exercise the next-release
+source surface from a checkout, install that exact checkout instead:
+
+```bash
+cargo install --path . --locked
+```
+
+## Agent-Ready Source Start
+
+```bash
+assura agent onboard . --agent auto --format json
+assura review
+assura explain src
+assura watch --format json
+assura check
+```
+
+These current-source commands expose active, inactive, and unresolved setup
+state rather than imply that unchecked capabilities passed. `assura review` is
+advisory; `assura check` remains the authoritative configured-policy gate.
+
+For a minimal supported structure-only start:
 
 ```bash
 assura init
 assura check
-assura migrate .ls-lint.yml --output .assura/config.yml
 ```
 
 ## Configuration
@@ -78,22 +104,21 @@ exclude:
 
 ## Supported Surface
 
-| Surface | Status |
-| --- | --- |
-| `assura check` | Supported structure validation command |
-| `assura check --format json`, `yaml`, `advice`, `status`, `agent` | Supported automation output |
-| `assura check --format agent --agent codex` | Supported Codex adapter on the shared agent format |
-| `assura init` | Supported starter config creation |
-| `assura status --format json` | Supported project/config/rule summary |
-| `assura migrate` | Supported LS-Lint 2.3 config migration path |
-| `assura hooks` | Supported local git-hook workflow |
-| `assura quality plan` | Supported config-backed quality planning |
-| `assura performance-report` | Supported performance evidence command |
+| Surface | Contract | Availability |
+| --- | --- | --- |
+| `assura check` and text/JSON/YAML/advice/status/agent formats | Supported configured-policy gate | `v0.3.0` and current source |
+| `assura init`, `status`, `migrate`, hooks, quality planning, performance report | Supported setup and automation | `v0.3.0` and current source |
+| `assura review`, `doctor`, and `explain` | Supported advisory, diagnosis, and policy-evidence workflow | Current source; next release |
+| `assura agent onboard` and `assura agent nudge` | Supported onboarding and bounded event feedback | Current source; next release |
+| `assura agent integration install|activate|update|deactivate|remove|status|doctor` | Supported Assura-owned project-local host lifecycle | Current source; next release |
+| Markdown/link/reference/guidance checks and local content/query/context packs | Supported deterministic policy and context layer | Current source; next release |
+| `assura watch`, cache, daemon, and local sessions | Supported warm local execution | Current source; next release |
 
-`assura info`, `assura watch`, and `extensions.custom_constraints` are
-experimental before 1.0. Dependency graph validation, hosted dashboards,
-automatic repair, IDE plugins, remote plugin loading, plugin marketplaces, and
-per-agent feedback packages are not supported release surfaces.
+`assura info`, Markdown safe fixes, and first-party `extensions.*` policy
+families remain experimental before 1.0.
+Hosted dashboards, automatic broad repair, remote plugin loading, plugin
+marketplaces, and per-agent validation engines are not supported release
+surfaces.
 
 See [Support Policy](docs/support-policy.md) and
 [Compatibility And Public Surface](docs/compatibility-and-surface.md) for the
@@ -126,7 +151,7 @@ The live release gate verifies the public install scripts and release assets:
 
 ```bash
 cargo xtask release-live
-ASSURA_VERSION=v0.1.0 cargo xtask release-live
+ASSURA_VERSION=v0.3.0 cargo xtask release-live
 ```
 
 ## Development Verification

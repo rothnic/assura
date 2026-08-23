@@ -33,12 +33,11 @@ The policy models a product platform with:
 The root and package guidance files use Assura's exact direct-count behavior:
 
 ```yaml
-files:
-  exists:
-    AGENTS.md: "1"
+structure:
+  AGENTS.md: exists:1
 ```
 
-Exact file counts such as `AGENTS.md: "1"` are Assura behavior. Extension
+Exact file counts such as `AGENTS.md: exists:1` are Assura behavior. Extension
 counts such as `*.md`-style direct file counts are the LS-Lint-compatible part
 of this policy family.
 
@@ -55,10 +54,11 @@ assura check --format agent . --warn
 the command advisory so an agent can inspect feedback without blocking the
 surrounding workflow.
 
-Codex delivery is an optional adapter for users who manually wire a Codex
-`UserPromptSubmit` hook:
+Codex delivery uses the same agent-format report through an explicitly
+activated project-local integration:
 
 ```bash
+assura agent integration activate codex .
 assura check --format agent --agent codex . --warn
 ```
 
@@ -144,9 +144,9 @@ output shape:
 | Advisory exit | `--warn` | Reports drift but exits `0` |
 
 This example proves the supported paths: manual CLI output, stable agent JSON,
-optional Codex delivery, configurable guided output, and same-turn observation.
-Codex `UserPromptSubmit` delivery uses `--agent codex` only when users wire
-that hook manually.
+optional managed Codex delivery, configurable guided output, and same-turn
+observation. Codex still requires the user to enable and approve project hooks;
+Assura manages only its project-local entries.
 
 The checked Goal 03 proof caps feedback at 11 messages for 12 seeded
 violations. Critical and High violations are prioritized before Medium

@@ -18,6 +18,15 @@ related:
 
 # Assura LLM Wiki Personal Knowledge Base Starters
 
+## Post-Merge Revalidation
+
+Still planned after PR #139. This goal remains the active backlog home for
+research authoring, LLM-wiki, agent-skill-wiki, Obsidian, and OKF starter
+structures, including validation, query examples, and native performance proof
+gates. Older standalone Project Intelligence demo/search goals now point here
+when the remaining need is content-structure examples rather than a new core
+CLI surface.
+
 ## Objective
 
 Make Assura a strong validation and querying layer for personal knowledge-base

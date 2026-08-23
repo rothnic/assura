@@ -184,3 +184,55 @@ structure:
 ```
 
 This checks the direct file count for `README.md` in the current directory.
+
+## Scenario: LS-Lint Dot-Directory Scope Disambiguation
+
+### 1. Scope / Trigger
+
+- Trigger: `convert_ls_lint_to_config` encounters a dot-prefixed key inside an
+  LS-Lint `ls:` mapping.
+
+### 2. Signatures
+
+- Converter entrypoint:
+  `convert_ls_lint_to_config(ls_lint_content: &str) -> Result<Config, String>`
+
+### 3. Contracts
+
+- A dot-prefixed mapping such as `.agents:` is a nested directory scope.
+- A dot-prefixed scalar such as `.ts: kebab-case` is an extension rule.
+- `.dir` remains the reserved self-directory rule and must be a scalar.
+- Shape discrimination happens before the generic dot-prefix extension check.
+
+### 4. Validation & Error Matrix
+
+| Input | Expected behavior |
+| --- | --- |
+| `.agents:` mapping | Convert to a `.agents` child scope |
+| `.ts: kebab-case` scalar | Convert to a TypeScript naming rule |
+| `.ts:` sequence | Reject as a non-string extension rule |
+| `.dir:` mapping | Reject because `.dir` must be a scalar rule |
+
+### 5. Good/Base/Bad Cases
+
+- Good: `.agents:` contains nested `skills:` policy and migrates as hierarchy.
+- Base: `.md: kebab-case` continues to migrate as an extension rule.
+- Bad: parser checks `key.starts_with('.')` before value shape and rejects a
+  valid dot-directory mapping as a non-string extension rule.
+
+### 6. Tests Required
+
+- `lslint_migration_accepts_dot_directory_scopes` proves nested mapping output.
+- Unsupported-shape coverage keeps dot-prefixed sequence values rejected.
+- Website config validation migrates the checked LS-Lint comparison fixture.
+
+### 7. Wrong vs Correct
+
+#### Wrong
+
+Treat every dot-prefixed key as an extension before inspecting its value.
+
+#### Correct
+
+Reserve `.dir`, then classify mappings as directory scopes and scalar
+dot-prefixed keys as extension rules.

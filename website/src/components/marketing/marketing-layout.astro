@@ -1,0 +1,64 @@
+---
+import '../../styles/marketing.css';
+import MarketingFooter from './marketing-footer.astro';
+import MarketingHeader from './marketing-header.astro';
+import SeoHead from './seo-head.astro';
+
+interface NavItem {
+  label: string;
+  href: string;
+  mobile?: boolean;
+}
+
+interface Props {
+  title: string;
+  description: string;
+  canonicalPath?: string;
+  imagePath?: string;
+  noindex?: boolean;
+  structuredData?: Record<string, unknown> | Array<Record<string, unknown>>;
+  navItems: NavItem[];
+}
+
+const props = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <SeoHead
+      title={props.title}
+      description={props.description}
+      canonicalPath={props.canonicalPath}
+      imagePath={props.imagePath}
+      noindex={props.noindex}
+      structuredData={props.structuredData}
+    />
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <MarketingHeader navItems={props.navItems} />
+    <slot />
+    <MarketingFooter />
+    <script is:inline>
+      document.addEventListener('click', (event) => {
+        const target = event.target instanceof Element
+          ? event.target.closest('[data-analytics-event]')
+          : null;
+        const name = target?.getAttribute('data-analytics-event');
+        if (!name) return;
+        const detail = {
+          name,
+          path: window.location.pathname,
+          label: target.textContent?.trim() || '',
+        };
+        window.dispatchEvent(new CustomEvent('assura:cta', { detail }));
+        window.zaraz?.track?.(name, detail);
+      });
+    </script>
+    <slot name="scripts" />
+  </body>
+</html>

@@ -1,0 +1,453 @@
+---
+import heroImage from '../assets/assura-landing-hero.webp';
+import AgentSetupDialog from '../components/marketing/agent-setup-dialog.astro';
+import CommandJourney from '../components/marketing/command-journey.astro';
+import ComparisonTable from '../components/marketing/comparison-table.astro';
+import MarketingLayout from '../components/marketing/marketing-layout.astro';
+import PerformanceProof from '../components/marketing/performance-proof.astro';
+import PolicyTreeDemo from '../components/marketing/policy-tree-demo.astro';
+import SectionHeading from '../components/marketing/section-heading.astro';
+import TerminalCard from '../components/marketing/terminal-card.astro';
+import {
+  agentSetupPrompt,
+  agentSetupSteps,
+  installCommand,
+  onboardingCommand,
+  sourcePreviewRevision,
+} from '../data/marketing';
+import onboardingDemo from '../data/onboarding-demo.json';
+import reviewDemo from '../data/review-demo.json';
+
+const pageTitle = 'Assura | Catch project drift before review';
+const pageDescription =
+  'Assura gives AI coding agents early warning signals about project structure, branch heat, docs, references, and policy drift before cleanup gets expensive.';
+
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': ['SoftwareApplication', 'SoftwareSourceCode'],
+  name: 'Assura',
+  applicationCategory: 'DeveloperApplication',
+  operatingSystem: 'Linux, macOS, Windows',
+  description: pageDescription,
+  url: 'https://assura.dev/',
+  codeRepository: 'https://github.com/rothnic/assura',
+  license: ['https://opensource.org/license/mit', 'https://www.apache.org/licenses/LICENSE-2.0'],
+  author: { '@type': 'Person', name: 'Nick Roth', url: 'https://www.nickroth.com/' },
+  offers: { '@type': 'Offer', price: 0, priceCurrency: 'USD' },
+};
+
+const navItems = [
+  { label: 'How it works', href: '#review-output' },
+  { label: 'Compare', href: '/compare/ls-lint/' },
+  { label: 'Performance', href: '/performance/' },
+  { label: 'Docs', href: '/guides/quickstart/', mobile: true },
+  { label: 'GitHub', href: 'https://github.com/rothnic/assura' },
+];
+
+const heroFacts = [
+  'Fast local checks',
+  'Branch-aware review',
+  'Thresholded signals',
+  'Warn before commit',
+  'Gate before merge',
+];
+
+const lateWorkflow = [
+  'Agent changes 18 files',
+  'Hooks fail after the batch',
+  'Agent rushes a broad refactor',
+  'Commit passes with debt',
+];
+
+const earlyWorkflow = [
+  'Agent changes files',
+  'Assura shows hot spots early',
+  'Agent makes small repairs',
+  'Review stays focused',
+];
+
+type TerminalTone = 'prompt' | 'plain' | 'muted' | 'info' | 'warn' | 'pass' | 'fail';
+const heroReviewLines = reviewDemo.hero_lines as Array<{ text: string; tone: TerminalTone }>;
+
+const problemSignals = [
+  {
+    label: 'Small drift',
+    body: 'A new helper lands in the wrong folder, docs reference an old path, or generated output escapes its boundary.',
+  },
+  {
+    label: 'Hook pressure',
+    body: 'Git hooks fire after the batch, so the agent optimizes for a green commit instead of evaluating the right refactor.',
+  },
+  {
+    label: 'Rushed repair',
+    body: 'A fix that could have moved one file becomes a wide patch that passes checks but leaves structural debt.',
+  },
+];
+
+const signalFamilies = [
+  {
+    label: 'Structure fit',
+    body: 'New top-level paths, folder growth, required files, naming drift, and generated-output boundaries.',
+  },
+  {
+    label: 'Change heat',
+    body: 'Files changed since base, line churn, untracked paths, renames, commits, and hot directories.',
+  },
+  {
+    label: 'Knowledge drift',
+    body: 'Docs, references, agent guidance, skill indexes, stale links, and unchecked content models.',
+  },
+  {
+    label: 'Extension hooks',
+    body: 'Project-specific and language-specific checks attach after the broad project layer is stable.',
+  },
+];
+
+const lifecycleStages = [
+  {
+    label: 'Watch',
+    status: 'while editing',
+    body: 'Run bounded advisory feedback during supported agent events without blocking the working loop.',
+  },
+  {
+    label: 'Warn',
+    status: 'before commit',
+    body: 'Show advisory and changed-path findings before the branch reaches its merge gate.',
+  },
+  {
+    label: 'Gate',
+    status: 'before merge',
+    body: 'Block only the serious configured policy violations that should not land.',
+  },
+];
+
+const onboardingApplied = [
+  'project and agent harness detected',
+  'editable policy added to the project',
+  'agent guidance and skills',
+  'onboarding packet',
+  'watch / warn / gate profile',
+];
+
+const onboardingOpen = [
+  'language and framework rules',
+  'project-specific naming',
+  'domain content models',
+  'source-document custody',
+  'human decisions still needed',
+];
+
+const performanceLayers = [
+  {
+    label: '0',
+    title: 'Git and worktree scan',
+    body: 'Find changed paths, line churn, untracked files, and the source branch first.',
+  },
+  {
+    label: '1',
+    title: 'Structure on affected areas',
+    body: 'Run cheap project-shape checks where edits can actually change the answer.',
+  },
+  {
+    label: '2',
+    title: 'Docs and references',
+    body: 'Layer markdown, frontmatter, links, and project-context checks when they are relevant.',
+  },
+  {
+    label: '3',
+    title: 'Gates and extensions',
+    body: 'Run deeper custom or language-specific checks when the workflow moves toward commit or merge.',
+  },
+];
+---
+
+<MarketingLayout
+  title={pageTitle}
+  description={pageDescription}
+  canonicalPath="/"
+  imagePath="/social/home.webp"
+  navItems={navItems}
+  structuredData={structuredData}
+>
+  <main id="main-content">
+      <section
+        class="hero"
+        aria-labelledby="hero-title"
+        data-release-surface="compact-review explicit-review-base"
+      >
+        <div class="hero-grid" aria-hidden="true"></div>
+        <div class="hero-content">
+          <div class="hero-copy-block">
+            <p class="eyebrow">Early warning signals for AI-assisted work</p>
+            <h1 id="hero-title">Catch project drift before review.</h1>
+            <p class="hero-copy">
+              AI agents change projects faster than teams can review them.
+              Assura turns structure, docs, references, and branch changes into
+              early warnings before drift becomes failed hooks, broken CI, or rushed
+              cleanup refactors.
+            </p>
+            <div class="hero-actions" aria-label="Primary actions">
+              <a
+                class="button button-primary"
+                href="#onboard"
+                data-open-setup
+                data-analytics-event="setup_open"
+              >
+                Set up with your agent
+              </a>
+              <a class="button button-secondary" href="#review-output" data-analytics-event="review_example_click">
+                See how rules apply
+              </a>
+            </div>
+            <ul class="hero-facts" aria-label="Assura product strengths">
+              {heroFacts.map((fact) => <li>{fact}</li>)}
+            </ul>
+          </div>
+
+          <div class="hero-visual" aria-label="Generated Assura project review">
+            <TerminalCard title={reviewDemo.command} lines={heroReviewLines} variant="review" />
+          </div>
+        </div>
+      </section>
+
+      <PerformanceProof />
+
+      <section class="section problem-section" aria-labelledby="problem-title">
+        <div class="section-head">
+          <p class="eyebrow">The problem</p>
+          <h2 id="problem-title">The current workflow catches problems too late.</h2>
+          <p>
+            Teams layer naming linters, code linters, custom scripts, hooks, CI, and
+            convention docs. Each tool sees a slice. Agents often hit the combined
+            wall only after a large batch of work, when the pressure is to make the
+            commit pass instead of choosing the right repair.
+          </p>
+        </div>
+        <div class="workflow-board problem-workflow" aria-label="Late cleanup versus early Assura signal">
+          <article class="workflow-lane late-lane">
+            <h3>Without Assura</h3>
+            <ol>
+              {lateWorkflow.map((step) => <li>{step}</li>)}
+            </ol>
+          </article>
+          <article class="workflow-lane signal-lane">
+            <h3>With Assura</h3>
+            <ol>
+              {earlyWorkflow.map((step) => <li>{step}</li>)}
+            </ol>
+          </article>
+        </div>
+        <div class="problem-grid" aria-label="Late project drift cost">
+          {problemSignals.map((point) => (
+            <article class="signal-card">
+              <h3>{point.label}</h3>
+              <p>{point.body}</p>
+            </article>
+          ))}
+        </div>
+        <div class="cost-line" aria-label="Cost of fixing drift over time">
+          <span>edit</span>
+          <span>small drift</span>
+          <span>drift grows</span>
+          <span>hook blocks</span>
+          <span>rushed refactor</span>
+          <span>debt lands</span>
+        </div>
+      </section>
+
+      <CommandJourney />
+
+      <section
+        id="review-output"
+        class="section review-section"
+        aria-labelledby="review-title"
+        data-release-surface="structure-validation-cli configured-policy-gate markdown-common-lints markdown-local-link-checks markdown-rule-severity-suppression repository-reference-checks agent-guidance-contracts"
+      >
+        <SectionHeading
+          eyebrow="Config to feedback"
+          title="Define the project once. Make every path checkable."
+          id="review-title"
+          layout="split"
+        >
+          <p>
+            Assura applies one language-agnostic project policy from the root down.
+            Agents see which paths fit, which rule failed, and the concrete threshold
+            they crossed while the repair is still small.
+          </p>
+        </SectionHeading>
+        <PolicyTreeDemo />
+      </section>
+
+      <section id="compare" class="section comparison-section" aria-labelledby="compare-title">
+        <div class="section-head compact">
+          <p class="eyebrow">Where it fits</p>
+          <h2 id="compare-title">One signal layer above your existing tools.</h2>
+          <p>
+            Assura does not replace linters, hooks, CI, or docs. It covers the
+            language-agnostic signals they leave scattered: line counts, structure,
+            docs, references, reusable rules, and repair guidance.
+          </p>
+        </div>
+        <ComparisonTable />
+      </section>
+
+      <section class="section map-section" aria-labelledby="map-title">
+        <div class="map-visual" aria-label="Top-down Assura signal model">
+          <img
+            class="map-texture"
+            src={heroImage.src}
+            width={heroImage.width}
+            height={heroImage.height}
+            alt=""
+            loading="lazy"
+            decoding="async"
+          />
+          <div class="map-layer project-layer">
+            <span>Project baseline</span>
+            <strong>structure, docs, agent readiness</strong>
+          </div>
+          <div class="map-layer branch-layer">
+            <span>Active branch / worktree</span>
+            <strong>changed files, line churn, hot directories</strong>
+          </div>
+          <div class="map-layer extension-layer">
+            <span>Specialized extensions</span>
+            <strong>language, content, release, domain checks</strong>
+          </div>
+        </div>
+        <div class="section-head">
+          <p class="eyebrow">Top down first</p>
+          <h2 id="map-title">Assura watches the project as a whole.</h2>
+          <p>
+            Start with broad, language-agnostic health and safety. Then attach
+            language or domain-specific checks only where file contents need deeper
+            validation.
+          </p>
+        </div>
+        <div class="family-grid">
+          {signalFamilies.map((family) => (
+            <article class="family-card">
+              <h3>{family.label}</h3>
+              <p>{family.body}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section
+        class="section lifecycle-section"
+        aria-labelledby="lifecycle-title"
+        data-release-surface="continuous-watch agent-daemon-nudges configured-policy-gate"
+      >
+        <div class="section-head compact">
+          <p class="eyebrow">Watch, warn, gate</p>
+          <h2 id="lifecycle-title">Small fixes while the work is still small.</h2>
+          <p>
+            Assura separates advisory signals from merge blockers, so agents get
+            timely feedback without turning every observation into a hard stop.
+          </p>
+        </div>
+        <div class="lifecycle-grid">
+          {lifecycleStages.map((stage) => (
+            <article class="lifecycle-card">
+              <div>
+                <span>{stage.status}</span>
+                <h3>{stage.label}</h3>
+              </div>
+              <p>{stage.body}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section
+        id="onboard"
+        class="section onboarding-section"
+        aria-labelledby="onboard-title"
+        data-release-surface="agent-onboarding agent-integration-lifecycle agent-guidance-contracts"
+      >
+        <div class="section-head split">
+          <div>
+            <p class="eyebrow">Agent-ready onboarding</p>
+            <h2 id="onboard-title">Checked is not the same as complete.</h2>
+          </div>
+          <p>
+            Assura does not pretend unchecked behavior passed. It tells the agent
+            what is active, what is inactive, and which human decisions are still
+            needed before adding project-specific rules.
+          </p>
+        </div>
+        <div class="onboarding-layout">
+          <div class="command-panel">
+            <code>$ {onboardingDemo.command}</code>
+            <p>
+              Detect the project, materialize compatible rules into project-owned
+              configuration, run local verification, and leave conflicts or
+              uncertain conventions as explicit questions.
+            </p>
+          </div>
+          <div class="check-columns">
+            <article>
+              <h3>Detects and applies</h3>
+              <ul>
+                {onboardingApplied.map((item) => <li>{item}</li>)}
+              </ul>
+            </article>
+            <article>
+              <h3>Leaves undecided</h3>
+              <ul>
+                {onboardingOpen.map((item) => <li>{item}</li>)}
+              </ul>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="section performance-section"
+        aria-labelledby="performance-title"
+        data-release-surface="cold-ls-lint-comparison warm-session-performance"
+      >
+        <div class="section-head">
+          <p class="eyebrow">Fast enough for the loop</p>
+          <h2 id="performance-title">Cheap signals early. Deeper checks near gates.</h2>
+          <p>
+            Assura is designed to run while work is happening, not only after work is
+            done. It starts as fast structural linting and grows into an incremental
+            project signal layer.
+          </p>
+        </div>
+        <div class="layer-list">
+          {performanceLayers.map((layer) => (
+            <article class="layer-row">
+              <span>{layer.label}</span>
+              <div>
+                <h3>{layer.title}</h3>
+                <p>{layer.body}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section class="section final-section" aria-labelledby="final-title">
+        <div>
+          <p class="eyebrow">Start small</p>
+          <h2 id="final-title">Give your agent one local project signal.</h2>
+        </div>
+        <div class="final-actions">
+          <a class="button button-primary" href="#onboard" data-open-setup data-analytics-event="setup_open">Start with your agent</a>
+          <a class="button button-secondary surface" href="/guides/agent-ready-onboarding/" data-analytics-event="docs_click">
+            Read onboarding
+          </a>
+        </div>
+      </section>
+  </main>
+  <AgentSetupDialog
+    steps={agentSetupSteps}
+    prompt={agentSetupPrompt}
+    onboardingCommand={onboardingCommand}
+    installCommand={installCommand}
+    sourceRevision={sourcePreviewRevision}
+  />
+</MarketingLayout>

@@ -1,6 +1,7 @@
 //! Tests for repo-native content runtime validation.
 
 use super::*;
+use serde_json::json;
 use std::fs;
 use std::path::Path;
 use tempfile::TempDir;
@@ -129,6 +130,48 @@ fn reports_collection_pattern_errors_in_collection_order() {
     assert_eq!(codes, vec!["missing_field", "invalid_pattern"]);
 }
 
+#[test]
+fn declared_fields_still_validate_when_schema_validator_exists() {
+    let fixture = FixtureRepo::new();
+    fixture.write(
+        "docs/goals/goal-1.md",
+        "---\nid: goal-1\nstatus: active\n---\n# Goal One\n",
+    );
+
+    let validation = ContentRepository::try_new(RepositoryModel {
+        collections: vec![schema_backed_goals_collection()],
+        placements: vec![PlacementRule::recursive("docs/goals", ["goal"])],
+        schema_artifact_path: None,
+        schema_artifact: Some(json!({
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$defs": {
+                "goal": {
+                    "type": "object",
+                    "required": ["id", "status"],
+                    "properties": {
+                        "id": { "type": "string" },
+                        "status": {
+                            "type": "string",
+                            "enum": ["active", "completed"]
+                        },
+                        "title": { "type": "string" }
+                    }
+                }
+            }
+        })),
+    })
+    .expect("model compiles")
+    .validate(fixture.path());
+    let codes = validation
+        .findings
+        .iter()
+        .map(|finding| finding.code)
+        .collect::<Vec<_>>();
+
+    assert!(codes.contains(&"missing_field"));
+    assert!(!codes.contains(&"invalid_object_shape"));
+}
+
 fn model() -> RepositoryModel {
     RepositoryModel {
         collections: vec![goals_collection(), specs_collection()],
@@ -193,6 +236,27 @@ fn invalid_pattern_collection() -> CollectionSpec {
         adapter: AdapterKind::JsonRecord,
         id_field: "id".to_string(),
         fields: Vec::new(),
+        references: Vec::new(),
+        code_symbols: Vec::new(),
+    }
+}
+
+fn schema_backed_goals_collection() -> CollectionSpec {
+    CollectionSpec {
+        name: "goals".to_string(),
+        object_type: "goal".to_string(),
+        schema_class: Some("goal".to_string()),
+        path_pattern: "docs/goals/*.md".to_string(),
+        adapter: AdapterKind::MarkdownFrontmatter,
+        id_field: "id".to_string(),
+        fields: vec![
+            FieldSpec::required("id", FieldKind::String),
+            FieldSpec::required("title", FieldKind::String),
+            FieldSpec::required(
+                "status",
+                FieldKind::Enum(vec!["active".to_string(), "completed".to_string()]),
+            ),
+        ],
         references: Vec::new(),
         code_symbols: Vec::new(),
     }

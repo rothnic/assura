@@ -1,5 +1,5 @@
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use assura::cli::run_structure_check;
 use tempfile::TempDir;
@@ -32,12 +32,13 @@ structure:
     "{package}/":
       needs: doc
   docs/packages/:
-    required: false
+    exists: 0-1
     "{package}.md":
       provides: doc
   docs/:
-    required: false
+    exists: 0-1
     packages.md:
+      exists: 0-1
       sections:
         "{package}":
           provides: doc
@@ -65,7 +66,7 @@ exclude:
 fn first_time_package_project_config() -> &'static str {
     r#"
 rules:
-  "@package-standard":
+  package-standard:
     README.md: exists:1
     package.json: exists:1
     src/: exists:1
@@ -75,10 +76,10 @@ structure:
     extra: true
   packages/:
     "{package}/":
-      use: "@package-standard"
+      use: $package-standard
       needs: doc
   docs/packages/:
-    required: false
+    exists: 0-1
     "{package}.md":
       provides: doc
 exclude:
@@ -105,6 +106,152 @@ structure:
 
     assert!(report.success, "{:#?}", report.violations);
     assert!(report.violations.is_empty());
+}
+
+#[test]
+fn nested_cardinality_and_scalar_tree_rules_enforce_the_displayed_contract() {
+    let project = TempDir::new().unwrap();
+    write_config(
+        &project,
+        r#"
+rules:
+  source-file: { naming: kebab-case, max_lines: 5 }
+  web-app:
+    package.json: exists:1
+    src/: exists:1
+structure:
+  ./:
+    extra: false
+    "**/*.{ts,tsx}": $source-file
+    docs/: exists:0-1
+    apps/:
+      .dir: kebab-case
+      web/: $web-app
+exclude:
+  - "**/{generated,vendor,dist}/**"
+"#,
+    );
+    fs::create_dir_all(project.path().join("apps/web/src")).unwrap();
+    fs::write(project.path().join("apps/web/package.json"), "{}\n").unwrap();
+    fs::write(
+        project.path().join("apps/web/src/user-menu.tsx"),
+        "export const userMenu = true;\n",
+    )
+    .unwrap();
+
+    let passing = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+    assert!(passing.success, "{:#?}", passing.violations);
+
+    fs::write(
+        project.path().join("apps/web/src/BadName.tsx"),
+        "export const badName = true;\n",
+    )
+    .unwrap();
+    fs::write(
+        project.path().join("apps/web/src/too-long.ts"),
+        "export const value = true;\n".repeat(6),
+    )
+    .unwrap();
+    fs::create_dir_all(project.path().join("tmp-output")).unwrap();
+
+    let failing = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+    assert!(!failing.success);
+    assert!(failing.violations.iter().any(|violation| {
+        violation.path.ends_with("BadName.tsx") && violation.rule == "file_naming"
+    }));
+    assert!(failing.violations.iter().any(|violation| {
+        violation.path.ends_with("too-long.ts") && violation.rule == "max_lines"
+    }));
+    assert!(failing.violations.iter().any(|violation| {
+        violation.path == Path::new("tmp-output") && violation.rule == "unexpected_directory"
+    }));
+}
+
+#[test]
+fn optional_nested_directory_skips_child_requirements_when_absent() {
+    let project = TempDir::new().unwrap();
+    write_config(
+        &project,
+        r#"
+structure:
+  ./:
+    docs/:
+      exists: 0-1
+      README.md: exists:1
+"#,
+    );
+
+    let absent = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+    assert!(absent.success, "{:#?}", absent.violations);
+
+    fs::create_dir_all(project.path().join("docs")).unwrap();
+    let present = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+    assert!(!present.success);
+    assert!(present
+        .violations
+        .iter()
+        .any(|violation| violation.path == Path::new("docs") && violation.rule == "exists_count"));
+}
+
+#[test]
+fn captured_directory_counts_match_capture_names() {
+    let project = TempDir::new().unwrap();
+    write_config(
+        &project,
+        r#"
+structure:
+  ./:
+    packages/:
+      "{package}/":
+        exists: 2
+        package.json: exists:1
+"#,
+    );
+    for package in ["core", "ui-kit"] {
+        fs::create_dir_all(project.path().join("packages").join(package)).unwrap();
+        fs::write(
+            project
+                .path()
+                .join("packages")
+                .join(package)
+                .join("package.json"),
+            "{}\n",
+        )
+        .unwrap();
+    }
+
+    let passing = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+    assert!(passing.success, "{:#?}", passing.violations);
+
+    fs::remove_dir_all(project.path().join("packages/ui-kit")).unwrap();
+    let failing = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+    assert!(!failing.success);
+    assert!(failing.violations.iter().any(|violation| {
+        violation.path == Path::new("packages")
+            && violation.rule == "exists_count"
+            && violation.message.contains("expected 2")
+    }));
+}
+
+#[test]
+fn unmatched_captured_tree_rule_is_match_only() {
+    let project = TempDir::new().unwrap();
+    write_config(
+        &project,
+        r#"
+rules:
+  package:
+    package.json: exists:1
+structure:
+  ./:
+    packages/:
+      "{package}/": $package
+"#,
+    );
+    fs::create_dir_all(project.path().join("packages")).unwrap();
+
+    let report = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+    assert!(report.success, "{:#?}", report.violations);
 }
 
 #[test]

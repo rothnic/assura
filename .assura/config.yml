@@ -1,5 +1,66 @@
 version: "2.0"
 
+# Project-owned agentic baseline. These rules replace the former hidden
+# runtime preset and can be changed with the rest of this repository policy.
+rules:
+  agent-entrypoint:
+    exists: 1
+    max_lines: 160
+    severity: low
+    message: See AGENTS.md.
+
+  skill-entrypoint:
+    exists: 1
+    max_lines: 500
+    max_size: "24KB"
+    severity: low
+    markdown:
+      require_frontmatter: true
+    message: See AGENTS.md#skills.
+
+  closed-entry: exists:0
+
+  closed:
+    ./*/: $closed-entry
+    ./*: $closed-entry
+
+  skill-resource-directory:
+    ./*/: kebab-case
+    ./*: kebab-case | max_lines:600 | max_size:24KB
+
+  skill:
+    ./: $closed
+    SKILL.md: $skill-entrypoint
+    ./{agents,assets,references,scripts}/:
+      ./: exists:0-1
+      inherit: false
+      use: $skill-resource-directory
+
+  agents-directory:
+    ./: $closed
+    README.md: exists:0-1
+    TEMPLATE.md: exists:0-1
+    skills/:
+      ./: exists:0-1 | $closed
+      inherit: false
+      README.md: exists:0-1
+      TEMPLATE.md: exists:0-1
+      built-in/:
+        ./: exists:0-1 | $closed
+        ./*/: kebab-case | $skill
+      custom/:
+        ./: exists:0-1 | $closed
+        ./*/: kebab-case | $skill
+      ./*/: kebab-case | $skill
+
+  agentic-core:
+    AGENTS.md: $agent-entrypoint
+    .agents/:
+      ./: exists:0-1
+      inherit: false
+      use: $agents-directory
+    .assura/: exists:0-1
+
 project:
   name: "assura"
   description: "Structure-first repository validation CLI"
@@ -80,6 +141,7 @@ quality:
       paths:
         - "benches/**"
         - "benches/history/**"
+        - "scripts/perf-vps-ls-lint-compare.sh"
         - "website/public/data/performance/**"
         - "website/src/content/docs/reference/performance*"
         - "docs/analysis/*performance*"
@@ -163,6 +225,16 @@ extensions:
           description_required_terms:
             - Internal
             - stable hash
+        - path: crates/assura-watch-state/Cargo.toml
+          package: assura-watch-state
+          role: internal
+          version: "0.3.0"
+          rust_version: "1.70.0"
+          license: "MIT OR Apache-2.0"
+          publish: internal
+          description_required_terms:
+            - Internal
+            - filesystem invalidation
         - path: xtask/Cargo.toml
           package: xtask
           role: internal
@@ -437,18 +509,32 @@ extensions:
           status: supported
         - surface: "command:assura check --format agent --agent codex"
           status: supported
+        - surface: "command:assura check --cache"
+          status: supported
         - surface: "command:assura status"
           status: supported
         - surface: "command:assura status --format json"
           status: supported
+        - surface: "command:assura review"
+          status: supported
+        - surface: "command:assura cache"
+          status: supported
+        - surface: "command:assura cache status"
+          status: supported
+        - surface: "command:assura cache clean"
+          status: supported
         - surface: "command:assura doctor"
-          status: experimental
+          status: supported
         - surface: "command:assura explain"
-          status: experimental
+          status: supported
         - surface: "command:assura init"
           status: supported
+        - surface: "command:assura config"
+          status: supported
+        - surface: "command:assura config add-recipe"
+          status: supported
         - surface: "command:assura watch"
-          status: experimental
+          status: supported
         - surface: "command:assura migrate"
           status: supported
         - surface: "command:assura fix markdown"
@@ -476,21 +562,25 @@ extensions:
         - surface: "command:assura agent safe-fixes"
           status: supported
         - surface: "command:assura agent onboard"
-          status: experimental
+          status: supported
         - surface: "command:assura agent nudge"
-          status: experimental
+          status: supported
         - surface: "command:assura agent integration"
-          status: experimental
+          status: supported
         - surface: "command:assura agent integration install"
-          status: experimental
+          status: supported
+        - surface: "command:assura agent integration activate"
+          status: supported
         - surface: "command:assura agent integration update"
-          status: experimental
+          status: supported
+        - surface: "command:assura agent integration deactivate"
+          status: supported
         - surface: "command:assura agent integration remove"
-          status: experimental
+          status: supported
         - surface: "command:assura agent integration status"
-          status: experimental
+          status: supported
         - surface: "command:assura agent integration doctor"
-          status: experimental
+          status: supported
         - surface: "command:assura agent session"
           status: supported
         - surface: "command:assura editor"
@@ -528,31 +618,33 @@ extensions:
         - surface: "command:assura content expand"
           status: supported
         - surface: "command:assura daemon"
-          status: experimental
+          status: supported
         - surface: "command:assura daemon status"
-          status: experimental
+          status: supported
         - surface: "command:assura daemon start"
-          status: experimental
+          status: supported
         - surface: "command:assura daemon stop"
-          status: experimental
+          status: supported
         - surface: "command:assura daemon restart"
-          status: experimental
+          status: supported
         - surface: "command:assura daemon doctor"
-          status: experimental
+          status: supported
         - surface: "command:assura daemon logs"
-          status: experimental
+          status: supported
         - surface: "command:assura daemon health"
-          status: experimental
+          status: supported
         - surface: "command:assura daemon check-path"
-          status: experimental
+          status: supported
         - surface: "command:assura daemon references"
-          status: experimental
+          status: supported
         - surface: "command:assura info"
           status: experimental
         - surface: "command:assura performance-report"
           status: supported
         - surface: "config:markdown.lint_common"
-          status: experimental
+          status: supported
+        - surface: "config:markdown.check_links"
+          status: supported
         - surface: "config:extensions.custom_constraints"
           status: experimental
         - surface: "config:extensions.release_contracts"
@@ -568,9 +660,9 @@ extensions:
         - surface: "config:extensions.docs_lifecycles"
           status: experimental
         - surface: "config:extensions.repository_references"
-          status: experimental
+          status: supported
         - surface: "config:extensions.agent_guidance"
-          status: experimental
+          status: supported
         - surface: "config:extensions.requirements_traceability"
           status: experimental
         - surface: "config:extensions.computed_checks"
@@ -614,6 +706,8 @@ extensions:
         - surface: "package:assura-check-cli"
           status: internal
         - surface: "package:assura-stable-hash"
+          status: internal
+        - surface: "package:assura-watch-state"
           status: internal
         - surface: "package:xtask"
           status: internal
@@ -693,6 +787,7 @@ collections:
 # All other root files must be standard project files
 structure:
   ./:
+    use: $agentic-core
     files:
       # Standard project files are allowed
       allowed_names:
@@ -717,7 +812,6 @@ structure:
       # Required files that must exist in root
       required:
         - "README.md"
-        - "AGENTS.md"
       naming: "PascalCase"
       allow_extra: false
     directories:
@@ -741,289 +835,6 @@ structure:
     
     # Subdirectories
     children:
-      .agents/:
-        files:
-          naming: "kebab-case"
-          allowed_names:
-            - "README.md"
-            - "SKILL.md"
-            - "TEMPLATE.md"
-            - "prd.json"
-          allow_extra: false
-        directories:
-          allowed_names:
-            - "skills"
-          allow_extra: false
-        children:
-          skills/:
-            files:
-              naming: "kebab-case"
-              max_lines: 600
-              max_size: "24KB"
-              naming_patterns:
-                "SKILL.md": "regex:^SKILL$"
-              allowed_names:
-                - "README.md"
-                - "TEMPLATE.md"
-              allow_extra: false
-            directories:
-              naming: "kebab-case"
-              allowed_names:
-                - "assura-goal-execution"
-                - "assura-goal-validation"
-                - "assura-local-build"
-                - "assura-performance-reporting"
-                - "assura-structure-fit"
-                - "built-in"
-                - "custom"
-                - "trellis-before-dev"
-                - "trellis-brainstorm"
-                - "trellis-break-loop"
-                - "trellis-check"
-                - "trellis-continue"
-                - "trellis-finish-work"
-                - "trellis-meta"
-                - "trellis-start"
-                - "trellis-update-spec"
-              allow_extra: false
-            children:
-              assura-goal-execution/:
-                files:
-                  naming: "kebab-case"
-                  naming_patterns:
-                    "SKILL.md": "regex:^SKILL$"
-                  allowed_names:
-                    - "SKILL.md"
-                  max_lines: 600
-                  max_size: "24KB"
-                  allow_extra: false
-                directories:
-                  allow_extra: false
-              assura-goal-validation/:
-                files:
-                  naming: "kebab-case"
-                  naming_patterns:
-                    "SKILL.md": "regex:^SKILL$"
-                  allowed_names:
-                    - "SKILL.md"
-                  max_lines: 600
-                  max_size: "24KB"
-                  allow_extra: false
-                directories:
-                  allow_extra: false
-              assura-local-build/:
-                files:
-                  naming: "kebab-case"
-                  naming_patterns:
-                    "SKILL.md": "regex:^SKILL$"
-                  allowed_names:
-                    - "SKILL.md"
-                  max_lines: 600
-                  max_size: "24KB"
-                  allow_extra: false
-                directories:
-                  allow_extra: false
-              assura-performance-reporting/:
-                files:
-                  naming: "kebab-case"
-                  naming_patterns:
-                    "SKILL.md": "regex:^SKILL$"
-                  allowed_names:
-                    - "SKILL.md"
-                  max_lines: 600
-                  max_size: "24KB"
-                  allow_extra: false
-                directories:
-                  allow_extra: false
-              assura-structure-fit/:
-                files:
-                  naming: "kebab-case"
-                  naming_patterns:
-                    "SKILL.md": "regex:^SKILL$"
-                  allowed_names:
-                    - "SKILL.md"
-                  max_lines: 600
-                  max_size: "24KB"
-                  allow_extra: false
-                directories:
-                  allowed_names:
-                    - "references"
-                  allow_extra: false
-                children:
-                  references/:
-                    files:
-                      naming: "kebab-case"
-                      allowed_names:
-                        - "structure-fit-check.md"
-                      max_lines: 600
-                      max_size: "24KB"
-                      allow_extra: false
-                    directories:
-                      allow_extra: false
-              built-in/:
-                files:
-                  allow_extra: false
-                directories:
-                  allowed_names:
-                    - "find-skills"
-                  allow_extra: false
-                children:
-                  find-skills/:
-                    files:
-                      naming: "kebab-case"
-                      naming_patterns:
-                        "SKILL.md": "regex:^SKILL$"
-                      allowed_names:
-                        - "SKILL.md"
-                      max_lines: 600
-                      max_size: "24KB"
-                      allow_extra: false
-                    directories:
-                      allow_extra: false
-              custom/:
-                files:
-                  allow_extra: false
-                directories:
-                  allowed_names:
-                    - "assura-validation"
-                    - "constraint-development"
-                  allow_extra: false
-                children:
-                  assura-validation/:
-                    files:
-                      naming: "kebab-case"
-                      naming_patterns:
-                        "SKILL.md": "regex:^SKILL$"
-                      allowed_names:
-                        - "SKILL.md"
-                      max_lines: 600
-                      max_size: "24KB"
-                      allow_extra: false
-                    directories:
-                      allow_extra: false
-                  constraint-development/:
-                    files:
-                      naming: "kebab-case"
-                      naming_patterns:
-                        "SKILL.md": "regex:^SKILL$"
-                      allowed_names:
-                        - "SKILL.md"
-                      max_lines: 600
-                      max_size: "24KB"
-                      allow_extra: false
-                    directories:
-                      allow_extra: false
-              trellis-before-dev/:
-                files:
-                  naming: "kebab-case"
-                  naming_patterns:
-                    "SKILL.md": "regex:^SKILL$"
-                  allowed_names:
-                    - "SKILL.md"
-                  max_lines: 600
-                  max_size: "24KB"
-                  allow_extra: false
-                directories:
-                  allow_extra: false
-              trellis-brainstorm/:
-                files:
-                  naming: "kebab-case"
-                  naming_patterns:
-                    "SKILL.md": "regex:^SKILL$"
-                  allowed_names:
-                    - "SKILL.md"
-                  max_lines: 600
-                  max_size: "24KB"
-                  allow_extra: false
-                directories:
-                  allow_extra: false
-              trellis-break-loop/:
-                files:
-                  naming: "kebab-case"
-                  naming_patterns:
-                    "SKILL.md": "regex:^SKILL$"
-                  allowed_names:
-                    - "SKILL.md"
-                  max_lines: 600
-                  max_size: "24KB"
-                  allow_extra: false
-                directories:
-                  allow_extra: false
-              trellis-check/:
-                files:
-                  naming: "kebab-case"
-                  naming_patterns:
-                    "SKILL.md": "regex:^SKILL$"
-                  allowed_names:
-                    - "SKILL.md"
-                  max_lines: 600
-                  max_size: "24KB"
-                  allow_extra: false
-                directories:
-                  allow_extra: false
-              trellis-continue/:
-                files:
-                  naming: "kebab-case"
-                  naming_patterns:
-                    "SKILL.md": "regex:^SKILL$"
-                  allowed_names:
-                    - "SKILL.md"
-                  max_lines: 600
-                  max_size: "24KB"
-                  allow_extra: false
-                directories:
-                  allow_extra: false
-              trellis-finish-work/:
-                files:
-                  naming: "kebab-case"
-                  naming_patterns:
-                    "SKILL.md": "regex:^SKILL$"
-                  allowed_names:
-                    - "SKILL.md"
-                  max_lines: 600
-                  max_size: "24KB"
-                  allow_extra: false
-                directories:
-                  allow_extra: false
-              trellis-meta/:
-                files:
-                  naming: "kebab-case"
-                  naming_patterns:
-                    "SKILL.md": "regex:^SKILL$"
-                  allowed_names:
-                    - "SKILL.md"
-                  max_lines: 600
-                  max_size: "24KB"
-                  allow_extra: false
-                directories:
-                  allowed_names:
-                    - "references"
-                  allow_extra: false
-              trellis-start/:
-                files:
-                  naming: "kebab-case"
-                  naming_patterns:
-                    "SKILL.md": "regex:^SKILL$"
-                  allowed_names:
-                    - "SKILL.md"
-                  max_lines: 600
-                  max_size: "24KB"
-                  allow_extra: false
-                directories:
-                  allow_extra: false
-              trellis-update-spec/:
-                files:
-                  naming: "kebab-case"
-                  naming_patterns:
-                    "SKILL.md": "regex:^SKILL$"
-                  allowed_names:
-                    - "SKILL.md"
-                  max_lines: 600
-                  max_size: "24KB"
-                  allow_extra: false
-                directories:
-                  allow_extra: false
-      
       .assura/:
         files:
           naming: "kebab-case"
@@ -1033,13 +844,57 @@ structure:
           allow_extra: false
         directories:
           allowed_names:
+            - "agent-sessions"
             - "hooks"
+            - "integrations"
             - "models"
           allow_extra: false
         children:
+          agent-sessions/:
+            files:
+              naming: "kebab-case"
+              allowed_patterns:
+                - "*.jsonl"
+              allow_extra: false
+            directories:
+              allow_extra: false
           hooks/:
             files:
               naming: "kebab-case"
+          integrations/:
+            files:
+              naming: "kebab-case"
+              allow_extra: false
+            directories:
+              allowed_names:
+                - "claude"
+                - "codex"
+                - "opencode"
+                - "pi"
+              allow_extra: false
+            children:
+              claude/:
+                files: &assura_agent_integration_files
+                  naming: "kebab-case"
+                  allowed_names:
+                    - "README.md"
+                    - "assura-agent.sh"
+                    - "manifest.json"
+                  allow_extra: false
+                directories:
+                  allow_extra: false
+              codex/:
+                files: *assura_agent_integration_files
+                directories:
+                  allow_extra: false
+              opencode/:
+                files: *assura_agent_integration_files
+                directories:
+                  allow_extra: false
+              pi/:
+                files: *assura_agent_integration_files
+                directories:
+                  allow_extra: false
           models/:
             files:
               naming: "kebab-case"
@@ -1123,6 +978,7 @@ structure:
           allowed_names:
             - "assura-check-cli"
             - "assura-stable-hash"
+            - "assura-watch-state"
         children:
           assura-check-cli/:
             files:
@@ -1161,6 +1017,25 @@ structure:
                   allowed_names:
                     - "lib.rs"
                   allow_extra: false
+          assura-watch-state/:
+            files:
+              naming: "kebab-case"
+              allowed_names:
+                - "Cargo.toml"
+              allow_extra: false
+            directories:
+              allowed_names:
+                - "src"
+              allow_extra: false
+            children:
+              src/:
+                files:
+                  naming: "snake_case"
+                  max_lines: 500
+                  allowed_names:
+                    - "concurrency_tests.rs"
+                    - "lib.rs"
+                  allow_extra: false
 
       scripts/:
         files:
@@ -1169,6 +1044,7 @@ structure:
             - "check-ci-scope.sh"
             - "ci-scope.sh"
             - "ci-scope-github.sh"
+            - "perf-vps-ls-lint-compare.sh"
             - "smoke-install-adoption.ps1"
             - "smoke-install-adoption.sh"
             - "summarize-rust-cache.sh"
@@ -1192,6 +1068,7 @@ structure:
               naming: "snake_case"
               allowed_names:
                 - "main.rs"
+                - "website_demo.rs"
               allow_extra: false
             directories:
               allow_extra: false
@@ -1360,6 +1237,7 @@ structure:
         files:
           naming: "snake_case"
           max_lines: 500
+          severity: low
           require_docs: true
         directories:
           allowed_names:
@@ -1384,6 +1262,7 @@ structure:
                 - "check"
                 - "content_query"
                 - "performance_report"
+                - "project_review"
               allow_extra: false
             children:
               check/:
@@ -1395,6 +1274,10 @@ structure:
                   naming: "snake_case"
                   max_lines: 500
               performance_report/:
+                files:
+                  naming: "snake_case"
+                  max_lines: 500
+              project_review/:
                 files:
                   naming: "snake_case"
                   max_lines: 500
@@ -1520,6 +1403,7 @@ structure:
         files:
           naming: "snake_case"
           max_lines: 1000
+          severity: low
         directories:
           allowed_names:
             - "fixtures"
@@ -1543,6 +1427,7 @@ structure:
             - "README.md"
             - "astro.config.mjs"
             - "package.json"
+            - "playwright.config.ts"
             - "pnpm-lock.yaml"
             - "tsconfig.json"
           allow_extra: false
@@ -1550,6 +1435,8 @@ structure:
           allowed_names:
             - "public"
             - "src"
+            - "test-results"
+            - "playwright-report"
           allow_extra: false
 
 # Global exclusions
@@ -1572,6 +1459,10 @@ exclude:
   - "dist"
   - "**/dist/**"
   - "**/dist"
+  - "website/test-results/**"
+  - "website/test-results"
+  - "website/playwright-report/**"
+  - "website/playwright-report"
   - "package-lock.json"
   - "**/package-lock.json"
   - "tests/fixtures/ls-lint/**"

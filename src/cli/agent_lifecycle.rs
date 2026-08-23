@@ -60,7 +60,7 @@ pub(super) fn lifecycle_profiles(
         LifecycleProfile {
             name: "agent-working-loop",
             mode: "nudge",
-            trigger: "session start, before-tool, after-tool, file-read, or recovery",
+            trigger: "session start, before-tool, after-tool, file-read, idle, or recovery",
             blocking: false,
             side_effects: "none unless a reviewable integration bundle is explicitly installed",
             reversible: true,

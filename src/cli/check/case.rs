@@ -40,6 +40,9 @@ pub(super) fn validate_single_name_with_path(
     convention: &str,
     regexes: &HashMap<String, Regex>,
 ) -> bool {
+    if let Some(expected) = convention.strip_prefix("exact:") {
+        return !expected.is_empty() && name == expected;
+    }
     if let Some(pattern) = convention.strip_prefix("regex:") {
         return validate_regex_name(name, path, pattern, regexes);
     }
@@ -56,11 +59,16 @@ pub(super) fn validate_file_stem_with_path(
     convention: &str,
     regexes: &HashMap<String, Regex>,
 ) -> bool {
-    validate_name_with_path(stem, path, convention, regexes)
-        || stem
-            .split_once('.')
-            .map(|(base, _)| validate_name_with_path(base, path, convention, regexes))
-            .unwrap_or(false)
+    split_naming_conventions(convention)
+        .into_iter()
+        .any(|part| {
+            if part.starts_with("exact:") || part.starts_with("regex:") {
+                return validate_single_name_with_path(stem, path, part, regexes);
+            }
+            stem.split('.').all(|segment| {
+                !segment.is_empty() && validate_single_name_with_path(segment, path, part, regexes)
+            })
+        })
 }
 
 fn validate_regex_name(

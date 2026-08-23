@@ -1,6 +1,7 @@
 //! Compiled glob pattern helpers for structure-first checks.
 
 use super::rules::rel_to_string;
+use super::scope_patterns::{literal_constraint_chars, CompiledScopePattern};
 use crate::config::config::DirectoryNode;
 use glob::Pattern;
 use std::collections::HashMap;
@@ -13,6 +14,21 @@ pub(super) fn collect_glob_patterns(node: &DirectoryNode, patterns: &mut HashMap
         if let Some(naming_patterns) = &files.naming_patterns {
             collect_patterns(naming_patterns.keys(), patterns);
         }
+        if let Some(max_lines_patterns) = &files.max_lines_patterns {
+            collect_patterns(max_lines_patterns.keys(), patterns);
+        }
+        if let Some(max_size_patterns) = &files.max_size_patterns {
+            collect_patterns(max_size_patterns.keys(), patterns);
+        }
+        if let Some(severity_patterns) = &files.severity_patterns {
+            collect_patterns(severity_patterns.keys(), patterns);
+        }
+        if let Some(message_patterns) = &files.message_patterns {
+            collect_patterns(message_patterns.keys(), patterns);
+        }
+        if let Some(markdown_patterns) = &files.markdown_patterns {
+            collect_patterns(markdown_patterns.keys(), patterns);
+        }
         if let Some(exists) = &files.exists {
             collect_patterns(exists.keys(), patterns);
         }
@@ -23,6 +39,12 @@ pub(super) fn collect_glob_patterns(node: &DirectoryNode, patterns: &mut HashMap
         collect_patterns(directories.forbidden_patterns.iter().flatten(), patterns);
         if let Some(exists) = &directories.exists {
             collect_patterns(exists.keys(), patterns);
+        }
+        if let Some(severity_patterns) = &directories.severity_patterns {
+            collect_patterns(severity_patterns.keys(), patterns);
+        }
+        if let Some(message_patterns) = &directories.message_patterns {
+            collect_patterns(message_patterns.keys(), patterns);
         }
     }
 
@@ -75,6 +97,7 @@ pub(super) fn matches_single_compiled_pattern(
         .unwrap_or(false)
 }
 
+#[cfg(test)]
 pub(super) fn best_lslint_suffix_match<'a>(
     patterns: &'a HashMap<String, String>,
     filename: &str,
@@ -103,6 +126,83 @@ pub(super) fn best_lslint_suffix_pair<'a, T>(
     .map(|(pattern, value)| (pattern.as_str(), value))
 }
 
+pub(super) fn best_file_pattern_match<'a, T>(
+    patterns: &'a HashMap<String, T>,
+    filename: &str,
+    rel: &Path,
+    compiled_patterns: &HashMap<String, Pattern>,
+) -> Option<(&'a str, &'a T)> {
+    if patterns
+        .keys()
+        .all(|pattern| is_lslint_extension_pattern(pattern))
+    {
+        let filename_segments = lslint_filename_segments(filename);
+        return best_lslint_extension_match(patterns.iter(), &filename_segments)
+            .map(|(pattern, value)| (pattern.as_str(), value));
+    }
+
+    patterns
+        .iter()
+        .filter(|(pattern, _)| {
+            matches_configured_file_pattern(pattern, filename, rel, compiled_patterns)
+        })
+        .map(|(pattern, value)| (pattern.as_str(), value))
+        .max_by(|(left, _), (right, _)| {
+            file_pattern_specificity(left)
+                .cmp(&file_pattern_specificity(right))
+                .then_with(|| right.cmp(left))
+        })
+}
+
+pub(super) fn matches_configured_file_pattern(
+    pattern: &str,
+    filename: &str,
+    rel: &Path,
+    compiled_patterns: &HashMap<String, Pattern>,
+) -> bool {
+    if is_path_aware_file_pattern(pattern) {
+        return CompiledScopePattern::from_str(pattern.trim_start_matches("./")).matches_path(rel);
+    }
+    matches_single_compiled_pattern(pattern, filename, compiled_patterns)
+}
+
+pub(super) fn is_path_aware_file_pattern(pattern: &str) -> bool {
+    pattern.starts_with("./") || pattern.contains('/')
+}
+
+pub(super) fn file_pattern_uses_lslint_stem(pattern: &str) -> bool {
+    pattern
+        .rsplit('/')
+        .next()
+        .is_some_and(is_lslint_extension_pattern)
+}
+
+fn file_pattern_specificity(pattern: &str) -> (usize, usize, usize, usize, usize) {
+    let path_aware = is_path_aware_file_pattern(pattern);
+    let normalized = pattern.trim_start_matches("./");
+    let segments = normalized
+        .split('/')
+        .filter(|segment| !segment.is_empty())
+        .collect::<Vec<_>>();
+    let literal_segments = segments
+        .iter()
+        .filter(|segment| !segment.contains(['*', '?', '[', ']', '{', '}']))
+        .count();
+    let constrained_segments = segments.iter().filter(|segment| **segment != "**").count();
+    let literal_chars = segments
+        .iter()
+        .map(|segment| literal_constraint_chars(segment))
+        .sum();
+    let recursive_segments = segments.iter().filter(|segment| **segment == "**").count();
+    (
+        literal_chars,
+        literal_segments,
+        constrained_segments,
+        usize::MAX.saturating_sub(recursive_segments),
+        usize::from(path_aware),
+    )
+}
+
 pub(super) fn simple_suffix_pattern(pattern: &str) -> Option<&str> {
     let suffix = pattern.strip_prefix('*')?;
     if suffix.is_empty() || suffix.contains(['*', '?', '[', ']']) {
@@ -115,15 +215,35 @@ pub(super) fn is_lslint_extension_pattern(pattern: &str) -> bool {
     lslint_extension_segments(pattern).is_some()
 }
 
-pub(super) fn lslint_file_stem(filename: &str) -> &str {
+pub(super) fn file_stem_for_pattern<'a>(pattern: &str, filename: &'a str) -> &'a str {
+    let pattern = pattern.rsplit('/').next().unwrap_or(pattern);
+    if let Some(segments) = lslint_extension_segments(pattern) {
+        let mut stem = filename;
+        for _ in segments {
+            let Some((base, _)) = stem.rsplit_once('.') else {
+                return filename;
+            };
+            stem = base;
+        }
+        return stem;
+    }
+    let suffix = pattern.strip_prefix('*').unwrap_or(pattern);
+    if !suffix.is_empty() {
+        return filename.strip_suffix(suffix).unwrap_or(filename);
+    }
     filename
-        .split_once('.')
+        .rsplit_once('.')
         .map(|(stem, _)| stem)
         .unwrap_or(filename)
 }
 
 fn lslint_extension_segments(pattern: &str) -> Option<Vec<&str>> {
-    let suffix = pattern.strip_prefix("*.")?;
+    if pattern.contains('/') {
+        return None;
+    }
+    let suffix = pattern
+        .strip_prefix("*.")
+        .or_else(|| pattern.strip_prefix('.'))?;
     let segments = suffix.split('.').collect::<Vec<_>>();
     (!segments.is_empty()
         && segments
@@ -158,23 +278,31 @@ fn best_lslint_extension_match<'a, T>(
         .map(|(_, pattern, value)| (pattern, value))
 }
 
-fn lslint_extension_match_rank(pattern: &str, filename_segments: &[&str]) -> Option<Vec<bool>> {
+fn lslint_extension_match_rank(
+    pattern: &str,
+    filename_segments: &[&str],
+) -> Option<(usize, usize)> {
     let pattern_segments = lslint_extension_segments(pattern)?;
+    if pattern.starts_with("*.") && pattern_segments.len() == 1 {
+        let pattern = pattern_segments[0];
+        let extension = filename_segments.last()?;
+        return (pattern == "*" || pattern == *extension)
+            .then_some((usize::from(pattern == "*"), usize::MAX - 1));
+    }
     if pattern_segments.len() != filename_segments.len() {
         return None;
     }
 
-    let mut rank = Vec::with_capacity(pattern_segments.len());
+    let mut wildcard_count = 0;
     for (pattern, segment) in pattern_segments.iter().zip(filename_segments) {
         if *pattern == "*" {
-            rank.push(true);
+            wildcard_count += 1;
         } else if *pattern == *segment {
-            rank.push(false);
         } else {
             return None;
         }
     }
-    Some(rank)
+    Some((wildcard_count, usize::MAX - pattern_segments.len()))
 }
 
 fn collect_patterns<'a>(
@@ -188,17 +316,56 @@ fn collect_patterns<'a>(
         if simple_suffix_pattern(pattern).is_some() {
             continue;
         }
-        if let Ok(glob) = Pattern::new(pattern) {
+        let compiled_pattern = capture_pattern_as_glob(pattern).unwrap_or_else(|| pattern.clone());
+        if let Ok(glob) = Pattern::new(&compiled_pattern) {
             compiled.insert(pattern.clone(), glob);
         }
     }
 }
 
+fn capture_pattern_as_glob(pattern: &str) -> Option<String> {
+    if !pattern.contains('{') {
+        return None;
+    }
+
+    let mut glob = String::with_capacity(pattern.len());
+    let mut rest = pattern;
+    loop {
+        let Some(open) = rest.find('{') else {
+            glob.push_str(rest);
+            break;
+        };
+        glob.push_str(&rest[..open]);
+        let close = rest[open + 1..].find('}')? + open + 1;
+        let name = &rest[open + 1..close];
+        if name.is_empty() || name.contains(',') {
+            return None;
+        }
+        glob.push('*');
+        rest = &rest[close + 1..];
+    }
+    Some(glob)
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{best_lslint_suffix_match, matches_single_compiled_pattern};
+    use super::{
+        best_file_pattern_match, best_lslint_suffix_match, capture_pattern_as_glob,
+        file_stem_for_pattern, matches_single_compiled_pattern,
+    };
     use glob::Pattern;
     use std::collections::HashMap;
+    use std::path::Path;
+
+    #[test]
+    fn direct_capture_patterns_compile_to_globs() {
+        assert_eq!(capture_pattern_as_glob("{package}"), Some("*".to_string()));
+        assert_eq!(
+            capture_pattern_as_glob("prefix-{package}-docs"),
+            Some("prefix-*-docs".to_string())
+        );
+        assert_eq!(capture_pattern_as_glob("{one,two}"), None);
+    }
 
     #[test]
     fn best_lslint_suffix_match_prefers_most_specific_suffix() {
@@ -214,6 +381,29 @@ mod tests {
     }
 
     #[test]
+    fn final_extension_defaults_cover_compound_stems() {
+        let patterns = HashMap::from([("*.ts".to_string(), "kebab-case".to_string())]);
+
+        assert_eq!(
+            best_lslint_suffix_match(&patterns, "button.test.ts"),
+            Some(("*.ts", "kebab-case"))
+        );
+    }
+
+    #[test]
+    fn matched_extension_pattern_preserves_the_name_portion() {
+        assert_eq!(
+            file_stem_for_pattern("*.js", "next.config.js"),
+            "next.config"
+        );
+        assert_eq!(
+            file_stem_for_pattern("*.config.ts", "vite.config.ts"),
+            "vite"
+        );
+        assert_eq!(file_stem_for_pattern(".*.js", "Button.test.js"), "Button");
+    }
+
+    #[test]
     fn best_lslint_suffix_match_defers_when_patterns_are_not_simple_dot_suffixes() {
         let patterns = HashMap::from([
             ("*.ts".to_string(), "kebab-case".to_string()),
@@ -224,7 +414,7 @@ mod tests {
     }
 
     #[test]
-    fn lslint_wildcard_subextension_pattern_matches_only_subextensions() {
+    fn multipart_patterns_are_exact_while_final_extension_defaults_are_broad() {
         let mut compiled = HashMap::new();
         compiled.insert("*.*.js".to_string(), Pattern::new("*.*.js").unwrap());
 
@@ -243,11 +433,45 @@ mod tests {
             "Button.story.test.js",
             &compiled
         ));
-        assert!(!matches_single_compiled_pattern(
+        assert!(matches_single_compiled_pattern(
             "*.js",
             "Button.test.js",
             &compiled
         ));
+        assert!(matches_single_compiled_pattern(
+            ".js",
+            "button.js",
+            &compiled
+        ));
+        assert!(!matches_single_compiled_pattern(
+            ".js",
+            "Button.test.js",
+            &compiled
+        ));
+    }
+
+    #[test]
+    fn root_relative_file_patterns_are_not_extension_selectors() {
+        let mut patterns = HashMap::new();
+        patterns.insert("./AGENTS.md".to_string(), 1usize);
+
+        assert_eq!(
+            best_file_pattern_match(
+                &patterns,
+                "AGENTS.md",
+                Path::new("AGENTS.md"),
+                &HashMap::new(),
+            )
+            .map(|(pattern, value)| (pattern, *value)),
+            Some(("./AGENTS.md", 1))
+        );
+        assert!(best_file_pattern_match(
+            &patterns,
+            "AGENTS.md",
+            Path::new("packages/core/AGENTS.md"),
+            &HashMap::new(),
+        )
+        .is_none());
     }
 
     #[test]
@@ -266,6 +490,57 @@ mod tests {
         assert_eq!(
             best_lslint_suffix_match(&patterns, "file.a.b.c.d.e.f.g.h.i.j.k.js"),
             Some(("*.a.b.c.d.e.f.g.h.i.j.k.js", "kebab-case"))
+        );
+    }
+
+    #[test]
+    fn explicit_path_patterns_distinguish_direct_and_recursive_files() {
+        let patterns = HashMap::from([
+            ("./**/*.ts".to_string(), 2),
+            ("./*.ts".to_string(), 1),
+            ("*.test.ts".to_string(), 3),
+        ]);
+        let compiled = HashMap::new();
+
+        assert_eq!(
+            best_file_pattern_match(&patterns, "root.ts", Path::new("root.ts"), &compiled),
+            Some(("./*.ts", &1))
+        );
+        assert_eq!(
+            best_file_pattern_match(
+                &patterns,
+                "nested.ts",
+                Path::new("src/nested.ts"),
+                &compiled
+            ),
+            Some(("./**/*.ts", &2))
+        );
+        assert_eq!(
+            best_file_pattern_match(
+                &patterns,
+                "root.test.ts",
+                Path::new("root.test.ts"),
+                &compiled
+            ),
+            Some(("*.test.ts", &3))
+        );
+    }
+
+    #[test]
+    fn capture_names_do_not_add_file_pattern_specificity() {
+        let patterns = HashMap::from([
+            ("./{very_long_capture_name}.ts".to_string(), 1),
+            ("./release-*.ts".to_string(), 2),
+        ]);
+
+        assert_eq!(
+            best_file_pattern_match(
+                &patterns,
+                "release-build.ts",
+                Path::new("release-build.ts"),
+                &HashMap::new()
+            ),
+            Some(("./release-*.ts", &2))
         );
     }
 }

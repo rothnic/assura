@@ -16,6 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       rustdoc: ${{ steps.scope.outputs.rustdoc }}
+      website: ${{ steps.scope.outputs.website }}
     steps:
     - uses: actions/checkout@v4
       with:
@@ -56,3 +57,45 @@ jobs:
         publish_dir: ./target/doc
         destination_dir: docs
         force_orphan: true
+
+  website:
+    name: Verify Marketing Website
+    needs: changes
+    if: needs.changes.outputs.website == 'true'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 24
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 10.25.0
+    - name: Install website dependencies
+      run: pnpm --dir website install --frozen-lockfile
+    - name: Install Playwright Chromium
+      working-directory: website
+      run: pnpm exec playwright install --with-deps chromium
+    - name: Verify generated marketing evidence and build
+      run: cargo xtask docs
+    - name: Verify production claims are in the candidate release
+      if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
+      run: cargo xtask website-demo-data --check --released
+    - name: Verify responsive marketing experience
+      run: pnpm --dir website test:marketing
+    - name: Upload visual verification
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: marketing-visual-verification
+        path: |
+          website/test-results
+          website/playwright-report
+        if-no-files-found: error
+        retention-days: 30

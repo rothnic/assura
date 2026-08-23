@@ -1,0 +1,237 @@
+{
+  "artifact_lines": [
+    {
+      "text": "Assura review",
+      "tone": "prompt"
+    },
+    {
+      "text": "Status     needs attention",
+      "tone": "warn"
+    },
+    {
+      "text": "Scope      feature/agent-review -> origin/main",
+      "tone": "info"
+    },
+    {
+      "text": "Findings   blocking=1 advisory=3 new=4",
+      "tone": "info"
+    },
+    {
+      "text": "Branch     feature/agent-review files=1 lines=+3/-0 commits=1",
+      "tone": "info"
+    },
+    {
+      "text": "Worktree   files=2 modified=1 untracked=1 lines=+2/-0",
+      "tone": "info"
+    },
+    {
+      "text": "Watch      blocking-validation=1/1",
+      "tone": "warn"
+    },
+    {
+      "text": "Hot path   apps/web/src violations=1 changed=2 lines=+2/-0",
+      "tone": "info"
+    },
+    {
+      "text": "Fix first  apps/web/src/BadName.tsx: File 'BadName.tsx' does not match naming convention 'kebab-case'",
+      "tone": "fail"
+    },
+    {
+      "text": "Next       Fix blocking configured check violations first.",
+      "tone": "muted"
+    },
+    {
+      "text": "Run        assura check --format agent .",
+      "tone": "pass"
+    }
+  ],
+  "branch": {
+    "base": "origin/main",
+    "commits": 1,
+    "files": 1,
+    "lines_added": 3,
+    "lines_deleted": 0,
+    "name": "feature/agent-review"
+  },
+  "command": "assura review",
+  "display_lines": [
+    {
+      "text": "Assura review",
+      "tone": "prompt"
+    },
+    {
+      "text": "",
+      "tone": "plain"
+    },
+    {
+      "text": "Status     needs attention",
+      "tone": "warn"
+    },
+    {
+      "text": "Scope      feature/agent-review -> origin/main",
+      "tone": "info"
+    },
+    {
+      "text": "Findings   blocking=1 advisory=3 new=4",
+      "tone": "info"
+    },
+    {
+      "text": "Branch     feature/agent-review files=1 lines=+3/-0 commits=1",
+      "tone": "info"
+    },
+    {
+      "text": "Worktree   files=2 modified=1 untracked=1 lines=+2/-0",
+      "tone": "info"
+    },
+    {
+      "text": "Watch      blocking-validation=1/1",
+      "tone": "warn"
+    },
+    {
+      "text": "Hot path   apps/web/src violations=1 changed=2 lines=+2/-0",
+      "tone": "info"
+    },
+    {
+      "text": "Fix first  apps/web/src/BadName.tsx: File 'BadName.tsx' does not match naming convention 'kebab-case'",
+      "tone": "fail"
+    },
+    {
+      "text": "Next       Fix blocking configured check violations first.",
+      "tone": "muted"
+    },
+    {
+      "text": "Run        assura check --format agent .",
+      "tone": "pass"
+    }
+  ],
+  "findings": [
+    {
+      "command": "assura check --format agent .",
+      "detail": "apps/web/src/BadName.tsx: File 'BadName.tsx' does not match naming convention 'kebab-case'",
+      "id": "blocking:file_naming",
+      "title": "Fix blocking `file_naming` violation"
+    }
+  ],
+  "generated_from": "assura.project-review.v2",
+  "hero_lines": [
+    {
+      "text": "Assura review",
+      "tone": "prompt"
+    },
+    {
+      "text": "Status     needs attention",
+      "tone": "warn"
+    },
+    {
+      "text": "Scope      feature/agent-review -> origin/main",
+      "tone": "info"
+    },
+    {
+      "text": "Findings   blocking=1 advisory=3 new=4",
+      "tone": "info"
+    },
+    {
+      "text": "Branch     feature/agent-review files=1 lines=+3/-0 commits=1",
+      "tone": "info"
+    },
+    {
+      "text": "Worktree   files=2 modified=1 untracked=1 lines=+2/-0",
+      "tone": "info"
+    },
+    {
+      "text": "Watch      blocking-validation=1/1",
+      "tone": "warn"
+    },
+    {
+      "text": "Hot path   apps/web/src violations=1 changed=2 lines=+2/-0",
+      "tone": "info"
+    },
+    {
+      "text": "Fix first  apps/web/src/BadName.tsx: File 'BadName.tsx' does not match naming convention 'kebab-case'",
+      "tone": "fail"
+    },
+    {
+      "text": "Run        assura check --format agent .",
+      "tone": "pass"
+    }
+  ],
+  "metrics": [
+    {
+      "detail": "blocking violation",
+      "label": "Policy",
+      "value": "1"
+    },
+    {
+      "detail": "+3 / -0 lines",
+      "label": "Branch",
+      "value": "1 file"
+    },
+    {
+      "detail": "1 untracked",
+      "label": "Worktree",
+      "value": "1 modified"
+    },
+    {
+      "detail": "reported, not passed",
+      "label": "Inactive",
+      "value": "6"
+    }
+  ],
+  "next_command": "assura check --format agent .",
+  "rendered_text": "Assura review\n\nStatus     needs attention\nScope      feature/agent-review -> origin/main\nFindings   blocking=1 advisory=3 new=4\nBranch     feature/agent-review files=1 lines=+3/-0 commits=1\nWorktree   files=2 modified=1 untracked=1 lines=+2/-0\nWatch      blocking-validation=1/1\nHot path   apps/web/src violations=1 changed=2 lines=+2/-0\nFix first  apps/web/src/BadName.tsx: File 'BadName.tsx' does not match naming convention 'kebab-case'\nNext       Fix blocking configured check violations first.\nRun        assura check --format agent .",
+  "schema": "assura.website-review-demo.v1",
+  "signals": [
+    {
+      "branch_changed_files": 0,
+      "branch_lines": {
+        "added": 0,
+        "deleted": 0
+      },
+      "modified_files": 1,
+      "naming_violations": 1,
+      "path": "apps/web/src",
+      "untracked_files": 1,
+      "violations": 1,
+      "worktree_lines": {
+        "added": 2,
+        "deleted": 0
+      }
+    },
+    {
+      "branch_changed_files": 1,
+      "branch_lines": {
+        "added": 3,
+        "deleted": 0
+      },
+      "modified_files": 0,
+      "naming_violations": 0,
+      "path": "apps/web/docs",
+      "untracked_files": 0,
+      "violations": 0,
+      "worktree_lines": {
+        "added": 0,
+        "deleted": 0
+      }
+    }
+  ],
+  "status": "fail",
+  "structure": {
+    "dirs_checked": 11,
+    "files_checked": 21,
+    "status": "fail",
+    "violations": 1
+  },
+  "summary": {
+    "advisory": 3,
+    "blocking": 1,
+    "inactive": 6,
+    "informational": 2,
+    "omitted_noise": 4
+  },
+  "worktree": {
+    "lines_added": 2,
+    "lines_deleted": 0,
+    "modified": 1,
+    "untracked": 1
+  }
+}

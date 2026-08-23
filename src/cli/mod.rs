@@ -16,7 +16,11 @@ mod agent_onboarding_content_templates;
 #[cfg(feature = "full-cli")]
 mod agent_onboarding_document_project_templates;
 #[cfg(feature = "full-cli")]
+mod agent_onboarding_handoff_templates;
+#[cfg(feature = "full-cli")]
 mod agent_onboarding_report;
+#[cfg(feature = "full-cli")]
+mod agent_onboarding_rules;
 #[cfg(feature = "full-cli")]
 mod agent_onboarding_structure_fit_templates;
 #[cfg(feature = "full-cli")]
@@ -25,6 +29,8 @@ mod agent_onboarding_templates;
 mod agent_query_args;
 #[cfg(feature = "full-cli")]
 pub mod args;
+#[cfg(feature = "full-cli")]
+mod cache_management;
 pub mod check;
 pub mod check_feedback;
 #[cfg(feature = "full-cli")]
@@ -47,6 +53,8 @@ mod doctor_agent;
 #[cfg(feature = "full-cli")]
 mod doctor_content;
 #[cfg(feature = "full-cli")]
+mod doctor_report;
+#[cfg(feature = "full-cli")]
 mod editor;
 #[cfg(feature = "full-cli")]
 mod editor_args;
@@ -61,7 +69,17 @@ pub mod output;
 #[cfg(feature = "full-cli")]
 pub mod performance_report;
 #[cfg(feature = "full-cli")]
+mod project_review;
+#[cfg(feature = "full-cli")]
 pub mod quality;
+#[cfg(feature = "full-cli")]
+mod watch;
+#[cfg(feature = "full-cli")]
+mod watch_event;
+#[cfg(feature = "watch-events")]
+mod watch_signal;
+#[cfg(feature = "watch-events")]
+pub mod watch_state;
 
 #[cfg(feature = "full-cli")]
 pub use agent::agent_command;
@@ -77,10 +95,12 @@ pub use agent_args::{
 pub use agent_query_args::AgentQueryArg;
 #[cfg(feature = "full-cli")]
 pub use args::{
-    AgentTarget, CheckOutputFormat, Cli, Commands, ExitCode, FixCommands, HookCommands,
-    MarkdownFixRuleArg, OutputFormat, PerformanceReportFormat, QualityCommands, QualityPhase,
-    QualityPlanFormat,
+    AgentTarget, CacheCommands, CheckOutputFormat, Cli, Commands, ConfigCommands, ExitCode,
+    FixCommands, HookCommands, MarkdownFixRuleArg, MigrationSource, OutputFormat,
+    PerformanceReportFormat, QualityCommands, QualityPhase, QualityPlanFormat, WatchOutputFormat,
 };
+#[cfg(feature = "full-cli")]
+pub use cache_management::cache_command;
 #[cfg(all(feature = "yaml-config", feature = "json-output"))]
 pub use check::run_structure_check_cached;
 #[cfg(feature = "yaml-config")]
@@ -98,8 +118,8 @@ pub use check::{
 pub use command_options::CheckCommandOptions;
 #[cfg(feature = "full-cli")]
 pub use commands::{
-    check_command, fix_markdown_command, info_command, init_command, migrate_command,
-    status_command, watch_command,
+    add_recipe_command, check_command, fix_markdown_command, info_command, init_command,
+    migrate_command, status_command,
 };
 #[cfg(feature = "full-cli")]
 pub use config::CliConfig;
@@ -126,4 +146,8 @@ pub use performance_report::{
     PerformanceResultRow,
 };
 #[cfg(feature = "full-cli")]
+pub use project_review::project_review_command;
+#[cfg(feature = "full-cli")]
 pub use quality::{quality_plan_command, QualityPlan, QualityPlanCommandOptions};
+#[cfg(feature = "full-cli")]
+pub use watch::watch_command;

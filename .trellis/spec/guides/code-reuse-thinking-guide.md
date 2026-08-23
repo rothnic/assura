@@ -35,6 +35,7 @@ grep -r "keyword" .
 | Is this pattern used elsewhere? | Follow the existing pattern |
 | Could this be a shared utility? | Create it in the right place |
 | Am I copying code from another file? | **STOP** - extract to shared |
+| Is this file near a configured line limit? | Split by responsibility, not by terseness |
 
 ---
 
@@ -57,6 +58,14 @@ grep -r "keyword" .
 **Bad**: Defining the same constant in multiple files
 
 **Good**: Single source of truth, import everywhere
+
+### Pattern 4: Line-Limit Compression
+
+**Bad**: Shortening names, removing comments, or collapsing readable branches
+just to get under a file-size limit
+
+**Good**: Extracting a cohesive submodule so each file keeps one clear
+responsibility
 
 ---
 
@@ -103,3 +112,4 @@ When you've made similar changes to multiple files:
 - [ ] No copy-pasted logic that should be shared
 - [ ] Constants defined in one place
 - [ ] Similar patterns follow same structure
+- [ ] Files near line limits were split naturally instead of compressed

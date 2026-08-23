@@ -11,6 +11,8 @@ pub enum AgentCommands {
         path: Option<PathBuf>,
         #[arg(long, value_enum, default_value = "auto")]
         agent: AgentOnboardingTarget,
+        #[arg(long, help = "Activate the detected or selected host integration")]
+        activate: bool,
         #[arg(long, value_enum, default_value = "none")]
         content_template: AgentContentTemplate,
         #[arg(short, long, value_enum, default_value = "json")]
@@ -108,6 +110,12 @@ pub enum AgentCommands {
         max_issues: usize,
         #[arg(long, default_value_t = 20)]
         reference_limit: usize,
+        #[arg(
+            long,
+            default_value_t = 300,
+            help = "Suppress identical event messages for this many seconds; use 0 to disable"
+        )]
+        cooldown_seconds: u64,
         #[arg(short, long, value_enum, default_value = "json")]
         format: OutputFormat,
     },
@@ -127,8 +135,12 @@ pub enum AgentCommands {
 pub enum AgentIntegrationCommands {
     /// Generate reviewable wrapper files for one host agent.
     Install(AgentIntegrationLifecycleArgs),
+    /// Activate Assura in one host's project-local configuration.
+    Activate(AgentIntegrationLifecycleArgs),
     /// Regenerate an existing wrapper bundle.
     Update(AgentIntegrationLifecycleArgs),
+    /// Remove Assura-owned host activation while retaining the bundle.
+    Deactivate(AgentIntegrationLifecycleArgs),
     /// Remove an Assura-managed wrapper bundle.
     Remove(AgentIntegrationLifecycleArgs),
     /// Report whether an Assura-managed wrapper bundle is present.
@@ -290,6 +302,8 @@ pub enum AgentNudgeEvent {
     AfterTool,
     /// Before or after a read-focused file event.
     FileRead,
+    /// Periodic or host-detected idle session review.
+    Idle,
     /// Recovery or resume event after tool failure, stale state, or context loss.
     Recovery,
 }

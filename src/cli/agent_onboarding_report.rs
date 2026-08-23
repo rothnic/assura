@@ -1,7 +1,7 @@
 //! Serializable report types for `assura agent onboard`.
 
 use super::agent_lifecycle::{LifecycleProfile, RankedNextAction};
-use super::agent_onboarding::DetectedSection;
+use super::agent_onboarding::{DetectedSection, OnboardingReview};
 use super::OutputFormat;
 use serde::Serialize;
 
@@ -24,39 +24,104 @@ pub(super) struct RenderedOnboardingReport {
 impl RenderedOnboardingReport {
     fn render_text(&self) -> String {
         let report = &self.report;
-        format!(
-            "Assura agent onboarding\ninstalled: assura {}\ndetected: project={} agent={} confidence={}\ncontent: {}={}\nlifecycle: {}\nverified: {}\ninactive: {}\nnext: {}\npacket: .assura/onboarding/agent-next.md",
-            report.installed.assura_version,
-            report.detected.project_type,
-            report.detected.agent_harness,
-            report.detected.agent_confidence,
-            report.content.template,
-            report.content.status,
-            report
-                .lifecycle_profiles
-                .iter()
-                .map(|item| format!("{}={}", item.name, item.mode))
-                .collect::<Vec<_>>()
-                .join(", "),
-            report
-                .verified
-                .iter()
-                .map(|item| format!("{}={}", item.name, item.status))
-                .collect::<Vec<_>>()
-                .join(", "),
-            report
-                .inactive
-                .iter()
-                .map(|item| item.name)
-                .collect::<Vec<_>>()
-                .join(", "),
-            report
-                .next_actions
-                .first()
-                .map(|action| action.action)
-                .unwrap_or("read agent-next.md")
-        )
+        [
+            "Assura agent onboarding".to_string(),
+            onboarding_row(
+                "Version",
+                format!("assura {}", report.installed.assura_version),
+            ),
+            onboarding_row(
+                "Project",
+                format!(
+                    "{} confidence={}",
+                    report.detected.project_type, report.detected.project_confidence
+                ),
+            ),
+            onboarding_row(
+                "Agent",
+                format!(
+                    "{} confidence={}",
+                    report.detected.agent_harness, report.detected.agent_confidence
+                ),
+            ),
+            onboarding_row(
+                "Policy",
+                report
+                    .rule_recommendations
+                    .iter()
+                    .map(|item| format!("{} -> {} ({})", item.preset, item.local_rule, item.status))
+                    .collect::<Vec<_>>()
+                    .join(", "),
+            ),
+            onboarding_row(
+                "Host",
+                format!(
+                    "{} generated={} activated={} verified={} conflicted={}",
+                    report.integration.agent,
+                    report.integration.generated,
+                    report.integration.activated,
+                    report.integration.verified,
+                    report.integration.conflicted
+                ),
+            ),
+            onboarding_row(
+                "Content",
+                format!("{}={}", report.content.template, report.content.status),
+            ),
+            onboarding_row(
+                "Lifecycle",
+                report
+                    .lifecycle_profiles
+                    .iter()
+                    .map(|item| format!("{}={}", item.name, item.mode))
+                    .collect::<Vec<_>>()
+                    .join(" "),
+            ),
+            onboarding_row(
+                "Verified",
+                report
+                    .verified
+                    .iter()
+                    .map(|item| format!("{}={}", item.name, item.status))
+                    .collect::<Vec<_>>()
+                    .join(" "),
+            ),
+            onboarding_row(
+                "Review",
+                format!(
+                    "{} blocking={} advisory={} inactive_signals={}",
+                    report.review.status,
+                    report.review.blocking,
+                    report.review.advisory,
+                    report.review.inactive
+                ),
+            ),
+            onboarding_row(
+                "Deferred",
+                report
+                    .inactive
+                    .iter()
+                    .map(|item| item.name)
+                    .collect::<Vec<_>>()
+                    .join(", "),
+            ),
+            onboarding_row(
+                "Next",
+                report
+                    .next_actions
+                    .first()
+                    .map(|action| action.action)
+                    .unwrap_or("read agent-next.md")
+                    .to_string(),
+            ),
+            onboarding_row("Packet", ".assura/onboarding/agent-next.md".to_string()),
+        ]
+        .join("\n")
     }
+}
+
+fn onboarding_row(label: &str, value: String) -> String {
+    format!("{label:<12} {value}")
 }
 
 #[derive(Serialize)]
@@ -65,13 +130,24 @@ pub(super) struct OnboardingReport {
     pub(super) project_root: String,
     pub(super) installed: InstalledSection,
     pub(super) detected: DetectedSection,
+    pub(super) rule_recommendations: Vec<RuleRecommendation>,
     pub(super) integration: IntegrationSection,
     pub(super) content: ContentSection,
     pub(super) lifecycle_profiles: Vec<LifecycleProfile>,
     pub(super) files: Vec<FileAction>,
     pub(super) verified: Vec<CheckItem>,
+    pub(super) review: OnboardingReview,
     pub(super) inactive: Vec<CheckItem>,
     pub(super) next_actions: Vec<RankedNextAction>,
+}
+
+#[derive(Serialize)]
+pub(super) struct RuleRecommendation {
+    pub(super) preset: &'static str,
+    pub(super) local_rule: &'static str,
+    pub(super) status: &'static str,
+    pub(super) reason: String,
+    pub(super) includes: Vec<&'static str>,
 }
 
 #[derive(Serialize)]
@@ -86,6 +162,10 @@ pub(super) struct IntegrationSection {
     pub(super) status: &'static str,
     pub(super) agent: &'static str,
     pub(super) mode: &'static str,
+    pub(super) generated: bool,
+    pub(super) activated: bool,
+    pub(super) verified: bool,
+    pub(super) conflicted: bool,
     pub(super) detail: &'static str,
 }
 

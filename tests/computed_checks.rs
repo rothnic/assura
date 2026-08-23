@@ -343,9 +343,7 @@ collections:
     path: records/doc.json
     adapter: json_record
     id: id
-structure:
-  ./:
-    required: false
+structure: {{}}
 exclude:
   - ".assura/**"
 "#

@@ -36,7 +36,7 @@ my-rust-project/
 3. **Initialize Assura**
 
    ```bash
-   assura init
+   assura init --recipe agentic-core --recipe structure-health
    ```
 
 4. **Run validation**
@@ -50,22 +50,28 @@ my-rust-project/
    Edit `.assura/config.yml`:
 
    ```yaml
+   rules:
+     closed-entry:
+       exists: 0
+     closed:
+       ./*/: $closed-entry
+       ./*: $closed-entry
+
    structure:
-     ./:
-       extra: false
-       README.md: exists:1
-       Cargo.toml: exists:1
-       src/: exists:1
-       "*.lock": exists:0-1
-     src/:
+     ./: $closed
+     README.md: exists:1
+     Cargo.toml: exists:1
+     src/: exists:1
+     ./*.lock: exists:0-1
+     ./**/:
        .rs: snake_case
    exclude:
      - "target/**"
    ```
 
    The root policy mirrors the project tree. It requires the public files,
-   allows one lockfile, closes the root to unexpected direct children, and
-   checks Rust source names where the source files live.
+   allows one lockfile, closes direct root contents through a reusable rule,
+   and checks Rust source names at every directory depth.
 
 6. **Check again**
 

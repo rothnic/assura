@@ -6,46 +6,86 @@
 
 ## Overview
 
-<!--
-Document your project's quality standards here.
-
-Questions to answer:
-- What patterns are forbidden?
-- What linting rules do you enforce?
-- What are your testing requirements?
-- What code review standards apply?
--->
-
-(To be filled by the team)
+Website changes should prove both build correctness and rendered layout quality.
+For standalone landing pages, verify desktop, tablet, and mobile widths in light
+and dark color schemes before claiming completion.
 
 ---
 
 ## Forbidden Patterns
 
-<!-- Patterns that should never be used and why -->
-
-(To be filled by the team)
+- Do not turn the docs home into the product landing experience by expanding
+  Starlight Markdown splash pages. Use a custom Astro page when the route needs
+  standalone product polish.
+- Do not commit temporary browser screenshots or verification folders at the
+  repository root. Assura should reject those as structure drift.
+- Do not rely on low-contrast accent colors for small labels. Light-mode
+  product accents used for text should meet WCAG AA contrast for normal text.
 
 ---
 
 ## Required Patterns
 
-<!-- Patterns that must always be used -->
-
-(To be filled by the team)
+- Run the website production build after route or style changes.
+- Smoke-test at least one existing docs route when changing `/` or shared docs
+  palette CSS.
+- Keep static pages static unless an island adds clear product value.
+- Render CLI examples as terminal text rather than stacked status panels. Keep
+  row labels, metric names, and metric values visually distinct; reserve strong
+  semantic color for statuses, crossed thresholds, actionable findings, and
+  commands. Preserve the exact supported CLI text beneath that presentation.
+  Use hanging indentation for compact labeled rows so wrapped values remain
+  under the value column, and separate summary, context, and action groups with
+  whitespace rather than additional boxes.
+- In syntax-highlighted configuration examples, color keys consistently whether
+  they open a nested scope or assign an inline value. Apply secondary color to
+  the value token, not the entire line, so paths do not imply different states.
+- For tool comparisons, render checked configuration fixtures exactly and keep
+  the view selector directly adjacent to the content it changes. Separate the
+  shared benchmark surface from Assura-only capabilities before showing code.
+- When a comparison fixture cannot express a marketed Assura guarantee, mark
+  the limitation beside the relevant valid YAML as a comment and style it as an
+  annotation. Do not present unsupported behavior as equivalent coverage.
+- Map every displayed competitor limitation one-to-one to an executable native
+  tool scenario. The test must compare the exact displayed claim list with the
+  proof registry so copy cannot be added, removed, or reworded without updating
+  its behavioral evidence.
+- Present multi-fixture performance evidence as a visible comparison table
+  before verbose fixture internals. Each row should identify the variable under
+  test, workload scale, both cold timings, the cold speed ratio, and the warm
+  timing; keep generated trees and source policies in optional disclosures.
+- On mobile, do not render desktop comparison columns as equally weighted
+  stacked bands. Give each benchmark case a compact identity header, pair the
+  test focus with a visually primary result, and align Assura and competitor
+  timings as an equal comparison row beneath it.
+- Keep marketing claims executable: if copy says a path is required, the
+  checked fixture must include the corresponding required-path directive.
+- Modal dialogs must lock the background document while preserving scrolling
+  inside the dialog. Every dismissal path must release the lock and restore the
+  exact page offset captured before opening.
 
 ---
 
 ## Testing Requirements
 
-<!-- What level of testing is expected -->
+For landing-page work, collect:
 
-(To be filled by the team)
+- `pnpm build` or `cargo xtask docs`
+- `cargo run --quiet -- check --format json .`
+- browser screenshots and DOM overflow checks at representative breakpoints
+- light/dark hierarchy and overflow assertions for dense comparison cards at
+  320px, 390px, and a representative tablet width
+- a docs-route smoke check
+- a mobile modal regression that attempts background scrolling and verifies
+  scroll-position restoration after dismissal
 
 ---
 
 ## Code Review Checklist
 
-<!-- What reviewers should check -->
-
-(To be filled by the team)
+- Does `/` feel like a deliberate product surface rather than a docs template?
+- Do existing Starlight docs routes still build and render?
+- Do text, buttons, and navigation avoid wrapping overflow on mobile?
+- Do light and dark palettes preserve contrast for small text?
+- Can a reader distinguish shared coverage, unsupported behavior, and the
+  currently selected configuration without reading both files end to end?

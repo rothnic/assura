@@ -2,9 +2,7 @@
 // allow-reason: performance row factories keep measured dimensions explicit
 // for benchmark auditability despite wide argument lists.
 
-use super::assura_cli::{
-    measure_assura_check_cli, measure_assura_cli, measure_assura_strategy, PreparedAssuraCli,
-};
+use super::assura_cli::{measure_assura_check_cli, measure_assura_strategy, PreparedAssuraCli};
 use super::cached_cli::measure_assura_check_cached_cli;
 use super::changed_path_cli::{
     measure_assura_check_changed_path_cli, measure_assura_check_dirty_project_cli,
@@ -12,6 +10,7 @@ use super::changed_path_cli::{
 use super::compiled_cli::measure_assura_check_compiled_cli;
 use super::dirty_project_socket::measure_assura_check_dirty_project_socket;
 use super::fixtures::FixtureScenario;
+use super::headline_pair::measure_headline_pair;
 use super::hot_cli::{measure_assura_check_hot_cli, measure_assura_check_status_cli};
 use super::ls_lint::PreparedLsLint;
 use super::prepared_rows::{measure_prepared_five_changed_paths, measure_prepared_full_check};
@@ -21,8 +20,8 @@ use super::traversal::{
     measure_parallel_jwalk_traversal, measure_serial_jwalk_traversal, measure_walkdir_traversal,
 };
 use super::{
-    materialize_fixture, measure_assura, measure_ls_lint, PerformanceEnvironment,
-    PerformanceResultRow, ToolAvailability,
+    materialize_fixture, measure_assura, PerformanceEnvironment, PerformanceResultRow,
+    ToolAvailability,
 };
 use std::fs;
 
@@ -50,28 +49,20 @@ pub(super) fn measure_scenario_rows(
 ) -> Result<Vec<PerformanceResultRow>, String> {
     let fixture = materialize_fixture(scenario)?;
     remove_benchmark_compiled_artifacts(&fixture);
+    let [assura_headline, ls_lint_headline] = measure_headline_pair(
+        &fixture,
+        iterations,
+        timestamp,
+        commit_sha,
+        branch,
+        environment,
+        baseline_id,
+        assura_cli,
+        ls_lint,
+    );
     let mut results = vec![
-        measure_assura_cli(
-            &fixture,
-            iterations,
-            timestamp,
-            commit_sha,
-            branch,
-            environment,
-            baseline_id,
-            ls_lint_status,
-            assura_cli,
-        ),
-        measure_ls_lint(
-            &fixture,
-            iterations,
-            timestamp,
-            commit_sha,
-            branch,
-            environment,
-            baseline_id,
-            ls_lint,
-        ),
+        assura_headline,
+        ls_lint_headline,
         measure_process_floor(
             &fixture,
             iterations,

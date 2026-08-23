@@ -5,10 +5,11 @@ use std::ffi::OsString;
 use tracing::{error, info};
 
 use super::{
-    agent_command, check_command, content_command, daemon_command, editor_command, explain_command,
-    fix_markdown_command, info_command, init_command, migrate_command, performance_report_command,
-    quality_plan_command, status_command, watch_command, CheckCommandOptions, Cli, Commands,
-    ExitCode, FixCommands, HookCommands, PerformanceReportCommandOptions, QualityCommands,
+    agent_command, cache_command, check_command, content_command, daemon_command, editor_command,
+    explain_command, fix_markdown_command, info_command, init_command, migrate_command,
+    performance_report_command, project_review_command, quality_plan_command, status_command,
+    watch_command, CacheCommands, CheckCommandOptions, Cli, Commands, ConfigCommands, ExitCode,
+    FixCommands, HookCommands, PerformanceReportCommandOptions, QualityCommands,
 };
 
 /// Run the complete Clap/Tokio-powered CLI for non-check commands and fallbacks.
@@ -55,6 +56,7 @@ async fn run_full_cli(cli: Cli) -> ExitCode {
 
     info!("Starting Assura CLI");
     let config_path = cli.config.clone();
+    let verbose = cli.verbose;
 
     let exit_code = match cli.command {
         Commands::Check {
@@ -86,19 +88,48 @@ async fn run_full_cli(cli: Cli) -> ExitCode {
         }
         Commands::Status { path, format } => status_command(path, config_path, format).await,
         Commands::Doctor { path, format } => super::doctor_command(path, config_path, format).await,
+        Commands::Review { path, format, base } => {
+            project_review_command(path, config_path, format, base, verbose).await
+        }
+        Commands::Cache { command } => match command {
+            CacheCommands::Status {
+                path,
+                cache_dir,
+                format,
+            } => cache_command(path, cache_dir, format, false),
+            CacheCommands::Clean {
+                path,
+                cache_dir,
+                format,
+            } => cache_command(path, cache_dir, format, true),
+        },
         Commands::Explain { path, format } => explain_command(path, config_path, format).await,
         Commands::Init {
             path,
             project_intelligence,
             force,
             no_git_hooks,
-        } => init_command(path, force, no_git_hooks, project_intelligence).await,
+            recipe,
+        } => init_command(path, force, no_git_hooks, project_intelligence, recipe).await,
+        Commands::Config { command } => match command {
+            ConfigCommands::AddRecipe {
+                recipe,
+                path,
+                dry_run,
+                force,
+            } => super::add_recipe_command(path, config_path, recipe, dry_run, force).await,
+        },
         Commands::Watch {
             path,
             debounce,
+            format,
             no_git,
-        } => watch_command(path, config_path, debounce, no_git).await,
-        Commands::Migrate { input, output } => migrate_command(input, output).await,
+        } => watch_command(path, config_path, debounce, format, no_git).await,
+        Commands::Migrate {
+            input,
+            from,
+            output,
+        } => migrate_command(input, from, output).await,
         Commands::Fix { command } => match command {
             FixCommands::Markdown {
                 path,
