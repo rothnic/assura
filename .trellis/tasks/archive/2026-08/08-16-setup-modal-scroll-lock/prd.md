@@ -12,4 +12,3 @@ the dialog closes.
 - Escape, the close button, and backdrop dismissal all release the lock.
 - Closing restores the page to its pre-open scroll position.
 - A browser regression test covers the lock and restoration at a mobile viewport.
-
