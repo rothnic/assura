@@ -5,8 +5,8 @@ status: active
 
 # Assura v0.4.0 Release Notes
 
-These notes describe the pre-1.0 public command surface prepared `v0.4.0`
-beta increment. `v0.3.0` remains the latest published release until
+These notes describe the pre-1.0 public command surface prepared `v0.4.0` beta increment.
+`v0.3.0` remains the latest published release until
 the `v0.4.0` tag completes release verification. Assura publishes installable archives from
 [`.github/workflows/release.yml`](../.github/workflows/release.yml) when a
 maintainer pushes an intentional `v*` tag after the release checklist in

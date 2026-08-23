@@ -30,7 +30,7 @@ assura check
 
 ## Current Scope
 
-The current source and next-release contract covers deterministic structure,
+The current source contract covers deterministic structure,
 Markdown, references, severity, suppressions, and agent-guidance checks. Review
 summarizes branch and worktree pressure without replacing the authoritative
 Check gate.
