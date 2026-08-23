@@ -365,11 +365,14 @@ test('review rows use hanging indents and semantic section breaks', async ({ pag
   const summary = terminal.locator('[data-terminal-line]').first();
   const findings = terminal.locator('[data-terminal-line]').filter({ hasText: /^Findings/ });
   const fixFirst = terminal.locator('[data-terminal-line]').filter({ hasText: /^Fix first/ });
+  const run = terminal.locator('[data-terminal-line]').filter({ hasText: /^Run/ });
 
   await expect(branch).toHaveAttribute('data-terminal-labelled', 'true');
   await expect(findings).toHaveAttribute('data-terminal-section-start', 'true');
+  await expect(branch).toHaveAttribute('data-terminal-section-start', 'true');
   await expect(summary).toHaveAttribute('data-terminal-summary', 'true');
   await expect(fixFirst).toHaveAttribute('data-terminal-section-start', 'true');
+  await expect(run).toHaveAttribute('data-terminal-section-start', 'true');
 
   const layout = await branch.evaluate((element) => {
     const style = getComputedStyle(element);
@@ -380,6 +383,8 @@ test('review rows use hanging indents and semantic section breaks', async ({ pag
   });
   expect(layout.paddingInlineStart).toBeGreaterThan(0);
   expect(layout.textIndent).toBeLessThan(0);
+  const sectionSpacing = await branch.evaluate((element) => Number.parseFloat(getComputedStyle(element).marginTop));
+  expect(sectionSpacing).toBeGreaterThanOrEqual(8);
   const fontSize = await terminal.locator('pre').evaluate(
     (element) => Number.parseFloat(getComputedStyle(element).fontSize),
   );

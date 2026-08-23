@@ -1080,12 +1080,12 @@
   }
 
   .review-terminal[data-terminal-variant="review"] .terminal-line[data-terminal-summary] {
-    margin-bottom: 0.16rem;
+    margin-bottom: 0.36rem;
     color: color-mix(in srgb, var(--terminal-text) 96%, transparent);
   }
 
   .review-terminal[data-terminal-variant="review"] .terminal-line[data-terminal-section-start] {
-    margin-top: 0.28rem;
+    margin-top: 0.68rem;
   }
 
   .terminal-token-label {

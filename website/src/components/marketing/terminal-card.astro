@@ -31,7 +31,7 @@ const { title, lines, className = '', variant = 'neutral' } = Astro.props;
 
 const reviewLabelWidth = 10;
 const dangerMetrics = new Set(['blocking', 'violations', 'v']);
-const reviewSectionStarts = new Set(['Findings', 'Watch', 'Fix first']);
+const reviewSectionStarts = new Set(['Findings', 'Branch', 'Watch', 'Fix first', 'Run']);
 function metricEmphasis(label: string, key: string, value: string): TerminalSegment['emphasis'] {
   const ratio = value.match(/^(\d+)\/(\d+)$/);
   if (
