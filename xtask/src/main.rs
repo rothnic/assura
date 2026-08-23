@@ -4171,6 +4171,9 @@ fn check_document_graph_support_claims(checks: &mut Checks) {
 }
 
 fn check_post_beta_release_hardening(checks: &mut Checks) {
+    let cargo_toml = read("Cargo.toml");
+    let candidate_version = toml_string_value(&cargo_toml, "version").unwrap_or_default();
+    let candidate_tag = format!("v{candidate_version}");
     let release_notes = read("docs/release-notes.md");
     let release_surfaces = read("docs/data/release-surfaces.json");
     let support_goal = read("docs/goals/assura-post-beta-support-release-hardening.md");
@@ -4180,13 +4183,13 @@ fn check_post_beta_release_hardening(checks: &mut Checks) {
     let release_readiness = read("website/src/content/docs/reference/release-readiness.md");
 
     for marker in [
-        "Assura v0.3.0 Release Notes",
-        "published `v0.3.0` beta increment",
-        "still remains pre-1.0 beta software",
+        format!("Assura {candidate_tag} Release Notes"),
+        format!("prepared `{candidate_tag}` beta increment"),
+        "still remains pre-1.0 beta software".to_string(),
     ] {
         checks.require(
-            release_notes.contains(marker),
-            format!("docs/release-notes.md: missing v0.3.0 beta marker {marker:?}"),
+            release_notes.contains(&marker),
+            format!("docs/release-notes.md: missing beta marker {marker:?}"),
         );
     }
 
@@ -4202,14 +4205,14 @@ fn check_post_beta_release_hardening(checks: &mut Checks) {
         );
     }
     for marker in [
-        "\"id\": \"daemon-mode\",\n      \"label\": \"Daemon mode\",\n      \"status\": \"supported\",\n      \"first_release\": \"unreleased\"",
-        "\"id\": \"vscode-extension\",\n      \"label\": \"VS Code beta local package\",\n      \"status\": \"supported\",\n      \"first_release\": \"v0.3.0\"",
-        "\"id\": \"extension-api-boundaries\",\n      \"label\": \"Extension API boundaries\",\n      \"status\": \"supported\",\n      \"first_release\": \"v0.3.0\"",
-        "\"id\": \"agent-integration-lifecycle\",\n      \"label\": \"Agent integration lifecycle\",\n      \"status\": \"supported\",\n      \"first_release\": \"unreleased\"",
+        format!("\"id\": \"daemon-mode\",\n      \"label\": \"Daemon mode\",\n      \"status\": \"supported\",\n      \"first_release\": \"{candidate_tag}\""),
+        "\"id\": \"vscode-extension\",\n      \"label\": \"VS Code beta local package\",\n      \"status\": \"supported\",\n      \"first_release\": \"v0.3.0\"".to_string(),
+        "\"id\": \"extension-api-boundaries\",\n      \"label\": \"Extension API boundaries\",\n      \"status\": \"supported\",\n      \"first_release\": \"v0.3.0\"".to_string(),
+        format!("\"id\": \"agent-integration-lifecycle\",\n      \"label\": \"Agent integration lifecycle\",\n      \"status\": \"supported\",\n      \"first_release\": \"{candidate_tag}\""),
     ] {
         checks.require(
-            release_surfaces.contains(marker),
-            format!("docs/data/release-surfaces.json: missing v0.3.0 marker {marker:?}"),
+            release_surfaces.contains(&marker),
+            format!("docs/data/release-surfaces.json: missing release marker {marker:?}"),
         );
     }
 

@@ -4,7 +4,6 @@ import { readFileSync } from 'node:fs';
 import {
   agentSetupPrompt,
   installCommand,
-  sourcePreviewRevision,
 } from '../data/marketing';
 
 const assuraPolicyFixture = readFileSync(
@@ -199,7 +198,7 @@ for (const colorScheme of themes) {
           width < 390 ? 640 : 844,
         );
         const installation = dialog.getByRole('group', {
-          name: `Installation details for revision ${sourcePreviewRevision.slice(0, 7)}`,
+          name: 'Public installation details',
         });
         await expect(installation).not.toHaveAttribute('open', '');
         await dialog.screenshot({
@@ -208,8 +207,7 @@ for (const colorScheme of themes) {
         await installation.locator('summary').click();
         await expect(dialog.locator('#install-command')).toHaveText(installCommand);
         await expect(dialog.locator('#agent-prompt')).toHaveText(agentSetupPrompt);
-        await expect(dialog.locator('#agent-prompt')).toContainText(sourcePreviewRevision);
-        await expect(dialog).not.toContainText('assura.dev/install.sh');
+        await expect(dialog.locator('#agent-prompt')).toContainText('assura.dev/install.sh');
         expect(await dialog.evaluate((element) => element.scrollWidth - element.clientWidth)).toBe(0);
         expect(
           await dialog.locator('#install-command').evaluate(
@@ -229,7 +227,7 @@ for (const colorScheme of themes) {
   }
 }
 
-test('setup copies the complete pinned evidence-first instruction', async ({ page }) => {
+test('setup copies the complete public installer instruction', async ({ page }) => {
   await page.addInitScript(() => {
     Object.defineProperty(navigator, 'clipboard', {
       configurable: true,

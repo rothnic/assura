@@ -16,12 +16,12 @@ merge.** Review is the radar; Check is the gate.
 
 ## Status
 
-Assura is pre-1.0. The current public release is
-[`v0.3.0`](https://github.com/rothnic/assura/releases/tag/v0.3.0), published
-and live-verified on 2026-07-02. The current source tree contains the supported
-next-release Review, Explain, onboarding, event-feedback, and managed host
-activation contracts. They remain marked `unreleased` in the release-surface
-manifest until a new version passes the strict release gate and is published.
+Assura is pre-1.0. [`v0.3.0`](https://github.com/rothnic/assura/releases/tag/v0.3.0)
+is the latest published release, live-verified on 2026-07-02. The current
+source tree is the `v0.4.0` candidate: its Review, Explain, onboarding,
+event-feedback, and managed-host activation contracts are assigned to that
+candidate in the release-surface manifest. They become publicly installable
+only after the `v0.4.0` tag passes the strict release gate and publishes.
 
 CI builds run on pull requests and `master` pushes, including release-style
 smoke builds. Those artifacts are verification evidence, not durable product
@@ -59,8 +59,8 @@ Build from source when working on Assura itself:
 cargo build --release
 ```
 
-The public installer above installs `v0.3.0`. To exercise the next-release
-source surface from a checkout, install that exact checkout instead:
+The public installer resolves the latest published release. To exercise the
+`v0.4.0` candidate from a checkout, install that exact checkout instead:
 
 ```bash
 cargo install --path . --locked
@@ -106,13 +106,13 @@ exclude:
 
 | Surface | Contract | Availability |
 | --- | --- | --- |
-| `assura check` and text/JSON/YAML/advice/status/agent formats | Supported configured-policy gate | `v0.3.0` and current source |
-| `assura init`, `status`, `migrate`, hooks, quality planning, performance report | Supported setup and automation | `v0.3.0` and current source |
-| `assura review`, `doctor`, and `explain` | Supported advisory, diagnosis, and policy-evidence workflow | Current source; next release |
-| `assura agent onboard` and `assura agent nudge` | Supported onboarding and bounded event feedback | Current source; next release |
-| `assura agent integration install|activate|update|deactivate|remove|status|doctor` | Supported Assura-owned project-local host lifecycle | Current source; next release |
-| Markdown/link/reference/guidance checks and local content/query/context packs | Supported deterministic policy and context layer | Current source; next release |
-| `assura watch`, cache, daemon, and local sessions | Supported warm local execution | Current source; next release |
+| `assura check` and text/JSON/YAML/advice/status/agent formats | Supported configured-policy gate | `v0.3.0`; `v0.4.0` candidate |
+| `assura init`, `status`, `migrate`, hooks, quality planning, performance report | Supported setup and automation | `v0.3.0`; `v0.4.0` candidate |
+| `assura review`, `doctor`, and `explain` | Supported advisory, diagnosis, and policy-evidence workflow | `v0.4.0` candidate |
+| `assura agent onboard` and `assura agent nudge` | Supported onboarding and bounded event feedback | `v0.4.0` candidate |
+| `assura agent integration install|activate|update|deactivate|remove|status|doctor` | Supported Assura-owned project-local host lifecycle | `v0.4.0` candidate |
+| Markdown/link/reference/guidance checks and local content/query/context packs | Supported deterministic policy and context layer | `v0.4.0` candidate |
+| `assura watch`, cache, daemon, and local sessions | Supported warm local execution | `v0.4.0` candidate |
 
 `assura info`, Markdown safe fixes, and first-party `extensions.*` policy
 families remain experimental before 1.0.
@@ -151,7 +151,7 @@ The live release gate verifies the public install scripts and release assets:
 
 ```bash
 cargo xtask release-live
-ASSURA_VERSION=v0.3.0 cargo xtask release-live
+ASSURA_VERSION=v0.4.0 cargo xtask release-live
 ```
 
 ## Development Verification

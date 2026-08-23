@@ -1,6 +1,4 @@
-export const sourceRepositoryUrl = 'https://github.com/rothnic/assura';
-export const sourcePreviewRevision = 'cbcd2b4855a7ac958e27d962371dcbe97f4ff625';
-export const installCommand = `cargo install --git ${sourceRepositoryUrl} --rev ${sourcePreviewRevision} --locked --bin assura assura`;
+export const installCommand = 'curl -fsSL https://assura.dev/install.sh | sh';
 
 export const onboardingCommand = 'assura agent onboard .';
 
@@ -12,7 +10,7 @@ export const agentSetupSteps = [
 
 export const agentSetupInstruction = `Set up Assura for this project. Run \`${onboardingCommand}\`. ${agentSetupSteps.join(' ')}`;
 
-export const agentSetupPrompt = `Install the exact Assura revision used to verify assura.dev:
+export const agentSetupPrompt = `Install the latest published Assura release:
 ${installCommand}
 
 ${agentSetupInstruction}

@@ -1629,17 +1629,18 @@ mod tests {
 
     #[test]
     fn performance_summary_keeps_cold_and_warm_claims_separate() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).parent().unwrap();
+        let version = package_version(&root.join("Cargo.toml")).expect("package version");
         let report = json!({
             "schema_version": "assura.performance.v1",
             "timestamp": "2026-07-10T00:00:00Z",
             "environment": {"os": "linux"},
             "claim_summary": {"aggregate_speedup_ratio": 1.5},
             "warm_claim_summary": {"aggregate_speedup_ratio": 20.0},
-            "results": [{"assura_version": "0.3.0"}]
+            "results": [{"assura_version": version}]
         });
-        let root = Path::new(env!("CARGO_MANIFEST_DIR")).parent().unwrap();
         let summary = compact_performance(root, &report).expect("summary");
-        assert_eq!(summary["assura_version"], "0.3.0");
+        assert_eq!(summary["assura_version"], version);
         assert_eq!(summary["cold"]["aggregate_speedup_ratio"], 1.5);
         assert_eq!(summary["warm"]["aggregate_speedup_ratio"], 20.0);
     }

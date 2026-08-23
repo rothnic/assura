@@ -8,7 +8,6 @@ import {
   installCommand,
   marketingNav,
   onboardingCommand,
-  sourcePreviewRevision,
 } from '../../data/marketing';
 import reportData from '../../../public/data/performance/current.json';
 
@@ -531,6 +530,5 @@ const ruleRange = countRange(cards.map((card) => card.cold?.rule_count));
     prompt={agentSetupPrompt}
     onboardingCommand={onboardingCommand}
     installCommand={installCommand}
-    sourceRevision={sourcePreviewRevision}
   />
 </MarketingLayout>
