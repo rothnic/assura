@@ -274,6 +274,22 @@ jobs:
         ./scripts/smoke-install-adoption.ps1 `
           -AssuraBin (Join-Path $bin "assura.exe") `
           -WorkRoot (Join-Path (Resolve-Path target) "adoption-smoke/windows-installer")
+        $invalidChecksum = Join-Path $env:RUNNER_TEMP "assura-invalid.sha256"
+        ("0" * 64) + "  assura-windows-amd64.zip" | Set-Content -NoNewline $invalidChecksum
+        try {
+          ./website/public/install.ps1 `
+            -AssetUrl (Resolve-Path target/assura-windows-amd64.zip) `
+            -ChecksumUrl $invalidChecksum `
+            -BinDir (Join-Path $env:RUNNER_TEMP "assura-invalid-bin")
+          throw "installer accepted an invalid checksum"
+        } catch {
+          if ($_.Exception.Message -eq "installer accepted an invalid checksum") {
+            throw
+          }
+          if ($_.Exception.Message -notmatch "checksum mismatch") {
+            throw
+          }
+        }
 
   installable-adoption:
     name: Installable Adoption Smoke (${{ matrix.label }})
@@ -289,6 +305,13 @@ jobs:
             target: x86_64-unknown-linux-gnu
             archive_name: assura-linux-amd64.tar.gz
             archive_kind: tar
+            linux_libc: glibc
+          - label: alpine-x86_64
+            os: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+            archive_name: assura-linux-musl-amd64.tar.gz
+            archive_kind: tar
+            linux_libc: musl
           - label: macos-arm64
             os: macos-14
             target: aarch64-apple-darwin
@@ -319,6 +342,12 @@ jobs:
     - name: Summarize Rust cache
       shell: bash
       run: bash scripts/summarize-rust-cache.sh "Installable Adoption Smoke (${{ matrix.label }})" "${{ steps.rust-cache.outputs.cache-hit }}" "assura-release-${{ runner.os }}-${{ matrix.target }}"
+    - name: Install musl build tools
+      if: matrix.target == 'x86_64-unknown-linux-musl'
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y musl-tools
     - name: Build release-style archive (Unix)
       if: matrix.archive_kind == 'tar'
       shell: bash
@@ -385,12 +414,27 @@ jobs:
         }
         Pop-Location
     - name: Smoke installed archive (Unix)
-      if: matrix.archive_kind == 'tar'
+      if: matrix.archive_kind == 'tar' && matrix.label != 'alpine-x86_64'
       shell: bash
       run: |
         tmp="$(mktemp -d)"
-        ASSURA_ASSET_URL="$PWD/target/${{ matrix.archive_name }}" BIN_DIR="$tmp/bin" ./website/public/install.sh
+        ASSURA_LINUX_LIBC="${{ matrix.linux_libc }}" ASSURA_ASSET_URL="$PWD/target/${{ matrix.archive_name }}" BIN_DIR="$tmp/bin" ./website/public/install.sh
         ASSURA_BIN="$tmp/bin/assura" ASSURA_SMOKE_DIR="$PWD/target/adoption-smoke/${{ matrix.label }}" ./scripts/smoke-install-adoption.sh
+    - name: Smoke installed archive (Alpine)
+      if: matrix.label == 'alpine-x86_64'
+      shell: bash
+      run: |
+        docker run --rm \
+          --mount "type=bind,source=$PWD,target=/work" \
+          --workdir /work \
+          -e ASSURA_LINUX_LIBC=musl \
+          -e ASSURA_ASSET_URL="/work/target/${{ matrix.archive_name }}" \
+          -e ASSURA_CHECKSUM_URL="/work/target/${{ matrix.archive_name }}.sha256" \
+          -e BIN_DIR=/tmp/assura-bin \
+          -e ASSURA_BIN=/tmp/assura-bin/assura \
+          -e ASSURA_SMOKE_DIR=/tmp/assura-smoke \
+          alpine:3.21 \
+          sh -ec 'apk add --no-cache bash ca-certificates coreutils curl libgcc libstdc++ python3 tar && ./website/public/install.sh && ./scripts/smoke-install-adoption.sh'
     - name: Smoke installed archive (Windows)
       if: matrix.archive_kind == 'zip'
       shell: pwsh
