@@ -77,6 +77,7 @@ Required PR checks before a release tag:
 - Release Bundle Smoke.
 - Windows Installer Smoke.
 - Installable Adoption Smoke on Ubuntu x86_64.
+- Installable Adoption Smoke on Alpine x86_64.
 - Installable Adoption Smoke on macOS arm64.
 - Installable Adoption Smoke on macOS x86_64.
 - Installable Adoption Smoke on Windows x86_64.
