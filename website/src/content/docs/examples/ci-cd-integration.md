@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sudo env BIN_DIR=/usr/local/bin sh
+      - run: curl -fsSL https://assura.dev/install.sh | sudo env BIN_DIR=/usr/local/bin sh
       - run: assura check --format text .
 ```
 
@@ -47,7 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sudo env BIN_DIR=/usr/local/bin sh
+      - run: curl -fsSL https://assura.dev/install.sh | sudo env BIN_DIR=/usr/local/bin sh
       - name: Run Assura
         run: assura check --format json . > assura-report.json
       - uses: actions/upload-artifact@v4
@@ -89,7 +89,7 @@ assura:
   image: ubuntu:latest
   before_script:
     - apt-get update && apt-get install -y curl
-    - curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | BIN_DIR=/usr/local/bin sh
+    - curl -fsSL https://assura.dev/install.sh | BIN_DIR=/usr/local/bin sh
   script:
     - assura check --format text .
 ```

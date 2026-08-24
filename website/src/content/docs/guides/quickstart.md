@@ -8,7 +8,7 @@ Use this path for a first local check.
 1. **Install Assura**
 
    ```bash
-   curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sh
+   curl -fsSL https://assura.dev/install.sh | sh
    ```
 
    The installer downloads a release archive and does not require a source
@@ -60,7 +60,7 @@ Use this path for a first local check.
 6. **Use the same command in CI**
 
    ```bash
-   curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sudo env BIN_DIR=/usr/local/bin sh
+   curl -fsSL https://assura.dev/install.sh | sudo env BIN_DIR=/usr/local/bin sh
    assura check --format text
    ```
 

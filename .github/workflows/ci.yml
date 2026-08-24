@@ -197,6 +197,7 @@ jobs:
         mkdir -p target/release-bundle
         cp target/release/assura target/release/assura-full target/release-bundle/
         tar -C target/release-bundle -czf target/assura-linux-amd64-preview.tar.gz assura assura-full
+        sha256sum target/assura-linux-amd64-preview.tar.gz > target/assura-linux-amd64-preview.tar.gz.sha256
     - name: Enforce release archive size
       run: |
         bytes="$(wc -c < target/assura-linux-amd64-preview.tar.gz | tr -d '[:space:]')"
@@ -205,10 +206,15 @@ jobs:
     - name: Smoke Unix installer
       run: |
         tmp="$(mktemp -d)"
-        ASSURA_ASSET_URL="$PWD/target/assura-linux-amd64-preview.tar.gz" BIN_DIR="$tmp/bin" ./website/public/install.sh
+        ASSURA_ASSET_URL="$PWD/target/assura-linux-amd64-preview.tar.gz" ASSURA_CHECKSUM_URL="$PWD/target/assura-linux-amd64-preview.tar.gz.sha256" BIN_DIR="$tmp/bin" ./website/public/install.sh
         "$tmp/bin/assura" --version
         "$tmp/bin/assura" --help >/tmp/assura-help.txt
         grep -q "Usage: assura" /tmp/assura-help.txt
+        printf '%064d  assura-linux-amd64-preview.tar.gz\n' 0 > "$tmp/invalid.sha256"
+        if ASSURA_ASSET_URL="$PWD/target/assura-linux-amd64-preview.tar.gz" ASSURA_CHECKSUM_URL="$tmp/invalid.sha256" BIN_DIR="$tmp/invalid-bin" ./website/public/install.sh; then
+          echo "installer accepted an invalid checksum" >&2
+          exit 1
+        fi
         ASSURA_BIN="$tmp/bin/assura" ASSURA_SMOKE_DIR="$PWD/target/adoption-smoke/release-bundle" ./scripts/smoke-install-adoption.sh
     - name: Upload preview bundle
       uses: actions/upload-artifact@v4
@@ -245,6 +251,8 @@ jobs:
         Copy-Item target/release/assura.exe target/release-bundle/assura.exe
         Copy-Item target/release/assura-full.exe target/release-bundle/assura-full.exe
         Compress-Archive -Path target/release-bundle/* -DestinationPath target/assura-windows-amd64.zip -Force
+        $hash = (Get-FileHash target/assura-windows-amd64.zip -Algorithm SHA256).Hash.ToLowerInvariant()
+        "$hash  assura-windows-amd64.zip" | Set-Content -NoNewline target/assura-windows-amd64.zip.sha256
     - name: Enforce release archive size
       shell: pwsh
       run: |
@@ -257,7 +265,10 @@ jobs:
       shell: pwsh
       run: |
         $bin = Join-Path $env:RUNNER_TEMP "assura-bin"
-        ./website/public/install.ps1 -AssetUrl (Resolve-Path target/assura-windows-amd64.zip) -BinDir $bin
+        ./website/public/install.ps1 `
+          -AssetUrl (Resolve-Path target/assura-windows-amd64.zip) `
+          -ChecksumUrl (Resolve-Path target/assura-windows-amd64.zip.sha256) `
+          -BinDir $bin
         & (Join-Path $bin "assura.exe") --version
         & (Join-Path $bin "assura.exe") --help | Select-String "Usage: assura"
         ./scripts/smoke-install-adoption.ps1 `

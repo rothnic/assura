@@ -14,28 +14,30 @@ Assura ships as a prebuilt CLI. Normal usage does not require Rust.
 Linux and macOS:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sh
+curl -fsSL https://assura.dev/install.sh | sh
 ```
 
 The installer detects your platform, downloads the matching release archive,
-and installs `assura` plus its internal `assura-full` companion into
+verifies its published SHA-256 sidecar, and installs `assura` plus its internal `assura-full` companion into
 `$HOME/.local/bin` by default. It does not clone this repository or build from
-source. Override the destination with `BIN_DIR`:
+source. Open a new terminal after installation if `$HOME/.local/bin` is not
+already on `PATH`. Override the destination with `BIN_DIR`:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sudo env BIN_DIR=/usr/local/bin sh
+curl -fsSL https://assura.dev/install.sh | sudo env BIN_DIR=/usr/local/bin sh
 ```
 
 Windows PowerShell:
 
 ```powershell
-irm https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.ps1 | iex
+irm https://assura.dev/install.ps1 | iex
 ```
 
-The PowerShell installer downloads `assura-windows-amd64.zip` and installs
-`assura.exe` plus `assura-full.exe` into
+The PowerShell installer downloads and verifies `assura-windows-amd64.zip`,
+installs `assura.exe` plus `assura-full.exe` into
 `%LOCALAPPDATA%\Programs\Assura\bin` by default. Override the destination with
-`$env:BIN_DIR` before running the script.
+`$env:BIN_DIR` before running the script. The install directory is added to the
+current session and user `PATH`; restart other terminals after installation.
 
 ## Supported Release Archives
 
@@ -43,7 +45,8 @@ Release and adoption smoke tests cover these installable archives:
 
 | Platform | Archive |
 | --- | --- |
-| Ubuntu x86_64 | `assura-linux-amd64.tar.gz` |
+| Linux x86_64 (glibc) | `assura-linux-amd64.tar.gz` |
+| Linux x86_64 (musl/Alpine) | `assura-linux-musl-amd64.tar.gz` |
 | macOS Apple Silicon | `assura-macos-arm64.tar.gz` |
 | macOS Intel | `assura-macos-amd64.tar.gz` |
 | Windows x86_64 | `assura-windows-amd64.zip` |
@@ -67,6 +70,9 @@ sudo install -m 755 assura assura-full /usr/local/bin/
 
 Windows users can download `assura-windows-amd64.zip`, extract
 `assura.exe` and `assura-full.exe`, and place both files on `PATH`.
+
+Each published archive has a `.sha256` sidecar. Both one-line installers verify
+that sidecar automatically before installing.
 
 Release archives include the public `assura` command and an internal
 `assura-full` companion used for less common commands such as `init`, `migrate`,
