@@ -14,8 +14,8 @@
       "packet": "reliability-packet.md#b00",
       "depends_on": [],
       "executor": "agent",
-      "state": "pending",
-      "owner": null,
+      "state": "done",
+      "owner": "Codex goal: Assura Maturity Execution Train",
       "evidence": "evidence/B00.md",
       "blocker": null
     },
