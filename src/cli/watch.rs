@@ -18,8 +18,47 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tokio::sync::mpsc;
 
+#[cfg(test)]
+use std::cell::RefCell;
+
 const DEFAULT_DEBOUNCE_MS: u64 = 300;
 const WATCH_CHANNEL_CAPACITY: usize = 256;
+
+#[cfg(test)]
+#[derive(Debug, PartialEq, Eq)]
+struct NormalizationCapture {
+    paths: Vec<PathBuf>,
+    kind: String,
+    needs_rescan: bool,
+    config_changed: bool,
+    invalidated: bool,
+}
+
+#[cfg(test)]
+thread_local! {
+    static NORMALIZATION_CAPTURE: RefCell<Option<NormalizationCapture>> = const { RefCell::new(None) };
+}
+
+#[cfg(test)]
+fn take_normalization_capture() -> Option<NormalizationCapture> {
+    NORMALIZATION_CAPTURE.with(|capture| capture.borrow_mut().take())
+}
+
+#[cfg(test)]
+fn record_normalization_capture(event: &Event, dirty: &DirtyState, invalidated: bool) {
+    NORMALIZATION_CAPTURE.with(|capture| {
+        *capture.borrow_mut() = Some(NormalizationCapture {
+            paths: event.paths.clone(),
+            kind: format!("{:?}", event.kind),
+            needs_rescan: event.need_rescan(),
+            config_changed: dirty.config_changed(),
+            invalidated,
+        });
+    });
+}
+
+#[cfg(not(test))]
+fn record_normalization_capture(_event: &Event, _dirty: &DirtyState, _invalidated: bool) {}
 
 /// Continuously validate filesystem changes until interrupted.
 pub async fn watch_command(
@@ -260,7 +299,9 @@ fn record_message(
             if event.paths.is_empty() && !event.need_rescan() {
                 return;
             }
-            if dirty.record_event(&event, &context.config_path) {
+            let invalidated = dirty.record_event(&event, &context.config_path);
+            record_normalization_capture(&event, dirty, invalidated);
+            if invalidated {
                 batch.invalidating_events += 1;
             }
         }

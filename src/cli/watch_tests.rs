@@ -1,7 +1,7 @@
 //! Unit tests for watch batching, invalidation, and fallback decisions.
 
 use super::*;
-use notify::event::RemoveKind;
+use notify::event::{DataChange, Flag, RemoveKind};
 use std::fs;
 
 #[test]
@@ -90,6 +90,49 @@ fn watcher_overflow_forces_an_observable_full_scope_fallback() {
     assert_eq!(event["report_scope"], "requested_path");
     assert_eq!(event["fallback_reason"], "event_channel_overflow");
     assert_eq!(event["report"]["success"], true);
+}
+
+#[test]
+fn normalization_capture_records_rescan_event_inputs() {
+    let project = tempfile::tempdir().unwrap();
+    fs::create_dir(project.path().join(".assura")).unwrap();
+    fs::create_dir(project.path().join("src")).unwrap();
+    fs::write(
+        project.path().join(".assura/config.yml"),
+        config_with_naming("kebab-case"),
+    )
+    .unwrap();
+    let source = project.path().join("src/BadName.ts");
+    fs::write(&source, "export {};\n").unwrap();
+    let prepared =
+        PreparedStructureCheck::load_for_path(Some(project.path().to_path_buf()), None, false)
+            .unwrap();
+    let context = test_watch_context(project.path());
+    let dirty = DirtyState::new();
+    dirty.take();
+    let mut batch = WatchBatch::default();
+    take_normalization_capture();
+
+    record_message(
+        WatchMessage::Event(
+            Event::new(EventKind::Modify(notify::event::ModifyKind::Data(
+                DataChange::Content,
+            )))
+            .add_path(source.clone())
+            .set_flag(Flag::Rescan),
+        ),
+        &context,
+        &prepared,
+        &dirty,
+        &mut batch,
+    );
+
+    let capture = take_normalization_capture().expect("normalization capture");
+    assert_eq!(capture.paths, vec![source]);
+    assert_eq!(capture.kind, "Modify(Data(Content))");
+    assert!(capture.needs_rescan);
+    assert!(!capture.config_changed);
+    assert!(capture.invalidated);
 }
 
 #[test]
