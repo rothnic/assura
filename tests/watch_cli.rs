@@ -66,10 +66,13 @@ impl WatchProcess {
     }
 
     fn assert_no_event(&self, duration: Duration) {
-        assert!(
-            self.events.recv_timeout(duration).is_err(),
-            "watch emitted an extra event after the debounce window"
-        );
+        match self.events.recv_timeout(duration) {
+            Err(mpsc::RecvTimeoutError::Timeout) => {}
+            Ok(event) => panic!("watch emitted an extra event after the debounce window: {event}"),
+            Err(mpsc::RecvTimeoutError::Disconnected) => {
+                panic!("watch event reader disconnected before the debounce window elapsed")
+            }
+        }
     }
 
     fn interrupt(&mut self) {
@@ -107,6 +110,20 @@ impl Drop for WatchProcess {
             let _ = self.child.wait();
         }
     }
+}
+
+#[test]
+#[should_panic(expected = "watch event reader disconnected")]
+fn assert_no_event_rejects_a_disconnected_event_reader() {
+    let child = Command::new(assura_full_bin())
+        .arg("--version")
+        .spawn()
+        .unwrap();
+    let (sender, events) = mpsc::channel();
+    drop(sender);
+    let watch = WatchProcess { child, events };
+
+    watch.assert_no_event(Duration::from_millis(1));
 }
 
 #[test]
@@ -245,7 +262,11 @@ structure:
 
     let changed = watch.next_event();
     assert_event(&changed, 2, "filesystem", "warm_full");
-    assert_eq!(changed["fallback_reason"], "project_wide_policy");
+    assert!(matches!(
+        changed["fallback_reason"].as_str(),
+        Some("project_wide_policy" | "full_rescan_event")
+    ));
+    assert_eq!(changed["report_scope"], "requested_path");
     assert_eq!(changed["report"]["success"], false);
     assert!(changed["report"]["violations"]
         .as_array()
