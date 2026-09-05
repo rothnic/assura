@@ -23,6 +23,8 @@ use std::cell::RefCell;
 
 const DEFAULT_DEBOUNCE_MS: u64 = 300;
 const WATCH_CHANNEL_CAPACITY: usize = 256;
+const NORMALIZATION_DEBUG_ENV: &str = "ASSURA_WATCH_NORMALIZATION_DEBUG";
+const NORMALIZATION_DIAGNOSTIC_PREFIX: &str = "assura.watch.normalization.v1 ";
 
 #[cfg(test)]
 #[derive(Debug, PartialEq, Eq)]
@@ -301,6 +303,7 @@ fn record_message(
             }
             let invalidated = dirty.record_event(&event, &context.config_path);
             record_normalization_capture(&event, dirty, invalidated);
+            emit_normalization_diagnostic(&event, context, dirty, invalidated);
             if invalidated {
                 batch.invalidating_events += 1;
             }
@@ -312,6 +315,25 @@ fn record_message(
             batch.watcher_failed = true;
         }
     }
+}
+
+fn emit_normalization_diagnostic(
+    event: &Event,
+    context: &WatchContext,
+    dirty: &DirtyState,
+    invalidated: bool,
+) {
+    if !cfg!(debug_assertions) || std::env::var_os(NORMALIZATION_DEBUG_ENV).is_none() {
+        return;
+    }
+    let diagnostic = serde_json::json!({
+        "paths": display_paths(&context.root, &event.paths),
+        "event_kind": format!("{:?}", event.kind),
+        "need_rescan": event.need_rescan(),
+        "config_changed": dirty.config_changed(),
+        "invalidated": invalidated,
+    });
+    eprintln!("{NORMALIZATION_DIAGNOSTIC_PREFIX}{diagnostic}");
 }
 
 fn validate_batch(

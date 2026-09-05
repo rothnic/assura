@@ -14,6 +14,7 @@ use std::os::windows::process::CommandExt;
 use windows_sys::Win32::System::Threading::CREATE_NEW_PROCESS_GROUP;
 
 const EVENT_TIMEOUT: Duration = Duration::from_secs(10);
+const NORMALIZATION_DIAGNOSTIC_PREFIX: &str = "assura.watch.normalization.v1 ";
 
 fn assura_full_bin() -> &'static str {
     env!("CARGO_BIN_EXE_assura-full")
@@ -22,6 +23,7 @@ fn assura_full_bin() -> &'static str {
 struct WatchProcess {
     child: Child,
     events: Receiver<Value>,
+    diagnostics: Receiver<Value>,
 }
 
 impl WatchProcess {
@@ -34,6 +36,15 @@ impl WatchProcess {
         config: Option<&std::path::Path>,
         debounce_ms: u64,
     ) -> Self {
+        Self::spawn_path_with_normalization_diagnostics(path, config, debounce_ms, false)
+    }
+
+    fn spawn_path_with_normalization_diagnostics(
+        path: &std::path::Path,
+        config: Option<&std::path::Path>,
+        debounce_ms: u64,
+        normalization_diagnostics: bool,
+    ) -> Self {
         let mut command = Command::new(assura_full_bin());
         if let Some(config) = config {
             command.arg("--config").arg(config);
@@ -44,6 +55,9 @@ impl WatchProcess {
             .args(["--format", "json", "--debounce", &debounce_ms.to_string()])
             .stdout(Stdio::piped())
             .stderr(Stdio::piped());
+        if normalization_diagnostics {
+            command.env("ASSURA_WATCH_NORMALIZATION_DEBUG", "1");
+        }
         #[cfg(windows)]
         command.creation_flags(CREATE_NEW_PROCESS_GROUP);
         let mut child = command.spawn().unwrap();
@@ -58,11 +72,31 @@ impl WatchProcess {
                 sender.send(serde_json::from_str(&line).unwrap()).unwrap();
             }
         });
-        Self { child, events }
+        let stderr = child.stderr.take().unwrap();
+        let (diagnostic_sender, diagnostics) = mpsc::channel();
+        std::thread::spawn(move || {
+            for line in BufReader::new(stderr).lines() {
+                let line = line.unwrap();
+                if let Some(payload) = line.strip_prefix(NORMALIZATION_DIAGNOSTIC_PREFIX) {
+                    diagnostic_sender
+                        .send(serde_json::from_str(payload).unwrap())
+                        .unwrap();
+                }
+            }
+        });
+        Self {
+            child,
+            events,
+            diagnostics,
+        }
     }
 
     fn next_event(&self) -> Value {
         self.events.recv_timeout(EVENT_TIMEOUT).unwrap()
+    }
+
+    fn next_normalization_diagnostic(&self) -> Value {
+        self.diagnostics.recv_timeout(EVENT_TIMEOUT).unwrap()
     }
 
     fn assert_no_event(&self, duration: Duration) {
@@ -121,9 +155,34 @@ fn assert_no_event_rejects_a_disconnected_event_reader() {
         .unwrap();
     let (sender, events) = mpsc::channel();
     drop(sender);
-    let watch = WatchProcess { child, events };
+    let (_diagnostic_sender, diagnostics) = mpsc::channel();
+    let watch = WatchProcess {
+        child,
+        events,
+        diagnostics,
+    };
 
     watch.assert_no_event(Duration::from_millis(1));
+}
+
+#[test]
+fn watch_debug_diagnostic_reports_normalized_event_inputs() {
+    let project = watch_project("kebab-case");
+    fs::create_dir(project.path().join("src")).unwrap();
+    let watch =
+        WatchProcess::spawn_path_with_normalization_diagnostics(project.path(), None, 100, true);
+    assert_eq!(watch.next_event()["report"]["success"], true);
+
+    let source = project.path().join("src/BadName.ts");
+    fs::write(&source, "export {};\n").unwrap();
+    let changed = watch.next_event();
+    assert_eq!(changed["report"]["success"], false);
+
+    let diagnostic = watch.next_normalization_diagnostic();
+    assert!(diagnostic["paths"].as_array().is_some());
+    assert!(diagnostic["event_kind"].is_string());
+    assert!(diagnostic["need_rescan"].is_boolean());
+    assert!(diagnostic["config_changed"].is_boolean());
 }
 
 #[test]
