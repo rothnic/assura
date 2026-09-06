@@ -3,7 +3,6 @@ use std::io::Write;
 
 use crate::cli::args::OutputFormat;
 use crate::constraints::ConstraintOutput;
-use crate::maturity::{MaturityLevel, MaturityReport};
 
 pub trait OutputFormatter {
     fn format(&self, format: OutputFormat) -> String;
@@ -174,154 +173,6 @@ impl ValidationReporter {
     }
 }
 
-pub struct StatusReporter {
-    maturity_report: MaturityReport,
-    active_constraints: Vec<String>,
-    last_validation: Option<std::time::SystemTime>,
-}
-
-impl StatusReporter {
-    pub fn new(
-        maturity_report: MaturityReport,
-        active_constraints: Vec<String>,
-        last_validation: Option<std::time::SystemTime>,
-    ) -> Self {
-        Self {
-            maturity_report,
-            active_constraints,
-            last_validation,
-        }
-    }
-
-    pub fn print(&self, format: OutputFormat, writer: &mut dyn Write) -> std::io::Result<()> {
-        let output = match format {
-            OutputFormat::Text => self.format_text(),
-            OutputFormat::Json => self.format_json(),
-            OutputFormat::Yaml => self.format_yaml(),
-            OutputFormat::Advice | OutputFormat::Status => self.format_text(),
-        };
-        write!(writer, "{}", output)
-    }
-
-    pub fn format_text(&self) -> String {
-        let mut output = String::new();
-
-        output.push_str("╔═══════════════════════════════════════════════════════════╗\n");
-        output.push_str("║                    Assura Project Status                  ║\n");
-        output.push_str("╚═══════════════════════════════════════════════════════════╝\n\n");
-
-        let level_emoji = match self.maturity_report.level {
-            MaturityLevel::Established => "🏆",
-            MaturityLevel::Mature => "✨",
-            MaturityLevel::Developing => "🌱",
-            MaturityLevel::Raw => "🔧",
-        };
-
-        output.push_str(&format!(
-            "Maturity Level: {} {}\n",
-            level_emoji, self.maturity_report.level
-        ));
-        output.push_str(&format!(
-            "Score: {:.1}%\n",
-            self.maturity_report.score * 100.0
-        ));
-        output.push_str(&format!(
-            "Confidence: {:.1}%\n",
-            self.maturity_report.confidence * 100.0
-        ));
-        output.push('\n');
-
-        output.push_str(&format!(
-            "Active Constraints: {}\n",
-            self.active_constraints.len()
-        ));
-        for constraint in &self.active_constraints {
-            output.push_str(&format!("  • {}\n", constraint));
-        }
-        output.push('\n');
-
-        if let Some(last_run) = self.last_validation {
-            let elapsed = std::time::SystemTime::now()
-                .duration_since(last_run)
-                .unwrap_or_default();
-            output.push_str(&format!(
-                "Last validation: {} ago\n",
-                format_duration(elapsed)
-            ));
-        } else {
-            output.push_str("Last validation: Never\n");
-        }
-
-        if !self.maturity_report.recommendations.is_empty() {
-            output.push_str("\n═══ Recommendations ═══\n");
-            for rec in &self.maturity_report.recommendations {
-                output.push_str(&format!("  💡 {}\n", rec.message));
-            }
-        }
-
-        output
-    }
-
-    pub fn format_json(&self) -> String {
-        let report = serde_json::json!({
-            "maturity": {
-                "level": format!("{:?}", self.maturity_report.level),
-                "score": self.maturity_report.score,
-                "confidence": self.maturity_report.confidence,
-                "assessed_at": self.maturity_report.assessed_at,
-            },
-            "constraints": {
-                "active": self.active_constraints,
-                "count": self.active_constraints.len(),
-            },
-            "last_validation": self.last_validation.map(|t| {
-                t.duration_since(std::time::UNIX_EPOCH)
-                    .unwrap_or_default()
-                    .as_secs()
-            }),
-            "recommendations": self.maturity_report.recommendations,
-        });
-
-        serde_json::to_string_pretty(&report).unwrap_or_default()
-    }
-
-    pub fn format_yaml(&self) -> String {
-        let report = serde_json::json!({
-            "maturity": {
-                "level": format!("{:?}", self.maturity_report.level),
-                "score": self.maturity_report.score,
-                "confidence": self.maturity_report.confidence,
-                "assessed_at": self.maturity_report.assessed_at,
-            },
-            "constraints": {
-                "active": self.active_constraints,
-                "count": self.active_constraints.len(),
-            },
-            "last_validation": self.last_validation.map(|t| {
-                t.duration_since(std::time::UNIX_EPOCH)
-                    .unwrap_or_default()
-                    .as_secs()
-            }),
-            "recommendations": self.maturity_report.recommendations,
-        });
-
-        serde_yaml::to_string(&report).unwrap_or_default()
-    }
-}
-
-fn format_duration(duration: std::time::Duration) -> String {
-    let secs = duration.as_secs();
-    if secs < 60 {
-        format!("{}s", secs)
-    } else if secs < 3600 {
-        format!("{}m", secs / 60)
-    } else if secs < 86400 {
-        format!("{}h", secs / 3600)
-    } else {
-        format!("{}d", secs / 86400)
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -356,16 +207,5 @@ mod tests {
         let reporter = ValidationReporter::new(vec![result], 100, 1);
         assert!(reporter.has_failures());
         assert_eq!(reporter.failure_count(), 1);
-    }
-
-    #[test]
-    fn test_format_duration() {
-        assert_eq!(format_duration(std::time::Duration::from_secs(30)), "30s");
-        assert_eq!(format_duration(std::time::Duration::from_secs(120)), "2m");
-        assert_eq!(format_duration(std::time::Duration::from_secs(7200)), "2h");
-        assert_eq!(
-            format_duration(std::time::Duration::from_secs(172800)),
-            "2d"
-        );
     }
 }

@@ -8,8 +8,18 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::maturity::engine::Priority;
 use crate::maturity::MaturityLevel;
+
+/// Priority labels used by the experimental constraint severity adapter.
+///
+/// This is a constraint concern, not a maturity-score concern.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, PartialOrd, Ord)]
+pub enum Priority {
+    Low = 0,
+    Medium = 1,
+    High = 2,
+    Critical = 3,
+}
 
 /// Severity levels for constraint violations
 #[derive(

@@ -82,10 +82,5 @@ pub use markdown::{
     TemplateConstraint, TemplateDefinition, ValidationConfig,
 };
 
-#[cfg(all(feature = "full-cli", feature = "git-signals"))]
-pub use maturity::GitSignals;
 #[cfg(feature = "full-cli")]
-pub use maturity::{
-    MaturityConfig, MaturityDecisionEngine, MaturityDetector, MaturityError, MaturityLevel,
-    MaturityReport, MaturityResult, MaturitySignal, SignalCollector, SignalPipeline, SignalType,
-};
+pub use maturity::{CiExecutionState, MaturityLevel, ProjectObservations};

@@ -34,7 +34,6 @@ required-features = ["full-cli"]
 [features]
 default = ["full-cli"]
 full-cli = [
-    "dep:anyhow",
     "dep:bincode",
     "dep:clap",
     "dep:frontmatter",
@@ -54,7 +53,6 @@ full-cli = [
     "json-output",
     "yaml-config",
 ]
-git-signals = ["dep:git2"]
 json-output = ["dep:serde_json"]
 watch-events = ["dep:assura-watch-state", "dep:notify"]
 yaml-config = ["dep:serde_yaml"]
@@ -67,7 +65,6 @@ serde = { version = "1.0", features = ["derive"] }
 serde_yaml = { version = "0.9", optional = true }
 serde_json = { version = "1.0", optional = true }
 thiserror = "1.0"
-anyhow = { version = "1.0", optional = true }
 tracing = { version = "0.1", optional = true }
 tracing-subscriber = { version = "0.3", features = ["env-filter"], optional = true }
 clap = { version = "4.0", features = ["derive"], optional = true }
@@ -87,7 +84,6 @@ toml = "0.8"
 sha2 = "0.10"
 rayon = { version = "1.7", optional = true }
 bincode = { version = "1.3", optional = true }
-git2 = { version = "0.20.2", optional = true, features = ["https", "ssh"] }
 pulldown-cmark = { version = "0.9", optional = true }
 frontmatter = { version = "0.4", optional = true }
 lazy_static = { version = "1.4", optional = true }
