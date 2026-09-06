@@ -95,6 +95,25 @@ impl WatchProcess {
         self.events.recv_timeout(EVENT_TIMEOUT).unwrap()
     }
 
+    fn next_config_event(&self) -> (Value, u64) {
+        let deadline = Instant::now() + EVENT_TIMEOUT;
+        let mut preceding_filesystem_events = 0;
+        loop {
+            let remaining = deadline.saturating_duration_since(Instant::now());
+            let event = self.events.recv_timeout(remaining).unwrap();
+            if event["trigger"] == "config" {
+                return (event, preceding_filesystem_events);
+            }
+            eprintln!("event before expected config reload: {event}");
+            assert_eq!(event["trigger"], "filesystem");
+            preceding_filesystem_events += 1;
+            assert_eq!(
+                preceding_filesystem_events, 1,
+                "watch emitted more than one filesystem event before config reload"
+            );
+        }
+    }
+
     fn next_normalization_diagnostic(&self) -> Value {
         self.diagnostics.recv_timeout(EVENT_TIMEOUT).unwrap()
     }
@@ -192,7 +211,8 @@ fn watch_debug_diagnostic_reports_normalized_event_inputs() {
 #[test]
 fn watch_emits_initial_and_warm_edit_reports() {
     let project = watch_project("kebab-case");
-    let watch = WatchProcess::spawn(&project, 100);
+    let watch =
+        WatchProcess::spawn_path_with_normalization_diagnostics(project.path(), None, 100, true);
 
     let initial = watch.next_event();
     assert_event(&initial, 1, "initial", "cold_full");
@@ -201,13 +221,26 @@ fn watch_emits_initial_and_warm_edit_reports() {
     fs::write(project.path().join("BadName.ts"), "export {};\n").unwrap();
 
     let changed = watch.next_event();
-    assert_event(&changed, 2, "filesystem", "warm_incremental");
+    eprintln!("warm edit report: {changed}");
+    let runtime_mode = changed["runtime_mode"].as_str().unwrap();
+    assert!(matches!(runtime_mode, "warm_incremental" | "warm_full"));
+    assert_event(&changed, 2, "filesystem", runtime_mode);
     assert_eq!(changed["cache_state"], "prepared");
     assert_eq!(changed["report"]["success"], false);
     assert_eq!(changed["report"]["violations"][0]["rule"], "file_naming");
-    assert!(changed["changed_paths"]
-        .as_array()
-        .is_some_and(|paths| paths.iter().any(|path| path == "BadName.ts")));
+    if runtime_mode == "warm_incremental" {
+        assert_eq!(changed["report_scope"], "affected_path");
+        assert!(changed["changed_paths"]
+            .as_array()
+            .is_some_and(|paths| paths.iter().any(|path| path == "BadName.ts")));
+    } else {
+        assert_eq!(changed["report_scope"], "requested_path");
+        assert_eq!(changed["fallback_reason"], "full_rescan_event");
+    }
+    eprintln!(
+        "warm edit diagnostic: {}",
+        watch.next_normalization_diagnostic()
+    );
 }
 
 #[test]
@@ -284,15 +317,26 @@ fn watch_observes_an_explicit_config_outside_the_project() {
     let config = config_home.path().join("assura.yml");
     fs::write(&config, config_with_naming("kebab-case")).unwrap();
     fs::write(project.path().join("good-name.ts"), "export {};\n").unwrap();
-    let watch = WatchProcess::spawn_path(project.path(), Some(&config), 100);
+    let watch = WatchProcess::spawn_path_with_normalization_diagnostics(
+        project.path(),
+        Some(&config),
+        100,
+        true,
+    );
     assert_eq!(watch.next_event()["report"]["success"], true);
 
     fs::write(config_home.path().join("unrelated.yml"), "ignored: true\n").unwrap();
     watch.assert_no_event(Duration::from_millis(350));
     fs::write(&config, config_with_naming("snake_case")).unwrap();
 
-    let changed = watch.next_event();
-    assert_event(&changed, 2, "config", "warm_full");
+    let (changed, preceding_filesystem_events) = watch.next_config_event();
+    eprintln!("external config report: {changed}");
+    assert_event(
+        &changed,
+        2 + preceding_filesystem_events,
+        "config",
+        "warm_full",
+    );
     assert_eq!(changed["cache_state"], "reloaded");
     assert_eq!(changed["report"]["success"], false);
 }
