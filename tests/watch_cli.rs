@@ -406,7 +406,12 @@ fn watch_honors_the_requested_directory_scope() {
     let project = watch_project("kebab-case");
     fs::create_dir(project.path().join("src")).unwrap();
     fs::create_dir(project.path().join("docs")).unwrap();
-    let watch = WatchProcess::spawn_path(&project.path().join("src"), None, 100);
+    let watch = WatchProcess::spawn_path_with_normalization_diagnostics(
+        &project.path().join("src"),
+        None,
+        100,
+        true,
+    );
     let initial = watch.next_event();
     assert!(initial["report"]["checked_path"]
         .as_str()
@@ -419,6 +424,16 @@ fn watch_honors_the_requested_directory_scope() {
     let changed = watch.next_event();
     assert_event(&changed, 2, "filesystem", "warm_incremental");
     assert_eq!(changed["report"]["success"], false);
+
+    let diagnostic = watch.next_normalization_diagnostic();
+    eprintln!("directory scope normalization diagnostic: {diagnostic}");
+    assert_eq!(diagnostic["paths"], serde_json::json!(["src/BadName.ts"]));
+    assert!(diagnostic["event_kind"]
+        .as_str()
+        .is_some_and(|kind| !kind.is_empty()));
+    assert_eq!(diagnostic["need_rescan"], false);
+    assert_eq!(diagnostic["config_changed"], false);
+    assert_eq!(diagnostic["invalidated"], true);
 }
 
 #[test]

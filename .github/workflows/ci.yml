@@ -172,6 +172,10 @@ jobs:
       run: bash scripts/summarize-rust-cache.sh "Test Suite" "${{ steps.rust-cache.outputs.cache-hit }}" "assura-debug-${{ runner.os }}-${{ matrix.rust }}"
     - name: Run tests
       run: cargo test --all-features
+    - name: Capture watch scope normalization evidence
+      env:
+        ASSURA_WATCH_NORMALIZATION_DEBUG: "1"
+      run: cargo test --all-features --test watch_cli watch_honors_the_requested_directory_scope -- --exact --nocapture
 
   release-bundle:
     name: Release Bundle Smoke
