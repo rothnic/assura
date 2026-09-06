@@ -584,7 +584,7 @@ mod recipe_tests {
             vec![InitRecipe::AgenticCore, InitRecipe::StructureHealth],
         ] {
             let source = starter_config(false, &recipes, None).unwrap();
-            let config = ConfigLoader::parse(source).unwrap();
+            let config = ConfigLoader::parse(&source).unwrap();
             assert!(config.structure.contains_key("./"));
             assert!(!source.contains("$agentic-project"));
         }
