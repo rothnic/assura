@@ -14,8 +14,8 @@
       "packet": "reliability-packet.md#b00",
       "depends_on": [],
       "executor": "agent",
-      "state": "active",
-      "owner": "Codex goal/r01-external-config-rescan",
+      "state": "done",
+      "owner": "Codex goal: Assura Maturity Execution Train",
       "evidence": "evidence/B00.md",
       "blocker": null
     },
@@ -42,8 +42,8 @@
         "B00"
       ],
       "executor": "agent",
-      "state": "done",
-      "owner": "Codex goal: Assura Maturity Execution Train",
+      "state": "active",
+      "owner": "Codex goal/r01-external-config-rescan",
       "evidence": "evidence/R01.md",
       "blocker": null
     },
