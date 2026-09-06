@@ -87,6 +87,7 @@ Located in `.agents/skills/`:
 | `assura-agent-harness-hooks` | Cross-harness hook research and implementation matrix for Codex, OpenCode, Claude, Pi, OpenClaw, and similar agent runtimes | Adding or changing agent hook integrations, generated hook bundles, or harness lifecycle support |
 | `assura-local-build` | Local Cargo/OpenSSL/network troubleshooting for WSL or locked-down environments | Cargo validation fails for platform or dependency-access reasons |
 | `assura-performance-reporting` | Performance-report, LS-Lint warm comparison, benchmark history, and website performance data workflow | Changing `assura performance-report` or PR performance evidence |
+| `assura-rust-quality` | Concise Rust decision guidance with routed local examples | Changing Rust policy, configuration, reports, subprocesses, or performance-sensitive checks |
 | `assura-notation-review` | Iterative notation review with composition, diagnostics, performance, and rendered-example gates | Simplifying Assura config syntax or reviewing public config examples |
 | `assura-structure-fit` | Structure mismatch decision workflow with `STRUCTURE_FIT_CHECK` progressive-disclosure guidance | Assura rejects a new or moved file/directory, or a config change would allow a new path |
 
