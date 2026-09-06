@@ -1,0 +1,6 @@
+{
+  "manager": "fixture-hook-manager",
+  "hooks": {
+    "pre_commit": ["test -f package.json"]
+  }
+}

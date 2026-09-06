@@ -1,0 +1,60 @@
+structure:
+  ./:
+    files:
+      allowed_names:
+        - pyproject.toml
+      allow_extra: false
+    directories:
+      allowed_names:
+        - .assura
+        - contracts
+        - src
+        - tests
+        - variants
+      allow_extra: false
+    children:
+      .assura/:
+        files:
+          allowed_names:
+            - config.yml
+          allow_extra: false
+        directories:
+          allow_extra: false
+      src/:
+        files:
+          allow_extra: false
+        directories:
+          allowed_names:
+            - agent_init_python
+          allow_extra: false
+        children:
+          agent_init_python/:
+            files:
+              allowed_names:
+                - __init__.py
+              allow_extra: false
+            directories:
+              allow_extra: false
+      tests/:
+        files:
+          naming: snake_case
+          extensions:
+            - py
+          allow_extra: false
+        directories:
+          allow_extra: false
+      variants/:
+        files:
+          allow_extra: false
+        directories:
+          allowed_names:
+            - existing_config
+            - existing_hook
+          allow_extra: false
+      contracts/:
+        files:
+          allowed_names:
+            - evaluation.json
+          allow_extra: false
+        directories:
+          allow_extra: false

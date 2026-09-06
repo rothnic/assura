@@ -1,0 +1,16 @@
+{
+  "schema": "assura.agent-init-evaluator.v1",
+  "fixture_id": "python-package-v1",
+  "prompt_hash": "2257e02d8f8d56f70937ca8ecc2993e3e4743888a68e7a5e21ca9e348f114941",
+  "stack": "python",
+  "required_paths": ["pyproject.toml", "src/agent_init_python/__init__.py", "tests/test_package.py"],
+  "forbidden_paths": [],
+  "preserve_hashes": {
+    "pyproject.toml": "ffb9daa90e5b9d1cd3b3bebf1870efaae5ae95f5e1e16992fb8bb88771b067ef",
+    "src/agent_init_python/__init__.py": "33cdb49736ef113fd8299e7605c697dea111f6184093b7aa92146904a40e59e4"
+  },
+  "positive_probes": [{"id": "strict-check", "command": ["check", "."], "cwd": "."}],
+  "negative_probes": [{"id": "reject-bad-name", "expected_rule": "snake_case", "mutation": {"path": "tests/BadName.py", "contents": "def invalid_name():\n    return 1\n"}, "command": ["check", "."], "cwd": "."}],
+  "native_commands": [{"id": "pytest", "command": ["sh", "-c", "PYTHONPATH=src pytest"], "cwd": ".", "require_collected_tests": true}],
+  "required_hook_states": []
+}

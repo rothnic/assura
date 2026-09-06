@@ -1,0 +1,4 @@
+rules:
+  typescript:
+    files:
+      naming: snake_case

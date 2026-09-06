@@ -156,8 +156,8 @@
         "P01"
       ],
       "executor": "agent",
-      "state": "pending",
-      "owner": null,
+      "state": "verified",
+      "owner": "Codex goal: Assura Maturity Execution Train",
       "evidence": "evidence/A01.md",
       "blocker": null
     },

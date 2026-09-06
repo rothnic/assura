@@ -1,0 +1,4 @@
+rules:
+  rust:
+    files:
+      naming: snake_case

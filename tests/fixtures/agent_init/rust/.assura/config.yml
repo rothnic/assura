@@ -1,0 +1,57 @@
+structure:
+  ./:
+    files:
+      allowed_names:
+        - Cargo.toml
+      allow_extra: false
+    directories:
+      allowed_names:
+        - .assura
+        - contracts
+        - src
+        - tests
+        - variants
+      allow_extra: false
+    children:
+      .assura/:
+        files:
+          allowed_names:
+            - config.yml
+          allow_extra: false
+        directories:
+          allow_extra: false
+      src/:
+        files:
+          naming: snake_case
+          extensions:
+            - rs
+          allow_extra: false
+        directories:
+          allow_extra: false
+        exists:
+          lib.rs: "1"
+      tests/:
+        files:
+          naming: snake_case
+          extensions:
+            - rs
+          allow_extra: false
+        directories:
+          allow_extra: false
+      variants/:
+        files:
+          allow_extra: false
+        directories:
+          allowed_names:
+            - existing_config
+            - existing_hook
+          allow_extra: false
+      contracts/:
+        files:
+          allowed_names:
+            - evaluation.json
+          allow_extra: false
+        directories:
+          allow_extra: false
+exclude:
+  - target/**

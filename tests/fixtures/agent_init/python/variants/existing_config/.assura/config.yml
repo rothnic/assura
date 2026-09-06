@@ -1,0 +1,4 @@
+rules:
+  python:
+    files:
+      naming: snake_case

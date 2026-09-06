@@ -1,0 +1,7 @@
+{
+  "name": "agent-init-typescript",
+  "private": true,
+  "scripts": {
+    "test": "bun test"
+  }
+}
