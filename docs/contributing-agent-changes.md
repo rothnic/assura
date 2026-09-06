@@ -17,12 +17,14 @@ support promises require an accepted design card. Do not bundle unrelated
 refactors with a focused change.
 
 Changes that delete tests, add exclusions, reduce severity, alter performance
-thresholds, or change CI scope require independent review. `CODEOWNERS` routes
-configuration, CI/release/install, and core-check surfaces to `@rothnic`; it
-does not make self-approval valid.
+thresholds, or change CI scope require independent review by policy. This is
+not enforceable until an administrator configures branch protection.
+`CODEOWNERS` routes configuration, CI/release/install, core-check surfaces,
+and itself to `@rothnic`; it does not make self-approval valid.
 
 The CI scope classifier emits `policy_review=true` and the affected paths when
-tests, current severity handling, performance-report surfaces, or
+tests, configured exclusions/severity, current severity handling, performance
+gate implementation, performance-report surfaces, or
 CI-scope/workflow files change. This is a visible review prompt, not automated
 approval or an NLP-based policy decision.
 
