@@ -1547,5 +1547,6 @@ exclude:
   - "tests/fixtures/ls-lint/**"
   - "tests/fixtures/real-project-agentic-feedback/**"
   - "tests/fixtures/content_runtime/**"
+  - "tests/fixtures/agent_init/**"
   - "tests/fixtures/markdown_engine_candidates/**"
   - "tests/fixtures/project_intelligence_real_repo/**"
