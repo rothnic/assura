@@ -121,6 +121,7 @@ def contract_validation_errors(contract: object) -> list[str]:
     required_types: dict[str, type[object] | tuple[type[object], ...]] = {
         "fixture_id": str,
         "stack": str,
+        "prompt_hash": str,
         "required_paths": list,
         "forbidden_paths": list,
         "preserve_hashes": dict,
@@ -136,10 +137,7 @@ def contract_validation_errors(contract: object) -> list[str]:
     if errors:
         return errors
 
-    if "prompt_hash" in contract and (
-        not isinstance(contract["prompt_hash"], str)
-        or not re.fullmatch(r"[0-9a-f]{64}", contract["prompt_hash"])
-    ):
+    if not re.fullmatch(r"[0-9a-f]{64}", contract["prompt_hash"]):
         errors.append("prompt_hash")
 
     def safe_relative_path(value: object) -> bool:

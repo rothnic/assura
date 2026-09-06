@@ -41,6 +41,7 @@ class AgentInitEvaluatorTests(unittest.TestCase):
                 "schema": "assura.agent-init-evaluator.v1",
                 "fixture_id": "permissive-false-green",
                 "stack": "rust",
+                "prompt_hash": "2257e02d8f8d56f70937ca8ecc2993e3e4743888a68e7a5e21ca9e348f114941",
                 "required_paths": [".assura/config.yml"],
                 "forbidden_paths": [],
                 "preserve_hashes": {},
@@ -99,6 +100,7 @@ class AgentInitEvaluatorTests(unittest.TestCase):
                         "schema": "assura.agent-init-evaluator.v1",
                         "fixture_id": "partial-scope",
                         "stack": "python",
+                "prompt_hash": "2257e02d8f8d56f70937ca8ecc2993e3e4743888a68e7a5e21ca9e348f114941",
                         "required_paths": [],
                         "forbidden_paths": [],
                         "preserve_hashes": {},
@@ -149,6 +151,7 @@ class AgentInitEvaluatorTests(unittest.TestCase):
                         "schema": "assura.agent-init-evaluator.v1",
                         "fixture_id": "preservation-failure",
                         "stack": "rust",
+                "prompt_hash": "2257e02d8f8d56f70937ca8ecc2993e3e4743888a68e7a5e21ca9e348f114941",
                         "required_paths": [],
                         "forbidden_paths": [],
                         "preserve_hashes": {"AGENTS.md": expected_hash},
@@ -182,7 +185,7 @@ class AgentInitEvaluatorTests(unittest.TestCase):
             contract_path = temporary_root / "contract.json"
             contract_path.write_text(json.dumps({
                 "schema": "assura.agent-init-evaluator.v1", "fixture_id": "native-missing",
-                "stack": "python", "required_paths": [], "forbidden_paths": [],
+                "stack": "python", "prompt_hash": "2257e02d8f8d56f70937ca8ecc2993e3e4743888a68e7a5e21ca9e348f114941", "required_paths": [], "forbidden_paths": [],
                 "preserve_hashes": {}, "positive_probes": [], "negative_probes": [],
                 "native_commands": [{"id": "pytest", "command": ["definitely-not-installed"], "cwd": "."}],
                 "required_hook_states": [],
@@ -211,7 +214,7 @@ class AgentInitEvaluatorTests(unittest.TestCase):
             contract_path = temporary_root / "contract.json"
             contract_path.write_text(json.dumps({
                 "schema": "assura.agent-init-evaluator.v1", "fixture_id": "structure-failure",
-                "stack": "typescript", "required_paths": ["src/index.ts"],
+                "stack": "typescript", "prompt_hash": "2257e02d8f8d56f70937ca8ecc2993e3e4743888a68e7a5e21ca9e348f114941", "required_paths": ["src/index.ts"],
                 "forbidden_paths": ["scratch.tmp"], "preserve_hashes": {},
                 "positive_probes": [], "negative_probes": [], "native_commands": [],
                 "required_hook_states": [],
@@ -239,7 +242,7 @@ class AgentInitEvaluatorTests(unittest.TestCase):
             contract_path = temporary_root / "contract.json"
             contract_path.write_text(json.dumps({
                 "schema": "assura.agent-init-evaluator.v1", "fixture_id": "partial-structure",
-                "stack": "rust", "required_paths": [], "forbidden_paths": [],
+                "stack": "rust", "prompt_hash": "2257e02d8f8d56f70937ca8ecc2993e3e4743888a68e7a5e21ca9e348f114941", "required_paths": [], "forbidden_paths": [],
                 "preserve_hashes": {}, "positive_probes": [], "negative_probes": [],
                 "native_commands": [{"id": "absent", "command": ["definitely-not-installed"], "cwd": "."}],
                 "required_hook_states": [],
@@ -267,7 +270,7 @@ class AgentInitEvaluatorTests(unittest.TestCase):
             contract_path = temporary_root / "contract.json"
             contract_path.write_text(json.dumps({
                 "schema": "assura.agent-init-evaluator.v1", "fixture_id": "positive-failure",
-                "stack": "rust", "required_paths": [], "forbidden_paths": [],
+                "stack": "rust", "prompt_hash": "2257e02d8f8d56f70937ca8ecc2993e3e4743888a68e7a5e21ca9e348f114941", "required_paths": [], "forbidden_paths": [],
                 "preserve_hashes": {},
                 "positive_probes": [{"id": "must-pass-check", "command": ["check", "."], "cwd": "."}],
                 "negative_probes": [], "native_commands": [], "required_hook_states": [],
@@ -294,7 +297,7 @@ class AgentInitEvaluatorTests(unittest.TestCase):
             contract_path = temporary_root / "contract.json"
             contract_path.write_text(json.dumps({
                 "schema": "assura.agent-init-evaluator.v1", "fixture_id": "hook-missing",
-                "stack": "rust", "required_paths": [], "forbidden_paths": [],
+                "stack": "rust", "prompt_hash": "2257e02d8f8d56f70937ca8ecc2993e3e4743888a68e7a5e21ca9e348f114941", "required_paths": [], "forbidden_paths": [],
                 "preserve_hashes": {}, "positive_probes": [], "negative_probes": [],
                 "native_commands": [],
                 "required_hook_states": [{"id": "pre-commit", "path": ".git/hooks/pre-commit", "exists": True}],
@@ -321,7 +324,7 @@ class AgentInitEvaluatorTests(unittest.TestCase):
             contract_path = temporary_root / "contract.json"
             contract_path.write_text(json.dumps({
                 "schema": "assura.agent-init-evaluator.v1", "fixture_id": "zero-tests",
-                "stack": "python", "required_paths": [], "forbidden_paths": [],
+                "stack": "python", "prompt_hash": "2257e02d8f8d56f70937ca8ecc2993e3e4743888a68e7a5e21ca9e348f114941", "required_paths": [], "forbidden_paths": [],
                 "preserve_hashes": {}, "positive_probes": [], "negative_probes": [],
                 "native_commands": [{
                     "id": "pytest", "command": ["sh", "-c", "echo '0 tests collected'"],
@@ -352,7 +355,7 @@ class AgentInitEvaluatorTests(unittest.TestCase):
             contract_path = temporary_root / "contract.json"
             contract_path.write_text(json.dumps({
                 "schema": "assura.agent-init-evaluator.v0", "fixture_id": "wrong-schema",
-                "stack": "rust", "required_paths": [], "forbidden_paths": [],
+                "stack": "rust", "prompt_hash": "2257e02d8f8d56f70937ca8ecc2993e3e4743888a68e7a5e21ca9e348f114941", "required_paths": [], "forbidden_paths": [],
                 "preserve_hashes": {}, "positive_probes": [], "negative_probes": [],
                 "native_commands": [], "required_hook_states": [],
             }))
@@ -378,7 +381,7 @@ class AgentInitEvaluatorTests(unittest.TestCase):
             contract_path = temporary_root / "contract.json"
             contract_path.write_text(json.dumps({
                 "schema": "assura.agent-init-evaluator.v1", "fixture_id": "wrong-cwd",
-                "stack": "rust", "required_paths": [], "forbidden_paths": [],
+                "stack": "rust", "prompt_hash": "2257e02d8f8d56f70937ca8ecc2993e3e4743888a68e7a5e21ca9e348f114941", "required_paths": [], "forbidden_paths": [],
                 "preserve_hashes": {}, "positive_probes": [], "negative_probes": [],
                 "native_commands": [{"id": "native", "command": ["sh", "-c", "exit 0"], "cwd": "missing"}],
                 "required_hook_states": [],
@@ -410,7 +413,7 @@ class AgentInitEvaluatorTests(unittest.TestCase):
             contract_path = temporary_root / "contract.json"
             contract_path.write_text(json.dumps({
                 "schema": "assura.agent-init-evaluator.v1", "fixture_id": "known-good",
-                "stack": "rust", "required_paths": ["src/lib.rs"], "forbidden_paths": [],
+                "stack": "rust", "prompt_hash": "2257e02d8f8d56f70937ca8ecc2993e3e4743888a68e7a5e21ca9e348f114941", "required_paths": ["src/lib.rs"], "forbidden_paths": [],
                 "preserve_hashes": {"src/lib.rs": hashlib.sha256(stable_file.read_bytes()).hexdigest()},
                 "positive_probes": [{"id": "check", "command": ["check", "."], "cwd": "."}],
                 "negative_probes": [],
@@ -449,7 +452,7 @@ class AgentInitEvaluatorTests(unittest.TestCase):
             contract_path = temporary_root / "contract.json"
             contract_path.write_text(json.dumps({
                 "schema": "assura.agent-init-evaluator.v1", "fixture_id": "redacted-publication",
-                "stack": "rust", "required_paths": [], "forbidden_paths": [],
+                "stack": "rust", "prompt_hash": "2257e02d8f8d56f70937ca8ecc2993e3e4743888a68e7a5e21ca9e348f114941", "required_paths": [], "forbidden_paths": [],
                 "preserve_hashes": {},
                 "positive_probes": [{"id": "check", "command": ["check", "."], "cwd": "."}],
                 "negative_probes": [{
@@ -494,7 +497,7 @@ class AgentInitEvaluatorTests(unittest.TestCase):
             contract_path = temporary_root / "contract.json"
             contract_path.write_text(json.dumps({
                 "schema": "assura.agent-init-evaluator.v1", "fixture_id": "idempotence",
-                "stack": "rust", "required_paths": ["src.txt"], "forbidden_paths": [],
+                "stack": "rust", "prompt_hash": "2257e02d8f8d56f70937ca8ecc2993e3e4743888a68e7a5e21ca9e348f114941", "required_paths": ["src.txt"], "forbidden_paths": [],
                 "preserve_hashes": {"src.txt": hashlib.sha256(source_file.read_bytes()).hexdigest()},
                 "positive_probes": [{"id": "check", "command": ["check", "."], "cwd": "."}],
                 "negative_probes": [], "native_commands": [], "required_hook_states": [],
@@ -531,7 +534,7 @@ class AgentInitEvaluatorTests(unittest.TestCase):
             contract_path = temporary_root / "contract.json"
             contract_path.write_text(json.dumps({
                 "schema": "assura.agent-init-evaluator.v1", "fixture_id": "missing-dimensions",
-                "stack": "rust", "required_paths": [], "forbidden_paths": [],
+                "stack": "rust", "prompt_hash": "2257e02d8f8d56f70937ca8ecc2993e3e4743888a68e7a5e21ca9e348f114941", "required_paths": [], "forbidden_paths": [],
                 "preserve_hashes": {}, "positive_probes": [], "negative_probes": [],
                 "native_commands": [], "required_hook_states": [],
             }))
@@ -575,7 +578,7 @@ class AgentInitEvaluatorTests(unittest.TestCase):
             contract_path = temporary_root / "contract.json"
             contract_path.write_text(json.dumps({
                 "schema": "assura.agent-init-evaluator.v1", "fixture_id": "relative-binary",
-                "stack": "rust", "required_paths": [], "forbidden_paths": [],
+                "stack": "rust", "prompt_hash": "2257e02d8f8d56f70937ca8ecc2993e3e4743888a68e7a5e21ca9e348f114941", "required_paths": [], "forbidden_paths": [],
                 "preserve_hashes": {}, "positive_probes": [],
                 "negative_probes": [{
                     "id": "reject-name", "expected_rule": "naming",
@@ -625,6 +628,36 @@ class AgentInitEvaluatorTests(unittest.TestCase):
             self.assertIn("prompt_hash", result)
             self.assertEqual(result["prompt_hash"], prompt_hash)
 
+    def test_contract_without_prompt_hash_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            temporary_root = Path(temporary_directory)
+            project = temporary_root / "project"
+            project.mkdir()
+            binary = temporary_root / "assura"
+            binary.write_text("#!/bin/sh\nexit 0\n")
+            binary.chmod(binary.stat().st_mode | stat.S_IXUSR)
+            contract = {
+                "schema": "assura.agent-init-evaluator.v1", "fixture_id": "missing-prompt",
+                "stack": "rust", "prompt_hash": "2257e02d8f8d56f70937ca8ecc2993e3e4743888a68e7a5e21ca9e348f114941",
+                "required_paths": [], "forbidden_paths": [], "preserve_hashes": {},
+                "positive_probes": [], "negative_probes": [],
+                "native_commands": [], "required_hook_states": [],
+            }
+            del contract["prompt_hash"]
+            contract_path = temporary_root / "contract.json"
+            contract_path.write_text(json.dumps(contract))
+            output_path = temporary_root / "result.json"
+            completed = subprocess.run(
+                [sys.executable, str(EVALUATOR), "--project", str(project),
+                 "--contract", str(contract_path), "--assura-bin", str(binary),
+                 "--output", str(output_path), "--dimensions", "structure"],
+                check=False, capture_output=True, text=True,
+            )
+
+            self.assertNotEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+            result = json.loads(output_path.read_text())
+            self.assertIn("contract:prompt_hash", result["critical_failures"])
+
     def test_negative_probe_requires_its_named_rule_in_command_output(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             temporary_root = Path(temporary_directory)
@@ -636,7 +669,7 @@ class AgentInitEvaluatorTests(unittest.TestCase):
             contract_path = temporary_root / "contract.json"
             contract_path.write_text(json.dumps({
                 "schema": "assura.agent-init-evaluator.v1", "fixture_id": "wrong-rule",
-                "stack": "rust", "required_paths": [], "forbidden_paths": [],
+                "stack": "rust", "prompt_hash": "2257e02d8f8d56f70937ca8ecc2993e3e4743888a68e7a5e21ca9e348f114941", "required_paths": [], "forbidden_paths": [],
                 "preserve_hashes": {}, "positive_probes": [],
                 "negative_probes": [{
                     "id": "reject-name", "expected_rule": "file_naming",
@@ -667,7 +700,7 @@ class AgentInitEvaluatorTests(unittest.TestCase):
             contract_path = temporary_root / "contract.json"
             contract_path.write_text(json.dumps({
                 "schema": "assura.agent-init-evaluator.v1", "fixture_id": "no-negative",
-                "stack": "rust", "required_paths": [], "forbidden_paths": [],
+                "stack": "rust", "prompt_hash": "2257e02d8f8d56f70937ca8ecc2993e3e4743888a68e7a5e21ca9e348f114941", "required_paths": [], "forbidden_paths": [],
                 "preserve_hashes": {}, "positive_probes": [], "negative_probes": [],
                 "native_commands": [], "required_hook_states": [],
             }))
@@ -694,7 +727,7 @@ class AgentInitEvaluatorTests(unittest.TestCase):
             contract_path = temporary_root / "contract.json"
             contract_path.write_text(json.dumps({
                 "schema": "assura.agent-init-evaluator.v1", "fixture_id": "stderr-zero-tests",
-                "stack": "python", "required_paths": [], "forbidden_paths": [],
+                "stack": "python", "prompt_hash": "2257e02d8f8d56f70937ca8ecc2993e3e4743888a68e7a5e21ca9e348f114941", "required_paths": [], "forbidden_paths": [],
                 "preserve_hashes": {}, "positive_probes": [], "negative_probes": [],
                 "native_commands": [{
                     "id": "pytest", "command": ["sh", "-c", "echo '0 tests collected' >&2"],
@@ -728,7 +761,7 @@ class AgentInitEvaluatorTests(unittest.TestCase):
             contract_path = temporary_root / "contract.json"
             contract_path.write_text(json.dumps({
                 "schema": "assura.agent-init-evaluator.v1", "fixture_id": "independent-negatives",
-                "stack": "rust", "required_paths": [], "forbidden_paths": [],
+                "stack": "rust", "prompt_hash": "2257e02d8f8d56f70937ca8ecc2993e3e4743888a68e7a5e21ca9e348f114941", "required_paths": [], "forbidden_paths": [],
                 "preserve_hashes": {}, "positive_probes": [],
                 "negative_probes": [
                     {"id": "reject-first", "expected_rule": "naming", "mutation": {"path": "first-violation", "contents": "x"},
@@ -762,7 +795,7 @@ class AgentInitEvaluatorTests(unittest.TestCase):
             contract_path = temporary_root / "contract.json"
             contract_path.write_text(json.dumps({
                 "schema": "assura.agent-init-evaluator.v1", "fixture_id": "missing-field",
-                "stack": "rust", "required_paths": [], "forbidden_paths": [],
+                "stack": "rust", "prompt_hash": "2257e02d8f8d56f70937ca8ecc2993e3e4743888a68e7a5e21ca9e348f114941", "required_paths": [], "forbidden_paths": [],
                 "preserve_hashes": {}, "positive_probes": [], "negative_probes": [],
                 "required_hook_states": [],
             }))
@@ -789,7 +822,7 @@ class AgentInitEvaluatorTests(unittest.TestCase):
             contract_path = temporary_root / "contract.json"
             contract_path.write_text(json.dumps({
                 "schema": "assura.agent-init-evaluator.v1", "fixture_id": "escaped-cwd",
-                "stack": "rust", "required_paths": [], "forbidden_paths": [],
+                "stack": "rust", "prompt_hash": "2257e02d8f8d56f70937ca8ecc2993e3e4743888a68e7a5e21ca9e348f114941", "required_paths": [], "forbidden_paths": [],
                 "preserve_hashes": {},
                 "positive_probes": [{"id": "escape", "command": ["check", "."], "cwd": "../"}],
                 "negative_probes": [], "native_commands": [], "required_hook_states": [],
@@ -817,7 +850,7 @@ class AgentInitEvaluatorTests(unittest.TestCase):
             contract_path = temporary_root / "contract.json"
             contract_path.write_text(json.dumps({
                 "schema": "assura.agent-init-evaluator.v1", "fixture_id": "pytest-zero-items",
-                "stack": "python", "required_paths": [], "forbidden_paths": [],
+                "stack": "python", "prompt_hash": "2257e02d8f8d56f70937ca8ecc2993e3e4743888a68e7a5e21ca9e348f114941", "required_paths": [], "forbidden_paths": [],
                 "preserve_hashes": {}, "positive_probes": [], "negative_probes": [],
                 "native_commands": [{
                     "id": "pytest", "command": ["sh", "-c", "echo 'collected 0 items'"],
@@ -850,7 +883,7 @@ class AgentInitEvaluatorTests(unittest.TestCase):
             contract_path = temporary_root / "contract.json"
             contract_path.write_text(json.dumps({
                 "schema": "assura.agent-init-evaluator.v1", "fixture_id": "policy-missing-cwd",
-                "stack": "rust", "required_paths": [], "forbidden_paths": [],
+                "stack": "rust", "prompt_hash": "2257e02d8f8d56f70937ca8ecc2993e3e4743888a68e7a5e21ca9e348f114941", "required_paths": [], "forbidden_paths": [],
                 "preserve_hashes": {},
                 "positive_probes": [{
                     "id": "missing-cwd", "command": ["check", "."], "cwd": "missing",
