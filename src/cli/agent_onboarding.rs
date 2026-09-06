@@ -7,7 +7,7 @@ use super::agent_onboarding_report::{
     OnboardingReport, RenderedOnboardingReport,
 };
 use super::agent_onboarding_rules::{normalize_existing_root, recommended_rules};
-use super::agent_onboarding_specialization::write_specialization_profile;
+use super::agent_onboarding_specialization::{inactive_capabilities, write_specialization_profile};
 use super::agent_onboarding_templates::{baseline_files, rule_recommendations_file, GeneratedFile};
 use super::doctor::project_doctor_packet_json;
 use super::project_review::build_project_review;
@@ -103,7 +103,7 @@ fn run_agent_onboarding(
     let (verified, review) = verify_project(&project_root, Some(config_path.clone()))?;
     write_specialization_profile(&project_root, &detected, recipe_file.as_deref(), &verified)?;
     let content = content_section(options.content_template);
-    let inactive = inactive_capabilities(options.content_template);
+    let inactive = inactive_capabilities(&detected, options.content_template);
     let lifecycle_profiles = lifecycle_profiles(&project_root, integration_target);
     let next_actions = ranked_next_actions(integration_target, options.content_template);
     let doctor_json = project_doctor_packet_json(&project_root, Some(config_path))?;
@@ -551,22 +551,6 @@ fn content_section(template: AgentContentTemplate) -> ContentSection {
             detail: "content runtime activation was not requested",
         }
     }
-}
-
-fn inactive_capabilities(template: AgentContentTemplate) -> Vec<CheckItem> {
-    let mut items = vec![CheckItem {
-        name: "project_specialization",
-        status: "needs_agent_specialization",
-        detail: "specialize from repository evidence in .assura/onboarding/agent-next.md",
-    }];
-    if !template.activates_content() {
-        items.push(CheckItem {
-            name: "content_models",
-            status: "inactive",
-            detail: "deferred until --content-template is selected",
-        });
-    }
-    items
 }
 
 #[derive(Clone, Serialize)]

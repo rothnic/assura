@@ -45,7 +45,7 @@ fn agent_onboard_uses_evidence_first_specialization_for_a_recognizable_cargo_pro
         .expect("specialization state")
         .iter()
         .any(|item| item["name"] == "project_specialization"
-            && item["status"] == "needs_agent_specialization"));
+            && item["status"] == "configured_unverified"));
     let handoff =
         fs::read_to_string(project.path().join(".assura/onboarding/agent-next.md")).unwrap();
     for step in [

@@ -2,6 +2,7 @@
 
 use super::agent_onboarding::DetectedSection;
 use super::agent_onboarding_report::CheckItem;
+use super::AgentContentTemplate;
 use sha2::{Digest, Sha256};
 use std::fs;
 use std::path::Path;
@@ -71,4 +72,32 @@ pub(super) fn write_specialization_profile(
         serde_json::to_vec_pretty(&profile).expect("specialization profile is serializable"),
     )
     .map_err(|error| error.to_string())
+}
+
+/// Report specialization honestly until an agent proves its selected policy.
+pub(super) fn inactive_capabilities(
+    detected: &DetectedSection,
+    template: AgentContentTemplate,
+) -> Vec<CheckItem> {
+    let mut items = vec![CheckItem {
+        name: "project_specialization",
+        status: if matches!(detected.project_type, "rust" | "node" | "python") {
+            "configured_unverified"
+        } else {
+            "needs_agent_specialization"
+        },
+        detail: if matches!(detected.project_type, "rust" | "node" | "python") {
+            "repository evidence selected a profile and the materialized config passed; prove a negative policy case before verification"
+        } else {
+            "specialize from repository evidence in .assura/onboarding/agent-next.md"
+        },
+    }];
+    if !template.activates_content() {
+        items.push(CheckItem {
+            name: "content_models",
+            status: "inactive",
+            detail: "deferred until --content-template is selected",
+        });
+    }
+    items
 }
