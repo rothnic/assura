@@ -3,7 +3,9 @@
 //! Resolves rules from the policy tree and merges constraints.
 //! Follows Constitution: structure-first resolution.
 
-use crate::config::ast::{ApplyValue, Config, Constraint, ConstraintItem, FileItem, Rule};
+use crate::config::ast::{
+    ApplyValue, Constraint, ConstraintItem, FileItem, LegacyNotationConfig, Rule,
+};
 use std::collections::HashMap;
 use std::path::Path;
 
@@ -20,7 +22,7 @@ pub struct RuleResolver;
 
 impl RuleResolver {
     /// Resolve all constraints for a file at a given path
-    pub fn resolve(config: &Config, file_path: &Path) -> ResolvedConstraints {
+    pub fn resolve(config: &LegacyNotationConfig, file_path: &Path) -> ResolvedConstraints {
         let mut result = ResolvedConstraints::default();
 
         // Traverse policy tree and collect applicable constraints
@@ -37,7 +39,7 @@ impl RuleResolver {
 
     /// Recursively traverse policy tree
     fn traverse_and_resolve(
-        config: &Config,
+        config: &LegacyNotationConfig,
         node: &crate::config::ast::PolicyNode,
         file_path: &Path,
         current_path: &Path,
@@ -121,7 +123,7 @@ impl RuleResolver {
 
     /// Resolve items from a file entry
     fn resolve_file_items(
-        config: &Config,
+        config: &LegacyNotationConfig,
         items: &Vec<FileItem>,
         file_path: &Path,
         result: &mut ResolvedConstraints,
@@ -245,7 +247,7 @@ mod tests {
             }]),
         );
 
-        let config = Config {
+        let config = LegacyNotationConfig {
             rules,
             contexts: HashMap::new(),
             messages: HashMap::new(),

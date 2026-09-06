@@ -2,8 +2,8 @@
 use super::*;
 use crate::config::types::Case;
 
-fn create_test_config() -> Config {
-    Config::new()
+fn create_test_config() -> LegacyPolicyConfig {
+    LegacyPolicyConfig::new()
         .with_rule(
             "rust-source",
             Rule::new()
@@ -89,7 +89,7 @@ fn test_resolve_non_matching_path() {
 
 #[test]
 fn test_specificity_rules() {
-    let config = Config::new().with_policy(
+    let config = LegacyPolicyConfig::new().with_policy(
         PolicyNode::new()
             .with_entry(
                 "src/",
@@ -131,7 +131,7 @@ fn test_specificity_rules() {
 
 #[test]
 fn test_rule_ref_resolution() {
-    let config = Config::new()
+    let config = LegacyPolicyConfig::new()
         .with_rule(
             "my-rule",
             Rule::new()
@@ -150,7 +150,7 @@ fn test_rule_ref_resolution() {
 
 #[test]
 fn test_extension_specificity() {
-    let config = Config::new().with_policy(
+    let config = LegacyPolicyConfig::new().with_policy(
         PolicyNode::new()
             .with_entry(
                 "src/",

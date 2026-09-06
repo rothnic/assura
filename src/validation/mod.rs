@@ -14,13 +14,16 @@ pub use resolver::{ResolvedConstraints, RuleResolver};
 
 /// Main validation orchestrator
 pub struct ValidationEngine {
-    config: crate::config::ast::Config,
+    config: crate::config::ast::LegacyNotationConfig,
     execution_context: ExecutionContext,
 }
 
 impl ValidationEngine {
     /// Create new validation engine
-    pub fn new(config: crate::config::ast::Config, execution_context: ExecutionContext) -> Self {
+    pub fn new(
+        config: crate::config::ast::LegacyNotationConfig,
+        execution_context: ExecutionContext,
+    ) -> Self {
         Self {
             config,
             execution_context,
@@ -109,7 +112,7 @@ impl ValidationEngine {
 mod tests {
     use super::*;
 
-    use crate::config::parser::ConfigParser;
+    use crate::config::parser::LegacyConfigParser;
 
     use std::path::Path;
 
@@ -134,7 +137,7 @@ policy:
       - apply: react
 "#;
 
-        let config = ConfigParser::parse(yaml).expect("Should parse");
+        let config = LegacyConfigParser::parse(yaml).expect("Should parse");
         let exec = ExecutionContext::ci();
         let engine = ValidationEngine::new(config, exec);
 
@@ -168,7 +171,7 @@ policy:
       - apply: react
 "#;
 
-        let config = ConfigParser::parse(yaml).expect("Should parse");
+        let config = LegacyConfigParser::parse(yaml).expect("Should parse");
         let exec = ExecutionContext::ci();
         let engine = ValidationEngine::new(config, exec);
 
@@ -201,7 +204,7 @@ policy:
       - apply: react
 "#;
 
-        let config = ConfigParser::parse(yaml).expect("Should parse");
+        let config = LegacyConfigParser::parse(yaml).expect("Should parse");
         let exec = ExecutionContext::ci();
         let engine = ValidationEngine::new(config, exec);
 
@@ -235,7 +238,7 @@ policy:
       - apply: react
 "#;
 
-        let config = ConfigParser::parse(yaml).expect("Should parse");
+        let config = LegacyConfigParser::parse(yaml).expect("Should parse");
         let exec = ExecutionContext::tool(); // Tool context, not CI
         let engine = ValidationEngine::new(config, exec);
 
@@ -269,7 +272,7 @@ policy:
       - apply: sized
 "#;
 
-        let config = ConfigParser::parse(yaml).expect("Should parse");
+        let config = LegacyConfigParser::parse(yaml).expect("Should parse");
 
         // CI context should return Block level
         let ci_exec = ExecutionContext::ci();
@@ -305,7 +308,7 @@ policy:
       - apply: sized
 "#;
 
-        let config = ConfigParser::parse(yaml).expect("Should parse");
+        let config = LegacyConfigParser::parse(yaml).expect("Should parse");
         let exec = ExecutionContext::ci();
         let engine = ValidationEngine::new(config, exec);
 

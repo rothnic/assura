@@ -4,8 +4,8 @@
 //! Ensures feature parity with LS-Lint.
 
 use crate::config::ast::{
-    ApplyValue, Config, Constraint, ConstraintItem, FileItem, NamingConvention, PolicyEntry,
-    PolicyNode, Rule, ViolationEntry,
+    ApplyValue, Constraint, ConstraintItem, FileItem, LegacyNotationConfig, NamingConvention,
+    PolicyEntry, PolicyNode, Rule, ViolationEntry,
 };
 use std::collections::HashMap;
 
@@ -133,7 +133,7 @@ impl LsLintParser {
     }
 
     /// Convert LS-Lint config to Assura config
-    pub fn convert_to_assura(ls_config: &LsLintConfig) -> Config {
+    pub fn convert_to_assura(ls_config: &LsLintConfig) -> LegacyNotationConfig {
         let mut rules = HashMap::new();
         let mut policy_entries = HashMap::new();
 
@@ -239,7 +239,7 @@ impl LsLintParser {
             policy_entries.insert(pattern.clone(), file_entry);
         }
 
-        Config {
+        LegacyNotationConfig {
             rules,
             contexts: HashMap::new(),
             messages: HashMap::new(),

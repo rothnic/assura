@@ -4,7 +4,7 @@
 
 #[cfg(test)]
 mod tests {
-    use crate::config::parser::ConfigParser;
+    use crate::config::parser::LegacyConfigParser;
     use crate::ls_compat::{LsLintParser, MigrationTool};
 
     /// Test that all LS-Lint naming conventions are supported
@@ -46,7 +46,7 @@ ls:
 
         // Convert and verify
         let assura_yaml = MigrationTool::migrate(yaml).expect("Should migrate");
-        let _ = ConfigParser::parse(&assura_yaml).expect("Should parse migrated config");
+        let _ = LegacyConfigParser::parse(&assura_yaml).expect("Should parse migrated config");
     }
 
     /// Test path-specific rules
@@ -134,7 +134,7 @@ ignore:
         let assura_yaml = MigrationTool::migrate(ls_yaml).expect("Should migrate");
 
         // Parse migrated config
-        let config = ConfigParser::parse(&assura_yaml).expect("Should parse migrated");
+        let config = LegacyConfigParser::parse(&assura_yaml).expect("Should parse migrated");
 
         // Verify structure
         assert!(!config.rules.is_empty());
@@ -153,7 +153,7 @@ ls:
 "#;
 
         let assura_yaml = MigrationTool::migrate(ls_yaml).expect("Should migrate");
-        let config = ConfigParser::parse(&assura_yaml).expect("Should parse");
+        let config = LegacyConfigParser::parse(&assura_yaml).expect("Should parse");
 
         let engine = ValidationEngine::new(config, ExecutionContext::ci());
 

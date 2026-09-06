@@ -6,7 +6,8 @@
 //! - Rule merging and inheritance
 
 use crate::config::types::{
-    Config, Directive, InlineRule, NamingConvention, PolicyEntry, PolicyNode, Rule, Severity,
+    Directive, InlineRule, LegacyPolicyConfig, NamingConvention, PolicyEntry, PolicyNode, Rule,
+    Severity,
 };
 use std::collections::HashMap;
 use std::path::Path;
@@ -35,7 +36,7 @@ pub struct ResolvedRules {
 /// Policy engine for resolving rules from the config
 #[derive(Debug)]
 pub struct PolicyEngine {
-    config: Config,
+    config: LegacyPolicyConfig,
 }
 
 /// Match result for policy entries
@@ -62,7 +63,7 @@ struct RuleProperties {
 
 impl PolicyEngine {
     /// Create a new policy engine from a config
-    pub fn new(config: Config) -> Self {
+    pub fn new(config: LegacyPolicyConfig) -> Self {
         Self { config }
     }
 
