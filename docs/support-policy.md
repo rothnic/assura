@@ -14,7 +14,22 @@ the release manifest; they are not retroactively part of `v0.3.0` and are not
 publicly installable until the release tag publishes. Assura remains pre-1.0
 beta.
 
+The current growth boundary is executable repository conventions for
+agent-assisted development: maintainable local policy, editable local patterns,
+safe initialization, bounded feedback, and deterministic local/CI gates.
+`docs/analysis/assura-scope-decisions.md` is the manifest-backed ledger for
+published version, evidence, consumer reference, and owner card for each
+release surface. It freezes new semantic-search, knowledge-platform,
+maturity-score, hosted-orchestration, remote-pattern, marketplace, and
+arbitrary automatic-repair work without silently changing the classification of
+existing behavior.
+
 ## Support Levels
+
+The four documented managed-agent hosts—Codex, Claude Code, OpenCode, and
+Pi—remain separate support obligations. A missing host proof is not permission
+to narrow the matrix: that requires a documented maintainer decision, consumer
+impact assessment, and matching manifest, documentation, and test changes.
 
 | Surface | Level | Policy |
 | --- | --- | --- |

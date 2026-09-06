@@ -2,13 +2,29 @@
 id: goal-assura-claim-complete-v0-4-and-v1
 type: goal
 title: Assura claim-complete v0.4 and evidence-backed v1.0
-status: active
+status: archived
 created: 2026-08-11
 owners:
   - assura-maintainers
 ---
 
 # Assura Claim-Complete v0.4 And Evidence-Backed v1.0
+
+> Historical goal. Its implementation and review record remains useful, but it
+> is not an active execution instruction. New work is owned by the
+> [Maturity Execution Train](../../.trellis/tasks/09-04-maturity-portfolio-strategy/research/execution-backlog.md).
+> The current scope ledger is
+> [Assura scope decisions](../analysis/assura-scope-decisions.md).
+
+## Supersession
+
+This goal's active-branch, PR, and release sequencing language was accurate for
+its original claim-complete program. It is superseded for new work by the
+Maturity Execution Train: establish current-source trust, reconcile the
+release/support contract, evaluate safe initialization, and then prepare a
+same-candidate release decision. It does not authorize publication or change
+the retained four-host proof obligation. Historical entries below are evidence,
+not instructions to revive already merged implementation work.
 
 ## Objective
 
