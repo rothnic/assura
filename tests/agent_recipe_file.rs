@@ -1,6 +1,7 @@
 use std::fs;
 use std::process::Command;
 
+use sha2::{Digest, Sha256};
 use tempfile::TempDir;
 
 fn assura_full_bin() -> &'static str {
@@ -36,4 +37,41 @@ fn init_applies_an_explicit_local_recipe_file_with_spaces_in_its_path() {
     )
     .expect("valid config YAML");
     assert_eq!(config["structure"]["./"]["README.md"], "exists:1");
+}
+
+#[test]
+fn init_records_the_explicit_local_recipe_origin_and_content_hash() {
+    let project = TempDir::new().expect("project directory");
+    let patterns = TempDir::new().expect("pattern directory");
+    let recipe_path = patterns.path().join("team-policy.yml");
+    let recipe = "structure:\n  ./:\n    CONTRIBUTING.md: exists:1\n";
+    fs::write(&recipe_path, recipe).expect("local recipe");
+
+    let output = Command::new(assura_full_bin())
+        .arg("init")
+        .arg(project.path())
+        .arg("--recipe-file")
+        .arg(&recipe_path)
+        .output()
+        .expect("assura init runs");
+
+    assert!(
+        output.status.success(),
+        "stderr:\n{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let profile: serde_json::Value = serde_json::from_str(
+        &fs::read_to_string(
+            project
+                .path()
+                .join(".assura/onboarding/profile-selection.json"),
+        )
+        .expect("profile selection record"),
+    )
+    .expect("valid profile selection JSON");
+    assert_eq!(profile["source"], recipe_path.display().to_string());
+    assert_eq!(
+        profile["source_hash"],
+        format!("{:x}", Sha256::digest(recipe.as_bytes()))
+    );
 }

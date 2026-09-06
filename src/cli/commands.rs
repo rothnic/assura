@@ -127,10 +127,10 @@ pub async fn init_command(
     no_git_hooks: bool,
     project_intelligence: bool,
     recipes: Vec<crate::cli::args::InitRecipe>,
-    recipe_files: Vec<PathBuf>,
+    recipe_file: Option<PathBuf>,
 ) -> ExitCode {
     let created =
-        match materialize_starter(path, force, project_intelligence, &recipes, &recipe_files) {
+        match materialize_starter(path, force, project_intelligence, &recipes, recipe_file) {
             Ok(created) => created,
             Err(error) => {
                 eprintln!("Error: {}", error.message());

@@ -149,7 +149,7 @@ pub enum Commands {
             value_name = "PATH",
             help = "Apply an explicit local Assura YAML recipe file (repeatable)"
         )]
-        recipe_file: Vec<PathBuf>,
+        recipe_file: Option<PathBuf>,
     },
 
     #[command(about = "Manage project-owned Assura configuration")]

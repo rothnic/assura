@@ -20,7 +20,7 @@ pub fn resolve_project_root(path: Option<PathBuf>) -> std::io::Result<PathBuf> {
 pub fn starter_config(
     project_intelligence: bool,
     recipes: &[crate::cli::args::InitRecipe],
-    recipe_files: &[PathBuf],
+    recipe_file: Option<&PathBuf>,
 ) -> Result<String, StarterInitError> {
     if project_intelligence {
         if !recipes.is_empty() {
@@ -73,7 +73,7 @@ exclude:
 "#,
     )
     .expect("built-in starter config is valid YAML");
-    crate::cli::local_recipe::apply_recipe_files(&mut config, recipe_files)?;
+    crate::cli::local_recipe::apply_recipe_file(&mut config, recipe_file)?;
     serde_yaml::to_string(&config).map_err(|error| {
         StarterInitError::Runtime(format!("failed to render starter config: {error}"))
     })
@@ -152,7 +152,7 @@ pub fn materialize_starter(
     force: bool,
     project_intelligence: bool,
     recipes: &[crate::cli::args::InitRecipe],
-    recipe_files: &[PathBuf],
+    recipe_file: Option<PathBuf>,
 ) -> Result<Vec<PathBuf>, StarterInitError> {
     let project_root =
         resolve_project_root(path).map_err(|error| StarterInitError::Runtime(error.to_string()))?;
@@ -180,7 +180,7 @@ pub fn materialize_starter(
             error
         ))
     })?;
-    let config = starter_config(project_intelligence, recipes, recipe_files)?;
+    let config = starter_config(project_intelligence, recipes, recipe_file.as_ref())?;
     crate::config::config::ConfigLoader::parse(&config).map_err(|error| {
         StarterInitError::Configuration(format!("starter recipe is invalid: {error}"))
     })?;
@@ -193,6 +193,12 @@ pub fn materialize_starter(
     })?;
 
     let mut created = vec![config_path];
+    if let Some(recipe_file) = recipe_file {
+        created.push(crate::cli::local_recipe::write_profile_selection(
+            &project_root,
+            &recipe_file,
+        )?);
+    }
     if project_intelligence {
         for file in project_intelligence_starter_files() {
             let path = project_root.join(file.path);
@@ -583,7 +589,7 @@ mod recipe_tests {
             vec![InitRecipe::StructureHealth],
             vec![InitRecipe::AgenticCore, InitRecipe::StructureHealth],
         ] {
-            let source = starter_config(false, &recipes, &[]).unwrap();
+            let source = starter_config(false, &recipes, None).unwrap();
             let config = ConfigLoader::parse(source).unwrap();
             assert!(config.structure.contains_key("./"));
             assert!(!source.contains("$agentic-project"));
