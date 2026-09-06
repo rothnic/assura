@@ -558,8 +558,8 @@ fn content_section(template: AgentContentTemplate) -> ContentSection {
 fn inactive_capabilities(template: AgentContentTemplate) -> Vec<CheckItem> {
     let mut items = vec![CheckItem {
         name: "project_specialization",
-        status: "inactive",
-        detail: "waiting for user answers in .assura/onboarding/questions.md",
+        status: "needs_agent_specialization",
+        detail: "specialize from repository evidence in .assura/onboarding/agent-next.md",
     }];
     if !template.activates_content() {
         items.push(CheckItem {

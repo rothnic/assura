@@ -142,8 +142,8 @@
         "R04"
       ],
       "executor": "mixed",
-      "state": "pending",
-      "owner": null,
+      "state": "active",
+      "owner": "Codex goal/a03-agent-specialization",
       "evidence": "evidence/Q02.md",
       "blocker": null
     },

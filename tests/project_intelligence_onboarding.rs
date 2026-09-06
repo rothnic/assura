@@ -243,7 +243,10 @@ fn agent_onboard_generates_broad_baseline_and_packet() {
         .any(|item| item["mode"] == "gate" && item["blocking"] == true));
     let first_action = &output["next_actions"][0];
     assert_eq!(first_action["priority"], 1);
-    assert_eq!(first_action["action"], "Read the onboarding handoff");
+    assert_eq!(
+        first_action["action"],
+        "Specialize from repository evidence"
+    );
     assert_eq!(
         first_action["affected_paths"][0],
         ".assura/onboarding/agent-next.md"
@@ -306,20 +309,17 @@ fn agent_onboard_generates_broad_baseline_and_packet() {
 
     let agent_next =
         fs::read_to_string(project.path().join(".assura/onboarding/agent-next.md")).unwrap();
-    assert!(agent_next.contains("Inspect Project Evidence First"));
-    assert!(agent_next.contains("package and workspace manifests"));
-    assert!(agent_next.contains("expected stack and intentional layout"));
-    assert!(agent_next.contains("Close stable scopes"));
-    assert!(agent_next.contains("unexpected files and directories fail"));
-    assert!(agent_next.contains("Ask only where the evidence is ambiguous"));
+    assert!(agent_next.contains("Specialize from evidence"));
+    assert!(agent_next.contains("Inspect explicit repository instructions"));
+    assert!(agent_next.contains("Preserve explicit local policy intent"));
+    assert!(agent_next.contains("Select the smallest matching pattern"));
+    assert!(agent_next.contains("Record source, test, generated-output boundaries"));
+    assert!(agent_next.contains("Report only unresolved exceptions"));
     assert!(agent_next.contains(".assura/onboarding/lifecycle.md"));
     assert!(agent_next.contains("STRUCTURE_FIT_CHECK"));
     assert!(agent_next.contains(".agents/skills/assura-structure-fit"));
     assert!(agent_next.contains(".assura/onboarding/rules.md"));
-    assert!(agent_next.contains("What primary language or stack should this project use?"));
-    assert!(agent_next.contains("What test layout should the project use?"));
-    assert!(agent_next.contains("assura review"));
-    assert!(agent_next.contains("assura check --format agent"));
+    assert!(!agent_next.contains("What primary language or stack should this project use?"));
     let lifecycle =
         fs::read_to_string(project.path().join(".assura/onboarding/lifecycle.md")).unwrap();
     assert!(lifecycle.contains("| nudge |"));
@@ -385,6 +385,54 @@ fn agent_onboard_text_keeps_verification_and_review_fields_aligned() {
     assert!(text.contains("Review       needs-review blocking=0 advisory="));
     assert!(text.contains("inactive_signals="));
     assert!(text.contains("Deferred     project_specialization, content_models"));
+}
+
+#[test]
+fn agent_onboard_uses_evidence_first_specialization_for_a_recognizable_cargo_project() {
+    let project = TempDir::new().unwrap();
+    fs::write(
+        project.path().join("Cargo.toml"),
+        "[package]\nname = \"sample\"\nversion = \"0.1.0\"\n",
+    )
+    .unwrap();
+    fs::create_dir_all(project.path().join("src")).unwrap();
+    fs::write(project.path().join("src/lib.rs"), "pub fn sample() {}\n").unwrap();
+    fs::create_dir_all(project.path().join("tests")).unwrap();
+    fs::write(
+        project.path().join("tests/sample.rs"),
+        "#[test]\nfn sample() {}\n",
+    )
+    .unwrap();
+
+    let output = json_from_success(run_assura(&[
+        "agent",
+        "onboard",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]));
+
+    assert!(output["inactive"]
+        .as_array()
+        .expect("specialization state")
+        .iter()
+        .any(|item| item["name"] == "project_specialization"
+            && item["status"] == "needs_agent_specialization"));
+    let handoff =
+        fs::read_to_string(project.path().join(".assura/onboarding/agent-next.md")).unwrap();
+    for step in [
+        "1. Inspect explicit repository instructions, manifests, and established layout.",
+        "2. Preserve explicit local policy intent before selecting a pattern.",
+        "3. Select the smallest matching pattern from project evidence.",
+        "4. Record source, test, generated-output boundaries, and native tools.",
+        "5. Apply and validate the project-owned policy.",
+        "6. Configure integration and gate guidance.",
+        "7. Prove one negative policy case.",
+        "8. Report only unresolved exceptions.",
+    ] {
+        assert!(handoff.contains(step), "missing handoff step: {step}");
+    }
+    assert!(!handoff.contains("What primary language or stack should this project use?"));
 }
 
 #[test]
