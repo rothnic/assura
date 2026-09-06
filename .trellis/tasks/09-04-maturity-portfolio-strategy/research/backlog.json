@@ -258,8 +258,8 @@
         "P01"
       ],
       "executor": "agent",
-      "state": "implemented",
-      "owner": "codex",
+      "state": "done",
+      "owner": "Codex goal: Assura Maturity Execution Train",
       "evidence": "evidence/Q03.md",
       "blocker": null
     },

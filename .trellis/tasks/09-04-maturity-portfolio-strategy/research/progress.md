@@ -83,3 +83,8 @@
 - P01 is now recorded done only because PR #146's `380b9bc889b8c653b57da375bd7bf06f174f8f2f` is reachable from current master and its source-scoped hosted gates passed. Skipped Rust behavior jobs remain explicitly skipped, not counted as tests.
 - R05 selection inspected the existing user-owned PR #142 without modifying it: it is stale against current master and retains a failed macOS test, failed Alpine adoption job, and cancelled Windows test. A new isolated current-master port owns any further R05 work.
 - Context level: not exposed. Current working facts: (1) R01/R02/P01/R04 have merged evidence; (2) R03 is a documented external comparable-Linux-runner block; (3) R07 has 18 advisory findings requiring individual dispositions; (4) R05 is being ported from #142 without taking over its stale branch; (5) no tag/release/deploy authority has been used. Repeated lessons are already covered by the existing goal-execution and structure-fit skills, so no new skill is warranted.
+
+## Iteration 12 — 2026-09-06 — Q03 queue reconciliation
+
+- Q03 evidence records PR #154 merged as `7a06b345d47521ede6b5e6c7cdc06e1128883774` and reachable from master, but backlog.json still said `implemented`. A dedicated documentation-only handoff corrects that stale queue state to `done`; no product behavior, performance threshold, or evaluator result was changed.
+- This makes Q04 dependency readiness accurately inspectable. The handoff remains separate from A01 while PR #162 is held by the already-blocked R03 performance gate and a macOS watch failure.
