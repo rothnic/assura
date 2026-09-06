@@ -1,6 +1,5 @@
 //! File, directory, and markdown validators for structure-first checks.
 
-use super::case::{validate_file_stem_with_path, validate_name_with_path};
 use super::direct_contents::exists_patterns_allow_name;
 use super::patterns::{
     best_file_pattern_match, file_pattern_uses_lslint_stem, file_stem_for_pattern,
@@ -13,6 +12,7 @@ use super::rules::{
 };
 use super::{direct_contents::DirectFilePolicy, StructureCheckReport, StructureChecker};
 use crate::config::config::FileBundle;
+use crate::policy::naming::{validate_file_stem_with_path, validate_name_with_path};
 use std::fs;
 use std::path::Path;
 

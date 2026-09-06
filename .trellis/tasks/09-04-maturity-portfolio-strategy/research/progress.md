@@ -1,5 +1,11 @@
 # Maturity execution train progress
 
+## Iteration 34 — 2026-09-06 — Q04 final current-master local proof
+
+- Q04 rebased through A01's merged closure to `675041985fded3e873eb68f35b264a23a50cd356`; only the shared progress history conflicted, and both cards' entries were retained. The policy extraction, config declaration, and test contracts applied cleanly.
+- The focused predicate/differential suites, all 23 CLI-check regressions, minimal/default checks, format/diff checks, repository policy check, and all three release artifacts succeeded on that SHA. The required local three-iteration report retained its cold 2x verdict as `not-complete` (1/8), despite all eight headline rows being faster; this does not alter blocked hosted R03 evidence.
+- Context health: long LTO release commands were allowed to finish singly, then rerun from the warm cache to record exits. This recurring observation pattern is covered by the existing local-build guidance; no new skill is warranted. Next: obtain a fresh independent review, then open Q04's current-master PR.
+
 ## Iteration 33 — 2026-09-06 — A01 current-master integration
 
 - PR [#162](https://github.com/rothnic/assura/pull/162) merged as `fdd0e76426c9ca6916fa72cdb3948378ad3a92e3`; a fresh fetch proved that merge is reachable from `origin/master`. The exact independently reviewed head was `1522352cb8b817620c4ea773780877332e122919`.
@@ -11,6 +17,56 @@
 - Rebased A01 onto current master `6f72bf3`, then independent review identified and the candidate repaired absolute candidate-binary enforcement, named-rule matching for negative probes, required negative policy evidence, stdout/stderr zero-test detection, and required SHA-256 fixed-prompt provenance. The final reviewed SHA is `83687478a7b399e318f917edfa5641cce4ad95d1`; final independent review found no remaining findings.
 - Focused RED tests were observed for every review condition. The final local evaluator suite passed 27 tests; Python compilation, repository structure check, evidence policy, and the 48-page documentation build passed. Rust, TypeScript, and Python policy-only partial controls all recorded matched named-rule negative probes and remain ineligible by scope; those runs do not assert unrequested native, guidance, or hook dimensions. A separate full Rust control records native, guidance, and hooks as unavailable; TypeScript/Python full-run evidence remains separately incomplete.
 - Context health: earlier Q02 and unrelated-card evidence show R03's no-slower gate can fluctuate on the same fixture, so hosted proof remains mandatory. Existing evaluator and performance workflows already cover the new findings; no new skill is warranted. Next: await the exact-SHA hosted matrix, then merge only if every required job passes and the candidate remains current-master based.
+
+## Iteration 15 — 2026-09-06 — Q03 integration and Q04 current-master refresh
+
+- Documentation-only PR #163 merged as
+  `25a141525ce2420f02f3686affbeb03b0915f607`; its commit is reachable from
+  `origin/master`, so Q03 is now done in both evidence and backlog state.
+- Q04 immediately rebased onto that master. The shared backlog conflict was
+  resolved by preserving Q03's done state and Q04's verified state. The
+  rebased behavior commit `4ccd8ca` has a byte-identical source/config/test
+  tree to the locally tested candidate, and an independent exact-SHA re-review
+  found no findings.
+- Context health review: long local LTO builds require process inspection after
+  an observer window; duplicate lock-waiters were stopped while the single
+  active build was retained. Existing `assura-local-build` already directs that
+  inspection, so no new project skill is warranted. `vps-dev` remains
+  DNS-unavailable. Next: force-with-lease Q04 onto its PR and obtain a fresh
+  current-master hosted matrix.
+
+## Iteration 14 — 2026-09-06 — Q04 local validation closure
+
+- Candidate `29b465669030c8fcdce4aa6c8a494130946a3c90` passed final focused
+  predicate and lightweight/full CLI differential checks, default and
+  no-default-feature builds, and all 23 `cli_check_tests` regressions.
+- Separate release artifacts produced the required three-iteration local
+  performance report. All eight headline `assura-cli` rows were faster than
+  LS-Lint on this host, while the report truthfully remains `not-complete` for
+  the 2x claim (1/8). This does not clear the independently blocked R03
+  hosted-performance issue.
+- Q04 is verified locally and awaits final exact-SHA review, hosted PR proof,
+  and merge reachability; the final exact-SHA review found no findings. No PR,
+  tag, release, deployment, or external
+  communication has been made.
+
+## Iteration 13 — 2026-09-06 — Q04 policy-boundary implementation
+
+- Q04 moved the cohesive pure naming-predicate family from `src/cli/check` to
+  crate-private `src/policy/naming.rs`, with only direct internal consumers and
+  no new public Rust surface. A focused missing-module red gate and the initial
+  green predicate/CLI differential records are in `research/evidence/Q04.md`.
+- Independent review found no source or boundary issue. Its separate Cargo
+  attempt was inconclusive under concurrent artifact locking/SIGKILL and is not
+  treated as a green verification.
+- Context health: the host's free space fell below 200 MiB during cold Cargo
+  validation. Only the exact goal-worktree ignored `target/` directory was
+  reclaimed after a dry run; `vps-dev` remains DNS-unavailable. No reusable
+  skill is warranted: existing `assura-local-build` and
+  `assura-structure-fit` already route both decisions.
+- Next: rerun the final expanded differential, minimal build, relevant suite,
+  and performance row when capacity permits; do not open/merge Q04 until those
+  and hosted current-master gates are honestly resolved.
 
 ## Iteration 1 — 2026-09-05 — B00 baseline capture
 

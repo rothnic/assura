@@ -1,8 +1,8 @@
 //! Fast naming matchers for LS-Lint-compatible checks.
 
-use super::case::{convention_to_case_validator, validate_single_name_with_path};
 use super::patterns::{best_lslint_suffix_pair, matches_single_compiled_pattern};
 use crate::config::config::split_naming_conventions;
+use crate::policy::naming::{convention_to_case_validator, validate_single_name_with_path};
 use glob::Pattern;
 use regex_lite::Regex;
 use std::collections::HashMap;
