@@ -248,7 +248,7 @@ impl GitSignals {
         let committers: HashSet<_> = revwalk
             .filter_map(|oid| oid.ok())
             .filter_map(|oid| repo.find_commit(oid).ok())
-            .filter_map(|commit| commit.committer().email().ok().map(|e| e.to_string()))
+            .filter_map(|commit| commit.committer().email().map(str::to_owned))
             .collect();
 
         let committer_count = committers.len();

@@ -97,10 +97,15 @@ jobs:
       uses: dtolnay/rust-toolchain@master
       with:
         toolchain: 1.86.0
+        components: clippy
     - name: Check default workspace targets
       run: cargo check --locked --workspace --all-targets
     - name: Build minimal public launcher
       run: cargo build --locked --bin assura --no-default-features --features json-output,yaml-config
+    - name: Lint all public feature combinations
+      run: cargo clippy --locked --workspace --all-targets --all-features -- -D warnings
+    - name: Test opt-in Git signals
+      run: cargo test --locked --features git-signals --test maturity_tests test_signal_collection_git -- --exact
 
   evidence:
     name: Evidence Gates
