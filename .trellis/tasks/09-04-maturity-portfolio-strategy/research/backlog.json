@@ -170,8 +170,8 @@
         "A01"
       ],
       "executor": "agent",
-      "state": "pending",
-      "owner": null,
+      "state": "implemented",
+      "owner": "Codex goal/a02-local-patterns",
       "evidence": "evidence/A02.md",
       "blocker": null
     },
