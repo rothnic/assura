@@ -287,8 +287,8 @@
         "Q01"
       ],
       "executor": "mixed",
-      "state": "pending",
-      "owner": null,
+      "state": "active",
+      "owner": "Codex goal: Assura Maturity Execution Train",
       "evidence": "evidence/Q05.md",
       "blocker": null
     },

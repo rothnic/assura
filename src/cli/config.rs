@@ -8,8 +8,6 @@ use thiserror::Error;
 #[cfg(feature = "full-cli")]
 use crate::constraints::ConstraintConfig;
 #[cfg(feature = "full-cli")]
-use crate::maturity::MaturityConfig;
-#[cfg(feature = "full-cli")]
 use std::collections::HashMap;
 
 #[derive(Error, Debug)]
@@ -43,9 +41,6 @@ pub struct CliConfig {
 
     #[serde(default)]
     pub constraint_config: ConstraintConfig,
-
-    #[serde(default)]
-    pub maturity_config: MaturityConfig,
 
     #[serde(default)]
     pub check: CheckConfig,
@@ -133,7 +128,6 @@ impl CliConfig {
         Self {
             version: default_version(),
             constraint_config: ConstraintConfig::default(),
-            maturity_config: MaturityConfig::default(),
             check: CheckConfig::default(),
             watch: WatchConfig::default(),
             output: OutputConfig::default(),
@@ -144,11 +138,6 @@ impl CliConfig {
 
     pub fn with_constraint_config(mut self, config: ConstraintConfig) -> Self {
         self.constraint_config = config;
-        self
-    }
-
-    pub fn with_maturity_config(mut self, config: MaturityConfig) -> Self {
-        self.maturity_config = config;
         self
     }
 

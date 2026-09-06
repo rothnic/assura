@@ -24,6 +24,12 @@ maturity-score, hosted-orchestration, remote-pattern, marketplace, and
 arbitrary automatic-repair work without silently changing the classification of
 existing behavior.
 
+The former experimental maturity scorer has been retired. Internal constraint
+contexts may retain a manually selected tier, but Assura does not infer project
+quality from repository files. Experimental local observations distinguish
+configuration presence from CI execution evidence; without a verified evidence
+source, CI execution is reported as `unverified`.
+
 ## Support Levels
 
 The four documented managed-agent hosts—Codex, Claude Code, OpenCode, and

@@ -88,3 +88,9 @@
 
 - Q03 evidence records PR #154 merged as `7a06b345d47521ede6b5e6c7cdc06e1128883774` and reachable from master, but backlog.json still said `implemented`. A dedicated documentation-only handoff corrects that stale queue state to `done`; no product behavior, performance threshold, or evaluator result was changed.
 - This makes Q04 dependency readiness accurately inspectable. The handoff remains separate from A01 while PR #162 is held by the already-blocked R03 performance gate and a macOS watch failure.
+
+## Iteration 16 — 2026-09-06 — Q05 maturity containment discovery
+
+- Q05 began in isolated current-master worktree `assura-q05-maturity-containment` at `25a1415`. Consumer enumeration found the score detector, report renderer, and CLI maturity configuration have no active CLI caller; only `MaturityLevel` remains used by internal experimental constraint severity and trigger helpers.
+- A focused observation contract was added test-first: an empty workflow directory does not establish CI configuration, local CI configuration remains `unverified` for execution, a bare `pyproject.toml` does not establish Black configuration, and additional package manifests are reported only as observations. The test first failed because the observation API did not exist.
+- The local green attempt is currently blocked by `ld` error 28 after goal-owned ignored build directories were safely reclaimed; this is not recorded as a passing test. Q04 PR #164 remains unmerged while installer, adoption, and performance jobs are still in progress.
