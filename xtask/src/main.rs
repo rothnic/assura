@@ -1,5 +1,6 @@
 //! Rust-first repository maintenance entrypoint.
 
+mod release_readiness;
 mod website_demo;
 
 use serde_json::Value;
@@ -41,7 +42,7 @@ fn run() -> Result<()> {
         "release-size" => run_release_size(),
         "release-smoke" => run_release_smoke(),
         "release-live" => run_release_live(),
-        "release-readiness" => run_release_readiness(&rest),
+        "release-readiness" => release_readiness::run(&rest),
         "perf-vps-ls-lint-compare" => run_perf_vps_ls_lint_compare(&rest),
         "performance-no-slower" => run_performance_no_slower(&rest),
         "native-performance-no-regression" => run_native_performance_no_regression(&rest),
@@ -307,50 +308,6 @@ fn run_release_live() -> Result<()> {
     Ok(())
 }
 
-fn run_release_readiness(args: &[String]) -> Result<()> {
-    let mut format = "text";
-    let mut index = 0;
-    while index < args.len() {
-        match args[index].as_str() {
-            "--format" => {
-                let Some(value) = args.get(index + 1) else {
-                    return Err("missing value for --format".into());
-                };
-                format = value;
-                index += 2;
-            }
-            other => return Err(format!("unknown release-readiness option: {other}").into()),
-        }
-    }
-    if !matches!(format, "json" | "text") {
-        return Err(format!("unsupported release-readiness format: {format}").into());
-    }
-
-    let report = release_readiness_report();
-    if format == "json" {
-        println!("{}", serde_json::to_string_pretty(&report)?);
-    } else {
-        let verdict = report
-            .get("verdict")
-            .and_then(Value::as_str)
-            .unwrap_or("unknown");
-        println!("Release readiness: {verdict}");
-        if let Some(reasons) = report.get("reasons").and_then(Value::as_array) {
-            for reason in reasons {
-                if let Some(reason) = reason.as_str() {
-                    println!("- {reason}");
-                }
-            }
-        }
-    }
-
-    if report.get("ready").and_then(Value::as_bool) == Some(true) {
-        Ok(())
-    } else {
-        Err("release readiness failed".into())
-    }
-}
-
 fn run_perf_vps_ls_lint_compare(args: &[String]) -> Result<()> {
     let args = if args.first().is_some_and(|arg| arg == "--") {
         &args[1..]
@@ -370,105 +327,6 @@ fn run_perf_vps_ls_lint_compare(args: &[String]) -> Result<()> {
         "./scripts/perf-vps-ls-lint-compare.sh",
         args.iter().map(String::as_str),
     )
-}
-
-fn release_readiness_report() -> Value {
-    let local_version = toml_string_value(&read("Cargo.toml"), "version").unwrap_or_default();
-    let release_notes_text = read("docs/release-notes.md");
-    let release_notes_version = release_notes_version(&release_notes_text).unwrap_or_default();
-    release_readiness_report_from_inputs(
-        &local_version,
-        &release_notes_version,
-        &read("docs/support-policy.md"),
-        &read("docs/release-candidate-checklist.md"),
-        &read("docs/compatibility-and-surface.md"),
-        release_surfaces_report(
-            "docs/data/release-surfaces.json",
-            Some(&format!("v{local_version}")),
-        ),
-        latest_github_release(),
-    )
-}
-
-fn release_readiness_report_from_inputs(
-    local_version: &str,
-    release_notes_version: &str,
-    support_policy_text: &str,
-    release_checklist_text: &str,
-    compatibility_text: &str,
-    release_surfaces: Value,
-    latest_release: Value,
-) -> Value {
-    let local_tag = format!("v{local_version}");
-    let mut reasons = Vec::new();
-    let mut missing_checklist_items = Vec::new();
-    for required in [
-        "cargo fmt --all -- --check",
-        "cargo test --all-targets --quiet",
-        "cargo clippy --all-targets --all-features -- -D warnings",
-        "cargo xtask website-demo-data --check --released",
-        "cargo xtask release-readiness --format json",
-        "cargo xtask release-smoke",
-        "cargo xtask release-live",
-    ] {
-        if !release_checklist_text.contains(required) {
-            missing_checklist_items.push(required.to_string());
-        }
-    }
-    if !missing_checklist_items.is_empty() {
-        reasons.push("release checklist is missing required gates".to_string());
-    }
-
-    if release_notes_version != local_version {
-        reasons.push(format!(
-            "release notes version {release_notes_version:?} does not match Cargo.toml version {local_version:?}"
-        ));
-    }
-    if !support_policy_text.contains("A release PR cannot close if") {
-        reasons.push("support policy is missing release PR blocking criteria".to_string());
-    }
-    if !compatibility_text.contains("Compatibility And Public Surface") {
-        reasons.push("compatibility matrix is missing release surface source of truth".to_string());
-    }
-
-    let unreleased_user_facing_changes = release_surfaces
-        .get("unreleased_user_facing_changes")
-        .cloned()
-        .unwrap_or_else(|| serde_json::json!([]));
-    if let Some(error) = release_surfaces.get("error").and_then(Value::as_str) {
-        reasons.push(format!(
-            "release surface manifest could not be checked: {error}"
-        ));
-    }
-    if let Some(error) = latest_release.get("error").and_then(Value::as_str) {
-        reasons.push(format!(
-            "latest GitHub release could not be checked: {error}"
-        ));
-    }
-    if unreleased_user_facing_changes
-        .as_array()
-        .map(|changes| !changes.is_empty())
-        .unwrap_or(false)
-    {
-        reasons.push(format!(
-            "{local_tag} cannot publish while supported or experimental user-facing surfaces remain unreleased"
-        ));
-    }
-
-    let ready = reasons.is_empty();
-    serde_json::json!({
-        "schema_version": "assura.release-readiness.v1",
-        "latest_github_release": latest_release,
-        "local_package_version": local_version,
-        "local_tag": local_tag,
-        "release_notes_version": release_notes_version,
-        "unreleased_user_facing_changes": unreleased_user_facing_changes,
-        "release_surfaces": release_surfaces,
-        "missing_checklist_items": missing_checklist_items,
-        "ready": ready,
-        "verdict": if ready { "pass" } else { "fail" },
-        "reasons": reasons,
-    })
 }
 
 fn latest_github_release() -> Value {
@@ -7468,7 +7326,7 @@ mod tests {
 
     #[test]
     fn release_readiness_report_passes_for_next_release_candidate() {
-        let report = release_readiness_report_from_inputs(
+        let report = release_readiness::report_from_inputs(
             "0.2.0",
             "0.2.0",
             "A release PR cannot close if",
@@ -7496,7 +7354,7 @@ mod tests {
 
     #[test]
     fn release_readiness_report_fails_for_any_candidate_with_unreleased_surfaces() {
-        let report = release_readiness_report_from_inputs(
+        let report = release_readiness::report_from_inputs(
             "0.2.0",
             "0.2.0",
             "A release PR cannot close if",
@@ -7523,6 +7381,31 @@ mod tests {
             .is_some_and(|reasons| reasons.iter().any(|reason| reason
                 .as_str()
                 .is_some_and(|reason| reason.contains("cannot publish")))));
+    }
+
+    #[test]
+    fn release_readiness_module_preserves_the_report_schema_for_fixed_inputs() {
+        let report = crate::release_readiness::report_from_inputs(
+            "0.2.0",
+            "0.2.0",
+            "A release PR cannot close if",
+            release_checklist_fixture(),
+            "Compatibility And Public Surface",
+            serde_json::json!({
+                "schema_version": "assura.release-surfaces.v1",
+                "path": "docs/data/release-surfaces.json",
+                "surface_count": 2,
+                "unreleased_user_facing_changes": []
+            }),
+            serde_json::json!({ "tagName": "v0.1.0" }),
+        );
+
+        assert_eq!(
+            report.get("schema_version").and_then(Value::as_str),
+            Some("assura.release-readiness.v1")
+        );
+        assert_eq!(report.get("ready").and_then(Value::as_bool), Some(true));
+        assert_eq!(report.get("verdict").and_then(Value::as_str), Some("pass"));
     }
 
     #[test]

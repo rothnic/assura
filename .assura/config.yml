@@ -1135,6 +1135,7 @@ structure:
               allowed_names:
                 - "main.rs"
                 - "website_demo.rs"
+                - "release_readiness.rs"
               allow_extra: false
             directories:
               allow_extra: false
