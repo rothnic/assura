@@ -184,8 +184,8 @@
         "A02"
       ],
       "executor": "agent",
-      "state": "pending",
-      "owner": null,
+      "state": "active",
+      "owner": "Codex goal/a03-agent-specialization",
       "evidence": "evidence/A03.md",
       "blocker": null
     },
