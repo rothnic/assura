@@ -9,9 +9,29 @@ rules:
     severity: low
     message: See AGENTS.md.
 
+  # R07 exception, reviewed 2026-09-05; review by 2026-12-05. This exact
+  # router remains cohesive while its operational detail is extracted.
+  agent-entrypoint-r07:
+    exists: 1
+    max_lines: 320
+    severity: low
+    message: See AGENTS.md.
+
   skill-entrypoint:
     exists: 1
     max_lines: 500
+    max_size: "24KB"
+    severity: low
+    markdown:
+      require_frontmatter: true
+    message: See AGENTS.md#skills.
+
+  # R07 exception, reviewed 2026-09-05; review by 2026-12-05. Scope this
+  # ceiling to the one discovery router; all other skill entrypoints retain
+  # the 500-line contract.
+  skill-entrypoint-r07:
+    exists: 1
+    max_lines: 600
     max_size: "24KB"
     severity: low
     markdown:
@@ -36,6 +56,14 @@ rules:
       inherit: false
       use: $skill-resource-directory
 
+  r07-trellis-brainstorm-skill:
+    ./: $closed
+    SKILL.md: exists:1 | $skill-entrypoint-r07
+    ./{agents,assets,references,scripts}/:
+      ./: exists:0-1
+      inherit: false
+      use: $skill-resource-directory
+
   agents-directory:
     ./: $closed
     README.md: exists:0-1
@@ -51,10 +79,11 @@ rules:
       custom/:
         ./: exists:0-1 | $closed
         ./*/: kebab-case | $skill
+      trellis-brainstorm/: $r07-trellis-brainstorm-skill
       ./*/: kebab-case | $skill
 
   agentic-core:
-    AGENTS.md: $agent-entrypoint
+    AGENTS.md: $agent-entrypoint-r07
     .agents/:
       ./: exists:0-1
       inherit: false
@@ -813,6 +842,27 @@ structure:
       required:
         - "README.md"
       naming: "PascalCase"
+      # R07 reviewed exceptions (2026-09-05; review by 2026-12-05).
+      # These are exact, temporary ceilings for cohesive boundaries that need
+      # dedicated behavior-preserving splits. Keep the directory defaults at
+      # 500/1000 so neighboring files still expose unintended growth.
+      max_lines_patterns:
+        "src/cli/agent_integration_bundle.rs": 700 # managed integration lifecycle boundary
+        "src/cli/agent_onboarding.rs": 600 # onboarding transaction boundary
+        "src/cli/args.rs": 540 # public CLI argument surface
+        "src/cli/check/compiled_artifact.rs": 550 # compiled-policy artifact boundary
+        "src/cli/check/markdown_fix.rs": 540 # Markdown repair boundary
+        "src/cli/check/patterns.rs": 575 # policy pattern matching boundary
+        "src/cli/check/rules.rs": 600 # check-rule composition boundary
+        "src/cli/commands.rs": 850 # top-level command dispatch boundary
+        "src/cli/init_support.rs": 620 # initializer support boundary
+        "src/cli/watch.rs": 600 # watch lifecycle boundary
+        "src/cli/watch_tests.rs": 700 # watch scenario ownership pending split
+        "src/config/config/structure_notation/directives.rs": 540 # notation directive composition
+        "src/config/config/structure_notation/tests/directive_shorthand.rs": 650 # shorthand matrix ownership
+        "src/config/config/structure_notation/tests.rs": 560 # notation composition regression set
+        "src/config/config/structure_notation.rs": 720 # notation parser boundary
+        "tests/project_intelligence_onboarding.rs": 1100 # end-to-end onboarding scenario set
       allow_extra: false
     directories:
       allowed_names:
