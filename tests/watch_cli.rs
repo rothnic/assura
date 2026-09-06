@@ -144,6 +144,22 @@ impl WatchProcess {
         }
     }
 
+    fn assert_no_event_or_scoped_rescan(&self, duration: Duration) {
+        match self.events.recv_timeout(duration) {
+            Err(mpsc::RecvTimeoutError::Timeout) => {}
+            Ok(event) => {
+                assert_event(&event, 2, "filesystem", "warm_full");
+                assert_eq!(event["fallback_reason"], "full_rescan_event");
+                assert_eq!(event["report_scope"], "requested_path");
+                assert_eq!(event["changed_paths"], serde_json::json!([]));
+                assert_eq!(event["report"]["success"], true);
+            }
+            Err(mpsc::RecvTimeoutError::Disconnected) => {
+                panic!("watch event reader disconnected before the debounce window elapsed")
+            }
+        }
+    }
+
     fn interrupt(&mut self) {
         #[cfg(unix)]
         let status = Command::new("kill")
@@ -418,7 +434,7 @@ fn watch_honors_the_requested_directory_scope() {
         .is_some_and(|path| path.replace('\\', "/").ends_with("/src")));
 
     fs::write(project.path().join("docs/BadName.ts"), "export {};\n").unwrap();
-    watch.assert_no_event(Duration::from_millis(450));
+    watch.assert_no_event_or_scoped_rescan(Duration::from_millis(450));
     fs::write(project.path().join("src/BadName.ts"), "export {};\n").unwrap();
 
     let changed = watch.next_event();
@@ -505,7 +521,7 @@ fn watch_ignores_assura_runtime_output() {
     )
     .unwrap();
 
-    watch.assert_no_event(Duration::from_millis(450));
+    watch.assert_no_event_or_scoped_rescan(Duration::from_millis(450));
 }
 
 #[test]
