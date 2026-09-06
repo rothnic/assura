@@ -12,6 +12,21 @@
 - Focused RED tests were observed for every review condition. The final local evaluator suite passed 27 tests; Python compilation, repository structure check, evidence policy, and the 48-page documentation build passed. Rust, TypeScript, and Python policy-only partial controls all recorded matched named-rule negative probes and remain ineligible by scope; those runs do not assert unrequested native, guidance, or hook dimensions. A separate full Rust control records native, guidance, and hooks as unavailable; TypeScript/Python full-run evidence remains separately incomplete.
 - Context health: earlier Q02 and unrelated-card evidence show R03's no-slower gate can fluctuate on the same fixture, so hosted proof remains mandatory. Existing evaluator and performance workflows already cover the new findings; no new skill is warranted. Next: await the exact-SHA hosted matrix, then merge only if every required job passes and the candidate remains current-master based.
 
+## Iteration 14 — 2026-09-06 — Q04 local validation closure
+
+- Candidate `29b465669030c8fcdce4aa6c8a494130946a3c90` passed final focused
+  predicate and lightweight/full CLI differential checks, default and
+  no-default-feature builds, and all 23 `cli_check_tests` regressions.
+- Separate release artifacts produced the required three-iteration local
+  performance report. All eight headline `assura-cli` rows were faster than
+  LS-Lint on this host, while the report truthfully remains `not-complete` for
+  the 2x claim (1/8). This does not clear the independently blocked R03
+  hosted-performance issue.
+- Q04 is verified locally and awaits final exact-SHA review, hosted PR proof,
+  and merge reachability; the final exact-SHA review found no findings. No PR,
+  tag, release, deployment, or external
+  communication has been made.
+
 ## Iteration 13 — 2026-09-06 — Q04 policy-boundary implementation
 
 - Q04 moved the cohesive pure naming-predicate family from `src/cli/check` to
