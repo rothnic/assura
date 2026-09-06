@@ -95,7 +95,7 @@ impl WatchProcess {
         self.events.recv_timeout(EVENT_TIMEOUT).unwrap()
     }
 
-    fn next_config_event(&self) -> (Value, u64) {
+    fn next_config_event(&self, expected_predecessor_path: &str) -> (Value, u64) {
         let deadline = Instant::now() + EVENT_TIMEOUT;
         let mut preceding_filesystem_events = 0;
         loop {
@@ -111,6 +111,22 @@ impl WatchProcess {
                 preceding_filesystem_events, 1,
                 "watch emitted more than one filesystem event before config reload"
             );
+            assert_eq!(event["report"]["success"], true);
+            match event["runtime_mode"].as_str() {
+                Some("warm_incremental") => {
+                    assert_eq!(event["report_scope"], "affected_path");
+                    assert!(event["changed_paths"].as_array().is_some_and(|paths| {
+                        paths.iter().any(|path| path == expected_predecessor_path)
+                    }));
+                }
+                Some("warm_full") => {
+                    assert_eq!(event["report_scope"], "requested_path");
+                    assert_eq!(event["fallback_reason"], "full_rescan_event");
+                }
+                runtime_mode => {
+                    panic!("unexpected filesystem event before config reload: {runtime_mode:?}")
+                }
+            }
         }
     }
 
@@ -329,7 +345,7 @@ fn watch_observes_an_explicit_config_outside_the_project() {
     watch.assert_no_event(Duration::from_millis(350));
     fs::write(&config, config_with_naming("snake_case")).unwrap();
 
-    let (changed, preceding_filesystem_events) = watch.next_config_event();
+    let (changed, preceding_filesystem_events) = watch.next_config_event("good-name.ts");
     eprintln!("external config report: {changed}");
     assert_event(
         &changed,
