@@ -112,10 +112,10 @@
         "B00"
       ],
       "executor": "agent",
-      "state": "active",
+      "state": "verified",
       "owner": "Codex goal: Assura Maturity Execution Train",
       "evidence": "evidence/R07.md",
-      "blocker": null
+      "blocker": "awaiting independent review, hosted checks, and current-master integration"
     },
     {
       "id": "Q01",
