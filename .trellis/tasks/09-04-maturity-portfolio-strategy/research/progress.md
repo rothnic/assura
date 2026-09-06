@@ -106,3 +106,8 @@
 - A01's current-master hosted matrix exposed an existing macOS watch-test contract gap, not an evaluator failure: the explicit-external-config test rejected the already-documented safe `full_rescan_event` fallback after an unrelated adjacent write. R01 was reopened in its own isolated worktree rather than folded into A01.
 - The minimal test-only repair accepts only silence or that constrained successful requested-scope rescan. Its focused test passed 10 consecutive local runs and the full 14-test watch suite passed. The broader fast tier hit local disk exhaustion while linking unrelated tests and is explicitly inconclusive.
 - Context health: repeated cold full-feature linking across goal worktrees is exhausting local disk. The safe correction is to retain focused local proof and use hosted platform gates for the full matrix; no new reusable skill is warranted because the existing isolation and evidence rules already require this distinction.
+
+## Iteration 19 — 2026-09-06 — R01 hosted-matrix truth hold
+
+- R01 PR #169's reviewed test-only repair passed the macOS regression it was opened for, all three platform suites, MSRV, coverage, release/installer, and five adoption smokes. It did not merge because the required Performance Report failed the unchanged R03 many-configured-scopes comparison: 20.661 ms for Assura versus 18.695 ms for LS-Lint.
+- The card remains active and the PR is held. This is not a reason to weaken the performance gate or count the skipped scoped Security Audit as a pass. Next: resolve the R03-owned comparable performance evidence, then rerun R01 from current master.
