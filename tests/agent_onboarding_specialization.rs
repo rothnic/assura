@@ -222,3 +222,17 @@ fn agent_onboard_requires_user_authority_for_conflicting_manifests() {
         .iter()
         .any(|conflict| conflict["kind"] == "manifest" && conflict["source"] == "Cargo.toml"));
 }
+
+#[test]
+fn public_onboarding_guide_documents_the_v2_specialization_contract() {
+    let guide = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/website/src/content/docs/guides/agent-ready-onboarding.md"
+    ));
+
+    assert!(guide.contains("\"schema\": \"assura.agent-onboarding.v2\""));
+    assert!(guide.contains("## Agent-Next Procedure"));
+    assert!(guide.contains("Exceptions that still require user authority"));
+    assert!(!guide.contains("## Agent-Next Questions"));
+    assert!(!guide.contains("Record the answers in project notes"));
+}

@@ -105,6 +105,7 @@ look like this:
 
 ```json
 {
+  "schema": "assura.agent-onboarding.v2",
   "installed": {
     "config": ".assura/config.yml",
     "onboarding_packet": ".assura/onboarding/"
@@ -204,7 +205,7 @@ evidence or a user confirms those choices.
 | --- | --- |
 | `summary.md` | What Assura detected and installed. |
 | `rules.md` | Materialized recipes, active project rules, and how to customize them. |
-| `questions.md` | The specialization questions the agent should ask. |
+| `questions.md` | Exceptions that still require user authority. |
 | `agent-next.md` | The next handoff for coding agents. |
 | `lifecycle.md` | When to use nudge, warn, and gate feedback. |
 | `doctor.json` | A project doctor snapshot showing checked and unchecked state. |
@@ -227,23 +228,15 @@ does not fit `.assura/config.yml`, agents should apply that check before
 editing config: inspect existing structure, prefer reuse or rename, and add a
 new config rule only for a durable non-duplicative project role.
 
-## Agent-Next Questions
+## Agent-Next Procedure
 
-The generated `agent-next.md` tells the agent to answer these from repository
-evidence first, then ask only for unresolved choices:
-
-- primary language or stack;
-- project type;
-- file naming convention;
-- source and test layout;
-- docs strictness;
-- hook lifecycle preference;
-- required project-specific files or folders;
-- source-document custody needs;
-- whether typed content models should be activated.
-
-Record the answers in project notes or `.assura/onboarding/answers.yml` before
-specializing the broad baseline.
+`agent-next.md` is an ordered evidence-first procedure: inspect instructions,
+manifests, and established layout; preserve local intent; select the smallest
+matching pattern; record boundaries and native tools; then apply and validate
+policy. It directs the agent to prove a negative policy case and report only
+unresolved exceptions. `questions.md` is not a routine questionnaire and no
+`answers.yml` file is generated. Ask the project owner only when stack intent
+is missing or repository evidence conflicts.
 
 ## Checked Versus Unchecked
 
