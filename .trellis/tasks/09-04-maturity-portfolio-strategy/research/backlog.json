@@ -316,8 +316,8 @@
         "Q01"
       ],
       "executor": "agent",
-      "state": "pending",
-      "owner": null,
+      "state": "active",
+      "owner": "Codex goal/q07-error-contract",
       "evidence": "evidence/Q07.md",
       "blocker": null
     },

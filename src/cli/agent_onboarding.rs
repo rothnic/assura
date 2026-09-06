@@ -3,7 +3,7 @@
 use super::agent_integration::configure_agent_integration_bundle;
 use super::agent_lifecycle::{lifecycle_profiles, ranked_next_actions};
 use super::agent_onboarding_report::{
-    render_report, CheckItem, ContentSection, FileAction, InstalledSection, IntegrationSection,
+    write_report, CheckItem, ContentSection, FileAction, InstalledSection, IntegrationSection,
     OnboardingReport, RenderedOnboardingReport,
 };
 use super::agent_onboarding_rules::{normalize_existing_root, recommended_rules};
@@ -40,7 +40,10 @@ pub async fn agent_onboarding_command(
 ) -> ExitCode {
     match run_agent_onboarding(options, config) {
         Ok(report) => {
-            println!("{}", render_report(&report));
+            if let Err(error) = write_report(&report, &mut std::io::stdout().lock()) {
+                eprintln!("Error: failed to write onboarding report: {error}");
+                return ExitCode::RuntimeError;
+            }
             if report
                 .report
                 .verified

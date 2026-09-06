@@ -4,13 +4,26 @@ use super::agent_lifecycle::{LifecycleProfile, RankedNextAction};
 use super::agent_onboarding::{DetectedSection, OnboardingReview};
 use super::OutputFormat;
 use serde::Serialize;
+use std::io::{self, Write};
 
-pub(super) fn render_report(report: &RenderedOnboardingReport) -> String {
+pub(super) fn write_report(
+    report: &RenderedOnboardingReport,
+    writer: &mut impl Write,
+) -> io::Result<()> {
     match report.format {
-        OutputFormat::Json => serde_json::to_string_pretty(&report.report).unwrap_or_default(),
-        OutputFormat::Yaml => serde_yaml::to_string(&report.report).unwrap_or_default(),
-        OutputFormat::Text | OutputFormat::Advice | OutputFormat::Status => report.render_text(),
+        OutputFormat::Json => write_serialized_report(writer, &report.report)?,
+        OutputFormat::Yaml => {
+            serde_yaml::to_writer(&mut *writer, &report.report).map_err(io::Error::other)?
+        }
+        OutputFormat::Text | OutputFormat::Advice | OutputFormat::Status => {
+            writer.write_all(report.render_text().as_bytes())?
+        }
     }
+    writer.write_all(b"\n")
+}
+
+fn write_serialized_report(writer: &mut impl Write, report: &impl Serialize) -> io::Result<()> {
+    serde_json::to_writer_pretty(&mut *writer, report).map_err(io::Error::other)
 }
 
 #[derive(Serialize)]
@@ -122,6 +135,39 @@ impl RenderedOnboardingReport {
 
 fn onboarding_row(label: &str, value: String) -> String {
     format!("{label:<12} {value}")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::io::{self, Write};
+
+    struct FailingWriter;
+
+    impl Write for FailingWriter {
+        fn write(&mut self, _buffer: &[u8]) -> io::Result<usize> {
+            Err(io::Error::new(
+                io::ErrorKind::BrokenPipe,
+                "injected output failure",
+            ))
+        }
+
+        fn flush(&mut self) -> io::Result<()> {
+            Ok(())
+        }
+    }
+
+    #[test]
+    fn serialized_report_returns_the_writer_error() {
+        let mut writer = FailingWriter;
+        let error = write_serialized_report(&mut writer, &serde_json::json!({"schema": "test"}))
+            .expect_err("an output failure must not become an empty success payload");
+
+        assert!(
+            error.to_string().contains("injected output failure"),
+            "writer failure was not preserved: {error}"
+        );
+    }
 }
 
 #[derive(Serialize)]

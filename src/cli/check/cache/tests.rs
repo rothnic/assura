@@ -133,3 +133,76 @@ fn file_fingerprint_changes_when_file_bytes_change() {
     let after = collect_file_snapshot(&path).unwrap();
     assert_ne!(before, after);
 }
+
+#[test]
+fn corrupt_cache_record_falls_back_to_fresh_validation() {
+    let project = tempfile::tempdir().unwrap();
+    let cache = tempfile::tempdir().unwrap();
+    fs::create_dir(project.path().join(".assura")).unwrap();
+    fs::write(
+        project.path().join(".assura/config.yml"),
+        "structure:\n  ./:\n    files:\n      naming: kebab-case\n",
+    )
+    .unwrap();
+    fs::write(project.path().join("good-name.rs"), "").unwrap();
+
+    let first = run_structure_check_cached(
+        Some(project.path().to_path_buf()),
+        None,
+        false,
+        cache.path().to_path_buf(),
+    )
+    .unwrap();
+    assert!(
+        first.success,
+        "initial check should populate a passing cache"
+    );
+
+    let record = walkdir::WalkDir::new(cache.path().join("worktrees"))
+        .into_iter()
+        .filter_map(Result::ok)
+        .find(|entry| {
+            entry.file_type().is_file() && entry.path().extension().is_some_and(|ext| ext == "json")
+        })
+        .expect("worktree cache record")
+        .into_path();
+    fs::write(&record, "not valid cache json").unwrap();
+
+    let recovered = run_structure_check_cached(
+        Some(project.path().to_path_buf()),
+        None,
+        false,
+        cache.path().to_path_buf(),
+    )
+    .unwrap();
+    assert!(
+        recovered.success,
+        "corrupt cache must fall back to a fresh passing validation"
+    );
+    let rewritten = fs::read(&record).expect("rewritten cache record");
+    assert!(
+        serde_json::from_slice::<CachedCheckReport>(&rewritten).is_ok(),
+        "fresh validation must replace the corrupt cache record"
+    );
+
+    fs::write(project.path().join("BadName.rs"), "").unwrap();
+
+    let refreshed = run_structure_check_cached(
+        Some(project.path().to_path_buf()),
+        None,
+        false,
+        cache.path().to_path_buf(),
+    )
+    .unwrap();
+    assert!(
+        !refreshed.success,
+        "corrupt cache must not suppress a fresh naming violation"
+    );
+    assert!(
+        refreshed
+            .violations
+            .iter()
+            .any(|violation| violation.rule == "file_naming"),
+        "fresh report must expose the seeded naming violation"
+    );
+}
