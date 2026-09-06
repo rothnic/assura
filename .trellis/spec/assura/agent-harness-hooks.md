@@ -61,6 +61,51 @@ expected files without timestamp noise.
   differ from the current generator.
 - Runtime hook logs belong under ignored `.assura/agent-sessions/*.jsonl`.
 
+## Scenario: Exact Git hook ownership
+
+### 1. Scope / Trigger
+
+- Trigger: Git hook install, force refresh, status, or removal changes.
+
+### 2. Signatures
+
+- `assura hooks install [PATH] [--force]`
+- `assura hooks uninstall [PATH]`
+
+### 3. Contracts
+
+- A Git entrypoint is Assura-managed only when its complete content equals the
+  generated delegator for that hook and project-local sidecar path.
+- A marker substring alone is never ownership proof. `--force` refreshes only
+  exact managed entrypoints. Removal deletes a wrapper and sidecar together
+  only after that same ownership check.
+
+### 4. Validation & Error Matrix
+
+| Condition | Required behavior |
+| --- | --- |
+| Existing exact managed wrapper | report unchanged or refreshed; removal is allowed |
+| Existing custom wrapper, including marker text | preserve and report it; never overwrite or delete |
+| Custom wrapper with an Assura-named sidecar | preserve both files |
+
+### 5. Good / Base / Bad Cases
+
+- Good: a force refresh replaces an exact stale Assura wrapper.
+- Base: a repeated install reports an exact current wrapper as unchanged.
+- Bad: treating `Git hook managed by Assura` in arbitrary custom content as ownership.
+
+### 6. Tests Required
+
+- Cover plain custom and marker-collision custom wrappers for install, force,
+  direct uninstall, and bulk uninstall; cover a custom wrapper plus sidecar.
+
+### 7. Wrong vs Correct
+
+Wrong: use `content.contains(marker)` for lifecycle ownership.
+
+Correct: compare the complete entrypoint to the deterministic generated
+delegator before touching either managed file.
+
 ## Harness Rules
 
 - Codex and Claude command hooks may use Python or shell adapters, but policy

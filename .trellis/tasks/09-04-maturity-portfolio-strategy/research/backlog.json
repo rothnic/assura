@@ -198,8 +198,8 @@
         "A03"
       ],
       "executor": "agent",
-      "state": "pending",
-      "owner": null,
+      "state": "verified",
+      "owner": "Codex goal/a04-verified-hook-lifecycle",
       "evidence": "evidence/A04.md",
       "blocker": null
     },
