@@ -73,15 +73,20 @@ fn run_agent_onboarding(
 
     let detected = detect_project(&project_root, options.agent, options.activate)?;
     let config_path = config.unwrap_or_else(|| project_root.join(".assura/config.yml"));
+    let recipe_file = options.recipe_file;
+    let had_config = config_path.is_file();
+    if had_config {
+        if let Some(recipe_file) = recipe_file.as_ref() {
+            merge_local_recipe(&config_path, recipe_file)?;
+        }
+    }
     let mut files = Vec::new();
     for file in baseline_files(&detected, options.content_template) {
         files.push(materialize_baseline_file(&project_root, file)?);
     }
-    if let Some(recipe_file) = options.recipe_file {
-        let outcome = crate::cli::local_recipe::merge_recipe_file(&config_path, &recipe_file)
-            .map_err(|error| error.message().to_string())?;
-        if !outcome.conflicts.is_empty() {
-            return Err(outcome.render_conflicts());
+    if let Some(recipe_file) = recipe_file {
+        if !had_config {
+            merge_local_recipe(&config_path, &recipe_file)?;
         }
         crate::cli::local_recipe::write_profile_selection(&project_root, &recipe_file)
             .map_err(|error| error.message().to_string())?;
@@ -137,6 +142,16 @@ fn run_agent_onboarding(
         },
         format: options.format,
     })
+}
+
+fn merge_local_recipe(config_path: &Path, recipe_file: &Path) -> Result<(), String> {
+    let outcome = crate::cli::local_recipe::merge_recipe_file(config_path, recipe_file)
+        .map_err(|error| error.message().to_string())?;
+    if outcome.conflicts.is_empty() {
+        Ok(())
+    } else {
+        Err(outcome.render_conflicts())
+    }
 }
 
 fn resolve_project_root(path: Option<PathBuf>) -> Result<PathBuf, String> {

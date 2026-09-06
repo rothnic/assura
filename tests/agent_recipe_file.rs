@@ -89,7 +89,11 @@ fn agent_onboard_applies_an_explicit_local_recipe_to_existing_project_policy() {
     fs::write(project.path().join("CONTRIBUTING.md"), "# Contributing\n")
         .expect("required project file");
     let recipe_path = patterns.path().join("team policy.yml");
-    fs::write(&recipe_path, "structure:\n  CONTRIBUTING.md: exists:1\n").expect("local recipe");
+    fs::write(
+        &recipe_path,
+        "structure:\n  ./:\n    CONTRIBUTING.md: exists:1\n",
+    )
+    .expect("local recipe");
 
     let output = Command::new(assura_full_bin())
         .args(["agent", "onboard"])
@@ -111,4 +115,49 @@ fn agent_onboard_applies_an_explicit_local_recipe_to_existing_project_policy() {
     )
     .expect("valid config YAML");
     assert_eq!(config["structure"]["CONTRIBUTING.md"], "exists:1");
+}
+
+#[test]
+fn agent_onboard_preserves_a_conflicting_local_rule_and_reports_both_values() {
+    let project = TempDir::new().expect("project directory");
+    let patterns = TempDir::new().expect("pattern directory");
+    fs::create_dir_all(project.path().join(".assura")).expect("Assura directory");
+    let original_policy =
+        "version: \"2.0\"\nrules:\n  project-file:\n    max_lines: 80\nstructure:\n  ./ :\n    extra: true\n";
+    fs::write(project.path().join(".assura/config.yml"), original_policy).expect("project policy");
+    let recipe_path = patterns.path().join("conflicting-policy.yml");
+    fs::write(&recipe_path, "rules:\n  project-file:\n    max_lines: 20\n").expect("local recipe");
+
+    let output = Command::new(assura_full_bin())
+        .args(["agent", "onboard"])
+        .arg(project.path())
+        .arg("--recipe-file")
+        .arg(&recipe_path)
+        .args(["--format", "json"])
+        .output()
+        .expect("assura agent onboard runs");
+
+    assert!(
+        !output.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("rules.project-file.max_lines"),
+        "stderr:\n{stderr}"
+    );
+    assert!(stderr.contains("existing: 80"), "stderr:\n{stderr}");
+    assert!(stderr.contains("incoming: 20"), "stderr:\n{stderr}");
+    let config: serde_yaml::Value = serde_yaml::from_str(
+        &fs::read_to_string(project.path().join(".assura/config.yml")).expect("project policy"),
+    )
+    .expect("valid config YAML");
+    assert_eq!(config["rules"]["project-file"]["max_lines"], 80);
+    assert_eq!(
+        fs::read_to_string(project.path().join(".assura/config.yml")).expect("project policy"),
+        original_policy,
+        "a local-recipe conflict must not leave a partially merged project policy"
+    );
 }
