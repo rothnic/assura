@@ -179,10 +179,12 @@ fn watch_debug_diagnostic_reports_normalized_event_inputs() {
     assert_eq!(changed["report"]["success"], false);
 
     let diagnostic = watch.next_normalization_diagnostic();
-    assert!(diagnostic["paths"].as_array().is_some());
-    assert!(diagnostic["event_kind"].is_string());
-    assert!(diagnostic["need_rescan"].is_boolean());
-    assert!(diagnostic["config_changed"].is_boolean());
+    eprintln!("normalization diagnostic: {diagnostic}");
+    assert_eq!(diagnostic["paths"], serde_json::json!(["src/BadName.ts"]));
+    assert_eq!(diagnostic["event_kind"], "Create(File)");
+    assert_eq!(diagnostic["need_rescan"], false);
+    assert_eq!(diagnostic["config_changed"], false);
+    assert_eq!(diagnostic["invalidated"], true);
 }
 
 #[test]
