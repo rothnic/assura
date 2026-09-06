@@ -3,7 +3,7 @@
 //! Integrates policy resolution with constraint validation.
 
 use crate::config::engine::PolicyEngine;
-use crate::config::types::{Case, Config, NamingConvention, Severity};
+use crate::config::types::{Case, LegacyPolicyConfig, NamingConvention, Severity};
 use crate::constraints::error::ValidationFailure;
 use crate::constraints::naming::CaseConvention;
 use std::path::Path;
@@ -42,7 +42,7 @@ pub struct ValidationResults {
 
 impl ValidationEngine {
     /// Create a new validation engine from a config
-    pub fn new(config: Config) -> Self {
+    pub fn new(config: LegacyPolicyConfig) -> Self {
         let policy_engine = PolicyEngine::new(config.clone());
         Self { policy_engine }
     }
@@ -305,7 +305,7 @@ mod tests {
 
     #[test]
     fn test_validate_naming_snake_case() {
-        let config = Config::new().with_policy(PolicyNode::new().with_entry(
+        let config = LegacyPolicyConfig::new().with_policy(PolicyNode::new().with_entry(
             "src/",
             PolicyEntry::InlineRule(InlineRule {
                 extensions: Some(vec!["rs".to_string()]),
@@ -331,7 +331,7 @@ mod tests {
     #[test]
     fn test_validate_max_lines() {
         // Use a glob pattern that will match any .rs file
-        let config = Config::new().with_policy(PolicyNode::new().with_entry(
+        let config = LegacyPolicyConfig::new().with_policy(PolicyNode::new().with_entry(
             "**/*.rs",
             PolicyEntry::InlineRule(InlineRule {
                 extensions: Some(vec!["rs".to_string()]),

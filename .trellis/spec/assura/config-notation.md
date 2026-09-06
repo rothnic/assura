@@ -4,6 +4,20 @@ This is the canonical contract for hand-authored structure notation. Assura is
 pre-1.0: one primary authored form is preferred, and removed alpha forms do not
 become permanent parser aliases.
 
+## Model Roles
+
+`config::config::Config` plus `ConfigLoader` is the sole current runtime
+interpretation: `check`, `status`, `explain`, `doctor`, and `info` load it from
+the selected config path. The loader parses, normalizes, and semantically
+validates this `structure` notation before a command consumes it.
+
+`ast::LegacyNotationConfig` with `LegacyConfigParser` is retained only for the
+older policy/context notation used by legacy validation and the named LS-Lint
+compatibility adapter. `types::LegacyPolicyConfig` similarly serves the legacy
+policy engine. Neither is a fallback for current runtime commands. Migration
+normalizes supported LS-Lint input through its named adapter and validates the
+result with `ConfigLoader`.
+
 ## Design Criteria
 
 Notation decisions are judged by:

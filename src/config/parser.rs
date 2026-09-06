@@ -1,16 +1,17 @@
-//! Configuration Parser
+//! Legacy notation parser.
 //!
-//! Parses Assura configuration files into AST.
-//! Follows Constitution: structure-first, valid YAML/JSON.
+//! This parser is retained for named compatibility validation and must not be
+//! used by current runtime command handlers. Current `structure` notation is
+//! parsed through [`crate::config::loader::ConfigLoader`].
 
-use crate::config::ast::Config;
+use crate::config::ast::LegacyNotationConfig;
 use crate::config::preprocessor::YamlPreprocessor;
 
-/// Parser for Assura configuration
-pub struct ConfigParser;
+/// Parser for the legacy policy/context notation.
+pub struct LegacyConfigParser;
 
 #[derive(Debug, thiserror::Error)]
-pub enum ParseError {
+pub enum LegacyParseError {
     #[error("YAML parse error: {0}")]
     Yaml(#[from] serde_yaml::Error),
 
@@ -21,18 +22,18 @@ pub enum ParseError {
     MissingField(String),
 }
 
-impl ConfigParser {
+impl LegacyConfigParser {
     /// Parse configuration from YAML string
     ///
     /// # Arguments
     /// * `input` - Raw YAML configuration
     ///
     /// # Returns
-    /// * Parsed Config or ParseError
+    /// * Parsed LegacyNotationConfig or LegacyParseError
     ///
     /// # Example
     /// ```ignore
-    /// use assura::config::parser::ConfigParser;
+    /// use assura::config::parser::LegacyConfigParser;
     ///
     /// let yaml = r#"
     /// rules:
@@ -47,14 +48,14 @@ impl ConfigParser {
     ///       - apply: react
     /// "#;
     ///
-    /// let config = ConfigParser::parse(yaml)?;
+    /// let config = LegacyConfigParser::parse(yaml)?;
     /// ```
-    pub fn parse(input: &str) -> Result<Config, ParseError> {
+    pub fn parse(input: &str) -> Result<LegacyNotationConfig, LegacyParseError> {
         // Step 1: Preprocess to make valid YAML
         let processed = YamlPreprocessor::process(input);
 
         // Step 2: Parse YAML to AST
-        let config: Config = serde_yaml::from_str(&processed)?;
+        let config: LegacyNotationConfig = serde_yaml::from_str(&processed)?;
 
         // Step 3: Validate
         Self::validate(&config)?;
@@ -63,24 +64,24 @@ impl ConfigParser {
     }
 
     /// Parse from file path
-    pub fn parse_file(path: &std::path::Path) -> Result<Config, ParseError> {
+    pub fn parse_file(path: &std::path::Path) -> Result<LegacyNotationConfig, LegacyParseError> {
         let content = std::fs::read_to_string(path)
-            .map_err(|e| ParseError::Invalid(format!("Failed to read file: {}", e)))?;
+            .map_err(|e| LegacyParseError::Invalid(format!("Failed to read file: {}", e)))?;
 
         Self::parse(&content)
     }
 
     /// Validate configuration
-    fn validate(config: &Config) -> Result<(), ParseError> {
+    fn validate(config: &LegacyNotationConfig) -> Result<(), LegacyParseError> {
         // Check that policy tree is not empty
         if config.policy.entries.is_empty() {
-            return Err(ParseError::MissingField("policy".to_string()));
+            return Err(LegacyParseError::MissingField("policy".to_string()));
         }
 
         // Validate rules
         for (name, rule) in &config.rules {
             if rule.patterns.is_empty() {
-                return Err(ParseError::Invalid(format!(
+                return Err(LegacyParseError::Invalid(format!(
                     "Rule '{}' has no patterns",
                     name
                 )));
@@ -95,10 +96,10 @@ impl ConfigParser {
 
     /// Recursively validate rule references in policy tree
     fn validate_rule_refs(
-        config: &Config,
+        config: &LegacyNotationConfig,
         node: &crate::config::ast::PolicyNode,
         path: &str,
-    ) -> Result<(), ParseError> {
+    ) -> Result<(), LegacyParseError> {
         use crate::config::ast::{ApplyValue, FileItem, PolicyEntry};
 
         for (key, entry) in &node.entries {
@@ -115,7 +116,7 @@ impl ConfigParser {
 
                             for rule_name in rule_names {
                                 if !config.rules.contains_key(&rule_name) {
-                                    return Err(ParseError::Invalid(format!(
+                                    return Err(LegacyParseError::Invalid(format!(
                                         "Rule '{}' not found (referenced at {})",
                                         rule_name, current_path
                                     )));
@@ -135,7 +136,7 @@ impl ConfigParser {
     }
 }
 
-/// Extension methods for Config
+/// Extension methods for LegacyNotationConfig
 pub trait ConfigExt {
     /// Get all rules applied at a policy node
     fn get_applied_rules(
@@ -148,7 +149,7 @@ pub trait ConfigExt {
     fn get_violation_level(&self, context_name: &str, file_path: &str) -> Option<String>;
 }
 
-impl ConfigExt for Config {
+impl ConfigExt for LegacyNotationConfig {
     fn get_applied_rules(
         &self,
         _path: &[&str],
@@ -186,7 +187,7 @@ policy:
       - exists: 1
 "#;
 
-        let result = ConfigParser::parse(yaml);
+        let result = LegacyConfigParser::parse(yaml);
         assert!(
             result.is_ok(),
             "Should parse valid config: {:?}",
@@ -208,7 +209,7 @@ rules:
 "#;
 
         // Direct YAML parse would fail on unquoted .tsx
-        let direct = serde_yaml::from_str::<Config>(yaml);
+        let direct = serde_yaml::from_str::<LegacyNotationConfig>(yaml);
         assert!(direct.is_err());
 
         // Preprocessor quotes keys but LS-Lint shorthand (.tsx: PascalCase)
@@ -226,7 +227,7 @@ policy:
       - apply: react
 "#;
 
-        let result = ConfigParser::parse(full_yaml);
+        let result = LegacyConfigParser::parse(full_yaml);
         assert!(result.is_ok());
     }
 
@@ -241,7 +242,7 @@ rules:
 policy:
 "#;
 
-        let result = ConfigParser::parse(yaml);
+        let result = LegacyConfigParser::parse(yaml);
         assert!(result.is_err());
     }
 
@@ -259,7 +260,7 @@ policy:
     ${name}.tsx:
       - apply: sized
 "#;
-        let result1 = ConfigParser::parse(yaml1);
+        let result1 = LegacyConfigParser::parse(yaml1);
         if let Err(ref e) = result1 {
             println!("Test 1 (constraints only) error: {:?}", e);
         }
@@ -278,7 +279,7 @@ policy:
     ${name}.tsx:
       - apply: sized
 "#;
-        let result2 = ConfigParser::parse(yaml2);
+        let result2 = LegacyConfigParser::parse(yaml2);
         if let Err(ref e) = result2 {
             println!("Test 2 (with violation) error: {:?}", e);
         }
@@ -298,7 +299,7 @@ policy:
     ${name}.tsx:
       - apply: sized
 "#;
-        let result3 = ConfigParser::parse(yaml3);
+        let result3 = LegacyConfigParser::parse(yaml3);
         if let Err(ref e) = result3 {
             println!("Test 3 (with message) error: {:?}", e);
         }
@@ -321,7 +322,7 @@ policy:
       - apply: sized
 "#;
 
-        let config = ConfigParser::parse(yaml).expect("Should parse");
+        let config = LegacyConfigParser::parse(yaml).expect("Should parse");
         let rule = config.rules.get("sized").expect("Should have sized rule");
 
         // Verify the rule has the correct patterns
@@ -343,7 +344,7 @@ policy:
       - apply: react
 "#;
 
-        let config = ConfigParser::parse(yaml).expect("Should parse");
+        let config = LegacyConfigParser::parse(yaml).expect("Should parse");
         let json = config.to_json().expect("Should serialize to JSON");
 
         // Should produce valid JSON
@@ -375,7 +376,7 @@ policy:
       - apply: react
 "#;
 
-        let config = ConfigParser::parse(yaml).expect("Should parse");
+        let config = LegacyConfigParser::parse(yaml).expect("Should parse");
         assert!(config.contexts.contains_key("ci"));
         assert!(config.contexts.contains_key("feature"));
     }
@@ -394,7 +395,7 @@ policy:
       - apply: nonexistent-rule
 "#;
 
-        let result = ConfigParser::parse(yaml);
+        let result = LegacyConfigParser::parse(yaml);
         assert!(
             result.is_err(),
             "Should fail for non-existent rule reference"
@@ -424,7 +425,7 @@ policy:
       - apply: [react, tested]
 "#;
 
-        let config = ConfigParser::parse(yaml).expect("Should parse array apply");
+        let config = LegacyConfigParser::parse(yaml).expect("Should parse array apply");
         // Should successfully parse apply with multiple rules
         assert!(config.rules.contains_key("react"));
         assert!(config.rules.contains_key("tested"));
@@ -445,7 +446,8 @@ policy:
       - apply: sized
 "#;
 
-        let config = ConfigParser::parse(yaml).expect("Should parse context-specific violations");
+        let config =
+            LegacyConfigParser::parse(yaml).expect("Should parse context-specific violations");
         let rule = config.rules.get("sized").expect("Should have sized rule");
         let items = rule
             .patterns

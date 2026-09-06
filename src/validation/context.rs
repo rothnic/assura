@@ -3,7 +3,7 @@
 //! Matches current execution context against defined contexts.
 //! Determines violation levels based on context.
 
-use crate::config::ast::{Config, ViolationEntry};
+use crate::config::ast::{LegacyNotationConfig, ViolationEntry};
 use std::collections::HashMap;
 
 /// Current execution context
@@ -55,7 +55,7 @@ pub struct ContextMatcher;
 impl ContextMatcher {
     /// Find matching context and determine violation level
     pub fn match_context(
-        config: &Config,
+        config: &LegacyNotationConfig,
         execution: &ExecutionContext,
         violation_entries: &Vec<ViolationEntry>,
     ) -> ViolationLevel {
@@ -85,7 +85,11 @@ impl ContextMatcher {
     }
 
     /// Check if a named context matches current execution
-    fn context_matches(config: &Config, context_name: &str, execution: &ExecutionContext) -> bool {
+    fn context_matches(
+        config: &LegacyNotationConfig,
+        context_name: &str,
+        execution: &ExecutionContext,
+    ) -> bool {
         let context = match config.contexts.get(context_name) {
             Some(c) => c,
             None => return false, // Unknown context name
@@ -348,7 +352,7 @@ mod tests {
 
     #[test]
     fn test_context_matching() {
-        use crate::config::ast::{Config, PolicyNode};
+        use crate::config::ast::{LegacyNotationConfig, PolicyNode};
 
         let mut contexts = std::collections::HashMap::new();
         contexts.insert(
@@ -371,7 +375,7 @@ mod tests {
             },
         );
 
-        let config = Config {
+        let config = LegacyNotationConfig {
             rules: std::collections::HashMap::new(),
             contexts,
             messages: std::collections::HashMap::new(),

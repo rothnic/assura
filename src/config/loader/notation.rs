@@ -1,8 +1,39 @@
 //! YAML notation routing and normalization for configuration loading.
 
-use super::Config;
+use super::{Config, ConfigLoader};
 use crate::cli::config::{ConfigError, ConfigResult};
 use crate::config::config::{normalize_structure_config_value, validate_config_semantics};
+use std::collections::BTreeSet;
+
+impl ConfigLoader {
+    /// Return the deterministic names of reusable rules authored in a current
+    /// structure configuration.
+    pub fn authored_rule_names(content: &str) -> ConfigResult<Vec<String>> {
+        let value = parse_yaml_value(content)?;
+        let names = value
+            .as_mapping()
+            .and_then(|root| root.get(serde_yaml::Value::String("rules".to_string())))
+            .and_then(serde_yaml::Value::as_mapping)
+            .map(|rules| {
+                rules
+                    .keys()
+                    .filter_map(serde_yaml::Value::as_str)
+                    .map(str::to_string)
+                    .collect::<BTreeSet<_>>()
+                    .into_iter()
+                    .collect()
+            })
+            .unwrap_or_default();
+        Ok(names)
+    }
+
+    /// Load an authored-rule summary from the same source file as the current
+    /// structure configuration.
+    pub fn authored_rule_names_from_path(path: &std::path::Path) -> ConfigResult<Vec<String>> {
+        let content = std::fs::read_to_string(path).map_err(ConfigError::Io)?;
+        Self::authored_rule_names(&content)
+    }
+}
 
 pub(super) fn parse_yaml_value(content: &str) -> ConfigResult<serde_yaml::Value> {
     serde_yaml::from_str(content).map_err(|error| ConfigError::Yaml(error.to_string()))

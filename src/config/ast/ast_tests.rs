@@ -16,7 +16,7 @@ policy:
       - apply: react
 "#;
 
-    let config = Config::from_yaml(yaml).expect("Should parse");
+    let config = LegacyNotationConfig::from_yaml(yaml).expect("Should parse");
     assert!(config.rules.contains_key("react"));
 }
 
@@ -44,9 +44,9 @@ policy:
       - apply: react
 "#;
 
-    let config = Config::from_yaml(yaml).expect("Should parse YAML");
+    let config = LegacyNotationConfig::from_yaml(yaml).expect("Should parse YAML");
     let json = config.to_json().expect("Should serialize to JSON");
-    let config2: Config = serde_json::from_str(&json).expect("Should parse JSON");
+    let config2: LegacyNotationConfig = serde_json::from_str(&json).expect("Should parse JSON");
 
     assert_eq!(config.rules.len(), config2.rules.len());
 }

@@ -15,7 +15,6 @@ use crate::cli::{CheckCommandOptions, ConfigDiscovery, ExitCode};
 use crate::config::config::{Config, DirectoryNode};
 use crate::config::loader::ConfigLoader;
 use crate::config::ls_compat::convert_ls_lint_documents_to_migration;
-use crate::config::parser::ConfigParser;
 use std::path::{Path, PathBuf};
 
 /// Run validation check
@@ -96,7 +95,15 @@ pub async fn status_command(
 
     match ConfigLoader::load(&config_path) {
         Ok(config) => {
-            let summary = StatusSummary::from_config(project_root, config_path, &config);
+            let reusable_rules = match ConfigLoader::authored_rule_names_from_path(&config_path) {
+                Ok(names) => names.len(),
+                Err(error) => {
+                    eprintln!("Error: {}", error);
+                    return ExitCode::ConfigurationError;
+                }
+            };
+            let summary =
+                StatusSummary::from_config(project_root, config_path, &config, reusable_rules);
             let rendered = match format {
                 OutputFormat::Text => summary.format_text(),
                 OutputFormat::Json => serde_json::to_string_pretty(&summary).unwrap_or_default(),
@@ -391,10 +398,18 @@ pub async fn info_command(path: Option<PathBuf>, config: Option<PathBuf>) -> Exi
 
     match ConfigLoader::load(&config_path) {
         Ok(config) => {
+            let reusable_rules = match ConfigLoader::authored_rule_names_from_path(&config_path) {
+                Ok(names) => names.len(),
+                Err(error) => {
+                    eprintln!("Error: {}", error);
+                    return ExitCode::ConfigurationError;
+                }
+            };
             println!("Assura configuration info");
             println!("=========================");
             println!("Config: {}", config_path.display());
             println!("Structure roots: {}", config.structure.len());
+            println!("Reusable rules: {reusable_rules}");
             println!("Top-level patterns: {}", config.patterns.len());
             println!("Exclusions: {}", config.exclude.len());
             println!(
@@ -469,37 +484,6 @@ impl Cli {
         } else {
             println!("\n--- Migrated Configuration ---");
             println!("{}", assura_yaml);
-        }
-
-        Ok(())
-    }
-
-    /// Show configuration information
-    pub fn info(config_path: &Path) -> Result<(), Box<dyn std::error::Error>> {
-        let config = ConfigParser::parse_file(config_path)?;
-
-        println!("Assura Configuration Info");
-        println!("=========================");
-        println!("Rules: {}", config.rules.len());
-        println!("Contexts: {}", config.contexts.len());
-        println!("Policy entries: {}", config.policy.entries.len());
-
-        if !config.rules.is_empty() {
-            println!("\\nDefined Rules:");
-            for name in config.rules.keys() {
-                println!("  - {}", name);
-            }
-        }
-
-        if !config.contexts.is_empty() {
-            println!("\\nDefined Contexts:");
-            for (name, ctx) in &config.contexts {
-                print!("  - {}", name);
-                if let Some(ref hook) = ctx.hook {
-                    print!(" (hook: {})", hook);
-                }
-                println!();
-            }
         }
 
         Ok(())
@@ -608,17 +592,24 @@ struct StatusSummary {
     configured_directories: usize,
     configured_file_rules: usize,
     configured_markdown_rules: usize,
+    reusable_rules: usize,
     exclusions: Vec<String>,
 }
 
 impl StatusSummary {
-    fn from_config(project_root: PathBuf, config_path: PathBuf, config: &Config) -> Self {
+    fn from_config(
+        project_root: PathBuf,
+        config_path: PathBuf,
+        config: &Config,
+        reusable_rules: usize,
+    ) -> Self {
         let mut summary = Self {
             project_root,
             config_path,
             configured_directories: 0,
             configured_file_rules: 0,
             configured_markdown_rules: 0,
+            reusable_rules,
             exclusions: config.exclude.clone(),
         };
 
@@ -654,6 +645,7 @@ Config: {}
 Configured directories: {}
 File rule bundles: {}
 Markdown rule bundles: {}
+Reusable rules: {}
 Exclusions: {}
 ",
             self.project_root.display(),
@@ -661,6 +653,7 @@ Exclusions: {}
             self.configured_directories,
             self.configured_file_rules,
             self.configured_markdown_rules,
+            self.reusable_rules,
             if self.exclusions.is_empty() {
                 "none".to_string()
             } else {
@@ -677,7 +670,7 @@ mod tests {
     use tempfile::{tempdir, NamedTempFile};
 
     #[test]
-    fn test_cli_info() {
+    fn legacy_parser_remains_available_to_compatibility_tests() {
         let mut temp_file = NamedTempFile::new().unwrap();
         temp_file
             .write_all(
@@ -696,7 +689,7 @@ policy:
             )
             .unwrap();
 
-        let result = Cli::info(temp_file.path());
+        let result = crate::config::parser::LegacyConfigParser::parse_file(temp_file.path());
         assert!(result.is_ok());
     }
 

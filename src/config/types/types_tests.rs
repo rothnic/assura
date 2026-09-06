@@ -36,7 +36,7 @@ fn test_naming_convention_multiple() {
 
 #[test]
 fn test_config_builder() {
-    let config = Config::new()
+    let config = LegacyPolicyConfig::new()
         .with_rule("rust", Rule::new().with_max_lines(500))
         .with_exclude("target/**");
 
@@ -46,7 +46,7 @@ fn test_config_builder() {
 
 #[test]
 fn test_yaml_serialization() {
-    let config = Config::new().with_rule(
+    let config = LegacyPolicyConfig::new().with_rule(
         "rust-source",
         Rule::new()
             .with_extensions(vec!["rs".to_string()])

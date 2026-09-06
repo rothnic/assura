@@ -1,7 +1,13 @@
 //! Configuration module for Assura
 //!
-//! This module handles parsing and representation of Assura configuration files.
-//! Follows Constitution principles: structure-first, valid YAML/JSON.
+//! The current authored configuration contract is `config::Config` loaded by
+//! `ConfigLoader`. It parses, normalizes, and validates `structure` notation
+//! for every supported runtime command.
+//!
+//! `ast::LegacyNotationConfig` and `types::LegacyPolicyConfig` remain only for
+//! the named legacy notation and compatibility validation paths. They do not
+//! describe the current `structure` language and must not be used by runtime
+//! command handlers.
 
 #[cfg(feature = "full-cli")]
 pub mod ast;
@@ -25,27 +31,33 @@ pub mod types;
 #[cfg(feature = "full-cli")]
 pub mod validator;
 
-// Re-export main types
+/// Legacy notation types retained for the LS-Lint compatibility adapter and
+/// legacy validation tests.
 #[cfg(feature = "full-cli")]
-pub use ast::{Config, Constraint, Context, PolicyNode, Rule, ViolationEntry};
+pub use ast::{Constraint, Context, LegacyNotationConfig, PolicyNode, Rule, ViolationEntry};
+/// Current normalized structure configuration used by runtime commands.
+pub use config::Config;
+/// Current loader for authored structure notation.
+#[cfg(feature = "yaml-config")]
+pub use loader::ConfigLoader;
 #[cfg(feature = "full-cli")]
-pub use parser::{ConfigParser, ParseError};
+pub use parser::{LegacyConfigParser, LegacyParseError};
 #[cfg(feature = "full-cli")]
 pub use preprocessor::YamlPreprocessor;
 
 /// Load configuration from default locations
 #[cfg(feature = "full-cli")]
-pub fn load_config() -> Result<Config, Box<dyn std::error::Error>> {
+pub fn load_config() -> Result<config::Config, Box<dyn std::error::Error>> {
     // Try .assura/config.yml
     let path = std::path::Path::new(".assura/config.yml");
     if path.exists() {
-        return Ok(ConfigParser::parse_file(path)?);
+        return Ok(ConfigLoader::load(path)?);
     }
 
     // Try .assura/config.yaml
     let path = std::path::Path::new(".assura/config.yaml");
     if path.exists() {
-        return Ok(ConfigParser::parse_file(path)?);
+        return Ok(ConfigLoader::load(path)?);
     }
 
     Err("No configuration file found".into())

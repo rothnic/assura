@@ -258,8 +258,8 @@
         "P01"
       ],
       "executor": "agent",
-      "state": "pending",
-      "owner": null,
+      "state": "implemented",
+      "owner": "codex",
       "evidence": "evidence/Q03.md",
       "blocker": null
     },

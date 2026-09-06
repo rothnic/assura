@@ -1,17 +1,16 @@
-//! Abstract Syntax Tree for Assura Configuration
+//! Legacy notation model retained for compatibility validation.
 //!
-//! Follows Constitution principles:
-//! - Structure-first representation
-//! - YAML/JSON compatible
-//! - No custom string parsing
+//! This model represents the pre-`structure` policy/context language consumed
+//! by the named legacy parser and LS-Lint compatibility adapter. Current
+//! runtime commands use [`crate::config::config::Config`] via `ConfigLoader`.
 
 use crate::config::preprocessor::YamlPreprocessor;
 use serde::{Deserialize, Serialize, Serializer};
 use std::collections::HashMap;
 
-/// Top-level configuration structure
+/// Top-level model for the legacy policy/context notation.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct Config {
+pub struct LegacyNotationConfig {
     /// Reusable rule definitions
     #[serde(default)]
     pub rules: HashMap<String, Rule>,
@@ -431,7 +430,7 @@ pub enum FileItem {
     Message(Message),
 }
 
-impl Config {
+impl LegacyNotationConfig {
     /// Parse configuration from YAML string
     /// Preprocesses to add quotes where needed before parsing
     pub fn from_yaml(yaml: &str) -> Result<Self, serde_yaml::Error> {

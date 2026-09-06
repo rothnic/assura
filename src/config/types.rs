@@ -2,7 +2,8 @@
 //!
 //! This module defines the types for the new config format:
 //! - `Rule`: Reusable validation rules defined in the `rules` section
-//! - `Config`: Root configuration with rules, policy tree, and exclusions
+//! - `LegacyPolicyConfig`: legacy policy-engine root retained for compatibility
+//!   validation; current runtime structure configuration lives in `config::Config`
 //! - `PolicyNode`: Tree structure for path/extension-based policy application
 //! - `PolicyEntry`: Individual policy entries (rule refs, conventions, directives)
 
@@ -113,11 +114,11 @@ pub enum Case {
     Regex(String),
 }
 
-/// Root configuration struct
+/// Root model for the legacy policy engine.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "full-cli", derive(Validate))]
 #[serde(rename_all = "snake_case")]
-pub struct Config {
+pub struct LegacyPolicyConfig {
     /// Reusable rule definitions
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     #[cfg_attr(feature = "full-cli", validate(nested))]
@@ -367,7 +368,7 @@ impl Default for Rule {
     }
 }
 
-impl Config {
+impl LegacyPolicyConfig {
     /// Create a new empty config
     pub fn new() -> Self {
         Self {
@@ -397,7 +398,7 @@ impl Config {
     }
 }
 
-impl Default for Config {
+impl Default for LegacyPolicyConfig {
     fn default() -> Self {
         Self::new()
     }
