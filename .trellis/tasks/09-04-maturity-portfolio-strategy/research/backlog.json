@@ -1,6 +1,6 @@
 {
   "schema": "assura.execution-backlog.v1",
-  "updated": "2026-09-04",
+  "updated": "2026-09-06",
   "source_snapshot": "ed093668918bc271fc98b9112acaf7c1bf3eb314",
   "refresh_source_before_execution": true,
   "spec": "../prd.md",
@@ -84,8 +84,8 @@
         "B00"
       ],
       "executor": "agent",
-      "state": "verified",
-      "owner": "Codex goal/r04-verified-msrv",
+      "state": "done",
+      "owner": "Codex goal: Assura Maturity Execution Train",
       "evidence": "evidence/R04.md",
       "blocker": null
     },
