@@ -73,39 +73,10 @@ exclude:
 "#,
     )
     .expect("built-in starter config is valid YAML");
-    for recipe_file in recipe_files {
-        let source = std::fs::read_to_string(recipe_file).map_err(|error| {
-            StarterInitError::Runtime(format!(
-                "failed to read local recipe {}: {error}",
-                recipe_file.display()
-            ))
-        })?;
-        let recipe = serde_yaml::from_str(&source).map_err(|error| {
-            StarterInitError::Configuration(format!(
-                "local recipe {} is not valid YAML: {error}",
-                recipe_file.display()
-            ))
-        })?;
-        merge_recipe_value(&mut config, recipe);
-    }
+    crate::cli::local_recipe::apply_recipe_files(&mut config, recipe_files)?;
     serde_yaml::to_string(&config).map_err(|error| {
         StarterInitError::Runtime(format!("failed to render starter config: {error}"))
     })
-}
-
-fn merge_recipe_value(destination: &mut serde_yaml::Value, source: serde_yaml::Value) {
-    match (destination, source) {
-        (serde_yaml::Value::Mapping(destination), serde_yaml::Value::Mapping(source)) => {
-            for (key, value) in source {
-                if let Some(existing) = destination.get_mut(&key) {
-                    merge_recipe_value(existing, value);
-                } else {
-                    destination.insert(key, value);
-                }
-            }
-        }
-        (destination, source) => *destination = source,
-    }
 }
 
 /// Return the project-owned YAML fragment for one first-party recipe.
