@@ -23,6 +23,8 @@ const OUTPUT_SCHEMA: &str = "assura.agent-onboarding.v1";
 pub struct AgentOnboardingOptions {
     /// Project root directory.
     pub path: Option<PathBuf>,
+    /// Explicit local policy recipe to apply.
+    pub recipe_file: Option<PathBuf>,
     /// Requested host-agent profile.
     pub agent: AgentOnboardingTarget,
     /// Whether to activate the selected host integration.
@@ -74,6 +76,15 @@ fn run_agent_onboarding(
     let mut files = Vec::new();
     for file in baseline_files(&detected, options.content_template) {
         files.push(materialize_baseline_file(&project_root, file)?);
+    }
+    if let Some(recipe_file) = options.recipe_file {
+        let outcome = crate::cli::local_recipe::merge_recipe_file(&config_path, &recipe_file)
+            .map_err(|error| error.message().to_string())?;
+        if !outcome.conflicts.is_empty() {
+            return Err(outcome.render_conflicts());
+        }
+        crate::cli::local_recipe::write_profile_selection(&project_root, &recipe_file)
+            .map_err(|error| error.message().to_string())?;
     }
     let rule_recommendations = recommended_rules(&detected, &config_path)?;
     files.push(materialize_managed_file(

@@ -9,6 +9,12 @@ pub enum AgentCommands {
     #[command(about = "Bootstrap a broad agent-ready project baseline")]
     Onboard {
         path: Option<PathBuf>,
+        #[arg(
+            long,
+            value_name = "PATH",
+            help = "Apply an explicit local Assura YAML recipe file"
+        )]
+        recipe_file: Option<PathBuf>,
         #[arg(long, value_enum, default_value = "auto")]
         agent: AgentOnboardingTarget,
         #[arg(long, help = "Activate the detected or selected host integration")]

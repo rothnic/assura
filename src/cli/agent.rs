@@ -11,6 +11,7 @@ pub async fn agent_command(command: AgentCommands, config: Option<PathBuf>) -> E
     match command {
         AgentCommands::Onboard {
             path,
+            recipe_file,
             agent,
             activate,
             content_template,
@@ -19,6 +20,7 @@ pub async fn agent_command(command: AgentCommands, config: Option<PathBuf>) -> E
             agent_onboarding_command(
                 AgentOnboardingOptions {
                     path,
+                    recipe_file,
                     agent,
                     activate,
                     content_template,

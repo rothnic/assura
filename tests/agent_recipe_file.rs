@@ -75,3 +75,40 @@ fn init_records_the_explicit_local_recipe_origin_and_content_hash() {
         format!("{:x}", Sha256::digest(recipe.as_bytes()))
     );
 }
+
+#[test]
+fn agent_onboard_applies_an_explicit_local_recipe_to_existing_project_policy() {
+    let project = TempDir::new().expect("project directory");
+    let patterns = TempDir::new().expect("pattern directory");
+    fs::create_dir_all(project.path().join(".assura")).expect("Assura directory");
+    fs::write(
+        project.path().join(".assura/config.yml"),
+        "version: \"2.0\"\nstructure:\n  ./:\n    extra: true\n",
+    )
+    .expect("project policy");
+    fs::write(project.path().join("CONTRIBUTING.md"), "# Contributing\n")
+        .expect("required project file");
+    let recipe_path = patterns.path().join("team policy.yml");
+    fs::write(&recipe_path, "structure:\n  CONTRIBUTING.md: exists:1\n").expect("local recipe");
+
+    let output = Command::new(assura_full_bin())
+        .args(["agent", "onboard"])
+        .arg(project.path())
+        .arg("--recipe-file")
+        .arg(&recipe_path)
+        .args(["--format", "json"])
+        .output()
+        .expect("assura agent onboard runs");
+
+    assert!(
+        output.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let config: serde_yaml::Value = serde_yaml::from_str(
+        &fs::read_to_string(project.path().join(".assura/config.yml")).expect("project policy"),
+    )
+    .expect("valid config YAML");
+    assert_eq!(config["structure"]["CONTRIBUTING.md"], "exists:1");
+}
