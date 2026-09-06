@@ -172,6 +172,10 @@ jobs:
       run: bash scripts/summarize-rust-cache.sh "Test Suite" "${{ steps.rust-cache.outputs.cache-hit }}" "assura-debug-${{ runner.os }}-${{ matrix.rust }}"
     - name: Run tests
       run: cargo test --all-features
+    - name: Capture watch scope normalization evidence
+      env:
+        ASSURA_WATCH_NORMALIZATION_DEBUG: "1"
+      run: cargo test --all-features --test watch_cli watch_honors_the_requested_directory_scope -- --exact --nocapture
 
   release-bundle:
     name: Release Bundle Smoke
@@ -473,20 +477,27 @@ jobs:
     - name: Summarize Rust cache
       run: bash scripts/summarize-rust-cache.sh "Performance Report" "${{ steps.rust-cache.outputs.cache-hit }}" "assura-release-${{ runner.os }}-host"
     - name: Build release performance bundle
+      id: perf_build
       run: |
         cargo build --release --bin assura --no-default-features --features json-output,yaml-config
         cargo rustc --release --bin assura --no-default-features --features json-output,yaml-config -- -C target-feature=+crt-static -C link-arg=-lgcc_eh
         cargo build --release --bin assura-full
         cargo build --release -p assura-check-cli
     - name: Generate comparison report
+      id: perf_lslint_generate
+      if: ${{ !cancelled() && steps.perf_build.outcome == 'success' }}
       run: |
         mkdir -p target/performance
         target/release/assura performance-report \
           --output target/performance/ls-lint-comparison.json \
           --iterations 16
     - name: Enforce no-slower gate
+      id: perf_lslint_gate
+      if: ${{ !cancelled() && steps.perf_lslint_generate.outcome == 'success' }}
       run: cargo xtask performance-no-slower target/performance/ls-lint-comparison.json
     - name: Generate native performance report
+      id: perf_native_generate
+      if: ${{ !cancelled() && steps.perf_build.outcome == 'success' }}
       run: |
         target/release/assura performance-report \
           --suite native \
@@ -494,8 +505,12 @@ jobs:
           --history target/performance/native-history.jsonl \
           --iterations 5
     - name: Enforce native performance gate
+      id: perf_native_gate
+      if: ${{ !cancelled() && steps.perf_native_generate.outcome == 'success' }}
       run: cargo xtask native-performance-no-regression target/performance/native-current.json
     - name: Generate warm-loop performance report
+      id: perf_warm_generate
+      if: ${{ !cancelled() && steps.perf_build.outcome == 'success' }}
       run: |
         cargo xtask warm-loop-benchmark \
           --binary target/release/assura-full \
@@ -503,81 +518,136 @@ jobs:
           --output target/performance/warm-loop-current.json \
           --history target/performance/warm-loop-history.jsonl
     - name: Validate checked warm-loop contract
+      id: perf_warm_checked_gate
+      if: ${{ !cancelled() && steps.perf_build.outcome == 'success' }}
       run: cargo xtask warm-loop-no-regression benches/history/warm-loop-current.json
     - name: Enforce warm-loop p95 budgets
+      id: perf_warm_gate
+      if: ${{ !cancelled() && steps.perf_warm_generate.outcome == 'success' }}
       run: cargo xtask warm-loop-no-regression target/performance/warm-loop-current.json
     - name: Summarize performance
-      if: always()
+      if: ${{ !cancelled() }}
+      env:
+        PERF_BUILD_OUTCOME: ${{ steps.perf_build.outcome }}
+        PERF_LSLINT_GENERATE_OUTCOME: ${{ steps.perf_lslint_generate.outcome }}
+        PERF_LSLINT_GATE_OUTCOME: ${{ steps.perf_lslint_gate.outcome }}
+        PERF_NATIVE_GENERATE_OUTCOME: ${{ steps.perf_native_generate.outcome }}
+        PERF_NATIVE_GATE_OUTCOME: ${{ steps.perf_native_gate.outcome }}
+        PERF_WARM_GENERATE_OUTCOME: ${{ steps.perf_warm_generate.outcome }}
+        PERF_WARM_CHECKED_GATE_OUTCOME: ${{ steps.perf_warm_checked_gate.outcome }}
+        PERF_WARM_GATE_OUTCOME: ${{ steps.perf_warm_gate.outcome }}
       run: |
         python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
         import json
+        import os
         from pathlib import Path
 
-        report_path = Path("target/performance/ls-lint-comparison.json")
-        report = json.loads(report_path.read_text())
-        print("## Assura vs LS-Lint Performance")
-        print()
-        print(f"- Baseline: `{report['comparison_baseline_id']}`")
-        print(f"- Commit: `{report['commit_sha']}`")
-        print(f"- Branch: `{report['branch']}`")
-        environment = report["environment"]
-        print(f"- Environment: `{environment['os']}/{environment['arch']}`")
-        print(f"- Rust: `{environment['rust_version']}`")
-        print(f"- Node/npm: `{environment['node_version']}` / `{environment['npm_version']}`")
-        status = report["ls_lint_status"]
-        if status["available"]:
-            print(f"- LS-Lint: `{status['version']}`")
-        else:
-            print(f"- LS-Lint: skipped, `{status['blocker']}`")
-        print("- Full machine-readable report is attached as `ls-lint-performance-report`.")
-        print()
-        print("| Fixture | Assura median | LS-Lint median | Status |")
-        print("| --- | ---: | ---: | --- |")
-        rows = report["results"]
-        def row_name(row):
-            return row.get("row_family") or row["tool_name"]
-        def find_row(fixture, *names):
-            return next(row for row in rows if row["fixture_id"] == fixture and row_name(row) in names)
+        outcomes = {
+            "build": os.environ.get("PERF_BUILD_OUTCOME", "unknown"),
+            "ls_lint_generation": os.environ.get("PERF_LSLINT_GENERATE_OUTCOME", "unknown"),
+            "ls_lint_gate": os.environ.get("PERF_LSLINT_GATE_OUTCOME", "unknown"),
+            "native_generation": os.environ.get("PERF_NATIVE_GENERATE_OUTCOME", "unknown"),
+            "native_gate": os.environ.get("PERF_NATIVE_GATE_OUTCOME", "unknown"),
+            "warm_generation": os.environ.get("PERF_WARM_GENERATE_OUTCOME", "unknown"),
+            "warm_checked_gate": os.environ.get("PERF_WARM_CHECKED_GATE_OUTCOME", "unknown"),
+            "warm_gate": os.environ.get("PERF_WARM_GATE_OUTCOME", "unknown"),
+        }
+
+        def evidence_status(generation):
+            if outcomes["build"] != "success":
+                return "not_run_build_failed"
+            if outcomes[generation] != "success":
+                return "generation_failed"
+            return "generated"
+
         def median(row):
             value = row["median_runtime_ms"]
             return "n/a" if value is None else f"{value:.3f} ms"
-        fixtures = []
-        for row in rows:
-            if row["fixture_id"] not in fixtures:
-                fixtures.append(row["fixture_id"])
-        for fixture in fixtures:
-            assura = find_row(fixture, "assura-cli")
-            lslint = find_row(fixture, "ls-lint-cli")
-            print(f"| `{fixture}` | {median(assura)} | {median(lslint)} | `{assura['status']}` / `{lslint['status']}` |")
+
+        print("## Performance Evidence Status")
         print()
-        print("## jwalk Migration Traversal Evidence")
+        for label, generation, gates in [
+            ("LS-Lint comparison", "ls_lint_generation", [("no-slower", "ls_lint_gate")]),
+            ("Native", "native_generation", [("native regression", "native_gate")]),
+            ("Warm loop", "warm_generation", [
+                ("checked contract", "warm_checked_gate"),
+                ("p95 budget", "warm_gate"),
+            ]),
+        ]:
+            gate_outcomes = ", ".join(
+                f"{name} `{outcomes[gate]}`" for name, gate in gates
+            )
+            print(
+                f"- {label}: `{evidence_status(generation)}` "
+                f"(generation `{outcomes[generation]}`, {gate_outcomes})"
+            )
         print()
-        print("| Fixture | walkdir | jwalk serial | jwalk parallel | Status |")
-        print("| --- | ---: | ---: | ---: | --- |")
-        for fixture in fixtures:
-            walkdir = find_row(fixture, "traversal:walkdir", "walkdir")
-            serial = find_row(fixture, "traversal:jwalk-serial", "jwalk-serial")
-            parallel = find_row(fixture, "traversal:jwalk-parallel", "jwalk-parallel")
-            print(f"| `{fixture}` | {median(walkdir)} | {median(serial)} | {median(parallel)} | `{walkdir['status']}` / `{serial['status']}` / `{parallel['status']}` |")
-        print()
-        print("## Assura Phase Breakdown")
-        print()
-        print("| Fixture | Config discovery | Config load | Init | Configured rules | Walk + validate | Sort |")
-        print("| --- | ---: | ---: | ---: | ---: | ---: | ---: |")
-        phases = [
-            "assura:phase:config-discovery",
-            "assura:phase:config-load",
-            "assura:phase:checker-init",
-            "assura:phase:configured-structure",
-            "assura:phase:walk-and-validate",
-            "assura:phase:report-sort",
-        ]
-        for fixture in fixtures:
-            values = [
-                median(find_row(fixture, phase))
-                for phase in phases
+
+        def summarize_lslint(report):
+            print("## Assura vs LS-Lint Performance")
+            print()
+            print(f"- Baseline: `{report['comparison_baseline_id']}`")
+            print(f"- Commit: `{report['commit_sha']}`")
+            print(f"- Branch: `{report['branch']}`")
+            environment = report["environment"]
+            print(f"- Environment: `{environment['os']}/{environment['arch']}`")
+            print(f"- Rust: `{environment['rust_version']}`")
+            print(f"- Node/npm: `{environment['node_version']}` / `{environment['npm_version']}`")
+            status = report["ls_lint_status"]
+            if status["available"]:
+                print(f"- LS-Lint: `{status['version']}`")
+            else:
+                print(f"- LS-Lint: skipped, `{status['blocker']}`")
+            print("- Full machine-readable report is attached as `ls-lint-performance-report`.")
+            print()
+            print("| Fixture | Assura median | LS-Lint median | Status |")
+            print("| --- | ---: | ---: | --- |")
+            rows = report["results"]
+            def row_name(row):
+                return row.get("row_family") or row["tool_name"]
+            def find_row(fixture, *names):
+                return next(row for row in rows if row["fixture_id"] == fixture and row_name(row) in names)
+            fixtures = []
+            for row in rows:
+                if row["fixture_id"] not in fixtures:
+                    fixtures.append(row["fixture_id"])
+            for fixture in fixtures:
+                assura = find_row(fixture, "assura-cli")
+                lslint = find_row(fixture, "ls-lint-cli")
+                print(f"| `{fixture}` | {median(assura)} | {median(lslint)} | `{assura['status']}` / `{lslint['status']}` |")
+            print()
+            print("## jwalk Migration Traversal Evidence")
+            print()
+            print("| Fixture | walkdir | jwalk serial | jwalk parallel | Status |")
+            print("| --- | ---: | ---: | ---: | --- |")
+            for fixture in fixtures:
+                walkdir = find_row(fixture, "traversal:walkdir", "walkdir")
+                serial = find_row(fixture, "traversal:jwalk-serial", "jwalk-serial")
+                parallel = find_row(fixture, "traversal:jwalk-parallel", "jwalk-parallel")
+                print(f"| `{fixture}` | {median(walkdir)} | {median(serial)} | {median(parallel)} | `{walkdir['status']}` / `{serial['status']}` / `{parallel['status']}` |")
+            print()
+            print("## Assura Phase Breakdown")
+            print()
+            print("| Fixture | Config discovery | Config load | Init | Configured rules | Walk + validate | Sort |")
+            print("| --- | ---: | ---: | ---: | ---: | ---: | ---: |")
+            phases = [
+                "assura:phase:config-discovery",
+                "assura:phase:config-load",
+                "assura:phase:checker-init",
+                "assura:phase:configured-structure",
+                "assura:phase:walk-and-validate",
+                "assura:phase:report-sort",
             ]
-            print(f"| `{fixture}` | " + " | ".join(values) + " |")
+            for fixture in fixtures:
+                values = [
+                    median(find_row(fixture, phase))
+                    for phase in phases
+                ]
+                print(f"| `{fixture}` | " + " | ".join(values) + " |")
+
+        report_path = Path("target/performance/ls-lint-comparison.json")
+        if report_path.exists():
+            summarize_lslint(json.loads(report_path.read_text()))
 
         native_path = Path("target/performance/native-current.json")
         if native_path.exists():
@@ -617,7 +687,7 @@ jobs:
                 )
         PY
     - name: Upload performance artifact
-      if: always()
+      if: ${{ !cancelled() && steps.perf_lslint_generate.outcome == 'success' && hashFiles('target/performance/ls-lint-comparison.json') != '' }}
       uses: actions/upload-artifact@v4
       with:
         name: ls-lint-performance-report
@@ -625,7 +695,7 @@ jobs:
         if-no-files-found: error
         retention-days: 30
     - name: Upload native performance artifact
-      if: always()
+      if: ${{ !cancelled() && steps.perf_native_generate.outcome == 'success' && hashFiles('target/performance/native-current.json') != '' && hashFiles('target/performance/native-history.jsonl') != '' }}
       uses: actions/upload-artifact@v4
       with:
         name: native-performance-report
@@ -635,7 +705,7 @@ jobs:
         if-no-files-found: error
         retention-days: 30
     - name: Upload warm-loop performance artifact
-      if: always()
+      if: ${{ !cancelled() && steps.perf_warm_generate.outcome == 'success' && hashFiles('target/performance/warm-loop-current.json') != '' && hashFiles('target/performance/warm-loop-history.jsonl') != '' }}
       uses: actions/upload-artifact@v4
       with:
         name: warm-loop-performance-report

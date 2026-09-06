@@ -1,0 +1,486 @@
+{
+  "schema": "assura.execution-backlog.v1",
+  "updated": "2026-09-04",
+  "source_snapshot": "ed093668918bc271fc98b9112acaf7c1bf3eb314",
+  "refresh_source_before_execution": true,
+  "spec": "../prd.md",
+  "instructions": "executor-prompt.md",
+  "selection": "First pending item with done/not_needed evidenced dependencies present in the checkout. Skip explicitly blocked external actions; read the card before editing.",
+  "items": [
+    {
+      "id": "B00",
+      "order": 1,
+      "title": "Current-source baseline",
+      "packet": "reliability-packet.md#b00",
+      "depends_on": [],
+      "executor": "agent",
+      "state": "done",
+      "owner": "Codex goal: Assura Maturity Execution Train",
+      "evidence": "evidence/B00.md",
+      "blocker": null
+    },
+    {
+      "id": "P01",
+      "order": 2,
+      "title": "Scope and roadmap contract",
+      "packet": "reliability-packet.md#p01",
+      "depends_on": [
+        "B00"
+      ],
+      "executor": "mixed",
+      "state": "pending",
+      "owner": null,
+      "evidence": "evidence/P01.md",
+      "blocker": null
+    },
+    {
+      "id": "R01",
+      "order": 3,
+      "title": "Watch scope correctness",
+      "packet": "reliability-packet.md#r01",
+      "depends_on": [
+        "B00"
+      ],
+      "executor": "agent",
+      "state": "verified",
+      "owner": "Codex goal: Assura Maturity Execution Train",
+      "evidence": "evidence/R01.md",
+      "blocker": null
+    },
+    {
+      "id": "R02",
+      "order": 4,
+      "title": "Independent performance evidence",
+      "packet": "reliability-packet.md#r02",
+      "depends_on": [
+        "B00"
+      ],
+      "executor": "agent",
+      "state": "active",
+      "owner": "Codex goal: Assura Maturity Execution Train",
+      "evidence": "evidence/R02.md",
+      "blocker": null
+    },
+    {
+      "id": "R03",
+      "order": 5,
+      "title": "Many-scope performance repair",
+      "packet": "reliability-packet.md#r03",
+      "depends_on": [
+        "R02"
+      ],
+      "executor": "agent",
+      "state": "pending",
+      "owner": null,
+      "evidence": "evidence/R03.md",
+      "blocker": null
+    },
+    {
+      "id": "R04",
+      "order": 6,
+      "title": "Verified Rust minimum",
+      "packet": "reliability-packet.md#r04",
+      "depends_on": [
+        "B00"
+      ],
+      "executor": "agent",
+      "state": "pending",
+      "owner": null,
+      "evidence": "evidence/R04.md",
+      "blocker": null
+    },
+    {
+      "id": "R05",
+      "order": 7,
+      "title": "Installer work completion",
+      "packet": "reliability-packet.md#r05",
+      "depends_on": [
+        "B00"
+      ],
+      "executor": "agent",
+      "state": "pending",
+      "owner": null,
+      "evidence": "evidence/R05.md",
+      "blocker": null
+    },
+    {
+      "id": "R07",
+      "order": 8,
+      "title": "Self-check advisory closure",
+      "packet": "reliability-packet.md#r07",
+      "depends_on": [
+        "B00"
+      ],
+      "executor": "agent",
+      "state": "active",
+      "owner": "Codex goal: Assura Maturity Execution Train",
+      "evidence": "evidence/R07.md",
+      "blocker": null
+    },
+    {
+      "id": "Q01",
+      "order": 9,
+      "title": "Rust quality skill",
+      "packet": "quality-packet.md#q01",
+      "depends_on": [
+        "B00"
+      ],
+      "executor": "agent",
+      "state": "pending",
+      "owner": null,
+      "evidence": "evidence/Q01.md",
+      "blocker": null
+    },
+    {
+      "id": "Q02",
+      "order": 10,
+      "title": "Contribution and review contract",
+      "packet": "quality-packet.md#q02",
+      "depends_on": [
+        "P01",
+        "Q01",
+        "R04"
+      ],
+      "executor": "mixed",
+      "state": "pending",
+      "owner": null,
+      "evidence": "evidence/Q02.md",
+      "blocker": null
+    },
+    {
+      "id": "A01",
+      "order": 11,
+      "title": "Independent init evaluator",
+      "packet": "initialization-packet.md#a01",
+      "depends_on": [
+        "P01"
+      ],
+      "executor": "agent",
+      "state": "pending",
+      "owner": null,
+      "evidence": "evidence/A01.md",
+      "blocker": null
+    },
+    {
+      "id": "A02",
+      "order": 12,
+      "title": "Reusable local patterns",
+      "packet": "initialization-packet.md#a02",
+      "depends_on": [
+        "A01"
+      ],
+      "executor": "agent",
+      "state": "pending",
+      "owner": null,
+      "evidence": "evidence/A02.md",
+      "blocker": null
+    },
+    {
+      "id": "A03",
+      "order": 13,
+      "title": "Agent-led specialization",
+      "packet": "initialization-packet.md#a03",
+      "depends_on": [
+        "A02"
+      ],
+      "executor": "agent",
+      "state": "pending",
+      "owner": null,
+      "evidence": "evidence/A03.md",
+      "blocker": null
+    },
+    {
+      "id": "A04",
+      "order": 14,
+      "title": "Verified hook lifecycle",
+      "packet": "initialization-packet.md#a04",
+      "depends_on": [
+        "A03"
+      ],
+      "executor": "agent",
+      "state": "pending",
+      "owner": null,
+      "evidence": "evidence/A04.md",
+      "blocker": null
+    },
+    {
+      "id": "A05",
+      "order": 15,
+      "title": "Native quality gates",
+      "packet": "initialization-packet.md#a05",
+      "depends_on": [
+        "A03"
+      ],
+      "executor": "agent",
+      "state": "pending",
+      "owner": null,
+      "evidence": "evidence/A05.md",
+      "blocker": null
+    },
+    {
+      "id": "A06",
+      "order": 16,
+      "title": "Bounded efficient feedback",
+      "packet": "initialization-packet.md#a06",
+      "depends_on": [
+        "R01",
+        "A04"
+      ],
+      "executor": "agent",
+      "state": "pending",
+      "owner": null,
+      "evidence": "evidence/A06.md",
+      "blocker": null
+    },
+    {
+      "id": "A07",
+      "order": 17,
+      "title": "Blinded candidate evaluation",
+      "packet": "initialization-packet.md#a07",
+      "depends_on": [
+        "A04",
+        "A05",
+        "A06"
+      ],
+      "executor": "agent",
+      "state": "pending",
+      "owner": null,
+      "evidence": "evidence/A07.md",
+      "blocker": null
+    },
+    {
+      "id": "Q03",
+      "order": 18,
+      "title": "Config authority consolidation",
+      "packet": "quality-packet.md#q03",
+      "depends_on": [
+        "Q01",
+        "P01"
+      ],
+      "executor": "agent",
+      "state": "pending",
+      "owner": null,
+      "evidence": "evidence/Q03.md",
+      "blocker": null
+    },
+    {
+      "id": "Q04",
+      "order": 19,
+      "title": "Cohesive policy modules",
+      "packet": "quality-packet.md#q04",
+      "depends_on": [
+        "Q03"
+      ],
+      "executor": "agent",
+      "state": "pending",
+      "owner": null,
+      "evidence": "evidence/Q04.md",
+      "blocker": null
+    },
+    {
+      "id": "Q05",
+      "order": 20,
+      "title": "Maturity score containment",
+      "packet": "quality-packet.md#q05",
+      "depends_on": [
+        "P01",
+        "Q01"
+      ],
+      "executor": "mixed",
+      "state": "pending",
+      "owner": null,
+      "evidence": "evidence/Q05.md",
+      "blocker": null
+    },
+    {
+      "id": "Q06",
+      "order": 21,
+      "title": "Maintenance command simplification",
+      "packet": "quality-packet.md#q06",
+      "depends_on": [
+        "Q01",
+        "R02"
+      ],
+      "executor": "agent",
+      "state": "pending",
+      "owner": null,
+      "evidence": "evidence/Q06.md",
+      "blocker": null
+    },
+    {
+      "id": "Q07",
+      "order": 22,
+      "title": "Error and fallback contracts",
+      "packet": "quality-packet.md#q07",
+      "depends_on": [
+        "Q01"
+      ],
+      "executor": "agent",
+      "state": "pending",
+      "owner": null,
+      "evidence": "evidence/Q07.md",
+      "blocker": null
+    },
+    {
+      "id": "W01",
+      "order": 23,
+      "title": "Working marketing CTAs",
+      "packet": "adoption-packet.md#w01",
+      "depends_on": [
+        "B00"
+      ],
+      "executor": "agent",
+      "state": "pending",
+      "owner": null,
+      "evidence": "evidence/W01.md",
+      "blocker": null
+    },
+    {
+      "id": "W02",
+      "order": 24,
+      "title": "Release-aware product story",
+      "packet": "adoption-packet.md#w02",
+      "depends_on": [
+        "P01",
+        "R02",
+        "W01"
+      ],
+      "executor": "agent",
+      "state": "pending",
+      "owner": null,
+      "evidence": "evidence/W02.md",
+      "blocker": null
+    },
+    {
+      "id": "R06",
+      "order": 25,
+      "title": "Public release/install proof",
+      "packet": "reliability-packet.md#r06",
+      "depends_on": [
+        "P01",
+        "R01",
+        "R02",
+        "R03",
+        "R04",
+        "R05",
+        "R07",
+        "Q02",
+        "W01",
+        "W02"
+      ],
+      "executor": "mixed",
+      "state": "pending",
+      "owner": null,
+      "evidence": "evidence/R06.md",
+      "blocker": null
+    },
+    {
+      "id": "W03",
+      "order": 26,
+      "title": "Existing leadership case study",
+      "packet": "adoption-packet.md#w03",
+      "depends_on": [
+        "B00",
+        "P01"
+      ],
+      "executor": "mixed",
+      "state": "pending",
+      "owner": null,
+      "evidence": "evidence/W03.md",
+      "blocker": null
+    },
+    {
+      "id": "W04",
+      "order": 27,
+      "title": "Cross-site discovery and measurement",
+      "packet": "adoption-packet.md#w04",
+      "depends_on": [
+        "W02",
+        "W03"
+      ],
+      "executor": "mixed",
+      "state": "pending",
+      "owner": null,
+      "evidence": "evidence/W04.md",
+      "blocker": null
+    },
+    {
+      "id": "F01",
+      "order": 28,
+      "title": "Interview kit and demand evidence",
+      "packet": "adoption-packet.md#f01",
+      "depends_on": [
+        "B00"
+      ],
+      "executor": "mixed",
+      "state": "pending",
+      "owner": null,
+      "evidence": "evidence/F01.md",
+      "blocker": null
+    },
+    {
+      "id": "F02",
+      "order": 29,
+      "title": "External pilot and retention",
+      "packet": "adoption-packet.md#f02",
+      "depends_on": [
+        "R06",
+        "A07",
+        "F01"
+      ],
+      "executor": "mixed",
+      "state": "pending",
+      "owner": null,
+      "evidence": "evidence/F02.md",
+      "blocker": null
+    },
+    {
+      "id": "F03",
+      "order": 30,
+      "title": "Launch package",
+      "packet": "adoption-packet.md#f03",
+      "depends_on": [
+        "F02",
+        "W03",
+        "W04"
+      ],
+      "executor": "agent",
+      "state": "pending",
+      "owner": null,
+      "evidence": "evidence/F03.md",
+      "blocker": null
+    },
+    {
+      "id": "F04",
+      "order": 31,
+      "title": "Approved publication and feedback",
+      "packet": "adoption-packet.md#f04",
+      "depends_on": [
+        "F03"
+      ],
+      "executor": "mixed",
+      "state": "pending",
+      "owner": null,
+      "evidence": "evidence/F04.md",
+      "blocker": null
+    },
+    {
+      "id": "F05",
+      "order": 32,
+      "title": "Evidence-based v1 decision",
+      "packet": "adoption-packet.md#f05",
+      "depends_on": [
+        "R06",
+        "A07",
+        "F02",
+        "Q02",
+        "Q07"
+      ],
+      "executor": "mixed",
+      "state": "pending",
+      "owner": null,
+      "evidence": "evidence/F05.md",
+      "blocker": null
+    }
+  ]
+}

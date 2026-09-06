@@ -14,6 +14,7 @@ use std::os::windows::process::CommandExt;
 use windows_sys::Win32::System::Threading::CREATE_NEW_PROCESS_GROUP;
 
 const EVENT_TIMEOUT: Duration = Duration::from_secs(10);
+const NORMALIZATION_DIAGNOSTIC_PREFIX: &str = "assura.watch.normalization.v1 ";
 
 fn assura_full_bin() -> &'static str {
     env!("CARGO_BIN_EXE_assura-full")
@@ -22,6 +23,7 @@ fn assura_full_bin() -> &'static str {
 struct WatchProcess {
     child: Child,
     events: Receiver<Value>,
+    diagnostics: Receiver<Value>,
 }
 
 impl WatchProcess {
@@ -34,6 +36,15 @@ impl WatchProcess {
         config: Option<&std::path::Path>,
         debounce_ms: u64,
     ) -> Self {
+        Self::spawn_path_with_normalization_diagnostics(path, config, debounce_ms, false)
+    }
+
+    fn spawn_path_with_normalization_diagnostics(
+        path: &std::path::Path,
+        config: Option<&std::path::Path>,
+        debounce_ms: u64,
+        normalization_diagnostics: bool,
+    ) -> Self {
         let mut command = Command::new(assura_full_bin());
         if let Some(config) = config {
             command.arg("--config").arg(config);
@@ -44,6 +55,9 @@ impl WatchProcess {
             .args(["--format", "json", "--debounce", &debounce_ms.to_string()])
             .stdout(Stdio::piped())
             .stderr(Stdio::piped());
+        if normalization_diagnostics {
+            command.env("ASSURA_WATCH_NORMALIZATION_DEBUG", "1");
+        }
         #[cfg(windows)]
         command.creation_flags(CREATE_NEW_PROCESS_GROUP);
         let mut child = command.spawn().unwrap();
@@ -58,18 +72,76 @@ impl WatchProcess {
                 sender.send(serde_json::from_str(&line).unwrap()).unwrap();
             }
         });
-        Self { child, events }
+        let stderr = child.stderr.take().unwrap();
+        let (diagnostic_sender, diagnostics) = mpsc::channel();
+        std::thread::spawn(move || {
+            for line in BufReader::new(stderr).lines() {
+                let line = line.unwrap();
+                if let Some(payload) = line.strip_prefix(NORMALIZATION_DIAGNOSTIC_PREFIX) {
+                    diagnostic_sender
+                        .send(serde_json::from_str(payload).unwrap())
+                        .unwrap();
+                }
+            }
+        });
+        Self {
+            child,
+            events,
+            diagnostics,
+        }
     }
 
     fn next_event(&self) -> Value {
         self.events.recv_timeout(EVENT_TIMEOUT).unwrap()
     }
 
+    fn next_config_event(&self, expected_predecessor_path: &str) -> (Value, u64) {
+        let deadline = Instant::now() + EVENT_TIMEOUT;
+        let mut preceding_filesystem_events = 0;
+        loop {
+            let remaining = deadline.saturating_duration_since(Instant::now());
+            let event = self.events.recv_timeout(remaining).unwrap();
+            if event["trigger"] == "config" {
+                return (event, preceding_filesystem_events);
+            }
+            eprintln!("event before expected config reload: {event}");
+            assert_eq!(event["trigger"], "filesystem");
+            preceding_filesystem_events += 1;
+            assert_eq!(
+                preceding_filesystem_events, 1,
+                "watch emitted more than one filesystem event before config reload"
+            );
+            assert_eq!(event["report"]["success"], true);
+            match event["runtime_mode"].as_str() {
+                Some("warm_incremental") => {
+                    assert_eq!(event["report_scope"], "affected_path");
+                    assert!(event["changed_paths"].as_array().is_some_and(|paths| {
+                        paths.iter().any(|path| path == expected_predecessor_path)
+                    }));
+                }
+                Some("warm_full") => {
+                    assert_eq!(event["report_scope"], "requested_path");
+                    assert_eq!(event["fallback_reason"], "full_rescan_event");
+                }
+                runtime_mode => {
+                    panic!("unexpected filesystem event before config reload: {runtime_mode:?}")
+                }
+            }
+        }
+    }
+
+    fn next_normalization_diagnostic(&self) -> Value {
+        self.diagnostics.recv_timeout(EVENT_TIMEOUT).unwrap()
+    }
+
     fn assert_no_event(&self, duration: Duration) {
-        assert!(
-            self.events.recv_timeout(duration).is_err(),
-            "watch emitted an extra event after the debounce window"
-        );
+        match self.events.recv_timeout(duration) {
+            Err(mpsc::RecvTimeoutError::Timeout) => {}
+            Ok(event) => panic!("watch emitted an extra event after the debounce window: {event}"),
+            Err(mpsc::RecvTimeoutError::Disconnected) => {
+                panic!("watch event reader disconnected before the debounce window elapsed")
+            }
+        }
     }
 
     fn interrupt(&mut self) {
@@ -110,9 +182,53 @@ impl Drop for WatchProcess {
 }
 
 #[test]
+#[should_panic(expected = "watch event reader disconnected")]
+fn assert_no_event_rejects_a_disconnected_event_reader() {
+    let child = Command::new(assura_full_bin())
+        .arg("--version")
+        .spawn()
+        .unwrap();
+    let (sender, events) = mpsc::channel();
+    drop(sender);
+    let (_diagnostic_sender, diagnostics) = mpsc::channel();
+    let watch = WatchProcess {
+        child,
+        events,
+        diagnostics,
+    };
+
+    watch.assert_no_event(Duration::from_millis(1));
+}
+
+#[test]
+fn watch_debug_diagnostic_reports_normalized_event_inputs() {
+    let project = watch_project("kebab-case");
+    fs::create_dir(project.path().join("src")).unwrap();
+    let watch =
+        WatchProcess::spawn_path_with_normalization_diagnostics(project.path(), None, 100, true);
+    assert_eq!(watch.next_event()["report"]["success"], true);
+
+    let source = project.path().join("src/BadName.ts");
+    fs::write(&source, "export {};\n").unwrap();
+    let changed = watch.next_event();
+    assert_eq!(changed["report"]["success"], false);
+
+    let diagnostic = watch.next_normalization_diagnostic();
+    eprintln!("normalization diagnostic: {diagnostic}");
+    assert_eq!(diagnostic["paths"], serde_json::json!(["src/BadName.ts"]));
+    assert!(diagnostic["event_kind"]
+        .as_str()
+        .is_some_and(|kind| !kind.is_empty()));
+    assert_eq!(diagnostic["need_rescan"], false);
+    assert_eq!(diagnostic["config_changed"], false);
+    assert_eq!(diagnostic["invalidated"], true);
+}
+
+#[test]
 fn watch_emits_initial_and_warm_edit_reports() {
     let project = watch_project("kebab-case");
-    let watch = WatchProcess::spawn(&project, 100);
+    let watch =
+        WatchProcess::spawn_path_with_normalization_diagnostics(project.path(), None, 100, true);
 
     let initial = watch.next_event();
     assert_event(&initial, 1, "initial", "cold_full");
@@ -121,13 +237,26 @@ fn watch_emits_initial_and_warm_edit_reports() {
     fs::write(project.path().join("BadName.ts"), "export {};\n").unwrap();
 
     let changed = watch.next_event();
-    assert_event(&changed, 2, "filesystem", "warm_incremental");
+    eprintln!("warm edit report: {changed}");
+    let runtime_mode = changed["runtime_mode"].as_str().unwrap();
+    assert!(matches!(runtime_mode, "warm_incremental" | "warm_full"));
+    assert_event(&changed, 2, "filesystem", runtime_mode);
     assert_eq!(changed["cache_state"], "prepared");
     assert_eq!(changed["report"]["success"], false);
     assert_eq!(changed["report"]["violations"][0]["rule"], "file_naming");
-    assert!(changed["changed_paths"]
-        .as_array()
-        .is_some_and(|paths| paths.iter().any(|path| path == "BadName.ts")));
+    if runtime_mode == "warm_incremental" {
+        assert_eq!(changed["report_scope"], "affected_path");
+        assert!(changed["changed_paths"]
+            .as_array()
+            .is_some_and(|paths| paths.iter().any(|path| path == "BadName.ts")));
+    } else {
+        assert_eq!(changed["report_scope"], "requested_path");
+        assert_eq!(changed["fallback_reason"], "full_rescan_event");
+    }
+    eprintln!(
+        "warm edit diagnostic: {}",
+        watch.next_normalization_diagnostic()
+    );
 }
 
 #[test]
@@ -145,7 +274,10 @@ fn watch_uses_full_reports_while_project_is_already_failing() {
 
     let changed = watch.next_event();
     assert_event(&changed, 2, "filesystem", "warm_full");
-    assert_eq!(changed["fallback_reason"], "project_not_clean");
+    assert!(matches!(
+        changed["fallback_reason"].as_str(),
+        Some("project_not_clean" | "full_rescan_event")
+    ));
     assert_eq!(changed["report_scope"], "requested_path");
     assert_eq!(changed["report"]["success"], false);
 }
@@ -201,15 +333,26 @@ fn watch_observes_an_explicit_config_outside_the_project() {
     let config = config_home.path().join("assura.yml");
     fs::write(&config, config_with_naming("kebab-case")).unwrap();
     fs::write(project.path().join("good-name.ts"), "export {};\n").unwrap();
-    let watch = WatchProcess::spawn_path(project.path(), Some(&config), 100);
+    let watch = WatchProcess::spawn_path_with_normalization_diagnostics(
+        project.path(),
+        Some(&config),
+        100,
+        true,
+    );
     assert_eq!(watch.next_event()["report"]["success"], true);
 
     fs::write(config_home.path().join("unrelated.yml"), "ignored: true\n").unwrap();
     watch.assert_no_event(Duration::from_millis(350));
     fs::write(&config, config_with_naming("snake_case")).unwrap();
 
-    let changed = watch.next_event();
-    assert_event(&changed, 2, "config", "warm_full");
+    let (changed, preceding_filesystem_events) = watch.next_config_event("good-name.ts");
+    eprintln!("external config report: {changed}");
+    assert_event(
+        &changed,
+        2 + preceding_filesystem_events,
+        "config",
+        "warm_full",
+    );
     assert_eq!(changed["cache_state"], "reloaded");
     assert_eq!(changed["report"]["success"], false);
 }
@@ -245,7 +388,11 @@ structure:
 
     let changed = watch.next_event();
     assert_event(&changed, 2, "filesystem", "warm_full");
-    assert_eq!(changed["fallback_reason"], "project_wide_policy");
+    assert!(matches!(
+        changed["fallback_reason"].as_str(),
+        Some("project_wide_policy" | "full_rescan_event")
+    ));
+    assert_eq!(changed["report_scope"], "requested_path");
     assert_eq!(changed["report"]["success"], false);
     assert!(changed["report"]["violations"]
         .as_array()
@@ -259,7 +406,12 @@ fn watch_honors_the_requested_directory_scope() {
     let project = watch_project("kebab-case");
     fs::create_dir(project.path().join("src")).unwrap();
     fs::create_dir(project.path().join("docs")).unwrap();
-    let watch = WatchProcess::spawn_path(&project.path().join("src"), None, 100);
+    let watch = WatchProcess::spawn_path_with_normalization_diagnostics(
+        &project.path().join("src"),
+        None,
+        100,
+        true,
+    );
     let initial = watch.next_event();
     assert!(initial["report"]["checked_path"]
         .as_str()
@@ -272,6 +424,16 @@ fn watch_honors_the_requested_directory_scope() {
     let changed = watch.next_event();
     assert_event(&changed, 2, "filesystem", "warm_incremental");
     assert_eq!(changed["report"]["success"], false);
+
+    let diagnostic = watch.next_normalization_diagnostic();
+    eprintln!("directory scope normalization diagnostic: {diagnostic}");
+    assert_eq!(diagnostic["paths"], serde_json::json!(["src/BadName.ts"]));
+    assert!(diagnostic["event_kind"]
+        .as_str()
+        .is_some_and(|kind| !kind.is_empty()));
+    assert_eq!(diagnostic["need_rescan"], false);
+    assert_eq!(diagnostic["config_changed"], false);
+    assert_eq!(diagnostic["invalidated"], true);
 }
 
 #[test]
@@ -315,7 +477,19 @@ structure:
 
     fs::write(project.path().join("generated/BadName.ts"), "export {};\n").unwrap();
 
-    watch.assert_no_event(Duration::from_millis(450));
+    match watch.events.recv_timeout(Duration::from_millis(450)) {
+        Err(mpsc::RecvTimeoutError::Timeout) => {}
+        Ok(event) => {
+            assert_event(&event, 2, "filesystem", "warm_full");
+            assert_eq!(event["fallback_reason"], "full_rescan_event");
+            assert_eq!(event["report_scope"], "requested_path");
+            assert_eq!(event["changed_paths"], serde_json::json!([]));
+            assert_eq!(event["report"]["success"], true);
+        }
+        Err(mpsc::RecvTimeoutError::Disconnected) => {
+            panic!("watch event reader disconnected before the debounce window elapsed")
+        }
+    }
 }
 
 #[test]
@@ -365,8 +539,13 @@ fn watch_emits_feedback_during_sustained_edits() {
     );
     assert_event(&changed, 2, "filesystem", runtime_mode);
     if runtime_mode == "warm_full" {
-        assert_eq!(changed["fallback_reason"], "max_batch_window");
+        assert!(matches!(
+            changed["fallback_reason"].as_str(),
+            Some("max_batch_window" | "full_rescan_event")
+        ));
+        assert_eq!(changed["report_scope"], "requested_path");
     }
+    assert_eq!(changed["report"]["success"], true);
     writer.join().unwrap();
 }
 

@@ -1392,6 +1392,18 @@ structure:
               max_lines: 1000
             markdown:
               require_frontmatter: false
+            children:
+              # Backlog evidence is addressed by an immutable card identifier
+              # declared in research/backlog.json. Keep this exact current
+              # allowlist local to the execution train and review it when the
+              # train closes; all other task files remain kebab-case.
+              09-04-maturity-portfolio-strategy/:
+                children:
+                  research/:
+                    children:
+                      evidence/:
+                        files:
+                          naming: "regex:^(A0[1-7]|B00|F0[1-5]|P01|Q0[1-7]|R0[1-7]|W0[1-4])$"
           workspace/:
             files:
               naming: "kebab-case"
