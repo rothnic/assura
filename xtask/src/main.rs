@@ -6324,6 +6324,7 @@ fn text_contains_option_value(text: &str, option: &str, value: &str) -> bool {
 }
 
 fn performance_workflow_contract_failures(workflow: &str) -> Vec<&'static str> {
+    let workflow = workflow.replace("\r\n", "\n");
     let mut failures = Vec::new();
     for (required, message) in [
         (
@@ -6434,6 +6435,18 @@ fn performance_workflow_contract_failures(workflow: &str) -> Vec<&'static str> {
         if !workflow.contains(required) {
             failures.push(message);
         }
+    }
+    let median_helper = workflow.find("        def median(row):");
+    let lslint_summary = workflow.find("        def summarize_lslint(report):");
+    let native_summary =
+        workflow.find("        native_path = Path(\"target/performance/native-current.json\")");
+    if !matches!(
+        (median_helper, lslint_summary, native_summary),
+        (Some(median), Some(lslint), Some(native)) if median < lslint && median < native
+    ) {
+        failures.push(
+            "performance summary must keep its median helper shared by LS-Lint, native, and warm sections",
+        );
     }
     failures
 }
@@ -6709,6 +6722,12 @@ mod tests {
                 warm_artifact_eligible: false,
             },
             "a failed bundle build must not create misleading artifact eligibility"
+        );
+
+        let windows_workflow = workflow.replace('\n', "\r\n");
+        assert!(
+            performance_workflow_contract_failures(&windows_workflow).is_empty(),
+            "workflow contract must evaluate identically with Windows checkout line endings"
         );
     }
 

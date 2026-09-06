@@ -560,6 +560,10 @@ jobs:
                 return "generation_failed"
             return "generated"
 
+        def median(row):
+            value = row["median_runtime_ms"]
+            return "n/a" if value is None else f"{value:.3f} ms"
+
         print("## Performance Evidence Status")
         print()
         for label, generation, gates in [
@@ -603,9 +607,6 @@ jobs:
                 return row.get("row_family") or row["tool_name"]
             def find_row(fixture, *names):
                 return next(row for row in rows if row["fixture_id"] == fixture and row_name(row) in names)
-            def median(row):
-                value = row["median_runtime_ms"]
-                return "n/a" if value is None else f"{value:.3f} ms"
             fixtures = []
             for row in rows:
                 if row["fixture_id"] not in fixtures:
