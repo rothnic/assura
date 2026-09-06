@@ -42,10 +42,10 @@
         "B00"
       ],
       "executor": "agent",
-      "state": "done",
+      "state": "active",
       "owner": "Codex goal: Assura Maturity Execution Train",
       "evidence": "evidence/R01.md",
-      "blocker": null
+      "blocker": "Hosted macOS run 34011050005 reopened R01: candidate 5aef17b requires independent review and a fresh macOS/Linux/Windows matrix."
     },
     {
       "id": "R02",
