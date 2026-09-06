@@ -12,8 +12,7 @@ language.
 
 ## Start with a small pattern
 
-The repository includes three conservative examples in
-`tests/fixtures/agent_init/patterns/`:
+Assura bundles three conservative layout recommendations:
 
 - `rust-library.yml` for Cargo libraries with `src/lib.rs` and `tests/`.
 - `typescript-bun-utility.yml` for utilities with `src/` and `test/`; scoped
@@ -22,9 +21,11 @@ The repository includes three conservative examples in
   pytest-style `tests/`. It leaves `__init__.py` conventional rather than
   forbidding it.
 
-Copy an example into your repository and edit it to match evidence already in
-the project. Service and framework layouts are variants: select them only when
-the manifest, repository instructions, or existing paths establish that need.
+Materialize one with `assura init --recipe <name>`, then edit the resulting
+project-owned policy to match evidence already in the project. The checked
+fixtures exercise these bundled recommendations; they are not the public
+catalog. Service and framework layouts are variants: select them only when the
+manifest, repository instructions, or existing paths establish that need.
 
 ## Apply explicit local intent
 
@@ -34,6 +35,18 @@ Use one local pattern explicitly:
 assura init . --recipe-file .assura/patterns/rust-library.yml
 assura agent onboard . --recipe-file .assura/patterns/rust-library.yml --format json
 ```
+
+For a bundled recommendation, use one language layout recipe by itself:
+
+```sh
+assura init . --recipe rust-library
+assura init . --recipe typescript-bun-utility
+assura init . --recipe python-pytest
+```
+
+Language layout recipes are deliberately mutually exclusive with each other
+and with the generic policy recipes. Compose further local intent through one
+explicit `--recipe-file`.
 
 `init` applies the pattern to a fresh starter policy. `agent onboard` merges it
 with an existing project policy. Existing scalar and sequence values are

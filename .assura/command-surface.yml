@@ -169,7 +169,7 @@ commands:
       --no-git-hooks: {}
       --recipe:
         takes_value: true
-        values: ["agentic-core", "structure-health"]
+        values: ["agentic-core", "structure-health", "rust-library", "typescript-bun-utility", "python-pytest"]
       --recipe-file:
         takes_value: true
   - name: "assura config"

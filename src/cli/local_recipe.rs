@@ -2,6 +2,7 @@
 
 use super::init_support::StarterInitError;
 use sha2::{Digest, Sha256};
+use std::io::{ErrorKind, Write};
 use std::path::{Path, PathBuf};
 
 /// A non-destructive local recipe merge result.
@@ -83,17 +84,53 @@ pub fn merge_recipe_file(
 
 /// Replace a validated project config with an atomic same-directory rename.
 pub fn write_config_atomically(config_path: &Path, contents: &str) -> Result<(), StarterInitError> {
-    let temporary = config_path.with_extension("yml.assura-tmp");
-    std::fs::write(&temporary, contents).map_err(|error| {
-        StarterInitError::Runtime(format!("failed to write {}: {error}", temporary.display()))
+    let parent = config_path.parent().ok_or_else(|| {
+        StarterInitError::Runtime(format!("{} has no parent directory", config_path.display()))
     })?;
-    std::fs::rename(&temporary, config_path).map_err(|error| {
-        let _ = std::fs::remove_file(&temporary);
-        StarterInitError::Runtime(format!(
-            "failed to replace {}: {error}",
-            config_path.display()
-        ))
-    })
+    let name = config_path
+        .file_name()
+        .and_then(|name| name.to_str())
+        .unwrap_or("config.yml");
+    for attempt in 0..128 {
+        let temporary = parent.join(format!(
+            ".{name}.{}.{}.assura-tmp",
+            std::process::id(),
+            attempt
+        ));
+        let mut file = match std::fs::OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&temporary)
+        {
+            Ok(file) => file,
+            Err(error) if error.kind() == ErrorKind::AlreadyExists => continue,
+            Err(error) => {
+                return Err(StarterInitError::Runtime(format!(
+                    "failed to create {}: {error}",
+                    temporary.display()
+                )));
+            }
+        };
+        if let Err(error) = file.write_all(contents.as_bytes()) {
+            let _ = std::fs::remove_file(&temporary);
+            return Err(StarterInitError::Runtime(format!(
+                "failed to write {}: {error}",
+                temporary.display()
+            )));
+        }
+        drop(file);
+        return std::fs::rename(&temporary, config_path).map_err(|error| {
+            let _ = std::fs::remove_file(&temporary);
+            StarterInitError::Runtime(format!(
+                "failed to replace {}: {error}",
+                config_path.display()
+            ))
+        });
+    }
+    Err(StarterInitError::Runtime(format!(
+        "failed to allocate a temporary config beside {}",
+        config_path.display()
+    )))
 }
 
 /// Overlay each explicit local recipe in argument order onto a YAML document.

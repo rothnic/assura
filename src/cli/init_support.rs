@@ -33,6 +33,27 @@ pub fn starter_config(
 
     let agentic = recipes.contains(&crate::cli::args::InitRecipe::AgenticCore);
     let health = recipes.contains(&crate::cli::args::InitRecipe::StructureHealth);
+    let language_recipes = recipes
+        .iter()
+        .copied()
+        .filter(|recipe| {
+            matches!(
+                recipe,
+                crate::cli::args::InitRecipe::RustLibrary
+                    | crate::cli::args::InitRecipe::TypescriptBunUtility
+                    | crate::cli::args::InitRecipe::PythonPytest
+            )
+        })
+        .collect::<Vec<_>>();
+    if !language_recipes.is_empty() {
+        if language_recipes.len() != 1 || agentic || health {
+            return Err(StarterInitError::Configuration(
+                "select exactly one language layout recipe; combine it through an explicit local recipe file instead"
+                    .to_string(),
+            ));
+        }
+        return Ok(recipe_config(language_recipes[0]).to_string());
+    }
     if agentic || health {
         return Ok(match (agentic, health) {
             (true, true) => AGENTIC_HEALTH_STARTER_CONFIG,
@@ -84,6 +105,9 @@ pub fn recipe_config(recipe: crate::cli::args::InitRecipe) -> &'static str {
     match recipe {
         crate::cli::args::InitRecipe::AgenticCore => AGENTIC_CORE_STARTER_CONFIG,
         crate::cli::args::InitRecipe::StructureHealth => STRUCTURE_HEALTH_STARTER_CONFIG,
+        crate::cli::args::InitRecipe::RustLibrary => RUST_LIBRARY_STARTER_CONFIG,
+        crate::cli::args::InitRecipe::TypescriptBunUtility => TYPESCRIPT_BUN_UTILITY_STARTER_CONFIG,
+        crate::cli::args::InitRecipe::PythonPytest => PYTHON_PYTEST_STARTER_CONFIG,
     }
 }
 
@@ -227,6 +251,53 @@ fn recipe_starter_files(recipes: &[crate::cli::args::InitRecipe]) -> Vec<&'stati
     }
     files
 }
+
+const RUST_LIBRARY_STARTER_CONFIG: &str = r#"version: "2.0"
+
+structure:
+  ./:
+    Cargo.toml: exists:1
+    src/: exists:1
+    tests/: exists:1
+    .rs: snake_case
+  src/:
+    lib.rs: exists:1
+    .rs: snake_case
+  tests/:
+    .rs: snake_case
+"#;
+
+const TYPESCRIPT_BUN_UTILITY_STARTER_CONFIG: &str = r#"version: "2.0"
+
+structure:
+  ./:
+    package.json: exists:1
+    src/: exists:1
+    test/: exists:1
+  src/:
+    .ts: snake_case
+    components/:
+      exists: 0-1
+      .tsx: PascalCase
+  test/:
+    .test.ts: snake_case
+"#;
+
+const PYTHON_PYTEST_STARTER_CONFIG: &str = r#"version: "2.0"
+
+structure:
+  ./:
+    pyproject.toml: exists:1
+    src/: exists:1
+    tests/: exists:1
+  src/:
+    .py: snake_case
+    __init__.py: exists:0-1
+    ./*/:
+      __init__.py: exists:0-1
+  tests/:
+    .py: snake_case
+"#;
 
 const AGENTIC_CORE_STARTER_CONFIG: &str = r#"rules:
   agent-entrypoint:
@@ -582,6 +653,9 @@ mod recipe_tests {
             vec![InitRecipe::AgenticCore],
             vec![InitRecipe::StructureHealth],
             vec![InitRecipe::AgenticCore, InitRecipe::StructureHealth],
+            vec![InitRecipe::RustLibrary],
+            vec![InitRecipe::TypescriptBunUtility],
+            vec![InitRecipe::PythonPytest],
         ] {
             let source = starter_config(false, &recipes, None).unwrap();
             let config = ConfigLoader::parse(&source).unwrap();
