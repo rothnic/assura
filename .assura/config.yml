@@ -1319,6 +1319,7 @@ structure:
             - "ls_compat"
             - "markdown"
             - "maturity"
+            - "policy"
             - "validation"
           allow_extra: false
         children:
@@ -1412,6 +1413,11 @@ structure:
                 - "engine"
                 - "filesystem"
               allow_extra: false
+
+          policy/:
+            files:
+              naming: "snake_case"
+              max_lines: 500
           
           validation/:
             files:

@@ -13,6 +13,59 @@ pub mod stable_hash {
 
 pub mod cli;
 pub mod config;
+pub(crate) mod policy;
+#[cfg(test)]
+mod policy_naming_contract_tests {
+    use std::collections::HashMap;
+
+    use regex_lite::Regex;
+
+    use crate::policy::naming::{
+        validate_file_stem_with_path, validate_name_with_path, validate_single_name_with_path,
+    };
+
+    #[test]
+    fn policy_naming_preserves_supported_naming_predicates() {
+        let regexes = HashMap::<String, Regex>::new();
+
+        assert!(validate_name_with_path(
+            "snake_case",
+            "src/snake_case.rs",
+            "snake_case",
+            &regexes
+        ));
+        assert!(validate_name_with_path(
+            "PascalCase",
+            "src/PascalCase.rs",
+            "PascalCase",
+            &regexes
+        ));
+        assert!(!validate_name_with_path(
+            "BadName",
+            "src/BadName.rs",
+            "kebab-case",
+            &regexes
+        ));
+        assert!(validate_single_name_with_path(
+            "scope-spec",
+            "scope",
+            "regex:^${0}-spec$",
+            &regexes
+        ));
+        assert!(validate_file_stem_with_path(
+            "archive.tar",
+            "archive.tar.gz",
+            "kebab-case",
+            &regexes
+        ));
+        assert!(validate_single_name_with_path(
+            "README",
+            "README.md",
+            "exact:README",
+            &regexes
+        ));
+    }
+}
 #[cfg(feature = "full-cli")]
 pub mod constraints;
 #[cfg(feature = "full-cli")]
