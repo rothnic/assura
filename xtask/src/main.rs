@@ -5790,40 +5790,9 @@ fn check_docs_release_performance(checks: &mut Checks) {
                 .contains("docs/analysis/2026-07-02-ls-lint-performance-reassessment.md"),
         "performance docs: missing post-beta LS-Lint reassessment links and claim boundaries",
     );
-    checks.require(
-        text_contains_ordered(
-            &ci_workflow,
-            &[
-                "performance:\n    name: Performance Report",
-                "- name: Generate comparison report",
-                "--output target/performance/ls-lint-comparison.json",
-                "--iterations 16",
-                "- name: Enforce no-slower gate",
-                "run: cargo xtask performance-no-slower target/performance/ls-lint-comparison.json",
-                "- name: Summarize performance",
-                "if: always()",
-                "- name: Upload performance artifact",
-                "if: always()",
-            ],
-        ),
-        ".github/workflows/ci.yml: Performance Report job must generate a 16-iteration report, enforce cargo xtask performance-no-slower on that report, and keep summary/artifact steps on failure",
-    );
-    checks.require(
-        text_contains_ordered(
-            &ci_workflow,
-            &[
-                "- name: Generate native performance report",
-                "--suite native",
-                "--output target/performance/native-current.json",
-                "--history target/performance/native-history.jsonl",
-                "--iterations 5",
-                "- name: Enforce native performance gate",
-                "run: cargo xtask native-performance-no-regression target/performance/native-current.json",
-                "name: native-performance-report",
-            ],
-        ),
-        ".github/workflows/ci.yml: Performance Report job must generate, gate, and upload the native performance report",
-    );
+    for failure in performance_workflow_contract_failures(&ci_workflow) {
+        checks.add(format!(".github/workflows/ci.yml: {failure}"));
+    }
 
     check_native_performance_artifacts(
         checks,
@@ -6354,15 +6323,153 @@ fn text_contains_option_value(text: &str, option: &str, value: &str) -> bool {
     text.contains(&format!("{option} {value}")) || text.contains(&format!("{option}={value}"))
 }
 
-fn text_contains_ordered(text: &str, needles: &[&str]) -> bool {
-    let mut remaining = text;
-    for needle in needles {
-        let Some(index) = remaining.find(needle) else {
-            return false;
-        };
-        remaining = &remaining[index + needle.len()..];
+fn performance_workflow_contract_failures(workflow: &str) -> Vec<&'static str> {
+    let mut failures = Vec::new();
+    for (required, message) in [
+        (
+            "- name: Build release performance bundle\n      id: perf_build",
+            "performance build step must expose perf_build",
+        ),
+        (
+            "- name: Generate comparison report\n      id: perf_lslint_generate\n      if: ${{ !cancelled() && steps.perf_build.outcome == 'success' }}",
+            "LS-Lint generation must be independently conditioned on a successful performance build",
+        ),
+        (
+            "- name: Enforce no-slower gate\n      id: perf_lslint_gate\n      if: ${{ !cancelled() && steps.perf_lslint_generate.outcome == 'success' }}",
+            "LS-Lint gate must run only after its report is generated",
+        ),
+        (
+            "--output target/performance/ls-lint-comparison.json",
+            "LS-Lint generation must write the comparison report",
+        ),
+        (
+            "--iterations 16",
+            "LS-Lint generation must retain its 16-iteration protocol",
+        ),
+        (
+            "cargo xtask performance-no-slower target/performance/ls-lint-comparison.json",
+            "LS-Lint no-slower gate must retain its comparison report input",
+        ),
+        (
+            "- name: Generate native performance report\n      id: perf_native_generate\n      if: ${{ !cancelled() && steps.perf_build.outcome == 'success' }}",
+            "native generation must be independent of an LS-Lint gate failure",
+        ),
+        (
+            "- name: Enforce native performance gate\n      id: perf_native_gate\n      if: ${{ !cancelled() && steps.perf_native_generate.outcome == 'success' }}",
+            "native gate must run only after its report is generated",
+        ),
+        (
+            "--suite native",
+            "native generation must retain its native suite",
+        ),
+        (
+            "--output target/performance/native-current.json",
+            "native generation must write its current report",
+        ),
+        (
+            "--history target/performance/native-history.jsonl",
+            "native generation must write its history report",
+        ),
+        (
+            "cargo xtask native-performance-no-regression target/performance/native-current.json",
+            "native gate must retain its generated report input",
+        ),
+        (
+            "- name: Generate warm-loop performance report\n      id: perf_warm_generate\n      if: ${{ !cancelled() && steps.perf_build.outcome == 'success' }}",
+            "warm-loop generation must be independent of earlier comparison gate failures",
+        ),
+        (
+            "- name: Enforce warm-loop p95 budgets\n      id: perf_warm_gate\n      if: ${{ !cancelled() && steps.perf_warm_generate.outcome == 'success' }}",
+            "warm-loop gate must run only after its report is generated",
+        ),
+        (
+            "- name: Validate checked warm-loop contract\n      id: perf_warm_checked_gate\n      if: ${{ !cancelled() && steps.perf_build.outcome == 'success' }}",
+            "checked warm-loop contract gate must remain independently observable",
+        ),
+        (
+            "--iterations 20",
+            "warm-loop generation must retain its 20-iteration protocol",
+        ),
+        (
+            "--output target/performance/warm-loop-current.json",
+            "warm-loop generation must write its current report",
+        ),
+        (
+            "--history target/performance/warm-loop-history.jsonl",
+            "warm-loop generation must write its history report",
+        ),
+        (
+            "cargo xtask warm-loop-no-regression target/performance/warm-loop-current.json",
+            "warm-loop gate must retain its generated report input",
+        ),
+        (
+            "steps.perf_lslint_generate.outcome == 'success' && hashFiles('target/performance/ls-lint-comparison.json') != ''",
+            "LS-Lint artifact upload must require successful generation and an existing report",
+        ),
+        (
+            "steps.perf_native_generate.outcome == 'success' && hashFiles('target/performance/native-current.json') != '' && hashFiles('target/performance/native-history.jsonl') != ''",
+            "native artifact upload must require successful generation and both generated files",
+        ),
+        (
+            "steps.perf_warm_generate.outcome == 'success' && hashFiles('target/performance/warm-loop-current.json') != '' && hashFiles('target/performance/warm-loop-history.jsonl') != ''",
+            "warm-loop artifact upload must require successful generation and both generated files",
+        ),
+        (
+            "generation_failed",
+            "performance summary must name generation_failed for absent evidence",
+        ),
+        (
+            "not_run_build_failed",
+            "performance summary must name not_run_build_failed for build-prerequisite failures",
+        ),
+        (
+            "PERF_WARM_CHECKED_GATE_OUTCOME: ${{ steps.perf_warm_checked_gate.outcome }}",
+            "performance summary must retain the checked warm-loop gate outcome",
+        ),
+        (
+            "\"warm_checked_gate\": os.environ.get(\"PERF_WARM_CHECKED_GATE_OUTCOME\", \"unknown\")",
+            "performance summary must report the checked warm-loop gate outcome",
+        ),
+    ] {
+        if !workflow.contains(required) {
+            failures.push(message);
+        }
     }
-    true
+    failures
+}
+
+#[cfg(test)]
+#[derive(Debug, PartialEq, Eq)]
+struct PerformanceWorkflowFixtureResult {
+    job_failed: bool,
+    native_generation_runs: bool,
+    warm_generation_runs: bool,
+    native_artifact_eligible: bool,
+    warm_artifact_eligible: bool,
+}
+
+#[cfg(test)]
+fn simulate_performance_workflow(
+    build_succeeds: bool,
+    lslint_gate_succeeds: bool,
+    native_generation_succeeds: bool,
+    warm_generation_succeeds: bool,
+    native_artifacts_exist: bool,
+    warm_artifacts_exist: bool,
+) -> PerformanceWorkflowFixtureResult {
+    let native_generation_runs = build_succeeds;
+    let warm_generation_runs = build_succeeds;
+    PerformanceWorkflowFixtureResult {
+        job_failed: !build_succeeds || !lslint_gate_succeeds,
+        native_generation_runs,
+        warm_generation_runs,
+        native_artifact_eligible: native_generation_runs
+            && native_generation_succeeds
+            && native_artifacts_exist,
+        warm_artifact_eligible: warm_generation_runs
+            && warm_generation_succeeds
+            && warm_artifacts_exist,
+    }
 }
 
 struct ReleaseArtifact {
@@ -6567,6 +6674,43 @@ fn check_lint_suppression_reasons(checks: &mut Checks) {
 mod tests {
     use super::*;
     use serde_json::json;
+
+    #[test]
+    fn performance_workflow_preserves_independent_reports_after_a_comparison_failure() {
+        let workflow = include_str!("../../.github/workflows/ci.yml");
+        let failures = performance_workflow_contract_failures(workflow);
+        assert!(
+            failures.is_empty(),
+            "performance workflow must preserve native and warm evidence when the LS-Lint gate fails: {failures:?}"
+        );
+
+        let lslint_gate_failure =
+            simulate_performance_workflow(true, false, true, true, true, true);
+        assert_eq!(
+            lslint_gate_failure,
+            PerformanceWorkflowFixtureResult {
+                job_failed: true,
+                native_generation_runs: true,
+                warm_generation_runs: true,
+                native_artifact_eligible: true,
+                warm_artifact_eligible: true,
+            },
+            "an LS-Lint gate failure must remain a job failure without suppressing independent native or warm artifacts"
+        );
+
+        let build_failure = simulate_performance_workflow(false, false, false, false, false, false);
+        assert_eq!(
+            build_failure,
+            PerformanceWorkflowFixtureResult {
+                job_failed: true,
+                native_generation_runs: false,
+                warm_generation_runs: false,
+                native_artifact_eligible: false,
+                warm_artifact_eligible: false,
+            },
+            "a failed bundle build must not create misleading artifact eligibility"
+        );
+    }
 
     #[test]
     fn performance_no_slower_passes_when_assura_is_not_slower() {

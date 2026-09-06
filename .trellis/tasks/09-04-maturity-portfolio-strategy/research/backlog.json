@@ -56,8 +56,8 @@
         "B00"
       ],
       "executor": "agent",
-      "state": "pending",
-      "owner": null,
+      "state": "active",
+      "owner": "Codex goal: Assura Maturity Execution Train",
       "evidence": "evidence/R02.md",
       "blocker": null
     },
