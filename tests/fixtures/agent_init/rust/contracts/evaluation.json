@@ -1,0 +1,24 @@
+{
+  "schema": "assura.agent-init-evaluator.v1",
+  "fixture_id": "rust-library-v1",
+  "stack": "rust",
+  "required_paths": ["Cargo.toml", "src/lib.rs", "tests/library.rs"],
+  "forbidden_paths": [],
+  "preserve_hashes": {
+    "Cargo.toml": "0ec08adf4b3108fdabb4ec5e6d782e594bb87323229d092bb0ada5c78b4fa07e",
+    "src/lib.rs": "b59238507e6a23bdb4151811553209249c602ab4b7be4eaa823a96cfad52c6af"
+  },
+  "positive_probes": [
+    {"id": "strict-check", "command": ["check", "."], "cwd": "."}
+  ],
+  "negative_probes": [
+    {
+      "id": "reject-bad-rust-name",
+      "mutation": {"path": "src/BadName.rs", "contents": "pub fn invalid_name() {}\n"},
+      "command": ["check", "."],
+      "cwd": "."
+    }
+  ],
+  "native_commands": [],
+  "required_hook_states": []
+}

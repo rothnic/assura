@@ -1,0 +1,53 @@
+structure:
+  ./:
+    files:
+      allowed_names:
+        - package.json
+      allow_extra: false
+    directories:
+      allowed_names:
+        - .assura
+        - contracts
+        - src
+        - test
+        - variants
+      allow_extra: false
+    children:
+      .assura/:
+        files:
+          allowed_names:
+            - config.yml
+          allow_extra: false
+        directories:
+          allow_extra: false
+      src/:
+        files:
+          naming: snake_case
+          extensions:
+            - ts
+          allow_extra: false
+        directories:
+          allow_extra: false
+      test/:
+        files:
+          naming: snake_case
+          extensions:
+            - ts
+          allow_extra: false
+        directories:
+          allow_extra: false
+      variants/:
+        files:
+          allow_extra: false
+        directories:
+          allowed_names:
+            - existing_config
+            - existing_hook
+          allow_extra: false
+      contracts/:
+        files:
+          allowed_names:
+            - evaluation.json
+          allow_extra: false
+        directories:
+          allow_extra: false

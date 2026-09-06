@@ -1,0 +1,15 @@
+{
+  "schema": "assura.agent-init-evaluator.v1",
+  "fixture_id": "typescript-utility-v1",
+  "stack": "typescript",
+  "required_paths": ["package.json", "src/format_value.ts", "test/format_value.test.ts"],
+  "forbidden_paths": [],
+  "preserve_hashes": {
+    "package.json": "54e05e6254ff4cc8182a3cb8d95734a2ac860d002252fc2fb15ab45ac7df97de",
+    "src/format_value.ts": "f87705b1b104757f5de361f6f29acff0c1c016fb7e15c81724f9242600a07a5f"
+  },
+  "positive_probes": [{"id": "strict-check", "command": ["check", "."], "cwd": "."}],
+  "negative_probes": [{"id": "reject-bad-name", "mutation": {"path": "src/BadName.ts", "contents": "export const bad = 1;\n"}, "command": ["check", "."], "cwd": "."}],
+  "native_commands": [{"id": "bun-test", "command": ["bun", "test"], "cwd": ".", "require_collected_tests": true}],
+  "required_hook_states": []
+}

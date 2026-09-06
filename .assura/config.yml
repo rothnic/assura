@@ -1110,6 +1110,7 @@ structure:
             - "check-ci-scope.sh"
             - "ci-scope.sh"
             - "ci-scope-github.sh"
+            - "evaluate-agent-init.py"
             - "perf-vps-ls-lint-compare.sh"
             - "smoke-install-adoption.ps1"
             - "smoke-install-adoption.sh"
