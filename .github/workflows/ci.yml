@@ -324,6 +324,17 @@ jobs:
         if ($beforeAssura -ne (Get-FileHash (Join-Path $bin "assura.exe") -Algorithm SHA256).Hash -or $beforeFull -ne (Get-FileHash (Join-Path $bin "assura-full.exe") -Algorithm SHA256).Hash) {
           throw "replacement failure did not preserve the installed executable pair"
         }
+        $env:ASSURA_TEST_FAIL_DURING_SECOND_BACKUP = "1"
+        try {
+          ./website/public/install.ps1 -AssetUrl (Resolve-Path target/assura-windows-amd64.zip) -ChecksumUrl (Resolve-Path target/assura-windows-amd64.zip.sha256) -BinDir $bin
+          throw "installer accepted an injected second backup failure"
+        } catch {
+          if ($_.Exception.Message -eq "installer accepted an injected second backup failure") { throw }
+          if ($_.Exception.Message -notmatch "replacement failed; restored previous installation") { throw }
+        } finally { Remove-Item Env:ASSURA_TEST_FAIL_DURING_SECOND_BACKUP -ErrorAction SilentlyContinue }
+        if ($beforeAssura -ne (Get-FileHash (Join-Path $bin "assura.exe") -Algorithm SHA256).Hash -or $beforeFull -ne (Get-FileHash (Join-Path $bin "assura-full.exe") -Algorithm SHA256).Hash) {
+          throw "second backup failure did not preserve the installed executable pair"
+        }
 
   installable-adoption:
     name: Installable Adoption Smoke (${{ matrix.label }})
