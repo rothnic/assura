@@ -12,6 +12,23 @@
 - Focused RED tests were observed for every review condition. The final local evaluator suite passed 27 tests; Python compilation, repository structure check, evidence policy, and the 48-page documentation build passed. Rust, TypeScript, and Python policy-only partial controls all recorded matched named-rule negative probes and remain ineligible by scope; those runs do not assert unrequested native, guidance, or hook dimensions. A separate full Rust control records native, guidance, and hooks as unavailable; TypeScript/Python full-run evidence remains separately incomplete.
 - Context health: earlier Q02 and unrelated-card evidence show R03's no-slower gate can fluctuate on the same fixture, so hosted proof remains mandatory. Existing evaluator and performance workflows already cover the new findings; no new skill is warranted. Next: await the exact-SHA hosted matrix, then merge only if every required job passes and the candidate remains current-master based.
 
+## Iteration 15 — 2026-09-06 — Q03 integration and Q04 current-master refresh
+
+- Documentation-only PR #163 merged as
+  `25a141525ce2420f02f3686affbeb03b0915f607`; its commit is reachable from
+  `origin/master`, so Q03 is now done in both evidence and backlog state.
+- Q04 immediately rebased onto that master. The shared backlog conflict was
+  resolved by preserving Q03's done state and Q04's verified state. The
+  rebased behavior commit `4ccd8ca` has a byte-identical source/config/test
+  tree to the locally tested candidate, and an independent exact-SHA re-review
+  found no findings.
+- Context health review: long local LTO builds require process inspection after
+  an observer window; duplicate lock-waiters were stopped while the single
+  active build was retained. Existing `assura-local-build` already directs that
+  inspection, so no new project skill is warranted. `vps-dev` remains
+  DNS-unavailable. Next: force-with-lease Q04 onto its PR and obtain a fresh
+  current-master hosted matrix.
+
 ## Iteration 14 — 2026-09-06 — Q04 local validation closure
 
 - Candidate `29b465669030c8fcdce4aa6c8a494130946a3c90` passed final focused
