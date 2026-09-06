@@ -235,3 +235,16 @@
   lifecycle tests, four private resolver tests, and thirteen host lifecycle
   tests passed; independent final review is clean.
 - Context health: not exposed. Multiple reviewer findings all reduced to one reusable ownership rule and are now captured in the harness hook spec. The local `cargo xtask pr` runner did not yield a terminal result within the observation window, so it remains inconclusive; hosted performance/PR gates are mandatory before merge.
+
+## Iteration 41 — 2026-09-06 — A04 hosted integration and closure
+
+- PR [#181](https://github.com/rothnic/assura/pull/181) merged as
+  `41949fd589f37d01222ef6a695a6a4c3f61ec9a7`. Its independently reviewed and
+  locally proven head `ec2cf6a57a001a1c266dcb7b99e147a02cc85a94` passed all
+  required hosted checks: documentation, Linux/macOS/Windows stable, MSRV,
+  release bundle, Windows installer, five adoption lanes, coverage, evidence
+  and security checks, and Performance Report.
+- `git fetch origin --prune` followed by `git merge-base --is-ancestor ec2cf6a
+  origin/master` exited 0. A04 is now done, with local hooks still described as
+  local lifecycle evidence rather than hosted merge protection. Next independent
+  ready card: A05; R03 remains blocked pending a comparable performance repair.
