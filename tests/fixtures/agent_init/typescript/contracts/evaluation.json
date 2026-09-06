@@ -1,6 +1,7 @@
 {
   "schema": "assura.agent-init-evaluator.v1",
   "fixture_id": "typescript-utility-v1",
+  "prompt_hash": "2257e02d8f8d56f70937ca8ecc2993e3e4743888a68e7a5e21ca9e348f114941",
   "stack": "typescript",
   "required_paths": ["package.json", "src/format_value.ts", "test/format_value.test.ts"],
   "forbidden_paths": [],

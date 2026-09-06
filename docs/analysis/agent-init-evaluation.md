@@ -24,7 +24,9 @@ must have the expected top-level type, command arguments must be nonempty string
 arrays, and project paths/cwds must be relative and cannot contain `..`. The
 candidate binary path itself must be absolute. Each negative policy probe must
 name its expected rule/output marker, so a different nonzero failure cannot
-credit the seeded mutation.
+credit the seeded mutation. A frozen initialization prompt may be represented
+by a validated SHA-256 `prompt_hash`; the private result retains it with the
+contract and binary hashes, while publication output omits it.
 
 ## Evidence model
 

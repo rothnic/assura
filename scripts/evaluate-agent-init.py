@@ -136,6 +136,12 @@ def contract_validation_errors(contract: object) -> list[str]:
     if errors:
         return errors
 
+    if "prompt_hash" in contract and (
+        not isinstance(contract["prompt_hash"], str)
+        or not re.fullmatch(r"[0-9a-f]{64}", contract["prompt_hash"])
+    ):
+        errors.append("prompt_hash")
+
     def safe_relative_path(value: object) -> bool:
         return (
             isinstance(value, str)
@@ -403,6 +409,7 @@ def evaluate(arguments: argparse.Namespace) -> tuple[int, dict[str, object]]:
     result = {
         "schema": "assura.agent-init-evaluation-result.v1",
         "fixture_id": contract["fixture_id"],
+        "prompt_hash": contract.get("prompt_hash"),
         "verification_scope": "partial" if partial else "full",
         "acceptance_eligible": not partial,
         "acceptance_pass": not partial and not critical_failures,
@@ -419,7 +426,10 @@ def publication_view(result: dict[str, object]) -> dict[str, object]:
         key: value
         for key, value in result.items()
         if key
-        not in {"fixture_id", "contract_hash", "assura_binary_hash", "critical_failures"}
+        not in {
+            "fixture_id", "prompt_hash", "contract_hash", "assura_binary_hash",
+            "critical_failures",
+        }
     }
     publication["critical_failure_count"] = len(result["critical_failures"])
     publication["command_evidence"] = []

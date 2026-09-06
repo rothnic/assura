@@ -595,6 +595,36 @@ class AgentInitEvaluatorTests(unittest.TestCase):
             result = json.loads(output_path.read_text())
             self.assertIn("assura_bin:absolute_path", result["critical_failures"])
 
+    def test_contract_prompt_hash_is_recorded_in_private_result(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            temporary_root = Path(temporary_directory)
+            project = temporary_root / "project"
+            project.mkdir()
+            binary = temporary_root / "assura"
+            binary.write_text("#!/bin/sh\nexit 0\n")
+            binary.chmod(binary.stat().st_mode | stat.S_IXUSR)
+            prompt_hash = "2257e02d8f8d56f70937ca8ecc2993e3e4743888a68e7a5e21ca9e348f114941"
+            contract_path = temporary_root / "contract.json"
+            contract_path.write_text(json.dumps({
+                "schema": "assura.agent-init-evaluator.v1", "fixture_id": "prompt-provenance",
+                "stack": "rust", "prompt_hash": prompt_hash,
+                "required_paths": [], "forbidden_paths": [], "preserve_hashes": {},
+                "positive_probes": [], "negative_probes": [],
+                "native_commands": [], "required_hook_states": [],
+            }))
+            output_path = temporary_root / "result.json"
+            completed = subprocess.run(
+                [sys.executable, str(EVALUATOR), "--project", str(project),
+                 "--contract", str(contract_path), "--assura-bin", str(binary),
+                 "--output", str(output_path), "--dimensions", "structure"],
+                check=False, capture_output=True, text=True,
+            )
+
+            self.assertNotEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+            result = json.loads(output_path.read_text())
+            self.assertIn("prompt_hash", result)
+            self.assertEqual(result["prompt_hash"], prompt_hash)
+
     def test_negative_probe_requires_its_named_rule_in_command_output(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             temporary_root = Path(temporary_directory)
