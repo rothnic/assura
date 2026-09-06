@@ -206,3 +206,9 @@
 
 - PR #173 merged the independently reviewed external-config rescan repair as `b3002b1`; the exact commit was fetched and verified reachable from `origin/master`. Its full hosted matrix passed, including macOS/Windows/Linux suites, MSRV, performance, release/installer/adoption, documentation, security, coverage, and evidence gates.
 - The correction keeps watcher safety explicit: unrelated external config and Assura runtime-output noise no longer produces false rescans, while pathless and excluded in-scope rescans remain observable fallbacks. No tag, release, deployment, or public action was taken. Next independent ready card: A02.
+
+## Iteration 38 — 2026-09-06 — A02 explicit local-policy preflight
+
+- A02 is active in isolated current-master worktree `goal/a02-local-patterns`. Focused VPS integration proof covers `init --recipe-file` with a spaced path, SHA-256 provenance in `.assura/onboarding/profile-selection.json`, successful `agent onboard --recipe-file`, and a conflicting local rule with path/existing/incoming diagnostics.
+- A new red contract showed onboarding was materializing its baseline before detecting a local-policy conflict, changing project config despite the conflict. The implementation now preflights a local recipe against an existing config before baseline materialization; the four-test focused suite is green and the local Assura structure gate has zero violations. This is not card completion: invalid-result, idempotence, bundled fixture, documentation, broader-gate, and review evidence remain.
+- Context health: local disk recovered to 1.7 GiB; VPS remains the compile/test authority and has ample capacity. The only repeated operational friction is explicit source synchronization between the isolated local worktree and the VPS clone; existing evidence commands remain sufficient and no new reusable skill is warranted. Next: add the remaining A02 merge and idempotence contracts.

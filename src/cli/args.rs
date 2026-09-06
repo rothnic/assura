@@ -143,6 +143,13 @@ pub enum Commands {
             help = "Materialize an editable first-party policy recipe (repeatable)"
         )]
         recipe: Vec<InitRecipe>,
+
+        #[arg(
+            long,
+            value_name = "PATH",
+            help = "Apply one explicit local Assura YAML recipe file"
+        )]
+        recipe_file: Option<PathBuf>,
     },
 
     #[command(about = "Manage project-owned Assura configuration")]
@@ -283,6 +290,12 @@ pub enum InitRecipe {
     AgenticCore,
     /// Advisory line-length and direct-child health defaults.
     StructureHealth,
+    /// Cargo library layout with conventional source and test directories.
+    RustLibrary,
+    /// TypeScript/Bun utility layout with source and test directories.
+    TypescriptBunUtility,
+    /// Python package layout with pytest-style tests.
+    PythonPytest,
 }
 
 /// Configuration grammar accepted by `assura migrate`.

@@ -23,6 +23,8 @@ const OUTPUT_SCHEMA: &str = "assura.agent-onboarding.v1";
 pub struct AgentOnboardingOptions {
     /// Project root directory.
     pub path: Option<PathBuf>,
+    /// Explicit local policy recipe to apply.
+    pub recipe_file: Option<PathBuf>,
     /// Requested host-agent profile.
     pub agent: AgentOnboardingTarget,
     /// Whether to activate the selected host integration.
@@ -71,9 +73,22 @@ fn run_agent_onboarding(
 
     let detected = detect_project(&project_root, options.agent, options.activate)?;
     let config_path = config.unwrap_or_else(|| project_root.join(".assura/config.yml"));
+    let recipe_file = options.recipe_file;
+    let had_config = config_path.is_file();
+    if had_config {
+        if let Some(recipe_file) = recipe_file.as_ref() {
+            merge_local_recipe(&config_path, recipe_file)?;
+        }
+    } else if let Some(recipe_file) = recipe_file.as_ref() {
+        materialize_initial_local_recipe(&config_path, recipe_file)?;
+    }
     let mut files = Vec::new();
     for file in baseline_files(&detected, options.content_template) {
         files.push(materialize_baseline_file(&project_root, file)?);
+    }
+    if let Some(recipe_file) = recipe_file {
+        crate::cli::local_recipe::write_profile_selection(&project_root, &recipe_file)
+            .map_err(|error| error.message().to_string())?;
     }
     let rule_recommendations = recommended_rules(&detected, &config_path)?;
     files.push(materialize_managed_file(
@@ -126,6 +141,32 @@ fn run_agent_onboarding(
         },
         format: options.format,
     })
+}
+
+fn materialize_initial_local_recipe(
+    config_path: &Path,
+    recipe_file: &PathBuf,
+) -> Result<(), String> {
+    let source = crate::cli::init_support::starter_config(false, &[], Some(recipe_file))
+        .map_err(|error| error.message().to_string())?;
+    crate::config::config::ConfigLoader::parse_validated(&source)
+        .map_err(|error| format!("local recipe produces an invalid project policy: {error}"))?;
+    let parent = config_path
+        .parent()
+        .ok_or_else(|| format!("{} has no parent directory", config_path.display()))?;
+    fs::create_dir_all(parent).map_err(|error| error.to_string())?;
+    crate::cli::local_recipe::write_config_atomically(config_path, &source)
+        .map_err(|error| error.message().to_string())
+}
+
+fn merge_local_recipe(config_path: &Path, recipe_file: &Path) -> Result<(), String> {
+    let outcome = crate::cli::local_recipe::merge_recipe_file(config_path, recipe_file)
+        .map_err(|error| error.message().to_string())?;
+    if outcome.conflicts.is_empty() {
+        Ok(())
+    } else {
+        Err(outcome.render_conflicts())
+    }
 }
 
 fn resolve_project_root(path: Option<PathBuf>) -> Result<PathBuf, String> {

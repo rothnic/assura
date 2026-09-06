@@ -1,0 +1,12 @@
+structure:
+  ./:
+    package.json: exists:1
+    src/: exists:1
+    test/: exists:1
+  src/:
+    .ts: snake_case
+    components/:
+      exists: 0-1
+      .tsx: PascalCase
+  test/:
+    .test.ts: snake_case

@@ -9,7 +9,7 @@ machine-readable onboarding report.
 ## 2. Signature
 
 ```text
-assura agent onboard [PATH] --agent <auto|codex|opencode|claude|pi|generic> --format <text|json|yaml>
+assura agent onboard [PATH] [--recipe-file <PATH>] --agent <auto|codex|opencode|claude|pi|generic> --format <text|json|yaml>
 ```
 
 The default first-run form is `assura agent onboard .`; `--agent auto` and
@@ -56,6 +56,7 @@ decision.
 | Existing config | Preserve user values and recursively merge missing recipe values. |
 | Legacy `structure: ./` | Normalize the wrapper before merging current notation. |
 | Existing recipe collision | Preserve user policy and report `conflict`. |
+| Explicit `--recipe-file` | Read only the supplied local YAML, validate and atomically merge it, record source path/SHA-256, and preserve conflicts without a partial config write. |
 | Alternate `--config` | Derive status from the selected config. |
 | Generated baseline fails verification | Return validation failure. |
 | Project evidence identifies stable paths | Tell the agent to model those paths and close the stable scope against unexpected entries. |

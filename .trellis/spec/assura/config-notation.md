@@ -259,6 +259,7 @@ First-party recipes are authoring sources, not hidden runtime dependencies:
 
 ```bash
 assura init --recipe agentic-core --recipe structure-health
+assura init --recipe-file .assura/patterns/rust-library.yml
 ```
 
 The command copies ordinary commented YAML into `.assura/config.yml`. The

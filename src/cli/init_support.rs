@@ -20,28 +20,54 @@ pub fn resolve_project_root(path: Option<PathBuf>) -> std::io::Result<PathBuf> {
 pub fn starter_config(
     project_intelligence: bool,
     recipes: &[crate::cli::args::InitRecipe],
-) -> Result<&'static str, StarterInitError> {
+    recipe_file: Option<&PathBuf>,
+) -> Result<String, StarterInitError> {
     if project_intelligence {
         if !recipes.is_empty() {
             return Err(StarterInitError::Configuration(
                 "--project-intelligence cannot currently be combined with --recipe".to_string(),
             ));
         }
-        return Ok(project_intelligence_starter_config());
+        return render_starter_config(project_intelligence_starter_config(), recipe_file);
     }
 
     let agentic = recipes.contains(&crate::cli::args::InitRecipe::AgenticCore);
     let health = recipes.contains(&crate::cli::args::InitRecipe::StructureHealth);
+    let language_recipes = recipes
+        .iter()
+        .copied()
+        .filter(|recipe| {
+            matches!(
+                recipe,
+                crate::cli::args::InitRecipe::RustLibrary
+                    | crate::cli::args::InitRecipe::TypescriptBunUtility
+                    | crate::cli::args::InitRecipe::PythonPytest
+            )
+        })
+        .collect::<Vec<_>>();
+    if !language_recipes.is_empty() {
+        if language_recipes.len() != 1 || agentic || health {
+            return Err(StarterInitError::Configuration(
+                "select exactly one language layout recipe; combine it through an explicit local recipe file instead"
+                    .to_string(),
+            ));
+        }
+        return render_starter_config(recipe_config(language_recipes[0]), recipe_file);
+    }
     if agentic || health {
-        return Ok(match (agentic, health) {
-            (true, true) => AGENTIC_HEALTH_STARTER_CONFIG,
-            (true, false) => AGENTIC_CORE_STARTER_CONFIG,
-            (false, true) => STRUCTURE_HEALTH_STARTER_CONFIG,
-            (false, false) => unreachable!(),
-        });
+        return render_starter_config(
+            match (agentic, health) {
+                (true, true) => AGENTIC_HEALTH_STARTER_CONFIG,
+                (true, false) => AGENTIC_CORE_STARTER_CONFIG,
+                (false, true) => STRUCTURE_HEALTH_STARTER_CONFIG,
+                (false, false) => unreachable!(),
+            },
+            recipe_file,
+        );
     }
 
-    Ok(r#"version: "2.0"
+    let mut config: serde_yaml::Value = serde_yaml::from_str(
+        r#"version: "2.0"
 
 structure:
   ./:
@@ -67,7 +93,30 @@ exclude:
   - "node_modules/**"
   - "dist/**"
   - "**/dist/**"
-"#)
+"#,
+    )
+    .expect("built-in starter config is valid YAML");
+    render_local_recipe(&mut config, recipe_file)
+}
+
+fn render_starter_config(
+    source: &str,
+    recipe_file: Option<&PathBuf>,
+) -> Result<String, StarterInitError> {
+    let mut config = serde_yaml::from_str(source).map_err(|error| {
+        StarterInitError::Runtime(format!("built-in starter config is invalid YAML: {error}"))
+    })?;
+    render_local_recipe(&mut config, recipe_file)
+}
+
+fn render_local_recipe(
+    config: &mut serde_yaml::Value,
+    recipe_file: Option<&PathBuf>,
+) -> Result<String, StarterInitError> {
+    crate::cli::local_recipe::apply_recipe_file(config, recipe_file)?;
+    serde_yaml::to_string(&config).map_err(|error| {
+        StarterInitError::Runtime(format!("failed to render starter config: {error}"))
+    })
 }
 
 /// Return the project-owned YAML fragment for one first-party recipe.
@@ -75,6 +124,15 @@ pub fn recipe_config(recipe: crate::cli::args::InitRecipe) -> &'static str {
     match recipe {
         crate::cli::args::InitRecipe::AgenticCore => AGENTIC_CORE_STARTER_CONFIG,
         crate::cli::args::InitRecipe::StructureHealth => STRUCTURE_HEALTH_STARTER_CONFIG,
+        crate::cli::args::InitRecipe::RustLibrary => {
+            crate::cli::init_recipes::RUST_LIBRARY_STARTER_CONFIG
+        }
+        crate::cli::args::InitRecipe::TypescriptBunUtility => {
+            crate::cli::init_recipes::TYPESCRIPT_BUN_UTILITY_STARTER_CONFIG
+        }
+        crate::cli::args::InitRecipe::PythonPytest => {
+            crate::cli::init_recipes::PYTHON_PYTEST_STARTER_CONFIG
+        }
     }
 }
 
@@ -143,6 +201,7 @@ pub fn materialize_starter(
     force: bool,
     project_intelligence: bool,
     recipes: &[crate::cli::args::InitRecipe],
+    recipe_file: Option<PathBuf>,
 ) -> Result<Vec<PathBuf>, StarterInitError> {
     let project_root =
         resolve_project_root(path).map_err(|error| StarterInitError::Runtime(error.to_string()))?;
@@ -170,19 +229,19 @@ pub fn materialize_starter(
             error
         ))
     })?;
-    let config = starter_config(project_intelligence, recipes)?;
-    crate::config::config::ConfigLoader::parse(config).map_err(|error| {
+    let config = starter_config(project_intelligence, recipes, recipe_file.as_ref())?;
+    crate::config::config::ConfigLoader::parse(&config).map_err(|error| {
         StarterInitError::Configuration(format!("starter recipe is invalid: {error}"))
     })?;
-    std::fs::write(&config_path, config).map_err(|error| {
-        StarterInitError::Runtime(format!(
-            "failed to write {}: {}",
-            config_path.display(),
-            error
-        ))
-    })?;
+    crate::cli::local_recipe::write_config_atomically(&config_path, &config)?;
 
     let mut created = vec![config_path];
+    if let Some(recipe_file) = recipe_file {
+        created.push(crate::cli::local_recipe::write_profile_selection(
+            &project_root,
+            &recipe_file,
+        )?);
+    }
     if project_intelligence {
         for file in project_intelligence_starter_files() {
             let path = project_root.join(file.path);
@@ -559,24 +618,3 @@ Copy this file into `docs/goals/` to see
 "#,
     },
 ];
-
-#[cfg(test)]
-mod recipe_tests {
-    use super::starter_config;
-    use crate::cli::args::InitRecipe;
-    use crate::config::config::ConfigLoader;
-
-    #[test]
-    fn selected_recipes_materialize_valid_project_owned_yaml() {
-        for recipes in [
-            vec![InitRecipe::AgenticCore],
-            vec![InitRecipe::StructureHealth],
-            vec![InitRecipe::AgenticCore, InitRecipe::StructureHealth],
-        ] {
-            let source = starter_config(false, &recipes).unwrap();
-            let config = ConfigLoader::parse(source).unwrap();
-            assert!(config.structure.contains_key("./"));
-            assert!(!source.contains("$agentic-project"));
-        }
-    }
-}

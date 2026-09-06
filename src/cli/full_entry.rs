@@ -110,7 +110,18 @@ async fn run_full_cli(cli: Cli) -> ExitCode {
             force,
             no_git_hooks,
             recipe,
-        } => init_command(path, force, no_git_hooks, project_intelligence, recipe).await,
+            recipe_file,
+        } => {
+            init_command(
+                path,
+                force,
+                no_git_hooks,
+                project_intelligence,
+                recipe,
+                recipe_file,
+            )
+            .await
+        }
         Commands::Config { command } => match command {
             ConfigCommands::AddRecipe {
                 recipe,

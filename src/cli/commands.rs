@@ -127,17 +127,19 @@ pub async fn init_command(
     no_git_hooks: bool,
     project_intelligence: bool,
     recipes: Vec<crate::cli::args::InitRecipe>,
+    recipe_file: Option<PathBuf>,
 ) -> ExitCode {
-    let created = match materialize_starter(path, force, project_intelligence, &recipes) {
-        Ok(created) => created,
-        Err(error) => {
-            eprintln!("Error: {}", error.message());
-            return match error {
-                StarterInitError::Configuration(_) => ExitCode::ConfigurationError,
-                StarterInitError::Runtime(_) => ExitCode::RuntimeError,
-            };
-        }
-    };
+    let created =
+        match materialize_starter(path, force, project_intelligence, &recipes, recipe_file) {
+            Ok(created) => created,
+            Err(error) => {
+                eprintln!("Error: {}", error.message());
+                return match error {
+                    StarterInitError::Configuration(_) => ExitCode::ConfigurationError,
+                    StarterInitError::Runtime(_) => ExitCode::RuntimeError,
+                };
+            }
+        };
     for path in created {
         println!("Created {}", path.display());
     }

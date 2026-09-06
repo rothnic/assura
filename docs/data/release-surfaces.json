@@ -230,7 +230,7 @@
       "detail_path": "docs/goals/assura-agent-onboarding-bootstrap-command.md",
       "marketing_claim": true,
       "evidence_status": "verified",
-      "evidence_refs": ["tests/project_intelligence_onboarding.rs"],
+      "evidence_refs": ["tests/project_intelligence_onboarding.rs", "tests/agent_recipe_file.rs"],
       "command": "assura agent onboard . --agent auto --format json",
       "smoke_args": ["agent", "onboard", ".", "--agent", "auto", "--format", "json"],
       "expected_exit": 1

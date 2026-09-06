@@ -1,0 +1,11 @@
+structure:
+  ./:
+    Cargo.toml: exists:1
+    src/: exists:1
+    tests/: exists:1
+    .rs: snake_case
+  src/:
+    lib.rs: exists:1
+    .rs: snake_case
+  tests/:
+    .rs: snake_case
