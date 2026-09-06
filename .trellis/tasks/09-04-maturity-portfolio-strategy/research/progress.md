@@ -12,6 +12,12 @@
 - Focused RED tests were observed for every review condition. The final local evaluator suite passed 27 tests; Python compilation, repository structure check, evidence policy, and the 48-page documentation build passed. Rust, TypeScript, and Python policy-only partial controls all recorded matched named-rule negative probes and remain ineligible by scope; those runs do not assert unrequested native, guidance, or hook dimensions. A separate full Rust control records native, guidance, and hooks as unavailable; TypeScript/Python full-run evidence remains separately incomplete.
 - Context health: earlier Q02 and unrelated-card evidence show R03's no-slower gate can fluctuate on the same fixture, so hosted proof remains mandatory. Existing evaluator and performance workflows already cover the new findings; no new skill is warranted. Next: await the exact-SHA hosted matrix, then merge only if every required job passes and the candidate remains current-master based.
 
+## Iteration 33 — 2026-09-06 — A03 guidance-evaluator evidence repair
+
+- A03 implementation merged in `2e882ae` after independent review and a fully green hosted retry. Its required partial evaluator run exposed the remaining honest gap: Contract v1 named `guidance` but had no assertion type, so it reported `unavailable` rather than a false pass.
+- A focused evaluator repair now adds optional fixture-owned textual guidance assertions, with passing, missing-fragment, and unsafe-path tests. The evaluator suite passed 30 tests and Python compilation passed. The exact A03 binary-backed disposable proof is pending: local storage had only 118 MiB free and Cargo failed with `No space left on device`; the local `vps-dev` SSH alias was unavailable. The failed temporary build and fixture were removed, restoring 128 MiB, still inadequate. This is an environmental evidence gap, not a passing result.
+- Context health: the repeated issue is constrained local disk, already visible in prior A01 docs observations. No new reusable skill is warranted; next is an adequately provisioned runner for the exact current-master binary proof, then independent review and hosted gating of this repair.
+
 ## Iteration 1 — 2026-09-05 — B00 baseline capture
 
 - Refreshed `origin/master` at `ed093668918bc271fc98b9112acaf7c1bf3eb314` and inventoried GitHub state, existing worktrees, release version, overlapping PR #142, and case-study PR #60.

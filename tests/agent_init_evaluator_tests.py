@@ -553,6 +553,178 @@ class AgentInitEvaluatorTests(unittest.TestCase):
             self.assertEqual(result["dimension_states"]["native"], "unavailable")
             self.assertFalse(result["acceptance_pass"])
 
+    def test_guidance_assertion_records_matching_fixture_evidence(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            temporary_root = Path(temporary_directory)
+            project = temporary_root / "project"
+            project.mkdir()
+            (project / "agent-next.md").write_text("Inspect manifests before selecting a pattern.\n")
+            binary = temporary_root / "assura"
+            binary.write_text("#!/bin/sh\nexit 0\n")
+            binary.chmod(binary.stat().st_mode | stat.S_IXUSR)
+            contract_path = temporary_root / "contract.json"
+            contract_path.write_text(json.dumps({
+                "schema": "assura.agent-init-evaluator.v1", "fixture_id": "guidance-pass",
+                "stack": "rust", "prompt_hash": "2257e02d8f8d56f70937ca8ecc2993e3e4743888a68e7a5e21ca9e348f114941",
+                "required_paths": [], "forbidden_paths": [], "preserve_hashes": {},
+                "positive_probes": [], "negative_probes": [], "native_commands": [],
+                "required_hook_states": [],
+                "guidance_assertions": [{
+                    "id": "inspect-manifests", "path": "agent-next.md",
+                    "contains": "Inspect manifests",
+                }],
+            }))
+            output_path = temporary_root / "result.json"
+            completed = subprocess.run(
+                [sys.executable, str(EVALUATOR), "--project", str(project),
+                 "--contract", str(contract_path), "--assura-bin", str(binary),
+                 "--output", str(output_path), "--dimensions", "guidance"],
+                check=False, capture_output=True, text=True,
+            )
+
+            self.assertNotEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+            result = json.loads(output_path.read_text())
+            self.assertEqual(result["dimension_states"]["guidance"], "pass")
+            evidence = next(entry for entry in result["command_evidence"] if entry["kind"] == "guidance")
+            self.assertTrue(evidence["matched"])
+
+    def test_missing_guidance_fragment_fails_requested_dimension(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            temporary_root = Path(temporary_directory)
+            project = temporary_root / "project"
+            project.mkdir()
+            (project / "agent-next.md").write_text("Inspect manifests.\n")
+            binary = temporary_root / "assura"
+            binary.write_text("#!/bin/sh\nexit 0\n")
+            binary.chmod(binary.stat().st_mode | stat.S_IXUSR)
+            contract_path = temporary_root / "contract.json"
+            contract_path.write_text(json.dumps({
+                "schema": "assura.agent-init-evaluator.v1", "fixture_id": "guidance-fail",
+                "stack": "rust", "prompt_hash": "2257e02d8f8d56f70937ca8ecc2993e3e4743888a68e7a5e21ca9e348f114941",
+                "required_paths": [], "forbidden_paths": [], "preserve_hashes": {},
+                "positive_probes": [], "negative_probes": [], "native_commands": [],
+                "required_hook_states": [],
+                "guidance_assertions": [{
+                    "id": "negative-proof", "path": "agent-next.md",
+                    "contains": "Prove a negative case",
+                }],
+            }))
+            output_path = temporary_root / "result.json"
+            completed = subprocess.run(
+                [sys.executable, str(EVALUATOR), "--project", str(project),
+                 "--contract", str(contract_path), "--assura-bin", str(binary),
+                 "--output", str(output_path), "--dimensions", "guidance"],
+                check=False, capture_output=True, text=True,
+            )
+
+            self.assertNotEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+            result = json.loads(output_path.read_text())
+            self.assertIn("guidance:negative-proof", result["critical_failures"])
+            self.assertEqual(result["dimension_states"]["guidance"], "fail")
+
+    def test_missing_guidance_file_fails_requested_dimension(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            temporary_root = Path(temporary_directory)
+            project = temporary_root / "project"
+            project.mkdir()
+            binary = temporary_root / "assura"
+            binary.write_text("#!/bin/sh\nexit 0\n")
+            binary.chmod(binary.stat().st_mode | stat.S_IXUSR)
+            contract_path = temporary_root / "contract.json"
+            contract_path.write_text(json.dumps({
+                "schema": "assura.agent-init-evaluator.v1", "fixture_id": "guidance-missing-file",
+                "stack": "rust", "prompt_hash": "2257e02d8f8d56f70937ca8ecc2993e3e4743888a68e7a5e21ca9e348f114941",
+                "required_paths": [], "forbidden_paths": [], "preserve_hashes": {},
+                "positive_probes": [], "negative_probes": [], "native_commands": [],
+                "required_hook_states": [],
+                "guidance_assertions": [{
+                    "id": "handoff-exists", "path": ".assura/onboarding/agent-next.md",
+                    "contains": "Inspect manifests",
+                }],
+            }))
+            output_path = temporary_root / "result.json"
+            completed = subprocess.run(
+                [sys.executable, str(EVALUATOR), "--project", str(project),
+                 "--contract", str(contract_path), "--assura-bin", str(binary),
+                 "--output", str(output_path), "--dimensions", "guidance"],
+                check=False, capture_output=True, text=True,
+            )
+
+            self.assertNotEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+            result = json.loads(output_path.read_text())
+            self.assertIn("guidance:handoff-exists", result["critical_failures"])
+            evidence = next(entry for entry in result["command_evidence"] if entry["kind"] == "guidance")
+            self.assertFalse(evidence["exists"])
+            self.assertFalse(evidence["matched"])
+
+    def test_unsafe_guidance_assertion_is_rejected_by_contract_validation(self) -> None:
+        contract = {
+            "fixture_id": "unsafe-guidance", "stack": "rust",
+            "prompt_hash": "2257e02d8f8d56f70937ca8ecc2993e3e4743888a68e7a5e21ca9e348f114941",
+            "required_paths": [], "forbidden_paths": [], "preserve_hashes": {},
+            "positive_probes": [], "negative_probes": [], "native_commands": [],
+            "required_hook_states": [],
+            "guidance_assertions": [{"id": "escape", "path": "../AGENTS.md", "contains": "safe"}],
+        }
+
+        self.assertIn(
+            "guidance_assertions[0]",
+            EVALUATOR_MODULE.contract_validation_errors(contract),
+        )
+
+    def test_empty_guidance_path_is_rejected_by_contract_validation(self) -> None:
+        contract = {
+            "fixture_id": "empty-guidance-path", "stack": "rust",
+            "prompt_hash": "2257e02d8f8d56f70937ca8ecc2993e3e4743888a68e7a5e21ca9e348f114941",
+            "required_paths": [], "forbidden_paths": [], "preserve_hashes": {},
+            "positive_probes": [], "negative_probes": [], "native_commands": [],
+            "required_hook_states": [],
+            "guidance_assertions": [{"id": "empty", "path": "", "contains": "safe"}],
+        }
+
+        self.assertIn(
+            "guidance_assertions[0]",
+            EVALUATOR_MODULE.contract_validation_errors(contract),
+        )
+
+    def test_guidance_assertion_rejects_external_symlink_content(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            temporary_root = Path(temporary_directory)
+            project = temporary_root / "project"
+            project.mkdir()
+            external_guide = temporary_root / "external-guide.md"
+            external_guide.write_text("external evidence must not satisfy guidance\n")
+            os.symlink(external_guide, project / "guide.md")
+            binary = temporary_root / "assura"
+            binary.write_text("#!/bin/sh\nexit 0\n")
+            binary.chmod(binary.stat().st_mode | stat.S_IXUSR)
+            contract_path = temporary_root / "contract.json"
+            contract_path.write_text(json.dumps({
+                "schema": "assura.agent-init-evaluator.v1", "fixture_id": "guidance-symlink",
+                "stack": "rust", "prompt_hash": "2257e02d8f8d56f70937ca8ecc2993e3e4743888a68e7a5e21ca9e348f114941",
+                "required_paths": [], "forbidden_paths": [], "preserve_hashes": {},
+                "positive_probes": [], "negative_probes": [], "native_commands": [],
+                "required_hook_states": [],
+                "guidance_assertions": [{
+                    "id": "no-external-content", "path": "guide.md",
+                    "contains": "external evidence",
+                }],
+            }))
+            output_path = temporary_root / "result.json"
+            completed = subprocess.run(
+                [sys.executable, str(EVALUATOR), "--project", str(project),
+                 "--contract", str(contract_path), "--assura-bin", str(binary),
+                 "--output", str(output_path), "--dimensions", "guidance"],
+                check=False, capture_output=True, text=True,
+            )
+
+            self.assertNotEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+            result = json.loads(output_path.read_text())
+            self.assertIn("guidance:no-external-content", result["critical_failures"])
+            evidence = next(entry for entry in result["command_evidence"] if entry["kind"] == "guidance")
+            self.assertEqual(evidence["reason"], "symlink_not_allowed")
+            self.assertFalse(evidence["matched"])
+
     def test_timed_out_policy_command_records_captured_output_as_failure(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             result = EVALUATOR_MODULE.run_command(

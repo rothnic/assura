@@ -143,6 +143,7 @@ def contract_validation_errors(contract: object) -> list[str]:
     def safe_relative_path(value: object) -> bool:
         return (
             isinstance(value, str)
+            and bool(value)
             and not Path(value).is_absolute()
             and ".." not in Path(value).parts
         )
@@ -187,6 +188,21 @@ def contract_validation_errors(contract: object) -> list[str]:
             hook_state.get("path")
         ) or ("exists" in hook_state and not isinstance(hook_state["exists"], bool)):
             errors.append(label)
+    guidance_assertions = contract.get("guidance_assertions", [])
+    if not isinstance(guidance_assertions, list):
+        errors.append("guidance_assertions")
+    else:
+        for index, assertion in enumerate(guidance_assertions):
+            label = f"guidance_assertions[{index}]"
+            if (
+                not isinstance(assertion, dict)
+                or not isinstance(assertion.get("id"), str)
+                or not assertion["id"]
+                or not safe_relative_path(assertion.get("path"))
+                or not isinstance(assertion.get("contains"), str)
+                or not assertion["contains"]
+            ):
+                errors.append(label)
     return errors
 
 
@@ -282,7 +298,7 @@ def evaluate(arguments: argparse.Namespace) -> tuple[int, dict[str, object]]:
             critical_failures.append(f"preservation:{relative_path}")
     with tempfile.TemporaryDirectory(prefix="assura-agent-init-evaluator-") as directory:
         disposable_project = Path(directory) / "project"
-        shutil.copytree(arguments.project, disposable_project)
+        shutil.copytree(arguments.project, disposable_project, symlinks=True)
         for probe in contract.get("positive_probes", []) if "policy" in requested_dimensions else []:
             command_evidence = run_command(
                 arguments.assura_bin,
@@ -298,7 +314,7 @@ def evaluate(arguments: argparse.Namespace) -> tuple[int, dict[str, object]]:
             contract.get("negative_probes", []) if "policy" in requested_dimensions else []
         ):
             negative_project = Path(directory) / f"negative-probe-{index}"
-            shutil.copytree(arguments.project, negative_project)
+            shutil.copytree(arguments.project, negative_project, symlinks=True)
             mutation = probe["mutation"]
             target = negative_project / mutation["path"]
             target.parent.mkdir(parents=True, exist_ok=True)
@@ -340,6 +356,31 @@ def evaluate(arguments: argparse.Namespace) -> tuple[int, dict[str, object]]:
             evidence.append(command_evidence)
             if command_evidence["state"] != "pass":
                 critical_failures.append(f"native:{native_command['id']}")
+        for assertion in contract.get("guidance_assertions", []) if "guidance" in requested_dimensions else []:
+            guidance_path = disposable_project / assertion["path"]
+            relative_parts = Path(assertion["path"]).parts
+            components = [disposable_project]
+            current = disposable_project
+            for part in relative_parts:
+                current = current / part
+                components.append(current)
+            contains_symlink = any(component.is_symlink() for component in components)
+            exists = guidance_path.is_file() and not contains_symlink
+            contents = guidance_path.read_text(errors="replace") if exists else ""
+            matched = assertion["contains"] in contents if exists else False
+            evidence.append(
+                {
+                    "kind": "guidance",
+                    "guidance_id": assertion["id"],
+                    "path": assertion["path"],
+                    "exists": exists,
+                    "matched": matched,
+                    "state": "pass" if matched else "fail",
+                    **({"reason": "symlink_not_allowed"} if contains_symlink else {}),
+                }
+            )
+            if not matched:
+                critical_failures.append(f"guidance:{assertion['id']}")
     if "idempotence" in requested_dimensions:
         source_hash_after = directory_hash(arguments.project)
         idempotent = source_hash_before == source_hash_after
@@ -363,6 +404,8 @@ def evaluate(arguments: argparse.Namespace) -> tuple[int, dict[str, object]]:
             evidenced_dimensions.add("preservation")
         elif entry.get("kind") == "idempotence":
             evidenced_dimensions.add("idempotence")
+        elif entry.get("kind") == "guidance":
+            evidenced_dimensions.add("guidance")
         elif "probe_id" in entry:
             evidenced_dimensions.add("policy")
         elif "native_id" in entry:
@@ -402,6 +445,8 @@ def evaluate(arguments: argparse.Namespace) -> tuple[int, dict[str, object]]:
             dimension_states["native"] = (
                 "unavailable" if native_evidence["state"] == "unavailable" else "fail"
             )
+        elif failure.startswith("guidance:"):
+            dimension_states["guidance"] = "fail"
         elif failure.startswith("idempotence:"):
             dimension_states["idempotence"] = "fail"
     result = {
