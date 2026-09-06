@@ -1,5 +1,4 @@
 //! First-run local onboarding for agent-ready repositories.
-
 use super::agent_integration::configure_agent_integration_bundle;
 use super::agent_lifecycle::{lifecycle_profiles, ranked_next_actions};
 use super::agent_onboarding_report::{
@@ -7,6 +6,7 @@ use super::agent_onboarding_report::{
     OnboardingReport, RenderedOnboardingReport,
 };
 use super::agent_onboarding_rules::{normalize_existing_root, recommended_rules};
+use super::agent_onboarding_specialization::{inactive_capabilities, write_specialization_profile};
 use super::agent_onboarding_templates::{baseline_files, rule_recommendations_file, GeneratedFile};
 use super::doctor::project_doctor_packet_json;
 use super::project_review::build_project_review;
@@ -18,7 +18,7 @@ use serde_yaml::Value;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-const OUTPUT_SCHEMA: &str = "assura.agent-onboarding.v1";
+const OUTPUT_SCHEMA: &str = "assura.agent-onboarding.v2";
 /// Options for `assura agent onboard`.
 pub struct AgentOnboardingOptions {
     /// Project root directory.
@@ -86,10 +86,6 @@ fn run_agent_onboarding(
     for file in baseline_files(&detected, options.content_template) {
         files.push(materialize_baseline_file(&project_root, file)?);
     }
-    if let Some(recipe_file) = recipe_file {
-        crate::cli::local_recipe::write_profile_selection(&project_root, &recipe_file)
-            .map_err(|error| error.message().to_string())?;
-    }
     let rule_recommendations = recommended_rules(&detected, &config_path)?;
     files.push(materialize_managed_file(
         &project_root,
@@ -104,8 +100,22 @@ fn run_agent_onboarding(
         options.activate,
     )?;
     let (verified, review) = verify_project(&project_root, Some(config_path.clone()))?;
+    write_specialization_profile(
+        &project_root,
+        &detected,
+        recipe_file.as_deref(),
+        &verified,
+        &rule_recommendations,
+    )?;
     let content = content_section(options.content_template);
-    let inactive = inactive_capabilities(options.content_template);
+    let inactive = inactive_capabilities(
+        &detected,
+        options.content_template,
+        rule_recommendations
+            .iter()
+            .any(|rule| rule.status == "conflict")
+            || !detected.manifest_conflicts.is_empty(),
+    );
     let lifecycle_profiles = lifecycle_profiles(&project_root, integration_target);
     let next_actions = ranked_next_actions(integration_target, options.content_template);
     let doctor_json = project_doctor_packet_json(&project_root, Some(config_path))?;
@@ -190,12 +200,26 @@ fn detect_project(
     let has_cargo = project_root.join("Cargo.toml").is_file();
     let has_package_json = project_root.join("package.json").is_file();
     let has_pyproject = project_root.join("pyproject.toml").is_file();
-    let has_docs = project_root.join("docs").is_dir();
+    let detected_manifests = [
+        (has_cargo, "Cargo.toml"),
+        (has_package_json, "package.json"),
+        (has_pyproject, "pyproject.toml"),
+    ]
+    .into_iter()
+    .filter_map(|(present, path)| present.then_some(path))
+    .collect::<Vec<_>>();
+    let manifest_conflicts = if detected_manifests.len() > 1 {
+        detected_manifests.clone()
+    } else {
+        Vec::new()
+    };
     let has_src = project_root.join("src").is_dir();
     let has_packages = project_root.join("packages").is_dir();
     let existing_source_files = has_src || has_cargo || has_package_json || has_pyproject;
     let project_type = if is_empty_project(project_root) {
         "empty"
+    } else if manifest_conflicts.len() > 1 {
+        "ambiguous"
     } else if has_packages {
         "monorepo"
     } else if has_cargo {
@@ -204,8 +228,6 @@ fn detect_project(
         "node"
     } else if has_pyproject {
         "python"
-    } else if has_docs {
-        "docs-heavy"
     } else {
         "unknown"
     };
@@ -224,6 +246,7 @@ fn detect_project(
         agent_confidence: agent.confidence,
         git_repository,
         existing_source_files,
+        manifest_conflicts,
     })
 }
 
@@ -555,22 +578,6 @@ fn content_section(template: AgentContentTemplate) -> ContentSection {
     }
 }
 
-fn inactive_capabilities(template: AgentContentTemplate) -> Vec<CheckItem> {
-    let mut items = vec![CheckItem {
-        name: "project_specialization",
-        status: "inactive",
-        detail: "waiting for user answers in .assura/onboarding/questions.md",
-    }];
-    if !template.activates_content() {
-        items.push(CheckItem {
-            name: "content_models",
-            status: "inactive",
-            detail: "deferred until --content-template is selected",
-        });
-    }
-    items
-}
-
 #[derive(Clone, Serialize)]
 pub(super) struct DetectedSection {
     pub(super) project_type: &'static str,
@@ -580,6 +587,7 @@ pub(super) struct DetectedSection {
     pub(super) agent_confidence: &'static str,
     pub(super) git_repository: bool,
     pub(super) existing_source_files: bool,
+    pub(super) manifest_conflicts: Vec<&'static str>,
 }
 
 #[derive(Serialize)]

@@ -112,8 +112,8 @@ pub(super) fn ranked_next_actions(
 ) -> Vec<RankedNextAction> {
     let mut actions = vec![RankedNextAction {
         priority: 1,
-        action: "Read the onboarding handoff",
-        reason: "The broad baseline is active but project specialization is still pending.",
+        action: "Specialize from repository evidence",
+        reason: "The baseline is active; use explicit project evidence before asking about unresolved exceptions.",
         affected_paths: vec![".assura/onboarding/agent-next.md"],
         follow_up: ".assura/onboarding/agent-next.md".to_string(),
     }];
@@ -122,11 +122,10 @@ pub(super) fn ranked_next_actions(
     actions.extend([
         RankedNextAction {
             priority: generic_base_priority,
-            action: "Ask remaining specialization questions",
-            reason:
-                "Assura should not invent language, layout, naming, hook, or domain conventions.",
-            affected_paths: vec![".assura/onboarding/questions.md"],
-            follow_up: ".assura/onboarding/questions.md".to_string(),
+            action: "Record unresolved specialization exceptions",
+            reason: "Ask only when repository evidence conflicts or cannot establish a consequential convention.",
+            affected_paths: vec![".assura/onboarding/agent-next.md"],
+            follow_up: ".assura/onboarding/agent-next.md".to_string(),
         },
         RankedNextAction {
             priority: generic_base_priority + 1,

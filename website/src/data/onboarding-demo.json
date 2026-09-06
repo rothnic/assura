@@ -37,7 +37,7 @@
       "tone": "warn"
     },
     {
-      "text": "Next         Read the onboarding handoff",
+      "text": "Next         Specialize from repository evidence",
       "tone": "pass"
     },
     {
@@ -56,6 +56,7 @@
     "agent_harness": "codex",
     "existing_source_files": true,
     "git_repository": false,
+    "manifest_conflicts": [],
     "project_confidence": "high",
     "project_type": "node",
     "requested_agent": "codex"
@@ -106,7 +107,7 @@
       "tone": "warn"
     },
     {
-      "text": "Next         Read the onboarding handoff",
+      "text": "Next         Specialize from repository evidence",
       "tone": "pass"
     },
     {
@@ -230,12 +231,12 @@
       "required": true
     }
   ],
-  "generated_from": "assura.agent-onboarding.v1",
+  "generated_from": "assura.agent-onboarding.v2",
   "inactive": [
     {
-      "detail": "waiting for user answers in .assura/onboarding/questions.md",
+      "detail": "repository evidence selected a profile and the materialized config passed; prove a negative policy case before verification",
       "name": "project_specialization",
-      "status": "inactive"
+      "status": "configured_unverified"
     },
     {
       "detail": "deferred until --content-template is selected",
@@ -280,22 +281,22 @@
   ],
   "next_actions": [
     {
-      "action": "Read the onboarding handoff",
+      "action": "Specialize from repository evidence",
       "affected_paths": [
         ".assura/onboarding/agent-next.md"
       ],
       "follow_up": ".assura/onboarding/agent-next.md",
       "priority": 1,
-      "reason": "The broad baseline is active but project specialization is still pending."
+      "reason": "The baseline is active; use explicit project evidence before asking about unresolved exceptions."
     },
     {
-      "action": "Ask remaining specialization questions",
+      "action": "Record unresolved specialization exceptions",
       "affected_paths": [
-        ".assura/onboarding/questions.md"
+        ".assura/onboarding/agent-next.md"
       ],
-      "follow_up": ".assura/onboarding/questions.md",
+      "follow_up": ".assura/onboarding/agent-next.md",
       "priority": 2,
-      "reason": "Assura should not invent language, layout, naming, hook, or domain conventions."
+      "reason": "Ask only when repository evidence conflicts or cannot establish a consequential convention."
     },
     {
       "action": "Use advisory feedback while drafting",
@@ -334,7 +335,7 @@
       "reason": "Content facts stay inactive until a template is selected deliberately."
     }
   ],
-  "rendered_text": "Assura agent onboarding\nVersion      assura 0.4.0\nProject      node confidence=high\nAgent        codex confidence=explicit\nPolicy       agentic-core + structure-health -> $agent-entrypoint (applied)\nHost         codex generated=true activated=true verified=true conflicted=false\nContent      none=inactive\nLifecycle    agent-working-loop=nudge pre-commit-warning=warn pre-push-or-ci-gate=gate\nVerified     structure_config=pass onboarding_packet=pass\nReview       needs-review blocking=0 advisory=0 inactive_signals=5\nDeferred     project_specialization, content_models\nNext         Read the onboarding handoff\nPacket       .assura/onboarding/agent-next.md",
+  "rendered_text": "Assura agent onboarding\nVersion      assura 0.4.0\nProject      node confidence=high\nAgent        codex confidence=explicit\nPolicy       agentic-core + structure-health -> $agent-entrypoint (applied)\nHost         codex generated=true activated=true verified=true conflicted=false\nContent      none=inactive\nLifecycle    agent-working-loop=nudge pre-commit-warning=warn pre-push-or-ci-gate=gate\nVerified     structure_config=pass onboarding_packet=pass\nReview       needs-review blocking=0 advisory=0 inactive_signals=5\nDeferred     project_specialization, content_models\nNext         Specialize from repository evidence\nPacket       .assura/onboarding/agent-next.md",
   "schema": "assura.website-onboarding-demo.v1",
   "verified": [
     {

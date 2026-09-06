@@ -200,7 +200,7 @@ fn agent_onboard_generates_broad_baseline_and_packet() {
             .expect("minimal onboarding command runs"),
     );
 
-    assert_eq!(output["schema"], "assura.agent-onboarding.v1");
+    assert_eq!(output["schema"], "assura.agent-onboarding.v2");
     assert_eq!(output["detected"]["project_type"], "empty");
     assert_eq!(output["detected"]["agent_harness"], "generic");
     assert_eq!(output["installed"]["config"], ".assura/config.yml");
@@ -243,7 +243,10 @@ fn agent_onboard_generates_broad_baseline_and_packet() {
         .any(|item| item["mode"] == "gate" && item["blocking"] == true));
     let first_action = &output["next_actions"][0];
     assert_eq!(first_action["priority"], 1);
-    assert_eq!(first_action["action"], "Read the onboarding handoff");
+    assert_eq!(
+        first_action["action"],
+        "Specialize from repository evidence"
+    );
     assert_eq!(
         first_action["affected_paths"][0],
         ".assura/onboarding/agent-next.md"
@@ -306,20 +309,17 @@ fn agent_onboard_generates_broad_baseline_and_packet() {
 
     let agent_next =
         fs::read_to_string(project.path().join(".assura/onboarding/agent-next.md")).unwrap();
-    assert!(agent_next.contains("Inspect Project Evidence First"));
-    assert!(agent_next.contains("package and workspace manifests"));
-    assert!(agent_next.contains("expected stack and intentional layout"));
-    assert!(agent_next.contains("Close stable scopes"));
-    assert!(agent_next.contains("unexpected files and directories fail"));
-    assert!(agent_next.contains("Ask only where the evidence is ambiguous"));
+    assert!(agent_next.contains("Specialize from evidence"));
+    assert!(agent_next.contains("Inspect explicit repository instructions"));
+    assert!(agent_next.contains("Preserve explicit local policy intent"));
+    assert!(agent_next.contains("Select the smallest matching pattern"));
+    assert!(agent_next.contains("Record source, test, generated-output boundaries"));
+    assert!(agent_next.contains("Report only unresolved exceptions"));
     assert!(agent_next.contains(".assura/onboarding/lifecycle.md"));
     assert!(agent_next.contains("STRUCTURE_FIT_CHECK"));
     assert!(agent_next.contains(".agents/skills/assura-structure-fit"));
     assert!(agent_next.contains(".assura/onboarding/rules.md"));
-    assert!(agent_next.contains("What primary language or stack should this project use?"));
-    assert!(agent_next.contains("What test layout should the project use?"));
-    assert!(agent_next.contains("assura review"));
-    assert!(agent_next.contains("assura check --format agent"));
+    assert!(!agent_next.contains("What primary language or stack should this project use?"));
     let lifecycle =
         fs::read_to_string(project.path().join(".assura/onboarding/lifecycle.md")).unwrap();
     assert!(lifecycle.contains("| nudge |"));
@@ -487,9 +487,10 @@ fn agent_onboard_document_project_tracks_source_document_custody() {
         .path()
         .join("source-documents/files/sample-source.txt")
         .is_file());
-    let questions =
+    let exceptions =
         fs::read_to_string(project.path().join(".assura/onboarding/questions.md")).unwrap();
-    assert!(questions.contains("research-authoring project"));
+    assert!(exceptions.contains("Unresolved Specialization Exceptions"));
+    assert!(!exceptions.contains("research-authoring project"));
     for path in [
         "library/topics/topic-document-project-baseline.md",
         "docs/drafts/draft-document-project-baseline.md",

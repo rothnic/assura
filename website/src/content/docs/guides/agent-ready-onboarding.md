@@ -105,6 +105,7 @@ look like this:
 
 ```json
 {
+  "schema": "assura.agent-onboarding.v2",
   "installed": {
     "config": ".assura/config.yml",
     "onboarding_packet": ".assura/onboarding/"
@@ -157,28 +158,34 @@ look like this:
     { "name": "onboarding_packet", "status": "pass" }
   ],
   "inactive": [
-    { "name": "project_specialization", "status": "inactive" },
+    {
+      "name": "project_specialization",
+      "status": "configured_unverified"
+    },
     { "name": "content_models", "status": "inactive" }
   ],
   "next_actions": [
     {
       "priority": 1,
-      "action": "Read the onboarding handoff",
+      "action": "Specialize from repository evidence",
       "follow_up": ".assura/onboarding/agent-next.md"
     },
     {
       "priority": 2,
-      "action": "Ask remaining specialization questions",
-      "affected_paths": [".assura/onboarding/questions.md"],
-      "follow_up": ".assura/onboarding/questions.md"
+      "action": "Record unresolved specialization exceptions",
+      "affected_paths": [".assura/onboarding/agent-next.md"],
+      "follow_up": ".assura/onboarding/agent-next.md"
     }
   ]
 }
 ```
 
-`verified` means Assura checked the configured baseline. `inactive` means the
-capability is deliberately not configured yet. A clean `assura check` result is
-not the same thing as a fully onboarded repository.
+`verified` means Assura checked the configured baseline. The v2 onboarding
+report distinguishes a detected, materialized profile that still needs a
+negative policy proof (`configured_unverified`) from missing stack intent
+(`needs_agent_specialization`) and conflicting repository evidence
+(`conflict_requires_user`). A clean `assura check` result is not the same thing
+as a fully onboarded repository.
 
 Assura materializes the `agentic-core` and `structure-health` recipes as normal
 YAML in `.assura/config.yml`. The project owns every generated rule and can
@@ -198,7 +205,7 @@ evidence or a user confirms those choices.
 | --- | --- |
 | `summary.md` | What Assura detected and installed. |
 | `rules.md` | Materialized recipes, active project rules, and how to customize them. |
-| `questions.md` | The specialization questions the agent should ask. |
+| `questions.md` | Exceptions that still require user authority. |
 | `agent-next.md` | The next handoff for coding agents. |
 | `lifecycle.md` | When to use nudge, warn, and gate feedback. |
 | `doctor.json` | A project doctor snapshot showing checked and unchecked state. |
@@ -221,23 +228,15 @@ does not fit `.assura/config.yml`, agents should apply that check before
 editing config: inspect existing structure, prefer reuse or rename, and add a
 new config rule only for a durable non-duplicative project role.
 
-## Agent-Next Questions
+## Agent-Next Procedure
 
-The generated `agent-next.md` tells the agent to answer these from repository
-evidence first, then ask only for unresolved choices:
-
-- primary language or stack;
-- project type;
-- file naming convention;
-- source and test layout;
-- docs strictness;
-- hook lifecycle preference;
-- required project-specific files or folders;
-- source-document custody needs;
-- whether typed content models should be activated.
-
-Record the answers in project notes or `.assura/onboarding/answers.yml` before
-specializing the broad baseline.
+`agent-next.md` is an ordered evidence-first procedure: inspect instructions,
+manifests, and established layout; preserve local intent; select the smallest
+matching pattern; record boundaries and native tools; then apply and validate
+policy. It directs the agent to prove a negative policy case and report only
+unresolved exceptions. `questions.md` is not a routine questionnaire and no
+`answers.yml` file is generated. Ask the project owner only when stack intent
+is missing or repository evidence conflicts.
 
 ## Checked Versus Unchecked
 
@@ -295,10 +294,11 @@ contract and exits nonzero for blocking findings.
 
 ## Specialization Flow
 
-After the user answers the generated questions:
+After the agent has applied evidence-supported decisions, or the project owner
+has resolved a recorded exception:
 
-1. Update `.assura/config.yml` with the chosen language, layout, naming, and
-   strictness rules.
+1. Update `.assura/config.yml` only with the supported language, layout,
+   naming, and strictness decisions supported by evidence or explicit authority.
 2. Activate `agent-project` or `document-project` when the user wants modeled
    facts.
 3. Activate a supported project-local host integration only when the user wants
@@ -311,4 +311,4 @@ After the user answers the generated questions:
    ```
 
 The goal is a repository that tells the agent what is checked, what is still
-unchecked, and what the next user-backed specialization step should be.
+unchecked, and which unresolved exception—if any—requires user authority.

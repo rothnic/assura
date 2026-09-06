@@ -166,6 +166,26 @@ structure:
     let rules = fs::read_to_string(project.path().join(".assura/onboarding/rules.md")).unwrap();
     assert!(rules.contains("Recommendation status: `conflict`"));
     assert!(!rules.contains("stale recommendation status"));
+    let profile: Value = serde_json::from_str(
+        &fs::read_to_string(
+            project
+                .path()
+                .join(".assura/onboarding/profile-selection.json"),
+        )
+        .expect("specialization profile"),
+    )
+    .expect("valid specialization profile JSON");
+    assert!(profile["conflicts"]
+        .as_array()
+        .expect("specialization conflicts")
+        .iter()
+        .any(|conflict| conflict["kind"] == "recommended_rule"));
+    assert!(output["inactive"]
+        .as_array()
+        .expect("specialization state")
+        .iter()
+        .any(|item| item["name"] == "project_specialization"
+            && item["status"] == "conflict_requires_user"));
 
     let merged: serde_yaml::Value =
         serde_yaml::from_str(&fs::read_to_string(&config_path).unwrap()).unwrap();
