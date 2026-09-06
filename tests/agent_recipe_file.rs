@@ -2,6 +2,7 @@ use std::fs;
 use std::process::Command;
 
 use sha2::{Digest, Sha256};
+use std::path::Path;
 use tempfile::TempDir;
 
 fn assura_full_bin() -> &'static str {
@@ -160,4 +161,150 @@ fn agent_onboard_preserves_a_conflicting_local_rule_and_reports_both_values() {
         original_policy,
         "a local-recipe conflict must not leave a partially merged project policy"
     );
+}
+
+#[test]
+fn init_rejects_a_recipe_that_makes_the_complete_policy_invalid_without_writing_config() {
+    let project = TempDir::new().expect("project directory");
+    let patterns = TempDir::new().expect("pattern directory");
+    let recipe_path = patterns.path().join("invalid-policy.yml");
+    fs::write(&recipe_path, "structure: not-a-mapping\n").expect("local recipe");
+
+    let output = Command::new(assura_full_bin())
+        .arg("init")
+        .arg(project.path())
+        .arg("--recipe-file")
+        .arg(&recipe_path)
+        .output()
+        .expect("assura init runs");
+
+    assert!(
+        !output.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert!(
+        !project.path().join(".assura/config.yml").exists(),
+        "invalid prospective policy must not create a config file"
+    );
+}
+
+#[test]
+fn init_rerun_with_the_same_explicit_recipe_is_byte_identical() {
+    let project = TempDir::new().expect("project directory");
+    let patterns = TempDir::new().expect("pattern directory");
+    let recipe_path = patterns.path().join("stable-policy.yml");
+    fs::write(&recipe_path, "structure:\n  ./:\n    README.md: exists:1\n").expect("local recipe");
+
+    for force in [false, true] {
+        let mut command = Command::new(assura_full_bin());
+        command
+            .arg("init")
+            .arg(project.path())
+            .arg("--recipe-file")
+            .arg(&recipe_path);
+        if force {
+            command.arg("--force");
+        }
+        let output = command.output().expect("assura init runs");
+        assert!(
+            output.status.success(),
+            "stdout:\n{}\nstderr:\n{}",
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr)
+        );
+        if !force {
+            continue;
+        }
+    }
+
+    let config = fs::read(project.path().join(".assura/config.yml")).expect("config bytes");
+    let profile = fs::read(
+        project
+            .path()
+            .join(".assura/onboarding/profile-selection.json"),
+    )
+    .expect("profile bytes");
+
+    let output = Command::new(assura_full_bin())
+        .arg("init")
+        .arg(project.path())
+        .arg("--recipe-file")
+        .arg(&recipe_path)
+        .arg("--force")
+        .output()
+        .expect("third init runs");
+    assert!(output.status.success());
+    assert_eq!(
+        fs::read(project.path().join(".assura/config.yml")).unwrap(),
+        config
+    );
+    assert_eq!(
+        fs::read(
+            project
+                .path()
+                .join(".assura/onboarding/profile-selection.json")
+        )
+        .unwrap(),
+        profile
+    );
+}
+
+#[test]
+fn bundled_local_pattern_examples_validate_matching_minimal_projects() {
+    let manifest = Path::new(env!("CARGO_MANIFEST_DIR"));
+    for (name, files) in [
+        (
+            "rust-library",
+            vec!["Cargo.toml", "src/lib.rs", "tests/library.rs"],
+        ),
+        (
+            "typescript-bun-utility",
+            vec![
+                "package.json",
+                "src/format_value.ts",
+                "test/format_value.test.ts",
+            ],
+        ),
+        (
+            "python-pytest",
+            vec![
+                "pyproject.toml",
+                "src/sample_package/__init__.py",
+                "tests/test_package.py",
+            ],
+        ),
+    ] {
+        let project = TempDir::new().expect("project directory");
+        for file in files {
+            let path = project.path().join(file);
+            fs::create_dir_all(path.parent().expect("parent directory")).expect("parent");
+            fs::write(path, "fixture\n").expect("fixture file");
+        }
+        let recipe = manifest.join(format!("tests/fixtures/agent_init/patterns/{name}.yml"));
+        let init = Command::new(assura_full_bin())
+            .arg("init")
+            .arg(project.path())
+            .arg("--recipe-file")
+            .arg(&recipe)
+            .output()
+            .expect("assura init runs");
+        assert!(
+            init.status.success(),
+            "{name} init stderr:\n{}",
+            String::from_utf8_lossy(&init.stderr)
+        );
+        let check = Command::new(assura_full_bin())
+            .args(["check", "--format", "json"])
+            .arg(project.path())
+            .output()
+            .expect("assura check runs");
+        assert!(
+            check.status.success(),
+            "{name} check stdout:\n{}\nstderr:\n{}",
+            String::from_utf8_lossy(&check.stdout),
+            String::from_utf8_lossy(&check.stderr)
+        );
+    }
 }

@@ -1,0 +1,12 @@
+structure:
+  ./:
+    pyproject.toml: exists:1
+    src/: exists:1
+    tests/: exists:1
+  src/:
+    .py: snake_case
+    __init__.py: exists:0-1
+    ./*/:
+      __init__.py: exists:0-1
+  tests/:
+    .py: snake_case
