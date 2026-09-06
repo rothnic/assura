@@ -1,5 +1,11 @@
 # Maturity execution train progress
 
+## Iteration 34 — 2026-09-06 — Q04 final current-master local proof
+
+- Q04 rebased through A01's merged closure to `675041985fded3e873eb68f35b264a23a50cd356`; only the shared progress history conflicted, and both cards' entries were retained. The policy extraction, config declaration, and test contracts applied cleanly.
+- The focused predicate/differential suites, all 23 CLI-check regressions, minimal/default checks, format/diff checks, repository policy check, and all three release artifacts succeeded on that SHA. The required local three-iteration report retained its cold 2x verdict as `not-complete` (1/8), despite all eight headline rows being faster; this does not alter blocked hosted R03 evidence.
+- Context health: long LTO release commands were allowed to finish singly, then rerun from the warm cache to record exits. This recurring observation pattern is covered by the existing local-build guidance; no new skill is warranted. Next: obtain a fresh independent review, then open Q04's current-master PR.
+
 ## Iteration 33 — 2026-09-06 — A01 current-master integration
 
 - PR [#162](https://github.com/rothnic/assura/pull/162) merged as `fdd0e76426c9ca6916fa72cdb3948378ad3a92e3`; a fresh fetch proved that merge is reachable from `origin/master`. The exact independently reviewed head was `1522352cb8b817620c4ea773780877332e122919`.
