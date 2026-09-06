@@ -13,7 +13,7 @@ described in `.assura/config.yml`.
 ## Current Supported Flow
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sh
+curl -fsSL https://assura.dev/install.sh | sh
 assura init --recipe agentic-core --recipe structure-health
 assura check
 ```
@@ -51,7 +51,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sudo env BIN_DIR=/usr/local/bin sh
+      - run: curl -fsSL https://assura.dev/install.sh | sudo env BIN_DIR=/usr/local/bin sh
       - run: assura check --format text
 ```
 

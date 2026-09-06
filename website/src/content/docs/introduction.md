@@ -21,7 +21,7 @@ an advisory branch review, and bounded feedback for coding agents.
 ## Quick Start
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sh
+curl -fsSL https://assura.dev/install.sh | sh
 assura init
 assura check
 ```

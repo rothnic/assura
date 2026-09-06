@@ -221,8 +221,8 @@ fn run_release_live() -> Result<()> {
         format!("https://github.com/{repo}/releases/download/{version}")
     };
     for url in [
-        format!("https://raw.githubusercontent.com/{repo}/master/website/public/install.sh"),
-        format!("https://raw.githubusercontent.com/{repo}/master/website/public/install.ps1"),
+        "https://assura.dev/install.sh".to_string(),
+        "https://assura.dev/install.ps1".to_string(),
         format!("{release_base}/assura-linux-amd64.tar.gz"),
         format!("{release_base}/assura-linux-amd64.tar.gz.sha256"),
         format!("{release_base}/assura-linux-musl-amd64.tar.gz"),
@@ -5575,6 +5575,23 @@ fn check_docs_release_performance(checks: &mut Checks) {
         release_workflow.contains("target/${{ matrix.archive_name }}.sha256")
             && ci_workflow.contains("target/${{ matrix.archive_name }}.sha256"),
         "release workflows must upload checksum sidecars for every archive",
+    );
+    checks.require(
+        install_sh.contains("ASSURA_CHECKSUM_URL")
+            && install_sh.contains("checksum mismatch")
+            && install_sh.contains("assura-linux-musl-amd64.tar.gz"),
+        "Unix installer must verify checksum sidecars and select the Linux musl archive",
+    );
+    checks.require(
+        install_ps1.contains("ChecksumUrl")
+            && install_ps1.contains("Get-FileHash")
+            && install_ps1.contains("SetEnvironmentVariable"),
+        "Windows installer must verify checksum sidecars and update the user PATH",
+    );
+    checks.require(
+        installation_text.contains("https://assura.dev/install.sh")
+            && installation_text.contains("https://assura.dev/install.ps1"),
+        "website installation docs must use the public installers for Unix and Windows",
     );
     checks.require(
         release_workflow.contains("validate-release-contract:")

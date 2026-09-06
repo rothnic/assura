@@ -37,6 +37,78 @@ Do not run the full Rust suite just because any file changed. Do run it when a
 docs/workflow change alters a command contract, CI behavior, release process, or
 validation logic that Rust tests exercise.
 
+## Release Installer Contract
+
+### 1. Scope / Trigger
+
+- Trigger: changing a public installer, release archive, checksum behavior, or
+  installation documentation.
+- The documented install path must be a usable release path, never a source
+  checkout or a local build instruction.
+
+### 2. Signatures
+
+- Unix: `curl -fsSL https://assura.dev/install.sh | sh`
+- Windows PowerShell: `irm https://assura.dev/install.ps1 | iex`
+- Test-only Unix overrides: `ASSURA_REPO`, `ASSURA_VERSION`,
+  `ASSURA_ASSET_URL`, `ASSURA_CHECKSUM_URL`, and `BIN_DIR`.
+- Test-only PowerShell parameters: `-Repo`, `-Version`, `-AssetUrl`,
+  `-ChecksumUrl`, and `-BinDir`.
+
+### 3. Contracts
+
+- Each published archive has a sibling `<archive>.sha256` sidecar. Installers
+  download and verify that sidecar before writing either executable to `BIN_DIR`.
+- Unix selects the matching macOS or Linux x86_64 archive. Linux selects the
+  musl archive for Alpine/musl systems and the glibc archive otherwise.
+- Windows installs the x86_64 archive and adds its install directory to the
+  current process and the user's PATH.
+- Every archive contains both `assura` and `assura-full` companions.
+
+### 4. Validation & Error Matrix
+
+| Condition | Required behavior |
+| --- | --- |
+| Unsupported OS or architecture | Exit nonzero before download and name the unsupported platform. |
+| Missing or malformed checksum sidecar | Exit nonzero without installing a binary. |
+| SHA-256 mismatch | Exit nonzero with a checksum-mismatch error. |
+| Matching archive and sidecar | Install both executables and make `assura --version` runnable. |
+
+### 5. Good / Base / Bad Cases
+
+- Good: a current release archive installs with the public Unix or Windows
+  command and reports its version.
+- Base: `cargo xtask release-smoke` installs the local archive through the Unix
+  installer and completes first-run adoption.
+- Bad: a sidecar containing a different 64-character digest is rejected.
+- Alpine: the musl archive installs and completes adoption inside an x86_64
+  Alpine container in CI.
+
+### 6. Tests Required
+
+- Run `cargo xtask release-smoke` after installer or archive changes.
+- Keep CI installer smoke coverage for Unix, Windows, macOS, and the Alpine
+  musl runtime. The Windows smoke must also reject an invalid checksum.
+- Run `cargo xtask docs` and `cargo xtask target-state` after changing public
+  installation copy or release-surface checks.
+
+### 7. Wrong vs Correct
+
+Wrong:
+
+```text
+curl -fsSL https://raw.githubusercontent.com/rothnic/assura/master/website/public/install.sh | sh
+```
+
+Correct:
+
+```text
+curl -fsSL https://assura.dev/install.sh | sh
+```
+
+The public installer resolves a published archive and verifies its checksum;
+the raw repository URL does neither by itself.
+
 ## Website Config Example Build Contract
 
 ### 1. Scope / Trigger

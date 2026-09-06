@@ -48,6 +48,12 @@ successful builds.
 curl -fsSL https://assura.dev/install.sh | sh
 ```
 
+Windows PowerShell:
+
+```powershell
+irm https://assura.dev/install.ps1 | iex
+```
+
 Manual release archives are available for Linux, macOS, and Windows from
 [GitHub Releases](https://github.com/rothnic/assura/releases/latest). Each
 archive includes `assura` plus an internal `assura-full` companion; keep both
