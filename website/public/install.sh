@@ -106,22 +106,36 @@ tar -xzf "$archive" -C "$tmp_dir"
 mkdir -p "$bin_dir"
 stage_dir="$bin_dir/.assura-stage-$$"
 backup_dir="$bin_dir/.assura-backup-$$"
+backup_assura=0
+backup_full=0
+new_assura=0
+new_full=0
 rollback() {
-  rm -f "$bin_dir/assura" "$bin_dir/assura-full"
-  if [ -e "$backup_dir/assura" ]; then mv "$backup_dir/assura" "$bin_dir/assura" || true; fi
-  if [ -e "$backup_dir/assura-full" ]; then mv "$backup_dir/assura-full" "$bin_dir/assura-full" || true; fi
+  [ "$new_assura" = 1 ] && rm -f "$bin_dir/assura"
+  [ "$new_full" = 1 ] && rm -f "$bin_dir/assura-full"
+  [ "$backup_assura" = 1 ] && mv "$backup_dir/assura" "$bin_dir/assura" || true
+  [ "$backup_full" = 1 ] && mv "$backup_dir/assura-full" "$bin_dir/assura-full" || true
   rm -rf "$stage_dir" "$backup_dir"
 }
 mkdir "$stage_dir" "$backup_dir"
 install -m 755 "$tmp_dir/assura" "$stage_dir/assura"
 install -m 755 "$tmp_dir/assura-full" "$stage_dir/assura-full"
-if [ -e "$bin_dir/assura" ] && ! mv "$bin_dir/assura" "$backup_dir/assura"; then rollback; exit 1; fi
-if [ -e "$bin_dir/assura-full" ] && ! mv "$bin_dir/assura-full" "$backup_dir/assura-full"; then rollback; exit 1; fi
-if ! mv "$stage_dir/assura" "$bin_dir/assura" || [ "${ASSURA_TEST_FAIL_AFTER_FIRST_REPLACE:-}" = "1" ] || ! mv "$stage_dir/assura-full" "$bin_dir/assura-full"; then
+if [ -e "$bin_dir/assura" ]; then mv "$bin_dir/assura" "$backup_dir/assura" || { rollback; exit 1; }; backup_assura=1; fi
+if [ -e "$bin_dir/assura-full" ]; then
+  if [ "${ASSURA_TEST_FAIL_DURING_SECOND_BACKUP:-}" = 1 ]; then rollback; exit 1; fi
+  mv "$bin_dir/assura-full" "$backup_dir/assura-full" || { rollback; exit 1; }; backup_full=1
+fi
+if ! mv "$stage_dir/assura" "$bin_dir/assura"; then
+  rollback
+  echo "assura installer: replacement failed; restored previous installation" >&2; exit 1
+fi
+new_assura=1
+if [ "${ASSURA_TEST_FAIL_AFTER_FIRST_REPLACE:-}" = 1 ] || ! mv "$stage_dir/assura-full" "$bin_dir/assura-full"; then
   rollback
   echo "assura installer: replacement failed; restored previous installation" >&2
   exit 1
 fi
+new_full=1
 rm -rf "$stage_dir" "$backup_dir"
 
 echo "Installed assura to $bin_dir/assura"

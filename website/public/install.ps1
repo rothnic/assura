@@ -75,18 +75,23 @@ try {
     Copy-Item -Force $newFull (Join-Path $stageDir "assura-full.exe")
     $destAssura = Join-Path $BinDir "assura.exe"
     $destFull = Join-Path $BinDir "assura-full.exe"
+    $backupAssura = $false; $backupFull = $false; $newAssuraInstalled = $false; $newFullInstalled = $false
     try {
-        if (Test-Path -LiteralPath $destAssura) { Move-Item -Force $destAssura (Join-Path $backupDir "assura.exe") }
-        if (Test-Path -LiteralPath $destFull) { Move-Item -Force $destFull (Join-Path $backupDir "assura-full.exe") }
+        if (Test-Path -LiteralPath $destAssura) { Move-Item -Force $destAssura (Join-Path $backupDir "assura.exe"); $backupAssura = $true }
+        if ($env:ASSURA_TEST_FAIL_DURING_SECOND_BACKUP -eq "1") { throw "injected second backup failure" }
+        if (Test-Path -LiteralPath $destFull) { Move-Item -Force $destFull (Join-Path $backupDir "assura-full.exe"); $backupFull = $true }
         Move-Item -Force (Join-Path $stageDir "assura.exe") $destAssura
+        $newAssuraInstalled = $true
         if ($env:ASSURA_TEST_FAIL_AFTER_FIRST_REPLACE -eq "1") {
             throw "injected replacement failure"
         }
         Move-Item -Force (Join-Path $stageDir "assura-full.exe") $destFull
+        $newFullInstalled = $true
     } catch {
-        Remove-Item -Force $destAssura, $destFull -ErrorAction SilentlyContinue
-        if (Test-Path -LiteralPath (Join-Path $backupDir "assura.exe")) { Move-Item -Force (Join-Path $backupDir "assura.exe") $destAssura }
-        if (Test-Path -LiteralPath (Join-Path $backupDir "assura-full.exe")) { Move-Item -Force (Join-Path $backupDir "assura-full.exe") $destFull }
+        if ($newAssuraInstalled) { Remove-Item -Force $destAssura -ErrorAction SilentlyContinue }
+        if ($newFullInstalled) { Remove-Item -Force $destFull -ErrorAction SilentlyContinue }
+        if ($backupAssura) { Move-Item -Force (Join-Path $backupDir "assura.exe") $destAssura }
+        if ($backupFull) { Move-Item -Force (Join-Path $backupDir "assura-full.exe") $destFull }
         throw "assura installer: replacement failed; restored previous installation: $($_.Exception.Message)"
     } finally { Remove-Item -Recurse -Force $stageDir, $backupDir -ErrorAction SilentlyContinue }
 

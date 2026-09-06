@@ -243,6 +243,20 @@ fn run_release_smoke() -> Result<()> {
     if fs::read(&assura)? != before_failure || fs::read(&full)? != before_full_failure {
         return Err("release smoke replacement failure did not preserve the installed pair".into());
     }
+    let failed_backup = Command::new("./website/public/install.sh")
+        .env("ASSURA_ASSET_URL", fs::canonicalize(&archive)?)
+        .env("ASSURA_CHECKSUM_URL", fs::canonicalize(&checksum)?)
+        .env("BIN_DIR", &install_dir)
+        .env("ASSURA_TEST_FAIL_DURING_SECOND_BACKUP", "1")
+        .status()?;
+    if failed_backup.success()
+        || fs::read(&assura)? != before_failure
+        || fs::read(&full)? != before_full_failure
+    {
+        return Err(
+            "release smoke second backup failure did not preserve the installed pair".into(),
+        );
+    }
     let mut smoke = Command::new("./scripts/smoke-install-adoption.sh");
     smoke
         .env("ASSURA_BIN", &assura)
