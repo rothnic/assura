@@ -94,11 +94,10 @@ pub(super) fn spawn_daemon(
         DAEMON_PROTOCOL_VERSION,
         pid,
     )
-    .map_err(|error| {
+    .inspect_err(|_| {
         let _ = child.kill();
         let _ = child.wait();
         let _ = cleanup_ready_files(&ready_file);
-        error
     })?;
     let startup_health = probe_health(&listen_addr).map_err(|error| {
         let _ = child.kill();

@@ -99,9 +99,9 @@ fn activate_files(bundle: &IntegrationBundle, dry_run: bool) -> Result<Activatio
                 path_string(&file.path)
             ));
         }
-        let write = current.as_ref().map_or(true, |status| {
-            status.content.as_deref() != Some(file.content.as_str())
-        });
+        let write = current
+            .as_ref()
+            .is_none_or(|status| status.content.as_deref() != Some(file.content.as_str()));
         changed |= write;
         actions.push(FileAction {
             path: path_string(&file.path),

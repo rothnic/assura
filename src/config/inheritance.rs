@@ -45,7 +45,7 @@ impl<'a> RuleResolver<'a> {
 
         // Then resolve structure hierarchy rules
         for (path, node) in &self.config.structure {
-            self.resolve_node(path, node, None, 0, &mut rules);
+            Self::resolve_node(path, node, None, 0, &mut rules);
         }
 
         // Sort by specificity (most specific first)
@@ -91,7 +91,6 @@ impl<'a> RuleResolver<'a> {
 
     /// Recursively resolve a node and its children
     fn resolve_node(
-        &self,
         path: &str,
         node: &DirectoryNode,
         parent_bundle: Option<&FileBundle>,
@@ -124,7 +123,7 @@ impl<'a> RuleResolver<'a> {
                     format!("{}/{}", path, child_name)
                 };
 
-                self.resolve_node(
+                Self::resolve_node(
                     &child_path,
                     child_node,
                     merged_bundle.as_ref().or(node.files.as_ref()),

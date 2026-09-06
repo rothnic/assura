@@ -436,13 +436,13 @@ fn is_fast_node(node: &DirectoryNode) -> bool {
         && node
             .self_directory
             .as_ref()
-            .map_or(true, is_fast_self_directory_bundle)
-        && node.files.as_ref().map_or(true, is_fast_file_bundle)
+            .is_none_or(is_fast_self_directory_bundle)
+        && node.files.as_ref().is_none_or(is_fast_file_bundle)
         && node
             .directories
             .as_ref()
-            .map_or(true, is_fast_directory_bundle)
-        && node.children.as_ref().map_or(true, |children| {
+            .is_none_or(is_fast_directory_bundle)
+        && node.children.as_ref().is_none_or(|children| {
             !children_have_potential_overlap(children) && children.values().all(is_fast_node)
         })
 }
@@ -460,7 +460,7 @@ fn is_fast_file_bundle(files: &FileBundle) -> bool {
         && files.max_size.is_none()
         && files.max_size_patterns.is_none()
         && files.markdown_patterns.is_none()
-        && files.naming_patterns.as_ref().map_or(true, |patterns| {
+        && files.naming_patterns.as_ref().is_none_or(|patterns| {
             patterns
                 .keys()
                 .all(|pattern| is_lslint_extension_pattern(pattern))

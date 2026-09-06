@@ -261,7 +261,7 @@ impl PreparedStructureCheck {
 }
 
 fn config_supports_incremental_path_checks(config: &Config) -> bool {
-    config.extensions.as_ref().map_or(true, |extensions| {
+    config.extensions.as_ref().is_none_or(|extensions| {
         extensions.custom_constraints.is_empty()
             && extensions.release_contracts.is_empty()
             && extensions.support_matrices.is_empty()
@@ -297,8 +297,8 @@ fn directory_node_supports_incremental_path_checks(node: &DirectoryNode) -> bool
         && node
             .files
             .as_ref()
-            .map_or(true, file_bundle_supports_incremental_path_checks)
-        && node.children.as_ref().map_or(true, |children| {
+            .is_none_or(file_bundle_supports_incremental_path_checks)
+        && node.children.as_ref().is_none_or(|children| {
             children
                 .values()
                 .all(directory_node_supports_incremental_path_checks)

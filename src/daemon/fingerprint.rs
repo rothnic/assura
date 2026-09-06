@@ -19,12 +19,9 @@ impl ProjectFingerprint {
             .into_iter()
             .filter_entry(|entry| !ignored_fingerprint_entry(entry))
         {
-            let entry =
-                entry.map_err(|error| std::io::Error::new(std::io::ErrorKind::Other, error))?;
+            let entry = entry.map_err(std::io::Error::other)?;
             let path = entry.path();
-            let metadata = entry
-                .metadata()
-                .map_err(|error| std::io::Error::new(std::io::ErrorKind::Other, error))?;
+            let metadata = entry.metadata().map_err(std::io::Error::other)?;
             let relative = path.strip_prefix(root).unwrap_or(path).to_path_buf();
             entries.insert(
                 relative,
