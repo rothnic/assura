@@ -42,7 +42,7 @@
         "B00"
       ],
       "executor": "agent",
-      "state": "verified",
+      "state": "done",
       "owner": "Codex goal: Assura Maturity Execution Train",
       "evidence": "evidence/R01.md",
       "blocker": null
@@ -56,7 +56,7 @@
         "B00"
       ],
       "executor": "agent",
-      "state": "active",
+      "state": "done",
       "owner": "Codex goal: Assura Maturity Execution Train",
       "evidence": "evidence/R02.md",
       "blocker": null
