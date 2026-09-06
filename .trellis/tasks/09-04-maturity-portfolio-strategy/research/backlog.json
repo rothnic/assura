@@ -143,9 +143,9 @@
       ],
       "executor": "mixed",
       "state": "implemented",
-      "owner": "Codex goal/q02-contribution-contract; existing PR #158",
+      "owner": "Codex goal/a05-current-audit; current-master integration of existing PR #158",
       "evidence": "evidence/Q02.md",
-      "blocker": null
+      "blocker": "GitHub master protection is absent; an authorized independent reviewer/bot route must be selected before an enforceable owner-review/required-check policy can be prepared for administrator approval."
     },
     {
       "id": "A01",

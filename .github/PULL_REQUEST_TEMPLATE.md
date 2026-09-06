@@ -4,9 +4,19 @@
 - Active Trellis task:
 - Related issue or PR:
 
-## Summary
+## Change contract
 
-<!-- Explain the user-visible outcome and the main implementation path. -->
+- User problem:
+- Behavior changed:
+- Reproducer (or `not applicable` for copy-only changes):
+- Exact validation (commands and exit/results, or `not applicable` with reason):
+- Known gaps:
+
+## Policy and assistance
+
+- Policy/dependency/support-promise changes:
+- Material AI assistance and how it was verified (no private prompt transcript required):
+- Independent review needed? (`test deletion`, `exclusion`, `severity reduction`, `performance threshold`, or `CI scope` changes require it):
 
 ## Evidence
 
@@ -23,6 +33,7 @@
 - [ ] `cargo xtask evidence`
 - [ ] `cargo xtask docs`
 - [ ] Goal-specific validation commands are listed above.
+- Exact validation results and any nonapplicable command rationale are recorded above.
 
 ## Review Feedback
 

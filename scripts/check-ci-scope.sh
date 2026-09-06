@@ -134,3 +134,16 @@ full_rustdoc=false
 full_evidence=true
 full_website=false
 full_security=false'
+
+policy_review_output="$(
+  printf '%b' 'tests/cli_contract.rs\nsrc/constraints/severity.rs\nsrc/cli/performance_report/rows.rs\n.github/workflows/ci.yml\nCONTRIBUTING.md\n' \
+    | scripts/ci-scope.sh --files-from - \
+    | grep -E '^(policy_review|policy_review_paths)='
+)"
+expected_policy_review='policy_review=true
+policy_review_paths=tests/cli_contract.rs,src/constraints/severity.rs,src/cli/performance_report/rows.rs,.github/workflows/ci.yml'
+if [ "$policy_review_output" != "$expected_policy_review" ]; then
+  printf 'CI policy-review summary mismatch:\n%s\n' "$policy_review_output" >&2
+  exit 1
+fi
+printf 'CI policy-review summary ok\n'
