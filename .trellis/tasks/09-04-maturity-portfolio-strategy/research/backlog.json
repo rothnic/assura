@@ -413,10 +413,10 @@
         "B00"
       ],
       "executor": "mixed",
-      "state": "pending",
-      "owner": null,
+      "state": "blocked",
+      "owner": "Codex goal: Assura Maturity Execution Train",
       "evidence": "evidence/F01.md",
-      "blocker": null
+      "blocker": "Pilot kit is locally prepared; Nick must authorize participant selection and invitations before real demand evidence or a go/narrow/stop decision can exist."
     },
     {
       "id": "F02",

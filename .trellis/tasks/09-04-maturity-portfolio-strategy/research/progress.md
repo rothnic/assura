@@ -59,6 +59,12 @@
 - Fetch confirmed the merge SHA is reachable from `origin/master`; W01 is now done. No deployment, release, tag, or public communication was initiated.
 - Next: rebase the independently prepared F01 kit onto current master before review, while Q02 remains held by the honest R03 performance gate failure.
 
+## Iteration 11 — 2026-09-06 — F01 pilot-kit preparation
+
+- F01's interview kit was prepared in isolated worktree `assura-f01-pilot-kit`, independently reviewed, and corrected to exclude re-identification data from repository evidence. The consented, Nick-controlled follow-up boundary is explicit; no external outreach or participant selection occurred.
+- The rebased candidate `877acebb2e8ef53cfb638acd14c290f46e2e43fc` passed docs, structural, and evidence gates locally against `9b032d3`. F01 remains blocked on Nick's explicit authorization to select and invite participants; that external authority was not inferred.
+- Next: independent final review of the rebased exact SHA, then documentation-only PR evidence. Q02 remains blocked by R03's honest hosted performance regression.
+
 ## Iteration 4 — 2026-09-06 — R01/R02 integrated proof and post-merge closure
 
 - PR [#144](https://github.com/rothnic/assura/pull/144) merged as `dcb1fb57ba100f77a7cb7e48c4f14507d3106231`; it was confirmed reachable from `origin/master` after fetch.
