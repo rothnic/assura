@@ -308,3 +308,50 @@ fn bundled_local_pattern_examples_validate_matching_minimal_projects() {
         );
     }
 }
+
+#[test]
+fn agent_onboard_unions_explicit_pattern_excludes_in_stable_order() {
+    let project = TempDir::new().expect("project directory");
+    let patterns = TempDir::new().expect("pattern directory");
+    fs::create_dir_all(project.path().join(".assura")).expect("Assura directory");
+    fs::write(
+        project.path().join(".assura/config.yml"),
+        "version: \"2.0\"\nstructure:\n  ./ :\n    extra: true\nexclude:\n  - generated/**\n",
+    )
+    .expect("project policy");
+    let recipe_path = patterns.path().join("exclude-policy.yml");
+    fs::write(&recipe_path, "exclude:\n  - vendor/**\n  - generated/**\n").expect("local recipe");
+
+    let output = Command::new(assura_full_bin())
+        .args(["agent", "onboard"])
+        .arg(project.path())
+        .arg("--recipe-file")
+        .arg(&recipe_path)
+        .args(["--format", "json"])
+        .output()
+        .expect("assura agent onboard runs");
+
+    assert!(
+        output.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let config: serde_yaml::Value = serde_yaml::from_str(
+        &fs::read_to_string(project.path().join(".assura/config.yml")).expect("project policy"),
+    )
+    .expect("valid config YAML");
+    assert_eq!(
+        config["exclude"].as_sequence().expect("exclude sequence"),
+        &vec![
+            serde_yaml::Value::String("generated/**".to_string()),
+            serde_yaml::Value::String("vendor/**".to_string()),
+            serde_yaml::Value::String(".assura/**".to_string()),
+            serde_yaml::Value::String(".git/**".to_string()),
+            serde_yaml::Value::String("target/**".to_string()),
+            serde_yaml::Value::String("node_modules/**".to_string()),
+            serde_yaml::Value::String("dist/**".to_string()),
+            serde_yaml::Value::String("**/dist/**".to_string()),
+        ]
+    );
+}

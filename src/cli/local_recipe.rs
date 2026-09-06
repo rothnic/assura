@@ -183,6 +183,15 @@ fn merge_preserving_existing(
                 }
             }
         }
+        (serde_yaml::Value::Sequence(destination), serde_yaml::Value::Sequence(source))
+            if path == "exclude" =>
+        {
+            for value in source {
+                if !destination.contains(&value) {
+                    destination.push(value);
+                }
+            }
+        }
         (destination, source) if *destination == source => {}
         (destination, source) => conflicts.push(RecipeConflict {
             path: path.to_string(),
