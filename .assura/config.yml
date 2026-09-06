@@ -181,7 +181,7 @@ extensions:
           package: assura
           role: public
           version: "0.4.0"
-          rust_version: "1.70.0"
+          rust_version: "1.86.0"
           license: "MIT OR Apache-2.0"
           publish: public
           description_required_terms:
@@ -199,7 +199,7 @@ extensions:
           package: assura-check-cli
           role: internal
           version: "0.4.0"
-          rust_version: "1.70.0"
+          rust_version: "1.86.0"
           license: "MIT OR Apache-2.0"
           publish: internal
           description_required_terms:
@@ -219,7 +219,7 @@ extensions:
           package: assura-stable-hash
           role: internal
           version: "0.4.0"
-          rust_version: "1.70.0"
+          rust_version: "1.86.0"
           license: "MIT OR Apache-2.0"
           publish: internal
           description_required_terms:
@@ -229,7 +229,7 @@ extensions:
           package: assura-watch-state
           role: internal
           version: "0.4.0"
-          rust_version: "1.70.0"
+          rust_version: "1.86.0"
           license: "MIT OR Apache-2.0"
           publish: internal
           description_required_terms:
@@ -239,7 +239,7 @@ extensions:
           package: xtask
           role: internal
           version: "0.4.0"
-          rust_version: "1.70.0"
+          rust_version: "1.86.0"
           license: "MIT OR Apache-2.0"
           publish: internal
           description_required_terms:

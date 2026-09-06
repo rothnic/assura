@@ -83,7 +83,7 @@ cargo install assura
 
 ## Build from Source
 
-Source builds require Rust 1.70.0 or later.
+Source builds require Rust 1.86.0 or later.
 
 ```bash
 git clone https://github.com/rothnic/assura

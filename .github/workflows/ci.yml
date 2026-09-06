@@ -86,6 +86,22 @@ jobs:
     - name: Check
       run: cargo check --all-targets --all-features
 
+  msrv:
+    name: MSRV (Rust 1.86.0)
+    needs: changes
+    if: needs.changes.outputs.rust == 'true'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install declared MSRV
+      uses: dtolnay/rust-toolchain@master
+      with:
+        toolchain: 1.86.0
+    - name: Check default workspace targets
+      run: cargo check --locked --workspace --all-targets
+    - name: Build minimal public launcher
+      run: cargo build --locked --bin assura --no-default-features --features json-output,yaml-config
+
   evidence:
     name: Evidence Gates
     needs: changes
