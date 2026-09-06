@@ -272,7 +272,7 @@
         "Q03"
       ],
       "executor": "agent",
-      "state": "implemented",
+      "state": "verified",
       "owner": "Codex goal: Assura Maturity Execution Train",
       "evidence": "evidence/Q04.md",
       "blocker": null
