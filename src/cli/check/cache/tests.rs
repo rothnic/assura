@@ -166,7 +166,25 @@ fn corrupt_cache_record_falls_back_to_fresh_validation() {
         })
         .expect("worktree cache record")
         .into_path();
-    fs::write(record, "not valid cache json").unwrap();
+    fs::write(&record, "not valid cache json").unwrap();
+
+    let recovered = run_structure_check_cached(
+        Some(project.path().to_path_buf()),
+        None,
+        false,
+        cache.path().to_path_buf(),
+    )
+    .unwrap();
+    assert!(
+        recovered.success,
+        "corrupt cache must fall back to a fresh passing validation"
+    );
+    let rewritten = fs::read(&record).expect("rewritten cache record");
+    assert!(
+        serde_json::from_slice::<CachedCheckReport>(&rewritten).is_ok(),
+        "fresh validation must replace the corrupt cache record"
+    );
+
     fs::write(project.path().join("BadName.rs"), "").unwrap();
 
     let refreshed = run_structure_check_cached(

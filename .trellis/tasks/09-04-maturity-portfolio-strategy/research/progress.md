@@ -101,6 +101,18 @@
 - The reachable `vps` benchmark host has the canonical fixture but was running unrelated Cargo work. Because paired cold-run attribution requires a quiet comparable runner, no benchmark or speculative optimization was started. R03 remains blocked on that named environment condition and the prior HashSet hypothesis remains rejected.
 - Queue health: Q02's existing candidate has correct local governance evidence but remains blocked on independent reviewer/branch-protection authority and the same required performance gate. Existing performance and worktree procedures cover this repeated decision; no new skill is warranted. Next independent ready card: A01.
 
+## Iteration 21 — 2026-09-06 — Q07 cache recovery attribution repair
+
+- Independent review found that the original corrupt-cache test added a naming
+  violation before its recovery assertion, allowing snapshot invalidation to
+  explain the fresh result. The revised test repeats against an unchanged
+  project, asserts a successful fresh validation and a valid rewritten cache
+  record, then separately checks the later naming violation.
+- Context-health review: the known Trellis `cargo xtask pr` active-task routing
+  discrepancy remains documented rather than waived; Q07 will retain its
+  nonzero result if it recurs. The nested launcher package test is bounded and
+  useful; no reusable-skill gap is evident.
+
 ## Iteration 20 — 2026-09-06 — Q07 launcher error contract
 
 - Q07 started in isolated current-master worktree `goal/q07-error-contract` at `c9ad106`. A focused red test proved the primary launcher silently treated a present, non-executable companion as absent because spawn errors were discarded with `.ok()?`.
