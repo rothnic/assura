@@ -70,6 +70,8 @@ website=false
 security=false
 reason=""
 files=()
+policy_review=false
+policy_review_paths=()
 
 set_all() {
   rust=true
@@ -132,6 +134,15 @@ load_files_from_input() {
 
 classify_path() {
   local path="$1"
+
+  # This is intentionally a review prompt, not an approval decision. GitHub
+  # review and required-check policy decides whether a flagged change merges.
+  case "$path" in
+    tests/*|tests/**|src/constraints/severity.rs|src/constraints/severity/*|src/constraints/severity/**|src/cli/performance_report/*|src/cli/performance_report/**|benches/*|benches/**|.github/workflows/*|scripts/ci-scope.sh|scripts/ci-scope-github.sh|scripts/check-ci-scope.sh)
+      policy_review=true
+      policy_review_paths+=("$path")
+      ;;
+  esac
 
   case "$path" in
     .github/workflows/*|.cargo/config.toml|xtask/*|xtask/**|scripts/ci-scope.sh|scripts/ci-scope-github.sh|scripts/summarize-rust-cache.sh)
@@ -206,3 +217,5 @@ append_output website "$website"
 append_output security "$security"
 append_output changed_count "$changed_count"
 append_output reason "$reason"
+append_output policy_review "$policy_review"
+append_output policy_review_paths "$(IFS=,; printf '%s' "${policy_review_paths[*]}")"

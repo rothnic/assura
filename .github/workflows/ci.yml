@@ -33,6 +33,8 @@ jobs:
       delta_performance: ${{ steps.scope.outputs.delta_performance }}
       delta_evidence: ${{ steps.scope.outputs.delta_evidence }}
       delta_website: ${{ steps.scope.outputs.delta_website }}
+      policy_review: ${{ steps.scope.outputs.policy_review }}
+      policy_review_paths: ${{ steps.scope.outputs.policy_review_paths }}
     steps:
     - uses: actions/checkout@v4
       with:
@@ -45,6 +47,9 @@ jobs:
       run: scripts/ci-scope-github.sh
     - name: Summarize CI scope decision
       shell: bash
+      env:
+        POLICY_REVIEW: ${{ steps.scope.outputs.policy_review }}
+        POLICY_REVIEW_PATHS: ${{ steps.scope.outputs.policy_review_paths }}
       run: |
         cat <<'MD' >> "$GITHUB_STEP_SUMMARY"
         ## CI Scope Decision
@@ -59,12 +64,23 @@ jobs:
         | Evidence | `${{ steps.scope.outputs.evidence }}` | `${{ steps.scope.outputs.full_evidence }}` | `${{ steps.scope.outputs.delta_evidence }}` |
         | Website | `${{ steps.scope.outputs.website }}` | `${{ steps.scope.outputs.full_website }}` | `${{ steps.scope.outputs.delta_website }}` |
 
+        | Policy review required | `${{ steps.scope.outputs.policy_review }}` |  |  |
+
         Pull request synchronize events use the commit delta as the effective
         scope only when skipped full-scope jobs already passed on the previous
         PR head. Opened/reopened PRs, pushes, schedules, workflow/classifier
         changes, unavailable delta state, and missing previous-head evidence
         fall back to full scope.
+
         MD
+        if [ "$POLICY_REVIEW" = "true" ]; then
+          {
+            printf '%s\n\n' 'Policy-review paths (shell-escaped):'
+            printf '%s\n' '```text'
+            printf '%q\n' "$POLICY_REVIEW_PATHS"
+            printf '%s\n' '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+        fi
 
   check:
     name: Check

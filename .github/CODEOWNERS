@@ -1,0 +1,12 @@
+# High-impact surfaces require maintainer routing. This file routes review; it
+# does not replace GitHub branch-protection or an independent reviewer.
+/src/config/ @rothnic
+/src/cli/check* @rothnic
+/.assura/ @rothnic
+/.github/workflows/ @rothnic
+/xtask/ @rothnic
+/website/public/install.sh @rothnic
+/website/public/install.ps1 @rothnic
+/scripts/smoke-install-adoption.sh @rothnic
+/scripts/smoke-install-adoption.ps1 @rothnic
+/docs/release-* @rothnic

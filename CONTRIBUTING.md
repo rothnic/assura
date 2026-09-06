@@ -30,11 +30,16 @@ Enhancement suggestions are tracked as GitHub issues. When creating an enhanceme
 ### Pull Requests
 
 1. Fork the repository
-2. Create a new branch from `main` for your feature or bug fix
-3. Make your changes
-4. Run the test suite and ensure all tests pass
-5. Update documentation as needed
-6. Submit a pull request
+2. Create a branch from current `master` for one focused change
+3. Reproduce the behavior or add a focused failing test before a behavior fix
+4. Run the relevant validation tier and record exact commands/results in the PR
+5. Update documentation and support claims when user-visible behavior changes
+6. Use the PR template; authors own understanding and verification
+
+Do not fabricate tests or evidence. New syntax, commands, dependencies, and
+support promises require an accepted design card. Test deletion, an exclusion,
+severity reduction, performance-threshold change, or CI-scope change requires
+independent review. See [the contributor and agent change contract](docs/contributing-agent-changes.md).
 
 ## Development Setup
 
@@ -57,27 +62,25 @@ cargo build --release
 ### Running Tests
 
 ```bash
-# Run all tests
-cargo test
+# Start with a focused test for the changed behavior
+cargo test <test_name>
 
-# Run tests with output
-cargo test -- --nocapture
+# Rust changes: repository fast tier before a PR
+cargo xtask fast
 
-# Run specific test
-cargo test test_name
+# PR-ready Rust changes: full tier (record a topology limitation if it occurs)
+cargo xtask pr
 ```
 
 ### Code Quality
 
 ```bash
-# Format code
-cargo fmt
-
-# Run linter
-cargo clippy -- -D warnings
-
-# Generate documentation
-cargo doc --open
+# Documentation/Trellis changes
+cargo run --quiet -- check --format json .
+cargo xtask evidence
+# If website/node_modules is absent, bootstrap the documented site build once:
+pnpm --dir website install --frozen-lockfile
+cargo xtask docs
 ```
 
 ## Style Guidelines
@@ -134,12 +137,14 @@ Closes #123
 - Write unit tests for all new functionality
 - Ensure tests cover edge cases
 - Integration tests should be in the `tests/` directory
-- Run the full test suite before submitting PR:
+- For Rust, Cargo, CI, release, or behavior changes, run the relevant full tier:
   ```bash
   cargo test
   cargo clippy -- -D warnings
   cargo fmt --check
   ```
+- For docs-only changes, the documentation/Trellis tier above is sufficient
+  unless the changed path triggers a broader CI scope.
 
 ## Project Structure
 
@@ -161,12 +166,9 @@ assura/
 
 ## Release Process
 
-1. Update version in `Cargo.toml`
-2. Update `CHANGELOG.md`
-3. Create a git tag: `git tag -a v0.1.0 -m "Release version 0.1.0"`
-4. Push the tag: `git push origin v0.1.0`
-5. GitHub Actions will automatically create or update the GitHub release and
-   upload the prebuilt archives used by the install scripts
+Release publication is maintainer-authorized work. Follow the
+[release candidate checklist](docs/release-candidate-checklist.md); contributors
+should prepare evidence rather than push tags or publish releases.
 
 ## Getting Help
 
