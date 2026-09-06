@@ -70,10 +70,10 @@
         "R02"
       ],
       "executor": "agent",
-      "state": "pending",
-      "owner": null,
+      "state": "blocked",
+      "owner": "Codex goal/r03-many-scope",
       "evidence": "evidence/R03.md",
-      "blocker": null
+      "blocker": "Current GitHub Linux artifact fails; the local release comparison omitted CI's Linux static primary-launcher command, and vps-dev is not resolvable for a complete comparable rerun."
     },
     {
       "id": "R04",
