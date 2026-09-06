@@ -1,5 +1,11 @@
 # Maturity execution train progress
 
+## Iteration 22 — 2026-09-06 — Q02 held by R03 gate
+
+- Q02 PR #158's final reviewed SHA `ae6837fe107b86841b74c58831c951a0f74dd317` passed every completed hosted job except the unchanged Performance Report gate. The exact failure was `many_configured_scopes_regression`: Assura `15.704 ms` versus LS-Lint `14.339 ms` in Rust CI run `34028084232`.
+- The candidate changes governance documentation, CODEOWNERS, scope classification, and task evidence—not the validator, benchmark fixture, or performance gate—so it was not merged around an R03-owned release-train failure. The external branch-protection administrator decision also remains unperformed.
+- Next independent ready work: A01. Context health: the same no-slower failure has now blocked unrelated cards; its owning R03 record already requires a quiet comparable Linux attribution run and a distinct hypothesis, so no new skill is warranted.
+
 ## Iteration 1 — 2026-09-05 — B00 baseline capture
 
 - Refreshed `origin/master` at `ed093668918bc271fc98b9112acaf7c1bf3eb314` and inventoried GitHub state, existing worktrees, release version, overlapping PR #142, and case-study PR #60.

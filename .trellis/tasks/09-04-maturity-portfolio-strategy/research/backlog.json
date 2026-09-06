@@ -145,7 +145,7 @@
       "state": "blocked",
       "owner": "Codex goal: Assura Maturity Execution Train",
       "evidence": "evidence/Q02.md",
-      "blocker": "GitHub master protection is absent; an authorized independent reviewer/bot route must be selected before an enforceable owner-review/required-check policy can be prepared for administrator approval."
+      "blocker": "Independent review of the current SHA is complete, but GitHub master protection is absent and requires administrator authority outside this goal. In addition, current hosted Rust CI run 34028084232 failed the unchanged R03 many-scope no-slower gate; Q02 is not merged around that release-train dependency."
     },
     {
       "id": "A01",
