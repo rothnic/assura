@@ -21,7 +21,10 @@ native commands, and required hook states.
 
 The evaluator rejects a malformed contract before any probe: required v1 fields
 must have the expected top-level type, command arguments must be nonempty string
-arrays, and project paths/cwds must be relative and cannot contain `..`.
+arrays, and project paths/cwds must be relative and cannot contain `..`. The
+candidate binary path itself must be absolute. Each negative policy probe must
+name its expected rule/output marker, so a different nonzero failure cannot
+credit the seeded mutation.
 
 ## Evidence model
 
@@ -36,8 +39,10 @@ out negative probe is not evidence that policy rejected its mutation. A missing
 probe executable or cwd is `unavailable` evidence, not an evaluator crash.
 
 A negative policy probe applies one trusted mutation at a time to a fresh
-disposable copy and must be rejected by the candidate binary. A permissive configuration
-that accepts the mutation is a critical failure. The source fixture is never
+disposable copy and must exit nonzero while reporting its named expected rule.
+A permissive configuration, timeout, unavailable command, or unrelated failure
+is a critical failure. A policy-capable evaluation contract requires at least
+one negative probe. The source fixture is never
 restored with a broad Git command because it is never mutated.
 
 ## Scope and claims

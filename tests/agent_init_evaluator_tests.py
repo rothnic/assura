@@ -48,6 +48,7 @@ class AgentInitEvaluatorTests(unittest.TestCase):
                 "negative_probes": [
                     {
                         "id": "must-reject-bad-name",
+                        "expected_rule": "naming",
                         "mutation": {"path": "src/BadName.rs", "contents": "pub fn bad() {}\n"},
                         "command": ["check", "."],
                         "cwd": ".",
@@ -441,7 +442,9 @@ class AgentInitEvaluatorTests(unittest.TestCase):
             project = temporary_root / "project"
             project.mkdir()
             binary = temporary_root / "assura"
-            binary.write_text("#!/bin/sh\necho private-evaluator-secret\nexit 0\n")
+            binary.write_text(
+                "#!/bin/sh\nif test -f BadName.rs; then echo snake_case >&2; exit 1; fi\necho private-evaluator-secret\nexit 0\n"
+            )
             binary.chmod(binary.stat().st_mode | stat.S_IXUSR)
             contract_path = temporary_root / "contract.json"
             contract_path.write_text(json.dumps({
@@ -449,7 +452,11 @@ class AgentInitEvaluatorTests(unittest.TestCase):
                 "stack": "rust", "required_paths": [], "forbidden_paths": [],
                 "preserve_hashes": {},
                 "positive_probes": [{"id": "check", "command": ["check", "."], "cwd": "."}],
-                "negative_probes": [], "native_commands": [], "required_hook_states": [],
+                "negative_probes": [{
+                    "id": "reject-bad-name", "expected_rule": "snake_case",
+                    "mutation": {"path": "BadName.rs", "contents": "x"},
+                    "command": ["check", "."], "cwd": ".",
+                }], "native_commands": [], "required_hook_states": [],
             }))
             private_output = temporary_root / "private-result.json"
             public_output = temporary_root / "public-result.json"
@@ -557,6 +564,127 @@ class AgentInitEvaluatorTests(unittest.TestCase):
             self.assertIsNone(result["exit"])
             self.assertIn("partial-output", result["stdout"])
 
+    def test_relative_assura_binary_is_rejected_before_project_commands_run(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            temporary_root = Path(temporary_directory)
+            project = temporary_root / "project"
+            project.mkdir()
+            project_binary = project / "assura"
+            project_binary.write_text("#!/bin/sh\nexit 0\n")
+            project_binary.chmod(project_binary.stat().st_mode | stat.S_IXUSR)
+            contract_path = temporary_root / "contract.json"
+            contract_path.write_text(json.dumps({
+                "schema": "assura.agent-init-evaluator.v1", "fixture_id": "relative-binary",
+                "stack": "rust", "required_paths": [], "forbidden_paths": [],
+                "preserve_hashes": {}, "positive_probes": [],
+                "negative_probes": [{
+                    "id": "reject-name", "expected_rule": "naming",
+                    "mutation": {"path": "BadName.rs", "contents": "x"},
+                    "command": ["check", "."], "cwd": ".",
+                }], "native_commands": [], "required_hook_states": [],
+            }))
+            output_path = temporary_root / "result.json"
+            completed = subprocess.run(
+                [sys.executable, str(EVALUATOR), "--project", str(project),
+                 "--contract", str(contract_path), "--assura-bin", "./assura",
+                 "--output", str(output_path)],
+                cwd=project, check=False, capture_output=True, text=True,
+            )
+
+            self.assertNotEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+            result = json.loads(output_path.read_text())
+            self.assertIn("assura_bin:absolute_path", result["critical_failures"])
+
+    def test_negative_probe_requires_its_named_rule_in_command_output(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            temporary_root = Path(temporary_directory)
+            project = temporary_root / "project"
+            project.mkdir()
+            binary = temporary_root / "assura"
+            binary.write_text("#!/bin/sh\necho unrelated failure >&2\nexit 1\n")
+            binary.chmod(binary.stat().st_mode | stat.S_IXUSR)
+            contract_path = temporary_root / "contract.json"
+            contract_path.write_text(json.dumps({
+                "schema": "assura.agent-init-evaluator.v1", "fixture_id": "wrong-rule",
+                "stack": "rust", "required_paths": [], "forbidden_paths": [],
+                "preserve_hashes": {}, "positive_probes": [],
+                "negative_probes": [{
+                    "id": "reject-name", "expected_rule": "file_naming",
+                    "mutation": {"path": "BadName.rs", "contents": "x"},
+                    "command": ["check", "."], "cwd": ".",
+                }], "native_commands": [], "required_hook_states": [],
+            }))
+            output_path = temporary_root / "result.json"
+            completed = subprocess.run(
+                [sys.executable, str(EVALUATOR), "--project", str(project),
+                 "--contract", str(contract_path), "--assura-bin", str(binary),
+                 "--output", str(output_path), "--dimensions", "policy"],
+                check=False, capture_output=True, text=True,
+            )
+
+            self.assertNotEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+            result = json.loads(output_path.read_text())
+            self.assertIn("reject-name", result["critical_failures"])
+
+    def test_policy_contract_without_negative_probes_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            temporary_root = Path(temporary_directory)
+            project = temporary_root / "project"
+            project.mkdir()
+            binary = temporary_root / "assura"
+            binary.write_text("#!/bin/sh\nexit 0\n")
+            binary.chmod(binary.stat().st_mode | stat.S_IXUSR)
+            contract_path = temporary_root / "contract.json"
+            contract_path.write_text(json.dumps({
+                "schema": "assura.agent-init-evaluator.v1", "fixture_id": "no-negative",
+                "stack": "rust", "required_paths": [], "forbidden_paths": [],
+                "preserve_hashes": {}, "positive_probes": [], "negative_probes": [],
+                "native_commands": [], "required_hook_states": [],
+            }))
+            output_path = temporary_root / "result.json"
+            completed = subprocess.run(
+                [sys.executable, str(EVALUATOR), "--project", str(project),
+                 "--contract", str(contract_path), "--assura-bin", str(binary),
+                 "--output", str(output_path), "--dimensions", "policy"],
+                check=False, capture_output=True, text=True,
+            )
+
+            self.assertNotEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+            result = json.loads(output_path.read_text())
+            self.assertIn("contract:negative_probes", result["critical_failures"])
+
+    def test_zero_collected_native_tests_on_stderr_fail_evaluation(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            temporary_root = Path(temporary_directory)
+            project = temporary_root / "project"
+            project.mkdir()
+            binary = temporary_root / "assura"
+            binary.write_text("#!/bin/sh\nexit 1\n")
+            binary.chmod(binary.stat().st_mode | stat.S_IXUSR)
+            contract_path = temporary_root / "contract.json"
+            contract_path.write_text(json.dumps({
+                "schema": "assura.agent-init-evaluator.v1", "fixture_id": "stderr-zero-tests",
+                "stack": "python", "required_paths": [], "forbidden_paths": [],
+                "preserve_hashes": {}, "positive_probes": [], "negative_probes": [],
+                "native_commands": [{
+                    "id": "pytest", "command": ["sh", "-c", "echo '0 tests collected' >&2"],
+                    "cwd": ".", "require_collected_tests": True,
+                }], "required_hook_states": [],
+            }))
+            output_path = temporary_root / "result.json"
+            completed = subprocess.run(
+                [sys.executable, str(EVALUATOR), "--project", str(project),
+                 "--contract", str(contract_path), "--assura-bin", str(binary),
+                 "--output", str(output_path), "--dimensions", "native"],
+                check=False, capture_output=True, text=True,
+            )
+
+            self.assertNotEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+            result = json.loads(output_path.read_text())
+            native_evidence = next(entry for entry in result["command_evidence"] if entry.get("native_id") == "pytest")
+            self.assertEqual(native_evidence["state"], "fail")
+            self.assertEqual(native_evidence["reason"], "zero_collected_tests")
+
     def test_each_negative_probe_uses_a_fresh_disposable_copy(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             temporary_root = Path(temporary_directory)
@@ -564,7 +692,7 @@ class AgentInitEvaluatorTests(unittest.TestCase):
             project.mkdir()
             binary = temporary_root / "assura"
             binary.write_text(
-                "#!/bin/sh\nif test -f first-violation; then exit 1; fi\nexit 0\n"
+                "#!/bin/sh\nif test -f first-violation; then echo naming >&2; exit 1; fi\nexit 0\n"
             )
             binary.chmod(binary.stat().st_mode | stat.S_IXUSR)
             contract_path = temporary_root / "contract.json"
@@ -573,9 +701,9 @@ class AgentInitEvaluatorTests(unittest.TestCase):
                 "stack": "rust", "required_paths": [], "forbidden_paths": [],
                 "preserve_hashes": {}, "positive_probes": [],
                 "negative_probes": [
-                    {"id": "reject-first", "mutation": {"path": "first-violation", "contents": "x"},
+                    {"id": "reject-first", "expected_rule": "naming", "mutation": {"path": "first-violation", "contents": "x"},
                      "command": ["check", "."], "cwd": "."},
-                    {"id": "reject-second", "mutation": {"path": "second-violation", "contents": "x"},
+                    {"id": "reject-second", "expected_rule": "naming", "mutation": {"path": "second-violation", "contents": "x"},
                      "command": ["check", "."], "cwd": "."},
                 ],
                 "native_commands": [], "required_hook_states": [],

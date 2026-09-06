@@ -14,6 +14,7 @@
   "negative_probes": [
     {
       "id": "reject-bad-rust-name",
+      "expected_rule": "snake_case",
       "mutation": {"path": "src/BadName.rs", "contents": "pub fn invalid_name() {}\n"},
       "command": ["check", "."],
       "cwd": "."

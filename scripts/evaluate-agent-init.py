@@ -173,6 +173,8 @@ def contract_validation_errors(contract: object) -> list[str]:
                     mutation.get("contents"), str
                 ):
                     errors.append(f"{label}.mutation")
+                if not isinstance(entry.get("expected_rule"), str) or not entry["expected_rule"]:
+                    errors.append(f"{label}.expected_rule")
     for index, hook_state in enumerate(contract["required_hook_states"]):
         label = f"required_hook_states[{index}]"
         if not isinstance(hook_state, dict):
@@ -208,6 +210,17 @@ def evaluate(arguments: argparse.Namespace) -> tuple[int, dict[str, object]]:
             "dimension_states": {},
             "command_evidence": [],
         }
+    if not arguments.assura_bin.is_absolute():
+        return 1, {
+            "schema": "assura.agent-init-evaluation-result.v1",
+            "fixture_id": contract.get("fixture_id"),
+            "verification_scope": "full",
+            "acceptance_eligible": False,
+            "acceptance_pass": False,
+            "critical_failures": ["assura_bin:absolute_path"],
+            "dimension_states": {},
+            "command_evidence": [],
+        }
     allowed_dimensions = {
         "structure", "policy", "guidance", "hooks", "native", "preservation", "idempotence"
     }
@@ -222,6 +235,8 @@ def evaluate(arguments: argparse.Namespace) -> tuple[int, dict[str, object]]:
     partial = requested_dimensions != allowed_dimensions
     critical_failures: list[str] = []
     evidence: list[dict[str, object]] = []
+    if "policy" in requested_dimensions and not contract["negative_probes"]:
+        critical_failures.append("contract:negative_probes")
     source_hash_before = (
         directory_hash(arguments.project) if "idempotence" in requested_dimensions else None
     )
@@ -290,11 +305,17 @@ def evaluate(arguments: argparse.Namespace) -> tuple[int, dict[str, object]]:
                 negative_project / probe.get("cwd", "."),
             )
             command_evidence["probe_id"] = probe["id"]
+            command_evidence["probe_kind"] = "negative"
+            command_evidence["expected_rule"] = probe["expected_rule"]
+            command_evidence["matched_expected_rule"] = probe["expected_rule"] in (
+                command_evidence.get("stdout", "") + command_evidence.get("stderr", "")
+            )
             evidence.append(command_evidence)
             if (
                 command_evidence["state"] == "unavailable"
                 or command_evidence.get("timed_out")
                 or command_evidence["exit"] == 0
+                or not command_evidence["matched_expected_rule"]
             ):
                 critical_failures.append(probe["id"])
         for native_command in contract.get("native_commands", []) if "native" in requested_dimensions else []:
@@ -307,7 +328,7 @@ def evaluate(arguments: argparse.Namespace) -> tuple[int, dict[str, object]]:
                 and command_evidence["state"] == "pass"
                 and re.search(
                     r"\b(?:0\s+tests?\s+(?:collected|run)|collected\s+0\s+items|running\s+0\s+tests)\b",
-                    command_evidence.get("stdout", ""),
+                    command_evidence.get("stdout", "") + command_evidence.get("stderr", ""),
                 )
             ):
                 command_evidence["state"] = "fail"
@@ -366,6 +387,8 @@ def evaluate(arguments: argparse.Namespace) -> tuple[int, dict[str, object]]:
         elif failure.startswith("preservation:"):
             dimension_states["preservation"] = "fail"
         elif failure.startswith(("positive:", "must-")):
+            dimension_states["policy"] = "fail"
+        elif failure == "contract:negative_probes":
             dimension_states["policy"] = "fail"
         elif failure.startswith("native:"):
             native_id = failure.split(":", maxsplit=1)[1]

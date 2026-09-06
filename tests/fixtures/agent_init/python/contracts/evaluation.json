@@ -9,7 +9,7 @@
     "src/agent_init_python/__init__.py": "33cdb49736ef113fd8299e7605c697dea111f6184093b7aa92146904a40e59e4"
   },
   "positive_probes": [{"id": "strict-check", "command": ["check", "."], "cwd": "."}],
-  "negative_probes": [{"id": "reject-bad-name", "mutation": {"path": "tests/BadName.py", "contents": "def invalid_name():\n    return 1\n"}, "command": ["check", "."], "cwd": "."}],
+  "negative_probes": [{"id": "reject-bad-name", "expected_rule": "snake_case", "mutation": {"path": "tests/BadName.py", "contents": "def invalid_name():\n    return 1\n"}, "command": ["check", "."], "cwd": "."}],
   "native_commands": [{"id": "pytest", "command": ["sh", "-c", "PYTHONPATH=src pytest"], "cwd": ".", "require_collected_tests": true}],
   "required_hook_states": []
 }
