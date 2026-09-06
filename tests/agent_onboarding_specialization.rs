@@ -141,3 +141,40 @@ fn agent_onboard_recommends_profiles_for_bun_and_pytest_repositories() {
         assert_eq!(profile["decisions"][0]["value"], stack);
     }
 }
+
+#[test]
+fn agent_onboard_keeps_ambiguous_repositories_reversible_and_repeatable() {
+    let project = TempDir::new().unwrap();
+    fs::write(project.path().join("README.md"), "# Sample\n").unwrap();
+
+    let first = json_from_success(run_assura(&[
+        "agent",
+        "onboard",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]));
+    assert!(first["inactive"]
+        .as_array()
+        .expect("specialization state")
+        .iter()
+        .any(|item| item["name"] == "project_specialization"
+            && item["status"] == "needs_agent_specialization"));
+    assert!(!project.path().join("Cargo.toml").exists());
+    assert!(!project.path().join("package.json").exists());
+    assert!(!project.path().join("pyproject.toml").exists());
+
+    let profile_path = project
+        .path()
+        .join(".assura/onboarding/profile-selection.json");
+    let first_profile = fs::read(&profile_path).unwrap();
+    let second = json_from_success(run_assura(&[
+        "agent",
+        "onboard",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]));
+    assert_eq!(second["detected"]["project_type"], "unknown");
+    assert_eq!(fs::read(profile_path).unwrap(), first_profile);
+}

@@ -200,7 +200,6 @@ fn detect_project(
     let has_cargo = project_root.join("Cargo.toml").is_file();
     let has_package_json = project_root.join("package.json").is_file();
     let has_pyproject = project_root.join("pyproject.toml").is_file();
-    let has_docs = project_root.join("docs").is_dir();
     let has_src = project_root.join("src").is_dir();
     let has_packages = project_root.join("packages").is_dir();
     let existing_source_files = has_src || has_cargo || has_package_json || has_pyproject;
@@ -214,8 +213,6 @@ fn detect_project(
         "node"
     } else if has_pyproject {
         "python"
-    } else if has_docs {
-        "docs-heavy"
     } else {
         "unknown"
     };
