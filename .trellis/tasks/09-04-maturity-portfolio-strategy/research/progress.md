@@ -201,3 +201,8 @@
 
 - The corrected R01 hosted matrix passed Linux but macOS exposed a remaining test-sequencing defect: a helper intentionally accepts a successful, pathless full-rescan event for an out-of-scope FSEvent, then the test incorrectly expected the subsequent in-scope mutation to retain sequence 2. The helper now returns the next expected sequence (2 when quiet, 3 after the accepted safety fallback); it does not weaken either event’s content contract.
 - The focused requested-directory test, complete 14-test watch integration suite, 16 `cli::watch` units, formatting, diff, and structure gates pass locally. Next: independent review of this exact test-contract repair, then a fresh hosted matrix.
+
+## Iteration 37 — 2026-09-06 — R01 external-config rescan integration
+
+- PR #173 merged the independently reviewed external-config rescan repair as `b3002b1`; the exact commit was fetched and verified reachable from `origin/master`. Its full hosted matrix passed, including macOS/Windows/Linux suites, MSRV, performance, release/installer/adoption, documentation, security, coverage, and evidence gates.
+- The correction keeps watcher safety explicit: unrelated external config and Assura runtime-output noise no longer produces false rescans, while pathless and excluded in-scope rescans remain observable fallbacks. No tag, release, deployment, or public action was taken. Next independent ready card: A02.
