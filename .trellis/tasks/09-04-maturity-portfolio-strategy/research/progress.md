@@ -46,6 +46,13 @@
 - Independent review also found and repaired a pair-preservation hole during the second backup move. Unix and hosted Windows controls now prove both old companion binaries survive that injected failure.
 - PR #153 merged as `2ee15e42c5b3bfdfcaf8c2ba8a2aa8f789c78356` after its full hosted artifact matrix passed. Next ready cards are Q02, A01, W01, and F01; choose one behavior surface at a time after this evidence closure is reviewed.
 
+## Iteration 9 — 2026-09-06 — W01 CTA contract and context health
+
+- W01 started in isolated current-master worktree `assura-w01-marketing-ctas` at `09310aa`. A route-wide Playwright fragment contract first failed on the real `/compare/ls-lint/#onboard` dead destination, then passed after the shared focused-page destination was corrected to `/#onboard`.
+- The complete marketing suite passed 105 tests. `cargo xtask docs`, repository structure check, and evidence gates passed. Manual keyboard checks confirmed both desktop and 375px About-page Start actions invoke the setup dialog while retaining the real no-JavaScript homepage target.
+- Context health: the only repeated execution friction was an overlapping cold Cargo docs invocation; the active first invocation was allowed to finish and the duplicate waiter then completed, with no changed-command retry or output claim. Existing isolation, test-first, browser, and evidence workflows are sufficient; no new skill is justified.
+- Next: independent review of the exact W01 candidate, then hosted PR proof. Q02 remains separately in its final hosted matrix and must not be merged until every required job is terminal green.
+
 ## Iteration 4 — 2026-09-06 — R01/R02 integrated proof and post-merge closure
 
 - PR [#144](https://github.com/rothnic/assura/pull/144) merged as `dcb1fb57ba100f77a7cb7e48c4f14507d3106231`; it was confirmed reachable from `origin/master` after fetch.

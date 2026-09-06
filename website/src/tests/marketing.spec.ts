@@ -944,6 +944,23 @@ test('setup actions retain a no-JavaScript onboarding destination', async ({ pag
   await expect(page.getByRole('link', { name: 'Start with your agent' }).first()).toHaveAttribute('href', '#onboard');
 });
 
+test('every local marketing fragment points to an element on its destination route', async ({ page }) => {
+  for (const route of marketingRoutes) {
+    await page.goto(route.path, { waitUntil: 'networkidle' });
+    const fragments = await page.locator('a[href*="#"]').evaluateAll((links) => links.map((link) => link.getAttribute('href')));
+
+    for (const href of fragments) {
+      if (!href || href.startsWith('http')) continue;
+      const destination = new URL(href, `http://127.0.0.1:4322${route.path}`);
+      if (!destination.hash) continue;
+
+      await page.goto(`${destination.pathname}${destination.hash}`);
+      const targetExists = await page.evaluate((fragment) => document.getElementById(fragment.slice(1)) !== null, destination.hash);
+      expect(targetExists, `${route.path} link ${href} resolves to ${destination.pathname}${destination.hash}`).toBe(true);
+    }
+  }
+});
+
 test('landing and setup dialog pass automated accessibility checks', async ({ page }) => {
   await page.goto('/');
   await page.waitForLoadState('networkidle');

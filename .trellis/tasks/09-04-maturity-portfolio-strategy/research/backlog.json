@@ -330,10 +330,10 @@
         "B00"
       ],
       "executor": "agent",
-      "state": "pending",
-      "owner": null,
+      "state": "verified",
+      "owner": "Codex goal: Assura Maturity Execution Train",
       "evidence": "evidence/W01.md",
-      "blocker": null
+      "blocker": "Local behavior and documentation tiers passed; independent review and hosted PR gates are required before integration."
     },
     {
       "id": "W02",

@@ -47,6 +47,7 @@ interface Props {
 }
 
 const props = Astro.props;
+const setupHref = props.canonicalPath === '/' ? '#onboard' : '/#onboard';
 const artifactTones = new Set<ArtifactTone>(['prompt', 'plain', 'muted', 'info', 'warn', 'pass', 'fail']);
 const artifactLines = props.artifactLines.map((line) => {
   if (typeof line === 'string') return { text: line, tone: 'plain' as const };
@@ -61,6 +62,7 @@ const artifactLines = props.artifactLines.map((line) => {
   canonicalPath={props.canonicalPath}
   imagePath={props.imagePath}
   navItems={marketingNav}
+  {setupHref}
   structuredData={props.structuredData}
 >
   <main id="main-content" class="focused-page" data-release-surface={props.releaseSurface}>
@@ -70,7 +72,7 @@ const artifactLines = props.artifactLines.map((line) => {
         <h1 id="focused-title">{props.heading}</h1>
         <p>{props.intro}</p>
         <div class="hero-actions">
-          <a class="button button-primary" href="#onboard" data-open-setup data-analytics-event="setup_open">
+          <a class="button button-primary" href={setupHref} data-open-setup data-analytics-event="setup_open">
             Start with your agent
           </a>
           <a class="button button-secondary surface" href={props.docsLinks[0].href} data-analytics-event="docs_click">
