@@ -62,4 +62,4 @@ agent behavior, hooks, or native tools; those remain owned by their cards.
 * A01 packet: `research/initialization-packet.md#a01`.
 * A03 acceptance: `research/initialization-packet.md#a03`.
 * Evaluator: `scripts/evaluate-agent-init.py`.
-* Existing evaluator tests: `tests/agent_init_evaluator_tests.py`.
+* Existing evaluator tests: `tests/agent_init_evaluator*_tests.py`.
