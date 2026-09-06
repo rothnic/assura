@@ -98,8 +98,8 @@
         "B00"
       ],
       "executor": "agent",
-      "state": "active",
-      "owner": "Codex goal: Assura Maturity Execution Train (R05 current-master worktree)",
+      "state": "done",
+      "owner": "Codex goal: Assura Maturity Execution Train",
       "evidence": "evidence/R05.md",
       "blocker": null
     },

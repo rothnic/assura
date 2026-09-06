@@ -40,6 +40,12 @@
 - R03 rejected, rather than merged, a locally favorable HashSet experiment because stronger same-fixture VPS public-command evidence records a regression. The experiment was reverted with no policy/evaluator change.
 - Next: merge this evidence closure after review; then refresh R05 onto current master and select only the next dependency-ready card. The exact R03 protocol remains required for a genuinely distinct hypothesis.
 
+## Iteration 8 — 2026-09-06 — R05 installer integration
+
+- R05's first current-master matrix exposed a real Alpine fixture collision; the archive installer itself had completed. The repair retained dedicated Alpine musl coverage under `/tmp` and removed only the duplicate generic collision path.
+- Independent review also found and repaired a pair-preservation hole during the second backup move. Unix and hosted Windows controls now prove both old companion binaries survive that injected failure.
+- PR #153 merged as `2ee15e42c5b3bfdfcaf8c2ba8a2aa8f789c78356` after its full hosted artifact matrix passed. Next ready cards are Q02, A01, W01, and F01; choose one behavior surface at a time after this evidence closure is reviewed.
+
 ## Iteration 4 — 2026-09-06 — R01/R02 integrated proof and post-merge closure
 
 - PR [#144](https://github.com/rothnic/assura/pull/144) merged as `dcb1fb57ba100f77a7cb7e48c4f14507d3106231`; it was confirmed reachable from `origin/master` after fetch.
