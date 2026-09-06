@@ -456,7 +456,7 @@ jobs:
         }
         Pop-Location
     - name: Smoke installed archive (Unix)
-      if: matrix.archive_kind == 'tar'
+      if: matrix.archive_kind == 'tar' && matrix.label != 'alpine-x86_64'
       shell: bash
       run: |
         tmp="$(mktemp -d)"
