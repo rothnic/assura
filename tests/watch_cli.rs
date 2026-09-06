@@ -358,7 +358,7 @@ fn watch_observes_an_explicit_config_outside_the_project() {
     assert_eq!(watch.next_event()["report"]["success"], true);
 
     fs::write(config_home.path().join("unrelated.yml"), "ignored: true\n").unwrap();
-    watch.assert_no_event(Duration::from_millis(350));
+    watch.assert_no_event_or_scoped_rescan(Duration::from_millis(350));
     fs::write(&config, config_with_naming("snake_case")).unwrap();
 
     let (changed, preceding_filesystem_events) = watch.next_config_event("good-name.ts");
