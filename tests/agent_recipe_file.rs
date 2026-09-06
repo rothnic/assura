@@ -355,3 +355,33 @@ fn agent_onboard_unions_explicit_pattern_excludes_in_stable_order() {
         ]
     );
 }
+
+#[test]
+fn init_never_executes_an_explicit_recipe_file() {
+    let project = TempDir::new().expect("project directory");
+    let patterns = TempDir::new().expect("pattern directory");
+    let marker = patterns.path().join("executed-marker");
+    let recipe_path = patterns.path().join("untrusted-template.sh");
+    fs::write(
+        &recipe_path,
+        format!("#!/bin/sh\ntouch {}\n", marker.display()),
+    )
+    .expect("recipe source");
+
+    let output = Command::new(assura_full_bin())
+        .arg("init")
+        .arg(project.path())
+        .arg("--recipe-file")
+        .arg(&recipe_path)
+        .output()
+        .expect("assura init runs");
+
+    assert!(
+        !output.status.success(),
+        "shell text is not valid policy YAML"
+    );
+    assert!(
+        !marker.exists(),
+        "local recipe files are data and must never execute"
+    );
+}

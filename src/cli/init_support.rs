@@ -184,13 +184,7 @@ pub fn materialize_starter(
     crate::config::config::ConfigLoader::parse(&config).map_err(|error| {
         StarterInitError::Configuration(format!("starter recipe is invalid: {error}"))
     })?;
-    std::fs::write(&config_path, config).map_err(|error| {
-        StarterInitError::Runtime(format!(
-            "failed to write {}: {}",
-            config_path.display(),
-            error
-        ))
-    })?;
+    crate::cli::local_recipe::write_config_atomically(&config_path, &config)?;
 
     let mut created = vec![config_path];
     if let Some(recipe_file) = recipe_file {

@@ -37,8 +37,10 @@ assura agent onboard . --recipe-file .assura/patterns/rust-library.yml --format 
 
 `init` applies the pattern to a fresh starter policy. `agent onboard` merges it
 with an existing project policy. Existing scalar and sequence values are
-preserved on collision; the command reports the policy path plus existing and
-incoming values, and does not partially modify config for that conflict.
+preserved on collision, except explicit pattern `exclude` entries are unioned
+in stable de-duplicated order. The command reports the policy path plus
+existing and incoming values, and does not partially modify config for a
+conflict.
 
 Assura validates the prospective complete policy before writing it atomically.
 The selected source path and SHA-256 are recorded in

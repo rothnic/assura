@@ -76,19 +76,24 @@ pub fn merge_recipe_file(
         StarterInitError::Configuration(format!("merged local recipe is invalid: {error}"))
     })?;
     if rendered != existing_source {
-        let temporary = config_path.with_extension("yml.assura-tmp");
-        std::fs::write(&temporary, rendered).map_err(|error| {
-            StarterInitError::Runtime(format!("failed to write {}: {error}", temporary.display()))
-        })?;
-        std::fs::rename(&temporary, config_path).map_err(|error| {
-            let _ = std::fs::remove_file(&temporary);
-            StarterInitError::Runtime(format!(
-                "failed to replace {}: {error}",
-                config_path.display()
-            ))
-        })?;
+        write_config_atomically(config_path, &rendered)?;
     }
     Ok(RecipeMergeOutcome { conflicts })
+}
+
+/// Replace a validated project config with an atomic same-directory rename.
+pub fn write_config_atomically(config_path: &Path, contents: &str) -> Result<(), StarterInitError> {
+    let temporary = config_path.with_extension("yml.assura-tmp");
+    std::fs::write(&temporary, contents).map_err(|error| {
+        StarterInitError::Runtime(format!("failed to write {}: {error}", temporary.display()))
+    })?;
+    std::fs::rename(&temporary, config_path).map_err(|error| {
+        let _ = std::fs::remove_file(&temporary);
+        StarterInitError::Runtime(format!(
+            "failed to replace {}: {error}",
+            config_path.display()
+        ))
+    })
 }
 
 /// Overlay each explicit local recipe in argument order onto a YAML document.
