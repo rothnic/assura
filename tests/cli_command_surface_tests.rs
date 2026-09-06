@@ -12,6 +12,91 @@ fn assura_full_bin() -> &'static str {
     env!("CARGO_BIN_EXE_assura-full")
 }
 
+fn normalized_findings(output: &[u8], project: &TempDir) -> Vec<(String, String, String, String)> {
+    let report: Value = serde_json::from_slice(output).unwrap();
+    report["violations"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|violation| {
+            let path = violation["path"].as_str().unwrap();
+            let path = path
+                .strip_prefix(&format!("{}/", project.path().display()))
+                .unwrap_or(path)
+                .to_string();
+            (
+                violation["rule"].as_str().unwrap().to_string(),
+                path,
+                violation["severity"].as_str().unwrap().to_string(),
+                violation["message"].as_str().unwrap().to_string(),
+            )
+        })
+        .collect()
+}
+
+#[test]
+fn lightweight_and_full_check_preserve_naming_findings() {
+    let project = TempDir::new().unwrap();
+    let assura_dir = project.path().join(".assura");
+    fs::create_dir(&assura_dir).unwrap();
+    fs::write(
+        assura_dir.join("config.yml"),
+        r#"
+structure:
+  ./:
+    files:
+      naming: "exact:README | regex:^ALLOWED$ | kebab-case"
+    children:
+      .assura/:
+        inherit: false
+        files:
+          naming: kebab-case
+      src/:
+        files:
+          naming: "regex:^${0}-generated$ | snake_case"
+      docs/:
+        files:
+          naming: PascalCase
+"#,
+    )
+    .unwrap();
+    fs::create_dir(project.path().join("src")).unwrap();
+    fs::create_dir(project.path().join("docs")).unwrap();
+    fs::write(project.path().join("README.md"), "# Readme\n").unwrap();
+    fs::write(project.path().join("ALLOWED.md"), "allowed\n").unwrap();
+    fs::write(project.path().join("archive.tar.gz"), "archive\n").unwrap();
+    fs::write(project.path().join("src/good_name.rs"), "fn main() {}\n").unwrap();
+    fs::write(
+        project.path().join("src/src-generated.rs"),
+        "fn generated() {}\n",
+    )
+    .unwrap();
+    fs::write(project.path().join("src/BadName.rs"), "fn main() {}\n").unwrap();
+    fs::write(project.path().join("docs/GoodName.md"), "# Good\n").unwrap();
+    fs::write(project.path().join("docs/bad-name.md"), "# Bad\n").unwrap();
+
+    let lightweight = Command::new(assura_bin())
+        .args(["check", "--format", "json"])
+        .arg(project.path())
+        .output()
+        .unwrap();
+    let full = Command::new(assura_full_bin())
+        .args(["check", "--format", "json"])
+        .arg(project.path())
+        .output()
+        .unwrap();
+
+    assert_eq!(lightweight.status.code(), Some(1));
+    assert_eq!(full.status.code(), Some(1));
+    assert_eq!(
+        normalized_findings(&lightweight.stdout, &project),
+        normalized_findings(&full.stdout, &project),
+        "lightweight stdout:\n{}\nfull stdout:\n{}",
+        String::from_utf8_lossy(&lightweight.stdout),
+        String::from_utf8_lossy(&full.stdout)
+    );
+}
+
 #[test]
 fn check_help_uses_lightweight_primary_path() {
     let output = Command::new(assura_bin())

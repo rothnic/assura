@@ -4,7 +4,7 @@ use crate::config::config::split_naming_conventions;
 use regex_lite::Regex;
 use std::collections::HashMap;
 
-pub(super) fn validate_name_with_path(
+pub(crate) fn validate_name_with_path(
     name: &str,
     path: &str,
     convention: &str,
@@ -34,7 +34,7 @@ pub(super) fn validate_name_with_path(
         .unwrap_or(false)
 }
 
-pub(super) fn validate_single_name_with_path(
+pub(crate) fn validate_single_name_with_path(
     name: &str,
     path: &str,
     convention: &str,
@@ -53,7 +53,7 @@ pub(super) fn validate_single_name_with_path(
     }
 }
 
-pub(super) fn validate_file_stem_with_path(
+pub(crate) fn validate_file_stem_with_path(
     stem: &str,
     path: &str,
     convention: &str,
@@ -113,7 +113,7 @@ fn substitute_lslint_regex_path(pattern: &str, path: &str) -> Option<String> {
     Some(substituted)
 }
 
-pub(super) fn convention_to_case_validator(convention: &str) -> Option<fn(&str) -> bool> {
+pub(crate) fn convention_to_case_validator(convention: &str) -> Option<fn(&str) -> bool> {
     match convention {
         "snake_case" | "snakecase" => Some(validate_snake_case),
         "camelCase" | "camelcase" => Some(validate_camel_case),

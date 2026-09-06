@@ -12,6 +12,24 @@
 - Focused RED tests were observed for every review condition. The final local evaluator suite passed 27 tests; Python compilation, repository structure check, evidence policy, and the 48-page documentation build passed. Rust, TypeScript, and Python policy-only partial controls all recorded matched named-rule negative probes and remain ineligible by scope; those runs do not assert unrequested native, guidance, or hook dimensions. A separate full Rust control records native, guidance, and hooks as unavailable; TypeScript/Python full-run evidence remains separately incomplete.
 - Context health: earlier Q02 and unrelated-card evidence show R03's no-slower gate can fluctuate on the same fixture, so hosted proof remains mandatory. Existing evaluator and performance workflows already cover the new findings; no new skill is warranted. Next: await the exact-SHA hosted matrix, then merge only if every required job passes and the candidate remains current-master based.
 
+## Iteration 13 — 2026-09-06 — Q04 policy-boundary implementation
+
+- Q04 moved the cohesive pure naming-predicate family from `src/cli/check` to
+  crate-private `src/policy/naming.rs`, with only direct internal consumers and
+  no new public Rust surface. A focused missing-module red gate and the initial
+  green predicate/CLI differential records are in `research/evidence/Q04.md`.
+- Independent review found no source or boundary issue. Its separate Cargo
+  attempt was inconclusive under concurrent artifact locking/SIGKILL and is not
+  treated as a green verification.
+- Context health: the host's free space fell below 200 MiB during cold Cargo
+  validation. Only the exact goal-worktree ignored `target/` directory was
+  reclaimed after a dry run; `vps-dev` remains DNS-unavailable. No reusable
+  skill is warranted: existing `assura-local-build` and
+  `assura-structure-fit` already route both decisions.
+- Next: rerun the final expanded differential, minimal build, relevant suite,
+  and performance row when capacity permits; do not open/merge Q04 until those
+  and hosted current-master gates are honestly resolved.
+
 ## Iteration 1 — 2026-09-05 — B00 baseline capture
 
 - Refreshed `origin/master` at `ed093668918bc271fc98b9112acaf7c1bf3eb314` and inventoried GitHub state, existing worktrees, release version, overlapping PR #142, and case-study PR #60.
