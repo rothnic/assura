@@ -28,7 +28,7 @@ pub fn starter_config(
                 "--project-intelligence cannot currently be combined with --recipe".to_string(),
             ));
         }
-        return Ok(project_intelligence_starter_config().to_string());
+        return render_starter_config(project_intelligence_starter_config(), recipe_file);
     }
 
     let agentic = recipes.contains(&crate::cli::args::InitRecipe::AgenticCore);
@@ -52,16 +52,18 @@ pub fn starter_config(
                     .to_string(),
             ));
         }
-        return Ok(recipe_config(language_recipes[0]).to_string());
+        return render_starter_config(recipe_config(language_recipes[0]), recipe_file);
     }
     if agentic || health {
-        return Ok(match (agentic, health) {
-            (true, true) => AGENTIC_HEALTH_STARTER_CONFIG,
-            (true, false) => AGENTIC_CORE_STARTER_CONFIG,
-            (false, true) => STRUCTURE_HEALTH_STARTER_CONFIG,
-            (false, false) => unreachable!(),
-        }
-        .to_string());
+        return render_starter_config(
+            match (agentic, health) {
+                (true, true) => AGENTIC_HEALTH_STARTER_CONFIG,
+                (true, false) => AGENTIC_CORE_STARTER_CONFIG,
+                (false, true) => STRUCTURE_HEALTH_STARTER_CONFIG,
+                (false, false) => unreachable!(),
+            },
+            recipe_file,
+        );
     }
 
     let mut config: serde_yaml::Value = serde_yaml::from_str(
@@ -94,7 +96,24 @@ exclude:
 "#,
     )
     .expect("built-in starter config is valid YAML");
-    crate::cli::local_recipe::apply_recipe_file(&mut config, recipe_file)?;
+    render_local_recipe(&mut config, recipe_file)
+}
+
+fn render_starter_config(
+    source: &str,
+    recipe_file: Option<&PathBuf>,
+) -> Result<String, StarterInitError> {
+    let mut config = serde_yaml::from_str(source).map_err(|error| {
+        StarterInitError::Runtime(format!("built-in starter config is invalid YAML: {error}"))
+    })?;
+    render_local_recipe(&mut config, recipe_file)
+}
+
+fn render_local_recipe(
+    config: &mut serde_yaml::Value,
+    recipe_file: Option<&PathBuf>,
+) -> Result<String, StarterInitError> {
+    crate::cli::local_recipe::apply_recipe_file(config, recipe_file)?;
     serde_yaml::to_string(&config).map_err(|error| {
         StarterInitError::Runtime(format!("failed to render starter config: {error}"))
     })

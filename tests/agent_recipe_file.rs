@@ -383,6 +383,52 @@ fn bundled_local_pattern_recommendations_validate_matching_minimal_projects() {
 }
 
 #[test]
+fn init_composes_explicit_local_intent_with_a_bundled_layout_recipe() {
+    let project = TempDir::new().expect("project directory");
+    let patterns = TempDir::new().expect("pattern directory");
+    fs::write(
+        project.path().join("Cargo.toml"),
+        "[package]\nname = \"sample\"\nversion = \"0.1.0\"\n",
+    )
+    .expect("Cargo manifest");
+    fs::create_dir_all(project.path().join("src")).expect("source directory");
+    fs::write(project.path().join("src/lib.rs"), "pub fn sample() {}\n").expect("library");
+    fs::create_dir_all(project.path().join("tests")).expect("test directory");
+    fs::write(
+        project.path().join("tests/sample.rs"),
+        "#[test]\nfn sample() {}\n",
+    )
+    .expect("test");
+    let recipe_path = patterns.path().join("team-policy.yml");
+    fs::write(
+        &recipe_path,
+        "structure:\n  ./:\n    CONTRIBUTING.md: exists:0-1\n",
+    )
+    .expect("local recipe");
+
+    let output = Command::new(assura_full_bin())
+        .arg("init")
+        .arg(project.path())
+        .args(["--recipe", "rust-library"])
+        .arg("--recipe-file")
+        .arg(&recipe_path)
+        .output()
+        .expect("assura init runs");
+
+    assert!(
+        output.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let config: serde_yaml::Value = serde_yaml::from_str(
+        &fs::read_to_string(project.path().join(".assura/config.yml")).expect("project policy"),
+    )
+    .expect("valid config YAML");
+    assert_eq!(config["structure"]["./"]["CONTRIBUTING.md"], "exists:0-1");
+}
+
+#[test]
 fn agent_onboard_unions_explicit_pattern_excludes_in_stable_order() {
     let project = TempDir::new().expect("project directory");
     let patterns = TempDir::new().expect("pattern directory");
