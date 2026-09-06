@@ -100,3 +100,8 @@
 - Q06 PR #166's repeat Rust CI run `34023443201` again failed only the unchanged Performance Report gate: `many_configured_scopes_regression` was `assura-cli 19.492 ms > ls-lint-cli 19.115 ms`; all other hosted checks succeeded. The release-readiness extraction is not treated as the cause or merged around the gate.
 - The reachable `vps` benchmark host has the canonical fixture but was running unrelated Cargo work. Because paired cold-run attribution requires a quiet comparable runner, no benchmark or speculative optimization was started. R03 remains blocked on that named environment condition and the prior HashSet hypothesis remains rejected.
 - Queue health: Q02's existing candidate has correct local governance evidence but remains blocked on independent reviewer/branch-protection authority and the same required performance gate. Existing performance and worktree procedures cover this repeated decision; no new skill is warranted. Next independent ready card: A01.
+
+## Iteration 20 — 2026-09-06 — Q07 launcher error contract
+
+- Q07 started in isolated current-master worktree `goal/q07-error-contract` at `c9ad106`. A focused red test proved the primary launcher silently treated a present, non-executable companion as absent because spawn errors were discarded with `.ok()?`.
+- The smallest repair now propagates a path-bearing OS error and runtime exit `1`; the exact focused test passed. The first `--exact` invocation selected zero tests because its nested test path was incomplete and is explicitly excluded from proof. Remaining Q07 work is the report-output failure contract, selected cache fallback audit, packaged-launcher coverage, and required integration/release gates.
