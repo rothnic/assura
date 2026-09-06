@@ -218,12 +218,33 @@ async fn handle_hooks_install(path: Option<std::path::PathBuf>, force: bool) -> 
 
     match GitHooksManager::new(&project_root) {
         Ok(manager) => match manager.install_all(force) {
-            Ok(installed) => {
-                if installed.is_empty() {
-                    println!("No hooks installed (already exist). Use --force to overwrite.");
+            Ok(outcome) => {
+                if outcome.installed.is_empty() {
+                    println!("No new hooks installed.");
                 } else {
                     println!("Installed hooks:");
-                    for hook in installed {
+                    for hook in outcome.installed {
+                        println!("  ✓ {}", hook.as_str());
+                    }
+                }
+                if !outcome.preserved.is_empty() {
+                    println!("Preserved existing custom hooks:");
+                    for hook in outcome.preserved {
+                        println!(
+                            "  ⚠ {} (not modified; configure an Assura integration explicitly if desired)",
+                            hook.as_str()
+                        );
+                    }
+                }
+                if !outcome.unchanged.is_empty() {
+                    println!("Managed hooks already current:");
+                    for hook in outcome.unchanged {
+                        println!("  ✓ {}", hook.as_str());
+                    }
+                }
+                if !outcome.refreshed.is_empty() {
+                    println!("Refreshed managed hooks:");
+                    for hook in outcome.refreshed {
                         println!("  ✓ {}", hook.as_str());
                     }
                 }
@@ -252,13 +273,19 @@ async fn handle_hooks_uninstall(path: Option<std::path::PathBuf>) -> ExitCode {
 
     match GitHooksManager::new(&project_root) {
         Ok(manager) => match manager.uninstall_all() {
-            Ok(uninstalled) => {
-                if uninstalled.is_empty() {
-                    println!("No hooks to uninstall.");
+            Ok(outcome) => {
+                if outcome.removed.is_empty() {
+                    println!("No Assura-managed hooks to uninstall.");
                 } else {
                     println!("Uninstalled hooks:");
-                    for hook in uninstalled {
+                    for hook in outcome.removed {
                         println!("  ✓ {}", hook.as_str());
+                    }
+                }
+                if !outcome.preserved.is_empty() {
+                    println!("Preserved existing custom hooks:");
+                    for hook in outcome.preserved {
+                        println!("  ⚠ {} (not modified)", hook.as_str());
                     }
                 }
                 ExitCode::Success

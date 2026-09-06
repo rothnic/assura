@@ -23,6 +23,28 @@ pub enum HookError {
 
 pub type HookResult<T> = Result<T, HookError>;
 
+/// Outcome of installing the managed Git hooks for a project.
+#[derive(Debug, Default, PartialEq, Eq)]
+pub struct HookInstallOutcome {
+    /// Hook entrypoints created by Assura during this invocation.
+    pub installed: Vec<HookType>,
+    /// Managed hook entrypoints that already matched the current generator.
+    pub unchanged: Vec<HookType>,
+    /// Managed hook entrypoints refreshed by an explicit force install.
+    pub refreshed: Vec<HookType>,
+    /// Existing custom hook entrypoints that Assura left unchanged.
+    pub preserved: Vec<HookType>,
+}
+
+/// Outcome of removing Assura-managed Git hooks from a project.
+#[derive(Debug, Default, PartialEq, Eq)]
+pub struct HookUninstallOutcome {
+    /// Managed hook entrypoints removed by Assura.
+    pub removed: Vec<HookType>,
+    /// Existing non-Assura hook entrypoints that Assura left unchanged.
+    pub preserved: Vec<HookType>,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum HookType {
     PreCommit,
@@ -78,20 +100,32 @@ impl GitHooksManager {
         })
     }
 
-    pub fn install_all(&self, force: bool) -> HookResult<Vec<HookType>> {
+    pub fn install_all(&self, force: bool) -> HookResult<HookInstallOutcome> {
         std::fs::create_dir_all(&self.assura_hooks_dir)?;
 
-        let mut installed = Vec::new();
+        let mut outcome = HookInstallOutcome::default();
 
         for hook_type in HookType::all() {
+            let status = self.status(hook_type);
+            if status.git_path.exists() && !status.is_managed {
+                outcome.preserved.push(hook_type);
+                continue;
+            }
+
+            if status.is_managed && !force {
+                outcome.unchanged.push(hook_type);
+                continue;
+            }
+
             match self.install(hook_type, force) {
-                Ok(_) => installed.push(hook_type),
-                Err(HookError::AlreadyExists(_)) if !force => continue,
+                Ok(_) if status.is_managed => outcome.refreshed.push(hook_type),
+                Ok(_) => outcome.installed.push(hook_type),
+                Err(HookError::AlreadyExists(_)) if !force => outcome.preserved.push(hook_type),
                 Err(e) => return Err(e),
             }
         }
 
-        Ok(installed)
+        Ok(outcome)
     }
 
     pub fn install(&self, hook_type: HookType, force: bool) -> HookResult<()> {
@@ -118,22 +152,7 @@ impl GitHooksManager {
         }
 
         // Create git hook that delegates to assura
-        let git_hook_content = format!(
-            r#"#!/bin/sh
-# Git hook managed by Assura
-# This file was auto-generated. Do not modify manually.
-
-ASSURA_HOOK="{}"
-
-if [ -f "$ASSURA_HOOK" ]; then
-    exec "$ASSURA_HOOK" "$@"
-else
-    echo "Warning: Assura hook not found at $ASSURA_HOOK" >&2
-    exit 0
-fi
-"#,
-            assura_hook_path.display()
-        );
+        let git_hook_content = self.managed_git_hook_content(&assura_hook_path);
 
         std::fs::write(&git_hook_path, git_hook_content)?;
 
@@ -149,37 +168,60 @@ fi
         Ok(())
     }
 
+    fn managed_git_hook_content(&self, assura_hook_path: &Path) -> String {
+        format!(
+            r#"#!/bin/sh
+# Git hook managed by Assura
+# This file was auto-generated. Do not modify manually.
+
+ASSURA_HOOK="{}"
+
+if [ -f "$ASSURA_HOOK" ]; then
+    exec "$ASSURA_HOOK" "$@"
+else
+    echo "Warning: Assura hook not found at $ASSURA_HOOK" >&2
+    exit 0
+fi
+"#,
+            assura_hook_path.display()
+        )
+    }
+
     pub fn uninstall(&self, hook_type: HookType) -> HookResult<()> {
         let hook_name = hook_type.as_str();
         let git_hook_path = self.git_hooks_dir.join(hook_name);
         let assura_hook_path = self.assura_hooks_dir.join(hook_name);
 
-        // Check if it's an assura-managed hook
-        if git_hook_path.exists() {
-            let content = std::fs::read_to_string(&git_hook_path)?;
-            if content.contains("Git hook managed by Assura") {
-                std::fs::remove_file(&git_hook_path)?;
-            }
-        }
+        let managed_git_hook = git_hook_path.exists()
+            && std::fs::read_to_string(&git_hook_path)?
+                == self.managed_git_hook_content(&assura_hook_path);
 
-        if assura_hook_path.exists() {
+        if managed_git_hook {
+            std::fs::remove_file(&git_hook_path)?;
+            if assura_hook_path.exists() {
+                std::fs::remove_file(&assura_hook_path)?;
+            }
+        } else if !git_hook_path.exists() && assura_hook_path.exists() {
             std::fs::remove_file(&assura_hook_path)?;
         }
 
         Ok(())
     }
 
-    pub fn uninstall_all(&self) -> HookResult<Vec<HookType>> {
-        let mut uninstalled = Vec::new();
+    pub fn uninstall_all(&self) -> HookResult<HookUninstallOutcome> {
+        let mut outcome = HookUninstallOutcome::default();
 
         for hook_type in HookType::all() {
-            if self.status(hook_type).is_installed {
+            let status = self.status(hook_type);
+            if status.is_managed {
                 self.uninstall(hook_type)?;
-                uninstalled.push(hook_type);
+                outcome.removed.push(hook_type);
+            } else if status.is_installed {
+                outcome.preserved.push(hook_type);
             }
         }
 
-        Ok(uninstalled)
+        Ok(outcome)
     }
 
     pub fn status(&self, hook_type: HookType) -> HookStatus {
@@ -188,13 +230,9 @@ fi
         let assura_hook_path = self.assura_hooks_dir.join(hook_name);
 
         let is_installed = git_hook_path.exists() || assura_hook_path.exists();
-        let is_managed = if git_hook_path.exists() {
-            std::fs::read_to_string(&git_hook_path)
-                .map(|content| content.contains("Git hook managed by Assura"))
-                .unwrap_or(false)
-        } else {
-            false
-        };
+        let is_managed = std::fs::read_to_string(&git_hook_path)
+            .map(|content| content == self.managed_git_hook_content(&assura_hook_path))
+            .unwrap_or(false);
 
         HookStatus {
             hook_type,
