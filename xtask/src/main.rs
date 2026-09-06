@@ -186,10 +186,28 @@ fn run_release_smoke() -> Result<()> {
     let _ = fs::remove_dir_all(&tmp);
     fs::create_dir_all(&tmp)?;
     let install_dir = tmp.join("bin");
+    let checksum = archive.with_extension("tar.gz.sha256");
+    let digest = if command_exists("sha256sum") {
+        command_stdout("sha256sum", [archive.to_string_lossy().as_ref()])?
+    } else {
+        command_stdout("shasum", ["-a", "256", archive.to_string_lossy().as_ref()])?
+    };
+    let digest = digest
+        .split_whitespace()
+        .next()
+        .ok_or("release archive checksum command returned no digest")?;
+    fs::write(
+        &checksum,
+        format!(
+            "{digest}  {}\n",
+            archive.file_name().unwrap().to_string_lossy()
+        ),
+    )?;
 
     let mut install = Command::new("./website/public/install.sh");
     install
         .env("ASSURA_ASSET_URL", fs::canonicalize(&archive)?)
+        .env("ASSURA_CHECKSUM_URL", fs::canonicalize(&checksum)?)
         .env("BIN_DIR", &install_dir);
     run_command_status(install)?;
 
@@ -204,6 +222,40 @@ fn run_release_smoke() -> Result<()> {
     let help = read(tmp.join("assura-help.txt"));
     if !help.contains("Usage: assura") {
         return Err("release smoke help output did not contain Usage: assura".into());
+    }
+    run_command_status({
+        let mut command = Command::new(install_dir.join("assura-full"));
+        command.arg("--help");
+        command
+    })?;
+    let before_failure = fs::read(&assura)?;
+    let full = install_dir.join("assura-full");
+    let before_full_failure = fs::read(&full)?;
+    let failed = Command::new("./website/public/install.sh")
+        .env("ASSURA_ASSET_URL", fs::canonicalize(&archive)?)
+        .env("ASSURA_CHECKSUM_URL", fs::canonicalize(&checksum)?)
+        .env("BIN_DIR", &install_dir)
+        .env("ASSURA_TEST_FAIL_AFTER_FIRST_REPLACE", "1")
+        .status()?;
+    if failed.success() {
+        return Err("release smoke installer accepted an injected replacement failure".into());
+    }
+    if fs::read(&assura)? != before_failure || fs::read(&full)? != before_full_failure {
+        return Err("release smoke replacement failure did not preserve the installed pair".into());
+    }
+    let failed_backup = Command::new("./website/public/install.sh")
+        .env("ASSURA_ASSET_URL", fs::canonicalize(&archive)?)
+        .env("ASSURA_CHECKSUM_URL", fs::canonicalize(&checksum)?)
+        .env("BIN_DIR", &install_dir)
+        .env("ASSURA_TEST_FAIL_DURING_SECOND_BACKUP", "1")
+        .status()?;
+    if failed_backup.success()
+        || fs::read(&assura)? != before_failure
+        || fs::read(&full)? != before_full_failure
+    {
+        return Err(
+            "release smoke second backup failure did not preserve the installed pair".into(),
+        );
     }
     let mut smoke = Command::new("./scripts/smoke-install-adoption.sh");
     smoke
