@@ -73,7 +73,7 @@
       "state": "blocked",
       "owner": "Codex goal/r03-many-scope",
       "evidence": "evidence/R03.md",
-      "blocker": "The prior configured-dir HashSet hypothesis is rejected by stronger same-fixture VPS public-command evidence; a distinct attributed hypothesis must be tested with the exact release protocol before R03 can proceed."
+      "blocker": "The prior configured-dir HashSet hypothesis is rejected by stronger same-fixture VPS public-command evidence; a distinct attributed hypothesis needs the exact static-primary release protocol on an approved quiet Linux runner. The reachable vps host currently has unrelated active Cargo workloads."
     },
     {
       "id": "R04",
