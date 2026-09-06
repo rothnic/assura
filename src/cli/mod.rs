@@ -22,6 +22,8 @@ mod agent_onboarding_report;
 #[cfg(feature = "full-cli")]
 mod agent_onboarding_rules;
 #[cfg(feature = "full-cli")]
+mod agent_onboarding_specialization;
+#[cfg(feature = "full-cli")]
 mod agent_onboarding_structure_fit_templates;
 #[cfg(feature = "full-cli")]
 mod agent_onboarding_templates;
