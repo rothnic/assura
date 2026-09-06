@@ -144,15 +144,16 @@ impl WatchProcess {
         }
     }
 
-    fn assert_no_event_or_scoped_rescan(&self, duration: Duration) {
+    fn assert_no_event_or_scoped_rescan(&self, duration: Duration) -> u64 {
         match self.events.recv_timeout(duration) {
-            Err(mpsc::RecvTimeoutError::Timeout) => {}
+            Err(mpsc::RecvTimeoutError::Timeout) => 2,
             Ok(event) => {
                 assert_event(&event, 2, "filesystem", "warm_full");
                 assert_eq!(event["fallback_reason"], "full_rescan_event");
                 assert_eq!(event["report_scope"], "requested_path");
                 assert_eq!(event["changed_paths"], serde_json::json!([]));
                 assert_eq!(event["report"]["success"], true);
+                3
             }
             Err(mpsc::RecvTimeoutError::Disconnected) => {
                 panic!("watch event reader disconnected before the debounce window elapsed")
@@ -434,11 +435,16 @@ fn watch_honors_the_requested_directory_scope() {
         .is_some_and(|path| path.replace('\\', "/").ends_with("/src")));
 
     fs::write(project.path().join("docs/BadName.ts"), "export {};\n").unwrap();
-    watch.assert_no_event_or_scoped_rescan(Duration::from_millis(450));
+    let expected_sequence = watch.assert_no_event_or_scoped_rescan(Duration::from_millis(450));
     fs::write(project.path().join("src/BadName.ts"), "export {};\n").unwrap();
 
     let changed = watch.next_event();
-    assert_event(&changed, 2, "filesystem", "warm_incremental");
+    assert_event(
+        &changed,
+        expected_sequence,
+        "filesystem",
+        "warm_incremental",
+    );
     assert_eq!(changed["report"]["success"], false);
 
     let diagnostic = watch.next_normalization_diagnostic();
