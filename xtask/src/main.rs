@@ -6724,7 +6724,10 @@ mod tests {
             "a failed bundle build must not create misleading artifact eligibility"
         );
 
-        let windows_workflow = workflow.replace('\n', "\r\n");
+        let crlf_checkout_workflow = workflow.replace('\n', "\r\n");
+        let windows_workflow = crlf_checkout_workflow
+            .replace("\r\n", "\n")
+            .replace('\n', "\r\n");
         assert!(
             performance_workflow_contract_failures(&windows_workflow).is_empty(),
             "workflow contract must evaluate identically with Windows checkout line endings"
