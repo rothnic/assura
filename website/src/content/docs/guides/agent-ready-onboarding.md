@@ -294,10 +294,11 @@ contract and exits nonzero for blocking findings.
 
 ## Specialization Flow
 
-After the user answers the generated questions:
+After the agent has applied evidence-supported decisions, or the project owner
+has resolved a recorded exception:
 
-1. Update `.assura/config.yml` with the chosen language, layout, naming, and
-   strictness rules.
+1. Update `.assura/config.yml` only with the supported language, layout,
+   naming, and strictness decisions supported by evidence or explicit authority.
 2. Activate `agent-project` or `document-project` when the user wants modeled
    facts.
 3. Activate a supported project-local host integration only when the user wants
@@ -310,4 +311,4 @@ After the user answers the generated questions:
    ```
 
 The goal is a repository that tells the agent what is checked, what is still
-unchecked, and what the next user-backed specialization step should be.
+unchecked, and which unresolved exception—if any—requires user authority.

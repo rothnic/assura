@@ -235,4 +235,5 @@ fn public_onboarding_guide_documents_the_v2_specialization_contract() {
     assert!(guide.contains("Exceptions that still require user authority"));
     assert!(!guide.contains("## Agent-Next Questions"));
     assert!(!guide.contains("Record the answers in project notes"));
+    assert!(!guide.contains("After the user answers the generated questions"));
 }
