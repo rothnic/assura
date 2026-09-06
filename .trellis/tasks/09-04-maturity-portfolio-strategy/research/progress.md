@@ -53,6 +53,12 @@
 - Context health: the only repeated execution friction was an overlapping cold Cargo docs invocation; the active first invocation was allowed to finish and the duplicate waiter then completed, with no changed-command retry or output claim. Existing isolation, test-first, browser, and evidence workflows are sufficient; no new skill is justified.
 - Next: independent review of the exact W01 candidate, then hosted PR proof. Q02 remains separately in its final hosted matrix and must not be merged until every required job is terminal green.
 
+## Iteration 10 — 2026-09-06 — W01 current-master closure
+
+- PR #159 merged as `8eaa31434528ba2a877284929723fba708d944b3` after independent review and all targeted hosted website/evidence/scope/security/external-build checks passed. The skipped Rust, release, and performance jobs were outside the website-only scope and are not recorded as passing.
+- Fetch confirmed the merge SHA is reachable from `origin/master`; W01 is now done. No deployment, release, tag, or public communication was initiated.
+- Next: rebase the independently prepared F01 kit onto current master before review, while Q02 remains held by the honest R03 performance gate failure.
+
 ## Iteration 4 — 2026-09-06 — R01/R02 integrated proof and post-merge closure
 
 - PR [#144](https://github.com/rothnic/assura/pull/144) merged as `dcb1fb57ba100f77a7cb7e48c4f14507d3106231`; it was confirmed reachable from `origin/master` after fetch.
