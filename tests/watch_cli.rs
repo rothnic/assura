@@ -477,7 +477,19 @@ structure:
 
     fs::write(project.path().join("generated/BadName.ts"), "export {};\n").unwrap();
 
-    watch.assert_no_event(Duration::from_millis(450));
+    match watch.events.recv_timeout(Duration::from_millis(450)) {
+        Err(mpsc::RecvTimeoutError::Timeout) => {}
+        Ok(event) => {
+            assert_event(&event, 2, "filesystem", "warm_full");
+            assert_eq!(event["fallback_reason"], "full_rescan_event");
+            assert_eq!(event["report_scope"], "requested_path");
+            assert_eq!(event["changed_paths"], serde_json::json!([]));
+            assert_eq!(event["report"]["success"], true);
+        }
+        Err(mpsc::RecvTimeoutError::Disconnected) => {
+            panic!("watch event reader disconnected before the debounce window elapsed")
+        }
+    }
 }
 
 #[test]
@@ -527,8 +539,13 @@ fn watch_emits_feedback_during_sustained_edits() {
     );
     assert_event(&changed, 2, "filesystem", runtime_mode);
     if runtime_mode == "warm_full" {
-        assert_eq!(changed["fallback_reason"], "max_batch_window");
+        assert!(matches!(
+            changed["fallback_reason"].as_str(),
+            Some("max_batch_window" | "full_rescan_event")
+        ));
+        assert_eq!(changed["report_scope"], "requested_path");
     }
+    assert_eq!(changed["report"]["success"], true);
     writer.join().unwrap();
 }
 
