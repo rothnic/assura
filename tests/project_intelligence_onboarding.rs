@@ -433,6 +433,31 @@ fn agent_onboard_uses_evidence_first_specialization_for_a_recognizable_cargo_pro
         assert!(handoff.contains(step), "missing handoff step: {step}");
     }
     assert!(!handoff.contains("What primary language or stack should this project use?"));
+
+    let profile: Value = serde_json::from_str(
+        &fs::read_to_string(
+            project
+                .path()
+                .join(".assura/onboarding/profile-selection.json"),
+        )
+        .expect("specialization profile"),
+    )
+    .expect("valid specialization profile JSON");
+    assert_eq!(profile["schema"], "assura.profile-selection.v1");
+    assert_eq!(profile["profile"], "rust-library");
+    assert_eq!(profile["source"], "Cargo.toml");
+    assert!(profile["source_hash"]
+        .as_str()
+        .is_some_and(|hash| !hash.is_empty()));
+    assert!(profile["decisions"]
+        .as_array()
+        .expect("decisions")
+        .iter()
+        .any(|decision| decision["key"] == "stack"
+            && decision["value"] == "rust"
+            && decision["evidence"] == "Cargo.toml"));
+    assert_eq!(profile["conflicts"], serde_json::json!([]));
+    assert_eq!(profile["verification"]["config"], "pass");
 }
 
 #[test]
