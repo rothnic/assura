@@ -126,8 +126,8 @@
         "B00"
       ],
       "executor": "agent",
-      "state": "pending",
-      "owner": null,
+      "state": "implemented",
+      "owner": "codex",
       "evidence": "evidence/Q01.md",
       "blocker": null
     },

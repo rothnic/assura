@@ -79,8 +79,24 @@ rules:
       custom/:
         ./: exists:0-1 | $closed
         ./*/: kebab-case | $skill
+      assura-agent-harness-hooks/: kebab-case | $skill
+      assura-goal-execution/: kebab-case | $skill
+      assura-goal-validation/: kebab-case | $skill
+      assura-local-build/: kebab-case | $skill
+      assura-notation-review/: kebab-case | $skill
+      assura-performance-reporting/: kebab-case | $skill
+      assura-rust-quality/: kebab-case | $skill
+      assura-structure-fit/: kebab-case | $skill
+      trellis-before-dev/: kebab-case | $skill
       trellis-brainstorm/: $r07-trellis-brainstorm-skill
-      ./*/: kebab-case | $skill
+      trellis-break-loop/: kebab-case | $skill
+      trellis-check/: kebab-case | $skill
+      trellis-continue/: kebab-case | $skill
+      trellis-finish-work/: kebab-case | $skill
+      trellis-meta/: kebab-case | $skill
+      trellis-start/: kebab-case | $skill
+      trellis-update-spec/: kebab-case | $skill
+      ./*/: $closed-entry
 
   agentic-core:
     AGENTS.md: $agent-entrypoint-r07
