@@ -56,6 +56,7 @@
     "agent_harness": "codex",
     "existing_source_files": true,
     "git_repository": false,
+    "manifest_conflicts": [],
     "project_confidence": "high",
     "project_type": "node",
     "requested_agent": "codex"
@@ -230,7 +231,7 @@
       "required": true
     }
   ],
-  "generated_from": "assura.agent-onboarding.v1",
+  "generated_from": "assura.agent-onboarding.v2",
   "inactive": [
     {
       "detail": "repository evidence selected a profile and the materialized config passed; prove a negative policy case before verification",

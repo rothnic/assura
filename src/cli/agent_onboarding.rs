@@ -1,5 +1,4 @@
 //! First-run local onboarding for agent-ready repositories.
-
 use super::agent_integration::configure_agent_integration_bundle;
 use super::agent_lifecycle::{lifecycle_profiles, ranked_next_actions};
 use super::agent_onboarding_report::{
@@ -19,7 +18,7 @@ use serde_yaml::Value;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-const OUTPUT_SCHEMA: &str = "assura.agent-onboarding.v1";
+const OUTPUT_SCHEMA: &str = "assura.agent-onboarding.v2";
 /// Options for `assura agent onboard`.
 pub struct AgentOnboardingOptions {
     /// Project root directory.
@@ -114,7 +113,8 @@ fn run_agent_onboarding(
         options.content_template,
         rule_recommendations
             .iter()
-            .any(|rule| rule.status == "conflict"),
+            .any(|rule| rule.status == "conflict")
+            || !detected.manifest_conflicts.is_empty(),
     );
     let lifecycle_profiles = lifecycle_profiles(&project_root, integration_target);
     let next_actions = ranked_next_actions(integration_target, options.content_template);
@@ -200,11 +200,26 @@ fn detect_project(
     let has_cargo = project_root.join("Cargo.toml").is_file();
     let has_package_json = project_root.join("package.json").is_file();
     let has_pyproject = project_root.join("pyproject.toml").is_file();
+    let detected_manifests = [
+        (has_cargo, "Cargo.toml"),
+        (has_package_json, "package.json"),
+        (has_pyproject, "pyproject.toml"),
+    ]
+    .into_iter()
+    .filter_map(|(present, path)| present.then_some(path))
+    .collect::<Vec<_>>();
+    let manifest_conflicts = if detected_manifests.len() > 1 {
+        detected_manifests.clone()
+    } else {
+        Vec::new()
+    };
     let has_src = project_root.join("src").is_dir();
     let has_packages = project_root.join("packages").is_dir();
     let existing_source_files = has_src || has_cargo || has_package_json || has_pyproject;
     let project_type = if is_empty_project(project_root) {
         "empty"
+    } else if manifest_conflicts.len() > 1 {
+        "ambiguous"
     } else if has_packages {
         "monorepo"
     } else if has_cargo {
@@ -231,6 +246,7 @@ fn detect_project(
         agent_confidence: agent.confidence,
         git_repository,
         existing_source_files,
+        manifest_conflicts,
     })
 }
 
@@ -571,6 +587,7 @@ pub(super) struct DetectedSection {
     pub(super) agent_confidence: &'static str,
     pub(super) git_repository: bool,
     pub(super) existing_source_files: bool,
+    pub(super) manifest_conflicts: Vec<&'static str>,
 }
 
 #[derive(Serialize)]

@@ -57,17 +57,29 @@ pub(super) fn write_specialization_profile(
         .find(|item| item.name == "structure_config")
         .map(|item| item.status)
         .unwrap_or("fail");
-    let conflicts = rule_recommendations
+    let mut conflicts = detected
+        .manifest_conflicts
         .iter()
-        .filter(|rule| rule.status == "conflict")
-        .map(|rule| {
+        .map(|source| {
             serde_json::json!({
-                "kind": "recommended_rule",
-                "source": rule.preset,
-                "detail": rule.reason,
+                "kind": "manifest",
+                "source": source,
+                "detail": "multiple stack manifests require user specialization authority",
             })
         })
         .collect::<Vec<_>>();
+    conflicts.extend(
+        rule_recommendations
+            .iter()
+            .filter(|rule| rule.status == "conflict")
+            .map(|rule| {
+                serde_json::json!({
+                    "kind": "recommended_rule",
+                    "source": rule.preset,
+                    "detail": rule.reason,
+                })
+            }),
+    );
     let profile = serde_json::json!({
         "schema": "assura.profile-selection.v1",
         "profile": profile,
@@ -124,11 +136,22 @@ fn validate_specialization_profile(profile: &serde_json::Value) -> Result<(), St
             }
         }
     }
-    if !profile
+    let conflicts = profile
         .get("conflicts")
-        .is_some_and(serde_json::Value::is_array)
-    {
-        return Err("specialization profile conflicts must be an array".to_string());
+        .and_then(serde_json::Value::as_array)
+        .ok_or_else(|| "specialization profile conflicts must be an array".to_string())?;
+    for conflict in conflicts {
+        for field in ["kind", "source", "detail"] {
+            if conflict
+                .get(field)
+                .and_then(serde_json::Value::as_str)
+                .is_none_or(str::is_empty)
+            {
+                return Err(format!(
+                    "specialization conflict {field} must be a non-empty string"
+                ));
+            }
+        }
     }
     match profile
         .pointer("/verification/config")
@@ -185,6 +208,21 @@ mod tests {
             "source_hash": "abc",
             "decisions": [{"key": "stack", "value": "rust"}],
             "conflicts": [],
+            "verification": {"config": "pass"}
+        });
+
+        assert!(validate_specialization_profile(&profile).is_err());
+    }
+
+    #[test]
+    fn rejects_a_conflict_without_its_source_or_detail() {
+        let profile = serde_json::json!({
+            "schema": "assura.profile-selection.v1",
+            "profile": "ambiguous",
+            "source": "repository inspection",
+            "source_hash": "abc",
+            "decisions": [{"key": "stack", "value": "ambiguous", "evidence": "repository inspection"}],
+            "conflicts": [{"kind": "manifest"}],
             "verification": {"config": "pass"}
         });
 

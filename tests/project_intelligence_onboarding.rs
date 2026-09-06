@@ -200,7 +200,7 @@ fn agent_onboard_generates_broad_baseline_and_packet() {
             .expect("minimal onboarding command runs"),
     );
 
-    assert_eq!(output["schema"], "assura.agent-onboarding.v1");
+    assert_eq!(output["schema"], "assura.agent-onboarding.v2");
     assert_eq!(output["detected"]["project_type"], "empty");
     assert_eq!(output["detected"]["agent_harness"], "generic");
     assert_eq!(output["installed"]["config"], ".assura/config.yml");

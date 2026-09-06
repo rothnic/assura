@@ -157,28 +157,34 @@ look like this:
     { "name": "onboarding_packet", "status": "pass" }
   ],
   "inactive": [
-    { "name": "project_specialization", "status": "inactive" },
+    {
+      "name": "project_specialization",
+      "status": "configured_unverified"
+    },
     { "name": "content_models", "status": "inactive" }
   ],
   "next_actions": [
     {
       "priority": 1,
-      "action": "Read the onboarding handoff",
+      "action": "Specialize from repository evidence",
       "follow_up": ".assura/onboarding/agent-next.md"
     },
     {
       "priority": 2,
-      "action": "Ask remaining specialization questions",
-      "affected_paths": [".assura/onboarding/questions.md"],
-      "follow_up": ".assura/onboarding/questions.md"
+      "action": "Record unresolved specialization exceptions",
+      "affected_paths": [".assura/onboarding/agent-next.md"],
+      "follow_up": ".assura/onboarding/agent-next.md"
     }
   ]
 }
 ```
 
-`verified` means Assura checked the configured baseline. `inactive` means the
-capability is deliberately not configured yet. A clean `assura check` result is
-not the same thing as a fully onboarded repository.
+`verified` means Assura checked the configured baseline. The v2 onboarding
+report distinguishes a detected, materialized profile that still needs a
+negative policy proof (`configured_unverified`) from missing stack intent
+(`needs_agent_specialization`) and conflicting repository evidence
+(`conflict_requires_user`). A clean `assura check` result is not the same thing
+as a fully onboarded repository.
 
 Assura materializes the `agentic-core` and `structure-health` recipes as normal
 YAML in `.assura/config.yml`. The project owns every generated rule and can

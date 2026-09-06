@@ -178,3 +178,47 @@ fn agent_onboard_keeps_ambiguous_repositories_reversible_and_repeatable() {
     assert_eq!(second["detected"]["project_type"], "unknown");
     assert_eq!(fs::read(profile_path).unwrap(), first_profile);
 }
+
+#[test]
+fn agent_onboard_requires_user_authority_for_conflicting_manifests() {
+    let project = TempDir::new().unwrap();
+    fs::write(
+        project.path().join("Cargo.toml"),
+        "[package]\nname = \"sample\"\n",
+    )
+    .unwrap();
+    fs::write(
+        project.path().join("package.json"),
+        "{\"name\":\"sample\"}\n",
+    )
+    .unwrap();
+
+    let output = json_from_success(run_assura(&[
+        "agent",
+        "onboard",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]));
+    assert_eq!(output["detected"]["project_type"], "ambiguous");
+    assert!(output["inactive"]
+        .as_array()
+        .expect("specialization state")
+        .iter()
+        .any(|item| item["name"] == "project_specialization"
+            && item["status"] == "conflict_requires_user"));
+    let profile: Value = serde_json::from_str(
+        &fs::read_to_string(
+            project
+                .path()
+                .join(".assura/onboarding/profile-selection.json"),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    assert!(profile["conflicts"]
+        .as_array()
+        .expect("manifest conflicts")
+        .iter()
+        .any(|conflict| conflict["kind"] == "manifest" && conflict["source"] == "Cargo.toml"));
+}
