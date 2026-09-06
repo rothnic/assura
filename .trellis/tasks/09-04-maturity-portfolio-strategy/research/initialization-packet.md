@@ -16,7 +16,7 @@ Contract v1 fields: `schema`, `fixture_id`, `stack`, `required_paths`, `forbidde
 - [ ] Write evaluator tests before implementation: empty config that passes check must fail a negative probe; valid exception must pass; missing native command is unavailable/fail, not skipped-pass; changed preserved file fails; wrong cwd cannot pass a native test; zero collected tests fails where expected; a partial-dimension pass is ineligible for final acceptance.
 - [ ] Implement setup evaluation using a disposable copy. First run baseline checks; then apply each trusted negative mutation separately, execute the authoritative check/hook, capture named rule/exit evidence, and restore before the next probe. Never mutate the user's source fixture or restore with broad destructive Git commands.
 - [ ] Emit per-dimension states `pass|fail|unavailable`, critical failures, command evidence and costs. A run with any critical fail/unavailable is not acceptance-pass. Preserve stdout/stderr privately; redact reports intended for publication.
-- [ ] Unit command: `python3 -m unittest discover -s tests -p 'agent_init_evaluator_tests.py'`. Validate intentionally broken evaluator-input cases and a known-good hand-configured fixture; only then score agents.
+- [ ] Unit command: `python3 -m unittest discover -s tests -p 'agent_init_evaluator*_tests.py'`. Validate intentionally broken evaluator-input cases and a known-good hand-configured fixture; only then score agents.
 
 **Accept:** Evaluator rejects a false-green setup and catches preservation/hook/native-test failures independently of agent self-report. Contract/schema and fixed prompt hashes are recorded.
 

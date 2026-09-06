@@ -62,6 +62,13 @@ cannot be accepted. This evaluator's idempotence assertion proves that repeated
 evaluation does not mutate the source fixture; initialization rerun/lifecycle
 proof remains with the owning onboarding and hook cards.
 
+Guidance evidence is an optional fixture-owned `guidance_assertions` list. Each
+record names an assertion id, a repository-relative file path, and a required
+text fragment. The evaluator reads only that file from its disposable copy;
+it never executes repository-provided instructions. A missing file or fragment
+is a failed guidance assertion, while no guidance assertions leaves a requested
+guidance dimension explicitly unavailable.
+
 The current hook-path assertion is only a contract input. A real lifecycle event
 and preservation of existing hook ownership are A04 evidence. Likewise, this
 evaluator supplies per-run contract evidence; it does not establish adoption,

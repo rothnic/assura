@@ -46,6 +46,22 @@ framework, naming, and layout policy should be materialized as project-owned
 rules; only ambiguous or potentially destructive choices require a user
 decision.
 
+### Independent initialization-evaluation guidance evidence
+
+`scripts/evaluate-agent-init.py` accepts the fixture-owned optional contract
+field `guidance_assertions[]`:
+
+```json
+{"id":"evidence-first-handoff","path":".assura/onboarding/agent-next.md","contains":"Inspect explicit repository instructions"}
+```
+
+Each record requires a nonempty id, repository-relative nonempty path, and
+nonempty required text fragment. Evaluation reads it only from a disposable
+copy. Missing files/fragments fail the requested `guidance` dimension; omitting
+the field leaves that dimension `unavailable`, never passing. Symlinked files
+or path components are refused so external content cannot satisfy an assertion.
+Public evaluator output exposes only aggregate state, not paths, ids, or text.
+
 ## 4. Validation & Error Matrix
 
 | Condition | Required behavior |
@@ -62,6 +78,9 @@ decision.
 | Project evidence identifies stable paths | Tell the agent to model those paths and close the stable scope against unexpected entries. |
 | Current tree conflicts with expected tech | Keep the conflict visible; do not treat every observed path as intended policy. |
 | Evidence is ambiguous | Leave the scope open and ask a focused question instead of guessing. |
+| Guidance assertion has an empty/unsafe path | Reject the evaluator contract. |
+| Guidance assertion path traverses a symlink | Fail the assertion without reading external content. |
+| Guidance assertion file or fragment is absent | Fail the requested guidance dimension. |
 
 ## 5. Good / Base / Bad Cases
 
@@ -85,6 +104,8 @@ decision.
 - Landing-page coverage separating applied policy from undecided policy.
 - Generated handoff coverage for evidence inspection, stable-scope closure,
   focused questions, and final `review` plus `check` verification.
+- Evaluator coverage for matching, missing-file, missing-fragment, malformed,
+  and symlinked guidance assertions; omitted assertions remain unavailable.
 
 ## 7. Canonical Shape
 
