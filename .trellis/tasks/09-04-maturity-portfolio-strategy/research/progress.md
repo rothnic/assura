@@ -1,5 +1,11 @@
 # Maturity execution train progress
 
+## Iteration 33 — 2026-09-06 — A01 current-master integration
+
+- PR [#162](https://github.com/rothnic/assura/pull/162) merged as `fdd0e76426c9ca6916fa72cdb3948378ad3a92e3`; a fresh fetch proved that merge is reachable from `origin/master`. The exact independently reviewed head was `1522352cb8b817620c4ea773780877332e122919`.
+- Rust CI, Documentation, Security Scope, and GitGuardian hosted checks passed. The scope-directed Security Audit job was skipped and is not represented as a passing test. A01 is now done as the partial evaluator contract, not as end-to-end initialization acceptance.
+- Context health: the long release/build commands in isolated worktrees can outlive an output window, so completed exits are being re-captured individually rather than inferred. This is an execution-observation issue, not a new reusable project skill. Next: finish current-master Q04 verification/review while A02 is dependency-ready.
+
 ## Iteration 32 — 2026-09-06 — A01 evaluator trust-boundary closure
 
 - Rebased A01 onto current master `6f72bf3`, then independent review identified and the candidate repaired absolute candidate-binary enforcement, named-rule matching for negative probes, required negative policy evidence, stdout/stderr zero-test detection, and required SHA-256 fixed-prompt provenance. The final reviewed SHA is `83687478a7b399e318f917edfa5641cce4ad95d1`; final independent review found no remaining findings.
