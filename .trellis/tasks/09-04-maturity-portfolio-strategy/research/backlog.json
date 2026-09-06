@@ -142,8 +142,8 @@
         "R04"
       ],
       "executor": "mixed",
-      "state": "done",
-      "owner": "Codex goal: Assura Maturity Execution Train",
+      "state": "pending",
+      "owner": null,
       "evidence": "evidence/Q02.md",
       "blocker": null
     },
@@ -184,8 +184,8 @@
         "A02"
       ],
       "executor": "agent",
-      "state": "active",
-      "owner": "Codex goal/a03-agent-specialization",
+      "state": "done",
+      "owner": "Codex goal: Assura Maturity Execution Train",
       "evidence": "evidence/A03.md",
       "blocker": null
     },
