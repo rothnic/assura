@@ -63,6 +63,8 @@ pub mod full_entry;
 #[cfg(feature = "full-cli")]
 pub mod hooks;
 #[cfg(feature = "full-cli")]
+mod init_recipes;
+#[cfg(feature = "full-cli")]
 pub mod init_support;
 #[cfg(feature = "full-cli")]
 mod local_recipe;

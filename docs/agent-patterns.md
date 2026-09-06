@@ -21,7 +21,7 @@ Assura bundles three conservative layout recommendations:
   pytest-style `tests/`. It leaves `__init__.py` conventional rather than
   forbidding it.
 
-Materialize one with `assura init --recipe <name>`, then edit the resulting
+Materialize a concrete bundled language layout, then edit the resulting
 project-owned policy to match evidence already in the project. The checked
 fixtures exercise these bundled recommendations; they are not the public
 catalog. Service and framework layouts are variants: select them only when the
