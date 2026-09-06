@@ -1,7 +1,8 @@
 # High-impact surfaces require maintainer routing. This file routes review; it
-# does not replace GitHub branch-protection or an independent reviewer.
+# does not enforce review until GitHub branch protection requires it.
+/.github/CODEOWNERS @rothnic
 /src/config/ @rothnic
-/src/cli/check* @rothnic
+/src/cli/check/ @rothnic
 /.assura/ @rothnic
 /.github/workflows/ @rothnic
 /xtask/ @rothnic

@@ -138,7 +138,7 @@ classify_path() {
   # This is intentionally a review prompt, not an approval decision. GitHub
   # review and required-check policy decides whether a flagged change merges.
   case "$path" in
-    tests/*|tests/**|src/constraints/severity.rs|src/constraints/severity/*|src/constraints/severity/**|src/cli/performance_report/*|src/cli/performance_report/**|benches/*|benches/**|.github/workflows/*|scripts/ci-scope.sh|scripts/ci-scope-github.sh|scripts/check-ci-scope.sh)
+    tests/*|tests/**|.assura/config.yml|src/constraints/severity.rs|src/constraints/severity/*|src/constraints/severity/**|src/cli/performance_report/*|src/cli/performance_report/**|xtask/src/main.rs|benches/*|benches/**|.github/workflows/*|scripts/ci-scope.sh|scripts/ci-scope-github.sh|scripts/check-ci-scope.sh)
       policy_review=true
       policy_review_paths+=("$path")
       ;;
