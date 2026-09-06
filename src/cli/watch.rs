@@ -287,6 +287,12 @@ fn record_message(
             }) {
                 return;
             }
+            let had_only_irrelevant_paths = !event.paths.is_empty()
+                && event.paths.iter().all(|path| {
+                    path != &context.config_path
+                        && (!path.starts_with(&context.watch_scope)
+                            || ignored_runtime_path(&context.root, path, context.no_git))
+                });
             event.paths.retain(|path| {
                 path == &context.config_path
                     || (path.starts_with(&context.watch_scope)
@@ -298,7 +304,7 @@ fn record_message(
                 &context.watch_scope,
                 context.watch_scope_is_file,
             );
-            if event.paths.is_empty() && !event.need_rescan() {
+            if event.paths.is_empty() && (had_only_irrelevant_paths || !event.need_rescan()) {
                 return;
             }
             let invalidated = dirty.record_event(&event, &context.config_path);
@@ -549,3 +555,7 @@ impl From<CheckError> for WatchError {
 #[cfg(test)]
 #[path = "watch_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "watch_rescan_tests.rs"]
+mod rescan_tests;
