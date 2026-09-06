@@ -3231,7 +3231,7 @@ fn collect_files_inner(path: &Path, suffix: Option<&str>, files: &mut Vec<PathBu
         return;
     };
     if metadata.is_file() {
-        if suffix.map_or(true, |suffix| path.to_string_lossy().ends_with(suffix)) {
+        if suffix.is_none_or(|suffix| path.to_string_lossy().ends_with(suffix)) {
             files.push(path.to_path_buf());
         }
         return;

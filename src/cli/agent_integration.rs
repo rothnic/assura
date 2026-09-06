@@ -123,7 +123,7 @@ fn lifecycle_command(
 
             for file in &files {
                 let status = file_status(&file.path);
-                let content_changed = status.as_ref().map_or(true, |status| {
+                let content_changed = status.as_ref().is_none_or(|status| {
                     !status.managed || status.content.as_deref() != Some(&file.content)
                 });
                 let write = args.force || content_changed;
@@ -141,7 +141,7 @@ fn lifecycle_command(
 
             for file in files {
                 let status = file_status(&file.path);
-                let content_changed = status.as_ref().map_or(true, |status| {
+                let content_changed = status.as_ref().is_none_or(|status| {
                     !status.managed || status.content.as_deref() != Some(&file.content)
                 });
                 let write = args.force || content_changed;

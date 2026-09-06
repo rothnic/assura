@@ -40,7 +40,7 @@ Enhancement suggestions are tracked as GitHub issues. When creating an enhanceme
 
 ### Prerequisites
 
-- Rust 1.70.0 or later
+- Rust 1.86.0 or later
 - Cargo
 
 ### Building

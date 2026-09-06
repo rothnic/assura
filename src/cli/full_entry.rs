@@ -58,7 +58,7 @@ async fn run_full_cli(cli: Cli) -> ExitCode {
     let config_path = cli.config.clone();
     let verbose = cli.verbose;
 
-    let exit_code = match cli.command {
+    match cli.command {
         Commands::Check {
             path,
             format,
@@ -195,9 +195,7 @@ async fn run_full_cli(cli: Cli) -> ExitCode {
                 .await
             }
         },
-    };
-
-    exit_code
+    }
 }
 
 async fn handle_hooks_install(path: Option<std::path::PathBuf>, force: bool) -> ExitCode {

@@ -254,10 +254,8 @@ impl Constraint for DirectoryConstraint {
         if path.is_dir() {
             if self.config.recursive && context.recursive_validation {
                 self.validate_recursive(path, &mut failures);
-            } else {
-                if let Some(failure) = self.validate_directory(path) {
-                    failures.push(failure);
-                }
+            } else if let Some(failure) = self.validate_directory(path) {
+                failures.push(failure);
             }
         } else {
             // Not a directory - check if we should report this

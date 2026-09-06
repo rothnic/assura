@@ -315,7 +315,7 @@ fn prune_empty_hooks(config: &mut Value) {
         return;
     };
     let remove_hooks = if let Some(hooks) = root.get_mut("hooks").and_then(Value::as_object_mut) {
-        hooks.retain(|_, groups| groups.as_array().map_or(true, |groups| !groups.is_empty()));
+        hooks.retain(|_, groups| groups.as_array().is_none_or(|groups| !groups.is_empty()));
         hooks.is_empty()
     } else {
         false

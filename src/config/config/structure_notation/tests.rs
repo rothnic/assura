@@ -309,7 +309,7 @@ structure:
         config
             .extensions
             .as_ref()
-            .map_or(true, |extensions| extensions.relationships.is_empty()),
+            .is_none_or(|extensions| extensions.relationships.is_empty()),
         "exact child requirements inside captured directories should remain structural requirements"
     );
 }

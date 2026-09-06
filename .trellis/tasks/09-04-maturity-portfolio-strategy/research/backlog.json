@@ -84,8 +84,8 @@
         "B00"
       ],
       "executor": "agent",
-      "state": "pending",
-      "owner": null,
+      "state": "verified",
+      "owner": "Codex goal/r04-verified-msrv",
       "evidence": "evidence/R04.md",
       "blocker": null
     },
