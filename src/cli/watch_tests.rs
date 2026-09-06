@@ -93,6 +93,89 @@ fn watcher_overflow_forces_an_observable_full_scope_fallback() {
 }
 
 #[test]
+fn project_not_clean_fallback_keeps_the_requested_scope() {
+    let project = tempfile::tempdir().unwrap();
+    fs::create_dir(project.path().join(".assura")).unwrap();
+    fs::write(
+        project.path().join(".assura/config.yml"),
+        config_with_naming("kebab-case"),
+    )
+    .unwrap();
+    let source = project.path().join("BadName.ts");
+    fs::write(&source, "export {};\n").unwrap();
+    let mut prepared =
+        PreparedStructureCheck::load_for_path(Some(project.path().to_path_buf()), None, false)
+            .unwrap();
+    let context = test_watch_context(project.path());
+
+    let event = validate_batch(
+        2,
+        100,
+        &context,
+        &mut prepared,
+        DirtyTake {
+            generation: 1,
+            config_changed: false,
+            project: DirtyProject::Paths(vec![source]),
+        },
+        WatchBatch {
+            invalidating_events: 1,
+            watcher_error: None,
+            watcher_failed: false,
+            max_window_reached: false,
+        },
+        false,
+    );
+    let event = serde_json::to_value(event).unwrap();
+
+    assert_eq!(event["runtime_mode"], "warm_full");
+    assert_eq!(event["report_scope"], "requested_path");
+    assert_eq!(event["fallback_reason"], "project_not_clean");
+    assert_eq!(event["report"]["success"], false);
+}
+
+#[test]
+fn rescan_fallback_overrides_project_not_clean_reason() {
+    let project = tempfile::tempdir().unwrap();
+    fs::create_dir(project.path().join(".assura")).unwrap();
+    fs::write(
+        project.path().join(".assura/config.yml"),
+        config_with_naming("kebab-case"),
+    )
+    .unwrap();
+    fs::write(project.path().join("BadName.ts"), "export {};\n").unwrap();
+    let mut prepared =
+        PreparedStructureCheck::load_for_path(Some(project.path().to_path_buf()), None, false)
+            .unwrap();
+    let context = test_watch_context(project.path());
+
+    let event = validate_batch(
+        2,
+        100,
+        &context,
+        &mut prepared,
+        DirtyTake {
+            generation: 1,
+            config_changed: false,
+            project: DirtyProject::Full,
+        },
+        WatchBatch {
+            invalidating_events: 1,
+            watcher_error: None,
+            watcher_failed: false,
+            max_window_reached: false,
+        },
+        false,
+    );
+    let event = serde_json::to_value(event).unwrap();
+
+    assert_eq!(event["runtime_mode"], "warm_full");
+    assert_eq!(event["report_scope"], "requested_path");
+    assert_eq!(event["fallback_reason"], "full_rescan_event");
+    assert_eq!(event["report"]["success"], false);
+}
+
+#[test]
 fn normalization_capture_records_rescan_event_inputs() {
     let project = tempfile::tempdir().unwrap();
     fs::create_dir(project.path().join(".assura")).unwrap();

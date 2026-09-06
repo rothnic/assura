@@ -225,7 +225,10 @@ fn watch_uses_full_reports_while_project_is_already_failing() {
 
     let changed = watch.next_event();
     assert_event(&changed, 2, "filesystem", "warm_full");
-    assert_eq!(changed["fallback_reason"], "project_not_clean");
+    assert!(matches!(
+        changed["fallback_reason"].as_str(),
+        Some("project_not_clean" | "full_rescan_event")
+    ));
     assert_eq!(changed["report_scope"], "requested_path");
     assert_eq!(changed["report"]["success"], false);
 }
