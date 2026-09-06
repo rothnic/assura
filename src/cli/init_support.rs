@@ -20,14 +20,15 @@ pub fn resolve_project_root(path: Option<PathBuf>) -> std::io::Result<PathBuf> {
 pub fn starter_config(
     project_intelligence: bool,
     recipes: &[crate::cli::args::InitRecipe],
-) -> Result<&'static str, StarterInitError> {
+    recipe_files: &[PathBuf],
+) -> Result<String, StarterInitError> {
     if project_intelligence {
         if !recipes.is_empty() {
             return Err(StarterInitError::Configuration(
                 "--project-intelligence cannot currently be combined with --recipe".to_string(),
             ));
         }
-        return Ok(project_intelligence_starter_config());
+        return Ok(project_intelligence_starter_config().to_string());
     }
 
     let agentic = recipes.contains(&crate::cli::args::InitRecipe::AgenticCore);
@@ -38,10 +39,12 @@ pub fn starter_config(
             (true, false) => AGENTIC_CORE_STARTER_CONFIG,
             (false, true) => STRUCTURE_HEALTH_STARTER_CONFIG,
             (false, false) => unreachable!(),
-        });
+        }
+        .to_string());
     }
 
-    Ok(r#"version: "2.0"
+    let mut config: serde_yaml::Value = serde_yaml::from_str(
+        r#"version: "2.0"
 
 structure:
   ./:
@@ -67,7 +70,42 @@ exclude:
   - "node_modules/**"
   - "dist/**"
   - "**/dist/**"
-"#)
+"#,
+    )
+    .expect("built-in starter config is valid YAML");
+    for recipe_file in recipe_files {
+        let source = std::fs::read_to_string(recipe_file).map_err(|error| {
+            StarterInitError::Runtime(format!(
+                "failed to read local recipe {}: {error}",
+                recipe_file.display()
+            ))
+        })?;
+        let recipe = serde_yaml::from_str(&source).map_err(|error| {
+            StarterInitError::Configuration(format!(
+                "local recipe {} is not valid YAML: {error}",
+                recipe_file.display()
+            ))
+        })?;
+        merge_recipe_value(&mut config, recipe);
+    }
+    serde_yaml::to_string(&config).map_err(|error| {
+        StarterInitError::Runtime(format!("failed to render starter config: {error}"))
+    })
+}
+
+fn merge_recipe_value(destination: &mut serde_yaml::Value, source: serde_yaml::Value) {
+    match (destination, source) {
+        (serde_yaml::Value::Mapping(destination), serde_yaml::Value::Mapping(source)) => {
+            for (key, value) in source {
+                if let Some(existing) = destination.get_mut(&key) {
+                    merge_recipe_value(existing, value);
+                } else {
+                    destination.insert(key, value);
+                }
+            }
+        }
+        (destination, source) => *destination = source,
+    }
 }
 
 /// Return the project-owned YAML fragment for one first-party recipe.
@@ -143,6 +181,7 @@ pub fn materialize_starter(
     force: bool,
     project_intelligence: bool,
     recipes: &[crate::cli::args::InitRecipe],
+    recipe_files: &[PathBuf],
 ) -> Result<Vec<PathBuf>, StarterInitError> {
     let project_root =
         resolve_project_root(path).map_err(|error| StarterInitError::Runtime(error.to_string()))?;
@@ -170,8 +209,8 @@ pub fn materialize_starter(
             error
         ))
     })?;
-    let config = starter_config(project_intelligence, recipes)?;
-    crate::config::config::ConfigLoader::parse(config).map_err(|error| {
+    let config = starter_config(project_intelligence, recipes, recipe_files)?;
+    crate::config::config::ConfigLoader::parse(&config).map_err(|error| {
         StarterInitError::Configuration(format!("starter recipe is invalid: {error}"))
     })?;
     std::fs::write(&config_path, config).map_err(|error| {
@@ -573,7 +612,7 @@ mod recipe_tests {
             vec![InitRecipe::StructureHealth],
             vec![InitRecipe::AgenticCore, InitRecipe::StructureHealth],
         ] {
-            let source = starter_config(false, &recipes).unwrap();
+            let source = starter_config(false, &recipes, &[]).unwrap();
             let config = ConfigLoader::parse(source).unwrap();
             assert!(config.structure.contains_key("./"));
             assert!(!source.contains("$agentic-project"));

@@ -143,6 +143,13 @@ pub enum Commands {
             help = "Materialize an editable first-party policy recipe (repeatable)"
         )]
         recipe: Vec<InitRecipe>,
+
+        #[arg(
+            long,
+            value_name = "PATH",
+            help = "Apply an explicit local Assura YAML recipe file (repeatable)"
+        )]
+        recipe_file: Vec<PathBuf>,
     },
 
     #[command(about = "Manage project-owned Assura configuration")]
