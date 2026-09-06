@@ -1,5 +1,8 @@
 {
   "schema_version": "assura.release-surfaces.v1",
+  "checked_source_version": "v0.4.0",
+  "current_published_release": "v0.3.0",
+  "scope_ledger_path": "docs/analysis/assura-scope-decisions.md",
   "surfaces": [
     {
       "id": "project-intelligence-local-surfaces",

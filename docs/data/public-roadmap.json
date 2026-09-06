@@ -1,222 +1,32 @@
 {
   "schema_version": "assura.public-roadmap.v1",
-  "updated": "2026-08-11",
+  "updated": "2026-09-05",
   "source": ".trellis/spec/assura/roadmap.md",
   "groups": [
     {
       "status": "done",
       "title": "Done",
       "items": [
-        {
-          "label": "Structure Validation",
-          "summary": "Validate repository shape with local and CI friendly reports.",
-          "detail_path": "website/src/content/docs/product/structure-validation.md",
-          "href": "/product/structure-validation/"
-        },
-        {
-          "label": "LS-Lint Migration",
-          "summary": "Convert supported LS-Lint 2.3 configuration into Assura structure rules.",
-          "detail_path": "website/src/content/docs/guides/ls-lint-migration.md",
-          "href": "/guides/ls-lint-migration/"
-        },
-        {
-          "label": "Agent Feedback",
-          "summary": "Emit concise check results for humans, scripts, and agent hooks.",
-          "detail_path": "website/src/content/docs/reference/agent-feedback.md",
-          "href": "/reference/agent-feedback/"
-        },
-        {
-          "label": "Performance Gate",
-          "summary": "Block regressions when the checked Assura path is slower than native LS-Lint.",
-          "detail_path": "docs/goals/assura-ls-lint-no-slower-performance-gate.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-ls-lint-no-slower-performance-gate.md"
-        },
-        {
-          "label": "Release Train",
-          "summary": "Report release readiness from structured surface and GitHub release state.",
-          "detail_path": "docs/goals/assura-incremental-release-train.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-incremental-release-train.md"
-        },
-        {
-          "label": "Public Roadmap",
-          "summary": "Publish a concise roadmap from this repo-owned artifact.",
-          "detail_path": "docs/goals/assura-public-roadmap-artifact.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-public-roadmap-artifact.md"
-        },
-        {
-          "label": "Structure Severity",
-          "summary": "Stabilize rule IDs, severity, and remediation messages.",
-          "detail_path": "docs/goals/assura-beta-structure-severity-contract.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-beta-structure-severity-contract.md"
-        },
-        {
-          "label": "Collections Querying",
-          "summary": "Model frontmatter collections and produce bounded context packs.",
-          "detail_path": "docs/goals/assura-beta-content-collections-querying.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-beta-content-collections-querying.md"
-        },
-        {
-          "label": "Markdown Quality",
-          "summary": "Validate Markdown links, headings, suppressions, safe fixes, and common lint checks.",
-          "detail_path": "docs/goals/assura-markdown-lint-link-reference-engine.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-markdown-lint-link-reference-engine.md"
-        },
-        {
-          "label": "Reference Graph",
-          "summary": "Validate repository-internal links and source-to-doc references.",
-          "detail_path": "docs/goals/assura-code-doc-reference-validation.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-code-doc-reference-validation.md"
-        },
-        {
-          "label": "Daemon Core",
-          "summary": "Provide warm affected-path feedback that matches one-shot truth.",
-          "detail_path": "docs/goals/assura-reference-daemon-readiness.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-reference-daemon-readiness.md"
-        },
-        {
-          "label": "Daemon CLI",
-          "summary": "Share start, stop, status, doctor, logs, and fallback commands.",
-          "detail_path": "docs/goals/assura-daemon-management-cli.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-daemon-management-cli.md"
-        },
-        {
-          "label": "Agent Nudges",
-          "summary": "Send bounded event-aware nudges to Codex, OpenCode, Claude, and Pi agents.",
-          "detail_path": "docs/goals/assura-beta-agent-nudge-integrations.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-beta-agent-nudge-integrations.md"
-        },
-        {
-          "label": "VS Code",
-          "summary": "Use the shared daemon/client contract for editor diagnostics and commands.",
-          "detail_path": "docs/goals/assura-vscode-daemon-integration.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-vscode-daemon-integration.md"
-        },
-        {
-          "label": "Beta Capabilities",
-          "summary": "Released the code-agnostic beta program as v0.2.0.",
-          "detail_path": "docs/goals/assura-beta-code-agnostic-capabilities-program.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-beta-code-agnostic-capabilities-program.md"
-        },
-        {
-          "label": "Self Config",
-          "summary": "Refined Assura's own config and resolved docs or structure variance.",
-          "detail_path": "docs/goals/assura-self-config-doc-variance-hardening.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-self-config-doc-variance-hardening.md"
-        },
-        {
-          "label": "Document Graph",
-          "summary": "Support content validation, search, query, graph expansion, and affected-reference context.",
-          "detail_path": "docs/goals/assura-supported-document-graph.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-supported-document-graph.md"
-        },
-        {
-          "label": "Daemon Server",
-          "summary": "Provide a true long-running local daemon with stale-state safety.",
-          "detail_path": "docs/goals/assura-true-daemon-mode.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-true-daemon-mode.md"
-        },
-        {
-          "label": "Markdown Engine",
-          "summary": "Selected the supported Rust Markdown lint/fix path for this beta increment.",
-          "detail_path": "docs/goals/assura-markdownlint-compatible-rust-engine.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-markdownlint-compatible-rust-engine.md"
-        },
-        {
-          "label": "Performance Floor",
-          "summary": "Fail accepted LS-Lint-equivalent fixture rows when Assura is slower.",
-          "detail_path": "docs/goals/assura-performance-floor-and-fixture-gate.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-performance-floor-and-fixture-gate.md"
-        },
-        {
-          "label": "Agent Installers",
-          "summary": "Install, update, remove, status, and doctor Codex, OpenCode, Claude, and Pi integration bundles.",
-          "detail_path": "docs/goals/assura-agent-integration-lifecycle.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-agent-integration-lifecycle.md"
-        },
-        {
-          "label": "VS Code Support",
-          "summary": "Support a beta local VS Code package through shared daemon, editor-session, and CLI contracts.",
-          "detail_path": "docs/goals/assura-vscode-supported-extension.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-vscode-supported-extension.md"
-        },
-        {
-          "label": "Extension APIs",
-          "summary": "Clarify first-party extensions, internal Rust APIs, and deferred plugin surfaces.",
-          "detail_path": "docs/goals/assura-extension-api-clarification.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-extension-api-clarification.md"
-        },
-        {
-          "label": "Agent-Ready Repos",
-          "summary": "Make Assura the default scaffold, doctor, and feedback loop for new coding-agent projects.",
-          "detail_path": "docs/goals/assura-agent-ready-project-onboarding-program.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-agent-ready-project-onboarding-program.md"
-        },
-        {
-          "label": "Onboarding Website",
-          "summary": "Show the agent bootstrap path, checked-versus-unchecked model, generated onboarding packet, and next-step questions clearly.",
-          "detail_path": "docs/goals/assura-website-agent-onboarding-experience.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-website-agent-onboarding-experience.md"
-        },
-        {
-          "label": "Doctor Explain",
-          "summary": "Show configured, inactive, inherited, skipped, broken, and next-fix guidance for agent-ready projects.",
-          "detail_path": "docs/goals/assura-agent-doctor-explain-feedback.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-agent-doctor-explain-feedback.md"
-        },
-        {
-          "label": "LS-Lint Parity",
-          "summary": "Reassess row-by-row LS-Lint performance and explain any CLI-floor cost.",
-          "detail_path": "docs/goals/assura-ls-lint-performance-reassessment.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-ls-lint-performance-reassessment.md"
-        },
-        {
-          "label": "PR Handoff",
-          "summary": "Merged the agent-ready onboarding follow-up and native performance evidence in PR #139.",
-          "detail_path": "docs/goals/assura-post-onboarding-backlog-execution-sequence.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-post-onboarding-backlog-execution-sequence.md"
-        }
+        {"label": "Repository Policy Foundation", "summary": "Established configurable structure, naming, path, Markdown, and reference policy with deterministic local reports.", "detail_path": "docs/support-policy.md", "href": "https://github.com/rothnic/assura/blob/master/docs/support-policy.md"},
+        {"label": "Release Surface Inventory", "summary": "Established a checked manifest for public command and release-surface claims.", "detail_path": "docs/data/release-surfaces.json", "href": "https://github.com/rothnic/assura/blob/master/docs/data/release-surfaces.json"},
+        {"label": "Historical Beta Evidence", "summary": "Retained earlier beta implementation and performance evidence without treating it as current release proof.", "detail_path": "docs/goals/assura-claim-complete-v0-4-and-v1.md", "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-claim-complete-v0-4-and-v1.md"}
       ]
     },
     {
       "status": "now",
       "title": "Now",
       "items": [
-        {
-          "label": "Claim-Complete Release",
-          "summary": "Stabilize every marketed capability, publish v0.4, and collect the explicit v1 soak evidence.",
-          "detail_path": "docs/goals/assura-claim-complete-v0-4-and-v1.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-claim-complete-v0-4-and-v1.md"
-        },
-        {
-          "label": "CLI Floor",
-          "summary": "Reduce startup and config/walk costs that keep small or many-scope rows from stronger performance targets.",
-          "detail_path": "docs/goals/assura-performance-polish-program.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-performance-polish-program.md"
-        },
-        {
-          "label": "Native Perf Report",
-          "summary": "Track content collection validation/querying, document graph, context pack, Markdown, reference, and daemon/session performance.",
-          "detail_path": "docs/goals/assura-performance-polish-program.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-performance-polish-program.md"
-        },
-        {
-          "label": "Compact Review",
-          "summary": "Combine doctor, self-check, next actions, and high-signal content gaps into one first diagnostic flow.",
-          "detail_path": "docs/goals/assura-compact-project-review-common-issues.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-compact-project-review-common-issues.md"
-        }
+        {"label": "Repository Convention Core", "summary": "Make explainable local policy and deterministic merge gates dependable for agent-assisted development.", "detail_path": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/execution-backlog.md", "href": "https://github.com/rothnic/assura/blob/master/.trellis/tasks/09-04-maturity-portfolio-strategy/research/execution-backlog.md"},
+        {"label": "Trustworthy Release Evidence", "summary": "Repair watch and performance evidence, then prove a single candidate across every retained platform obligation.", "detail_path": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/reliability-packet.md", "href": "https://github.com/rothnic/assura/blob/master/.trellis/tasks/09-04-maturity-portfolio-strategy/research/reliability-packet.md"},
+        {"label": "Safe Agent Initialization", "summary": "Evaluate project-owned patterns, explicit activation, preservation, and native CI recipes without autonomous repair.", "detail_path": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/initialization-packet.md", "href": "https://github.com/rothnic/assura/blob/master/.trellis/tasks/09-04-maturity-portfolio-strategy/research/initialization-packet.md"}
       ]
     },
     {
       "status": "next",
       "title": "Next",
       "items": [
-        {
-          "label": "Release Hardening",
-          "summary": "Keep release, install, and support evidence current after the next product increment.",
-          "detail_path": "docs/goals/assura-post-beta-support-release-hardening.md",
-          "href": "https://github.com/rothnic/assura/blob/master/docs/goals/assura-post-beta-support-release-hardening.md"
-        }
+        {"label": "Blinded Setup Evaluation", "summary": "Measure fixed-fixture initialization and follow-on changes before promoting specialized setup outcomes.", "detail_path": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/initialization-packet.md", "href": "https://github.com/rothnic/assura/blob/master/.trellis/tasks/09-04-maturity-portfolio-strategy/research/initialization-packet.md"},
+        {"label": "Evidence Based Release", "summary": "Prepare release and portfolio artifacts only after the retained contract has same-candidate proof.", "detail_path": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/adoption-packet.md", "href": "https://github.com/rothnic/assura/blob/master/.trellis/tasks/09-04-maturity-portfolio-strategy/research/adoption-packet.md"}
       ]
     }
   ]

@@ -35,30 +35,30 @@ name short enough to scan quickly, then track concrete work in Trellis tasks.
 | 21 | Markdown Reference Intelligence | Completed | Completed for beta in PR #112; post-beta Markdown, graph, daemon, agent, and editor hardening now routes through Post-Beta Capabilities |
 | 22 | Beta Code-Agnostic Capabilities | Completed | PR #112 merged; `v0.2.0` tag and GitHub release published with live release evidence |
 | 23 | Post-Beta Capabilities | Completed | `v0.3.0` beta increment published and live-verified with self-config hardening, supported document graph, true daemon mode, Markdown engine/safe fixes, performance floor, agent installers, VS Code support, extension API clarity, LS-Lint reassessment, and release hardening |
-| 24 | Performance Polish | Active / Release Proof | PR #140 carries the product-grade report, LS-Lint comparison fixtures, and claim evidence; release closure is owned by `.trellis/tasks/08-11-assura-claim-complete-release-program` |
+| 24 | Performance Polish | Historical | Earlier claim evidence is retained; current performance trust work is owned by `R02` and `R03` in the Maturity Execution Train. |
 | 25 | Agent-Ready Project Onboarding | Completed | Parent program and all twelve child goals merged in PR #139 at `0020278066bc7498627ae9ef5a32bec54296ce73`; final audit in `docs/analysis/2026-07-03-agent-ready-onboarding-final-audit.md` |
-| 26 | Claim-Complete Release | Active | Stabilize every marketed surface, publish a claim-complete v0.4, then complete the explicit v1 soak defined in `docs/goals/assura-claim-complete-v0-4-and-v1.md` |
+| 26 | Claim-Complete Release | Superseded | Historical implementation and release evidence remains auditable; new work is routed to the Maturity Execution Train. |
+| 27 | Maturity Execution Train | Active | Make the repository-policy core, safe initialization, bounded feedback, and release evidence trustworthy before further product expansion. |
 
 ## Active Roadmap Iteration
 
-Claim-Complete Release is the active iteration. PR #140 already contains the
-landing experience, compact project review, onboarding, performance evidence,
-and configuration examples. The remaining work is to make every promoted
-claim a released support contract rather than a preview-only capability.
+Maturity Execution Train is the active iteration. Assura's growth priority is
+executable repository conventions for agent-assisted development: maintainable
+local policy, editable local patterns, safe initialization, bounded feedback,
+and deterministic local/CI gates. Existing supported behavior remains
+available pending consumer review; this does not make checked-source `0.4.0`
+behavior publicly installable while the published release remains `v0.3.0`.
 
-Active branch: `codex/assura-landing-experience`.
-
-Owning task: `.trellis/tasks/08-11-assura-claim-complete-release-program`.
-
-Owning goal: `docs/goals/assura-claim-complete-v0-4-and-v1.md`.
+Owning task:
+`.trellis/tasks/09-04-maturity-portfolio-strategy/`.
 
 Current recommended goal:
-`docs/goals/assura-claim-complete-v0-4-and-v1.md`.
+`.trellis/tasks/09-04-maturity-portfolio-strategy/research/execution-backlog.md`.
 
-The compact review implementation is complete in this branch and remains open
-only until PR #140 supplies hosted proof and merges. Performance polish is now
-part of the same release-proof lane because its public claims and generated
-evidence must close against the candidate release together.
+The claim-complete goal and its branch references are historical evidence, not
+instructions for new implementation. The release-surface ledger and scope
+decision are in `docs/analysis/assura-scope-decisions.md`; release publication
+remains separately authorized work in `R06`.
 
 Public roadmap artifact: `docs/data/public-roadmap.json`.
 
@@ -73,12 +73,13 @@ that direction as superseded by `.trellis/spec/assura/codex-agent-feedback.md`.
 
 ## Recommended Next Action
 
-Execute the claim-complete release children in order: enforce the claim/release
-contract, replace the one-shot watch placeholder with a support-grade runtime,
-add explicit managed activation for the four documented agent hosts, promote
-the deterministic policy depth used by the site, publish v0.4, and then collect
-the required v1 soak evidence. Do not mark v1 complete before the 30-day,
-50-session, three-repository, four-host proof gate passes.
+Execute dependency-ready Maturity Execution Train cards in the recorded order:
+repair current-source trust evidence, establish the canonical support ledger,
+build safe initialization and bounded feedback, run blinded evaluation, then
+prepare release, portfolio, pilot, and feedback decisions. Do not start new
+semantic search, knowledge-platform, maturity-score, hosted orchestration,
+remote pattern, marketplace, or arbitrary auto-repair work without a separate
+approved scope decision.
 
 ## Roadmap Rules
 

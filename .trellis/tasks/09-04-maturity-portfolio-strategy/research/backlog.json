@@ -28,10 +28,10 @@
         "B00"
       ],
       "executor": "mixed",
-      "state": "pending",
-      "owner": null,
+      "state": "verified",
+      "owner": "Codex goal: Assura Maturity Execution Train",
       "evidence": "evidence/P01.md",
-      "blocker": null
+      "blocker": "Independent review and hosted documentation/CI proof are pending before integration."
     },
     {
       "id": "R01",

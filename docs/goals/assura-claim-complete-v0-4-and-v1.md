@@ -2,7 +2,7 @@
 id: goal-assura-claim-complete-v0-4-and-v1
 type: goal
 title: Assura claim-complete v0.4 and evidence-backed v1.0
-status: active
+status: archived
 created: 2026-08-11
 owners:
   - assura-maintainers
@@ -10,7 +10,23 @@ owners:
 
 # Assura Claim-Complete v0.4 And Evidence-Backed v1.0
 
-## Objective
+> Historical goal. Its implementation and review record remains useful, but it
+> is not an active execution instruction. New work is owned by the
+> [Maturity Execution Train](../../.trellis/tasks/09-04-maturity-portfolio-strategy/research/execution-backlog.md).
+> The current scope ledger is
+> [Assura scope decisions](../analysis/assura-scope-decisions.md).
+
+## Supersession
+
+This goal's active-branch, PR, and release sequencing language was accurate for
+its original claim-complete program. It is superseded for new work by the
+Maturity Execution Train: establish current-source trust, reconcile the
+release/support contract, evaluate safe initialization, and then prepare a
+same-candidate release decision. It does not authorize publication or change
+the retained four-host proof obligation. Historical entries below are evidence,
+not instructions to revive already merged implementation work.
+
+## Original objective (historical snapshot)
 
 Make every capability promoted on the core Assura website a supported,
 release-available CLI contract, publish that coherent product as v0.4, and
@@ -25,9 +41,11 @@ The release sequence is deliberately two-stage:
    three repositories, all four supported agent hosts, and a final 14-day
    public-contract freeze.
 
-## Live Revalidation
+## Historical revalidation snapshot (2026-08-11)
 
-The goal is valid as of 2026-08-11.
+This was the goal's live revalidation as of 2026-08-11. It is retained to
+explain the original delivery sequence; it does not describe current state or
+authorize new work.
 
 - The landing and documentation evidence gates pass locally.
 - The release-readiness gate is blocked because the package and latest GitHub
@@ -40,14 +58,14 @@ The goal is valid as of 2026-08-11.
   mixed together on public pages.
 - Pull request 140 is blocked on Windows LS-Lint golden tests.
 
-## User Certainty Bar
+## Original user certainty bar (historical snapshot)
 
 A user should be able to choose a supported capability from a core marketing
 page, install the current release, run the exact command shown, and receive the
 documented behavior without an experimental qualifier or a manual integration
 step that the page omitted.
 
-## Locked Decisions
+## Original locked decisions (historical snapshot)
 
 - Ship v0.4 before v1.0.
 - v1.0 is a CLI contract; the Rust library remains internal and is not a stable
@@ -66,7 +84,7 @@ step that the page omitted.
   plugin SDK, MCP, full LSP, marketplace distribution, and automatic repair
   remain roadmap work until separately implemented and proven.
 
-## Ordered Delivery
+## Original ordered delivery (historical snapshot)
 
 | Phase | Outcome | Measurable exit |
 | --- | --- | --- |
@@ -77,7 +95,7 @@ step that the page omitted.
 | v0.4 publication | The current binary, docs, website, checksums, and release notes are one release | Release smoke passes on Linux, macOS, and Windows; live artifact commands pass |
 | v1.0 proof | The v0.4 CLI contract survives real agent work without incompatible change | 30 days, 50 sessions, 3 repos, 4 hosts, final 14-day freeze, zero unresolved release blockers |
 
-## Scope
+## Original scope (historical snapshot)
 
 - Claim-to-evidence and release-availability enforcement.
 - Real watch behavior and support-grade warm runtime diagnostics.
@@ -88,14 +106,14 @@ step that the page omitted.
   release proof.
 - CLI public-contract isolation and the v1.0 soak record.
 
-## Non-Goals
+## Original non-goals (historical snapshot)
 
 - A stable Rust library API in v1.0.
 - Hosted services or remote policy execution.
 - Shipping future intelligence features merely to remove a roadmap label.
 - Claiming v1.0 before the time-based soak can be measured.
 
-## Definition Of Done
+## Original definition of done (historical snapshot)
 
 ### v0.4
 
@@ -126,7 +144,7 @@ step that the page omitted.
 - No unresolved severity-one or release-blocking findings remain.
 - Public Rust internals are isolated from the supported CLI contract.
 
-## Validation
+## Original validation (historical snapshot)
 
 Run focused checks during each child task and the complete release boundary at
 v0.4:
@@ -147,7 +165,7 @@ pnpm --dir website test:marketing
 git diff --check
 ```
 
-## Reviewer Blocking Criteria
+## Original reviewer blocking criteria (historical snapshot)
 
 Block release if a core claim is not available in the promoted binary, a
 command is still a one-shot placeholder, host activation changes unmanaged
