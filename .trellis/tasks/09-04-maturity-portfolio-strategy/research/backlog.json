@@ -42,10 +42,10 @@
         "B00"
       ],
       "executor": "agent",
-      "state": "active",
+      "state": "done",
       "owner": "Codex goal: Assura Maturity Execution Train",
       "evidence": "evidence/R01.md",
-      "blocker": "Hosted macOS run 34011050005 reopened R01: candidate 5aef17b requires independent review and a fresh macOS/Linux/Windows matrix."
+      "blocker": null
     },
     {
       "id": "R02",
@@ -73,7 +73,7 @@
       "state": "blocked",
       "owner": "Codex goal/r03-many-scope",
       "evidence": "evidence/R03.md",
-      "blocker": "Current GitHub Linux artifact fails; the local release comparison omitted CI's Linux static primary-launcher command, and vps-dev is not resolvable for a complete comparable rerun."
+      "blocker": "The prior configured-dir HashSet hypothesis is rejected by stronger same-fixture VPS public-command evidence; a distinct attributed hypothesis must be tested with the exact release protocol before R03 can proceed."
     },
     {
       "id": "R04",
@@ -112,10 +112,10 @@
         "B00"
       ],
       "executor": "agent",
-      "state": "verified",
+      "state": "done",
       "owner": "Codex goal: Assura Maturity Execution Train",
       "evidence": "evidence/R07.md",
-      "blocker": "awaiting independent review, hosted checks, and current-master integration"
+      "blocker": null
     },
     {
       "id": "Q01",
@@ -126,7 +126,7 @@
         "B00"
       ],
       "executor": "agent",
-      "state": "implemented",
+      "state": "done",
       "owner": "codex",
       "evidence": "evidence/Q01.md",
       "blocker": null

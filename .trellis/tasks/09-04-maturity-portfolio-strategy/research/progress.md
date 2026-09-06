@@ -18,6 +18,28 @@
 - Context health review: the repeated local root Cargo rebuild stalled without CPU and was interrupted rather than retried unchanged; the isolated R01 worktree completed its own verification normally. The durable policy mismatch is card evidence naming (`<ID>.md`) versus the current kebab-case self-policy, explicitly assigned to independent ready card R07. No new skill is warranted: the existing `assura-structure-fit` skill already routes that decision.
 - Next: independent review of the exact R01 SHA, then hosted macOS/Linux/Windows proof. Do not call R01 done until that proof exists.
 
+## Iteration 4 — 2026-09-06 — R01 hosted regression repair
+
+- The first current-master R05 matrix exposed a real macOS watch-test regression: pathless filesystem rescan events produced the intentionally safe `full_rescan_event` report instead of the formerly expected silence.
+- R01 narrowed only its test contract to accept that exact safe fallback while rejecting other output; production overflow behavior remains unchanged. Independent review found the repair clean.
+
+## Iteration 5 — 2026-09-06 — R01 current-master integration
+
+- PR #155 (`ca3d4efb1ca3366bb157074d81601693347eb723`) passed the full hosted matrix, including macOS, Ubuntu, Windows, installer/adoption, release, evidence, and performance checks.
+- Merged as `fc5dd2214483b463be6c8a0b6823adf810b36388`, then verified reachable from `origin/master`. The card remains awaiting a separate post-merge evidence/state closure.
+
+## Iteration 6 — 2026-09-06 — Active repair context health
+
+- Q03's hosted Windows failure is a test-only extended-path formatting mismatch; its correction is under independent review and must honestly dispose of the Q03-introduced loader-size advisory before it can proceed.
+- R03 is independently reproducing the many-scope release comparison. It has preserved the failing hosted rows and is investigating launcher/scope-plan attribution; the evaluator and threshold remain unchanged. `vps-dev` is currently unavailable, so it is not counted as verification.
+- Context health: current-master integration and independent-review gates are functioning. No new reusable skill is warranted; the existing performance and structure-fit skills cover the active decisions. The next action is Q03 repair review/hosted proof, then R03's evidence-backed outcome; R05 waits for both its current-master refresh and the performance gate.
+
+## Iteration 7 — 2026-09-06 — Q03 integration and R03 hypothesis rejection
+
+- Q03's Windows path-contract correction and loader-size remediation passed independent review and the complete hosted matrix, then merged as `7a06b345d47521ede6b5e6c7cdc06e1128883774`.
+- R03 rejected, rather than merged, a locally favorable HashSet experiment because stronger same-fixture VPS public-command evidence records a regression. The experiment was reverted with no policy/evaluator change.
+- Next: merge this evidence closure after review; then refresh R05 onto current master and select only the next dependency-ready card. The exact R03 protocol remains required for a genuinely distinct hypothesis.
+
 ## Iteration 4 — 2026-09-06 — R01/R02 integrated proof and post-merge closure
 
 - PR [#144](https://github.com/rothnic/assura/pull/144) merged as `dcb1fb57ba100f77a7cb7e48c4f14507d3106231`; it was confirmed reachable from `origin/master` after fetch.
