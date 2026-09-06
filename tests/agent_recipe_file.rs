@@ -154,6 +154,17 @@ fn agent_onboard_applies_local_intent_before_inferred_baseline_for_a_new_project
     )
     .expect("valid config YAML");
     assert_eq!(config["rules"]["agent-entrypoint"]["max_lines"], 200);
+    let profile: serde_json::Value = serde_json::from_str(
+        &fs::read_to_string(
+            project
+                .path()
+                .join(".assura/onboarding/profile-selection.json"),
+        )
+        .expect("specialization profile"),
+    )
+    .expect("valid specialization profile JSON");
+    assert_eq!(profile["profile"], "local-policy");
+    assert_eq!(profile["source"], recipe_path.display().to_string());
 }
 
 #[test]

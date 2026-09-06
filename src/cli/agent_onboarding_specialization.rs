@@ -1,7 +1,7 @@
 //! Deterministic specialization evidence for agent onboarding.
 
 use super::agent_onboarding::DetectedSection;
-use super::agent_onboarding_report::CheckItem;
+use super::agent_onboarding_report::{CheckItem, RuleRecommendation};
 use super::AgentContentTemplate;
 use sha2::{Digest, Sha256};
 use std::fs;
@@ -13,6 +13,7 @@ pub(super) fn write_specialization_profile(
     detected: &DetectedSection,
     recipe_file: Option<&Path>,
     verified: &[CheckItem],
+    rule_recommendations: &[RuleRecommendation],
 ) -> Result<(), String> {
     let (profile, source, source_path, stack) = match recipe_file {
         Some(recipe_file) => (
@@ -56,15 +57,27 @@ pub(super) fn write_specialization_profile(
         .find(|item| item.name == "structure_config")
         .map(|item| item.status)
         .unwrap_or("fail");
+    let conflicts = rule_recommendations
+        .iter()
+        .filter(|rule| rule.status == "conflict")
+        .map(|rule| {
+            serde_json::json!({
+                "kind": "recommended_rule",
+                "source": rule.preset,
+                "detail": rule.reason,
+            })
+        })
+        .collect::<Vec<_>>();
     let profile = serde_json::json!({
         "schema": "assura.profile-selection.v1",
         "profile": profile,
         "source": source,
         "source_hash": source_hash,
         "decisions": [{"key": "stack", "value": stack, "evidence": source}],
-        "conflicts": [],
+        "conflicts": conflicts,
         "verification": {"config": config_status},
     });
+    validate_specialization_profile(&profile)?;
     let directory = project_root.join(".assura/onboarding");
     fs::create_dir_all(&directory).map_err(|error| error.to_string())?;
     fs::write(
@@ -74,19 +87,76 @@ pub(super) fn write_specialization_profile(
     .map_err(|error| error.to_string())
 }
 
+fn validate_specialization_profile(profile: &serde_json::Value) -> Result<(), String> {
+    if profile.get("schema").and_then(serde_json::Value::as_str)
+        != Some("assura.profile-selection.v1")
+    {
+        return Err(
+            "specialization profile schema must be assura.profile-selection.v1".to_string(),
+        );
+    }
+    for field in ["profile", "source", "source_hash"] {
+        if profile
+            .get(field)
+            .and_then(serde_json::Value::as_str)
+            .is_none_or(str::is_empty)
+        {
+            return Err(format!(
+                "specialization profile {field} must be a non-empty string"
+            ));
+        }
+    }
+    let decisions = profile
+        .get("decisions")
+        .and_then(serde_json::Value::as_array)
+        .filter(|items| !items.is_empty())
+        .ok_or_else(|| "specialization profile decisions must be a non-empty array".to_string())?;
+    for decision in decisions {
+        for field in ["key", "value", "evidence"] {
+            if decision
+                .get(field)
+                .and_then(serde_json::Value::as_str)
+                .is_none_or(str::is_empty)
+            {
+                return Err(format!(
+                    "specialization decision {field} must be a non-empty string"
+                ));
+            }
+        }
+    }
+    if !profile
+        .get("conflicts")
+        .is_some_and(serde_json::Value::is_array)
+    {
+        return Err("specialization profile conflicts must be an array".to_string());
+    }
+    match profile
+        .pointer("/verification/config")
+        .and_then(serde_json::Value::as_str)
+    {
+        Some("pass" | "fail") => Ok(()),
+        _ => Err("specialization profile verification.config must be pass or fail".to_string()),
+    }
+}
+
 /// Report specialization honestly until an agent proves its selected policy.
 pub(super) fn inactive_capabilities(
     detected: &DetectedSection,
     template: AgentContentTemplate,
+    has_conflict: bool,
 ) -> Vec<CheckItem> {
     let mut items = vec![CheckItem {
         name: "project_specialization",
-        status: if matches!(detected.project_type, "rust" | "node" | "python") {
+        status: if has_conflict {
+            "conflict_requires_user"
+        } else if matches!(detected.project_type, "rust" | "node" | "python") {
             "configured_unverified"
         } else {
             "needs_agent_specialization"
         },
-        detail: if matches!(detected.project_type, "rust" | "node" | "python") {
+        detail: if has_conflict {
+            "a project-owned policy conflicts with the recommended rule; preserve it and request user authority"
+        } else if matches!(detected.project_type, "rust" | "node" | "python") {
             "repository evidence selected a profile and the materialized config passed; prove a negative policy case before verification"
         } else {
             "specialize from repository evidence in .assura/onboarding/agent-next.md"
@@ -100,4 +170,24 @@ pub(super) fn inactive_capabilities(
         });
     }
     items
+}
+
+#[cfg(test)]
+mod tests {
+    use super::validate_specialization_profile;
+
+    #[test]
+    fn rejects_a_profile_without_evidence_for_each_decision() {
+        let profile = serde_json::json!({
+            "schema": "assura.profile-selection.v1",
+            "profile": "rust-library",
+            "source": "Cargo.toml",
+            "source_hash": "abc",
+            "decisions": [{"key": "stack", "value": "rust"}],
+            "conflicts": [],
+            "verification": {"config": "pass"}
+        });
+
+        assert!(validate_specialization_profile(&profile).is_err());
+    }
 }

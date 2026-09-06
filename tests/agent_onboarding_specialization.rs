@@ -93,3 +93,51 @@ fn agent_onboard_uses_evidence_first_specialization_for_a_recognizable_cargo_pro
     assert_eq!(profile["conflicts"], serde_json::json!([]));
     assert_eq!(profile["verification"]["config"], "pass");
 }
+
+#[test]
+fn agent_onboard_recommends_profiles_for_bun_and_pytest_repositories() {
+    for (manifest, contents, profile_name, stack) in [
+        (
+            "package.json",
+            r#"{"scripts":{"test":"bun test"}}"#,
+            "typescript-bun-utility",
+            "node",
+        ),
+        (
+            "pyproject.toml",
+            "[project]\nname = \"sample\"\nversion = \"0.1.0\"\n",
+            "python-pytest",
+            "python",
+        ),
+    ] {
+        let project = TempDir::new().unwrap();
+        fs::write(project.path().join(manifest), contents).unwrap();
+
+        let output = json_from_success(run_assura(&[
+            "agent",
+            "onboard",
+            project.path().to_str().unwrap(),
+            "--format",
+            "json",
+        ]));
+        assert!(output["inactive"]
+            .as_array()
+            .expect("specialization state")
+            .iter()
+            .any(|item| item["name"] == "project_specialization"
+                && item["status"] == "configured_unverified"));
+
+        let profile: Value = serde_json::from_str(
+            &fs::read_to_string(
+                project
+                    .path()
+                    .join(".assura/onboarding/profile-selection.json"),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+        assert_eq!(profile["profile"], profile_name);
+        assert_eq!(profile["source"], manifest);
+        assert_eq!(profile["decisions"][0]["value"], stack);
+    }
+}

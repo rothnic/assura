@@ -101,9 +101,21 @@ fn run_agent_onboarding(
         options.activate,
     )?;
     let (verified, review) = verify_project(&project_root, Some(config_path.clone()))?;
-    write_specialization_profile(&project_root, &detected, recipe_file.as_deref(), &verified)?;
+    write_specialization_profile(
+        &project_root,
+        &detected,
+        recipe_file.as_deref(),
+        &verified,
+        &rule_recommendations,
+    )?;
     let content = content_section(options.content_template);
-    let inactive = inactive_capabilities(&detected, options.content_template);
+    let inactive = inactive_capabilities(
+        &detected,
+        options.content_template,
+        rule_recommendations
+            .iter()
+            .any(|rule| rule.status == "conflict"),
+    );
     let lifecycle_profiles = lifecycle_profiles(&project_root, integration_target);
     let next_actions = ranked_next_actions(integration_target, options.content_template);
     let doctor_json = project_doctor_packet_json(&project_root, Some(config_path))?;
