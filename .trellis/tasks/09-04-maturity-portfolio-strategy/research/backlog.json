@@ -70,10 +70,10 @@
         "R02"
       ],
       "executor": "agent",
-      "state": "blocked",
-      "owner": "Codex goal/r03-many-scope",
+      "state": "active",
+      "owner": "Codex goal: isolated VPS baseline attribution, no retained candidate",
       "evidence": "evidence/R03.md",
-      "blocker": "The prior configured-dir HashSet hypothesis is rejected by stronger same-fixture VPS public-command evidence; a distinct attributed hypothesis needs the exact static-primary release protocol on an approved quiet Linux runner. The reachable vps host currently has unrelated active Cargo workloads."
+      "blocker": null
     },
     {
       "id": "R04",
@@ -142,8 +142,8 @@
         "R04"
       ],
       "executor": "mixed",
-      "state": "pending",
-      "owner": null,
+      "state": "implemented",
+      "owner": "Codex goal/q02-contribution-contract; existing PR #158",
       "evidence": "evidence/Q02.md",
       "blocker": null
     },
@@ -198,8 +198,8 @@
         "A03"
       ],
       "executor": "agent",
-      "state": "done",
-      "owner": "Codex goal: Assura Maturity Execution Train",
+      "state": "active",
+      "owner": "Codex goal/a04-hook-ownership-repair",
       "evidence": "evidence/A04.md",
       "blocker": null
     },
@@ -212,8 +212,8 @@
         "A03"
       ],
       "executor": "agent",
-      "state": "pending",
-      "owner": null,
+      "state": "implemented",
+      "owner": "Codex goal/a05-native-harness-lifecycle; preserved partial uncommitted work",
       "evidence": "evidence/A05.md",
       "blocker": null
     },
@@ -272,8 +272,8 @@
         "Q03"
       ],
       "executor": "agent",
-      "state": "pending",
-      "owner": null,
+      "state": "implemented",
+      "owner": "Codex goal/q04-policy-naming; existing PR #164",
       "evidence": "evidence/Q04.md",
       "blocker": null
     },
@@ -302,8 +302,8 @@
         "R02"
       ],
       "executor": "agent",
-      "state": "pending",
-      "owner": null,
+      "state": "implemented",
+      "owner": "Codex goal/q06-release-readiness; existing PR #166",
       "evidence": "evidence/Q06.md",
       "blocker": null
     },
