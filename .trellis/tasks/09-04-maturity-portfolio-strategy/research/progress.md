@@ -1,5 +1,50 @@
 # Maturity execution train progress
 
+## Iteration 83 — 2026-09-07 — isolated diagnostic tool preparation
+
+- A04 local master refresh completed80ad01d with normal hook30653/fdc8a7,
+  clean/Ready yes, current-master ancestry and unchanged behavior source.
+  Independent metadata re-review closed the stale R01-to-W02 routing finding.
+  No push, hosted update, master merge, new worktree or cleanup followed.
+- R03's hardware denial changed the next action. Root selected a bounded
+  isolated software-tool prerequisite, not another timing attempt. Independent
+  review corrected inherited-path tool selection and absent debug inventory
+  before execution. The final reviewed driver used fixed system tools, a
+  cleared child environment, exact versions/SHA256, and one bounded download.
+- Setup14035/e063e1 exited0: two verified Ubuntu packages extracted only under
+  owned /home/ubuntu/data/projects/assura-r03-valgrind-preflight.m3DTGw,
+ 129196KiB including downloads. Debug inventory273files plus launcher/engine
+  hashes and raw log are recorded in evidence/R03.md. No package executable,
+  product command, fixture, profiler or counter collection ran. No system
+  installation, permissions/config/services or global environment changed.
+- Post-setup libc6 remains2.42-0ubuntu3.1. The initial --show query's empty
+  Valgrind version was ambiguous; --status515574 exited1 explicitly saying
+  not installed. The earlier query=present label is not package-install proof.
+- Current original binaries are stripped static-PIE, confirmed read-only.
+  Tool extraction does not prove compatibility or source-line mapping. Root's
+  next internal step is a reviewed tool-health/static-PIE observer protocol;
+  event counts must not be equated with native CPU cost. The initial broad
+  proposal's unexamined exact cache-vector/DWARF prerequisites are not silently
+  adopted or later relaxed to fit results. No product collection approved yet.
+- Queue unchanged14done/1active/4blocked/4implemented/9pending. A04 ownership
+  must integrate before its next behavior slice; W02 local packet remains
+  externally blocked. Publication approval/verified separation, required hosted
+  gates, R01 failing-cause proof and R03 performance acceptance remain open.
+  All51registered worktrees and A05/user work are preserved; the new remote
+  tool prefix is separately owned and must be accounted for at final cleanup.
+- Context review before handoff: level not exposed. All invoked sessions are
+  terminal. The recurring issue is evidence scope, addressed with exact source/
+  runner identity, independent scoped review and explicit prerequisite versus
+  acceptance labels. Existing goal/build/performance guidance remains sufficient;
+  this one-off setup is discoverable through R03 evidence, not a new AGENTS
+  procedure or speculative project skill. Next periodic review84.
+
+Metadata validation8278/0e9b01 exited0: structure1787files/393dirs/0violations
+and cargo xtask evidence, with existing A04 target/jobs4. Final diff/source
+checks b02422 exited0. Independent three-file metadata audit CLEAN on frozen
+diff24387e3e5e84b58ff4ebadaf6d60226ee4557cd1f4911ae9b6fcaf3744a524f3;
+root accepts its scoped evidence/authority/resource-accounting verdict.
+
 ## Iteration 82 — 2026-09-07 — current-master A04 refresh and R03 prerequisite result
 
 - Previous turn made progress: W02 local closure/queue committed790b0a9 with
