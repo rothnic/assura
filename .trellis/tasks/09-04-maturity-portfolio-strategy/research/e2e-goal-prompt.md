@@ -2,6 +2,17 @@
 
 ## Direction review
 
+Current-state routing: read `backlog.json`, the newest `progress.md` entry and
+the selected card's `evidence/<ID>.md` before using any status or SHA below.
+The app goal text and older checkouts can retain superseded snapshots. Refresh
+GitHub and reconcile newer goal-owned evidence in a dedicated documentation
+handoff before treating a dependency as done. Preserve conflicting historical
+records with explicit supersession; do not overwrite them with a stale queue.
+No performance regression may merge: retain all rows and failed controls,
+reject candidates that fail the prescribed comparison, and stop invalid
+diagnostics instead of repeating runs until green. Root owns review judgment
+and merge approval; method changes never imply relaxed acceptance thresholds.
+
 The product direction remains sound: specialize in executable repository conventions and agent-assisted initialization, with existing language tools supplying their own checks. The execution mechanism should be a **reviewed release train**, not a long-lived mega-branch or a blind attempt to close every checkbox. The queue remains the technical source of truth; this goal supplies cross-session control, integration discipline, and cleanup rules.
 
 On 2026-09-05, `origin/master` remains `ed093668918bc271fc98b9112acaf7c1bf3eb314`. PR #142 is still open and unstable, with macOS and Alpine failures, so installer work must be reused or repaired rather than duplicated. The worktree inventory has pre-existing and prunable entries; cleanup must be ownership-based rather than a broad deletion. The historical post-onboarding execution goal is `completed` and must not be reopened as the current program.
