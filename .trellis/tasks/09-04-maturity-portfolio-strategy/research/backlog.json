@@ -347,7 +347,7 @@
       ],
       "executor": "agent",
       "state": "active",
-      "owner": "Codex goal/w02-performance-claim-containment; source review passed, final verification and full-card outcomes incomplete",
+      "owner": "Codex goal/w02-performance-claim-containment; local wrapping correction afc35aa verified on macOS/Linux, hosted revalidation and full-card outcomes incomplete",
       "evidence": "evidence/W02.md",
       "blocker": "PR187 merge and further preview-triggering pushes held: configured Cloudflare app created a PR preview; production-branch behavior cannot be verified with current auth. Need explicit approval for merge plus any automatic production deployment, or verified no-deploy separation. Remaining W02 local packet work is still incomplete."
     },

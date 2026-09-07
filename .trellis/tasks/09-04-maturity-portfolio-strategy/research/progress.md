@@ -1,5 +1,37 @@
 # Maturity execution train progress
 
+## Iteration 65 — 2026-09-07 — Cross-platform wrapping repair
+
+- Continued safely without treating deployment approval as permission already
+  granted. Source afc35aadb5d8d42feebeff3c76dbadfc6cac25b4 removes only the
+  status titles' nowrap constraint. Original hosted traces and a matching Linux
+  RED prove144.4375px text exceeded approximately128px content width; Mac's
+  narrower system font had masked the defect. No font size, text, threshold,
+  test or benchmark row changed.
+- Focused18 tests passed on both systems; full macOS36832 and corrected Linux
+  43014 each passed128/128 with workers1/retries0. Docs and production builds
+  passed; production captures verified both themes and root inspected Linux
+  320px wrapping. Independent source and validation-recipe reviews passed.
+  See W02 evidence for exact hashes, cwd, commands, exits and limitations.
+- Preserve two validation failures honestly: Linux31556 passed127/128 because
+  a website-only export omitted tracked root roadmap data; one corrected export
+  then passed. Original Linux RED traces were overwritten by Playwright's
+  default output cleanup, while RED logs/CDP and original hosted traces remain.
+  Later outputs are run-specific and earlier31556 artifacts verified unchanged.
+- Context health before handoff: context level not exposed. Current source is
+  based on refreshed98bd187, not the old strategy checkout; R03 remains blocked;
+  PR187 remote34d572c remains failed; no new Cloudflare deployment was triggered;
+  W02 is still partial. The existing local-build skill gained a concise tested
+  export/artifact recipe, justified by these actual failures; AGENTS stays a
+  router with no added operational detail. Next periodic context review66.
+- Next local slice is release-aware setup. Independent design review PASS at
+  audit7397b2e keeps public availability separate from strict candidate-package
+  compatibility, requires source provenance in both modes, paired binaries and
+  a stale-companion negative control, and proves the exact displayed installer
+  or archive route in an explicit disposable destination. Local preparation
+  needs refreshed ownership/ancestry and reviewed source dependencies, not
+  PR187 integration approval. No next-slice implementation has started yet.
+
 ## Iteration 64 — 2026-09-07 — W02 PR and deployment authority hold
 
 Terminal update: hosted website job101690258756 failed126/128; both320px

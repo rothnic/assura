@@ -84,6 +84,26 @@ to `vps` and run the same validation there. Use a temporary npm cache such as
 possibly blocked home-directory cache. Keep hosted Linux, macOS, and Windows CI
 as the final cross-platform proof.
 
+## Isolated Website Revalidation
+
+Export the complete tested commit plus the reviewed patch, preserving repository
+layout. A website-only export omits `docs/data/public-roadmap.json`, imported by
+the roadmap component. Verify input and changed-file identities before running.
+
+From the repository root, give each invocation a fresh artifact directory:
+
+```bash
+run_dir="$(mktemp -d /tmp/assura-website-run.XXXXXX)"
+printf 'Artifacts: %s\n' "$run_dir"
+PLAYWRIGHT_HTML_OUTPUT_DIR="$run_dir/report" \
+  pnpm --dir website test:marketing --output="$run_dir/results" --workers=1 --retries=0
+```
+
+Retain each RED, focused and full run's printed directory with its command/exit.
+Playwright cleans its output directory at startup; preserve earlier logs,
+reports and traces before another invocation, and verify they remain afterward.
+Record missing artifacts honestly; a later reproduction is not the original.
+
 ## Validation Pattern
 
 After resolving local build prerequisites, run:
