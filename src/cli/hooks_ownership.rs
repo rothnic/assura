@@ -52,10 +52,10 @@ pub(super) fn classify_artifact(
     if !metadata.file_type().is_file() {
         return Ok(ArtifactOwnership::Unmanaged);
     }
-    let content = std::fs::read_to_string(path)?;
+    let content = std::fs::read(path)?;
     if expected_contents
         .iter()
-        .any(|expected| expected == &content)
+        .any(|expected| expected.as_bytes() == content)
     {
         Ok(ArtifactOwnership::Managed)
     } else {

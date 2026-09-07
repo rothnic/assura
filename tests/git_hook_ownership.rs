@@ -107,6 +107,25 @@ fn bulk_install_preserves_and_reports_an_unowned_orphan_sidecar() {
 }
 
 #[test]
+fn bulk_lifecycle_preserves_and_reports_non_utf8_hook_content() {
+    let project = project_with_git_hooks();
+    let (wrapper, sidecar) = hook_paths(project.path(), HookType::PrePush);
+    let wrapper_bytes = [0xff, 0x00, b'w'];
+    let sidecar_bytes = [0xfe, 0x00, b's'];
+    std::fs::write(&wrapper, wrapper_bytes).unwrap();
+    std::fs::write(&sidecar, sidecar_bytes).unwrap();
+    let manager = GitHooksManager::new(project.path()).unwrap();
+
+    let install = manager.install_all(true).unwrap();
+    let uninstall = manager.uninstall_all().unwrap();
+
+    assert_eq!(install.preserved, vec![HookType::PrePush]);
+    assert_eq!(uninstall.preserved, vec![HookType::PrePush]);
+    assert_eq!(std::fs::read(wrapper).unwrap(), wrapper_bytes);
+    assert_eq!(std::fs::read(sidecar).unwrap(), sidecar_bytes);
+}
+
+#[test]
 fn bulk_uninstall_preserves_a_managed_wrapper_with_a_modified_sidecar() {
     let project = project_with_git_hooks();
     let manager = GitHooksManager::new(project.path()).unwrap();
