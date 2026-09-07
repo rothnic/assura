@@ -353,11 +353,24 @@ fn report_diagnostics_count_invalidations_not_access_notifications() {
         &diagnostics,
         &serde_json::json!({"sequence": 3, "coalesced_events": 2}),
         "src",
-        Duration::from_millis(20),
+        EVENT_TIMEOUT,
     );
     assert_eq!(records.len(), 2);
     assert_eq!(records[0]["event_kind"], "Create(File)");
     assert_eq!(records[1]["event_kind"], "Modify(Data(Content))");
+}
+
+fn assert_rejection(result: std::thread::Result<()>, expected: &str) {
+    let panic = result.expect_err("invalid diagnostic was accepted");
+    let message = panic
+        .downcast_ref::<String>()
+        .map(String::as_str)
+        .or_else(|| panic.downcast_ref::<&str>().copied())
+        .unwrap();
+    assert!(
+        message.contains(expected),
+        "unexpected rejection: {message}"
+    );
 }
 
 #[test]
@@ -375,12 +388,20 @@ fn report_diagnostics_reject_missing_and_disconnected_records() {
                 &diagnostics,
                 &serde_json::json!({"coalesced_events": 1}),
                 "src",
-                Duration::from_millis(5),
+                if disconnected {
+                    EVENT_TIMEOUT
+                } else {
+                    Duration::from_millis(5)
+                },
             );
         }));
-        assert!(
-            result.is_err(),
-            "missing record was accepted (disconnected={disconnected})"
+        assert_rejection(
+            result,
+            if disconnected {
+                "missing normalization diagnostic for report: Disconnected"
+            } else {
+                "normalization diagnostic"
+            },
         );
         drop(sender);
     }
@@ -415,13 +436,17 @@ fn report_diagnostics_reject_wrong_scope_and_invalid_ignored_records() {
                 &diagnostics,
                 &serde_json::json!({"coalesced_events": 1}),
                 "src",
-                Duration::from_millis(20),
+                EVENT_TIMEOUT,
             );
         }));
-        assert!(
-            result.is_err(),
-            "invalid diagnostic was accepted: {path}, {kind}"
-        );
+        let expected = if invalidated {
+            "diagnostic outside requested scope"
+        } else if rescan {
+            "invalid ignored access diagnostic"
+        } else {
+            "unexpected non-invalidating diagnostic"
+        };
+        assert_rejection(result, expected);
     }
 }
 
