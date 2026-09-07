@@ -373,32 +373,29 @@ fn generated_wrapper_invokes_a_literal_metacharacter_path_without_expansion() {
 }
 
 #[cfg(target_os = "linux")]
-#[test]
-fn generated_wrapper_preserves_non_utf8_project_path_bytes_end_to_end() {
+fn non_utf8_project(root: &Path) -> std::path::PathBuf {
     use std::ffi::OsString;
     use std::os::unix::ffi::OsStringExt;
+
+    let project_name = OsString::from_vec(b"project non-utf8 \xff ' quoted".to_vec());
+    let project = root.join(project_name);
+    std::fs::create_dir_all(project.join(".git/hooks")).unwrap();
+    std::fs::create_dir_all(project.join(".assura/hooks")).unwrap();
+    project
+}
+
+#[cfg(target_os = "linux")]
+#[test]
+fn generated_wrapper_preserves_non_utf8_project_path_bytes_end_to_end() {
     use std::os::unix::fs::PermissionsExt;
 
     let root = tempfile::TempDir::new().unwrap();
-    let project_name = OsString::from_vec(b"project non-utf8 \xff ' quoted".to_vec());
-    let project = root.path().join(project_name);
-    std::fs::create_dir_all(project.join(".git/hooks")).unwrap();
-    std::fs::create_dir_all(project.join(".assura/hooks")).unwrap();
+    let project = non_utf8_project(root.path());
     let manager = GitHooksManager::new(&project).unwrap();
     manager.install(HookType::PrePush, false).unwrap();
     let (wrapper, sidecar) = hook_paths(&project, HookType::PrePush);
-    let generated_wrapper = std::fs::read(&wrapper).unwrap();
 
     assert!(manager.status(HookType::PrePush).is_ready());
-
-    let legacy_lossy_wrapper = format!(
-        "#!/bin/sh\n# Git hook managed by Assura\n# This file was auto-generated. Do not modify manually.\n\nASSURA_HOOK=\"{}\"\n\nif [ -f \"$ASSURA_HOOK\" ]; then\n    exec \"$ASSURA_HOOK\" \"$@\"\nelse\n    echo \"Warning: Assura hook not found at $ASSURA_HOOK\" >&2\n    exit 0\nfi\n",
-        sidecar.to_string_lossy()
-    );
-    std::fs::write(&wrapper, legacy_lossy_wrapper).unwrap();
-    assert!(!manager.status(HookType::PrePush).is_managed);
-    std::fs::write(&wrapper, generated_wrapper).unwrap();
-    std::fs::set_permissions(&wrapper, std::fs::Permissions::from_mode(0o755)).unwrap();
 
     let invoked = root.path().join("non-utf8-invoked");
     std::fs::write(&sidecar, "#!/bin/sh\nprintf invoked > \"$1\"\n").unwrap();
@@ -407,4 +404,22 @@ fn generated_wrapper_preserves_non_utf8_project_path_bytes_end_to_end() {
 
     assert!(status.success());
     assert_eq!(std::fs::read_to_string(invoked).unwrap(), "invoked");
+}
+
+#[cfg(target_os = "linux")]
+#[test]
+fn lossy_legacy_wrapper_is_not_managed_for_a_non_utf8_project_path() {
+    let root = tempfile::TempDir::new().unwrap();
+    let project = non_utf8_project(root.path());
+    let manager = GitHooksManager::new(&project).unwrap();
+    manager.install(HookType::PrePush, false).unwrap();
+    let (wrapper, sidecar) = hook_paths(&project, HookType::PrePush);
+    let legacy_lossy_wrapper = format!(
+        "#!/bin/sh\n# Git hook managed by Assura\n# This file was auto-generated. Do not modify manually.\n\nASSURA_HOOK=\"{}\"\n\nif [ -f \"$ASSURA_HOOK\" ]; then\n    exec \"$ASSURA_HOOK\" \"$@\"\nelse\n    echo \"Warning: Assura hook not found at $ASSURA_HOOK\" >&2\n    exit 0\nfi\n",
+        sidecar.to_string_lossy()
+    );
+
+    std::fs::write(wrapper, legacy_lossy_wrapper).unwrap();
+
+    assert!(!manager.status(HookType::PrePush).is_managed);
 }
