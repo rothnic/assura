@@ -1487,8 +1487,18 @@ structure:
           allowed_names:
             - "fixtures"
             - "ls_lint_rule_coverage"
+            - "watch_cli"
           allow_extra: false
         children:
+          watch_cli/:
+            files:
+              naming: "snake_case"
+              max_lines: 1000
+              allowed_names:
+                - "support.rs"
+              allow_extra: false
+            directories:
+              allow_extra: false
           ls_lint_rule_coverage/:
             files:
               naming: "snake_case"

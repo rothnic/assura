@@ -5,6 +5,93 @@ use notify::event::Flag;
 use std::fs;
 
 #[test]
+fn root_folder_reports_retain_failed_file_evidence_with_or_without_its_event() {
+    for include_file_event in [false, true] {
+        let project = tempfile::tempdir().unwrap();
+        fs::create_dir(project.path().join(".assura")).unwrap();
+        fs::create_dir(project.path().join("src")).unwrap();
+        fs::write(
+            project.path().join(".assura/config.yml"),
+            config_with_naming("kebab-case"),
+        )
+        .unwrap();
+        let root = project.path().canonicalize().unwrap();
+        let source = root.join("src/BadName.ts");
+        let mut prepared =
+            PreparedStructureCheck::load_for_path(Some(root.clone()), None, false).unwrap();
+        assert!(prepared.check_path(root.clone()).unwrap().success);
+        fs::write(&source, "export {};\n").unwrap();
+        let context = WatchContext {
+            root: root.clone(),
+            watch_scope: root.clone(),
+            watch_scope_is_file: false,
+            config_path: root.join(".assura/config.yml"),
+            config_watch_parent: Some(root.join(".assura")),
+            no_git: false,
+        };
+        let dirty = DirtyState::new();
+        dirty.take();
+        let mut batch = WatchBatch::default();
+        record_message(
+            WatchMessage::Event(
+                Event::new(EventKind::Create(notify::event::CreateKind::Folder))
+                    .add_path(root.clone()),
+            ),
+            &context,
+            &prepared,
+            &dirty,
+            &mut batch,
+        );
+        let capture = take_normalization_capture().unwrap();
+        assert_eq!(display_paths(&root, &capture.paths), vec![""]);
+        assert_eq!(capture.kind, "Create(Folder)");
+        assert!(capture.invalidated);
+        assert!(!capture.needs_rescan && !capture.config_changed);
+        if include_file_event {
+            record_message(
+                WatchMessage::Event(
+                    Event::new(EventKind::Create(notify::event::CreateKind::File))
+                        .add_path(source.clone()),
+                ),
+                &context,
+                &prepared,
+                &dirty,
+                &mut batch,
+            );
+            assert_eq!(
+                display_paths(&root, &take_normalization_capture().unwrap().paths),
+                vec!["src/BadName.ts"]
+            );
+        }
+        let event = serde_json::to_value(validate_batch(
+            2,
+            100,
+            &context,
+            &mut prepared,
+            dirty.take(),
+            batch,
+            true,
+        ))
+        .unwrap();
+        assert_eq!(
+            event["coalesced_events"],
+            if include_file_event { 2 } else { 1 }
+        );
+        assert_eq!(event["runtime_mode"], "warm_full");
+        assert_eq!(event["fallback_reason"], "full_rescan_event");
+        assert_eq!(event["report_scope"], "requested_path");
+        assert_eq!(event["changed_paths"], serde_json::json!([]));
+        assert_eq!(event["report"]["checked_path"], root.to_str().unwrap());
+        assert_eq!(event["report"]["success"], false);
+        let violations = event["report"]["violations"].as_array().unwrap();
+        assert!(violations
+            .iter()
+            .any(|violation| violation["rule"] == "file_naming"
+                && violation["path"] == "src/BadName.ts"));
+    }
+}
+
+#[test]
 fn pathless_rescan_remains_an_observable_full_scope_fallback() {
     let project = tempfile::tempdir().unwrap();
     fs::create_dir(project.path().join(".assura")).unwrap();
