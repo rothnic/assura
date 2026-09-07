@@ -19,12 +19,31 @@ pub(super) fn replace_pair(
     wrapper_path: &Path,
     wrapper_content: &[u8],
 ) -> HookResult<()> {
+    replace_pair_with(
+        sidecar_path,
+        sidecar_content,
+        wrapper_path,
+        wrapper_content,
+        atomic_replace,
+    )
+}
+
+fn replace_pair_with<F>(
+    sidecar_path: &Path,
+    sidecar_content: &[u8],
+    wrapper_path: &Path,
+    wrapper_content: &[u8],
+    mut replace: F,
+) -> HookResult<()>
+where
+    F: FnMut(&Path, &[u8], Option<Permissions>) -> HookResult<()>,
+{
     let sidecar_snapshot = capture_regular_file(sidecar_path)?;
     let _wrapper_snapshot = capture_regular_file(wrapper_path)?;
 
-    atomic_replace(sidecar_path, sidecar_content, None)?;
-    if let Err(operation_error) = atomic_replace(wrapper_path, wrapper_content, None) {
-        return match restore(sidecar_path, sidecar_snapshot) {
+    replace(sidecar_path, sidecar_content, None)?;
+    if let Err(operation_error) = replace(wrapper_path, wrapper_content, None) {
+        return match restore_with(sidecar_path, sidecar_snapshot, &mut replace) {
             Ok(()) => Err(operation_error),
             Err(rollback_error) => Err(HookError::RollbackFailed {
                 operation: operation_error.to_string(),
@@ -51,9 +70,12 @@ fn capture_regular_file(path: &Path) -> HookResult<FileSnapshot> {
     })
 }
 
-fn restore(path: &Path, snapshot: FileSnapshot) -> HookResult<()> {
+fn restore_with<F>(path: &Path, snapshot: FileSnapshot, replace: &mut F) -> HookResult<()>
+where
+    F: FnMut(&Path, &[u8], Option<Permissions>) -> HookResult<()>,
+{
     match snapshot.contents {
-        Some(contents) => atomic_replace(path, &contents, snapshot.permissions),
+        Some(contents) => replace(path, &contents, snapshot.permissions),
         None => match fs::symlink_metadata(path) {
             Ok(metadata) if metadata.file_type().is_file() => {
                 fs::remove_file(path)?;
@@ -156,4 +178,58 @@ fn set_executable(file: &fs::File) -> std::io::Result<()> {
 #[cfg(not(unix))]
 fn set_executable(_file: &fs::File) -> std::io::Result<()> {
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn wrapper_failure_restores_sidecar_and_leaves_wrapper_unchanged() {
+        let directory = tempfile::TempDir::new().unwrap();
+        let sidecar = directory.path().join("assura-hook");
+        let wrapper = directory.path().join("git-hook");
+        let original_sidecar = b"original sidecar bytes\n";
+        let original_wrapper = b"original wrapper bytes\n";
+        let new_wrapper = b"new wrapper bytes\n";
+        fs::write(&sidecar, original_sidecar).unwrap();
+        fs::write(&wrapper, original_wrapper).unwrap();
+
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            fs::set_permissions(&sidecar, Permissions::from_mode(0o600)).unwrap();
+        }
+
+        let result = replace_pair_with(
+            &sidecar,
+            b"new sidecar bytes\n",
+            &wrapper,
+            new_wrapper,
+            |path, content, permissions| {
+                if path == wrapper && content == new_wrapper {
+                    return Err(HookError::Io(std::io::Error::other(
+                        "injected wrapper publication failure",
+                    )));
+                }
+                atomic_replace(path, content, permissions)
+            },
+        );
+
+        assert!(matches!(
+            result,
+            Err(HookError::Io(ref error))
+                if error.to_string() == "injected wrapper publication failure"
+        ));
+        assert_eq!(fs::read(&sidecar).unwrap(), original_sidecar);
+        assert_eq!(fs::read(&wrapper).unwrap(), original_wrapper);
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            assert_eq!(
+                fs::metadata(&sidecar).unwrap().permissions().mode() & 0o777,
+                0o600
+            );
+        }
+    }
 }

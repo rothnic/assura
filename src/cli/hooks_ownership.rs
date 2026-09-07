@@ -36,7 +36,7 @@ impl HookOwnership {
 
 pub(super) fn classify_artifact(
     path: &Path,
-    expected_contents: &[String],
+    expected_contents: &[Vec<u8>],
     parent_is_safe: bool,
 ) -> HookResult<ArtifactOwnership> {
     if !parent_is_safe {
@@ -55,7 +55,7 @@ pub(super) fn classify_artifact(
     let content = std::fs::read(path)?;
     if expected_contents
         .iter()
-        .any(|expected| expected.as_bytes() == content)
+        .any(|expected| expected.as_slice() == content)
     {
         Ok(ArtifactOwnership::Managed)
     } else {
@@ -65,7 +65,7 @@ pub(super) fn classify_artifact(
 
 pub(super) fn remove_file_if_still_managed(
     path: &Path,
-    expected_contents: &[String],
+    expected_contents: &[Vec<u8>],
 ) -> HookResult<()> {
     if classify_artifact(path, expected_contents, true)? != ArtifactOwnership::Managed {
         return Err(HookError::UnsafePath(path.to_path_buf()));
@@ -93,7 +93,42 @@ pub(super) fn ensure_plain_directory(path: &Path) -> HookResult<()> {
     }
 }
 
-pub(super) fn shell_single_quote(path: &Path) -> String {
-    let value = path.to_string_lossy();
-    format!("'{}'", value.replace('\'', "'\\''"))
+#[cfg(unix)]
+pub(super) fn shell_single_quote(path: &Path) -> Vec<u8> {
+    use std::os::unix::ffi::OsStrExt;
+
+    shell_single_quote_bytes(path.as_os_str().as_bytes())
+}
+
+#[cfg(not(unix))]
+pub(super) fn shell_single_quote(path: &Path) -> Vec<u8> {
+    shell_single_quote_bytes(path.to_string_lossy().as_bytes())
+}
+
+fn shell_single_quote_bytes(value: &[u8]) -> Vec<u8> {
+    let mut quoted = Vec::with_capacity(value.len() + 2);
+    quoted.push(b'\'');
+    for byte in value {
+        if *byte == b'\'' {
+            quoted.extend_from_slice(b"'\\''");
+        } else {
+            quoted.push(*byte);
+        }
+    }
+    quoted.push(b'\'');
+    quoted
+}
+
+#[cfg(all(test, unix))]
+mod tests {
+    use super::*;
+    use std::ffi::OsString;
+    use std::os::unix::ffi::OsStringExt;
+
+    #[test]
+    fn shell_quote_preserves_non_utf8_path_bytes() {
+        let path = Path::new(&OsString::from_vec(b"/tmp/non-utf8-\xff".to_vec())).to_path_buf();
+
+        assert_eq!(shell_single_quote(&path), b"'/tmp/non-utf8-\xff'");
+    }
 }

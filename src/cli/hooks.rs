@@ -48,7 +48,7 @@ pub struct HookInstallOutcome {
     pub unchanged: Vec<HookType>,
     /// Managed hook entrypoints refreshed by an explicit force install.
     pub refreshed: Vec<HookType>,
-    /// Existing custom hook entrypoints that Assura left unchanged.
+    /// Hook artifact pairs Assura left unchanged because ownership was not proven.
     pub preserved: Vec<HookType>,
 }
 
@@ -57,7 +57,7 @@ pub struct HookInstallOutcome {
 pub struct HookUninstallOutcome {
     /// Managed hook entrypoints removed by Assura.
     pub removed: Vec<HookType>,
-    /// Existing non-Assura hook entrypoints that Assura left unchanged.
+    /// Hook artifact pairs Assura left unchanged because ownership was not proven.
     pub preserved: Vec<HookType>,
 }
 
@@ -166,17 +166,20 @@ impl GitHooksManager {
             &assura_hook_path,
             hook_content.as_bytes(),
             &git_hook_path,
-            git_hook_content.as_bytes(),
+            &git_hook_content,
         )
     }
 
-    fn managed_git_hook_content(&self, assura_hook_path: &Path) -> String {
-        format!(
-            r#"#!/bin/sh
+    fn managed_git_hook_content(&self, assura_hook_path: &Path) -> Vec<u8> {
+        let mut content = br#"#!/bin/sh
 # Git hook managed by Assura
 # This file was auto-generated. Do not modify manually.
 
-ASSURA_HOOK={}
+ASSURA_HOOK="#
+            .to_vec();
+        content.extend_from_slice(&shell_single_quote(assura_hook_path));
+        content.extend_from_slice(
+            br#"
 
 if [ -f "$ASSURA_HOOK" ]; then
     exec "$ASSURA_HOOK" "$@"
@@ -185,13 +188,15 @@ else
     exit 0
 fi
 "#,
-            shell_single_quote(assura_hook_path)
-        )
+        );
+        content
     }
 
-    fn legacy_managed_git_hook_content(&self, assura_hook_path: &Path) -> String {
-        format!(
-            r#"#!/bin/sh
+    fn legacy_managed_git_hook_content(&self, assura_hook_path: &Path) -> Option<Vec<u8>> {
+        let assura_hook_path = assura_hook_path.to_str()?;
+        Some(
+            format!(
+                r#"#!/bin/sh
 # Git hook managed by Assura
 # This file was auto-generated. Do not modify manually.
 
@@ -204,7 +209,9 @@ else
     exit 0
 fi
 "#,
-            assura_hook_path.display()
+                assura_hook_path
+            )
+            .into_bytes(),
         )
     }
 
@@ -223,7 +230,7 @@ fi
             remove_file_if_still_managed(&git_hook_path, &expected)?;
         }
         if ownership.sidecar == ArtifactOwnership::Managed {
-            let expected = self.generate_hook_content(hook_type)?;
+            let expected = self.generate_hook_content(hook_type)?.into_bytes();
             remove_file_if_still_managed(&assura_hook_path, &[expected])?;
         }
 
@@ -289,7 +296,7 @@ fi
         let git_hook_path = self.git_hooks_dir.join(hook_name);
         let assura_hook_path = self.assura_hooks_dir.join(hook_name);
         let wrapper_expected = self.managed_wrapper_contents(&assura_hook_path);
-        let sidecar_expected = self.generate_hook_content(hook_type)?;
+        let sidecar_expected = self.generate_hook_content(hook_type)?.into_bytes();
 
         Ok(HookOwnership {
             wrapper: classify_artifact(
@@ -305,11 +312,12 @@ fi
         })
     }
 
-    fn managed_wrapper_contents(&self, assura_hook_path: &Path) -> Vec<String> {
-        vec![
-            self.managed_git_hook_content(assura_hook_path),
-            self.legacy_managed_git_hook_content(assura_hook_path),
-        ]
+    fn managed_wrapper_contents(&self, assura_hook_path: &Path) -> Vec<Vec<u8>> {
+        let mut contents = vec![self.managed_git_hook_content(assura_hook_path)];
+        if let Some(legacy) = self.legacy_managed_git_hook_content(assura_hook_path) {
+            contents.push(legacy);
+        }
+        contents
     }
 
     fn assura_hook_directories_are_safe(&self) -> bool {

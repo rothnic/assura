@@ -78,7 +78,8 @@ expected files without timestamp noise.
   deterministic Assura delegator for that hook and project-local sidecar path,
   and the complete sidecar equals the embedded hook script. The previous exact
   double-quoted delegator remains an accepted managed format for lifecycle
-  compatibility; newly generated delegators single-quote literal paths.
+  compatibility; newly generated delegators single-quote literal paths while
+  preserving their exact Unix path bytes.
 - A marker substring, expected filename, or one matching artifact is never
   ownership proof for the other artifact. `--force` refreshes only a pair with
   no unowned content. Removal classifies the wrapper and sidecar together before
