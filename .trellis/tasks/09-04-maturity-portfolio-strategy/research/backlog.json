@@ -302,10 +302,10 @@
         "R02"
       ],
       "executor": "agent",
-      "state": "pending",
-      "owner": null,
+      "state": "blocked",
+      "owner": "Codex goal: Assura Maturity Execution Train",
       "evidence": "evidence/Q06.md",
-      "blocker": null
+      "blocker": "Hosted run 34022750062 failed the existing R03 many-scope no-slower gate (assura-cli 13.601 ms > ls-lint-cli 13.212 ms); Q06 is held without changing the evaluator."
     },
     {
       "id": "Q07",
