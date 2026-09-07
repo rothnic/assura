@@ -3,6 +3,7 @@
 use super::*;
 use notify::event::Flag;
 use std::fs;
+use std::sync::mpsc::sync_channel;
 
 #[test]
 fn directory_create_forces_full_validation_only_in_the_requested_scope() {
@@ -279,6 +280,175 @@ fn rescan_coalescing_external_config_and_runtime_output_is_ignored() {
 
     assert_eq!(batch.invalidating_events, 0);
     assert_eq!(dirty.take().project, DirtyProject::Clean);
+}
+
+#[test]
+fn replay_external_native_batch_and_rescan_controls() {
+    use notify::event::{CreateKind, DataChange, MetadataKind, ModifyKind};
+
+    for scenario in ["external", "mixed_root", "pathless", "changed_config"] {
+        let project = tempfile::tempdir().unwrap();
+        let config_home = tempfile::tempdir().unwrap();
+        let root = project.path().canonicalize().unwrap();
+        let config_home = config_home.path().canonicalize().unwrap();
+        let config_path = config_home.join("assura.yml");
+        let sibling = config_home.join("unrelated.yml");
+        fs::write(&config_path, config_with_naming("kebab-case")).unwrap();
+        fs::write(root.join("good-name.ts"), "export {};\n").unwrap();
+        let mut prepared = PreparedStructureCheck::load_for_path(
+            Some(root.clone()),
+            Some(config_path.clone()),
+            false,
+        )
+        .unwrap();
+        assert!(prepared.check_path(root.clone()).unwrap().success);
+        let context = external_config_context(root.clone(), config_path.clone(), &config_home);
+        let dirty = DirtyState::new();
+        dirty.take();
+        let mut batch = WatchBatch::default();
+        // Exact event classes from the one-shot native capture, rebased to this fixture.
+        for kind in [
+            EventKind::Create(CreateKind::File),
+            EventKind::Modify(ModifyKind::Metadata(MetadataKind::Extended)),
+            EventKind::Modify(ModifyKind::Data(DataChange::Content)),
+        ] {
+            record_message(
+                WatchMessage::Event(Event::new(kind).add_path(sibling.clone())),
+                &context,
+                &prepared,
+                &dirty,
+                &mut batch,
+            );
+        }
+        assert_eq!(batch.invalidating_events, 0, "{scenario}");
+        assert_eq!(dirty.take().project, DirtyProject::Clean, "{scenario}");
+        let event = match scenario {
+            "external" => continue,
+            "mixed_root" => Event::new(EventKind::Create(CreateKind::Folder))
+                .add_path(sibling)
+                .add_path(root.clone()),
+            "pathless" => Event::new(EventKind::Any).set_flag(Flag::Rescan),
+            "changed_config" => {
+                fs::write(&config_path, config_with_naming("snake_case")).unwrap();
+                Event::new(EventKind::Modify(ModifyKind::Data(DataChange::Content)))
+                    .add_path(config_path)
+            }
+            _ => unreachable!(),
+        };
+        record_message(
+            WatchMessage::Event(event),
+            &context,
+            &prepared,
+            &dirty,
+            &mut batch,
+        );
+        assert_eq!(batch.invalidating_events, 1, "{scenario}");
+        let capture = take_normalization_capture().unwrap();
+        assert!(capture.invalidated, "{scenario}");
+        if scenario == "mixed_root" {
+            assert_eq!(display_paths(&root, &capture.paths), vec![""]);
+            assert!(!capture.needs_rescan);
+        } else if scenario == "pathless" {
+            assert!(capture.paths.is_empty() && capture.needs_rescan);
+        }
+        let event = serde_json::to_value(validate_batch(
+            2,
+            100,
+            &context,
+            &mut prepared,
+            dirty.take(),
+            batch,
+            true,
+        ))
+        .unwrap();
+        assert_eq!(event["coalesced_events"], 1, "{scenario}");
+        assert_eq!(event["runtime_mode"], "warm_full", "{scenario}");
+        assert_eq!(event["report_scope"], "requested_path", "{scenario}");
+        if scenario == "changed_config" {
+            assert_eq!(event["trigger"], "config");
+            assert_eq!(event["cache_state"], "reloaded");
+            assert_eq!(event["report"]["success"], false);
+            assert!(event["report"]["violations"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|violation| violation["rule"] == "file_naming"
+                    && violation["path"] == "good-name.ts"));
+        } else {
+            assert_eq!(event["trigger"], "filesystem", "{scenario}");
+            assert_eq!(event["fallback_reason"], "full_rescan_event", "{scenario}");
+            assert_eq!(event["report"]["success"], true, "{scenario}");
+        }
+    }
+}
+
+#[test]
+fn queued_root_event_remains_visible_on_either_side_of_initial_scan() {
+    for mutation_before_initial in [false, true] {
+        let project = tempfile::tempdir().unwrap();
+        let config_home = tempfile::tempdir().unwrap();
+        let root = project.path().canonicalize().unwrap();
+        let config_path = config_home.path().join("assura.yml");
+        fs::write(&config_path, config_with_naming("kebab-case")).unwrap();
+        let mut prepared = PreparedStructureCheck::load_for_path(
+            Some(root.clone()),
+            Some(config_path.clone()),
+            false,
+        )
+        .unwrap();
+        let context = external_config_context(root.clone(), config_path, config_home.path());
+        let dirty = DirtyState::new();
+        dirty.take();
+        let write_violation = || fs::write(root.join("BadName.ts"), "export {};\n").unwrap();
+        let (sender, receiver) = sync_channel(1);
+        let root_event = || {
+            WatchMessage::Event(
+                Event::new(EventKind::Create(notify::event::CreateKind::Folder))
+                    .add_path(root.clone()),
+            )
+        };
+        if mutation_before_initial {
+            write_violation();
+            sender.send(root_event()).unwrap();
+        }
+        let initial = prepared.check_path(root.clone()).unwrap();
+        assert_eq!(initial.success, !mutation_before_initial);
+        if !mutation_before_initial {
+            write_violation();
+            sender.send(root_event()).unwrap();
+        }
+        // Model run_watch's queued callback processing after the initial report.
+        // An initial report is not an event-queue fence in either ordering.
+        let mut batch = WatchBatch::default();
+        record_message(
+            receiver.recv().unwrap(),
+            &context,
+            &prepared,
+            &dirty,
+            &mut batch,
+        );
+        assert_eq!(batch.invalidating_events, 1);
+        let event = serde_json::to_value(validate_batch(
+            2,
+            100,
+            &context,
+            &mut prepared,
+            dirty.take(),
+            batch,
+            initial.success,
+        ))
+        .unwrap();
+        assert_eq!(event["trigger"], "filesystem");
+        assert_eq!(event["fallback_reason"], "full_rescan_event");
+        assert_eq!(event["report"]["success"], false);
+        assert!(event["report"]["violations"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(
+                |violation| violation["rule"] == "file_naming" && violation["path"] == "BadName.ts"
+            ));
+    }
 }
 
 fn external_config_context(

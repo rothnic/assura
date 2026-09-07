@@ -126,11 +126,27 @@ fn watch_observes_an_explicit_config_outside_the_project() {
     let config = config_home.path().join("assura.yml");
     fs::write(&config, config_with_naming("kebab-case")).unwrap();
     fs::write(project.path().join("good-name.ts"), "export {};\n").unwrap();
-    let watch = WatchProcess::spawn_path(project.path(), Some(&config), 100);
+    let watch = WatchProcess::spawn_path_with_event_trace(project.path(), Some(&config), 100);
     assert_eq!(watch.next_event()["report"]["success"], true);
+    eprintln!(
+        "external-config initial report received {:?}",
+        std::time::SystemTime::now()
+    );
 
+    eprintln!(
+        "external-config sibling write begins {:?}",
+        std::time::SystemTime::now()
+    );
     fs::write(config_home.path().join("unrelated.yml"), "ignored: true\n").unwrap();
+    eprintln!(
+        "external-config sibling write ends {:?}",
+        std::time::SystemTime::now()
+    );
     watch.assert_no_event(Duration::from_millis(350));
+    eprintln!(
+        "external-config config write begins {:?}",
+        std::time::SystemTime::now()
+    );
     fs::write(&config, config_with_naming("snake_case")).unwrap();
 
     let (changed, preceding_filesystem_events) = watch.next_config_event("good-name.ts");

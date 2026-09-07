@@ -23,8 +23,9 @@ use std::cell::RefCell;
 
 const DEFAULT_DEBOUNCE_MS: u64 = 300;
 const WATCH_CHANNEL_CAPACITY: usize = 256;
-const NORMALIZATION_DEBUG_ENV: &str = "ASSURA_WATCH_NORMALIZATION_DEBUG";
-const NORMALIZATION_DIAGNOSTIC_PREFIX: &str = "assura.watch.normalization.v1 ";
+#[path = "watch_diagnostics.rs"]
+mod trace;
+use trace::emit_normalization_diagnostic;
 
 #[cfg(test)]
 #[derive(Debug, PartialEq, Eq)]
@@ -123,6 +124,7 @@ async fn run_watch(
     )?;
 
     dirty.take();
+    trace::phase(2);
     let started = Instant::now();
     let report = prepared.check_path(context.watch_scope.clone())?;
     let mut project_clean = report.success;
@@ -143,6 +145,7 @@ async fn run_watch(
     )
     .map_err(WatchError::Runtime)?;
 
+    trace::phase(3);
     let mut sequence = 2;
     let debounce = Duration::from_millis(debounce_ms);
     let max_batch_window = Duration::from_millis(debounce_ms.saturating_mul(4).max(1_000));
@@ -232,7 +235,7 @@ fn create_watcher(
     let mut watcher = RecommendedWatcher::new(
         move |result: notify::Result<Event>| {
             let message = match result {
-                Ok(event) => WatchMessage::Event(event),
+                Ok(event) => trace::callback(event),
                 Err(error) => WatchMessage::Error(error.to_string()),
             };
             if sender.try_send(message).is_err() {
@@ -255,12 +258,14 @@ fn create_watcher(
             RecursiveMode::NonRecursive,
         )
     };
+    trace::phase(0);
     watcher
         .watch(subscription, recursive_mode)
         .map_err(|error| {
             WatchError::Runtime(format!("watch {}: {error}", subscription.display()))
         })?;
     if let Some(parent) = config_watch_parent.filter(|parent| *parent != subscription) {
+        trace::phase(1);
         watcher
             .watch(parent, RecursiveMode::NonRecursive)
             .map_err(|error| {
@@ -280,11 +285,22 @@ fn record_message(
     dirty: &DirtyState,
     batch: &mut WatchBatch,
 ) {
+    let (message, trace) = match message {
+        WatchMessage::TracedEvent(event, trace) => (WatchMessage::Event(event), Some(trace)),
+        message => (message, None),
+    };
     match message {
         WatchMessage::Event(mut event) => {
             if !normalize_config_event(&mut event, &context.config_path, || {
                 prepared.config_content_changed().unwrap_or(true)
             }) {
+                trace::filtered(
+                    trace.as_ref(),
+                    &event,
+                    context,
+                    dirty,
+                    "drop_unchanged_config",
+                );
                 return;
             }
             let had_only_irrelevant_paths = !event.paths.is_empty()
@@ -305,9 +321,31 @@ fn record_message(
                 context.watch_scope_is_file,
             );
             if event.paths.is_empty() && (had_only_irrelevant_paths || !event.need_rescan()) {
+                trace::filtered(
+                    trace.as_ref(),
+                    &event,
+                    context,
+                    dirty,
+                    if had_only_irrelevant_paths {
+                        "drop_only_irrelevant_paths"
+                    } else {
+                        "drop_empty_without_rescan"
+                    },
+                );
                 return;
             }
             let invalidated = dirty.record_event(&event, &context.config_path);
+            trace::filtered(
+                trace.as_ref(),
+                &event,
+                context,
+                dirty,
+                if invalidated {
+                    "retained_invalidating"
+                } else {
+                    "retained_noninvalidating"
+                },
+            );
             record_normalization_capture(&event, dirty, invalidated);
             emit_normalization_diagnostic(&event, context, dirty, invalidated);
             if invalidated {
@@ -320,26 +358,8 @@ fn record_message(
             batch.watcher_error = Some(error);
             batch.watcher_failed = true;
         }
+        WatchMessage::TracedEvent(_, _) => unreachable!("trace metadata already unpacked"),
     }
-}
-
-fn emit_normalization_diagnostic(
-    event: &Event,
-    context: &WatchContext,
-    dirty: &DirtyState,
-    invalidated: bool,
-) {
-    if !cfg!(debug_assertions) || std::env::var_os(NORMALIZATION_DEBUG_ENV).is_none() {
-        return;
-    }
-    let diagnostic = serde_json::json!({
-        "paths": display_paths(&context.root, &event.paths),
-        "event_kind": format!("{:?}", event.kind),
-        "need_rescan": event.need_rescan(),
-        "config_changed": dirty.config_changed(),
-        "invalidated": invalidated,
-    });
-    eprintln!("{NORMALIZATION_DIAGNOSTIC_PREFIX}{diagnostic}");
 }
 
 fn validate_batch(
@@ -538,6 +558,7 @@ struct WatchContext {
 
 enum WatchMessage {
     Event(Event),
+    TracedEvent(Event, trace::Trace),
     Error(String),
 }
 

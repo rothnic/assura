@@ -15,6 +15,29 @@ use windows_sys::Win32::System::Threading::CREATE_NEW_PROCESS_GROUP;
 pub(super) const EVENT_TIMEOUT: Duration = Duration::from_secs(10);
 const NORMALIZATION_DIAGNOSTIC_PREFIX: &str = "assura.watch.normalization.v1 ";
 
+#[test]
+fn callback_trace_is_explicitly_disabled_for_ordinary_watch_fixtures() {
+    let command =
+        WatchProcess::diagnostic_command(std::path::Path::new("."), None, 100, true, false);
+    let activation = command
+        .get_envs()
+        .find(|(key, _)| *key == "ASSURA_WATCH_TRACE_DEBUG");
+    assert_eq!(activation.map(|(_, value)| value), Some(None));
+}
+
+#[test]
+fn callback_trace_is_explicitly_enabled_for_the_external_config_investigation() {
+    let command =
+        WatchProcess::diagnostic_command(std::path::Path::new("."), None, 100, true, true);
+    let activation = command
+        .get_envs()
+        .find(|(key, _)| *key == "ASSURA_WATCH_TRACE_DEBUG");
+    assert_eq!(
+        activation.map(|(_, value)| value),
+        Some(Some(std::ffi::OsStr::new("1")))
+    );
+}
+
 fn assura_full_bin() -> &'static str {
     env!("CARGO_BIN_EXE_assura-full")
 }
@@ -44,6 +67,24 @@ impl WatchProcess {
         debounce_ms: u64,
         normalization_diagnostics: bool,
     ) -> Self {
+        Self::spawn_with_diagnostics(path, config, debounce_ms, normalization_diagnostics, false)
+    }
+
+    pub(super) fn spawn_path_with_event_trace(
+        path: &std::path::Path,
+        config: Option<&std::path::Path>,
+        debounce_ms: u64,
+    ) -> Self {
+        Self::spawn_with_diagnostics(path, config, debounce_ms, true, true)
+    }
+
+    fn diagnostic_command(
+        path: &std::path::Path,
+        config: Option<&std::path::Path>,
+        debounce_ms: u64,
+        normalization_diagnostics: bool,
+        event_trace: bool,
+    ) -> Command {
         let mut command = Command::new(assura_full_bin());
         if let Some(config) = config {
             command.arg("--config").arg(config);
@@ -54,11 +95,34 @@ impl WatchProcess {
             .args(["--format", "json", "--debounce", &debounce_ms.to_string()])
             .stdout(Stdio::piped())
             .stderr(Stdio::piped());
+        // Only the explicitly selected fixture opts in; parent environment cannot
+        // accidentally activate callback tracing in every native watch test.
+        command.env_remove("ASSURA_WATCH_TRACE_DEBUG");
+        if event_trace {
+            command.env("ASSURA_WATCH_TRACE_DEBUG", "1");
+        }
         if normalization_diagnostics {
             command.env("ASSURA_WATCH_NORMALIZATION_DEBUG", "1");
         }
         #[cfg(windows)]
         command.creation_flags(CREATE_NEW_PROCESS_GROUP);
+        command
+    }
+
+    fn spawn_with_diagnostics(
+        path: &std::path::Path,
+        config: Option<&std::path::Path>,
+        debounce_ms: u64,
+        normalization_diagnostics: bool,
+        event_trace: bool,
+    ) -> Self {
+        let mut command = Self::diagnostic_command(
+            path,
+            config,
+            debounce_ms,
+            normalization_diagnostics,
+            event_trace,
+        );
         let mut child = command.spawn().unwrap();
         let stdout = child.stdout.take().unwrap();
         let (sender, events) = mpsc::channel();
@@ -76,6 +140,9 @@ impl WatchProcess {
         std::thread::spawn(move || {
             for line in BufReader::new(stderr).lines() {
                 let line = line.unwrap();
+                if line.starts_with("assura.watch.trace.v1 ") {
+                    eprintln!("{line}");
+                }
                 if let Some(payload) = line.strip_prefix(NORMALIZATION_DIAGNOSTIC_PREFIX) {
                     diagnostic_sender
                         .send(serde_json::from_str(payload).unwrap())
