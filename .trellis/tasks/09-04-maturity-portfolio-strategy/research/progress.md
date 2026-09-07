@@ -248,3 +248,23 @@
   origin/master` exited 0. A04 is now done, with local hooks still described as
   local lifecycle evidence rather than hosted merge protection. Next independent
   ready card: A05; R03 remains blocked pending a comparable performance repair.
+
+## Iteration 43 — 2026-09-06 — A03 target-state contract repair
+
+- Post-merge verification exposed one verifier inconsistency rather than a
+  product regression: the accepted A03 public guide used the evidence-first
+  procedure, while `cargo xtask target-state` still required its three retired
+  questionnaire markers. The isolated baseline failed only for those markers;
+  no guide content was restored and no gate was disabled.
+- Implementation `932306e` extracts the production guide contract for focused
+  tests, requires the current procedure/action/path, and rejects the retired
+  heading/action/path. Focused RED failed three tests for the stale behavior;
+  GREEN and post-commit runs passed all three. The exact implementation passed
+  `cargo xtask target-state`, `cargo xtask fast`, and the complete local
+  `cargo xtask pr` gate, including Clippy, deterministic docs evidence, and the
+  48-page website build.
+- Independent review of `6d613f8..932306e` found no issues and marked spec and
+  quality PASS. Context health: the omitted target-state update is now captured
+  by positive, missing-current, retired-guidance, and contextual-exception
+  controls; no new reusable skill is warranted. Next: commit this evidence,
+  run the final exact-HEAD PR gate, then let the controller open the PR.
