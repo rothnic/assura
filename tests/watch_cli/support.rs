@@ -159,7 +159,7 @@ impl WatchProcess {
                 if let Some((scope, checked_path)) = diagnostic_scope {
                     assert_eq!(
                         event["report"]["checked_path"],
-                        checked_path.to_str().unwrap()
+                        checked_path.to_string_lossy().replace('\\', "/")
                     );
                     read_report_diagnostics(&self.diagnostics, &event, scope, EVENT_TIMEOUT);
                 }
@@ -289,13 +289,18 @@ pub(super) fn assert_invalid_edit_feedback(
         assert_eq!(event["changed_paths"], serde_json::json!([expected_path]));
         assert_eq!(
             event["report"]["checked_path"],
-            root.join(expected_path).to_str().unwrap()
+            root.join(expected_path)
+                .to_string_lossy()
+                .replace('\\', "/")
         );
     } else {
         assert_eq!(event["report_scope"], "requested_path");
         assert_eq!(event["fallback_reason"], "full_rescan_event");
         assert_eq!(event["changed_paths"], serde_json::json!([]));
-        assert_eq!(event["report"]["checked_path"], root.to_str().unwrap());
+        assert_eq!(
+            event["report"]["checked_path"],
+            root.to_string_lossy().replace('\\', "/")
+        );
     }
     let diagnostics = read_report_diagnostics(&watch.diagnostics, event, "", EVENT_TIMEOUT);
     if mode == "warm_full" {
@@ -527,7 +532,7 @@ fn queued_edit_feedback(full: bool, paths: &[&str]) -> (WatchProcess, Value) {
         "report_scope": if full { "requested_path" } else { "affected_path" },
         "changed_paths": if full { vec![] } else { vec!["src/BadName.ts"] },
         "report": {"success": false,
-            "checked_path": checked_path,
+            "checked_path": checked_path.to_string_lossy().replace('\\', "/"),
             "violations": [{"rule": "file_naming", "path": "src/BadName.ts"}]}
     });
     (
@@ -538,6 +543,31 @@ fn queued_edit_feedback(full: bool, paths: &[&str]) -> (WatchProcess, Value) {
         },
         event,
     )
+}
+
+#[test]
+fn checked_path_assertions_accept_serialized_windows_paths() {
+    for (native, serialized) in [
+        (r"C:\fixture", "C:/fixture"),
+        (r"\\?\C:\fixture", "//?/C:/fixture"),
+        (r"\\server\share\fixture", "//server/share/fixture"),
+    ] {
+        for full in [false, true] {
+            let (watch, mut event) =
+                queued_edit_feedback(full, if full { &[""] } else { &["src/BadName.ts"] });
+            event["report"]["checked_path"] = Value::String(if full {
+                serialized.to_owned()
+            } else {
+                format!("{serialized}/src/BadName.ts")
+            });
+            assert_invalid_edit_feedback(
+                &watch,
+                &event,
+                std::path::Path::new(native),
+                "src/BadName.ts",
+            );
+        }
+    }
 }
 
 #[test]

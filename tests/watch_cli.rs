@@ -229,7 +229,10 @@ fn watch_honors_the_requested_directory_scope() {
     assert_eq!(changed["report_scope"], "affected_path");
     assert_eq!(
         changed["report"]["checked_path"],
-        checked_scope.join("BadName.ts").to_str().unwrap()
+        checked_scope
+            .join("BadName.ts")
+            .to_string_lossy()
+            .replace('\\', "/")
     );
     let violations = changed["report"]["violations"].as_array().unwrap();
     assert!(violations
