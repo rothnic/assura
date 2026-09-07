@@ -10,6 +10,7 @@ import {
   onboardingCommand,
 } from '../../data/marketing';
 import reportData from '../../../public/data/performance/current.json';
+import performanceSummary from '../../data/performance-summary.json';
 
 type ResultRow = {
   fixture_id: string;
@@ -196,8 +197,9 @@ const featuredCases = featuredFixtures.map((featured) => ({
   ...cards.find((card) => card.id === featured.id)!,
   ...featured,
 }));
-const title = 'Assura Performance: Fast Feedback for Agent Work';
-const description = 'See why low-latency validation matters for parallel coding agents, how Assura compares with native LS-Lint, and which project configurations protect performance.';
+const title = 'Assura Performance: Historical Evidence and Methodology';
+const description = 'Current performance evidence is under review. Inspect historical Assura and LS-Lint measurements, their recorded context, and the comparison methodology.';
+const historicalContext = `Historical report: recorded version ${performanceSummary.assura_version} · ${report.timestamp?.slice(0, 10) ?? 'date unavailable'} UTC.`;
 const canonicalPath = '/performance/';
 const coldRatio = report.claim_summary?.aggregate_speedup_ratio?.toFixed(2) ?? 'n/a';
 const warmRatio = report.warm_claim_summary?.aggregate_speedup_ratio?.toFixed(2) ?? 'n/a';
@@ -244,12 +246,12 @@ const ruleRange = countRange(cards.map((card) => card.cold?.rule_count));
   >
     <section class="benchmark-hero" aria-labelledby="benchmark-title">
       <div class="benchmark-hero-copy">
-        <p class="eyebrow">Performance for agentic work</p>
-        <h1 id="benchmark-title">Fast checks keep agent work moving.</h1>
+        <p class="eyebrow">Historical performance evidence</p>
+        <h1 id="benchmark-title">Performance evidence under review</h1>
         <p>
-          Assura keeps deterministic repository checks fast enough to run during the edit loop, not
-          only at commit time. Every tracked cold project beats native LS-Lint, and a persistent Assura
-          session widens the gap when checks repeat.
+          {historicalContext} These measurements are retained for inspection, not as a current
+          speed claim or proof of published-version availability. Cold process comparisons and
+          persistent-session measurements describe different execution paths.
         </p>
         <div class="hero-actions">
           <a class="button button-primary" href="#measured-comparison">See the measured comparison</a>
@@ -257,21 +259,21 @@ const ruleRange = countRange(cards.map((card) => card.cold?.rule_count));
         </div>
       </div>
 
-      <div class="benchmark-summary" aria-label="Current benchmark summary">
+      <div class="benchmark-summary" aria-label="Historical benchmark summary">
         <div class="benchmark-summary-head">
-          <span>Current checked cohort</span>
+          <span>Historical checked cohort</span>
           <strong>{report.claim_summary?.measured_fixture_count ?? 0} / {report.claim_summary?.fixture_count ?? cards.length} measured</strong>
         </div>
         <div class="benchmark-summary-results">
           <div>
             <span>Cold CLI</span>
             <strong>{coldRatio}x</strong>
-            <small>faster aggregate</small>
+            <small>recorded faster aggregate</small>
           </div>
           <div>
             <span>Repeated checks</span>
             <strong>{warmRatio}x</strong>
-            <small>Assura session vs rerun native LS-Lint CLI</small>
+            <small>recorded Assura session vs rerun native LS-Lint CLI</small>
           </div>
         </div>
         <div class="benchmark-comparison-flow" aria-label="Equivalent comparison flow">
@@ -291,11 +293,11 @@ const ruleRange = countRange(cards.map((card) => card.cold?.rule_count));
     <section id="measured-comparison" class="measured-comparison" aria-labelledby="comparison-title">
       <header class="benchmark-section-head">
         <div>
-          <p class="eyebrow">The measured takeaway</p>
-          <h2 id="comparison-title">Faster than native LS-Lint in all eight cold comparisons.</h2>
+          <p class="eyebrow">Performance evidence under review</p>
+          <h2 id="comparison-title">Historical cold comparisons, not a current speed claim.</h2>
         </div>
         <p>
-          The speed comparison isolates the policy surface both tools share. Assura-only checks such as
+          {historicalContext} The recorded speed comparison isolates the policy surface both tools share. Assura-only checks such as
           file contents, Markdown, references, and agent repair guidance are reported separately.
         </p>
       </header>
@@ -377,10 +379,10 @@ const ruleRange = countRange(cards.map((card) => card.cold?.rule_count));
 
       <div class="benchmark-cohort-head" id="benchmark-projects">
         <div>
-          <span>All eight measured cases</span>
+          <span>All eight historical cases</span>
           <strong>See what changes and how the speed changes with it.</strong>
         </div>
-        <p>Each row runs equivalent naming, scope, count, and ignore work through both cold release CLIs. Warm timing is the persistent Assura agent loop. Report: <code>{report.ls_lint_package ?? 'LS-Lint'}</code> · {report.timestamp?.slice(0, 10) ?? 'date unavailable'} UTC.</p>
+        <p>{historicalContext} Each row records equivalent naming, scope, count, and ignore work through both cold release-profile CLIs. Warm timing records the persistent Assura agent loop. Comparison package: <code>{report.ls_lint_package ?? 'LS-Lint'}</code>.</p>
       </div>
 
       <div class="benchmark-matrix" role="table" aria-label="All benchmark project differences and timings">
@@ -510,7 +512,7 @@ const ruleRange = countRange(cards.map((card) => card.cold?.rule_count));
       <header class="benchmark-section-head">
         <div>
           <p class="eyebrow">Benchmark boundary</p>
-          <h2 id="method-title">The speed claim covers the rules both tools share.</h2>
+          <h2 id="method-title">The historical comparison covers the rules both tools share.</h2>
         </div>
         <p>Each cold row runs the same generated project with an LS-Lint policy migrated into Assura. The aggregate uses all eight accepted fixtures shown above.</p>
       </header>

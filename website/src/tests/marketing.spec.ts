@@ -53,6 +53,12 @@ const policyDemo = JSON.parse(
   tree: Array<{ path: string; full_path?: string; status: string; detail: string }>;
 };
 
+const performanceSummary = JSON.parse(
+  readFileSync(new URL('../data/performance-summary.json', import.meta.url), 'utf8'),
+) as { assura_version: string; timestamp: string };
+
+const historicalPerformanceContext = `Historical report: recorded version ${performanceSummary.assura_version} · ${performanceSummary.timestamp.slice(0, 10)} UTC.`;
+
 const performanceReport = JSON.parse(
   readFileSync(new URL('../../public/data/performance/current.json', import.meta.url), 'utf8'),
 ) as {
@@ -74,12 +80,12 @@ const performanceReport = JSON.parse(
 const formatMeasuredMs = (value: number) => `${value.toFixed(value >= 10 ? 1 : 2)} ms`;
 const formatCount = (value: number) => value.toLocaleString('en-US');
 
-const widths = [360, 390, 430, 768, 1024, 1440];
+const widths = [320, 360, 390, 430, 768, 1024, 1440];
 const themes = ['light', 'dark'] as const;
 const marketingRoutes = [
   { path: '/', heading: 'Catch project drift before review.' },
   { path: '/compare/ls-lint/', heading: 'A faster path from naming checks to agent-ready project validation.' },
-  { path: '/performance/', heading: 'Fast checks keep agent work moving.' },
+  { path: '/performance/', heading: 'Performance evidence under review' },
   { path: '/ai-coding-agent-guardrails/', heading: 'Guide the repair before a late gate forces it.' },
   { path: '/about/', heading: 'Built to make AI-assisted work easier to trust.' },
   { path: '/project-review/', heading: 'See what this branch changed before review starts.' },
@@ -107,6 +113,9 @@ for (const colorScheme of themes) {
       await page.screenshot({
         path: testInfo.outputPath(`landing-${colorScheme}-${width}.png`),
         fullPage: true,
+      });
+      await page.locator('.performance-proof').screenshot({
+        path: testInfo.outputPath(`performance-proof-${colorScheme}-${width}.png`),
       });
     });
   }
@@ -433,6 +442,47 @@ test('compact policy links to the complete monorepo example through optional dis
   expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
 });
 
+for (const colorScheme of themes) {
+  for (const width of [320, 390, 720, 721, 768, 980, 981, 1024, 1440]) {
+    test(`${colorScheme} performance evidence content stays inside its cells at ${width}px`, async ({ page }) => {
+      await page.emulateMedia({ colorScheme });
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/');
+      await expect(page.getByRole('region', { name: 'Performance evidence under review', exact: true })).toBeVisible();
+      await expect(page.locator('.performance-proof > div')).toHaveCount(3);
+      const cells = await page.locator('.performance-proof > div').evaluateAll((items) =>
+        items.map((item) => {
+          const { left, right, top, bottom } = item.getBoundingClientRect();
+          const textBounds = Array.from(item.querySelectorAll('span, strong, small, a')).flatMap((text) => {
+            const range = document.createRange();
+            range.selectNodeContents(text);
+            return Array.from(range.getClientRects(), (rect) => ({
+              left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom,
+            }));
+          });
+          return { left, right, top, bottom, textBounds, overflow: item.scrollWidth - item.clientWidth };
+        }),
+      );
+      expect(cells).toHaveLength(3);
+      for (const [index, cell] of cells.entries()) {
+        expect(cell.overflow, `cell ${index} overflow`).toBe(0);
+        expect(cell.textBounds.length).toBeGreaterThan(0);
+        for (const text of cell.textBounds) {
+          expect(text.left).toBeGreaterThanOrEqual(cell.left);
+          expect(text.right).toBeLessThanOrEqual(cell.right);
+          expect(text.top).toBeGreaterThanOrEqual(cell.top);
+          expect(text.bottom).toBeLessThanOrEqual(cell.bottom);
+        }
+        for (const other of cells.slice(index + 1)) {
+          const overlaps = Math.min(cell.right, other.right) > Math.max(cell.left, other.left)
+            && Math.min(cell.bottom, other.bottom) > Math.max(cell.top, other.top);
+          expect(overlaps, `cell ${index} overlaps another cell`).toBe(false);
+        }
+      }
+    });
+  }
+}
+
 for (const width of [320, 360, 390]) {
   test(`homepage policy is fully visible without nested scrolling at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 844 });
@@ -580,11 +630,43 @@ test('review, check, and onboarding retain distinct real product states', async 
   );
 });
 
-test('performance CTA lands on the measured project cohort', async ({ page }) => {
+test('homepage withholds current speed claims and links methodology and historical evidence', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('link', { name: 'How we measured it' }).click();
+  const proof = page.getByRole('region', { name: 'Performance evidence under review', exact: true });
+  await expect(proof).toBeVisible();
+  await expect(proof.getByText('Performance evidence under review', { exact: true })).toBeVisible();
+  await expect(proof.locator('strong')).toHaveText(['Under review', 'Under review']);
+  await expect(proof).not.toContainText(/faster|\d+(?:\.\d+)?\s*[×x]|current\s+(?:Assura\s+)?(?:speed|performance) evidence/i);
+  await expect(proof).toHaveAttribute('data-release-surface', 'cold-ls-lint-comparison warm-session-performance');
+  const methodology = proof.getByRole('link', { name: 'How we measured it' });
+  await expect(methodology).toHaveAttribute('href', '/insights/benchmark-methodology/');
+  await methodology.click();
+  await expect(page.getByRole('heading', { name: 'Measure equivalent work before comparing speed.' })).toBeVisible();
+  await expect(page.getByText('Performance evidence under review', { exact: true })).toBeVisible();
+  await expect(page.locator('.focused-hero-copy')).toContainText(historicalPerformanceContext);
+  await expect(page.locator('.focused-artifact')).toContainText(`recorded version ${performanceSummary.assura_version}`);
+  await expect(page.locator('.focused-artifact')).not.toContainText(/release\s+\d/i);
+  await expect(page.getByRole('heading', { name: 'Release-bound claims', exact: true })).toHaveCount(0);
+  await page.goto('/');
+  await page.locator('.performance-proof').getByRole('link', {
+    name: `Historical report (recorded version ${performanceSummary.assura_version})`,
+  }).click();
   await expect(page).toHaveURL(/\/performance\/#measured-comparison$/);
-  await expect(page.getByRole('heading', { name: 'Faster than native LS-Lint in all eight cold comparisons.' })).toBeVisible();
+  const comparison = page.locator('#measured-comparison');
+  await expect(comparison.getByText('Performance evidence under review', { exact: true })).toBeInViewport();
+  await expect(comparison).toContainText(historicalPerformanceContext);
+});
+
+test('performance page preserves the measured project cohort', async ({ page }) => {
+  await page.goto('/performance/#measured-comparison');
+  const comparison = page.locator('#measured-comparison');
+  await expect(comparison.getByText('Performance evidence under review', { exact: true })).toBeInViewport();
+  await expect(comparison).toContainText(historicalPerformanceContext);
+  await expect(comparison.getByRole('heading')).toHaveText('Historical cold comparisons, not a current speed claim.');
+  await expect(page.getByRole('heading', { name: 'Performance evidence under review', exact: true })).toBeVisible();
+  await expect(page.locator('.benchmark-hero')).toContainText(historicalPerformanceContext);
+  await expect(page.locator('.benchmark-summary')).toHaveAttribute('aria-label', 'Historical benchmark summary');
+  await expect(page.locator('main')).not.toContainText(/Current checked cohort|Every tracked cold project beats native LS-Lint|Faster than native LS-Lint in all eight cold comparisons\./);
   await expect(page.locator('.policy-breadth-card')).toHaveCount(1);
   await expect(page.locator('.policy-wipe-layer')).toHaveCount(2);
   await expect(page.getByRole('slider')).toHaveCount(0);
