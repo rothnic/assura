@@ -1,5 +1,27 @@
 # Maturity execution train progress
 
+## Iteration 45 — 2026-09-07 — Safe legacy upgrade and context health
+
+- Fresh-source tests confirmed the unsafe exact legacy wrapper, including a
+  real shell-substitution sentinel. Source fix `258282a` now distinguishes
+  ownership from current safe content and upgrades proven legacy pairs by
+  default through both direct and bulk APIs. It preserves custom/drifted pairs,
+  removal authority and transactional rollback. Focused, library, Clippy and
+  structure checks passed; final-head full gates and re-review remain required.
+- Context health: the budget is not exposed. Current base is merged A03
+  `3d9a255`; A04 owns the active repair; A05 remains preserved; R03 retains
+  fresh hosted and VPS passes without claiming an optimization/noise amendment;
+  47 worktrees remain after owned merged cleanup, with unrelated state intact.
+- Repeated issue reviewed: exact ownership was incorrectly conflated with safe
+  readiness. The distinction now lives in executable legacy-upgrade tests and
+  the existing harness hook spec. The existing hook skill already routes that
+  spec, so another operational skill would duplicate it rather than prevent
+  rediscovery. Final approval must explicitly review legacy as well as newly
+  generated wrappers.
+- Next: finish independent review and final committed-head fast/PR gates, then
+  a fully gated ownership PR. A04's effective hook path/manager integration and
+  host permission/runtime evidence remain subsequent current-master slices.
+
 ## Iteration 44 — 2026-09-06 — A03 integration and legacy-path correction
 
 - PR #183 merged as `3d9a255f832733082c864edf703fc98c854e7f6e`. All 24
@@ -19,6 +41,13 @@
   distinguish proven ownership from safe/current state and upgrade exact legacy
   wrappers by default. A04 remains unapproved; no dangerous fixture content was
   merged. This contract is now in the bounded repair plan.
+- Preserved A03 runtime evidence under this goal's runtime area, then removed
+  its clean merged worktree and exact-SHA-leased remote branch. The first local
+  `branch -d` was correctly refused from the older strategy checkout because
+  that checkout lacks the merge; deletion was retried only from the descendant
+  A04 checkout after verifying ancestry against both HEAD and `origin/master`.
+  No force deletion was used. Inventory is 47 worktrees; shared build cache,
+  unknown paths and both pre-existing prune-dry-run findings remain untouched.
 
 ## Iteration 42 — 2026-09-06 — Acceptance correction and queue reconciliation
 
