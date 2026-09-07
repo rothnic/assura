@@ -450,6 +450,82 @@ fn watch_scope_filters_an_outside_event_and_retains_an_inside_event() {
 }
 
 #[test]
+fn directory_create_forces_full_validation_only_in_the_requested_scope() {
+    let project = tempfile::tempdir().unwrap();
+    fs::create_dir(project.path().join(".assura")).unwrap();
+    fs::create_dir(project.path().join("src")).unwrap();
+    fs::create_dir(project.path().join("docs")).unwrap();
+    fs::write(
+        project.path().join(".assura/config.yml"),
+        config_with_naming("kebab-case"),
+    )
+    .unwrap();
+    for directory in ["src", "docs"] {
+        fs::write(
+            project.path().join(directory).join("BadName.ts"),
+            "export {};\n",
+        )
+        .unwrap();
+    }
+    let root = project.path().canonicalize().unwrap();
+    let scope = root.join("src");
+    let mut prepared =
+        PreparedStructureCheck::load_for_path(Some(scope.clone()), None, false).unwrap();
+    let context = WatchContext {
+        root: root.clone(),
+        watch_scope: scope.clone(),
+        watch_scope_is_file: false,
+        config_path: root.join(".assura/config.yml"),
+        config_watch_parent: Some(root.join(".assura")),
+        no_git: false,
+    };
+    let dirty = DirtyState::new();
+    dirty.take();
+    let mut batch = WatchBatch::default();
+    record_message(
+        WatchMessage::Event(
+            Event::new(EventKind::Create(notify::event::CreateKind::Folder))
+                .add_path(scope.clone()),
+        ),
+        &context,
+        &prepared,
+        &dirty,
+        &mut batch,
+    );
+    assert_eq!(batch.invalidating_events, 1);
+    let taken = dirty.take();
+    assert_eq!(taken.project, DirtyProject::Full);
+    let event = serde_json::to_value(validate_batch(
+        2,
+        100,
+        &context,
+        &mut prepared,
+        taken,
+        batch,
+        true,
+    ))
+    .unwrap();
+    assert_eq!(event["runtime_mode"], "warm_full");
+    assert_eq!(event["fallback_reason"], "full_rescan_event");
+    assert_eq!(event["report_scope"], "requested_path");
+    assert_eq!(event["changed_paths"], serde_json::json!([]));
+    assert_eq!(event["report"]["checked_path"], scope.to_str().unwrap());
+    assert_eq!(event["report"]["success"], false);
+    let violations = event["report"]["violations"].as_array().unwrap();
+    assert!(violations
+        .iter()
+        .any(|violation| violation["rule"] == "file_naming"
+            && violation["path"]
+                .as_str()
+                .is_some_and(|path| path.replace('\\', "/").ends_with("src/BadName.ts"))));
+    assert!(violations.iter().all(|violation| !violation["path"]
+        .as_str()
+        .unwrap()
+        .replace('\\', "/")
+        .contains("docs/")));
+}
+
+#[test]
 fn assura_parent_events_only_invalidate_when_config_content_changed() {
     let project = tempfile::tempdir().unwrap();
     fs::create_dir(project.path().join(".assura")).unwrap();

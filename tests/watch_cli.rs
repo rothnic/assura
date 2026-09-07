@@ -144,7 +144,11 @@ impl WatchProcess {
         }
     }
 
-    fn assert_no_event_or_scoped_rescan(&self, duration: Duration) -> u64 {
+    fn assert_no_event_or_scoped_rescan(
+        &self,
+        duration: Duration,
+        diagnostic_scope: Option<(&str, &std::path::Path)>,
+    ) -> u64 {
         match self.events.recv_timeout(duration) {
             Err(mpsc::RecvTimeoutError::Timeout) => 2,
             Ok(event) => {
@@ -153,6 +157,13 @@ impl WatchProcess {
                 assert_eq!(event["report_scope"], "requested_path");
                 assert_eq!(event["changed_paths"], serde_json::json!([]));
                 assert_eq!(event["report"]["success"], true);
+                if let Some((scope, checked_path)) = diagnostic_scope {
+                    assert_eq!(
+                        event["report"]["checked_path"],
+                        checked_path.to_str().unwrap()
+                    );
+                    read_report_diagnostics(&self.diagnostics, &event, scope, EVENT_TIMEOUT);
+                }
                 3
             }
             Err(mpsc::RecvTimeoutError::Disconnected) => {
@@ -189,6 +200,65 @@ impl WatchProcess {
     }
 }
 
+// stdout and stderr have separate reader threads. Associate in FIFO order by
+// the report's invalidating-event count, never by searching for an expected path.
+fn read_report_diagnostics(
+    diagnostics: &Receiver<Value>,
+    event: &Value,
+    scope: &str,
+    timeout: Duration,
+) -> Vec<Value> {
+    let expected = event["coalesced_events"].as_u64().unwrap();
+    assert!(
+        expected > 0,
+        "filesystem report must contain invalidating events"
+    );
+    let deadline = Instant::now() + timeout;
+    let mut records = Vec::new();
+    while records.len() < expected as usize {
+        let remaining = deadline.saturating_duration_since(Instant::now());
+        assert!(
+            !remaining.is_zero(),
+            "normalization diagnostic deadline elapsed"
+        );
+        let diagnostic = diagnostics
+            .recv_timeout(remaining)
+            .expect("missing normalization diagnostic for report");
+        eprintln!(
+            "normalization diagnostic for sequence {}: {diagnostic}",
+            event["sequence"]
+        );
+        assert_eq!(diagnostic["config_changed"], false);
+        let kind = diagnostic["event_kind"].as_str().unwrap();
+        assert!(!kind.is_empty());
+        let paths = diagnostic["paths"].as_array().unwrap();
+        assert!(
+            paths.iter().all(|path| path
+                .as_str()
+                .is_some_and(|path| path == scope || path.starts_with(&format!("{scope}/")))),
+            "diagnostic outside requested scope: {diagnostic}"
+        );
+        let rescan = diagnostic["need_rescan"].as_bool().unwrap();
+        if diagnostic["invalidated"].as_bool().unwrap() {
+            assert!(
+                !paths.is_empty() || rescan,
+                "pathless diagnostic must request rescan"
+            );
+            records.push(diagnostic);
+        } else {
+            assert!(
+                kind.starts_with("Access(") && kind != "Access(Close(Write))",
+                "unexpected non-invalidating diagnostic: {diagnostic}"
+            );
+            assert!(
+                !rescan && !paths.is_empty(),
+                "invalid ignored access diagnostic"
+            );
+        }
+    }
+    records
+}
+
 impl Drop for WatchProcess {
     fn drop(&mut self) {
         if self.child.try_wait().ok().flatten().is_none() {
@@ -215,6 +285,206 @@ fn assert_no_event_rejects_a_disconnected_event_reader() {
     };
 
     watch.assert_no_event(Duration::from_millis(1));
+}
+
+#[test]
+fn scoped_rescan_consumes_its_diagnostic_before_the_incremental_edit() {
+    let child = Command::new(assura_full_bin())
+        .arg("--version")
+        .spawn()
+        .unwrap();
+    let (sender, events) = mpsc::channel();
+    let (diagnostic_sender, diagnostics) = mpsc::channel();
+    sender
+        .send(serde_json::json!({
+            "schema": "assura.watch.event.v1", "sequence": 2,
+            "trigger": "filesystem", "runtime_mode": "warm_full", "debounce_ms": 100,
+            "fallback_reason": "full_rescan_event", "report_scope": "requested_path",
+            "changed_paths": [], "coalesced_events": 1,
+            "report": {"success": true, "checked_path": "/fixture/src"}
+        }))
+        .unwrap();
+    for (event_kind, path) in [
+        ("Create(Folder)", "src"),
+        ("Create(File)", "src/BadName.ts"),
+    ] {
+        diagnostic_sender
+            .send(serde_json::json!({
+                "event_kind": event_kind, "paths": [path], "need_rescan": false,
+                "config_changed": false, "invalidated": true
+            }))
+            .unwrap();
+    }
+    let watch = WatchProcess {
+        child,
+        events,
+        diagnostics,
+    };
+    assert_eq!(
+        watch.assert_no_event_or_scoped_rescan(
+            Duration::from_millis(20),
+            Some(("src", std::path::Path::new("/fixture/src")))
+        ),
+        3
+    );
+    assert_eq!(
+        watch.next_normalization_diagnostic()["paths"],
+        serde_json::json!(["src/BadName.ts"])
+    );
+}
+
+#[test]
+fn report_diagnostics_count_invalidations_not_access_notifications() {
+    let (sender, diagnostics) = mpsc::channel();
+    for (kind, invalidated) in [
+        ("Access(Read)", false),
+        ("Create(File)", true),
+        ("Access(Open(Read))", false),
+        ("Modify(Data(Content))", true),
+    ] {
+        sender
+            .send(serde_json::json!({
+                "event_kind": kind, "paths": ["src/BadName.ts"], "need_rescan": false,
+                "config_changed": false, "invalidated": invalidated
+            }))
+            .unwrap();
+    }
+    let records = read_report_diagnostics(
+        &diagnostics,
+        &serde_json::json!({"sequence": 3, "coalesced_events": 2}),
+        "src",
+        Duration::from_millis(20),
+    );
+    assert_eq!(records.len(), 2);
+    assert_eq!(records[0]["event_kind"], "Create(File)");
+    assert_eq!(records[1]["event_kind"], "Modify(Data(Content))");
+}
+
+#[test]
+fn report_diagnostics_reject_missing_and_disconnected_records() {
+    for disconnected in [false, true] {
+        let (sender, diagnostics) = mpsc::channel::<Value>();
+        let sender = if disconnected {
+            drop(sender);
+            None
+        } else {
+            Some(sender)
+        };
+        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            read_report_diagnostics(
+                &diagnostics,
+                &serde_json::json!({"coalesced_events": 1}),
+                "src",
+                Duration::from_millis(5),
+            );
+        }));
+        assert!(
+            result.is_err(),
+            "missing record was accepted (disconnected={disconnected})"
+        );
+        drop(sender);
+    }
+}
+
+#[test]
+fn report_diagnostics_reject_wrong_scope_and_invalid_ignored_records() {
+    for (path, kind, invalidated, rescan) in [
+        ("docs/BadName.ts", "Create(File)", true, false),
+        ("src-other/BadName.ts", "Create(File)", true, false),
+        ("src/BadName.ts", "Create(File)", false, false),
+        ("src/BadName.ts", "Access(Close(Write))", false, false),
+        ("src/BadName.ts", "Access(Read)", false, true),
+    ] {
+        let (sender, diagnostics) = mpsc::channel();
+        sender
+            .send(serde_json::json!({
+                "event_kind": kind, "paths": [path], "need_rescan": rescan,
+                "config_changed": false, "invalidated": invalidated
+            }))
+            .unwrap();
+        // A valid record follows so silently skipping the bad input would pass
+        // the reader, not merely fail later from an unrelated timeout.
+        sender
+            .send(serde_json::json!({
+                "event_kind": "Create(File)", "paths": ["src/BadName.ts"],
+                "need_rescan": false, "config_changed": false, "invalidated": true
+            }))
+            .unwrap();
+        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            read_report_diagnostics(
+                &diagnostics,
+                &serde_json::json!({"coalesced_events": 1}),
+                "src",
+                Duration::from_millis(20),
+            );
+        }));
+        assert!(
+            result.is_err(),
+            "invalid diagnostic was accepted: {path}, {kind}"
+        );
+    }
+}
+
+#[test]
+#[should_panic(expected = "warm_full")]
+fn scoped_rescan_does_not_hide_a_second_predecessor() {
+    let child = Command::new(assura_full_bin())
+        .arg("--version")
+        .spawn()
+        .unwrap();
+    let (sender, events) = mpsc::channel();
+    let (_diagnostic_sender, diagnostics) = mpsc::channel();
+    for sequence in [2, 3] {
+        sender
+            .send(serde_json::json!({
+                "schema": "assura.watch.event.v1", "sequence": sequence,
+                "trigger": "filesystem", "runtime_mode": "warm_full", "debounce_ms": 100,
+                "fallback_reason": "full_rescan_event", "report_scope": "requested_path",
+                "changed_paths": [], "coalesced_events": 1, "report": {"success": true}
+            }))
+            .unwrap();
+    }
+    let watch = WatchProcess {
+        child,
+        events,
+        diagnostics,
+    };
+    let expected = watch.assert_no_event_or_scoped_rescan(Duration::from_millis(20), None);
+    assert_event(
+        &watch.next_event(),
+        expected,
+        "filesystem",
+        "warm_incremental",
+    );
+}
+
+#[test]
+#[should_panic(expected = "/fixture/docs")]
+fn scoped_rescan_rejects_a_report_checked_outside_the_requested_directory() {
+    let child = Command::new(assura_full_bin())
+        .arg("--version")
+        .spawn()
+        .unwrap();
+    let (sender, events) = mpsc::channel();
+    let (_diagnostic_sender, diagnostics) = mpsc::channel();
+    sender
+        .send(serde_json::json!({
+            "schema": "assura.watch.event.v1", "sequence": 2,
+            "trigger": "filesystem", "runtime_mode": "warm_full", "debounce_ms": 100,
+            "fallback_reason": "full_rescan_event", "report_scope": "requested_path",
+            "changed_paths": [], "coalesced_events": 1,
+            "report": {"success": true, "checked_path": "/fixture/docs"}
+        }))
+        .unwrap();
+    let watch = WatchProcess {
+        child,
+        events,
+        diagnostics,
+    };
+    watch.assert_no_event_or_scoped_rescan(
+        Duration::from_millis(20),
+        Some(("src", std::path::Path::new("/fixture/src"))),
+    );
 }
 
 #[test]
@@ -430,12 +700,17 @@ fn watch_honors_the_requested_directory_scope() {
         true,
     );
     let initial = watch.next_event();
+    assert_eq!(initial["report"]["success"], true);
     assert!(initial["report"]["checked_path"]
         .as_str()
         .is_some_and(|path| path.replace('\\', "/").ends_with("/src")));
 
     fs::write(project.path().join("docs/BadName.ts"), "export {};\n").unwrap();
-    let expected_sequence = watch.assert_no_event_or_scoped_rescan(Duration::from_millis(450));
+    let checked_scope = project.path().join("src").canonicalize().unwrap();
+    let expected_sequence = watch.assert_no_event_or_scoped_rescan(
+        Duration::from_millis(450),
+        Some(("src", &checked_scope)),
+    );
     fs::write(project.path().join("src/BadName.ts"), "export {};\n").unwrap();
 
     let changed = watch.next_event();
@@ -446,16 +721,32 @@ fn watch_honors_the_requested_directory_scope() {
         "warm_incremental",
     );
     assert_eq!(changed["report"]["success"], false);
-
-    let diagnostic = watch.next_normalization_diagnostic();
-    eprintln!("directory scope normalization diagnostic: {diagnostic}");
-    assert_eq!(diagnostic["paths"], serde_json::json!(["src/BadName.ts"]));
-    assert!(diagnostic["event_kind"]
+    assert_eq!(
+        changed["changed_paths"],
+        serde_json::json!(["src/BadName.ts"])
+    );
+    assert_eq!(changed["report_scope"], "affected_path");
+    assert_eq!(
+        changed["report"]["checked_path"],
+        checked_scope.join("BadName.ts").to_str().unwrap()
+    );
+    let violations = changed["report"]["violations"].as_array().unwrap();
+    assert!(violations
+        .iter()
+        .any(|violation| violation["rule"] == "file_naming"
+            && violation["path"]
+                .as_str()
+                .is_some_and(|path| path.replace('\\', "/").ends_with("src/BadName.ts"))));
+    assert!(violations.iter().all(|violation| !violation["path"]
         .as_str()
-        .is_some_and(|kind| !kind.is_empty()));
-    assert_eq!(diagnostic["need_rescan"], false);
-    assert_eq!(diagnostic["config_changed"], false);
-    assert_eq!(diagnostic["invalidated"], true);
+        .unwrap()
+        .replace('\\', "/")
+        .contains("docs/")));
+
+    for diagnostic in read_report_diagnostics(&watch.diagnostics, &changed, "src", EVENT_TIMEOUT) {
+        assert_eq!(diagnostic["paths"], serde_json::json!(["src/BadName.ts"]));
+        assert_eq!(diagnostic["need_rescan"], false);
+    }
 }
 
 #[test]
@@ -527,7 +818,7 @@ fn watch_ignores_assura_runtime_output() {
     )
     .unwrap();
 
-    watch.assert_no_event_or_scoped_rescan(Duration::from_millis(450));
+    watch.assert_no_event_or_scoped_rescan(Duration::from_millis(450), None);
 }
 
 #[test]
