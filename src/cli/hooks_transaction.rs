@@ -185,12 +185,12 @@ mod tests {
     use super::*;
 
     #[test]
-    fn wrapper_failure_restores_sidecar_and_leaves_wrapper_unchanged() {
+    fn wrapper_failure_during_legacy_upgrade_restores_original_pair() {
         let directory = tempfile::TempDir::new().unwrap();
         let sidecar = directory.path().join("assura-hook");
         let wrapper = directory.path().join("git-hook");
         let original_sidecar = b"original sidecar bytes\n";
-        let original_wrapper = b"original wrapper bytes\n";
+        let original_wrapper = b"exact legacy wrapper bytes\n";
         let new_wrapper = b"new wrapper bytes\n";
         fs::write(&sidecar, original_sidecar).unwrap();
         fs::write(&wrapper, original_wrapper).unwrap();

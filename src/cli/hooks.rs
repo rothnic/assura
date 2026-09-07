@@ -5,13 +5,18 @@ use thiserror::Error;
 
 #[path = "hooks_ownership.rs"]
 mod ownership;
+#[path = "hooks_status.rs"]
+mod status;
 #[path = "hooks_transaction.rs"]
 mod transaction;
+
+pub use status::HookStatus;
 
 use ownership::{
     classify_artifact, ensure_plain_directory, plain_directory_or_absent,
     remove_file_if_still_managed, shell_single_quote, ArtifactOwnership, HookOwnership,
 };
+use status::is_runnable;
 
 #[derive(Error, Debug)]
 pub enum HookError {
@@ -46,7 +51,7 @@ pub struct HookInstallOutcome {
     pub installed: Vec<HookType>,
     /// Managed hook entrypoints that already matched the current generator.
     pub unchanged: Vec<HookType>,
-    /// Managed hook entrypoints refreshed by an explicit force install.
+    /// Managed hook entrypoints refreshed because they were stale or force was explicit.
     pub refreshed: Vec<HookType>,
     /// Hook artifact pairs Assura left unchanged because ownership was not proven.
     pub preserved: Vec<HookType>,
@@ -126,7 +131,7 @@ impl GitHooksManager {
                 continue;
             }
 
-            if ownership.is_complete() && !force {
+            if ownership.is_current() && !force {
                 outcome.unchanged.push(hook_type);
                 continue;
             }
@@ -147,7 +152,7 @@ impl GitHooksManager {
         let assura_hook_path = self.assura_hooks_dir.join(hook_name);
         let ownership = self.ownership(hook_type)?;
 
-        if ownership.has_unmanaged() || (ownership.is_complete() && !force) {
+        if ownership.has_unmanaged() || (ownership.is_current() && !force) {
             return Err(HookError::AlreadyExists(hook_name.to_string()));
         }
 
@@ -156,7 +161,7 @@ impl GitHooksManager {
         // Reclassify at the final mutation boundary so a static path change made
         // after manager creation cannot turn a managed write into an overwrite.
         let ownership = self.ownership(hook_type)?;
-        if ownership.has_unmanaged() || (ownership.is_complete() && !force) {
+        if ownership.has_unmanaged() || (ownership.is_current() && !force) {
             return Err(HookError::AlreadyExists(hook_name.to_string()));
         }
 
@@ -225,11 +230,11 @@ fi
             return Ok(());
         }
 
-        if ownership.wrapper == ArtifactOwnership::Managed {
+        if ownership.wrapper.is_managed() {
             let expected = self.managed_wrapper_contents(&assura_hook_path);
             remove_file_if_still_managed(&git_hook_path, &expected)?;
         }
-        if ownership.sidecar == ArtifactOwnership::Managed {
+        if ownership.sidecar.is_managed() {
             let expected = self.generate_hook_content(hook_type)?.into_bytes();
             remove_file_if_still_managed(&assura_hook_path, &[expected])?;
         }
@@ -267,6 +272,7 @@ fi
             hook_type,
             is_installed: ownership.is_installed(),
             is_managed: ownership.is_complete(),
+            is_current: ownership.is_current(),
             git_runnable: is_runnable(&git_hook_path),
             assura_runnable: is_runnable(&assura_hook_path),
             git_path: git_hook_path,
@@ -386,53 +392,6 @@ fn resolve_common_git_dir(git_dir: &Path) -> PathBuf {
     std::fs::canonicalize(&resolved).unwrap_or(resolved)
 }
 
-#[derive(Debug)]
-pub struct HookStatus {
-    pub hook_type: HookType,
-    pub is_installed: bool,
-    pub is_managed: bool,
-    pub git_runnable: bool,
-    pub assura_runnable: bool,
-    pub git_path: PathBuf,
-    pub assura_path: PathBuf,
-}
-
-impl HookStatus {
-    pub fn is_ready(&self) -> bool {
-        self.is_installed && self.is_managed && self.git_runnable && self.assura_runnable
-    }
-
-    pub fn display(&self) -> String {
-        let status = if self.is_ready() {
-            "✓ installed (managed by assura, runnable)"
-        } else if self.is_installed {
-            if self.is_managed {
-                "⚠ installed (managed by assura, not runnable)"
-            } else {
-                "⚠ installed (not managed by assura)"
-            }
-        } else {
-            "✗ not installed"
-        };
-
-        format!("{:<20} {}", self.hook_type.as_str(), status)
-    }
-}
-
-#[cfg(unix)]
-fn is_runnable(path: &Path) -> bool {
-    use std::os::unix::fs::PermissionsExt;
-
-    path.symlink_metadata()
-        .map(|metadata| metadata.is_file() && metadata.permissions().mode() & 0o111 != 0)
-        .unwrap_or(false)
-}
-
-#[cfg(not(unix))]
-fn is_runnable(path: &Path) -> bool {
-    path.is_file()
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -452,6 +411,7 @@ mod tests {
             hook_type: HookType::PreCommit,
             is_installed: true,
             is_managed: true,
+            is_current: true,
             git_runnable: true,
             assura_runnable: true,
             git_path: PathBuf::from(".git/hooks/pre-commit"),

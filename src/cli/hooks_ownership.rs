@@ -6,8 +6,15 @@ use std::path::Path;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(super) enum ArtifactOwnership {
     Absent,
-    Managed,
+    ManagedCurrent,
+    ManagedLegacy,
     Unmanaged,
+}
+
+impl ArtifactOwnership {
+    pub(super) fn is_managed(self) -> bool {
+        matches!(self, Self::ManagedCurrent | Self::ManagedLegacy)
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -22,11 +29,16 @@ impl HookOwnership {
     }
 
     pub(super) fn is_complete(self) -> bool {
-        self.wrapper == ArtifactOwnership::Managed && self.sidecar == ArtifactOwnership::Managed
+        self.wrapper.is_managed() && self.sidecar.is_managed()
+    }
+
+    pub(super) fn is_current(self) -> bool {
+        self.wrapper == ArtifactOwnership::ManagedCurrent
+            && self.sidecar == ArtifactOwnership::ManagedCurrent
     }
 
     pub(super) fn has_managed_artifact(self) -> bool {
-        self.wrapper == ArtifactOwnership::Managed || self.sidecar == ArtifactOwnership::Managed
+        self.wrapper.is_managed() || self.sidecar.is_managed()
     }
 
     pub(super) fn is_installed(self) -> bool {
@@ -53,11 +65,15 @@ pub(super) fn classify_artifact(
         return Ok(ArtifactOwnership::Unmanaged);
     }
     let content = std::fs::read(path)?;
-    if expected_contents
+    if let Some(index) = expected_contents
         .iter()
-        .any(|expected| expected.as_slice() == content)
+        .position(|expected| expected.as_slice() == content)
     {
-        Ok(ArtifactOwnership::Managed)
+        Ok(if index == 0 {
+            ArtifactOwnership::ManagedCurrent
+        } else {
+            ArtifactOwnership::ManagedLegacy
+        })
     } else {
         Ok(ArtifactOwnership::Unmanaged)
     }
@@ -67,7 +83,7 @@ pub(super) fn remove_file_if_still_managed(
     path: &Path,
     expected_contents: &[Vec<u8>],
 ) -> HookResult<()> {
-    if classify_artifact(path, expected_contents, true)? != ArtifactOwnership::Managed {
+    if !classify_artifact(path, expected_contents, true)?.is_managed() {
         return Err(HookError::UnsafePath(path.to_path_buf()));
     }
     std::fs::remove_file(path)?;

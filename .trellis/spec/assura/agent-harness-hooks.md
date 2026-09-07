@@ -77,9 +77,10 @@ expected files without timestamp noise.
 - A Git hook pair is Assura-managed only when the complete entrypoint equals a
   deterministic Assura delegator for that hook and project-local sidecar path,
   and the complete sidecar equals the embedded hook script. The previous exact
-  double-quoted delegator remains an accepted managed format for lifecycle
-  compatibility; newly generated delegators single-quote literal paths while
-  preserving their exact Unix path bytes.
+  double-quoted delegator remains ownership evidence for refresh/removal, but
+  it is legacy rather than current or ready and default installation upgrades
+  it. Newly generated delegators single-quote literal paths while preserving
+  their exact Unix path bytes.
 - A marker substring, expected filename, or one matching artifact is never
   ownership proof for the other artifact. `--force` refreshes only a pair with
   no unowned content. Removal classifies the wrapper and sidecar together before
@@ -98,7 +99,8 @@ expected files without timestamp noise.
 
 | Condition | Required behavior |
 | --- | --- |
-| Existing exact managed wrapper | report unchanged or refreshed; removal is allowed |
+| Existing exact current wrapper | report unchanged, or refreshed under force; removal is allowed |
+| Existing exact legacy wrapper | report owned but not ready; default install upgrades it; removal is allowed |
 | Existing custom wrapper, including marker text | preserve and report it; never overwrite or delete |
 | Custom wrapper with an Assura-named sidecar | preserve both files |
 | Exact wrapper with modified sidecar | preserve both files and report drift |
@@ -112,6 +114,8 @@ expected files without timestamp noise.
 
 - Good: a force refresh replaces an exact stale Assura wrapper and exact
   sidecar without weakening advisory/default or opt-in blocking behavior.
+- Good: default install upgrades an exact legacy wrapper before it can execute
+  shell expansion from an otherwise literal project path.
 - Base: a repeated install reports an exact current wrapper as unchanged.
 - Bad: treating `Git hook managed by Assura`, an Assura filename, or a symlink
   target as ownership.

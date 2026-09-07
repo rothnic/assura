@@ -19,6 +19,25 @@ fn hook_paths(project: &Path, hook_type: HookType) -> (std::path::PathBuf, std::
     )
 }
 
+fn write_exact_legacy_pre_push_pair(project: &Path) -> (std::path::PathBuf, std::path::PathBuf) {
+    let (wrapper, sidecar) = hook_paths(project, HookType::PrePush);
+    std::fs::write(&sidecar, include_str!("../.assura/hooks/pre-push")).unwrap();
+    let legacy_wrapper = format!(
+        "#!/bin/sh\n# Git hook managed by Assura\n# This file was auto-generated. Do not modify manually.\n\nASSURA_HOOK=\"{}\"\n\nif [ -f \"$ASSURA_HOOK\" ]; then\n    exec \"$ASSURA_HOOK\" \"$@\"\nelse\n    echo \"Warning: Assura hook not found at $ASSURA_HOOK\" >&2\n    exit 0\nfi\n",
+        sidecar.display()
+    );
+    std::fs::write(&wrapper, legacy_wrapper).unwrap();
+
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        std::fs::set_permissions(&wrapper, std::fs::Permissions::from_mode(0o755)).unwrap();
+        std::fs::set_permissions(&sidecar, std::fs::Permissions::from_mode(0o755)).unwrap();
+    }
+
+    (wrapper, sidecar)
+}
+
 #[test]
 fn direct_force_install_preserves_a_custom_wrapper() {
     let project = project_with_git_hooks();
@@ -213,19 +232,99 @@ fn install_repairs_a_missing_wrapper_only_for_an_exact_managed_sidecar() {
 #[test]
 fn exact_legacy_wrapper_remains_managed_for_removal() {
     let project = project_with_git_hooks();
-    let (wrapper, sidecar) = hook_paths(project.path(), HookType::PrePush);
-    std::fs::write(&sidecar, include_str!("../.assura/hooks/pre-push")).unwrap();
-    let legacy_wrapper = format!(
-        "#!/bin/sh\n# Git hook managed by Assura\n# This file was auto-generated. Do not modify manually.\n\nASSURA_HOOK=\"{}\"\n\nif [ -f \"$ASSURA_HOOK\" ]; then\n    exec \"$ASSURA_HOOK\" \"$@\"\nelse\n    echo \"Warning: Assura hook not found at $ASSURA_HOOK\" >&2\n    exit 0\nfi\n",
-        sidecar.display()
-    );
-    std::fs::write(&wrapper, legacy_wrapper).unwrap();
+    let (wrapper, sidecar) = write_exact_legacy_pre_push_pair(project.path());
     let manager = GitHooksManager::new(project.path()).unwrap();
+    let status = manager.status(HookType::PrePush);
 
-    assert!(manager.status(HookType::PrePush).is_managed);
+    assert!(status.is_managed);
+    assert!(!status.is_current);
+    assert!(!status.is_ready());
     manager.uninstall(HookType::PrePush).unwrap();
     assert!(!wrapper.exists());
     assert!(!sidecar.exists());
+}
+
+#[test]
+fn default_install_upgrades_an_exact_legacy_pair_and_reruns_idempotently() {
+    let project = project_with_git_hooks();
+    let (wrapper, sidecar) = write_exact_legacy_pre_push_pair(project.path());
+    let legacy_wrapper = std::fs::read(&wrapper).unwrap();
+    let manager = GitHooksManager::new(project.path()).unwrap();
+    let before = manager.status(HookType::PrePush);
+
+    let first = manager.install_all(false).unwrap();
+    let upgraded_wrapper = std::fs::read(&wrapper).unwrap();
+    let after = manager.status(HookType::PrePush);
+    let second = manager.install_all(false).unwrap();
+    let forced = manager.install_all(true).unwrap();
+    manager.uninstall(HookType::PrePush).unwrap();
+
+    assert!(before.is_managed);
+    assert!(!before.is_current);
+    assert!(!before.is_ready());
+    assert!(before.display().contains("upgrade required"));
+    assert_eq!(first.refreshed, vec![HookType::PrePush]);
+    assert_ne!(upgraded_wrapper, legacy_wrapper);
+    assert!(after.is_ready());
+    assert!(after.is_current);
+    assert_eq!(second.unchanged, HookType::all());
+    assert_eq!(forced.refreshed, HookType::all());
+    assert!(!wrapper.exists());
+    assert!(!sidecar.exists());
+}
+
+#[test]
+fn default_install_preserves_a_legacy_wrapper_with_a_drifted_sidecar() {
+    let project = project_with_git_hooks();
+    let (wrapper, sidecar) = write_exact_legacy_pre_push_pair(project.path());
+    let legacy_wrapper = std::fs::read(&wrapper).unwrap();
+    let drifted_sidecar = b"#!/bin/sh\necho user-changed-sidecar\n";
+    std::fs::write(&sidecar, drifted_sidecar).unwrap();
+    let manager = GitHooksManager::new(project.path()).unwrap();
+
+    let outcome = manager.install_all(false).unwrap();
+
+    assert_eq!(outcome.preserved, vec![HookType::PrePush]);
+    assert_eq!(std::fs::read(wrapper).unwrap(), legacy_wrapper);
+    assert_eq!(std::fs::read(sidecar).unwrap(), drifted_sidecar);
+}
+
+#[cfg(unix)]
+#[test]
+fn default_install_upgrades_legacy_shell_expansion_before_real_invocation() {
+    use std::os::unix::fs::PermissionsExt;
+
+    let root = tempfile::TempDir::new().unwrap();
+    let project = root
+        .path()
+        .join("project $(touch dollar-sentinel) `touch backtick-sentinel` \"quoted\"");
+    std::fs::create_dir_all(project.join(".git/hooks")).unwrap();
+    std::fs::create_dir_all(project.join(".assura/hooks")).unwrap();
+    let (wrapper, sidecar) = write_exact_legacy_pre_push_pair(&project);
+    let manager = GitHooksManager::new(&project).unwrap();
+    let before = manager.status(HookType::PrePush);
+
+    let install_result = manager.install(HookType::PrePush, false);
+    let after = manager.status(HookType::PrePush);
+    let invoked = root.path().join("legacy-upgrade-invoked");
+    std::fs::write(&sidecar, "#!/bin/sh\nprintf invoked > \"$1\"\n").unwrap();
+    std::fs::set_permissions(&sidecar, std::fs::Permissions::from_mode(0o755)).unwrap();
+    let invocation = Command::new(&wrapper)
+        .arg(&invoked)
+        .current_dir(root.path())
+        .status()
+        .unwrap();
+
+    assert!(!root.path().join("dollar-sentinel").exists());
+    assert!(!root.path().join("backtick-sentinel").exists());
+    assert!(before.is_managed);
+    assert!(!before.is_current);
+    assert!(!before.is_ready());
+    assert!(install_result.is_ok());
+    assert!(after.is_ready());
+    assert!(after.is_current);
+    assert!(invocation.success());
+    assert_eq!(std::fs::read_to_string(invoked).unwrap(), "invoked");
 }
 
 #[test]
