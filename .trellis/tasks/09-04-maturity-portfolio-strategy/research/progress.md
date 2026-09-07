@@ -1,5 +1,25 @@
 # Maturity execution train progress
 
+## Iteration 44 — 2026-09-06 — A03 integration and legacy-path correction
+
+- PR #183 merged as `3d9a255f832733082c864edf703fc98c854e7f6e`. All 24
+  hosted checks passed on independently reviewed and locally PR-tier-tested
+  `9d4bf50643155e8cd14e37b1a601f5a7b2a7399f`; the parent also reran all three
+  focused tests and target-state successfully. Fetch and ancestry verification
+  exited 0. No release, tag or deployment was performed.
+- A04 was cleanly rebased onto that merge, resolving only the explicit task
+  branch binding to `goal/a04-hook-ownership-repair`; workflow gate is ready.
+- Linux negative controls on `783ff05` with `07599a9` tests failed both actual
+  raw-byte invocation and lossy legacy ownership assertions, session 17578 exit
+  101, two failures, zero ignored tests. Candidate suites are running separately;
+  this does not replace final rebased gates.
+- A parent-triggered legacy-path review superseded the previous clean A04
+  verdict: exact UTF-8 legacy wrappers at shell-metacharacter paths still report
+  ready/current while executing command substitution. The owning repair must
+  distinguish proven ownership from safe/current state and upgrade exact legacy
+  wrappers by default. A04 remains unapproved; no dangerous fixture content was
+  merged. This contract is now in the bounded repair plan.
+
 ## Iteration 42 — 2026-09-06 — Acceptance correction and queue reconciliation
 
 - The preceding review was progress: it found concrete A04 contract violations

@@ -24,6 +24,16 @@ must not all be labeled custom hooks. Literal Unix paths are byte strings;
 Linux must prove real non-UTF-8 path invocation and reject lossy legacy ownership.
 macOS filesystem rejection is not a passing or failing wrapper contract test.
 
+Final-review correction: exact historical wrappers are ownership evidence, not
+proof of a safe/current runnable wrapper. Their old double-quoted path expands
+`$()` and backticks and mishandles embedded double quotes. Keep exact legacy
+ownership for refresh/removal, but distinguish it from current safe content.
+Default installation must transactionally upgrade a proven legacy pair, not
+leave it unchanged until `--force`. Before upgrade status must not claim ready;
+after upgrade prove literal invocation and no shell-substitution sentinel.
+Test ordinary legacy upgrade, rerun idempotence, forced refresh, removal and
+path variants without broadening ownership of custom/drifted files.
+
 1. Run the current focused tests as the baseline; then add focused failing tests
    for direct forced install over a custom wrapper, an exact managed wrapper
    with a modified sidecar, and an orphan sidecar with arbitrary user content.
