@@ -45,6 +45,29 @@
   sampled CPU use, not process names in stale evidence. Its isolated immutable
   master diagnostic build is now live; the default nightly compiler and shared
   services prevent claiming hosted stable-toolchain parity. See R03 evidence.
+- The three still-present remote documentation branches (A01/A03/Q07 above)
+  were deleted with exact expected-SHA leases after ancestry verification;
+  pre-push validation and deletion exited 0. The other three were already absent.
+  A separate current-master A03 target-state repair worktree brings the inventory
+  to 48. The verifier still required retired questionnaire text, independently
+  reproduced on unchanged master; correcting its owning contract is required,
+  not a waiver of `cargo xtask pr`.
+- Ownership review found arbitrary-byte custom hooks and Unix project paths
+  were not safely preserved/resolved. The file-content repair is committed;
+  raw path invocation and deterministic rollback checks remain under correction.
+  A04 stays active after this slice: effective hook paths and host evidence are
+  still required. One worker bypassed the commit hook during cache contention;
+  this was explicitly rejected as a procedure, recorded, and does not waive any
+  final gate or approval requirement.
+- A03 fast checks completed with exit 0 before cloning the idle Cargo cache
+  into A04's own target. The clone exposed stale shared fingerprints, so the
+  first A04 run is invalid evidence; only its local Assura package artifacts
+  are being cleaned before the actual RED run. Cache separation avoids lock
+  contention but does not prove source/binary identity.
+- The immutable master VPS baseline also passed with the exact hosted Rust
+  1.98.1 compiler: eight accepted no-slower rows, independent native gate, and
+  all five warm p95 rows. All command exits and hashes are in R03 evidence.
+  This is not a source optimization or proof that historical failures were noise.
 
 ## Iteration 33 — 2026-09-06 — A01 current-master integration
 

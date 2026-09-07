@@ -12,7 +12,7 @@
   "assignee": "nroth",
   "createdAt": "2026-09-04",
   "completedAt": null,
-  "branch": "goal/a03-target-state-contract",
+  "branch": "goal/a04-hook-ownership-repair",
   "base_branch": "master",
   "worktree_path": null,
   "commit": null,

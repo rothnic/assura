@@ -18,6 +18,12 @@ Own `src/cli/hooks.rs`, its cohesive helpers if necessary, existing hook tests,
 and the exact Git ownership section of the hook spec. Do not edit backlog,
 progress or A04 evidence; the controller owns those.
 
+Independent-review follow-up also owns only the install/remove preservation
+wording in `src/cli/full_entry.rs`: preserved drift, orphan and unsafe artifacts
+must not all be labeled custom hooks. Literal Unix paths are byte strings;
+Linux must prove real non-UTF-8 path invocation and reject lossy legacy ownership.
+macOS filesystem rejection is not a passing or failing wrapper contract test.
+
 1. Run the current focused tests as the baseline; then add focused failing tests
    for direct forced install over a custom wrapper, an exact managed wrapper
    with a modified sidecar, and an orphan sidecar with arbitrary user content.
