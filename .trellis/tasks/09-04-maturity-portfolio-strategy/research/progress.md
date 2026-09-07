@@ -1,5 +1,28 @@
 # Maturity execution train progress
 
+## Iteration 52 — 2026-09-07 — Strict silence and performance attribution
+
+- R01 exact reviewed3ec25fd passed fast42820, PR51849 and final default docs22923;
+  normal push75325 succeeded and PR185 now targets that head. Fresh macOS CI
+  passed root/directory corrections but failed external-config silence,26/27.
+  Linux/Windows were cancelled. The unexpected full-root report has three
+  coalesced events; actual diagnostic paths are unknown, not invented.
+- Approved diagnosis before another repair: preserve strict silence, capture
+  failure diagnostics, discriminate genuine external-scope regression from
+  delayed in-scope setup. Independent review is designing that experiment;
+  closed169's permissive acceptance is not revived. No green retry or merge.
+- R03 structural probe confirms800 reset children, one inherited root, zero
+  composition targets and801 shared Arc observations (strong count3).
+  Descendant construction adds9,603 allocations. Counting overhead prevents
+  a timing conclusion; an allocator/counter-free timing variant is required
+  before retaining any optimization. All accepted performance gates remain.
+- A04 reviewed9c9a896 passed fast8047 and PR25099; its PR update/rebase remains
+  held behind R01/R03. Full hook-path/host acceptance is still unfinished.
+  Runtime checkpoint51 records context/repeated-failure review and inventory49;
+  no new skill, unknown cleanup, release or public action was warranted.
+- Next: decisive R01 event-origin evidence and R03 counter-free timing, then
+  the smallest independently reviewed repair supported by those observations.
+
 ## Iteration 46 — 2026-09-07 — Post-merge watch evidence correction
 
 - Master `3d9a255f832733082c864edf703fc98c854e7f6e` has the same tree as
