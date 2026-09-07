@@ -6222,13 +6222,17 @@ fn check_agent_onboarding_website(checks: &mut Checks) {
         "website entry points must link to the Agent-Ready Onboarding guide",
     );
 
+    check_agent_onboarding_guide(checks, guide_path, &guide);
+}
+
+fn check_agent_onboarding_guide(checks: &mut Checks, guide_path: &str, guide: &str) {
     for marker in [
         "## First-Run Phases",
         "## Report Shape",
         "## Generated Packet",
         "## Project-Local Skills",
         "## Agent Prompt",
-        "## Agent-Next Questions",
+        "## Agent-Next Procedure",
         "## Checked Versus Unchecked",
         "## Content And Project Packs",
         "## Lifecycle Profiles",
@@ -6241,8 +6245,8 @@ fn check_agent_onboarding_website(checks: &mut Checks) {
         "\"mode\": \"warn\"",
         "\"mode\": \"gate\"",
         "\"blocking\": true",
-        "\"action\": \"Ask remaining specialization questions\"",
-        "\"affected_paths\": [\".assura/onboarding/questions.md\"]",
+        "\"action\": \"Record unresolved specialization exceptions\"",
+        "\"affected_paths\": [\".assura/onboarding/agent-next.md\"]",
         "The local command is:",
         "reviewable bundle and explicitly activate its project-local host",
         "\"rule_recommendations\"",
@@ -6270,6 +6274,17 @@ fn check_agent_onboarding_website(checks: &mut Checks) {
         checks.require(
             guide.contains(marker),
             format!("{guide_path}: missing agent onboarding marker {marker:?}"),
+        );
+    }
+
+    for forbidden in [
+        "## Agent-Next Questions",
+        "\"action\": \"Ask remaining specialization questions\"",
+        "\"affected_paths\": [\".assura/onboarding/questions.md\"]",
+    ] {
+        checks.require(
+            !guide.contains(forbidden),
+            format!("{guide_path}: contains retired questionnaire guidance {forbidden:?}"),
         );
     }
 
@@ -6743,6 +6758,73 @@ fn check_lint_suppression_reasons(checks: &mut Checks) {
 mod tests {
     use super::*;
     use serde_json::json;
+
+    const AGENT_ONBOARDING_GUIDE: &str =
+        include_str!("../../website/src/content/docs/guides/agent-ready-onboarding.md");
+
+    #[test]
+    fn agent_onboarding_guide_accepts_current_evidence_first_procedure() {
+        assert!(
+            AGENT_ONBOARDING_GUIDE.contains("`questions.md` is not a routine questionnaire"),
+            "the valid exception fixture must retain the contextual questions.md guidance"
+        );
+
+        let mut checks = Checks::default();
+        check_agent_onboarding_guide(&mut checks, "guide.md", AGENT_ONBOARDING_GUIDE);
+
+        assert!(
+            checks.errors.is_empty(),
+            "current evidence-first guide must satisfy the target-state contract: {:?}",
+            checks.errors
+        );
+    }
+
+    #[test]
+    fn agent_onboarding_guide_requires_each_current_procedure_marker() {
+        for marker in [
+            "## Agent-Next Procedure",
+            "\"action\": \"Record unresolved specialization exceptions\"",
+            "\"affected_paths\": [\".assura/onboarding/agent-next.md\"]",
+        ] {
+            let guide = AGENT_ONBOARDING_GUIDE.replacen(marker, "<removed-current-guidance>", 1);
+            assert_ne!(
+                guide, AGENT_ONBOARDING_GUIDE,
+                "fixture must contain current marker {marker:?}"
+            );
+
+            let mut checks = Checks::default();
+            check_agent_onboarding_guide(&mut checks, "guide.md", &guide);
+
+            assert_eq!(
+                checks.errors,
+                vec![format!(
+                    "guide.md: missing agent onboarding marker {marker:?}"
+                )],
+                "removing current marker {marker:?} must produce one focused finding"
+            );
+        }
+    }
+
+    #[test]
+    fn agent_onboarding_guide_rejects_each_retired_questionnaire_marker() {
+        for marker in [
+            "## Agent-Next Questions",
+            "\"action\": \"Ask remaining specialization questions\"",
+            "\"affected_paths\": [\".assura/onboarding/questions.md\"]",
+        ] {
+            let guide = format!("{AGENT_ONBOARDING_GUIDE}\n{marker}\n");
+            let mut checks = Checks::default();
+            check_agent_onboarding_guide(&mut checks, "guide.md", &guide);
+
+            assert_eq!(
+                checks.errors,
+                vec![format!(
+                    "guide.md: contains retired questionnaire guidance {marker:?}"
+                )],
+                "retired marker {marker:?} must fail the target-state contract"
+            );
+        }
+    }
 
     #[test]
     fn performance_workflow_preserves_independent_reports_after_a_comparison_failure() {
