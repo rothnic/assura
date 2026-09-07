@@ -45,7 +45,7 @@
       "state": "active",
       "owner": "Codex goal/r01-diagnostic-association",
       "evidence": "evidence/R01.md",
-      "blocker": "Master CI 34084659580 failed macOS diagnostic association after a permitted folder-rescan predecessor; deterministic reader repair and fresh reviewed three-platform proof required. Do not discard rescans or retry until green."
+      "blocker": "Master CI 34084659580 and PR185 run 34088013090 exposed diagnostic-consumer assumptions. Complete-batch/root correction and Windows path assertions require fresh reviewed local and three-platform proof; R03 performance failure also holds merging. No discarded rescans or green retries."
     },
     {
       "id": "R02",
