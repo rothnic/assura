@@ -1,5 +1,79 @@
 # Maturity execution train progress
 
+## Iteration 50 — 2026-09-07 — Fixture isolation and bounded attribution
+
+- A04 test-only d79a80c removes the proven in-process inherited-writer window
+  using a fixture guard. Linux 27/27, macOS 22/22 and focused lint passed;
+  independent review passed. Exact hosted holder remains unknown. The original
+  OS 26 failure and intentional direct-execution negative control remain.
+- Created clean current-master R03 worktree `assura-r03-scope-rules-attribution`
+  on its matching goal branch, 3d9a255; session 82658 exited 0 and workflow gate
+  is ready. Inventory is now 49. No unknown or dirty path was removed.
+- Approved diagnostic-only counters/timing to test duplicate exact/descendant
+  naming-plan construction. Actual generated fixture identity, inherit-reset
+  counts and public cold cost must be established before an optimization.
+  Parent retains review authority; VPS work must preserve immutable binaries
+  and unrelated workloads. No benchmark threshold or supported row changes.
+- Next: R01 final review/gates, R03 measured hypothesis decision, A04 final
+  metadata/rebase/gates. A05 remains untouched; no card is newly done.
+
+## Iteration 49 — 2026-09-07 — Complete diagnostic-consumer correction
+
+- PR #185 head 1852b61 passed final local PR tier 82802 (exit 0), then failed
+  a distinct hosted root-debug assumption. The root path is `[""]`, not `[]`;
+  hosted report mode/count are unknown. No stale-predecessor explanation was
+  invented. Linux/Windows fail-fast cancellations are not passing platform proof.
+- R01 fb724fd audits all diagnostic readers and validates complete FIFO batches
+  with separate full-root and incremental contracts. Actual reader RED/GREEN,
+  26 watch tests, 20 watch units and 40 stop-on-failure focused runs passed.
+  Exact support-module structure allowance retains limits and negative control.
+  Independent review and exact-head gates are pending; PR remains held.
+- Hosted many-scopes performance failed at 19.364834 ms versus LS-Lint
+  17.6041085 ms, 7/8 accepted comparisons, 392 retained rows. Native/warm passes
+  do not clear it. Wider-stack profiling produced 3,430 samples with zero lost
+  but still unreliable callers; attribution must use a discriminating probe.
+- No green rerun, release, deployment or scope reduction was used for closure.
+
+## Iteration 48 — 2026-09-07 — Hook diagnostics and context health
+
+- PR #184 `d42094c` failed Ubuntu executable-hook launch with OS 26
+  (`Text file busy`); 23/24 ownership and 10/10 lifecycle tests passed.
+  macOS/Windows were cancelled, not passed. Five adoption smoke lanes and
+  performance passed but cannot replace the failed suite/platform proof.
+- Passing Linux traces show close-before-rename and direct wrapper/sidecar
+  execution, excluding a persistent leaked writer in those observations, not
+  a transient race in the failing hosted schedule. A writable-inode negative
+  control reproduced errno 26. No production source cause is established.
+- Approved bounded failure-only Linux diagnostics: invoke the installed
+  wrapper once, capture executable identity and same-inode writer evidence,
+  then return failure. Exclude command lines/environments, bound enumeration
+  and label missing/racy data. No retries, sleeps or shell-launch bypass.
+- R03 quiet probe on `vps-9cb01956`, session 10542 exit 0, found continuing
+  Node/Temporal/background activity. No benchmark was started, no services
+  stopped, and no exclusive-runner or historical-noise claim was made.
+- Context level: not exposed. Master `3d9a255`; reviewed R01 `1852b61` has
+  final PR-tier bootstrap running; A04 owns diagnostics; A05 is preserved;
+  inventory remains 48 worktrees. Repeated failures require exact stream
+  association and discriminating execution evidence, not green reruns.
+  Executable helpers and existing goal/local-build/performance skills are the
+  appropriate homes; no new skill or AGENTS expansion is warranted.
+- Next: R01 integration, A04 diagnostic review, current-master rebase and
+  fresh hosted proof without waivers.
+
+## Iteration 47 — 2026-09-07 — R01 review correction
+
+- R01 `0ccebea` reproduced stale diagnostic association before repair, then
+  passed 20 prescribed stop-on-failure runs, the 20-test watch suite and
+  library checks. Parent review added actual checked-path/violation proof.
+- Independent review found a 20 ms queued-test deadline could spuriously fail
+  and broad panic checks could accept the wrong rejection. `1852b61` uses
+  the standard deadline and specific reasons; source/docs re-review PASS.
+- Exact-head fast session 52386 exited 0. PR session 46503 passed Rust,
+  structure, evidence, target-state and Clippy, then failed because the docs
+  helper expected cwd/target while Cargo used the preserved explicit cache.
+  Approved real ignored artifact directories with hash-equal binaries;
+  unchanged-head PR rerun 82802 remains pending. The first failure is retained.
+
 ## Iteration 45 — 2026-09-07 — Safe legacy upgrade and context health
 
 - Fresh-source tests confirmed the unsafe exact legacy wrapper, including a
