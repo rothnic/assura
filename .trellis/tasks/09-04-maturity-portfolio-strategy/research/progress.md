@@ -1,5 +1,53 @@
 # Maturity execution train progress
 
+## Iteration 46 — 2026-09-07 — Post-merge watch evidence correction
+
+- Master `3d9a255f832733082c864edf703fc98c854e7f6e` has the same tree as
+  reviewed PR #183 head `9d4bf50`, whose 24 hosted checks passed. Its later
+  Rust CI run `34084659580` failed macOS job `101626309708`; Windows was
+  cancelled, not passed. Performance, security and documentation passed.
+- The failure compared diagnostic paths `src` versus `src/BadName.ts`, not
+  the report's changed paths. Read-only independent tracing found that the
+  harness consumes one permitted successful full-rescan predecessor from
+  stdout but leaves its diagnostic in the separate stderr queue. Folder
+  events force full checks and cannot explain the incremental report that
+  already passed. Precise OS notification timing is not established.
+- Reopened R01 in a clean current-master worktree at
+  `/Users/nroth/.codex/worktrees/assura-r01-diagnostic-association`. Require a
+  deterministic association RED, bounded report/diagnostic accounting and
+  negative controls for missing diagnostics, disconnection, wrong scope and
+  extra predecessors. Strengthen actual violation-path evidence; preserve
+  config reload, pathless/excluded rescans and overflow safety.
+- A04's independently reviewed `d42094c` passed exact-head fast (session 29959)
+  and PR (56973) tiers, both terminal exit 0. Its ownership slice stays separate
+  and cannot merge by waiving the current-master failure. A05 is untouched;
+  R03's fresh measurements remain diagnostic evidence, not an optimization.
+- Inventory is 48 worktrees after the new isolated repair. The two pre-existing
+  prune-dry-run findings and unrelated paths remain untouched. Next: reviewed
+  R01 correction, hosted proof, then rebase/revalidate the A04 ownership slice.
+
+### Review decisions and subsequent hosted evidence
+
+- A04 PR #184 is open at reviewed `d42094c`, with explicit merge holds. Its
+  Linux job `101630975101` in run `34086323317` failed executable raw-byte hook
+  launch with OS 26 (`Text file busy`); 23/24 ownership tests and 10/10 lifecycle
+  tests passed. macOS and Windows were cancelled by fail-fast, not independently
+  passing. The owning investigation must distinguish fixture/process lifetime
+  from product publication behavior; no retry-to-green or weaker shell-launch
+  substitute is approved. Existing local passes remain historical evidence.
+- Independent performance review found no justified optimization from the
+  current profile. R03's remaining bounded experiment is two unchanged-source
+  16-iteration comparisons in a verified quiet interval, keeping the existing
+  balanced per-iteration tool alternation and every row. Serialize this after
+  Linux hook diagnostics. Two passes can establish no reproduced current
+  regression, not prove historical runner noise. Strict cold 2x is not a gate.
+- Next A04 slice is effective Git hook-path resolution and preservation at that
+  path, with real Git-event proof, after ownership integration. Current source
+  has no supported manager adapter; fixture-manager metadata is not integration
+  proof. Relative/worktree/absolute configuration, configuration errors and
+  symlink ancestry require explicit tests. Manager support and host runtime
+  proof remain separate acceptance gaps; do not silently count them complete.
+
 ## Iteration 33 — 2026-09-06 — A01 current-master integration
 
 - PR [#162](https://github.com/rothnic/assura/pull/162) merged as `fdd0e76426c9ca6916fa72cdb3948378ad3a92e3`; a fresh fetch proved that merge is reachable from `origin/master`. The exact independently reviewed head was `1522352cb8b817620c4ea773780877332e122919`.

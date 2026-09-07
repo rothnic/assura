@@ -1,6 +1,6 @@
 {
   "schema": "assura.execution-backlog.v1",
-  "updated": "2026-09-06",
+  "updated": "2026-09-07",
   "source_snapshot": "ed093668918bc271fc98b9112acaf7c1bf3eb314",
   "refresh_source_before_execution": true,
   "spec": "../prd.md",
@@ -42,10 +42,10 @@
         "B00"
       ],
       "executor": "agent",
-      "state": "done",
-      "owner": "Codex goal: Assura Maturity Execution Train",
+      "state": "active",
+      "owner": "Codex goal/r01-diagnostic-association",
       "evidence": "evidence/R01.md",
-      "blocker": null
+      "blocker": "Master CI 34084659580 failed macOS diagnostic association after a permitted folder-rescan predecessor; deterministic reader repair and fresh reviewed three-platform proof required. Do not discard rescans or retry until green."
     },
     {
       "id": "R02",
