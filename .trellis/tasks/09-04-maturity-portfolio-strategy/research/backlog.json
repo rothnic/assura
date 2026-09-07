@@ -1,6 +1,6 @@
 {
   "schema": "assura.execution-backlog.v1",
-  "updated": "2026-09-06",
+  "updated": "2026-09-07",
   "source_snapshot": "ed093668918bc271fc98b9112acaf7c1bf3eb314",
   "refresh_source_before_execution": true,
   "spec": "../prd.md",
@@ -42,10 +42,10 @@
         "B00"
       ],
       "executor": "agent",
-      "state": "done",
-      "owner": "Codex goal: Assura Maturity Execution Train",
+      "state": "blocked",
+      "owner": "Codex goal/r01-diagnostic-association; existing PR #185",
       "evidence": "evidence/R01.md",
-      "blocker": null
+      "blocker": "R01 packet stop: single diagnostic run34094418980 passed platform tests but did not reproduce prior macOS external-config cause. Need complete raw paths/kinds/rescan/config state for run34090768850/job101643647551 seq2/count3, or specific maintainer native-readiness decision. Source/evidence preserved through2debe29; no further diagnostic CI or speculative loop refactor."
     },
     {
       "id": "R02",
@@ -71,9 +71,9 @@
       ],
       "executor": "agent",
       "state": "blocked",
-      "owner": "Codex goal/r03-many-scope",
+      "owner": "Codex goal/r03-scope-rules-attribution; rejected candidate reverted, bounded diagnostic terminated",
       "evidence": "evidence/R03.md",
-      "blocker": "The prior configured-dir HashSet hypothesis is rejected by stronger same-fixture VPS public-command evidence; a distinct attributed hypothesis needs the exact static-primary release protocol on an approved quiet Linux runner. The reachable vps host currently has unrelated active Cargo workloads."
+      "blocker": "Diagnostic25650 stopped at block1 after three perturbation-control failures; independent audit ac2749 confirms invalid attribution. Need a separately justified, independently reviewed comparability-validation method decision under existing bounds. No further run or source optimization is supported; retain rejected candidate and all evidence."
     },
     {
       "id": "R04",
@@ -142,8 +142,8 @@
         "R04"
       ],
       "executor": "mixed",
-      "state": "pending",
-      "owner": null,
+      "state": "implemented",
+      "owner": "Codex goal/q02-contribution-contract; existing PR #158",
       "evidence": "evidence/Q02.md",
       "blocker": null
     },
@@ -198,8 +198,8 @@
         "A03"
       ],
       "executor": "agent",
-      "state": "done",
-      "owner": "Codex goal: Assura Maturity Execution Train",
+      "state": "active",
+      "owner": "Codex goal/a04-hook-ownership-repair; existing PR #184; full hook-path and runtime acceptance pending",
       "evidence": "evidence/A04.md",
       "blocker": null
     },
@@ -212,8 +212,8 @@
         "A03"
       ],
       "executor": "agent",
-      "state": "pending",
-      "owner": null,
+      "state": "implemented",
+      "owner": "Codex goal/a05-native-harness-lifecycle; partial uncommitted patch exists, implementation/proof incomplete, not PR-ready",
       "evidence": "evidence/A05.md",
       "blocker": null
     },
@@ -272,8 +272,8 @@
         "Q03"
       ],
       "executor": "agent",
-      "state": "pending",
-      "owner": null,
+      "state": "implemented",
+      "owner": "Codex goal/q04-policy-naming; existing PR #164",
       "evidence": "evidence/Q04.md",
       "blocker": null
     },
@@ -302,8 +302,8 @@
         "R02"
       ],
       "executor": "agent",
-      "state": "pending",
-      "owner": null,
+      "state": "implemented",
+      "owner": "Codex goal/q06-release-readiness; existing PR #166",
       "evidence": "evidence/Q06.md",
       "blocker": null
     },
@@ -346,8 +346,8 @@
         "W01"
       ],
       "executor": "agent",
-      "state": "pending",
-      "owner": null,
+      "state": "active",
+      "owner": "Codex goal/w02-performance-claim-containment; source review passed, final verification and full-card outcomes incomplete",
       "evidence": "evidence/W02.md",
       "blocker": null
     },
