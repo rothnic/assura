@@ -8,8 +8,8 @@ owner: maintainers
 
 Start from current `master`, use the PR template, and run the smallest relevant
 validation tier. Authors own understanding and verification: do not fabricate
-tests or evidence. AI assistance may be disclosed in the PR, but private prompt
-transcripts are not required.
+tests or evidence. Record material AI assistance and how you verified its work
+in the PR, but do not include private prompt transcripts.
 
 Small documentation corrections may mark behavior, reproducer, or validation
 fields as not applicable with a reason. New syntax, commands, dependencies, or
