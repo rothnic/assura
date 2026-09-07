@@ -1,5 +1,28 @@
 # Maturity execution train progress
 
+## Iteration 64 — 2026-09-07 — W02 PR and deployment authority hold
+
+Terminal update: hosted website job101690258756 failed126/128; both320px
+light/dark containment cases reported6px cell overflow. No merge/retry follows.
+The earlier running observation below is historical. Local reproduction and
+repair remain required independently of the deployment-authority decision.
+
+- Final source/metadata independent Spec/quality PASS; normal commit71428
+  created34d572c, push12694 and PR187 creation54825 exited0. All reviewed file
+  hashes match; post-commit42610 structure/evidence passed. No merge yet.
+- Workers Builds app automatically produced a PR preview (check101690381606),
+  exposing deployment coupling absent from GitHub's deployments inventory.
+  A historical master website merge also triggered a Workers build. Read-only
+  Wrangler access failed auth; dashboard requires sign-in. No auth/settings
+  mutation, no manual deployment and no production promotion performed.
+- Root holds PR187 merge/further pushes pending explicit approval for its
+  possible automatic production deployment, or verified no-deploy separation.
+  The earlier running observation is retained as historical; the website job
+  subsequently failed. Evidence gate passed; exacthead34d572c remains preserved.
+- Next-slice W02 read-only audit continues locally; no additional product work
+  is started on this reviewed branch. The full goal remains active; no cards
+  marked done or gates relaxed. Next periodic context review66.
+
 ## Iteration 63 — 2026-09-07 — Evidence handoff merged; W02 locally gated
 
 - PR186 merged as98bd187abd70005b40fa2df89ea3f45f332e4a04 after independent
