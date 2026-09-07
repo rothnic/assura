@@ -132,7 +132,7 @@ load_files_from_input() {
   fi
 }
 
-classify_path() {
+classify_policy_review_path() {
   local path="$1"
 
   # This is intentionally a review prompt, not an approval decision. GitHub
@@ -143,6 +143,10 @@ classify_path() {
       policy_review_paths+=("$path")
       ;;
   esac
+}
+
+classify_path() {
+  local path="$1"
 
   case "$path" in
     .github/workflows/*|.cargo/config.toml|xtask/*|xtask/**|scripts/ci-scope.sh|scripts/ci-scope-github.sh|scripts/summarize-rust-cache.sh)
@@ -195,6 +199,10 @@ elif [ -n "$files_from" ]; then
 else
   load_files_from_diff
 fi
+
+for file in "${files[@]}"; do
+  classify_policy_review_path "$file"
+done
 
 if [ -z "$reason" ]; then
   for file in "${files[@]}"; do

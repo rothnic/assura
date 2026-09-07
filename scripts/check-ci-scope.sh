@@ -147,3 +147,133 @@ if [ "$policy_review_output" != "$expected_policy_review" ]; then
   exit 1
 fi
 printf 'CI policy-review summary ok\n'
+
+mixed_order_output="$(
+  printf '%b' '.cargo/config.toml\ntests/policy.rs\n' \
+    | scripts/ci-scope.sh --files-from - \
+    | grep -E '^(rust|release|performance|rustdoc|evidence|website|security|reason|policy_review|policy_review_paths)='
+)"
+expected_mixed_order='rust=true
+release=true
+performance=true
+rustdoc=true
+evidence=true
+website=true
+security=true
+reason=workflow, classifier, or validation command changed
+policy_review=true
+policy_review_paths=tests/policy.rs'
+if [ "$mixed_order_output" != "$expected_mixed_order" ]; then
+  printf 'CI mixed-order policy-review mismatch:\nExpected:\n%s\nActual:\n%s\n' "$expected_mixed_order" "$mixed_order_output" >&2
+  exit 1
+fi
+printf 'CI mixed-order policy-review ok\n'
+
+check_github_policy_review_retention() {
+  local fixture_dir fixture_repo event_file fake_bin output
+  fixture_dir="$(mktemp -d)"
+  fixture_repo="$fixture_dir/repo"
+  event_file="$fixture_dir/event.json"
+  fake_bin="$fixture_dir/bin"
+  mkdir -p "$fixture_repo/scripts" "$fixture_repo/tests" "$fixture_repo/docs" "$fake_bin"
+  cp scripts/ci-scope.sh scripts/ci-scope-github.sh "$fixture_repo/scripts/"
+
+  git -C "$fixture_repo" init -q
+  git -C "$fixture_repo" config user.email ci-scope@example.invalid
+  git -C "$fixture_repo" config user.name 'CI scope fixture'
+  printf '%s\n' baseline > "$fixture_repo/README.md"
+  git -C "$fixture_repo" add README.md
+  git -C "$fixture_repo" commit -qm 'fixture: baseline'
+  local base_sha
+  base_sha="$(git -C "$fixture_repo" rev-parse HEAD)"
+
+  printf '%s\n' 'policy-sensitive test' > "$fixture_repo/tests/policy.rs"
+  git -C "$fixture_repo" add tests/policy.rs
+  git -C "$fixture_repo" commit -qm 'test: add policy-sensitive test'
+  local previous_sha
+  previous_sha="$(git -C "$fixture_repo" rev-parse HEAD)"
+
+  printf '%s\n' 'docs follow-up' > "$fixture_repo/docs/follow-up.md"
+  git -C "$fixture_repo" add docs/follow-up.md
+  git -C "$fixture_repo" commit -qm 'docs: follow up'
+  local head_sha
+  head_sha="$(git -C "$fixture_repo" rev-parse HEAD)"
+
+  cat > "$event_file" <<EOF
+{"action":"synchronize","before":"$previous_sha","pull_request":{"base":{"sha":"$base_sha"},"head":{"sha":"$head_sha"}}}
+EOF
+  cat > "$fake_bin/gh" <<'EOF'
+#!/usr/bin/env bash
+cat <<'CHECKS'
+Check	success
+MSRV (Rust 1.86.0)	success
+Rustfmt	success
+Clippy	success
+Code Coverage	success
+Test Suite (ubuntu-latest, stable)	success
+Test Suite (macos-latest, stable)	success
+Test Suite (windows-latest, stable)	success
+Release Bundle Smoke	success
+Windows Installer Smoke	success
+Installable Adoption Smoke (ubuntu-x86_64)	success
+CHECKS
+if [ "${OMIT_ALPINE_CHECK:-}" != true ]; then
+  printf '%s\n' 'Installable Adoption Smoke (alpine-x86_64)	success'
+fi
+cat <<'CHECKS'
+Installable Adoption Smoke (macos-arm64)	success
+Installable Adoption Smoke (macos-x86_64)	success
+Installable Adoption Smoke (windows-x86_64)	success
+Performance Report	success
+Build Documentation	success
+Security Audit	success
+CHECKS
+EOF
+  chmod +x "$fake_bin/gh"
+
+  output="$(
+    cd "$fixture_repo"
+    PATH="$fake_bin:$PATH" \
+      GITHUB_EVENT_NAME=pull_request \
+      GITHUB_EVENT_PATH="$event_file" \
+      GITHUB_REPOSITORY=rothnic/assura \
+      GH_TOKEN=fixture-token \
+      scripts/ci-scope-github.sh
+  )"
+
+  local actual
+  actual="$(
+    for output_name in scope_mode policy_review policy_review_paths; do
+      printf '%s\n' "$output" | grep -E "^${output_name}=" | tail -n 1
+    done
+  )"
+  local expected='scope_mode=delta
+policy_review=true
+policy_review_paths=tests/policy.rs'
+  if [ "$actual" != "$expected" ]; then
+    printf 'GitHub full-PR policy-review retention mismatch:\nExpected:\n%s\nActual:\n%s\n' "$expected" "$actual" >&2
+    exit 1
+  fi
+  printf 'GitHub full-PR policy-review retention ok\n'
+
+  local missing_check_output missing_check_mode
+  missing_check_output="$(
+    cd "$fixture_repo"
+    PATH="$fake_bin:$PATH" \
+      GITHUB_EVENT_NAME=pull_request \
+      GITHUB_EVENT_PATH="$event_file" \
+      GITHUB_REPOSITORY=rothnic/assura \
+      GH_TOKEN=fixture-token \
+      OMIT_ALPINE_CHECK=true \
+      scripts/ci-scope-github.sh
+  )"
+  missing_check_mode="$(printf '%s\n' "$missing_check_output" | grep -E '^scope_mode=' | tail -n 1)"
+  if [ "$missing_check_mode" != 'scope_mode=full' ]; then
+    printf 'GitHub missing adoption-check fallback mismatch: expected scope_mode=full, got %s\n' "$missing_check_mode" >&2
+    exit 1
+  fi
+  printf 'GitHub missing adoption-check fallback ok\n'
+  rm -rf "$fixture_dir"
+}
+
+check_github_policy_review_retention
