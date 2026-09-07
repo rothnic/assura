@@ -1,5 +1,425 @@
 # Maturity execution train progress
 
+## Iteration 82 — 2026-09-07 — current-master A04 refresh and R03 prerequisite result
+
+- Previous turn made progress: W02 local closure/queue committed790b0a9 with
+  independent audit. Context review81 confirmed serial A04 ownership/path
+  sequencing and no further website expansion. Latest W02 evidence stays with
+  its named owner; the local pointer below does not import W02 behavior.
+- Fresh90313/f16c41: origin/master98bd187, releasev0.3.0 (July2), PR184 still
+  d42094c/DIRTY with Ubuntu failure and cancelled macOS/Windows. Registered
+  worktree inventory51; no creation, cleanup or unknown/dirty path mutation.
+  The existing clean goal-owned A04 branch9c9a896 entered a local master merge.
+  Five metadata conflicts were resolved; unique old evidence remains, including
+  unfavorable R03 diagnostics. Product source/tests/workflows remain unchanged.
+- Existing9c9a896 full PR log recount is1310passed/0failed/1ignored across
+ 104binaries,8zero-pass not coverage. Both preserved binaries still match
+  recorded SHA256. Covering74364/1013c3 metadata gates passed1787files/393dirs/
+  zero violations plus evidence policy/JSON counts. Do not repeat the unchanged
+  Rust tier or call this fresh hosted/platform/performance proof. Independent
+  resolution review and local checkpoint follow; A04 remains active, not done.
+- Root made and executed the next R03 internal method decision: one independently
+  reviewed unprivileged instruction-counter access probe on /usr/bin/true,
+  never a product/fixture/timing run. Review fixed a5second timeout-grace excess
+  before execution. Probe28740/3d547b exited255 with access denied on the exact
+  VPS user/session; driver0 reports that failure, not a passing measurement.
+  All identities, commands, errors and hashes are in evidence/R03.md. No retry,
+  permission change, profiler attachment, optimization or acceptance change.
+- Hardware counter collection is unavailable under unchanged runner policy.
+  Valgrind is absent, strace present; the syscall-count fallback does not answer
+  the selected userspace-work question and is not approved. Read-only package
+  metadata93127/6dcb18 identifies Valgrind1:3.25.1-0ubuntu1 and matching
+  libc6-dbg2.42-0ubuntu3.1 for installed libc6. This is prerequisite information,
+  not a download/install or instrumented execution. Root is evaluating a finite
+  isolated software event-count method, with explicit observer/compatibility
+  controls; no product collection is authorized by this checkpoint.
+- Queue14done/1active/4blocked/4implemented/9pending. Publication approval/
+  verified no-deploy separation remains unresolved. No push, merge to master,
+  release or deployment occurred. A04 ownership must integrate before its
+  effective-path slice; A05 dirty work is preserved; A06/A07 stay dependent.
+  R01 still requires a causal failing native-event trace, not an equivalent
+  passing capture. R03's method decision remains root-owned, not automatically
+  a human approval blocker.
+- Context level not exposed. Existing goal/build/performance/harness guidance
+  covers this work; no new skill or AGENTS expansion. All described processes
+  are terminal. One truncated reference read was completed in a bounded second
+  read; two guessed artifact/glob paths were corrected through file inventory.
+  Neither is a product failure/pass. Next periodic context review84.
+
+Final metadata gates35481/8eb1f6 passed on staged tree
+0bab03b29be97e953f1a8a7aef1186f4534dd5ec with the same1787file/393directory
+structure result and evidence policy. Independent review of frozen diff
+bf2cc872406359f457db0a172c9a67643889249de923aea369b11b66efef3a84 caught one
+stale leading cross-card sentence imported with R01 evidence: W02 was still
+labeled an active implementation lane. Root corrected that current routing to
+locally prepared/externally blocked, preserving historical records. No source,
+acceptance or publication authority changed; scoped re-review is required.
+
+## A04 merge reconciliation pointer — 2026-09-07
+
+This checkout is resolving master98bd187 into A04 ownership head9c9a896;
+the merge is not yet committed or newly gated. Only five conflicting task
+metadata files are being reconciled. Product ownership source is unchanged.
+Later effective-hook-path/runtime slices remain serialized until ownership
+integration. Root owns the next proof/runtime entry (iteration82).
+
+The latest controller progress/queue is preserved in local commit790b0a9 on
+goal/w02-release-aware-installation. Read that commit's same-task
+research/progress.md (iteration80), research/progress-history-01.md, and
+research/evidence/W02.md for the newer local packet and exact proof identities.
+The local W02 evidence file brought by this merge is an older snapshot; the
+790b0a9 pointer is the newer source of evidence, not W02 behavior ancestry.
+W02 is locally complete but externally blocked, not done: Cloudflare approval
+or verified no-deploy separation and exact-head hosted/integration gates remain.
+R03's stopped A/A controls and narrow offline analysis are retained in the
+updated R03 evidence; no new method or run is approved by this reconciliation.
+Queue:14done/1active(A04)/4blocked(R01/R03/W02/F01)/4implemented/9pending.
+
+All old A04 HEAD progress paragraphs already occur verbatim in the following
+master98bd187 reconciled log; it is preserved without copying a second ledger.
+Its historical active/next/clean statements do not supersede the newer state
+above. The older planning source_snapshot is not a branch-ancestry claim.
+
+## Iteration 62 — 2026-09-07 — Evidence reconciliation and bounded stops
+
+- Previous goal turn: progress. Independent R03 raw audit confirmed invalid
+  perturbation controls and correct early stop; independent W02 re-review
+  approved the source correction but not final production acceptance.
+- Refreshed master3d9a255, releasev0.3.0 (July2), PR185/184/166/164/158 and
+  preserved user PR142. Master Rust CI34084659580 remains failing. No existing
+  PR is represented as merge-ready merely from local review.
+- Created docs/maturity-evidence-handoff at current master, worktree
+  /Users/nroth/.codex/worktrees/assura-maturity-evidence-handoff
+  (789419 exit0). Inventory grew from50 to51; no cleanup/deletion performed.
+  This documentation-only handoff consolidates later R01/A04/R03 records and
+  W02 ownership without product patches. Source worktrees remain intact.
+- Queue correction:14done,2active(A04/W02),3blocked(R01/R03/F01),
+  4implemented(Q02/A05/Q04/Q06),9pending. R01 and A04 historical done states
+  are superseded; A05 is partial, not a satisfied A07 dependency.
+- R03 run25650 stopped at48Assura+48LS, three of four observer controls
+  failed; independent audit ac2749 passed. No causal/noise inference, no
+  rerun, no performance waiver. See evidence/R03.md for hashes and next
+  measurement-method decision. Rejected product source remains reverted.
+- W02 corrected tablet source passed23focused checks and independent review.
+  Earlier110tests missed real component clipping; the new geometry checks
+  cover actual text/cell bounds. Final production verification is separately
+  owned in W02; this handoff does not mark W02 done.
+- Integration order: reconcile evidence first, then finish the bounded W02
+  claim correction; broader W02 and held behavior cards remain open.
+  One active implementation lane plus independent review; no speculative R03
+  optimization or R01 debounce changes. User-owned A05/PR142 work preserved.
+- Context health: level not exposed. The repeated failure is distributed
+  ledger drift, not a missing product abstraction. Durable routing below
+  requires reconciling newer evidence before selecting dependencies; operational
+  detail stays in existing goal/performance/build skills, no AGENTS expansion.
+  Next periodic review63; no goal completion or external publication claimed.
+
+## Reconciled branch-local history
+
+Local handoff validation22748 terminated0: structure checked1778files/393dirs
+with0violations; `CARGO_BUILD_JOBS=4` with shared A03 `CARGO_TARGET_DIR` ran
+`cargo xtask evidence` successfully (xtask compiled6.21s). Checker binary
+was the preserved default full binary with SHA-256
+`af8f5479095d0095ff23ec9b1c296263c1743f131d9c86215847477c5cd4ebe1`.
+`git diff --quiet 3d9a255 2debe29 -- src/cli/check.rs src/cli/check src/config`
+exited0, establishing unchanged checker/config source, not whole-binary or
+release equivalence. No Rust/CI/config/website source changes in this handoff;
+heavy Rust/performance/website suites are outside its existing classified
+scope, not counted as passing. Initial workflow gate Ready yes; subsequent
+dirty warnings are the explicitly owned handoff paths, resolved by its commit.
+Final changed-file checks and independent review remain required before PR.
+
+The following previously unmerged records are preserved from goal-owned R03,
+R01, A04 and W02 worktrees. Original iteration labels and unfavorable results
+are retained; the current summary above and per-card latest evidence take
+precedence over historical status claims. Original source branches remain
+recoverable. This reconciliation adds records rather than rewriting outcomes.
+
+## Iteration 61 — 2026-09-07 — W02 claim containment and journey review
+
+- Started independent W02 in clean goal/w02-performance-claim-containment at
+  refreshed master3d9a255 (worktree creation79893 terminal0). Worker owns
+  website source/tests; root owns planning/evidence. No VPS competition with
+  R03 diagnostic preparation; A05 and user-owned work remain untouched.
+- Actual browser RED62654 proved the missing under-review state. Initial
+  component refinement passed5 focused tests48396 at exact hashes recorded in
+  evidence/W02.md. Setup and test-authoring failures remain distinct from
+  product failures; final production visual/build/full-suite gates are pending.
+- Independent review rejected linked-journey acceptance: both destinations
+  still presented unqualified current/release claims, and a test preserved the
+  old headline. Root accepted the finding and authorized test-first historical
+  qualification of those two pages, retaining all measured tables/raw data.
+  W02 is active/partial, not done or PR-approved.
+- Source audit found --released compares claims to local Cargo version rather
+  than independently published GitHub release. Preserve the gate, but require
+  actual install-route proof for remaining W02/R06 acceptance.
+- R03 temporary probe source passed review; its runner review found failed
+  sample persistence, attribution-verdict, tool-order, deadline and opt-in
+  control gaps. Corrections and exact-hash re-review remain required before
+  measurements. Rejected product source remains reverted; no acceptance retry.
+- Next: independently review the corrected diagnostic runner and W02 linked
+  journey, then run their distinct bounded gates. Context review remains due63.
+
+## Iteration 60 — 2026-09-07 — Course correction and next independent slice
+
+- Rejection/rollback metadata is independently reviewed and committed
+  b2b3632183230ebd717dc594819545dba8b122e2. Structure checked1777files/393dirs
+  with0violations; evidence and normal pre-commit gates passed (session7383,
+  terminal0). Fresh fetch75981 confirms master3d9a255 and unchanged open PR
+  heads; workflow Ready yes, branch clean, product src equals master.
+- R03 diagnostic preparation remains remote and unmeasured. Independent
+  probe-only review found no source issue, but runner/controls/full identity
+  review is outstanding. Absolute perturbation bounds apply in both directions
+  to original/disabled/enabled controls; block-level results cannot be hidden
+  by aggregation. No approval to run measurements, retry acceptance or merge.
+- Read-only independent queue review identifies W02 homepage claim containment
+  as the next ready local slice: render the prescribed "Performance evidence
+  under review" state and retain methodology/history, rather than unqualified
+  current speed claims. P01/R02/W01 dependencies are in ancestry. Preserve
+  generated benchmark data; W02 remains incomplete until provenance and
+  release-aware commands are also proven. No W02 implementation started here.
+- W03 must reuse NickRoth PR60/canonical article; absence from main is not a
+  sorting defect. Assura merge authority does not authorize NickRoth publication.
+  Website deployment side effects must be checked before integration: no
+  explicit master deployment or GitHub deployment record was found, but that
+  does not prove external deployment integration is absent.
+- Context health: level not exposed. Fourteen done/eighteen unfinished; R01
+  packet-blocked, R03 rejected source restored, A04 held, A05/user work intact.
+  Local free space13GiB; prune was dry-run only, nothing removed. Repeated
+  setup errors came from guessed paths/schema keys and shell-sensitive names,
+  not product failures. Use rg inventory, inspect JSON keys and explicit Bash
+  before commands; existing performance/build/worktree guidance covers the
+  reusable workflow. No new skill or AGENTS expansion is justified. Next
+  context review63; next immediate action is final diagnostic runner review.
+
+## Iteration 59 — 2026-09-07 — Reject spillover and restore source
+
+- R03 full run55014 terminated1: many-scopes improved25.755%/7.1383865ms,
+  but multipart slowed14.868%/0.6735275ms. Both392-row reports are retained;
+  independent raw audit recomputed medians and confirmed rejection. Candidate
+  absolute gate passed; that does not clear the before/after spillover failure.
+  No second full run, retry or native/warm acceptance followed.
+- Source-only revert69dfc4a restores the entire src tree byte-for-byte to3d9a255;
+  net branch diff is metadata only. Workflow/structure/evidence/pre-commit
+  passed. Rejected commit/binaries/full artifacts remain recoverable, including
+ 52MiB local audit copy. No PR, push or merge for this candidate.
+- Preserve caveats: build commands selected1.98.1 but report runtime field is
+ 1.95-nightly; generated full-report config bytes were not retained. Observed
+  failure is neither proven stable causation nor confirmed noise. The existing
+  phase/context differences leave an attribution gap, not a multipart fix.
+- One bounded public-path diagnostic is authorized after probe review: fixed
+  fixture bytes, existing walk timer, original/disabled/enabled overhead
+  controls, max96 measured launches. It cannot reinstate the rejected patch;
+  failure/inconclusive localization stops rather than repeating acceptance.
+- R01 remains packet-blocked at independently reviewed2debe29; its PR body
+  now records the failed cold gate and unresolved native cause without another
+  push/CI run. Queue now14done,2active,2blocked,4implemented,10pending.
+
+## Iteration 58 — 2026-09-07 — Validate the measurement decision itself
+
+- Exact bundles built in68398 exit0. Independent review caught false-pass
+  paths in the one-off before/after evaluator; actual RED112a94 and nine
+  corrected controls reject duplicates, missing/relabeled rows, invalid samples
+  and improper skips. Root reran9 controls in e2b4fa exit0.
+- Final script/evaluator review passed0626f667/3f5aa3dd. All14x28 rows and
+  fixed eight accepted fixtures are enforced. Candidate absolute and unchanged
+  target AND/spillover OR rules remain binding; baseline failure is diagnostic.
+  Runtime checkpoint58 retains hashes and bounded first-run authorization.
+
+## Iteration 55 — 2026-09-07 — Source review and public performance screen
+
+- R03 complete-descendant reuse passed actual allocation RED/GREEN, focused
+  correctness, broader tests, Clippy and zero-violation structure gates.
+  Independent source review found no findings. Cohesive modules preserve the
+  existing line limits; no policy allowance or evaluator changed.
+- Two fixed-fixture balanced public quiet comparisons improved medians5.31%
+  and12.38%. These are exploratory source-bound measurements, not full
+  performance acceptance. Reviewed source is committed5eb0e339; full392-row/
+  no-spillover plus cold/native/warm proof remain next. Failed keep bars stop
+  the attempt.
+- R01 exact reviewed0f0fe960 passed fast99082, PR80503 and final default docs
+  24607, all exit0. Normal push93967 passed pre-push checks and published that
+  exact head to PR185. One hosted diagnostic capture is now authorized; strict
+  silence is unchanged and a pass without the raw cause remains inconclusive.
+- Master remains3d9a255. No merge or new done card. A04 remains held for R01
+  integration/current-master revalidation and unresolved full-card outcomes;
+  preserved A05 and user-owned PR142 are untouched. Next context review57.
+- Reconciled this current-master branch's stale queue entries with the live
+  PR inventory and preserved A04 ownership ledger: R01/A04 active, Q02/Q04/Q06
+  implemented but unmerged, A05 partial implemented. Fourteen done and eighteen
+  unfinished; no readiness may be inferred from historical done snapshots.
+- Metadata review corrected an overclaim:0.398ms is an instrumented bucket
+  median, not a public-savings ceiling. Clone-only rejection remains a bounded
+  prioritization decision. A05 uses the executor glossary's implemented state
+  (patch exists, proof incomplete), explicitly partial and not PR-ready; it
+  does not count as done or satisfy A07's dependency.
+
+## Iteration 53 — 2026-09-07 — Reject small fix, test complete reuse
+
+- R03's allocator-free timing deprioritizes the clone-only guard: observed
+  strip-bucket median0.398ms, not a public-savings upper bound. Whole duplicate
+  descendant construction measures
+  about0.956ms plus unquantified teardown. A fresh uninstrumented static build
+  and32-command paired control exposed substantial probe/host variation; no
+  production savings is claimed from internal buckets.
+- Authorized one test-first candidate for complete identical-descendant reuse.
+  Direct-content policies, inheritance/reset, composition, serialized plans
+  and plain/fast/compiled oracles must remain correct. Public before/after
+  measurements decide retention; no threshold, row or execution-model change.
+- R01 raw captures and seven replay controls distinguish ordinary external
+  drops from real root/rescan/config signals. One27-test suite and20 prescribed
+  exact local captures passed without reproducing the hosted failure. Approved
+  one bounded, structure-compliant diagnostic-only hosted head after review
+  and local gates; strict silence remains and tracing may affect timing.
+- PR185's latest performance job passed8/8 at18.6063435ms versus20.1631345ms;
+  the prior19.364834/17.6041085 failure remains. macOS external-config silence
+  still fails; Linux/Windows were cancelled. Watch75876 terminated1, not pass.
+- Master remains3d9a255; current release reconfirmedv0.3.0, published July2.
+  Existing PR142/user work and A05 remain untouched. No new card is done.
+- Next: source-bound R03 RED/GREEN/public comparison and reviewed R01 hosted
+  event-origin capture. No merge is approved on incomplete platform evidence.
+
+## Iteration 57 — 2026-09-07 — Enforce packet stop and review context health
+
+- R01's explicit no-reproduced-cause stop rule now applies. Marked the card
+  blocked on the named macOS raw event evidence or a specific maintainer
+  native-readiness decision. No further diagnostic reruns. Preserved the
+  reviewed loop-characterization design but did not authorize its speculative
+  four-file refactor; it cannot close native acceptance by itself.
+- R03 remains independent and executable. Exact final archive d2a9ca7 retains
+  reviewed behavior source5eb0e339. VPS baseline bundle completed; original
+  build68398 has live candidate rustc processes, not an expired-observation
+  failure. No duplicate build or performance report has been launched.
+- Context health: clean source ownership and exact handles remain explicit.
+  Worktree inventory49; dry-run lists only two previously known prunable
+  records, neither removed. Local disk14GiB free, so heavy work remains on VPS.
+  A05 partial work, PR142 and unknown work are preserved. Q02 inspection found
+  its existing administrator-protection decision and R03 hold unchanged;
+  no premature rebase or extra implementation lane was started.
+- Repeated native passes cannot establish an unobserved event cause. The
+  existing packet stop rule and goal/performance/build skills already cover
+  this decision; no new skill or AGENTS expansion is warranted. Next: full
+  R03 report review and retain/reject decision, then the next dependency-ready
+  integration. Goal remains active; this is not whole-goal external blockage.
+
+## Iteration 56 — 2026-09-07 — Preserve failed gate, bound remaining diagnosis
+
+- R01 exact0f0fe96 passed independent review, fast99082/PR80503/docs24607 and
+  normal push93967. Single hosted run34094418980 completed: all platform tests
+  and adoption/release jobs passed; performance alone failed. Observer68967
+  exited1. No retry or merge; source remains unchanged.
+- Cold many-scopes18.7323025ms versus18.4814565ms fails the unchanged gate.
+  All392rows and native/warm artifacts are retained; diagnostic zero-sample
+  rows are not passes. Prior failed and passed measurements are not erased.
+- The external-config test passed but emitted no captured successful-test raw
+  events, so its earlier cause remains inconclusive. Independent design review
+  proposes a minimal actual-loop injection seam, not backend-quiescence proof.
+  Preparation is bounded; no permissive rescan acceptance or further CI chase.
+- R03 reviewed source5eb0e339 and separately reviewed metadata d2a9ca7 are
+  committed clean. Two exploratory fixed-fixture quiet comparisons improved
+ 5.31%/12.38%; full exact-bundle392-row and cold/native/warm acceptance is still
+  required. Original VPS build68398 remains the owned observation handle.
+- Next: compare complete performance evidence, finalize the minimal R01 loop
+  contract design, and perform context/repeated-failure review at57. No new
+  done card, release, deployment, invitation or cleanup is claimed.
+
+## Iteration 54 — 2026-09-07 — Bounded hosted diagnosis and context health
+
+- R01's20 prescribed local captures all passed without reproducing the hosted
+  full-rescan event. Seven replay controls preserve the actual policy branches;
+  no silence assertion or source classifier was relaxed. Diagnostic-only
+  source267857f adds explicit bounded/raw-path-safe capture and processing
+  identity, with unchanged normalization output in a cohesive sibling module.
+- Independent review passed the diagnostic diff after three concrete fixes.
+  Focused units24, native tests29 and structure0violations passed; final exact
+  head review/gates precede ONE fresh hosted capture. Passing without a cause
+  remains inconclusive. No diagnostic-only commit is approved for merge.
+- R03 has one authorized complete-descendant-reuse candidate, test-first,
+  behind unchanged public keep bars. Clone-only optimization was rejected.
+  Public before/after proof, not allocation counts alone, decides retention.
+- Context budget is not exposed. Master3d9a255 and releasev0.3.0 were refreshed;
+ 49worktrees remain after the last inventory, with A05/unknown work preserved.
+  Parent owns review/merge judgment; R01 local build cache and R03 remote
+  candidate targets remain separately owned. A04 gates passed but merge is held.
+- Repeated failures show why startup receipt, a successful policy result and
+  a passing diagnostic run are not causal evidence. Existing goal/build/hook/
+  performance/structure-fit skills and executable diagnostics cover this work;
+  no new skill or AGENTS expansion is justified. Keep exact session exits and
+  avoid broad or guessed cross-worktree reads.
+- Next: R01 exact-head gates/one hosted capture and R03 first public candidate
+  measurement. No new completion, threshold waiver, release or deployment.
+
+## Iteration 52 — 2026-09-07 — Strict silence and performance attribution
+
+- R01 exact reviewed3ec25fd passed fast42820, PR51849 and final default docs22923;
+  normal push75325 succeeded and PR185 now targets that head. Fresh macOS CI
+  passed root/directory corrections but failed external-config silence,26/27.
+  Linux/Windows were cancelled. The unexpected full-root report has three
+  coalesced events; actual diagnostic paths are unknown, not invented.
+- Approved diagnosis before another repair: preserve strict silence, capture
+  failure diagnostics, discriminate genuine external-scope regression from
+  delayed in-scope setup. Independent review is designing that experiment;
+  closed169's permissive acceptance is not revived. No green retry or merge.
+- R03 structural probe confirms800 reset children, one inherited root, zero
+  composition targets and801 shared Arc observations (strong count3).
+  Descendant construction adds9,603 allocations. Counting overhead prevents
+  a timing conclusion; an allocator/counter-free timing variant is required
+  before retaining any optimization. All accepted performance gates remain.
+- A04 reviewed9c9a896 passed fast8047 and PR25099; its PR update/rebase remains
+  held behind R01/R03. Full hook-path/host acceptance is still unfinished.
+  Runtime checkpoint51 records context/repeated-failure review and inventory49;
+  no new skill, unknown cleanup, release or public action was warranted.
+- Next: decisive R01 event-origin evidence and R03 counter-free timing, then
+  the smallest independently reviewed repair supported by those observations.
+
+## Iteration 46 — 2026-09-07 — Post-merge watch evidence correction
+
+- Master `3d9a255f832733082c864edf703fc98c854e7f6e` has the same tree as
+  reviewed PR #183 head `9d4bf50`, whose 24 hosted checks passed. Its later
+  Rust CI run `34084659580` failed macOS job `101626309708`; Windows was
+  cancelled, not passed. Performance, security and documentation passed.
+- The failure compared diagnostic paths `src` versus `src/BadName.ts`, not
+  the report's changed paths. Read-only independent tracing found that the
+  harness consumes one permitted successful full-rescan predecessor from
+  stdout but leaves its diagnostic in the separate stderr queue. Folder
+  events force full checks and cannot explain the incremental report that
+  already passed. Precise OS notification timing is not established.
+- Reopened R01 in a clean current-master worktree at
+  `/Users/nroth/.codex/worktrees/assura-r01-diagnostic-association`. Require a
+  deterministic association RED, bounded report/diagnostic accounting and
+  negative controls for missing diagnostics, disconnection, wrong scope and
+  extra predecessors. Strengthen actual violation-path evidence; preserve
+  config reload, pathless/excluded rescans and overflow safety.
+- A04's independently reviewed `d42094c` passed exact-head fast (session 29959)
+  and PR (56973) tiers, both terminal exit 0. Its ownership slice stays separate
+  and cannot merge by waiving the current-master failure. A05 is untouched;
+  R03's fresh measurements remain diagnostic evidence, not an optimization.
+- Inventory is 48 worktrees after the new isolated repair. The two pre-existing
+  prune-dry-run findings and unrelated paths remain untouched. Next: reviewed
+  R01 correction, hosted proof, then rebase/revalidate the A04 ownership slice.
+
+### Review decisions and subsequent hosted evidence
+
+- A04 PR #184 is open at reviewed `d42094c`, with explicit merge holds. Its
+  Linux job `101630975101` in run `34086323317` failed executable raw-byte hook
+  launch with OS 26 (`Text file busy`); 23/24 ownership tests and 10/10 lifecycle
+  tests passed. macOS and Windows were cancelled by fail-fast, not independently
+  passing. The owning investigation must distinguish fixture/process lifetime
+  from product publication behavior; no retry-to-green or weaker shell-launch
+  substitute is approved. Existing local passes remain historical evidence.
+- Independent performance review found no justified optimization from the
+  current profile. R03's remaining bounded experiment is two unchanged-source
+  16-iteration comparisons in a verified quiet interval, keeping the existing
+  balanced per-iteration tool alternation and every row. Serialize this after
+  Linux hook diagnostics. Two passes can establish no reproduced current
+  regression, not prove historical runner noise. Strict cold 2x is not a gate.
+- Next A04 slice is effective Git hook-path resolution and preservation at that
+  path, with real Git-event proof, after ownership integration. Current source
+  has no supported manager adapter; fixture-manager metadata is not integration
+  proof. Relative/worktree/absolute configuration, configuration errors and
+  symlink ancestry require explicit tests. Manager support and host runtime
+  proof remain separate acceptance gaps; do not silently count them complete.
+
 ## Iteration 50 — 2026-09-07 — Fixture isolation and bounded attribution
 
 - A04 test-only d79a80c removes the proven in-process inherited-writer window

@@ -5,7 +5,7 @@
   "refresh_source_before_execution": true,
   "spec": "../prd.md",
   "instructions": "executor-prompt.md",
-  "selection": "First pending item with done/not_needed evidenced dependencies present in the checkout. Skip explicitly blocked external actions; read the card before editing.",
+  "selection": "First pending item with done/not_needed evidenced dependencies present in the checkout. Skip explicitly blocked external actions; read the card before editing. source_snapshot is the historical planning baseline, not branch ancestry; imported evidence status does not import behavior source.",
   "items": [
     {
       "id": "B00",
@@ -42,10 +42,10 @@
         "B00"
       ],
       "executor": "agent",
-      "state": "active",
-      "owner": "Codex goal/r01-diagnostic-association",
+      "state": "blocked",
+      "owner": "Codex goal/r01-diagnostic-association; existing PR #185",
       "evidence": "evidence/R01.md",
-      "blocker": "Master CI 34084659580 and PR185 run 34088013090 exposed diagnostic-consumer assumptions. Complete-batch/root correction and Windows path assertions require fresh reviewed local and three-platform proof; R03 performance failure also holds merging. No discarded rescans or green retries."
+      "blocker": "R01 packet stop: single diagnostic run34094418980 passed platform tests but did not reproduce prior macOS external-config cause. Need complete raw paths/kinds/rescan/config state for run34090768850/job101643647551 seq2/count3, or specific maintainer native-readiness decision. Source/evidence preserved through2debe29; no further diagnostic CI or speculative loop refactor."
     },
     {
       "id": "R02",
@@ -70,10 +70,10 @@
         "R02"
       ],
       "executor": "agent",
-      "state": "active",
-      "owner": "Codex goal/r03-scope-rules-attribution: diagnostic-only exact/descendant plan cost, no retained candidate",
+      "state": "blocked",
+      "owner": "Codex goal/r03-scope-rules-attribution; A/A method stopped and audited, rejected source remains reverted",
       "evidence": "evidence/R03.md",
-      "blocker": null
+      "blocker": "A/A run66774 stopped at block1: identical Assura differs0.4192105ms/9.3178%, LS differs0.106567ms; existing comparability bounds fail. Raw audit6e228e7e confirms32samples+4controls, unchanged identities, no block2. Root must justify a materially different attribution/runner method before further measurement; same-method retry, optimization, candidate rehabilitation and gate amendment are not authorized. Not a whole-goal or automatic human-approval block."
     },
     {
       "id": "R04",
@@ -199,7 +199,7 @@
       ],
       "executor": "agent",
       "state": "active",
-      "owner": "Codex goal/a04-hook-ownership-repair",
+      "owner": "Codex goal/a04-hook-ownership-repair; existing PR #184; ownership merge/revalidation active; later hook-path and runtime slices serialized until ownership integration",
       "evidence": "evidence/A04.md",
       "blocker": null
     },
@@ -213,7 +213,7 @@
       ],
       "executor": "agent",
       "state": "implemented",
-      "owner": "Codex goal/a05-native-harness-lifecycle; preserved partial uncommitted work",
+      "owner": "Codex goal/a05-native-harness-lifecycle; partial uncommitted patch exists, implementation/proof incomplete, not PR-ready",
       "evidence": "evidence/A05.md",
       "blocker": null
     },
@@ -346,10 +346,10 @@
         "W01"
       ],
       "executor": "agent",
-      "state": "pending",
-      "owner": null,
+      "state": "blocked",
+      "owner": "Codex goal/w02-release-aware-installation; local packet complete at7cebab8 after independent review,158browser and covering VPS docs/released checks; unchanged Rust/xtask passed1303test PR tier at3cebe325; source/public installation proof audited; hosted integration remains pending; latest evidence preserved at 790b0a9:research/evidence/W02.md in the same task, not imported behavior",
       "evidence": "evidence/W02.md",
-      "blocker": null
+      "blocker": "Local packet preparation complete; Nick's explicit Cloudflare publication approval or verified no-deploy separation is required before preview-triggering push/merge. PR187 is still old/failing; exact-head hosted/performance gates and current-master integration remain mandatory after authority is resolved."
     },
     {
       "id": "R06",
