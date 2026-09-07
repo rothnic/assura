@@ -3,6 +3,16 @@ use std::path::{Path, PathBuf};
 
 use thiserror::Error;
 
+#[path = "hooks_ownership.rs"]
+mod ownership;
+#[path = "hooks_transaction.rs"]
+mod transaction;
+
+use ownership::{
+    classify_artifact, ensure_plain_directory, plain_directory_or_absent,
+    remove_file_if_still_managed, shell_single_quote, ArtifactOwnership, HookOwnership,
+};
+
 #[derive(Error, Debug)]
 pub enum HookError {
     #[error("IO error: {0}")]
@@ -19,6 +29,12 @@ pub enum HookError {
 
     #[error("Invalid hook type: {0}")]
     InvalidType(String),
+
+    #[error("Refusing hook mutation through unmanaged path: {0}")]
+    UnsafePath(PathBuf),
+
+    #[error("Hook mutation failed: {operation}; rollback also failed: {rollback}")]
+    RollbackFailed { operation: String, rollback: String },
 }
 
 pub type HookResult<T> = Result<T, HookError>;
@@ -101,26 +117,23 @@ impl GitHooksManager {
     }
 
     pub fn install_all(&self, force: bool) -> HookResult<HookInstallOutcome> {
-        std::fs::create_dir_all(&self.assura_hooks_dir)?;
-
         let mut outcome = HookInstallOutcome::default();
 
         for hook_type in HookType::all() {
-            let status = self.status(hook_type);
-            if status.git_path.exists() && !status.is_managed {
+            let ownership = self.ownership(hook_type)?;
+            if ownership.has_unmanaged() {
                 outcome.preserved.push(hook_type);
                 continue;
             }
 
-            if status.is_managed && !force {
+            if ownership.is_complete() && !force {
                 outcome.unchanged.push(hook_type);
                 continue;
             }
 
             match self.install(hook_type, force) {
-                Ok(_) if status.is_managed => outcome.refreshed.push(hook_type),
+                Ok(_) if ownership.has_managed_artifact() => outcome.refreshed.push(hook_type),
                 Ok(_) => outcome.installed.push(hook_type),
-                Err(HookError::AlreadyExists(_)) if !force => outcome.preserved.push(hook_type),
                 Err(e) => return Err(e),
             }
         }
@@ -132,43 +145,51 @@ impl GitHooksManager {
         let hook_name = hook_type.as_str();
         let git_hook_path = self.git_hooks_dir.join(hook_name);
         let assura_hook_path = self.assura_hooks_dir.join(hook_name);
+        let ownership = self.ownership(hook_type)?;
 
-        // Check if already exists
-        if git_hook_path.exists() && !force {
+        if ownership.has_unmanaged() || (ownership.is_complete() && !force) {
             return Err(HookError::AlreadyExists(hook_name.to_string()));
         }
 
-        // Create the assura hook script
+        self.ensure_mutation_directories()?;
+
+        // Reclassify at the final mutation boundary so a static path change made
+        // after manager creation cannot turn a managed write into an overwrite.
+        let ownership = self.ownership(hook_type)?;
+        if ownership.has_unmanaged() || (ownership.is_complete() && !force) {
+            return Err(HookError::AlreadyExists(hook_name.to_string()));
+        }
+
         let hook_content = self.generate_hook_content(hook_type)?;
-        std::fs::write(&assura_hook_path, hook_content)?;
-
-        // Make it executable (on Unix)
-        #[cfg(unix)]
-        {
-            use std::os::unix::fs::PermissionsExt;
-            let mut permissions = std::fs::metadata(&assura_hook_path)?.permissions();
-            permissions.set_mode(0o755);
-            std::fs::set_permissions(&assura_hook_path, permissions)?;
-        }
-
-        // Create git hook that delegates to assura
         let git_hook_content = self.managed_git_hook_content(&assura_hook_path);
-
-        std::fs::write(&git_hook_path, git_hook_content)?;
-
-        // Make git hook executable (on Unix)
-        #[cfg(unix)]
-        {
-            use std::os::unix::fs::PermissionsExt;
-            let mut permissions = std::fs::metadata(&git_hook_path)?.permissions();
-            permissions.set_mode(0o755);
-            std::fs::set_permissions(&git_hook_path, permissions)?;
-        }
-
-        Ok(())
+        transaction::replace_pair(
+            &assura_hook_path,
+            hook_content.as_bytes(),
+            &git_hook_path,
+            git_hook_content.as_bytes(),
+        )
     }
 
     fn managed_git_hook_content(&self, assura_hook_path: &Path) -> String {
+        format!(
+            r#"#!/bin/sh
+# Git hook managed by Assura
+# This file was auto-generated. Do not modify manually.
+
+ASSURA_HOOK={}
+
+if [ -f "$ASSURA_HOOK" ]; then
+    exec "$ASSURA_HOOK" "$@"
+else
+    echo "Warning: Assura hook not found at $ASSURA_HOOK" >&2
+    exit 0
+fi
+"#,
+            shell_single_quote(assura_hook_path)
+        )
+    }
+
+    fn legacy_managed_git_hook_content(&self, assura_hook_path: &Path) -> String {
         format!(
             r#"#!/bin/sh
 # Git hook managed by Assura
@@ -192,17 +213,18 @@ fi
         let git_hook_path = self.git_hooks_dir.join(hook_name);
         let assura_hook_path = self.assura_hooks_dir.join(hook_name);
 
-        let managed_git_hook = git_hook_path.exists()
-            && std::fs::read_to_string(&git_hook_path)?
-                == self.managed_git_hook_content(&assura_hook_path);
+        let ownership = self.ownership(hook_type)?;
+        if ownership.has_unmanaged() {
+            return Ok(());
+        }
 
-        if managed_git_hook {
-            std::fs::remove_file(&git_hook_path)?;
-            if assura_hook_path.exists() {
-                std::fs::remove_file(&assura_hook_path)?;
-            }
-        } else if !git_hook_path.exists() && assura_hook_path.exists() {
-            std::fs::remove_file(&assura_hook_path)?;
+        if ownership.wrapper == ArtifactOwnership::Managed {
+            let expected = self.managed_wrapper_contents(&assura_hook_path);
+            remove_file_if_still_managed(&git_hook_path, &expected)?;
+        }
+        if ownership.sidecar == ArtifactOwnership::Managed {
+            let expected = self.generate_hook_content(hook_type)?;
+            remove_file_if_still_managed(&assura_hook_path, &[expected])?;
         }
 
         Ok(())
@@ -212,12 +234,12 @@ fi
         let mut outcome = HookUninstallOutcome::default();
 
         for hook_type in HookType::all() {
-            let status = self.status(hook_type);
-            if status.is_managed {
+            let ownership = self.ownership(hook_type)?;
+            if ownership.has_unmanaged() {
+                outcome.preserved.push(hook_type);
+            } else if ownership.has_managed_artifact() {
                 self.uninstall(hook_type)?;
                 outcome.removed.push(hook_type);
-            } else if status.is_installed {
-                outcome.preserved.push(hook_type);
             }
         }
 
@@ -229,15 +251,15 @@ fi
         let git_hook_path = self.git_hooks_dir.join(hook_name);
         let assura_hook_path = self.assura_hooks_dir.join(hook_name);
 
-        let is_installed = git_hook_path.exists() || assura_hook_path.exists();
-        let is_managed = std::fs::read_to_string(&git_hook_path)
-            .map(|content| content == self.managed_git_hook_content(&assura_hook_path))
-            .unwrap_or(false);
+        let ownership = self.ownership(hook_type).unwrap_or(HookOwnership {
+            wrapper: ArtifactOwnership::Unmanaged,
+            sidecar: ArtifactOwnership::Unmanaged,
+        });
 
         HookStatus {
             hook_type,
-            is_installed,
-            is_managed,
+            is_installed: ownership.is_installed(),
+            is_managed: ownership.is_complete(),
             git_runnable: is_runnable(&git_hook_path),
             assura_runnable: is_runnable(&assura_hook_path),
             git_path: git_hook_path,
@@ -260,6 +282,51 @@ fi
         };
 
         Ok(content.to_string())
+    }
+
+    fn ownership(&self, hook_type: HookType) -> HookResult<HookOwnership> {
+        let hook_name = hook_type.as_str();
+        let git_hook_path = self.git_hooks_dir.join(hook_name);
+        let assura_hook_path = self.assura_hooks_dir.join(hook_name);
+        let wrapper_expected = self.managed_wrapper_contents(&assura_hook_path);
+        let sidecar_expected = self.generate_hook_content(hook_type)?;
+
+        Ok(HookOwnership {
+            wrapper: classify_artifact(
+                &git_hook_path,
+                &wrapper_expected,
+                plain_directory_or_absent(&self.git_hooks_dir),
+            )?,
+            sidecar: classify_artifact(
+                &assura_hook_path,
+                &[sidecar_expected],
+                self.assura_hook_directories_are_safe(),
+            )?,
+        })
+    }
+
+    fn managed_wrapper_contents(&self, assura_hook_path: &Path) -> Vec<String> {
+        vec![
+            self.managed_git_hook_content(assura_hook_path),
+            self.legacy_managed_git_hook_content(assura_hook_path),
+        ]
+    }
+
+    fn assura_hook_directories_are_safe(&self) -> bool {
+        self.assura_hooks_dir
+            .parent()
+            .is_some_and(plain_directory_or_absent)
+            && plain_directory_or_absent(&self.assura_hooks_dir)
+    }
+
+    fn ensure_mutation_directories(&self) -> HookResult<()> {
+        ensure_plain_directory(&self.git_hooks_dir)?;
+        let assura_dir = self
+            .assura_hooks_dir
+            .parent()
+            .ok_or_else(|| HookError::UnsafePath(self.assura_hooks_dir.clone()))?;
+        ensure_plain_directory(assura_dir)?;
+        ensure_plain_directory(&self.assura_hooks_dir)
     }
 }
 
@@ -348,7 +415,7 @@ impl HookStatus {
 fn is_runnable(path: &Path) -> bool {
     use std::os::unix::fs::PermissionsExt;
 
-    path.metadata()
+    path.symlink_metadata()
         .map(|metadata| metadata.is_file() && metadata.permissions().mode() & 0o111 != 0)
         .unwrap_or(false)
 }

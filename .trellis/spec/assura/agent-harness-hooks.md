@@ -74,11 +74,24 @@ expected files without timestamp noise.
 
 ### 3. Contracts
 
-- A Git entrypoint is Assura-managed only when its complete content equals the
-  generated delegator for that hook and project-local sidecar path.
-- A marker substring alone is never ownership proof. `--force` refreshes only
-  exact managed entrypoints. Removal deletes a wrapper and sidecar together
-  only after that same ownership check.
+- A Git hook pair is Assura-managed only when the complete entrypoint equals a
+  deterministic Assura delegator for that hook and project-local sidecar path,
+  and the complete sidecar equals the embedded hook script. The previous exact
+  double-quoted delegator remains an accepted managed format for lifecycle
+  compatibility; newly generated delegators single-quote literal paths.
+- A marker substring, expected filename, or one matching artifact is never
+  ownership proof for the other artifact. `--force` refreshes only a pair with
+  no unowned content. Removal classifies the wrapper and sidecar together before
+  deleting either; an exact managed orphan may be removed, while arbitrary
+  orphan content is preserved.
+- Static symbolic links at either hook file or in the project-local Assura hook
+  directory are unowned and preserved, including dangling links. Assura does
+  not follow them for lifecycle reads or writes.
+- One hook pair is installed transactionally: if publishing the entrypoint
+  fails after changing its sidecar, Assura restores the sidecar and reports any
+  rollback failure. `install_all` remains a sequential series of these per-hook
+  transactions, not one transaction across all hook types. This guarantee does
+  not claim protection against arbitrary concurrent hostile filesystem changes.
 
 ### 4. Validation & Error Matrix
 
@@ -87,24 +100,37 @@ expected files without timestamp noise.
 | Existing exact managed wrapper | report unchanged or refreshed; removal is allowed |
 | Existing custom wrapper, including marker text | preserve and report it; never overwrite or delete |
 | Custom wrapper with an Assura-named sidecar | preserve both files |
+| Exact wrapper with modified sidecar | preserve both files and report drift |
+| Missing half of an otherwise exact managed pair | repair the missing artifact |
+| Arbitrary orphan sidecar | preserve and report it |
+| Exact managed orphan sidecar | removal is allowed |
+| Hook file or Assura hook directory is a symbolic link | preserve it and do not touch its target |
+| Entrypoint publication fails after sidecar publication | restore the prior sidecar or report rollback failure |
 
 ### 5. Good / Base / Bad Cases
 
-- Good: a force refresh replaces an exact stale Assura wrapper.
+- Good: a force refresh replaces an exact stale Assura wrapper and exact
+  sidecar without weakening advisory/default or opt-in blocking behavior.
 - Base: a repeated install reports an exact current wrapper as unchanged.
-- Bad: treating `Git hook managed by Assura` in arbitrary custom content as ownership.
+- Bad: treating `Git hook managed by Assura`, an Assura filename, or a symlink
+  target as ownership.
 
 ### 6. Tests Required
 
 - Cover plain custom and marker-collision custom wrappers for install, force,
   direct uninstall, and bulk uninstall; cover a custom wrapper plus sidecar.
+- Cover modified and orphan sidecars through direct and bulk mutation paths,
+  missing managed artifacts, hook-file and directory symlinks, per-hook rollback,
+  and real invocation through paths containing spaces and shell metacharacters.
 
 ### 7. Wrong vs Correct
 
-Wrong: use `content.contains(marker)` for lifecycle ownership.
+Wrong: use `content.contains(marker)`, path existence, or symlink-following file
+reads for lifecycle ownership.
 
-Correct: compare the complete entrypoint to the deterministic generated
-delegator before touching either managed file.
+Correct: classify both non-symlink artifacts by complete deterministic content
+before any write or deletion, and publish a pair with rollback of the first
+artifact when the second publication fails.
 
 ## Harness Rules
 
