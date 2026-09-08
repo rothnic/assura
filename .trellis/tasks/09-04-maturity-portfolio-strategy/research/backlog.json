@@ -198,10 +198,10 @@
         "A03"
       ],
       "executor": "agent",
-      "state": "active",
-      "owner": "Codex goal/a04-pre-commit-contract; pre-commit 4.6.2 adapter contract selected for test-first implementation; host-runtime acceptance stays serialized",
+      "state": "done",
+      "owner": "Codex goal/a04-pre-commit-adapter; reviewed PR #220 merged after current-master hosted gates",
       "evidence": "evidence/A04.md",
-      "blocker": "Implement the selected pre-commit 4.6.2 adapter test-first: a shared Assura pre-push runner, byte-safe .pre-commit-config.yaml append/update/remove ownership, configured-versus-active status, and a disposable real pre-push event. Unsupported shape, runtime, marker, or user-edit cases are proposal-only; host-runtime acceptance remains separately serialized."
+      "blocker": null
     },
     {
       "id": "A05",
@@ -227,8 +227,8 @@
         "A04"
       ],
       "executor": "agent",
-      "state": "active",
-      "owner": "Codex goal/a06-observation-contract; A06 packet behavior, exact-binary observations, and independent rereview are locally complete at b305578; reviewed hosted integration remains before done",
+      "state": "done",
+      "owner": "Codex goal/a06-observation-contract; reviewed PR #222 merged after current-master hosted gates",
       "evidence": "evidence/A06.md",
       "blocker": null
     },
