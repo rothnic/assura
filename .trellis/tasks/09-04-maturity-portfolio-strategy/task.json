@@ -38,6 +38,7 @@
     "execution_branches": [
       "goal/a05-current-audit",
       "goal/a04-readiness-hold",
+      "goal/w02-deployment-hold",
       "goal/q02-contribution-contract",
       "goal/q04-policy-naming",
       "goal/q06-release-readiness"

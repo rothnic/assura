@@ -349,7 +349,7 @@
       "state": "blocked",
       "owner": "Codex goal/w02-release-aware-installation; local packet complete at7cebab8 after independent review,158browser and covering VPS docs/released checks; unchanged Rust/xtask passed1303test PR tier at3cebe325; source/public installation proof audited; hosted integration remains pending; latest evidence preserved at 790b0a9:research/evidence/W02.md in the same task, not imported behavior",
       "evidence": "evidence/W02.md",
-      "blocker": "Local packet preparation complete; Nick's explicit Cloudflare publication approval or verified no-deploy separation is required before preview-triggering push/merge. PR187 is still old/failing; exact-head hosted/performance gates and current-master integration remain mandatory after authority is resolved."
+      "blocker": "Local packet preparation complete. Read-only 2026-09-08 audit of PR #187 found its successful Workers Builds: assura check linked to Cloudflare's production-builds surface, so no-deploy separation is not verified. Nick's explicit Cloudflare approval is required before any current-master push/PR that could trigger builds. PR187 is not current and lacks required exact-head gates; exact-head hosted/performance gates and current-master integration remain mandatory after authority is resolved."
     },
     {
       "id": "R06",
