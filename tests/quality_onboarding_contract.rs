@@ -107,6 +107,82 @@ fn quality_plan_reports_unconfigured_scopes_without_guessing_native_gates() {
 }
 
 #[test]
+fn quality_plan_deduplicates_overlapping_scopes_in_cumulative_stable_order() {
+    let project = TempDir::new().expect("project directory");
+    fs::create_dir_all(project.path().join(".assura")).expect("Assura directory");
+    fs::write(
+        project.path().join(".assura/config.yml"),
+        r#"structure:
+  ./:
+    extra: true
+quality:
+  scopes:
+    base:
+      paths: ["**"]
+      always: ["assura check"]
+      frequent: ["cargo fmt --all -- --check"]
+      pre_push: ["cargo test --locked"]
+      pr: ["cargo clippy --all-targets -- -D warnings"]
+      merge: ["cargo doc --no-deps"]
+    rust:
+      paths: ["src/**"]
+      always: ["assura check"]
+      frequent: ["cargo fmt --all -- --check", "cargo check --locked"]
+      pre_push: ["cargo test --locked"]
+      pr: ["cargo clippy --all-targets -- -D warnings"]
+      merge: ["cargo doc --no-deps"]
+"#,
+    )
+    .expect("quality policy configuration");
+
+    let phase_contracts = [
+        (
+            "frequent",
+            serde_json::json!([
+                "assura check",
+                "cargo fmt --all -- --check",
+                "cargo check --locked"
+            ]),
+        ),
+        (
+            "pre-push",
+            serde_json::json!([
+                "assura check",
+                "cargo fmt --all -- --check",
+                "cargo test --locked",
+                "cargo check --locked"
+            ]),
+        ),
+        (
+            "pr",
+            serde_json::json!([
+                "assura check",
+                "cargo fmt --all -- --check",
+                "cargo test --locked",
+                "cargo clippy --all-targets -- -D warnings",
+                "cargo check --locked"
+            ]),
+        ),
+        (
+            "merge",
+            serde_json::json!([
+                "assura check",
+                "cargo fmt --all -- --check",
+                "cargo test --locked",
+                "cargo clippy --all-targets -- -D warnings",
+                "cargo doc --no-deps",
+                "cargo check --locked"
+            ]),
+        ),
+    ];
+    for (phase, expected_checks) in phase_contracts {
+        let plan = successful_plan_json(&project, &["src/lib.rs"], phase);
+        assert_eq!(plan["scopes"].as_array().map(Vec::len), Some(2));
+        assert_eq!(plan["checks"], expected_checks, "wrong {phase} plan");
+    }
+}
+
+#[test]
 fn onboarding_a_cargo_project_plans_cumulative_native_gates_for_rust_sources() {
     let project = TempDir::new().expect("project directory");
     fs::create_dir_all(project.path().join("src")).expect("source directory");
