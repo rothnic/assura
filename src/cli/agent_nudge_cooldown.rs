@@ -36,6 +36,7 @@ pub(super) fn apply(
     project_root: &Path,
     event: &str,
     agent: &str,
+    policy_generation: &str,
     nudges: &mut Vec<NudgeItem>,
     seconds: u64,
 ) -> CooldownSummary {
@@ -55,8 +56,9 @@ pub(super) fn apply(
         .messages
         .retain(|_, timestamp| within_cooldown(now, *timestamp, seconds));
     let before = nudges.len();
+    let agent_generation = format!("{agent}\0{policy_generation}");
     nudges.retain(|nudge| {
-        let fingerprint = fingerprint(&session, event, agent, nudge);
+        let fingerprint = fingerprint(&session, event, &agent_generation, nudge);
         if state
             .messages
             .get(&fingerprint)
@@ -75,6 +77,18 @@ pub(super) fn apply(
         mode,
         fallback_reason,
     }
+}
+
+pub(super) fn policy_generation(project_root: &Path, config: Option<&Path>) -> String {
+    let path = config
+        .map(Path::to_path_buf)
+        .unwrap_or_else(|| project_root.join(".assura/config.yml"));
+    let contents = fs::read(&path).unwrap_or_default();
+    let mut hasher = Sha256::new();
+    hasher.update(path.as_os_str().as_encoded_bytes());
+    hasher.update([0]);
+    hasher.update(contents);
+    format!("{:x}", hasher.finalize())
 }
 
 fn state_path(project_root: &Path) -> (PathBuf, &'static str, Option<&'static str>) {
@@ -181,12 +195,24 @@ fn unix_seconds() -> u64 {
 
 #[cfg(test)]
 mod tests {
-    use super::within_cooldown;
+    use super::{policy_generation, within_cooldown};
+    use std::fs;
 
     #[test]
     fn cooldown_discards_future_and_expired_timestamps() {
         assert!(within_cooldown(1_000, 950, 60));
         assert!(!within_cooldown(1_000, 900, 60));
         assert!(!within_cooldown(1_000, 1_001, 60));
+    }
+
+    #[test]
+    fn policy_generation_distinguishes_non_utf8_config_bytes() {
+        let project = tempfile::tempdir().expect("temporary project");
+        let config = project.path().join("config.yml");
+        fs::write(&config, b"structure: {}\n# \xff\n").expect("write first config");
+        let first = policy_generation(project.path(), Some(&config));
+        fs::write(&config, b"structure: {}\n# \xfe\n").expect("write second config");
+
+        assert_ne!(first, policy_generation(project.path(), Some(&config)));
     }
 }

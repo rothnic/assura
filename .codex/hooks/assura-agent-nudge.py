@@ -24,6 +24,7 @@ from typing import Any
 STATE_SCHEMA = "assura.codex-hook-state.v1"
 STATE_FILE = "codex-hook-state.jsonl"
 MAX_CONTEXT_NUDGES = 5
+MAX_CONTEXT_BYTES = 2 * 1024
 MAX_CHANGED_PATHS = 20
 DEFAULT_MIN_SEVERITY = "medium"
 GIT_WRITE_INTENTS = {
@@ -336,7 +337,7 @@ def compact_context(payload: dict[str, Any], meta: dict[str, Any]) -> str:
             f"{meta.get('intent')} while the workspace has "
             f"{meta.get('dirty_path_count', 0)} dirty path(s)."
         )
-    for nudge in payload.get("nudges", [])[:MAX_CONTEXT_NUDGES]:
+    for nudge in prioritized_nudges(payload.get("nudges", [])):
         severity = nudge.get("severity", "unknown")
         category = nudge.get("category", "unknown")
         path = nudge.get("path") or "-"
@@ -354,7 +355,45 @@ def compact_context(payload: dict[str, Any], meta: dict[str, Any]) -> str:
     lines.append("Log: .assura/agent-sessions/nudges.jsonl")
     lines.append("State: .assura/agent-sessions/codex-hook-state.jsonl")
     lines.append("</assura-nudge>")
-    return "\n".join(lines)
+    return bounded_context(lines)
+
+
+def prioritized_nudges(nudges: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Keep the first critical finding visible when bounded output truncates.
+
+    High findings are the fallback when no critical finding exists, so the
+    compact context remains useful for the most severe actionable result.
+    """
+    priority = next(
+        (nudge for nudge in nudges if nudge.get("severity") == "critical"),
+        None,
+    )
+    if priority is None:
+        priority = next(
+            (nudge for nudge in nudges if nudge.get("severity") == "high"),
+            None,
+        )
+    if priority is None:
+        return nudges[:MAX_CONTEXT_NUDGES]
+    return [priority, *(
+        nudge
+        for nudge in nudges
+        if nudge is not priority
+    )][:MAX_CONTEXT_NUDGES]
+
+
+def bounded_context(lines: list[str]) -> str:
+    context = "\n".join(lines)
+    if len(context.encode("utf-8")) <= MAX_CONTEXT_BYTES:
+        return context
+    suffix = (
+        "\nOutput truncated at 2 KiB; full payload: "
+        ".assura/agent-sessions/nudges.jsonl\n</assura-nudge>"
+    )
+    body = "\n".join(lines[:-1])
+    remaining = MAX_CONTEXT_BYTES - len(suffix.encode("utf-8"))
+    prefix = body.encode("utf-8")[:remaining].decode("utf-8", errors="ignore")
+    return f"{prefix}{suffix}"
 
 
 def should_inject(payload: dict[str, Any], meta: dict[str, Any]) -> bool:

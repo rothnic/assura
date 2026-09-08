@@ -794,6 +794,102 @@ fn codex_post_tool_hook_injects_changed_path_nudge_and_logs_state() {
 }
 
 #[test]
+fn codex_hook_bounds_utf8_context_for_many_long_findings() {
+    let project = git_nudge_fixture();
+    for index in 0..4 {
+        let filename = format!("src/A{}-{index}.rs", "é".repeat(80));
+        fs::write(project.path().join(filename), "fn bad() {}\n").expect("write long bad file");
+    }
+    fs::create_dir_all(project.path().join("xtask/src")).expect("create performance path");
+    fs::write(project.path().join("xtask/src/main.rs"), "fn main() {}\n")
+        .expect("write performance path");
+    let session = "bounded-context-test";
+    let input = serde_json::json!({
+        "session_id": session,
+        "cwd": project.path().to_str().expect("project path"),
+        "hook_event_name": "PostToolUse",
+        "tool_name": "apply_patch",
+        "tool_input": {"patch": "fixture"}
+    });
+    let output = run_codex_hook(project.path(), input, session);
+    assert!(
+        output.status.success(),
+        "hook stderr: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let hook_output: Value = serde_json::from_slice(&output.stdout).expect("hook emits JSON");
+    let context = hook_output["hookSpecificOutput"]["additionalContext"]
+        .as_str()
+        .expect("additional context");
+    // Rust string length is UTF-8 byte length, matching the hook's byte cap.
+    assert!(context.len() <= 2 * 1024);
+    assert!(context.is_char_boundary(context.len()));
+    assert!(context.contains("Output truncated at 2 KiB"));
+    assert!(context.contains("performance_no_slower"));
+    assert!(context.ends_with("</assura-nudge>"));
+}
+
+#[test]
+fn codex_hook_context_prioritizes_a_later_critical_finding() {
+    let program = r#"
+import importlib.util
+import json
+import sys
+
+spec = importlib.util.spec_from_file_location("assura_nudge", sys.argv[1])
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+nudges = [
+    {
+        "severity": "high",
+        "category": "performance",
+        "path": "xtask/src/main.rs",
+        "rule": "performance_no_slower",
+        "message": "x" * 700,
+    },
+    *[
+        {
+            "severity": "medium",
+            "category": "structure",
+            "path": f"src/long-{index}.rs",
+            "rule": "file_naming",
+            "message": "x" * 700,
+        }
+        for index in range(5)
+    ],
+]
+nudges.append(
+    {
+        "severity": "critical",
+        "category": "structure",
+        "path": "src/critical.rs",
+        "rule": "critical_rule",
+        "message": "critical finding must remain visible",
+    }
+)
+context = module.compact_context({"event": "after_tool", "summary": {}, "nudges": nudges}, {})
+print(json.dumps({"context": context}))
+"#;
+    let output = Command::new("python3")
+        .args(["-c", program])
+        .arg(codex_hook_script())
+        .output()
+        .expect("run hook context formatter");
+    assert!(
+        output.status.success(),
+        "hook formatter stderr: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    let rendered: Value = serde_json::from_slice(&output.stdout).expect("formatter emits JSON");
+    let context = rendered["context"].as_str().expect("formatted context");
+    assert!(context.len() <= 2 * 1024);
+    assert!(context.contains("critical_rule"));
+    assert!(context.contains("Output truncated at 2 KiB"));
+    assert!(context.ends_with("</assura-nudge>"));
+}
+
+#[test]
 fn codex_post_tool_hook_injects_git_commit_intent_without_new_delta() {
     let project = git_nudge_fixture();
     fs::write(
@@ -915,6 +1011,48 @@ fn agent_nudge_suppresses_identical_messages_during_the_cooldown() {
     assert_eq!(second["summary"]["nudge_count"], 0);
     assert_eq!(second["cache_policy"]["cooldown"]["suppressed"], 1);
     assert_eq!(second["summary"]["omitted_count"], 1);
+}
+
+#[test]
+fn agent_nudge_does_not_suppress_a_finding_after_policy_generation_changes() {
+    let project = nudge_fixture();
+    let path = project.path().to_str().expect("fixture path");
+    let args = [
+        "nudge",
+        path,
+        "--event",
+        "after-tool",
+        "--changed",
+        "src/BadName.rs",
+        "--cooldown-seconds",
+        "600",
+    ];
+
+    let first = agent_json(&args);
+    fs::write(
+        project.path().join(".assura/config.yml"),
+        r#"
+structure:
+  ./:
+    extra: true
+    children:
+      src/:
+        files:
+          naming: kebab-case
+          extensions: ["rs", "md"]
+exclude:
+  - target/**
+"#,
+    )
+    .expect("change policy");
+    let after_policy_change = agent_json(&args);
+
+    assert_eq!(first["summary"]["nudge_count"], 1);
+    assert_eq!(after_policy_change["summary"]["nudge_count"], 1);
+    assert_eq!(
+        after_policy_change["cache_policy"]["cooldown"]["suppressed"],
+        0
+    );
 }
 
 #[test]
