@@ -104,6 +104,12 @@ class R03PerformanceCalibrationCollectorContractTests(unittest.TestCase):
                 self.assertFalse(output_dir.exists())
 
     def test_strict_gate_failure_retains_complete_classification_evidence(self) -> None:
+        self._run_fake_collection(binary_identity_failure=False)
+
+    def test_binary_identity_failure_retains_raw_artifacts_but_not_eligible_metadata(self) -> None:
+        self._run_fake_collection(binary_identity_failure=True)
+
+    def _run_fake_collection(self, *, binary_identity_failure: bool) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             temporary_root = Path(temporary_directory)
             scripts_dir = temporary_root / "scripts"
@@ -135,6 +141,13 @@ class R03PerformanceCalibrationCollectorContractTests(unittest.TestCase):
             shim_dir.mkdir()
             (shim_dir / "cargo").write_text("#!/usr/bin/env bash\n[[ \"$1\" == xtask ]] && exit 1\nexit 0\n", encoding="utf-8")
             (shim_dir / "lscpu").write_text("#!/usr/bin/env bash\necho 'Model name: AMD EPYC 9V74'\n", encoding="utf-8")
+            if binary_identity_failure:
+                real_sha256sum = shutil.which("sha256sum")
+                self.assertIsNotNone(real_sha256sum)
+                (shim_dir / "sha256sum").write_text(
+                    f"#!/usr/bin/env bash\n[[ \"$1\" == -c ]] && exit 1\nexec {real_sha256sum} \"$@\"\n",
+                    encoding="utf-8",
+                )
             for shim in shim_dir.iterdir():
                 shim.chmod(0o755)
 
@@ -170,8 +183,12 @@ class R03PerformanceCalibrationCollectorContractTests(unittest.TestCase):
             self.assertEqual(metadata["source_sha"], source_sha)
             self.assertEqual(metadata["report_exit"], 0)
             self.assertEqual(metadata["gate_exit"], 1)
-            self.assertEqual(metadata["binary_identity_exit"], 0)
-            self.assertEqual(metadata["paired_deltas_ms"], [0.5] * 16)
+            self.assertEqual(metadata["binary_identity_exit"], 1 if binary_identity_failure else 0)
+            if binary_identity_failure:
+                self.assertEqual(metadata["assura_binary_sha256"], "missing")
+            else:
+                self.assertRegex(metadata["assura_binary_sha256"], r"^[0-9a-f]{64}$")
+            self.assertEqual(metadata["paired_deltas_ms"], [] if binary_identity_failure else [0.5] * 16)
 
 
 if __name__ == "__main__":

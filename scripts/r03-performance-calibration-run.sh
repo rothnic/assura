@@ -104,6 +104,13 @@ if (( build_exit == 0 )); then
         end
     ' "$report")"
   fi
+
+  if (( binary_identity_exit != 0 )); then
+    # Preserve the raw report and hash-check output, but never emit a record
+    # that the classifier can mistake for an immutable-binary observation.
+    binary_sha256="missing"
+    paired_deltas='[]'
+  fi
 fi
 
 job_id="${GITHUB_RUN_ID}:${GITHUB_RUN_ATTEMPT:-1}:${GITHUB_JOB}:${slot}"
