@@ -217,8 +217,20 @@ async fn handle_hooks_install(path: Option<std::path::PathBuf>, force: bool) -> 
         std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."))
     });
 
+    let pre_commit_config_present = project_root.join(".pre-commit-config.yaml").is_file();
+    if let Err(error) = super::pre_commit_adapter::append_pre_push(&project_root) {
+        eprintln!("Pre-commit integration not applied: {error}");
+    }
+
     match GitHooksManager::new(&project_root) {
-        Ok(manager) => match manager.install_all(force) {
+        Ok(manager) => match manager.install_all_except(
+            force,
+            if pre_commit_config_present {
+                &[super::hooks::HookType::PrePush]
+            } else {
+                &[]
+            },
+        ) {
             Ok(outcome) => {
                 if outcome.installed.is_empty() {
                     println!("No new hooks installed.");
@@ -392,9 +404,9 @@ fn handle_hooks_run(hook: &str) -> ExitCode {
         .args(["rev-parse", "--show-toplevel"])
         .output()
     {
-        Ok(output) if output.status.success() => String::from_utf8_lossy(&output.stdout)
-            .trim()
-            .to_owned(),
+        Ok(output) if output.status.success() => {
+            String::from_utf8_lossy(&output.stdout).trim().to_owned()
+        }
         _ => {
             eprintln!("Error: Git repository not found");
             return ExitCode::ConfigurationError;

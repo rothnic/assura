@@ -77,6 +77,8 @@ pub mod output;
 #[cfg(feature = "full-cli")]
 pub mod performance_report;
 #[cfg(feature = "full-cli")]
+mod pre_commit_adapter;
+#[cfg(feature = "full-cli")]
 mod project_review;
 #[cfg(feature = "full-cli")]
 pub mod quality;
