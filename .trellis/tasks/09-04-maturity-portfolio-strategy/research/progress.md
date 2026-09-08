@@ -1,5 +1,130 @@
 # Maturity execution train progress
 
+## Iteration 83 — 2026-09-07 — isolated diagnostic tool preparation
+
+- A04 local master refresh completed80ad01d with normal hook30653/fdc8a7,
+  clean/Ready yes, current-master ancestry and unchanged behavior source.
+  Independent metadata re-review closed the stale R01-to-W02 routing finding.
+  No push, hosted update, master merge, new worktree or cleanup followed.
+- R03's hardware denial changed the next action. Root selected a bounded
+  isolated software-tool prerequisite, not another timing attempt. Independent
+  review corrected inherited-path tool selection and absent debug inventory
+  before execution. The final reviewed driver used fixed system tools, a
+  cleared child environment, exact versions/SHA256, and one bounded download.
+- Setup14035/e063e1 exited0: two verified Ubuntu packages extracted only under
+  owned /home/ubuntu/data/projects/assura-r03-valgrind-preflight.m3DTGw,
+ 129196KiB including downloads. Debug inventory273files plus launcher/engine
+  hashes and raw log are recorded in evidence/R03.md. No package executable,
+  product command, fixture, profiler or counter collection ran. No system
+  installation, permissions/config/services or global environment changed.
+- Post-setup libc6 remains2.42-0ubuntu3.1. The initial --show query's empty
+  Valgrind version was ambiguous; --status515574 exited1 explicitly saying
+  not installed. The earlier query=present label is not package-install proof.
+- Current original binaries are stripped static-PIE, confirmed read-only.
+  Tool extraction does not prove compatibility or source-line mapping. Root's
+  next internal step is a reviewed tool-health/static-PIE observer protocol;
+  event counts must not be equated with native CPU cost. The initial broad
+  proposal's unexamined exact cache-vector/DWARF prerequisites are not silently
+  adopted or later relaxed to fit results. No product collection approved yet.
+- Queue unchanged14done/1active/4blocked/4implemented/9pending. A04 ownership
+  must integrate before its next behavior slice; W02 local packet remains
+  externally blocked. Publication approval/verified separation, required hosted
+  gates, R01 failing-cause proof and R03 performance acceptance remain open.
+  All51registered worktrees and A05/user work are preserved; the new remote
+  tool prefix is separately owned and must be accounted for at final cleanup.
+- Context review before handoff: level not exposed. All invoked sessions are
+  terminal. The recurring issue is evidence scope, addressed with exact source/
+  runner identity, independent scoped review and explicit prerequisite versus
+  acceptance labels. Existing goal/build/performance guidance remains sufficient;
+  this one-off setup is discoverable through R03 evidence, not a new AGENTS
+  procedure or speculative project skill. Next periodic review84.
+
+Metadata validation8278/0e9b01 exited0: structure1787files/393dirs/0violations
+and cargo xtask evidence, with existing A04 target/jobs4. Final diff/source
+checks b02422 exited0. Independent three-file metadata audit CLEAN on frozen
+diff24387e3e5e84b58ff4ebadaf6d60226ee4557cd1f4911ae9b6fcaf3744a524f3;
+root accepts its scoped evidence/authority/resource-accounting verdict.
+
+## Iteration 82 — 2026-09-07 — current-master A04 refresh and R03 prerequisite result
+
+- Previous turn made progress: W02 local closure/queue committed790b0a9 with
+  independent audit. Context review81 confirmed serial A04 ownership/path
+  sequencing and no further website expansion. Latest W02 evidence stays with
+  its named owner; the local pointer below does not import W02 behavior.
+- Fresh90313/f16c41: origin/master98bd187, releasev0.3.0 (July2), PR184 still
+  d42094c/DIRTY with Ubuntu failure and cancelled macOS/Windows. Registered
+  worktree inventory51; no creation, cleanup or unknown/dirty path mutation.
+  The existing clean goal-owned A04 branch9c9a896 entered a local master merge.
+  Five metadata conflicts were resolved; unique old evidence remains, including
+  unfavorable R03 diagnostics. Product source/tests/workflows remain unchanged.
+- Existing9c9a896 full PR log recount is1310passed/0failed/1ignored across
+ 104binaries,8zero-pass not coverage. Both preserved binaries still match
+  recorded SHA256. Covering74364/1013c3 metadata gates passed1787files/393dirs/
+  zero violations plus evidence policy/JSON counts. Do not repeat the unchanged
+  Rust tier or call this fresh hosted/platform/performance proof. Independent
+  resolution review and local checkpoint follow; A04 remains active, not done.
+- Root made and executed the next R03 internal method decision: one independently
+  reviewed unprivileged instruction-counter access probe on /usr/bin/true,
+  never a product/fixture/timing run. Review fixed a5second timeout-grace excess
+  before execution. Probe28740/3d547b exited255 with access denied on the exact
+  VPS user/session; driver0 reports that failure, not a passing measurement.
+  All identities, commands, errors and hashes are in evidence/R03.md. No retry,
+  permission change, profiler attachment, optimization or acceptance change.
+- Hardware counter collection is unavailable under unchanged runner policy.
+  Valgrind is absent, strace present; the syscall-count fallback does not answer
+  the selected userspace-work question and is not approved. Read-only package
+  metadata93127/6dcb18 identifies Valgrind1:3.25.1-0ubuntu1 and matching
+  libc6-dbg2.42-0ubuntu3.1 for installed libc6. This is prerequisite information,
+  not a download/install or instrumented execution. Root is evaluating a finite
+  isolated software event-count method, with explicit observer/compatibility
+  controls; no product collection is authorized by this checkpoint.
+- Queue14done/1active/4blocked/4implemented/9pending. Publication approval/
+  verified no-deploy separation remains unresolved. No push, merge to master,
+  release or deployment occurred. A04 ownership must integrate before its
+  effective-path slice; A05 dirty work is preserved; A06/A07 stay dependent.
+  R01 still requires a causal failing native-event trace, not an equivalent
+  passing capture. R03's method decision remains root-owned, not automatically
+  a human approval blocker.
+- Context level not exposed. Existing goal/build/performance/harness guidance
+  covers this work; no new skill or AGENTS expansion. All described processes
+  are terminal. One truncated reference read was completed in a bounded second
+  read; two guessed artifact/glob paths were corrected through file inventory.
+  Neither is a product failure/pass. Next periodic context review84.
+
+Final metadata gates35481/8eb1f6 passed on staged tree
+0bab03b29be97e953f1a8a7aef1186f4534dd5ec with the same1787file/393directory
+structure result and evidence policy. Independent review of frozen diff
+bf2cc872406359f457db0a172c9a67643889249de923aea369b11b66efef3a84 caught one
+stale leading cross-card sentence imported with R01 evidence: W02 was still
+labeled an active implementation lane. Root corrected that current routing to
+locally prepared/externally blocked, preserving historical records. No source,
+acceptance or publication authority changed; scoped re-review is required.
+
+## A04 merge reconciliation pointer — 2026-09-07
+
+This checkout is resolving master98bd187 into A04 ownership head9c9a896;
+the merge is not yet committed or newly gated. Only five conflicting task
+metadata files are being reconciled. Product ownership source is unchanged.
+Later effective-hook-path/runtime slices remain serialized until ownership
+integration. Root owns the next proof/runtime entry (iteration82).
+
+The latest controller progress/queue is preserved in local commit790b0a9 on
+goal/w02-release-aware-installation. Read that commit's same-task
+research/progress.md (iteration80), research/progress-history-01.md, and
+research/evidence/W02.md for the newer local packet and exact proof identities.
+The local W02 evidence file brought by this merge is an older snapshot; the
+790b0a9 pointer is the newer source of evidence, not W02 behavior ancestry.
+W02 is locally complete but externally blocked, not done: Cloudflare approval
+or verified no-deploy separation and exact-head hosted/integration gates remain.
+R03's stopped A/A controls and narrow offline analysis are retained in the
+updated R03 evidence; no new method or run is approved by this reconciliation.
+Queue:14done/1active(A04)/4blocked(R01/R03/W02/F01)/4implemented/9pending.
+
+All old A04 HEAD progress paragraphs already occur verbatim in the following
+master98bd187 reconciled log; it is preserved without copying a second ledger.
+Its historical active/next/clean statements do not supersede the newer state
+above. The older planning source_snapshot is not a branch-ancestry claim.
+
 ## Iteration 62 — 2026-09-07 — Evidence reconciliation and bounded stops
 
 - Previous goal turn: progress. Independent R03 raw audit confirmed invalid

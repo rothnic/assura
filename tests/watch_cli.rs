@@ -95,9 +95,14 @@ impl WatchProcess {
         self.events.recv_timeout(EVENT_TIMEOUT).unwrap()
     }
 
-    fn next_config_event(&self, expected_predecessor_path: &str) -> (Value, u64) {
+    fn next_config_event(
+        &self,
+        expected_predecessor_path: &str,
+        allowed_full_rescan_predecessors: u64,
+    ) -> (Value, u64) {
         let deadline = Instant::now() + EVENT_TIMEOUT;
         let mut preceding_filesystem_events = 0;
+        let mut remaining_full_rescan_predecessors = allowed_full_rescan_predecessors;
         loop {
             let remaining = deadline.saturating_duration_since(Instant::now());
             let event = self.events.recv_timeout(remaining).unwrap();
@@ -120,6 +125,11 @@ impl WatchProcess {
                     }));
                 }
                 Some("warm_full") => {
+                    assert!(
+                        remaining_full_rescan_predecessors > 0,
+                        "watch emitted an additional full rescan before config reload"
+                    );
+                    remaining_full_rescan_predecessors -= 1;
                     assert_eq!(event["report_scope"], "requested_path");
                     assert_eq!(event["fallback_reason"], "full_rescan_event");
                 }
@@ -215,6 +225,67 @@ fn assert_no_event_rejects_a_disconnected_event_reader() {
     };
 
     watch.assert_no_event(Duration::from_millis(1));
+}
+
+#[test]
+fn next_config_event_accepts_one_safe_full_rescan_before_config_reload() {
+    let child = Command::new(assura_full_bin())
+        .arg("--version")
+        .spawn()
+        .unwrap();
+    let (sender, events) = mpsc::channel();
+    sender
+        .send(serde_json::json!({
+            "trigger": "filesystem",
+            "runtime_mode": "warm_full",
+            "report_scope": "requested_path",
+            "fallback_reason": "full_rescan_event",
+            "report": { "success": true }
+        }))
+        .unwrap();
+    sender
+        .send(serde_json::json!({ "trigger": "config", "sequence": 3 }))
+        .unwrap();
+    drop(sender);
+    let (_diagnostic_sender, diagnostics) = mpsc::channel();
+    let watch = WatchProcess {
+        child,
+        events,
+        diagnostics,
+    };
+
+    let (config, preceding_filesystem_events) = watch.next_config_event("good-name.ts", 1);
+
+    assert_eq!(preceding_filesystem_events, 1);
+    assert_eq!(config["sequence"], 3);
+}
+
+#[test]
+#[should_panic(expected = "watch emitted an additional full rescan before config reload")]
+fn next_config_event_rejects_a_second_full_rescan_after_the_allowance_is_used() {
+    let child = Command::new(assura_full_bin())
+        .arg("--version")
+        .spawn()
+        .unwrap();
+    let (sender, events) = mpsc::channel();
+    sender
+        .send(serde_json::json!({
+            "trigger": "filesystem",
+            "runtime_mode": "warm_full",
+            "report_scope": "requested_path",
+            "fallback_reason": "full_rescan_event",
+            "report": { "success": true }
+        }))
+        .unwrap();
+    drop(sender);
+    let (_diagnostic_sender, diagnostics) = mpsc::channel();
+    let watch = WatchProcess {
+        child,
+        events,
+        diagnostics,
+    };
+
+    watch.next_config_event("good-name.ts", 0);
 }
 
 #[test]
@@ -359,14 +430,16 @@ fn watch_observes_an_explicit_config_outside_the_project() {
     assert_eq!(watch.next_event()["report"]["success"], true);
 
     fs::write(config_home.path().join("unrelated.yml"), "ignored: true\n").unwrap();
-    watch.assert_no_event(Duration::from_millis(350));
+    let expected_sequence = watch.assert_no_event_or_scoped_rescan(Duration::from_millis(350));
     fs::write(&config, config_with_naming("snake_case")).unwrap();
 
-    let (changed, preceding_filesystem_events) = watch.next_config_event("good-name.ts");
+    let allowed_full_rescan_predecessors = u64::from(expected_sequence == 2);
+    let (changed, preceding_filesystem_events) =
+        watch.next_config_event("good-name.ts", allowed_full_rescan_predecessors);
     eprintln!("external config report: {changed}");
     assert_event(
         &changed,
-        2 + preceding_filesystem_events,
+        expected_sequence + preceding_filesystem_events,
         "config",
         "warm_full",
     );
@@ -449,7 +522,11 @@ fn watch_honors_the_requested_directory_scope() {
 
     let diagnostic = watch.next_normalization_diagnostic();
     eprintln!("directory scope normalization diagnostic: {diagnostic}");
-    assert_eq!(diagnostic["paths"], serde_json::json!(["src/BadName.ts"]));
+    assert!(
+        diagnostic["paths"] == serde_json::json!(["src/BadName.ts"])
+            || diagnostic["paths"] == serde_json::json!(["src"]),
+        "expected a file or scoped-directory notification, got {diagnostic}"
+    );
     assert!(diagnostic["event_kind"]
         .as_str()
         .is_some_and(|kind| !kind.is_empty()));

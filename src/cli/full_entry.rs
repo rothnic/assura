@@ -228,10 +228,10 @@ async fn handle_hooks_install(path: Option<std::path::PathBuf>, force: bool) -> 
                     }
                 }
                 if !outcome.preserved.is_empty() {
-                    println!("Preserved existing custom hooks:");
+                    println!("Preserved existing hook artifacts:");
                     for hook in outcome.preserved {
                         println!(
-                            "  ⚠ {} (not modified; configure an Assura integration explicitly if desired)",
+                            "  ⚠ {} (not modified; ownership was not proven)",
                             hook.as_str()
                         );
                     }
@@ -283,9 +283,12 @@ async fn handle_hooks_uninstall(path: Option<std::path::PathBuf>) -> ExitCode {
                     }
                 }
                 if !outcome.preserved.is_empty() {
-                    println!("Preserved existing custom hooks:");
+                    println!("Preserved existing hook artifacts:");
                     for hook in outcome.preserved {
-                        println!("  ⚠ {} (not modified)", hook.as_str());
+                        println!(
+                            "  ⚠ {} (not modified; ownership was not proven)",
+                            hook.as_str()
+                        );
                     }
                 }
                 ExitCode::Success

@@ -1,0 +1,150 @@
+//! Exact managed-artifact classification for Git hook pairs.
+
+use super::{HookError, HookResult};
+use std::path::Path;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(super) enum ArtifactOwnership {
+    Absent,
+    ManagedCurrent,
+    ManagedLegacy,
+    Unmanaged,
+}
+
+impl ArtifactOwnership {
+    pub(super) fn is_managed(self) -> bool {
+        matches!(self, Self::ManagedCurrent | Self::ManagedLegacy)
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(super) struct HookOwnership {
+    pub(super) wrapper: ArtifactOwnership,
+    pub(super) sidecar: ArtifactOwnership,
+}
+
+impl HookOwnership {
+    pub(super) fn has_unmanaged(self) -> bool {
+        self.wrapper == ArtifactOwnership::Unmanaged || self.sidecar == ArtifactOwnership::Unmanaged
+    }
+
+    pub(super) fn is_complete(self) -> bool {
+        self.wrapper.is_managed() && self.sidecar.is_managed()
+    }
+
+    pub(super) fn is_current(self) -> bool {
+        self.wrapper == ArtifactOwnership::ManagedCurrent
+            && self.sidecar == ArtifactOwnership::ManagedCurrent
+    }
+
+    pub(super) fn has_managed_artifact(self) -> bool {
+        self.wrapper.is_managed() || self.sidecar.is_managed()
+    }
+
+    pub(super) fn is_installed(self) -> bool {
+        self.wrapper != ArtifactOwnership::Absent || self.sidecar != ArtifactOwnership::Absent
+    }
+}
+
+pub(super) fn classify_artifact(
+    path: &Path,
+    expected_contents: &[Vec<u8>],
+    parent_is_safe: bool,
+) -> HookResult<ArtifactOwnership> {
+    if !parent_is_safe {
+        return Ok(ArtifactOwnership::Unmanaged);
+    }
+    let metadata = match std::fs::symlink_metadata(path) {
+        Ok(metadata) => metadata,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+            return Ok(ArtifactOwnership::Absent)
+        }
+        Err(error) => return Err(error.into()),
+    };
+    if !metadata.file_type().is_file() {
+        return Ok(ArtifactOwnership::Unmanaged);
+    }
+    let content = std::fs::read(path)?;
+    if let Some(index) = expected_contents
+        .iter()
+        .position(|expected| expected.as_slice() == content)
+    {
+        Ok(if index == 0 {
+            ArtifactOwnership::ManagedCurrent
+        } else {
+            ArtifactOwnership::ManagedLegacy
+        })
+    } else {
+        Ok(ArtifactOwnership::Unmanaged)
+    }
+}
+
+pub(super) fn remove_file_if_still_managed(
+    path: &Path,
+    expected_contents: &[Vec<u8>],
+) -> HookResult<()> {
+    if !classify_artifact(path, expected_contents, true)?.is_managed() {
+        return Err(HookError::UnsafePath(path.to_path_buf()));
+    }
+    std::fs::remove_file(path)?;
+    Ok(())
+}
+
+pub(super) fn plain_directory_or_absent(path: &Path) -> bool {
+    match std::fs::symlink_metadata(path) {
+        Ok(metadata) => metadata.file_type().is_dir(),
+        Err(error) => error.kind() == std::io::ErrorKind::NotFound,
+    }
+}
+
+pub(super) fn ensure_plain_directory(path: &Path) -> HookResult<()> {
+    match std::fs::symlink_metadata(path) {
+        Ok(metadata) if metadata.file_type().is_dir() => Ok(()),
+        Ok(_) => Err(HookError::UnsafePath(path.to_path_buf())),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+            std::fs::create_dir(path)?;
+            Ok(())
+        }
+        Err(error) => Err(error.into()),
+    }
+}
+
+#[cfg(unix)]
+pub(super) fn shell_single_quote(path: &Path) -> Vec<u8> {
+    use std::os::unix::ffi::OsStrExt;
+
+    shell_single_quote_bytes(path.as_os_str().as_bytes())
+}
+
+#[cfg(not(unix))]
+pub(super) fn shell_single_quote(path: &Path) -> Vec<u8> {
+    shell_single_quote_bytes(path.to_string_lossy().as_bytes())
+}
+
+fn shell_single_quote_bytes(value: &[u8]) -> Vec<u8> {
+    let mut quoted = Vec::with_capacity(value.len() + 2);
+    quoted.push(b'\'');
+    for byte in value {
+        if *byte == b'\'' {
+            quoted.extend_from_slice(b"'\\''");
+        } else {
+            quoted.push(*byte);
+        }
+    }
+    quoted.push(b'\'');
+    quoted
+}
+
+#[cfg(all(test, unix))]
+mod tests {
+    use super::*;
+    use std::ffi::OsString;
+    use std::os::unix::ffi::OsStringExt;
+
+    #[test]
+    fn shell_quote_preserves_non_utf8_path_bytes() {
+        let path = Path::new(&OsString::from_vec(b"/tmp/non-utf8-\xff".to_vec())).to_path_buf();
+
+        assert_eq!(shell_single_quote(&path), b"'/tmp/non-utf8-\xff'");
+    }
+}

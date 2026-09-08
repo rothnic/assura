@@ -173,7 +173,7 @@ fn uninstall_preserves_the_sidecar_used_by_a_custom_hook() {
 }
 
 #[test]
-fn uninstall_removes_an_orphan_assura_sidecar() {
+fn uninstall_preserves_an_unowned_orphan_assura_sidecar() {
     let project = tempfile::TempDir::new().unwrap();
     std::fs::create_dir_all(project.path().join(".git/hooks")).unwrap();
     let assura_hooks_dir = project.path().join(".assura/hooks");
@@ -184,5 +184,8 @@ fn uninstall_removes_an_orphan_assura_sidecar() {
     let manager = GitHooksManager::new(project.path()).unwrap();
     manager.uninstall(HookType::PrePush).unwrap();
 
-    assert!(!sidecar.exists());
+    assert_eq!(
+        std::fs::read_to_string(sidecar).unwrap(),
+        "#!/bin/sh\necho sidecar\n"
+    );
 }
