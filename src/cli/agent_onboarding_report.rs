@@ -70,12 +70,22 @@ impl RenderedOnboardingReport {
             onboarding_row(
                 "Host",
                 format!(
-                    "{} generated={} activated={} verified={} conflicted={}",
+                    "{} generated={} activated={} structurally_verified={} conflicted={}",
                     report.integration.agent,
                     report.integration.generated,
                     report.integration.activated,
-                    report.integration.verified,
+                    report.integration.structural_verified,
                     report.integration.conflicted
+                ),
+            ),
+            onboarding_row(
+                "Host status",
+                format!(
+                    "post_activation={} doctor={} host_approval={} follow_up={}",
+                    report.integration.post_activation.status,
+                    report.integration.post_activation.doctor.status,
+                    report.integration.host_approval.status,
+                    report.integration.host_approval.follow_up
                 ),
             ),
             onboarding_row(
@@ -226,8 +236,37 @@ pub(super) struct IntegrationSection {
     pub(super) generated: bool,
     pub(super) activated: bool,
     pub(super) verified: bool,
+    pub(super) structural_verified: bool,
     pub(super) conflicted: bool,
+    pub(super) post_activation: PostActivationSection,
+    pub(super) host_approval: HostApprovalSection,
     pub(super) detail: &'static str,
+}
+
+#[derive(Serialize)]
+pub(super) struct PostActivationSection {
+    pub(super) status: &'static str,
+    pub(super) doctor: IntegrationDoctorSection,
+}
+
+#[derive(Serialize)]
+pub(super) struct IntegrationDoctorSection {
+    pub(super) status: &'static str,
+    pub(super) facts: Vec<IntegrationDoctorFact>,
+}
+
+#[derive(Serialize)]
+pub(super) struct IntegrationDoctorFact {
+    pub(super) name: &'static str,
+    pub(super) status: &'static str,
+    pub(super) detail: &'static str,
+}
+
+#[derive(Serialize)]
+pub(super) struct HostApprovalSection {
+    pub(super) required: bool,
+    pub(super) status: &'static str,
+    pub(super) follow_up: &'static str,
 }
 
 #[derive(Serialize)]

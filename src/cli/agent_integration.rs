@@ -50,8 +50,20 @@ pub async fn agent_integration_command(command: AgentIntegrationCommands) -> Exi
 pub(super) struct ManagedIntegrationState {
     pub(super) generated: bool,
     pub(super) activated: bool,
-    pub(super) verified: bool,
+    pub(super) structural_verified: bool,
     pub(super) conflicted: bool,
+    pub(super) post_activation_status: &'static str,
+    pub(super) doctor_status: &'static str,
+    pub(super) doctor_facts: Vec<ManagedIntegrationDoctorFact>,
+    pub(super) host_approval_required: bool,
+    pub(super) host_approval_status: &'static str,
+    pub(super) host_approval_follow_up: &'static str,
+}
+
+pub(super) struct ManagedIntegrationDoctorFact {
+    pub(super) name: &'static str,
+    pub(super) status: &'static str,
+    pub(super) detail: &'static str,
 }
 
 pub(super) fn configure_agent_integration_bundle(
@@ -63,7 +75,7 @@ pub(super) fn configure_agent_integration_bundle(
         if activate { "activate" } else { "install" },
         AgentIntegrationLifecycleArgs {
             agent,
-            path: Some(project_root),
+            path: Some(project_root.clone()),
             dry_run: false,
             force: false,
             format: OutputFormat::Json,
@@ -72,12 +84,93 @@ pub(super) fn configure_agent_integration_bundle(
         false,
     )?;
     let activation = report.report.activation;
+    let post_activation = status_command(
+        "status",
+        AgentIntegrationStatusArgs {
+            agent,
+            path: Some(project_root.clone()),
+            format: OutputFormat::Json,
+        },
+    )?
+    .report
+    .activation;
+    let doctor = status_command(
+        "doctor",
+        AgentIntegrationStatusArgs {
+            agent,
+            path: Some(project_root),
+            format: OutputFormat::Json,
+        },
+    )?
+    .report;
+    let doctor_status = if doctor
+        .checks
+        .iter()
+        .any(|check| check.status == CheckStatus::Fail)
+    {
+        "fail"
+    } else {
+        "pass"
+    };
+    let doctor_facts = doctor
+        .checks
+        .into_iter()
+        .map(|check| ManagedIntegrationDoctorFact {
+            name: check.name,
+            status: match check.status {
+                CheckStatus::Pass => "pass",
+                CheckStatus::Fail => "fail",
+            },
+            detail: check.message,
+        })
+        .collect();
     Ok(ManagedIntegrationState {
         generated: activation.generated,
         activated: activation.activated,
-        verified: activation.verified,
+        structural_verified: activation.verified,
         conflicted: activation.conflicted,
+        post_activation_status: activation_status(&post_activation),
+        doctor_status,
+        doctor_facts,
+        host_approval_required: post_activation.host_approval_required,
+        host_approval_status: if post_activation.host_approval_required {
+            "unavailable"
+        } else {
+            "not_required"
+        },
+        host_approval_follow_up: host_approval_follow_up(agent),
     })
+}
+
+fn activation_status(activation: &bundle::ActivationReport) -> &'static str {
+    if activation.conflicted {
+        "conflicted"
+    } else if activation.verified {
+        "structurally_verified"
+    } else if activation.activated {
+        "activated"
+    } else if activation.generated {
+        "generated"
+    } else {
+        "not_generated"
+    }
+}
+
+fn host_approval_follow_up(agent: AgentIntegrationTarget) -> &'static str {
+    match agent {
+        AgentIntegrationTarget::Codex => {
+            "Review the generated project hooks, then trust the project and approve its hooks in Codex."
+        }
+        AgentIntegrationTarget::Claude => {
+            "Review the generated project hooks, then trust the project hooks in Claude Code."
+        }
+        AgentIntegrationTarget::Pi => {
+            "Review the generated project extension, then trust the project extension in Pi."
+        }
+        AgentIntegrationTarget::Opencode => {
+            "Review and trust the generated project plugin in OpenCode before relying on delivery."
+        }
+    }
 }
 
 /// Resolve an installed harness name to its supported integration target.
@@ -364,7 +457,7 @@ fn status_command(
     let installed = bundle.is_installed();
     let activation = host::status(&bundle)?;
     let checks = if action == "doctor" {
-        doctor_checks(&bundle, &files)
+        doctor_checks(&bundle, &files)?
     } else {
         Vec::new()
     };
@@ -389,12 +482,16 @@ fn status_command(
     })
 }
 
-fn doctor_checks(bundle: &IntegrationBundle, files: &[FileAction]) -> Vec<DoctorCheck> {
+fn doctor_checks(
+    bundle: &IntegrationBundle,
+    files: &[FileAction],
+) -> Result<Vec<DoctorCheck>, String> {
     let all_expected_files_present = files.iter().all(|file| file.existed);
     let all_existing_files_managed = files.iter().all(|file| !file.existed || file.managed);
     let wrapper_path = bundle.integration_dir.join("assura-agent.sh");
+    let activation = host::status(bundle)?;
 
-    vec![
+    Ok(vec![
         DoctorCheck {
             name: "config",
             status: if bundle.project_root.join(".assura/config.yml").is_file() {
@@ -455,7 +552,14 @@ fn doctor_checks(bundle: &IntegrationBundle, files: &[FileAction]) -> Vec<Doctor
             ),
             message: "wrapper delegates to assura daemon status/doctor",
         },
-    ]
+        DoctorCheck {
+            name: "host_configuration",
+            status: check_status(
+                activation.activated && activation.verified && !activation.conflicted,
+            ),
+            message: "Assura-managed project host configuration is structurally verified",
+        },
+    ])
 }
 
 fn check_status(pass: bool) -> CheckStatus {

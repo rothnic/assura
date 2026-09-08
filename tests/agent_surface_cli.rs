@@ -553,6 +553,31 @@ fn agent_integration_lifecycle_installs_reviewable_bundles_for_all_hosts() {
             .iter()
             .all(|file| file["managed"] == true));
 
+        let inactive_doctor = run_assura(&[
+            "agent",
+            "integration",
+            "doctor",
+            agent,
+            path,
+            "--format",
+            "json",
+        ]);
+        assert!(
+            !inactive_doctor.status.success(),
+            "an installed but unactivated {agent} integration must not report structural host configuration as ready"
+        );
+        let inactive_doctor: Value =
+            serde_json::from_slice(&inactive_doctor.stdout).expect("inactive doctor JSON");
+        assert!(inactive_doctor["checks"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|check| check["name"] == "host_configuration" && check["status"] == "fail"));
+
+        let activation = agent_json(&["integration", "activate", agent, path]);
+        assert_eq!(activation["activation"]["activated"], true);
+        assert_eq!(activation["activation"]["verified"], true);
+
         let doctor = agent_json(&["integration", "doctor", agent, path]);
         assert_eq!(doctor["installed"], true);
         assert!(doctor["checks"]
