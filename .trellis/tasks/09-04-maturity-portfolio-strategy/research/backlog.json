@@ -272,10 +272,10 @@
         "Q03"
       ],
       "executor": "agent",
-      "state": "blocked",
-      "owner": "Codex goal/q04-policy-naming; reviewed source 5e88b0a, metadata 2ff1041; existing PR #164",
+      "state": "done",
+      "owner": "Codex goal/q04-policy-naming; independently reviewed and merged via PR #164 (9f1b8e3)",
       "evidence": "evidence/Q04.md",
-      "blocker": "Local current-master consumer correction and Rust/metadata/docs gates covered. Await exact-head hosted checks, comparable R03 performance acceptance, and authority for automatic Cloudflare publication side effects before PR164 update/merge."
+      "blocker": null
     },
     {
       "id": "Q05",
