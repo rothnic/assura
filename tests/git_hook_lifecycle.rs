@@ -52,6 +52,8 @@ fn command_with_pre_commit_4_6_2(
         paths.extend(std::env::split_paths(&current_path));
     }
     command.env("PATH", std::env::join_paths(paths).unwrap());
+    #[cfg(windows)]
+    command.env("PATHEXT", ".COM;.EXE;.BAT;.CMD");
     if reject_validation {
         command.env("ASSURA_TEST_PRE_COMMIT_REJECT", "1");
     }
