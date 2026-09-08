@@ -235,6 +235,9 @@ async fn handle_hooks_install(path: Option<std::path::PathBuf>, force: bool) -> 
                             hook.as_str()
                         );
                     }
+                    println!(
+                        "  Proposed integration: add the Assura hook command through the existing hook owner; the preserved hook was not changed."
+                    );
                 }
                 if !outcome.unchanged.is_empty() {
                     println!("Managed hooks already current:");
