@@ -216,66 +216,67 @@ async fn handle_hooks_install(path: Option<std::path::PathBuf>, force: bool) -> 
     let project_root = path.unwrap_or_else(|| {
         std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."))
     });
+    let manager = match GitHooksManager::new(&project_root) {
+        Ok(manager) => manager,
+        Err(e) => {
+            error!("Git repository not found: {}", e);
+            eprintln!("Error: {}", e);
+            return ExitCode::ConfigurationError;
+        }
+    };
 
     let pre_commit_config_present = project_root.join(".pre-commit-config.yaml").is_file();
     if let Err(error) = super::pre_commit_adapter::append_pre_push(&project_root) {
         eprintln!("Pre-commit integration not applied: {error}");
     }
 
-    match GitHooksManager::new(&project_root) {
-        Ok(manager) => match manager.install_all_except(
-            force,
-            if pre_commit_config_present {
-                &[super::hooks::HookType::PrePush]
+    match manager.install_all_except(
+        force,
+        if pre_commit_config_present {
+            &[super::hooks::HookType::PrePush]
+        } else {
+            &[]
+        },
+    ) {
+        Ok(outcome) => {
+            if outcome.installed.is_empty() {
+                println!("No new hooks installed.");
             } else {
-                &[]
-            },
-        ) {
-            Ok(outcome) => {
-                if outcome.installed.is_empty() {
-                    println!("No new hooks installed.");
-                } else {
-                    println!("Installed hooks:");
-                    for hook in outcome.installed {
-                        println!("  ✓ {}", hook.as_str());
-                    }
+                println!("Installed hooks:");
+                for hook in outcome.installed {
+                    println!("  ✓ {}", hook.as_str());
                 }
-                if !outcome.preserved.is_empty() {
-                    println!("Preserved existing hook artifacts:");
-                    for hook in outcome.preserved {
-                        println!(
-                            "  ⚠ {} (not modified; ownership was not proven)",
-                            hook.as_str()
-                        );
-                    }
+            }
+            if !outcome.preserved.is_empty() {
+                println!("Preserved existing hook artifacts:");
+                for hook in outcome.preserved {
                     println!(
-                        "  Proposed integration: add the Assura hook command through the existing hook owner; the preserved hook was not changed."
+                        "  ⚠ {} (not modified; ownership was not proven)",
+                        hook.as_str()
                     );
                 }
-                if !outcome.unchanged.is_empty() {
-                    println!("Managed hooks already current:");
-                    for hook in outcome.unchanged {
-                        println!("  ✓ {}", hook.as_str());
-                    }
-                }
-                if !outcome.refreshed.is_empty() {
-                    println!("Refreshed managed hooks:");
-                    for hook in outcome.refreshed {
-                        println!("  ✓ {}", hook.as_str());
-                    }
-                }
-                ExitCode::Success
+                println!(
+                        "  Proposed integration: add the Assura hook command through the existing hook owner; the preserved hook was not changed."
+                    );
             }
-            Err(e) => {
-                error!("Failed to install hooks: {}", e);
-                eprintln!("Error: {}", e);
-                ExitCode::RuntimeError
+            if !outcome.unchanged.is_empty() {
+                println!("Managed hooks already current:");
+                for hook in outcome.unchanged {
+                    println!("  ✓ {}", hook.as_str());
+                }
             }
-        },
+            if !outcome.refreshed.is_empty() {
+                println!("Refreshed managed hooks:");
+                for hook in outcome.refreshed {
+                    println!("  ✓ {}", hook.as_str());
+                }
+            }
+            ExitCode::Success
+        }
         Err(e) => {
-            error!("Git repository not found: {}", e);
+            error!("Failed to install hooks: {}", e);
             eprintln!("Error: {}", e);
-            ExitCode::ConfigurationError
+            ExitCode::RuntimeError
         }
     }
 }
@@ -288,33 +289,40 @@ async fn handle_hooks_uninstall(path: Option<std::path::PathBuf>) -> ExitCode {
     });
 
     match GitHooksManager::new(&project_root) {
-        Ok(manager) => match manager.uninstall_all() {
-            Ok(outcome) => {
-                if outcome.removed.is_empty() {
-                    println!("No Assura-managed hooks to uninstall.");
-                } else {
-                    println!("Uninstalled hooks:");
-                    for hook in outcome.removed {
-                        println!("  ✓ {}", hook.as_str());
-                    }
-                }
-                if !outcome.preserved.is_empty() {
-                    println!("Preserved existing hook artifacts:");
-                    for hook in outcome.preserved {
-                        println!(
-                            "  ⚠ {} (not modified; ownership was not proven)",
-                            hook.as_str()
-                        );
-                    }
-                }
-                ExitCode::Success
+        Ok(manager) => {
+            match super::pre_commit_adapter::remove_pre_push(&project_root) {
+                Ok(true) => println!("Removed Assura pre-commit integration."),
+                Ok(false) => {}
+                Err(error) => eprintln!("Pre-commit integration not removed: {error}"),
             }
-            Err(e) => {
-                error!("Failed to uninstall hooks: {}", e);
-                eprintln!("Error: {}", e);
-                ExitCode::RuntimeError
+            match manager.uninstall_all() {
+                Ok(outcome) => {
+                    if outcome.removed.is_empty() {
+                        println!("No Assura-managed hooks to uninstall.");
+                    } else {
+                        println!("Uninstalled hooks:");
+                        for hook in outcome.removed {
+                            println!("  ✓ {}", hook.as_str());
+                        }
+                    }
+                    if !outcome.preserved.is_empty() {
+                        println!("Preserved existing hook artifacts:");
+                        for hook in outcome.preserved {
+                            println!(
+                                "  ⚠ {} (not modified; ownership was not proven)",
+                                hook.as_str()
+                            );
+                        }
+                    }
+                    ExitCode::Success
+                }
+                Err(e) => {
+                    error!("Failed to uninstall hooks: {}", e);
+                    eprintln!("Error: {}", e);
+                    ExitCode::RuntimeError
+                }
             }
-        },
+        }
         Err(e) => {
             error!("Git repository not found: {}", e);
             eprintln!("Error: {}", e);
@@ -341,7 +349,15 @@ async fn handle_hooks_status(path: Option<std::path::PathBuf>) -> ExitCode {
     match GitHooksManager::new(&project_root) {
         Ok(manager) => {
             println!("Git hooks status:");
-            for status in manager.all_status() {
+            let statuses = manager.all_status();
+            let pre_push_hook = statuses
+                .iter()
+                .find(|status| status.hook_type == super::hooks::HookType::PrePush)
+                .expect("pre-push status is always present");
+            let pre_commit =
+                super::pre_commit_adapter::status(&project_root, &pre_push_hook.git_path);
+            println!("Pre-commit adapter: {}", pre_commit.as_str());
+            for status in statuses {
                 println!("{}", status.display());
             }
             ExitCode::Success
@@ -372,12 +388,28 @@ async fn handle_hooks_verify(path: Option<std::path::PathBuf>) -> ExitCode {
     match GitHooksManager::new(&project_root) {
         Ok(manager) => {
             let statuses = manager.all_status();
+            let pre_push_hook = statuses
+                .iter()
+                .find(|status| status.hook_type == super::hooks::HookType::PrePush)
+                .expect("pre-push status is always present");
+            let pre_commit =
+                super::pre_commit_adapter::status(&project_root, &pre_push_hook.git_path);
             println!("Git hooks verification:");
+            println!("Pre-commit adapter: {}", pre_commit.as_str());
             for status in &statuses {
                 println!("{}", status.display());
             }
 
-            let failure_count = statuses.iter().filter(|status| !status.is_ready()).count();
+            let mut failure_count = statuses
+                .iter()
+                .filter(|status| {
+                    status.hook_type != super::hooks::HookType::PrePush || !pre_commit.is_active()
+                })
+                .filter(|status| !status.is_ready())
+                .count();
+            if pre_commit.is_configured() && !pre_commit.is_active() {
+                failure_count += 1;
+            }
             if failure_count == 0 {
                 println!("All Assura hooks are installed, managed, and runnable.");
                 ExitCode::Success

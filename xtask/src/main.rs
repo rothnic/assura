@@ -4317,6 +4317,11 @@ const CLI_COMMAND_VARIANT_ROWS: &[CliCommandVariantRow] = &[
         command_surface_names: &["assura hooks verify"],
     },
     CliCommandVariantRow {
+        enum_name: "HookCommands",
+        variant_name: "Run",
+        command_surface_names: &["assura hooks run"],
+    },
+    CliCommandVariantRow {
         enum_name: "QualityCommands",
         variant_name: "Plan",
         command_surface_names: &["assura quality plan"],
@@ -4750,6 +4755,7 @@ const SUPPORT_MATRIX_ROWS: &[SupportMatrixRow] = &[
             "assura hooks uninstall",
             "assura hooks status",
             "assura hooks verify",
+            "assura hooks run",
         ],
         support_policy_markers: &["`assura hooks` for local git hooks"],
         compatibility_markers: &["| `assura hooks` | Supported for local git hooks |"],

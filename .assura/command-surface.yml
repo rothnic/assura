@@ -1137,3 +1137,14 @@ commands:
       --quiet: {}
       --help:
         aliases: ["-h"]
+  - name: "assura hooks run"
+    allow_positionals: true
+    flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
+      --help:
+        aliases: ["-h"]
