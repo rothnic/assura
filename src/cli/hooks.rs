@@ -479,8 +479,13 @@ mod tests {
         );
 
         let ownership = manager.ownership(HookType::PrePush).unwrap();
-        assert_eq!(ownership.wrapper, ArtifactOwnership::ManagedLegacy);
-        assert_eq!(ownership.sidecar, ArtifactOwnership::ManagedCurrent);
+        assert_eq!(
+            ownership,
+            HookOwnership {
+                wrapper: ArtifactOwnership::ManagedLegacy,
+                sidecar: ArtifactOwnership::ManagedCurrent,
+            }
+        );
     }
 
     #[test]
