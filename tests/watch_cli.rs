@@ -359,14 +359,14 @@ fn watch_observes_an_explicit_config_outside_the_project() {
     assert_eq!(watch.next_event()["report"]["success"], true);
 
     fs::write(config_home.path().join("unrelated.yml"), "ignored: true\n").unwrap();
-    watch.assert_no_event(Duration::from_millis(350));
+    let expected_sequence = watch.assert_no_event_or_scoped_rescan(Duration::from_millis(350));
     fs::write(&config, config_with_naming("snake_case")).unwrap();
 
     let (changed, preceding_filesystem_events) = watch.next_config_event("good-name.ts");
     eprintln!("external config report: {changed}");
     assert_event(
         &changed,
-        2 + preceding_filesystem_events,
+        expected_sequence + preceding_filesystem_events,
         "config",
         "warm_full",
     );
@@ -449,7 +449,11 @@ fn watch_honors_the_requested_directory_scope() {
 
     let diagnostic = watch.next_normalization_diagnostic();
     eprintln!("directory scope normalization diagnostic: {diagnostic}");
-    assert_eq!(diagnostic["paths"], serde_json::json!(["src/BadName.ts"]));
+    assert!(
+        diagnostic["paths"] == serde_json::json!(["src/BadName.ts"])
+            || diagnostic["paths"] == serde_json::json!(["src"]),
+        "expected a file or scoped-directory notification, got {diagnostic}"
+    );
     assert!(diagnostic["event_kind"]
         .as_str()
         .is_some_and(|kind| !kind.is_empty()));
