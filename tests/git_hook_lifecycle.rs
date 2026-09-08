@@ -57,6 +57,40 @@ fn install_preserves_an_existing_custom_hook_and_reports_it() {
 }
 
 #[test]
+fn install_reports_a_non_destructive_proposal_for_an_existing_custom_hook() {
+    let project = tempfile::TempDir::new().unwrap();
+    assert_git(project.path(), &["init", "--quiet"]);
+    let custom_hook = project.path().join(".git/hooks/pre-push");
+    let custom_content = "#!/bin/sh\necho custom-pre-push\n";
+    std::fs::write(&custom_hook, custom_content).unwrap();
+
+    let output = Command::new(assura_bin())
+        .args(["hooks", "install"])
+        .arg(project.path())
+        .output()
+        .expect("install hooks");
+
+    assert!(
+        output.status.success(),
+        "hook install failed: {}",
+        command_output_text(&output)
+    );
+    assert!(
+        command_output_text(&output).contains(
+            "Proposed integration: add the Assura hook command through the existing hook owner; the preserved hook was not changed."
+        ),
+        "custom hook proposal was not reported: {}",
+        command_output_text(&output)
+    );
+    assert_eq!(
+        std::fs::read_to_string(custom_hook).unwrap(),
+        custom_content
+    );
+    assert!(project.path().join(".git/hooks/pre-commit").is_file());
+    assert!(project.path().join(".git/hooks/post-checkout").is_file());
+}
+
+#[test]
 fn force_install_never_overwrites_an_existing_custom_hook() {
     let project = tempfile::TempDir::new().unwrap();
     let hooks_dir = project.path().join(".git/hooks");
