@@ -384,10 +384,10 @@
         "P01"
       ],
       "executor": "mixed",
-      "state": "blocked",
-      "owner": "Nick (classify W03 candidate ownership)",
+      "state": "verified",
+      "owner": "Codex goal: Assura Maturity Execution Train; NickRoth PR #61",
       "evidence": "evidence/W03.md",
-      "blocker": "W03 is dependency-ready, but its only identified candidate is clean, unpushed Nick-authored work at /Users/nroth/workspace/nickroth-assura-case-study on goal/w03-case-study-evidence (113febc) with no ledger owner or closure record. Do not rebase, commit, fold, or duplicate it until Nick records transfer to this goal or preservation as user-owned work."
+      "blocker": "Production publication remains pending explicit authority. PR #61 is reviewed, current-main-based, locally and hosted verified, and merge-ready."
     },
     {
       "id": "W04",
