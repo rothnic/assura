@@ -219,7 +219,11 @@ fn install_recognizes_an_exact_owned_pre_commit_suffix_on_rerun() {
         );
     }
     let updated = std::fs::read_to_string(project.path().join(".pre-commit-config.yaml")).unwrap();
-    assert_eq!(updated.matches("id: assura-pre-push").count(), 1, "{updated}");
+    assert_eq!(
+        updated.matches("id: assura-pre-push").count(),
+        1,
+        "{updated}"
+    );
 }
 
 #[test]
