@@ -821,7 +821,8 @@ fn codex_hook_bounds_utf8_context_for_many_long_findings() {
     let context = hook_output["hookSpecificOutput"]["additionalContext"]
         .as_str()
         .expect("additional context");
-    assert!(context.as_bytes().len() <= 2 * 1024);
+    // Rust string length is UTF-8 byte length, matching the hook's byte cap.
+    assert!(context.len() <= 2 * 1024);
     assert!(context.is_char_boundary(context.len()));
     assert!(context.contains("Output truncated at 2 KiB"));
     assert!(context.contains("performance_no_slower"));
@@ -882,7 +883,7 @@ print(json.dumps({"context": context}))
 
     let rendered: Value = serde_json::from_slice(&output.stdout).expect("formatter emits JSON");
     let context = rendered["context"].as_str().expect("formatted context");
-    assert!(context.as_bytes().len() <= 2 * 1024);
+    assert!(context.len() <= 2 * 1024);
     assert!(context.contains("critical_rule"));
     assert!(context.contains("Output truncated at 2 KiB"));
     assert!(context.ends_with("</assura-nudge>"));
