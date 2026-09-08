@@ -1,5 +1,6 @@
 //! Compiled plan types for the LS-Lint-compatible check fast path.
 
+use super::ls_fast_direct_content::strip_direct_content_policy_is_noop;
 use super::ls_fast_naming::{
     collect_fast_naming_regex_patterns, compile_fast_naming, FastFileNaming, FastNaming,
 };
@@ -28,9 +29,9 @@ pub(super) struct FastScope {
 #[derive(Clone)]
 pub(super) struct FastRules {
     pub(super) effective: EffectiveRules,
-    pub(super) file_naming: Option<FastFileNaming>,
-    pub(super) directory_naming: Option<FastNaming>,
-    pub(super) self_directory_naming: Option<FastNaming>,
+    pub(super) file_naming: Option<Arc<FastFileNaming>>,
+    pub(super) directory_naming: Option<Arc<FastNaming>>,
+    pub(super) self_directory_naming: Option<Arc<FastNaming>>,
     pub(super) has_direct_file_policy: bool,
     pub(super) has_direct_directory_policy: bool,
 }
@@ -209,9 +210,9 @@ impl FastRules {
         let has_direct_directory_policy = has_direct_directory_policy(&effective);
         Self {
             effective,
-            file_naming,
-            directory_naming,
-            self_directory_naming,
+            file_naming: file_naming.map(Arc::new),
+            directory_naming: directory_naming.map(Arc::new),
+            self_directory_naming: self_directory_naming.map(Arc::new),
             has_direct_file_policy,
             has_direct_directory_policy,
         }
@@ -227,9 +228,9 @@ impl FastRules {
     ) {
         (
             &self.effective,
-            self.file_naming.as_ref(),
-            self.directory_naming.as_ref(),
-            self.self_directory_naming.as_ref(),
+            self.file_naming.as_deref(),
+            self.directory_naming.as_deref(),
+            self.self_directory_naming.as_deref(),
         )
     }
 
@@ -264,20 +265,27 @@ impl FastRules {
                 })
                 .unwrap_or_default();
 
-            (default.is_some() || !suffix_patterns.is_empty() || !glob_patterns.is_empty())
-                .then(|| FastFileNaming::from_parts(suffix_patterns, glob_patterns, default))
+            (default.is_some() || !suffix_patterns.is_empty() || !glob_patterns.is_empty()).then(
+                || {
+                    Arc::new(FastFileNaming::from_parts(
+                        suffix_patterns,
+                        glob_patterns,
+                        default,
+                    ))
+                },
+            )
         });
 
         let directory_naming = effective
             .directories
             .as_ref()
             .and_then(|directories| directories.naming.as_ref())
-            .map(|naming| naming_cache.compile(naming));
+            .map(|naming| Arc::new(naming_cache.compile(naming)));
         let self_directory_naming = effective
             .self_directory
             .as_ref()
             .and_then(|directory| directory.naming.as_ref())
-            .map(|naming| naming_cache.compile(naming));
+            .map(|naming| Arc::new(naming_cache.compile(naming)));
 
         Self {
             has_direct_file_policy: has_direct_file_policy(&effective),
@@ -343,14 +351,13 @@ fn compile_scope_node(
         }
     };
 
-    scopes.push(
-        FastScope::new(
-            node_rel.clone(),
-            FastRules::new_with_cache(effective.clone(), naming_cache),
-            FastRules::new_with_cache(strip_direct_content_policy(effective.clone()), naming_cache),
-        )
-        .with_inherit(node.inherit),
-    );
+    let exact = FastRules::new_with_cache(effective.clone(), naming_cache);
+    let descendant = if strip_direct_content_policy_is_noop(&effective) {
+        exact.clone()
+    } else {
+        FastRules::new_with_cache(strip_direct_content_policy(effective.clone()), naming_cache)
+    };
+    scopes.push(FastScope::new(node_rel.clone(), exact, descendant).with_inherit(node.inherit));
 
     if let Some(children) = &node.children {
         for (child_name, child) in children {

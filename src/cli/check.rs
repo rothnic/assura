@@ -31,6 +31,9 @@ pub mod fast_cli;
 mod file_limits;
 mod ls_fast;
 mod ls_fast_counts;
+mod ls_fast_direct_content;
+#[cfg(test)]
+mod ls_fast_direct_content_tests;
 mod ls_fast_naming;
 #[cfg(feature = "full-cli")]
 mod ls_fast_parallel;
