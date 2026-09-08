@@ -6601,8 +6601,7 @@ fn check_agent_workflow_state(checks: &mut Checks) {
         .into_iter()
         .filter_map(|path| {
             let task = serde_json::from_str::<Value>(&read(&path)).ok()?;
-            let status = task.get("status").and_then(Value::as_str)?;
-            (status == "planning" || status == "in_progress").then_some((path, task))
+            task_is_active(&task).then_some((path, task))
         })
         .collect::<Vec<_>>();
     if active_tasks.is_empty() {
@@ -6615,18 +6614,61 @@ fn check_agent_workflow_state(checks: &mut Checks) {
     }
     let branch_owned = active_tasks
         .iter()
-        .any(|(_, task)| task.get("branch").and_then(Value::as_str) == Some(branch));
+        .any(|(_, task)| task_owns_branch(task, branch));
     checks.require(
         branch_owned,
         "workflow gate: active task branch must match current branch",
     );
-    let has_prd = active_tasks.iter().any(|(path, task)| {
-        task.get("branch").and_then(Value::as_str) == Some(branch)
-            && path
-                .parent()
-                .is_some_and(|task_dir| task_dir.join("prd.md").exists())
-    });
+    let has_prd = active_tasks
+        .iter()
+        .any(|(path, task)| task_has_prd_for_branch(path, task, branch));
     checks.require(has_prd, "workflow gate: active task needs prd.md");
+}
+
+fn task_is_active(task: &Value) -> bool {
+    matches!(
+        task.get("status").and_then(Value::as_str),
+        Some("planning" | "in_progress")
+    )
+}
+
+/// Returns whether a task explicitly owns a non-detached branch.
+///
+/// Long-running execution trains retain their primary task branch and may name
+/// additional, isolated card branches in `meta.execution_branches`.
+fn task_owns_branch(task: &Value, branch: &str) -> bool {
+    if branch.is_empty() {
+        return false;
+    }
+    if task.get("branch").and_then(Value::as_str) == Some(branch) {
+        return true;
+    }
+    let Some(branches) = task
+        .pointer("/meta/execution_branches")
+        .and_then(Value::as_array)
+    else {
+        return false;
+    };
+    branches.iter().all(|candidate| {
+        candidate
+            .as_str()
+            .is_some_and(|candidate| !candidate.is_empty())
+    }) && branches
+        .iter()
+        .any(|candidate| candidate.as_str() == Some(branch))
+}
+
+fn task_has_prd_for_branch(path: &Path, task: &Value, branch: &str) -> bool {
+    task_owns_branch_with_prd(
+        task,
+        branch,
+        path.parent()
+            .is_some_and(|task_dir| task_dir.join("prd.md").exists()),
+    )
+}
+
+fn task_owns_branch_with_prd(task: &Value, branch: &str, has_prd: bool) -> bool {
+    task_owns_branch(task, branch) && has_prd
 }
 
 fn check_goal_revalidation_route(checks: &mut Checks) {
@@ -6761,6 +6803,93 @@ mod tests {
 
     const AGENT_ONBOARDING_GUIDE: &str =
         include_str!("../../website/src/content/docs/guides/agent-ready-onboarding.md");
+
+    #[test]
+    fn task_branch_ownership_requires_an_exact_declared_branch() {
+        let task = json!({
+            "branch": "goal/a05-onboarding-quality-core",
+            "meta": {
+                "execution_branches": ["goal/a04-runtime-diagnostic"]
+            }
+        });
+
+        assert!(task_owns_branch(&task, "goal/a05-onboarding-quality-core"));
+        assert!(task_owns_branch(&task, "goal/a04-runtime-diagnostic"));
+        assert!(!task_owns_branch(&task, "goal/a04-runtime"));
+        assert!(!task_owns_branch(
+            &task,
+            "goal/a04-runtime-diagnostic-extra"
+        ));
+    }
+
+    #[test]
+    fn task_branch_ownership_rejects_invalid_allowlist_metadata() {
+        let non_array = json!({
+            "branch": "goal/a05-onboarding-quality-core",
+            "meta": {"execution_branches": "goal/a04-runtime-diagnostic"}
+        });
+        let non_string_entry = json!({
+            "branch": "goal/a05-onboarding-quality-core",
+            "meta": {"execution_branches": [42]}
+        });
+        let mixed_entries = json!({
+            "branch": "goal/a05-onboarding-quality-core",
+            "meta": {"execution_branches": ["goal/a04-runtime-diagnostic", 42]}
+        });
+        let empty_entry = json!({
+            "branch": "goal/a05-onboarding-quality-core",
+            "meta": {"execution_branches": [""]}
+        });
+
+        assert!(!task_owns_branch(&non_array, "goal/a04-runtime-diagnostic"));
+        assert!(!task_owns_branch(
+            &non_string_entry,
+            "goal/a04-runtime-diagnostic"
+        ));
+        assert!(!task_owns_branch(
+            &mixed_entries,
+            "goal/a04-runtime-diagnostic"
+        ));
+        assert!(!task_owns_branch(&empty_entry, ""));
+    }
+
+    #[test]
+    fn task_prd_membership_stays_bound_to_the_matched_active_task() {
+        let matching = json!({
+            "status": "in_progress",
+            "branch": "goal/a05-onboarding-quality-core",
+            "meta": {"execution_branches": ["goal/a04-runtime-diagnostic"]}
+        });
+        let unrelated = json!({
+            "status": "in_progress",
+            "branch": "goal/unrelated",
+            "meta": {}
+        });
+        let inactive = json!({
+            "status": "completed",
+            "branch": "goal/a05-onboarding-quality-core",
+            "meta": {"execution_branches": ["goal/a04-runtime-diagnostic"]}
+        });
+
+        assert!(task_is_active(&matching));
+        assert!(!task_owns_branch_with_prd(
+            &matching,
+            "goal/a04-runtime-diagnostic",
+            false
+        ));
+        assert!(task_owns_branch_with_prd(
+            &matching,
+            "goal/a04-runtime-diagnostic",
+            true
+        ));
+        assert!(!task_owns_branch_with_prd(
+            &unrelated,
+            "goal/a04-runtime-diagnostic",
+            true
+        ));
+        assert!(!task_is_active(&inactive));
+        assert!(task_owns_branch(&inactive, "goal/a04-runtime-diagnostic"));
+    }
 
     #[test]
     fn agent_onboarding_guide_accepts_current_evidence_first_procedure() {

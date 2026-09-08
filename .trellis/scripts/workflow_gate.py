@@ -101,6 +101,11 @@ def _active_task_state(
         "title": task.title if task else None,
         "status": task.status if task else None,
         "branch": task.raw.get("branch") if task else None,
+        "execution_branches": (
+            task.raw.get("meta", {}).get("execution_branches")
+            if isinstance(task.raw.get("meta"), dict)
+            else None
+        ) if task else None,
         "artifacts": artifacts,
     }
 
@@ -115,10 +120,16 @@ def _derive_verdict(state: dict[str, Any]) -> dict[str, Any]:
     workflow_state = "unknown"
     next_action = "Continue with the user request."
     task_branch = task.get("branch")
+    execution_branches = task.get("execution_branches")
+    declared_branches = [task_branch]
+    if isinstance(execution_branches, list) and all(
+        isinstance(branch, str) and branch for branch in execution_branches
+    ):
+        declared_branches.extend(execution_branches)
 
-    if task_branch and task_branch != state["git"]["branch"]:
+    if task_branch and state["git"]["branch"] not in declared_branches:
         warnings.append(
-            f"Active task declares branch `{task_branch}` but shell is on `{state['git']['branch']}`."
+            f"Active task declares branches {declared_branches!r} but shell is on `{state['git']['branch']}`."
         )
 
     if changes:
