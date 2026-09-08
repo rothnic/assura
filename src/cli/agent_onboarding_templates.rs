@@ -3,6 +3,7 @@
 use super::agent_onboarding::DetectedSection;
 use super::agent_onboarding_content_templates as content;
 use super::agent_onboarding_handoff_templates as handoff;
+use super::agent_onboarding_quality::quality_config;
 use super::agent_onboarding_structure_fit_templates as structure_fit;
 use super::AgentContentTemplate;
 
@@ -223,69 +224,6 @@ exclude:
   - "**/dist/**"
 "#
     )
-}
-
-fn quality_config(detected: &DetectedSection) -> String {
-    if detected.project_type == "rust" {
-        return rust_quality_config().to_string();
-    }
-    if detected.python_pytest_available {
-        return r#"quality:
-  scopes:
-    python:
-      paths:
-        - "src/**"
-        - "tests/**"
-        - "pyproject.toml"
-      always:
-        - "assura check"
-      pre_push:
-        - "pytest"
-"#
-        .to_string();
-    }
-    if detected.bun_scripts.is_empty() {
-        return String::new();
-    }
-    let frequent = detected
-        .bun_scripts
-        .iter()
-        .any(|script| script == "lint")
-        .then_some("      frequent:\n        - \"bun run lint\"\n")
-        .unwrap_or("");
-    let pre_push = detected
-        .bun_scripts
-        .iter()
-        .any(|script| script == "test")
-        .then_some("      pre_push:\n        - \"bun run test\"\n")
-        .unwrap_or("");
-    format!(
-        "quality:\n  scopes:\n    bun:\n      paths:\n        - \"src/**\"\n        - \"tests/**\"\n        - \"package.json\"\n        - \"bun.lock\"\n      always:\n        - \"assura check\"\n{frequent}{pre_push}"
-    )
-}
-
-fn rust_quality_config() -> &'static str {
-    r#"quality:
-  scopes:
-    rust:
-      paths:
-        - "src/**"
-        - "tests/**"
-        - "examples/**"
-        - "benches/**"
-        - "crates/**"
-        - "Cargo.toml"
-        - "Cargo.lock"
-        - "build.rs"
-      always:
-        - "assura check"
-      frequent:
-        - "cargo fmt --all -- --check"
-      pre_push:
-        - "cargo test --locked"
-      pr:
-        - "cargo clippy --all-targets -- -D warnings"
-"#
 }
 
 fn presets_lock() -> &'static str {

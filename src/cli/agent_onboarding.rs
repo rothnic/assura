@@ -1,7 +1,9 @@
 //! First-run local onboarding for agent-ready repositories.
 use super::agent_integration::{configure_agent_integration_bundle, target_from_harness};
 use super::agent_lifecycle::{lifecycle_profiles, ranked_next_actions};
-use super::agent_onboarding_quality::{declared_bun_quality_scripts, python_quality_advice};
+use super::agent_onboarding_quality::{
+    available_python_quality_tools, declared_bun_quality_scripts, python_quality_advice,
+};
 use super::agent_onboarding_report::{
     write_report, CheckItem, ContentSection, FileAction, InstalledSection, IntegrationSection,
     OnboardingReport, RenderedOnboardingReport,
@@ -235,9 +237,7 @@ fn detect_project(
         "high"
     };
     let bun_scripts = declared_bun_quality_scripts(project_root, has_package_json);
-    let python_pytest_available = python_quality_advice(project_root)
-        .iter()
-        .any(|advice| advice.tool == "pytest" && advice.status == "available");
+    let python_quality_tools = available_python_quality_tools(project_root);
     let agent = detect_agent(project_root, requested_agent, activate)?;
 
     Ok(DetectedSection {
@@ -250,7 +250,7 @@ fn detect_project(
         existing_source_files,
         manifest_conflicts,
         bun_scripts,
-        python_pytest_available,
+        python_quality_tools,
     })
 }
 
@@ -583,7 +583,7 @@ pub(super) struct DetectedSection {
     #[serde(skip)]
     pub(super) bun_scripts: Vec<String>,
     #[serde(skip)]
-    pub(super) python_pytest_available: bool,
+    pub(super) python_quality_tools: Vec<&'static str>,
 }
 
 #[derive(Serialize)]

@@ -232,3 +232,44 @@ fn onboarding_does_not_plan_a_nonexecutable_pytest_file() {
         "onboarding must not create a Python quality scope for a non-executable tool"
     );
 }
+
+#[cfg(unix)]
+#[test]
+fn onboarding_plans_only_available_configured_python_quality_tools_by_phase() {
+    use std::os::unix::fs::PermissionsExt;
+
+    let project = TempDir::new().expect("project directory");
+    fs::write(
+        project.path().join("pyproject.toml"),
+        "[tool.pytest.ini_options]\ntestpaths = [\"tests\"]\n\n[tool.ruff]\n\n[tool.mypy]\n",
+    )
+    .expect("Python project configuration");
+    let tools = TempDir::new().expect("tool directory");
+    for tool in ["pytest", "ruff", "mypy"] {
+        let path = tools.path().join(tool);
+        fs::write(&path, "#!/bin/sh\nexit 0\n").expect("quality tool fixture");
+        let mut permissions = fs::metadata(&path).expect("tool metadata").permissions();
+        permissions.set_mode(0o755);
+        fs::set_permissions(path, permissions).expect("quality tool executable");
+    }
+
+    let output = Command::new(assura_full_bin())
+        .args(["agent", "onboard"])
+        .arg(project.path())
+        .env("PATH", tools.path())
+        .output()
+        .expect("assura agent onboard runs");
+    assert!(output.status.success());
+    assert_eq!(
+        successful_plan_json(&project, &["src/app.py"], "frequent")["checks"],
+        serde_json::json!(["assura check", "ruff check ."])
+    );
+    assert_eq!(
+        successful_plan_json(&project, &["src/app.py"], "pre-push")["checks"],
+        serde_json::json!(["assura check", "ruff check .", "pytest"])
+    );
+    assert_eq!(
+        successful_plan_json(&project, &["src/app.py"], "pr")["checks"],
+        serde_json::json!(["assura check", "ruff check .", "pytest", "mypy ."])
+    );
+}

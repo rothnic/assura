@@ -1,5 +1,6 @@
-//! Native quality-tool discovery for generated onboarding policy.
+//! Native quality detection and policy rendering for generated onboarding.
 
+use super::agent_onboarding::DetectedSection;
 use serde::Serialize;
 use std::fs;
 use std::path::Path;
@@ -11,28 +12,134 @@ pub(super) struct QualityAdvice {
 }
 
 pub(super) fn python_quality_advice(project_root: &Path) -> Vec<QualityAdvice> {
+    configured_python_tools(project_root)
+        .into_iter()
+        .map(|tool| QualityAdvice {
+            tool,
+            status: if executable_on_path(tool) {
+                "available"
+            } else {
+                "unavailable"
+            },
+        })
+        .collect()
+}
+
+/// Return configured Python quality tools that can actually run locally.
+pub(super) fn available_python_quality_tools(project_root: &Path) -> Vec<&'static str> {
+    configured_python_tools(project_root)
+        .into_iter()
+        .filter(|tool| executable_on_path(tool))
+        .collect()
+}
+
+/// Render the generated quality policy for the detected local project.
+pub(super) fn quality_config(detected: &DetectedSection) -> String {
+    if detected.project_type == "rust" {
+        return rust_quality_config().to_string();
+    }
+    if !detected.python_quality_tools.is_empty() {
+        let frequent = detected
+            .python_quality_tools
+            .contains(&"ruff")
+            .then_some("      frequent:\n        - \"ruff check .\"\n")
+            .unwrap_or("");
+        let pre_push = detected
+            .python_quality_tools
+            .contains(&"pytest")
+            .then_some("      pre_push:\n        - \"pytest\"\n")
+            .unwrap_or("");
+        let pr = detected
+            .python_quality_tools
+            .contains(&"mypy")
+            .then_some("      pr:\n        - \"mypy .\"\n")
+            .unwrap_or("");
+        return format!(
+            r#"quality:
+  scopes:
+    python:
+      paths:
+        - "src/**"
+        - "tests/**"
+        - "pyproject.toml"
+      always:
+        - "assura check"
+{frequent}{pre_push}{pr}"#
+        );
+    }
+    if detected.bun_scripts.is_empty() {
+        return String::new();
+    }
+    let frequent = detected
+        .bun_scripts
+        .iter()
+        .any(|script| script == "lint")
+        .then_some("      frequent:\n        - \"bun run lint\"\n")
+        .unwrap_or("");
+    let pre_push = detected
+        .bun_scripts
+        .iter()
+        .any(|script| script == "test")
+        .then_some("      pre_push:\n        - \"bun run test\"\n")
+        .unwrap_or("");
+    format!(
+        "quality:\n  scopes:\n    bun:\n      paths:\n        - \"src/**\"\n        - \"tests/**\"\n        - \"package.json\"\n        - \"bun.lock\"\n      always:\n        - \"assura check\"\n{frequent}{pre_push}"
+    )
+}
+
+fn rust_quality_config() -> &'static str {
+    r#"quality:
+  scopes:
+    rust:
+      paths:
+        - "src/**"
+        - "tests/**"
+        - "examples/**"
+        - "benches/**"
+        - "crates/**"
+        - "Cargo.toml"
+        - "Cargo.lock"
+        - "build.rs"
+      always:
+        - "assura check"
+      frequent:
+        - "cargo fmt --all -- --check"
+      pre_push:
+        - "cargo test --locked"
+      pr:
+        - "cargo clippy --all-targets -- -D warnings"
+"#
+}
+
+fn configured_python_tools(project_root: &Path) -> Vec<&'static str> {
     let Ok(contents) = fs::read_to_string(project_root.join("pyproject.toml")) else {
         return Vec::new();
     };
     let Ok(pyproject) = contents.parse::<toml::Value>() else {
         return Vec::new();
     };
-    let pytest_configured = pyproject
-        .get("tool")
-        .and_then(|tool| tool.get("pytest"))
-        .and_then(|pytest| pytest.get("ini_options"))
-        .is_some_and(toml::Value::is_table);
-    if !pytest_configured {
-        return Vec::new();
-    }
-    vec![QualityAdvice {
-        tool: "pytest",
-        status: if executable_on_path("pytest") {
-            "available"
-        } else {
-            "unavailable"
-        },
-    }]
+    let tool = pyproject.get("tool");
+    [
+        (
+            tool.and_then(|tool| tool.get("pytest"))
+                .and_then(|pytest| pytest.get("ini_options"))
+                .is_some_and(toml::Value::is_table),
+            "pytest",
+        ),
+        (
+            tool.and_then(|tool| tool.get("ruff"))
+                .is_some_and(toml::Value::is_table),
+            "ruff",
+        ),
+        (
+            tool.and_then(|tool| tool.get("mypy"))
+                .is_some_and(toml::Value::is_table),
+            "mypy",
+        ),
+    ]
+    .into_iter()
+    .filter_map(|(configured, tool)| configured.then_some(tool))
+    .collect()
 }
 
 fn executable_on_path(name: &str) -> bool {
