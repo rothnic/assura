@@ -918,6 +918,48 @@ fn agent_nudge_suppresses_identical_messages_during_the_cooldown() {
 }
 
 #[test]
+fn agent_nudge_does_not_suppress_a_finding_after_policy_generation_changes() {
+    let project = nudge_fixture();
+    let path = project.path().to_str().expect("fixture path");
+    let args = [
+        "nudge",
+        path,
+        "--event",
+        "after-tool",
+        "--changed",
+        "src/BadName.rs",
+        "--cooldown-seconds",
+        "600",
+    ];
+
+    let first = agent_json(&args);
+    fs::write(
+        project.path().join(".assura/config.yml"),
+        r#"
+structure:
+  ./:
+    extra: true
+    children:
+      src/:
+        files:
+          naming: kebab-case
+          extensions: ["rs", "md"]
+exclude:
+  - target/**
+"#,
+    )
+    .expect("change policy");
+    let after_policy_change = agent_json(&args);
+
+    assert_eq!(first["summary"]["nudge_count"], 1);
+    assert_eq!(after_policy_change["summary"]["nudge_count"], 1);
+    assert_eq!(
+        after_policy_change["cache_policy"]["cooldown"]["suppressed"],
+        0
+    );
+}
+
+#[test]
 fn agent_nudge_omitted_count_includes_findings_hidden_by_max_issues() {
     let project = nudge_fixture();
     let path = project.path().to_str().expect("fixture path");

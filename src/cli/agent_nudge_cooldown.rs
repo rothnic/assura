@@ -36,6 +36,7 @@ pub(super) fn apply(
     project_root: &Path,
     event: &str,
     agent: &str,
+    policy_generation: &str,
     nudges: &mut Vec<NudgeItem>,
     seconds: u64,
 ) -> CooldownSummary {
@@ -55,8 +56,9 @@ pub(super) fn apply(
         .messages
         .retain(|_, timestamp| within_cooldown(now, *timestamp, seconds));
     let before = nudges.len();
+    let agent_generation = format!("{agent}\0{policy_generation}");
     nudges.retain(|nudge| {
-        let fingerprint = fingerprint(&session, event, agent, nudge);
+        let fingerprint = fingerprint(&session, event, &agent_generation, nudge);
         if state
             .messages
             .get(&fingerprint)
@@ -75,6 +77,18 @@ pub(super) fn apply(
         mode,
         fallback_reason,
     }
+}
+
+pub(super) fn policy_generation(project_root: &Path, config: Option<&Path>) -> String {
+    let path = config
+        .map(Path::to_path_buf)
+        .unwrap_or_else(|| project_root.join(".assura/config.yml"));
+    let contents = fs::read(&path).unwrap_or_default();
+    digest(&format!(
+        "{}\0{}",
+        path.display(),
+        String::from_utf8_lossy(&contents)
+    ))
 }
 
 fn state_path(project_root: &Path) -> (PathBuf, &'static str, Option<&'static str>) {

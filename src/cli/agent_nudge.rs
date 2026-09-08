@@ -66,6 +66,7 @@ fn build_agent_nudge(
         Some(path) => path,
         None => std::env::current_dir().map_err(|error| error.to_string())?,
     };
+    let policy_generation = cooldown::policy_generation(&project_path, config.as_deref());
     let agent_fallback_command = suggested_command(&project_path, options.agent);
     let mut nudges = Vec::new();
     let mut changed_path_checks = Vec::new();
@@ -166,6 +167,7 @@ fn build_agent_nudge(
         &project_path,
         event_name(options.event),
         agent_name(options.agent),
+        &policy_generation,
         &mut nudges,
         options.cooldown_seconds,
     );
