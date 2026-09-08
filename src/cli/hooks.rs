@@ -463,6 +463,14 @@ mod tests {
         );
         std::fs::write(&wrapper, fixture).unwrap();
 
+        let expected = manager.managed_wrapper_contents(&sidecar);
+        assert_eq!(std::fs::read(&wrapper).unwrap(), expected[1]);
+        assert!(plain_directory_or_absent(wrapper.parent().unwrap()));
+        assert_eq!(
+            classify_artifact(&wrapper, &expected, true).unwrap(),
+            ArtifactOwnership::ManagedLegacy
+        );
+
         let ownership = manager.ownership(HookType::PrePush).unwrap();
         assert_eq!(ownership.wrapper, ArtifactOwnership::ManagedLegacy);
         assert_eq!(ownership.sidecar, ArtifactOwnership::ManagedCurrent);
