@@ -97,6 +97,42 @@ fn onboarding_a_cargo_project_plans_cumulative_native_gates_for_rust_sources() {
 }
 
 #[test]
+fn onboarding_routes_rust_configuration_to_the_broader_native_plan() {
+    let project = TempDir::new().expect("project directory");
+    fs::write(
+        project.path().join("Cargo.toml"),
+        "[package]\nname = \"fixture\"\nversion = \"0.1.0\"\nedition = \"2021\"\n",
+    )
+    .expect("Cargo manifest");
+    assert!(onboard(&project).status.success());
+    let expected = serde_json::json!([
+        "assura check",
+        "cargo fmt --all -- --check",
+        "cargo test --locked",
+        "cargo clippy --all-targets -- -D warnings"
+    ]);
+    for changed_path in [
+        "Cargo.toml",
+        "Cargo.lock",
+        "rust-toolchain.toml",
+        ".cargo/config.toml",
+        ".assura/config.yml",
+        ".github/workflows/ci.yml",
+    ] {
+        assert_eq!(
+            successful_plan_json(&project, &[changed_path], "pr")["checks"],
+            expected,
+            "wrong native plan for Rust configuration {changed_path}"
+        );
+    }
+    assert_eq!(
+        successful_plan_json(&project, &["docs/guide.md"], "pr")["checks"],
+        serde_json::json!(["assura check"]),
+        "documentation must remain policy-only"
+    );
+}
+
+#[test]
 fn onboarding_a_bun_project_uses_only_declared_quality_scripts() {
     let project = TempDir::new().expect("project directory");
     fs::write(

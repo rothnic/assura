@@ -35,8 +35,10 @@ pub(super) fn available_python_quality_tools(project_root: &Path) -> Vec<&'stati
 
 /// Render the generated quality policy for the detected local project.
 pub(super) fn quality_config(detected: &DetectedSection) -> String {
+    let mut config = String::from(QUALITY_POLICY_SCOPES);
     if detected.project_type == "rust" {
-        return rust_quality_config().to_string();
+        config.push_str(rust_quality_scope());
+        return config;
     }
     if !detected.python_quality_tools.is_empty() {
         let frequent = detected
@@ -54,10 +56,8 @@ pub(super) fn quality_config(detected: &DetectedSection) -> String {
             .contains(&"mypy")
             .then_some("      pr:\n        - \"mypy .\"\n")
             .unwrap_or("");
-        return format!(
-            r#"quality:
-  scopes:
-    python:
+        config.push_str(&format!(
+            r#"    python:
       paths:
         - "src/**"
         - "tests/**"
@@ -65,10 +65,11 @@ pub(super) fn quality_config(detected: &DetectedSection) -> String {
       always:
         - "assura check"
 {frequent}{pre_push}{pr}"#
-        );
+        ));
+        return config;
     }
     if detected.bun_scripts.is_empty() {
-        return String::new();
+        return config;
     }
     let frequent = detected
         .bun_scripts
@@ -82,15 +83,33 @@ pub(super) fn quality_config(detected: &DetectedSection) -> String {
         .any(|script| script == "test")
         .then_some("      pre_push:\n        - \"bun run test\"\n")
         .unwrap_or("");
-    format!(
-        "quality:\n  scopes:\n    bun:\n      paths:\n        - \"src/**\"\n        - \"tests/**\"\n        - \"package.json\"\n        - \"bun.lock\"\n      always:\n        - \"assura check\"\n{frequent}{pre_push}"
-    )
+    config.push_str(&format!(
+        "    bun:\n      paths:\n        - \"src/**\"\n        - \"tests/**\"\n        - \"package.json\"\n        - \"bun.lock\"\n      always:\n        - \"assura check\"\n{frequent}{pre_push}"
+    ));
+    config
 }
 
-fn rust_quality_config() -> &'static str {
-    r#"quality:
+const QUALITY_POLICY_SCOPES: &str = r#"quality:
   scopes:
-    rust:
+    policy:
+      paths:
+        - "**"
+      always:
+        - "assura check"
+    project-config:
+      paths:
+        - ".assura/**"
+        - "AGENTS.md"
+        - ".agents/**"
+        - ".github/workflows/**"
+        - ".gitlab-ci.yml"
+        - ".circleci/**"
+      always:
+        - "assura check"
+"#;
+
+fn rust_quality_scope() -> &'static str {
+    r#"    rust:
       paths:
         - "src/**"
         - "tests/**"
@@ -98,8 +117,31 @@ fn rust_quality_config() -> &'static str {
         - "benches/**"
         - "crates/**"
         - "Cargo.toml"
+        - "**/Cargo.toml"
         - "Cargo.lock"
+        - "**/Cargo.lock"
         - "build.rs"
+        - "**/build.rs"
+        - "rust-toolchain"
+        - "rust-toolchain.toml"
+        - "**/rust-toolchain"
+        - "**/rust-toolchain.toml"
+        - ".cargo/**"
+        - "**/.cargo/**"
+        - "rustfmt.toml"
+        - ".rustfmt.toml"
+        - "clippy.toml"
+        - ".clippy.toml"
+        - "**/rustfmt.toml"
+        - "**/.rustfmt.toml"
+        - "**/clippy.toml"
+        - "**/.clippy.toml"
+        - ".assura/**"
+        - "AGENTS.md"
+        - ".agents/**"
+        - ".github/workflows/**"
+        - ".gitlab-ci.yml"
+        - ".circleci/**"
       always:
         - "assura check"
       frequent:
