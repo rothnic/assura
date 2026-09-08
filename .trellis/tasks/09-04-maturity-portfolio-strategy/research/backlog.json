@@ -70,10 +70,10 @@
         "R02"
       ],
       "executor": "agent",
-      "state": "blocked",
-      "owner": "Codex goal/r03-scope-rules-attribution; A/A method stopped and audited, rejected source remains reverted",
+      "state": "active",
+      "owner": "Codex goal/r03-fresh-attribution; finite Callgrind attribution plan pending independent review, rejected source remains reverted",
       "evidence": "evidence/R03.md",
-      "blocker": "A/A run66774 stopped at block1: identical Assura differs0.4192105ms/9.3178%, LS differs0.106567ms; existing comparability bounds fail. Raw audit6e228e7e confirms32samples+4controls, unchanged identities, no block2. Root must justify a materially different attribution/runner method before further measurement; same-method retry, optimization, candidate rehabilitation and gate amendment are not authorized. Not a whole-goal or automatic human-approval block."
+      "blocker": null
     },
     {
       "id": "R04",
