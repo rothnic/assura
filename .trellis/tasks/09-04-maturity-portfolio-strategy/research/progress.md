@@ -955,3 +955,21 @@ recoverable. This reconciliation adds records rather than rewriting outcomes.
   preview, GitGuardian). W03 is `verified`, not `done`: no production
   publication/deployment authority was exercised. Next: merge or publish only
   when Nick explicitly authorizes production visibility.
+
+## Iteration 46 — 2026-09-08 — A05 current execution proof and ownership rotation
+
+- PR #200 merged the independently reviewed first A05 native execution slice as
+  `f1f3312`. A closed-world fixture test runs the generated Rust `pr` plan in
+  its project cwd, observes a seeded formatter failure, and proves recovery
+  after restoration; it does not introduce a general command executor.
+- The exact execution-branch allowlist moved from the completed A04 branch to
+  `goal/a05-current-audit`, preserving target-state's exact branch-plus-PRD
+  requirement. The full local `cargo xtask pr` gate and the hosted matrix,
+  including Performance Report and platform/install lanes, passed. Security
+  Scope passed; the conditional Security Audit was scope-skipped and is not
+  treated as test evidence.
+- The A05 ledger now records the integrated slice while preserving the separate
+  user-owned historical worktree. A05 remains active because Bun/Python
+  detection, broader-phase/config coverage, released-binary CI recipe behavior,
+  and full acceptance evidence remain. Next: select its smallest current-master
+  contract without importing the preserved work.

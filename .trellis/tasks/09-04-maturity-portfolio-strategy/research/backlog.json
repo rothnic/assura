@@ -212,8 +212,8 @@
         "A03"
       ],
       "executor": "agent",
-      "state": "implemented",
-      "owner": "Codex goal/a05-native-harness-lifecycle; partial uncommitted patch exists, implementation/proof incomplete, not PR-ready",
+      "state": "active",
+      "owner": "Codex goal/a05-current-audit; current Rust PR-plan fixture-cwd execution slice reviewed and merged in PR #200; preserved historical work remains untouched and full A05 acceptance is incomplete",
       "evidence": "evidence/A05.md",
       "blocker": null
     },
