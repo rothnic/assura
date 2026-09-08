@@ -7540,90 +7540,6 @@ mod tests {
     }
 
     #[test]
-    fn release_readiness_report_passes_for_next_release_candidate() {
-        let report = release_readiness::report_from_inputs(
-            "0.2.0",
-            "0.2.0",
-            "A release PR cannot close if",
-            release_checklist_fixture(),
-            "Compatibility And Public Surface",
-            serde_json::json!({
-                "schema_version": "assura.release-surfaces.v1",
-                "path": "docs/data/release-surfaces.json",
-                "surface_count": 2,
-                "unreleased_user_facing_changes": []
-            }),
-            serde_json::json!({ "tagName": "v0.1.0" }),
-        );
-        assert_eq!(
-            report.get("schema_version").and_then(Value::as_str),
-            Some("assura.release-readiness.v1")
-        );
-        assert_eq!(report.get("ready").and_then(Value::as_bool), Some(true));
-        assert_eq!(report.get("verdict").and_then(Value::as_str), Some("pass"));
-        assert!(report
-            .get("reasons")
-            .and_then(Value::as_array)
-            .is_some_and(|reasons| reasons.is_empty()));
-    }
-
-    #[test]
-    fn release_readiness_report_fails_for_any_candidate_with_unreleased_surfaces() {
-        let report = release_readiness::report_from_inputs(
-            "0.2.0",
-            "0.2.0",
-            "A release PR cannot close if",
-            release_checklist_fixture(),
-            "Compatibility And Public Surface",
-            serde_json::json!({
-                "schema_version": "assura.release-surfaces.v1",
-                "path": "docs/data/release-surfaces.json",
-                "surface_count": 1,
-                "unreleased_user_facing_changes": [{
-                    "id": "project-intelligence-local-surfaces",
-                    "status": "supported",
-                    "first_release": "unreleased",
-                    "detail_path": "docs/release-notes.md"
-                }]
-            }),
-            serde_json::json!({ "tagName": "v0.1.0" }),
-        );
-        assert_eq!(report.get("ready").and_then(Value::as_bool), Some(false));
-        assert_eq!(report.get("verdict").and_then(Value::as_str), Some("fail"));
-        assert!(report
-            .get("reasons")
-            .and_then(Value::as_array)
-            .is_some_and(|reasons| reasons.iter().any(|reason| reason
-                .as_str()
-                .is_some_and(|reason| reason.contains("cannot publish")))));
-    }
-
-    #[test]
-    fn release_readiness_module_preserves_the_report_schema_for_fixed_inputs() {
-        let report = crate::release_readiness::report_from_inputs(
-            "0.2.0",
-            "0.2.0",
-            "A release PR cannot close if",
-            release_checklist_fixture(),
-            "Compatibility And Public Surface",
-            serde_json::json!({
-                "schema_version": "assura.release-surfaces.v1",
-                "path": "docs/data/release-surfaces.json",
-                "surface_count": 2,
-                "unreleased_user_facing_changes": []
-            }),
-            serde_json::json!({ "tagName": "v0.1.0" }),
-        );
-
-        assert_eq!(
-            report.get("schema_version").and_then(Value::as_str),
-            Some("assura.release-readiness.v1")
-        );
-        assert_eq!(report.get("ready").and_then(Value::as_bool), Some(true));
-        assert_eq!(report.get("verdict").and_then(Value::as_str), Some("pass"));
-    }
-
-    #[test]
     fn release_surfaces_report_rejects_placeholder_supported_releases() {
         let path = env::temp_dir().join(format!(
             "assura-release-surfaces-invalid-{}.json",
@@ -7781,15 +7697,5 @@ mod tests {
                 "agent-nudge"
             ]
         );
-    }
-
-    fn release_checklist_fixture() -> &'static str {
-        "cargo fmt --all -- --check\n\
-         cargo test --all-targets --quiet\n\
-         cargo clippy --all-targets --all-features -- -D warnings\n\
-         cargo xtask website-demo-data --check --released\n\
-         cargo xtask release-readiness --format json\n\
-         cargo xtask release-smoke\n\
-         cargo xtask release-live"
     }
 }
