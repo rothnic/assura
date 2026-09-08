@@ -143,9 +143,9 @@
       ],
       "executor": "mixed",
       "state": "implemented",
-      "owner": "Codex goal/q02-contribution-contract; existing PR #158",
+      "owner": "Codex goal/a05-current-audit; current-master integration of existing PR #158",
       "evidence": "evidence/Q02.md",
-      "blocker": null
+      "blocker": "Independent review of the current SHA is complete, but GitHub master protection is absent and requires administrator authority outside this goal. In addition, current hosted Rust CI run 34028084232 failed the unchanged R03 many-scope no-slower gate; Q02 is not merged around that release-train dependency."
     },
     {
       "id": "A01",

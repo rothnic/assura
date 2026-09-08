@@ -144,6 +144,7 @@ required_checks_for_group() {
     rust)
       printf '%s\n' \
         "Check" \
+        "MSRV (Rust 1.86.0)" \
         "Rustfmt" \
         "Clippy" \
         "Code Coverage" \
@@ -156,6 +157,7 @@ required_checks_for_group() {
         "Release Bundle Smoke" \
         "Windows Installer Smoke" \
         "Installable Adoption Smoke (ubuntu-x86_64)" \
+        "Installable Adoption Smoke (alpine-x86_64)" \
         "Installable Adoption Smoke (macos-arm64)" \
         "Installable Adoption Smoke (macos-x86_64)" \
         "Installable Adoption Smoke (windows-x86_64)"
@@ -260,7 +262,17 @@ emit_effective_scope() {
   run_unprefixed_full_scope
 }
 
+emit_full_policy_review() {
+  local full_file="$1"
+  # Expensive jobs may use a proven-green synchronize delta, but review routing
+  # always describes the complete PR so a docs-only follow-up cannot hide an
+  # earlier policy-sensitive change.
+  append_output policy_review "$(scope_file_value "$full_file" full_policy_review)"
+  append_output policy_review_paths "$(scope_file_value "$full_file" full_policy_review_paths)"
+}
+
 full_file="$(mktemp)"
 run_full_scope "$full_file"
 emit_effective_scope "$full_file"
+emit_full_policy_review "$full_file"
 rm -f "$full_file"

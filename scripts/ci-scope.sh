@@ -70,6 +70,8 @@ website=false
 security=false
 reason=""
 files=()
+policy_review=false
+policy_review_paths=()
 
 set_all() {
   rust=true
@@ -130,6 +132,19 @@ load_files_from_input() {
   fi
 }
 
+classify_policy_review_path() {
+  local path="$1"
+
+  # This is intentionally a review prompt, not an approval decision. GitHub
+  # review and required-check policy decides whether a flagged change merges.
+  case "$path" in
+    tests/*|tests/**|.assura/config.yml|src/constraints/severity.rs|src/constraints/severity/*|src/constraints/severity/**|src/cli/performance_report/*|src/cli/performance_report/**|xtask/src/main.rs|benches/*|benches/**|.github/workflows/*|scripts/ci-scope.sh|scripts/ci-scope-github.sh|scripts/check-ci-scope.sh)
+      policy_review=true
+      policy_review_paths+=("$path")
+      ;;
+  esac
+}
+
 classify_path() {
   local path="$1"
 
@@ -185,6 +200,10 @@ else
   load_files_from_diff
 fi
 
+for file in "${files[@]}"; do
+  classify_policy_review_path "$file"
+done
+
 if [ -z "$reason" ]; then
   for file in "${files[@]}"; do
     classify_path "$file"
@@ -206,3 +225,5 @@ append_output website "$website"
 append_output security "$security"
 append_output changed_count "$changed_count"
 append_output reason "$reason"
+append_output policy_review "$policy_review"
+append_output policy_review_paths "$(IFS=,; printf '%s' "${policy_review_paths[*]}")"
