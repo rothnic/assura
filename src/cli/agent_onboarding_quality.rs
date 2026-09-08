@@ -216,6 +216,7 @@ fn configured_python_tools(project_root: &Path) -> Vec<&'static str> {
     .collect()
 }
 
+#[cfg(unix)]
 fn executable_on_path(name: &str) -> bool {
     let Some(path) = std::env::var_os("PATH") else {
         return false;
@@ -231,9 +232,27 @@ fn executable_file(path: &Path) -> bool {
         && fs::metadata(path).is_ok_and(|metadata| metadata.permissions().mode() & 0o111 != 0)
 }
 
-#[cfg(not(unix))]
-fn executable_file(path: &Path) -> bool {
-    path.is_file()
+#[cfg(windows)]
+fn executable_on_path(name: &str) -> bool {
+    let Some(path) = std::env::var_os("PATH") else {
+        return false;
+    };
+    let extensions = std::env::var("PATHEXT")
+        .unwrap_or_else(|_| ".COM;.EXE;.BAT;.CMD".to_string())
+        .split(';')
+        .filter(|extension| !extension.is_empty())
+        .map(str::to_owned)
+        .collect::<Vec<_>>();
+    std::env::split_paths(&path).any(|directory| {
+        extensions
+            .iter()
+            .any(|extension| directory.join(format!("{name}{extension}")).is_file())
+    })
+}
+
+#[cfg(not(any(unix, windows)))]
+fn executable_on_path(_name: &str) -> bool {
+    false
 }
 
 /// Return declared quality scripts only for an explicit Bun project.

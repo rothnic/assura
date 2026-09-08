@@ -381,3 +381,29 @@ fn onboarding_plans_only_available_configured_python_quality_tools_by_phase() {
         serde_json::json!(["assura check", "ruff check .", "pytest", "mypy ."])
     );
 }
+
+#[cfg(windows)]
+#[test]
+fn onboarding_admits_configured_pytest_from_a_pathext_entrypoint() {
+    let project = TempDir::new().expect("project directory");
+    fs::write(
+        project.path().join("pyproject.toml"),
+        "[tool.pytest.ini_options]\ntestpaths = [\"tests\"]\n",
+    )
+    .expect("Python project configuration");
+    let tools = TempDir::new().expect("tool directory");
+    fs::write(tools.path().join("pytest.EXE"), "fixture").expect("pytest fixture");
+
+    let output = Command::new(assura_full_bin())
+        .args(["agent", "onboard"])
+        .arg(project.path())
+        .env("PATH", tools.path())
+        .env("PATHEXT", ".EXE")
+        .output()
+        .expect("assura agent onboard runs");
+    assert!(output.status.success());
+    assert_eq!(
+        successful_plan_json(&project, &["src/app.py"], "pre-push")["checks"],
+        serde_json::json!(["assura check", "pytest"])
+    );
+}
