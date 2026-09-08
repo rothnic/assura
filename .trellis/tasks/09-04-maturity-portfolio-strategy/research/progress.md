@@ -1,5 +1,92 @@
 # Maturity execution train progress
 
+## Iteration 65 — 2026-09-07 — Cross-platform wrapping repair
+
+- Continued safely without treating deployment approval as permission already
+  granted. Source afc35aadb5d8d42feebeff3c76dbadfc6cac25b4 removes only the
+  status titles' nowrap constraint. Original hosted traces and a matching Linux
+  RED prove144.4375px text exceeded approximately128px content width; Mac's
+  narrower system font had masked the defect. No font size, text, threshold,
+  test or benchmark row changed.
+- Focused18 tests passed on both systems; full macOS36832 and corrected Linux
+  43014 each passed128/128 with workers1/retries0. Docs and production builds
+  passed; production captures verified both themes and root inspected Linux
+  320px wrapping. Independent source and validation-recipe reviews passed.
+  See W02 evidence for exact hashes, cwd, commands, exits and limitations.
+- Preserve two validation failures honestly: Linux31556 passed127/128 because
+  a website-only export omitted tracked root roadmap data; one corrected export
+  then passed. Original Linux RED traces were overwritten by Playwright's
+  default output cleanup, while RED logs/CDP and original hosted traces remain.
+  Later outputs are run-specific and earlier31556 artifacts verified unchanged.
+- Context health before handoff: context level not exposed. Current source is
+  based on refreshed98bd187, not the old strategy checkout; R03 remains blocked;
+  PR187 remote34d572c remains failed; no new Cloudflare deployment was triggered;
+  W02 is still partial. The existing local-build skill gained a concise tested
+  export/artifact recipe, justified by these actual failures; AGENTS stays a
+  router with no added operational detail. Next periodic context review66.
+- Next local slice is release-aware setup. Independent design review PASS at
+  audit7397b2e keeps public availability separate from strict candidate-package
+  compatibility, requires source provenance in both modes, paired binaries and
+  a stale-companion negative control, and proves the exact displayed installer
+  or archive route in an explicit disposable destination. Local preparation
+  needs refreshed ownership/ancestry and reviewed source dependencies, not
+  PR187 integration approval. No next-slice implementation has started yet.
+
+## Iteration 64 — 2026-09-07 — W02 PR and deployment authority hold
+
+Terminal update: hosted website job101690258756 failed126/128; both320px
+light/dark containment cases reported6px cell overflow. No merge/retry follows.
+The earlier running observation below is historical. Local reproduction and
+repair remain required independently of the deployment-authority decision.
+
+- Final source/metadata independent Spec/quality PASS; normal commit71428
+  created34d572c, push12694 and PR187 creation54825 exited0. All reviewed file
+  hashes match; post-commit42610 structure/evidence passed. No merge yet.
+- Workers Builds app automatically produced a PR preview (check101690381606),
+  exposing deployment coupling absent from GitHub's deployments inventory.
+  A historical master website merge also triggered a Workers build. Read-only
+  Wrangler access failed auth; dashboard requires sign-in. No auth/settings
+  mutation, no manual deployment and no production promotion performed.
+- Root holds PR187 merge/further pushes pending explicit approval for its
+  possible automatic production deployment, or verified no-deploy separation.
+  The earlier running observation is retained as historical; the website job
+  subsequently failed. Evidence gate passed; exacthead34d572c remains preserved.
+- Next-slice W02 read-only audit continues locally; no additional product work
+  is started on this reviewed branch. The full goal remains active; no cards
+  marked done or gates relaxed. Next periodic context review66.
+
+## Iteration 63 — 2026-09-07 — Evidence handoff merged; W02 locally gated
+
+- PR186 merged as98bd187abd70005b40fa2df89ea3f45f332e4a04 after independent
+  nine-file Spec/quality PASS, local structure/evidence and exact31946c7 hosted
+  gates. Evidence job101687995188 passed; unrelated scope skips are not tests.
+  Fetch/ancestry confirmed the exact reviewed commit in origin/master.
+- W02 source9231c18 is committed after source review and normal pre-commit.
+  Final128marketing tests passed without retries, all production captures and
+  fresh-binary docs/demo/config/structure/evidence gates passed. The real tablet
+  RED and earlier failed captures remain preserved; no speed data was hidden.
+  W02 merged new documentation-only master into d9441ea with unchanged source.
+- Old W02 local metadata was archived under its owned ignored runtime before
+  reconciliation, not carried into the PR as stale global status. Queue stays
+  14done/2active/3blocked/4implemented/9pending; W02 is not done after this slice.
+- Context health: level not exposed. Review caught missing supporting plan,
+  ambiguous runtime ownership and absent destination hashes; all were corrected
+  before integration. Evidence snapshots must name the owner and reviewed source.
+  Existing goal/performance/local-build guidance plus the new state-routing
+  paragraph covers reuse; no additional skill or AGENTS expansion is warranted.
+- Next: final W02 metadata/branch review and exact-head hosted checks, then its
+  bounded integration if all required gates pass. R01/R03 stops, A04 full-card
+  gaps, A05 partial work and external release/pilot authority remain unchanged.
+  No release, deployment, invitation or public announcement was authorized.
+
+Post-integration local70983 terminated0:1779files/393dirs/0violations and
+evidence policy passed with the fresh W02 binary. Cleanup20924 terminated0:
+only merged goal-owned docs/maturity-evidence-handoff branch/worktree removed
+after clean/ancestry checks and prune dry-run. Its review artifacts were copied
+and byte-compared under W02 runtime maturity-evidence-handoff-merged-186;
+commits remain in master. No pre-existing prunable entry or unknown tree was
+removed. Inventory returns to50. Next periodic context review66.
+
 ## Iteration 62 — 2026-09-07 — Evidence reconciliation and bounded stops
 
 - Previous goal turn: progress. Independent R03 raw audit confirmed invalid
