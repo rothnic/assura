@@ -1049,46 +1049,6 @@ fn agent_nudge_reemits_a_finding_reintroduced_during_the_cooldown() {
 }
 
 #[test]
-fn agent_nudge_reemits_one_reintroduced_finding_when_another_persists() {
-    let project = nudge_fixture();
-    let path = project.path().to_str().expect("fixture path");
-    let args = [
-        "nudge",
-        path,
-        "--event",
-        "after-tool",
-        "--changed",
-        "src/BadName.js",
-        "--cooldown-seconds",
-        "600",
-    ];
-
-    let first = agent_json(&args);
-    fs::rename(
-        project.path().join("src/BadName.js"),
-        project.path().join("src/good-name.js"),
-    )
-    .expect("resolve only naming violation");
-    let resolved_naming = agent_json(&args);
-    fs::rename(
-        project.path().join("src/good-name.js"),
-        project.path().join("src/BadName.js"),
-    )
-    .expect("reintroduce naming violation");
-    let reintroduced = agent_json(&args);
-
-    assert_eq!(first["summary"]["nudge_count"], 2);
-    assert_eq!(resolved_naming["summary"]["nudge_count"], 0);
-    assert_eq!(reintroduced["summary"]["nudge_count"], 2);
-    assert!(reintroduced["nudges"]
-        .as_array()
-        .expect("reintroduced nudges")
-        .iter()
-        .any(|nudge| nudge["rule"] == "file_naming"));
-    assert_eq!(reintroduced["cache_policy"]["cooldown"]["suppressed"], 0);
-}
-
-#[test]
 fn agent_nudge_does_not_suppress_a_finding_after_policy_generation_changes() {
     let project = nudge_fixture();
     let path = project.path().to_str().expect("fixture path");

@@ -70,11 +70,11 @@ pub(super) fn apply(
         .collect::<BTreeSet<_>>();
     state.messages.retain(|fingerprint, message| {
         within_cooldown(now, message.timestamp, seconds)
-            && (!message
-                .path
-                .as_ref()
-                .is_some_and(|path| changed_paths.contains(path))
-                || observed.contains(fingerprint))
+            && match message.path.as_ref() {
+                Some(path) if changed_paths.contains(path) => observed.contains(fingerprint),
+                Some(_) => true,
+                None => observed.contains(fingerprint),
+            }
     });
     let before = nudges.len();
     nudges.retain(|nudge| {
@@ -237,6 +237,19 @@ mod tests {
         }
     }
 
+    fn pathless_nudge() -> NudgeItem {
+        NudgeItem {
+            category: "daemon",
+            path: None,
+            rule: Some("daemon_health".to_string()),
+            severity: "medium",
+            message: "daemon is unavailable".to_string(),
+            suggested_command: String::new(),
+            inject: true,
+            daemon_health: None,
+        }
+    }
+
     #[test]
     fn cooldown_discards_future_and_expired_timestamps() {
         assert!(within_cooldown(1_000, 950, 60));
@@ -297,5 +310,46 @@ mod tests {
         assert_eq!(reintroduced.len(), 1);
         assert_eq!(reintroduced[0].rule.as_deref(), Some("file_naming"));
         assert_eq!(summary.suppressed, 1);
+    }
+
+    #[test]
+    fn reintroduced_pathless_failure_is_not_suppressed_after_recovery() {
+        let project = tempfile::tempdir().expect("temporary project");
+        let mut failure = vec![pathless_nudge()];
+        apply(
+            project.path(),
+            "after_tool",
+            "codex",
+            "policy",
+            &[],
+            &mut failure,
+            600,
+        );
+        assert_eq!(failure.len(), 1);
+
+        let mut recovery = Vec::new();
+        apply(
+            project.path(),
+            "after_tool",
+            "codex",
+            "policy",
+            &[],
+            &mut recovery,
+            600,
+        );
+        assert!(recovery.is_empty());
+
+        let mut reintroduced = vec![pathless_nudge()];
+        let summary = apply(
+            project.path(),
+            "after_tool",
+            "codex",
+            "policy",
+            &[],
+            &mut reintroduced,
+            600,
+        );
+        assert_eq!(reintroduced.len(), 1);
+        assert_eq!(summary.suppressed, 0);
     }
 }
