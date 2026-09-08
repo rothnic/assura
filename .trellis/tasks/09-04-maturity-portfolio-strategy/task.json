@@ -45,7 +45,8 @@
       "goal/q06-release-readiness",
       "goal/a06-bounded-feedback",
       "goal/a06-observation-contract",
-      "goal/maturity-ledger-reconciliation"
+      "goal/maturity-ledger-reconciliation",
+      "goal/a01-native-test-aggregation"
     ]
   }
 }
