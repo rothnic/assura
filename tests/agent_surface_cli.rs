@@ -840,13 +840,22 @@ module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 nudges = [
     {
-        "severity": "medium",
-        "category": "structure",
-        "path": f"src/long-{index}.rs",
-        "rule": "file_naming",
+        "severity": "high",
+        "category": "performance",
+        "path": "xtask/src/main.rs",
+        "rule": "performance_no_slower",
         "message": "x" * 700,
-    }
-    for index in range(5)
+    },
+    *[
+        {
+            "severity": "medium",
+            "category": "structure",
+            "path": f"src/long-{index}.rs",
+            "rule": "file_naming",
+            "message": "x" * 700,
+        }
+        for index in range(5)
+    ],
 ]
 nudges.append(
     {

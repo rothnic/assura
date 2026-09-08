@@ -365,13 +365,14 @@ def prioritized_nudges(nudges: list[dict[str, Any]]) -> list[dict[str, Any]]:
     compact context remains useful for the most severe actionable result.
     """
     priority = next(
-        (
-            nudge
-            for nudge in nudges
-            if nudge.get("severity") in {"critical", "high"}
-        ),
+        (nudge for nudge in nudges if nudge.get("severity") == "critical"),
         None,
     )
+    if priority is None:
+        priority = next(
+            (nudge for nudge in nudges if nudge.get("severity") == "high"),
+            None,
+        )
     if priority is None:
         return nudges[:MAX_CONTEXT_NUDGES]
     return [priority, *(
