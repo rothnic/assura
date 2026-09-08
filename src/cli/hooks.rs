@@ -466,6 +466,13 @@ mod tests {
         let expected = manager.managed_wrapper_contents(&sidecar);
         assert_eq!(std::fs::read(&wrapper).unwrap(), expected[1]);
         assert!(plain_directory_or_absent(wrapper.parent().unwrap()));
+        assert_eq!(manager.git_hooks_dir, wrapper.parent().unwrap());
+        assert_eq!(manager.assura_hooks_dir, sidecar.parent().unwrap());
+        assert!(plain_directory_or_absent(&manager.git_hooks_dir));
+        assert_eq!(
+            manager.managed_wrapper_contents(&manager.assura_hooks_dir.join("pre-push")),
+            expected
+        );
         assert_eq!(
             classify_artifact(&wrapper, &expected, true).unwrap(),
             ArtifactOwnership::ManagedLegacy
