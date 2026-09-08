@@ -1,6 +1,6 @@
 //! Bounded repeated-message suppression for agent lifecycle events.
 
-use super::NudgeItem;
+use super::{helpers::path_string, NudgeItem};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::collections::BTreeMap;
@@ -36,6 +36,18 @@ struct CooldownState {
 struct CachedMessage {
     timestamp: u64,
     path: Option<String>,
+}
+
+pub(super) fn resolved_paths(changed_paths: &[PathBuf], nudges: &[NudgeItem]) -> Vec<String> {
+    changed_paths
+        .iter()
+        .map(|path| path_string(path))
+        .filter(|path| {
+            !nudges
+                .iter()
+                .any(|nudge| nudge.path.as_deref() == Some(path.as_str()))
+        })
+        .collect()
 }
 
 pub(super) fn apply(
