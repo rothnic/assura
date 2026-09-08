@@ -925,3 +925,33 @@ recoverable. This reconciliation adds records rather than rewriting outcomes.
   by positive, missing-current, retired-guidance, and contextual-exception
   controls; no new reusable skill is warranted. Next: commit this evidence,
   run the final exact-HEAD PR gate, then let the controller open the PR.
+
+## Iteration 44 — 2026-09-07 — W03 ownership impasse
+
+- Refreshed Assura `origin/master` to `98bd187` and confirmed B00/P01 are done.
+  W03 is the sole dependency-ready pending card, but its only identified
+  NickRoth candidate is clean, local, unpushed, Nick-authored work at `113febc`
+  with no Assura-ledger owner or closure record.
+- Independent read-only impasse review accepted two findings: do not infer
+  ownership or mutate that worktree, and do not treat its unrun local test code
+  as W03 acceptance evidence. The exact held action, resolution choices, and
+  non-ready alternatives are recorded in `evidence/W03.md`.
+- Context level: not exposed. This is a first ownership classification impasse,
+  not a rediscovered procedure gap; existing orchestration and worktree skills
+  provide the required control. Next: Nick records transfer or preservation of
+  `113febc`; then run W03's prescribed checks in one clean owned worktree.
+
+## Iteration 45 — 2026-09-08 — W03 ownership transfer and PR readiness
+
+- Nick explicitly transferred `goal/w03-case-study-evidence` at `113febc` to
+  the execution goal. Its branch already contained current NickRoth `main`; no
+  duplicate article or rebase was needed.
+- Independent review found no correctness issues. Astro check, Vitest (18),
+  focused Playwright (12 across Chromium/WebKit and mobile/desktop), and the
+  static production build passed. The first Playwright attempt failed before
+  test execution because browsers were absent; pinned browser installation and
+  the succeeding run are retained distinctly.
+- PR #61 is current-base, clean, and hosted-green (Lighthouse, Cloudflare Pages
+  preview, GitGuardian). W03 is `verified`, not `done`: no production
+  publication/deployment authority was exercised. Next: merge or publish only
+  when Nick explicitly authorizes production visibility.

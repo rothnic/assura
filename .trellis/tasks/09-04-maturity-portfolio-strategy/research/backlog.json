@@ -384,10 +384,10 @@
         "P01"
       ],
       "executor": "mixed",
-      "state": "pending",
-      "owner": null,
+      "state": "verified",
+      "owner": "Codex goal: Assura Maturity Execution Train; NickRoth PR #61",
       "evidence": "evidence/W03.md",
-      "blocker": null
+      "blocker": "Production publication remains pending explicit authority. PR #61 is reviewed, current-main-based, locally and hosted verified, and merge-ready."
     },
     {
       "id": "W04",
