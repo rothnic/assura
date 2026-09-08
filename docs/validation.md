@@ -191,6 +191,42 @@ Phases are cumulative for normal development: `frequent` is the local loop,
 adds final merge confidence. `release` adds release-specific checks.
 `scheduled` is separate for background audits.
 
+### Opt-in native CI recipe
+
+Keep `quality plan` as a classifier. It intentionally does not execute shell
+commands. In a project that adopts the generated Rust scope, install the
+released Assura binary in CI, then add explicit project-native commands from
+the reviewed plan:
+
+```sh
+# `assura` is the released binary selected by this project's CI setup.
+assura check .
+printf '%s\n' "$CHANGED_PATHS" | assura quality plan . --files-from - --phase pr --format json
+cargo fmt --all -- --check
+cargo test --locked
+cargo clippy --all-targets -- -D warnings
+```
+
+The plan is evidence for why the commands apply; it is not a generic shell
+executor. Run each native command from the repository root, retain normal CI
+output, and include a known failing fixture or negative control in the
+project's own test coverage.
+
+When a repository already has CI, do not replace its workflow. Review an
+explicit patch such as this and keep project-specific setup intact:
+
+```diff
+ jobs:
+   test:
+     steps:
++      - name: Classify and run the reviewed native quality plan
++        run: |
++          assura check .
++          cargo fmt --all -- --check
++          cargo test --locked
++          cargo clippy --all-targets -- -D warnings
+```
+
 GitHub Actions uses `scripts/ci-scope-github.sh` as the lightweight bootstrap
 classifier before running expensive jobs. That wrapper calls
 `scripts/ci-scope.sh` and records two scopes when possible:
