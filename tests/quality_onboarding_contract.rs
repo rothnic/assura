@@ -95,3 +95,37 @@ fn onboarding_a_cargo_project_plans_cumulative_native_gates_for_rust_sources() {
         assert_eq!(plan["checks"], expected_checks, "wrong {phase} plan");
     }
 }
+
+#[test]
+fn onboarding_a_bun_project_uses_only_declared_quality_scripts() {
+    let project = TempDir::new().expect("project directory");
+    fs::write(
+        project.path().join("package.json"),
+        r#"{"packageManager":"bun@1.1.0","scripts":{"lint":"biome check .","test":"bun test"}}"#,
+    )
+    .expect("package manifest");
+
+    let onboard = Command::new(assura_full_bin())
+        .args(["agent", "onboard"])
+        .arg(project.path())
+        .output()
+        .expect("assura agent onboard runs");
+    assert!(onboard.status.success());
+
+    let config: serde_yaml::Value = serde_yaml::from_str(
+        &fs::read_to_string(project.path().join(".assura/config.yml"))
+            .expect("materialized config"),
+    )
+    .expect("valid config YAML");
+    let bun = &config["quality"]["scopes"]["bun"];
+    assert_eq!(bun["paths"][0], "src/**");
+    assert_eq!(
+        bun["frequent"],
+        serde_yaml::Value::Sequence(vec!["bun run lint".into()])
+    );
+    assert_eq!(
+        bun["pre_push"],
+        serde_yaml::Value::Sequence(vec!["bun run test".into()])
+    );
+    assert!(bun["pr"].is_null(), "type-check gates must not be invented");
+}
