@@ -192,3 +192,43 @@ fn onboarding_admits_available_configured_pytest_to_the_pre_push_plan() {
         serde_json::json!(["assura check", "pytest"])
     );
 }
+
+#[cfg(unix)]
+#[test]
+fn onboarding_does_not_plan_a_nonexecutable_pytest_file() {
+    let project = TempDir::new().expect("project directory");
+    fs::write(
+        project.path().join("pyproject.toml"),
+        "[tool.pytest.ini_options]\ntestpaths = [\"tests\"]\n",
+    )
+    .expect("Python project configuration");
+    let tools = TempDir::new().expect("tool directory");
+    fs::write(tools.path().join("pytest"), "not executable\n").expect("pytest fixture");
+
+    let output = Command::new(assura_full_bin())
+        .args(["agent", "onboard"])
+        .arg(project.path())
+        .args(["--format", "json"])
+        .env("PATH", tools.path())
+        .output()
+        .expect("assura agent onboard runs");
+    assert!(output.status.success());
+    let report: serde_json::Value = serde_json::from_slice(&output.stdout).expect("report JSON");
+    assert!(
+        report["quality_advice"]
+            .as_array()
+            .expect("quality advice array")
+            .iter()
+            .any(|item| { item["tool"] == "pytest" && item["status"] == "unavailable" }),
+        "non-executable pytest files are setup advice, not runnable quality gates"
+    );
+    let config: serde_yaml::Value = serde_yaml::from_str(
+        &fs::read_to_string(project.path().join(".assura/config.yml"))
+            .expect("materialized config"),
+    )
+    .expect("valid config YAML");
+    assert!(
+        config["quality"]["scopes"]["python"].is_null(),
+        "onboarding must not create a Python quality scope for a non-executable tool"
+    );
+}
