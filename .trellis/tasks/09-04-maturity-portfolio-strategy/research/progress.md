@@ -973,3 +973,17 @@ recoverable. This reconciliation adds records rather than rewriting outcomes.
   detection, broader-phase/config coverage, released-binary CI recipe behavior,
   and full acceptance evidence remain. Next: select its smallest current-master
   contract without importing the preserved work.
+
+## Iteration 47 — 2026-09-08 — A05 honest unconfigured-plan diagnosis
+
+- PR #202 merged as `186426d` after independent review, a concrete finding,
+  the accepted test-only correction, and scoped rereview. Its new integration
+  contract requires a valid project without `quality.scopes` to exit 2 with the
+  configuration diagnosis and no successful plan; it cannot quietly imply
+  runnable native coverage.
+- The exact test, all 12 A05 integration tests, and `cargo xtask pr` passed.
+  The full hosted matrix passed, including Performance Report, five adoption
+  lanes, Windows Installer Smoke, release smoke, coverage, all stable OS
+  suites, documentation, and website verification. Security Scope passed; the
+  conditional Security Audit was scope-skipped and is not called passing test
+  evidence. The continuing A05 branch is clean and rebased to the merge.
