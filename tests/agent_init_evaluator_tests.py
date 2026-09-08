@@ -344,6 +344,36 @@ class AgentInitEvaluatorTests(unittest.TestCase):
             native_evidence = next(entry for entry in result["command_evidence"] if entry.get("native_id") == "pytest")
             self.assertEqual(native_evidence["state"], "fail")
 
+    def test_mixed_cargo_test_suites_do_not_fail_as_zero_collected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            temporary_root = Path(temporary_directory)
+            project = temporary_root / "project"
+            project.mkdir()
+            binary = temporary_root / "assura"
+            binary.write_text("#!/bin/sh\nexit 1\n")
+            binary.chmod(binary.stat().st_mode | stat.S_IXUSR)
+            contract_path = temporary_root / "contract.json"
+            contract_path.write_text(json.dumps({
+                "schema": "assura.agent-init-evaluator.v1", "fixture_id": "mixed-cargo-suites",
+                "stack": "rust", "prompt_hash": "2257e02d8f8d56f70937ca8ecc2993e3e4743888a68e7a5e21ca9e348f114941", "required_paths": [], "forbidden_paths": [],
+                "preserve_hashes": {}, "positive_probes": [], "negative_probes": [],
+                "native_commands": [{
+                    "id": "cargo-test", "command": ["sh", "-c", "printf 'running 0 tests\n\nrunning 1 test\n'"],
+                    "cwd": ".", "require_collected_tests": True,
+                }], "required_hook_states": [],
+            }))
+            output_path = temporary_root / "result.json"
+            subprocess.run(
+                [sys.executable, str(EVALUATOR), "--project", str(project),
+                 "--contract", str(contract_path), "--assura-bin", str(binary),
+                 "--output", str(output_path), "--dimensions", "native"],
+                check=False, capture_output=True, text=True,
+            )
+            result = json.loads(output_path.read_text())
+            native_evidence = next(entry for entry in result["command_evidence"] if entry.get("native_id") == "cargo-test")
+            self.assertEqual(native_evidence["state"], "pass")
+            self.assertNotIn("native:cargo-test", result["critical_failures"])
+
     def test_unknown_contract_schema_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             temporary_root = Path(temporary_directory)

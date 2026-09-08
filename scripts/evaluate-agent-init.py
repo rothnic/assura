@@ -343,13 +343,18 @@ def evaluate(arguments: argparse.Namespace) -> tuple[int, dict[str, object]]:
                 native_command["command"], disposable_project / native_command.get("cwd", ".")
             )
             command_evidence["native_id"] = native_command["id"]
+            native_output = command_evidence.get("stdout", "") + command_evidence.get("stderr", "")
+            has_passing_cargo_suite = re.search(
+                r"\brunning\s+[1-9]\d*\s+tests?\b", native_output
+            )
             if (
                 native_command.get("require_collected_tests")
                 and command_evidence["state"] == "pass"
                 and re.search(
                     r"\b(?:0\s+tests?\s+(?:collected|run)|collected\s+0\s+items|running\s+0\s+tests)\b",
-                    command_evidence.get("stdout", "") + command_evidence.get("stderr", ""),
+                    native_output,
                 )
+                and not has_passing_cargo_suite
             ):
                 command_evidence["state"] = "fail"
                 command_evidence["reason"] = "zero_collected_tests"
