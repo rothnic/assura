@@ -18,7 +18,6 @@ use serde::Serialize;
 use serde_yaml::Value;
 use std::fs;
 use std::path::{Path, PathBuf};
-
 const OUTPUT_SCHEMA: &str = "assura.agent-onboarding.v2";
 /// Options for `assura agent onboard`.
 pub struct AgentOnboardingOptions {
@@ -35,7 +34,6 @@ pub struct AgentOnboardingOptions {
     /// Output format.
     pub format: OutputFormat,
 }
-
 /// Run the first-run agent onboarding command.
 pub async fn agent_onboarding_command(
     options: AgentOnboardingOptions,
@@ -64,14 +62,12 @@ pub async fn agent_onboarding_command(
         }
     }
 }
-
 fn run_agent_onboarding(
     options: AgentOnboardingOptions,
     config: Option<PathBuf>,
 ) -> Result<RenderedOnboardingReport, String> {
     let project_root = resolve_project_root(options.path)?;
     fs::create_dir_all(&project_root).map_err(|error| error.to_string())?;
-
     let detected = detect_project(&project_root, options.agent, options.activate)?;
     let config_path = config.unwrap_or_else(|| project_root.join(".assura/config.yml"));
     let recipe_file = options.recipe_file;
@@ -179,7 +175,6 @@ fn merge_local_recipe(config_path: &Path, recipe_file: &Path) -> Result<(), Stri
         Err(outcome.render_conflicts())
     }
 }
-
 fn resolve_project_root(path: Option<PathBuf>) -> Result<PathBuf, String> {
     let path = match path {
         Some(path) => path,
