@@ -71,7 +71,7 @@
       ],
       "executor": "agent",
       "state": "active",
-      "owner": "Codex goal/r03-perf-variance-diagnostic; hosted same-SHA variance diagnostic active, rejected source remains reverted",
+      "owner": "Codex goal/r03-fast-rules-clone; reviewed no-op direct-content bundle candidate awaiting current-head hosted performance evidence",
       "evidence": "evidence/R03.md",
       "blocker": null
     },
