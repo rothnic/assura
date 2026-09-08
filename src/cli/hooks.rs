@@ -449,6 +449,26 @@ mod tests {
     }
 
     #[test]
+    fn legacy_wrapper_fixture_is_classified_after_current_installation() {
+        let project = tempfile::TempDir::new().unwrap();
+        std::fs::create_dir_all(project.path().join(".git/hooks")).unwrap();
+        std::fs::create_dir_all(project.path().join(".assura/hooks")).unwrap();
+        let manager = GitHooksManager::new(project.path()).unwrap();
+        manager.install(HookType::PrePush, false).unwrap();
+        let wrapper = project.path().join(".git/hooks/pre-push");
+        let sidecar = project.path().join(".assura/hooks/pre-push");
+        let fixture = format!(
+            "#!/bin/sh\n# Git hook managed by Assura\n# This file was auto-generated. Do not modify manually.\n\nASSURA_HOOK=\"{}\"\n\nif [ -f \"$ASSURA_HOOK\" ]; then\n    exec \"$ASSURA_HOOK\" \"$@\"\nelse\n    echo \"Warning: Assura hook not found at $ASSURA_HOOK\" >&2\n    exit 0\nfi\n",
+            sidecar.display()
+        );
+        std::fs::write(&wrapper, fixture).unwrap();
+
+        let ownership = manager.ownership(HookType::PrePush).unwrap();
+        assert_eq!(ownership.wrapper, ArtifactOwnership::ManagedLegacy);
+        assert_eq!(ownership.sidecar, ArtifactOwnership::ManagedCurrent);
+    }
+
+    #[test]
     fn git_hooks_dir_resolves_worktree_git_file_to_common_hooks() {
         let project = tempfile::TempDir::new().unwrap();
         let git_dir = project.path().join("main.git/worktrees/agent");
