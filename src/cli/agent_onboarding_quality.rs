@@ -25,12 +25,45 @@ pub(super) fn python_quality_advice(project_root: &Path) -> Vec<QualityAdvice> {
         .collect()
 }
 
+/// Gather setup advice for all configured native-quality runtimes.
+pub(super) fn onboarding_quality_advice(project_root: &Path) -> Vec<QualityAdvice> {
+    let mut advice = python_quality_advice(project_root);
+    advice.extend(bun_quality_advice(
+        project_root,
+        project_root.join("package.json").is_file(),
+    ));
+    advice
+}
+
 /// Return configured Python quality tools that can actually run locally.
 pub(super) fn available_python_quality_tools(project_root: &Path) -> Vec<&'static str> {
     configured_python_tools(project_root)
         .into_iter()
         .filter(|tool| executable_on_path(tool))
         .collect()
+}
+
+/// Report an explicit Bun project whose runtime is not locally executable.
+pub(super) fn bun_quality_advice(
+    project_root: &Path,
+    has_package_json: bool,
+) -> Vec<QualityAdvice> {
+    if !explicit_bun_project(project_root, has_package_json) {
+        return Vec::new();
+    }
+    vec![QualityAdvice {
+        tool: "bun",
+        status: if bun_available(project_root, has_package_json) {
+            "available"
+        } else {
+            "unavailable"
+        },
+    }]
+}
+
+/// Whether an explicit Bun project has a runnable local Bun executable.
+pub(super) fn bun_available(project_root: &Path, has_package_json: bool) -> bool {
+    explicit_bun_project(project_root, has_package_json) && executable_on_path("bun")
 }
 
 /// Render the generated quality policy for the detected local project.
@@ -68,7 +101,7 @@ pub(super) fn quality_config(detected: &DetectedSection) -> String {
         ));
         return config;
     }
-    if detected.bun_scripts.is_empty() {
+    if !detected.bun_available {
         return config;
     }
     let frequent = detected
@@ -77,12 +110,11 @@ pub(super) fn quality_config(detected: &DetectedSection) -> String {
         .any(|script| script == "lint")
         .then_some("      frequent:\n        - \"bun run lint\"\n")
         .unwrap_or("");
-    let pre_push = detected
-        .bun_scripts
-        .iter()
-        .any(|script| script == "test")
-        .then_some("      pre_push:\n        - \"bun run test\"\n")
-        .unwrap_or("");
+    let pre_push = if detected.bun_scripts.iter().any(|script| script == "test") {
+        "      pre_push:\n        - \"bun run test\"\n"
+    } else {
+        "      pre_push:\n        - \"bun test\"\n"
+    };
     config.push_str(&format!(
         "    bun:\n      paths:\n        - \"src/**\"\n        - \"tests/**\"\n        - \"package.json\"\n        - \"bun.lock\"\n      always:\n        - \"assura check\"\n{frequent}{pre_push}"
     ));
@@ -209,7 +241,7 @@ pub(super) fn declared_bun_quality_scripts(
     project_root: &Path,
     has_package_json: bool,
 ) -> Vec<String> {
-    if !has_package_json {
+    if !bun_available(project_root, has_package_json) {
         return Vec::new();
     }
     let Ok(contents) = fs::read_to_string(project_root.join("package.json")) else {
@@ -218,13 +250,6 @@ pub(super) fn declared_bun_quality_scripts(
     let Ok(manifest) = serde_json::from_str::<serde_json::Value>(&contents) else {
         return Vec::new();
     };
-    let is_bun = manifest
-        .get("packageManager")
-        .and_then(serde_json::Value::as_str)
-        .is_some_and(|manager| manager.starts_with("bun@"));
-    if !is_bun {
-        return Vec::new();
-    }
     ["lint", "test"]
         .into_iter()
         .filter(|name| {
@@ -235,4 +260,22 @@ pub(super) fn declared_bun_quality_scripts(
         })
         .map(str::to_string)
         .collect()
+}
+
+fn explicit_bun_project(project_root: &Path, has_package_json: bool) -> bool {
+    if !has_package_json {
+        return false;
+    }
+    let Ok(contents) = fs::read_to_string(project_root.join("package.json")) else {
+        return false;
+    };
+    serde_json::from_str::<serde_json::Value>(&contents)
+        .ok()
+        .and_then(|manifest| {
+            manifest
+                .get("packageManager")
+                .and_then(serde_json::Value::as_str)
+                .map(str::to_owned)
+        })
+        .is_some_and(|manager| manager.starts_with("bun@"))
 }

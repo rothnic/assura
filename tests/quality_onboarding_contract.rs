@@ -167,6 +167,78 @@ fn onboarding_a_bun_project_uses_only_declared_quality_scripts() {
 }
 
 #[test]
+fn onboarding_reports_unavailable_bun_as_advice_without_runnable_bun_gates() {
+    let project = TempDir::new().expect("project directory");
+    fs::write(
+        project.path().join("package.json"),
+        r#"{"packageManager":"bun@1.1.0","scripts":{"lint":"biome check .","test":"bun test"}}"#,
+    )
+    .expect("package manifest");
+
+    let output = Command::new(assura_full_bin())
+        .args(["agent", "onboard"])
+        .arg(project.path())
+        .args(["--format", "json"])
+        .env("PATH", project.path())
+        .output()
+        .expect("assura agent onboard runs");
+    assert!(output.status.success());
+    let report: serde_json::Value = serde_json::from_slice(&output.stdout).expect("report JSON");
+    assert!(
+        report["quality_advice"]
+            .as_array()
+            .expect("quality advice array")
+            .iter()
+            .any(|item| { item["tool"] == "bun" && item["status"] == "unavailable" }),
+        "an unavailable Bun runtime must remain setup advice"
+    );
+    let config: serde_yaml::Value = serde_yaml::from_str(
+        &fs::read_to_string(project.path().join(".assura/config.yml"))
+            .expect("materialized config"),
+    )
+    .expect("valid config YAML");
+    assert!(
+        config["quality"]["scopes"]["bun"].is_null(),
+        "onboarding must not emit runnable Bun commands without Bun"
+    );
+}
+
+#[cfg(unix)]
+#[test]
+fn onboarding_uses_available_bun_test_fallback_when_no_test_script_is_declared() {
+    use std::os::unix::fs::PermissionsExt;
+
+    let project = TempDir::new().expect("project directory");
+    fs::write(
+        project.path().join("package.json"),
+        r#"{"packageManager":"bun@1.1.0","scripts":{"lint":"biome check ."}}"#,
+    )
+    .expect("package manifest");
+    let tools = TempDir::new().expect("tool directory");
+    let bun = tools.path().join("bun");
+    fs::write(&bun, "#!/bin/sh\nexit 0\n").expect("Bun fixture");
+    let mut permissions = fs::metadata(&bun).expect("Bun metadata").permissions();
+    permissions.set_mode(0o755);
+    fs::set_permissions(&bun, permissions).expect("Bun executable");
+
+    let output = Command::new(assura_full_bin())
+        .args(["agent", "onboard"])
+        .arg(project.path())
+        .env("PATH", tools.path())
+        .output()
+        .expect("assura agent onboard runs");
+    assert!(output.status.success());
+    assert_eq!(
+        successful_plan_json(&project, &["src/index.ts"], "frequent")["checks"],
+        serde_json::json!(["assura check", "bun run lint"])
+    );
+    assert_eq!(
+        successful_plan_json(&project, &["src/index.ts"], "pre-push")["checks"],
+        serde_json::json!(["assura check", "bun run lint", "bun test"])
+    );
+}
+
+#[test]
 fn onboarding_reports_configured_but_unavailable_python_tool_as_advice() {
     let project = TempDir::new().expect("project directory");
     fs::write(

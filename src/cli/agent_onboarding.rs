@@ -2,7 +2,8 @@
 use super::agent_integration::{configure_agent_integration_bundle, target_from_harness};
 use super::agent_lifecycle::{lifecycle_profiles, ranked_next_actions};
 use super::agent_onboarding_quality::{
-    available_python_quality_tools, declared_bun_quality_scripts, python_quality_advice,
+    available_python_quality_tools, bun_available, declared_bun_quality_scripts,
+    onboarding_quality_advice,
 };
 use super::agent_onboarding_report::{
     write_report, CheckItem, ContentSection, FileAction, InstalledSection, IntegrationSection,
@@ -82,7 +83,7 @@ fn run_agent_onboarding(
         materialize_initial_local_recipe(&config_path, recipe_file)?;
     }
     let mut files = Vec::new();
-    let quality_advice = python_quality_advice(&project_root);
+    let quality_advice = onboarding_quality_advice(&project_root);
     for file in baseline_files(&detected, options.content_template) {
         files.push(materialize_baseline_file(&project_root, file)?);
     }
@@ -237,6 +238,7 @@ fn detect_project(
         "high"
     };
     let bun_scripts = declared_bun_quality_scripts(project_root, has_package_json);
+    let bun_available = bun_available(project_root, has_package_json);
     let python_quality_tools = available_python_quality_tools(project_root);
     let agent = detect_agent(project_root, requested_agent, activate)?;
 
@@ -250,6 +252,7 @@ fn detect_project(
         existing_source_files,
         manifest_conflicts,
         bun_scripts,
+        bun_available,
         python_quality_tools,
     })
 }
@@ -583,9 +586,10 @@ pub(super) struct DetectedSection {
     #[serde(skip)]
     pub(super) bun_scripts: Vec<String>,
     #[serde(skip)]
+    pub(super) bun_available: bool,
+    #[serde(skip)]
     pub(super) python_quality_tools: Vec<&'static str>,
 }
-
 #[derive(Serialize)]
 pub(super) struct OnboardingReview {
     pub(super) status: &'static str,
