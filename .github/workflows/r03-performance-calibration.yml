@@ -43,3 +43,27 @@ jobs:
         path: target/performance/r03-performance-calibration-${{ matrix.slot }}
         if-no-files-found: error
         retention-days: 14
+
+  classify:
+    name: Classify collected cohort
+    needs: collect
+    if: ${{ always() && !cancelled() }}
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+    - name: Download raw R03 calibration evidence
+      uses: actions/download-artifact@v4
+      with:
+        pattern: r03-performance-calibration-*
+        path: target/performance/r03-performance-calibration
+        merge-multiple: false
+    - name: Assemble diagnostic cohort classification
+      run: python3 .trellis/scripts/r03_performance_calibration.py --collect target/performance/r03-performance-calibration > target/performance/r03-performance-calibration/classification.json
+    - name: Upload R03 calibration classification
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: r03-performance-calibration-classification
+        path: target/performance/r03-performance-calibration/classification.json
+        if-no-files-found: error
+        retention-days: 14

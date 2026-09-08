@@ -109,6 +109,39 @@ class R03PerformanceCalibrationContractTests(unittest.TestCase):
         result = self.classify([payload])
         self.assertEqual(result["cohorts"][0]["classification"], "inconclusive")
 
+    def test_collect_groups_independent_artifacts_by_runner_fingerprint(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            artifact_root = Path(temporary_directory)
+            for index in range(3):
+                artifact_directory = artifact_root / f"r03-performance-calibration-{index + 1}"
+                artifact_directory.mkdir()
+                (artifact_directory / "run.json").write_text(json.dumps({
+                    "job_id": f"job-{index}",
+                    "cpu_model": "AMD EPYC 9V74",
+                    "runner_image_name": "ubuntu24",
+                    "runner_image_version": "20260901.1",
+                    "source_sha": "a" * 40,
+                    "assura_binary_sha256": "b" * 64,
+                    "report_sha256": f"{index:064x}",
+                    "report_exit": 0,
+                    "gate_exit": 1,
+                    "paired_deltas_ms": [1.0] * 16,
+                }), encoding="utf-8")
+
+            completed = subprocess.run(
+                [sys.executable, str(CLASSIFIER), "--collect", str(artifact_root)],
+                cwd=REPOSITORY_ROOT,
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        result = json.loads(completed.stdout)
+        self.assertEqual(result["required_observed_cpu_model"]["status"], "present")
+        self.assertEqual(result["cohorts"][0]["classification"], "stable-slow")
+        self.assertEqual(result["cohorts"][0]["independent_job_count"], 3)
+
 
 if __name__ == "__main__":
     unittest.main()

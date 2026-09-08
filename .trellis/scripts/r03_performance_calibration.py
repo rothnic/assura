@@ -9,6 +9,7 @@ gate, and missing, mixed, or insufficient evidence is deliberately
 from __future__ import annotations
 
 import argparse
+from collections import defaultdict
 import json
 import math
 import re
@@ -103,25 +104,73 @@ def classify_cohort(cohort: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def collected_fingerprint(run: Any, index: int) -> str:
+    if isinstance(run, dict):
+        cpu_model = run.get("cpu_model")
+        image_name = run.get("runner_image_name")
+        image_version = run.get("runner_image_version")
+        if all(isinstance(value, str) and value for value in (cpu_model, image_name, image_version)):
+            return f"{cpu_model}|{image_name}@{image_version}"
+    return f"unproven:artifact-{index}"
+
+
+def collect_cohorts(artifact_root: Path) -> dict[str, Any]:
+    grouped: dict[str, list[Any]] = defaultdict(list)
+    for index, run_path in enumerate(sorted(artifact_root.rglob("run.json")), start=1):
+        try:
+            run = json.loads(run_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            run = {"artifact_error": str(run_path)}
+        grouped[collected_fingerprint(run, index)].append(run)
+    if not grouped:
+        grouped["unproven:no-run-artifacts"] = []
+    return {
+        "cohorts": [
+            {"fingerprint": fingerprint, "runs": runs}
+            for fingerprint, runs in sorted(grouped.items())
+        ]
+    }
+
+
+def classify_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    cohorts = payload.get("cohorts")
+    if not isinstance(cohorts, list):
+        raise ValueError("COHORTS_JSON must contain a cohorts array")
+    classified = [classify_cohort(cohort) for cohort in cohorts]
+    required_cpu = PLAN["required_observed_cpu_model"]
+    required_present = any(item["provenance_complete"] and item["fingerprint"].split("|", 1)[0] == required_cpu for item in classified)
+    return {
+        "diagnostic_only": True,
+        "required_observed_cpu_model": {
+            "value": required_cpu,
+            "status": "present" if required_present else "unproven",
+        },
+        "cohorts": classified,
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--plan", action="store_true", help="print the pre-registered cohort contract")
     group.add_argument("--classify", type=Path, metavar="COHORTS_JSON", help="classify collected cohort JSON")
+    group.add_argument("--collect", type=Path, metavar="ARTIFACT_ROOT", help="assemble and classify downloaded run artifacts")
     arguments = parser.parse_args()
 
     if arguments.plan:
         print(json.dumps(PLAN, indent=2, sort_keys=True))
         return 0
 
-    payload = json.loads(arguments.classify.read_text(encoding="utf-8"))
-    cohorts = payload.get("cohorts")
-    if not isinstance(cohorts, list):
-        parser.error("COHORTS_JSON must contain a cohorts array")
-    classified = [classify_cohort(cohort) for cohort in cohorts]
-    required_cpu = PLAN["required_observed_cpu_model"]
-    required_present = any(item["provenance_complete"] and item["fingerprint"].split("|", 1)[0] == required_cpu for item in classified)
-    print(json.dumps({"diagnostic_only": True, "required_observed_cpu_model": {"value": required_cpu, "status": "present" if required_present else "unproven"}, "cohorts": classified}, indent=2, sort_keys=True))
+    try:
+        payload = (
+            collect_cohorts(arguments.collect)
+            if arguments.collect is not None
+            else json.loads(arguments.classify.read_text(encoding="utf-8"))
+        )
+        result = classify_payload(payload)
+    except (OSError, ValueError, json.JSONDecodeError) as error:
+        parser.error(str(error))
+    print(json.dumps(result, indent=2, sort_keys=True))
     return 0
 
 

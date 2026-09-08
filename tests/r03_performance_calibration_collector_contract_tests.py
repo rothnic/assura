@@ -26,6 +26,10 @@ class R03PerformanceCalibrationCollectorContractTests(unittest.TestCase):
         self.assertIn("slot: [1, 2, 3]", workflow)
         self.assertIn("ASSURA_R03_CALIBRATION_SLOT", workflow)
         self.assertIn("r03-performance-calibration-${{ matrix.slot }}", workflow)
+        self.assertIn("classify:", workflow)
+        self.assertIn("needs: collect", workflow)
+        self.assertIn("--collect target/performance/r03-performance-calibration", workflow)
+        self.assertIn("r03-performance-calibration-classification", workflow)
         self.assertIn("if: ${{ always() }}", workflow)
         self.assertNotIn("continue-on-error", workflow)
 
