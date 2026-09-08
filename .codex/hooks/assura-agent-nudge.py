@@ -337,7 +337,7 @@ def compact_context(payload: dict[str, Any], meta: dict[str, Any]) -> str:
             f"{meta.get('intent')} while the workspace has "
             f"{meta.get('dirty_path_count', 0)} dirty path(s)."
         )
-    for nudge in payload.get("nudges", [])[:MAX_CONTEXT_NUDGES]:
+    for nudge in prioritized_nudges(payload.get("nudges", [])):
         severity = nudge.get("severity", "unknown")
         category = nudge.get("category", "unknown")
         path = nudge.get("path") or "-"
@@ -356,6 +356,29 @@ def compact_context(payload: dict[str, Any], meta: dict[str, Any]) -> str:
     lines.append("State: .assura/agent-sessions/codex-hook-state.jsonl")
     lines.append("</assura-nudge>")
     return bounded_context(lines)
+
+
+def prioritized_nudges(nudges: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Keep the first critical finding visible when bounded output truncates.
+
+    High findings are the fallback when no critical finding exists, so the
+    compact context remains useful for the most severe actionable result.
+    """
+    priority = next(
+        (
+            nudge
+            for nudge in nudges
+            if nudge.get("severity") in {"critical", "high"}
+        ),
+        None,
+    )
+    if priority is None:
+        return nudges[:MAX_CONTEXT_NUDGES]
+    return [priority, *(
+        nudge
+        for nudge in nudges
+        if nudge is not priority
+    )][:MAX_CONTEXT_NUDGES]
 
 
 def bounded_context(lines: list[str]) -> str:

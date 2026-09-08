@@ -796,10 +796,13 @@ fn codex_post_tool_hook_injects_changed_path_nudge_and_logs_state() {
 #[test]
 fn codex_hook_bounds_utf8_context_for_many_long_findings() {
     let project = git_nudge_fixture();
-    for index in 0..5 {
+    for index in 0..4 {
         let filename = format!("src/A{}-{index}.rs", "é".repeat(80));
         fs::write(project.path().join(filename), "fn bad() {}\n").expect("write long bad file");
     }
+    fs::create_dir_all(project.path().join("xtask/src")).expect("create performance path");
+    fs::write(project.path().join("xtask/src/main.rs"), "fn main() {}\n")
+        .expect("write performance path");
     let session = "bounded-context-test";
     let input = serde_json::json!({
         "session_id": session,
@@ -818,8 +821,60 @@ fn codex_hook_bounds_utf8_context_for_many_long_findings() {
     let context = hook_output["hookSpecificOutput"]["additionalContext"]
         .as_str()
         .expect("additional context");
-    assert!(context.len() <= 2 * 1024);
+    assert!(context.as_bytes().len() <= 2 * 1024);
     assert!(context.is_char_boundary(context.len()));
+    assert!(context.contains("Output truncated at 2 KiB"));
+    assert!(context.contains("performance_no_slower"));
+    assert!(context.ends_with("</assura-nudge>"));
+}
+
+#[test]
+fn codex_hook_context_prioritizes_a_later_critical_finding() {
+    let program = r#"
+import importlib.util
+import json
+import sys
+
+spec = importlib.util.spec_from_file_location("assura_nudge", sys.argv[1])
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+nudges = [
+    {
+        "severity": "medium",
+        "category": "structure",
+        "path": f"src/long-{index}.rs",
+        "rule": "file_naming",
+        "message": "x" * 700,
+    }
+    for index in range(5)
+]
+nudges.append(
+    {
+        "severity": "critical",
+        "category": "structure",
+        "path": "src/critical.rs",
+        "rule": "critical_rule",
+        "message": "critical finding must remain visible",
+    }
+)
+context = module.compact_context({"event": "after_tool", "summary": {}, "nudges": nudges}, {})
+print(json.dumps({"context": context}))
+"#;
+    let output = Command::new("python3")
+        .args(["-c", program])
+        .arg(codex_hook_script())
+        .output()
+        .expect("run hook context formatter");
+    assert!(
+        output.status.success(),
+        "hook formatter stderr: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    let rendered: Value = serde_json::from_slice(&output.stdout).expect("formatter emits JSON");
+    let context = rendered["context"].as_str().expect("formatted context");
+    assert!(context.as_bytes().len() <= 2 * 1024);
+    assert!(context.contains("critical_rule"));
     assert!(context.contains("Output truncated at 2 KiB"));
     assert!(context.ends_with("</assura-nudge>"));
 }
