@@ -243,8 +243,8 @@
         "A06"
       ],
       "executor": "agent",
-      "state": "pending",
-      "owner": null,
+      "state": "active",
+      "owner": "Codex goal/a07-blinded-evaluation; freeze the candidate, blinded screening, and holdout protocol before scheduling any evaluator run",
       "evidence": "evidence/A07.md",
       "blocker": null
     },
