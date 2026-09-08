@@ -16,7 +16,7 @@ pub(super) fn baseline_files(
     let mut files = vec![
         GeneratedFile {
             path: ".assura/config.yml",
-            contents: agent_ready_config(content_template),
+            contents: agent_ready_config(detected, content_template),
             required: true,
             executable: false,
         },
@@ -95,12 +95,16 @@ impl GeneratedFile {
     }
 }
 
-fn agent_ready_config(content_template: AgentContentTemplate) -> String {
+fn agent_ready_config(
+    detected: &DetectedSection,
+    content_template: AgentContentTemplate,
+) -> String {
     let repository_references = content::repository_reference_config(content_template);
     let requirements_traceability = content::requirements_traceability_config(content_template);
     let content_config = content::content_config(content_template);
     let root_structure = content::root_structure(content_template);
     let docs_structure = content::docs_structure(content_template);
+    let quality_config = rust_quality_config(detected.project_type);
     format!(
         r#"rules:
   # Progressive-disclosure entrypoints.
@@ -178,6 +182,7 @@ extensions:
 {repository_references}
 {requirements_traceability}
 {content_config}
+{quality_config}
 
 structure:
   # Agent entrypoints and project-owned skills.
@@ -218,6 +223,34 @@ exclude:
   - "**/dist/**"
 "#
     )
+}
+
+fn rust_quality_config(project_type: &str) -> &'static str {
+    if project_type != "rust" {
+        return "";
+    }
+
+    r#"quality:
+  scopes:
+    rust:
+      paths:
+        - "src/**"
+        - "tests/**"
+        - "examples/**"
+        - "benches/**"
+        - "crates/**"
+        - "Cargo.toml"
+        - "Cargo.lock"
+        - "build.rs"
+      always:
+        - "assura check"
+      frequent:
+        - "cargo fmt --all -- --check"
+      pre_push:
+        - "cargo test --locked"
+      pr:
+        - "cargo clippy --all-targets -- -D warnings"
+"#
 }
 
 fn presets_lock() -> &'static str {
