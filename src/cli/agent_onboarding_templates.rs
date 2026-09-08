@@ -229,6 +229,21 @@ fn quality_config(detected: &DetectedSection) -> String {
     if detected.project_type == "rust" {
         return rust_quality_config().to_string();
     }
+    if detected.python_pytest_available {
+        return r#"quality:
+  scopes:
+    python:
+      paths:
+        - "src/**"
+        - "tests/**"
+        - "pyproject.toml"
+      always:
+        - "assura check"
+      pre_push:
+        - "pytest"
+"#
+        .to_string();
+    }
     if detected.bun_scripts.is_empty() {
         return String::new();
     }

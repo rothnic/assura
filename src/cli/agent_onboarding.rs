@@ -1,5 +1,5 @@
 //! First-run local onboarding for agent-ready repositories.
-use super::agent_integration::configure_agent_integration_bundle;
+use super::agent_integration::{configure_agent_integration_bundle, target_from_harness};
 use super::agent_lifecycle::{lifecycle_profiles, ranked_next_actions};
 use super::agent_onboarding_quality::{declared_bun_quality_scripts, python_quality_advice};
 use super::agent_onboarding_report::{
@@ -90,7 +90,7 @@ fn run_agent_onboarding(
         rule_recommendations_file(&detected, rule_recommendations[0].status),
     )?);
 
-    let integration_target = integration_target(&detected);
+    let integration_target = target_from_harness(detected.agent_harness);
     let integration = install_integration(
         &project_root,
         &detected,
@@ -235,6 +235,9 @@ fn detect_project(
         "high"
     };
     let bun_scripts = declared_bun_quality_scripts(project_root, has_package_json);
+    let python_pytest_available = python_quality_advice(project_root)
+        .iter()
+        .any(|advice| advice.tool == "pytest" && advice.status == "available");
     let agent = detect_agent(project_root, requested_agent, activate)?;
 
     Ok(DetectedSection {
@@ -247,6 +250,7 @@ fn detect_project(
         existing_source_files,
         manifest_conflicts,
         bun_scripts,
+        python_pytest_available,
     })
 }
 
@@ -505,16 +509,6 @@ fn install_integration(
     }
 }
 
-fn integration_target(detected: &DetectedSection) -> Option<AgentIntegrationTarget> {
-    match detected.agent_harness {
-        "codex" => Some(AgentIntegrationTarget::Codex),
-        "opencode" => Some(AgentIntegrationTarget::Opencode),
-        "claude" => Some(AgentIntegrationTarget::Claude),
-        "pi" => Some(AgentIntegrationTarget::Pi),
-        _ => None,
-    }
-}
-
 fn verify_project(
     project_root: &Path,
     config: Option<PathBuf>,
@@ -588,6 +582,8 @@ pub(super) struct DetectedSection {
     pub(super) manifest_conflicts: Vec<&'static str>,
     #[serde(skip)]
     pub(super) bun_scripts: Vec<String>,
+    #[serde(skip)]
+    pub(super) python_pytest_available: bool,
 }
 
 #[derive(Serialize)]
