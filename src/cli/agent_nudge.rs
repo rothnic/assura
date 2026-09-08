@@ -163,11 +163,22 @@ fn build_agent_nudge(
         }
     }
 
+    let resolved_paths = options
+        .changed_paths
+        .iter()
+        .map(|path| path_string(path))
+        .filter(|path| {
+            !nudges
+                .iter()
+                .any(|nudge| nudge.path.as_deref() == Some(path.as_str()))
+        })
+        .collect::<Vec<_>>();
     let cooldown = cooldown::apply(
         &project_path,
         event_name(options.event),
         agent_name(options.agent),
         &policy_generation,
+        &resolved_paths,
         &mut nudges,
         options.cooldown_seconds,
     );

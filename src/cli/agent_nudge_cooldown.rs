@@ -8,7 +8,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
-const STATE_SCHEMA: &str = "assura.agent-nudge-cooldown.v1";
+const STATE_SCHEMA: &str = "assura.agent-nudge-cooldown.v2";
 
 #[derive(Debug, Serialize)]
 pub(super) struct CooldownSummary {
@@ -29,7 +29,13 @@ pub(super) struct CachePolicy {
 #[derive(Default, Deserialize, Serialize)]
 struct CooldownState {
     schema: String,
-    messages: BTreeMap<String, u64>,
+    messages: BTreeMap<String, CachedMessage>,
+}
+
+#[derive(Deserialize, Serialize)]
+struct CachedMessage {
+    timestamp: u64,
+    path: Option<String>,
 }
 
 pub(super) fn apply(
@@ -37,10 +43,11 @@ pub(super) fn apply(
     event: &str,
     agent: &str,
     policy_generation: &str,
+    resolved_paths: &[String],
     nudges: &mut Vec<NudgeItem>,
     seconds: u64,
 ) -> CooldownSummary {
-    if seconds == 0 || nudges.is_empty() {
+    if seconds == 0 {
         return CooldownSummary {
             seconds,
             suppressed: 0,
@@ -52,21 +59,29 @@ pub(super) fn apply(
     let session = std::env::var("ASSURA_AGENT_SESSION_ID").unwrap_or_else(|_| "manual".to_string());
     let (path, mode, fallback_reason) = state_path(project_root);
     let mut state = read_state(&path);
-    state
-        .messages
-        .retain(|_, timestamp| within_cooldown(now, *timestamp, seconds));
+    state.messages.retain(|_, message| {
+        within_cooldown(now, message.timestamp, seconds)
+            && !message
+                .path
+                .as_ref()
+                .is_some_and(|path| resolved_paths.contains(path))
+    });
     let before = nudges.len();
     let agent_generation = format!("{agent}\0{policy_generation}");
     nudges.retain(|nudge| {
         let fingerprint = fingerprint(&session, event, &agent_generation, nudge);
-        if state
-            .messages
-            .get(&fingerprint)
-            .is_some_and(|timestamp| *timestamp <= now && now.saturating_sub(*timestamp) < seconds)
-        {
+        if state.messages.get(&fingerprint).is_some_and(|message| {
+            message.timestamp <= now && now.saturating_sub(message.timestamp) < seconds
+        }) {
             false
         } else {
-            state.messages.insert(fingerprint, now);
+            state.messages.insert(
+                fingerprint,
+                CachedMessage {
+                    timestamp: now,
+                    path: nudge.path.clone(),
+                },
+            );
             true
         }
     });

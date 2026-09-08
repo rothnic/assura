@@ -43,7 +43,8 @@
       "goal/q02-contribution-contract",
       "goal/q04-policy-naming",
       "goal/q06-release-readiness",
-      "goal/a06-bounded-feedback"
+      "goal/a06-bounded-feedback",
+      "goal/a06-observation-contract"
     ]
   }
 }
