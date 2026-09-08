@@ -199,9 +199,9 @@
       ],
       "executor": "agent",
       "state": "active",
-      "owner": "Codex goal/a05-current-audit; reviewed effective-hook-path and execution-branch ownership slice merged in PR #196; unknown-custom-hook proposal slice merged in PR #210; supported-manager adapter awaits a selected real manager/version/config ownership and event contract; host-runtime acceptance stays serialized",
+      "owner": "Codex goal/a04-pre-commit-contract; pre-commit 4.6.2 adapter contract selected for test-first implementation; host-runtime acceptance stays serialized",
       "evidence": "evidence/A04.md",
-      "blocker": "Selection hold: before a supported-manager adapter, the A04 coordinator must name a real manager, version, recognized project config, insertion/update/remove ownership, user-edit conflict behavior, and disposable real-manager pre-push fixture. A synthetic fixture or arbitrary custom hook is not a manager contract; host-runtime acceptance remains separately serialized."
+      "blocker": "Implement the selected pre-commit 4.6.2 adapter test-first: a shared Assura pre-push runner, byte-safe .pre-commit-config.yaml append/update/remove ownership, configured-versus-active status, and a disposable real pre-push event. Unsupported shape, runtime, marker, or user-edit cases are proposal-only; host-runtime acceptance remains separately serialized."
     },
     {
       "id": "A05",
