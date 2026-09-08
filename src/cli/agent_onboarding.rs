@@ -236,6 +236,7 @@ fn detect_project(
     } else {
         "high"
     };
+    let bun_scripts = declared_bun_quality_scripts(project_root, has_package_json);
     let agent = detect_agent(project_root, requested_agent, activate)?;
 
     Ok(DetectedSection {
@@ -247,7 +248,37 @@ fn detect_project(
         git_repository,
         existing_source_files,
         manifest_conflicts,
+        bun_scripts,
     })
+}
+
+fn declared_bun_quality_scripts(project_root: &Path, has_package_json: bool) -> Vec<String> {
+    if !has_package_json {
+        return Vec::new();
+    }
+    let Ok(contents) = fs::read_to_string(project_root.join("package.json")) else {
+        return Vec::new();
+    };
+    let Ok(manifest) = serde_json::from_str::<serde_json::Value>(&contents) else {
+        return Vec::new();
+    };
+    let is_bun = manifest
+        .get("packageManager")
+        .and_then(serde_json::Value::as_str)
+        .is_some_and(|manager| manager.starts_with("bun@"));
+    if !is_bun {
+        return Vec::new();
+    }
+    ["lint", "test"]
+        .into_iter()
+        .filter(|name| {
+            manifest["scripts"]
+                .get(*name)
+                .and_then(serde_json::Value::as_str)
+                .is_some()
+        })
+        .map(str::to_string)
+        .collect()
 }
 
 struct DetectedAgent {
@@ -588,6 +619,8 @@ pub(super) struct DetectedSection {
     pub(super) git_repository: bool,
     pub(super) existing_source_files: bool,
     pub(super) manifest_conflicts: Vec<&'static str>,
+    #[serde(skip)]
+    pub(super) bun_scripts: Vec<String>,
 }
 
 #[derive(Serialize)]

@@ -104,7 +104,7 @@ fn agent_ready_config(
     let content_config = content::content_config(content_template);
     let root_structure = content::root_structure(content_template);
     let docs_structure = content::docs_structure(content_template);
-    let quality_config = rust_quality_config(detected.project_type);
+    let quality_config = quality_config(detected);
     format!(
         r#"rules:
   # Progressive-disclosure entrypoints.
@@ -225,11 +225,31 @@ exclude:
     )
 }
 
-fn rust_quality_config(project_type: &str) -> &'static str {
-    if project_type != "rust" {
-        return "";
+fn quality_config(detected: &DetectedSection) -> String {
+    if detected.project_type == "rust" {
+        return rust_quality_config().to_string();
     }
+    if detected.bun_scripts.is_empty() {
+        return String::new();
+    }
+    let frequent = detected
+        .bun_scripts
+        .iter()
+        .any(|script| script == "lint")
+        .then_some("      frequent:\n        - \"bun run lint\"\n")
+        .unwrap_or("");
+    let pre_push = detected
+        .bun_scripts
+        .iter()
+        .any(|script| script == "test")
+        .then_some("      pre_push:\n        - \"bun run test\"\n")
+        .unwrap_or("");
+    format!(
+        "quality:\n  scopes:\n    bun:\n      paths:\n        - \"src/**\"\n        - \"tests/**\"\n        - \"package.json\"\n        - \"bun.lock\"\n      always:\n        - \"assura check\"\n{frequent}{pre_push}"
+    )
+}
 
+fn rust_quality_config() -> &'static str {
     r#"quality:
   scopes:
     rust:
