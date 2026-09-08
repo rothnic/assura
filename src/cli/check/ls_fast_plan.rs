@@ -1,5 +1,6 @@
 //! Compiled plan types for the LS-Lint-compatible check fast path.
 
+use super::ls_fast_direct_content::strip_direct_content_policy_is_noop;
 use super::ls_fast_naming::{
     collect_fast_naming_regex_patterns, compile_fast_naming, FastFileNaming, FastNaming,
 };
@@ -343,14 +344,13 @@ fn compile_scope_node(
         }
     };
 
-    scopes.push(
-        FastScope::new(
-            node_rel.clone(),
-            FastRules::new_with_cache(effective.clone(), naming_cache),
-            FastRules::new_with_cache(strip_direct_content_policy(effective.clone()), naming_cache),
-        )
-        .with_inherit(node.inherit),
-    );
+    let exact = FastRules::new_with_cache(effective.clone(), naming_cache);
+    let descendant = if strip_direct_content_policy_is_noop(&effective) {
+        exact.clone()
+    } else {
+        FastRules::new_with_cache(strip_direct_content_policy(effective.clone()), naming_cache)
+    };
+    scopes.push(FastScope::new(node_rel.clone(), exact, descendant).with_inherit(node.inherit));
 
     if let Some(children) = &node.children {
         for (child_name, child) in children {
