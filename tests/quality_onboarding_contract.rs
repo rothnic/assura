@@ -267,6 +267,31 @@ fn onboarding_reports_configured_but_unavailable_python_tool_as_advice() {
     );
 }
 
+#[test]
+fn onboarding_renders_unavailable_python_tools_in_text_and_advice_output() {
+    let project = TempDir::new().expect("project directory");
+    fs::write(
+        project.path().join("pyproject.toml"),
+        "[tool.pytest.ini_options]\ntestpaths = [\"tests\"]\n",
+    )
+    .expect("Python project configuration");
+    for format in ["text", "advice"] {
+        let output = Command::new(assura_full_bin())
+            .args(["agent", "onboard"])
+            .arg(project.path())
+            .args(["--format", format])
+            .env("PATH", project.path())
+            .output()
+            .expect("assura agent onboard runs");
+        assert!(output.status.success());
+        let rendered = String::from_utf8_lossy(&output.stdout);
+        assert!(
+            rendered.contains("Quality") && rendered.contains("pytest=unavailable"),
+            "{format} output must render unavailable native quality setup advice: {rendered}"
+        );
+    }
+}
+
 #[cfg(unix)]
 #[test]
 fn onboarding_admits_available_configured_pytest_to_the_pre_push_plan() {

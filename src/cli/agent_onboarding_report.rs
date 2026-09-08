@@ -83,6 +83,19 @@ impl RenderedOnboardingReport {
                 format!("{}={}", report.content.template, report.content.status),
             ),
             onboarding_row(
+                "Quality",
+                if report.quality_advice.is_empty() {
+                    "no configured native tools".to_string()
+                } else {
+                    report
+                        .quality_advice
+                        .iter()
+                        .map(|item| format!("{}={}", item.tool, item.status))
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                },
+            ),
+            onboarding_row(
                 "Lifecycle",
                 report
                     .lifecycle_profiles
