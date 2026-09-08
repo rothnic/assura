@@ -384,10 +384,10 @@
         "P01"
       ],
       "executor": "mixed",
-      "state": "pending",
-      "owner": null,
+      "state": "blocked",
+      "owner": "Nick (classify W03 candidate ownership)",
       "evidence": "evidence/W03.md",
-      "blocker": null
+      "blocker": "W03 is dependency-ready, but its only identified candidate is clean, unpushed Nick-authored work at /Users/nroth/workspace/nickroth-assura-case-study on goal/w03-case-study-evidence (113febc) with no ledger owner or closure record. Do not rebase, commit, fold, or duplicate it until Nick records transfer to this goal or preservation as user-owned work."
     },
     {
       "id": "W04",
