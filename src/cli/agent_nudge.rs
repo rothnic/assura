@@ -163,13 +163,12 @@ fn build_agent_nudge(
         }
     }
 
-    let resolved_paths = cooldown::resolved_paths(&options.changed_paths, &nudges);
     let cooldown = cooldown::apply(
         &project_path,
         event_name(options.event),
         agent_name(options.agent),
         &policy_generation,
-        &resolved_paths,
+        &options.changed_paths,
         &mut nudges,
         options.cooldown_seconds,
     );

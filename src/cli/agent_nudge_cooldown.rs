@@ -3,7 +3,7 @@
 use super::{helpers::path_string, NudgeItem};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -38,24 +38,12 @@ struct CachedMessage {
     path: Option<String>,
 }
 
-pub(super) fn resolved_paths(changed_paths: &[PathBuf], nudges: &[NudgeItem]) -> Vec<String> {
-    changed_paths
-        .iter()
-        .map(|path| path_string(path))
-        .filter(|path| {
-            !nudges
-                .iter()
-                .any(|nudge| nudge.path.as_deref() == Some(path.as_str()))
-        })
-        .collect()
-}
-
 pub(super) fn apply(
     project_root: &Path,
     event: &str,
     agent: &str,
     policy_generation: &str,
-    resolved_paths: &[String],
+    changed_paths: &[PathBuf],
     nudges: &mut Vec<NudgeItem>,
     seconds: u64,
 ) -> CooldownSummary {
@@ -71,15 +59,24 @@ pub(super) fn apply(
     let session = std::env::var("ASSURA_AGENT_SESSION_ID").unwrap_or_else(|_| "manual".to_string());
     let (path, mode, fallback_reason) = state_path(project_root);
     let mut state = read_state(&path);
-    state.messages.retain(|_, message| {
+    let agent_generation = format!("{agent}\0{policy_generation}");
+    let observed = nudges
+        .iter()
+        .map(|nudge| fingerprint(&session, event, &agent_generation, nudge))
+        .collect::<BTreeSet<_>>();
+    let changed_paths = changed_paths
+        .iter()
+        .map(|path| path_string(path))
+        .collect::<BTreeSet<_>>();
+    state.messages.retain(|fingerprint, message| {
         within_cooldown(now, message.timestamp, seconds)
-            && !message
+            && (!message
                 .path
                 .as_ref()
-                .is_some_and(|path| resolved_paths.contains(path))
+                .is_some_and(|path| changed_paths.contains(path))
+                || observed.contains(fingerprint))
     });
     let before = nudges.len();
-    let agent_generation = format!("{agent}\0{policy_generation}");
     nudges.retain(|nudge| {
         let fingerprint = fingerprint(&session, event, &agent_generation, nudge);
         if state.messages.get(&fingerprint).is_some_and(|message| {
@@ -222,8 +219,23 @@ fn unix_seconds() -> u64 {
 
 #[cfg(test)]
 mod tests {
-    use super::{policy_generation, within_cooldown};
+    use super::super::NudgeItem;
+    use super::{apply, policy_generation, within_cooldown};
     use std::fs;
+    use std::path::PathBuf;
+
+    fn nudge(rule: &str) -> NudgeItem {
+        NudgeItem {
+            category: "structure",
+            path: Some("src/BadName.js".to_string()),
+            rule: Some(rule.to_string()),
+            severity: "medium",
+            message: format!("{rule} violation"),
+            suggested_command: String::new(),
+            inject: true,
+            daemon_health: None,
+        }
+    }
 
     #[test]
     fn cooldown_discards_future_and_expired_timestamps() {
@@ -241,5 +253,49 @@ mod tests {
         fs::write(&config, b"structure: {}\n# \xfe\n").expect("write second config");
 
         assert_ne!(first, policy_generation(project.path(), Some(&config)));
+    }
+
+    #[test]
+    fn reintroduced_finding_is_not_suppressed_when_another_finding_persists() {
+        let project = tempfile::tempdir().expect("temporary project");
+        let changed = [PathBuf::from("src/BadName.js")];
+        let mut initial = vec![nudge("file_naming"), nudge("file_extension")];
+        apply(
+            project.path(),
+            "after_tool",
+            "codex",
+            "policy",
+            &changed,
+            &mut initial,
+            600,
+        );
+        assert_eq!(initial.len(), 2);
+
+        let mut resolved_naming = vec![nudge("file_extension")];
+        let summary = apply(
+            project.path(),
+            "after_tool",
+            "codex",
+            "policy",
+            &changed,
+            &mut resolved_naming,
+            600,
+        );
+        assert!(resolved_naming.is_empty());
+        assert_eq!(summary.suppressed, 1);
+
+        let mut reintroduced = vec![nudge("file_naming"), nudge("file_extension")];
+        let summary = apply(
+            project.path(),
+            "after_tool",
+            "codex",
+            "policy",
+            &changed,
+            &mut reintroduced,
+            600,
+        );
+        assert_eq!(reintroduced.len(), 1);
+        assert_eq!(reintroduced[0].rule.as_deref(), Some("file_naming"));
+        assert_eq!(summary.suppressed, 1);
     }
 }
