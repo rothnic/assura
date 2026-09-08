@@ -385,9 +385,9 @@
       ],
       "executor": "mixed",
       "state": "verified",
-      "owner": "Codex goal: Assura Maturity Execution Train; NickRoth PR #61",
+      "owner": "Codex goal: Assura Maturity Execution Train; rothnic/nickroth PR #61",
       "evidence": "evidence/W03.md",
-      "blocker": "Production publication remains pending explicit authority. PR #61 is reviewed, current-main-based, locally and hosted verified, and merge-ready."
+      "blocker": "Production publication remains pending explicit authority. rothnic/nickroth PR #61 is current-main-based, locally and hosted verified, and merge-ready."
     },
     {
       "id": "W04",
