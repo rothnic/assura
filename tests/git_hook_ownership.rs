@@ -36,11 +36,7 @@ fn write_exact_legacy_pre_push_pair(project: &Path) -> (std::path::PathBuf, std:
     let (wrapper, sidecar) = hook_paths(project, HookType::PrePush);
     let canonical_sidecar = include_str!("../.assura/hooks/pre-push").replace("\r\n", "\n");
     std::fs::write(&sidecar, canonical_sidecar).unwrap();
-    let legacy_wrapper = format!(
-        "#!/bin/sh\n# Git hook managed by Assura\n# This file was auto-generated. Do not modify manually.\n\nASSURA_HOOK=\"{}\"\n\nif [ -f \"$ASSURA_HOOK\" ]; then\n    exec \"$ASSURA_HOOK\" \"$@\"\nelse\n    echo \"Warning: Assura hook not found at $ASSURA_HOOK\" >&2\n    exit 0\nfi\n",
-        sidecar.display()
-    );
-    std::fs::write(&wrapper, legacy_wrapper).unwrap();
+    std::fs::write(&wrapper, legacy_wrapper_content(&sidecar)).unwrap();
 
     #[cfg(unix)]
     {
@@ -50,6 +46,13 @@ fn write_exact_legacy_pre_push_pair(project: &Path) -> (std::path::PathBuf, std:
     }
 
     (wrapper, sidecar)
+}
+
+fn legacy_wrapper_content(sidecar: &Path) -> String {
+    format!(
+        "#!/bin/sh\n# Git hook managed by Assura\n# This file was auto-generated. Do not modify manually.\n\nASSURA_HOOK=\"{}\"\n\nif [ -f \"$ASSURA_HOOK\" ]; then\n    exec \"$ASSURA_HOOK\" \"$@\"\nelse\n    echo \"Warning: Assura hook not found at $ASSURA_HOOK\" >&2\n    exit 0\nfi\n",
+        sidecar.display()
+    )
 }
 
 #[test]
@@ -269,6 +272,35 @@ fn exact_legacy_wrapper_remains_managed_for_removal() {
     manager.uninstall(HookType::PrePush).unwrap();
     assert!(!wrapper.exists());
     assert!(!sidecar.exists());
+}
+
+#[test]
+fn exact_legacy_wrapper_is_owned_with_a_known_current_sidecar() {
+    let _fixture_guard = ownership_fixture_guard();
+    let project = project_with_git_hooks();
+    let manager = GitHooksManager::new(project.path()).unwrap();
+    manager.install(HookType::PrePush, false).unwrap();
+    let (wrapper, sidecar) = hook_paths(project.path(), HookType::PrePush);
+    assert!(manager.status(HookType::PrePush).is_current);
+
+    std::fs::write(&wrapper, legacy_wrapper_content(&sidecar)).unwrap();
+    let status = manager.status(HookType::PrePush);
+
+    assert!(status.is_managed);
+    assert!(!status.is_current);
+}
+
+#[test]
+fn embedded_sidecar_is_owned_with_a_known_current_wrapper() {
+    let _fixture_guard = ownership_fixture_guard();
+    let project = project_with_git_hooks();
+    let manager = GitHooksManager::new(project.path()).unwrap();
+    manager.install(HookType::PrePush, false).unwrap();
+    let (_, sidecar) = hook_paths(project.path(), HookType::PrePush);
+    assert!(manager.status(HookType::PrePush).is_current);
+
+    std::fs::write(&sidecar, include_str!("../.assura/hooks/pre-push")).unwrap();
+    assert!(manager.status(HookType::PrePush).is_current);
 }
 
 #[test]
