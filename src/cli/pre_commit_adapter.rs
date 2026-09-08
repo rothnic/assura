@@ -136,7 +136,7 @@ fn is_pre_commit_pre_push_hook(path: &Path) -> bool {
 }
 
 fn require_pinned_pre_commit() -> Result<(), String> {
-    let version = Command::new("pre-commit")
+    let version = pre_commit_command()?
         .arg("--version")
         .output()
         .map_err(|error| format!("pre-commit unavailable: {error}"))?;
@@ -217,7 +217,7 @@ fn validate_candidate(project_root: &Path, candidate: &str) -> Result<(), String
         .map_err(|error| format!("write candidate config: {error}"))?;
     drop(file);
 
-    let output = Command::new("pre-commit")
+    let output = pre_commit_command()?
         .args(["validate-config", temporary.to_string_lossy().as_ref()])
         .current_dir(project_root)
         .output()
@@ -231,5 +231,29 @@ fn validate_candidate(project_root: &Path, candidate: &str) -> Result<(), String
             "pre-commit rejected candidate: {}",
             String::from_utf8_lossy(&output.stderr).trim()
         ))
+    }
+}
+
+/// Resolve the configured pre-commit launcher without introducing shell parsing.
+fn pre_commit_command() -> Result<Command, String> {
+    #[cfg(windows)]
+    {
+        let output = Command::new("where.exe")
+            .arg("pre-commit")
+            .output()
+            .map_err(|error| format!("pre-commit unavailable: {error}"))?;
+        if !output.status.success() {
+            return Err("pre-commit unavailable: program not found".to_string());
+        }
+        let launcher = String::from_utf8_lossy(&output.stdout)
+            .lines()
+            .map(str::trim)
+            .find(|path| !path.is_empty())
+            .ok_or_else(|| "pre-commit unavailable: program not found".to_string())?;
+        Ok(Command::new(launcher))
+    }
+    #[cfg(not(windows))]
+    {
+        Ok(Command::new("pre-commit"))
     }
 }
