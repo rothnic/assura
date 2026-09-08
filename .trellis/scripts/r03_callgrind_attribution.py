@@ -29,11 +29,23 @@ PLAN = {
         "verify isolated launcher and Callgrind engine hashes",
         "valgrind none true exits zero",
         "callgrind true emits a numeric summary",
-        "shell-loop-1000-no-io summary is strictly greater than true",
         "verify retained static-PIE binaries and valid fixture manifest",
-        "probe each retained static-PIE executable before collection",
     ],
-    "positive_control": "shell-loop-1000-no-io",
+    "positive_control": {
+        "name": "shell-loop-1000-no-io",
+        "content_identity": "retain the SHA-256 of the exact no-I/O POSIX loop source",
+        "requirement": "its numeric Callgrind summary is strictly greater than the true probe under identical options",
+    },
+    "static_pie_compatibility_probes": {
+        "executables": ["baseline", "candidate"],
+        "invocation": "the frozen valid-fixture argv, cwd, and scrubbed environment",
+        "required_results": [
+            "expected exit status",
+            "expected normalized diagnostic digest",
+            "numeric Callgrind summary",
+        ],
+        "sample_status": "health control only; excluded from the six collection samples",
+    },
     "collection_requirements": [
         "fixed absolute executable, argv, cwd, and scrubbed environment",
         "unique Callgrind output and log path per invocation",
