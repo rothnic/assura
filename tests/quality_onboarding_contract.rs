@@ -79,6 +79,34 @@ fn run_planned_rust_check(project: &TempDir, check: &str) -> std::process::Outpu
 }
 
 #[test]
+fn quality_plan_reports_unconfigured_scopes_without_guessing_native_gates() {
+    let project = TempDir::new().expect("project directory");
+    fs::create_dir_all(project.path().join(".assura")).expect("Assura directory");
+    fs::write(
+        project.path().join(".assura/config.yml"),
+        "structure:\n  ./:\n    extra: true\n",
+    )
+    .expect("valid Assura configuration");
+
+    let output = quality_plan(&project, &["src/lib.rs"], "pr");
+    assert_eq!(
+        output.status.code(),
+        Some(2),
+        "an unconfigured quality plan must be a configuration error"
+    );
+    assert!(
+        output.stdout.is_empty(),
+        "an unconfigured quality plan must not emit a successful plan: {}",
+        String::from_utf8_lossy(&output.stdout)
+    );
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("quality.scopes is not configured"),
+        "the diagnosis must name the missing configuration: {stderr}"
+    );
+}
+
+#[test]
 fn onboarding_a_cargo_project_plans_cumulative_native_gates_for_rust_sources() {
     let project = TempDir::new().expect("project directory");
     fs::create_dir_all(project.path().join("src")).expect("source directory");
