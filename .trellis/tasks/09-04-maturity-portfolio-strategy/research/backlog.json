@@ -199,7 +199,7 @@
       ],
       "executor": "agent",
       "state": "active",
-      "owner": "Codex goal/a04-hook-ownership-repair; existing PR #184; ownership merge/revalidation active; later hook-path and runtime slices serialized until ownership integration",
+      "owner": "Codex goal/a04-runtime-diagnostic; reviewed effective-hook-path and execution-branch ownership slice merged in PR #196; remaining A04 acceptance slices stay serialized",
       "evidence": "evidence/A04.md",
       "blocker": null
     },
