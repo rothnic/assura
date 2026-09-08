@@ -74,21 +74,21 @@ pub(super) fn quality_config(detected: &DetectedSection) -> String {
         return config;
     }
     if !detected.python_quality_tools.is_empty() {
-        let frequent = detected
-            .python_quality_tools
-            .contains(&"ruff")
-            .then_some("      frequent:\n        - \"ruff check .\"\n")
-            .unwrap_or("");
-        let pre_push = detected
-            .python_quality_tools
-            .contains(&"pytest")
-            .then_some("      pre_push:\n        - \"pytest\"\n")
-            .unwrap_or("");
-        let pr = detected
-            .python_quality_tools
-            .contains(&"mypy")
-            .then_some("      pr:\n        - \"mypy .\"\n")
-            .unwrap_or("");
+        let frequent = if detected.python_quality_tools.contains(&"ruff") {
+            "      frequent:\n        - \"ruff check .\"\n"
+        } else {
+            ""
+        };
+        let pre_push = if detected.python_quality_tools.contains(&"pytest") {
+            "      pre_push:\n        - \"pytest\"\n"
+        } else {
+            ""
+        };
+        let pr = if detected.python_quality_tools.contains(&"mypy") {
+            "      pr:\n        - \"mypy .\"\n"
+        } else {
+            ""
+        };
         config.push_str(&format!(
             r#"    python:
       paths:
@@ -104,12 +104,11 @@ pub(super) fn quality_config(detected: &DetectedSection) -> String {
     if !detected.bun_available {
         return config;
     }
-    let frequent = detected
-        .bun_scripts
-        .iter()
-        .any(|script| script == "lint")
-        .then_some("      frequent:\n        - \"bun run lint\"\n")
-        .unwrap_or("");
+    let frequent = if detected.bun_scripts.iter().any(|script| script == "lint") {
+        "      frequent:\n        - \"bun run lint\"\n"
+    } else {
+        ""
+    };
     let pre_push = if detected.bun_scripts.iter().any(|script| script == "test") {
         "      pre_push:\n        - \"bun run test\"\n"
     } else {
