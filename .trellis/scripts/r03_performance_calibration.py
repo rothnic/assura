@@ -52,14 +52,18 @@ def classify_cohort(cohort: dict[str, Any]) -> dict[str, Any]:
             continue
         job_id = run.get("job_id")
         cpu_model = run.get("cpu_model")
-        runner_image = run.get("runner_image")
+        runner_image_name = run.get("runner_image_name")
+        runner_image_version = run.get("runner_image_version")
         source_sha = run.get("source_sha")
         binary_sha = run.get("assura_binary_sha256")
         report_sha = run.get("report_sha256")
         report_exit = run.get("report_exit")
         gate_exit = run.get("gate_exit")
         samples = run.get("paired_deltas_ms")
-        if not all(isinstance(value, str) for value in (job_id, cpu_model, runner_image, source_sha, binary_sha, report_sha)) or not isinstance(report_exit, int) or not isinstance(gate_exit, int) or not isinstance(samples, list):
+        if not all(isinstance(value, str) for value in (job_id, cpu_model, runner_image_name, runner_image_version, source_sha, binary_sha, report_sha)) or not isinstance(report_exit, int) or not isinstance(gate_exit, int) or not isinstance(samples, list):
+            valid = False
+            continue
+        if not runner_image_name or not runner_image_version or "latest" in runner_image_name.lower() or "latest" in runner_image_version.lower():
             valid = False
             continue
         if not re.fullmatch(r"[0-9a-f]{40}", source_sha) or not re.fullmatch(r"[0-9a-f]{64}", binary_sha) or not re.fullmatch(r"[0-9a-f]{64}", report_sha):
@@ -69,7 +73,7 @@ def classify_cohort(cohort: dict[str, Any]) -> dict[str, Any]:
             valid = False
             continue
         job_ids.append(job_id)
-        run_fingerprints.append(f"{cpu_model}|{runner_image}")
+        run_fingerprints.append(f"{cpu_model}|{runner_image_name}@{runner_image_version}")
         source_shas.append(source_sha)
         binary_hashes.append(binary_sha)
         report_hashes.append(report_sha)

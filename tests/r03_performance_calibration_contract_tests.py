@@ -48,12 +48,13 @@ class R03PerformanceCalibrationContractTests(unittest.TestCase):
     def test_classifier_distinguishes_stable_slow_stable_no_slower_and_inconclusive(self) -> None:
         def cohort(cpu: str, image: str, gate_exit: int, delta: float, jobs: int = 3) -> dict[str, object]:
             return {
-                "fingerprint": f"{cpu}|{image}",
+                "fingerprint": f"{cpu}|{image}@v1",
                 "runs": [
                     {
                         "job_id": f"{cpu}-{image}-{index}",
                         "cpu_model": cpu,
-                        "runner_image": image,
+                        "runner_image_name": image,
+                        "runner_image_version": "v1",
                         "source_sha": "a" * 40,
                         "assura_binary_sha256": "b" * 64,
                         "report_sha256": f"{index:064x}",
@@ -71,16 +72,17 @@ class R03PerformanceCalibrationContractTests(unittest.TestCase):
             cohort("inconclusive", "image-a", 0, -1.0, jobs=2),
         ])
         classifications = {item["fingerprint"]: item["classification"] for item in result["cohorts"]}
-        self.assertEqual(classifications["stable-slow|image-a"], "stable-slow")
-        self.assertEqual(classifications["stable-no-slower|image-a"], "stable-no-slower")
-        self.assertEqual(classifications["inconclusive|image-a"], "inconclusive")
+        self.assertEqual(classifications["stable-slow|image-a@v1"], "stable-slow")
+        self.assertEqual(classifications["stable-no-slower|image-a@v1"], "stable-no-slower")
+        self.assertEqual(classifications["inconclusive|image-a@v1"], "inconclusive")
         self.assertEqual(result["required_observed_cpu_model"]["status"], "unproven")
 
     def test_mixed_or_nonfinite_provenance_is_inconclusive(self) -> None:
         run = {
             "job_id": "one",
             "cpu_model": "AMD EPYC 9V74",
-            "runner_image": "ubuntu-24.04-v1",
+            "runner_image_name": "ubuntu-24.04",
+            "runner_image_version": "v1",
             "source_sha": "a" * 40,
             "assura_binary_sha256": "b" * 64,
             "report_sha256": "c" * 64,
@@ -96,6 +98,16 @@ class R03PerformanceCalibrationContractTests(unittest.TestCase):
         result = self.classify([mixed, nonfinite])
         self.assertEqual([item["classification"] for item in result["cohorts"]], ["inconclusive", "inconclusive"])
         self.assertEqual(result["required_observed_cpu_model"]["status"], "unproven")
+
+    def test_mutable_runner_image_is_inconclusive(self) -> None:
+        run = {
+            "cpu_model": "AMD EPYC 9V74", "runner_image_name": "ubuntu-latest", "runner_image_version": "latest",
+            "source_sha": "a" * 40, "assura_binary_sha256": "b" * 64, "report_exit": 0, "gate_exit": 0,
+            "paired_deltas_ms": [-1.0] * 16,
+        }
+        payload = {"fingerprint": "AMD EPYC 9V74|ubuntu-latest@latest", "runs": [run | {"job_id": str(index), "report_sha256": f"{index:064x}"} for index in range(3)]}
+        result = self.classify([payload])
+        self.assertEqual(result["cohorts"][0]["classification"], "inconclusive")
 
 
 if __name__ == "__main__":
