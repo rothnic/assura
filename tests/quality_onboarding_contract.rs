@@ -152,9 +152,9 @@ fn onboarding_reports_configured_but_unavailable_python_tool_as_advice() {
         .as_array()
         .expect("quality advice array");
     assert!(
-        advice.iter().any(|item| {
-            item["tool"] == "pytest" && item["status"] == "unavailable"
-        }),
+        advice
+            .iter()
+            .any(|item| { item["tool"] == "pytest" && item["status"] == "unavailable" }),
         "configured pytest must remain visible as unavailable setup advice"
     );
 }
