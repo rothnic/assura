@@ -206,7 +206,11 @@ EOF
 #!/usr/bin/env bash
 cat <<'CHECKS'
 Check	success
-MSRV (Rust 1.86.0)	success
+CHECKS
+if [ "${OMIT_MSRV_CHECK:-}" != true ]; then
+  printf '%s\n' 'MSRV (Rust 1.86.0)	success'
+fi
+cat <<'CHECKS'
 Rustfmt	success
 Clippy	success
 Code Coverage	success
@@ -273,6 +277,24 @@ policy_review_paths=tests/policy.rs'
     exit 1
   fi
   printf 'GitHub missing adoption-check fallback ok\n'
+
+  local missing_msrv_output missing_msrv_mode
+  missing_msrv_output="$(
+    cd "$fixture_repo"
+    PATH="$fake_bin:$PATH" \
+      GITHUB_EVENT_NAME=pull_request \
+      GITHUB_EVENT_PATH="$event_file" \
+      GITHUB_REPOSITORY=rothnic/assura \
+      GH_TOKEN=fixture-token \
+      OMIT_MSRV_CHECK=true \
+      scripts/ci-scope-github.sh
+  )"
+  missing_msrv_mode="$(printf '%s\n' "$missing_msrv_output" | grep -E '^scope_mode=' | tail -n 1)"
+  if [ "$missing_msrv_mode" != 'scope_mode=full' ]; then
+    printf 'GitHub missing MSRV-check fallback mismatch: expected scope_mode=full, got %s\n' "$missing_msrv_mode" >&2
+    exit 1
+  fi
+  printf 'GitHub missing MSRV-check fallback ok\n'
   rm -rf "$fixture_dir"
 }
 
