@@ -227,8 +227,8 @@
         "A04"
       ],
       "executor": "agent",
-      "state": "pending",
-      "owner": null,
+      "state": "active",
+      "owner": "Codex goal/a06-bounded-feedback; bounded hook/cooldown core implemented, independently rereviewed, and locally fully gated; remaining packet observations are explicitly retained in evidence/A06.md",
       "evidence": "evidence/A06.md",
       "blocker": null
     },
