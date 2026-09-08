@@ -561,7 +561,6 @@ fn verify_project(
     };
     Ok((verified, review))
 }
-
 fn content_section(template: AgentContentTemplate) -> ContentSection {
     if template.activates_content() {
         ContentSection {
@@ -577,7 +576,6 @@ fn content_section(template: AgentContentTemplate) -> ContentSection {
         }
     }
 }
-
 #[derive(Clone, Serialize)]
 pub(super) struct DetectedSection {
     pub(super) project_type: &'static str,
