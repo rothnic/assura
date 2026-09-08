@@ -34,7 +34,8 @@ fn hook_paths(project: &Path, hook_type: HookType) -> (std::path::PathBuf, std::
 
 fn write_exact_legacy_pre_push_pair(project: &Path) -> (std::path::PathBuf, std::path::PathBuf) {
     let (wrapper, sidecar) = hook_paths(project, HookType::PrePush);
-    std::fs::write(&sidecar, include_str!("../.assura/hooks/pre-push")).unwrap();
+    let canonical_sidecar = include_str!("../.assura/hooks/pre-push").replace("\r\n", "\n");
+    std::fs::write(&sidecar, canonical_sidecar).unwrap();
     let legacy_wrapper = format!(
         "#!/bin/sh\n# Git hook managed by Assura\n# This file was auto-generated. Do not modify manually.\n\nASSURA_HOOK=\"{}\"\n\nif [ -f \"$ASSURA_HOOK\" ]; then\n    exec \"$ASSURA_HOOK\" \"$@\"\nelse\n    echo \"Warning: Assura hook not found at $ASSURA_HOOK\" >&2\n    exit 0\nfi\n",
         sidecar.display()
