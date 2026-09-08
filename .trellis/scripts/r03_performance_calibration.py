@@ -10,6 +10,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
+import re
 from pathlib import Path
 from statistics import median
 from typing import Any
@@ -18,7 +20,7 @@ from typing import Any
 PLAN = {
     "diagnostic_only": True,
     "production_gate": "unchanged exact no-slower gate; every production report remains independently required",
-    "required_observed_fingerprint": "EPYC 9V74 plus its immutable runner-image fingerprint",
+    "required_observed_cpu_model": "AMD EPYC 9V74",
     "independent_jobs_per_fingerprint": 3,
     "paired_samples_per_job": 16,
     "classifications": {
@@ -37,6 +39,10 @@ def classify_cohort(cohort: dict[str, Any]) -> dict[str, Any]:
         raise ValueError("each cohort requires string fingerprint and runs list")
 
     job_ids: list[str] = []
+    run_fingerprints: list[str] = []
+    source_shas: list[str] = []
+    binary_hashes: list[str] = []
+    report_hashes: list[str] = []
     exits: list[int] = []
     deltas: list[float] = []
     valid = True
@@ -45,21 +51,36 @@ def classify_cohort(cohort: dict[str, Any]) -> dict[str, Any]:
             valid = False
             continue
         job_id = run.get("job_id")
+        cpu_model = run.get("cpu_model")
+        runner_image = run.get("runner_image")
+        source_sha = run.get("source_sha")
+        binary_sha = run.get("assura_binary_sha256")
+        report_sha = run.get("report_sha256")
+        report_exit = run.get("report_exit")
         gate_exit = run.get("gate_exit")
         samples = run.get("paired_deltas_ms")
-        if not isinstance(job_id, str) or not isinstance(gate_exit, int) or not isinstance(samples, list):
+        if not all(isinstance(value, str) for value in (job_id, cpu_model, runner_image, source_sha, binary_sha, report_sha)) or not isinstance(report_exit, int) or not isinstance(gate_exit, int) or not isinstance(samples, list):
             valid = False
             continue
-        if len(samples) != PLAN["paired_samples_per_job"] or not all(isinstance(sample, (int, float)) for sample in samples):
+        if not re.fullmatch(r"[0-9a-f]{40}", source_sha) or not re.fullmatch(r"[0-9a-f]{64}", binary_sha) or not re.fullmatch(r"[0-9a-f]{64}", report_sha):
+            valid = False
+            continue
+        if report_exit != 0 or len(samples) != PLAN["paired_samples_per_job"] or not all(isinstance(sample, (int, float)) and math.isfinite(sample) for sample in samples):
             valid = False
             continue
         job_ids.append(job_id)
+        run_fingerprints.append(f"{cpu_model}|{runner_image}")
+        source_shas.append(source_sha)
+        binary_hashes.append(binary_sha)
+        report_hashes.append(report_sha)
         exits.append(gate_exit)
         deltas.extend(float(sample) for sample in samples)
 
     independent = len(job_ids) == PLAN["independent_jobs_per_fingerprint"] and len(set(job_ids)) == len(job_ids)
+    identity_matches = len(set(run_fingerprints)) == 1 and run_fingerprints == [fingerprint] * len(run_fingerprints) and len(set(source_shas)) == 1 and len(set(binary_hashes)) == 1 and len(set(report_hashes)) == len(report_hashes)
+    provenance_complete = valid and independent and identity_matches
     pooled_median = median(deltas) if deltas else None
-    if not valid or not independent or pooled_median is None:
+    if not provenance_complete or pooled_median is None:
         classification = "inconclusive"
     elif all(exit_code == 0 for exit_code in exits) and pooled_median <= 0:
         classification = "stable-no-slower"
@@ -74,6 +95,7 @@ def classify_cohort(cohort: dict[str, Any]) -> dict[str, Any]:
         "independent_job_count": len(set(job_ids)),
         "pooled_paired_median_ms": pooled_median,
         "strict_gate_exits": exits,
+        "provenance_complete": provenance_complete,
     }
 
 
@@ -92,7 +114,10 @@ def main() -> int:
     cohorts = payload.get("cohorts")
     if not isinstance(cohorts, list):
         parser.error("COHORTS_JSON must contain a cohorts array")
-    print(json.dumps({"diagnostic_only": True, "cohorts": [classify_cohort(cohort) for cohort in cohorts]}, indent=2, sort_keys=True))
+    classified = [classify_cohort(cohort) for cohort in cohorts]
+    required_cpu = PLAN["required_observed_cpu_model"]
+    required_present = any(item["provenance_complete"] and item["fingerprint"].split("|", 1)[0] == required_cpu for item in classified)
+    print(json.dumps({"diagnostic_only": True, "required_observed_cpu_model": {"value": required_cpu, "status": "present" if required_present else "unproven"}, "cohorts": classified}, indent=2, sort_keys=True))
     return 0
 
 
