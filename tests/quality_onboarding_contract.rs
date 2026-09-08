@@ -183,6 +183,46 @@ quality:
 }
 
 #[test]
+fn onboarding_preserves_existing_ci_workflow_while_materializing_rust_quality_policy() {
+    let project = TempDir::new().expect("project directory");
+    fs::create_dir_all(project.path().join(".github/workflows")).expect("workflow directory");
+    let workflow = "name: Project CI\non:\n  push:\n    branches: [main]\n";
+    let workflow_path = project.path().join(".github/workflows/ci.yml");
+    fs::write(&workflow_path, workflow).expect("project-owned workflow");
+    fs::create_dir_all(project.path().join("src")).expect("source directory");
+    fs::write(
+        project.path().join("Cargo.toml"),
+        "[package]\nname = \"workflow-preservation-fixture\"\nversion = \"0.1.0\"\nedition = \"2021\"\n",
+    )
+    .expect("Cargo manifest");
+    fs::write(project.path().join("src/lib.rs"), "pub fn fixture() {}\n").expect("Rust source");
+
+    let output = onboard(&project);
+    assert!(
+        output.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    assert_eq!(
+        fs::read_to_string(&workflow_path).expect("project-owned workflow remains readable"),
+        workflow,
+        "onboarding must not overwrite an existing CI workflow"
+    );
+    assert_eq!(
+        successful_plan_json(&project, &["src/lib.rs"], "pr")["checks"],
+        serde_json::json!([
+            "assura check",
+            "cargo fmt --all -- --check",
+            "cargo test --locked",
+            "cargo clippy --all-targets -- -D warnings"
+        ]),
+        "onboarding must materialize the opt-in Rust quality policy"
+    );
+}
+
+#[test]
 fn onboarding_a_cargo_project_plans_cumulative_native_gates_for_rust_sources() {
     let project = TempDir::new().expect("project directory");
     fs::create_dir_all(project.path().join("src")).expect("source directory");
