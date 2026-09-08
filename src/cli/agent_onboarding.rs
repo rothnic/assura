@@ -1,7 +1,7 @@
 //! First-run local onboarding for agent-ready repositories.
 use super::agent_integration::configure_agent_integration_bundle;
 use super::agent_lifecycle::{lifecycle_profiles, ranked_next_actions};
-use super::agent_onboarding_quality::declared_bun_quality_scripts;
+use super::agent_onboarding_quality::{declared_bun_quality_scripts, python_quality_advice};
 use super::agent_onboarding_report::{
     write_report, CheckItem, ContentSection, FileAction, InstalledSection, IntegrationSection,
     OnboardingReport, RenderedOnboardingReport,
@@ -80,6 +80,7 @@ fn run_agent_onboarding(
         materialize_initial_local_recipe(&config_path, recipe_file)?;
     }
     let mut files = Vec::new();
+    let quality_advice = python_quality_advice(&project_root);
     for file in baseline_files(&detected, options.content_template) {
         files.push(materialize_baseline_file(&project_root, file)?);
     }
@@ -137,6 +138,7 @@ fn run_agent_onboarding(
             },
             detected,
             rule_recommendations,
+            quality_advice,
             integration,
             content,
             lifecycle_profiles,

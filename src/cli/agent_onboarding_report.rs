@@ -2,6 +2,7 @@
 
 use super::agent_lifecycle::{LifecycleProfile, RankedNextAction};
 use super::agent_onboarding::{DetectedSection, OnboardingReview};
+use super::agent_onboarding_quality::QualityAdvice;
 use super::OutputFormat;
 use serde::Serialize;
 use std::io::{self, Write};
@@ -177,6 +178,7 @@ pub(super) struct OnboardingReport {
     pub(super) installed: InstalledSection,
     pub(super) detected: DetectedSection,
     pub(super) rule_recommendations: Vec<RuleRecommendation>,
+    pub(super) quality_advice: Vec<QualityAdvice>,
     pub(super) integration: IntegrationSection,
     pub(super) content: ContentSection,
     pub(super) lifecycle_profiles: Vec<LifecycleProfile>,
