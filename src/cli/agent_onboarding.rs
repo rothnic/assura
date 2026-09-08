@@ -1,6 +1,7 @@
 //! First-run local onboarding for agent-ready repositories.
 use super::agent_integration::configure_agent_integration_bundle;
 use super::agent_lifecycle::{lifecycle_profiles, ranked_next_actions};
+use super::agent_onboarding_quality::declared_bun_quality_scripts;
 use super::agent_onboarding_report::{
     write_report, CheckItem, ContentSection, FileAction, InstalledSection, IntegrationSection,
     OnboardingReport, RenderedOnboardingReport,
@@ -250,35 +251,6 @@ fn detect_project(
         manifest_conflicts,
         bun_scripts,
     })
-}
-
-fn declared_bun_quality_scripts(project_root: &Path, has_package_json: bool) -> Vec<String> {
-    if !has_package_json {
-        return Vec::new();
-    }
-    let Ok(contents) = fs::read_to_string(project_root.join("package.json")) else {
-        return Vec::new();
-    };
-    let Ok(manifest) = serde_json::from_str::<serde_json::Value>(&contents) else {
-        return Vec::new();
-    };
-    let is_bun = manifest
-        .get("packageManager")
-        .and_then(serde_json::Value::as_str)
-        .is_some_and(|manager| manager.starts_with("bun@"));
-    if !is_bun {
-        return Vec::new();
-    }
-    ["lint", "test"]
-        .into_iter()
-        .filter(|name| {
-            manifest["scripts"]
-                .get(*name)
-                .and_then(serde_json::Value::as_str)
-                .is_some()
-        })
-        .map(str::to_string)
-        .collect()
 }
 
 struct DetectedAgent {
