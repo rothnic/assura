@@ -3,8 +3,8 @@ name: R03 Performance Variance Diagnostic
 on:
   workflow_dispatch:
     inputs:
-      ref:
-        description: Immutable commit or branch ref to measure.
+      commit:
+        description: full 40-character commit SHA to measure.
         required: true
         type: string
 
@@ -19,7 +19,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
-        ref: ${{ inputs.ref }}
+        ref: ${{ inputs.commit }}
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
     - name: Setup Node
@@ -27,6 +27,8 @@ jobs:
       with:
         node-version: 24
     - name: Collect repeated exact cold reports
+      env:
+        ASSURA_PERF_VARIANCE_COMMIT: ${{ inputs.commit }}
       run: scripts/r03-performance-variance.sh
     - name: Upload raw R03 variance evidence
       if: ${{ always() }}

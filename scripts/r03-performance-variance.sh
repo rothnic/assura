@@ -9,9 +9,20 @@ set -euo pipefail
 
 run_count="${ASSURA_PERF_VARIANCE_RUNS:-3}"
 output_dir="${ASSURA_PERF_VARIANCE_OUTPUT_DIR:-target/performance/r03-performance-variance}"
+requested_commit="${ASSURA_PERF_VARIANCE_COMMIT:-}"
 
-if ! [[ "$run_count" =~ ^[0-9]+$ ]] || (( run_count < 2 )); then
-  echo "ASSURA_PERF_VARIANCE_RUNS must be an integer of at least 2" >&2
+if ! [[ "$run_count" =~ ^[0-9]+$ ]] || (( run_count < 3 )); then
+  echo "ASSURA_PERF_VARIANCE_RUNS must be an integer of at least 3" >&2
+  exit 2
+fi
+
+if ! [[ "$requested_commit" =~ ^[0-9a-f]{40}$ ]]; then
+  echo "ASSURA_PERF_VARIANCE_COMMIT must be a full 40-character commit SHA" >&2
+  exit 2
+fi
+
+if [[ "$(git rev-parse HEAD)" != "$requested_commit" ]]; then
+  echo "checked-out commit does not match ASSURA_PERF_VARIANCE_COMMIT" >&2
   exit 2
 fi
 
@@ -25,6 +36,7 @@ git rev-parse HEAD > "$output_dir/source-commit.txt"
 git status --short > "$output_dir/source-status.txt"
 
 cargo build --release --bin assura --no-default-features --features json-output,yaml-config
+cargo rustc --release --bin assura --no-default-features --features json-output,yaml-config -- -C target-feature=+crt-static -C link-arg=-lgcc_eh
 cargo build --release --bin assura-full
 cargo build --release -p assura-check-cli
 
