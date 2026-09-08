@@ -249,6 +249,7 @@ fn pre_commit_command() -> Result<Command, String> {
             .lines()
             .map(str::trim)
             .find(|path| !path.is_empty())
+            .map(str::to_owned)
             .ok_or_else(|| "pre-commit unavailable: program not found".to_string())?;
         Ok(Command::new(launcher))
     }
