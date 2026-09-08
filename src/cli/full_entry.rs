@@ -184,6 +184,7 @@ async fn run_full_cli(cli: Cli) -> ExitCode {
             HookCommands::Uninstall { path } => handle_hooks_uninstall(path).await,
             HookCommands::Status { path } => handle_hooks_status(path).await,
             HookCommands::Verify { path } => handle_hooks_verify(path).await,
+            HookCommands::Run { hook } => handle_hooks_run(&hook),
         },
         Commands::Quality { command } => match command {
             QualityCommands::Plan {
@@ -378,5 +379,55 @@ async fn handle_hooks_verify(path: Option<std::path::PathBuf>) -> ExitCode {
             eprintln!("Error: {}", e);
             ExitCode::ConfigurationError
         }
+    }
+}
+
+fn handle_hooks_run(hook: &str) -> ExitCode {
+    if hook != "pre-push" {
+        eprintln!("Error: unsupported managed hook {hook}");
+        return ExitCode::ConfigurationError;
+    }
+
+    let root = match std::process::Command::new("git")
+        .args(["rev-parse", "--show-toplevel"])
+        .output()
+    {
+        Ok(output) if output.status.success() => String::from_utf8_lossy(&output.stdout)
+            .trim()
+            .to_owned(),
+        _ => {
+            eprintln!("Error: Git repository not found");
+            return ExitCode::ConfigurationError;
+        }
+    };
+    if !std::path::Path::new(&root).join(".assura").is_dir() {
+        eprintln!("Warning: .assura directory not found");
+        return ExitCode::Success;
+    }
+
+    let output = match std::env::current_exe().and_then(|binary| {
+        std::process::Command::new(binary)
+            .args(["check", &root, "--format", "advice"])
+            .output()
+    }) {
+        Ok(output) => output,
+        Err(error) => {
+            eprintln!("Warning: Assura runner unavailable: {error}");
+            return ExitCode::Success;
+        }
+    };
+    print!("{}", String::from_utf8_lossy(&output.stdout));
+    eprint!("{}", String::from_utf8_lossy(&output.stderr));
+    if output.status.success() {
+        println!("Assura validation passed");
+        ExitCode::Success
+    } else if std::env::var("ASSURA_BLOCKING_PUSH").as_deref() == Ok("1") {
+        eprintln!("ERROR: Assura validation failed and ASSURA_BLOCKING_PUSH=1 is set");
+        ExitCode::ValidationFailed
+    } else {
+        println!("WARNING: Assura validation found issues");
+        println!("Pre-push is advisory until the self-check baseline is clean.");
+        println!("Set ASSURA_BLOCKING_PUSH=1 to enforce blocking pushes locally.");
+        ExitCode::Success
     }
 }

@@ -401,6 +401,12 @@ pub enum HookCommands {
         #[arg(help = "Project root directory (defaults to discovered project root)")]
         path: Option<PathBuf>,
     },
+
+    #[command(about = "Run a managed hook policy")]
+    Run {
+        #[arg(value_parser = ["pre-push"])]
+        hook: String,
+    },
 }
 
 #[derive(Subcommand, Debug)]

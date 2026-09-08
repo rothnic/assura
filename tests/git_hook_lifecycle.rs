@@ -36,6 +36,37 @@ fn command_output_text(output: &Output) -> String {
 }
 
 #[test]
+fn hooks_run_pre_push_keeps_invalid_policy_advisory() {
+    let project = tempfile::TempDir::new().unwrap();
+    assert_git(project.path(), &["init", "--quiet"]);
+    std::fs::create_dir_all(project.path().join(".assura")).unwrap();
+    std::fs::create_dir_all(project.path().join("src")).unwrap();
+    std::fs::write(
+        project.path().join(".assura/config.yml"),
+        "structure:\n  ./:\n    extra: true\n    children:\n      src/:\n        files:\n          naming: kebab-case\n          extensions: [\"rs\"]\n",
+    )
+    .unwrap();
+    std::fs::write(project.path().join("src/BadName.rs"), "fn main() {}\n").unwrap();
+
+    let output = Command::new(assura_bin())
+        .args(["hooks", "run", "pre-push"])
+        .current_dir(project.path())
+        .output()
+        .expect("run stable pre-push runner");
+
+    assert!(
+        output.status.success(),
+        "pre-push runner must remain advisory by default: {}",
+        command_output_text(&output)
+    );
+    assert!(
+        command_output_text(&output).contains("WARNING: Assura validation found issues"),
+        "pre-push runner must report the invalid policy: {}",
+        command_output_text(&output)
+    );
+}
+
+#[test]
 fn install_preserves_an_existing_custom_hook_and_reports_it() {
     let project = tempfile::TempDir::new().unwrap();
     let hooks_dir = project.path().join(".git/hooks");
