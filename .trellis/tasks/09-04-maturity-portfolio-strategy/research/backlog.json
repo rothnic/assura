@@ -302,8 +302,8 @@
         "R02"
       ],
       "executor": "agent",
-      "state": "implemented",
-      "owner": "Codex goal/q06-release-readiness; existing PR #166",
+      "state": "done",
+      "owner": "Codex goal/q06-release-readiness; independently reviewed and merged via PR #166 (50e131e)",
       "evidence": "evidence/Q06.md",
       "blocker": null
     },
