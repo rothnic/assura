@@ -129,3 +129,32 @@ fn onboarding_a_bun_project_uses_only_declared_quality_scripts() {
     );
     assert!(bun["pr"].is_null(), "type-check gates must not be invented");
 }
+
+#[test]
+fn onboarding_reports_configured_but_unavailable_python_tool_as_advice() {
+    let project = TempDir::new().expect("project directory");
+    fs::write(
+        project.path().join("pyproject.toml"),
+        "[tool.pytest.ini_options]\ntestpaths = [\"tests\"]\n",
+    )
+    .expect("Python project configuration");
+
+    let output = Command::new(assura_full_bin())
+        .args(["agent", "onboard"])
+        .arg(project.path())
+        .args(["--format", "json"])
+        .env("PATH", project.path())
+        .output()
+        .expect("assura agent onboard runs");
+    assert!(output.status.success());
+    let report: serde_json::Value = serde_json::from_slice(&output.stdout).expect("report JSON");
+    let advice = report["quality_advice"]
+        .as_array()
+        .expect("quality advice array");
+    assert!(
+        advice.iter().any(|item| {
+            item["tool"] == "pytest" && item["status"] == "unavailable"
+        }),
+        "configured pytest must remain visible as unavailable setup advice"
+    );
+}
