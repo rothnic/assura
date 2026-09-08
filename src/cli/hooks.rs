@@ -5,6 +5,8 @@ use thiserror::Error;
 
 #[path = "hooks_ownership.rs"]
 mod ownership;
+#[path = "hooks_paths.rs"]
+mod paths;
 #[path = "hooks_status.rs"]
 mod status;
 #[path = "hooks_transaction.rs"]
@@ -16,6 +18,7 @@ use ownership::{
     classify_artifact, ensure_plain_directory, plain_directory_or_absent,
     remove_file_if_still_managed, shell_single_quote, ArtifactOwnership, HookOwnership,
 };
+use paths::resolve_git_hooks_dir;
 use status::is_runnable;
 
 #[derive(Error, Debug)]
@@ -344,113 +347,6 @@ fi
     }
 }
 
-fn resolve_git_hooks_dir(project_root: &Path) -> HookResult<PathBuf> {
-    let git_path = project_root.join(".git");
-    if git_path.is_dir() {
-        return Ok(git_path.join("hooks"));
-    }
-    if git_path.is_file() {
-        let git_dir = resolve_gitdir_file(&git_path)?;
-        return Ok(resolve_common_git_dir(&git_dir).join("hooks"));
-    }
-    Err(HookError::GitNotFound)
-}
-
-fn resolve_gitdir_file(git_path: &Path) -> HookResult<PathBuf> {
-    let content = std::fs::read_to_string(git_path)?;
-    let Some(first_line) = content.lines().next() else {
-        return Err(HookError::GitNotFound);
-    };
-    let Some(raw_git_dir) = first_line.trim().strip_prefix("gitdir:") else {
-        return Err(HookError::GitNotFound);
-    };
-    let git_dir = PathBuf::from(raw_git_dir.trim());
-    if git_dir.is_absolute() {
-        Ok(git_dir)
-    } else {
-        Ok(git_path
-            .parent()
-            .unwrap_or_else(|| Path::new("."))
-            .join(git_dir))
-    }
-}
-
-fn resolve_common_git_dir(git_dir: &Path) -> PathBuf {
-    let common_dir_file = git_dir.join("commondir");
-    let Ok(content) = std::fs::read_to_string(&common_dir_file) else {
-        return git_dir.to_path_buf();
-    };
-    let Some(first_line) = content.lines().next() else {
-        return git_dir.to_path_buf();
-    };
-    let common_dir = PathBuf::from(first_line.trim());
-    let resolved = if common_dir.is_absolute() {
-        common_dir
-    } else {
-        git_dir.join(common_dir)
-    };
-    std::fs::canonicalize(&resolved).unwrap_or(resolved)
-}
-
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_hook_type_from_str() {
-        assert_eq!(
-            "pre-commit".parse::<HookType>().unwrap(),
-            HookType::PreCommit
-        );
-        assert!("invalid".parse::<HookType>().is_err());
-    }
-
-    #[test]
-    fn test_hook_status_display() {
-        let status = HookStatus {
-            hook_type: HookType::PreCommit,
-            is_installed: true,
-            is_managed: true,
-            is_current: true,
-            git_runnable: true,
-            assura_runnable: true,
-            git_path: PathBuf::from(".git/hooks/pre-commit"),
-            assura_path: PathBuf::from(".assura/hooks/pre-commit"),
-        };
-
-        assert!(status.display().contains("installed"));
-    }
-
-    #[test]
-    fn git_hooks_dir_resolves_regular_git_directory() {
-        let project = tempfile::TempDir::new().unwrap();
-        std::fs::create_dir_all(project.path().join(".git/hooks")).unwrap();
-
-        let hooks_dir = resolve_git_hooks_dir(project.path()).unwrap();
-
-        assert_eq!(hooks_dir, project.path().join(".git/hooks"));
-    }
-
-    #[test]
-    fn git_hooks_dir_resolves_worktree_git_file_to_common_hooks() {
-        let project = tempfile::TempDir::new().unwrap();
-        let git_dir = project.path().join("main.git/worktrees/agent");
-        std::fs::create_dir_all(&git_dir).unwrap();
-        std::fs::create_dir_all(project.path().join("main.git/hooks")).unwrap();
-        std::fs::write(git_dir.join("commondir"), "../..\n# ignored metadata\n").unwrap();
-        std::fs::write(
-            project.path().join(".git"),
-            format!("gitdir: {}\n# ignored metadata\n", git_dir.display()),
-        )
-        .unwrap();
-
-        let hooks_dir = resolve_git_hooks_dir(project.path()).unwrap();
-
-        assert_eq!(
-            hooks_dir,
-            std::fs::canonicalize(project.path().join("main.git"))
-                .unwrap()
-                .join("hooks")
-        );
-    }
-}
+#[path = "hooks_tests.rs"]
+mod tests;
