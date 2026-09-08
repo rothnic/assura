@@ -212,8 +212,8 @@
         "A03"
       ],
       "executor": "agent",
-      "state": "implemented",
-      "owner": "Codex goal/a05-native-harness-lifecycle; partial uncommitted patch exists, implementation/proof incomplete, not PR-ready",
+      "state": "active",
+      "owner": "Codex goal/a05-quality-execution; PR #190 merged the reviewed native planning/detection core; bounded fixture-cwd execution proof and remaining A05 acceptance are active",
       "evidence": "evidence/A05.md",
       "blocker": null
     },
