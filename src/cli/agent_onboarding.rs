@@ -6,8 +6,9 @@ use super::agent_onboarding_quality::{
     onboarding_quality_advice,
 };
 use super::agent_onboarding_report::{
-    write_report, CheckItem, ContentSection, FileAction, InstalledSection, IntegrationSection,
-    OnboardingReport, RenderedOnboardingReport,
+    write_report, CheckItem, ContentSection, FileAction, HostApprovalSection, InstalledSection,
+    IntegrationDoctorFact, IntegrationDoctorSection, IntegrationSection, OnboardingReport,
+    PostActivationSection, RenderedOnboardingReport,
 };
 use super::agent_onboarding_rules::{normalize_existing_root, recommended_rules};
 use super::agent_onboarding_specialization::{inactive_capabilities, write_specialization_profile};
@@ -473,8 +474,8 @@ fn install_integration(
         Ok(IntegrationSection {
             status: if state.conflicted {
                 "conflicted"
-            } else if state.verified {
-                "verified"
+            } else if state.structural_verified {
+                "structurally_verified"
             } else if state.activated {
                 "activated"
             } else if state.generated {
@@ -490,10 +491,31 @@ fn install_integration(
             },
             generated: state.generated,
             activated: state.activated,
-            verified: state.verified,
+            verified: state.structural_verified,
+            structural_verified: state.structural_verified,
             conflicted: state.conflicted,
+            post_activation: PostActivationSection {
+                status: state.post_activation_status,
+                doctor: IntegrationDoctorSection {
+                    status: state.doctor_status,
+                    facts: state
+                        .doctor_facts
+                        .into_iter()
+                        .map(|fact| IntegrationDoctorFact {
+                            name: fact.name,
+                            status: fact.status,
+                            detail: fact.detail,
+                        })
+                        .collect(),
+                },
+            },
+            host_approval: HostApprovalSection {
+                required: state.host_approval_required,
+                status: state.host_approval_status,
+                follow_up: state.host_approval_follow_up,
+            },
             detail: if activate {
-                "managed project-local host wiring written and structurally verified; host trust may still be required"
+                "managed project-local host wiring written and structurally verified; host runtime delivery remains unavailable until the user trusts and approves the host configuration"
             } else {
                 ".assura/integrations/<agent>/ generated; activation remains explicit"
             },
@@ -506,7 +528,20 @@ fn install_integration(
             generated: false,
             activated: false,
             verified: false,
+            structural_verified: false,
             conflicted: false,
+            post_activation: PostActivationSection {
+                status: "not_applicable",
+                doctor: IntegrationDoctorSection {
+                    status: "unavailable",
+                    facts: Vec::new(),
+                },
+            },
+            host_approval: HostApprovalSection {
+                required: false,
+                status: "not_applicable",
+                follow_up: "Choose a supported host before configuring a host integration.",
+            },
             detail: "no supported host-agent harness detected; use AGENTS.md and assura check --format agent --warn",
         })
     }

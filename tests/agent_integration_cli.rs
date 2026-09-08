@@ -386,8 +386,54 @@ fn onboarding_activation_reports_generated_activated_verified_and_conflicted_sta
     let report: Value = serde_json::from_slice(&output.stdout).expect("onboarding JSON");
     assert_eq!(report["integration"]["generated"], true);
     assert_eq!(report["integration"]["activated"], true);
-    assert_eq!(report["integration"]["verified"], true);
+    assert_eq!(report["integration"]["structural_verified"], true);
     assert_eq!(report["integration"]["conflicted"], false);
+    assert_eq!(
+        report["integration"]["post_activation"]["status"],
+        "structurally_verified"
+    );
+    assert_eq!(
+        report["integration"]["post_activation"]["doctor"]["status"],
+        "pass"
+    );
+    assert!(report["integration"]["post_activation"]["doctor"]["facts"]
+        .as_array()
+        .expect("doctor facts")
+        .iter()
+        .any(|fact| fact["name"] == "host_configuration" && fact["status"] == "pass"));
+    assert_eq!(report["integration"]["host_approval"]["required"], true);
+    assert_eq!(
+        report["integration"]["host_approval"]["status"],
+        "unavailable"
+    );
+    assert!(report["integration"]["host_approval"]["follow_up"]
+        .as_str()
+        .expect("host approval follow-up")
+        .contains("trust the project and approve its hooks"));
+
+    let text = Command::new(assura_bin())
+        .args([
+            "agent",
+            "onboard",
+            project.path().to_str().unwrap(),
+            "--agent",
+            "codex",
+            "--activate",
+            "--format",
+            "text",
+        ])
+        .output()
+        .expect("text agent onboard");
+    assert!(
+        text.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&text.stdout),
+        String::from_utf8_lossy(&text.stderr)
+    );
+    let text = String::from_utf8(text.stdout).expect("onboarding text");
+    assert!(text.contains("post_activation=structurally_verified doctor=pass"));
+    assert!(text.contains("host_approval=unavailable"));
+    assert!(text.contains("follow_up=Review the generated project hooks, then trust the project and approve its hooks in Codex."));
 }
 
 #[test]

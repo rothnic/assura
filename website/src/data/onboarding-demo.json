@@ -17,8 +17,12 @@
       "tone": "info"
     },
     {
-      "text": "Host         codex generated=true activated=true verified=true conflicted=false",
+      "text": "Host         codex generated=true activated=true structurally_verified=true conflicted=false",
       "tone": "pass"
+    },
+    {
+      "text": "Host status  post_activation=structurally_verified doctor=pass host_approval=unavailable follow_up=Review the generated project hooks, then trust the project and approve its hooks in Codex.",
+      "tone": "warn"
     },
     {
       "text": "Lifecycle    agent-working-loop=nudge pre-commit-warning=warn pre-push-or-ci-gate=gate",
@@ -83,8 +87,12 @@
       "tone": "info"
     },
     {
-      "text": "Host         codex generated=true activated=true verified=true conflicted=false",
+      "text": "Host         codex generated=true activated=true structurally_verified=true conflicted=false",
       "tone": "pass"
+    },
+    {
+      "text": "Host status  post_activation=structurally_verified doctor=pass host_approval=unavailable follow_up=Review the generated project hooks, then trust the project and approve its hooks in Codex.",
+      "tone": "warn"
     },
     {
       "text": "Content      none=inactive",
@@ -257,10 +265,69 @@
     "activated": true,
     "agent": "codex",
     "conflicted": false,
-    "detail": "managed project-local host wiring written and structurally verified; host trust may still be required",
+    "detail": "managed project-local host wiring written and structurally verified; host runtime delivery remains unavailable until the user trusts and approves the host configuration",
     "generated": true,
+    "host_approval": {
+      "follow_up": "Review the generated project hooks, then trust the project and approve its hooks in Codex.",
+      "required": true,
+      "status": "unavailable"
+    },
     "mode": "managed-project-activation",
-    "status": "verified",
+    "post_activation": {
+      "doctor": {
+        "facts": [
+          {
+            "detail": "project has .assura/config.yml",
+            "name": "config",
+            "status": "pass"
+          },
+          {
+            "detail": "managed integration manifest exists",
+            "name": "bundle_installed",
+            "status": "pass"
+          },
+          {
+            "detail": "manifest, wrapper, and README files are present",
+            "name": "expected_files",
+            "status": "pass"
+          },
+          {
+            "detail": "expected files are Assura-managed",
+            "name": "managed_files",
+            "status": "pass"
+          },
+          {
+            "detail": "wrapper delegates to assura agent nudge",
+            "name": "shared_nudge_contract",
+            "status": "pass"
+          },
+          {
+            "detail": "wrapper records nudge payloads for session review",
+            "name": "nudge_logging_contract",
+            "status": "pass"
+          },
+          {
+            "detail": "wrapper delegates to assura check --format agent",
+            "name": "shared_check_contract",
+            "status": "pass"
+          },
+          {
+            "detail": "wrapper delegates to assura daemon status/doctor",
+            "name": "shared_daemon_contract",
+            "status": "pass"
+          },
+          {
+            "detail": "Assura-managed project host configuration is structurally verified",
+            "name": "host_configuration",
+            "status": "pass"
+          }
+        ],
+        "status": "pass"
+      },
+      "status": "structurally_verified"
+    },
+    "status": "structurally_verified",
+    "structural_verified": true,
     "verified": true
   },
   "lifecycle_profiles": [
@@ -339,7 +406,7 @@
       "reason": "Content facts stay inactive until a template is selected deliberately."
     }
   ],
-  "rendered_text": "Assura agent onboarding\nVersion      assura 0.4.0\nProject      node confidence=high\nAgent        codex confidence=explicit\nPolicy       agentic-core + structure-health -> $agent-entrypoint (applied)\nHost         codex generated=true activated=true verified=true conflicted=false\nContent      none=inactive\nQuality      no configured native tools\nLifecycle    agent-working-loop=nudge pre-commit-warning=warn pre-push-or-ci-gate=gate\nVerified     structure_config=pass onboarding_packet=pass\nReview       needs-review blocking=0 advisory=0 inactive_signals=5\nDeferred     project_specialization, content_models\nNext         Specialize from repository evidence\nPacket       .assura/onboarding/agent-next.md",
+  "rendered_text": "Assura agent onboarding\nVersion      assura 0.4.0\nProject      node confidence=high\nAgent        codex confidence=explicit\nPolicy       agentic-core + structure-health -> $agent-entrypoint (applied)\nHost         codex generated=true activated=true structurally_verified=true conflicted=false\nHost status  post_activation=structurally_verified doctor=pass host_approval=unavailable follow_up=Review the generated project hooks, then trust the project and approve its hooks in Codex.\nContent      none=inactive\nQuality      no configured native tools\nLifecycle    agent-working-loop=nudge pre-commit-warning=warn pre-push-or-ci-gate=gate\nVerified     structure_config=pass onboarding_packet=pass\nReview       needs-review blocking=0 advisory=0 inactive_signals=5\nDeferred     project_specialization, content_models\nNext         Specialize from repository evidence\nPacket       .assura/onboarding/agent-next.md",
   "schema": "assura.website-onboarding-demo.v1",
   "verified": [
     {

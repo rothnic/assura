@@ -1304,6 +1304,7 @@ fn compact_onboarding(report: &Value, rendered_text: &str) -> Result<Value> {
     for required in [
         "Assura agent onboarding",
         "Host",
+        "Host status",
         "Lifecycle",
         "Review",
         "Deferred",
@@ -1341,6 +1342,7 @@ fn compact_onboarding(report: &Value, rendered_text: &str) -> Result<Value> {
                 "Agent",
                 "Policy",
                 "Host",
+                "Host status",
                 "Lifecycle",
                 "Verified",
                 "Review",

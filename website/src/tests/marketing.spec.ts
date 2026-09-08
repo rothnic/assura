@@ -575,8 +575,11 @@ test('review, check, and onboarding retain distinct real product states', async 
     verified: true,
     conflicted: false,
   });
-  await expect(onboarding.locator('[data-terminal-line]').filter({ hasText: /^Host/ })).toContainText(
-    'generated=true activated=true verified=true conflicted=false',
+  await expect(onboarding.locator('[data-terminal-line]').filter({ hasText: /^Host\s+codex\b/ })).toContainText(
+    'generated=true activated=true structurally_verified=true conflicted=false',
+  );
+  await expect(onboarding.locator('[data-terminal-line]').filter({ hasText: /^Host status/ })).toContainText(
+    'post_activation=structurally_verified doctor=pass host_approval=unavailable',
   );
 });
 
