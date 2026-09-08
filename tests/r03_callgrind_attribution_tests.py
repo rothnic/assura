@@ -42,9 +42,13 @@ class R03CallgrindAttributionDriverTests(unittest.TestCase):
         static_pie = plan["static_pie_compatibility_probes"]
         self.assertEqual(static_pie["executables"], ["baseline", "candidate"])
         self.assertIn("frozen valid-fixture", static_pie["invocation"])
+        self.assertIn("cwd", static_pie["invocation"])
         self.assertIn("scrubbed environment", static_pie["invocation"])
-        self.assertIn("expected normalized diagnostic digest", static_pie["required_results"])
-        self.assertIn("numeric Callgrind summary", static_pie["required_results"])
+        self.assertEqual(static_pie["required_results"], [
+            "expected exit status",
+            "expected normalized diagnostic digest",
+            "numeric Callgrind summary",
+        ])
         self.assertIn("excluded", static_pie["sample_status"])
         self.assertIn("hosted no-slower", plan["non_acceptance_uses"])
 
