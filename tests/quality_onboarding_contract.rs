@@ -140,10 +140,25 @@ fn onboarding_a_bun_project_uses_only_declared_quality_scripts() {
         r#"{"packageManager":"bun@1.1.0","scripts":{"lint":"biome check .","test":"bun test"}}"#,
     )
     .expect("package manifest");
+    let tools = TempDir::new().expect("tool directory");
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+
+        let bun = tools.path().join("bun");
+        fs::write(&bun, "#!/bin/sh\nexit 0\n").expect("Bun fixture");
+        let mut permissions = fs::metadata(&bun).expect("Bun metadata").permissions();
+        permissions.set_mode(0o755);
+        fs::set_permissions(&bun, permissions).expect("Bun executable");
+    }
+    #[cfg(windows)]
+    fs::write(tools.path().join("bun.CMD"), "@exit /b 0\r\n").expect("Bun fixture");
 
     let onboard = Command::new(assura_full_bin())
         .args(["agent", "onboard"])
         .arg(project.path())
+        .env("PATH", tools.path())
+        .env("PATHEXT", ".CMD")
         .output()
         .expect("assura agent onboard runs");
     assert!(onboard.status.success());
@@ -417,13 +432,19 @@ fn onboarding_admits_configured_pytest_from_a_pathext_entrypoint() {
     )
     .expect("Python project configuration");
     let tools = TempDir::new().expect("tool directory");
-    fs::write(tools.path().join("pytest.EXE"), "fixture").expect("pytest fixture");
+    let pytest = tools.path().join("pytest.CMD");
+    fs::write(&pytest, "@exit /b 0\r\n").expect("pytest fixture");
+    let executable = Command::new("cmd")
+        .args(["/C", pytest.to_str().expect("UTF-8 pytest fixture")])
+        .output()
+        .expect("pytest fixture executes");
+    assert!(executable.status.success(), "pytest fixture must execute");
 
     let output = Command::new(assura_full_bin())
         .args(["agent", "onboard"])
         .arg(project.path())
         .env("PATH", tools.path())
-        .env("PATHEXT", ".EXE")
+        .env("PATHEXT", ".CMD")
         .output()
         .expect("assura agent onboard runs");
     assert!(output.status.success());
