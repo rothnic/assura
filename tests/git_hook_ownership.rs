@@ -19,23 +19,22 @@ fn ownership_fixture_guard() -> MutexGuard<'static, ()> {
 
 fn project_with_git_hooks() -> tempfile::TempDir {
     let project = tempfile::TempDir::new().unwrap();
-    std::fs::create_dir_all(project.path().join(".git/hooks")).unwrap();
-    std::fs::create_dir_all(project.path().join(".assura/hooks")).unwrap();
+    std::fs::create_dir_all(project.path().join(".git").join("hooks")).unwrap();
+    std::fs::create_dir_all(project.path().join(".assura").join("hooks")).unwrap();
     project
 }
 
 fn hook_paths(project: &Path, hook_type: HookType) -> (std::path::PathBuf, std::path::PathBuf) {
     let hook_name = hook_type.as_str();
     (
-        project.join(".git/hooks").join(hook_name),
-        project.join(".assura/hooks").join(hook_name),
+        project.join(".git").join("hooks").join(hook_name),
+        project.join(".assura").join("hooks").join(hook_name),
     )
 }
 
 fn write_exact_legacy_pre_push_pair(project: &Path) -> (std::path::PathBuf, std::path::PathBuf) {
     let (wrapper, sidecar) = hook_paths(project, HookType::PrePush);
-    let canonical_sidecar = include_str!("../.assura/hooks/pre-push").replace("\r\n", "\n");
-    std::fs::write(&sidecar, canonical_sidecar).unwrap();
+    std::fs::write(&sidecar, include_str!("../.assura/hooks/pre-push")).unwrap();
     std::fs::write(&wrapper, legacy_wrapper_content(&sidecar)).unwrap();
 
     #[cfg(unix)]
