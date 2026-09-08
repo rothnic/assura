@@ -212,8 +212,8 @@
         "A03"
       ],
       "executor": "agent",
-      "state": "active",
-      "owner": "Codex goal/a05-current-audit; current Rust PR-plan fixture-cwd execution slice reviewed and merged in PR #200; preserved historical work remains untouched and full A05 acceptance is incomplete",
+      "state": "done",
+      "owner": "Codex goal/a05-current-audit; A05 acceptance closed through independently reviewed PRs #200, #202, #204, and #206; preserved historical work remains untouched",
       "evidence": "evidence/A05.md",
       "blocker": null
     },
