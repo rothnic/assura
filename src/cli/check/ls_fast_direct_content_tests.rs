@@ -3,8 +3,10 @@
 use super::ls_fast_direct_content::strip_direct_content_policy_is_noop;
 use super::ls_fast_plan::{compile_lslint_fast_scopes, fast_rules_for_dir};
 use super::rules::EffectiveRules;
+use super::CompiledStructureConfigArtifact;
 use crate::config::config::{Config, DirectoryBundle, DirectoryNode, FileBundle};
 use crate::config::types::ChildrenLimitConfig;
+use std::collections::HashMap;
 use std::sync::Arc;
 
 #[test]
@@ -15,7 +17,19 @@ fn fast_plan_reuses_noop_direct_content_rule_bundles() {
         DirectoryNode {
             files: Some(FileBundle {
                 naming: Some("kebab-case".to_string()),
+                naming_patterns: Some(HashMap::from([(
+                    "*.rs".to_string(),
+                    "snake_case".to_string(),
+                )])),
                 ..FileBundle::default()
+            }),
+            directories: Some(DirectoryBundle {
+                naming: Some("kebab-case".to_string()),
+                ..DirectoryBundle::default()
+            }),
+            self_directory: Some(DirectoryBundle {
+                naming: Some("snake_case".to_string()),
+                ..DirectoryBundle::default()
             }),
             inherit: false,
             ..DirectoryNode::default()
@@ -38,6 +52,33 @@ fn fast_plan_reuses_noop_direct_content_rule_bundles() {
             .files
             .as_ref()
             .expect("descendant files"),
+    ));
+    assert!(Arc::ptr_eq(
+        exact.file_naming.as_ref().expect("exact file naming"),
+        descendant
+            .file_naming
+            .as_ref()
+            .expect("descendant file naming"),
+    ));
+    assert!(Arc::ptr_eq(
+        exact
+            .directory_naming
+            .as_ref()
+            .expect("exact directory naming"),
+        descendant
+            .directory_naming
+            .as_ref()
+            .expect("descendant directory naming"),
+    ));
+    assert!(Arc::ptr_eq(
+        exact
+            .self_directory_naming
+            .as_ref()
+            .expect("exact self directory naming"),
+        descendant
+            .self_directory_naming
+            .as_ref()
+            .expect("descendant self directory naming"),
     ));
 }
 
@@ -87,6 +128,41 @@ fn fast_plan_strips_direct_content_policy_from_descendants() {
             .and_then(|files| files.naming.as_deref()),
         Some("kebab-case")
     );
+}
+
+#[test]
+fn fast_plan_naming_arcs_survive_compiled_artifact_round_trip() {
+    let config = Config::new().with_node(
+        "pkg",
+        DirectoryNode {
+            files: Some(FileBundle {
+                naming: Some("kebab-case".to_string()),
+                naming_patterns: Some(HashMap::from([(
+                    "*.rs".to_string(),
+                    "snake_case".to_string(),
+                )])),
+                ..FileBundle::default()
+            }),
+            directories: Some(DirectoryBundle {
+                naming: Some("kebab-case".to_string()),
+                ..DirectoryBundle::default()
+            }),
+            self_directory: Some(DirectoryBundle {
+                naming: Some("snake_case".to_string()),
+                ..DirectoryBundle::default()
+            }),
+            ..DirectoryNode::default()
+        },
+    );
+
+    let artifact = CompiledStructureConfigArtifact::new(config);
+    let artifact = serde_json::from_slice::<CompiledStructureConfigArtifact>(
+        &serde_json::to_vec(&artifact).expect("artifact serializes"),
+    )
+    .expect("artifact deserializes");
+
+    assert!(artifact.is_compatible());
+    assert!(artifact.into_fast_compiled_config(false).is_ok());
 }
 
 #[test]

@@ -29,9 +29,9 @@ pub(super) struct FastScope {
 #[derive(Clone)]
 pub(super) struct FastRules {
     pub(super) effective: EffectiveRules,
-    pub(super) file_naming: Option<FastFileNaming>,
-    pub(super) directory_naming: Option<FastNaming>,
-    pub(super) self_directory_naming: Option<FastNaming>,
+    pub(super) file_naming: Option<Arc<FastFileNaming>>,
+    pub(super) directory_naming: Option<Arc<FastNaming>>,
+    pub(super) self_directory_naming: Option<Arc<FastNaming>>,
     pub(super) has_direct_file_policy: bool,
     pub(super) has_direct_directory_policy: bool,
 }
@@ -210,9 +210,9 @@ impl FastRules {
         let has_direct_directory_policy = has_direct_directory_policy(&effective);
         Self {
             effective,
-            file_naming,
-            directory_naming,
-            self_directory_naming,
+            file_naming: file_naming.map(Arc::new),
+            directory_naming: directory_naming.map(Arc::new),
+            self_directory_naming: self_directory_naming.map(Arc::new),
             has_direct_file_policy,
             has_direct_directory_policy,
         }
@@ -228,9 +228,9 @@ impl FastRules {
     ) {
         (
             &self.effective,
-            self.file_naming.as_ref(),
-            self.directory_naming.as_ref(),
-            self.self_directory_naming.as_ref(),
+            self.file_naming.as_deref(),
+            self.directory_naming.as_deref(),
+            self.self_directory_naming.as_deref(),
         )
     }
 
@@ -265,20 +265,27 @@ impl FastRules {
                 })
                 .unwrap_or_default();
 
-            (default.is_some() || !suffix_patterns.is_empty() || !glob_patterns.is_empty())
-                .then(|| FastFileNaming::from_parts(suffix_patterns, glob_patterns, default))
+            (default.is_some() || !suffix_patterns.is_empty() || !glob_patterns.is_empty()).then(
+                || {
+                    Arc::new(FastFileNaming::from_parts(
+                        suffix_patterns,
+                        glob_patterns,
+                        default,
+                    ))
+                },
+            )
         });
 
         let directory_naming = effective
             .directories
             .as_ref()
             .and_then(|directories| directories.naming.as_ref())
-            .map(|naming| naming_cache.compile(naming));
+            .map(|naming| Arc::new(naming_cache.compile(naming)));
         let self_directory_naming = effective
             .self_directory
             .as_ref()
             .and_then(|directory| directory.naming.as_ref())
-            .map(|naming| naming_cache.compile(naming));
+            .map(|naming| Arc::new(naming_cache.compile(naming)));
 
         Self {
             has_direct_file_policy: has_direct_file_policy(&effective),
