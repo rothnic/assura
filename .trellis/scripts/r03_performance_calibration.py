@@ -9,6 +9,7 @@ gate, and missing, mixed, or insufficient evidence is deliberately
 from __future__ import annotations
 
 import argparse
+from collections import defaultdict
 import json
 import math
 import re
@@ -30,6 +31,8 @@ PLAN = {
     },
     "non_acceptance_uses": "Cannot relax, widen, drop, relabel, or bypass the production performance gate.",
 }
+
+EXPECTED_CALIBRATION_SLOTS = ("1", "2", "3")
 
 
 def classify_cohort(cohort: dict[str, Any]) -> dict[str, Any]:
@@ -103,25 +106,106 @@ def classify_cohort(cohort: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def collected_fingerprint(run: Any, index: int) -> str:
+    if isinstance(run, dict):
+        cpu_model = run.get("cpu_model")
+        image_name = run.get("runner_image_name")
+        image_version = run.get("runner_image_version")
+        if all(isinstance(value, str) and value for value in (cpu_model, image_name, image_version)):
+            return f"{cpu_model}|{image_name}@{image_version}"
+    return f"unproven:artifact-{index}"
+
+
+def collect_cohorts(artifact_root: Path) -> dict[str, Any]:
+    grouped: dict[str, list[Any]] = defaultdict(list)
+    errors: list[str] = []
+    runs: list[Any] = []
+    expected_paths = {
+        artifact_root / f"r03-performance-calibration-{slot}" / "run.json"
+        for slot in EXPECTED_CALIBRATION_SLOTS
+    }
+    actual_paths = set(artifact_root.rglob("run.json")) if artifact_root.is_dir() else set()
+    for unexpected_path in sorted(actual_paths - expected_paths):
+        errors.append(f"unexpected run artifact: {unexpected_path.relative_to(artifact_root)}")
+
+    seen_job_ids: set[str] = set()
+    for slot in EXPECTED_CALIBRATION_SLOTS:
+        run_path = artifact_root / f"r03-performance-calibration-{slot}" / "run.json"
+        if not run_path.is_file():
+            errors.append(f"missing required run artifact for slot {slot}")
+            continue
+        try:
+            run = json.loads(run_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            errors.append(f"malformed required run artifact for slot {slot}")
+            continue
+        if not isinstance(run, dict):
+            errors.append(f"required run artifact for slot {slot} is not an object")
+            continue
+        job_id = run.get("job_id")
+        if not isinstance(job_id, str) or not job_id.endswith(f":{slot}"):
+            errors.append(f"job provenance does not match required slot {slot}")
+            continue
+        if job_id in seen_job_ids:
+            errors.append(f"duplicate job provenance for required slot {slot}")
+            continue
+        seen_job_ids.add(job_id)
+        runs.append(run)
+
+    if errors:
+        grouped["unproven:collection-integrity"] = runs + [{"artifact_errors": errors}]
+    else:
+        for index, run in enumerate(runs, start=1):
+            grouped[collected_fingerprint(run, index)].append(run)
+    return {
+        "cohorts": [
+            {"fingerprint": fingerprint, "runs": runs}
+            for fingerprint, runs in sorted(grouped.items())
+        ],
+        "collection_errors": errors,
+    }
+
+
+def classify_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    cohorts = payload.get("cohorts")
+    if not isinstance(cohorts, list):
+        raise ValueError("COHORTS_JSON must contain a cohorts array")
+    classified = [classify_cohort(cohort) for cohort in cohorts]
+    required_cpu = PLAN["required_observed_cpu_model"]
+    required_present = any(item["provenance_complete"] and item["fingerprint"].split("|", 1)[0] == required_cpu for item in classified)
+    return {
+        "diagnostic_only": True,
+        "required_observed_cpu_model": {
+            "value": required_cpu,
+            "status": "present" if required_present else "unproven",
+        },
+        "cohorts": classified,
+        "collection_errors": payload.get("collection_errors", []),
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--plan", action="store_true", help="print the pre-registered cohort contract")
     group.add_argument("--classify", type=Path, metavar="COHORTS_JSON", help="classify collected cohort JSON")
+    group.add_argument("--collect", type=Path, metavar="ARTIFACT_ROOT", help="assemble and classify downloaded run artifacts")
     arguments = parser.parse_args()
 
     if arguments.plan:
         print(json.dumps(PLAN, indent=2, sort_keys=True))
         return 0
 
-    payload = json.loads(arguments.classify.read_text(encoding="utf-8"))
-    cohorts = payload.get("cohorts")
-    if not isinstance(cohorts, list):
-        parser.error("COHORTS_JSON must contain a cohorts array")
-    classified = [classify_cohort(cohort) for cohort in cohorts]
-    required_cpu = PLAN["required_observed_cpu_model"]
-    required_present = any(item["provenance_complete"] and item["fingerprint"].split("|", 1)[0] == required_cpu for item in classified)
-    print(json.dumps({"diagnostic_only": True, "required_observed_cpu_model": {"value": required_cpu, "status": "present" if required_present else "unproven"}, "cohorts": classified}, indent=2, sort_keys=True))
+    try:
+        payload = (
+            collect_cohorts(arguments.collect)
+            if arguments.collect is not None
+            else json.loads(arguments.classify.read_text(encoding="utf-8"))
+        )
+        result = classify_payload(payload)
+    except (OSError, ValueError, json.JSONDecodeError) as error:
+        parser.error(str(error))
+    print(json.dumps(result, indent=2, sort_keys=True))
     return 0
 
 
