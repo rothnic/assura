@@ -80,6 +80,17 @@ pub(super) fn configure_agent_integration_bundle(
     })
 }
 
+/// Resolve an installed harness name to its supported integration target.
+pub(super) fn target_from_harness(agent_harness: &str) -> Option<AgentIntegrationTarget> {
+    match agent_harness {
+        "codex" => Some(AgentIntegrationTarget::Codex),
+        "opencode" => Some(AgentIntegrationTarget::Opencode),
+        "claude" => Some(AgentIntegrationTarget::Claude),
+        "pi" => Some(AgentIntegrationTarget::Pi),
+        _ => None,
+    }
+}
+
 fn run_agent_integration_command(
     command: AgentIntegrationCommands,
 ) -> Result<RenderedIntegrationReport, String> {

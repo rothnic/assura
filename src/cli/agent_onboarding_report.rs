@@ -2,6 +2,7 @@
 
 use super::agent_lifecycle::{LifecycleProfile, RankedNextAction};
 use super::agent_onboarding::{DetectedSection, OnboardingReview};
+use super::agent_onboarding_quality::QualityAdvice;
 use super::OutputFormat;
 use serde::Serialize;
 use std::io::{self, Write};
@@ -80,6 +81,19 @@ impl RenderedOnboardingReport {
             onboarding_row(
                 "Content",
                 format!("{}={}", report.content.template, report.content.status),
+            ),
+            onboarding_row(
+                "Quality",
+                if report.quality_advice.is_empty() {
+                    "no configured native tools".to_string()
+                } else {
+                    report
+                        .quality_advice
+                        .iter()
+                        .map(|item| format!("{}={}", item.tool, item.status))
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                },
             ),
             onboarding_row(
                 "Lifecycle",
@@ -177,6 +191,7 @@ pub(super) struct OnboardingReport {
     pub(super) installed: InstalledSection,
     pub(super) detected: DetectedSection,
     pub(super) rule_recommendations: Vec<RuleRecommendation>,
+    pub(super) quality_advice: Vec<QualityAdvice>,
     pub(super) integration: IntegrationSection,
     pub(super) content: ContentSection,
     pub(super) lifecycle_profiles: Vec<LifecycleProfile>,

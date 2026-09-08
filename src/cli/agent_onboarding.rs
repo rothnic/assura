@@ -1,6 +1,10 @@
 //! First-run local onboarding for agent-ready repositories.
-use super::agent_integration::configure_agent_integration_bundle;
+use super::agent_integration::{configure_agent_integration_bundle, target_from_harness};
 use super::agent_lifecycle::{lifecycle_profiles, ranked_next_actions};
+use super::agent_onboarding_quality::{
+    available_python_quality_tools, bun_available, declared_bun_quality_scripts,
+    onboarding_quality_advice,
+};
 use super::agent_onboarding_report::{
     write_report, CheckItem, ContentSection, FileAction, InstalledSection, IntegrationSection,
     OnboardingReport, RenderedOnboardingReport,
@@ -17,7 +21,6 @@ use serde::Serialize;
 use serde_yaml::Value;
 use std::fs;
 use std::path::{Path, PathBuf};
-
 const OUTPUT_SCHEMA: &str = "assura.agent-onboarding.v2";
 /// Options for `assura agent onboard`.
 pub struct AgentOnboardingOptions {
@@ -34,7 +37,6 @@ pub struct AgentOnboardingOptions {
     /// Output format.
     pub format: OutputFormat,
 }
-
 /// Run the first-run agent onboarding command.
 pub async fn agent_onboarding_command(
     options: AgentOnboardingOptions,
@@ -63,14 +65,12 @@ pub async fn agent_onboarding_command(
         }
     }
 }
-
 fn run_agent_onboarding(
     options: AgentOnboardingOptions,
     config: Option<PathBuf>,
 ) -> Result<RenderedOnboardingReport, String> {
     let project_root = resolve_project_root(options.path)?;
     fs::create_dir_all(&project_root).map_err(|error| error.to_string())?;
-
     let detected = detect_project(&project_root, options.agent, options.activate)?;
     let config_path = config.unwrap_or_else(|| project_root.join(".assura/config.yml"));
     let recipe_file = options.recipe_file;
@@ -83,6 +83,7 @@ fn run_agent_onboarding(
         materialize_initial_local_recipe(&config_path, recipe_file)?;
     }
     let mut files = Vec::new();
+    let quality_advice = onboarding_quality_advice(&project_root);
     for file in baseline_files(&detected, options.content_template) {
         files.push(materialize_baseline_file(&project_root, file)?);
     }
@@ -92,7 +93,7 @@ fn run_agent_onboarding(
         rule_recommendations_file(&detected, rule_recommendations[0].status),
     )?);
 
-    let integration_target = integration_target(&detected);
+    let integration_target = target_from_harness(detected.agent_harness);
     let integration = install_integration(
         &project_root,
         &detected,
@@ -140,6 +141,7 @@ fn run_agent_onboarding(
             },
             detected,
             rule_recommendations,
+            quality_advice,
             integration,
             content,
             lifecycle_profiles,
@@ -178,7 +180,6 @@ fn merge_local_recipe(config_path: &Path, recipe_file: &Path) -> Result<(), Stri
         Err(outcome.render_conflicts())
     }
 }
-
 fn resolve_project_root(path: Option<PathBuf>) -> Result<PathBuf, String> {
     let path = match path {
         Some(path) => path,
@@ -236,6 +237,9 @@ fn detect_project(
     } else {
         "high"
     };
+    let bun_scripts = declared_bun_quality_scripts(project_root, has_package_json);
+    let bun_available = bun_available(project_root, has_package_json);
+    let python_quality_tools = available_python_quality_tools(project_root);
     let agent = detect_agent(project_root, requested_agent, activate)?;
 
     Ok(DetectedSection {
@@ -247,6 +251,9 @@ fn detect_project(
         git_repository,
         existing_source_files,
         manifest_conflicts,
+        bun_scripts,
+        bun_available,
+        python_quality_tools,
     })
 }
 
@@ -505,16 +512,6 @@ fn install_integration(
     }
 }
 
-fn integration_target(detected: &DetectedSection) -> Option<AgentIntegrationTarget> {
-    match detected.agent_harness {
-        "codex" => Some(AgentIntegrationTarget::Codex),
-        "opencode" => Some(AgentIntegrationTarget::Opencode),
-        "claude" => Some(AgentIntegrationTarget::Claude),
-        "pi" => Some(AgentIntegrationTarget::Pi),
-        _ => None,
-    }
-}
-
 fn verify_project(
     project_root: &Path,
     config: Option<PathBuf>,
@@ -561,7 +558,6 @@ fn verify_project(
     };
     Ok((verified, review))
 }
-
 fn content_section(template: AgentContentTemplate) -> ContentSection {
     if template.activates_content() {
         ContentSection {
@@ -577,7 +573,6 @@ fn content_section(template: AgentContentTemplate) -> ContentSection {
         }
     }
 }
-
 #[derive(Clone, Serialize)]
 pub(super) struct DetectedSection {
     pub(super) project_type: &'static str,
@@ -588,8 +583,13 @@ pub(super) struct DetectedSection {
     pub(super) git_repository: bool,
     pub(super) existing_source_files: bool,
     pub(super) manifest_conflicts: Vec<&'static str>,
+    #[serde(skip)]
+    pub(super) bun_scripts: Vec<String>,
+    #[serde(skip)]
+    pub(super) bun_available: bool,
+    #[serde(skip)]
+    pub(super) python_quality_tools: Vec<&'static str>,
 }
-
 #[derive(Serialize)]
 pub(super) struct OnboardingReview {
     pub(super) status: &'static str,

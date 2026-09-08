@@ -3,6 +3,7 @@
 use super::agent_onboarding::DetectedSection;
 use super::agent_onboarding_content_templates as content;
 use super::agent_onboarding_handoff_templates as handoff;
+use super::agent_onboarding_quality::quality_config;
 use super::agent_onboarding_structure_fit_templates as structure_fit;
 use super::AgentContentTemplate;
 
@@ -16,7 +17,7 @@ pub(super) fn baseline_files(
     let mut files = vec![
         GeneratedFile {
             path: ".assura/config.yml",
-            contents: agent_ready_config(content_template),
+            contents: agent_ready_config(detected, content_template),
             required: true,
             executable: false,
         },
@@ -95,12 +96,16 @@ impl GeneratedFile {
     }
 }
 
-fn agent_ready_config(content_template: AgentContentTemplate) -> String {
+fn agent_ready_config(
+    detected: &DetectedSection,
+    content_template: AgentContentTemplate,
+) -> String {
     let repository_references = content::repository_reference_config(content_template);
     let requirements_traceability = content::requirements_traceability_config(content_template);
     let content_config = content::content_config(content_template);
     let root_structure = content::root_structure(content_template);
     let docs_structure = content::docs_structure(content_template);
+    let quality_config = quality_config(detected);
     format!(
         r#"rules:
   # Progressive-disclosure entrypoints.
@@ -178,6 +183,7 @@ extensions:
 {repository_references}
 {requirements_traceability}
 {content_config}
+{quality_config}
 
 structure:
   # Agent entrypoints and project-owned skills.
