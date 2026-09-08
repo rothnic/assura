@@ -348,7 +348,15 @@ class AgentInitEvaluatorTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary_directory:
             temporary_root = Path(temporary_directory)
             project = temporary_root / "project"
-            project.mkdir()
+            (project / "src").mkdir(parents=True)
+            (project / "tests").mkdir()
+            (project / "Cargo.toml").write_text(
+                "[package]\nname = \"mixed-cargo-suites\"\nversion = \"0.1.0\"\nedition = \"2021\"\n"
+            )
+            (project / "src/lib.rs").write_text("pub fn stable_value() -> u8 { 1 }\n")
+            (project / "tests/library.rs").write_text(
+                "#[test]\nfn stable_value_is_preserved() { assert_eq!(mixed_cargo_suites::stable_value(), 1); }\n"
+            )
             binary = temporary_root / "assura"
             binary.write_text("#!/bin/sh\nexit 1\n")
             binary.chmod(binary.stat().st_mode | stat.S_IXUSR)
@@ -358,7 +366,7 @@ class AgentInitEvaluatorTests(unittest.TestCase):
                 "stack": "rust", "prompt_hash": "2257e02d8f8d56f70937ca8ecc2993e3e4743888a68e7a5e21ca9e348f114941", "required_paths": [], "forbidden_paths": [],
                 "preserve_hashes": {}, "positive_probes": [], "negative_probes": [],
                 "native_commands": [{
-                    "id": "cargo-test", "command": ["sh", "-c", "printf 'running 0 tests\n\nrunning 1 test\n'"],
+                    "id": "cargo-test", "command": ["cargo", "test", "--offline"],
                     "cwd": ".", "require_collected_tests": True,
                 }], "required_hook_states": [],
             }))
@@ -371,8 +379,38 @@ class AgentInitEvaluatorTests(unittest.TestCase):
             )
             result = json.loads(output_path.read_text())
             native_evidence = next(entry for entry in result["command_evidence"] if entry.get("native_id") == "cargo-test")
-            self.assertEqual(native_evidence["state"], "pass")
+            self.assertEqual(native_evidence["state"], "pass", native_evidence)
             self.assertNotIn("native:cargo-test", result["critical_failures"])
+
+    def test_non_cargo_warning_cannot_bypass_zero_collected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            temporary_root = Path(temporary_directory)
+            project = temporary_root / "project"
+            project.mkdir()
+            binary = temporary_root / "assura"
+            binary.write_text("#!/bin/sh\nexit 1\n")
+            binary.chmod(binary.stat().st_mode | stat.S_IXUSR)
+            contract_path = temporary_root / "contract.json"
+            contract_path.write_text(json.dumps({
+                "schema": "assura.agent-init-evaluator.v1", "fixture_id": "warning-with-zero-tests",
+                "stack": "rust", "prompt_hash": "2257e02d8f8d56f70937ca8ecc2993e3e4743888a68e7a5e21ca9e348f114941", "required_paths": [], "forbidden_paths": [],
+                "preserve_hashes": {}, "positive_probes": [], "negative_probes": [],
+                "native_commands": [{
+                    "id": "native", "command": ["sh", "-c", "printf 'warning: running 1 test\\nrunning 0 tests\\n'"],
+                    "cwd": ".", "require_collected_tests": True,
+                }], "required_hook_states": [],
+            }))
+            output_path = temporary_root / "result.json"
+            subprocess.run(
+                [sys.executable, str(EVALUATOR), "--project", str(project),
+                 "--contract", str(contract_path), "--assura-bin", str(binary),
+                 "--output", str(output_path), "--dimensions", "native"],
+                check=False, capture_output=True, text=True,
+            )
+            result = json.loads(output_path.read_text())
+            native_evidence = next(entry for entry in result["command_evidence"] if entry.get("native_id") == "native")
+            self.assertEqual(native_evidence["state"], "fail")
+            self.assertIn("native:native", result["critical_failures"])
 
     def test_unknown_contract_schema_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
