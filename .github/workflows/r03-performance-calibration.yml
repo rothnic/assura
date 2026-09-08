@@ -1,0 +1,45 @@
+name: R03 Performance Calibration Cohort
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit:
+        description: Full 40-character commit SHA to measure.
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  collect:
+    name: Collect independent cohort ${{ matrix.slot }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        slot: [1, 2, 3]
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: ${{ inputs.commit }}
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 24
+    - name: Collect exact paired report and provenance
+      env:
+        ASSURA_R03_CALIBRATION_COMMIT: ${{ inputs.commit }}
+        ASSURA_R03_CALIBRATION_SLOT: ${{ matrix.slot }}
+      run: scripts/r03-performance-calibration-run.sh
+    - name: Upload raw R03 calibration evidence
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: r03-performance-calibration-${{ matrix.slot }}
+        path: target/performance/r03-performance-calibration-${{ matrix.slot }}
+        if-no-files-found: error
+        retention-days: 14
