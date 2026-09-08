@@ -116,7 +116,7 @@ class R03PerformanceCalibrationContractTests(unittest.TestCase):
                 artifact_directory = artifact_root / f"r03-performance-calibration-{index + 1}"
                 artifact_directory.mkdir()
                 (artifact_directory / "run.json").write_text(json.dumps({
-                    "job_id": f"job-{index}",
+                    "job_id": f"run:collect:{index + 1}",
                     "cpu_model": "AMD EPYC 9V74",
                     "runner_image_name": "ubuntu24",
                     "runner_image_version": "20260901.1",
@@ -141,6 +141,47 @@ class R03PerformanceCalibrationContractTests(unittest.TestCase):
         self.assertEqual(result["required_observed_cpu_model"]["status"], "present")
         self.assertEqual(result["cohorts"][0]["classification"], "stable-slow")
         self.assertEqual(result["cohorts"][0]["independent_job_count"], 3)
+
+    def test_collect_rejects_duplicate_evidence_when_a_required_slot_is_malformed(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            artifact_root = Path(temporary_directory)
+            for index in range(2):
+                artifact_directory = artifact_root / f"r03-performance-calibration-{index + 1}"
+                artifact_directory.mkdir()
+                record = {
+                    "job_id": f"run:collect:{index + 1}",
+                    "cpu_model": "AMD EPYC 9V74",
+                    "runner_image_name": "ubuntu24",
+                    "runner_image_version": "20260901.1",
+                    "source_sha": "a" * 40,
+                    "assura_binary_sha256": "b" * 64,
+                    "report_sha256": f"{index:064x}",
+                    "report_exit": 0,
+                    "gate_exit": 0,
+                    "paired_deltas_ms": [-1.0] * 16,
+                }
+                (artifact_directory / "run.json").write_text(json.dumps(record), encoding="utf-8")
+            malformed_slot = artifact_root / "r03-performance-calibration-3"
+            malformed_slot.mkdir()
+            (malformed_slot / "run.json").write_text("{not-json", encoding="utf-8")
+            duplicate = artifact_root / "r03-performance-calibration-1" / "duplicate"
+            duplicate.mkdir()
+            (duplicate / "run.json").write_text(json.dumps(record | {"job_id": "run:collect:3", "report_sha256": "c" * 64}), encoding="utf-8")
+
+            completed = subprocess.run(
+                [sys.executable, str(CLASSIFIER), "--collect", str(artifact_root)],
+                cwd=REPOSITORY_ROOT,
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        result = json.loads(completed.stdout)
+        self.assertEqual(result["cohorts"][0]["classification"], "inconclusive")
+        self.assertEqual(result["required_observed_cpu_model"]["status"], "unproven")
+        self.assertTrue(any("slot 3" in error for error in result["collection_errors"]))
+        self.assertTrue(any("unexpected" in error for error in result["collection_errors"]))
 
 
 if __name__ == "__main__":

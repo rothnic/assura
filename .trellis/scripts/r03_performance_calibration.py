@@ -32,6 +32,8 @@ PLAN = {
     "non_acceptance_uses": "Cannot relax, widen, drop, relabel, or bypass the production performance gate.",
 }
 
+EXPECTED_CALIBRATION_SLOTS = ("1", "2", "3")
+
 
 def classify_cohort(cohort: dict[str, Any]) -> dict[str, Any]:
     fingerprint = cohort.get("fingerprint")
@@ -116,19 +118,51 @@ def collected_fingerprint(run: Any, index: int) -> str:
 
 def collect_cohorts(artifact_root: Path) -> dict[str, Any]:
     grouped: dict[str, list[Any]] = defaultdict(list)
-    for index, run_path in enumerate(sorted(artifact_root.rglob("run.json")), start=1):
+    errors: list[str] = []
+    runs: list[Any] = []
+    expected_paths = {
+        artifact_root / f"r03-performance-calibration-{slot}" / "run.json"
+        for slot in EXPECTED_CALIBRATION_SLOTS
+    }
+    actual_paths = set(artifact_root.rglob("run.json")) if artifact_root.is_dir() else set()
+    for unexpected_path in sorted(actual_paths - expected_paths):
+        errors.append(f"unexpected run artifact: {unexpected_path.relative_to(artifact_root)}")
+
+    seen_job_ids: set[str] = set()
+    for slot in EXPECTED_CALIBRATION_SLOTS:
+        run_path = artifact_root / f"r03-performance-calibration-{slot}" / "run.json"
+        if not run_path.is_file():
+            errors.append(f"missing required run artifact for slot {slot}")
+            continue
         try:
             run = json.loads(run_path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
-            run = {"artifact_error": str(run_path)}
-        grouped[collected_fingerprint(run, index)].append(run)
-    if not grouped:
-        grouped["unproven:no-run-artifacts"] = []
+            errors.append(f"malformed required run artifact for slot {slot}")
+            continue
+        if not isinstance(run, dict):
+            errors.append(f"required run artifact for slot {slot} is not an object")
+            continue
+        job_id = run.get("job_id")
+        if not isinstance(job_id, str) or not job_id.endswith(f":{slot}"):
+            errors.append(f"job provenance does not match required slot {slot}")
+            continue
+        if job_id in seen_job_ids:
+            errors.append(f"duplicate job provenance for required slot {slot}")
+            continue
+        seen_job_ids.add(job_id)
+        runs.append(run)
+
+    if errors:
+        grouped["unproven:collection-integrity"] = runs + [{"artifact_errors": errors}]
+    else:
+        for index, run in enumerate(runs, start=1):
+            grouped[collected_fingerprint(run, index)].append(run)
     return {
         "cohorts": [
             {"fingerprint": fingerprint, "runs": runs}
             for fingerprint, runs in sorted(grouped.items())
-        ]
+        ],
+        "collection_errors": errors,
     }
 
 
@@ -146,6 +180,7 @@ def classify_payload(payload: dict[str, Any]) -> dict[str, Any]:
             "status": "present" if required_present else "unproven",
         },
         "cohorts": classified,
+        "collection_errors": payload.get("collection_errors", []),
     }
 
 
