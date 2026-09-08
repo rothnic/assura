@@ -228,7 +228,7 @@
       ],
       "executor": "agent",
       "state": "active",
-      "owner": "Codex goal/a06-bounded-feedback; bounded hook/cooldown core implemented, independently rereviewed, and locally fully gated; remaining packet observations are explicitly retained in evidence/A06.md",
+      "owner": "Codex goal/a06-observation-contract; A06 packet behavior, exact-binary observations, and independent rereview are locally complete at b305578; reviewed hosted integration remains before done",
       "evidence": "evidence/A06.md",
       "blocker": null
     },

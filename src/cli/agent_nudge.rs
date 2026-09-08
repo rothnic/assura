@@ -168,6 +168,7 @@ fn build_agent_nudge(
         event_name(options.event),
         agent_name(options.agent),
         &policy_generation,
+        &options.changed_paths,
         &mut nudges,
         options.cooldown_seconds,
     );

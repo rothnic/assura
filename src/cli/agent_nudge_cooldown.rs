@@ -1,14 +1,14 @@
 //! Bounded repeated-message suppression for agent lifecycle events.
 
-use super::NudgeItem;
+use super::{helpers::path_string, NudgeItem};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
-const STATE_SCHEMA: &str = "assura.agent-nudge-cooldown.v1";
+const STATE_SCHEMA: &str = "assura.agent-nudge-cooldown.v2";
 
 #[derive(Debug, Serialize)]
 pub(super) struct CooldownSummary {
@@ -29,7 +29,13 @@ pub(super) struct CachePolicy {
 #[derive(Default, Deserialize, Serialize)]
 struct CooldownState {
     schema: String,
-    messages: BTreeMap<String, u64>,
+    messages: BTreeMap<String, CachedMessage>,
+}
+
+#[derive(Deserialize, Serialize)]
+struct CachedMessage {
+    timestamp: u64,
+    path: Option<String>,
 }
 
 pub(super) fn apply(
@@ -37,10 +43,11 @@ pub(super) fn apply(
     event: &str,
     agent: &str,
     policy_generation: &str,
+    changed_paths: &[PathBuf],
     nudges: &mut Vec<NudgeItem>,
     seconds: u64,
 ) -> CooldownSummary {
-    if seconds == 0 || nudges.is_empty() {
+    if seconds == 0 {
         return CooldownSummary {
             seconds,
             suppressed: 0,
@@ -52,21 +59,38 @@ pub(super) fn apply(
     let session = std::env::var("ASSURA_AGENT_SESSION_ID").unwrap_or_else(|_| "manual".to_string());
     let (path, mode, fallback_reason) = state_path(project_root);
     let mut state = read_state(&path);
-    state
-        .messages
-        .retain(|_, timestamp| within_cooldown(now, *timestamp, seconds));
-    let before = nudges.len();
     let agent_generation = format!("{agent}\0{policy_generation}");
+    let observed = nudges
+        .iter()
+        .map(|nudge| fingerprint(&session, event, &agent_generation, nudge))
+        .collect::<BTreeSet<_>>();
+    let changed_paths = changed_paths
+        .iter()
+        .map(|path| path_string(path))
+        .collect::<BTreeSet<_>>();
+    state.messages.retain(|fingerprint, message| {
+        within_cooldown(now, message.timestamp, seconds)
+            && match message.path.as_ref() {
+                Some(path) if changed_paths.contains(path) => observed.contains(fingerprint),
+                Some(_) => true,
+                None => observed.contains(fingerprint),
+            }
+    });
+    let before = nudges.len();
     nudges.retain(|nudge| {
         let fingerprint = fingerprint(&session, event, &agent_generation, nudge);
-        if state
-            .messages
-            .get(&fingerprint)
-            .is_some_and(|timestamp| *timestamp <= now && now.saturating_sub(*timestamp) < seconds)
-        {
+        if state.messages.get(&fingerprint).is_some_and(|message| {
+            message.timestamp <= now && now.saturating_sub(message.timestamp) < seconds
+        }) {
             false
         } else {
-            state.messages.insert(fingerprint, now);
+            state.messages.insert(
+                fingerprint,
+                CachedMessage {
+                    timestamp: now,
+                    path: nudge.path.clone(),
+                },
+            );
             true
         }
     });
@@ -195,8 +219,36 @@ fn unix_seconds() -> u64 {
 
 #[cfg(test)]
 mod tests {
-    use super::{policy_generation, within_cooldown};
+    use super::super::NudgeItem;
+    use super::{apply, policy_generation, within_cooldown};
     use std::fs;
+    use std::path::PathBuf;
+
+    fn nudge(rule: &str) -> NudgeItem {
+        NudgeItem {
+            category: "structure",
+            path: Some("src/BadName.js".to_string()),
+            rule: Some(rule.to_string()),
+            severity: "medium",
+            message: format!("{rule} violation"),
+            suggested_command: String::new(),
+            inject: true,
+            daemon_health: None,
+        }
+    }
+
+    fn pathless_nudge() -> NudgeItem {
+        NudgeItem {
+            category: "daemon",
+            path: None,
+            rule: Some("daemon_health".to_string()),
+            severity: "medium",
+            message: "daemon is unavailable".to_string(),
+            suggested_command: String::new(),
+            inject: true,
+            daemon_health: None,
+        }
+    }
 
     #[test]
     fn cooldown_discards_future_and_expired_timestamps() {
@@ -214,5 +266,90 @@ mod tests {
         fs::write(&config, b"structure: {}\n# \xfe\n").expect("write second config");
 
         assert_ne!(first, policy_generation(project.path(), Some(&config)));
+    }
+
+    #[test]
+    fn reintroduced_finding_is_not_suppressed_when_another_finding_persists() {
+        let project = tempfile::tempdir().expect("temporary project");
+        let changed = [PathBuf::from("src/BadName.js")];
+        let mut initial = vec![nudge("file_naming"), nudge("file_extension")];
+        apply(
+            project.path(),
+            "after_tool",
+            "codex",
+            "policy",
+            &changed,
+            &mut initial,
+            600,
+        );
+        assert_eq!(initial.len(), 2);
+
+        let mut resolved_naming = vec![nudge("file_extension")];
+        let summary = apply(
+            project.path(),
+            "after_tool",
+            "codex",
+            "policy",
+            &changed,
+            &mut resolved_naming,
+            600,
+        );
+        assert!(resolved_naming.is_empty());
+        assert_eq!(summary.suppressed, 1);
+
+        let mut reintroduced = vec![nudge("file_naming"), nudge("file_extension")];
+        let summary = apply(
+            project.path(),
+            "after_tool",
+            "codex",
+            "policy",
+            &changed,
+            &mut reintroduced,
+            600,
+        );
+        assert_eq!(reintroduced.len(), 1);
+        assert_eq!(reintroduced[0].rule.as_deref(), Some("file_naming"));
+        assert_eq!(summary.suppressed, 1);
+    }
+
+    #[test]
+    fn reintroduced_pathless_failure_is_not_suppressed_after_recovery() {
+        let project = tempfile::tempdir().expect("temporary project");
+        let mut failure = vec![pathless_nudge()];
+        apply(
+            project.path(),
+            "after_tool",
+            "codex",
+            "policy",
+            &[],
+            &mut failure,
+            600,
+        );
+        assert_eq!(failure.len(), 1);
+
+        let mut recovery = Vec::new();
+        apply(
+            project.path(),
+            "after_tool",
+            "codex",
+            "policy",
+            &[],
+            &mut recovery,
+            600,
+        );
+        assert!(recovery.is_empty());
+
+        let mut reintroduced = vec![pathless_nudge()];
+        let summary = apply(
+            project.path(),
+            "after_tool",
+            "codex",
+            "policy",
+            &[],
+            &mut reintroduced,
+            600,
+        );
+        assert_eq!(reintroduced.len(), 1);
+        assert_eq!(summary.suppressed, 0);
     }
 }

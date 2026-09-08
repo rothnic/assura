@@ -1014,6 +1014,41 @@ fn agent_nudge_suppresses_identical_messages_during_the_cooldown() {
 }
 
 #[test]
+fn agent_nudge_reemits_a_finding_reintroduced_during_the_cooldown() {
+    let project = nudge_fixture();
+    let path = project.path().to_str().expect("fixture path");
+    let args = [
+        "nudge",
+        path,
+        "--event",
+        "after-tool",
+        "--changed",
+        "src/BadName.rs",
+        "--cooldown-seconds",
+        "600",
+    ];
+
+    let first = agent_json(&args);
+    fs::rename(
+        project.path().join("src/BadName.rs"),
+        project.path().join("src/good-name.rs"),
+    )
+    .expect("resolve naming violation");
+    let resolved = agent_json(&args);
+    fs::rename(
+        project.path().join("src/good-name.rs"),
+        project.path().join("src/BadName.rs"),
+    )
+    .expect("reintroduce naming violation");
+    let reintroduced = agent_json(&args);
+
+    assert_eq!(first["summary"]["nudge_count"], 1);
+    assert_eq!(resolved["summary"]["nudge_count"], 0);
+    assert_eq!(reintroduced["summary"]["nudge_count"], 1);
+    assert_eq!(reintroduced["cache_policy"]["cooldown"]["suppressed"], 0);
+}
+
+#[test]
 fn agent_nudge_does_not_suppress_a_finding_after_policy_generation_changes() {
     let project = nudge_fixture();
     let path = project.path().to_str().expect("fixture path");
