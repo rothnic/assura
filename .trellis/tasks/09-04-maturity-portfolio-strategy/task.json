@@ -36,8 +36,9 @@
   "notes": "Planning deliverable with 32 execution cards, standalone executor prompt, and a new-session E2E release-train goal. Start B00; use the machine-readable queue and per-card proof. Product code, skill installation, release and posting are not completed. Current task files are the only owned checkout changes. The source snapshot and original evaluated master describe the historical planning baseline, not current branch ancestry; current execution follows the reconciled queue and per-card evidence.",
   "meta": {
     "execution_branches": [
-      "goal/a05-current-audit",
-      "goal/a04-readiness-hold",
+    "goal/a05-current-audit",
+    "goal/a04-pre-commit-contract",
+    "goal/a04-readiness-hold",
       "goal/w02-deployment-hold",
       "goal/q02-contribution-contract",
       "goal/q04-policy-naming",
