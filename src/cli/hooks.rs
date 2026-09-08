@@ -432,6 +432,23 @@ mod tests {
     }
 
     #[test]
+    fn legacy_wrapper_bytes_match_the_historical_fixture_shape() {
+        let project = tempfile::TempDir::new().unwrap();
+        std::fs::create_dir_all(project.path().join(".git/hooks")).unwrap();
+        let manager = GitHooksManager::new(project.path()).unwrap();
+        let sidecar = project.path().join(".assura/hooks/pre-push");
+        let fixture = format!(
+            "#!/bin/sh\n# Git hook managed by Assura\n# This file was auto-generated. Do not modify manually.\n\nASSURA_HOOK=\"{}\"\n\nif [ -f \"$ASSURA_HOOK\" ]; then\n    exec \"$ASSURA_HOOK\" \"$@\"\nelse\n    echo \"Warning: Assura hook not found at $ASSURA_HOOK\" >&2\n    exit 0\nfi\n",
+            sidecar.display()
+        );
+
+        assert_eq!(
+            manager.legacy_managed_git_hook_content(&sidecar).unwrap(),
+            fixture.into_bytes()
+        );
+    }
+
+    #[test]
     fn git_hooks_dir_resolves_worktree_git_file_to_common_hooks() {
         let project = tempfile::TempDir::new().unwrap();
         let git_dir = project.path().join("main.git/worktrees/agent");
