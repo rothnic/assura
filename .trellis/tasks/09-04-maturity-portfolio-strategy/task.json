@@ -37,7 +37,8 @@
   "meta": {
     "execution_branches": [
       "goal/a05-current-audit",
-      "goal/q02-contribution-contract"
+      "goal/q02-contribution-contract",
+      "goal/q04-policy-naming"
     ]
   }
 }

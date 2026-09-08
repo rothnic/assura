@@ -12,6 +12,138 @@ fn assura_full_bin() -> &'static str {
     env!("CARGO_BIN_EXE_assura-full")
 }
 
+fn normalized_findings(output: &[u8], project: &TempDir) -> Vec<(String, String, String, String)> {
+    let report: Value = serde_json::from_slice(output).unwrap();
+    report["violations"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|violation| {
+            let path = violation["path"].as_str().unwrap();
+            let path = std::path::Path::new(path);
+            let path = path
+                .strip_prefix(project.path())
+                .unwrap_or(path)
+                .to_string_lossy()
+                .replace('\\', "/");
+            (
+                violation["rule"].as_str().unwrap().to_string(),
+                path,
+                violation["severity"].as_str().unwrap().to_string(),
+                violation["message"].as_str().unwrap().to_string(),
+            )
+        })
+        .collect()
+}
+
+#[test]
+fn lightweight_and_full_check_preserve_naming_findings() {
+    let project = TempDir::new().unwrap();
+    let assura_dir = project.path().join(".assura");
+    fs::create_dir(&assura_dir).unwrap();
+    let config = r#"
+structure:
+  ./:
+    files:
+      naming: "exact:README | regex:^(ALLOWED|LICENSE)$ | kebab-case"
+    children:
+      .assura/:
+        inherit: false
+        files:
+          naming: kebab-case
+      src/:
+        files:
+          naming: "regex:^${0}-generated$ | snake_case"
+      docs/:
+        files:
+          naming: PascalCase
+"#;
+    fs::write(assura_dir.join("config.yml"), config).unwrap();
+    fs::create_dir(project.path().join("src")).unwrap();
+    fs::create_dir(project.path().join("docs")).unwrap();
+    fs::write(project.path().join("README.md"), "# Readme\n").unwrap();
+    fs::write(project.path().join("ALLOWED.md"), "allowed\n").unwrap();
+    fs::write(project.path().join("LICENSE.md"), "license\n").unwrap();
+    fs::write(project.path().join("archive.tar.gz"), "archive\n").unwrap();
+    fs::write(project.path().join("src/good_name.rs"), "fn main() {}\n").unwrap();
+    fs::write(
+        project.path().join("src/src-generated.rs"),
+        "fn generated() {}\n",
+    )
+    .unwrap();
+    fs::write(project.path().join("src/BadName.rs"), "fn main() {}\n").unwrap();
+    fs::write(project.path().join("docs/GoodName.md"), "# Good\n").unwrap();
+    fs::write(project.path().join("docs/bad-name.md"), "# Bad\n").unwrap();
+
+    let lightweight = Command::new(assura_bin())
+        .args(["check", "--format", "json"])
+        .arg(project.path())
+        .output()
+        .unwrap();
+    let full = Command::new(assura_full_bin())
+        .args(["check", "--format", "json"])
+        .arg(project.path())
+        .output()
+        .unwrap();
+
+    assert_eq!(lightweight.status.code(), Some(1));
+    assert_eq!(full.status.code(), Some(1));
+    let lightweight_findings = normalized_findings(&lightweight.stdout, &project);
+    assert_eq!(
+        lightweight_findings,
+        normalized_findings(&full.stdout, &project),
+        "lightweight stdout:\n{}\nfull stdout:\n{}",
+        String::from_utf8_lossy(&lightweight.stdout),
+        String::from_utf8_lossy(&full.stdout)
+    );
+
+    // Both frontends above can select the fast engine. A non-binding line limit
+    // makes is_fast_file_bundle reject this policy, exercising the plain engine
+    // over the same naming rules and files (all comfortably below 100 lines).
+    let plain_config = config.replacen("    files:\n", "    files:\n      max_lines: 100\n", 1);
+    fs::write(assura_dir.join("config.yml"), plain_config).unwrap();
+    let plain = Command::new(assura_full_bin())
+        .args(["check", "--format", "json"])
+        .arg(project.path())
+        .output()
+        .unwrap();
+    assert_eq!(plain.status.code(), Some(1));
+    assert_eq!(
+        lightweight_findings,
+        normalized_findings(&plain.stdout, &project),
+        "fast stdout:\n{}\nplain stdout:\n{}",
+        String::from_utf8_lossy(&lightweight.stdout),
+        String::from_utf8_lossy(&plain.stdout)
+    );
+
+    // Independent expected findings catch shared misses and false positives:
+    // README, both uppercase regex alternatives, multipart archive, path-aware
+    // src-generated, snake_case, and PascalCase positives must remain accepted.
+    let expected = [
+        (
+            "file_naming",
+            "docs/bad-name.md",
+            "medium",
+            "File 'bad-name.md' does not match naming convention 'PascalCase'",
+        ),
+        (
+            "file_naming",
+            "src/BadName.rs",
+            "medium",
+            "File 'BadName.rs' does not match naming convention 'regex:^${0}-generated$ | snake_case'",
+        ),
+    ]
+    .map(|(rule, path, severity, message)| {
+        (
+            rule.to_string(),
+            path.to_string(),
+            severity.to_string(),
+            message.to_string(),
+        )
+    });
+    assert_eq!(lightweight_findings, expected);
+}
+
 #[test]
 fn check_help_uses_lightweight_primary_path() {
     let output = Command::new(assura_bin())
