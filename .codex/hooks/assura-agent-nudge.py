@@ -24,6 +24,7 @@ from typing import Any
 STATE_SCHEMA = "assura.codex-hook-state.v1"
 STATE_FILE = "codex-hook-state.jsonl"
 MAX_CONTEXT_NUDGES = 5
+MAX_CONTEXT_BYTES = 2 * 1024
 MAX_CHANGED_PATHS = 20
 DEFAULT_MIN_SEVERITY = "medium"
 GIT_WRITE_INTENTS = {
@@ -354,7 +355,21 @@ def compact_context(payload: dict[str, Any], meta: dict[str, Any]) -> str:
     lines.append("Log: .assura/agent-sessions/nudges.jsonl")
     lines.append("State: .assura/agent-sessions/codex-hook-state.jsonl")
     lines.append("</assura-nudge>")
-    return "\n".join(lines)
+    return bounded_context(lines)
+
+
+def bounded_context(lines: list[str]) -> str:
+    context = "\n".join(lines)
+    if len(context.encode("utf-8")) <= MAX_CONTEXT_BYTES:
+        return context
+    suffix = (
+        "\nOutput truncated at 2 KiB; full payload: "
+        ".assura/agent-sessions/nudges.jsonl\n</assura-nudge>"
+    )
+    body = "\n".join(lines[:-1])
+    remaining = MAX_CONTEXT_BYTES - len(suffix.encode("utf-8"))
+    prefix = body.encode("utf-8")[:remaining].decode("utf-8", errors="ignore")
+    return f"{prefix}{suffix}"
 
 
 def should_inject(payload: dict[str, Any], meta: dict[str, Any]) -> bool:

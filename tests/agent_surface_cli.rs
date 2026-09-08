@@ -794,6 +794,37 @@ fn codex_post_tool_hook_injects_changed_path_nudge_and_logs_state() {
 }
 
 #[test]
+fn codex_hook_bounds_utf8_context_for_many_long_findings() {
+    let project = git_nudge_fixture();
+    for index in 0..5 {
+        let filename = format!("src/A{}-{index}.rs", "é".repeat(80));
+        fs::write(project.path().join(filename), "fn bad() {}\n").expect("write long bad file");
+    }
+    let session = "bounded-context-test";
+    let input = serde_json::json!({
+        "session_id": session,
+        "cwd": project.path().to_str().expect("project path"),
+        "hook_event_name": "PostToolUse",
+        "tool_name": "apply_patch",
+        "tool_input": {"patch": "fixture"}
+    });
+    let output = run_codex_hook(project.path(), input, session);
+    assert!(
+        output.status.success(),
+        "hook stderr: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let hook_output: Value = serde_json::from_slice(&output.stdout).expect("hook emits JSON");
+    let context = hook_output["hookSpecificOutput"]["additionalContext"]
+        .as_str()
+        .expect("additional context");
+    assert!(context.len() <= 2 * 1024);
+    assert!(context.is_char_boundary(context.len()));
+    assert!(context.contains("Output truncated at 2 KiB"));
+    assert!(context.ends_with("</assura-nudge>"));
+}
+
+#[test]
 fn codex_post_tool_hook_injects_git_commit_intent_without_new_delta() {
     let project = git_nudge_fixture();
     fs::write(
