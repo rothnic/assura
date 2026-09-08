@@ -71,7 +71,7 @@
       ],
       "executor": "agent",
       "state": "active",
-      "owner": "Codex goal/r03-fresh-attribution; finite Callgrind attribution plan pending independent review, rejected source remains reverted",
+      "owner": "Codex goal/r03-perf-variance-diagnostic; hosted same-SHA variance diagnostic active, rejected source remains reverted",
       "evidence": "evidence/R03.md",
       "blocker": null
     },

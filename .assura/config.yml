@@ -1112,6 +1112,7 @@ structure:
             - "ci-scope-github.sh"
             - "evaluate-agent-init.py"
             - "perf-vps-ls-lint-compare.sh"
+            - "r03-performance-variance.sh"
             - "smoke-install-adoption.ps1"
             - "smoke-install-adoption.sh"
             - "summarize-rust-cache.sh"

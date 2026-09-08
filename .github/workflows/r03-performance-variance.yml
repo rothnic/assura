@@ -1,0 +1,40 @@
+name: R03 Performance Variance Diagnostic
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit:
+        description: full 40-character commit SHA to measure.
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    name: Retain strict paired cold evidence
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: ${{ inputs.commit }}
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 24
+    - name: Collect repeated exact cold reports
+      env:
+        ASSURA_PERF_VARIANCE_COMMIT: ${{ inputs.commit }}
+      run: scripts/r03-performance-variance.sh
+    - name: Upload raw R03 variance evidence
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: r03-performance-variance
+        path: target/performance/r03-performance-variance
+        if-no-files-found: error
+        retention-days: 14
