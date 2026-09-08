@@ -675,28 +675,11 @@ recoverable. This reconciliation adds records rather than rewriting outcomes.
 - A focused evaluator repair now adds optional fixture-owned textual guidance assertions, with passing, missing-fragment, and unsafe-path tests. The evaluator suite passed 30 tests and Python compilation passed. The exact A03 binary-backed disposable proof is pending: local storage had only 118 MiB free and Cargo failed with `No space left on device`; the local `vps-dev` SSH alias was unavailable. The failed temporary build and fixture were removed, restoring 128 MiB, still inadequate. This is an environmental evidence gap, not a passing result.
 - Context health: the repeated issue is constrained local disk, already visible in prior A01 docs observations. No new reusable skill is warranted; next is an adequately provisioned runner for the exact current-master binary proof, then independent review and hosted gating of this repair.
 
-## Iteration 1 — 2026-09-05 — B00 baseline capture
+## Historical index
 
-- Refreshed `origin/master` at `ed093668918bc271fc98b9112acaf7c1bf3eb314` and inventoried GitHub state, existing worktrees, release version, overlapping PR #142, and case-study PR #60.
-- Preserved the previously uncommitted plan in dedicated PR #143; rebased it directly on current master after independent review identified that evidence must remain in execution ancestry.
-- Captured B00 evidence in `research/evidence/B00.md`. Current hosted evidence exposes a real macOS watch assertion failure; it remains failing and blocks the planning handoff from merging alone.
-
-## Iteration 2 — 2026-09-05 — R01 ownership and investigation
-
-- Created isolated worktree `/Users/nroth/.codex/worktrees/assura-r01-watch-scope` on `goal/r01-watch-scope`, parented on the dedicated planning handoff.
-- Marked R01 active and assigned its narrowly scoped test-first repair. Investigation shows macOS `need_rescan` truthfully requires `full_rescan_event`; R01 must retain overflow safety while making the contract portable and instrumented.
-- Next: review the local R01 implementation, obtain its independent review, then run required hosted platform proof before considering it done.
-
-## Iteration 3 — 2026-09-05 — R01 local proof and context health
-
-- R01 is locally verified at `b52dc4db7c986ca305b0f594d5d23b99543da29a`: the targeted suite passed 13/13, library tests passed 514 Assura plus 15 watch-state tests, and the scoped integration passed 20 consecutive runs after the full tier was green.
-- Context health review: the repeated local root Cargo rebuild stalled without CPU and was interrupted rather than retried unchanged; the isolated R01 worktree completed its own verification normally. The durable policy mismatch is card evidence naming (`<ID>.md`) versus the current kebab-case self-policy, explicitly assigned to independent ready card R07. No new skill is warranted: the existing `assura-structure-fit` skill already routes that decision.
-- Next: independent review of the exact R01 SHA, then hosted macOS/Linux/Windows proof. Do not call R01 done until that proof exists.
-
-## Iteration 4 — 2026-09-06 — R01 hosted regression repair
-
-- The first current-master R05 matrix exposed a real macOS watch-test regression: pathless filesystem rescan events produced the intentionally safe `full_rescan_event` report instead of the formerly expected silence.
-- R01 narrowed only its test contract to accept that exact safe fallback while rejecting other output; production overflow behavior remains unchanged. Independent review found the repair clean.
+- Initial B00/R01 iterations 1–4 are preserved in
+  [`progress-early-history.md`](progress-early-history.md) so this live journal
+  remains within its configured structural limit.
 
 ## Iteration 5 — 2026-09-06 — R01 current-master integration
 
@@ -987,3 +970,21 @@ recoverable. This reconciliation adds records rather than rewriting outcomes.
   suites, documentation, and website verification. Security Scope passed; the
   conditional Security Audit was scope-skipped and is not called passing test
   evidence. The continuing A05 branch is clean and rebased to the merge.
+
+## Iteration 48 — 2026-09-08 — A05 cumulative overlapping-scope contract
+
+- PR #204 merged as `dd2efaf` after independent review identified one concrete
+  observability issue, the accepted test-only correction made scope order
+  observable with a Rust-only command, and scoped rereview found no remaining
+  defect. The fixture proves `frequent` through `merge` plans are cumulative,
+  stable, and deduplicated across overlapping base/Rust scopes.
+- The focused contract, 13-test A05 integration target, formatting and diff
+  checks, and full `cargo xtask pr` gate passed. The full hosted matrix passed,
+  including Performance Report, five adoption lanes, Windows Installer Smoke,
+  release smoke, coverage, all stable OS suites, documentation, and website
+  verification. Security Scope passed; the conditional Security Audit was
+  scope-skipped and is not called passing test evidence.
+- Context level: not exposed. The reviewer correction was specific to a test
+  oracle, and the existing reviewer plus goal-execution loop captured it; no
+  new reusable skill is warranted. Next: reconcile this evidence, then select
+  the smallest remaining current-master A05 contract in the clean owner.
