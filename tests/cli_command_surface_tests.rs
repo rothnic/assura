@@ -500,7 +500,7 @@ fn hooks_help_lists_local_hook_subcommands() {
         String::from_utf8_lossy(&output.stderr)
     );
     let stdout = String::from_utf8_lossy(&output.stdout);
-    for command in ["install", "uninstall", "status", "verify"] {
+    for command in ["install", "uninstall", "status", "verify", "run"] {
         assert!(stdout.contains(command), "stdout was:\n{stdout}");
     }
 }

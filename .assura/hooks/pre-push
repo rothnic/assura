@@ -1,6 +1,6 @@
 #!/bin/sh
 # Assura pre-push hook
-# Runs full validation before pushing
+# Delegates validation to Assura's stable pre-push runner.
 
 set -e
 
@@ -27,26 +27,10 @@ run_assura() {
     fi
 }
 
-# Run full validation. This stays advisory until the repository passes its
-# self-check baseline; set ASSURA_BLOCKING_PUSH=1 to opt into local blocking.
+# The CLI runner owns advisory and ASSURA_BLOCKING_PUSH behavior so generated
+# Git hooks and pre-commit invoke one contract.
 if run_assura --help >/dev/null 2>&1; then
-    if run_assura check "$PROJECT_ROOT" --format advice; then
-        echo "Assura validation passed"
-        exit 0
-    else
-        EXIT_CODE=$?
-    fi
-
-    if [ "$ASSURA_BLOCKING_PUSH" = "1" ]; then
-        echo "ERROR: Assura validation failed and ASSURA_BLOCKING_PUSH=1 is set"
-        exit $EXIT_CODE
-    fi
-
-    echo ""
-    echo "WARNING: Assura validation found issues"
-    echo "Pre-push is advisory until the self-check baseline is clean."
-    echo "Set ASSURA_BLOCKING_PUSH=1 to enforce blocking pushes locally."
-    exit 0
+    run_assura hooks run pre-push
 else
     echo "Warning: assura command not found and local cargo fallback is unavailable"
     exit 0

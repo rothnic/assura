@@ -4,6 +4,61 @@ use assura::cli::{GitHooksManager, HookType};
 use std::path::Path;
 use std::process::{Command, Output};
 
+#[cfg(unix)]
+fn install_pre_commit_4_6_2_shim(project: &Path, include_assura: bool) -> std::path::PathBuf {
+    use std::os::unix::fs::PermissionsExt;
+
+    let bin = project.join("test-bin");
+    std::fs::create_dir_all(&bin).unwrap();
+    let shim = bin.join("pre-commit");
+    std::fs::write(
+        &shim,
+        "#!/bin/sh\nif [ \"$1\" = \"--version\" ]; then\n  printf 'pre-commit 4.6.2\\n'\nelif [ \"$ASSURA_TEST_PRE_COMMIT_REJECT\" = \"1\" ]; then\n  exit 1\nfi\n",
+    )
+    .unwrap();
+    std::fs::set_permissions(&shim, std::fs::Permissions::from_mode(0o755)).unwrap();
+    if include_assura {
+        let assura = bin.join("assura");
+        std::fs::write(&assura, "#!/bin/sh\nexit 0\n").unwrap();
+        std::fs::set_permissions(&assura, std::fs::Permissions::from_mode(0o755)).unwrap();
+    }
+    bin
+}
+
+#[cfg(windows)]
+fn install_pre_commit_4_6_2_shim(project: &Path, include_assura: bool) -> std::path::PathBuf {
+    let bin = project.join("test-bin");
+    std::fs::create_dir_all(&bin).unwrap();
+    std::fs::write(
+        bin.join("pre-commit.cmd"),
+        "@echo off\r\nif \"%1\"==\"--version\" (\r\n  echo pre-commit 4.6.2\r\n  exit /b 0\r\n)\r\nif \"%ASSURA_TEST_PRE_COMMIT_REJECT%\"==\"1\" exit /b 1\r\n",
+    )
+    .unwrap();
+    if include_assura {
+        std::fs::write(bin.join("assura.cmd"), "@echo off\r\nexit /b 0\r\n").unwrap();
+    }
+    bin
+}
+
+fn command_with_pre_commit_4_6_2(
+    command: &mut Command,
+    project: &Path,
+    reject_validation: bool,
+    include_assura: bool,
+) {
+    let shim_dir = install_pre_commit_4_6_2_shim(project, include_assura);
+    let mut paths = vec![shim_dir];
+    if let Some(current_path) = std::env::var_os("PATH") {
+        paths.extend(std::env::split_paths(&current_path));
+    }
+    command.env("PATH", std::env::join_paths(paths).unwrap());
+    #[cfg(windows)]
+    command.env("PATHEXT", ".COM;.EXE;.BAT;.CMD");
+    if reject_validation {
+        command.env("ASSURA_TEST_PRE_COMMIT_REJECT", "1");
+    }
+}
+
 fn git(project: &Path, args: &[&str]) -> Output {
     Command::new("git")
         .arg("-C")
@@ -33,6 +88,365 @@ fn command_output_text(output: &Output) -> String {
         String::from_utf8_lossy(&output.stdout),
         String::from_utf8_lossy(&output.stderr)
     )
+}
+
+#[test]
+fn hooks_run_pre_push_keeps_invalid_policy_advisory() {
+    let project = tempfile::TempDir::new().unwrap();
+    assert_git(project.path(), &["init", "--quiet"]);
+    std::fs::create_dir_all(project.path().join(".assura")).unwrap();
+    std::fs::create_dir_all(project.path().join("src")).unwrap();
+    std::fs::write(
+        project.path().join(".assura/config.yml"),
+        "structure:\n  ./:\n    extra: true\n    children:\n      src/:\n        files:\n          naming: kebab-case\n          extensions: [\"rs\"]\n",
+    )
+    .unwrap();
+    std::fs::write(project.path().join("src/BadName.rs"), "fn main() {}\n").unwrap();
+
+    let output = Command::new(assura_bin())
+        .args(["hooks", "run", "pre-push"])
+        .current_dir(project.path())
+        .output()
+        .expect("run stable pre-push runner");
+
+    assert!(
+        output.status.success(),
+        "pre-push runner must remain advisory by default: {}",
+        command_output_text(&output)
+    );
+    assert!(
+        command_output_text(&output).contains("WARNING: Assura validation found issues"),
+        "pre-push runner must report the invalid policy: {}",
+        command_output_text(&output)
+    );
+}
+
+#[test]
+fn generated_pre_push_hook_delegates_to_the_stable_runner() {
+    let project = tempfile::TempDir::new().unwrap();
+    assert_git(project.path(), &["init", "--quiet"]);
+
+    let manager = GitHooksManager::new(project.path()).unwrap();
+    manager.install(HookType::PrePush, false).unwrap();
+
+    let generated = std::fs::read_to_string(project.path().join(".assura/hooks/pre-push")).unwrap();
+    assert!(
+        generated.contains("hooks run pre-push"),
+        "generated hook must delegate to the CLI runner: {generated}"
+    );
+}
+
+#[test]
+fn install_appends_owned_pre_commit_pre_push_block_without_rewriting_comments() {
+    let project = tempfile::TempDir::new().unwrap();
+    assert_git(project.path(), &["init", "--quiet"]);
+    std::fs::create_dir_all(project.path().join(".assura")).unwrap();
+    std::fs::write(project.path().join(".assura/config.yml"), "structure: {}\n").unwrap();
+    let config = "# keep this comment\nrepos:\n- repo: local\n  hooks:\n  - id: user-hook\n    entry: true\n    language: system\n";
+    std::fs::write(project.path().join(".pre-commit-config.yaml"), config).unwrap();
+
+    let mut command = Command::new(assura_bin());
+    command.args(["hooks", "install"]).arg(project.path());
+    command_with_pre_commit_4_6_2(&mut command, project.path(), false, true);
+    let output = command.output().expect("install hooks through pre-commit");
+    assert!(output.status.success(), "{}", command_output_text(&output));
+    let updated = std::fs::read_to_string(project.path().join(".pre-commit-config.yaml")).unwrap();
+    assert!(
+        updated.starts_with(config),
+        "existing bytes changed: {updated:?}"
+    );
+    assert!(
+        updated.contains("id: assura-pre-push"),
+        "missing owned manager entry: {updated}"
+    );
+    assert!(
+        updated.contains("name: Assura pre-push validation"),
+        "pinned pre-commit requires the owned local hook name: {updated}"
+    );
+    assert!(updated.contains("entry: assura hooks run pre-push"));
+    assert!(
+        !project.path().join(".git/hooks/pre-push").exists(),
+        "a pre-commit-managed project must not receive a competing raw pre-push wrapper"
+    );
+}
+
+#[test]
+fn install_accepts_a_terminal_root_repos_sequence() {
+    let project = tempfile::TempDir::new().unwrap();
+    assert_git(project.path(), &["init", "--quiet"]);
+    std::fs::create_dir_all(project.path().join(".assura")).unwrap();
+    std::fs::write(project.path().join(".assura/config.yml"), "structure: {}\n").unwrap();
+    let config = "# preserve this source\nrepos:\n- repo: local\n  hooks:\n  - id: user-hook\n    entry: true\n    language: system\n";
+    std::fs::write(project.path().join(".pre-commit-config.yaml"), config).unwrap();
+
+    let mut command = Command::new(assura_bin());
+    command.args(["hooks", "install"]).arg(project.path());
+    command_with_pre_commit_4_6_2(&mut command, project.path(), false, true);
+    let output = command.output().expect("install hooks through pre-commit");
+
+    assert!(output.status.success(), "{}", command_output_text(&output));
+    let updated = std::fs::read_to_string(project.path().join(".pre-commit-config.yaml")).unwrap();
+    assert!(
+        updated.starts_with(config),
+        "existing bytes changed: {updated:?}"
+    );
+    assert!(
+        updated.contains("id: assura-pre-push"),
+        "missing owned entry: {updated}"
+    );
+}
+
+#[test]
+fn install_recognizes_an_exact_owned_pre_commit_suffix_on_rerun() {
+    let project = tempfile::TempDir::new().unwrap();
+    assert_git(project.path(), &["init", "--quiet"]);
+    std::fs::create_dir_all(project.path().join(".assura")).unwrap();
+    std::fs::write(project.path().join(".assura/config.yml"), "structure: {}\n").unwrap();
+    std::fs::write(
+        project.path().join(".pre-commit-config.yaml"),
+        "repos:\n- repo: local\n  hooks:\n  - id: user-hook\n    entry: true\n    language: system\n",
+    )
+    .unwrap();
+
+    for attempt in 0..2 {
+        let mut command = Command::new(assura_bin());
+        command.args(["hooks", "install"]).arg(project.path());
+        command_with_pre_commit_4_6_2(&mut command, project.path(), false, true);
+        let output = command.output().expect("rerun pre-commit adapter install");
+        assert!(output.status.success(), "{}", command_output_text(&output));
+        assert!(
+            !command_output_text(&output).contains("Pre-commit integration not applied"),
+            "exact owned suffix must remain configured on rerun {attempt}: {}",
+            command_output_text(&output)
+        );
+    }
+    let updated = std::fs::read_to_string(project.path().join(".pre-commit-config.yaml")).unwrap();
+    assert_eq!(
+        updated.matches("id: assura-pre-push").count(),
+        1,
+        "{updated}"
+    );
+}
+
+#[test]
+fn install_leaves_pre_commit_config_unchanged_when_candidate_validation_fails() {
+    let project = tempfile::TempDir::new().unwrap();
+    assert_git(project.path(), &["init", "--quiet"]);
+    std::fs::create_dir_all(project.path().join(".assura")).unwrap();
+    std::fs::write(project.path().join(".assura/config.yml"), "structure: {}\n").unwrap();
+    let config = "# preserve this source\nrepos:\n- repo: local\n  hooks:\n  - id: user-hook\n    entry: true\n    language: system\n";
+    let config_path = project.path().join(".pre-commit-config.yaml");
+    std::fs::write(&config_path, config).unwrap();
+
+    let mut command = Command::new(assura_bin());
+    command.args(["hooks", "install"]).arg(project.path());
+    command_with_pre_commit_4_6_2(&mut command, project.path(), true, true);
+    let output = command
+        .output()
+        .expect("attempt install through rejecting pre-commit");
+
+    assert!(output.status.success(), "{}", command_output_text(&output));
+    assert_eq!(std::fs::read_to_string(config_path).unwrap(), config);
+    assert!(
+        command_output_text(&output).contains("Pre-commit integration not applied"),
+        "rejected candidate must be reported: {}",
+        command_output_text(&output)
+    );
+}
+
+#[test]
+fn install_preserves_unsupported_pre_commit_config_shapes_byte_for_byte() {
+    let cases = [
+        "repos: []\n",
+        "repos:\n- repo: local\n  hooks: []\n...\n",
+        "repos:\n- repo: local\n  hooks: []\ndefault_language_version:\n  python: python3\n",
+        "# >>> Assura pre-commit integration >>>\nrepos:\n- repo: local\n  hooks: []\n",
+        "repos:\n- repo: local\n  hooks:\n  - id: assura-pre-push\n    entry: stale-command\n    language: system\n",
+    ];
+
+    for config in cases {
+        let project = tempfile::TempDir::new().unwrap();
+        assert_git(project.path(), &["init", "--quiet"]);
+        std::fs::create_dir_all(project.path().join(".assura")).unwrap();
+        std::fs::write(project.path().join(".assura/config.yml"), "structure: {}\n").unwrap();
+        let config_path = project.path().join(".pre-commit-config.yaml");
+        std::fs::write(&config_path, config).unwrap();
+
+        let mut command = Command::new(assura_bin());
+        command.args(["hooks", "install"]).arg(project.path());
+        command_with_pre_commit_4_6_2(&mut command, project.path(), false, true);
+        let output = command
+            .output()
+            .expect("attempt guarded pre-commit install");
+
+        assert!(output.status.success(), "{}", command_output_text(&output));
+        assert_eq!(
+            std::fs::read_to_string(config_path).unwrap(),
+            config,
+            "unsupported shape was rewritten: {config:?}"
+        );
+    }
+}
+
+#[cfg(unix)]
+#[test]
+fn install_leaves_pre_commit_config_unchanged_without_assura_on_path() {
+    let project = tempfile::TempDir::new().unwrap();
+    assert_git(project.path(), &["init", "--quiet"]);
+    std::fs::create_dir_all(project.path().join(".assura")).unwrap();
+    std::fs::write(project.path().join(".assura/config.yml"), "structure: {}\n").unwrap();
+    let config = "repos:\n- repo: local\n  hooks:\n  - id: user-hook\n    entry: true\n    language: system\n";
+    let config_path = project.path().join(".pre-commit-config.yaml");
+    std::fs::write(&config_path, config).unwrap();
+
+    let mut command = Command::new(assura_bin());
+    command.args(["hooks", "install"]).arg(project.path());
+    command_with_pre_commit_4_6_2(&mut command, project.path(), false, false);
+    command.env(
+        "PATH",
+        std::env::join_paths([
+            project.path().join("test-bin"),
+            std::path::PathBuf::from("/usr/bin"),
+            std::path::PathBuf::from("/bin"),
+        ])
+        .unwrap(),
+    );
+    let output = command
+        .output()
+        .expect("attempt install without assura on PATH");
+
+    assert!(output.status.success(), "{}", command_output_text(&output));
+    assert_eq!(std::fs::read_to_string(config_path).unwrap(), config);
+    assert!(
+        command_output_text(&output).contains("Pre-commit integration not applied"),
+        "missing executable precondition must be reported: {}",
+        command_output_text(&output)
+    );
+}
+
+#[test]
+fn install_leaves_pre_commit_config_unchanged_outside_a_git_repository() {
+    let project = tempfile::TempDir::new().unwrap();
+    std::fs::create_dir_all(project.path().join(".assura")).unwrap();
+    std::fs::write(project.path().join(".assura/config.yml"), "structure: {}\n").unwrap();
+    let config = "repos:\n- repo: local\n  hooks:\n  - id: user-hook\n    entry: true\n    language: system\n";
+    let config_path = project.path().join(".pre-commit-config.yaml");
+    std::fs::write(&config_path, config).unwrap();
+
+    let mut command = Command::new(assura_bin());
+    command.args(["hooks", "install"]).arg(project.path());
+    command_with_pre_commit_4_6_2(&mut command, project.path(), false, true);
+    let output = command.output().expect("attempt install outside git");
+
+    assert!(!output.status.success(), "{}", command_output_text(&output));
+    assert_eq!(std::fs::read_to_string(config_path).unwrap(), config);
+}
+
+#[test]
+fn uninstall_removes_only_the_exact_owned_pre_commit_suffix() {
+    let project = tempfile::TempDir::new().unwrap();
+    assert_git(project.path(), &["init", "--quiet"]);
+    std::fs::create_dir_all(project.path().join(".assura")).unwrap();
+    std::fs::write(project.path().join(".assura/config.yml"), "structure: {}\n").unwrap();
+    let config = "# retain every original byte\nrepos:\n- repo: local\n  hooks:\n  - id: user-hook\n    entry: true\n    language: system";
+    let config_path = project.path().join(".pre-commit-config.yaml");
+    std::fs::write(&config_path, config).unwrap();
+
+    let mut install = Command::new(assura_bin());
+    install.args(["hooks", "install"]).arg(project.path());
+    command_with_pre_commit_4_6_2(&mut install, project.path(), false, true);
+    assert!(install.output().unwrap().status.success());
+
+    let uninstall = Command::new(assura_bin())
+        .args(["hooks", "uninstall"])
+        .arg(project.path())
+        .output()
+        .expect("uninstall pre-commit adapter");
+    assert!(
+        uninstall.status.success(),
+        "{}",
+        command_output_text(&uninstall)
+    );
+    assert_eq!(std::fs::read_to_string(config_path).unwrap(), config);
+}
+
+#[test]
+fn hooks_status_and_verify_distinguish_pre_commit_configured_from_active() {
+    let project = tempfile::TempDir::new().unwrap();
+    assert_git(project.path(), &["init", "--quiet"]);
+    std::fs::create_dir_all(project.path().join(".assura")).unwrap();
+    std::fs::write(project.path().join(".assura/config.yml"), "structure: {}\n").unwrap();
+    std::fs::write(
+        project.path().join(".pre-commit-config.yaml"),
+        "repos:\n- repo: local\n  hooks:\n  - id: user-hook\n    entry: true\n    language: system\n",
+    )
+    .unwrap();
+
+    let mut install = Command::new(assura_bin());
+    install.args(["hooks", "install"]).arg(project.path());
+    command_with_pre_commit_4_6_2(&mut install, project.path(), false, true);
+    assert!(install.output().unwrap().status.success());
+
+    let configured = Command::new(assura_bin())
+        .args(["hooks", "status"])
+        .arg(project.path())
+        .output()
+        .expect("report configured pre-commit adapter");
+    assert!(
+        configured.status.success(),
+        "{}",
+        command_output_text(&configured)
+    );
+    assert!(command_output_text(&configured).contains("Pre-commit adapter: configured"));
+
+    let inactive_verify = Command::new(assura_bin())
+        .args(["hooks", "verify"])
+        .arg(project.path())
+        .output()
+        .expect("verify inactive pre-commit adapter");
+    assert!(!inactive_verify.status.success());
+    assert!(command_output_text(&inactive_verify).contains("Pre-commit adapter: configured"));
+
+    std::fs::write(
+        project.path().join(".git/hooks/pre-push"),
+        "#!/bin/sh\n# File generated by pre-commit: https://pre-commit.com\nARGS=(hook-impl --config=.pre-commit-config.yaml --hook-type=pre-push)\n",
+    )
+    .unwrap();
+    let spoofed = Command::new(assura_bin())
+        .args(["hooks", "status"])
+        .arg(project.path())
+        .output()
+        .expect("reject spoofed pre-commit wrapper");
+    assert!(
+        spoofed.status.success(),
+        "{}",
+        command_output_text(&spoofed)
+    );
+    assert!(command_output_text(&spoofed).contains("Pre-commit adapter: configured"));
+
+    std::fs::write(
+        project.path().join(".git/hooks/pre-push"),
+        "#!/usr/bin/env bash\n# File generated by pre-commit: https://pre-commit.com\n# ID: 138fd403232d2ddd5efb44317e38bf03\n\n# start templated\nINSTALL_PYTHON=/test/pre-commit-python\nARGS=(hook-impl --config=.pre-commit-config.yaml --hook-type=pre-push)\n# end templated\n\nHERE=\"$(cd \"$(dirname \"$0\")\" && pwd)\"\nARGS+=(--hook-dir \"$HERE\" -- \"$@\")\n\nif [ -x \"$INSTALL_PYTHON\" ]; then\n    exec \"$INSTALL_PYTHON\" -mpre_commit \"${ARGS[@]}\"\nelif command -v pre-commit > /dev/null; then\n    exec pre-commit \"${ARGS[@]}\"\nelse\n    echo '`pre-commit` not found.  Did you forget to activate your virtualenv?' 1>&2\n    exit 1\nfi\n",
+    )
+    .unwrap();
+    let active = Command::new(assura_bin())
+        .args(["hooks", "status"])
+        .arg(project.path())
+        .output()
+        .expect("report active pre-commit adapter");
+    assert!(active.status.success(), "{}", command_output_text(&active));
+    assert!(command_output_text(&active).contains("Pre-commit adapter: active"));
+
+    let active_verify = Command::new(assura_bin())
+        .args(["hooks", "verify"])
+        .arg(project.path())
+        .output()
+        .expect("verify active pre-commit adapter");
+    assert!(
+        active_verify.status.success(),
+        "{}",
+        command_output_text(&active_verify)
+    );
 }
 
 #[test]

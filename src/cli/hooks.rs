@@ -125,9 +125,21 @@ impl GitHooksManager {
     }
 
     pub fn install_all(&self, force: bool) -> HookResult<HookInstallOutcome> {
+        self.install_all_except(force, &[])
+    }
+
+    /// Install managed hooks while leaving explicitly excluded hook types untouched.
+    pub fn install_all_except(
+        &self,
+        force: bool,
+        excluded: &[HookType],
+    ) -> HookResult<HookInstallOutcome> {
         let mut outcome = HookInstallOutcome::default();
 
         for hook_type in HookType::all() {
+            if excluded.contains(&hook_type) {
+                continue;
+            }
             let ownership = self.ownership(hook_type)?;
             if ownership.has_unmanaged() {
                 outcome.preserved.push(hook_type);

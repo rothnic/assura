@@ -726,6 +726,8 @@ extensions:
           status: supported
         - surface: "command:assura hooks verify"
           status: supported
+        - surface: "command:assura hooks run"
+          status: supported
         - surface: "rust:stable_hash"
           status: internal
         - surface: "rust:cli"
