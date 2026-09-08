@@ -158,3 +158,37 @@ fn onboarding_reports_configured_but_unavailable_python_tool_as_advice() {
         "configured pytest must remain visible as unavailable setup advice"
     );
 }
+
+#[cfg(unix)]
+#[test]
+fn onboarding_admits_available_configured_pytest_to_the_pre_push_plan() {
+    use std::os::unix::fs::PermissionsExt;
+
+    let project = TempDir::new().expect("project directory");
+    fs::write(
+        project.path().join("pyproject.toml"),
+        "[tool.pytest.ini_options]\ntestpaths = [\"tests\"]\n",
+    )
+    .expect("Python project configuration");
+    let tools = TempDir::new().expect("tool directory");
+    let pytest = tools.path().join("pytest");
+    fs::write(&pytest, "#!/bin/sh\nexit 0\n").expect("pytest fixture");
+    let mut permissions = fs::metadata(&pytest)
+        .expect("pytest metadata")
+        .permissions();
+    permissions.set_mode(0o755);
+    fs::set_permissions(&pytest, permissions).expect("pytest executable");
+
+    let output = Command::new(assura_full_bin())
+        .args(["agent", "onboard"])
+        .arg(project.path())
+        .env("PATH", tools.path())
+        .output()
+        .expect("assura agent onboard runs");
+    assert!(output.status.success());
+    let plan = successful_plan_json(&project, &["src/app.py"], "pre-push");
+    assert_eq!(
+        plan["checks"],
+        serde_json::json!(["assura check", "pytest"])
+    );
+}
