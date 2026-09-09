@@ -56,7 +56,8 @@
       "goal/execution-recovery-plan",
       "goal/maturity-goal-contract",
       "goal/maturity-goal-reconciliation",
-      "goal/maturity-goal-handoff"
+      "goal/maturity-goal-handoff",
+      "docs/a07-parent-isolation"
     ]
   }
 }
