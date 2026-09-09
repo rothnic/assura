@@ -1,12 +1,18 @@
 # A07 candidate-binding correction plan
 
-Status: active. Owner: this thread's A07 acceptance coordinator. The runner
-binding correction and the first product canary remain historical evidence; the
-current next action is a fresh context-isolated canary against a refreshed
-`origin/master` (at this checkpoint, `1f9ebf2`). The older `922d7f0` candidate
-is a historical evidence/archive reference, not the active baseline. This plan
-does not change the A07 contract, scoring thresholds, fixture allocation, or
-product acceptance.
+Status: active. Owner: this thread's A07 acceptance coordinator. The current
+baseline is refreshed `origin/master` `77b41fed7ee625333ea97ef2791da609f0ed5cc4`;
+the candidate-bound, context-isolated canary passed the full contract and
+receives no screening allocation. The next action is to record the exact
+two-condition screening manifest and begin the authorized 30-run batch from
+sibling-free disposable parents. Earlier candidate SHAs remain historical
+evidence/archive references, not the active baseline. This plan does not
+change the A07 contract, scoring thresholds, fixture allocation, or product
+acceptance.
+
+The canary's private event, evaluator, fixture, and identity provenance remains
+outside the repository. Public evidence retains only the candidate identity and
+redacted aggregate outcomes needed to route the next action.
 
 ## Current supersession — 2026-09-09
 
@@ -14,12 +20,13 @@ The earlier status below correctly records a candidate-bound identity canary
 and the A02 discovery correction that followed it, but it is superseded for
 execution routing. PR #231 merged the A02 correction as `922d7f0`; that SHA is
 retained as historical evidence and a clean candidate archive, not as the
-current execution baseline. A later
-initializer attempt was invalid because it selected an ambient Assura binary
-and inspected evaluator-only context. It receives no screening, holdout or
-acceptance credit. Before any allocation, launch a fresh one-shot child from a
-source-only fixture with the fixed public prompt and minimal login-shell-safe
-`PATH`, then prove same-environment executable identity and context separation.
+current execution baseline. A later initializer attempt was invalid because it
+selected an ambient Assura binary and inspected evaluator-only context; it
+receives no screening, holdout or acceptance credit. The fresh canary against
+`77b41fed7ee625333ea97ef2791da609f0ed5cc4` then proved candidate identity,
+context separation, and the full product contract. The next authorized action
+is to record the exact two product-input conditions from the private screening
+manifest and begin the 30-run batch; no canary result is allocated to it.
 
 ## Finding
 
@@ -59,14 +66,12 @@ the binding inside the run before any product result is counted:
    separate.
 
 The canary must also prove that the candidate exposes the expected merged
-`init --agent <host> --activate` surface. The historical candidate-bound
-canary passed those identity and surface checks on the `f1595fc` candidate;
-the later `922d7f0` run is the invalid context-contaminated attempt recorded
-below. The fresh agent still chose plain `assura init .`
-and failed the full contract, so that result is valid product evidence but a
-canary only; it receives no screening allocation. An explicit-route control may
-verify the composed implementation, but it is calibration evidence and never
-counts as a blinded run.
+`init --agent <host> --activate` surface. The current `77b41fe` canary passed
+those identity, surface, context, and full-contract checks. The historical
+`f1595fc` and `922d7f0` runs remain labeled below for provenance; neither is a
+screening allocation. An explicit-route control may verify the composed
+implementation, but it is calibration evidence and never counts as a blinded
+run.
 
 ## Smallest implementation and verification
 
@@ -77,17 +82,17 @@ counts as a blinded run.
 - Add focused runner regressions for PATH reset, wrong-shim-target mismatch, and
   successful exact-target binding. Keep private fixture and evaluator
   identities out of source, prompts, reviewer briefs, and public evidence.
-- Run one fresh Rust canary with the fixed prompt only after the identity
-  assertions pass. Compare the event stream and evaluator input before
-  authorizing any screening repetition.
-- The identity canary passed, but the product contract did not: the fresh agent
-  selected the intentionally config-only plain route. Route that failure to the
-  A02 discovery owner and add a focused normative handoff regression before
-  any screening. After the product correction, freeze its exact source/binary
-  identity and run a new candidate-bound canary. If it fails, retain the result,
-  repair the owning behavior, and do not repeat the unchanged method. The later
-  context-contaminated attempt is invalid protocol evidence and does not replace
-  the fresh canary required by the current supersession above.
+- The current candidate-bound canary is complete. Before the first screening
+  run, record the authoritative names and contract references for both
+  product-input conditions in a private screening manifest; do not infer or
+  rename them in public evidence. Then launch one fresh source-only fixture and
+  child under a sibling-free disposable parent per run. If identity, context,
+  or contract checks fail, retain the result as invalid/no-credit evidence,
+  repair the owning method, and obtain a fresh canary before resuming.
+- The earlier plain-route product failure and context-contaminated attempt are
+  historical protocol evidence. They remain no-credit records and must not be
+  replayed as an unchanged method or treated as a replacement for the passed
+  current canary.
 
 ## Gates and ownership
 
