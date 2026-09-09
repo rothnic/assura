@@ -2,12 +2,14 @@
 
 ## Iteration 85 — 2026-09-09 — reviewed routing and proof correction
 
-- Independent review accepted P1/P2: the required A07 plan now supersedes stale
-  routing, and A02 `done` has an exact command/exit proof table. Historical
-  failures, skipped-check accounting and no-credit rules remain preserved.
-- Current baseline is `origin/master=922d7f0`; scoped gates pass. Next action is
-  rereview of these deltas, then a fresh context-isolated A07 canary before any
-  screening allocation.
+- Independent review accepted P1/P2 and scoped rereview returned PASS: the
+  required A07 plan supersedes stale routing, and A02 `done` has an exact
+  command/exit proof table. Historical failures, skipped-check accounting and
+  no-credit rules remain preserved.
+- PR #232 merged as `0c0eae8` on top of `922d7f0`; the merged tree matches the
+  reviewed candidate and its applicable hosted checks pass. The owned process
+  branch/worktree is clean; next action is exact cleanup/topology verification,
+  then a fresh context-isolated A07 canary before any screening allocation.
 
 ## Iteration 84 — 2026-09-09 — runner-context isolation correction
 
@@ -983,17 +985,3 @@ recoverable. This reconciliation adds records rather than rewriting outcomes.
   detection, broader-phase/config coverage, released-binary CI recipe behavior,
   and full acceptance evidence remain. Next: select its smallest current-master
   contract without importing the preserved work.
-
-## Iteration 47 — 2026-09-08 — A05 honest unconfigured-plan diagnosis
-
-- PR #202 merged as `186426d` after independent review, a concrete finding,
-  the accepted test-only correction, and scoped rereview. Its new integration
-  contract requires a valid project without `quality.scopes` to exit 2 with the
-  configuration diagnosis and no successful plan; it cannot quietly imply
-  runnable native coverage.
-- The exact test, all 12 A05 integration tests, and `cargo xtask pr` passed.
-  The full hosted matrix passed, including Performance Report, five adoption
-  lanes, Windows Installer Smoke, release smoke, coverage, all stable OS
-  suites, documentation, and website verification. Security Scope passed; the
-  conditional Security Audit was scope-skipped and is not called passing test
-  evidence. The continuing A05 branch is clean and rebased to the merge.
