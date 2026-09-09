@@ -35,13 +35,32 @@ Operate as a controlled release train:
 4. Merge only a clean, review-resolved, current-master PR whose required hosted and local gates pass. After merging, verify the exact commit is reachable from origin/master, update the card to done only when its observable outcome exists, and remove only worktrees/branches created by this goal after confirming they are clean and merged. Inventory existing worktrees first; use prune dry-runs; never delete unknown, user-owned, or dirty paths.
 5. Follow the queue's dependency graph and phase boundaries: establish baseline and support scope; repair trust/release evidence; build safe init/hooks/gates; run blinded evaluation; then release, portfolio, pilot, and feedback work. When a result contradicts the plan, repair the owning card or explicitly narrow supported scope—do not lower the evaluator or rewrite history.
 
+Execution-continuity invariant: do not stop at a card checkpoint. At every
+boundary, retain a named live action (test, CI, review, integration, cleanup),
+resolve its failed gate, or immediately select the next independently ready
+card. Record action, owner, source SHA/worktree, proof required, and the exact
+next observation or command in the progress/evidence record. Treat a status
+report, a passing local gate, a submitted PR, a merge-ready card, or an empty
+pending queue as intermediate state whenever an active, implemented, verified,
+integrated, or cleanup action remains. A held publication/authority action
+holds only that action; continue independent authorized work. Final handoff is
+allowed only for an explicit user pause, completed authorized scope with owned
+branches/worktrees terminal, or an independently audited external prerequisite
+after all independent authorized work is exhausted.
+
 Keep scope stable: invest in structure, naming, local patterns, explainable policy, bounded feedback, hooks, CI, and independent initialization proof. Do not expand project intelligence, semantic search, remote pattern execution, marketplaces, generic maturity scoring, autonomous PM, or arbitrary auto-repair.
 
 Maintain a progress log after every meaningful iteration. Every third iteration and before final handoff, review context health, repeated failures, and whether a concise project skill would prevent rediscovery. Keep AGENTS.md as a router and put operational detail in a skill only when it is genuinely reusable.
 
 This goal authorizes merging reviewed, fully gated Assura code/documentation PRs into main. It does not authorize tags/releases, deployments, branch-protection changes, external invitations, posts, or other public communication: prepare those artifacts and stop for the specific approval required by their backlog card.
 
-Complete only when every applicable card is done, or is honestly blocked on a named external decision with completed local preparation and evidence. Final handoff must summarize merged commits/PRs, outstanding blocks, release/pilot evidence, remaining branches/worktrees created by the goal (normally none), and the next human decision. Do not end with a generalized status report.
+Complete only when every applicable card is done, or is honestly held on a named
+external decision with completed local preparation and evidence after an
+independent impasse review confirms that no authorized continuation remains.
+Final handoff must summarize merged commits/PRs, outstanding held actions,
+release/pilot evidence, remaining branches/worktrees created by the goal
+(normally none), and the next human decision. Do not end with a generalized
+status report while the execution-continuity invariant identifies another action.
 ```
 
 ## Start condition

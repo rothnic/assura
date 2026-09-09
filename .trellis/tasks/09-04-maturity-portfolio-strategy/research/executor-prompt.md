@@ -34,6 +34,17 @@ written evidence/approved scope disposition. If an item is blocked on publicatio
 people or environment, record the blocker and take another independent ready item.
 Do not run the whole backlog as one giant patch. Default batch size is one card.
 
+Execution-continuity invariant: a checkpoint is not a stopping condition. Keep
+one concrete owned action live at all times: retain an active test, CI, review,
+integration, or cleanup handle; resolve a failed gate; or select the next ready
+card immediately after a terminal phase. Before yielding, record the action,
+owner, source SHA/worktree, required proof, and the exact next observation or
+command. An empty pending queue does not satisfy this invariant while an active,
+implemented, verified, merge-ready, or integrated card still has a real next
+phase. If a card is held by an external prerequisite, record that narrow held
+action and continue another independent authorized card; do not convert the
+whole train into a status report.
+
 For the selected card:
 - State ID, expected outcome, owned files and acceptance checks before editing.
 - Follow its prescribed solution. Use existing patterns and commands. Proposed
@@ -74,12 +85,17 @@ commit/PR/integration state and next-ready ID. Do not mark done until the card's
 actual outcome is proven. If local code is verified but hosted proof or publication
 is pending, use verified or blocked with that exact reason.
 
-Your final handoff must contain:
+At each card boundary, write a checkpoint containing:
 1. ID and outcome achieved (or exact blocker).
 2. Changed files and why.
 3. Verification evidence and known limitations.
-4. Commit/PR status and next-ready ID.
-Do not end with another general strategy or merely a list of concerns.
+4. Commit/PR status, the named next action, and its owner.
+
+Only make a final handoff after an explicit user pause, completion of the
+authorized scope with every owned branch/worktree terminal, or an independently
+audited external prerequisite after all independent authorized work is exhausted.
+Do not end with another general strategy, a merely informational status, or a
+list of concerns while a concrete next action remains.
 ```
 
 ## Starting with a particular card

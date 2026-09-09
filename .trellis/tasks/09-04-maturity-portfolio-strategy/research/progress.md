@@ -988,3 +988,13 @@ recoverable. This reconciliation adds records rather than rewriting outcomes.
   oracle, and the existing reviewer plus goal-execution loop captured it; no
   new reusable skill is warranted. Next: reconcile this evidence, then select
   the smallest remaining current-master A05 contract in the clean owner.
+
+## Iteration 49 — 2026-09-08 — execution-continuity control
+
+- Canonical executor and end-to-end prompts now make a checkpoint intermediate:
+  retain a named live action or select the next independent ready card, recording
+  owner, SHA/worktree, proof, and next observation.
+- Local pass, PR, merge-ready state, empty queue, or held publication cannot end
+  the train while another active, verified, integration, or cleanup action exists.
+- This preserves review, current-master, quality, authority, and unknown-work
+  safeguards. Next: validate, commit, independently review, then resume A07.
