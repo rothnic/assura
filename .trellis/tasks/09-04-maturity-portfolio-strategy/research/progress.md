@@ -1,5 +1,22 @@
 # Maturity execution train progress
 
+## Iteration 50 — 2026-09-09 — reviewed recovery plan
+
+- Corrected the prior thread assessment against current master `da773bc`;
+  the old strategy checkout and heartbeat were stale. Updated the existing
+  heartbeat to resolve current task evidence and the latest authorized scope.
+- Added `recovery-plan.md` and `recovery-evidence.md`, reduced AGENTS from 296
+  to 93 lines, and routed execution/validation details through existing skills.
+- Independent audit found five efficiency/control gaps. Candidate review
+  exercised seven decision scenarios and identified three corrections; all
+  were accepted, fixed, and independently cleared at `e60c7b1`.
+- Local structure, evidence, target-state and diff checks passed; four
+  unchanged source line-count advisories and the crashing global topology
+  audit remain explicit. VPS capacity was inspected; no speedup is claimed.
+- Context level: not exposed. This is process scope, not A07 acceptance.
+  Next: applicable hosted proof, authorized merge and closure of the process
+  branch, then the train coordinator follows the ordered recovery plan.
+
 ## Iteration 83 — 2026-09-07 — isolated diagnostic tool preparation
 
 - A04 local master refresh completed80ad01d with normal hook30653/fdc8a7,

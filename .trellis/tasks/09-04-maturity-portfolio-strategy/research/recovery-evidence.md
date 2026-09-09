@@ -51,6 +51,13 @@ toolchain; P3 retained `cargo xtask docs` for any docs/website path instead of
 narrowing it to build inputs. Scoped rereview remains required after these
 corrections. No hosted-green claim is made before that run completes.
 
+Scoped rereview at `e60c7b120226de6e05e2940e1f24b6bb3f821bfb` returned
+ready within process scope, with P1/P2/P3 resolved and no remaining findings.
+The final source-built evidence, target-state and structure sequence exited 0;
+structure retained the same four advisories. This paragraph records those
+results as an evidence-only delta. Hosted proof and merge/closure are recorded
+on the resulting PR and must be verified before final handoff.
+
 ## Topology and remote observations
 
 Global `audit-topology.sh --strict`: exit 128 on pre-existing missing worktree
