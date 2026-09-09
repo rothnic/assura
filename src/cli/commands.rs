@@ -199,7 +199,7 @@ pub async fn init_command(options: InitCommandOptions) -> ExitCode {
         .await;
     }
     println!(
-        "For agent-assisted setup, run `assura agent onboard --agent codex --activate` to generate guidance and configure Codex hooks; runtime delivery still requires trusting the project and approving its hooks in Codex."
+        "Plain `assura init` is configuration-only and does not complete agent-assisted setup. If you are an agent initializing this project, run `assura init --agent codex --activate` now; do not claim agent setup is complete from plain init. Runtime delivery still requires trusting the project and approving its hooks in Codex."
     );
     ExitCode::Success
 }

@@ -321,8 +321,25 @@ fn init_creates_supported_structure_config() {
     );
     assert!(
         String::from_utf8_lossy(&output.stdout)
-            .contains("assura agent onboard --agent codex --activate"),
-        "init must direct an agent-assisted project to complete onboarding: stdout:\n{}",
+            .contains("Plain `assura init` is configuration-only"),
+        "init must make its configuration-only boundary explicit: stdout:\n{}",
+        String::from_utf8_lossy(&output.stdout)
+    );
+    assert!(
+        String::from_utf8_lossy(&output.stdout).contains("does not complete agent-assisted setup"),
+        "init must state that agent-assisted setup remains incomplete: stdout:\n{}",
+        String::from_utf8_lossy(&output.stdout)
+    );
+    assert!(
+        String::from_utf8_lossy(&output.stdout)
+            .contains("If you are an agent initializing this project, run `assura init --agent codex --activate` now"),
+        "init must give an agent a direct next command: stdout:\n{}",
+        String::from_utf8_lossy(&output.stdout)
+    );
+    assert!(
+        String::from_utf8_lossy(&output.stdout)
+            .contains("do not claim agent setup is complete from plain init"),
+        "init must prevent a false completion claim: stdout:\n{}",
         String::from_utf8_lossy(&output.stdout)
     );
     assert!(
