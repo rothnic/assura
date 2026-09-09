@@ -2,15 +2,19 @@
 
 Status: active. Owner: this thread's A07 acceptance coordinator. The runner
 binding correction and the first product canary remain historical evidence; the
-current next action is a fresh context-isolated canary against merged
-`origin/master=922d7f0`. This plan does not change the A07 contract, scoring
-thresholds, fixture allocation, or product acceptance.
+current next action is a fresh context-isolated canary against a refreshed
+`origin/master` (at this checkpoint, `1f9ebf2`). The older `922d7f0` candidate
+is a historical evidence/archive reference, not the active baseline. This plan
+does not change the A07 contract, scoring thresholds, fixture allocation, or
+product acceptance.
 
 ## Current supersession — 2026-09-09
 
 The earlier status below correctly records a candidate-bound identity canary
 and the A02 discovery correction that followed it, but it is superseded for
-execution routing. PR #231 merged the A02 correction as `922d7f0`; a later
+execution routing. PR #231 merged the A02 correction as `922d7f0`; that SHA is
+retained as historical evidence and a clean candidate archive, not as the
+current execution baseline. A later
 initializer attempt was invalid because it selected an ambient Assura binary
 and inspected evaluator-only context. It receives no screening, holdout or
 acceptance credit. Before any allocation, launch a fresh one-shot child from a
@@ -56,7 +60,8 @@ the binding inside the run before any product result is counted:
 
 The canary must also prove that the candidate exposes the expected merged
 `init --agent <host> --activate` surface. This binding canary now passes those
-identity and surface checks. Its fresh agent still chose plain `assura init .`
+identity and surface checks on the historical `922d7f0` candidate. Its fresh
+agent still chose plain `assura init .`
 and failed the full contract, so that result is valid product evidence but a
 canary only; it receives no screening allocation. An explicit-route control may
 verify the composed implementation, but it is calibration evidence and never
