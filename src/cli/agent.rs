@@ -23,6 +23,7 @@ pub async fn agent_command(command: AgentCommands, config: Option<PathBuf>) -> E
                     recipe_file,
                     agent,
                     activate,
+                    preserve_existing_config: false,
                     content_template,
                     format,
                 },

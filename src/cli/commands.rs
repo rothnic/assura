@@ -161,7 +161,17 @@ pub async fn init_command(options: InitCommandOptions) -> ExitCode {
         }
     }
     let onboarding_path = path.clone();
-    let created =
+    let reuse_existing_config = agent.is_some()
+        && !force
+        && !project_intelligence
+        && recipes.is_empty()
+        && recipe_file.is_none()
+        && crate::cli::init_support::resolve_project_root(path.clone())
+            .map(|project_root| project_root.join(".assura/config.yml").is_file())
+            .unwrap_or(false);
+    let created = if reuse_existing_config {
+        Vec::new()
+    } else {
         match materialize_starter(path, force, project_intelligence, &recipes, recipe_file) {
             Ok(created) => created,
             Err(error) => {
@@ -171,7 +181,8 @@ pub async fn init_command(options: InitCommandOptions) -> ExitCode {
                     StarterInitError::Runtime(_) => ExitCode::RuntimeError,
                 };
             }
-        };
+        }
+    };
     for path in created {
         println!("Created {}", path.display());
     }
@@ -191,6 +202,7 @@ pub async fn init_command(options: InitCommandOptions) -> ExitCode {
                 recipe_file: None,
                 agent,
                 activate,
+                preserve_existing_config: reuse_existing_config,
                 content_template: crate::cli::AgentContentTemplate::None,
                 format: OutputFormat::Text,
             },
@@ -199,7 +211,7 @@ pub async fn init_command(options: InitCommandOptions) -> ExitCode {
         .await;
     }
     println!(
-        "For agent-assisted setup, run `assura agent onboard --agent codex --activate` to generate guidance and configure Codex hooks; runtime delivery still requires trusting the project and approving its hooks in Codex."
+        "Plain `assura init` is configuration-only and does not complete agent-assisted setup. If you are an agent initializing this project, run `assura init --agent codex --activate` now; do not claim agent setup is complete from plain init. Runtime delivery still requires trusting the project and approving its hooks in Codex."
     );
     ExitCode::Success
 }

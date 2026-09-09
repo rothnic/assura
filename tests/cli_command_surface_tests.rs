@@ -321,8 +321,25 @@ fn init_creates_supported_structure_config() {
     );
     assert!(
         String::from_utf8_lossy(&output.stdout)
-            .contains("assura agent onboard --agent codex --activate"),
-        "init must direct an agent-assisted project to complete onboarding: stdout:\n{}",
+            .contains("Plain `assura init` is configuration-only"),
+        "init must make its configuration-only boundary explicit: stdout:\n{}",
+        String::from_utf8_lossy(&output.stdout)
+    );
+    assert!(
+        String::from_utf8_lossy(&output.stdout).contains("does not complete agent-assisted setup"),
+        "init must state that agent-assisted setup remains incomplete: stdout:\n{}",
+        String::from_utf8_lossy(&output.stdout)
+    );
+    assert!(
+        String::from_utf8_lossy(&output.stdout)
+            .contains("If you are an agent initializing this project, run `assura init --agent codex --activate` now"),
+        "init must give an agent a direct next command: stdout:\n{}",
+        String::from_utf8_lossy(&output.stdout)
+    );
+    assert!(
+        String::from_utf8_lossy(&output.stdout)
+            .contains("do not claim agent setup is complete from plain init"),
+        "init must prevent a false completion claim: stdout:\n{}",
         String::from_utf8_lossy(&output.stdout)
     );
     assert!(
@@ -393,6 +410,54 @@ fn init_can_compose_explicit_agent_activation_without_creating_git_state() {
         stdout.contains("trust the project and approve its hooks in Codex"),
         "composed init must report the runtime approval follow-up:\n{stdout}"
     );
+}
+
+#[test]
+fn init_handoff_composes_on_existing_plain_config_without_overwriting() {
+    let project = TempDir::new().unwrap();
+
+    let plain = Command::new(assura_bin())
+        .args(["init", project.path().to_str().unwrap(), "--no-git-hooks"])
+        .output()
+        .unwrap();
+    assert!(
+        plain.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&plain.stdout),
+        String::from_utf8_lossy(&plain.stderr)
+    );
+    let config_path = project.path().join(".assura/config.yml");
+    let config_before = fs::read_to_string(&config_path).unwrap();
+
+    let composed = Command::new(assura_bin())
+        .args([
+            "init",
+            project.path().to_str().unwrap(),
+            "--agent",
+            "codex",
+            "--activate",
+            "--no-git-hooks",
+        ])
+        .output()
+        .unwrap();
+
+    assert!(
+        composed.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&composed.stdout),
+        String::from_utf8_lossy(&composed.stderr)
+    );
+    assert_eq!(fs::read_to_string(&config_path).unwrap(), config_before);
+    assert!(project
+        .path()
+        .join(".assura/onboarding/agent-next.md")
+        .is_file());
+    assert!(project.path().join(".codex/hooks.json").is_file());
+    assert!(project.path().join(".assura/integrations/codex").is_dir());
+    assert!(!project.path().join(".git").exists());
+    let stdout = String::from_utf8_lossy(&composed.stdout);
+    assert!(stdout.contains("post_activation=structurally_verified"));
+    assert!(stdout.contains("host_approval=unavailable"));
 }
 
 #[test]
