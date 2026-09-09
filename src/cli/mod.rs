@@ -129,7 +129,7 @@ pub use command_options::CheckCommandOptions;
 #[cfg(feature = "full-cli")]
 pub use commands::{
     add_recipe_command, check_command, fix_markdown_command, info_command, init_command,
-    migrate_command, status_command,
+    migrate_command, status_command, InitCommandOptions,
 };
 #[cfg(feature = "full-cli")]
 pub use config::CliConfig;

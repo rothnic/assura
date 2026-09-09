@@ -9,7 +9,8 @@ use super::{
     explain_command, fix_markdown_command, info_command, init_command, migrate_command,
     performance_report_command, project_review_command, quality_plan_command, status_command,
     watch_command, CacheCommands, CheckCommandOptions, Cli, Commands, ConfigCommands, ExitCode,
-    FixCommands, HookCommands, PerformanceReportCommandOptions, QualityCommands,
+    FixCommands, HookCommands, InitCommandOptions, PerformanceReportCommandOptions,
+    QualityCommands,
 };
 
 /// Run the complete Clap/Tokio-powered CLI for non-check commands and fallbacks.
@@ -114,16 +115,16 @@ async fn run_full_cli(cli: Cli) -> ExitCode {
             recipe,
             recipe_file,
         } => {
-            init_command(
+            init_command(InitCommandOptions {
                 path,
                 agent,
                 activate,
                 force,
                 no_git_hooks,
                 project_intelligence,
-                recipe,
+                recipes: recipe,
                 recipe_file,
-            )
+            })
             .await
         }
         Commands::Config { command } => match command {

@@ -59,6 +59,26 @@ pub async fn check_command(options: CheckCommandOptions) -> ExitCode {
     }
 }
 
+/// Inputs for the `assura init` command.
+pub struct InitCommandOptions {
+    /// Project root directory.
+    pub path: Option<PathBuf>,
+    /// Explicit host-agent target for composed onboarding.
+    pub agent: Option<AgentOnboardingTarget>,
+    /// Whether to activate the selected host-agent target.
+    pub activate: bool,
+    /// Overwrite an existing starter configuration.
+    pub force: bool,
+    /// Skip optional Git hook installation guidance.
+    pub no_git_hooks: bool,
+    /// Create project-intelligence starter files.
+    pub project_intelligence: bool,
+    /// Built-in policy recipes to materialize.
+    pub recipes: Vec<crate::cli::args::InitRecipe>,
+    /// Explicit local recipe file to apply.
+    pub recipe_file: Option<PathBuf>,
+}
+
 /// Show status of configuration
 pub async fn status_command(
     path: Option<PathBuf>,
@@ -121,16 +141,17 @@ pub async fn status_command(
 }
 
 /// Initialize a new Assura configuration
-pub async fn init_command(
-    path: Option<PathBuf>,
-    agent: Option<AgentOnboardingTarget>,
-    activate: bool,
-    force: bool,
-    no_git_hooks: bool,
-    project_intelligence: bool,
-    recipes: Vec<crate::cli::args::InitRecipe>,
-    recipe_file: Option<PathBuf>,
-) -> ExitCode {
+pub async fn init_command(options: InitCommandOptions) -> ExitCode {
+    let InitCommandOptions {
+        path,
+        agent,
+        activate,
+        force,
+        no_git_hooks,
+        project_intelligence,
+        recipes,
+        recipe_file,
+    } = options;
     if let Some(agent) = agent {
         if agent.integration_target().is_none() {
             eprintln!(
