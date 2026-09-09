@@ -170,8 +170,8 @@
         "A01"
       ],
       "executor": "agent",
-      "state": "active",
-      "owner": "Codex goal: A02 follow-up owner; strengthen plain-init discovery handoff after candidate-bound A07 canary failure; preserve config-only boundary",
+      "state": "done",
+      "owner": "Codex goal/a02-init-discovery-correction; follow-up merged in PR #231",
       "evidence": "evidence/A02.md",
       "blocker": null
     },
@@ -244,7 +244,7 @@
       ],
       "executor": "agent",
       "state": "active",
-      "owner": "Codex goal: A07 acceptance coordinator; candidate binding is canary-proven but the fresh-agent contract still fails; A02 owns the plain-init discovery correction before screening",
+      "owner": "Codex goal: A07 acceptance coordinator; merged-candidate context-isolation canary is required before screening",
       "evidence": "evidence/A07.md",
       "blocker": null
     },
