@@ -33,6 +33,8 @@ pub struct AgentOnboardingOptions {
     pub agent: AgentOnboardingTarget,
     /// Whether to activate the selected host integration.
     pub activate: bool,
+    /// Preserve an existing project-owned config when onboarding is composed after `init`.
+    pub preserve_existing_config: bool,
     /// Optional content runtime activation template.
     pub content_template: AgentContentTemplate,
     /// Output format.
@@ -86,7 +88,16 @@ fn run_agent_onboarding(
     let mut files = Vec::new();
     let quality_advice = onboarding_quality_advice(&project_root);
     for file in baseline_files(&detected, options.content_template) {
-        files.push(materialize_baseline_file(&project_root, file)?);
+        if had_config && options.preserve_existing_config && file.path == ".assura/config.yml" {
+            files.push(FileAction {
+                path: file.path,
+                action: "existing",
+                existed: true,
+                required: file.required,
+            });
+        } else {
+            files.push(materialize_baseline_file(&project_root, file)?);
+        }
     }
     let rule_recommendations = recommended_rules(&detected, &config_path)?;
     files.push(materialize_managed_file(
