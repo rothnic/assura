@@ -27,9 +27,15 @@ only improves its process. Do not substitute a process PR for product acceptance
    [runner isolation](references/runner-isolation.md) before launching the
    child agent. A parent shell's `PATH` prefix or a passing evaluator command
    is not identity proof.
-6. Record the current phase and exact next action in the selected card's
-   evidence before/after major phases. A task path is portable; an old checkout
-   snapshot, automation prompt or conversation summary is not current state.
+6. For A07 screening, read the task's
+   [screening manifest contract](../../../../.trellis/tasks/09-04-maturity-portfolio-strategy/research/screening-manifest-contract.md)
+   before naming conditions or allocating runs. Do not invent missing product
+   inputs from historical run names.
+7. Use [layered context routing](references/context-routing.md) after
+   compaction and at phase transitions. Record the current phase and exact next
+   action in the selected card's evidence before/after major phases. A task
+   path is portable; an old checkout snapshot, automation prompt or conversation
+   summary is not current state.
 
 ## Context routing
 
@@ -38,6 +44,10 @@ only improves its process. Do not substitute a process PR for product acceptance
 - Test/build/CI placement: validation routing; environment detail only on need.
 - A07 or any agent-driven evaluation: runner isolation; keep the evaluator
   oracle and private fixture details outside the child context.
+- A07 screening condition or matrix: screening manifest contract; keep its
+  values and mappings private.
+- Goal start, compaction or handoff: context-routing; load only the next
+  phase/card layer and record a compact checkpoint.
 - Maturity train recovery: the canonical task's `research/recovery-plan.md`.
 - Never load all packets, all historical logs or private evaluation fixtures
   into an implementation/reviewer prompt. Link exact evidence on demand.

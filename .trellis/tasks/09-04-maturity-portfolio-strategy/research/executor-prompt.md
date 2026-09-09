@@ -97,6 +97,11 @@ Place each fixture beneath a dedicated disposable parent with no sibling
 worktrees or prior-run artifacts; recursive discovery of an out-of-scope parent
 path is context contamination even when the fixture itself contains only public
 source files.
+Before screening allocation, read
+`screening-manifest-contract.md` and validate the private manifest's exactly two
+named product-input conditions, one-variable difference, blinded mapping and
+complete 30-cell matrix. Historical run names are not condition definitions;
+missing supplied-input evidence means the cell is not executable.
 Keep initializer events, private evaluator output and redacted evidence
 separate. Run the evaluator only after the identity canary and initializer have
 completed.

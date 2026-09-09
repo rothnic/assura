@@ -45,6 +45,11 @@ reference: the child receives only a public source-only fixture and fixed task
 prompt, with no evaluator contract, private harness, coordinator transcript or
 hidden expected output. A forbidden-path read or context leak is invalid
 protocol evidence even if the evaluator later passes.
+Before allocating any screening run, also read
+[screening-manifest-contract.md](screening-manifest-contract.md). The packet's
+two product-input conditions must be named, differ in one specified variable,
+and be evidenced in a private manifest with an independently reviewed 30-cell
+matrix; do not infer conditions from historical run names.
 
 The product direction remains sound: specialize in executable repository conventions and agent-assisted initialization, with existing language tools supplying their own checks. The execution mechanism should be a **reviewed release train**, not a long-lived mega-branch or a blind attempt to close every checkbox. The queue remains the technical source of truth; this goal supplies cross-session control, integration discipline, and cleanup rules.
 

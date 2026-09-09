@@ -104,7 +104,7 @@ The runner must also satisfy
 any screening allocation: the initializer and evaluator must use the same
 absolute candidate executable, proven inside the actual command environment.
 
-- [ ] Freeze A01 contracts, source SHA, binary hash, model/harness version and two input conditions. Screening: 3 stacks ×5 repetitions ×2 conditions =30 runs, changing one product-input variable at a time. Limit concurrency to available budget and isolate every repo/session.
+- [ ] Freeze A01 contracts, source SHA, binary hash, model/harness version and exactly two named product-input conditions using the [screening manifest contract](screening-manifest-contract.md). Record the one changed variable, supplied-input evidence, blinded mapping and private fixture/contract handles before screening. Screening remains 3 stacks ×5 repetitions ×2 conditions =30 runs; limit concurrency to available budget and isolate every repo/session.
 - [ ] Initializing agent receives only “Initialize this project with Assura,” normal repo context and candidate tool access. It does not see evaluator contracts. No parent coaching, inherited trial memory or manual post-run repairs.
 - [ ] Evaluate each run with A01. A separate fresh agent adds a small specified feature; assess structure preservation, native test success, bounded repair and no disabled policy.
 - [ ] Final candidate batch: 10 fresh runs per stack, at least 9/10 acceptable per stack, zero destructive overwrites and zero missed critical seeded violations. Unavailable required host/tool evidence is not pass.
