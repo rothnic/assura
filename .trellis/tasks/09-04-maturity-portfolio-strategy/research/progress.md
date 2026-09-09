@@ -978,16 +978,12 @@ recoverable. This reconciliation adds records rather than rewriting outcomes.
   observable with a Rust-only command, and scoped rereview found no remaining
   defect. The fixture proves `frequent` through `merge` plans are cumulative,
   stable, and deduplicated across overlapping base/Rust scopes.
-- The focused contract, 13-test A05 integration target, formatting and diff
-  checks, and full `cargo xtask pr` gate passed. The full hosted matrix passed,
-  including Performance Report, five adoption lanes, Windows Installer Smoke,
-  release smoke, coverage, all stable OS suites, documentation, and website
+- The focused contract, 13-test A05 integration target, formatting and diff checks, and full `cargo xtask pr` gate passed. The full hosted matrix passed,
+  including Performance Report, five adoption lanes, Windows Installer Smoke, release smoke, coverage, all stable OS suites, documentation, and website
   verification. Security Scope passed; the conditional Security Audit was
   scope-skipped and is not called passing test evidence.
-- Context level: not exposed. The reviewer correction was specific to a test
-  oracle, and the existing reviewer plus goal-execution loop captured it; no
-  new reusable skill is warranted. Next: reconcile this evidence, then select
-  the smallest remaining current-master A05 contract in the clean owner.
+- Context level: not exposed. The reviewer correction was specific to a test oracle, and the existing reviewer plus goal-execution loop captured it; no
+  new reusable skill is warranted. Next: reconcile this evidence, then select the smallest remaining current-master A05 contract in the clean owner.
 
 ## Iteration 49 — 2026-09-08 — execution-continuity control
 
@@ -998,3 +994,7 @@ recoverable. This reconciliation adds records rather than rewriting outcomes.
   the train while another active, verified, integration, or cleanup action exists.
 - This preserves review, current-master, quality, authority, and unknown-work
   safeguards. Next: validate, commit, independently review, then resume A07.
+
+## Iteration 50 — 2026-09-09 — candidate-binding correction
+
+- A07's first probe lost its candidate through a login shell and receives no allocation credit; the correction plan records the identity canary and next product-boundary check. Continue with review, commit, and a bound canary.

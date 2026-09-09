@@ -20,6 +20,15 @@ reject candidates that fail the prescribed comparison, and stop invalid
 diagnostics instead of repeating runs until green. Root owns review judgment
 and merge approval; method changes never imply relaxed acceptance thresholds.
 
+For A07 evaluation, read
+[a07-candidate-binding-plan.md](a07-candidate-binding-plan.md) before launching
+an initializer. A candidate must be bound by absolute executable identity inside
+the initializer's actual command environment; login-shell `PATH` inheritance is
+not proof. Record `command -v assura`, version, and SHA before counting a run.
+Any mismatch invalidates the run and receives no screening, holdout, or
+acceptance credit; fix the runner and run a fresh canary before repeating the
+protocol.
+
 The product direction remains sound: specialize in executable repository conventions and agent-assisted initialization, with existing language tools supplying their own checks. The execution mechanism should be a **reviewed release train**, not a long-lived mega-branch or a blind attempt to close every checkbox. The queue remains the technical source of truth; this goal supplies cross-session control, integration discipline, and cleanup rules.
 
 On 2026-09-05, `origin/master` remains `ed093668918bc271fc98b9112acaf7c1bf3eb314`. PR #142 is still open and unstable, with macOS and Alpine failures, so installer work must be reused or repaired rather than duplicated. The worktree inventory has pre-existing and prunable entries; cleanup must be ownership-based rather than a broad deletion. The historical post-onboarding execution goal is `completed` and must not be reopened as the current program.
@@ -38,6 +47,13 @@ Begin with B00. Refresh GitHub master, CI/PR state, worktree ownership, the actu
 Operate as a controlled release train:
 1. Select only a ready card whose dependencies have evidence and are in the current branch ancestry. Work in an isolated, current-master worktree and a clearly named branch. One behavior card per PR by default; parallel work is allowed only for independent cards with separate worktrees and review capacity.
 2. Follow the card's prescribed solution exactly enough to preserve its contract: reproduce or write the focused failing test first, make the smallest cohesive change, run focused checks then the required repository tier, and record the exact SHA, cwd, binary, commands, exits, negative control, limitations, and next-ready card in research/evidence/<ID>.md. Update backlog.json honestly.
+
+   For A07, bind the candidate by absolute executable identity inside the
+   initializer's actual command environment before counting a run. Capture
+   `command -v assura`, `assura --version`, and the SHA-256 there; a login-shell
+   `PATH` mismatch invalidates the run and receives no allocation credit. Follow
+   [a07-candidate-binding-plan.md](a07-candidate-binding-plan.md), repair the
+   runner, and complete a fresh canary before repeating screening.
 3. Before any merge, obtain an independent review for behavior, CI, release, public-contract, or complex changes. Refine valid findings, rerun affected gates, and verify the reviewed SHA is the tested SHA. Never weaken policy, hide benchmark rows, claim generated hooks are active, or count skipped/zero tests as passing merely to clear a card.
 4. Merge only a clean, review-resolved, current-master PR whose required hosted and local gates pass. After merging, verify the exact commit is reachable from origin/master, update the card to done only when its observable outcome exists, and remove only worktrees/branches created by this goal after confirming they are clean and merged. Inventory existing worktrees first; use prune dry-runs; never delete unknown, user-owned, or dirty paths.
 5. Follow the queue's dependency graph and phase boundaries: establish baseline and support scope; repair trust/release evidence; build safe init/hooks/gates; run blinded evaluation; then release, portfolio, pilot, and feedback work. When a result contradicts the plan, repair the owning card or explicitly narrow supported scope—do not lower the evaluator or rewrite history.

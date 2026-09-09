@@ -78,6 +78,15 @@ evidence-based hypotheses, record results and the smallest required plan change.
 Do not repeatedly retry unchanged commands or guess a broad rewrite. Stop that
 card for a real contract/authority decision; continue independent work if available.
 
+For A07 initializer evaluation, read `a07-candidate-binding-plan.md` before
+launching any run. The candidate must be bound by absolute executable identity
+inside the initializer's actual command environment. Capture
+`command -v assura`, `assura --version`, and the candidate SHA from that same
+environment; a login-shell `PATH` mismatch invalidates the run and earns no
+screening, holdout, or final-batch credit. Repair the runner and complete a
+fresh identity canary before repeating the protocol. Keep private fixture and
+evaluator details out of prompts, reviewer briefs, and public evidence.
+
 Before a complex PR, request an independent review under project rules. Review
 findings critically and fix valid issues. Commit only your owned, verified changes
 when the repository workflow requires it. Prepare a PR-ready summary; creating a
