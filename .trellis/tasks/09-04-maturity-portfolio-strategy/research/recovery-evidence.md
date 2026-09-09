@@ -2,6 +2,9 @@
 
 Date: 2026-09-09. Scope: process artifacts, agent instructions and validation
 routing only. Product acceptance is unchanged; no card is promoted by this file.
+Process iteration: 84 (after the highest recorded historical iteration, 83).
+Context level: not exposed. The before/after phase record is this evidence
+file, linked from the full historical progress log.
 
 ## Candidate and proof
 
@@ -79,6 +82,12 @@ scope and revision-aware task evidence. Its response reported ACTIVE. The
 goal tool returned no active goal; automatic goal continuation is not assumed.
 
 ## Next phase
+
+Appending a recovery summary initially made `progress.md` exceed its existing
+1,000-line limit; the source structure check failed. The correction keeps the
+checkpoint here and adds a link in the log's existing heading,
+preserving historical entries and the unchanged limit. Rerun the source check
+after this correction; the failed attempt is not passing evidence.
 
 Resolve candidate review, rerun affected checks, then submit the reviewed final
 candidate for applicable hosted checks. Merge only after those pass. Verify
