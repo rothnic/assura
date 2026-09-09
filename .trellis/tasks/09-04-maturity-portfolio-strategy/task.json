@@ -28,6 +28,7 @@
     "research/backlog.json",
     "research/executor-prompt.md",
     "research/e2e-goal-prompt.md",
+    "research/a07-candidate-binding-plan.md",
     "research/reliability-packet.md",
     "research/quality-packet.md",
     "research/initialization-packet.md",

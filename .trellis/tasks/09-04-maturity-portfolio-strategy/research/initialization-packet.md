@@ -99,6 +99,11 @@ quality:
 
 **Outcome:** Candidate initialization meets the expected configuration and supports later development. **Own:** evaluation run artifacts and findings; fixes go back to A02–A06, not into evaluator expectations.
 
+The runner must also satisfy
+[the candidate-binding correction plan](a07-candidate-binding-plan.md) before
+any screening allocation: the initializer and evaluator must use the same
+absolute candidate executable, proven inside the actual command environment.
+
 - [ ] Freeze A01 contracts, source SHA, binary hash, model/harness version and two input conditions. Screening: 3 stacks ×5 repetitions ×2 conditions =30 runs, changing one product-input variable at a time. Limit concurrency to available budget and isolate every repo/session.
 - [ ] Initializing agent receives only “Initialize this project with Assura,” normal repo context and candidate tool access. It does not see evaluator contracts. No parent coaching, inherited trial memory or manual post-run repairs.
 - [ ] Evaluate each run with A01. A separate fresh agent adds a small specified feature; assess structure preservation, native test success, bounded repair and no disabled policy.
