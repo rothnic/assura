@@ -148,6 +148,9 @@ pub async fn init_command(
     } else {
         println!("Run `assura hooks install` to install optional git hooks.");
     }
+    println!(
+        "For agent-assisted setup, run `assura agent onboard --agent codex --activate` to generate guidance and configure Codex hooks; runtime delivery still requires trusting the project and approving its hooks in Codex."
+    );
     ExitCode::Success
 }
 
