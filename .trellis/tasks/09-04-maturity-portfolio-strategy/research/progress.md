@@ -1,5 +1,24 @@
 # Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md))
 
+## Iteration 86 — 2026-09-09 — durable goal checkpoint and owned-topology closure
+
+- PR #233 merged the reviewed reconciliation as `1f9ebf2` on top of
+  `0c0eae8`; the current master tree includes the runner-isolation contract,
+  exact A02 proof, and preserved progress history. Its hosted CI Scope,
+  Documentation Scope, Security Scope, Evidence Gates, and GitGuardian checks
+  passed; scope-skipped product, release, performance, and Rust jobs remain
+  explicitly skipped rather than counted as passes.
+- The five goal-owned branch worktrees were clean, matched their merged PR
+  trees, and were removed with their local refs deleted. The superseded
+  detached A07 build at `f1595fc` was removed; the clean `922d7f0` candidate
+  build is retained as a bounded evidence archive for the next canary.
+- The root unknown file and pre-existing prunable registrations remain
+  untouched. The topology report is therefore expected to retain those
+  ownership exceptions; no strict-green claim is made from their presence.
+  A07 remains `active` with zero screening/holdout/acceptance credit. The next
+  exact action is a fresh one-shot source-only canary from current master with
+  minimal login-shell-safe PATH and same-environment executable identity proof.
+
 ## Iteration 85 — 2026-09-09 — reviewed routing and proof correction
 
 - Independent review accepted P1/P2 and scoped rereview returned PASS: the
@@ -904,19 +923,6 @@ recoverable. This reconciliation adds records rather than rewriting outcomes.
   lifecycle tests, four private resolver tests, and thirteen host lifecycle
   tests passed; independent final review is clean.
 - Context health: not exposed. Multiple reviewer findings all reduced to one reusable ownership rule and are now captured in the harness hook spec. The local `cargo xtask pr` runner did not yield a terminal result within the observation window, so it remains inconclusive; hosted performance/PR gates are mandatory before merge.
-
-## Iteration 41 — 2026-09-06 — A04 hosted integration and closure
-
-- PR [#181](https://github.com/rothnic/assura/pull/181) merged as
-  `41949fd589f37d01222ef6a695a6a4c3f61ec9a7`. Its independently reviewed and
-  locally proven head `ec2cf6a57a001a1c266dcb7b99e147a02cc85a94` passed all
-  required hosted checks: documentation, Linux/macOS/Windows stable, MSRV,
-  release bundle, Windows installer, five adoption lanes, coverage, evidence
-  and security checks, and Performance Report.
-- `git fetch origin --prune` followed by `git merge-base --is-ancestor ec2cf6a
-  origin/master` exited 0. A04 is now done, with local hooks still described as
-  local lifecycle evidence rather than hosted merge protection. Next independent
-  ready card: A05; R03 remains blocked pending a comparable performance repair.
 
 ## Iteration 43 — 2026-09-06 — A03 target-state contract repair
 
