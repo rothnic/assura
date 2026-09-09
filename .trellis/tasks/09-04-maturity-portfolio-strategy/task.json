@@ -52,6 +52,7 @@
       "goal/a07-onboarding-activation",
       "goal/a07-composed-init",
       "goal/a07-composed-init-reconciliation",
+      "goal/a02-init-discovery-correction",
       "goal/execution-recovery-plan"
     ]
   }
