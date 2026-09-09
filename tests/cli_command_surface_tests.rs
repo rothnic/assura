@@ -309,6 +309,17 @@ fn init_creates_supported_structure_config() {
     assert!(!config.contains("allowed_names"));
     assert!(!config.contains("children:"));
     assert!(
+        !project
+            .path()
+            .join(".assura/onboarding/agent-next.md")
+            .exists(),
+        "plain init must remain config-only"
+    );
+    assert!(
+        !project.path().join(".codex/hooks.json").exists(),
+        "plain init must not activate a host implicitly"
+    );
+    assert!(
         String::from_utf8_lossy(&output.stdout)
             .contains("assura agent onboard --agent codex --activate"),
         "init must direct an agent-assisted project to complete onboarding: stdout:\n{}",
@@ -336,6 +347,91 @@ fn init_creates_supported_structure_config() {
         String::from_utf8_lossy(&check.stdout),
         String::from_utf8_lossy(&check.stderr)
     );
+}
+
+#[test]
+fn init_can_compose_explicit_agent_activation_without_creating_git_state() {
+    let project = TempDir::new().unwrap();
+
+    let output = Command::new(assura_bin())
+        .args([
+            "init",
+            project.path().to_str().unwrap(),
+            "--agent",
+            "codex",
+            "--activate",
+            "--no-git-hooks",
+        ])
+        .output()
+        .unwrap();
+
+    assert!(
+        output.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert!(project.path().join(".assura/config.yml").is_file());
+    assert!(project
+        .path()
+        .join(".assura/onboarding/agent-next.md")
+        .is_file());
+    assert!(project.path().join(".codex/hooks.json").is_file());
+    assert!(project.path().join(".assura/integrations/codex").is_dir());
+    assert!(!project.path().join(".git").exists());
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(
+        stdout.contains("post_activation=structurally_verified"),
+        "composed init must report structural activation proof:\n{stdout}"
+    );
+    assert!(
+        stdout.contains("host_approval=unavailable"),
+        "composed init must retain the host approval boundary:\n{stdout}"
+    );
+    assert!(
+        stdout.contains("trust the project and approve its hooks in Codex"),
+        "composed init must report the runtime approval follow-up:\n{stdout}"
+    );
+}
+
+#[test]
+fn init_agent_flags_require_an_explicit_activation_request() {
+    let project = TempDir::new().unwrap();
+    let output = Command::new(assura_bin())
+        .args(["init", project.path().to_str().unwrap(), "--agent", "codex"])
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(2));
+    assert!(String::from_utf8_lossy(&output.stderr).contains("--activate"));
+    assert!(!project.path().join(".assura/config.yml").exists());
+}
+
+#[test]
+fn init_rejects_ambiguous_agent_targets_before_writing_project_state() {
+    for target in ["auto", "generic"] {
+        let project = TempDir::new().unwrap();
+        let output = Command::new(assura_bin())
+            .args([
+                "init",
+                project.path().to_str().unwrap(),
+                "--agent",
+                target,
+                "--activate",
+            ])
+            .output()
+            .unwrap();
+
+        assert_eq!(output.status.code(), Some(2), "target={target}");
+        assert!(
+            String::from_utf8_lossy(&output.stderr).contains("requires a concrete host"),
+            "target={target}, stderr:\n{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        assert!(!project.path().join(".assura/config.yml").exists());
+        assert!(!project.path().join(".codex/hooks.json").exists());
+    }
 }
 
 #[test]

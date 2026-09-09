@@ -1,5 +1,5 @@
 //! Command-line argument definitions for the Assura CLI.
-use super::agent_args::AgentCommands;
+use super::agent_args::{AgentCommands, AgentOnboardingTarget};
 use super::content_args::ContentCommands;
 use super::daemon::DaemonCommands;
 use super::editor_args::EditorCommands;
@@ -127,6 +127,21 @@ pub enum Commands {
     Init {
         #[arg(help = "Project root directory (defaults to current directory)")]
         path: Option<PathBuf>,
+
+        #[arg(
+            long,
+            value_enum,
+            requires = "activate",
+            help = "Compose first-run onboarding for one explicit host agent"
+        )]
+        agent: Option<AgentOnboardingTarget>,
+
+        #[arg(
+            long,
+            requires = "agent",
+            help = "Activate the selected host agent after creating the starter policy"
+        )]
+        activate: bool,
 
         #[arg(long, help = "Create project-intelligence starter files")]
         project_intelligence: bool,
