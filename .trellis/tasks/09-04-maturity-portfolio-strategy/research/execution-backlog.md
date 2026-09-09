@@ -14,7 +14,7 @@
 
 ## How to execute
 
-The machine-readable queue is [backlog.json](backlog.json). Each ID has a solution card in the packet linked below. `pending` means not implemented, not ready by itself. Select the first pending row whose dependencies are done and whose required authority/environment is available. An implementation-dependent row must also have its dependencies in the current Git ancestry. Prefer the listed order; independent rows can proceed when an earlier row is externally blocked.
+The machine-readable queue is [backlog.json](backlog.json), read at the refreshed integration revision. Resume unfinished active, implemented and verified candidates after confirming live ownership before selecting pending rows. Each ID has a solution card below. `pending` means not implemented, not ready by itself. Select a pending row only with evidenced dependencies, required authority/environment and merged implementation ancestry. Follow [recovery-plan.md](recovery-plan.md) and the goal-execution validation matrix; independent rows can proceed when an earlier action is held.
 
 1. Start with **B00**, fresh GitHub state and execution isolation. The strategy checkout is older than master; do not implement on it.
 2. Then **P01**, make the product boundary and support contract explicit.

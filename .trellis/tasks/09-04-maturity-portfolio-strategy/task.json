@@ -48,7 +48,8 @@
       "goal/maturity-ledger-reconciliation",
       "goal/a01-native-test-aggregation",
       "goal/a07-blinded-evaluation",
-      "goal/a07-onboarding-activation"
+      "goal/a07-onboarding-activation",
+      "goal/execution-recovery-plan"
     ]
   }
 }

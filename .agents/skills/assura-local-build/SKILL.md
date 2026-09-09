@@ -1,6 +1,6 @@
 ---
 name: assura-local-build
-description: Use when Cargo, Clippy, tests, benchmarks, or Assura self-checks fail for local platform, OpenSSL, pkg-config, or network-limited WSL reasons before changing product code.
+description: "Resolve Assura build prerequisites and route isolated VPS validation."
 ---
 
 # Assura Local Build
@@ -78,21 +78,54 @@ tools explicitly:
   /usr/bin/python3 ./.trellis/scripts/workflow_gate.py --platform codex
 ```
 
-When Cargo or website validation is affected, copy the current commit or patch
-to `vps` and run the same validation there. Use a temporary npm cache such as
-`NPM_CONFIG_CACHE=/tmp/assura-npm-cache` so validation does not depend on a
-possibly blocked home-directory cache. Keep hosted Linux, macOS, and Windows CI
-as the final cross-platform proof.
+When Cargo or website validation is affected, use the exact-commit procedure
+below to run the applicable validation on `vps`. Keep hosted Linux, macOS and
+Windows CI as final cross-platform proof.
 
 ## Validation Pattern
 
-After resolving local build prerequisites, run:
+After resolving prerequisites, resume the failed applicable command from its
+original cwd. Use OpenSSL overrides only after confirming that specific Linux
+layout. See [validation routing](../assura-goal-execution/references/validation-routing.md)
+for the changed surface; do not run unrelated Rust, website and integration
+suites as a universal recovery recipe. For website setup, use
+`pnpm --dir website install --frozen-lockfile` from the repository root.
 
-```bash
-cargo fmt --all -- --check
-OPENSSL_INCLUDE_DIR=/usr/include OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu cargo build
-OPENSSL_INCLUDE_DIR=/usr/include OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu cargo clippy --all-targets --all-features -- -D warnings
-OPENSSL_INCLUDE_DIR=/usr/include OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu cargo run --quiet -- check --format json .
-cd website && pnpm install --frozen-lockfile && pnpm build
-cd integrations/agents/codex && npm install && npm run lint && npm run build
-```
+## Isolated VPS validation
+
+1. Resolve the configured SSH alias with local SSH config. On Nick's current
+   machine the development alias is `vps`; do not assume `vps-dev` resolves.
+   Probe with batch mode and a bounded connection timeout. Read CPU/load,
+   available RAM, free disk, installed toolchains and any existing owned job.
+2. Choose one clean committed candidate and record its SHA/base. Create a
+   unique local scratch directory with `mktemp -d` and an exact Git bundle:
+   `git bundle create <scratch>/candidate.bundle HEAD`, followed by
+   `git bundle verify <scratch>/candidate.bundle`. Retain the exact SHA.
+3. Create a unique remote directory with `mktemp -d` under the approved
+   development workspace (discover the home/path first). Transfer only the
+   bundle, clone it there, and check out the recorded SHA detached. Verify
+   remote HEAD, clean status and bundle checksum against the local values.
+   Do not copy credentials, private evaluators, or another checkout's dirt.
+4. Select a toolchain matching the applicable CI job explicitly (`cargo
+   +<toolchain> ...`). Record `rustc -Vv`, Cargo, OS, dependency lockfile hash
+   and package-manager versions. A default nightly is not stable/MSRV proof.
+   Confirm projected build size plus a safety margin fits available disk;
+   low disk means choose a smaller applicable job or retain local execution.
+   Never remove unrelated caches or build trees to make room.
+5. Run one bounded heavy job initially. Keep process/session identity, stdout,
+   stderr and actual exit (including failure). Use a dedicated log and status
+   file outside tracked source for detached jobs; do not infer success from a
+   disconnected SSH session or the last line of output. Reconnect to that job.
+6. Retrieve logs/results and verify source identity remained unchanged. Record
+   elapsed time and host utilization before claiming an efficiency improvement.
+   Concurrent builds must not contaminate performance comparisons. Retain
+   baseline/candidate rows, warm/cold distinctions and all gate thresholds.
+7. Close only the exact owned remote directory after evidence is retrieved and
+   no process uses it, or record its owner, next action and archive/restore path.
+
+The existing `scripts/perf-vps-ls-lint-compare.sh` is a specialized unstaged-diff
+diagnostic, not a clean-commit validation runner. It recreates a date/label
+directory and copies the working tree; inspect those effects and ownership
+before any use. Prefer the isolated bundle procedure for merge evidence.
+Do not configure a self-hosted GitHub runner or change protections as part of
+routine remote validation.

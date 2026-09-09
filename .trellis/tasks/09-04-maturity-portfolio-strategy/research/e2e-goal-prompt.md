@@ -1,5 +1,12 @@
 # Stable E2E goal: Assura maturity execution train
 
+Resume through [recovery-plan.md](recovery-plan.md) and the repository's
+`assura-goal-execution` skill. Read this task at refreshed `origin/master`;
+dated direction snapshots below remain historical. Check the existing product
+goal's actual lifecycle before relying on automatic continuation. Keep one
+program objective with bounded card checkpoints; do not replace an unfinished
+goal at each card boundary.
+
 ## Direction review
 
 Current-state routing: read `backlog.json`, the newest `progress.md` entry and

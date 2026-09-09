@@ -1,11 +1,11 @@
 {
   "schema": "assura.execution-backlog.v1",
-  "updated": "2026-09-08",
+  "updated": "2026-09-09",
   "source_snapshot": "ed093668918bc271fc98b9112acaf7c1bf3eb314",
   "refresh_source_before_execution": true,
   "spec": "../prd.md",
   "instructions": "executor-prompt.md",
-  "selection": "First pending item with done/not_needed evidenced dependencies present in the checkout. Skip explicitly blocked external actions; read the card before editing. source_snapshot is the historical planning baseline, not branch ancestry; imported evidence status does not import behavior source.",
+  "selection": "Read at refreshed integration revision. Resume unfinished active/implemented/verified candidates after confirming live ownership, then select ready pending items with evidenced merged dependencies. Read recovery-plan.md and the selected packet/evidence. Hold only specific unavailable external actions. source_snapshot is historical; imported evidence does not import behavior source.",
   "items": [
     {
       "id": "B00",
