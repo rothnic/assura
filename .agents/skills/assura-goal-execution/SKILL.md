@@ -1,19 +1,40 @@
 ---
 name: assura-goal-execution
-description: Use when executing long-running Assura goals from docs/goals, especially when the work spans several iterations, context may drift, or repo-local .agents/skills may need to be created or updated for progressive disclosure.
+description: "Resume Assura goals and Trellis backlogs with evidence, review, validation and clean integration."
 ---
 
 # Assura Goal Execution
 
-Use this skill when working from a long-running goal in `docs/goals/`.
+Use for goals in `docs/goals/` and canonical execution tasks in `.trellis/tasks/`.
+The latest user scope controls whether this session executes product work or
+only improves its process. Do not substitute a process PR for product acceptance.
 
 ## Start
 
-1. Read the target goal file.
-2. Read `AGENTS.md` and the Trellis workflow/spec files named by the goal.
-3. Record a progress-log entry in the goal before and after major phases.
-4. If local build or network failures occur, load
-   `.agents/skills/assura-local-build/SKILL.md` before changing product code.
+1. Run the workflow gate and preserve unrelated dirty work. Refresh the base;
+   compare checkout HEAD before reading the ledger. Use `git show
+   origin/master:<task>/research/backlog.json` or a clean current-base checkout
+   when the supplied canonical path is on an old branch.
+2. Read the goal/PRD, queue, selected packet and evidence. Inspect active,
+   implemented and verified candidates before pending ones; verify live owners.
+3. Read [execution contract](references/execution-contract.md) for the phase,
+   acceptance, continuation and merge rules. Use the installed personal
+   `assura-orchestration` skill and its independent review brief when available;
+   the repository contract remains usable without that installation.
+4. Before spending on gates, read [validation routing](references/validation-routing.md).
+   Environment failures route to `assura-local-build`, not product changes.
+5. Record the current phase and exact next action in the selected card's
+   evidence before/after major phases. A task path is portable; an old checkout
+   snapshot, automation prompt or conversation summary is not current state.
+
+## Context routing
+
+- Always: AGENTS, this index, selected card's current evidence and contract.
+- Phase transition/review/merge: execution contract and exact review delta.
+- Test/build/CI placement: validation routing; environment detail only on need.
+- Maturity train recovery: the canonical task's `research/recovery-plan.md`.
+- Never load all packets, all historical logs or private evaluation fixtures
+  into an implementation/reviewer prompt. Link exact evidence on demand.
 
 ## Iteration Review Hook
 

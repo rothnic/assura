@@ -1,273 +1,70 @@
-# Assura Project - Agent Guidelines
+# Assura agent entrypoint
+
+Assura is a pre-1.0, structure-first repository-policy CLI. Keep one configured
+policy engine, thin host adapters, project-owned conventions, and honest
+evidence. Broad automatic repair, hosted orchestration, semantic inference as
+policy, and public third-party plugin APIs are outside the supported contract.
+
+## Start and ownership
+
+1. Read this file, then run `python3 .trellis/scripts/workflow_gate.py --platform
+   codex` on each new request; use the actual platform outside Codex. Steering
+   within a turn does not require restarting. If task resolution is missing,
+   rerun with `--task <task-path>`. Whenever `Ready: no`, follow `Next`/`Needs`
+   before starting work; resolve or isolate the stated prerequisite.
+2. Inspect cwd, branch, remote, HEAD and `git status --short`. Preserve unknown
+   work. Use a clean owned checkout when the current one has unrelated dirt.
+3. Resolve task files at the refreshed integration revision. A canonical task
+   path in an old checkout is historical; it is not the latest ledger.
+4. Read only the selected task/card and the relevant spec/skill routes below.
+   Do not create a second task for an already active canonical task.
+
+## Rules every agent needs
+
+- One owner per candidate; keep file ownership explicit when delegating.
+  Commit coherent owned work before review, handoff, or changing cards.
+- Test observable behavior, including meaningful negative controls. Preserve
+  user configuration, errors, policy thresholds, and unfavorable evidence.
+- A passing command is insufficient when expected tests were skipped or zero,
+  policy was empty, or generated hooks were never observed executing.
+- Independently review complex changes before a PR. Resolve concrete findings,
+  rerun affected checks, and obtain scoped rereview of the final changes.
+- Merge only within existing authorization, with current-base source, resolved
+  review, required hosted/local checks and the slice's acceptance evidence.
+  Deployment, release, protections, invitations and publication need their own
+  authority. Inspect actual trigger coupling before an affected push or merge.
+- Do not lower gates, hide failures, or infer that earlier failures excuse a
+  current one. A policy change needs an explicit separate decision.
+- Preserve source SHA, cwd, binary/toolchain, commands, exits and review proof.
+  Verify merged reachability and clean ownership before removing branches.
+- Use conventional commits. Document public Rust APIs; preserve contextual
+  errors and bounded, thread-safe behavior. Breaking public API changes require
+  approval; new modules need spec review and dependencies need justification.
+
+## Skills
+
+Read the selected `SKILL.md` before applying it. Paths below are repo-relative.
+
+| Work | Entry point |
+| --- | --- |
+| Resume or orchestrate a goal/Trellis backlog | [.agents/skills/assura-goal-execution/SKILL.md](.agents/skills/assura-goal-execution/SKILL.md) |
+| Revalidate an older goal or scope | [.agents/skills/assura-goal-validation/SKILL.md](.agents/skills/assura-goal-validation/SKILL.md) |
+| Session setup without injected context | [.agents/skills/trellis-start/SKILL.md](.agents/skills/trellis-start/SKILL.md) |
+| New requirements / implementation / verification | `.agents/skills/trellis-{brainstorm,before-dev,check}/SKILL.md` |
+| Rust changes | [.agents/skills/assura-rust-quality/SKILL.md](.agents/skills/assura-rust-quality/SKILL.md) |
+| Build environment or VPS validation | [.agents/skills/assura-local-build/SKILL.md](.agents/skills/assura-local-build/SKILL.md) |
+| Performance evidence | [.agents/skills/assura-performance-reporting/SKILL.md](.agents/skills/assura-performance-reporting/SKILL.md) |
+| Host hooks/lifecycle | [.agents/skills/assura-agent-harness-hooks/SKILL.md](.agents/skills/assura-agent-harness-hooks/SKILL.md) |
+| Config notation / rejected structure | `.agents/skills/assura-{notation-review,structure-fit}/SKILL.md` |
+
+Specs start at [.trellis/spec/assura/index.md](.trellis/spec/assura/index.md).
+Rust/toolchain truth is `Cargo.toml`, toolchain files and current CI, not a
+copied version here. Use the validation matrix linked from goal execution;
+docs/process edits do not automatically require the full Rust tier.
+Keep operational procedures in skills, current state in task evidence, and
+AGENTS as this shared router. Compatibility policy lives in the scoped specs;
+do not introduce internal pre-1.0 shims without a demonstrated consumer.
 
-## Project Overview
-
-**Assura** is a structure-first repository validation CLI written in Rust. The
-current supported source surface provides:
-
-- `assura check` as the configured-policy gate and `assura review` as advisory
-  project/branch/worktree radar
-- `assura doctor` and `assura explain` for setup and scoped policy evidence
-- `assura agent onboard`, bounded event nudges, and managed project-local Codex,
-  OpenCode, Claude, and Pi activation lifecycles
-- deterministic Markdown, local-link, repository-reference, agent-guidance,
-  content-model, and query/context-pack behavior
-- `assura init`, `status`, `migrate`, hooks, watch, daemon/session, performance,
-  and text/JSON/YAML/agent automation surfaces
-
-Automatic broad repair, hosted orchestration, semantic inference as policy, and
-public third-party plugin APIs remain outside the supported core contract.
-
-### Key Dependencies
-- `tokio` - Async runtime used by CLI and validation flows
-- `petgraph` - Graph algorithms retained for planned dependency analysis work
-- `serde`/`serde_yaml` - Configuration file parsing
-- `clap` - CLI interface
-- `regex`/`glob` - Pattern matching for file discovery
-- `notify` - File system event support for continuous local watch workflows
-
-## Agent Coordination Guidelines
-
-### Task Types and Agent Roles
-
-**General Agent** (default)
-- Feature implementation and bug fixes
-- Refactoring and optimization
-- Documentation updates
-
-**Architect Agent**
-- Core engine design decisions
-- API design and module boundaries
-- Performance critical code review
-
-**Test Agent**
-- Test suite development
-- Edge case identification
-- Benchmark creation
-
-### Workflow Guidelines
-
-1. **Always start by reading AGENTS.md** - Check for project-specific context
-2. **Run the workflow gate on each new user request** - use
-   `python3 ./.trellis/scripts/workflow_gate.py --platform <current-platform>`
-   before changing files or scope; Codex uses `--platform codex`.
-   Steering/correction messages inside the same turn count as part of the
-   original request. If injected workflow-state provides a Task path but session
-   state is unresolved, rerun with `--task <task-path>`. If the gate says
-   `Ready: no`, follow its `Next`/`Needs` output before reading long workflow
-   docs or starting work.
-3. **Read SKILL.md files** before using built-in skills
-4. **Check existing code patterns** before introducing new ones
-5. **Use concurrency safely** - Assura uses multi-threading (Rayon, Tokio)
-6. **Document public APIs** - All public structs/functions need rustdoc
-7. **Write tests for validation logic** - All validators need unit tests
-8. **Scope validation to changed surfaces** - Docs/Trellis/workflow-only edits
-   should run the workflow gate, `cargo run --quiet -- check --format json .`,
-   `cargo xtask evidence`, and `cargo xtask docs` when website/docs are touched.
-   Reserve full Rust test/clippy/release gates for Rust, Cargo, CI, release, or
-   behavior changes.
-
-### Decision Authority
-
-- **Code changes within existing modules**: Any agent can implement
-- **New module creation**: Consult project documentation first
-- **Breaking API changes**: Requires explicit approval
-- **Dependency additions**: Must be justified in code comments
-
-## Available Skills
-
-### Project Skills
-
-Located in `.agents/skills/`:
-
-| Skill | Description | Use When |
-|-------|-------------|----------|
-| `assura-goal-execution` | Long-running goal execution loop with iteration/context review and progressive-disclosure skill maintenance | Executing a goal from `docs/goals/` |
-| `assura-goal-validation` | Goal creation and revalidation workflow for old or separate-context goal docs | Creating a goal, choosing the next goal, or starting an older goal that may be stale |
-| `assura-agent-harness-hooks` | Cross-harness hook research and implementation matrix for Codex, OpenCode, Claude, Pi, OpenClaw, and similar agent runtimes | Adding or changing agent hook integrations, generated hook bundles, or harness lifecycle support |
-| `assura-local-build` | Local Cargo/OpenSSL/network troubleshooting for WSL or locked-down environments | Cargo validation fails for platform or dependency-access reasons |
-| `assura-performance-reporting` | Performance-report, LS-Lint warm comparison, benchmark history, and website performance data workflow | Changing `assura performance-report` or PR performance evidence |
-| `assura-rust-quality` | Concise Rust decision guidance with routed local examples | Changing Rust policy, configuration, reports, subprocesses, or performance-sensitive checks |
-| `assura-notation-review` | Iterative notation review with composition, diagnostics, performance, and rendered-example gates | Simplifying Assura config syntax or reviewing public config examples |
-| `assura-structure-fit` | Structure mismatch decision workflow with `STRUCTURE_FIT_CHECK` progressive-disclosure guidance | Assura rejects a new or moved file/directory, or a config change would allow a new path |
-
-**Usage**: Read `.agents/skills/<skill-name>/SKILL.md` for instructions.
-
-### Built-in Skills
-
-Located in `/workspace/repos/research/assura/skills/built-in/`:
-
-| Skill | Description | Use When |
-|-------|-------------|----------|
-| `find-skills` | Search vercel-labs/skills registry for reusable skills | Need to discover existing skills instead of writing from scratch |
-
-**Usage**: Read `skills/built-in/<skill-name>/SKILL.md` for instructions.
-
-### Recommended External Skills
-
-Install these via `npx skills add <owner/repo> --skill <skill-name>`:
-
-**High Priority** (reference for validation patterns):
-- `vercel-labs/agent-skills:web-design-guidelines` - 100+ rule audit patterns
-- `vercel-labs/agent-skills:react-best-practices` - Rule prioritization methodology
-- `supercent-io/skills-template:file-organization` - File structure validation
-
-**Medium Priority** (reference for workflows):
-- `supercent-io/skills-template:git-workflow` - Pre-commit validation integration
-- `supercent-io/skills-template:security-best-practices` - File permission validation
-- `squirrelscan/skills:audit-website` - Audit report formatting
-
-**Reference** (techniques and patterns):
-- `supercent-io/skills-template:codebase-search` - Pattern matching for file discovery
-- `supercent-io/skills-template:performance-optimization` - Validation engine tuning
-- `supercent-io/skills-template:technical-writing` - Error message formatting
-
-See `docs/archive/skills-research.md` for detailed analysis.
-
-## Coding Standards and Conventions
-
-### Rust Standards
-
-- **Edition**: 2021
-- **Formatting**: `cargo fmt` (default configuration)
-- **Linting**: `cargo clippy` with no warnings
-- **Documentation**: All public items must have rustdoc
-
-### Code Organization
-
-```
-src/
-  main.rs           # CLI entry point
-  lib.rs            # Library exports
-  core/
-    mod.rs          # Core engine module
-    graph.rs        # Dependency graph
-    validator.rs    # Validation engine
-  rules/
-    mod.rs          # Rule definitions
-    severity.rs     # Severity levels (Critical, High, Medium, Low)
-  fs/
-    mod.rs          # File system operations
-    watcher.rs      # File watching
-  config/
-    mod.rs          # Configuration parsing
-    loader.rs       # Config file loading
-  report/
-    mod.rs          # Report generation
-    formatter.rs    # Output formatting
-```
-
-### Error Handling
-
-- Use `thiserror` for structured error types
-- Use `anyhow` for application-level error handling
-- All I/O operations must use proper error propagation
-- Validation errors must include context (file, line, rule)
-
-### Testing
-
-- Unit tests in `tests/` directory
-- Benchmarks in `benches/` directory
-- Use `pretty_assertions` for readable test failures
-- Use `mockall` for mocking in tests
-- Use `tempfile` for test fixtures
-
-### Async Patterns
-
-- Prefer `tokio::spawn` for parallel validation
-- Use `rayon` for CPU-intensive graph operations
-- Handle cancellation gracefully with `tokio::select!`
-- All async functions should be `Send + 'static`
-
-## Communication Protocols
-
-### File System Communication
-
-Agents communicate through:
-
-1. **This file** (`AGENTS.md`) - Project-wide guidelines
-2. **Code comments** - Inline rationale for decisions
-3. **Rustdoc** - Public API documentation
-4. **Git commits** - Conventional commit format
-
-### Status Reporting
-
-When completing work:
-
-1. **Report what was changed** - File paths and key modifications
-2. **Reference skill usage** - If external skills were applied
-3. **Note breaking changes** - API changes or behavioral differences
-4. **Suggest next steps** - If continuation work is needed
-
-### Error Reporting
-
-When encountering issues:
-
-1. **State the symptom clearly** - What is not working
-2. **Provide context** - Relevant file paths and code sections
-3. **Mention attempted solutions** - What has already been tried
-4. **Tag appropriate agent** - If specialized knowledge is needed
-
-### Version Control
-
-- Use conventional commits: `type(scope): description`
-- Types: `feat`, `fix`, `docs`, `refactor`, `test`, `perf`
-- Scope examples: `core`, `rules`, `config`, `fs`, `report`
-- Reference issues/PRs in commit messages when applicable
-
-## Quick Reference
-
-### Common Commands
-
-```bash
-# Build
-cargo build --release
-
-# Test
-cargo test
-cargo test --lib
-cargo test --integration
-
-# Lint
-cargo fmt
-cargo clippy -- -D warnings
-
-# Benchmark
-cargo bench
-
-# Documentation
-cargo doc --open
-
-# Watch mode (for development)
-cargo watch -x test
-```
-
-### Project Constraints
-
-- **Minimum Rust version**: 1.70.0
-- **Supported platforms**: Linux, macOS, Windows
-- **Concurrency**: Thread-safe by design
-- **Memory**: No unbounded allocations in hot paths
-
-## Backwards Compatibility Policy
-
-**No internal backwards compatibility until 1.0 release.**
-
-- Configuration formats, APIs, and internal structures may change without migration paths
-- The LS-Lint compatibility layer (`ls_compat.rs`) is maintained for testing purposes only
-- External users should expect breaking changes in pre-1.0 versions
-- Once 1.0 is released, standard semantic versioning will be followed
-
-## References
-
-- Skills Research: `docs/archive/skills-research.md`
-- Cargo Configuration: `Cargo.toml`
-- Skill Examples: `skills/built-in/*/SKILL.md`
-
----
-
-*Last updated: 2026-03-19*
-*For questions about agent capabilities, ask: "What can you help me with?"*
 <!-- TRELLIS:START -->
 # Trellis Instructions
 

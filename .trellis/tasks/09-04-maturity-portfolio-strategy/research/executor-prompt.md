@@ -1,5 +1,10 @@
 # Copy-paste prompt for an execution agent
 
+Current recovery route: [recovery-plan.md](recovery-plan.md). Resolve this task
+at refreshed `origin/master`, then read the repository's `assura-goal-execution`
+skill for the execution contract and validation matrix. Absolute paths below
+identify the task, not the authoritative revision of an old checkout.
+
 Copy the following prompt into a coding agent that can access the repository and planning task. It is designed for sequential execution with limited context. The queue and solution cards are the source of truth; no knowledge of the earlier conversation is required.
 
 ```text
@@ -28,7 +33,8 @@ isolated current-master checkout. Inspect overlapping PR #142 and the existing
 NickRoth case-study branch before creating duplicate work. Record actual cwd,
 SHA, binary version and toolchain. Load the worktree skill for isolation.
 
-Select the first pending backlog item whose dependencies are done and whose
+First inspect unfinished active/implemented/verified candidates and actual live
+owners. Then select a pending item with evidenced merged dependencies and whose
 required changes are present in this checkout. A not_needed dependency requires
 written evidence/approved scope disposition. If an item is blocked on publication,
 people or environment, record the blocker and take another independent ready item.
@@ -57,9 +63,10 @@ For the selected card:
   severity, change CI scope or claim a skipped check passed to finish a task.
   If such a policy change is justified, record the evidence and request a
   separate maintainer decision.
-- Run the focused tests from the right cwd, then the repository's relevant
-  verification tier. For Rust PRs run cargo xtask fast and cargo xtask pr plus
-  applicable feature/OS gates. Do not rerun unrelated heavy suites repeatedly.
+- Run focused tests from the right cwd, then the relevant verification tier.
+  cargo xtask pr already includes fast; one nested invocation proves both at
+  readiness. Retain applicable final-source feature/OS/performance gates.
+  Use the goal skill's matrix/VPS route; record actual exits and elapsed time.
 - Use real temporary fixture repos for hook/installer tests. Restore or discard
   only your own disposable test data; never overwrite user hooks/configuration.
 - Evaluate with the candidate binary, not a global older Assura installation.

@@ -1,4 +1,4 @@
-# Maturity execution train progress
+# Maturity execution train progress ([latest recovery](recovery-evidence.md))
 
 ## Iteration 83 — 2026-09-07 — isolated diagnostic tool preparation
 
