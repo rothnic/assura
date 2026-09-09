@@ -57,7 +57,13 @@ Objective: turn Assura into a trustworthy, narrowly positioned repository-policy
 /Users/nroth/workspace/assura/.trellis/tasks/09-04-maturity-portfolio-strategy/
 Read prd.md, research/execution-backlog.md, research/backlog.json, the relevant packet for each card, and research/executor-prompt.md before work.
 
-Begin with B00. Refresh GitHub master, CI/PR state, worktree ownership, the actual released version, and all existing planning evidence. The SHA recorded in the plan is a snapshot, never a permanent baseline. Do not implement from the older strategy checkout. If the planning artifacts are still uncommitted, first validate and preserve them in a dedicated documentation handoff; do not lose or silently fold them into unrelated product work.
+Begin by validating B00's current evidence; if it is already current, do not
+rerun or reopen it. Refresh GitHub master, CI/PR state, worktree ownership, the
+actual released version, and all existing planning evidence. The SHA recorded
+in the plan is a snapshot, never a permanent baseline. Do not implement from
+the older strategy checkout. If the planning artifacts are still uncommitted,
+first validate and preserve them in a dedicated documentation handoff; do not
+lose or silently fold them into unrelated product work.
 
 Operate as a controlled release train:
 1. Select only a ready card whose dependencies have evidence and are in the current branch ancestry. Work in an isolated, current-master worktree and a clearly named branch. One behavior card per PR by default; parallel work is allowed only for independent cards with separate worktrees and review capacity.
