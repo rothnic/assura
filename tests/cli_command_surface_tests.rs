@@ -308,6 +308,18 @@ fn init_creates_supported_structure_config() {
     assert!(config.contains(".rs: snake_case"));
     assert!(!config.contains("allowed_names"));
     assert!(!config.contains("children:"));
+    assert!(
+        String::from_utf8_lossy(&output.stdout)
+            .contains("assura agent onboard --agent codex --activate"),
+        "init must direct an agent-assisted project to complete onboarding: stdout:\n{}",
+        String::from_utf8_lossy(&output.stdout)
+    );
+    assert!(
+        String::from_utf8_lossy(&output.stdout)
+            .contains("trusting the project and approving its hooks in Codex"),
+        "init must retain the runtime approval boundary: stdout:\n{}",
+        String::from_utf8_lossy(&output.stdout)
+    );
 
     fs::write(project.path().join("README.md"), "# Example\n").unwrap();
     let check = Command::new(assura_bin())
