@@ -55,7 +55,8 @@
       "goal/a02-init-discovery-correction",
       "goal/execution-recovery-plan",
       "goal/maturity-goal-contract",
-      "goal/maturity-goal-reconciliation"
+      "goal/maturity-goal-reconciliation",
+      "goal/maturity-goal-handoff"
     ]
   }
 }

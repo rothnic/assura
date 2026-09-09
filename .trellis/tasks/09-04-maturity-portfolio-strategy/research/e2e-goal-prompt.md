@@ -20,13 +20,18 @@ reject candidates that fail the prescribed comparison, and stop invalid
 diagnostics instead of repeating runs until green. Root owns review judgment
 and merge approval; method changes never imply relaxed acceptance thresholds.
 
-Continuation checkpoint captured 2026-09-09: `origin/master` is `922d7f0`,
-including the independently reviewed A02 plain-init handoff correction in PR
-#231. A07 remains active. Its previous candidate-bound identity canary was
-valid but the fresh-agent product contract failed; a later attempt is invalid
-when the child falls back to an ambient Assura binary or receives private
-evaluator context. Preserve both outcomes, give neither screening credit, and
-resume with a fresh isolated canary after the A02 correction.
+Continuation checkpoint captured 2026-09-09 after PR #233: `origin/master` is
+`1f9ebf2`, including the independently reviewed A02 plain-init correction in
+PR #231 and the runner-isolation contract in PR #232. The reconciliation
+checkpoint in PR #233 records the merged tree and removes the five verified
+clean local goal worktrees/refs; the superseded `f1595fc` detached build was
+also removed, while the clean `922d7f0` candidate build remains an evidence
+archive for the next canary. A07 remains active. Its previous candidate-bound
+identity canary was valid but the fresh-agent product contract failed; a later
+attempt is invalid when the child falls back to an ambient Assura binary or
+receives private evaluator context. Preserve both outcomes, give neither
+screening credit, and resume with a fresh isolated canary from the current
+master source after rechecking candidate identity.
 
 For A07 evaluation, read
 [a07-candidate-binding-plan.md](a07-candidate-binding-plan.md) before launching
