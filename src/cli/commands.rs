@@ -131,6 +131,14 @@ pub async fn init_command(
     recipes: Vec<crate::cli::args::InitRecipe>,
     recipe_file: Option<PathBuf>,
 ) -> ExitCode {
+    if let Some(agent) = agent {
+        if agent.integration_target().is_none() {
+            eprintln!(
+                "Error: `init --agent` requires a concrete host (codex, claude, opencode, or pi); `auto` and `generic` cannot activate a project"
+            );
+            return ExitCode::ConfigurationError;
+        }
+    }
     let onboarding_path = path.clone();
     let created =
         match materialize_starter(path, force, project_intelligence, &recipes, recipe_file) {

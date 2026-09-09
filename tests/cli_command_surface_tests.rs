@@ -409,6 +409,32 @@ fn init_agent_flags_require_an_explicit_activation_request() {
 }
 
 #[test]
+fn init_rejects_ambiguous_agent_targets_before_writing_project_state() {
+    for target in ["auto", "generic"] {
+        let project = TempDir::new().unwrap();
+        let output = Command::new(assura_bin())
+            .args([
+                "init",
+                project.path().to_str().unwrap(),
+                "--agent",
+                target,
+                "--activate",
+            ])
+            .output()
+            .unwrap();
+
+        assert_eq!(output.status.code(), Some(2), "target={target}");
+        assert!(
+            String::from_utf8_lossy(&output.stderr).contains("requires a concrete host"),
+            "target={target}, stderr:\n{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        assert!(!project.path().join(".assura/config.yml").exists());
+        assert!(!project.path().join(".codex/hooks.json").exists());
+    }
+}
+
+#[test]
 fn init_refuses_to_overwrite_without_force() {
     let project = TempDir::new().unwrap();
     let assura_dir = project.path().join(".assura");
