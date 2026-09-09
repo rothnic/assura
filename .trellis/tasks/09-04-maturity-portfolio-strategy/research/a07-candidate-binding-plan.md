@@ -1,9 +1,21 @@
 # A07 candidate-binding correction plan
 
 Status: active. Owner: this thread's A07 acceptance coordinator. The runner
-binding correction is now canary-proven; the remaining action is the smallest
-product discovery correction. This plan does not change the A07 contract,
-scoring thresholds, fixture allocation, or product acceptance.
+binding correction and the first product canary remain historical evidence; the
+current next action is a fresh context-isolated canary against merged
+`origin/master=922d7f0`. This plan does not change the A07 contract, scoring
+thresholds, fixture allocation, or product acceptance.
+
+## Current supersession — 2026-09-09
+
+The earlier status below correctly records a candidate-bound identity canary
+and the A02 discovery correction that followed it, but it is superseded for
+execution routing. PR #231 merged the A02 correction as `922d7f0`; a later
+initializer attempt was invalid because it selected an ambient Assura binary
+and inspected evaluator-only context. It receives no screening, holdout or
+acceptance credit. Before any allocation, launch a fresh one-shot child from a
+source-only fixture with the fixed public prompt and minimal login-shell-safe
+`PATH`, then prove same-environment executable identity and context separation.
 
 ## Finding
 
@@ -67,7 +79,9 @@ counts as a blinded run.
   A02 discovery owner and add a focused normative handoff regression before
   any screening. After the product correction, freeze its exact source/binary
   identity and run a new candidate-bound canary. If it fails, retain the result,
-  repair the owning behavior, and do not repeat the unchanged method.
+  repair the owning behavior, and do not repeat the unchanged method. The later
+  context-contaminated attempt is invalid protocol evidence and does not replace
+  the fresh canary required by the current supersession above.
 
 ## Gates and ownership
 

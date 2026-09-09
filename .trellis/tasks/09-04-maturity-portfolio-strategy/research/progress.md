@@ -1,5 +1,14 @@
 # Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md))
 
+## Iteration 85 — 2026-09-09 — reviewed routing and proof correction
+
+- Independent review accepted P1/P2: the required A07 plan now supersedes stale
+  routing, and A02 `done` has an exact command/exit proof table. Historical
+  failures, skipped-check accounting and no-credit rules remain preserved.
+- Current baseline is `origin/master=922d7f0`; scoped gates pass. Next action is
+  rereview of these deltas, then a fresh context-isolated A07 canary before any
+  screening allocation.
+
 ## Iteration 84 — 2026-09-09 — runner-context isolation correction
 
 - The merged A02 correction is current at `origin/master=922d7f0`; its hosted

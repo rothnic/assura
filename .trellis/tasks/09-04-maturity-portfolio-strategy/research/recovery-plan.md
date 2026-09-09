@@ -20,7 +20,12 @@ proof and full evaluator dimensions remain mandatory. CI, generated files and
 partial checks cannot substitute. R06/publication/pilots retain their separate
 authority and observed-outcome requirements.
 
-## Corrected baseline
+## Corrected baseline (historical snapshot; refresh before action)
+
+The details in this section describe the recovery snapshot that preceded the
+current integration. The live baseline is `origin/master=922d7f0`; use the
+newest progress entry and card evidence for current routing rather than copying
+the historical SHA or PR state below.
 
 Refreshed integration source: `da773bce8315cbb9e69941f0fe89d0a91e42829d`.
 Master Rust CI `34310994162`, Documentation `34310994191` and Security
