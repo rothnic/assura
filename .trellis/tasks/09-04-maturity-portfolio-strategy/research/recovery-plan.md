@@ -23,11 +23,12 @@ authority and observed-outcome requirements.
 ## Corrected baseline (historical snapshot; refresh before action)
 
 The details in this section describe the recovery snapshot that preceded the
-current integration. The live baseline is `origin/master=922d7f0`; use the
-newest progress entry and card evidence for current routing rather than copying
-the historical SHA or PR state below.
+current integration. That historical snapshot used `origin/master=922d7f0`;
+the current checkpoint after PR #233 is `origin/master=1f9ebf2`. Always refresh
+the live ref and use the newest progress entry and card evidence for routing
+rather than copying either historical SHA or the PR state below.
 
-Refreshed integration source: `da773bce8315cbb9e69941f0fe89d0a91e42829d`.
+Historical integration source: `da773bce8315cbb9e69941f0fe89d0a91e42829d`.
 Master Rust CI `34310994162`, Documentation `34310994191` and Security
 `34310994120` report success at that SHA. PR #227 merged; its scoped init
 guidance contract is not proof of A07 success. PR #196 is already merged and
@@ -42,11 +43,14 @@ done. R01, W02 and F01 retain specific held outcomes; W03 is verified with
 publication outstanding. Reconcile packet-level contradictions before promotion
 (including A06's R01 dependency), using source and reviewed evidence.
 
-Unknown root dirt remains untouched. `goal/a07-composed-init` is clean at
-`da773bc` with no product patch yet. Other clean historical goal branches need
-ownership and reachability classification, not blanket deletion. The global
-topology report exits 128 on a missing worktree; record incomplete coverage
-and use the read-only fallback before proposing a targeted audit repair.
+The historical inventory recorded unknown root dirt, a clean
+`goal/a07-composed-init` at `da773bc`, and other clean branches that required
+ownership classification. The current checkpoint has removed only the five
+verified-merged goal worktrees/refs and the superseded detached build; it keeps
+the unknown root dirt, the pre-existing prunable registration, and the clean
+`922d7f0` candidate archive. The global topology report still exits 128 on the
+preserved missing worktree; record incomplete coverage and use the read-only
+fallback before proposing a targeted audit repair.
 
 ## Ordered recovery slices
 

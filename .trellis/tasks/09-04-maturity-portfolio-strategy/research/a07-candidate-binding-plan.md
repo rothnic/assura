@@ -59,9 +59,10 @@ the binding inside the run before any product result is counted:
    separate.
 
 The canary must also prove that the candidate exposes the expected merged
-`init --agent <host> --activate` surface. This binding canary now passes those
-identity and surface checks on the historical `922d7f0` candidate. Its fresh
-agent still chose plain `assura init .`
+`init --agent <host> --activate` surface. The historical candidate-bound
+canary passed those identity and surface checks on the `f1595fc` candidate;
+the later `922d7f0` run is the invalid context-contaminated attempt recorded
+below. The fresh agent still chose plain `assura init .`
 and failed the full contract, so that result is valid product evidence but a
 canary only; it receives no screening allocation. An explicit-route control may
 verify the composed implementation, but it is calibration evidence and never
