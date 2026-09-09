@@ -28,7 +28,7 @@ only improves its process. Do not substitute a process PR for product acceptance
    child agent. A parent shell's `PATH` prefix or a passing evaluator command
    is not identity proof.
 6. For A07 screening, read the task's
-   [screening manifest contract](../../../../.trellis/tasks/09-04-maturity-portfolio-strategy/research/screening-manifest-contract.md)
+   [screening manifest contract](../../../.trellis/tasks/09-04-maturity-portfolio-strategy/research/screening-manifest-contract.md)
    before naming conditions or allocating runs. Do not invent missing product
    inputs from historical run names.
 7. Use [layered context routing](references/context-routing.md) after
