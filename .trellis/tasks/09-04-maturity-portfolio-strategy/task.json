@@ -50,6 +50,7 @@
       "goal/a07-blinded-evaluation",
       "goal/a07-onboarding-activation",
       "goal/a07-composed-init",
+      "goal/a07-composed-init-reconciliation",
       "goal/execution-recovery-plan"
     ]
   }
