@@ -72,6 +72,7 @@ policy changes. Those require their own recorded acceptance and review.
 | Environment recipe repeats unrelated suites and chained cwd errors | Resume original applicable command, use root-relative package setup and validation matrix |
 | VPS diff helper destroys/reuses labeled directories and lacks clean-commit identity | Use isolated exact-commit bundle procedure; no automatic helper promotion |
 | Evidence-policy check mistaken for outcome proof | Require card consumer/negative evidence separately from `cargo xtask evidence` |
+| Initializer inherited an ambient binary or coordinator/evaluator context | Launch a fresh one-shot child from a source-only fixture with a fixed public prompt and minimal login-shell-safe `PATH`; prove identity and context separation before allocation |
 
 Read layers: AGENTS → goal skill → selected card/current checkpoint → required
 phase reference → exact source/log. Do not load all historical packets or
@@ -96,6 +97,14 @@ measurements before proposing cache/concurrency/runner changes.
 hosted scope reuse verifies successful prior jobs and falls back to full checks;
 preserve it. `cargo xtask evidence` checks repository evidence policy, not card
 acceptance. Do not change workflow coverage or performance thresholds here.
+
+For A07, perform the cheap identity/context canary before native tests or a
+screening batch. One candidate build may support multiple diagnostics only when
+its source, binary, fixture and invocation remain unchanged; a child that sees
+private evaluator material or a global Assura install is invalid and must not be
+repeated unchanged. A safety-guard rejection is an operational observation,
+not permission to weaken the guard; use a disposable fixture and preserve the
+rejection in evidence.
 
 ## Verification and continuation
 

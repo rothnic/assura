@@ -31,19 +31,21 @@ toolchain, environment and invocation. Record what was compared. Rebase or a
 changed dependency invalidates affected proof; required final-head CI still
 runs. Do not rerun an unchanged failing test/benchmark until it happens to pass.
 
-For agent-driven evaluation, bind the candidate executable by absolute path and
-record its source SHA, version, and SHA-256 before launch. Verify
-`command -v assura`, `assura --version`, and the hash from the initializer's
-actual command environment as well; `/bin/zsh -lc` or another login-shell tool
-may replace a parent `PATH` prefix. A mismatch makes the run invalid and earns
-no screening, holdout, or acceptance credit. Use a disposable login-shell-safe
-launcher or command shim rather than changing global binaries or startup files.
-The preferred binding is the regular candidate executable itself; a shim must
-`exec` one fixed absolute target. Record the resolved command path and target
-path, canonicalize and hash the actual target, and reject aliases, functions,
-opaque symlink chains, or a shim that delegates elsewhere. Then run focused
-wrong-target and exact-target controls plus a fresh identity canary before
-repeating the evaluation protocol.
+For agent-driven evaluation, read the detailed
+[runner-isolation](runner-isolation.md) contract first. Bind the candidate
+executable by absolute path and record its source SHA, version, and SHA-256
+before launch. Verify `command -v assura`, `assura --version`, and the hash from
+the initializer's actual command environment as well; `/bin/zsh -lc` or another
+login-shell tool may replace a parent `PATH` prefix. A mismatch, ambient global
+binary fallback, private-evaluator exposure or missing child-context proof
+makes the run invalid and earns no screening, holdout, or acceptance credit.
+Use a disposable login-shell-safe launcher or command shim rather than changing
+global binaries or startup files. The preferred binding is the regular
+candidate executable itself; a shim must `exec` one fixed absolute target.
+Record the resolved command path and target path, canonicalize and hash the
+actual target, and reject aliases, functions, opaque symlink chains, or a shim
+that delegates elsewhere. Then run focused wrong-target and exact-target
+controls plus a fresh identity canary before repeating the evaluation protocol.
 
 ## VPS routing
 

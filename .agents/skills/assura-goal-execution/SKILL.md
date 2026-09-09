@@ -23,7 +23,11 @@ only improves its process. Do not substitute a process PR for product acceptance
    the repository contract remains usable without that installation.
 4. Before spending on gates, read [validation routing](references/validation-routing.md).
    Environment failures route to `assura-local-build`, not product changes.
-5. Record the current phase and exact next action in the selected card's
+5. For candidate-bound initializer evaluation, read
+   [runner isolation](references/runner-isolation.md) before launching the
+   child agent. A parent shell's `PATH` prefix or a passing evaluator command
+   is not identity proof.
+6. Record the current phase and exact next action in the selected card's
    evidence before/after major phases. A task path is portable; an old checkout
    snapshot, automation prompt or conversation summary is not current state.
 
@@ -32,6 +36,8 @@ only improves its process. Do not substitute a process PR for product acceptance
 - Always: AGENTS, this index, selected card's current evidence and contract.
 - Phase transition/review/merge: execution contract and exact review delta.
 - Test/build/CI placement: validation routing; environment detail only on need.
+- A07 or any agent-driven evaluation: runner isolation; keep the evaluator
+  oracle and private fixture details outside the child context.
 - Maturity train recovery: the canonical task's `research/recovery-plan.md`.
 - Never load all packets, all historical logs or private evaluation fixtures
   into an implementation/reviewer prompt. Link exact evidence on demand.

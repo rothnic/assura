@@ -53,7 +53,8 @@
       "goal/a07-composed-init",
       "goal/a07-composed-init-reconciliation",
       "goal/a02-init-discovery-correction",
-      "goal/execution-recovery-plan"
+      "goal/execution-recovery-plan",
+      "goal/maturity-goal-contract"
     ]
   }
 }
