@@ -14,6 +14,7 @@ into a child, reviewer, or public artifact.
 | Card | `prd.md`, `backlog.json`, selected packet, selected `evidence/<ID>.md` | The observable outcome and current next action |
 | Special lane | Only the reference named by the phase (for example `runner-isolation.md`) | Fragile or high-risk procedure |
 | Private evaluator | Private manifest, contracts and raw results outside the repository | Oracle inputs and detailed provenance; coordinator/evaluator only |
+| Protocol review | Manifest schema, condition mapping and matrix in an isolated review session | Independent protocol check; no raw oracle, child transcript or unrelated worktree access |
 
 The task's `recovery-plan.md` is a phase reference for maturity-train recovery,
 not a replacement queue. Historical logs are read only when a current record
@@ -42,11 +43,15 @@ progress file by moving exact old entries to its linked history file.
 ## Prompt boundary
 
 An implementation child receives only its public task, ordinary source context,
-and the candidate tool. A reviewer receives the frozen diff, contract and
-public evidence needed for the review. Neither receives evaluator contracts,
-private paths, hidden expected output, coordinator transcripts, or unrelated
-worktree names. If a needed fact is private, record a boolean/aggregate outcome
-and keep the fact in the private lane.
+and the candidate tool. A product/code reviewer receives the frozen diff,
+contract and public evidence needed for the review. Neither receives evaluator
+contracts, private paths, hidden expected output, coordinator transcripts, or
+unrelated worktree names. A separate protocol reviewer may inspect only the
+private manifest's schema, two-condition mapping, supplied-input evidence and
+30-cell matrix in an isolated session; it must not inspect raw oracle output,
+child transcripts or unrelated fixtures and must return redacted findings.
+If a needed fact is private, record a boolean/aggregate outcome and keep the
+fact in the private lane.
 
 ## Stop/continue decision
 

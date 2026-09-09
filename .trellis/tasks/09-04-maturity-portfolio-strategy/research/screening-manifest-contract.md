@@ -29,6 +29,21 @@ The source fixture, evaluator contract, acceptance predicate and thresholds must
 otherwise remain equivalent. A condition with an ambiguous value, missing
 supplied-input proof, or an unreviewed mapping is not executable.
 
+## Independent protocol-reviewer role
+
+This manifest has two distinct reviews. The ordinary product/code reviewer sees
+the public contract and redacted evidence. A separate protocol reviewer runs in
+an isolated session with narrowly scoped access to the private manifest's
+schema, condition rows, blinded/unblinded mapping, supplied-input evidence and
+matrix metadata. The protocol reviewer may verify the one-variable difference,
+exactly-two rule, complete 30-cell allocation and privacy fields, but must not
+read raw evaluator output, hidden expected results, child transcripts, private
+fixture contents, or unrelated worktrees. It returns only `PASS` or redacted
+findings with location, failure scenario, contract and smallest verification.
+The coordinator records that disposition without copying private values into
+the repository. A missing or conflated protocol review leaves the matrix
+unexecutable.
+
 ## Matrix and run record
 
 Freeze 30 unique cells: three stacks × two conditions × five repetitions. Each
@@ -45,8 +60,9 @@ condition, or evaluator provenance is missing or mismatched.
 2. Confirm the full candidate-bound canary passed; it remains no-credit.
 3. Confirm all six unseen holdout layouts are frozen privately.
 4. Validate the manifest schema, exactly-two condition rule, one-variable
-   difference, private mapping, and complete 30-cell matrix in independent
-   review. This is the smallest resolution for the missing-condition finding.
+   difference, private mapping, and complete 30-cell matrix in an isolated
+   protocol review. Keep the separate product/code review boundary intact. This
+   is the smallest resolution for the missing-condition finding.
 5. Run cheap identity/context checks before each child, then evaluate and run
    the separate follow-up feature. Preserve failures and stop invalid runs;
    never repeat an unchanged method until it happens to pass.

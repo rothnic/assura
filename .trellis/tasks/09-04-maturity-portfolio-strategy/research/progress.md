@@ -15,6 +15,10 @@
 - The layered context-routing reference now separates universal, goal/phase,
   card, special-lane and private-evaluator context. AGENTS remains a router;
   detail stays in skills and the task contract. Context level: not exposed.
+- Scoped process review found the private-manifest reviewer boundary was
+  ambiguous. The routing now defines a separate isolated protocol reviewer who
+  may inspect only manifest schema/mapping/matrix metadata and returns redacted
+  findings; raw oracle, child transcript and fixture contents remain private.
 - Root's unknown file and stale missing-gitdir registration remain untouched;
   topology report/strict retains those ownership exceptions. Next action: create
   and independently review the private two-condition manifest, then run the
