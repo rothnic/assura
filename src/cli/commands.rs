@@ -11,7 +11,7 @@ use crate::cli::init_support::{
     materialize_recipe_starter_files, materialize_starter, recipe_config, StarterInitError,
 };
 use crate::cli::MarkdownFixRuleArg;
-use crate::cli::{CheckCommandOptions, ConfigDiscovery, ExitCode};
+use crate::cli::{AgentOnboardingTarget, CheckCommandOptions, ConfigDiscovery, ExitCode};
 use crate::config::config::{Config, DirectoryNode};
 use crate::config::loader::ConfigLoader;
 use crate::config::ls_compat::convert_ls_lint_documents_to_migration;
@@ -123,12 +123,15 @@ pub async fn status_command(
 /// Initialize a new Assura configuration
 pub async fn init_command(
     path: Option<PathBuf>,
+    agent: Option<AgentOnboardingTarget>,
+    activate: bool,
     force: bool,
     no_git_hooks: bool,
     project_intelligence: bool,
     recipes: Vec<crate::cli::args::InitRecipe>,
     recipe_file: Option<PathBuf>,
 ) -> ExitCode {
+    let onboarding_path = path.clone();
     let created =
         match materialize_starter(path, force, project_intelligence, &recipes, recipe_file) {
             Ok(created) => created,
@@ -147,6 +150,24 @@ pub async fn init_command(
         println!("Skipped git hook setup because --no-git-hooks was provided.");
     } else {
         println!("Run `assura hooks install` to install optional git hooks.");
+    }
+    if let Some(agent) = agent {
+        println!(
+            "Composing agent onboarding for {} with explicit host activation.",
+            agent.as_str()
+        );
+        return crate::cli::agent_onboarding::agent_onboarding_command(
+            crate::cli::agent_onboarding::AgentOnboardingOptions {
+                path: onboarding_path,
+                recipe_file: None,
+                agent,
+                activate,
+                content_template: crate::cli::AgentContentTemplate::None,
+                format: OutputFormat::Text,
+            },
+            None,
+        )
+        .await;
     }
     println!(
         "For agent-assisted setup, run `assura agent onboard --agent codex --activate` to generate guidance and configure Codex hooks; runtime delivery still requires trusting the project and approving its hooks in Codex."

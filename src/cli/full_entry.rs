@@ -106,6 +106,8 @@ async fn run_full_cli(cli: Cli) -> ExitCode {
         Commands::Explain { path, format } => explain_command(path, config_path, format).await,
         Commands::Init {
             path,
+            agent,
+            activate,
             project_intelligence,
             force,
             no_git_hooks,
@@ -114,6 +116,8 @@ async fn run_full_cli(cli: Cli) -> ExitCode {
         } => {
             init_command(
                 path,
+                agent,
+                activate,
                 force,
                 no_git_hooks,
                 project_intelligence,
