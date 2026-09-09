@@ -12,6 +12,11 @@ conversation context.
 2. Create a fresh source-only fixture containing only the public inputs needed
    for the initializer. Do not copy evaluator contracts, harness directories,
    prior results, coordinator notes or hidden expected-output files into it.
+   Place it under a dedicated disposable parent that contains no sibling
+   worktrees, harnesses, contracts or prior-run artifacts. A fixture can be
+   source-only yet still be contaminated when a child walks `..`; verify the
+   parent listing before launch and reject any run that exposes an out-of-scope
+   path through recursive discovery.
 3. Launch a one-shot child with the fixed public task prompt. Do not forward the
    coordinator transcript or inject acceptance assertions that reveal the
    evaluator. A fresh subprocess/session is preferred; if the harness cannot
@@ -52,9 +57,10 @@ results separate; the evaluator is invoked only after the initializer exits.
   private raw results separately from redacted evidence; public records contain
   aggregates and method limitations, never hidden oracle contents.
 - Any private-evaluator exposure, forbidden-path read, prompt contamination,
-  global-binary fallback, identity mismatch or missing identity observation
-  invalidates the run. Preserve it, label it, and repair the runner before a
-  fresh canary; never repeat the unchanged method until it happens to pass.
+  sibling-artifact or out-of-scope parent discovery, global-binary fallback,
+  identity mismatch or missing identity observation invalidates the run.
+  Preserve it, label it, and repair the runner before a fresh canary; never
+  repeat the unchanged method until it happens to pass.
 - A valid candidate-bound canary that fails the product contract is useful
   product evidence but receives no screening allocation. Route the concrete
   failure to its owning behavior card. Explicit-route controls are calibration

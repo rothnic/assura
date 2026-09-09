@@ -20,18 +20,17 @@ reject candidates that fail the prescribed comparison, and stop invalid
 diagnostics instead of repeating runs until green. Root owns review judgment
 and merge approval; method changes never imply relaxed acceptance thresholds.
 
-Continuation checkpoint captured 2026-09-09 after PR #233: `origin/master` is
-`1f9ebf2`, including the independently reviewed A02 plain-init correction in
-PR #231 and the runner-isolation contract in PR #232. The reconciliation
-checkpoint in PR #233 records the merged tree and removes the five verified
-clean local goal worktrees/refs; the superseded `f1595fc` detached build was
-also removed, while the clean `922d7f0` candidate build remains an evidence
-archive for the next canary. A07 remains active. Its previous candidate-bound
-identity canary was valid but the fresh-agent product contract failed; a later
-attempt is invalid when the child falls back to an ambient Assura binary or
-receives private evaluator context. Preserve both outcomes, give neither
-screening credit, and resume with a fresh isolated canary from the current
-master source after rechecking candidate identity.
+Continuation checkpoint captured 2026-09-09 after PR #234: `origin/master` is
+`77b41fe`, including the independently reviewed A02 plain-init correction in
+PR #231, the runner-isolation contract in PR #232, and the reconciled clean
+handoff record in PRs #233-#234. The verified goal-owned worktrees/refs were
+removed after merge; the preserved root dirt and stale registration remain
+outside this goal's ownership. A07 remains active. A fresh current-master
+candidate-bound canary now passes the full private contract with all seven
+dimensions green. It is pre-screening evidence only and receives no allocation
+credit. The next action is the authorized 30-run screening, using a new
+source-only fixture under a sibling-free disposable parent for every run; the
+18-run untouched holdout and final 10-per-stack threshold remain mandatory.
 
 For A07 evaluation, read
 [a07-candidate-binding-plan.md](a07-candidate-binding-plan.md) before launching

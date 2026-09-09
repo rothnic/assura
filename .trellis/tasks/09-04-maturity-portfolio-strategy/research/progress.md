@@ -1,4 +1,31 @@
-# Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md))
+# Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md), [preserved history](progress-history-03.md))
+
+## Iteration 87 — 2026-09-09 — current-master A07 canary and parent-isolation correction
+
+- Refreshed `origin/master=77b41fed7ee625333ea97ef2791da609f0ed5cc4` and built
+  the release candidate in a clean detached checkout with
+  `cargo build --release` (exit 0, 0.53s). Assura 0.4.0 and the candidate
+  SHA-256 are recorded in `evidence/A07.md`.
+- The first fresh child was correctly rejected as no-credit protocol evidence:
+  its source-only fixture shared a temporary parent whose recursive discovery
+  exposed sibling private worktree names. A second context-clean attempt used
+  a non-frozen source fixture and therefore could not satisfy the frozen
+  preservation contract. Both raw event streams remain preserved; neither was
+  evaluated as screening credit.
+- A third fresh one-shot child used the exact frozen Rust source hashes, a
+  sibling-free disposable parent, isolated child home, minimal login-shell-safe
+  PATH and the fixed public prompt. Candidate identity matched in the child
+  environment; targeted event scanning found no evaluator, coordinator,
+  memory, or out-of-scope parent-path access.
+- The full private evaluator exited 0 with all seven dimensions passing and no
+  critical failures. This is a valid candidate-bound canary only; A07 remains
+  active with zero screening/holdout/final-batch credit. The runner reference,
+  executor prompt and continuation prompt now state the sibling-free-parent
+  requirement. Next action: record the screening budget and run the authorized
+  30-run batch with one isolated owner/fixture/child per run.
+- The root unknown file and stale prunable registration remain untouched.
+  Topology `--report` and `--strict` still exit 128 for those pre-existing
+  ownership exceptions; no cleanup mutation was performed.
 
 ## Iteration 86 — 2026-09-09 — durable goal checkpoint and owned-topology closure
 
@@ -943,51 +970,3 @@ recoverable. This reconciliation adds records rather than rewriting outcomes.
   by positive, missing-current, retired-guidance, and contextual-exception
   controls; no new reusable skill is warranted. Next: commit this evidence,
   run the final exact-HEAD PR gate, then let the controller open the PR.
-
-## Iteration 44 — 2026-09-07 — W03 ownership impasse
-
-- Refreshed Assura `origin/master` to `98bd187` and confirmed B00/P01 are done.
-  W03 is the sole dependency-ready pending card, but its only identified
-  NickRoth candidate is clean, local, unpushed, Nick-authored work at `113febc`
-  with no Assura-ledger owner or closure record.
-- Independent read-only impasse review accepted two findings: do not infer
-  ownership or mutate that worktree, and do not treat its unrun local test code
-  as W03 acceptance evidence. The exact held action, resolution choices, and
-  non-ready alternatives are recorded in `evidence/W03.md`.
-- Context level: not exposed. This is a first ownership classification impasse,
-  not a rediscovered procedure gap; existing orchestration and worktree skills
-  provide the required control. Next: Nick records transfer or preservation of
-  `113febc`; then run W03's prescribed checks in one clean owned worktree.
-
-## Iteration 45 — 2026-09-08 — W03 ownership transfer and PR readiness
-
-- Nick explicitly transferred `goal/w03-case-study-evidence` at `113febc` to
-  the execution goal. Its branch already contained current NickRoth `main`; no
-  duplicate article or rebase was needed.
-- Independent review found no correctness issues. Astro check, Vitest (18),
-  focused Playwright (12 across Chromium/WebKit and mobile/desktop), and the
-  static production build passed. The first Playwright attempt failed before
-  test execution because browsers were absent; pinned browser installation and
-  the succeeding run are retained distinctly.
-- PR #61 is current-base, clean, and hosted-green (Lighthouse, Cloudflare Pages
-  preview, GitGuardian). W03 is `verified`, not `done`: no production
-  publication/deployment authority was exercised. Next: merge or publish only
-  when Nick explicitly authorizes production visibility.
-
-## Iteration 46 — 2026-09-08 — A05 current execution proof and ownership rotation
-
-- PR #200 merged the independently reviewed first A05 native execution slice as
-  `f1f3312`. A closed-world fixture test runs the generated Rust `pr` plan in
-  its project cwd, observes a seeded formatter failure, and proves recovery
-  after restoration; it does not introduce a general command executor.
-- The exact execution-branch allowlist moved from the completed A04 branch to
-  `goal/a05-current-audit`, preserving target-state's exact branch-plus-PRD
-  requirement. The full local `cargo xtask pr` gate and the hosted matrix,
-  including Performance Report and platform/install lanes, passed. Security
-  Scope passed; the conditional Security Audit was scope-skipped and is not
-  treated as test evidence.
-- The A05 ledger now records the integrated slice while preserving the separate
-  user-owned historical worktree. A05 remains active because Bun/Python
-  detection, broader-phase/config coverage, released-binary CI recipe behavior,
-  and full acceptance evidence remain. Next: select its smallest current-master
-  contract without importing the preserved work.

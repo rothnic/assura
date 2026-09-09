@@ -93,6 +93,10 @@ evaluator contracts, private harness paths, hidden expected output, or ambient
 global Assura installations. A forbidden-context read, global-binary fallback,
 or missing identity observation invalidates the run and earns no allocation
 credit, even when the evaluator is invoked with the intended binary afterward.
+Place each fixture beneath a dedicated disposable parent with no sibling
+worktrees or prior-run artifacts; recursive discovery of an out-of-scope parent
+path is context contamination even when the fixture itself contains only public
+source files.
 Keep initializer events, private evaluator output and redacted evidence
 separate. Run the evaluator only after the identity canary and initializer have
 completed.
