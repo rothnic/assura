@@ -8,7 +8,7 @@ never change required coverage to manufacture a green result.
 | Change/phase | Pre-PR work | Merge proof |
 | --- | --- | --- |
 | Docs, skills, Trellis only | workflow gate, diff check, structure, `cargo xtask evidence`; instruction decision scenarios | Independent process review plus applicable hosted scope/evidence jobs |
-| Website or docs build inputs | Above plus `cargo xtask docs` and affected browser/link checks | Applicable docs/website hosted checks |
+| Any website or docs path | Above plus `cargo xtask docs` and affected browser/link checks | Applicable docs/website hosted checks |
 | Rust behavior | Focused red/green contract; `cargo xtask fast` at meaningful implementation boundaries; `cargo xtask pr` once candidate settles | Required final-candidate OS/features/install/performance jobs and scoped independent review |
 | CI, scripts or validation logic | Positive and negative scope/behavior controls; affected tier and representative execution | Review coverage changes explicitly; all affected required hosted jobs |
 | Performance | Correctness proof first; comparable baseline/candidate raw rows on one idle host | Existing required native, warm and no-slower gates on final candidate |

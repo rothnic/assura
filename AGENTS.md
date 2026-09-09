@@ -10,7 +10,8 @@ policy, and public third-party plugin APIs are outside the supported contract.
 1. Read this file, then run `python3 .trellis/scripts/workflow_gate.py --platform
    codex` on each new request; use the actual platform outside Codex. Steering
    within a turn does not require restarting. If task resolution is missing,
-   rerun with `--task <task-path>` and follow `Next`/`Needs`.
+   rerun with `--task <task-path>`. Whenever `Ready: no`, follow `Next`/`Needs`
+   before starting work; resolve or isolate the stated prerequisite.
 2. Inspect cwd, branch, remote, HEAD and `git status --short`. Preserve unknown
    work. Use a clean owned checkout when the current one has unrelated dirt.
 3. Resolve task files at the refreshed integration revision. A canonical task

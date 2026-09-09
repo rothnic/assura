@@ -107,7 +107,8 @@ suites as a universal recovery recipe. For website setup, use
    remote HEAD, clean status and bundle checksum against the local values.
    Do not copy credentials, private evaluators, or another checkout's dirt.
 4. Select a toolchain matching the applicable CI job explicitly (`cargo
-   +<toolchain> ...`). Record `rustc -Vv`, Cargo, OS, dependency lockfile hash
+   +<toolchain> ...`). Record `rustc +<toolchain> -Vv`, `cargo +<toolchain>
+   --version`, OS, dependency lockfile hash
    and package-manager versions. A default nightly is not stable/MSRV proof.
    Confirm projected build size plus a safety margin fits available disk;
    low disk means choose a smaller applicable job or retain local execution.

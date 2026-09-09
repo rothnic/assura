@@ -25,7 +25,7 @@ routing only. Product acceptance is unchanged; no card is promoted by this file.
   policy and CI surfaces are unchanged. Full Rust/platform/performance reruns
   are not claimed for this process-only diff.
 
-AGENTS shrank from 296 to 92 lines; its managed Trellis block is retained.
+AGENTS shrank from 296 to 93 lines; its managed Trellis block is retained.
 The stale hardcoded minimum Rust version was replaced by the manifest/CI
 source route. Goal execution now routes Trellis tasks and layered references.
 
@@ -38,8 +38,18 @@ mistaken for outcome proof. All five were accepted and corrected in the skills
 and recovery plan. The audit found existing hosted proof-aware scope reuse;
 it remains unchanged. It did not establish external provider deployment rules.
 
-Independent candidate review and decision-exercise results are pending here;
-this file is not a preemptive approval or hosted-green claim.
+Independent review of `ceb3029` accepted the recovery sequence and exercised
+seven decisions: current-base state supersedes stale checkout; failed required
+performance holds merge; live timeout resumes its handle; process scope does
+not authorize product edits; VPS capacity/toolchain must be checked; unknown
+dirt is preserved during owned branch closure; passing slice does not close
+failing A07. These are instruction simulations, not operational outcome proof.
+
+Three medium findings were accepted: P1 restored unconditional `Ready: no`
+routing; P2 qualified remote compiler/Cargo identity with the selected
+toolchain; P3 retained `cargo xtask docs` for any docs/website path instead of
+narrowing it to build inputs. Scoped rereview remains required after these
+corrections. No hosted-green claim is made before that run completes.
 
 ## Topology and remote observations
 
