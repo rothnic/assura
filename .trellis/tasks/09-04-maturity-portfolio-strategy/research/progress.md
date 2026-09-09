@@ -1,4 +1,31 @@
-# Maturity execution train progress ([latest recovery](recovery-evidence.md))
+# Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md))
+
+## Iteration 85 — 2026-09-09 — reviewed routing and proof correction
+
+- Independent review accepted P1/P2: the required A07 plan now supersedes stale
+  routing, and A02 `done` has an exact command/exit proof table. Historical
+  failures, skipped-check accounting and no-credit rules remain preserved.
+- Current baseline is `origin/master=922d7f0`; scoped gates pass. Next action is
+  rereview of these deltas, then a fresh context-isolated A07 canary before any
+  screening allocation.
+
+## Iteration 84 — 2026-09-09 — runner-context isolation correction
+
+- The merged A02 correction is current at `origin/master=922d7f0`; its hosted
+  and local gates are recorded with PR #231. A fresh initializer attempt was
+  retained as invalid protocol evidence because it explicitly selected an
+  ambient Assura binary and inspected evaluator-only context; no A07 credit was
+  assigned, even though later disposable checks used the intended candidate.
+- The durable goal, executor prompt and goal-execution skill now route through
+  one runner-isolation reference: source-only fixture, fixed public prompt,
+  fresh one-shot child, minimal login-shell-safe `PATH`, same-environment
+  executable identity, and separate evaluator/redacted evidence. Forbidden
+  context, global-binary fallback, or missing identity invalidates a run rather
+  than becoming a green result through evaluator re-invocation.
+- Context level: not exposed. The correction addresses a distinct runner
+  contamination failure; it does not relax A07's screening, holdout or final
+  acceptance thresholds. Next: independently review and integrate this process
+  slice, then run a fresh candidate-bound canary before any screening.
 
 ## Iteration 83 — 2026-09-07 — isolated diagnostic tool preparation
 
@@ -970,31 +997,3 @@ recoverable. This reconciliation adds records rather than rewriting outcomes.
   suites, documentation, and website verification. Security Scope passed; the
   conditional Security Audit was scope-skipped and is not called passing test
   evidence. The continuing A05 branch is clean and rebased to the merge.
-
-## Iteration 48 — 2026-09-08 — A05 cumulative overlapping-scope contract
-
-- PR #204 merged as `dd2efaf` after independent review identified one concrete
-  observability issue, the accepted test-only correction made scope order
-  observable with a Rust-only command, and scoped rereview found no remaining
-  defect. The fixture proves `frequent` through `merge` plans are cumulative,
-  stable, and deduplicated across overlapping base/Rust scopes.
-- The focused contract, 13-test A05 integration target, formatting and diff checks, and full `cargo xtask pr` gate passed. The full hosted matrix passed,
-  including Performance Report, five adoption lanes, Windows Installer Smoke, release smoke, coverage, all stable OS suites, documentation, and website
-  verification. Security Scope passed; the conditional Security Audit was
-  scope-skipped and is not called passing test evidence.
-- Context level: not exposed. The reviewer correction was specific to a test oracle, and the existing reviewer plus goal-execution loop captured it; no
-  new reusable skill is warranted. Next: reconcile this evidence, then select the smallest remaining current-master A05 contract in the clean owner.
-
-## Iteration 49 — 2026-09-08 — execution-continuity control
-
-- Canonical executor and end-to-end prompts now make a checkpoint intermediate:
-  retain a named live action or select the next independent ready card, recording
-  owner, SHA/worktree, proof, and next observation.
-- Local pass, PR, merge-ready state, empty queue, or held publication cannot end
-  the train while another active, verified, integration, or cleanup action exists.
-- This preserves review, current-master, quality, authority, and unknown-work
-  safeguards. Next: validate, commit, independently review, then resume A07.
-
-## Iteration 50 — 2026-09-09 — candidate-binding correction
-
-- A07's first probe lost its candidate through a login shell and receives no allocation credit; the correction plan records the identity canary and next product-boundary check. Continue with review, commit, and a bound canary.

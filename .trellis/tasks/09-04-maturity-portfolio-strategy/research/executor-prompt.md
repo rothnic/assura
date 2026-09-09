@@ -85,7 +85,17 @@ inside the initializer's actual command environment. Capture
 environment; a login-shell `PATH` mismatch invalidates the run and earns no
 screening, holdout, or final-batch credit. Repair the runner and complete a
 fresh identity canary before repeating the protocol. Keep private fixture and
-evaluator details out of prompts, reviewer briefs, and public evidence.
+evaluator details out of prompts, reviewer briefs, and public evidence. Read the
+goal skill's `references/runner-isolation.md`: launch a fresh one-shot child
+with a source-only fixture, a fixed public task prompt, and a minimal explicit
+login-shell-safe `PATH`. Do not inherit the coordinator transcript or expose
+evaluator contracts, private harness paths, hidden expected output, or ambient
+global Assura installations. A forbidden-context read, global-binary fallback,
+or missing identity observation invalidates the run and earns no allocation
+credit, even when the evaluator is invoked with the intended binary afterward.
+Keep initializer events, private evaluator output and redacted evidence
+separate. Run the evaluator only after the identity canary and initializer have
+completed.
 
 Before a complex PR, request an independent review under project rules. Review
 findings critically and fix valid issues. Commit only your owned, verified changes
