@@ -85,7 +85,10 @@ but never replaces required macOS/Windows/hosted proof.
 
 ## Current next action
 
-The A07 coordinator must create the private two-condition manifest, validate it
-against this contract, and obtain scoped independent review. Until that review
-passes, A07 remains active with zero screening/holdout/final-batch credit; the
-current canary and process PR do not satisfy this manifest gate.
+On each resume, the A07 coordinator must first refresh `origin/master`, rerun
+the revision-pinned ledger, freeze the candidate identity and confirm the six
+holdouts. The coordinator then creates the private two-condition manifest,
+validates it against this contract, and obtains scoped independent review.
+Until that review passes, A07 remains active with zero screening/holdout/
+final-batch credit; the historical canary and process PR do not satisfy this
+manifest gate.

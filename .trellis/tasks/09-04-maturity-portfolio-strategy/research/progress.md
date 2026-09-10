@@ -1,5 +1,27 @@
 # Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md), [progress-history-04.md], [progress-history-05.md], [iterations 4-17](progress-history-06.md), [preserved history](progress-history-03.md), [iterations 104 and earlier](progress-history-07.md))
 
+## Iteration 107 — 2026-09-10 — current-master reset and A07 route after PR #253
+
+- Owner/phase: process coordinator / `reset-route`; fetched
+  `origin/master=a14cb02332921e3a06b184381720319767a2b7aa` and reran the
+  revision-pinned ledger from a clean detached checkout. It reports 32 items,
+  zero ready pending, five unfinished and three held: A07 `active`, W03
+  `verified`, and R01/W02/F01 held. No pending card is executable.
+- PR #253's process-only refresh-before-use correction is merged. Active A07
+  instructions require a fresh fetch and ledger run before binding; 062/a92
+  are dated provenance and 2eda is historical. No product, evaluator,
+  threshold, allocation, publication, deployment or invitation state changed.
+- No live A07 handle exists. The detached `77b41fed` canary checkout is clean
+  historical material; the private mode-700 store's 204-line manifest lacks
+  discoverable condition/product-input/supplied-input/mapping/matrix/
+  protocol-review fields, so its 17 run objects earn no credit.
+- Next resume: fetch and freeze current master, confirm the six holdouts, then
+  privately obtain the exactly-two-condition manifest and isolated protocol
+  review `PASS`; only then bind and run the no-credit canary. R01's raw trace or
+  maintainer decision, W02 authority and F01 authorization remain separate.
+  Context level: not exposed. Full redacted audit is in the recovery checkpoint;
+  topology report 0/strict 1 preserves external conditions.
+
 ## Iteration 106 — 2026-09-10 — post-merge checkpoint for PR #251
 
 - PR #251 merged reviewed process-only head `e777ee7` (base `1bd78cc`) as

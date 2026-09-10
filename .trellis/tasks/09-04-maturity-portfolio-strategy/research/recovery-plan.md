@@ -23,6 +23,36 @@ proof and full evaluator dimensions remain mandatory. CI, generated files and
 partial checks cannot substitute. R06/publication/pilots retain their separate
 authority and observed-outcome requirements.
 
+## Post-merge refresh checkpoint — 2026-09-10 UTC (`origin/master=a14cb02`)
+
+PR #253 merged the independently reviewed process-only A07 refresh-before-use
+correction as `a14cb02332921e3a06b184381720319767a2b7aa` (candidate
+`0f8e012ca4ef2af61c875310e344a1416d92a42c`). The candidate and merge trees
+are identical, required local and hosted process gates passed, and the owned
+branch/worktree were removed after verification. This is a dated checkpoint,
+not a live pointer: every continuation must fetch `origin/master` and rerun
+the ledger before canary binding.
+
+The fresh ledger at this revision remains 32 items with `ready_pending=0`,
+five unfinished and three held: A07 is active, W03 is verified, and R01/W02/F01
+retain their card-level holds. The metadata-only private A07 audit found the
+mode-700 owner-controlled store, a 204-line manifest without discoverable
+condition/product-input/supplied-input/mapping/matrix/protocol-review fields,
+17 private run objects, and no isolated protocol-review artifact. No screening,
+holdout or final-acceptance credit is created by these observations.
+
+No live A07 worker, initializer, evaluator or review handle exists. On the next
+resume, first fetch `origin/master`, rerun the revision-pinned ledger and
+freeze the candidate identity, then confirm the six frozen holdouts. The exact
+private action after that refresh is to create or locate the versioned
+exactly-two-condition manifest, prove supplied inputs and blinded mapping,
+validate the complete 30-cell matrix, and obtain an isolated protocol review
+`PASS`. Only then may the coordinator run a fresh no-credit canary against the
+frozen identity. Do not invent private values, reuse historical run names as
+conditions, or launch screening early. R01's raw trace or maintainer decision,
+W02's external approval and F01's participant authorization remain independent
+held actions.
+
 ## Post-merge process checkpoint — 2026-09-10 UTC (`origin/master=062f6c3`)
 
 PR #251 merged the reviewed process-only candidate `e777ee7` (based on
@@ -375,7 +405,7 @@ classified historical or user-owned and must not be deleted by pattern.
 | Priority / owner | Action | Exit proof / next action |
 | --- | --- | --- |
 | 1 / process coordinator | Keep the current-master pointer and continuation route reconciled across the recovery plan, A07 routing evidence, continuation prompt, task metadata and goal-execution skill | PR #249 merged the continuation-control/source-label correction at `2eda17e`; fetch and rerun the ledger before the next phase |
-| 2 / train coordinator | Apply the current A07 evidence and manifest contract before any allocation; keep private values outside public artifacts | Create/validate the private manifest, obtain protocol-review `PASS`, then refresh the candidate identity and canary against the refreshed `origin/master` |
+| 2 / train coordinator | Apply the current A07 evidence and manifest contract before any allocation; keep private values outside public artifacts | Refresh `origin/master`, rerun the ledger and freeze candidate identity; confirm holdouts; create/validate the private manifest and obtain protocol-review `PASS`; then run the canary against that frozen identity |
 | 3 / A07 implementation owner | Test explicit composed init proposal against public semantics; plain init remains config-only; preserve conflicts and honest runtime permission reporting | Focused negative/positive controls, review, required final-source local/hosted gates; merge slice only if its own goals pass; rerun blinded protocol before A07 completion |
 | 4 / independent R01 investigator | Read latest R01 packet/evidence and rejected diagnostics; determine missing causal observable before spending another platform run | Concrete hypothesis, distinguishing observation and reviewed method amendment; do not repeat prior unchanged diagnostic or invent native readiness |
 | 5 / topology owner | Inventory existing goal branches, live owners and base reachability; repair audit parser as a separately tested slice if needed | Complete report; merged clean branches removed by exact identity or verified archive; unknown work preserved |
