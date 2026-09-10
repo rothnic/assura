@@ -85,6 +85,19 @@ file, linked from the full historical progress log.
   current-master checkout and one-card ownership are retained. The affected
   process/docs gates and scoped independent rereview must pass before any PR
   submission or merge.
+- Correction commit `49dc5d6e9ef5cfe66bf8c0f0d5f3330752b6f523` is based on
+  `origin/master=2607709fd218685bb8882e278428bd798f6a6291`. On that exact
+  tree, the workflow gate was `Ready: yes`; source check JSON was
+  `success=true`; `cargo xtask evidence`, `cargo xtask target-state`,
+  `cargo fmt --all -- --check`, `git diff --check`, task JSON parsing,
+  `assura check --format agent --agent codex`, and the CI-scope classifier all
+  exited `0`. The classifier reported `evidence=true`, `changed_count=4`,
+  with product/Rust/release/performance/rustdoc/website/security surfaces
+  `false`.
+- The exact correction tree's `cargo xtask docs` gate passed and built 48
+  pages. The earlier clean-checkout dependency bootstrap failure remains
+  recorded above and is not counted as a pass; the frozen install and
+  successful rerun are the valid docs evidence.
 
 ## Current A07 readiness audit — 2026-09-10
 
