@@ -1,5 +1,32 @@
 # Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md), [preserved history](progress-history-03.md))
 
+## Iteration 88 — 2026-09-09 — merged privacy correction and screening-manifest routing
+
+- PR #235 merged as `5329abd` on refreshed `origin/master`; the independently
+  rereviewed A07 parent-isolation/privacy slice passed its local and applicable
+  hosted gates. Private evaluator, fixture, contract, event and identity
+  provenance is no longer recorded in durable public evidence.
+- The live A07 canary remains valid pre-screening evidence only. A protocol audit
+  found that the packet's two product-input conditions were never named or
+  evidenced; inventing them from historical run names would invalidate the
+  screening design. The new screening-manifest contract requires exactly two
+  named conditions, one changed variable, supplied-input proof, private mapping,
+  and a reviewed 30-cell matrix without changing any thresholds.
+- The layered context-routing reference now separates universal, goal/phase,
+  card, special-lane and private-evaluator context. AGENTS remains a router;
+  detail stays in skills and the task contract. Context level: not exposed.
+- Scoped process review found the private-manifest reviewer boundary was
+  ambiguous. The routing now defines a separate isolated protocol reviewer who
+  may inspect only manifest schema/mapping/matrix metadata and returns redacted
+  findings; raw oracle, child transcript and fixture contents remain private.
+- Root's unknown file and stale missing-gitdir registration remain untouched;
+  topology report/strict retains those ownership exceptions. The earlier
+  canary was against historical `77b41fe`; the live baseline is now
+  `5329abd`. Next action, in order: create and validate the private
+  two-condition manifest, obtain isolated protocol-review `PASS`, refresh the
+  candidate-bound canary against `5329abd`, then run the authorized 30-cell
+  screen with one sibling-free fixture/child per cell.
+
 ## Iteration 87 — 2026-09-09 — current-master A07 canary and parent-isolation correction
 
 - Refreshed `origin/master=77b41fed7ee625333ea97ef2791da609f0ed5cc4` and built

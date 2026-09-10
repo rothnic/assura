@@ -29,6 +29,7 @@
     "research/executor-prompt.md",
     "research/e2e-goal-prompt.md",
     "research/a07-candidate-binding-plan.md",
+    "research/screening-manifest-contract.md",
     "research/reliability-packet.md",
     "research/quality-packet.md",
     "research/initialization-packet.md",
@@ -57,7 +58,8 @@
       "goal/maturity-goal-contract",
       "goal/maturity-goal-reconciliation",
       "goal/maturity-goal-handoff",
-      "docs/a07-parent-isolation"
+      "docs/a07-parent-isolation",
+      "docs/a07-screening-routing"
     ]
   }
 }

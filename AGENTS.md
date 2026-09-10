@@ -64,6 +64,9 @@ docs/process edits do not automatically require the full Rust tier.
 Keep operational procedures in skills, current state in task evidence, and
 AGENTS as this shared router. Compatibility policy lives in the scoped specs;
 do not introduce internal pre-1.0 shims without a demonstrated consumer.
+For layered context or A07 screening-manifest routing, load the linked
+`assura-goal-execution` references only when that phase requires them; never
+inline private evaluator details here.
 
 <!-- TRELLIS:START -->
 # Trellis Instructions
