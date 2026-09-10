@@ -64,7 +64,8 @@
       "docs/a07-screening-routing",
       "docs/recovery-plan-current",
       "docs/current-master-pointer-refresh",
-      "docs/post-merge-reconciliation"
+      "docs/post-merge-reconciliation",
+      "docs/topology-audit-robustness"
     ]
   }
 }
