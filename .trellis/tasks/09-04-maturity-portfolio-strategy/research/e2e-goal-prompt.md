@@ -20,7 +20,29 @@ reject candidates that fail the prescribed comparison, and stop invalid
 diagnostics instead of repeating runs until green. Root owns review judgment
 and merge approval; method changes never imply relaxed acceptance thresholds.
 
-## Current source-pointer reconciliation — 2026-09-10 UTC (`origin/master=755c28d`)
+## Current continuation checkpoint — 2026-09-10 UTC (`origin/master=2eda17e`)
+
+PR #249 merged the reviewed continuation-control/source-label correction as
+`2eda17e82d9dab12338805479a33a5774560451f` from candidate `5f17f7f`, based on
+`755c28d`; the merged tree matches the candidate. This process-only slice
+changes no product, evaluator, threshold, allocation or authority state.
+
+At this current source the revision-pinned ledger has 32 items,
+`ready_pending=0`, five unfinished and three held: A07 active, W03 verified,
+and R01/W02/F01 held. The metadata-only private A07 audit still lacks the
+exactly-two-condition manifest, supplied-input proof, blinded mapping,
+complete 30-cell matrix and isolated protocol-review `PASS`; no screening,
+holdout or final-acceptance credit exists. Independent impasse/process review
+records `A07-MANIFEST-04` as the concrete evidence gap.
+
+Keep the runtime goal active and route the next action to the A07 acceptance
+coordinator: privately create or locate and validate the manifest in an
+isolated protocol review. After a redacted `PASS`, fetch again, bind the
+candidate identity and run a fresh no-credit canary before allocating cells.
+An empty ready-pending set is not completion or a whole-goal block; continue
+bounded R01/W02/W03/topology preparation that is independently authorized.
+
+## Historical source-pointer reconciliation — 2026-09-10 UTC (`origin/master=755c28d`; superseded by PR #249)
 
 PR #248 merged the reviewed source-pointer lifecycle correction as
 `755c28ded66d1f2d82b38d27633be83a0233f30e` from candidate
@@ -32,14 +54,14 @@ held. A metadata-only private audit still lacks the required exactly-two-
 condition manifest, supplied-input mapping, complete 30-cell matrix and
 isolated protocol-review `PASS`.
 
-The only executable continuation is the A07 coordinator's private manifest and
+At this historical checkpoint the only executable continuation was the A07 coordinator's private manifest and
 protocol disposition. After a redacted `PASS`, refresh the candidate identity
 against the then-current master and run the no-credit canary; no screening,
 holdout, final-acceptance, release, deployment, publication or invitation
 credit is created by this reconciliation. The source-pointer lifecycle requires
-another fetch and ledger audit on every resume; later SHAs supersede this
-as-of checkpoint without requiring evidence-only churn when labels cannot
-misroute work.
+another fetch and ledger audit on every resume; PR #249 subsequently moved the
+current source to `2eda17e`. Later SHAs supersede this as-of checkpoint without
+requiring evidence-only churn when labels cannot misroute work.
 
 ## Historical post-merge continuation checkpoint — 2026-09-10 UTC (`origin/master=6ed43c3`; superseded by PR #248)
 
@@ -54,7 +76,7 @@ The next real action remains private A07 manifest validation and isolated
 protocol-review `PASS`, followed by a fresh current-master candidate-bound
 canary; no screening, holdout or final-acceptance credit is authorized here.
 The d62 snapshot below is a historical candidate-base record, and this
-`6ed43c3` checkpoint is superseded by current `755c28d`; neither is a live
+`6ed43c3` checkpoint is superseded by current `2eda17e`; neither is a live
 source.
 
 ## Historical candidate-base refresh — 2026-09-10 UTC (`origin/master=d62dd40`; superseded by PR #247)

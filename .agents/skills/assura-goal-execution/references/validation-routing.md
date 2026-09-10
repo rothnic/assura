@@ -26,6 +26,12 @@ review any fixes as a delta. Push a prepared candidate once; avoid successive
 evidence-only pushes that invalidate live CI. Existing final-head requirements
 remain authoritative, including metadata that alters check selection.
 
+Cargo package and target locks are shared within a checkout. Do not launch
+parallel `cargo` commands there: lock-wait time is resource contention, not
+test progress or proof. Parallelize only independent read-only checks, or use
+separate explicitly isolated target directories after measuring the tradeoff;
+serialize the heavy command sequence and record elapsed/wait time.
+
 Proof reuse requires unchanged relevant files, dependencies, configuration,
 toolchain, environment and invocation. Record what was compared. Rebase or a
 changed dependency invalidates affected proof; required final-head CI still

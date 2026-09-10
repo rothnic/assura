@@ -1,8 +1,42 @@
-# Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md), [progress-history-04.md], [progress-history-05.md], [preserved history](progress-history-03.md))
+# Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md), [progress-history-04.md], [progress-history-05.md], [iterations 4-17](progress-history-06.md), [preserved history](progress-history-03.md))
 
-## Iteration 103 — 2026-09-10 — current source-pointer reconciliation
+## Iteration 104 — 2026-09-10 — continuation-control route on current master
 
-- PR #248 merged the reviewed source-pointer lifecycle correction as `755c28d` from candidate `89a0430` based on `6ed43c3`; dated checkpoints are now as-of/historical and every resume must fetch and rerun the ledger.
+- Context level: not exposed. Current source is freshly fetched
+  `origin/master=2eda17e`; the PR #249 candidate `5f17f7f` was based on
+  `755c28d` and its merged tree matches. This process slice adds a concise
+  continuation-control reference and reconciles active source labels; it does
+  not change product, evaluator, threshold, allocation or authority state.
+- The revision-pinned ledger has 32 items, `ready_pending=0`, five unfinished
+  and three held: A07 active, W03 verified, R01/W02/F01 held. No pending row is
+  executable, so the coordinator retains an owned next action rather than
+  stopping or creating a duplicate goal.
+- Independent impasse/process review recorded `A07-MANIFEST-04` as evidence
+  missing: the private exactly-two-condition manifest, supplied-input proof,
+  blinded mapping, six frozen holdouts, complete 30-cell matrix and isolated
+  protocol-review `PASS` are absent. A07 remains active with zero screening,
+  holdout or final-acceptance credit; private values and raw runs stay private.
+- The next action is owned by the A07 acceptance coordinator: create or locate
+  and validate that private manifest in an isolated protocol review. After a
+  redacted `PASS`, fetch again, bind the candidate identity and run a fresh
+  no-credit canary before allocating any cells. R01/W02/F01 and W03 remain
+  separate held/authority routes.
+- A serialized `vps` probe is capacity evidence only (16 CPUs, low load,
+  roughly 42.7 GiB memory and 23 GiB disk free at 94% use; nightly Rust 1.95,
+  pnpm 10.29.3, no Bun, busy host). No heavy job ran; local cheap gates and
+  hosted final proof remain authoritative.
+- Parallel local Cargo probes briefly contended on shared package/artifact
+  locks; they were serialized afterward. The validation-routing skill now
+  treats lock wait as resource timing, never as test progress or proof.
+- Topology remains `worktrees=34 dirty=2 prunable=3 unreadable=1
+  goal_branches=13 unmerged_goal=9`; report is 0 and strict is 1 only for
+  preserved unknown/user dirt, external work and historical registrations.
+  The owned continuation worktree is clean; final handoff must rerun report
+  and strict, then remove only its merged worktree/ref.
+
+## Iteration 103 — 2026-09-10 — historical source-pointer reconciliation (superseded by PR #249)
+
+- PR #248 merged the reviewed source-pointer lifecycle correction as `755c28d` from candidate `89a0430` based on `6ed43c3`; dated checkpoints are now as-of/historical and every resume must fetch and rerun the ledger. PR #249 subsequently moved current master to `2eda17e`; see iteration 104.
 - Current ledger: 32 items, zero ready pending, five unfinished and three held; A07 active, W03 verified, R01/W02/F01 held. Private metadata still lacks the exactly-two-condition manifest, supplied-input mapping, 30-cell matrix and isolated protocol-review artifact.
 - Independent review accepted `IMPASSE-PTR-02`; older `6ed43c3`, `8cabc536` and `e03278e` pointers are historical. Next: private manifest/protocol `PASS`, then a fresh no-credit canary against current master; no card/evaluation/release/authority state changed. Context not exposed; VPS remains optional after exact toolchain/disk checks.
 
@@ -957,39 +991,3 @@ recoverable. This reconciliation adds records rather than rewriting outcomes.
 
 - The planning review resolves the Contract v1 concern: A01 supports partial evaluator dimensions; A03–A05 own guidance/hook/native closure and A07 owns full acceptance. Unavailable dimensions therefore remain visible and non-accepting, while A01's card-level acceptance is its independently reviewed ability to catch false-green policy, preservation, hook, and native failures.
 - A01 is now `verified` in the backlog with two independent review passes, 21 focused tests, evidence gate, compilation, and zero-blocking structure proof. The docs gate remains inconclusive under low disk and must be decided by hosted PR evidence; A01 is not done until its reviewed PR is merged and reachable from master.
-
-## Iteration 4 — 2026-09-06 — R01/R02 integrated proof and post-merge closure
-
-- PR [#144](https://github.com/rothnic/assura/pull/144) merged as `dcb1fb57ba100f77a7cb7e48c4f14507d3106231`; it was confirmed reachable from `origin/master` after fetch.
-- Final reviewed head `4741e560c28620a0a8813f9a8635ae52c67ca3cc` passed all hosted checks in Rust CI run [34004956631](https://github.com/rothnic/assura/actions/runs/34004956631), including macOS/Linux/Windows suites, four-platform adoption, installer smoke, release bundle, and Performance Report. R01 and R02 are done.
-- Context health review: three Windows reruns exposed fixture-only `CRCRLF` construction errors; each was preserved as RED evidence, independently reviewed, and narrowed until the actual Windows suite passed. The repeated discovery is specific to this temporary contract fixture; no new reusable skill is warranted. R07 remains active because current self-check still reports 18 advisory line-length findings that need individual dispositions.
-- Next ready card: R03 (many-scope performance repair). P01 is also locally ready but remains a separate documentation integration.
-
-## Iteration 5 — 2026-09-06 — P01/R03 integration and R04 MSRV closure
-
-- PR [#146](https://github.com/rothnic/assura/pull/146) merged P01 scope evidence as `380b9bc889b8c653b57da375bd7bf06f174f8f2f`; PR [#147](https://github.com/rothnic/assura/pull/147) merged R03's truthful performance evidence as `3ff8c889e18381e83cc960803ccf9ddfba35f1d3`. R03 remains blocked, not failed-closed: the exact GitHub Linux comparison regressed and a comparable Linux rerun cannot yet be run because `vps-dev` is unresolved.
-- PR [#148](https://github.com/rothnic/assura/pull/148) merged R04 as `e6f3a8e70068ea44a51a6d2626eaece1256e28b2`, then `git merge-base --is-ancestor` confirmed it reachable from `origin/master`. The merged Rust `1.86.0` floor is backed by a hosted all-features MSRV Clippy lane, focused `git-signals` proof, all required platform/adoption/installer/release/performance/docs/security gates, and two independent-review passes on the final PR tip.
-- The initial hosted R04 run exposed 16 current-Clippy findings; the first correction exposed that the public optional `git-signals` feature did not meet the stated MSRV. Both findings were repaired instead of suppressed or scoped away, and the evidence records the exact failed and corrected SHA lineage. Next ready work remains R05 inspection and R07's individually dispositioned advisory backlog; R03 requires an external comparable Linux runner.
-
-## Iteration 6 — 2026-09-06 — post-merge queue reconciliation and context health
-
-- P01 is now recorded done only because PR #146's `380b9bc889b8c653b57da375bd7bf06f174f8f2f` is reachable from current master and its source-scoped hosted gates passed. Skipped Rust behavior jobs remain explicitly skipped, not counted as tests.
-- R05 selection inspected the existing user-owned PR #142 without modifying it: it is stale against current master and retains a failed macOS test, failed Alpine adoption job, and cancelled Windows test. A new isolated current-master port owns any further R05 work.
-- Context level: not exposed. Current working facts: (1) R01/R02/P01/R04 have merged evidence; (2) R03 is a documented external comparable-Linux-runner block; (3) R07 has 18 advisory findings requiring individual dispositions; (4) R05 is being ported from #142 without taking over its stale branch; (5) no tag/release/deploy authority has been used. Repeated lessons are already covered by the existing goal-execution and structure-fit skills, so no new skill is warranted.
-
-## Iteration 12 — 2026-09-06 — Q03 queue reconciliation
-
-- Q03 evidence records PR #154 merged as `7a06b345d47521ede6b5e6c7cdc06e1128883774` and reachable from master, but backlog.json still said `implemented`. A dedicated documentation-only handoff corrects that stale queue state to `done`; no product behavior, performance threshold, or evaluator result was changed.
-- This makes Q04 dependency readiness accurately inspectable. The handoff remains separate from A01 while PR #162 is held by the already-blocked R03 performance gate and a macOS watch failure.
-
-## Iteration 16 — 2026-09-06 — Q05 maturity containment discovery
-
-- Q05 began in isolated current-master worktree `assura-q05-maturity-containment` at `25a1415`. Consumer enumeration found the score detector, report renderer, and CLI maturity configuration have no active CLI caller; only `MaturityLevel` remains used by internal experimental constraint severity and trigger helpers.
-- A focused observation contract was added test-first: an empty workflow directory does not establish CI configuration, local CI configuration remains `unverified` for execution, a bare `pyproject.toml` does not establish Black configuration, and additional package manifests are reported only as observations. The test first failed because the observation API did not exist.
-- The local green attempt is currently blocked by `ld` error 28 after goal-owned ignored build directories were safely reclaimed; this is not recorded as a passing test. Q04 PR #164 remains unmerged while installer, adoption, and performance jobs are still in progress.
-
-## Iteration 17 — 2026-09-06 — R03/Q06 performance hold and queue health
-
-- Q06 PR #166's repeat Rust CI run `34023443201` again failed only the unchanged Performance Report gate: `many_configured_scopes_regression` was `assura-cli 19.492 ms > ls-lint-cli 19.115 ms`; all other hosted checks succeeded. The release-readiness extraction is not treated as the cause or merged around the gate.
-- The reachable `vps` benchmark host has the canonical fixture but was running unrelated Cargo work. Because paired cold-run attribution requires a quiet comparable runner, no benchmark or speculative optimization was started. R03 remains blocked on that named environment condition and the prior HashSet hypothesis remains rejected.
-- Queue health: Q02's existing candidate has correct local governance evidence but remains blocked on independent reviewer/branch-protection authority and the same required performance gate. Existing performance and worktree procedures cover this repeated decision; no new skill is warranted. Next independent ready card: A01.
