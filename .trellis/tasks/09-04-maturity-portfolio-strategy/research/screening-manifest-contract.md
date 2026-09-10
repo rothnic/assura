@@ -56,13 +56,16 @@ condition, or evaluator provenance is missing or mismatched.
 
 ## Gate order
 
-1. Refresh and freeze current-master candidate identity.
-2. Confirm the full candidate-bound canary passed; it remains no-credit.
-3. Confirm all six unseen holdout layouts are frozen privately.
-4. Validate the manifest schema, exactly-two condition rule, one-variable
+1. Refresh and freeze the current-master candidate identity; this observation
+   is not screening credit.
+2. Confirm all six unseen holdout layouts are frozen privately.
+3. Validate the manifest schema, exactly-two condition rule, one-variable
    difference, private mapping, and complete 30-cell matrix in an isolated
    protocol review. Keep the separate product/code review boundary intact. This
-   is the smallest resolution for the missing-condition finding.
+   is the smallest resolution for the missing-condition finding; a review that
+   does not return `PASS` leaves the matrix unexecutable.
+4. Run a fresh candidate-bound canary against the frozen current-master
+   identity and confirm the full contract passes; the canary remains no-credit.
 5. Run cheap identity/context checks before each child, then evaluate and run
    the separate follow-up feature. Preserve failures and stop invalid runs;
    never repeat an unchanged method until it happens to pass.
