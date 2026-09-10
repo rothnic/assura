@@ -20,6 +20,15 @@ action without changing card acceptance or authority.
    source SHA, worktree/branch, phase, proof and exact triggering observation.
    A status observation without a route is not a checkpoint.
 
+## Command identity fence
+
+The terminal/tool `workdir` is not proof when wrappers nest commands. Before
+every check, test or build, explicitly `cd` to the owned worktree and verify
+`pwd`, `git rev-parse --show-toplevel`, branch, expected source SHA and target
+directory. Use `git -C` or absolute paths for read-only queries. If the
+effective cwd, repository or source SHA differs, discard the result as invalid
+evidence and rerun from the owned checkout.
+
 An empty `READY_PENDING` set is a routing result, not completion or a whole-goal
 block. An active or verified card still owns the next observation. If its
 contract cannot run yet, record a held action with the exact missing evidence,

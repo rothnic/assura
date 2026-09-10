@@ -4,7 +4,8 @@ Date: 2026-09-10. Scope: process artifacts, agent instructions and validation
 routing only. Product acceptance is unchanged; no card is promoted by this file.
 The historical proof below is retained; the current continuation route and
 source reconciliation are recorded before the historical next-phase notes.
-Process iteration: 104 (continuation-control route on current master;
+Process iteration: 105 (current-master R01 diagnostic preparation;
+iteration 104 was the continuation-control route on current master;
 iteration 103 was the current source-pointer reconciliation;
 iteration 102 was the post-merge source-pointer lifecycle checkpoint;
 iteration 101 was the current-master/private-manifest readiness re-audit;
@@ -22,7 +23,35 @@ iteration 92).
 Context level: not exposed. The before/after phase record is this evidence
 file, linked from the full historical progress log.
 
-## Current continuation checkpoint — 2026-09-10 UTC (`origin/master=2eda17e`)
+## Current diagnostic observation — 2026-09-10 UTC (`origin/master=1bd78cc`)
+
+- Owner/phase: process coordinator / R01 diagnostic preparation. A clean,
+  detached checkout at `1bd78cc3705e278d6502637463873de4ad1c2aab` ran the exact
+  external-config watch test from its own cwd on Darwin x86_64 with
+  Rust/Cargo `1.94.1`. The corrected command used the shared target cache and
+  exited `0` after 195 seconds; compilation took 1m54s and the test 1.50s.
+- The only event was the expected config-triggered sequence-2 warm-full report
+  (`coalesced_events=4`, `changed_paths=[]`, no fallback) with the expected
+  `snake_case` violation. No unexpected filesystem event occurred, so the
+  historical macOS extra `full_rescan_event` was not reproduced. A prior
+  wrong-cwd attempt was discarded as invalid evidence and its clean worktree
+  was removed.
+- No hosted diagnostic run, retry, filter, threshold, or product edit was
+  made. This observation cannot close R01. The next action remains obtaining
+  the historical callback paths/kinds/rescan/config-generation trace for
+  run34090768850/job101643647551, or a maintainer decision on native readiness;
+  speculative debounce/loop changes remain unauthorized.
+- The owned diagnostic worktree was clean after the run and removed. The
+  current ledger/topology must still be refreshed before the next phase; no
+  card state or A07 allocation state changed.
+- Scoped documentation/evidence gates on this recovery slice passed: `cargo
+  run --quiet -- check --format json .` exited `0` with six pre-existing low
+  max-lines advisories; the evidence and target-state xtask checks exited `0`;
+  after frozen website dependency installation, `xtask docs` exited `0` and
+  built 48 pages; `git diff --check` exited `0`. These checks validate the
+  process artifacts only and do not promote R01 or A07.
+
+## Historical continuation checkpoint — 2026-09-10 UTC (`origin/master=2eda17e`; superseded by the current observation)
 
 - Owner/phase: process coordinator / `investigate-prepare`; the A07
   acceptance coordinator owns the next card action. A fresh fetch resolved
