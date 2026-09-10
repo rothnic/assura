@@ -103,7 +103,7 @@ The canary must also prove that the candidate exposes the expected merged
 `init --agent <host> --activate` surface. The historical `77b41fe` and
 `9b410e9` canaries passed those identity, surface, context, and full-contract
 checks for their own snapshots; they remain no-credit controls. The fresh
-69246d3 canaries repeat the same checks against the current candidate. The
+ebedb3e canaries repeat the same checks against the current candidate. The
 historical `f1595fc`, `922d7f0` and `af73d8a` runs remain labeled below for
 provenance; none is a screening allocation. An explicit-route control may
 verify the composed implementation, but it is calibration evidence and never
