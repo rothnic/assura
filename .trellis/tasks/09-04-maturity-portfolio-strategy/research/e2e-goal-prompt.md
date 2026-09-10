@@ -49,28 +49,28 @@ W03 and F01's named holds separate.
 Do not finish the goal while a live review, repair, integration, cleanup or
 independently authorized preparation action remains.
 
-## Current candidate checkpoint (refresh required) — 2026-09-10 UTC (`69246d3`)
+## Current candidate checkpoint (refresh required) — 2026-09-10 UTC (`ebedb3e`)
 
-PR #271 reconciled the corrected process/documentation slice and is merged at
-`69246d35a2a1939cad4965732e962eba2c9a2e35`; its tree and owned closure are
+PR #272 reconciled the current candidate-preparation route and is merged at
+`ebedb3ea434eca6ddb05d2bd63d0693bbb7d948c`; its tree and owned closure are
 verified. The merge changes no product, evaluator, threshold, allocation or
-authority state. The 9df6ae6 candidate freeze, canaries, six-handle binding and
-isolated protocol `PASS` are historical no-credit metadata after this source
-and contract advance. The ledger remains 32 items, `ready_pending=0`, five
-unfinished and three held: A07 active, W03 verified, and R01/W02/F01 held.
+authority state. The 9df and 692 candidate freezes, canaries, bindings and
+isolated protocol `PASS` records are historical no-credit metadata after this
+source and contract advance. The ledger remains 32 items, `ready_pending=0`,
+five unfinished and three held: A07 active, W03 verified, and R01/W02/F01 held.
 
-The current A07 candidate is frozen privately at 69246d3. Its login-shell identity
-controls and two source-only canaries pass the full public contract with seven
-dimensions and a meaningful negative control; these are no-credit preparation.
-The private 9df binding/manifest/receipts/matrix and isolated protocol `PASS`
-remain historical metadata-only/no-credit; the current 692 candidate canary is
-not a replacement protocol review. On resume, fetch again, rerun the ledger and
-topology audit, refresh release/tag and PR/CI facts, rebind the current packet as
-needed and run a fresh no-credit canary before the separately authorized
+The current A07 candidate is frozen privately at ebedb3e. Its login-shell
+identity controls and two source-only canaries pass the full public contract
+with seven dimensions and a meaningful negative control; these are no-credit
+preparation. The corrected private six-handle packet passed isolated protocol
+rereview after six metadata-only provenance/linkage corrections; this remains
+no screening or acceptance credit. On resume, fetch again, rerun the ledger and
+topology audit, refresh release/tag and PR/CI facts, re-freeze the current
+candidate and run a fresh no-credit canary before the separately authorized
 screening gate. Never allocate or credit cells from a process merge, canary or
 protocol metadata alone.
 
-## Historical 8be continuation checkpoint (superseded by current `69246d3`; previously `b7043ab`) — 2026-09-10 UTC (`8be6103`)
+## Historical 8be continuation checkpoint (superseded by current `ebedb3e`; previously `b7043ab`) — 2026-09-10 UTC (`8be6103`)
 
 The latest read-only refresh resolved `origin/master` to
 `8be61034e3f6f295753570ef2080e100d53efd4c` after PR #268. The reviewed

@@ -104,16 +104,15 @@ but never replaces required macOS/Windows/hosted proof.
 ## Current next action
 
 On each resume, the A07 coordinator must first refresh `origin/master`, rerun
-the revision-pinned ledger, and freeze the candidate identity. The 9b and 8be
-manifests, canaries and protocol `PASS` are historical no-credit evidence after
-the later process merges and must not route current work. The current as-of
-69246d3 candidate has fresh identity controls and two full-contract source-only
-canaries with a meaningful negative control; these are no-credit preparation.
-The corrected 9df6ae6 six-handle binding, supplied-input receipts, two-condition
-manifest, 30 reserved cells and isolated protocol `PASS` are historical
-metadata-only/no-credit after this source/contract advance. On each next resume,
-refresh source/ledger, release/tag, PR/CI and topology state, rebind the current
-candidate packet and obtain the isolated protocol `PASS` as needed, then run a
-fresh no-credit canary before the separately authorized screening gate. Prior
-canaries, process PRs and metadata-only evidence never satisfy screening or
-acceptance gates.
+the revision-pinned ledger, and freeze the candidate identity. The 9b, 8be, 9df
+and 692 manifests, canaries and protocol `PASS` records are historical
+no-credit evidence after the later process merges and must not route current
+work. The current as-of ebedb3e candidate has fresh identity controls and two
+full-contract source-only canaries with a meaningful negative control; these are
+no-credit preparation. Its six-handle binding, supplied-input receipts,
+two-condition manifest and 30 reserved cells passed the isolated protocol
+rereview after six metadata-only provenance/linkage corrections. On each next
+resume, refresh source/ledger, release/tag, PR/CI and topology state, re-freeze
+the current candidate, then run a fresh no-credit canary before the separately
+authorized screening gate. Prior canaries, process PRs and metadata-only
+evidence never satisfy screening or acceptance gates.

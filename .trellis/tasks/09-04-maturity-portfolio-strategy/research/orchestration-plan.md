@@ -92,27 +92,27 @@ public evidence.
   three measured comparable runs show queue/execution, retry and coverage
   effects.
 
-## Current train route — 69246d3 (refresh required)
+## Current train route — ebedb3e (refresh required)
 
-At the latest post-merge refresh, `origin/master=69246d35a2a1939cad4965732e962eba2c9a2e35`
-is the only current source pointer. PR #271 reconciled the corrected protocol
-disposition as a process-only documentation slice; its merged tree and owned
-closure are verified. The earlier 9df candidate, canaries, binding and
-isolated protocol `PASS` are historical no-credit metadata because the source
-and public contract tree advanced. The ledger remains 32 items, no
-ready-pending card, five unfinished cards and three narrow holds. A02 is
-complete and its plain-init handoff incident is historical.
+At the latest post-merge refresh, `origin/master=ebedb3ea434eca6ddb05d2bd63d0693bbb7d948c`
+is the only current source pointer. PR #272 reconciled the current candidate
+preparation route as a process-only documentation slice; its merged tree and
+owned closure are verified. The earlier 9df and 692 candidates, canaries,
+bindings and isolated protocol `PASS` records are historical no-credit metadata
+because the source and public contract tree advanced. The ledger remains 32
+items, no ready-pending card, five unfinished cards and three narrow holds.
+A02 is complete and its plain-init handoff incident is historical.
 
-A07 is the active lane. A fresh 692 candidate was built from a clean checkout;
-login-shell identity controls and two source-only canaries pass the full public
-contract, but they create no screening or acceptance credit. The corrected 9df
-six-handle binding, per-handle creation records, exact toolchain,
-supplied-input receipts, two-condition manifest and 30 reserved cells remain
-historical metadata, as does its isolated protocol `PASS`. The exact next
-action is to refresh origin/master, release/tag, PR/CI and topology state,
-rerun the ledger, rebind the current contract packet as needed and run a fresh
-no-credit canary before the separately authorized screening preparation. Do
-not reuse an older packet or allocate/credit cells from this process
+A07 is the active lane. A fresh ebedb3e candidate was built from a clean
+checkout; login-shell identity controls and two source-only canaries pass the
+full public contract, but they create no screening or acceptance credit. The
+private six-handle binding, per-handle creation records, exact toolchain,
+stable supplied-input receipts, two-condition manifest and 30 reserved cells
+passed isolated protocol rereview after six metadata-only provenance/linkage
+corrections. The exact next action is to refresh source, release/tag, PR/CI and
+topology state, rerun the ledger, re-freeze the current candidate and run the
+next fresh no-credit canary before separately authorized screening preparation.
+Do not reuse an older packet or allocate/credit cells from this process
 checkpoint.
 
 R01 still needs the raw callback trace or a specific maintainer native-readiness
