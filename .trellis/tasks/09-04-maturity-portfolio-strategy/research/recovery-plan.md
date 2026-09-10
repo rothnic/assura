@@ -32,6 +32,13 @@ process-only correction adds the continuation-control routing reference and
 reconciles current source labels; it changes no product, evaluator,
 threshold, allocation, release, deployment, publication or invitation state.
 
+Session/live handle: none for A07; the metadata audit is complete and no
+initializer, evaluator, CI or review process is running. Worktree/branch:
+private A07 evidence lane / no shared checkout; the process candidate is the
+separate clean `docs/continuation-control-route` branch. Trigger/proof:
+`ready_pending=0` plus the redacted private-manifest metadata audit below;
+the exact next action is the coordinator's isolated manifest/protocol review.
+
 The revision-pinned ledger reports 32 items, `ready_pending=0`, five
 unfinished and three held: A07 is `active`, W03 is `verified`, and R01/W02/F01
 retain their named holds. No pending card is executable. A redacted,
@@ -58,7 +65,7 @@ heavy job ran. Local cheap gates remain first; remote work is permitted only
 through the exact-toolchain bundle procedure after disk/headroom checks, one
 job at a time. Hosted platform and performance checks remain final proof.
 
-Topology remains `worktrees=34 dirty=2 prunable=3 unreadable=1
+Topology while this owned candidate is present remains `worktrees=35 dirty=2 prunable=3 unreadable=1
 goal_branches=13 unmerged_goal=9`; report exits 0 and strict exits 1 for the
 preserved root/user dirt, external dirty worktree, stale registrations and
 historical goal refs. None is owned by this slice. Before handoff, rerun both

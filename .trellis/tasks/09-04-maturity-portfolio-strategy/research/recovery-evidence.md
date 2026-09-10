@@ -32,6 +32,12 @@ file, linked from the full historical progress log.
   adds the continuation-control reference and reconciles active source labels;
   no product, evaluator, threshold, allocation, release, deployment,
   publication or invitation state changed.
+- Session/live handle: none for A07; the metadata-only audit is complete and
+  no initializer, evaluator, CI or review process is running. Worktree/branch:
+  private A07 evidence lane / no shared checkout; the process candidate is the
+  separate clean `docs/continuation-control-route` branch. Trigger/proof:
+  `ready_pending=0` plus the redacted private-manifest metadata audit below;
+  the exact next action is isolated manifest/protocol review.
 - The revision-pinned ledger reports 32 items, `ready_pending=0`, five
   unfinished and three held: A07 active, W03 verified, R01/W02/F01 held. No
   pending card is executable. A redacted metadata audit still finds seven
@@ -54,10 +60,12 @@ file, linked from the full historical progress log.
 - Shared Cargo lock contention observed during parallel local probes is now
   treated as resource timing; heavy Cargo commands are serialized and lock
   wait is never reported as test progress or proof.
-- Topology remains `worktrees=34 dirty=2 prunable=3 unreadable=1
+- Topology while this owned candidate is present is `worktrees=35 dirty=2 prunable=3 unreadable=1
   goal_branches=13 unmerged_goal=9`; report exits 0 and strict exits 1 only
   for preserved root/user dirt, external dirt, stale registrations and
-  historical refs. Rerun both modes before handoff and remove only this
+  historical refs. The report includes this clean candidate worktree
+  (`worktrees=35`); after merged closure it should return to the preserved
+  baseline count of 34. Rerun both modes before handoff and remove only this
   slice's clean merged worktree/ref.
 - Continuation decision: keep the existing runtime goal active. An empty
   ready-pending set is not completion or a whole-goal block; record the A07

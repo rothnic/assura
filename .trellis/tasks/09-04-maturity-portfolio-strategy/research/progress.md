@@ -28,11 +28,12 @@
 - Parallel local Cargo probes briefly contended on shared package/artifact
   locks; they were serialized afterward. The validation-routing skill now
   treats lock wait as resource timing, never as test progress or proof.
-- Topology remains `worktrees=34 dirty=2 prunable=3 unreadable=1
+- Topology while this owned candidate is present is `worktrees=35 dirty=2 prunable=3 unreadable=1
   goal_branches=13 unmerged_goal=9`; report is 0 and strict is 1 only for
-  preserved unknown/user dirt, external work and historical registrations.
-  The owned continuation worktree is clean; final handoff must rerun report
-  and strict, then remove only its merged worktree/ref.
+  preserved unknown/user dirt, external work and historical registrations; the
+  count includes this clean process worktree and returns to 34 after merged
+  closure. The owned continuation worktree is clean; final handoff must rerun
+  report and strict, then remove only its merged worktree/ref.
 
 ## Iteration 103 — 2026-09-10 — historical source-pointer reconciliation (superseded by PR #249)
 
