@@ -1,6 +1,18 @@
-# Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md), [progress-history-04.md], [progress-history-05.md], [iterations 4-17](progress-history-06.md), [preserved history](progress-history-03.md), [iterations 100 and earlier](progress-history-07.md))
+# Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md), [progress-history-04.md], [progress-history-05.md], [iterations 4-17](progress-history-06.md), [preserved history](progress-history-03.md), [iterations 104 and earlier](progress-history-07.md))
 
-## Iteration 105 — 2026-09-10 — current-master R01 diagnostic preparation
+## Iteration 106 — 2026-09-10 — post-merge checkpoint for PR #251
+
+- PR #251 merged reviewed process-only head `e777ee7` (base `1bd78cc`) as
+  `062f6c3`; merged-tree equality and clean owned-worktree closure passed.
+- The corrected R01 route and command identity fence are integrated. The
+  ledger remains 32 items, zero ready pending, five unfinished and three
+  held; A07 is the active next route, while R01/W02/F01 remain card-level
+  holds and W03 remains verified. No product or authority state changed.
+- The 1bd diagnostic is explicitly candidate-base evidence; refresh before
+  use. Final topology report passed and strict remains nonzero only for
+  preserved external/user conditions and historical registrations.
+
+## Iteration 105 — 2026-09-10 — candidate-base R01 diagnostic preparation (superseded by Iteration 106)
 
 - Owner/phase: process coordinator / R01 diagnostic preparation. A corrected
   clean checkout at `origin/master=1bd78cc` ran the exact external-config
@@ -14,41 +26,6 @@
   config-generation evidence for run34090768850/job101643647551, or a
   maintainer native-readiness decision; speculative debounce/loop changes stay
   unauthorized.
-
-## Iteration 104 — 2026-09-10 — continuation-control route on current master
-
-- Context level: not exposed. Current source is freshly fetched
-  `origin/master=2eda17e`; the PR #249 candidate `5f17f7f` was based on
-  `755c28d` and its merged tree matches. This process slice adds a concise
-  continuation-control reference and reconciles active source labels; it does
-  not change product, evaluator, threshold, allocation or authority state.
-- The revision-pinned ledger has 32 items, `ready_pending=0`, five unfinished
-  and three held: A07 active, W03 verified, R01/W02/F01 held. No pending row is
-  executable, so the coordinator retains an owned next action rather than
-  stopping or creating a duplicate goal.
-- Independent impasse/process review recorded `A07-MANIFEST-04` as evidence
-  missing: the private exactly-two-condition manifest, supplied-input proof,
-  blinded mapping, six frozen holdouts, complete 30-cell matrix and isolated
-  protocol-review `PASS` are absent. A07 remains active with zero screening,
-  holdout or final-acceptance credit; private values and raw runs stay private.
-- The next action is owned by the A07 acceptance coordinator: create or locate
-  and validate that private manifest in an isolated protocol review. After a
-  redacted `PASS`, fetch again, bind the candidate identity and run a fresh
-  no-credit canary before allocating any cells. R01/W02/F01 and W03 remain
-  separate held/authority routes.
-- A serialized `vps` probe is capacity evidence only (16 CPUs, low load,
-  roughly 42.7 GiB memory and 23 GiB disk free at 94% use; nightly Rust 1.95,
-  pnpm 10.29.3, no Bun, busy host). No heavy job ran; local cheap gates and
-  hosted final proof remain authoritative.
-- Parallel local Cargo probes briefly contended on shared package/artifact
-  locks; they were serialized afterward. The validation-routing skill now
-  treats lock wait as resource timing, never as test progress or proof.
-- Topology while this owned candidate is present is `worktrees=35 dirty=2 prunable=3 unreadable=1
-  goal_branches=13 unmerged_goal=9`; report is 0 and strict is 1 only for
-  preserved unknown/user dirt, external work and historical registrations; the
-  count includes this clean process worktree and returns to 34 after merged
-  closure. The owned continuation worktree is clean; final handoff must rerun
-  report and strict, then remove only its merged worktree/ref.
 
 ## Iteration 103 — 2026-09-10 — historical source-pointer reconciliation (superseded by PR #249)
 

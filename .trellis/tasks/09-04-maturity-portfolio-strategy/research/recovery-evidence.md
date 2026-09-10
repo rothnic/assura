@@ -4,7 +4,8 @@ Date: 2026-09-10. Scope: process artifacts, agent instructions and validation
 routing only. Product acceptance is unchanged; no card is promoted by this file.
 The historical proof below is retained; the current continuation route and
 source reconciliation are recorded before the historical next-phase notes.
-Process iteration: 105 (current-master R01 diagnostic preparation;
+Process iteration: 106 (post-merge checkpoint for PR #251; the R01
+diagnostic preparation is candidate-base evidence;
 iteration 104 was the continuation-control route on current master;
 iteration 103 was the current source-pointer reconciliation;
 iteration 102 was the post-merge source-pointer lifecycle checkpoint;
@@ -23,7 +24,24 @@ iteration 92).
 Context level: not exposed. The before/after phase record is this evidence
 file, linked from the full historical progress log.
 
-## Current diagnostic observation — 2026-09-10 UTC (`origin/master=1bd78cc`)
+## Post-merge process checkpoint — 2026-09-10 UTC (`origin/master=062f6c3`)
+
+- PR #251 merged the reviewed process-only candidate `e777ee7` (based on
+  `1bd78cc`) as `062f6c39d15babc8b12299863576a29febda5dd5`; the merged tree
+  equals the reviewed candidate. It carries the corrected R01 next-action
+  route and the continuation command identity fence.
+- The revision-pinned ledger remains 32 items with `ready_pending=0`, five
+  unfinished and three held: A07 active, W03 verified, R01/W02/F01 held. No
+  product, card, evaluator, threshold, allocation, release, deployment,
+  publication or invitation state changed. The next authorized route remains
+  A07's private manifest/protocol review; R01 still requires its raw callback
+  trace or a maintainer native-readiness decision.
+- The owned candidate worktree and branch were removed after clean closure.
+  The final topology report exited `0`; strict exited `1` only for preserved
+  root/user or external dirt, stale registrations and historical refs. The
+  `1bd78cc` diagnostic below is candidate-base evidence; refresh before use.
+
+## Candidate-base diagnostic observation — 2026-09-10 UTC (`origin/master=1bd78cc`; superseded by the post-merge checkpoint)
 
 - Owner/phase: process coordinator / R01 diagnostic preparation. A clean,
   detached checkout at `1bd78cc3705e278d6502637463873de4ad1c2aab` ran the exact
@@ -51,7 +69,7 @@ file, linked from the full historical progress log.
   built 48 pages; `git diff --check` exited `0`. These checks validate the
   process artifacts only and do not promote R01 or A07.
 
-## Historical continuation checkpoint — 2026-09-10 UTC (`origin/master=2eda17e`; superseded by the current observation)
+## Historical continuation checkpoint — 2026-09-10 UTC (`origin/master=2eda17e`; superseded by the candidate-base observation and post-merge checkpoint)
 
 - Owner/phase: process coordinator / `investigate-prepare`; the A07
   acceptance coordinator owns the next card action. A fresh fetch resolved
