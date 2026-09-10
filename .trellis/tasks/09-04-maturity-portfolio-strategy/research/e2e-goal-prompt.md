@@ -20,21 +20,26 @@ reject candidates that fail the prescribed comparison, and stop invalid
 diagnostics instead of repeating runs until green. Root owns review judgment
 and merge approval; method changes never imply relaxed acceptance thresholds.
 
-## Current continuation checkpoint — 2026-09-10 UTC (`origin/master=062f6c3`)
+## Dated continuation checkpoint (refresh required) — 2026-09-10 UTC
+
+This route was reconciled at `origin/master=062f6c3` and integrated by PR #252
+as `a92b109c2158113a1f2316b8cdd5ef79f6668571`. It is a dated provenance
+checkpoint, not a live source pointer. Fetch `origin/master` and rerun the
+revision-pinned ledger before binding a canary or using any embedded SHA.
 
 PR #251 merged the reviewed process-only continuation correction as
 `062f6c39d15babc8b12299863576a29febda5dd5` from candidate `e777ee7`, based
 on `1bd78cc`; the merged tree matches the candidate. It changes only command
-identity and R01 route handling. Refresh this source before binding a canary;
+identity and R01 route handling. Bind runs only to a freshly fetched source;
 no A07 product, evaluator, threshold, allocation or authority state changed.
 
-At this source the revision-pinned ledger remains 32 items,
+At the recorded checkpoint the revision-pinned ledger remains 32 items,
 `ready_pending=0`, five unfinished and three held: A07 active, W03 verified,
 R01/W02/F01 held. The private A07 manifest/protocol-review evidence is still
 missing, so screening, holdout and final-acceptance credit remain zero. Route
 the next action to the private exactly-two-condition manifest and isolated
-protocol-review `PASS`, then refresh and bind a 062-based no-credit canary
-before any allocation.
+protocol-review `PASS`, then refresh and bind a canary to the freshly fetched
+source before any allocation.
 
 ## Historical continuation checkpoint — 2026-09-10 UTC (`origin/master=2eda17e`; superseded by PR #251)
 
