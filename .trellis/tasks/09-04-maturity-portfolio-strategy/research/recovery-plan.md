@@ -52,7 +52,7 @@ the unknown root dirt, the pre-existing prunable registration, and the clean
 preserved missing worktree; record incomplete coverage and use the read-only
 fallback before proposing a targeted audit repair.
 
-## Current checkpoint — 2026-09-10
+## Prior process checkpoint — 2026-09-10 (PR #236; superseded)
 
 Refresh evidence identifies `origin/master=35cce811532c793f9446d13b8ef42f6390d370bf`,
 the merge of PR #236 from reviewed head
@@ -75,14 +75,39 @@ The root unknown file and known missing-gitdir registration remain preserved.
 The owned PR #236 worktree and branch were clean, merged, verified reachable
 from `origin/master`, and removed. Other goal refs/worktrees are retained only
 as classified historical archives or user-owned work; do not delete them by
-pattern.
+pattern. This checkpoint is retained for provenance; it is not the current
+integration baseline.
+
+## Current checkpoint — 2026-09-10 (post-PR #237 refresh)
+
+A fresh read-only fetch identifies `origin/master=8cabc53658530a239c00a0c55cbae9b050ad74ca`,
+the merge of PR #237 from independently reviewed head
+`19c5941a8717f05f305032be56080f626fdd06b5`. PR #237 reconciles the recovery
+plan/evidence and current task metadata; it does not change product behavior,
+the backlog's acceptance thresholds, or A07 allocation credit. The prior
+`35cce811` process checkpoint and `5329abd` candidate baseline are historical
+after this merge.
+
+A07 remains `active` with zero screening, holdout, or final-acceptance credit.
+The current route is: freeze the two private product-input conditions and six
+holdouts; validate the private manifest and complete 30-cell matrix; obtain an
+isolated protocol-review `PASS`; build and identity-check a fresh candidate
+bound to `8cabc536`; then screen only if every preceding gate passes. The
+earlier `77b41fe` and `5329abd` canaries remain no-credit historical evidence.
+The 18-run untouched holdout, follow-up feature checks, and final
+ten-per-stack at-least-9/10 threshold remain mandatory.
+
+The root unknown file, the missing-gitdir registration, and the two clean
+detached evidence archives remain preserved. The current pointer-reconciliation
+slice is the sole new owned worktree; all other branches and worktrees remain
+classified historical or user-owned and must not be deleted by pattern.
 
 ## Ordered recovery slices
 
 | Priority / owner | Action | Exit proof / next action |
 | --- | --- | --- |
-| 1 / process coordinator | Integrate this recovery plan, lean AGENTS router, execution/validation references and corrected scheduler routing | Completed through PR #236 (`2008f3f` → merge `35cce81`); next action is the A07 manifest/protocol-review route below |
-| 2 / train coordinator | Apply the current A07 evidence and manifest contract before any allocation; keep private values outside public artifacts | Current checkpoint is recorded above; create/validate the private manifest, obtain protocol-review `PASS`, then refresh the canary |
+| 1 / process coordinator | Reconcile the live current-master pointer across the recovery plan, A07 routing evidence, continuation prompt, and task metadata | Owned slice is based on `8cabc536`; record exact review/gate/merge/cleanup proof before advancing the train |
+| 2 / train coordinator | Apply the current A07 evidence and manifest contract before any allocation; keep private values outside public artifacts | Current checkpoint is recorded above; create/validate the private manifest, obtain protocol-review `PASS`, then refresh the canary against `8cabc536` |
 | 3 / A07 implementation owner | Test explicit composed init proposal against public semantics; plain init remains config-only; preserve conflicts and honest runtime permission reporting | Focused negative/positive controls, review, required final-source local/hosted gates; merge slice only if its own goals pass; rerun blinded protocol before A07 completion |
 | 4 / independent R01 investigator | Read latest R01 packet/evidence and rejected diagnostics; determine missing causal observable before spending another platform run | Concrete hypothesis, distinguishing observation and reviewed method amendment; do not repeat prior unchanged diagnostic or invent native readiness |
 | 5 / topology owner | Inventory existing goal branches, live owners and base reachability; repair audit parser as a separately tested slice if needed | Complete report; merged clean branches removed by exact identity or verified archive; unknown work preserved |
@@ -158,6 +183,6 @@ Record actual reviewer decisions and limitations in `recovery-evidence.md`.
 
 Next action: keep the supported runtime goal active and follow the current
 checkpoint's identity/holdout → manifest validation → isolated protocol review
-`PASS` → fresh current-master canary → screening sequence. Do not replace or
-complete an unfinished goal to repair a status mismatch, and do not treat this
-process merge as A07 acceptance.
+`PASS` → fresh current-master canary against `8cabc536` → screening sequence.
+Do not replace or complete an unfinished goal to repair a status mismatch, and
+do not treat this process reconciliation as A07 acceptance.
