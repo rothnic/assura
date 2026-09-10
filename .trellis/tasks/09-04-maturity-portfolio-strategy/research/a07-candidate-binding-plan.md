@@ -77,7 +77,8 @@ the binding inside the run before any product result is counted:
 The canary must also prove that the candidate exposes the expected merged
 `init --agent <host> --activate` surface. The historical `77b41fe` canary
 passed those identity, surface, context, and full-contract checks; a fresh
-candidate-bound canary against live `8cabc536` is still required before
+candidate-bound canary against the freshly fetched then-current
+`origin/master` (checkpoint `755c28d`) is still required before
 allocation. The historical `f1595fc` and `922d7f0` runs remain labeled below
 for provenance; none is a screening allocation. An explicit-route control may
 verify the composed implementation, but it is calibration evidence and never
@@ -97,7 +98,8 @@ counts as a blinded run.
   references for both product-input conditions in a private screening manifest,
   validate its supplied-input evidence and complete matrix, and obtain an
   isolated protocol-review `PASS`; do not infer or rename conditions in public
-  evidence. Then refresh the candidate-bound canary against live `8cabc536` and
+  evidence. Then refresh the candidate-bound canary against the freshly fetched
+  then-current `origin/master` (checkpoint `755c28d`) and
   launch one fresh source-only fixture and child under a sibling-free
   disposable parent per run. If identity, context, or contract checks fail,
   retain the result as invalid/no-credit evidence, repair the owning method, and
