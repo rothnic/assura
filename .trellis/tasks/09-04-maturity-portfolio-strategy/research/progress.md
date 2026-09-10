@@ -2,8 +2,8 @@
 
 ## Iteration 130 — 2026-09-10 — current ebedb3e candidate canary and packet rebind
 - PR #272 merged the reviewed process/documentation reconciliation at `origin/master=ebedb3e`; the merged tree and owned closure are verified. This is process-only and changes no product or acceptance state.
-- The fresh ebedb3e candidate identity and two source-only canaries pass all seven public dimensions with a meaningful negative control; they are no-credit preparation. The private six-handle packet, manifest, receipts and 30 reserved cells are rebound to ebedb3e, with isolated protocol rereview pending.
-- The ledger remains 32/0/5/3 with A07 active and R01/W02/F01 held. Next owner/action: complete the independent protocol rereview, record PASS or concrete corrections, then refresh source, release/tag, PR/CI and topology state before the next fresh no-credit canary and any separately authorized screening preparation; context level: not exposed.
+- The fresh ebedb3e candidate identity and two source-only canaries pass all seven public dimensions with a meaningful negative control; they are no-credit preparation. The private six-handle packet, manifest, receipts and 30 reserved cells are rebound to ebedb3e, with isolated protocol rereview PASS after six metadata-only provenance/linkage corrections.
+- The ledger remains 32/0/5/3 with A07 active and R01/W02/F01 held. Next owner/action: refresh source, release/tag, PR/CI and topology state, rerun the ledger, re-freeze the current candidate and run the next fresh no-credit canary before any separately authorized screening preparation; context level: not exposed.
 ## Iteration 126 — 2026-09-10 — historical protocol disposition (superseded by current `ebedb3e`; previously `b7043ab`)
 
 - The primary isolated protocol rereview returned `PASS` against the corrected

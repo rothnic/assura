@@ -6,7 +6,7 @@ Older tail note: [recovery history 01](recovery-history-01.md) and
 The historical proof below is retained; the current continuation route and
 post-merge source reconciliation are maintained in [recovery-plan.md](recovery-plan.md)
 and the newest progress entry before these historical notes.
-Process iteration: 130 (origin/master=ebedb3e current candidate freeze, identity controls and two full-contract no-credit canaries pass; current six-handle packet/manifest rebind prepared with isolated protocol rereview pending and all allocation/credit false; iteration 129 preserved in progress-history-17.md; iteration 128 preserved in progress-history-16.md; iteration 127 recorded post-merge source reconciliation;
+Process iteration: 130 (origin/master=ebedb3e current candidate freeze, identity controls and two full-contract no-credit canaries pass; current six-handle packet/manifest rebind passed isolated protocol rereview after six metadata-only provenance/linkage corrections and all allocation/credit false; next action refresh source/ledger/topology, re-freeze and run a fresh no-credit canary; iteration 129 preserved in progress-history-17.md; iteration 128 preserved in progress-history-16.md; iteration 127 recorded post-merge source reconciliation;
 iteration 123 was the corrected continuation goal and current-source rebind;
 iteration 122 was the merged A07 process route and current-candidate canary;
 iteration 121 was the accepted stale-route finding delta; iteration 120 was the

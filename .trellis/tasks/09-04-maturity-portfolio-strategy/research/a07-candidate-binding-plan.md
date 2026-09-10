@@ -20,19 +20,21 @@ input receipts, blinded mapping and complete 30-cell reserved matrix remain
 private. The 9df and 692 packets are historical after the source advances; the
 current ebedb3e packet includes an immutable six-handle holdout-binding record,
 per-handle creation evidence, exact toolchain comparison and a second
-read-only rebind confirmation. Its isolated protocol rereview is pending and
-the disqualified raw-hook draft remains explicitly excluded. Do not infer
-conditions or holdout validity from historical run names or labels.
+read-only rebind confirmation. Its isolated protocol rereview passed after six
+metadata-only provenance/linkage corrections; the disqualified raw-hook draft
+remains explicitly excluded. Do not infer conditions or holdout validity from
+historical run names or labels.
 
 A fresh detached checkout at ebedb3e is the current as-of candidate build, and
 its source/tree, version, fixed target and login-shell command identity are
 frozen privately. Two fresh source-only canaries used the composed
 `init --agent codex --activate` route and passed the full evaluator; they prove
 neither screening, holdout, follow-up-feature nor final-batch acceptance. The
-current packet is rebound and its isolated protocol rereview is pending. The
-next ordered action is to complete that rereview, record PASS or concrete
-corrections, then refresh source/ledger, release/tag, PR/CI and topology state
-before the next fresh no-credit canary and separately authorized screening gate.
+current packet is rebound and its isolated protocol rereview passed after six
+metadata-only provenance/linkage corrections. The next ordered action is to
+refresh source/ledger, release/tag, PR/CI and topology state, re-freeze the
+current candidate, then run the next fresh no-credit canary before the
+separately authorized screening gate.
 This plan does not change the A07 contract, scoring thresholds, fixture
 allocation, or product acceptance.
 
