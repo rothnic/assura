@@ -70,7 +70,8 @@
       "docs/ledger-routing-helper",
       "docs/ledger-routing-reconcile",
       "docs/train-continuation-control",
-      "docs/train-continuation-reconcile"
+      "docs/train-continuation-reconcile",
+      "docs/train-continuation-finalize"
     ]
   }
 }
