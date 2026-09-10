@@ -44,6 +44,11 @@ file, linked from the full historical progress log.
   identity against `d62dd40`, run the no-credit full-contract canary, and only
   then allocate the authorized 30-cell screen. No historical canary or run is
   reused.
+- Independent process review accepted finding `IMPASSE-PTR-01`: older current
+  pointers still routed from PR #245/`27ef54d` (and the ordered table from
+  PR #244/`2902a07`). This candidate refreshes those pointers to `d62dd40` and
+  labels the older snapshots historical; scoped rereview covers this exact
+  correction.
 - The topology audit reported `base=origin/master worktrees=34 dirty=2
   prunable=3 unreadable=1 goal_branches=13 unmerged_goal=9`; `--report`
   exited `0` and `--strict` exited `1`. The preserved root unknown file,

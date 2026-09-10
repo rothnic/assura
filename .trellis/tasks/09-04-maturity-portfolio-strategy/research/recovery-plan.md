@@ -1,6 +1,7 @@
 # Execution recovery plan
 
-Status: active continuation route, 2026-09-10 UTC (last verified after PR #245; refresh before use). This is a plan and audit, not
+Status: active continuation route, 2026-09-10 UTC (read-only refresh at
+`origin/master=d62dd40`; refresh before use). This is a plan and audit, not
 evidence that product cards passed. The supported runtime goal remains the
 coordinator; process corrections are merged separately from product card
 slices. Product changes stay in their separately owned card slices.
@@ -20,7 +21,24 @@ proof and full evaluator dimensions remain mandatory. CI, generated files and
 partial checks cannot substitute. R06/publication/pilots retain their separate
 authority and observed-outcome requirements.
 
-## Last verified checkpoint — 2026-09-10 UTC (after PR #245 / `27ef54d`; refresh before use)
+## Current read-only continuation refresh — 2026-09-10 UTC (`origin/master=d62dd40`)
+
+Owner/phase: process coordinator / `investigate-prepare`. A fresh fetch and
+revision-pinned ledger make `d62dd40f0d915e693db25cdea2fb29d1000e9b50` the
+live routing source: 32 items, zero ready pending, five unfinished and three
+held; A07 is active, W03 verified, and R01/W02/F01 retain their named holds.
+This process refresh changes no product, evaluator, threshold, release,
+deployment, publication or invitation state.
+
+The redacted private A07 audit found six valid frozen holdout layouts and one
+disqualified construction draft, but no discoverable exactly-two-condition
+record, supplied-input mapping, complete 30-cell matrix or isolated
+protocol-review `PASS`. The next action is to obtain that private protocol
+disposition; only then may the coordinator refresh a candidate identity against
+`d62dd40` and run the no-credit canary. The checkpoint below is historical and
+must not route work from its older hashes.
+
+## Historical last verified checkpoint — 2026-09-10 UTC (after PR #245 / `27ef54d`; superseded)
 
 The last verified integration point is `origin/master=27ef54d489847e41e5907f7c74f870a2391a7dae`,
 the merge of reviewed PR #245 final head
@@ -211,8 +229,8 @@ classified historical or user-owned and must not be deleted by pattern.
 
 | Priority / owner | Action | Exit proof / next action |
 | --- | --- | --- |
-| 1 / process coordinator | Reconcile the live current-master pointer across the recovery plan, A07 routing evidence, continuation prompt, and task metadata | PR #244 is merged at `2902a07`; preserve exact review/gate/merge/cleanup proof and carry the train into the next A07 phase |
-| 2 / train coordinator | Apply the current A07 evidence and manifest contract before any allocation; keep private values outside public artifacts | Create/validate the private manifest, obtain protocol-review `PASS`, then refresh the canary against `2902a07` |
+| 1 / process coordinator | Reconcile the live current-master pointer across the recovery plan, A07 routing evidence, continuation prompt, and task metadata | The read-only pointer refresh is recorded at `d62dd40`; preserve exact review/gate/merge/cleanup proof and carry the train into the next A07 phase |
+| 2 / train coordinator | Apply the current A07 evidence and manifest contract before any allocation; keep private values outside public artifacts | Create/validate the private manifest, obtain protocol-review `PASS`, then refresh the candidate identity and canary against the refreshed `origin/master` |
 | 3 / A07 implementation owner | Test explicit composed init proposal against public semantics; plain init remains config-only; preserve conflicts and honest runtime permission reporting | Focused negative/positive controls, review, required final-source local/hosted gates; merge slice only if its own goals pass; rerun blinded protocol before A07 completion |
 | 4 / independent R01 investigator | Read latest R01 packet/evidence and rejected diagnostics; determine missing causal observable before spending another platform run | Concrete hypothesis, distinguishing observation and reviewed method amendment; do not repeat prior unchanged diagnostic or invent native readiness |
 | 5 / topology owner | Inventory existing goal branches, live owners and base reachability; repair audit parser as a separately tested slice if needed | Complete report; merged clean branches removed by exact identity or verified archive; unknown work preserved |
