@@ -53,12 +53,13 @@ authority and observed-outcome requirements.
 - The ledger remains 32 items, `ready_pending=0`, five unfinished and three
   held: A07 active, W03 verified, R01/W02/F01 held. Next owner/action: refresh
   source, release/tag, PR/CI and topology state, rerun the ledger and topology
-  audit, re-freeze the current candidate, run a fresh no-credit canary, then
-  seek separately authorized screening preparation. The current private
-  protocol rereview is `PASS` but grants no screening, allocation or product-
-  acceptance authority. Preserve all private values, fixtures, evaluator output
-  and prior packets as historical; do not allocate or credit cells from this
-  checkpoint.
+  audit, re-freeze the current candidate, run a fresh no-credit canary,
+  verify/rebind the current six-handle holdout and exactly-two-condition
+  manifest, and obtain isolated protocol `PASS` before seeking separately
+  authorized screening preparation. The current private protocol rereview is
+  `PASS` but grants no screening, allocation or product-acceptance authority.
+  Preserve all private values, fixtures, evaluator output and prior packets as
+  historical; do not allocate or credit cells from this checkpoint.
 
 ## Historical post-merge candidate rebind checkpoint — 2026-09-10 UTC (`origin/master=8be6103`, superseded by current `129a249`; previously `b7043ab`)
 

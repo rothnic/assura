@@ -118,7 +118,9 @@ historical after this source advance. The current binding and manifest passed
 isolated protocol rereview after correcting `A07-129-HOLDOUT-PROVENANCE-001`;
 all six handles now resolve to current-candidate construction metadata. On each
 next resume, refresh source/ledger, release/tag, PR/CI and topology state,
-re-freeze the current candidate, and run a fresh no-credit canary before the
-separately authorized screening gate. Prior
+rerun the ledger, re-freeze the current candidate, run a fresh no-credit
+canary, verify/rebind the current six-handle holdout and exactly-two-condition
+manifest, and obtain isolated protocol `PASS` before the separately
+authorized screening gate. Prior
 canaries, process PRs and metadata-only evidence never satisfy screening or
 acceptance gates.
