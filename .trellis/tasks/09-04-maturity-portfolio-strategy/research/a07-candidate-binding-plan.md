@@ -4,8 +4,8 @@ Status: active. Owner: this thread's A07 acceptance coordinator. This plan
 does not embed a permanent routing baseline: fetch `origin/master` and rerun
 the revision-pinned ledger before every canary. The latest 2026-09-10
 post-merge refresh resolved
-`origin/master=9df6ae61e10f2667968866852a56bbcf51b5cb59` after PR #270, which
-reconciled the reviewed process-only continuation contract. Its merged tree
+`origin/master=69246d35a2a1939cad4965732e962eba2c9a2e35` after PR #271, which
+reconciled the corrected process-only continuation contract. Its merged tree
 equals the reviewed candidate, and applicable Documentation/CI/Security/
 Evidence/GitGuardian checks passed. This checkpoint changes no A07 product or
 acceptance state and does not authorize screening.
@@ -17,24 +17,26 @@ manifest and condition rows were rebound to the supplied contract bytes; the
 finding is resolved for 9b410e9 but must not be treated as current evidence.
 The six valid unseen holdout layouts, exactly-two-condition manifest, supplied-
 input receipts, blinded mapping and complete 30-cell reserved matrix remain
-private. The current 9df private packet includes an immutable six-handle
-holdout-binding record, per-handle creation evidence, exact toolchain comparison
-and a second read-only rebind confirmation; the disqualified raw-hook draft is
+private. The 9df private packet includes an immutable six-handle holdout-binding
+record, per-handle creation evidence, exact toolchain comparison and a second
+read-only rebind confirmation; after the 692 source/contract advance those
+records are historical metadata and the disqualified raw-hook draft remains
 explicitly excluded. Do not infer conditions or holdout validity from
 historical run names or labels.
 
-A fresh detached checkout at 9df6ae6 is the current as-of candidate build, and
+A fresh detached checkout at 69246d3 is the current as-of candidate build, and
 its source/tree, version, fixed target and login-shell command identity are
 frozen privately. Two fresh source-only canaries used the composed
 `init --agent codex --activate` route and passed the full evaluator; they prove
 neither screening, holdout, follow-up-feature nor final-batch acceptance. The
 isolated protocol rereview returned `PASS` after the bounded metadata findings
 `A07-CONTRACT-HASH-001`, `A07-MAPPING-REF-002` and `A07-HOLDOUT-EVIDENCE-003`
-were corrected. This is metadata-only/no-credit. The next ordered action is to
-refresh source/ledger, release/tag, PR/CI and topology state, freeze the
-then-current candidate and run a fresh no-credit canary before the separately
-authorized screening gate. This plan does not change the A07 contract, scoring
-thresholds, fixture allocation, or product acceptance.
+were corrected. That protocol result is historical metadata-only/no-credit after
+the 692 source/contract advance. The next ordered action is to refresh
+source/ledger, release/tag, PR/CI and topology state, rebind the current packet
+as needed, and run a fresh no-credit canary before the separately authorized
+screening gate. This plan does not change the A07 contract, scoring thresholds,
+fixture allocation, or product acceptance.
 
 The canary's private event, evaluator, fixture, and identity provenance remains
 outside the repository. Public evidence retains only the candidate identity and

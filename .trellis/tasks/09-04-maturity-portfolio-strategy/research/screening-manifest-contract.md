@@ -107,14 +107,13 @@ On each resume, the A07 coordinator must first refresh `origin/master`, rerun
 the revision-pinned ledger, and freeze the candidate identity. The 9b and 8be
 manifests, canaries and protocol `PASS` are historical no-credit evidence after
 the later process merges and must not route current work. The current as-of
-9df6ae6 packet has fresh identity controls, two full-contract source-only
-canaries, an immutable six-handle binding with per-handle creation evidence,
-exact canonical toolchain comparison, supplied-input receipts, two conditions
-and 30 reserved cells. Its isolated protocol rereview returned `PASS` after
-the bounded metadata findings `A07-CONTRACT-HASH-001`,
-`A07-MAPPING-REF-002` and `A07-HOLDOUT-EVIDENCE-003` were corrected. This is
-metadata-only/no-credit. After `PASS`, refresh source/ledger, release/tag,
-PR/CI and topology state again, freeze the then-current candidate and run a
+69246d3 candidate has fresh identity controls and two full-contract source-only
+canaries with a meaningful negative control; these are no-credit preparation.
+The corrected 9df6ae6 six-handle binding, supplied-input receipts, two-condition
+manifest, 30 reserved cells and isolated protocol `PASS` are historical
+metadata-only/no-credit after this source/contract advance. On each next resume,
+refresh source/ledger, release/tag, PR/CI and topology state, rebind the current
+candidate packet and obtain the isolated protocol `PASS` as needed, then run a
 fresh no-credit canary before the separately authorized screening gate. Prior
 canaries, process PRs and metadata-only evidence never satisfy screening or
 acceptance gates.
