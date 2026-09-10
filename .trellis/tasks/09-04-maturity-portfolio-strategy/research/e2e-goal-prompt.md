@@ -20,7 +20,24 @@ reject candidates that fail the prescribed comparison, and stop invalid
 diagnostics instead of repeating runs until green. Root owns review judgment
 and merge approval; method changes never imply relaxed acceptance thresholds.
 
-## Last verified continuation checkpoint — 2026-09-10 UTC (after PR #245 / `27ef54d`; refresh before use)
+## Current read-only continuation refresh — 2026-09-10 UTC (`origin/master=d62dd40`)
+
+The live routing source is the freshly fetched
+`origin/master=d62dd40f0d915e693db25cdea2fb29d1000e9b50`. Its revision-pinned
+ledger has 32 items, zero ready pending, five unfinished and three held: A07 is
+active, W03 is verified, and R01/W02/F01 retain their named holds. No product,
+evaluator, threshold, release, deployment, publication or invitation state
+changed during this read-only refresh.
+
+The redacted private A07 audit found six valid frozen holdout layouts and one
+disqualified construction draft, but no discoverable exactly-two-condition
+manifest, supplied-input mapping, complete 30-cell matrix or isolated
+protocol-review `PASS`. The concrete next action is that private protocol
+disposition; after `PASS`, refresh the candidate identity against the current
+master and run the no-credit canary before any screening allocation. The older
+checkpoint below is historical and must not be used as a current source.
+
+## Historical last verified continuation checkpoint — 2026-09-10 UTC (after PR #245 / `27ef54d`; superseded)
 
 The last verified integration point is `origin/master=27ef54d489847e41e5907f7c74f870a2391a7dae`,
 the merge of reviewed PR #245 final head

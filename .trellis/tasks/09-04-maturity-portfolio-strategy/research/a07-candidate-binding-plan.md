@@ -1,22 +1,23 @@
 # A07 candidate-binding correction plan
 
 Status: active. Owner: this thread's A07 acceptance coordinator. The current
-baseline is refreshed `origin/master` `8cabc53658530a239c00a0c55cbae9b050ad74ca`;
-the candidate-bound, context-isolated canary against the prior `77b41fe`
-baseline passed the full contract but receives no screening allocation. The
-next action is ordered: create and validate the exact two-condition screening
-manifest, obtain an isolated protocol-review `PASS`, refresh the candidate
-identity canary against `8cabc536`, then begin the authorized 30-run batch from
-sibling-free disposable parents. Earlier candidate SHAs remain historical
-evidence/archive references, not the active baseline. This plan does not
-change the A07 contract, scoring thresholds, fixture allocation, or product
-acceptance.
+routing baseline is refreshed `origin/master`
+`d62dd40f0d915e693db25cdea2fb29d1000e9b50`; no candidate-bound canary has yet
+been run against this revision. The candidate-bound, context-isolated canary
+against the prior `77b41fe` baseline passed the full contract but receives no
+screening allocation. The next action is ordered: create and validate the exact
+two-condition screening manifest, obtain an isolated protocol-review `PASS`,
+refresh the candidate identity canary against `d62dd40`, then begin the
+authorized 30-run batch from sibling-free disposable parents. Earlier
+candidate SHAs remain historical evidence/archive references, not the active
+baseline. This plan does not change the A07 contract, scoring thresholds,
+fixture allocation, or product acceptance.
 
 The canary's private event, evaluator, fixture, and identity provenance remains
 outside the repository. Public evidence retains only the candidate identity and
 redacted aggregate outcomes needed to route the next action.
 
-## Current supersession — 2026-09-09
+## Historical supersession — 2026-09-09 (superseded)
 
 The earlier status below correctly records a candidate-bound identity canary
 and the A02 discovery correction that followed it, but it is superseded for
