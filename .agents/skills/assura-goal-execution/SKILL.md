@@ -14,7 +14,9 @@ only improves its process. Do not substitute a process PR for product acceptance
 1. Run the workflow gate and preserve unrelated dirty work. Refresh the base;
    compare checkout HEAD before reading the ledger. Use `git show
    origin/master:<task>/research/backlog.json` or a clean current-base checkout
-   when the supplied canonical path is on an old branch.
+   when the supplied canonical path is on an old branch. Apply the
+   [source-pointer lifecycle](references/source-pointer-lifecycle.md) to
+   classify every dated snapshot before routing from it.
 2. Read the goal/PRD, queue, selected packet and evidence. Inspect active,
    implemented and verified candidates before pending ones; verify live owners.
    Use [scripts/audit-ledger.sh](scripts/audit-ledger.sh) for a read-only
@@ -55,6 +57,8 @@ only improves its process. Do not substitute a process PR for product acceptance
   values and mappings private.
 - Goal start, compaction or handoff: context-routing; load only the next
   phase/card layer and record a compact checkpoint.
+- Source refresh, merge or SHA mismatch: source-pointer-lifecycle; reconcile
+  current, candidate-base and historical labels before selecting work.
 - Maturity train recovery: the canonical task's `research/recovery-plan.md`.
 - Never load all packets, all historical logs or private evaluation fixtures
   into an implementation/reviewer prompt. Link exact evidence on demand.

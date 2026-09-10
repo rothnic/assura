@@ -1,7 +1,7 @@
 # Execution recovery plan
 
-Status: active continuation route, 2026-09-10 UTC (read-only refresh at
-`origin/master=d62dd40`; refresh before use). This is a plan and audit, not
+Status: active continuation route, 2026-09-10 UTC (post-merge checkpoint at
+`origin/master=6ed43c3`; refresh before use). This is a plan and audit, not
 evidence that product cards passed. The supported runtime goal remains the
 coordinator; process corrections are merged separately from product card
 slices. Product changes stay in their separately owned card slices.
@@ -21,7 +21,24 @@ proof and full evaluator dimensions remain mandatory. CI, generated files and
 partial checks cannot substitute. R06/publication/pilots retain their separate
 authority and observed-outcome requirements.
 
-## Current read-only continuation refresh — 2026-09-10 UTC (`origin/master=d62dd40`)
+## Post-merge continuation checkpoint — 2026-09-10 UTC (`origin/master=6ed43c3`)
+
+Owner/phase: process coordinator / `reconcile-handoff` complete. PR #247
+merged the reviewed pointer correction as
+`6ed43c3c63fab7b60a86f1d587c067c9b04ded93`; its tree matches candidate
+`577b6d63030aab338238088c85cfa7c7750baeb2` and the fetched parent is the
+reviewed base `d62dd40f0d915e693db25cdea2fb29d1000e9b50`. The post-merge
+ledger remains 32 items with zero ready pending, five unfinished and three
+held: A07 active, W03 verified, and R01/W02/F01 held.
+
+The pre-merge `d62dd40` readiness audit below is now a historical candidate-base
+record. At the next resume, fetch `origin/master` again before using any
+checkpoint. The active route remains A07's private exactly-two-condition
+manifest, isolated protocol-review `PASS`, then a fresh current-master
+candidate-bound canary; no screening, holdout or final-acceptance credit is
+created by this reconciliation.
+
+## Historical candidate-base refresh — 2026-09-10 UTC (`origin/master=d62dd40`; superseded by PR #247)
 
 Owner/phase: process coordinator / `investigate-prepare`. A fresh fetch and
 revision-pinned ledger make `d62dd40f0d915e693db25cdea2fb29d1000e9b50` the
@@ -229,7 +246,7 @@ classified historical or user-owned and must not be deleted by pattern.
 
 | Priority / owner | Action | Exit proof / next action |
 | --- | --- | --- |
-| 1 / process coordinator | Reconcile the live current-master pointer across the recovery plan, A07 routing evidence, continuation prompt, and task metadata | The read-only pointer refresh is recorded at `d62dd40`; preserve exact review/gate/merge/cleanup proof and carry the train into the next A07 phase |
+| 1 / process coordinator | Reconcile the live current-master pointer across the recovery plan, A07 routing evidence, continuation prompt, and task metadata | PR #247 merged the pointer correction at `6ed43c3`; fetch and rerun the ledger before the next phase |
 | 2 / train coordinator | Apply the current A07 evidence and manifest contract before any allocation; keep private values outside public artifacts | Create/validate the private manifest, obtain protocol-review `PASS`, then refresh the candidate identity and canary against the refreshed `origin/master` |
 | 3 / A07 implementation owner | Test explicit composed init proposal against public semantics; plain init remains config-only; preserve conflicts and honest runtime permission reporting | Focused negative/positive controls, review, required final-source local/hosted gates; merge slice only if its own goals pass; rerun blinded protocol before A07 completion |
 | 4 / independent R01 investigator | Read latest R01 packet/evidence and rejected diagnostics; determine missing causal observable before spending another platform run | Concrete hypothesis, distinguishing observation and reviewed method amendment; do not repeat prior unchanged diagnostic or invent native readiness |
