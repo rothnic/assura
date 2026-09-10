@@ -1,4 +1,29 @@
-# Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md), [progress-history-04.md], [progress-history-05.md](progress-history-05.md), [iterations 4-17](progress-history-06.md), [preserved history](progress-history-03.md), [A01 iterations 15–31](progress-history-08.md), [iterations 5–11](progress-history-09.md), [iteration 114](progress-history-10.md), [iterations 104 and earlier](progress-history-07.md))
+# Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md), [progress-history-04.md], [progress-history-05.md](progress-history-05.md), [iterations 4-17](progress-history-06.md), [preserved history](progress-history-03.md), [A01 iterations 15–31](progress-history-08.md), [iterations 5–11](progress-history-09.md), [iteration 114](progress-history-10.md), [iteration 111](progress-history-11.md), [iterations 104 and earlier](progress-history-07.md))
+
+## Iteration 116 — 2026-09-10 — current-master pointer and gate-triage correction
+
+- Owner/session: process coordinator `/root`; phase: `implement` /
+  `pointer-refresh`; closure: `active`. The fresh source is
+  `origin/master=bcd0386b4f864163e3f3a08e81d6106a790491c2` after PR #263.
+  This process-only slice updates every live-looking A07/recovery/orchestration
+  pointer to that as-of source and labels the superseded PR #259 sections as
+  historical; it does not change product, evaluator, threshold, allocation or
+  authority state.
+- The revision-pinned ledger remains `items=32`, `ready_pending=0`,
+  `unfinished=5`, `held=3`: A07 active, W03 verified, R01/W02/F01 held.
+  Context routing is `42/42 PASS`. The new layered `ci-gate-triage.md` route
+  records pass/fail/queued/skipped/zero-test classification, cheap-to-expensive
+  ordering, serialized heavy work, measured VPS preflight and the merge fence;
+  `AGENTS.md` remains the compact universal router.
+- Candidate `55c2470` is clean and passed the scoped local gates: workflow,
+  context-routing `43/43`, ledger, target-state, source check, evidence,
+  documentation build and diff check. Independent process review by
+  `/root/context_routing_review_fast` returned `PASS` on the exact head with
+  no findings; it verified the pointer labels, new gate-triage route and no
+  product/authority changes. Next: push once and watch only applicable hosted
+  checks, then record the merge/tree/cleanup proof. A07 still routes to its
+  private manifest and isolated protocol-review `PASS`; no screening, holdout
+  or acceptance credit is created.
 
 ## Iteration 115 — 2026-09-10 — PR #262 post-merge reconciliation
 
@@ -41,47 +66,6 @@
 ## Iteration 113 — 2026-09-10 — post-merge reconciliation for PR #259
 
 - Owner/phase: process coordinator / `post-merge-reconcile`. PR [#259](https://github.com/rothnic/assura/pull/259) merged reviewed `ccd3bd2` (based on `8c198dcb`) as `373fb01`; tree equality, applicable Documentation/CI/Evidence/Security/GitGuardian checks and independent review passed with no product or acceptance-state change. The fresh ledger remains 32 items, zero ready pending, five unfinished and three held (A07 active, W03 verified, R01/W02/F01 held); validation case [`A07-CONTINUATION-CASE-09`](recovery-evidence.md#orchestration-validation-case-09) (scenario 9) rejected stopping the goal by routing A07 to its private manifest/protocol action, W03 to separate publication review, and R01/W02/F01 to their retained evidence/authority holds. PR #258 and PR #259 checkouts/branches/refs were removed after diff, tree and reachability proofs; report exited 0 and strict remains nonzero only for preserved external/user and historical topology exceptions. Context is not exposed; next is refresh source/ledger, validate A07's private exactly-two-condition manifest and isolated protocol `PASS`, then a fresh no-credit canary with no screening credit implied.
-## Iteration 111 — 2026-09-10 — current-master candidate identity freeze
-
-- Owner/phase: A07 acceptance coordinator / `candidate-freeze`; a clean
-  detached checkout was based on freshly fetched
-  `origin/master=c34f917866e45cc122ec07412fa0c630d460f663`. The revision-
-  pinned ledger reports 32 items, zero ready pending, five unfinished and
-  three held; A07 is active, W03 verified, and R01/W02/F01 retain separate
-  holds. No pending card is executable ahead of A07.
-- The exact local Rust/Cargo `1.94.1` release build exited `0`, reports
-  `assura 0.4.0`, is not a symlink, and hashes to
-  `95c93052bd1993566d9f8209bdba5625c2b39a19287ed6358d710015d2ac59ff`.
-  `command -v`, version and SHA matched in a minimal `zsh -lic` environment.
-  This is candidate preparation only; no screening, holdout or acceptance
-  credit was created and no global binary was changed.
-- The six valid private holdouts remain frozen. The required versioned
-  two-condition manifest, supplied-input receipt, blinded mapping, complete
-  30-cell matrix and isolated protocol-review `PASS` are still missing. The
-  supported input surface was audited, but no concrete condition values are
-  authorized by the packet; the next owned action is to select and evidence
-  two values for one supported input, then obtain the isolated protocol
-  disposition. Historical run names remain no-credit evidence.
-- VPS efficiency review: `vps` is reachable (16 CPUs, about 43 GiB available
-  memory) but has 94% root-disk use, about 20 GiB free, nightly Rust 1.95 and
-  no Bun; `vps-dev` is not a resolvable alias. No remote build ran. Local
-  exact-toolchain work plus hosted/platform gates remains the proof route.
-- Context level: not exposed. This iteration reviewed the current ledger,
-  candidate identity, private holdout state, supported product inputs and
-  measured VPS capacity before documenting the next action. Before any handoff
-  refresh source/ledger and run report plus strict topology, removing only
-  this owned checkout after any reviewed merge.
-- Owned checkout: `/private/tmp/assura-a07-exec.7TAjaD` on
-  `docs/maturity-goal-continuation`; the coherent documentation delta is ready
-  for commit and independent review. `git diff --check`, the workflow gate
-  after naming the branch, `cargo xtask target-state`, and `cargo xtask
-  evidence` passed. The source check returned `success=true` with six
-  unchanged advisory findings. The first docs attempt correctly failed because
-  this clean checkout had no website dependencies; frozen
-  `pnpm --dir website install --frozen-lockfile` followed by the same
-  `cargo xtask docs` passed and built 48 pages. The missing-dependency failure
-  remains retained as precondition evidence, not a pass.
-
 ## Iteration 110 — 2026-09-10 — active goal contract reconciled
 
 - Owner/phase: process coordinator / `goal-contract-reconcile`; a clean
@@ -996,3 +980,5 @@ recoverable. This reconciliation adds records rather than rewriting outcomes.
   are preserved in [`progress-history-09.md`](progress-history-09.md).
 - Iteration 114 is preserved in
   [`progress-history-10.md`](progress-history-10.md).
+- Iteration 111 is preserved in
+  [`progress-history-11.md`](progress-history-11.md).

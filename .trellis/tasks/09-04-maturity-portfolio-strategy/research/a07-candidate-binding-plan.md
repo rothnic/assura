@@ -2,11 +2,15 @@
 
 Status: active. Owner: this thread's A07 acceptance coordinator. This plan
 does not embed a permanent routing baseline: fetch `origin/master` and rerun
-the revision-pinned ledger before every canary. The 2026-09-10 post-merge
-refresh resolved `origin/master=373fb01ac268285d9b21cd6948862050bd7d8c6e`
-(PR #259), whose reviewed process candidate was based on
-`8c198dcb4c94095e7db1b017908eaadb813cb9e7`. A clean detached checkout built
-the parent candidate with Rust/Cargo
+the revision-pinned ledger before every canary. The latest 2026-09-10
+post-merge refresh resolved `origin/master=bcd0386b4f864163e3f3a08e81d6106a790491c2`
+after PR #263, which merged reviewed process candidate
+`56b44fee457f355cf6dd22735afb17f3b9be84f4` based on
+`040babbcfb7dbe744d89a1c13838c2111d3a3b10`; merged-tree equality,
+reachability, independent review and applicable Documentation/CI/Security/
+Evidence/GitGuardian checks passed. This process-only checkpoint does not
+bind a new A07 binary. The exact identity observation below was prepared
+against the historical parent with Rust/Cargo
 `1.94.1`; `assura 0.4.0` and binary SHA-256
 `95c93052bd1993566d9f8209bdba5625c2b39a19287ed6358d710015d2ac59ff` matched
 inside a `zsh -lic` initializer-like environment. This identity observation
@@ -39,12 +43,13 @@ selected an ambient Assura binary and inspected evaluator-only context; it
 receives no screening, holdout or acceptance credit. The fresh canary against
 `77b41fed7ee625333ea97ef2791da609f0ed5cc4` then proved candidate identity,
 context separation, and the full product contract, but that source is now
-historical after PR #235. The live baseline is
+historical after PR #235. The former live baseline was
 `5329abd880fb26b0eeded5176e2d308b654d2cc9`; PR #237 is now merged, so it is
 historical. The `8cabc536` baseline is also historical after PR #248; the
 `755c28d` baseline is historical after PR #249, and the `2eda17e` baseline is
 historical after PR #251. The dated execution baseline in this narrative was
-`062f6c3`; it is now superseded by the live `373fb01` section above. The next authorized action is to
+`062f6c3`; it is now superseded by the current as-of `bcd0386` checkpoint above
+(refresh before use). The next authorized action is to
 create and validate the exact two product-input conditions in the private
 screening manifest, obtain an isolated protocol-review `PASS`, and refresh the
 candidate-bound canary against the then-current master before any 30-cell screening
@@ -91,8 +96,8 @@ The canary must also prove that the candidate exposes the expected merged
 `init --agent <host> --activate` surface. The historical `77b41fe` canary
 passed those identity, surface, context, and full-contract checks; a fresh
 candidate-bound canary against the freshly fetched then-current
-`origin/master` (the live post-merge checkpoint is `373fb01`, subject to a
-fresh fetch) is still required before
+`origin/master` (the latest as-of post-merge checkpoint is `bcd0386`, subject
+to a fresh fetch) is still required before
 allocation. The historical `f1595fc` and `922d7f0` runs remain labeled below
 for provenance; none is a screening allocation. An explicit-route control may
 verify the composed implementation, but it is calibration evidence and never
@@ -113,8 +118,9 @@ counts as a blinded run.
   authoritative names and contract references for both product-input
   conditions in a private screening manifest. Validate its supplied-input
   evidence and complete matrix, and obtain an isolated protocol-review `PASS`;
-  do not infer or rename conditions in public evidence. Then refresh the live
-  `373fb01` source pointer and ledger and run a fresh candidate-bound canary
+  do not infer or rename conditions in public evidence. Then refresh the
+  current `origin/master` source pointer and ledger (latest as-of checkpoint:
+  `bcd0386`) and run a fresh candidate-bound canary
   against that frozen identity; all embedded checkpoints remain historical.
   launch one fresh source-only fixture and child under a sibling-free
   disposable parent per run. If identity, context, or contract checks fail,

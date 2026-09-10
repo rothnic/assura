@@ -33,7 +33,8 @@ only improves its process. Do not substitute a process PR for product acceptance
    acceptance, continuation and merge rules. Use the installed personal
    `assura-orchestration` skill and its independent review brief when available;
    the repository contract remains usable without that installation.
-4. Before spending on gates, read [validation routing](references/validation-routing.md).
+4. Before spending on gates, read [validation routing](references/validation-routing.md)
+   and, for slow/failed/queued checks, [CI gate triage](references/ci-gate-triage.md).
    Environment failures route to `assura-local-build`, not product changes.
 5. For candidate-bound initializer evaluation, read
    [runner isolation](references/runner-isolation.md) before launching the
@@ -58,6 +59,8 @@ only improves its process. Do not substitute a process PR for product acceptance
 - Always: AGENTS, this index, selected card's current evidence and contract.
 - Phase transition/review/merge: execution contract and exact review delta.
 - Test/build/CI placement: validation routing; environment detail only on need.
+- Slow, failed or queued hosted checks: `references/ci-gate-triage.md`; keep
+  the exact head, scope decision, queue/execution timing and retry reason.
 - A07 or any agent-driven evaluation: runner isolation; keep the evaluator
   oracle and private fixture details outside the child context.
 - A07 screening condition or matrix: screening manifest contract; keep its
