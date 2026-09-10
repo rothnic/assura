@@ -69,6 +69,7 @@
       "docs/a07-manifest-readiness",
       "docs/a07-manifest-readiness-refresh",
       "docs/source-pointer-lifecycle",
+      "docs/current-pointer-reconcile",
       "docs/ledger-routing-helper",
       "docs/ledger-routing-reconcile",
       "docs/train-continuation-control",

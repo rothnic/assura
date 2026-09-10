@@ -1,7 +1,7 @@
 # Execution recovery plan
 
-Status: active continuation route, 2026-09-10 UTC (post-merge checkpoint at
-`origin/master=6ed43c3`; refresh before use). This is a plan and audit, not
+Status: active continuation route, 2026-09-10 UTC (current source checkpoint at
+`origin/master=755c28d`; refresh before use). This is a plan and audit, not
 evidence that product cards passed. The supported runtime goal remains the
 coordinator; process corrections are merged separately from product card
 slices. Product changes stay in their separately owned card slices.
@@ -21,7 +21,34 @@ proof and full evaluator dimensions remain mandatory. CI, generated files and
 partial checks cannot substitute. R06/publication/pilots retain their separate
 authority and observed-outcome requirements.
 
-## Post-merge continuation checkpoint — 2026-09-10 UTC (`origin/master=6ed43c3`)
+## Current source-pointer reconciliation — 2026-09-10 UTC (`origin/master=755c28d`)
+
+Owner/phase: process coordinator / `reconcile-handoff`. A fresh fetch resolved
+`origin/master` to the full merge SHA
+`755c28ded66d1f2d82b38d27633be83a0233f30e` after PR #248. The reviewed
+candidate `89a0430ba9f4bbf141e717ed78de72b41c5ab3b6` was based on
+`6ed43c3c63fab7b60a86f1d587c067c9b04ded93`; the merged tree matches that
+candidate. This process-only merge adds the source-pointer lifecycle rule and
+changes no product, evaluator, threshold, allocation, release, deployment,
+publication or invitation state.
+
+The immutable ledger at this source reports 32 items, zero ready pending, five
+unfinished and three held: A07 active, W03 verified, and R01/W02/F01 held.
+The redacted private A07 metadata audit still finds seven layout directories,
+including six frozen-layout entries and one disqualified raw-hook draft; the
+draft manifest has no discoverable condition rows, supplied-input mapping,
+complete matrix or isolated protocol-review artifact. No screening, holdout or
+final-acceptance credit exists.
+
+The current route is therefore the A07 coordinator's private exactly-two-
+condition manifest and isolated protocol-review `PASS`; after that disposition,
+refresh the candidate identity against the then-current master and run the
+no-credit canary. The source-pointer lifecycle makes this checkpoint an
+as-of record: every resume must fetch and rerun the ledger, and later master
+SHAs supersede this pointer without an evidence-only chase when labels cannot
+misroute work.
+
+## Historical post-merge continuation checkpoint — 2026-09-10 UTC (`origin/master=6ed43c3`; superseded by PR #248)
 
 Owner/phase: process coordinator / `reconcile-handoff` complete. PR #247
 merged the reviewed pointer correction as
@@ -31,9 +58,10 @@ reviewed base `d62dd40f0d915e693db25cdea2fb29d1000e9b50`. The post-merge
 ledger remains 32 items with zero ready pending, five unfinished and three
 held: A07 active, W03 verified, and R01/W02/F01 held.
 
-The pre-merge `d62dd40` readiness audit below is now a historical candidate-base
-record. At the next resume, fetch `origin/master` again before using any
-checkpoint. The active route remains A07's private exactly-two-condition
+The pre-merge `d62dd40` readiness audit below is a historical candidate-base
+record, and this `6ed43c3` checkpoint is superseded by the current `755c28d`
+reconciliation above. At the next resume, fetch `origin/master` again before
+using any checkpoint. The active route remains A07's private exactly-two-condition
 manifest, isolated protocol-review `PASS`, then a fresh current-master
 candidate-bound canary; no screening, holdout or final-acceptance credit is
 created by this reconciliation.
@@ -242,11 +270,11 @@ detached evidence archives remain preserved. The current pointer-reconciliation
 slice is the sole new owned worktree; all other branches and worktrees remain
 classified historical or user-owned and must not be deleted by pattern.
 
-## Ordered recovery slices at the live checkpoint
+## Ordered recovery slices after current reconciliation
 
 | Priority / owner | Action | Exit proof / next action |
 | --- | --- | --- |
-| 1 / process coordinator | Reconcile the live current-master pointer across the recovery plan, A07 routing evidence, continuation prompt, and task metadata | PR #247 merged the pointer correction at `6ed43c3`; fetch and rerun the ledger before the next phase |
+| 1 / process coordinator | Keep the current-master pointer reconciled across the recovery plan, A07 routing evidence, continuation prompt, and task metadata | PR #248 merged the lifecycle correction at `755c28d`; fetch and rerun the ledger before the next phase |
 | 2 / train coordinator | Apply the current A07 evidence and manifest contract before any allocation; keep private values outside public artifacts | Create/validate the private manifest, obtain protocol-review `PASS`, then refresh the candidate identity and canary against the refreshed `origin/master` |
 | 3 / A07 implementation owner | Test explicit composed init proposal against public semantics; plain init remains config-only; preserve conflicts and honest runtime permission reporting | Focused negative/positive controls, review, required final-source local/hosted gates; merge slice only if its own goals pass; rerun blinded protocol before A07 completion |
 | 4 / independent R01 investigator | Read latest R01 packet/evidence and rejected diagnostics; determine missing causal observable before spending another platform run | Concrete hypothesis, distinguishing observation and reviewed method amendment; do not repeat prior unchanged diagnostic or invent native readiness |
