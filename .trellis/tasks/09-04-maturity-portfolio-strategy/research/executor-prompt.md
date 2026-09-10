@@ -13,22 +13,26 @@ After every merge, refresh `origin/master` and reconcile the task pointer,
 ledger and owned topology before selecting or handing off; a clean merge is a
 phase transition, not completion of the runtime goal.
 
-As-of routing checkpoint (2026-09-10, refresh before use): PR #269 merged the
-reviewed process/documentation candidate as `b7043ab1b402a0dd103de6fe67e307442e67964a`
-from reviewed `0b3bdca`; merged-tree equality, independent review and the
-applicable Documentation, CI, Evidence Gates, Security Scope and GitGuardian
-checks passed. Scope-skipped product/Rust/performance/release jobs remain
-non-applicable. The 8be candidate freeze, canaries, six-handle binding and
-isolated protocol `PASS` are historical no-credit preparation after this
+As-of routing checkpoint (2026-09-10, refresh before use): PR #270 reconciled
+the reviewed process/documentation candidate at
+`9df6ae61e10f2667968866852a56bbcf51b5cb59`; merged-tree equality, independent
+review and the applicable Documentation, CI, Evidence Gates, Security Scope and
+GitGuardian checks passed. Scope-skipped product/Rust/performance/release jobs
+remain non-applicable. The 8be candidate freeze, canaries, six-handle binding
+and isolated protocol `PASS` are historical no-credit preparation after this
 source-tree advance. A02 is complete; its old plain-init finding is historical.
-The ledger at b7043ab has 32 items, zero ready pending, five unfinished and
-three held: A07 active, W03 verified, and R01/W02/F01 held. R01's merged
-raw-log recovery is bounded negative evidence. On every resume, refresh source,
-release/tag and topology state, rerun the ledger, freeze a new A07 candidate,
-run a fresh no-credit canary, and rebuild/review its private manifest before
-any separately authorized screening allocation. Preserve residual fixture,
-launcher, child-isolation and evaluator limitations. Route from
-`recovery-plan.md`, not this snapshot, after a fresh fetch and ledger.
+The ledger at 9df6ae6 has 32 items, zero ready pending, five unfinished and
+three held: A07 active, W03 verified, and R01/W02/F01 held. A fresh 9df A07
+freeze, exact identity controls and two full-contract canaries are current
+no-credit preparation; its private binding/manifest/receipts/matrix received an
+isolated protocol rereview `PASS` after three bounded metadata corrections.
+That disposition is metadata-only/no-credit. R01's merged raw-log recovery is
+bounded negative evidence. On every resume, refresh source, release/tag, PR/CI
+and topology state, rerun the ledger, freeze the then-current A07 candidate and
+run a fresh no-credit canary before any separately authorized screening
+allocation. Preserve
+residual fixture, launcher, child-isolation and evaluator limitations. Route
+from `recovery-plan.md`, not this snapshot, after a fresh fetch and ledger.
 
 The historical parent-`c34f917` candidate-freeze observation used a clean
 detached checkout and the exact Rust/Cargo `1.94.1` toolchain. Its non-symlink

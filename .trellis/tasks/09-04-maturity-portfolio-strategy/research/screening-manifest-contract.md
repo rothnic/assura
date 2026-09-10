@@ -104,14 +104,17 @@ but never replaces required macOS/Windows/hosted proof.
 ## Current next action
 
 On each resume, the A07 coordinator must first refresh `origin/master`, rerun
-the revision-pinned ledger, and freeze the candidate identity. The 9b
-manifest, canaries and protocol `PASS` are historical no-credit evidence after
-the 8be advance and must not route current work. The historical 8be manifest
-references its candidate freeze and immutable six-handle binding record; its
-schema, mapping, receipts, 30-cell invariants, per-handle creation records and
-exact canonical toolchain comparison were independently reviewed `PASS`. This
-packet is historical after the `b7043ab` process merge and remains metadata-only
-preparation: on every resume, refresh source/ledger and
-freeze the candidate again before any separately authorized screening
-allocation. Prior canaries, process PRs and metadata-only evidence do not
-satisfy screening or acceptance gates.
+the revision-pinned ledger, and freeze the candidate identity. The 9b and 8be
+manifests, canaries and protocol `PASS` are historical no-credit evidence after
+the later process merges and must not route current work. The current as-of
+9df6ae6 packet has fresh identity controls, two full-contract source-only
+canaries, an immutable six-handle binding with per-handle creation evidence,
+exact canonical toolchain comparison, supplied-input receipts, two conditions
+and 30 reserved cells. Its isolated protocol rereview returned `PASS` after
+the bounded metadata findings `A07-CONTRACT-HASH-001`,
+`A07-MAPPING-REF-002` and `A07-HOLDOUT-EVIDENCE-003` were corrected. This is
+metadata-only/no-credit. After `PASS`, refresh source/ledger, release/tag,
+PR/CI and topology state again, freeze the then-current candidate and run a
+fresh no-credit canary before the separately authorized screening gate. Prior
+canaries, process PRs and metadata-only evidence never satisfy screening or
+acceptance gates.

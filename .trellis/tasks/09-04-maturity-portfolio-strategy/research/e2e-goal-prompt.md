@@ -49,21 +49,28 @@ W03 and F01's named holds separate.
 Do not finish the goal while a live review, repair, integration, cleanup or
 independently authorized preparation action remains.
 
-## Current post-merge reconciliation checkpoint (refresh required) — 2026-09-10 UTC (`b7043ab`)
+## Current candidate checkpoint (refresh required) — 2026-09-10 UTC (`9df6ae6`)
 
-PR #269 merged the reviewed process/documentation slice as
-`b7043ab1b402a0dd103de6fe67e307442e67964a`; its tree equals reviewed
-`0b3bdca`, and the owned branch/worktree closed cleanly. The merge changes no
-product, evaluator, threshold, allocation or authority state. The 8be6103
-candidate freeze, canaries, six-handle binding and isolated protocol `PASS` are
-historical no-credit preparation after this source-tree advance. The ledger
-remains 32 items, `ready_pending=0`, five unfinished and three held: A07 active,
-W03 verified, and R01/W02/F01 held. On resume, fetch b7043ab, rerun the ledger
-and topology audit, freeze a new candidate identity, and run only a fresh
-no-credit canary; rebuild and rereview its private manifest before any
-separately authorized screening allocation.
+PR #270 reconciled the reviewed process/documentation slice and is merged at
+`9df6ae61e10f2667968866852a56bbcf51b5cb59`; its tree and owned closure are
+verified. The merge changes no product, evaluator, threshold, allocation or
+authority state. The 8be6103 candidate freeze, canaries, six-handle binding and
+isolated protocol `PASS` are historical no-credit preparation after this source
+advance. The ledger remains 32 items, `ready_pending=0`, five unfinished and
+three held: A07 active, W03 verified, and R01/W02/F01 held.
 
-## Historical 8be continuation checkpoint (superseded by `b7043ab`) — 2026-09-10 UTC (`8be6103`)
+The current A07 packet is frozen privately at 9df6ae6. Its login-shell identity
+controls and two source-only canaries pass the full public contract with seven
+dimensions and a meaningful negative control; these are no-credit preparation.
+The private binding/manifest/receipts/matrix are current-candidate metadata. The
+isolated protocol rereview returned `PASS` after the three bounded metadata
+findings were corrected; this remains metadata-only/no-credit. On resume, fetch
+again, rerun the ledger and topology audit, refresh release/tag and PR/CI facts,
+freeze the then-current candidate and run a fresh no-credit canary before the
+separately authorized screening gate. Never allocate or credit cells from a
+process merge, canary or protocol metadata alone.
+
+## Historical 8be continuation checkpoint (superseded by current `9df6ae6`; previously `b7043ab`) — 2026-09-10 UTC (`8be6103`)
 
 The latest read-only refresh resolved `origin/master` to
 `8be61034e3f6f295753570ef2080e100d53efd4c` after PR #268. The reviewed
