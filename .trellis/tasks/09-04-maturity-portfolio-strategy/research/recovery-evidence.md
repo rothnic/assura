@@ -4,8 +4,8 @@ Date: 2026-09-10. Scope: process artifacts, agent instructions and validation
 routing only. Product acceptance is unchanged; no card is promoted by this file.
 The historical proof below is retained; the current continuation route and
 source reconciliation are recorded before the historical next-phase notes.
-Process iteration: 112 (post-merge reconciliation for PR #258; iteration 111
-was the candidate identity freeze after the goal-contract
+Process iteration: 113 (post-merge reconciliation for PR #259; iteration 112
+was the PR #258 post-merge reconciliation and iteration 111 was the candidate identity freeze after the goal-contract
 correction; iteration 110 was the goal-contract correction after the R01
 raw-log recovery; iteration 109 is the current-master R01 recovery evidence;
 iteration 106 was the post-merge checkpoint for PR #251; the R01
@@ -28,12 +28,12 @@ iteration 92).
 Context level: not exposed. The before/after phase record is this evidence
 file, linked from the full historical progress log.
 
-## Live post-merge continuation checkpoint — 2026-09-10 UTC (`origin/master=8c198dcb`)
+## Live post-merge continuation checkpoint — 2026-09-10 UTC (`origin/master=373fb01`)
 
-- Owner/phase: process coordinator / `post-merge-reconcile`. PR #258 merged
-  reviewed candidate `dba4e33df4a3bbdb1d52a0846aa0c9808268cbfc` (based on
-  `c34f917866e45cc122ec07412fa0c630d460f663`) as
-  `8c198dcb4c94095e7db1b017908eaadb813cb9e7`; the merged tree equals the
+- Owner/phase: process coordinator / `post-merge-reconcile`. PR #259 merged
+  reviewed candidate `ccd3bd2dcfe8ba6177b59ffc16ecc09560558bf8` (based on
+  `8c198dcb4c94095e7db1b017908eaadb813cb9e7`) as
+  `373fb01ac268285d9b21cd6948862050bd7d8c6e`; the merged tree equals the
   reviewed candidate. Applicable Documentation, CI, Evidence Gates, Security
   Scope and GitGuardian checks passed; scope-skipped product/Rust/performance/
   release/installer/website jobs remain non-applicable.
@@ -44,14 +44,12 @@ file, linked from the full historical progress log.
   [this file's validation record](#orchestration-validation-case-09))
   rejected a whole-goal stop; the next action is A07's private exactly-two-
   condition manifest and isolated protocol review `PASS`.
-- The prior PR #258 `docs/maturity-goal-continuation` checkout, branch and
-  remote ref were removed after clean status, `git diff --check`, merged-tree
-  equality and reachability proofs. The current PR #259
-  `docs/a07-postmerge-checkpoint` checkout, branch and remote ref remain owned
-  until its merge; then repeat those proofs and remove only that exact slice.
-  Topology `--report` exited 0; strict is expected nonzero while this candidate
-  is present and for preserved root/user dirt, unrelated dirty work, stale/
-  prunable registrations, one unreadable registration and historical branches.
+- The PR #258 `docs/maturity-goal-continuation` and PR #259
+  `docs/a07-postmerge-checkpoint` checkouts, branches and remote refs were each
+  removed after clean status, `git diff --check`, merged-tree equality and
+  reachability proofs. Topology `--report` exited 0; strict remains nonzero
+  only for preserved root/user dirt, unrelated dirty work, stale/prunable
+  registrations, one unreadable registration and historical branches.
 - This phase adds no screening, holdout or acceptance credit. The next
   continuation must fetch and rerun the ledger before binding any source or
   candidate identity, then validate the private manifest/protocol disposition;
@@ -68,7 +66,7 @@ commands.
 
 At the case revision (`origin/master=c34f917`), the ledger had no ready pending
 card, but A07 was active, W03 verified, and R01/W02/F01 retained narrow held
-actions. The coordinator revalidated those states at `origin/master=8c198dcb`.
+actions. The coordinator revalidated those states at `origin/master=373fb01`.
 The action mapping was: continue A07 to its private exactly-two-condition
 manifest and isolated protocol review; inspect W03 only for authorized
 current-head integration while publication stays separate; and preserve R01,
@@ -80,6 +78,12 @@ Decision: continue the supported runtime goal. After a redacted A07 protocol
 `PASS`, refresh source and ledger, freeze a new current-master identity, and
 run only the no-credit canary. Recheck live handles and candidate phases at
 the next continuation before drawing any conclusion from a pending-only queue.
+
+## Historical post-merge continuation checkpoint — 2026-09-10 UTC (`origin/master=8c198dcb`, superseded by `373fb01`)
+
+- This is the PR #258 post-merge state before PR #259. The pending cleanup
+  statement and `8c198dcb` pointer are retained for provenance only; use the
+  live section above for execution routing.
 
 ## Historical candidate-freeze checkpoint — 2026-09-10 UTC (`origin/master=c34f9178`, superseded by `8c198dcb`)
 

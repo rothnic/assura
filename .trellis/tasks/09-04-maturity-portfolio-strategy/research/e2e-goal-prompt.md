@@ -20,12 +20,12 @@ reject candidates that fail the prescribed comparison, and stop invalid
 diagnostics instead of repeating runs until green. Root owns review judgment
 and merge approval; method changes never imply relaxed acceptance thresholds.
 
-## Live continuation checkpoint (refresh required) — 2026-09-10 UTC (`8c198dcb`)
+## Live continuation checkpoint (refresh required) — 2026-09-10 UTC (`373fb01`)
 
 The latest read-only refresh resolved `origin/master` to
-`8c198dcb4c94095e7db1b017908eaadb813cb9e7` after PR #258, which merged the
-reviewed process candidate `dba4e33df4a3bbdb1d52a0846aa0c9808268cbfc` based on
-`c34f917866e45cc122ec07412fa0c630d460f663`. The merged tree equals the
+`373fb01ac268285d9b21cd6948862050bd7d8c6e` after PR #259, which merged the
+reviewed process candidate `ccd3bd2dcfe8ba6177b59ffc16ecc09560558bf8` based on
+`8c198dcb4c94095e7db1b017908eaadb813cb9e7`. The merged tree equals the
 reviewed candidate and changes no product or acceptance state. The
 revision-pinned ledger still has 32 items, `ready_pending=0`, five unfinished
 and three held: A07 is active, W03 is verified, and R01/W02/F01 retain separate
@@ -48,7 +48,7 @@ available memory, 94% root-disk use (about 20 GiB free), nightly Rust 1.95 and
 no Bun; the documented `vps-dev` alias is unresolved. Remote execution cannot
 replace exact-toolchain local/hosted proof.
 
-## Historical candidate-freeze checkpoint (superseded by current 8c198dcb) — 2026-09-10 UTC (`c34f9178`)
+## Historical candidate-freeze checkpoint (superseded by current 373fb01) — 2026-09-10 UTC (`c34f9178`)
 
 The latest refresh resolved `origin/master` to the full merge SHA
 `a819c0cd2e8e9fdf14a3641cc76f0119ceb9d2bc` (PR #256). Fetch again before
