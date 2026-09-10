@@ -1,12 +1,13 @@
 # Execution recovery plan
 
 Status: active continuation route, 2026-09-10 UTC. The latest diagnostic
-observation is candidate-base evidence at `origin/master=1bd78cc`; process
-correction PR #251 is integrated at `origin/master=062f6c3`. Refresh before
-use. This is a plan and audit, not evidence that product cards passed. The
-supported runtime goal remains the coordinator; process corrections are
-merged separately from product card slices. Product changes stay in their
-separately owned card slices.
+observation remains candidate-base evidence at `origin/master=1bd78cc`; the
+latest process correction is PR #254, merged at
+`origin/master=7a7753713319d01c9b3b9966cb4028e4929e8df1` after PRs #251–#253.
+Refresh before use. This is a plan and audit, not evidence that product cards
+passed. The supported runtime goal remains the coordinator; process
+corrections are merged separately from product card slices. Product changes
+stay in their separately owned card slices.
 
 ## Outcome and success gates
 
@@ -22,6 +23,23 @@ stack, zero destructive overwrites and zero critical misses. Follow-up feature
 proof and full evaluator dimensions remain mandatory. CI, generated files and
 partial checks cannot substitute. R06/publication/pilots retain their separate
 authority and observed-outcome requirements.
+
+## Post-merge gate-order checkpoint — 2026-09-10 UTC (`origin/master=7a775371`)
+
+PR #254 merged the independently reviewed process-only A07 gate-order
+correction as `7a7753713319d01c9b3b9966cb4028e4929e8df1` from candidate
+`6a6adca5f92700a7cba71c05e5d9a2d6f2271aa5`, based on `a14cb02`. Candidate and
+merge trees match; required local/hosted process gates passed, while
+scope-skipped product/Rust/performance/release/installer jobs remain
+non-applicable rather than passing evidence. The owned branch/worktree/ref
+were removed after clean closure.
+
+A fresh checkout at this revision reran the ledger and active A07 gate-order
+assertion. The ledger remains 32 items, zero ready pending, five unfinished
+and three held: A07 is active, W03 is verified, and R01/W02/F01 retain their
+card-level holds. The next resume must fetch, rerun the ledger, freeze current
+identity, confirm six holdouts, obtain private manifest/protocol `PASS`, then
+run the fresh no-credit canary; no screening or acceptance credit is created.
 
 ## Post-merge refresh checkpoint — 2026-09-10 UTC (`origin/master=a14cb02`)
 

@@ -1,26 +1,30 @@
 # Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md), [progress-history-04.md], [progress-history-05.md], [iterations 4-17](progress-history-06.md), [preserved history](progress-history-03.md), [iterations 104 and earlier](progress-history-07.md))
 
-## Iteration 107 — 2026-09-10 — current-master reset and A07 route after PR #253
+## Iteration 108 — 2026-09-10 — PR #254 current-master gate-order reconciliation
 
-- Owner/phase: process coordinator / `reset-route`; fetched
-  `origin/master=a14cb02332921e3a06b184381720319767a2b7aa` and reran the
-  revision-pinned ledger from a clean detached checkout. It reports 32 items,
-  zero ready pending, five unfinished and three held: A07 `active`, W03
-  `verified`, and R01/W02/F01 held. No pending card is executable.
-- PR #253's process-only refresh-before-use correction is merged. Active A07
-  instructions require a fresh fetch and ledger run before binding; 062/a92
-  are dated provenance and 2eda is historical. No product, evaluator,
-  threshold, allocation, publication, deployment or invitation state changed.
-- No live A07 handle exists. The detached `77b41fed` canary checkout is clean
-  historical material; the private mode-700 store's 204-line manifest lacks
-  discoverable condition/product-input/supplied-input/mapping/matrix/
-  protocol-review fields, so its 17 run objects earn no credit.
-- Next resume: fetch and freeze current master, confirm the six holdouts, then
-  privately obtain the exactly-two-condition manifest and isolated protocol
-  review `PASS`; only then bind and run the no-credit canary. R01's raw trace or
-  maintainer decision, W02 authority and F01 authorization remain separate.
-  Context level: not exposed. Full redacted audit is in the recovery checkpoint;
-  topology report 0/strict 1 preserves external conditions.
+- Owner/phase: process coordinator / `reconcile-handoff`. PR #254 merged the
+  reviewed process-only A07 gate-order correction as `7a775371` from `6a6adca`,
+  based on `a14cb02`; candidate and merge trees match.
+- Required local/hosted process gates passed; scope-skipped product/Rust/
+  performance/release/installer jobs remain non-applicable, not passing proof.
+- Fresh closure at `7a775371` reran the ledger and gate-order assertion: 32
+  items, zero ready pending, five unfinished, three held; A07 active, W03
+  verified, R01/W02/F01 held. No product or authority state changed.
+- Next resume: fetch, rerun ledger, freeze identity, confirm six holdouts,
+  obtain private manifest/protocol `PASS`, then run the no-credit canary.
+  Owned branch/worktree/ref are removed; report 0, strict 1 preserves
+  external/user/history conditions.
+
+## Iteration 107 — 2026-09-10 — current-master reset and A07 route after PR #253 (superseded by Iteration 108)
+
+- The process coordinator fetched `origin/master=a14cb02` and reran the
+  revision-pinned ledger: 32 items, zero ready pending, five unfinished and
+  three held; A07 active, W03 verified, R01/W02/F01 held.
+- PR #253's refresh-before-use correction was merged; the private 204-line
+  manifest still lacked required fields, so its 17 run objects earned no
+  credit. No live A07 handle or product/authority state was changed.
+- Next was the six-holdout and private manifest/protocol `PASS`, then a fresh
+  no-credit canary; R01/W02/F01 remained separate held actions.
 
 ## Iteration 106 — 2026-09-10 — post-merge checkpoint for PR #251
 
