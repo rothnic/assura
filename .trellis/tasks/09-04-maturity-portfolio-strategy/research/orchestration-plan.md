@@ -116,9 +116,11 @@ passed isolated protocol rereview after correcting
 `A07-129-HOLDOUT-PROVENANCE-001`: all six handles now resolve to current
 construction provenance, with immutable creation timestamps and historical
 source digests preserved. This remains no-credit preparation. The exact next
-action is to refresh source, release/tag, PR/CI and topology state before any
-separately authorized screening preparation. Do not reuse an older packet or
-allocate/credit cells from this process checkpoint.
+action is to refresh source, release/tag, PR/CI and topology state, re-freeze
+the current candidate, run a fresh no-credit canary, verify/rebind the current
+six-handle holdout and exactly-two-condition manifest, and obtain isolated
+protocol `PASS` before any separately authorized screening preparation. Do not
+reuse an older packet or allocate/credit cells from this process checkpoint.
 
 R01 still needs the raw callback trace or a specific maintainer native-readiness
 decision. W02 needs explicit Cloudflare approval before any current push that

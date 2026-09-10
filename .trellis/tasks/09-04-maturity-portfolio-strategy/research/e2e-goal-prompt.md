@@ -71,7 +71,10 @@ advance. The current 129a249 holdout binding and manifest were re-reviewed
 after correcting `A07-129-HOLDOUT-PROVENANCE-001`; all six handles now point to
 current-candidate construction metadata and the scoped protocol rereview is
 `PASS`. On resume, fetch again, rerun the ledger and topology audit, refresh
-release/tag and PR/CI facts, and seek the separately authorized screening gate.
+release/tag and PR/CI facts, re-freeze the current candidate, run a fresh
+no-credit canary, verify/rebind the current six-handle holdout and exactly-two-
+condition manifest, and obtain isolated protocol `PASS` before seeking the
+separately authorized screening gate.
 Never allocate or credit cells from a process merge, canary or protocol
 metadata alone.
 

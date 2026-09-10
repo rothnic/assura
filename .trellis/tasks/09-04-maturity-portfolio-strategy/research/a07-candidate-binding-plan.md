@@ -41,7 +41,10 @@ resolves to current-candidate construction metadata while preserving its
 immutable creation timestamp and historical source digest. The scoped private
 protocol rereview returned `PASS`; allocation and credit remain false. The next
 ordered action is to refresh source/ledger, release/tag, PR/CI and topology
-state before any separately authorized screening preparation.
+state, re-freeze the current candidate, run a fresh no-credit canary,
+verify/rebind the current six-handle holdout and exactly-two-condition
+manifest, and obtain isolated protocol `PASS` before any separately authorized
+screening preparation.
 This plan does not change the A07 contract, scoring thresholds, fixture
 allocation, or product acceptance.
 
