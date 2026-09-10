@@ -65,7 +65,8 @@
       "docs/recovery-plan-current",
       "docs/current-master-pointer-refresh",
       "docs/post-merge-reconciliation",
-      "docs/topology-audit-robustness"
+      "docs/topology-audit-robustness",
+      "docs/a07-manifest-readiness"
     ]
   }
 }

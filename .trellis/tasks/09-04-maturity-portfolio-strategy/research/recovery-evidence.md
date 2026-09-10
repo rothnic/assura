@@ -4,12 +4,46 @@ Date: 2026-09-10. Scope: process artifacts, agent instructions and validation
 routing only. Product acceptance is unchanged; no card is promoted by this file.
 The historical proof below is retained; the current reconciliation and continuation
 route are recorded before the historical next-phase note.
-Process iteration: 93 (topology-audit helper correction; after the highest
-recorded historical iteration, 88; PR #236 closure was iteration 89, the
-pointer candidate review was iteration 90, the proof-record delta was
-iteration 91, and post-merge reconciliation was iteration 92).
+Process iteration: 94 (A07 private-manifest readiness audit; iteration 93 was
+the topology-audit helper correction; after the highest recorded historical
+iteration, 88; PR #236 closure was iteration 89, the pointer candidate review
+was iteration 90, the proof-record delta was iteration 91, and post-merge
+reconciliation was iteration 92).
 Context level: not exposed. The before/after phase record is this evidence
 file, linked from the full historical progress log.
+
+## Current A07 readiness audit — 2026-09-10
+
+- A fresh read-only reset resolved the integration base to
+  `origin/master=e03278e25e1d81d6c5d84beb1bac992ea6059869` after PR #240. The
+  prior topology-helper slice is merged and its owned branch/worktree is
+  closed; this audit changes no product, evaluator, threshold, release,
+  deployment, publication, invitation or authority surface.
+- The A07 acceptance coordinator's private evidence store was inspected only
+  for readiness metadata. The available records include holdout-construction
+  material and historical/no-credit run records, but no discoverable artifact
+  that satisfies the required screening manifest's exactly-two condition rows,
+  one-variable supplied-input proof, blinded mapping, complete 30-cell matrix,
+  and isolated protocol-review `PASS`. Historical run filenames and explicit
+  controls are not condition definitions or screening allocation evidence.
+  Private values, fixture/contract identities, child transcripts and raw
+  evaluator output remain outside this repository and are not copied here.
+- This is a concrete held action, not a whole-goal stop: the A07 coordinator
+  must create or locate the versioned private manifest, validate the contract
+  and complete matrix in a separate isolated protocol review, and record only
+  a redacted `PASS` or findings. Until that observation exists, A07 remains
+  `active` with zero screening, holdout or final-acceptance credit. The next
+  observation after a protocol `PASS` is a fresh candidate-bound canary against
+  `e03278e`; no historical canary or run is reused.
+- Owner/phase: A07 acceptance coordinator / investigate-prepare. The process
+  audit checkout is `/private/tmp/assura-a07-manifest-readiness-audit` on
+  `docs/a07-manifest-readiness`, based on the refreshed master. Its only
+  intended delta is this redacted task evidence and branch provenance.
+- The live topology audit remains intentionally non-green because preserved
+  unknown/user-owned dirt, a dirty external worktree, stale registrations and
+  unmerged historical goal branches remain outside this slice's ownership.
+  The helper now reaches its summary and strict mode remains nonzero; no prune,
+  reassignment or deletion is authorized by this audit.
 
 ## Candidate and proof
 
