@@ -62,11 +62,11 @@ five unfinished and three held: A07 active, W03 verified, and R01/W02/F01 held.
 The current A07 candidate is frozen privately at ebedb3e. Its login-shell
 identity controls and two source-only canaries pass the full public contract
 with seven dimensions and a meaningful negative control; these are no-credit
-preparation. The private six-handle packet is rebound to the current candidate,
-with isolated protocol rereview pending; this is not screening or acceptance
-credit. On resume, complete that rereview, record PASS or concrete corrections,
-then fetch again, rerun the ledger and topology audit, refresh release/tag and
-PR/CI facts, and run a fresh no-credit canary before the separately authorized
+preparation. The corrected private six-handle packet passed isolated protocol
+rereview after six metadata-only provenance/linkage corrections; this remains
+no screening or acceptance credit. On resume, fetch again, rerun the ledger and
+topology audit, refresh release/tag and PR/CI facts, re-freeze the current
+candidate and run a fresh no-credit canary before the separately authorized
 screening gate. Never allocate or credit cells from a process merge, canary or
 protocol metadata alone.
 

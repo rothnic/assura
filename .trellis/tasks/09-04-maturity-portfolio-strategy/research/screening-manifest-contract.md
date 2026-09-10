@@ -110,9 +110,9 @@ no-credit evidence after the later process merges and must not route current
 work. The current as-of ebedb3e candidate has fresh identity controls and two
 full-contract source-only canaries with a meaningful negative control; these are
 no-credit preparation. Its six-handle binding, supplied-input receipts,
-two-condition manifest and 30 reserved cells are rebound with isolated protocol
-rereview pending. On each next resume, complete that rereview, record PASS or
-concrete corrections, refresh source/ledger, release/tag, PR/CI and topology
-state, then run a fresh no-credit canary before the separately authorized
-screening gate. Prior canaries, process PRs and metadata-only evidence never
-satisfy screening or acceptance gates.
+two-condition manifest and 30 reserved cells passed the isolated protocol
+rereview after six metadata-only provenance/linkage corrections. On each next
+resume, refresh source/ledger, release/tag, PR/CI and topology state, re-freeze
+the current candidate, then run a fresh no-credit canary before the separately
+authorized screening gate. Prior canaries, process PRs and metadata-only
+evidence never satisfy screening or acceptance gates.

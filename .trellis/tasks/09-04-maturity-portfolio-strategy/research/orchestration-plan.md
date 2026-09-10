@@ -107,11 +107,11 @@ A07 is the active lane. A fresh ebedb3e candidate was built from a clean
 checkout; login-shell identity controls and two source-only canaries pass the
 full public contract, but they create no screening or acceptance credit. The
 private six-handle binding, per-handle creation records, exact toolchain,
-supplied-input receipts, two-condition manifest and 30 reserved cells are
-rebound to ebedb3e, with isolated protocol rereview pending. The exact next
-action is to complete that independent rereview, record PASS or concrete
-corrections, then refresh source, release/tag, PR/CI and topology state before
-the next fresh no-credit canary and separately authorized screening preparation.
+stable supplied-input receipts, two-condition manifest and 30 reserved cells
+passed isolated protocol rereview after six metadata-only provenance/linkage
+corrections. The exact next action is to refresh source, release/tag, PR/CI and
+topology state, rerun the ledger, re-freeze the current candidate and run the
+next fresh no-credit canary before separately authorized screening preparation.
 Do not reuse an older packet or allocate/credit cells from this process
 checkpoint.
 

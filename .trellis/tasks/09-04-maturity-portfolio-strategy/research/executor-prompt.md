@@ -24,14 +24,14 @@ no-credit metadata after this source/contract advance. A02 is complete; its
 old plain-init finding is historical. The ledger at ebedb3e has 32 items, zero
 ready pending, five unfinished and three held: A07 active, W03 verified, and
 R01/W02/F01 held. A fresh ebedb3e A07 freeze, exact identity controls and two
-full-contract canaries are current no-credit preparation; the current packet is
-rebound and its isolated protocol rereview is pending. R01's merged raw-log
-recovery is bounded negative evidence. On every resume, complete the current
-protocol rereview, record PASS or concrete corrections, refresh source,
-release/tag, PR/CI and topology state, rerun the ledger, and run a fresh
-no-credit canary before any separately authorized screening allocation. Preserve
-residual fixture, launcher, child-isolation and evaluator limitations. Route
-from `recovery-plan.md`, not this snapshot, after a fresh fetch and ledger.
+full-contract canaries are current no-credit preparation; the corrected packet
+passed its isolated protocol rereview after six metadata-only provenance/linkage
+corrections. R01's merged raw-log recovery is bounded negative evidence. On
+every resume, refresh source, release/tag, PR/CI and topology state, rerun the
+ledger, re-freeze the current candidate, and run a fresh no-credit canary before
+any separately authorized screening allocation. Preserve residual fixture,
+launcher, child-isolation and evaluator limitations. Route from
+`recovery-plan.md`, not this snapshot, after a fresh fetch and ledger.
 
 The historical parent-`c34f917` candidate-freeze observation used a clean
 detached checkout and the exact Rust/Cargo `1.94.1` toolchain. Its non-symlink

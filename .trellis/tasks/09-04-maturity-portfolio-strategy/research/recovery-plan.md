@@ -42,16 +42,16 @@ authority and observed-outcome requirements.
 - A fresh ebedb3e candidate freeze, exact login-shell identity controls and two
   source-only canaries passed the public contract with seven dimensions and a
   meaningful negative control. They are no-credit preparation. The private
-  six-handle packet, manifest, receipts and 30 reserved cells are rebound to
-  the current candidate; isolated protocol rereview is pending and allocation
-  remains false.
+  six-handle packet, manifest, stable receipts and 30 reserved cells passed an
+  isolated protocol rereview after six metadata-only provenance/linkage
+  corrections; allocation and credit remain false.
 - The ledger remains 32 items, `ready_pending=0`, five unfinished and three
-  held: A07 active, W03 verified, R01/W02/F01 held. Next owner/action: complete
-  the independent protocol rereview, record PASS or concrete corrections, then
-  refresh source, release/tag, PR/CI and topology state before the next fresh
-  no-credit canary and separately authorized screening preparation. Preserve
-  all private values, fixtures, evaluator output and prior packets as
-  historical; do not allocate or credit cells from this checkpoint.
+  held: A07 active, W03 verified, R01/W02/F01 held. Next owner/action: refresh
+  source, release/tag, PR/CI and topology state, rerun the ledger and topology
+  audit, re-freeze the current candidate, and run the next fresh no-credit
+  canary before separately authorized screening preparation. Preserve all
+  private values, fixtures, evaluator output and prior packets as historical;
+  do not allocate or credit cells from this checkpoint.
 
 ## Historical post-merge candidate rebind checkpoint — 2026-09-10 UTC (`origin/master=8be6103`, superseded by current `ebedb3e`; previously `b7043ab`)
 
