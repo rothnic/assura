@@ -85,7 +85,8 @@
       "docs/maturity-goal-continuation",
       "docs/context-routing-audit",
       "docs/a07-current-route",
-      "docs/a07-postmerge-route"
+      "docs/a07-postmerge-route",
+      "docs/a07-condition-manifest-review"
     ]
   }
 }

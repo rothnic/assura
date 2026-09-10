@@ -21,12 +21,12 @@ reject candidates that fail the prescribed comparison, and stop invalid
 diagnostics instead of repeating runs until green. Root owns review judgment
 and merge approval; method changes never imply relaxed acceptance thresholds.
 
-## Current as-of continuation checkpoint (refresh required) — 2026-09-10 UTC (`6fa806d`)
+## Current as-of continuation checkpoint (refresh required) — 2026-09-10 UTC (`af73d8a`)
 
 The latest read-only refresh resolved `origin/master` to
-`6fa806d05d4fab7245f35a1f57d21c237a72a809` after PR #264. The reviewed
-process candidate `4cfd9174d1c305a8d62c88dee9a3a49368a37885` was based on
-`bcd0386b4f864163e3f3a08e81d6106a790491c2`; merged-tree equality and
+`af73d8a5004ea8c0d2298202467d1635853434c9` after PR #266. The reviewed
+process candidate `c2d47aa2c8d6263f99d2968d187cf4d26d0a0581` was based on
+`afcbe967fd6f1fcc4fe0d7a606bfa288eb4c8df5`; merged-tree equality and
 reachability were verified, as were independent review and the applicable
 Documentation, CI, Security, Evidence and GitGuardian checks. Scope-skipped
 product/Rust/performance/release jobs remain non-applicable rather than proof.
@@ -35,15 +35,19 @@ state.
 
 The revision-pinned ledger remains 32 items, `ready_pending=0`, five
 unfinished and three held: A07 active, W03 verified, and R01/W02/F01 held.
-The six valid unseen holdouts remain frozen. The private exactly-two-condition
-manifest, supplied-input receipt, blinded mapping, complete 30-cell matrix and
-isolated protocol-review `PASS` are still absent; no screening, holdout or
-acceptance credit exists. The next owned action is that private manifest and
-protocol review, followed by a fresh source/identity refresh and no-credit
-canary only after a redacted `PASS`.
+The six valid unseen holdouts remain frozen. The private A07 manifest now has
+exactly two explicit conditions, supplied-input receipts, a blinded mapping,
+and a complete 30-cell reserved matrix. An isolated protocol review found and
+resolved three concrete metadata gaps: receipts now bind source SHA/tree,
+summaries are value-neutral, and each condition row binds the stack set and
+toolchain. The scoped rereview returned a redacted `PASS` with no findings;
+this proves only the private protocol gate, so no screening, holdout or
+acceptance credit exists. The next owned action is a fresh source/identity
+refresh and candidate-bound no-credit canary; preserve residual fixture,
+launcher, child-isolation and evaluator limitations.
 
-The measured `vps` host remains optional (16 CPUs, about 43 GiB available,
-94% root-disk use with about 20 GiB free, nightly Rust 1.95 and no Bun); the
+The measured `vps` host remains optional (16 CPUs, about 42 GiB available,
+95% root-disk use with about 20 GiB free, nightly Rust 1.95 and no Bun); the
 `vps-dev` alias is unresolved. Use the exact-toolchain isolated bundle
 procedure only when fresh capacity and disk checks permit. Refresh this
 checkpoint before use; its SHA is an as-of pointer, not a permanent pin.
