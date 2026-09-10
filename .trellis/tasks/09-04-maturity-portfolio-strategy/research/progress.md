@@ -1,45 +1,43 @@
-# Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md), [progress-history-04.md], [progress-history-05.md](progress-history-05.md), [iterations 4-17](progress-history-06.md), [preserved history](progress-history-03.md), [A01 iterations 15–31](progress-history-08.md), [iterations 5–11](progress-history-09.md), [iterations 104 and earlier](progress-history-07.md))
+# Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md), [progress-history-04.md], [progress-history-05.md](progress-history-05.md), [iterations 4-17](progress-history-06.md), [preserved history](progress-history-03.md), [A01 iterations 15–31](progress-history-08.md), [iterations 5–11](progress-history-09.md), [iteration 114](progress-history-10.md), [iterations 104 and earlier](progress-history-07.md))
 
-## Iteration 114 — 2026-09-10 — current-master route audit / post-merge reconciliation
+## Iteration 115 — 2026-09-10 — PR #262 post-merge reconciliation
 
 - Owner/session: A07 checkpoint writer / Trellis implementer
   `/root/a07_checkpoint_writer`; phase: `post-merge-reconcile` /
-  `route-audit`; closure: `active`. The clean owned checkout is
-  `/private/tmp/assura-a07-current-route.vcLjcl` on
-  `docs/a07-current-route`.
-- Source SHA: a fresh fetch resolves `origin/master` to
-  `2d4607bf6213c55a919fd230a31a09d64004213d`; route checkpoint commit:
-  `5d92af27805b85841d3999b4ed568858dd8026cf` in this documentation-only
-  checkout. The route commit is based on, but is not the same tree as, the
-  source SHA. This is not a new A07 product candidate or evaluation run. The
-  detached A07 checkout at `77b41fe` is historical and must not be reused. The
-  PR #261 process branch and worktree were already removed after merged-tree
-  and reachability proof.
-- The revision-pinned ledger has 32 items, `ready_pending=0`, five unfinished
-  and three held. A07 is active with no live worker, initializer, evaluator or
-  review handle; W03 is verified; R01, W02 and F01 retain their existing
-  smallest-resolution holds. The current context-routing audit is `42/42
-  PASS`. No product, acceptance, screening, publication, release, deployment,
-  or invitation credit changed.
-- Exact next action: in the private A07 store, produce and independently
-  review the exactly-two-condition manifest, supplied-input receipt, blinded
-  mapping, complete 30-cell matrix and isolated protocol-review `PASS`. Only
-  after that disposition may the coordinator refresh source and run a fresh
-  candidate-bound no-credit canary; no screening credit is implied.
-- Held-action resolution remains explicit: R01 requires the exact raw
+  `route-audit`; closure: `active`. Clean owned checkout:
+  `/private/tmp/assura-a07-postmerge.Au57JM` on `docs/a07-postmerge-route`.
+- Source/candidate SHA: PR [#262](https://github.com/rothnic/assura/pull/262)
+  merged reviewed candidate `756865ec0d99993c25532802874d87b12d328851` (based
+  on `2d4607bf6213c55a919fd230a31a09d64004213d`) as
+  `040babbcfb7dbe744d89a1c13838c2111d3a3b10`; candidate and merge trees are
+  equal, ancestry is verified, and fresh `origin/master` is the merge SHA.
+  This is process-only evidence, not an A07 product candidate or product
+  credit.
+- Applicable hosted Documentation, CI, Security, Evidence and GitGuardian
+  checks: `PASS`; independent scoped rereview: `PASS`. Scope-skipped checks
+  remain non-applicable/non-passing and are not green proof. The owned
+  `docs/a07-current-route` branch and `/private/tmp/assura-a07-current-route.vcLjcl`
+  worktree were clean; exact local/remote refs and worktree were removed after
+  reachability and tree-equality proof. No product, acceptance, screening,
+  holdout, publication, release, deployment or invitation credit changed.
+- Current revision-pinned ledger: 32 items, `ready_pending=0`, unfinished=5,
+  held=3. A07 is active with no live worker, initializer, evaluator or review
+  handle; W03 is verified; R01/W02/F01 retain their smallest-resolution holds.
+  Detached A07 checkout `77b41fe` is historical and must not be reused.
+- Exact next action: privately produce and independently review the
+  exactly-two-condition manifest, supplied-input receipt, blinded mapping,
+  complete 30-cell matrix and isolated protocol-review `PASS`; only then
+  refresh source/candidate identity and run a fresh candidate-bound no-credit
+  canary. No screening or acceptance credit is implied.
+- Held-action resolution remains unchanged: R01 requires the exact raw
   paths/kinds/rescan/config-state trace for hosted run
-  `34090768850`/job `101643647551` sequence 2/count 3, or a specific
-  maintainer native-readiness decision; W02 requires explicit Cloudflare
-  approval for hosted integration with deployment kept separate; W03's
-  publication remains authority-held; F01's participant selection and
-  invitations remain Nick-authorized. No speculative retry, release,
-  deployment, publication or invitation action is authorized by this
-  checkpoint.
-- The detached-checkout `cargo xtask target-state` probe exits `1` because the
-  active multi-card task has `branch: null`; this is a caveat, not a passing
-  gate, and this slice does not alter the task branch policy. Context level is
-  not exposed. Continue while the private protocol action exists; closure
-  remains `active`.
+  `34090768850`/job `101643647551` sequence 2/count 3, or a specific maintainer
+  native-readiness decision; W02 requires explicit Cloudflare approval for
+  hosted integration with deployment separate; W03 publication and F01
+  participant selection/invitations remain authority-held. No speculative
+  retry, release, deployment, publication or invitation action is authorized.
+  Context level is not exposed; closure stays `active` while the private
+  protocol action exists.
 
 ## Iteration 113 — 2026-09-10 — post-merge reconciliation for PR #259
 
@@ -997,3 +995,5 @@ recoverable. This reconciliation adds records rather than rewriting outcomes.
 - Initial B00/R01 iterations 1–4 remain in
   [`progress-early-history.md`](progress-early-history.md); iterations 5–11
   are preserved in [`progress-history-09.md`](progress-history-09.md).
+- Iteration 114 is preserved in
+  [`progress-history-10.md`](progress-history-10.md).
