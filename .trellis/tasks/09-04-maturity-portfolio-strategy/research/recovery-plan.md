@@ -55,14 +55,14 @@ authority and observed-outcome requirements.
   confirmation and explicit raw-hook exclusion. A follow-up correction now
   canonicalizes the exact compiler/Cargo identity across the freeze, conditions,
   receipts and six rows, and mirrors six immutable per-handle creation records
-  in the second-readonly check. A supplemental metadata rereview passed;
-  screening, holdout and final-acceptance credit remain zero until the primary
-  current packet rereview passes.
-- Next owner/action: the A07 acceptance coordinator owns the scoped `8be6103`
-  protocol rereview against the corrected binding and manifest. If it passes,
-  refresh source/ledger and prepare only the separately authorized no-credit
-  screening gate. R01, W02, W03 and F01 retain their named authority/evidence
-  holds.
+  in the second-readonly check. Supplemental and primary isolated metadata
+  rereviews passed; the disposition is metadata-only. Screening, holdout and
+  final-acceptance credit remain zero until a fresh source/ledger refresh,
+  candidate freeze and separately authorized screening gate complete.
+- Next owner/action: the A07 acceptance coordinator owns post-review
+  reconciliation. Refresh source/ledger, freeze the new candidate, and prepare
+  only the separately authorized no-credit screening gate. R01, W02, W03 and
+  F01 retain their named authority/evidence holds.
 
 ## Historical current as-of A07 candidate-bound canary checkpoint — 2026-09-10 UTC (`origin/master=9b410e9`)
 

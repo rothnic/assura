@@ -72,9 +72,11 @@ binding/provenance and stale-review-reference gaps; those records are corrected
 privately. The follow-up correction also canonicalizes one exact compiler/Cargo
 identity across the freeze, conditions, receipts and all six rows, and records
 an immutable creation time/evidence reference for each row that the second
-read-only confirmation repeats. A supplemental metadata rereview passed; the
-primary scoped 8be rereview is still required before any screening allocation.
-No screening, holdout or acceptance credit exists; preserve residual fixture,
+read-only confirmation repeats. Both supplemental and primary isolated
+protocol rereviews now pass the corrected packet. The disposition remains
+metadata-only: before any allocation, refresh source/ledger and freeze a new
+candidate identity, then obtain the separately authorized screening gate. No
+screening, holdout or acceptance credit exists; preserve residual fixture,
 launcher, child-isolation and evaluator limitations.
 
 The measured `vps` host remains optional (16 CPUs, about 42 GiB available,

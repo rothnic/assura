@@ -1,5 +1,20 @@
 # Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md), [progress-history-04.md], [progress-history-05.md](progress-history-05.md), [iterations 4-17](progress-history-06.md), [preserved history](progress-history-03.md), [A01 iterations 15–31](progress-history-08.md), [iterations 5–11](progress-history-09.md), [iteration 114](progress-history-10.md), [iteration 111](progress-history-11.md), [iterations 106–108](progress-history-12.md), [iterations 104 and earlier](progress-history-07.md), [iterations 32–33 and 42](progress-history-13.md), [iterations 44–47](progress-history-14.md))
 
+## Iteration 126 — 2026-09-10 — current protocol disposition recorded
+
+- The primary isolated protocol rereview returned `PASS` against the corrected
+  current 8be packet. It verified exact candidate/toolchain/contract identity,
+  the two-condition invariants and receipts, six unique holdout bindings with
+  immutable creation records, explicit raw-hook exclusion, 30 reserved cells,
+  privacy flags and no-credit boundaries. Supplemental metadata review also
+  passed; no raw evaluator or fixture material was exposed.
+- The disposition is metadata-only and does not grant screening, holdout,
+  evaluator, follow-up-feature, final-batch, product, release, deployment,
+  publication or invitation credit. The next owner/action is to refresh
+  `origin/master` and the revision-pinned ledger, freeze a new candidate
+  identity, and prepare only the separately authorized no-credit screening gate.
+  Context level: not exposed.
+
 ## Iteration 125 — 2026-09-10 — protocol packet canonicalization and rereview
 
 - The scoped protocol rereview supplied two additional concrete contract
@@ -12,11 +27,10 @@
   creation-evidence reference, and the second read-only confirmation repeats
   all six records and checks the canonical identity. The raw-hook draft remains
   explicitly excluded; all screening and credit flags remain false.
-- An independent supplemental metadata rereview passed the corrected packet.
-  The primary isolated protocol rereview remains live; after its disposition,
-  the owner must refresh source/ledger before any separately authorized
-  no-credit screening preparation. No product, threshold, evaluator or
-  authority state changed. Context level: not exposed.
+- Independent metadata review passed the corrected packet; the primary
+  disposition is recorded in Iteration 126. The owner must refresh source/ledger
+  before any separately authorized no-credit screening preparation. No product,
+  threshold, evaluator or authority state changed. Context level: not exposed.
 
 ## Iteration 124 — 2026-09-10 — protocol findings corrected, rereview required
 

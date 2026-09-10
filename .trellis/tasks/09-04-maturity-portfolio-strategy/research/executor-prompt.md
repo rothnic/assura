@@ -35,10 +35,12 @@ and second read-only confirmation are corrected. The corrected packet now uses
 one exact canonical compiler/Cargo identity in the freeze, both conditions,
 both supplied-input receipts and all six per-layout rows; each row has an
 immutable creation time/evidence reference mirrored by the second-readonly
-record. A supplemental metadata rereview passed, while the primary scoped
-rereview remains the next action. No screening allocation is allowed until
-current identity, contract, holdout-binding and protocol rereview gates pass.
-Preserve residual fixture, launcher, child-isolation and evaluator limitations. Route from
+record. Both supplemental and primary isolated protocol rereviews passed. This
+is metadata-only; the next action is a fresh source/ledger refresh and
+candidate freeze before the separately authorized screening gate. No screening
+allocation is allowed until current identity, contract, holdout-binding and
+protocol rereview gates pass. Preserve residual fixture, launcher,
+child-isolation and evaluator limitations. Route from
 `recovery-plan.md`, not this snapshot, after a fresh fetch and ledger.
 
 The historical parent-`c34f917` candidate-freeze observation used a clean

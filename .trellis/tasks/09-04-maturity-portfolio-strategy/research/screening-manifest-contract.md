@@ -111,7 +111,8 @@ after the 8be advance. The 8be manifest now references a current candidate
 freeze and immutable six-handle binding record; validate its schema, mapping,
 receipts, 30-cell invariants, per-handle creation records and exact canonical
 toolchain comparison, then obtain an isolated protocol rereview before
-allocating any cell. Until that current-candidate rereview passes, A07 remains
-active with zero screening/holdout/final-batch credit; prior canaries, process
-PRs and metadata-only reviews do not satisfy the current-candidate manifest
-gate.
+allocating any cell. The corrected 8be packet has now passed that metadata
+review, but it remains no-credit preparation; on every resume, refresh
+source/ledger and freeze the candidate again before allocation. Prior canaries,
+process PRs and metadata-only evidence do not satisfy screening or acceptance
+gates.
