@@ -1,8 +1,10 @@
 # Recovery process verification
 
-Date: 2026-09-09. Scope: process artifacts, agent instructions and validation
+Date: 2026-09-10. Scope: process artifacts, agent instructions and validation
 routing only. Product acceptance is unchanged; no card is promoted by this file.
-Process iteration: 84 (after the highest recorded historical iteration, 83).
+The historical proof below is retained; the current closure and continuation
+route are recorded before the historical next-phase note.
+Process iteration: 89 (after the highest recorded historical iteration, 88).
 Context level: not exposed. The before/after phase record is this evidence
 file, linked from the full historical progress log.
 
@@ -77,11 +79,36 @@ failed. CPU/RAM, disk and toolchain observations are in the recovery plan.
 No remote builds, cleanup, runner installation or benchmark speedup is claimed.
 The bundle validation procedure is documented, not yet operationally timed.
 
-The existing heartbeat was updated through the app to follow the latest user
-scope and revision-aware task evidence. Its response reported ACTIVE. The
-goal tool returned no active goal; automatic goal continuation is not assumed.
+The historical heartbeat was updated through the app to follow the then-current
+scope and revision-aware task evidence; its response reported ACTIVE. A
+historical goal-tool read returned no active goal, which is not current runtime
+state and must not be used to stop the supported goal. The current continuation
+route is recorded below and in `recovery-plan.md`.
 
-## Next phase
+## Current closure — 2026-09-10
+
+- PR #236 merged as `35cce811532c793f9446d13b8ef42f6390d370bf` from reviewed
+  head `2008f3fe7eecb6806492490511b3a8d6a47c4ab1` on refreshed `origin/master`.
+  Its stale-baseline and manifest gate-order findings were resolved by the
+  final scoped rereview. Hosted CI Scope, Documentation Scope, Security Scope,
+  Evidence Gates and GitGuardian passed; scope-skipped jobs remain explicitly
+  skipped and were not counted as passes.
+- The merged process artifacts now route A07 through current identity and
+  holdout freeze, private manifest validation, isolated protocol-review `PASS`,
+  fresh current-master canary, and only then 30-cell screening. The prior
+  `77b41fe` canary remains historical/no-credit; A07 has no screening, holdout
+  or final-acceptance credit.
+- The owned `docs/a07-screening-routing` worktree and branch were clean,
+  ancestry-verified and removed. The root unknown file, known missing-gitdir
+  registration and other classified user/archive worktrees remain untouched.
+- In this fresh recovery worktree, the first `cargo xtask docs` attempt failed
+  with exit 1 because `website/node_modules` was absent (`astro: command not
+  found`). After the locked `pnpm --dir website install --frozen-lockfile`
+  bootstrap, the identical docs gate passed with exit 0 and built 48 pages.
+  The initial environment failure is retained as a setup observation, not
+  treated as a skipped or passing check.
+
+## Historical next phase (superseded)
 
 Appending a recovery summary initially made `progress.md` exceed its existing
 1,000-line limit; the source structure check failed. The correction keeps the

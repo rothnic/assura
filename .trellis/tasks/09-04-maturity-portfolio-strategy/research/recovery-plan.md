@@ -1,9 +1,9 @@
 # Execution recovery plan
 
-Status: process recovery in progress, 2026-09-09. This is a plan and audit,
-not evidence that product cards passed. Coordinator: this thread's process
-owner, branch `goal/execution-recovery-plan`. Product changes stay in their
-separately owned card slices.
+Status: active continuation route, 2026-09-10. This is a plan and audit, not
+evidence that product cards passed. The supported runtime goal remains the
+coordinator; process corrections are merged separately from product card
+slices. Product changes stay in their separately owned card slices.
 
 ## Outcome and success gates
 
@@ -24,9 +24,9 @@ authority and observed-outcome requirements.
 
 The details in this section describe the recovery snapshot that preceded the
 current integration. That historical snapshot used `origin/master=922d7f0`;
-the current checkpoint after PR #233 is `origin/master=1f9ebf2`. Always refresh
-the live ref and use the newest progress entry and card evidence for routing
-rather than copying either historical SHA or the PR state below.
+the later pre-#235 checkpoint was `origin/master=1f9ebf2`. Always refresh the
+live ref and use the newest progress entry and card evidence for routing rather
+than copying either historical SHA or the PR state below.
 
 Historical integration source: `da773bce8315cbb9e69941f0fe89d0a91e42829d`.
 Master Rust CI `34310994162`, Documentation `34310994191` and Security
@@ -45,19 +45,44 @@ publication outstanding. Reconcile packet-level contradictions before promotion
 
 The historical inventory recorded unknown root dirt, a clean
 `goal/a07-composed-init` at `da773bc`, and other clean branches that required
-ownership classification. The current checkpoint has removed only the five
+ownership classification. That pre-#236 checkpoint had removed only the five
 verified-merged goal worktrees/refs and the superseded detached build; it keeps
 the unknown root dirt, the pre-existing prunable registration, and the clean
 `922d7f0` candidate archive. The global topology report still exits 128 on the
 preserved missing worktree; record incomplete coverage and use the read-only
 fallback before proposing a targeted audit repair.
 
+## Current checkpoint — 2026-09-10
+
+Refresh evidence identifies `origin/master=35cce811532c793f9446d13b8ef42f6390d370bf`,
+the merge of PR #236 from reviewed head
+`2008f3fe7eecb6806492490511b3a8d6a47c4ab1`. That process correction makes the
+A07 manifest, privacy boundary, layered context routing and live action
+ordering executable. Its scoped local and hosted gates passed; skipped
+product/Rust/performance/release jobs remain explicitly skipped and are not
+outcome proof.
+
+A07 remains `active` with zero screening, holdout or final-acceptance credit.
+The earlier `77b41fe` canary is historical and no-credit. The next exact route
+is: refresh current-master identity and freeze holdouts; create and validate
+the private two-condition manifest; obtain an isolated protocol-review `PASS`;
+run a fresh candidate-bound canary against `35cce81`; then launch the 30-cell
+screen only if every preceding gate passes. The 18-run untouched holdout,
+follow-up feature checks and final ten-per-stack at-least-9/10 threshold remain
+mandatory.
+
+The root unknown file and known missing-gitdir registration remain preserved.
+The owned PR #236 worktree and branch were clean, merged, verified reachable
+from `origin/master`, and removed. Other goal refs/worktrees are retained only
+as classified historical archives or user-owned work; do not delete them by
+pattern.
+
 ## Ordered recovery slices
 
 | Priority / owner | Action | Exit proof / next action |
 | --- | --- | --- |
-| 1 / process coordinator | Integrate this recovery plan, lean AGENTS router, execution/validation references and corrected scheduler routing | Independent process review and decision scenarios; structure/evidence and applicable hosted checks; verify merge and close this branch |
-| 2 / train coordinator | Reconcile active A07 evidence with retained private results and confirm live owner of composed-init worktree | One current checkpoint; no hidden evaluator material in public artifacts; select smallest public behavior contract |
+| 1 / process coordinator | Integrate this recovery plan, lean AGENTS router, execution/validation references and corrected scheduler routing | Completed through PR #236 (`2008f3f` → merge `35cce81`); next action is the A07 manifest/protocol-review route below |
+| 2 / train coordinator | Apply the current A07 evidence and manifest contract before any allocation; keep private values outside public artifacts | Current checkpoint is recorded above; create/validate the private manifest, obtain protocol-review `PASS`, then refresh the canary |
 | 3 / A07 implementation owner | Test explicit composed init proposal against public semantics; plain init remains config-only; preserve conflicts and honest runtime permission reporting | Focused negative/positive controls, review, required final-source local/hosted gates; merge slice only if its own goals pass; rerun blinded protocol before A07 completion |
 | 4 / independent R01 investigator | Read latest R01 packet/evidence and rejected diagnostics; determine missing causal observable before spending another platform run | Concrete hypothesis, distinguishing observation and reviewed method amendment; do not repeat prior unchanged diagnostic or invent native readiness |
 | 5 / topology owner | Inventory existing goal branches, live owners and base reachability; repair audit parser as a separately tested slice if needed | Complete report; merged clean branches removed by exact identity or verified archive; unknown work preserved |
@@ -107,12 +132,20 @@ hosted scope reuse verifies successful prior jobs and falls back to full checks;
 preserve it. `cargo xtask evidence` checks repository evidence policy, not card
 acceptance. Do not change workflow coverage or performance thresholds here.
 
-For A07, perform the cheap identity/context canary before native tests or a
-screening batch. One candidate build may support multiple diagnostics only when
-its source, binary, fixture and invocation remain unchanged; a child that sees
-private evaluator material or a global Assura install is invalid and must not be
-repeated unchanged. A safety-guard rejection is an operational observation,
-not permission to weaken the guard; use a disposable fixture and preserve the
+For a fresh documentation worktree, preflight `website/node_modules` and the
+locked package manager before running `cargo xtask docs`. If the documented
+build tool is absent, run `pnpm --dir website install --frozen-lockfile` in the
+disposable worktree and rerun the same gate; a missing tool is a failed
+environment precondition, never a skipped or passing docs result.
+
+For A07, after refreshing current source identity, freezing holdouts, and
+obtaining an isolated protocol-review `PASS` for the private manifest, perform
+the cheap identity/context canary before native tests or a screening batch. One
+candidate build may support multiple diagnostics only when its source, binary,
+fixture and invocation remain unchanged; a child that sees private evaluator
+material or a global Assura install is invalid and must not be repeated
+unchanged. A safety-guard rejection is an operational observation, not
+permission to weaken the guard; use a disposable fixture and preserve the
 rejection in evidence.
 
 ## Verification and continuation
@@ -123,8 +156,8 @@ VPS nightly/low disk; clean branches with unknown dirt elsewhere; passing slice
 while A07 acceptance fails. Expected decisions follow the execution contract.
 Record actual reviewer decisions and limitations in `recovery-evidence.md`.
 
-Next action: validate and independently review this committed process slice,
-resolve findings, run applicable hosted checks, integrate and close its owned
-branch. Refresh runtime goal state through the supported product tools; the
-latest read returned no goal, so no automatic goal continuation is claimed.
-Do not replace or complete an unfinished goal to repair a status mismatch.
+Next action: keep the supported runtime goal active and follow the current
+checkpoint's identity/holdout → manifest validation → isolated protocol review
+`PASS` → fresh current-master canary → screening sequence. Do not replace or
+complete an unfinished goal to repair a status mismatch, and do not treat this
+process merge as A07 acceptance.
