@@ -44,6 +44,20 @@ file, linked from the full historical progress log.
   unmerged historical goal branches remain outside this slice's ownership.
   The helper now reaches its summary and strict mode remains nonzero; no prune,
   reassignment or deletion is authorized by this audit.
+- Candidate `5af50cf1a649330dce514184d3dc1fb1538e188c` passed the docs/process
+  validation tier: workflow `Ready: yes`; source check success `true` with the
+  same six unchanged low max-line advisories; `cargo xtask evidence`,
+  `cargo xtask target-state`, `cargo fmt --all -- --check`, `git diff --check`,
+  JSON parsing, and `assura check --format agent --agent codex` all exited `0`.
+  The committed CI scope classifier reported `evidence=true`,
+  `changed_count=3`, with product/Rust/release/performance/rustdoc/website and
+  security surfaces `false`.
+- The first identical `cargo xtask docs` attempt exited `1` because the clean
+  checkout had no `website/node_modules` and could not resolve `astro`. The
+  locked `pnpm --dir website install --frozen-lockfile` bootstrap exited `0`
+  with 355 cached packages, and the identical docs gate then exited `0`,
+  building 48 pages. The failed environment precondition is retained and is
+  not counted as a pass.
 
 ## Candidate and proof
 
