@@ -1,10 +1,12 @@
 # Execution recovery plan
 
-Status: active continuation route, 2026-09-10 UTC (current diagnostic
-observation at `origin/master=1bd78cc`; refresh before use). This is a plan and audit, not
-evidence that product cards passed. The supported runtime goal remains the
-coordinator; process corrections are merged separately from product card
-slices. Product changes stay in their separately owned card slices.
+Status: active continuation route, 2026-09-10 UTC. The latest diagnostic
+observation is candidate-base evidence at `origin/master=1bd78cc`; process
+correction PR #251 is integrated at `origin/master=062f6c3`. Refresh before
+use. This is a plan and audit, not evidence that product cards passed. The
+supported runtime goal remains the coordinator; process corrections are
+merged separately from product card slices. Product changes stay in their
+separately owned card slices.
 
 ## Outcome and success gates
 
@@ -21,7 +23,25 @@ proof and full evaluator dimensions remain mandatory. CI, generated files and
 partial checks cannot substitute. R06/publication/pilots retain their separate
 authority and observed-outcome requirements.
 
-## Current diagnostic observation — 2026-09-10 UTC (`origin/master=1bd78cc`)
+## Post-merge process checkpoint — 2026-09-10 UTC (`origin/master=062f6c3`)
+
+PR #251 merged the reviewed process-only candidate `e777ee7` (based on
+`1bd78cc`) as `062f6c39d15babc8b12299863576a29febda5dd5`; its merged tree
+matches the reviewed candidate. The recovery route now points to the raw R01
+callback trace or a maintainer native-readiness decision, and the continuation
+skill enforces explicit command identity before accepting check/test/build
+evidence. The revision-pinned ledger still reports 32 items,
+`ready_pending=0`, five unfinished and three held: A07 is active, W03 is
+verified, and R01/W02/F01 retain their card-level holds. No product, card,
+evaluator, threshold, allocation, release, deployment, publication or
+invitation state changed. The merged worktree and branch were removed after
+clean closure; the final topology report is 0 and strict is 1 only for
+preserved external/user conditions and historical registrations. The next
+authorized route remains A07's private manifest/protocol review; the R01
+diagnostic below is candidate-base evidence and must not be treated as a new
+current-master result without a refresh.
+
+## Candidate-base diagnostic observation — 2026-09-10 UTC (`origin/master=1bd78cc`; superseded by the post-merge checkpoint)
 
 Owner/phase: process coordinator / R01 diagnostic preparation. A clean,
 detached current-master checkout at `1bd78cc3705e278d6502637463873de4ad1c2aab`
@@ -43,7 +63,7 @@ run34090768850/job101643647551, or a maintainer decision on an alternative
 native-readiness contract. The next independent action is that trace or
 decision; avoid speculative debounce/loop changes.
 
-## Historical continuation checkpoint — 2026-09-10 UTC (`origin/master=2eda17e`; superseded by the current observation)
+## Historical continuation checkpoint — 2026-09-10 UTC (`origin/master=2eda17e`; superseded by the candidate-base observation and post-merge checkpoint)
 
 Owner/phase: process coordinator / `investigate-prepare`; the next card action
 belongs to the A07 acceptance coordinator. A fresh fetch resolved
