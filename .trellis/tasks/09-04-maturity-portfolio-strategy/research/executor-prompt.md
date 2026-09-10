@@ -13,14 +13,24 @@ After every merge, refresh `origin/master` and reconcile the task pointer,
 ledger and owned topology before selecting or handing off; a clean merge is a
 phase transition, not completion of the runtime goal.
 
-Live routing checkpoint (2026-09-10, refresh before use): `origin/master` is
-`a819c0cd2e8e9fdf14a3641cc76f0119ceb9d2bc` after PR #256. The ledger at that
+Live routing checkpoint (2026-09-10, refresh before use): the latest reset
+resolved `origin/master` to
+`c34f917866e45cc122ec07412fa0c630d460f663` after PR #257. The ledger at that
 revision has 32 items, zero ready pending, five unfinished and three held:
 A07 is active, W03 verified, and R01/W02/F01 held. R01's merged raw-log
 recovery is bounded negative evidence; A07 still requires the private
 six-holdout/two-condition manifest and isolated protocol-review `PASS` before
 any no-credit canary or screening allocation. Route from
 `recovery-plan.md`, not from this snapshot, after a fresh fetch and ledger.
+
+The current candidate-freeze observation used a clean detached checkout and
+the exact Rust/Cargo `1.94.1` toolchain. Its non-symlink `assura 0.4.0` binary
+hash is
+`95c93052bd1993566d9f8209bdba5625c2b39a19287ed6358d710015d2ac59ff`, matching
+`command -v`, version and target hash inside a minimal login shell. This is
+no-credit preparation. The six valid holdouts are frozen; the private
+condition values, supplied-input receipt, mapping, matrix and protocol
+`PASS` are still required and must not be inferred from historical run names.
 
 Copy the following prompt into a coding agent that can access the repository and planning task. It is designed for sequential execution with limited context. The queue and solution cards are the source of truth; no knowledge of the earlier conversation is required.
 

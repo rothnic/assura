@@ -4,7 +4,8 @@ Date: 2026-09-10. Scope: process artifacts, agent instructions and validation
 routing only. Product acceptance is unchanged; no card is promoted by this file.
 The historical proof below is retained; the current continuation route and
 source reconciliation are recorded before the historical next-phase notes.
-Process iteration: 110 (goal-contract correction after the R01 raw-log
+Process iteration: 111 (candidate identity freeze after the goal-contract
+correction; iteration 110 was the R01 raw-log
 recovery merge; iteration 109 is the current-master R01 recovery evidence;
 iteration 106 was the post-merge checkpoint for PR #251; the R01
 diagnostic preparation is candidate-base evidence;
@@ -25,6 +26,32 @@ the proof-record delta was iteration 91, and post-merge reconciliation was
 iteration 92).
 Context level: not exposed. The before/after phase record is this evidence
 file, linked from the full historical progress log.
+
+## Live candidate-freeze checkpoint — 2026-09-10 UTC (`origin/master=c34f9178`)
+
+- Owner/phase: A07 acceptance coordinator / `candidate-freeze`. The refreshed
+  source is `c34f917866e45cc122ec07412fa0c630d460f663`; the revision-pinned
+  ledger reports 32 items, `ready_pending=0`, five unfinished and three held.
+  A07 is active, W03 is verified, and R01/W02/F01 remain separate held
+  actions. No pending card is executable ahead of this active lane.
+- A clean detached checkout built the exact candidate with Rust/Cargo `1.94.1`
+  and released `assura 0.4.0` (exit `0`). The non-symlink binary SHA-256 is
+  `95c93052bd1993566d9f8209bdba5625c2b39a19287ed6358d710015d2ac59ff`; a
+  minimal `zsh -lic` check matched `command -v`, version and target hash. The
+  candidate identity is recorded privately and this observation earns no
+  evaluation credit.
+- Read-only private reconciliation confirms six valid frozen holdouts and one
+  disqualified construction draft. The exactly-two-condition manifest,
+  supplied-input receipt, blinded mapping, 30-cell matrix and isolated
+  protocol-review `PASS` remain absent; no historical run is promoted or
+  reclassified. The held action is concrete: select two values for one
+  supported product input, prove receipt, validate the manifest in an isolated
+  review, then refresh and run a fresh no-credit canary.
+- The configured `vps` endpoint is reachable but not used: 16 CPUs, about
+  43 GiB available memory, 94% root-disk use (about 20 GiB free), nightly Rust
+  1.95 and no Bun. The documented `vps-dev` alias does not resolve. Local
+  exact-toolchain evidence and required hosted/platform gates remain
+  authoritative.
 
 ## Live goal-contract checkpoint — 2026-09-10 UTC (`origin/master=a819c0c`)
 
