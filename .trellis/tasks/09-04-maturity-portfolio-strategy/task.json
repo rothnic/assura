@@ -75,7 +75,8 @@
       "docs/train-continuation-control",
       "docs/train-continuation-reconcile",
       "docs/train-continuation-finalize",
-      "docs/continuation-control-route"
+      "docs/continuation-control-route",
+      "docs/r01-diagnostic-timeout-reconcile"
     ]
   }
 }

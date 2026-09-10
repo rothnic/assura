@@ -1,7 +1,7 @@
 # Execution recovery plan
 
-Status: active continuation route, 2026-09-10 UTC (current source checkpoint at
-`origin/master=2eda17e`; refresh before use). This is a plan and audit, not
+Status: active continuation route, 2026-09-10 UTC (current diagnostic
+observation at `origin/master=1bd78cc`; refresh before use). This is a plan and audit, not
 evidence that product cards passed. The supported runtime goal remains the
 coordinator; process corrections are merged separately from product card
 slices. Product changes stay in their separately owned card slices.
@@ -21,7 +21,28 @@ proof and full evaluator dimensions remain mandatory. CI, generated files and
 partial checks cannot substitute. R06/publication/pilots retain their separate
 authority and observed-outcome requirements.
 
-## Current continuation checkpoint — 2026-09-10 UTC (`origin/master=2eda17e`)
+## Current diagnostic observation — 2026-09-10 UTC (`origin/master=1bd78cc`)
+
+Owner/phase: process coordinator / R01 diagnostic preparation. A clean,
+detached current-master checkout at `1bd78cc3705e278d6502637463873de4ad1c2aab`
+ran the exact external-config watch test from its own cwd. The corrected
+command was `cargo test --target-dir /Users/nroth/workspace/assura/target
+--test watch_cli watch_observes_an_explicit_config_outside_the_project --
+--exact --nocapture`; it exited `0` after 195 seconds on Darwin x86_64 with
+Rust/Cargo `1.94.1`. It emitted only the expected config-triggered sequence-2
+warm-full report (`coalesced_events=4`, no fallback) and did not reproduce the
+historical unexpected filesystem event. A prior attempt that accidentally ran
+from the dirty strategy root was explicitly discarded as no evidence.
+
+This is a current-host reproduction result, not native-readiness closure. No
+hosted diagnostic run, retry, filter, threshold or product edit was made. The
+R01 owner still needs the raw callback paths/kinds/rescan/config-generation
+trace for run34090768850/job101643647551, or a maintainer decision on an
+alternative native-readiness contract. The next independent action is to
+preserve this result in R01 evidence and avoid speculative debounce/loop
+changes.
+
+## Historical continuation checkpoint — 2026-09-10 UTC (`origin/master=2eda17e`; superseded by the current observation)
 
 Owner/phase: process coordinator / `investigate-prepare`; the next card action
 belongs to the A07 acceptance coordinator. A fresh fetch resolved
