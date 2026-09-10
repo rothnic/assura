@@ -5,6 +5,11 @@ at refreshed `origin/master`, then read the repository's `assura-goal-execution`
 skill for the execution contract and validation matrix. Absolute paths below
 identify the task, not the authoritative revision of an old checkout.
 
+Resume the existing supported runtime goal; do not create a replacement goal
+for a card boundary or a compaction. Refresh the `release` ref and tags as
+separate availability facts, and record a missing release branch rather than
+turning it into release proof.
+
 Copy the following prompt into a coding agent that can access the repository and planning task. It is designed for sequential execution with limited context. The queue and solution cards are the source of truth; no knowledge of the earlier conversation is required.
 
 ```text
@@ -26,18 +31,23 @@ AI systems leadership. Do not expand project intelligence, semantic search,
 agent orchestration, remote plugins or generic maturity scoring.
 
 First task is B00 unless its completion evidence already exists and is current.
-Use latest GitHub master as the source baseline. ed093668 was the reviewed SHA,
-not a permanent pin. The original local checkout is older: do not implement on
-it. Refresh Git/PR/worktree state, preserve unrelated changes and work in an
-isolated current-master checkout. Inspect overlapping PR #142 and the existing
-NickRoth case-study branch before creating duplicate work. Record actual cwd,
-SHA, binary version and toolchain. Load the worktree skill for isolation.
+Use latest GitHub master as the source baseline. The original planning review
+used `ed093668`, but that SHA is historical and never a permanent pin. The
+original local checkout is older: do not implement on it. Refresh Git/PR,
+release/tag, worktree and owner state, preserve unrelated changes and work in
+an isolated current-master checkout. Inspect overlapping PR #142 and the
+existing NickRoth case-study branch before creating duplicate work. Record
+actual cwd, SHA, binary version and toolchain. Load the worktree skill for
+isolation.
 
 First inspect unfinished active/implemented/verified candidates and actual live
 owners. Then select a pending item with evidenced merged dependencies and whose
 required changes are present in this checkout. A not_needed dependency requires
-written evidence/approved scope disposition. If an item is blocked on publication,
-people or environment, record the blocker and take another independent ready item.
+written evidence/approved scope disposition. If no pending item is ready, keep
+one coordinator-owned recovery, review or integration action live and record
+its owner, phase, proof and exact next command; do not stop at a status report
+or invent a card. If an item is held on publication, people or environment,
+record the narrow hold and take another independent ready or process action.
 Do not run the whole backlog as one giant patch. Default batch size is one card.
 
 Execution-continuity invariant: a checkpoint is not a stopping condition. Keep

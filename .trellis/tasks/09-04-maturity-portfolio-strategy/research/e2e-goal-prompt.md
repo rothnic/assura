@@ -20,7 +20,36 @@ reject candidates that fail the prescribed comparison, and stop invalid
 diagnostics instead of repeating runs until green. Root owns review judgment
 and merge approval; method changes never imply relaxed acceptance thresholds.
 
-Continuation checkpoint captured 2026-09-10 after PR #237: refreshed
+## Live continuation checkpoint — 2026-09-10 UTC (after PR #243)
+
+At every resume, refresh this task from `origin/master` before using any
+snapshot below. The current revision is
+`80d2d9a7fea55c1413f7e50f0873306049a65a48` (PR #243). The pinned ledger
+contains 32 items with no ready pending card, five unfinished items and three
+named holds: A07 is active; R01, W02 and F01 retain their specific holds; W03
+is verified. Route active/implemented/verified candidates and actual owners
+before pending rows; an empty ready set is an intermediate routing result, not
+a reason to end the runtime goal.
+
+The read-only release refresh found no `origin/release` ref. Tags reach
+`v0.3.0`, while the current source and installed `/usr/local/bin/assura` are
+`0.4.0`; record both facts and never infer public release proof from either.
+Open PR #194 has a required Performance Report failure (6m53s), #195 targets
+that unmerged branch, #187 is not current and couples a Cloudflare build to
+production, and #142 retains platform failures. Scope-skipped jobs remain
+non-applicable, never green evidence. The root unknown file and classified
+dirty/prunable/unreadable worktrees remain outside ownership.
+
+The only authorized next A07 phase is private: name exactly two product-input
+conditions and six holdouts, validate the complete 30-cell matrix, obtain an
+isolated protocol-review `PASS`, and then run a fresh candidate-bound canary
+against `80d2d9a`. Do not invent conditions, launch screening, or promote a
+card from process documentation. If that phase is held, record its owner,
+missing contract/evidence, smallest resolution and independent work that can
+continue; keep the same supported goal active rather than creating a duplicate.
+
+Historical checkpoint captured 2026-09-10 after PR #237 (superseded by the
+live checkpoint above): refreshed
 `origin/master` is `8cabc53658530a239c00a0c55cbae9b050ad74ca`, including the
 independently reviewed A02 plain-init correction in PR #231, the
 runner-isolation contract in PR #232, the reconciled clean handoff record in
@@ -60,7 +89,13 @@ names.
 
 The product direction remains sound: specialize in executable repository conventions and agent-assisted initialization, with existing language tools supplying their own checks. The execution mechanism should be a **reviewed release train**, not a long-lived mega-branch or a blind attempt to close every checkbox. The queue remains the technical source of truth; this goal supplies cross-session control, integration discipline, and cleanup rules.
 
-On 2026-09-05, `origin/master` remains `ed093668918bc271fc98b9112acaf7c1bf3eb314`. PR #142 is still open and unstable, with macOS and Alpine failures, so installer work must be reused or repaired rather than duplicated. The worktree inventory has pre-existing and prunable entries; cleanup must be ownership-based rather than a broad deletion. The historical post-onboarding execution goal is `completed` and must not be reopened as the current program.
+Historical direction snapshot (2026-09-05; not a current baseline):
+`origin/master` was `ed093668918bc271fc98b9112acaf7c1bf3eb314`. PR #142 was
+open and unstable, with macOS and Alpine failures, so installer work must be
+reused or repaired rather than duplicated. The worktree inventory had
+pre-existing and prunable entries; cleanup must be ownership-based rather than
+a broad deletion. The historical post-onboarding execution goal was
+`completed` and must not be reopened as the current program.
 
 ## Copy-paste continuation goal
 
@@ -81,8 +116,13 @@ the older strategy checkout. If the planning artifacts are still uncommitted,
 first validate and preserve them in a dedicated documentation handoff; do not
 lose or silently fold them into unrelated product work.
 
+At the same reset, query the `release` ref and tags explicitly. A missing
+release branch, an older tag, or a locally installed binary is an availability
+fact, not public-install proof. Record the exact result and keep release,
+deployment, publication and invitation authority separate.
+
 Operate as a controlled release train:
-1. Select only a ready card whose dependencies have evidence and are in the current branch ancestry. Work in an isolated, current-master worktree and a clearly named branch. One behavior card per PR by default; parallel work is allowed only for independent cards with separate worktrees and review capacity.
+1. Select only a ready card whose dependencies have evidence and are in the current branch ancestry. Inspect active, implemented and verified candidates and their actual owners first. If no pending card is ready, keep a named coordinator-owned recovery or review action live; do not stop at a status report or invent a card. Work in an isolated, current-master worktree and a clearly named branch. One behavior card per PR by default; parallel work is allowed only for independent cards with separate worktrees and review capacity.
 2. Follow the card's prescribed solution exactly enough to preserve its contract: reproduce or write the focused failing test first, make the smallest cohesive change, run focused checks then the required repository tier, and record the exact SHA, cwd, binary, commands, exits, negative control, limitations, and next-ready card in research/evidence/<ID>.md. Update backlog.json honestly.
 
    For A07, bind the candidate by absolute executable identity inside the

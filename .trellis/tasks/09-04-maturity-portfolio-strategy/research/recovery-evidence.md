@@ -4,7 +4,8 @@ Date: 2026-09-10. Scope: process artifacts, agent instructions and validation
 routing only. Product acceptance is unchanged; no card is promoted by this file.
 The historical proof below is retained; the current reconciliation and continuation
 route are recorded before the historical next-phase note.
-Process iteration: 97 (post-merge ledger-routing reconciliation; iteration 96
+Process iteration: 98 (current-master continuation-control refresh; iteration 97
+was the post-merge ledger-routing reconciliation; iteration 96
 was the ledger-routing helper pin/path correction; iteration 95 was the
 deterministic ledger-routing helper; iteration 94 was the A07
 private-manifest readiness audit; iteration 93 was the topology-audit
@@ -14,6 +15,60 @@ the proof-record delta was iteration 91, and post-merge reconciliation was
 iteration 92).
 Context level: not exposed. The before/after phase record is this evidence
 file, linked from the full historical progress log.
+
+## Current-master continuation-control refresh — 2026-09-10 UTC
+
+- Owner/phase: process coordinator / `investigate-prepare`. The read-only reset
+  ran from the stale root only for inspection; `git fetch origin master` exited
+  `0` and resolved `origin/master` to
+  `80d2d9a7fea55c1413f7e50f0873306049a65a48` (the PR #243 merge). The clean
+  owned worktree for this process slice is based on that SHA; the root's
+  unknown `research/a04-host-status-doctor-permission-gap.md` is preserved.
+- `bash .agents/skills/assura-goal-execution/scripts/audit-ledger.sh
+  <clean-worktree> .trellis/tasks/09-04-maturity-portfolio-strategy` exited
+  `0` and loaded both task blobs through the immutable base object. It reported
+  `items=32`, `ready_pending=0`, `unfinished=5`, `held=3`; A07 is active,
+  W03 verified, R01/W02/F01 held, and no pending row is executable. This is
+  routing evidence only; it is not owner-liveness, acceptance, review or merge
+  proof. Active/implemented/verified candidates were inspected before pending
+  rows as required by the execution contract.
+- Release/installation refresh: `git fetch origin release` exited `128` with
+  `couldn't find remote ref release`; `git ls-remote --tags origin` reaches
+  `v0.3.0`; `command -v assura` resolved `/usr/local/bin/assura` and
+  `assura --version` returned `0.4.0`; `Cargo.toml` at the current base also
+  declares `0.4.0`. No release branch, tag or installed binary is treated as
+  public-install proof.
+- Open-PR/CI refresh: PR #194 is open against `master` with head
+  `4c3c4981cf5be19e7dc49ac7d090b01d3070871f`; its required Performance Report
+  failed after `6m53s` while other applicable jobs passed. PR #195 is open
+  against the unmerged #194 branch and has only GitGuardian evidence. PR #187
+  is not current and its successful Workers Builds check is coupled to
+  Cloudflare production; PR #142 retains Alpine and macOS/Windows failures.
+  Scope-skipped jobs are retained as non-applicable, never as passing proof.
+- Serialized remote preflight: `ssh -o BatchMode=yes -o ConnectTimeout=8
+  vps-dev ...` failed to resolve the host; the same bounded probe to `vps`
+  exited `0` and reported 16 CPUs, 43,750 MiB available memory, load below 1,
+  23,217,420 KiB free at 94% disk use, nightly Rust 1.95, Node 22.22.1 and
+  pnpm 10.29.3. No build, benchmark or test ran remotely. This is capacity
+  evidence only; remote work remains conditional on exact toolchain and
+  projected target-size headroom, with one job per host and hosted CI as final
+  platform/performance proof.
+- Topology: `audit-topology.sh --report` exited `0`; `--strict` exited `1`
+  with `worktrees=34 dirty=2 prunable=3 unreadable=1 goal_branches=13
+  unmerged_goal=9`. `git worktree prune --dry-run -v` was read-only. The root
+  unknown file, external dirty worktree, stale registrations and historical
+  unmerged goal branches are outside this slice's ownership; no stash, reset,
+  prune, deletion or ownership reassignment occurred.
+- Decision/next action: keep the existing runtime goal active; do not create a
+  duplicate or stop at the empty ready set. The A07 acceptance coordinator
+  must privately name exactly two product-input conditions and six holdouts,
+  validate the complete 30-cell matrix, obtain an isolated protocol-review
+  `PASS`, and then run a fresh candidate-bound canary against `80d2d9a`. No
+  screening cell, release, deployment, publication or invitation is authorized
+  by this process slice. R01's raw macOS trace/native-readiness decision,
+  W02's Cloudflare approval, F01's participant authorization and W03's
+  publication remain separate held actions; independent process work may
+  continue. This entry does not promote any card.
 
 ## Ledger-routing helper integration reconciliation — 2026-09-10
 
