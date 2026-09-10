@@ -1,6 +1,7 @@
 # Stable E2E goal: Assura maturity execution train
 
-Resume through [recovery-plan.md](recovery-plan.md) and the repository's
+Resume through [recovery-plan.md](recovery-plan.md), the compact
+[maturity train orchestration plan](orchestration-plan.md), and the repository's
 `assura-goal-execution` skill. Read this task at refreshed `origin/master`;
 dated direction snapshots below remain historical. Check the existing product
 goal's actual lifecycle before relying on automatic continuation. Keep one

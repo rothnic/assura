@@ -12,7 +12,7 @@
   "assignee": "nroth",
   "createdAt": "2026-09-04",
   "completedAt": null,
-  "branch": "goal/a05-onboarding-quality-core",
+  "branch": null,
   "base_branch": "master",
   "worktree_path": null,
   "commit": null,
@@ -82,7 +82,8 @@
       "docs/a07-current-checkpoint",
       "docs/a07-postmerge-checkpoint",
       "docs/r01-trace-recovery",
-      "docs/maturity-goal-continuation"
+      "docs/maturity-goal-continuation",
+      "docs/context-routing-audit"
     ]
   }
 }

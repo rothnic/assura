@@ -49,9 +49,10 @@ Planning root:
 /Users/nroth/workspace/assura/.trellis/tasks/09-04-maturity-portfolio-strategy
 
 Read first:
-1. research/execution-backlog.md
-2. research/backlog.json
-3. This project's AGENTS.md and the skills relevant to the selected card.
+1. research/orchestration-plan.md
+2. research/execution-backlog.md
+3. research/backlog.json
+4. This project's AGENTS.md and the skills relevant to the selected card.
 Read prd.md for the overall product intent. Then read only the packet section
 for your selected ID and any shared contract it explicitly references.
 

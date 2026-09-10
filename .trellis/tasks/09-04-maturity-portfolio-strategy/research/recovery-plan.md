@@ -14,6 +14,11 @@ supported runtime goal remains the coordinator; process corrections are
 merged separately from product card slices. Product changes stay in their
 separately owned card slices.
 
+Use the compact [maturity train orchestration plan](orchestration-plan.md) for
+the reset, layered-context, gate-placement, review, integration and closure
+sequence. It is an operator route, not a replacement queue; refresh all source
+and ledger pointers before acting.
+
 ## Outcome and success gates
 
 The PRD's outcome remains dependable repository conventions and agent-assisted

@@ -17,6 +17,9 @@ only improves its process. Do not substitute a process PR for product acceptance
    when the supplied canonical path is on an old branch. Apply the
    [source-pointer lifecycle](references/source-pointer-lifecycle.md) to
    classify every dated snapshot before routing from it.
+   Run the read-only [context-routing audit](scripts/audit-context-routing.py)
+   against the same checkout; a failed routing audit is a process-repair
+   route, not product evidence.
 2. Read the goal/PRD, queue, selected packet and evidence. Inspect active,
    implemented and verified candidates before pending ones; verify live owners.
    Use [scripts/audit-ledger.sh](scripts/audit-ledger.sh) for a read-only
