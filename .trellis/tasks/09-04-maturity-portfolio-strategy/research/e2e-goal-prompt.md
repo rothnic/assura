@@ -20,10 +20,31 @@ reject candidates that fail the prescribed comparison, and stop invalid
 diagnostics instead of repeating runs until green. Root owns review judgment
 and merge approval; method changes never imply relaxed acceptance thresholds.
 
-## Live continuation checkpoint — 2026-09-10 UTC (after PR #243)
+## Live continuation checkpoint — 2026-09-10 UTC (PR #244 / `2902a07`)
+
+The latest refresh resolves `origin/master=2902a073f39f8e8a47a9658a6358791c3e7f4655`,
+the merge of reviewed PR #244 final head `03a9b01eb1a5742b0cc84373e53f3f9aed8d0f1e`
+from `80d2d9a7fea55c1413f7e50f0873306049a65a48`; exact ancestry was verified.
+The ledger at this immutable revision remains 32 items with `ready_pending=0`,
+five unfinished items and three named holds: A07 active, W03 verified, and
+R01/W02/F01 held. The applicable process checks on PR #244 passed; product,
+Rust, performance, release, installer and website jobs were scope-skipped and
+are not outcome proof. Its process worktree and refs were removed after clean
+merged reachability, while root/user-owned dirt and historical topology
+exceptions remain preserved.
+
+The continuation action is not a new goal: the coordinator keeps the existing
+runtime goal active, privately names and validates A07's exactly two conditions
+and six holdouts, obtains an isolated protocol-review `PASS`, and runs a fresh
+candidate-bound canary against `2902a07` before any screening cell. R01's raw
+macOS/native-readiness decision, W02 Cloudflare approval, F01 participant
+authorization and W03 publication stay separate. An empty pending queue is an
+intermediate route; keep a concrete coordinator-owned action live.
+
+## Historical checkpoint — 2026-09-10 UTC (after PR #243; superseded)
 
 At every resume, refresh this task from `origin/master` before using any
-snapshot below. The current revision is
+snapshot below. The historical revision was
 `80d2d9a7fea55c1413f7e50f0873306049a65a48` (PR #243). The pinned ledger
 contains 32 items with no ready pending card, five unfinished items and three
 named holds: A07 is active; R01, W02 and F01 retain their specific holds; W03

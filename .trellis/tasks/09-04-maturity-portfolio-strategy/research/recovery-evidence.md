@@ -4,8 +4,8 @@ Date: 2026-09-10. Scope: process artifacts, agent instructions and validation
 routing only. Product acceptance is unchanged; no card is promoted by this file.
 The historical proof below is retained; the current reconciliation and continuation
 route are recorded before the historical next-phase note.
-Process iteration: 98 (current-master continuation-control refresh; iteration 97
-was the post-merge ledger-routing reconciliation; iteration 96
+Process iteration: 99 (post-merge continuation reconciliation; iteration 98
+was the current-master continuation-control refresh; iteration 97
 was the ledger-routing helper pin/path correction; iteration 95 was the
 deterministic ledger-routing helper; iteration 94 was the A07
 private-manifest readiness audit; iteration 93 was the topology-audit
@@ -15,6 +15,49 @@ the proof-record delta was iteration 91, and post-merge reconciliation was
 iteration 92).
 Context level: not exposed. The before/after phase record is this evidence
 file, linked from the full historical progress log.
+
+## Post-merge continuation reconciliation — 2026-09-10 UTC (PR #244 / 2902a07)
+
+- Owner/phase: process coordinator / `reconcile-handoff`. A fresh fetch from
+  the preserved root succeeded and resolved `origin/master` to
+  `2902a073f39f8e8a47a9658a6358791c3e7f4655`, the merge of PR #244. The
+  reviewed final head `03a9b01eb1a5742b0cc84373e53f3f9aed8d0f1e` is an
+  ancestor (`git merge-base --is-ancestor` exited `0`) with base
+  `80d2d9a7fea55c1413f7e50f0873306049a65a48`.
+- PR #244's exact final hosted result is terminal: Documentation Scope, CI
+  Scope, Security Scope, Evidence Gates and GitGuardian passed. Build
+  Documentation, Check, Clippy, Code Coverage, MSRV, Performance Report,
+  Release Bundle Smoke, Rustfmt, Test Suite, installer/adoption and website
+  jobs were scope-skipped by the evidence-only classifier; they are retained
+  as non-applicable, never treated as passing product or performance proof.
+  The initial clean-checkout documentation precondition and frozen-install
+  retry are retained in iteration 98; the identical retry passed and built 48
+  pages.
+- The owned `/private/tmp/assura-train-continuation-control` worktree was clean
+  and removed after merged reachability; its local and remote
+  `docs/train-continuation-control` refs were deleted by exact identity. The
+  root's unknown A04 research file, the external dirty worktree, three
+  prunable registrations, one unreadable registration and historical
+  unmerged goal refs remain outside this slice's ownership. No stash, reset,
+  prune or broad cleanup was performed.
+- The refreshed topology report at this handoff is
+  `base=origin/master worktrees=35 dirty=2 prunable=3 unreadable=1
+  goal_branches=13 unmerged_goal=9`; report exited `0` and strict exited `1`.
+  `git worktree prune --dry-run -v` listed only the three stale registrations.
+  The strict nonzero result is the preserved root/external dirt and historical
+  topology outside this process slice, not a reason to erase or claim ownership
+  of them.
+- The revision-pinned ledger at `2902a07` reports `items=32`,
+  `ready_pending=0`, `unfinished=5`, `held=3`: A07 remains active, W03
+  remains verified, and R01/W02/F01 retain their named holds. No product card,
+  evaluator result, acceptance threshold, release, deployment, publication or
+  invitation changed. This is process reconciliation evidence only.
+- The next authorized action is A07's private exactly-two-condition manifest
+  and six-holdout validation, isolated protocol-review `PASS`, and a fresh
+  candidate-bound canary against `2902a07`; the R01 native-readiness/trace,
+  W02 Cloudflare approval, F01 participant authorization and W03 publication
+  decisions stay with their named owners. The supported runtime goal remains
+  active; an empty ready queue is an intermediate route, not completion.
 
 ## Current-master continuation-control refresh — 2026-09-10 UTC
 
