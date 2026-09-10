@@ -90,7 +90,8 @@
       "docs/a07-postmerge-canary-9b410e9",
       "docs/a07-postmerge-canary-9ad926a",
       "docs/a07-protocol-rebind-8be6103",
-      "docs/a07-postmerge-reconcile-b7043ab"
+      "docs/a07-postmerge-reconcile-b7043ab",
+      "docs/a07-current-129a-rebind"
     ],
     "continuation_goal": {
       "status": "active",
@@ -98,16 +99,16 @@
       "objective": "Drive this canonical maturity task through owned, evidence-bound slices with current-master provenance, independent review, full applicable gates, verified integration and terminal cleanup; never convert process, evaluator or skipped-check evidence into product success.",
       "source_policy": "Fetch origin/master and rerun the revision-pinned ledger before every phase; embedded SHAs are dated checkpoints only.",
       "current_checkpoint": {
-        "origin_master": "9ad926aeb6c85ebb19985a94813e96bebe519e7c",
+        "origin_master": "129a249fa49b72b835d999a812ef2bf9e6b3b7d9",
         "ledger": "items=32; ready_pending=0; unfinished=5; held=3",
         "active": "A07",
         "verified": "W03",
         "held": ["R01", "W02", "F01"],
         "current_evidence": {
-          "candidate": "9ad926a fresh candidate freeze and two source-only no-credit canaries pass the public contract; identity is current as-of this checkpoint and must be refreshed before use",
-          "holdout_binding": "the prior ebedb3e private six-handle rebind remains historical after the 9ad926a source advance; rebind current handles before allocation",
-          "manifest": "the prior ebedb3e private two-condition manifest, supplied-input receipts, mapping and 30 reserved cells remain historical after the 9ad926a source advance; rebind before allocation",
-          "protocol_review": "isolated protocol PASS covers the corrected 9ad926a no-credit canary identity gate only; current holdout/manifest protocol and all later screening gates remain required"
+          "candidate": "129a249 fresh candidate freeze and two source-only no-credit canaries pass the public contract; identity is current as-of this checkpoint and must be refreshed before use",
+          "holdout_binding": "the current 129a249 private six-handle binding resolves every handle to current-candidate construction metadata, preserves immutable creation timestamps and historical source digests, and remains no-credit",
+          "manifest": "the current 129a249 private two-condition manifest, supplied-input receipts, mapping and 30 reserved cells pass protocol review and remain no-credit",
+          "protocol_review": "isolated protocol PASS covers the current 129a249 canary, six-handle construction provenance, second-readonly confirmation and manifest metadata; screening, holdout credit and all later acceptance gates remain required"
         },
         "corrections": [
           "A02 is complete; the old plain-init handoff finding is historical.",
@@ -116,10 +117,11 @@
           "The first 8be protocol review correctly rejected an unbound holdout set, historical candidate hashes and a stale 9b review reference; a follow-up found shorthand toolchain and missing per-handle creation-record evidence, and all five findings were corrected privately with supplemental and primary metadata PASS, remaining zero-credit after b7043ab advanced master.",
           "PR #270 and PR #271 are reconciled process baselines at 9df6ae6 and 69246d3; the fresh 69246d3 candidate canary supersedes the 9df metadata packet for current preparation without changing product, threshold, allocation or authority state.",
           "PR #272 advanced the process baseline to ebedb3e; the fresh ebedb3e candidate canaries pass no-credit preparation, and the corrected private packet passed isolated protocol rereview after contract, provenance, receipt, holdout-reference, shim-identity and review-linkage findings were resolved without changing product, threshold, allocation or authority state.",
-          "PR #273 advanced the process baseline to 9ad926a; the fresh candidate freeze and two source-only canaries pass no-credit preparation. A scoped rereview corrected the evaluator/public-contract identity binding while preserving the separate private evaluator contract identity; no product, threshold, allocation or authority state changed."
+          "PR #273 advanced the process baseline to 9ad926a; the fresh candidate freeze and two source-only canaries pass no-credit preparation. A scoped rereview corrected the evaluator/public-contract identity binding while preserving the separate private evaluator contract identity; no product, threshold, allocation or authority state changed.",
+          "PR #274 advanced the process baseline to 129a249; the fresh candidate freeze and two source-only canaries pass no-credit preparation. The private protocol rereview found A07-129-HOLDOUT-PROVENANCE-001, which was corrected by rebinding all six handles to current-candidate construction metadata while preserving immutable creation timestamps and historical source digests; the scoped rereview then returned PASS. No product, threshold, allocation or authority state changed."
         ]
       },
-      "next_action": "Refresh origin/master, release/tag, PR/CI and topology state, rerun the revision-pinned ledger, re-freeze the current candidate and run a fresh no-credit canary; then rebind the private six-handle holdout and exactly-two-condition manifest to that candidate, obtain isolated protocol PASS, and only afterward seek the separately authorized screening gate. Retain earlier packets as metadata-only and do not allocate or credit cells without every later gate.",
+      "next_action": "Refresh origin/master, release/tag, PR/CI and topology state before every phase, rerun the revision-pinned ledger, re-freeze the current candidate and run a fresh no-credit canary; then verify the current six-handle construction provenance and exactly-two-condition manifest with isolated protocol PASS, and only afterward seek the separately authorized screening gate. Retain earlier packets as metadata-only and do not allocate or credit cells without every later gate.",
       "success_predicate": "Do not merge or mark a card complete without its observable contract, resolved review findings, applicable local/hosted proof, current-base reachability and clean owned closure. Preserve failures, thresholds, negative controls and no-credit dispositions.",
       "authority_boundaries": [
         "A07 evaluation is separate from implementation and remains zero-credit until its complete protocol, screening, holdout and final acceptance gates pass.",

@@ -49,17 +49,17 @@ W03 and F01's named holds separate.
 Do not finish the goal while a live review, repair, integration, cleanup or
 independently authorized preparation action remains.
 
-## Current candidate checkpoint (refresh required) — 2026-09-10 UTC (`9ad926a`)
+## Current candidate checkpoint (refresh required) — 2026-09-10 UTC (`129a249`)
 
-PR #273 reconciled the current candidate-preparation route and is merged at
-`9ad926aeb6c85ebb19985a94813e96bebe519e7c`; its tree and owned closure are
+PR #274 reconciled the current candidate-preparation route and is merged at
+`129a249fa49b72b835d999a812ef2bf9e6b3b7d9`; its tree and owned closure are
 verified. The merge changes no product, evaluator, threshold, allocation or
-authority state. The ebed, 9df and 692 candidate freezes, canaries, bindings
+authority state. The ebed, 9df, 692 and 9ad candidate freezes, canaries, bindings
 and isolated protocol `PASS` records are historical no-credit metadata after
 this source advance. The ledger remains 32 items, `ready_pending=0`, five
 unfinished and three held: A07 active, W03 verified, and R01/W02/F01 held.
 
-The current A07 candidate is frozen privately at 9ad926a. Its login-shell
+The current A07 candidate is frozen privately at 129a249. Its login-shell
 identity controls and two fresh source-only canaries pass the full public
 contract with seven dimensions and a meaningful negative control; these are
 no-credit preparation. The scoped protocol rereview returned `PASS` for the
@@ -67,14 +67,15 @@ no-credit canary identity gate after correcting one concrete evaluator/public-
 contract identity gap while retaining the separate private evaluator-contract
 identity.
 The prior ebed six-handle/manifest packet is historical after this source
-advance and must be rebound to 9ad926a before allocation. On resume, fetch
-again, rerun the ledger and topology audit, refresh release/tag and PR/CI facts,
-re-freeze the current candidate, run a fresh no-credit canary, rebind the
-private holdout/manifest, and obtain isolated protocol `PASS` before the
-separately authorized screening gate. Never allocate or credit cells from a
-process merge, canary or protocol metadata alone.
+advance. The current 129a249 holdout binding and manifest were re-reviewed
+after correcting `A07-129-HOLDOUT-PROVENANCE-001`; all six handles now point to
+current-candidate construction metadata and the scoped protocol rereview is
+`PASS`. On resume, fetch again, rerun the ledger and topology audit, refresh
+release/tag and PR/CI facts, and seek the separately authorized screening gate.
+Never allocate or credit cells from a process merge, canary or protocol
+metadata alone.
 
-## Historical 8be continuation checkpoint (superseded by current `9ad926a`; previously `b7043ab`) — 2026-09-10 UTC (`8be6103`)
+## Historical 8be continuation checkpoint (superseded by current `129a249`; previously `b7043ab`) — 2026-09-10 UTC (`8be6103`)
 
 The latest read-only refresh resolved `origin/master` to
 `8be61034e3f6f295753570ef2080e100d53efd4c` after PR #268. The reviewed
