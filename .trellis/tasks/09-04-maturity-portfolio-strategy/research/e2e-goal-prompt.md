@@ -69,9 +69,13 @@ finding and its rereview `PASS` are historical no-credit evidence after the 8be
 advance. The fresh 8be login-shell identity and two source-only canaries passed
 as no-credit preparation. The first current protocol review found the missing
 binding/provenance and stale-review-reference gaps; those records are corrected
-privately, and a scoped 8be rereview is required before any screening
-allocation. No screening, holdout or acceptance credit exists; preserve
-residual fixture, launcher, child-isolation and evaluator limitations.
+privately. The follow-up correction also canonicalizes one exact compiler/Cargo
+identity across the freeze, conditions, receipts and all six rows, and records
+an immutable creation time/evidence reference for each row that the second
+read-only confirmation repeats. A supplemental metadata rereview passed; the
+primary scoped 8be rereview is still required before any screening allocation.
+No screening, holdout or acceptance credit exists; preserve residual fixture,
+launcher, child-isolation and evaluator limitations.
 
 The measured `vps` host remains optional (16 CPUs, about 42 GiB available,
 95% root-disk use with about 20 GiB free, nightly Rust 1.95 and no Bun); the

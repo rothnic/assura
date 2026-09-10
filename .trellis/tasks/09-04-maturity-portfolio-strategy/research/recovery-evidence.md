@@ -4,7 +4,7 @@ Date: 2026-09-10. Scope: process artifacts, agent instructions and validation ro
 Older tail note: [recovery history 01](recovery-history-01.md) and
 [recovery history 02](recovery-history-02.md).
 The historical proof below is retained; the current continuation route and source reconciliation are recorded before historical notes.
-Process iteration: 124 (protocol findings corrected and current rereview queued;
+Process iteration: 125 (protocol packet canonicalized and current rereview queued;
 iteration 123 was the corrected continuation goal and current-source rebind;
 iteration 122 was the merged A07 process route and current-candidate canary;
 iteration 121 was the accepted stale-route finding delta; iteration 120 was the
@@ -57,8 +57,8 @@ file, linked from the full historical progress log.
   contains a current candidate freeze, immutable six-handle binding with
   source/contract digests and current provenance, a second read-only
   confirmation, an explicit raw-hook exclusion, and a current manifest review
-  reference. The two-condition receipts and 30 reserved cells remain
-  no-credit; the findings are not screening or product results.
+  reference. The two-condition receipts and 30 reserved cells remain no-credit; the findings are not screening or product results.
+- Follow-up packet correction canonicalizes one exact compiler/Cargo identity across freeze, conditions, receipts and all six rows, mirrors six immutable per-handle creation records in the second-readonly check, and records supplemental metadata rereview PASS while the primary isolated rereview remains live.
 - Next owner/action: complete the scoped 8be protocol rereview against the
   corrected binding and manifest. If it passes, re-fetch source/ledger and
   prepare only the separately authorized no-credit screening gate. Private

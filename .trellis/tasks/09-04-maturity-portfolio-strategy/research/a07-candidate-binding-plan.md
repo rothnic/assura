@@ -29,10 +29,14 @@ privately. Two fresh source-only canaries used the composed
 neither screening, holdout, follow-up-feature nor final-batch acceptance. The
 first isolated 8be protocol review found and named three metadata gaps; the
 holdout binding, candidate references and review reference are now corrected.
-The next ordered action is a scoped rereview of the corrected 8be packet, and
-only then preparation for screening if every identity/context/contract gate
-remains valid. This plan does not change the A07 contract, scoring thresholds,
-fixture allocation, or product acceptance.
+The correction also makes the compiler/Cargo identity byte-for-byte canonical
+across the freeze, condition rows, receipts and six bindings, and adds an
+immutable creation time/evidence record per handle with a matching second
+read-only comparison. A supplemental metadata review passed; the next ordered
+action is the primary scoped rereview of the corrected 8be packet, and only
+then preparation for screening if every identity/context/contract gate remains
+valid. This plan does not change the A07 contract, scoring thresholds, fixture
+allocation, or product acceptance.
 
 The canary's private event, evaluator, fixture, and identity provenance remains
 outside the repository. Public evidence retains only the candidate identity and

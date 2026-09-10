@@ -1,5 +1,23 @@
 # Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md), [progress-history-04.md], [progress-history-05.md](progress-history-05.md), [iterations 4-17](progress-history-06.md), [preserved history](progress-history-03.md), [A01 iterations 15–31](progress-history-08.md), [iterations 5–11](progress-history-09.md), [iteration 114](progress-history-10.md), [iteration 111](progress-history-11.md), [iterations 106–108](progress-history-12.md), [iterations 104 and earlier](progress-history-07.md), [iterations 32–33 and 42](progress-history-13.md), [iterations 44–47](progress-history-14.md))
 
+## Iteration 125 — 2026-09-10 — protocol packet canonicalization and rereview
+
+- The scoped protocol rereview supplied two additional concrete contract
+  findings: shorthand toolchain strings differed from the candidate freeze and
+  receipts did not carry the exact identity; the six holdout rows did not make
+  their creation-time evidence explicit in the second read-only record.
+- The private packet now uses one exact compiler/Cargo identity in the freeze,
+  manifest, both condition rows, both supplied-input receipts and every
+  per-layout binding. Each of the six valid handles carries `created_at` and a
+  creation-evidence reference, and the second read-only confirmation repeats
+  all six records and checks the canonical identity. The raw-hook draft remains
+  explicitly excluded; all screening and credit flags remain false.
+- An independent supplemental metadata rereview passed the corrected packet.
+  The primary isolated protocol rereview remains live; after its disposition,
+  the owner must refresh source/ledger before any separately authorized
+  no-credit screening preparation. No product, threshold, evaluator or
+  authority state changed. Context level: not exposed.
+
 ## Iteration 124 — 2026-09-10 — protocol findings corrected, rereview required
 
 - The isolated 8be protocol review returned concrete changes needed rather

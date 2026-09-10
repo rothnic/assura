@@ -52,8 +52,12 @@ authority and observed-outcome requirements.
   unbound holdout handles, historical candidate hashes in holdout metadata and
   a stale 9b review reference. The private manifest now references a current
   candidate freeze and immutable six-handle binding, with a second read-only
-  confirmation and explicit raw-hook exclusion. Screening, holdout and
-  final-acceptance credit remain zero until the current packet passes rereview.
+  confirmation and explicit raw-hook exclusion. A follow-up correction now
+  canonicalizes the exact compiler/Cargo identity across the freeze, conditions,
+  receipts and six rows, and mirrors six immutable per-handle creation records
+  in the second-readonly check. A supplemental metadata rereview passed;
+  screening, holdout and final-acceptance credit remain zero until the primary
+  current packet rereview passes.
 - Next owner/action: the A07 acceptance coordinator owns the scoped `8be6103`
   protocol rereview against the corrected binding and manifest. If it passes,
   refresh source/ledger and prepare only the separately authorized no-credit

@@ -22,6 +22,10 @@ Use a versioned record with these fields for each of exactly two conditions:
   inputs held constant;
 - `fixture_ref` and `contract_ref`: private handles, not repository paths;
 - `source_digest`, `contract_digest`, `prompt_digest` and candidate identity;
+- one exact canonical `toolchain` identity (including compiler and Cargo
+  commit/date when available), reused byte-for-byte in the candidate freeze,
+  both condition invariants, every supplied-input receipt and every holdout
+  row;
 - `public_summary`: a redacted description suitable for aggregate reporting.
 
 The two conditions must differ in one specified product-input variable only.
@@ -58,16 +62,20 @@ Before any cell is allocated, the private manifest must reference an immutable
 holdout-binding record. That record must map exactly six opaque handles (two
 valid unseen layouts for each stack) to their source-tree and full-contract
 digests, current candidate source/tree/binary/contract/prompt/toolchain
-identity, private hand-verification evidence, creation time, and a second
-read-only confirmation. It must list every disqualified or unfrozen layout
-outside the six-handle set. A historical binary hash, a prose claim that a
-layout is frozen, or an unbound handle is not current-candidate holdout proof.
+identity, private hand-verification evidence, an immutable per-handle
+`created_at` plus `creation_evidence_ref`, and a second read-only confirmation
+that repeats and compares those six creation records and the canonical
+toolchain. It must list every disqualified or unfrozen layout outside the
+six-handle set. A historical binary hash, a prose claim that a layout is
+frozen, an unbound handle, a missing creation record, or a shorthand toolchain
+string is not current-candidate holdout proof.
 
 ## Gate order
 
 1. Refresh and freeze the current-master candidate identity; this observation
    is not screening credit.
 2. Confirm the immutable six-handle holdout-binding record is frozen privately;
+   verify all six per-handle creation records and exact toolchain identity;
    exclude every disqualified or unfrozen construction draft.
 3. Validate the manifest schema, exactly-two condition rule, one-variable
    difference, private mapping, and complete 30-cell matrix in an isolated
@@ -101,8 +109,9 @@ two-condition manifest and corrected scoped protocol `PASS` exist for the 9b
 candidate, while its canaries and review are now historical no-credit evidence
 after the 8be advance. The 8be manifest now references a current candidate
 freeze and immutable six-handle binding record; validate its schema, mapping,
-receipts, and 30-cell invariants, then obtain an isolated protocol rereview
-before allocating any cell. Until that current-candidate rereview passes, A07
-remains active with zero screening/holdout/final-batch credit; prior canaries,
-process PRs and metadata-only reviews do not satisfy the current-candidate
-manifest gate.
+receipts, 30-cell invariants, per-handle creation records and exact canonical
+toolchain comparison, then obtain an isolated protocol rereview before
+allocating any cell. Until that current-candidate rereview passes, A07 remains
+active with zero screening/holdout/final-batch credit; prior canaries, process
+PRs and metadata-only reviews do not satisfy the current-candidate manifest
+gate.
