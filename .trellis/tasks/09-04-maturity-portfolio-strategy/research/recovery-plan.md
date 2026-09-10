@@ -1,6 +1,6 @@
 # Execution recovery plan
 
-Status: active continuation route, 2026-09-10 UTC (post-PR #243 reset). This is a plan and audit, not
+Status: active continuation route, 2026-09-10 UTC (post-PR #244 reconciliation). This is a plan and audit, not
 evidence that product cards passed. The supported runtime goal remains the
 coordinator; process corrections are merged separately from product card
 slices. Product changes stay in their separately owned card slices.
@@ -20,7 +20,34 @@ proof and full evaluator dimensions remain mandatory. CI, generated files and
 partial checks cannot substitute. R06/publication/pilots retain their separate
 authority and observed-outcome requirements.
 
-## Live continuation checkpoint — 2026-09-10 UTC (after PR #243)
+## Post-merge live checkpoint — 2026-09-10 UTC (PR #244 / `2902a07`)
+
+The read-only reset refreshed `origin/master=2902a073f39f8e8a47a9658a6358791c3e7f4655`,
+the merge of reviewed PR #244 final head `03a9b01eb1a5742b0cc84373e53f3f9aed8d0f1e`
+from base `80d2d9a7fea55c1413f7e50f0873306049a65a48`; exact ancestry was
+verified with `git merge-base --is-ancestor` exit `0`. Documentation Scope,
+CI Scope, Security Scope, Evidence Gates and GitGuardian passed on the exact
+head. All product, Rust, performance, release, installer and website jobs
+were scope-skipped and remain non-applicable. The first docs attempt's missing
+Astro dependency and the frozen-install/identical retry are retained as
+environment evidence; the retry passed and built 48 pages.
+
+The owned process worktree and `docs/train-continuation-control` refs were
+removed only after clean status and merged reachability. The root unknown file,
+external dirty worktree, three prunable registrations, one unreadable
+registration and historical unmerged goal refs remain preserved. At this
+revision the ledger still reports 32 items, zero ready pending, five
+unfinished and three held; A07 is active, W03 verified, and R01/W02/F01 retain
+their exact holds. This slice changes no card state or external authority.
+
+**Continuation decision.** Keep the supported runtime goal active and carry the
+process coordinator's next action into the new clean worktree: privately name
+and validate A07's exactly two product-input conditions and six holdouts, obtain
+an isolated protocol-review `PASS`, then run a fresh candidate-bound canary
+against `2902a07`. Do not launch screening or infer release, deployment,
+publication or invitation authority from this documentation slice.
+
+## Historical checkpoint — 2026-09-10 UTC (after PR #243; superseded)
 
 This is the current read-only reset. The root checkout is an older strategy
 branch and has one unknown untracked file,
@@ -159,8 +186,8 @@ classified historical or user-owned and must not be deleted by pattern.
 
 | Priority / owner | Action | Exit proof / next action |
 | --- | --- | --- |
-| 1 / process coordinator | Reconcile the live current-master pointer across the recovery plan, A07 routing evidence, continuation prompt, and task metadata | This checkpoint is based on `80d2d9a`; record exact review/gate/merge/cleanup proof before advancing the train |
-| 2 / train coordinator | Apply the current A07 evidence and manifest contract before any allocation; keep private values outside public artifacts | Create/validate the private manifest, obtain protocol-review `PASS`, then refresh the canary against `80d2d9a` |
+| 1 / process coordinator | Reconcile the live current-master pointer across the recovery plan, A07 routing evidence, continuation prompt, and task metadata | PR #244 is merged at `2902a07`; preserve exact review/gate/merge/cleanup proof and carry the train into the next A07 phase |
+| 2 / train coordinator | Apply the current A07 evidence and manifest contract before any allocation; keep private values outside public artifacts | Create/validate the private manifest, obtain protocol-review `PASS`, then refresh the canary against `2902a07` |
 | 3 / A07 implementation owner | Test explicit composed init proposal against public semantics; plain init remains config-only; preserve conflicts and honest runtime permission reporting | Focused negative/positive controls, review, required final-source local/hosted gates; merge slice only if its own goals pass; rerun blinded protocol before A07 completion |
 | 4 / independent R01 investigator | Read latest R01 packet/evidence and rejected diagnostics; determine missing causal observable before spending another platform run | Concrete hypothesis, distinguishing observation and reviewed method amendment; do not repeat prior unchanged diagnostic or invent native readiness |
 | 5 / topology owner | Inventory existing goal branches, live owners and base reachability; repair audit parser as a separately tested slice if needed | Complete report; merged clean branches removed by exact identity or verified archive; unknown work preserved |
@@ -237,6 +264,6 @@ Record actual reviewer decisions and limitations in `recovery-evidence.md`.
 
 Next action: keep the supported runtime goal active and follow the current
 checkpoint's identity/holdout → manifest validation → isolated protocol review
-`PASS` → fresh current-master canary against `80d2d9a` → screening sequence.
+`PASS` → fresh current-master canary against `2902a07` → screening sequence.
 Do not replace or complete an unfinished goal to repair a status mismatch, and
 do not treat this process reconciliation as A07 acceptance.

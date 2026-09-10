@@ -9,6 +9,9 @@ Resume the existing supported runtime goal; do not create a replacement goal
 for a card boundary or a compaction. Refresh the `release` ref and tags as
 separate availability facts, and record a missing release branch rather than
 turning it into release proof.
+After every merge, refresh `origin/master` and reconcile the task pointer,
+ledger and owned topology before selecting or handing off; a clean merge is a
+phase transition, not completion of the runtime goal.
 
 Copy the following prompt into a coding agent that can access the repository and planning task. It is designed for sequential execution with limited context. The queue and solution cards are the source of truth; no knowledge of the earlier conversation is required.
 
