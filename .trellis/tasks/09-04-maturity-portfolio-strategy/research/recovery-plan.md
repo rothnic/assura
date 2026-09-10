@@ -1,18 +1,18 @@
 # Execution recovery plan
 
 Status: active continuation route, 2026-09-10 UTC. The latest post-merge
-refresh resolved `origin/master=6fa806d05d4fab7245f35a1f57d21c237a72a809`
-after PR #264; this pointer is an as-of checkpoint and must be refreshed before
-use. PR #264 merged the reviewed process pointer-reconciliation candidate
-`4cfd9174d1c305a8d62c88dee9a3a49368a37885`, based on
-`bcd0386b4f864163e3f3a08e81d6106a790491c2`; its merged tree matches and it
-changed no product or acceptance state. The earlier PR #263/`bcd0386` and
-PR #262/`040babb` candidate checkpoints are historical. The latest diagnostic is the bounded R01 raw-log recovery recorded at candidate base
-`c1202af` and merged as process evidence; it does not close R01 or authorize a
-retry. This is a plan and audit, not evidence that product cards passed. The
-supported runtime goal remains the coordinator; process corrections are
-merged separately from product card slices. Product changes stay in their
-separately owned card slices.
+refresh resolved `origin/master=af73d8a5004ea8c0d2298202467d1635853434c9`
+after PR #266; this pointer is an as-of checkpoint and must be refreshed before
+use. PR #266 merged the reviewed A07 private-readiness audit candidate
+`c2d47aa2c8d6263f99d2968d187cf4d26d0a0581`, based on
+`afcbe967fd6f1fcc4fe0d7a606bfa288eb4c8df5`; its merged tree matches and it
+changed no product or acceptance state. Earlier pointer and reconciliation
+checkpoints are historical. The latest diagnostic is the bounded R01 raw-log
+recovery recorded at candidate base `c1202af` and merged as process evidence;
+it does not close R01 or authorize a retry. This is a plan and audit, not
+evidence that product cards passed. The supported runtime goal remains the
+coordinator; process corrections are merged separately from product card
+slices. Product changes stay in their separately owned card slices.
 
 Use the compact [maturity train orchestration plan](orchestration-plan.md) for
 the reset, layered-context, gate-placement, review, integration and closure
@@ -34,26 +34,31 @@ proof and full evaluator dimensions remain mandatory. CI, generated files and
 partial checks cannot substitute. R06/publication/pilots retain their separate
 authority and observed-outcome requirements.
 
-## Current as-of post-merge continuation checkpoint — 2026-09-10 UTC (`origin/master=6fa806d`)
+## Current as-of A07 protocol-review checkpoint — 2026-09-10 UTC (`origin/master=af73d8a`)
 
-- Owner/phase: process coordinator / `post-merge-reconcile`. PR #264 merged
-  the independently reviewed process candidate `4cfd917` (based on
-  `bcd0386`) as `6fa806d`; merged-tree equality and reachability passed.
-  Applicable Documentation, CI, Security, Evidence and GitGuardian checks
-  passed; product, Rust, performance, release, installer and website jobs
-  were scope-skipped and remain non-applicable, not acceptance proof.
-- The revision-pinned ledger at `origin/master=bcd0386` has 32 items, zero
+- Owner/phase: process coordinator / `review`; clean owned checkout
+  `/private/tmp/assura-a07-manifest-review` on
+  `docs/a07-condition-manifest-review`, based on freshly fetched
+  `origin/master=af73d8a5004ea8c0d2298202467d1635853434c9`.
+- PR #266's process-only candidate `c2d47aa2c8d6263f99d2968d187cf4d26d0a0581`
+  was independently reviewed and merged as `af73d8a`; merged-tree equality,
+  reachability and applicable Documentation, CI, Security, Evidence and
+  GitGuardian checks passed. Product, Rust, performance, release, installer
+  and website jobs were scope-skipped and remain non-applicable, not
+  acceptance proof.
+- The revision-pinned ledger at `origin/master=af73d8a` has 32 items, zero
   ready pending, five unfinished and three held: A07 active, W03 verified,
   and R01/W02/F01 separately held. The context-routing audit is `43/43 PASS`.
-- The owned pointer-refresh route is process-only. Its candidate/merge proof,
-  current-master reconciliation and exact branch/worktree cleanup must be
-  recorded before handoff; no product, screening, holdout, publication,
-  release, deployment or invitation credit changes.
-- A07's next real action remains private: exactly-two-condition manifest,
-  supplied-input receipt, blinded mapping, complete 30-cell matrix and
-  isolated protocol-review `PASS`; only then refresh source/identity for a
-  fresh candidate-bound no-credit canary. R01, W02, W03 and F01 retain their
-  named authority/evidence holds.
+- The private A07 store now contains exactly two explicit conditions, fresh
+  supplied-input receipts, a separate blinded mapping, six frozen holdout
+  handles and 30 reserved cells. An isolated protocol reviewer found three
+  concrete metadata gaps; those corrections are applied privately and a
+  scoped rereview is live. No screening, holdout or acceptance credit exists.
+- On protocol `PASS`, refresh source and ledger again, freeze a new candidate
+  identity and run only the fresh candidate-bound no-credit canary. A concrete
+  rereview finding blocks that canary and is fixed only in the private
+  manifest lane. R01, W02, W03 and F01 retain their named authority/evidence
+  holds.
 - Refresh `origin/master` and rerun the ledger before use. This SHA is an
   as-of routing checkpoint, not a permanent source pin.
 

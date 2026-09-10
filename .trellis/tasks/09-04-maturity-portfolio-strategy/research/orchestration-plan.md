@@ -94,18 +94,23 @@ public evidence.
 
 ## Current train route
 
-At the latest verified refresh (`origin/master=6fa806d`, as-of; refresh before
-use, after reviewed process PR #264), the ledger had 32 items, no ready-pending
-card, five unfinished cards and three narrow holds. A07 is the active lane: its next action is the private
-exactly-two-condition manifest, supplied-input receipt, blinded mapping,
-complete 30-cell matrix and isolated protocol-review `PASS`; only then may a
-fresh current-master identity canary run. R01 still needs the raw callback
-trace or a specific maintainer native-readiness decision. W02 needs explicit
-Cloudflare approval before any current push that could trigger builds. W03's
-technical change is verified but publication remains separately authorized.
-F01's pilot kit is prepared, while participant selection/invitations remain
-Nick-authorized. These holds do not end independent process, review, topology,
-or authorized integration work.
+At the latest verified refresh (`origin/master=af73d8a`, as-of; refresh before
+use, after reviewed process PR #266), the ledger has 32 items, no ready-pending
+card, five unfinished cards and three narrow holds. A07 is the active lane: its
+private exactly-two-condition manifest, supplied-input receipts, blinded
+mapping, six holdout handles and complete 30-cell reserved matrix exist. The
+isolated protocol review returned a redacted `PASS` with no findings after
+correcting receipt source SHA/tree provenance, value-neutral public summaries,
+and explicit stack-set/toolchain invariants in each condition row. This PASS is
+only the private protocol gate; no canary or screening credit is allowed yet.
+Refresh the source/ledger, freeze a new identity and run the fresh no-credit
+candidate-bound canary next. R01 still needs the raw callback trace or a specific
+maintainer native-readiness decision. W02 needs explicit Cloudflare approval
+before any current push that could trigger builds. W03's technical change is
+verified but publication remains separately authorized. F01's pilot kit is
+prepared, while participant selection/invitations remain Nick-authorized.
+These holds do not end independent process, review, topology, or authorized
+integration work.
 
 ## Checkpoint record
 

@@ -1,10 +1,11 @@
 # Recovery process verification
 
-Date: 2026-09-10. Scope: process artifacts, agent instructions and validation
-routing only. Product acceptance is unchanged; no card is promoted by this file.
-The historical proof below is retained; the current continuation route and
-source reconciliation are recorded before the historical next-phase notes.
-Process iteration: 118 (A07 private-readiness audit at current master; iteration 117
+Date: 2026-09-10. Scope: process artifacts, agent instructions and validation routing only. Product acceptance is unchanged; no card is promoted by this file.
+Older tail note: [recovery history](recovery-history-01.md).
+The historical proof below is retained; the current continuation route and source reconciliation are recorded before historical notes.
+Process iteration: 120 (A07 protocol review PASS at current master; iteration 119
+was the A07 private manifest review at current master; iteration 118
+was the A07 private-readiness audit at current master; iteration 117
 was the post-merge reconciliation for PR #264; iteration 116
 was the current-master pointer reconciliation after PR #263, iteration 115
 was the PR #262 post-merge reconciliation, iteration 114 was the preserved
@@ -33,7 +34,31 @@ iteration 92).
 Context level: not exposed. The before/after phase record is this evidence
 file, linked from the full historical progress log.
 
-## Current as-of private-readiness audit — 2026-09-10 UTC (`origin/master=afcbe967`)
+## Current as-of private manifest review — 2026-09-10 UTC (`origin/master=af73d8a`)
+
+- Owner/phase: process coordinator `/root` / `review`; clean checkout
+  `/private/tmp/assura-a07-manifest-review` on
+  `docs/a07-condition-manifest-review`, based on fetched
+  `origin/master=af73d8a5004ea8c0d2298202467d1635853434c9`.
+- Reset proof: workflow/context routing `43/43 PASS`; ledger
+  `items=32`, `ready_pending=0`, `unfinished=5`, `held=3` (A07 active,
+  W03 verified, R01/W02/F01 held); no pending card is independently executable.
+- The private store has an exactly-two-condition manifest, separate mapping,
+  six holdout handles and 30 reserved cells. Final supplied-input receipts
+  came from sibling-free parents with byte-identical source-only fixtures;
+  both exited `0` and match the frozen candidate. Earlier contaminated or
+  non-identical attempts remain private invalid/no-credit evidence.
+- Isolated reviewer `/root/a07_protocol_review` inspected only manifest,
+  mapping, receipt and matrix metadata and returned redacted `PASS` with no
+  findings after the three corrections. Raw output, transcripts and fixture
+  contents were excluded. This is only the protocol gate: no screening,
+  holdout or acceptance credit or product/authority state changed.
+- Next owner/action: refresh source/ledger, freeze a new current-master
+  identity and run a fresh candidate-bound no-credit canary. The PASS does not
+  verify fixture contents, unseen holdouts, launcher identity, child isolation
+  or evaluator outcomes. Closure remains active.
+
+## Historical current as-of private-readiness audit — 2026-09-10 UTC (`origin/master=afcbe967`, superseded by `af73d8a`)
 
 - Owner/phase: process coordinator `/root` / `investigate-prepare`; clean
   owned checkout `/private/tmp/assura-a07-route.WCNcQp` on
@@ -973,16 +998,3 @@ route is recorded below and in `recovery-plan.md`.
   the frozen `pnpm --dir website install --frozen-lockfile` bootstrap exited
   `0`, and the identical `cargo xtask docs` rerun exited `0` after building 48
   pages. The failed precondition is retained and is not counted as a pass.
-
-## Historical next phase (superseded)
-
-Appending a recovery summary initially made `progress.md` exceed its existing
-1,000-line limit; the source structure check failed. The correction keeps the
-checkpoint here and adds a link in the log's existing heading,
-preserving historical entries and the unchanged limit. Rerun the source check
-after this correction; the failed attempt is not passing evidence.
-
-Resolve candidate review, rerun affected checks, then submit the reviewed final
-candidate for applicable hosted checks. Merge only after those pass. Verify
-integration and remove only this process slice's clean owned branch/worktree.
-The wider recovery plan remains for the train coordinator to execute.
