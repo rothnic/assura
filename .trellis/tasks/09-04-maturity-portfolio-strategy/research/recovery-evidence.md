@@ -59,6 +59,22 @@ file, linked from the full historical progress log.
   decisions stay with their named owners. The supported runtime goal remains
   active; an empty ready queue is an intermediate route, not completion.
 
+## Reconciliation candidate review — 2026-09-10 UTC (PR #245)
+
+- Independent review returned `PASS` with no findings for exact candidate
+  `cb11a22dcdf5a01fdb5cbf8f9f2ce168e76d3a8f` against
+  `2902a073f39f8e8a47a9658a6358791c3e7f4655`. The reviewer verified exactly
+  seven intended documentation/Trellis/task-metadata paths, clean status and
+  ancestry, linked history, JSON/structure/workflow/evidence/target-state/
+  docs/format/diff gates, and no product/evaluator/threshold/privacy/
+  authority/CI-policy changes.
+- PR #245's applicable hosted checks were terminal and passing: Documentation
+  Scope, CI Scope, Security Scope, Evidence Gates and GitGuardian. Product,
+  Rust, performance, release, installer and website jobs remained explicit
+  scope skips and are not product or performance proof. The final review delta
+  below must receive a scoped rereview and the same exact-head checks before
+  merge.
+
 ## Current-master continuation-control refresh — 2026-09-10 UTC
 
 - Owner/phase: process coordinator / `investigate-prepare`. The read-only reset
