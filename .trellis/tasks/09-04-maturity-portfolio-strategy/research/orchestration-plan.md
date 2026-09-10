@@ -142,3 +142,11 @@ checkout. It returned exit 1 with 11 findings: a 295-line AGENTS router, an
 overlong skill description, no `.trellis/tasks/` scope, and all seven layered
 references absent. This demonstrates the audit catches the exact stale-context
 failure without treating the old checkout's task state as current evidence.
+
+The independent impasse review also found that the train's `task.json` primary
+`branch` still pointed at the historical A05 checkout. The correction clears
+that field to `null` and declares the active process branch only in
+`meta.execution_branches`; `cargo xtask target-state` then passes without
+inventing a single permanent train branch. This keeps session attribution from
+silently selecting a completed card while preserving explicit card-branch
+provenance.
