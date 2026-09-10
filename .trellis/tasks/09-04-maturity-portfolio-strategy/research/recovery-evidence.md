@@ -4,9 +4,10 @@ Date: 2026-09-10. Scope: process artifacts, agent instructions and validation
 routing only. Product acceptance is unchanged; no card is promoted by this file.
 The historical proof below is retained; the current reconciliation and continuation
 route are recorded before the historical next-phase note.
-Process iteration: 91 (after the highest recorded historical iteration, 88;
-PR #236 closure was iteration 89 and the pointer candidate review was
-iteration 90).
+Process iteration: 92 (post-merge reconciliation; after the highest recorded
+historical iteration, 88; PR #236 closure was iteration 89, the pointer
+candidate review was iteration 90, and the proof-record delta was iteration
+91).
 Context level: not exposed. The before/after phase record is this evidence
 file, linked from the full historical progress log.
 
