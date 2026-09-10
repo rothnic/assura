@@ -4,13 +4,47 @@ Date: 2026-09-10. Scope: process artifacts, agent instructions and validation
 routing only. Product acceptance is unchanged; no card is promoted by this file.
 The historical proof below is retained; the current reconciliation and continuation
 route are recorded before the historical next-phase note.
-Process iteration: 94 (A07 private-manifest readiness audit; iteration 93 was
-the topology-audit helper correction; after the highest recorded historical
-iteration, 88; PR #236 closure was iteration 89, the pointer candidate review
-was iteration 90, the proof-record delta was iteration 91, and post-merge
-reconciliation was iteration 92).
+Process iteration: 95 (deterministic ledger-routing helper; iteration 94 was
+the A07 private-manifest readiness audit; iteration 93 was the topology-audit
+helper correction; after the highest recorded historical iteration, 88; PR
+#236 closure was iteration 89, the pointer candidate review was iteration 90,
+the proof-record delta was iteration 91, and post-merge reconciliation was
+iteration 92).
 Context level: not exposed. The before/after phase record is this evidence
 file, linked from the full historical progress log.
+
+## Ledger-routing helper — 2026-09-10
+
+- The current base is `origin/master=2607709fd218685bb8882e278428bd798f6a6291`.
+  This process-only slice adds a read-only queue-routing helper at
+  `.agents/skills/assura-goal-execution/scripts/audit-ledger.sh` and a concise
+  route to it from the goal-execution skill. It changes no product behavior,
+  evaluator input, acceptance threshold, release, deployment, publication,
+  invitation or authority surface.
+- The helper reads the backlog and declared execution branches from an
+  explicit Git revision and emits `BASE`, `TASK`, `CARD`, `READY_PENDING`,
+  `UNFINISHED`, `BRANCH` and `SUMMARY` records. It requires every declared
+  dependency to resolve to a `done` or `verified` item before reporting a
+  pending card as ready; an unknown dependency cannot become ready through an
+  empty-state default. The output is routing evidence only: it does not prove
+  owner liveness, card acceptance, review, or merge authorization.
+- `bash -n` and the current repository run passed. At the current base the
+  helper reports `items=32`, `ready_pending=0`, `unfinished=5`, `held=3` and
+  routes A07 as active while retaining R01/W02/F01 held actions and W03's
+  verified state. A disposable `HEAD` fixture reported one ready pending card,
+  one held card, and excluded a pending card whose dependency ID was absent;
+  this verifies both positive and missing-dependency controls without touching
+  the Assura checkout.
+- Owner/phase: process coordinator / investigate-prepare. The owned checkout
+  is `/private/tmp/assura-ledger-routing-helper` on
+  `docs/ledger-routing-helper`, based on the refreshed master. The exact
+  candidate and final gates will be recorded before review; no private
+  evaluator or fixture values are copied into repository evidence.
+- The next authorized action remains the A07 coordinator's private
+  exactly-two-condition manifest and isolated protocol review. The helper must
+  be used at the next continuation before any pending-card selection; its
+  result cannot override that A07 protocol gate or the preserved topology
+  ownership exceptions.
 
 ## Current A07 readiness audit — 2026-09-10
 
