@@ -4,7 +4,8 @@ Date: 2026-09-10. Scope: process artifacts, agent instructions and validation
 routing only. Product acceptance is unchanged; no card is promoted by this file.
 The historical proof below is retained; the current reconciliation and continuation
 route are recorded before the historical next-phase note.
-Process iteration: 100 (post-merge closure for PR #245; iteration 99 was the
+Process iteration: 101 (current-master/private-manifest readiness re-audit;
+iteration 100 was the post-merge closure for PR #245; iteration 99 was the
 post-merge continuation reconciliation; iteration 98 was the current-master
 continuation-control refresh; iteration 97 was the post-merge ledger-routing
 reconciliation; iteration 96 was the ledger-routing helper pin/path correction;
@@ -17,6 +18,37 @@ the proof-record delta was iteration 91, and post-merge reconciliation was
 iteration 92).
 Context level: not exposed. The before/after phase record is this evidence
 file, linked from the full historical progress log.
+
+## Current-master/private-manifest readiness re-audit — 2026-09-10 UTC
+
+- Owner/phase: process coordinator / `investigate-prepare`, with the A07
+  acceptance coordinator as the named next-action owner. The read-only reset
+  fetched `origin/master=d62dd40f0d915e693db25cdea2fb29d1000e9b50`; no product
+  source, evaluator, threshold, release, deployment, publication or
+  invitation state changed.
+- The immutable ledger at that revision reports `items=32`,
+  `ready_pending=0`, `unfinished=5`, `held=3`: A07 is active, W03 verified,
+  and R01/W02/F01 retain their named holds. Active/implemented/verified rows
+  were inspected before pending rows; no pending card is executable.
+- A redacted read-only audit of the private A07 store found six valid frozen
+  holdout layouts and one disqualified construction draft. The available
+  construction document remains explicitly a draft and does not contain the
+  required separate exactly-two-condition record, private mapping,
+  supplied-input proof, complete 30-cell matrix or isolated protocol-review
+  `PASS`. Five distinct screen-named run families are retained as historical
+  controls/attempts and receive no allocation credit; private values and raw
+  evaluator output remain outside this repository.
+- This is a concrete A07 held action, not a whole-goal stop: the smallest
+  resolution is a versioned private manifest plus isolated protocol review
+  returning redacted `PASS` or findings. After `PASS`, refresh the candidate
+  identity against `d62dd40`, run the no-credit full-contract canary, and only
+  then allocate the authorized 30-cell screen. No historical canary or run is
+  reused.
+- The topology audit reported `base=origin/master worktrees=34 dirty=2
+  prunable=3 unreadable=1 goal_branches=13 unmerged_goal=9`; `--report`
+  exited `0` and `--strict` exited `1`. The preserved root unknown file,
+  external dirty worktree, stale registrations and historical goal branches
+  remain outside ownership and were not changed.
 
 ## Post-merge cleanup reconciliation — 2026-09-10 UTC (PR #245 / 27ef54d)
 

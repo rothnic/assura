@@ -1,5 +1,26 @@
 # Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md), [progress-history-04.md], [progress-history-05.md], [preserved history](progress-history-03.md))
 
+## Iteration 101 — 2026-09-10 — current-master/private-manifest readiness re-audit
+
+- The read-only reset fetched `origin/master=d62dd40`; the revision-pinned
+  ledger reports 32 items, zero ready pending, five unfinished and three held.
+  A07 remains active, W03 verified, and R01/W02/F01 retain separate holds; no
+  pending card is executable.
+- A redacted audit found six valid frozen A07 holdout layouts and one
+  disqualified construction draft, but no separate exactly-two-condition
+  manifest, supplied-input mapping, complete 30-cell matrix or isolated
+  protocol-review `PASS`. Five screen-named run families remain historical or
+  pre-gate attempts and receive no allocation credit.
+- The A07 acceptance coordinator owns the next real observation: version and
+  privately validate the manifest, obtain isolated protocol-review `PASS`,
+  refresh the current-master candidate identity, and run a no-credit canary
+  before any screening cell. Private values and raw evaluator results remain
+  outside repository evidence; no thresholds or authority boundaries changed.
+- Context level: not exposed. Current base, card, proof gap, owner and next
+  action are recorded in [recovery-evidence.md](recovery-evidence.md) and
+  `evidence/A07.md`; the preserved dirty/ historical topology set is outside
+  this slice's ownership.
+
 ## Iteration 100 — 2026-09-10 — post-merge closure for PR #245
 
 - The reviewed reconciliation candidate `391178676931ba935ad0058fce0bc55e101b3641` merged as PR #245 at `27ef54d489847e41e5907f7c74f870a2391a7dae`; exact ancestry from `origin/master` was verified after fetch. Its applicable Documentation Scope, CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed; product/Rust/performance/release/installer/website checks were explicit skips and remain non-applicable.
