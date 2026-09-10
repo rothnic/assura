@@ -149,6 +149,13 @@ exit 1 with `TASK_FILE executor-prompt.md FAIL`; the file was restored and the
 worktree removed cleanly. The four task routing artifacts are therefore
 required inputs, not optional observations.
 
+The independent review of candidate `e479ac6` raised `CTX-001` because those
+four files were initially optional. The finding was accepted and fixed in
+`8803376`; the scoped rereview of `5dc8bfa` returned `PASS` with no remaining
+concrete findings. The audit remains intentionally structural: it does not
+prove task-content freshness, external references, or private evaluator
+semantics, so those checks stay in the goal and card contracts.
+
 The independent impasse review also found that the train's `task.json` primary
 `branch` still pointed at the historical A05 checkout. The correction clears
 that field to `null` and declares the active process branch only in
