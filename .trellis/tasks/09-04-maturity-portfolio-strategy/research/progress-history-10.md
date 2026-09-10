@@ -40,5 +40,3 @@
   gate, and this slice does not alter the task branch policy. Context level is
   not exposed. Continue while the private protocol action exists; closure
   remains `active`.
-
-<!-- End of Iteration 114 history. -->

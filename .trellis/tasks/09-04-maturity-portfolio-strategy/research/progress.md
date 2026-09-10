@@ -2,8 +2,7 @@
 
 ## Iteration 115 — 2026-09-10 — PR #262 post-merge reconciliation
 
-- Owner/session: A07 checkpoint writer / Trellis implementer
-  `/root/a07_checkpoint_writer`; phase: `post-merge-reconcile` /
+- Owner/session: process coordinator `/root`; phase: `post-merge-reconcile` /
   `route-audit`; closure: `active`. Clean owned checkout:
   `/private/tmp/assura-a07-postmerge.Au57JM` on `docs/a07-postmerge-route`.
 - Source/candidate SHA: PR [#262](https://github.com/rothnic/assura/pull/262)
