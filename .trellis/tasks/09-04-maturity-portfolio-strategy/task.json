@@ -62,7 +62,8 @@
       "goal/maturity-goal-handoff",
       "docs/a07-parent-isolation",
       "docs/a07-screening-routing",
-      "docs/recovery-plan-current"
+      "docs/recovery-plan-current",
+      "docs/current-master-pointer-refresh"
     ]
   }
 }

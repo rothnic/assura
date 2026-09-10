@@ -2,9 +2,11 @@
 
 Date: 2026-09-10. Scope: process artifacts, agent instructions and validation
 routing only. Product acceptance is unchanged; no card is promoted by this file.
-The historical proof below is retained; the current closure and continuation
+The historical proof below is retained; the current reconciliation and continuation
 route are recorded before the historical next-phase note.
-Process iteration: 89 (after the highest recorded historical iteration, 88).
+Process iteration: 91 (after the highest recorded historical iteration, 88;
+PR #236 closure was iteration 89 and the pointer candidate review was
+iteration 90).
 Context level: not exposed. The before/after phase record is this evidence
 file, linked from the full historical progress log.
 
@@ -85,7 +87,7 @@ historical goal-tool read returned no active goal, which is not current runtime
 state and must not be used to stop the supported goal. The current continuation
 route is recorded below and in `recovery-plan.md`.
 
-## Current closure — 2026-09-10
+## Prior closure — 2026-09-10 (PR #236; superseded)
 
 - PR #236 merged as `35cce811532c793f9446d13b8ef42f6390d370bf` from reviewed
   head `2008f3fe7eecb6806492490511b3a8d6a47c4ab1` on refreshed `origin/master`.
@@ -107,6 +109,56 @@ route is recorded below and in `recovery-plan.md`.
   bootstrap, the identical docs gate passed with exit 0 and built 48 pages.
   The initial environment failure is retained as a setup observation, not
   treated as a skipped or passing check.
+
+## Current reconciliation — 2026-09-10
+
+- A fresh read-only reset fetched `origin/master=8cabc53658530a239c00a0c55cbae9b050ad74ca`.
+  This is the merge of PR #237 from reviewed head
+  `19c5941a8717f05f305032be56080f626fdd06b5`; the prior PR #236 merge
+  `35cce811` and its `5329abd` follow-on baseline are now historical.
+- The reconciled slice updates only live process pointers and the task's
+  execution-branch metadata. It does not alter product source, A07 scoring,
+  private conditions, holdout allocation, performance thresholds, or authority
+  boundaries. A07 remains active with no screening, holdout, or acceptance
+  credit.
+- The current owned checkout is `/private/tmp/assura-current-master-pointer-refresh`
+  on `docs/current-master-pointer-refresh`, based on `8cabc536`; its owner is
+  this process coordinator. The root checkout's untracked
+  `research/a04-host-status-doctor-permission-gap.md` remains unknown/user-owned
+  and untouched. Existing detached archives and stale registrations remain
+  outside this slice's ownership.
+- Live routing now points the recovery plan, A07 candidate plan/evidence, and
+  continuation prompt at `8cabc536`. Older hashes remain explicitly labeled
+  historical. The next authorized A07 action is still private manifest and
+  isolated protocol review before a fresh candidate-bound canary; no canary or
+  screening allocation is claimed here.
+- The committed pointer diff passed the local process tier: workflow gate
+  `Ready: yes`; `git diff --check`, JSON parsing, `cargo xtask evidence`,
+  `cargo xtask target-state`, `cargo fmt --all -- --check`, and
+  `assura check --format agent --agent codex` all exited `0`. The source check
+  returned `success: true` with six unchanged low-severity max-line advisories;
+  none is in the changed process paths. `scripts/ci-scope.sh --base origin/master
+  --head HEAD` reported `evidence=true` and Rust/release/performance/rustdoc/
+  website/security false, so no product or performance gate was silently
+  skipped.
+- The required docs gate first exited `1` because the disposable checkout had
+  no `website/node_modules` (`astro: command not found`). The exact frozen
+  bootstrap `pnpm --dir website install --frozen-lockfile` exited `0`, and the
+  identical `cargo xtask docs` rerun exited `0` after building 48 pages. The
+  failed environment precondition is retained; it is not counted as a pass.
+- Independent process review of the frozen pointer-reconciliation candidate
+  returned `ready within reviewed scope — PASS` with no findings. It verified
+  current-base ancestry, consistent `8cabc536` routing, historical/no-credit
+  labeling for `35cce81`/`5329abd`/`77b41fe`, unchanged thresholds and authority
+  boundaries, and no product/evaluator/private-fixture changes. The review did
+  not establish hosted results, post-merge reachability, private manifest
+  validity, canary success, or A07 acceptance; scoped rereview is required for
+  this proof-record delta before submission.
+- Required completion remains: scoped rereview, applicable hosted
+  scope/evidence checks on the exact final head, merge, post-merge reachability,
+  and clean owned-worktree closure. A strict topology failure caused by
+  preserved unknown dirt or stale missing-gitdir registrations is retained as a
+  limitation, never represented as green.
 
 ## Historical next phase (superseded)
 

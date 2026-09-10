@@ -1,12 +1,12 @@
 # A07 candidate-binding correction plan
 
 Status: active. Owner: this thread's A07 acceptance coordinator. The current
-baseline is refreshed `origin/master` `5329abd880fb26b0eeded5176e2d308b654d2cc9`;
+baseline is refreshed `origin/master` `8cabc53658530a239c00a0c55cbae9b050ad74ca`;
 the candidate-bound, context-isolated canary against the prior `77b41fe`
 baseline passed the full contract but receives no screening allocation. The
 next action is ordered: create and validate the exact two-condition screening
 manifest, obtain an isolated protocol-review `PASS`, refresh the candidate
-identity canary against `5329abd`, then begin the authorized 30-run batch from
+identity canary against `8cabc536`, then begin the authorized 30-run batch from
 sibling-free disposable parents. Earlier candidate SHAs remain historical
 evidence/archive references, not the active baseline. This plan does not
 change the A07 contract, scoring thresholds, fixture allocation, or product
@@ -28,10 +28,12 @@ receives no screening, holdout or acceptance credit. The fresh canary against
 `77b41fed7ee625333ea97ef2791da609f0ed5cc4` then proved candidate identity,
 context separation, and the full product contract, but that source is now
 historical after PR #235. The live baseline is
-`5329abd880fb26b0eeded5176e2d308b654d2cc9`. The next authorized action is to
+`5329abd880fb26b0eeded5176e2d308b654d2cc9`; PR #237 is now merged, so it is
+historical. The current execution baseline is
+`8cabc53658530a239c00a0c55cbae9b050ad74ca`. The next authorized action is to
 create and validate the exact two product-input conditions in the private
 screening manifest, obtain an isolated protocol-review `PASS`, and refresh the
-candidate-bound canary against the live baseline before any 30-cell screening
+candidate-bound canary against `8cabc536` before any 30-cell screening
 batch; no prior canary result is allocated to it.
 
 ## Finding
@@ -74,7 +76,7 @@ the binding inside the run before any product result is counted:
 The canary must also prove that the candidate exposes the expected merged
 `init --agent <host> --activate` surface. The historical `77b41fe` canary
 passed those identity, surface, context, and full-contract checks; a fresh
-candidate-bound canary against live `5329abd` is still required before
+candidate-bound canary against live `8cabc536` is still required before
 allocation. The historical `f1595fc` and `922d7f0` runs remain labeled below
 for provenance; none is a screening allocation. An explicit-route control may
 verify the composed implementation, but it is calibration evidence and never
@@ -94,7 +96,7 @@ counts as a blinded run.
   references for both product-input conditions in a private screening manifest,
   validate its supplied-input evidence and complete matrix, and obtain an
   isolated protocol-review `PASS`; do not infer or rename conditions in public
-  evidence. Then refresh the candidate-bound canary against live `5329abd` and
+  evidence. Then refresh the candidate-bound canary against live `8cabc536` and
   launch one fresh source-only fixture and child under a sibling-free
   disposable parent per run. If identity, context, or contract checks fail,
   retain the result as invalid/no-credit evidence, repair the owning method, and

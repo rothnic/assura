@@ -20,17 +20,19 @@ reject candidates that fail the prescribed comparison, and stop invalid
 diagnostics instead of repeating runs until green. Root owns review judgment
 and merge approval; method changes never imply relaxed acceptance thresholds.
 
-Continuation checkpoint captured 2026-09-09 after PR #235: refreshed
-`origin/master` is `5329abd`, including the independently reviewed A02
-plain-init correction in PR #231, the runner-isolation contract in PR #232,
-the reconciled clean handoff record in PRs #233-#234, and the A07
-parent-isolation/privacy correction in PR #235. The verified goal-owned
-worktrees/refs were removed after merge; the preserved root dirt and stale
-registration remain outside this goal's ownership. A07 remains active. The
-earlier candidate-bound canary against `77b41fe` is historical pre-screening
-evidence only and receives no allocation credit. Before allocation, create and
-validate the private two-condition manifest, obtain an independent isolated
-protocol-review `PASS`, and rerun the candidate-bound canary against `5329abd`.
+Continuation checkpoint captured 2026-09-10 after PR #237: refreshed
+`origin/master` is `8cabc53658530a239c00a0c55cbae9b050ad74ca`, including the
+independently reviewed A02 plain-init correction in PR #231, the
+runner-isolation contract in PR #232, the reconciled clean handoff record in
+PRs #233-#234, the A07 parent-isolation/privacy correction in PR #235, and the
+current recovery-plan/evidence reconciliation in PR #237. The verified
+goal-owned worktrees/refs were removed after merge; the preserved root dirt and
+stale registration remain outside this goal's ownership. A07 remains active.
+The earlier `5329abd` and `77b41fe` candidate-bound canaries are historical
+pre-screening evidence only and receive no allocation credit. Before allocation,
+create and validate the private two-condition manifest, obtain an independent
+isolated protocol-review `PASS`, and rerun the candidate-bound canary against
+`8cabc536`.
 Only then may the authorized 30-run screening launch, using a new source-only
 fixture under a sibling-free disposable parent for every run; the 18-run
 untouched holdout and final 10-per-stack threshold remain mandatory.
