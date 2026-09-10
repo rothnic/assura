@@ -1,4 +1,34 @@
-# Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md), [progress-history-04.md], [progress-history-05.md](progress-history-05.md), [iterations 4-17](progress-history-06.md), [preserved history](progress-history-03.md), [A01 iterations 15–31](progress-history-08.md), [iterations 5–11](progress-history-09.md), [iteration 114](progress-history-10.md), [iteration 111](progress-history-11.md), [iterations 104 and earlier](progress-history-07.md))
+# Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md), [progress-history-04.md], [progress-history-05.md](progress-history-05.md), [iterations 4-17](progress-history-06.md), [preserved history](progress-history-03.md), [A01 iterations 15–31](progress-history-08.md), [iterations 5–11](progress-history-09.md), [iteration 114](progress-history-10.md), [iteration 111](progress-history-11.md), [iterations 106–108](progress-history-12.md), [iterations 104 and earlier](progress-history-07.md))
+
+## Iteration 118 — 2026-09-10 — A07 private readiness audit at current master
+
+- Owner/phase: process coordinator `/root` / `investigate-prepare`; the clean
+  owned checkout is `/private/tmp/assura-a07-route.WCNcQp` on
+  `docs/a07-manifest-readiness-refresh`, based on
+  `origin/master=afcbe967fd6f1fcc4fe0d7a606bfa288eb4c8df5`. The root's
+  unknown `a04-host-status-doctor-permission-gap.md` remains untouched.
+- Reset proof: origin/master, GitHub PR/release/tag state and topology were
+  refreshed; context routing is `43/43 PASS`; the revision-pinned ledger is
+  `items=32`, `ready_pending=0`, `unfinished=5`, `held=3` (A07 active, W03
+  verified, R01/W02/F01 held). No pending card has independently executable
+  merged dependencies.
+- A bounded metadata-only inspection of the owner-controlled private harness
+  found mode `0700`, one candidate-freeze record, three contract records, one
+  holdout-construction record and 17 run records, but no discoverable versioned
+  two-condition screening manifest or isolated protocol-review artifact.
+  Private condition values, mappings, fixtures, contracts, raw output and
+  child transcripts remain outside this repository and receive no public copy.
+- Independent impasse/process review by `/root/context_routing_review_fast`
+  returned `PASS`: the empty pending queue is an intermediate route, A07 owns
+  the next action, and no pending card is independently executable. No product,
+  screening, holdout, evaluator, threshold, allocation, release, deployment,
+  publication or invitation state changed.
+- Next owner/action: the A07 acceptance coordinator privately creates or
+  locates and validates the exact-two-condition manifest, supplied-input
+  receipt, blinded mapping, complete 30-cell matrix and isolated protocol
+  review `PASS`; only then refresh source/ledger and bind a fresh no-credit
+  candidate canary. R01/W02/W03/F01 holds remain separate. Closure stays
+  `active` while this private protocol action exists.
 
 ## Iteration 117 — 2026-09-10 — PR #264 post-merge reconciliation
 
@@ -106,37 +136,6 @@
 - This negative evidence does not close R01: no retry, filter, threshold, loop
   refactor, or product/hosted change was made. Next is the retained raw trace or a specific maintainer native-readiness decision.
 - Ledger remains 32 items, zero ready pending, five unfinished, three held; A07 active, W03 verified, R01/W02/F01 retain separate holds.
-
-## Iteration 108 — 2026-09-10 — PR #254 current-master gate-order reconciliation (superseded by Iteration 109)
-
-- PR #254 merged the reviewed process-only A07 gate-order correction as
-  `7a775371` from `6a6adca` based on `a14cb02`; trees match. Required process
-  gates passed; scope-skipped jobs remain non-applicable. Fresh closure found
-  32 items, zero ready pending, five unfinished, three held; next A07 route is
-  six holdouts → private manifest/protocol `PASS` → fresh no-credit canary.
-
-## Iteration 107 — 2026-09-10 — current-master reset and A07 route after PR #253 (superseded by Iteration 108)
-
-- The process coordinator fetched `origin/master=a14cb02` and reran the ledger:
-  32 items, zero ready pending, five unfinished, three held; A07 active, W03
-  verified, R01/W02/F01 held.
-- PR #253's refresh-before-use correction was merged; the private 204-line
-  manifest lacked required fields, so its 17 run objects earned no credit. No
-  live A07 handle or product/authority state changed.
-- Next was six holdouts and private manifest/protocol `PASS`, then a fresh
-  no-credit canary; R01/W02/F01 remained separate held actions.
-
-## Iteration 106 — 2026-09-10 — post-merge checkpoint for PR #251
-
-- PR #251 merged reviewed process-only head `e777ee7` (base `1bd78cc`) as
-  `062f6c3`; merged-tree equality and clean owned-worktree closure passed.
-- The corrected R01 route and command identity fence are integrated. The
-  ledger remains 32 items, zero ready pending, five unfinished and three
-  held; A07 is the active next route, while R01/W02/F01 remain card-level
-  holds and W03 remains verified. No product or authority state changed.
-- The 1bd diagnostic is explicitly candidate-base evidence; refresh before
-  use. Final topology report passed and strict remains nonzero only for
-  preserved external/user conditions and historical registrations.
 
 ## Iteration 105 — 2026-09-10 — candidate-base R01 diagnostic preparation (superseded by Iteration 106)
 

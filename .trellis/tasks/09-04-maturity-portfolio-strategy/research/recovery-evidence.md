@@ -4,7 +4,8 @@ Date: 2026-09-10. Scope: process artifacts, agent instructions and validation
 routing only. Product acceptance is unchanged; no card is promoted by this file.
 The historical proof below is retained; the current continuation route and
 source reconciliation are recorded before the historical next-phase notes.
-Process iteration: 117 (post-merge reconciliation for PR #264; iteration 116
+Process iteration: 118 (A07 private-readiness audit at current master; iteration 117
+was the post-merge reconciliation for PR #264; iteration 116
 was the current-master pointer reconciliation after PR #263, iteration 115
 was the PR #262 post-merge reconciliation, iteration 114 was the preserved
 A07 route-history correction, and iteration 113 was the PR #259
@@ -32,7 +33,35 @@ iteration 92).
 Context level: not exposed. The before/after phase record is this evidence
 file, linked from the full historical progress log.
 
-## Current as-of post-merge continuation checkpoint — 2026-09-10 UTC (`origin/master=6fa806d`)
+## Current as-of private-readiness audit — 2026-09-10 UTC (`origin/master=afcbe967`)
+
+- Owner/phase: process coordinator `/root` / `investigate-prepare`; clean
+  owned checkout `/private/tmp/assura-a07-route.WCNcQp` on
+  `docs/a07-manifest-readiness-refresh`, based on freshly fetched
+  `origin/master=afcbe967fd6f1fcc4fe0d7a606bfa288eb4c8df5`. Candidate: this
+  process-only evidence slice (recorded at commit).
+- Reset proof: context-routing is `43/43 PASS`; the revision-pinned ledger is
+  `items=32`, `ready_pending=0`, `unfinished=5`, `held=3`; A07 is active,
+  W03 verified, and R01/W02/F01 remain separately held. No pending card has
+  independently executable merged dependencies.
+- A bounded metadata-only inspection of the owner-controlled private harness
+  found mode `0700`, candidate/contract/holdout/run records, and no discoverable
+  versioned two-condition screening manifest or isolated protocol-review
+  artifact. Private values, mappings, fixtures, contracts, raw output and child
+  transcripts remain outside this repository; no allocation or acceptance credit
+  is created.
+- Independent impasse/process review by `/root/context_routing_review_fast`
+  returned `PASS`: an empty pending queue is an intermediate route, A07 owns
+  the next action, and no pending card is independently executable. No concrete
+  process finding was returned.
+- Next owner/action: the A07 acceptance coordinator privately creates or locates
+  and validates the exact-two-condition manifest, supplied-input receipt,
+  blinded mapping, complete 30-cell matrix and isolated protocol review `PASS`;
+  only then refresh source/ledger and bind a fresh no-credit canary. R01/W02/
+  W03/F01 holds remain separate. This slice changes no product/evaluator/
+  threshold, allocation, release, deployment, publication or invitation state.
+
+## Historical as-of post-merge continuation checkpoint — 2026-09-10 UTC (`origin/master=6fa806d`, superseded by `afcbe967`)
 
 - Owner/phase: process coordinator / `post-merge-reconcile` / pointer refresh.
   PR #264 merged reviewed process candidate `4cfd917` (based on
