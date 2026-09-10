@@ -2,9 +2,10 @@
 
 Date: 2026-09-10. Scope: process artifacts, agent instructions and validation
 routing only. Product acceptance is unchanged; no card is promoted by this file.
-The historical proof below is retained; the current reconciliation and continuation
-route are recorded before the historical next-phase note.
-Process iteration: 103 (current source-pointer reconciliation;
+The historical proof below is retained; the current continuation route and
+source reconciliation are recorded before the historical next-phase notes.
+Process iteration: 104 (continuation-control route on current master;
+iteration 103 was the current source-pointer reconciliation;
 iteration 102 was the post-merge source-pointer lifecycle checkpoint;
 iteration 101 was the current-master/private-manifest readiness re-audit;
 iteration 100 was the post-merge closure for PR #245; iteration 99 was the
@@ -21,7 +22,57 @@ iteration 92).
 Context level: not exposed. The before/after phase record is this evidence
 file, linked from the full historical progress log.
 
-## Current source-pointer reconciliation — 2026-09-10 UTC (`origin/master=755c28d`)
+## Current continuation checkpoint — 2026-09-10 UTC (`origin/master=2eda17e`)
+
+- Owner/phase: process coordinator / `investigate-prepare`; the A07
+  acceptance coordinator owns the next card action. A fresh fetch resolved
+  `origin/master` to the PR #249 merge
+  `2eda17e82d9dab12338805479a33a5774560451f`. Reviewed candidate `5f17f7f`
+  was based on `755c28d` and its merged tree matches. This process-only slice
+  adds the continuation-control reference and reconciles active source labels;
+  no product, evaluator, threshold, allocation, release, deployment,
+  publication or invitation state changed.
+- Session/live handle: none for A07; the metadata-only audit is complete and
+  no initializer, evaluator, CI or review process is running. Worktree/branch:
+  private A07 evidence lane / no shared checkout; the process candidate is the
+  separate clean `docs/continuation-control-route` branch. Trigger/proof:
+  `ready_pending=0` plus the redacted private-manifest metadata audit below;
+  the exact next action is isolated manifest/protocol review.
+- The revision-pinned ledger reports 32 items, `ready_pending=0`, five
+  unfinished and three held: A07 active, W03 verified, R01/W02/F01 held. No
+  pending card is executable. A redacted metadata audit still finds seven
+  private A07 layout directories (six frozen and one disqualified draft), a
+  draft manifest without discoverable condition/supplied-input/mapping/matrix
+  fields, and no isolated protocol-review artifact. No screening, holdout or
+  final-acceptance credit is awarded.
+- Independent impasse/process review recorded `A07-MANIFEST-04`: the smallest
+  resolution is a private versioned manifest with exactly two named
+  product-input conditions differing in one variable, supplied-input proof,
+  blinded mapping, six frozen holdouts and a complete 30-cell matrix, followed
+  by an isolated protocol-review `PASS`. After that disposition, fetch again,
+  bind candidate identity and run the no-credit canary before allocation.
+- Capacity evidence is not a merge or performance claim. The serialized
+  `vps` probe found 16 CPUs, low load, about 42.7 GiB available memory and
+  about 23 GiB free disk at 94% use, with nightly Rust 1.95, pnpm 10.29.3,
+  no Bun and unrelated active processes; no heavy job ran. Use remote work
+  only through the exact-toolchain bundle procedure after headroom checks and
+  one job at a time; retain hosted platform/performance proof.
+- Shared Cargo lock contention observed during parallel local probes is now
+  treated as resource timing; heavy Cargo commands are serialized and lock
+  wait is never reported as test progress or proof.
+- Topology while this owned candidate is present is `worktrees=35 dirty=2 prunable=3 unreadable=1
+  goal_branches=13 unmerged_goal=9`; report exits 0 and strict exits 1 only
+  for preserved root/user dirt, external dirt, stale registrations and
+  historical refs. The report includes this clean candidate worktree
+  (`worktrees=35`); after merged closure it should return to the preserved
+  baseline count of 34. Rerun both modes before handoff and remove only this
+  slice's clean merged worktree/ref.
+- Continuation decision: keep the existing runtime goal active. An empty
+  ready-pending set is not completion or a whole-goal block; record the A07
+  held action and continue bounded topology/R01/W02/W03 preparation that is
+  independently authorized.
+
+## Historical source-pointer reconciliation — 2026-09-10 UTC (`origin/master=755c28d`; superseded by PR #249)
 
 - Owner/phase: process coordinator / `reconcile-handoff`. A fresh fetch
   resolved `origin/master` to the full PR #248 merge SHA
@@ -71,7 +122,7 @@ file, linked from the full historical progress log.
   unmerged_goal=9`; report exited `0`, strict exited `1` only for preserved
   root/external dirt and stale registrations/history.
 - The d62 readiness audit below is historical candidate-base evidence, and this
-  `6ed43c3` checkpoint is superseded by the current `755c28d` reconciliation.
+  `6ed43c3` checkpoint is superseded by the current `2eda17e` reconciliation.
   At the next resume, fetch `origin/master`, rerun the ledger and route A07 to
   its private manifest/protocol-review `PASS` before a fresh current-master
   canary. No historical run receives screening or acceptance credit.

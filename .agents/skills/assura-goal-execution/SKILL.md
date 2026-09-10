@@ -45,6 +45,10 @@ only improves its process. Do not substitute a process PR for product acceptance
    action in the selected card's evidence before/after major phases. A task
    path is portable; an old checkout snapshot, automation prompt or conversation
    summary is not current state.
+8. Apply [continuation control](references/continuation-control.md) after
+   resets, compaction, failed gates, review results and empty ready-pending
+   queries. Keep one owned next action live; an empty pending set is not a
+   stopping condition.
 
 ## Context routing
 
@@ -60,6 +64,8 @@ only improves its process. Do not substitute a process PR for product acceptance
 - Source refresh, merge or SHA mismatch: source-pointer-lifecycle; reconcile
   current, candidate-base and historical labels before selecting work.
 - Maturity train recovery: the canonical task's `research/recovery-plan.md`.
+- Reset, compaction, failed gate, review or empty queue: load
+  `references/continuation-control.md` and record the next route.
 - Never load all packets, all historical logs or private evaluation fixtures
   into an implementation/reviewer prompt. Link exact evidence on demand.
 
