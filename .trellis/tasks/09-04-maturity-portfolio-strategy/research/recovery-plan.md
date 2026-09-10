@@ -36,11 +36,12 @@ from the dirty strategy root was explicitly discarded as no evidence.
 
 This is a current-host reproduction result, not native-readiness closure. No
 hosted diagnostic run, retry, filter, threshold or product edit was made. The
-R01 owner still needs the raw callback paths/kinds/rescan/config-generation
-trace for run34090768850/job101643647551, or a maintainer decision on an
-alternative native-readiness contract. The next independent action is to
-preserve this result in R01 evidence and avoid speculative debounce/loop
-changes.
+result is already preserved in `research/evidence/R01.md` and
+`research/progress.md`. The R01 owner still needs the raw callback
+paths/kinds/rescan/config-generation trace for
+run34090768850/job101643647551, or a maintainer decision on an alternative
+native-readiness contract. The next independent action is that trace or
+decision; avoid speculative debounce/loop changes.
 
 ## Historical continuation checkpoint — 2026-09-10 UTC (`origin/master=2eda17e`; superseded by the current observation)
 
