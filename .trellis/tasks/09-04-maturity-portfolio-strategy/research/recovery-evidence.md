@@ -39,19 +39,47 @@ file, linked from the full historical progress log.
   release/installer/website jobs remain non-applicable.
 - The fresh revision-pinned ledger reports 32 items, `ready_pending=0`, five
   unfinished and three held. A07 remains active, W03 verified, and R01/W02/F01
-  remain separate held actions. Independent process validation rejected a
-  whole-goal stop; the next action is A07's private exactly-two-condition
-  manifest and isolated protocol review `PASS`.
-- The owned `docs/a07-postmerge-checkpoint` checkout, branch and remote ref
-  were removed after clean status, `git diff --check`, merged-tree equality and
-  reachability proofs. Topology `--report` exited 0; `--strict` exited 1 only
-  for preserved root/user dirt, one unrelated dirty worktree, stale/prunable
-  registrations, one unreadable registration and historical unmerged goal
-  branches. No unrelated cleanup was performed.
+  remain separate held actions. Validation case
+  `A07-CONTINUATION-CASE-09` (scenario 9; details in
+  [this file's validation record](#orchestration-validation-case-09))
+  rejected a whole-goal stop; the next action is A07's private exactly-two-
+  condition manifest and isolated protocol review `PASS`.
+- The prior PR #258 `docs/maturity-goal-continuation` checkout, branch and
+  remote ref were removed after clean status, `git diff --check`, merged-tree
+  equality and reachability proofs. The current PR #259
+  `docs/a07-postmerge-checkpoint` checkout, branch and remote ref remain owned
+  until its merge; then repeat those proofs and remove only that exact slice.
+  Topology `--report` exited 0; strict is expected nonzero while this candidate
+  is present and for preserved root/user dirt, unrelated dirty work, stale/
+  prunable registrations, one unreadable registration and historical branches.
 - This phase adds no screening, holdout or acceptance credit. The next
   continuation must fetch and rerun the ledger before binding any source or
   candidate identity, then validate the private manifest/protocol disposition;
   only after a redacted `PASS` may a fresh no-credit canary run.
+
+## Orchestration validation case 09 — `A07-CONTINUATION-CASE-09`
+
+This read-only decision check maps to scenario 9 in
+`assura-orchestration/references/validation-cases.md#scenario-9`. The
+independent process-validation agent (`/root/process_validation_case`) found
+that a pending-only scan was insufficient and returned “reject the proposed
+whole-goal stop.” It changed no files and ran no product or private-evaluator
+commands.
+
+At the case revision (`origin/master=c34f917`), the ledger had no ready pending
+card, but A07 was active, W03 verified, and R01/W02/F01 retained narrow held
+actions. The coordinator revalidated those states at `origin/master=8c198dcb`.
+The action mapping was: continue A07 to its private exactly-two-condition
+manifest and isolated protocol review; inspect W03 only for authorized
+current-head integration while publication stays separate; and preserve R01,
+W02 and F01 evidence/authority boundaries without speculative retries,
+deployment coupling or invitations. Ledger owner strings are provenance, so
+actual branches, worktrees, PRs, reviews and live handles must be inspected.
+
+Decision: continue the supported runtime goal. After a redacted A07 protocol
+`PASS`, refresh source and ledger, freeze a new current-master identity, and
+run only the no-credit canary. Recheck live handles and candidate phases at
+the next continuation before drawing any conclusion from a pending-only queue.
 
 ## Historical candidate-freeze checkpoint — 2026-09-10 UTC (`origin/master=c34f9178`, superseded by `8c198dcb`)
 

@@ -39,16 +39,21 @@ authority and observed-outcome requirements.
   and remain non-applicable, not acceptance proof.
 - The revision-pinned ledger at `origin/master=8c198dc` still has 32 items,
   zero ready pending, five unfinished and three held: A07 active, W03
-  verified, and R01/W02/F01 separately held. The independent process review
-  rejected a whole-goal stop. A07's next owned action is the private
+  verified, and R01/W02/F01 separately held. Validation case
+  `A07-CONTINUATION-CASE-09` (scenario 9; see
+  `recovery-evidence.md#orchestration-validation-case-09`) rejected a whole-goal stop by
+  routing A07 to its manifest/protocol action and preserving the W03,
+  R01/W02/F01 boundaries. A07's next owned action is the private
   exactly-two-condition manifest, supplied-input receipt, blinded mapping,
   complete 30-cell matrix and isolated protocol-review `PASS`.
-- The candidate-freeze checkout, branch and remote ref were removed after
-  clean-status, `git diff --check`, merged-tree and reachability proofs. The
-  topology report passed; strict mode remains nonzero only for preserved
-  root/user dirt, the unrelated dirty worktree, stale/prunable and unreadable
-  registrations, and historical unmerged goal branches. No broad prune or
-  unrelated cleanup was performed.
+- The prior PR #258 candidate-freeze checkout, branch and remote ref were
+  removed after clean-status, `git diff --check`, merged-tree and reachability
+  proofs. The current PR #259 `docs/a07-postmerge-checkpoint` checkout, branch
+  and remote ref remain owned until merge; repeat those proofs and remove only
+  that exact slice afterward. The topology report passed; strict mode is
+  expected nonzero while this candidate is present and for preserved root/user
+  dirt, unrelated work, stale/prunable and unreadable registrations, and
+  historical unmerged goal branches.
 - This reconciliation creates no screening, holdout or acceptance credit. On
   the next continuation, refresh source and ledger again, then have the A07
   acceptance coordinator validate the private protocol. Only after a redacted

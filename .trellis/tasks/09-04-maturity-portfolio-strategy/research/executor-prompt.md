@@ -28,14 +28,17 @@ manifest and isolated protocol-review `PASS` before any no-credit canary or
 screening allocation. Route from
 `recovery-plan.md`, not from this snapshot, after a fresh fetch and ledger.
 
-The current candidate-freeze observation used a clean detached checkout and
-the exact Rust/Cargo `1.94.1` toolchain. Its non-symlink `assura 0.4.0` binary
-hash is
+The historical parent-`c34f917` candidate-freeze observation used a clean
+detached checkout and the exact Rust/Cargo `1.94.1` toolchain. Its non-symlink
+`assura 0.4.0` binary hash is
 `95c93052bd1993566d9f8209bdba5625c2b39a19287ed6358d710015d2ac59ff`, matching
 `command -v`, version and target hash inside a minimal login shell. This is
-no-credit preparation. The six valid holdouts are frozen; the private
-condition values, supplied-input receipt, mapping, matrix and protocol
-`PASS` are still required and must not be inferred from historical run names.
+historical no-credit preparation, not a current candidate binding. The six
+valid holdouts are frozen; the private condition values, supplied-input
+receipt, mapping, matrix and protocol `PASS` are still required and must not
+be inferred from historical run names. After that redacted `PASS`, fetch
+`origin/master` again, rebuild and freeze a new candidate identity before any
+no-credit canary or screening allocation; never reuse this parent binary hash.
 
 Copy the following prompt into a coding agent that can access the repository and planning task. It is designed for sequential execution with limited context. The queue and solution cards are the source of truth; no knowledge of the earlier conversation is required.
 
