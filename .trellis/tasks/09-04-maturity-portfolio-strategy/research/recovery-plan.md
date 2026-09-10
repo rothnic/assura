@@ -1,18 +1,17 @@
 # Execution recovery plan
 
 Status: active continuation route, 2026-09-10 UTC. The latest post-merge
-refresh resolved `origin/master=8be61034e3f6f295753570ef2080e100d53efd4c`
-after PR #268; this pointer is an as-of checkpoint and must be refreshed before
-use. PR #268 merged the reviewed current-candidate canary-route documentation
-candidate `da6ce09f215e11e5de9023477bec9be1d7096ce4`, based on
-`9b410e936e2afe85f0adc4cd83ef614e35c43d2c`; its merged tree matches and it
-changed no product or acceptance state. Earlier pointer and reconciliation
-checkpoints are historical. The latest diagnostic is the bounded R01 raw-log
-recovery recorded at candidate base `c1202af` and merged as process evidence;
-it does not close R01 or authorize a retry. This is a plan and audit, not
-evidence that product cards passed. The supported runtime goal remains the
-coordinator; process corrections are merged separately from product card
-slices. Product changes stay in their separately owned card slices.
+reconciliation is `origin/master=b7043ab1b402a0dd103de6fe67e307442e67964a`
+after PR #269; this pointer is an as-of checkpoint and must be refreshed before
+use. PR #269 merged the reviewed process/documentation continuation contract
+from `0b3bdca`; its merged tree matches and it changed no product or acceptance
+state. Earlier pointer and reconciliation checkpoints, including the 8be
+candidate packet, are historical no-credit evidence. The latest diagnostic is
+the bounded R01 raw-log recovery recorded at candidate base `c1202af` and
+merged as process evidence; it does not close R01 or authorize a retry. This is
+a plan and audit, not evidence that product cards passed. The supported runtime
+goal remains the coordinator; process corrections are merged separately from
+product card slices. Product changes stay in their separately owned card slices.
 
 Use the compact [maturity train orchestration plan](orchestration-plan.md) for
 the reset, layered-context, gate-placement, review, integration and closure
@@ -34,7 +33,23 @@ proof and full evaluator dimensions remain mandatory. CI, generated files and
 partial checks cannot substitute. R06/publication/pilots retain their separate
 authority and observed-outcome requirements.
 
-## Current as-of post-merge candidate rebind checkpoint — 2026-09-10 UTC (`origin/master=8be6103`)
+## Current post-merge reconciliation — 2026-09-10 UTC (`origin/master=b7043ab`)
+
+- PR #269 merged the reviewed process/documentation candidate as `b7043ab`;
+  the merged tree equals reviewed `0b3bdca`, and the owned branch/worktree were
+  removed after clean closure. This merge changes no product, evaluator,
+  threshold, allocation or authority state.
+- The prior 8be candidate freeze, canaries, six-handle binding and isolated
+  protocol `PASS` are now historical no-credit metadata because the source tree
+  advanced. The ledger at b7043ab remains 32 items, `ready_pending=0`, five
+  unfinished and three held: A07 active, W03 verified, R01/W02/F01 held.
+- Next owner/action: refresh source, release/tag and topology state from b7043ab,
+  freeze a new candidate identity and run only a no-credit canary. Rebuild the
+  private manifest/binding for that candidate and obtain its isolated protocol
+  `PASS` before any separately authorized screening allocation. Preserve all
+  prior evidence as historical and retain no-credit status.
+
+## Historical post-merge candidate rebind checkpoint — 2026-09-10 UTC (`origin/master=8be6103`, superseded by `b7043ab`)
 
 - PR #268 is a process-only documentation merge; it changes no product,
   evaluator, threshold, allocation or authority state. The prior `9b410e9`

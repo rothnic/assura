@@ -3,8 +3,10 @@
 Date: 2026-09-10. Scope: process artifacts, agent instructions and validation routing only. Product acceptance is unchanged; no card is promoted by this file.
 Older tail note: [recovery history 01](recovery-history-01.md) and
 [recovery history 02](recovery-history-02.md).
-The historical proof below is retained; the current continuation route and source reconciliation are recorded before historical notes.
-Process iteration: 126 (current protocol PASS recorded and post-review refresh queued;
+The historical proof below is retained; the current continuation route and
+post-merge source reconciliation are maintained in [recovery-plan.md](recovery-plan.md)
+and the newest progress entry before these historical notes.
+Process iteration: 127 (post-merge source reconciliation recorded; current protocol PASS is historical and refresh is queued;
 iteration 123 was the corrected continuation goal and current-source rebind;
 iteration 122 was the merged A07 process route and current-candidate canary;
 iteration 121 was the accepted stale-route finding delta; iteration 120 was the
@@ -36,10 +38,10 @@ helper correction; after the highest recorded historical iteration, 88; PR
 #236 closure was iteration 89, the pointer candidate review was iteration 90,
 the proof-record delta was iteration 91, and post-merge reconciliation was
 iteration 92).
-Context level: not exposed. The before/after phase record is this evidence
-file, linked from the full historical progress log.
+Context level: not exposed. The before/after phase record is this evidence file, linked from the full historical progress log.
 
-## Current as-of 8be candidate rebind and protocol correction — 2026-09-10 UTC (`origin/master=8be6103`)
+## Historical 8be candidate rebind and protocol correction — 2026-09-10 UTC (`origin/master=8be6103`, superseded by `b7043ab`)
+
 - Owner/phase: process coordinator `/root` / `candidate-bound-canary`. PR #268
   is merged as a process-only documentation slice; A02 is complete and its
   old plain-init handoff finding is historical. The fresh detached 8be6103
@@ -59,10 +61,8 @@ file, linked from the full historical progress log.
   confirmation, an explicit raw-hook exclusion, and a current manifest review
   reference. The two-condition receipts and 30 reserved cells remain no-credit; the findings are not screening or product results.
 - Follow-up packet correction canonicalizes one exact compiler/Cargo identity across freeze, conditions, receipts and all six rows, mirrors six immutable per-handle creation records in the second-readonly check, and records supplemental and primary metadata rereview PASS; this remains no-credit evidence.
-- Next owner/action: refresh source/ledger, freeze a new candidate identity and
-  prepare only the separately authorized no-credit screening gate. Private
-  values, mappings, fixtures, raw evaluator output and child transcripts remain
-  outside this record; closure stays `active`.
+- Next owner/action: refresh source/ledger, freeze a new candidate identity and prepare only the separately authorized no-credit screening gate. Private values, mappings, fixtures, raw evaluator output and child transcripts remain outside this record; closure stays `active`.
+
 ## Historical current as-of merged-candidate canary — 2026-09-10 UTC (`origin/master=9b410e9`)
 
 - Owner/phase: process coordinator `/root` / `candidate-bound-canary`; the

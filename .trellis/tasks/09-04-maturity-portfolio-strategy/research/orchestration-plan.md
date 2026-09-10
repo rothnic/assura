@@ -92,34 +92,25 @@ public evidence.
   three measured comparable runs show queue/execution, retry and coverage
   effects.
 
-## Current train route — 8be6103 (refresh required)
+## Current train route — b7043ab (refresh required)
 
-At the latest verified refresh (`origin/master=8be6103`, as-of; refresh before
-use, after reviewed process PR #268), `8be6103` is the only current source
-pointer. The prior `9b410e9` candidate and its protocol packet are historical
-and must not be used for binding, review or allocation. The ledger has 32 items,
-no ready-pending
-card, five unfinished cards and three narrow holds. A02 is complete and its
-plain-init handoff incident is historical. A07 is the active lane: its private
-exactly-two-condition manifest, supplied-input receipts, blinded mapping, six
-holdout handles and complete 30-cell reserved matrix exist. The current packet
-now also has an immutable six-handle holdout binding, current candidate freeze,
-second read-only confirmation and explicit exclusion for the disqualified
-raw-hook draft. The first 8be protocol review found those missing bindings,
-historical candidate hashes and a stale 9b review reference; the corrections are
-in place and require scoped rereview. The 9b contract-hash finding and review
-remain metadata-only historical evidence after the 8be advance. The fresh 8be
-identity and two source-only canaries are no-credit preparation. The current
-next action is the scoped 8be protocol rereview; only after `PASS` may the
-coordinator re-fetch the source/ledger and prepare the separately authorized
-no-credit screening gate. No screening, holdout or acceptance credit is allowed
-yet. R01 still needs the
-raw callback trace or a specific maintainer native-readiness decision. W02
-needs explicit Cloudflare approval before any current push that could trigger
-builds. W03's technical change is verified but publication remains separately
-authorized. F01's pilot kit is prepared, while participant selection/invitations
-remain Nick-authorized. These holds do not end independent process, review,
-topology, or authorized integration work.
+At the post-merge refresh, `origin/master=b7043ab1b402a0dd103de6fe67e307442e67964a`
+is the only current source pointer. PR #269 is merged as a process-only
+documentation slice with exact tree equality to reviewed `0b3bdca`; its worktree
+and branch are closed. The earlier `8be6103` candidate, canaries and isolated
+protocol `PASS` are historical no-credit evidence because the merge advanced the
+source tree. The ledger remains 32 items, no ready-pending card, five unfinished
+cards and three narrow holds. A02 is complete and its plain-init handoff
+incident is historical. A07 remains the active lane: the next owner/action is a
+fresh b7043ab source/ledger rebind, candidate freeze and no-credit canary before
+any separately authorized screening preparation. Do not reuse the 8be packet or
+allocate/credit cells from this process merge. R01 still needs the raw callback
+trace or a specific maintainer native-readiness decision. W02 needs explicit
+Cloudflare approval before any current push that could trigger builds. W03's
+technical change is verified but publication remains separately authorized.
+F01's pilot kit is prepared, while participant selection/invitations remain
+Nick-authorized. These holds do not end independent process, review, topology,
+or authorized integration work.
 
 ## Checkpoint record
 

@@ -42,12 +42,28 @@ evaluator, canary or process documentation never grants screening, release,
 deployment, publication or invitation credit.
 
 Current route: refresh the current source and revision-pinned ledger, then own
-the A07 8be6103 candidate identity, canary, immutable holdout binding and
-private manifest rereview. Keep R01, W02, W03 and F01's named holds separate.
+the A07 candidate identity at that revision, its canary, immutable holdout
+binding and private manifest rereview. The prior 8be6103 packet is historical
+after the process merge; never reuse it for current allocation. Keep R01, W02,
+W03 and F01's named holds separate.
 Do not finish the goal while a live review, repair, integration, cleanup or
 independently authorized preparation action remains.
 
-## Current as-of continuation checkpoint (refresh required) — 2026-09-10 UTC (`8be6103`)
+## Current post-merge reconciliation checkpoint (refresh required) — 2026-09-10 UTC (`b7043ab`)
+
+PR #269 merged the reviewed process/documentation slice as
+`b7043ab1b402a0dd103de6fe67e307442e67964a`; its tree equals reviewed
+`0b3bdca`, and the owned branch/worktree closed cleanly. The merge changes no
+product, evaluator, threshold, allocation or authority state. The 8be6103
+candidate freeze, canaries, six-handle binding and isolated protocol `PASS` are
+historical no-credit preparation after this source-tree advance. The ledger
+remains 32 items, `ready_pending=0`, five unfinished and three held: A07 active,
+W03 verified, and R01/W02/F01 held. On resume, fetch b7043ab, rerun the ledger
+and topology audit, freeze a new candidate identity, and run only a fresh
+no-credit canary; rebuild and rereview its private manifest before any
+separately authorized screening allocation.
+
+## Historical 8be continuation checkpoint (superseded by `b7043ab`) — 2026-09-10 UTC (`8be6103`)
 
 The latest read-only refresh resolved `origin/master` to
 `8be61034e3f6f295753570ef2080e100d53efd4c` after PR #268. The reviewed
