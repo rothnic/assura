@@ -131,7 +131,7 @@ This plan and its routing audit were validated from a clean detached checkout
 at `origin/master=f921cae79d04e98ce729eecc64c79c68e4591fb9` before the candidate
 was committed. The positive controls were:
 
-- `python3 .agents/skills/assura-goal-execution/scripts/audit-context-routing.py . .trellis/tasks/09-04-maturity-portfolio-strategy` — exit 0; 38 routing/link/reference checks passed.
+- `python3 .agents/skills/assura-goal-execution/scripts/audit-context-routing.py . .trellis/tasks/09-04-maturity-portfolio-strategy` — exit 0; 42 routing/link/reference checks passed.
 - `cargo run --quiet -- check --format json .` — exit 0; `success=true`, 1,827 files, 396 directories, and only existing low-severity line-length advisories.
 - `cargo xtask evidence` — exit 0; review-evidence and CI-scope policy checks passed.
 - `pnpm --dir website install --frozen-lockfile` followed by `cargo xtask docs` — exits 0; 48 website pages built.
@@ -142,6 +142,12 @@ checkout. It returned exit 1 with 11 findings: a 295-line AGENTS router, an
 overlong skill description, no `.trellis/tasks/` scope, and all seven layered
 references absent. This demonstrates the audit catches the exact stale-context
 failure without treating the old checkout's task state as current evidence.
+
+The audit's missing-artifact negative control removed
+`research/executor-prompt.md` in a disposable detached worktree and returned
+exit 1 with `TASK_FILE executor-prompt.md FAIL`; the file was restored and the
+worktree removed cleanly. The four task routing artifacts are therefore
+required inputs, not optional observations.
 
 The independent impasse review also found that the train's `task.json` primary
 `branch` still pointed at the historical A05 checkout. The correction clears
