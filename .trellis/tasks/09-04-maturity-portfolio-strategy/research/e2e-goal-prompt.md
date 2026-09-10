@@ -20,17 +20,20 @@ reject candidates that fail the prescribed comparison, and stop invalid
 diagnostics instead of repeating runs until green. Root owns review judgment
 and merge approval; method changes never imply relaxed acceptance thresholds.
 
-Continuation checkpoint captured 2026-09-09 after PR #234: `origin/master` is
-`77b41fe`, including the independently reviewed A02 plain-init correction in
-PR #231, the runner-isolation contract in PR #232, and the reconciled clean
-handoff record in PRs #233-#234. The verified goal-owned worktrees/refs were
-removed after merge; the preserved root dirt and stale registration remain
-outside this goal's ownership. A07 remains active. A fresh current-master
-candidate-bound canary now passes the full private contract with all seven
-dimensions green. It is pre-screening evidence only and receives no allocation
-credit. The next action is the authorized 30-run screening, using a new
-source-only fixture under a sibling-free disposable parent for every run; the
-18-run untouched holdout and final 10-per-stack threshold remain mandatory.
+Continuation checkpoint captured 2026-09-09 after PR #235: refreshed
+`origin/master` is `5329abd`, including the independently reviewed A02
+plain-init correction in PR #231, the runner-isolation contract in PR #232,
+the reconciled clean handoff record in PRs #233-#234, and the A07
+parent-isolation/privacy correction in PR #235. The verified goal-owned
+worktrees/refs were removed after merge; the preserved root dirt and stale
+registration remain outside this goal's ownership. A07 remains active. The
+earlier candidate-bound canary against `77b41fe` is historical pre-screening
+evidence only and receives no allocation credit. Before allocation, create and
+validate the private two-condition manifest, obtain an independent isolated
+protocol-review `PASS`, and rerun the candidate-bound canary against `5329abd`.
+Only then may the authorized 30-run screening launch, using a new source-only
+fixture under a sibling-free disposable parent for every run; the 18-run
+untouched holdout and final 10-per-stack threshold remain mandatory.
 
 For A07 evaluation, read
 [a07-candidate-binding-plan.md](a07-candidate-binding-plan.md) before launching
@@ -48,8 +51,10 @@ protocol evidence even if the evaluator later passes.
 Before allocating any screening run, also read
 [screening-manifest-contract.md](screening-manifest-contract.md). The packet's
 two product-input conditions must be named, differ in one specified variable,
-and be evidenced in a private manifest with an independently reviewed 30-cell
-matrix; do not infer conditions from historical run names.
+and be evidenced in a private manifest with a complete 30-cell matrix. The
+manifest must validate and receive an isolated protocol-review `PASS` before
+any screening cell is launched; do not infer conditions from historical run
+names.
 
 The product direction remains sound: specialize in executable repository conventions and agent-assisted initialization, with existing language tools supplying their own checks. The execution mechanism should be a **reviewed release train**, not a long-lived mega-branch or a blind attempt to close every checkbox. The queue remains the technical source of truth; this goal supplies cross-session control, integration discipline, and cleanup rules.
 

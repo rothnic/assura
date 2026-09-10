@@ -100,8 +100,11 @@ source files.
 Before screening allocation, read
 `screening-manifest-contract.md` and validate the private manifest's exactly two
 named product-input conditions, one-variable difference, blinded mapping and
-complete 30-cell matrix. Historical run names are not condition definitions;
-missing supplied-input evidence means the cell is not executable.
+complete 30-cell matrix. Obtain an isolated protocol-review `PASS` before
+launching any screening cell; historical run names are not condition
+definitions, and missing supplied-input evidence means the cell is not
+executable. Refresh the candidate-bound canary against the current master
+after the manifest review and before allocation.
 Keep initializer events, private evaluator output and redacted evidence
 separate. Run the evaluator only after the identity canary and initializer have
 completed.

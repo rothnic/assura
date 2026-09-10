@@ -20,9 +20,12 @@
   may inspect only manifest schema/mapping/matrix metadata and returns redacted
   findings; raw oracle, child transcript and fixture contents remain private.
 - Root's unknown file and stale missing-gitdir registration remain untouched;
-  topology report/strict retains those ownership exceptions. Next action: create
-  and independently review the private two-condition manifest, then run the
-  authorized 30-cell screen with one sibling-free fixture/child per cell.
+  topology report/strict retains those ownership exceptions. The earlier
+  canary was against historical `77b41fe`; the live baseline is now
+  `5329abd`. Next action, in order: create and validate the private
+  two-condition manifest, obtain isolated protocol-review `PASS`, refresh the
+  candidate-bound canary against `5329abd`, then run the authorized 30-cell
+  screen with one sibling-free fixture/child per cell.
 
 ## Iteration 87 — 2026-09-09 — current-master A07 canary and parent-isolation correction
 
