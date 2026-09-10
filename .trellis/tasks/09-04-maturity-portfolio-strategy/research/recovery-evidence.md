@@ -4,13 +4,100 @@ Date: 2026-09-10. Scope: process artifacts, agent instructions and validation
 routing only. Product acceptance is unchanged; no card is promoted by this file.
 The historical proof below is retained; the current reconciliation and continuation
 route are recorded before the historical next-phase note.
-Process iteration: 94 (A07 private-manifest readiness audit; iteration 93 was
-the topology-audit helper correction; after the highest recorded historical
-iteration, 88; PR #236 closure was iteration 89, the pointer candidate review
-was iteration 90, the proof-record delta was iteration 91, and post-merge
-reconciliation was iteration 92).
+Process iteration: 96 (ledger-routing helper pin/path correction; iteration 95
+was the deterministic ledger-routing helper; iteration 94 was the A07
+private-manifest readiness audit; iteration 93 was the topology-audit
+helper correction; after the highest recorded historical iteration, 88; PR
+#236 closure was iteration 89, the pointer candidate review was iteration 90,
+the proof-record delta was iteration 91, and post-merge reconciliation was
+iteration 92).
 Context level: not exposed. The before/after phase record is this evidence
 file, linked from the full historical progress log.
+
+## Ledger-routing helper — 2026-09-10
+
+- The current base is `origin/master=2607709fd218685bb8882e278428bd798f6a6291`.
+  This process-only slice adds a read-only queue-routing helper at
+  `.agents/skills/assura-goal-execution/scripts/audit-ledger.sh` and a concise
+  route to it from the goal-execution skill. It changes no product behavior,
+  evaluator input, acceptance threshold, release, deployment, publication,
+  invitation or authority surface.
+- The helper reads the backlog and declared execution branches from an
+  explicit Git revision and emits `BASE`, `TASK`, `CARD`, `READY_PENDING`,
+  `UNFINISHED`, `BRANCH` and `SUMMARY` records. It requires every declared
+  dependency to resolve to a `done` or `verified` item before reporting a
+  pending card as ready; an unknown dependency cannot become ready through an
+  empty-state default. The output is routing evidence only: it does not prove
+  owner liveness, card acceptance, review, or merge authorization.
+- `bash -n` and the current repository run passed. At the current base the
+  helper reports `items=32`, `ready_pending=0`, `unfinished=5`, `held=3` and
+  routes A07 as active while retaining R01/W02/F01 held actions and W03's
+  verified state. A disposable `HEAD` fixture reported one ready pending card,
+  one held card, and excluded a pending card whose dependency ID was absent;
+  this verifies both positive and missing-dependency controls without touching
+  the Assura checkout.
+- Owner/phase: process coordinator / investigate-prepare. The owned checkout
+  is `/private/tmp/assura-ledger-routing-helper` on
+  `docs/ledger-routing-helper`, based on the refreshed master. The exact
+  candidate and final gates will be recorded before review; no private
+  evaluator or fixture values are copied into repository evidence.
+- Candidate `f882d22613e21c3c987cd028f0f82366ee8a9c02` passed the final local
+  process/docs tier: workflow `Ready: yes`; source check success `true` with
+  six unchanged low max-line advisories; `cargo xtask evidence`,
+  `cargo xtask target-state`, `cargo fmt --all -- --check`, `git diff --check`,
+  JSON parsing, and `assura check --format agent --agent codex` all exited `0`.
+  The committed CI scope classifier reported `evidence=true`,
+  `changed_count=4`, with product/Rust/release/performance/rustdoc/website and
+  security surfaces `false`.
+- The first identical `cargo xtask docs` attempt exited `1` because the clean
+  checkout lacked `website/node_modules` and could not resolve `astro`. The
+  locked `pnpm --dir website install --frozen-lockfile` bootstrap exited `0`
+  with 355 cached packages; the identical docs gate then exited `0` and built
+  48 pages. The failed environment precondition remains recorded and is not a
+  pass.
+- The next authorized action remains the A07 coordinator's private
+  exactly-two-condition manifest and isolated protocol review. The helper must
+  be used at the next continuation before any pending-card selection; its
+  result cannot override that A07 protocol gate or the preserved topology
+  ownership exceptions.
+
+## Ledger-routing helper correction — 2026-09-10
+
+- Independent review found two routing-integrity defects in the first helper
+  candidate: it resolved and printed a base SHA but loaded task blobs through
+  the mutable symbolic ref, and its `awk` parser truncated declared worktree
+  paths at spaces. Both findings were accepted as concrete process correctness
+  gaps; no product, evaluator, threshold, release, deployment, publication,
+  invitation or authority surface is involved.
+- The correction now loads `backlog.json` and `task.json` through the resolved
+  immutable object ID, and parses `git worktree list --porcelain -z` records by
+  complete `worktree ` suffix. This keeps the advertised revision and routing
+  records coherent if a ref advances during execution and preserves paths
+  exactly for ownership inspection.
+- Verification before final hosted review: `bash -n` passed; the live ledger
+  still reports `items=32`, `ready_pending=0`, `unfinished=5`, `held=3`; the
+  disposable positive/missing-dependency fixture still reports exactly one
+  ready pending card and excludes the unknown dependency; and a disposable
+  declared branch fixture with a space-containing worktree path reports the
+  complete path. These checks are routing controls only and do not establish
+  owner liveness, acceptance, review, or merge authority.
+- Owner/phase: process coordinator / correction-validate. The same clean
+  current-master checkout and one-card ownership are retained. The affected
+  process/docs gates and scoped independent rereview must pass before any PR
+  submission or merge.
+- Correction commit `49dc5d6e9ef5cfe66bf8c0f0d5f3330752b6f523` is based on
+  `origin/master=2607709fd218685bb8882e278428bd798f6a6291`. On that exact
+  tree, the workflow gate was `Ready: yes`; source check JSON was
+  `success=true`; `cargo xtask evidence`, `cargo xtask target-state`,
+  `cargo fmt --all -- --check`, `git diff --check`, task JSON parsing,
+  `assura check --format agent --agent codex`, and the CI-scope classifier all
+  exited `0`. The classifier reported `evidence=true`, `changed_count=4`,
+  with product/Rust/release/performance/rustdoc/website/security surfaces
+  `false`.
+- The exact correction tree's `cargo xtask docs` gate passed and built 48
+  pages. The earlier clean-checkout dependency bootstrap failure remains
+  recorded above and is not counted as a pass; the frozen install and
+  successful rerun are the valid docs evidence.
 
 ## Current A07 readiness audit — 2026-09-10
 
