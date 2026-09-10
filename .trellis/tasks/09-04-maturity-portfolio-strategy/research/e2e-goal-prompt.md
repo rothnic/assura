@@ -21,12 +21,12 @@ reject candidates that fail the prescribed comparison, and stop invalid
 diagnostics instead of repeating runs until green. Root owns review judgment
 and merge approval; method changes never imply relaxed acceptance thresholds.
 
-## Current as-of continuation checkpoint (refresh required) — 2026-09-10 UTC (`bcd0386`)
+## Current as-of continuation checkpoint (refresh required) — 2026-09-10 UTC (`6fa806d`)
 
 The latest read-only refresh resolved `origin/master` to
-`bcd0386b4f864163e3f3a08e81d6106a790491c2` after PR #263. The reviewed
-process candidate `56b44fee457f355cf6dd22735afb17f3b9be84f4` was based on
-`040babbcfb7dbe744d89a1c13838c2111d3a3b10`; merged-tree equality and
+`6fa806d05d4fab7245f35a1f57d21c237a72a809` after PR #264. The reviewed
+process candidate `4cfd9174d1c305a8d62c88dee9a3a49368a37885` was based on
+`bcd0386b4f864163e3f3a08e81d6106a790491c2`; merged-tree equality and
 reachability were verified, as were independent review and the applicable
 Documentation, CI, Security, Evidence and GitGuardian checks. Scope-skipped
 product/Rust/performance/release jobs remain non-applicable rather than proof.
@@ -48,7 +48,7 @@ The measured `vps` host remains optional (16 CPUs, about 43 GiB available,
 procedure only when fresh capacity and disk checks permit. Refresh this
 checkpoint before use; its SHA is an as-of pointer, not a permanent pin.
 
-## Historical post-merge checkpoint (superseded by current as-of `bcd0386`) — 2026-09-10 UTC (`373fb01`)
+## Historical post-merge checkpoint (superseded by current as-of `6fa806d`) — 2026-09-10 UTC (`373fb01`)
 
 The latest read-only refresh resolved `origin/master` to
 `373fb01ac268285d9b21cd6948862050bd7d8c6e` after PR #259, which merged the
@@ -76,7 +76,7 @@ available memory, 94% root-disk use (about 20 GiB free), nightly Rust 1.95 and
 no Bun; the documented `vps-dev` alias is unresolved. Remote execution cannot
 replace exact-toolchain local/hosted proof.
 
-## Historical candidate-freeze checkpoint (superseded by current as-of `bcd0386`) — 2026-09-10 UTC (`c34f9178`)
+## Historical candidate-freeze checkpoint (superseded by current as-of `6fa806d`) — 2026-09-10 UTC (`c34f9178`)
 
 The latest refresh resolved `origin/master` to the full merge SHA
 `a819c0cd2e8e9fdf14a3641cc76f0119ceb9d2bc` (PR #256). Fetch again before
