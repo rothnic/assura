@@ -4,7 +4,9 @@ Date: 2026-09-10. Scope: process artifacts, agent instructions and validation
 routing only. Product acceptance is unchanged; no card is promoted by this file.
 The historical proof below is retained; the current continuation route and
 source reconciliation are recorded before the historical next-phase notes.
-Process iteration: 106 (post-merge checkpoint for PR #251; the R01
+Process iteration: 110 (goal-contract correction after the R01 raw-log
+recovery merge; iteration 109 is the current-master R01 recovery evidence;
+iteration 106 was the post-merge checkpoint for PR #251; the R01
 diagnostic preparation is candidate-base evidence;
 iteration 104 was the continuation-control route on current master;
 iteration 103 was the current source-pointer reconciliation;
@@ -23,6 +25,40 @@ the proof-record delta was iteration 91, and post-merge reconciliation was
 iteration 92).
 Context level: not exposed. The before/after phase record is this evidence
 file, linked from the full historical progress log.
+
+## Live goal-contract checkpoint — 2026-09-10 UTC (`origin/master=a819c0c`)
+
+- Owner/phase: process coordinator / `goal-contract-reconcile`. A clean
+  worktree was created from freshly fetched `origin/master` at
+  `a819c0cd2e8e9fdf14a3641cc76f0119ceb9d2bc`; no product checkout or private
+  evaluator store was changed.
+- The canonical copy-paste goal now routes through the active runtime goal,
+  the revision-pinned ledger, active/implemented/verified candidates and
+  explicit held-action owners. It records the merged R01 raw-log recovery,
+  preserves A07's missing private manifest/protocol `PASS`, and keeps W02
+  Cloudflare work, W03 publication and F01 participant outreach separate.
+- The recovery-plan header now points to the same as-of source and records
+  that the public 2,225-line macOS log confirms `full_rescan_event` but lacks
+  raw callback paths/kinds, rescan and config-generation fields. The evidence
+  remains negative and bounded; it does not close R01 or authorize a retry.
+- The current ledger is 32 items with `ready_pending=0`, five unfinished and
+  three held: A07 active, W03 verified, and R01/W02/F01 held. The next real
+  action remains private A07 six-holdout/manifest validation and isolated
+  protocol review `PASS`, then a fresh no-credit candidate-bound canary.
+- Before integration, run the documentation/process validation matrix and an
+  independent review of this exact diff. After integration, refresh the
+  pointer, ledger and topology; remove only this clean merged worktree/ref.
+- Candidate proof: commit `6c61a9e3056b0a372ef91d0b96573c2c9ee40e71` on
+  `docs/maturity-goal-continuation`; post-commit workflow `Ready: yes`, clean
+  status and `git diff --check` passed. `cargo run --quiet -- check --format
+  json .` returned `success=true` with six unchanged low max-line advisories;
+  `cargo xtask target-state`, `cargo xtask evidence`, task JSON parsing and
+  the progress line-budget check passed.
+- The first identical `cargo xtask docs` attempt exited `1` because the clean
+  worktree had no `website/node_modules` and `astro` was unavailable. The
+  frozen `pnpm --dir website install --frozen-lockfile` exited `0`; the
+  identical docs gate then exited `0` and built 48 pages. The environment
+  failure is retained as a precondition, not counted as a pass.
 
 ## Post-merge process checkpoint — 2026-09-10 UTC (`origin/master=062f6c3`)
 

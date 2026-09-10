@@ -20,7 +20,38 @@ reject candidates that fail the prescribed comparison, and stop invalid
 diagnostics instead of repeating runs until green. Root owns review judgment
 and merge approval; method changes never imply relaxed acceptance thresholds.
 
-## Dated continuation checkpoint (refresh required) — 2026-09-10 UTC
+## Live continuation checkpoint (refresh required) — 2026-09-10 UTC
+
+The latest refresh resolved `origin/master` to the full merge SHA
+`a819c0cd2e8e9fdf14a3641cc76f0119ceb9d2bc` (PR #256). Fetch again before
+acting; this checkpoint is an as-of routing record, not a permanent source
+pin. The R01 recovery slice retrieved the public failed macOS job log with
+`gh run view 34090768850 --job 101643647551 --log` (exit `0`, 2,225 lines).
+It confirmed the reported sequence-2 `full_rescan_event`, but the log has no
+raw callback paths/kinds, rescan flag or config-generation fields. This is
+bounded negative evidence, not R01 closure: the next R01 action is retained
+raw trace evidence or a specific maintainer native-readiness decision, with no
+speculative retry, filter, threshold or loop change.
+
+The revision-pinned ledger at this merge remains 32 items,
+`ready_pending=0`, five unfinished and three held: A07 is active, W03 is
+verified, and R01/W02/F01 retain separate holds. The private A07 audit still
+has no discoverable exactly-two-condition manifest, supplied-input proof,
+blinded mapping, complete 30-cell matrix or isolated protocol-review `PASS`;
+screening, holdout and final-acceptance credit remain zero. No A07 worker or
+review handle is live. The next real action is the A07 acceptance
+coordinator's private manifest/holdout validation and isolated protocol review,
+followed by a fresh no-credit candidate-bound canary only after `PASS`.
+
+The post-merge topology report is clean for this slice; strict mode remains
+nonzero only for preserved root/user dirt, an unrelated dirty worktree, stale
+prunable/unreadable registrations and historical goal branches. Preserve all
+of those records. The merged R01 evidence, local process gates and hosted
+scope/evidence checks do not promote R01 or A07, and W03 publication, W02
+Cloudflare work and F01 participant outreach retain their separate authority
+boundaries.
+
+## Historical continuation checkpoint (superseded by PR #256) — 2026-09-10 UTC
 
 This route was reconciled at `origin/master=062f6c3` and integrated by PR #252
 as `a92b109c2158113a1f2316b8cdd5ef79f6668571`. It is a dated provenance
@@ -283,6 +314,7 @@ Operate as a controlled release train:
 3. Before any merge, obtain an independent review for behavior, CI, release, public-contract, or complex changes. Refine valid findings, rerun affected gates, and verify the reviewed SHA is the tested SHA. Never weaken policy, hide benchmark rows, claim generated hooks are active, or count skipped/zero tests as passing merely to clear a card.
 4. Merge only a clean, review-resolved, current-master PR whose required hosted and local gates pass. After merging, verify the exact commit is reachable from origin/master, update the card to done only when its observable outcome exists, and remove only worktrees/branches created by this goal after confirming they are clean and merged. Inventory existing worktrees first; use prune dry-runs; never delete unknown, user-owned, or dirty paths.
 5. Follow the queue's dependency graph and phase boundaries: establish baseline and support scope; repair trust/release evidence; build safe init/hooks/gates; run blinded evaluation; then release, portfolio, pilot, and feedback work. When a result contradicts the plan, repair the owning card or explicitly narrow supported scope—do not lower the evaluator or rewrite history.
+6. Route validation efficiently without lowering proof: run cheap focused checks before expensive suites, resume a live handle instead of repeating unchanged commands, and consult the validation matrix and `assura-local-build` procedure for long Rust/docs gates. Use a VPS only after a serialized SSH preflight confirms adequate measured headroom, disk, and the exact toolchain; use a clean-commit bundle and one job at a time. VPS Linux evidence supplements and never replaces required macOS/Windows, hosted, or performance gates. Do not delete another worktree's caches to make room.
 
 Execution-continuity invariant: do not stop at a card checkpoint. At every
 boundary, retain a named live action (test, CI, review, integration, cleanup),
