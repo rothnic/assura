@@ -28,9 +28,11 @@ its source/tree, version, fixed target and login-shell command identity are
 frozen privately. Two fresh source-only canaries used the composed
 `init --agent codex --activate` route and passed the full evaluator; they prove
 neither screening, holdout, follow-up-feature nor final-batch acceptance. The
-current packet is with an isolated protocol reviewer; until its `PASS`, the
-next ordered action is only to finish that review. If it passes, refresh
-source/ledger and freeze the then-current candidate before the separately
+isolated protocol rereview returned `PASS` after the bounded metadata findings
+`A07-CONTRACT-HASH-001`, `A07-MAPPING-REF-002` and `A07-HOLDOUT-EVIDENCE-003`
+were corrected. This is metadata-only/no-credit. The next ordered action is to
+refresh source/ledger, release/tag, PR/CI and topology state, freeze the
+then-current candidate and run a fresh no-credit canary before the separately
 authorized screening gate. This plan does not change the A07 contract, scoring
 thresholds, fixture allocation, or product acceptance.
 

@@ -24,11 +24,13 @@ source-tree advance. A02 is complete; its old plain-init finding is historical.
 The ledger at 9df6ae6 has 32 items, zero ready pending, five unfinished and
 three held: A07 active, W03 verified, and R01/W02/F01 held. A fresh 9df A07
 freeze, exact identity controls and two full-contract canaries are current
-no-credit preparation; its private binding/manifest/receipts/matrix await
-isolated protocol rereview. R01's merged raw-log recovery is bounded negative
-evidence. On every resume, finish the rereview, then refresh source, release/
-tag and topology state, rerun the ledger, and freeze the then-current A07
-candidate before any separately authorized screening allocation. Preserve
+no-credit preparation; its private binding/manifest/receipts/matrix received an
+isolated protocol rereview `PASS` after three bounded metadata corrections.
+That disposition is metadata-only/no-credit. R01's merged raw-log recovery is
+bounded negative evidence. On every resume, refresh source, release/tag, PR/CI
+and topology state, rerun the ledger, freeze the then-current A07 candidate and
+run a fresh no-credit canary before any separately authorized screening
+allocation. Preserve
 residual fixture, launcher, child-isolation and evaluator limitations. Route
 from `recovery-plan.md`, not this snapshot, after a fresh fetch and ledger.
 

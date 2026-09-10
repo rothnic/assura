@@ -107,11 +107,15 @@ A07 is the active lane. A fresh 9df candidate was built from a clean checkout;
 login-shell identity controls and two source-only canaries pass the full public
 contract, but they create no screening or acceptance credit. Its private
 six-handle binding, per-handle creation records, exact toolchain, supplied-input
-receipts, two-condition manifest and 30 reserved cells are prepared. The exact
-next action is to finish the isolated protocol rereview; on `PASS`, refresh the
-source and ledger again, freeze the then-current candidate, and route only the
-separately authorized no-credit screening preparation. Do not reuse an older
-packet or allocate/credit cells from this process checkpoint.
+receipts, two-condition manifest and 30 reserved cells are prepared. The
+isolated protocol rereview returned `PASS` after the three bounded metadata
+findings `A07-CONTRACT-HASH-001`, `A07-MAPPING-REF-002` and
+`A07-HOLDOUT-EVIDENCE-003` were corrected. This is metadata-only/no-credit.
+The exact next action is to refresh origin/master, release/tag, PR/CI and
+topology state, rerun the ledger, freeze the then-current candidate and run a
+fresh no-credit canary before the separately authorized screening preparation.
+Do not reuse an older packet or allocate/credit cells from this process
+checkpoint.
 
 R01 still needs the raw callback trace or a specific maintainer native-readiness
 decision. W02 needs explicit Cloudflare approval before any current push that

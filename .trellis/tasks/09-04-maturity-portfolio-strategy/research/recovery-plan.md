@@ -44,13 +44,17 @@ authority and observed-outcome requirements.
   meaningful negative control. They are no-credit preparation. The private
   six-handle binding, creation records, exact toolchain comparison, receipts,
   two-condition manifest and 30 reserved cells are rebound to this candidate;
-  the isolated protocol rereview is the live gate.
+  the isolated protocol rereview returned `PASS` after the bounded
+  `A07-CONTRACT-HASH-001`, `A07-MAPPING-REF-002` and
+  `A07-HOLDOUT-EVIDENCE-003` metadata corrections.
 - The ledger remains 32 items, `ready_pending=0`, five unfinished and three
-  held: A07 active, W03 verified, R01/W02/F01 held. Next owner/action: finish
-  the current 9df protocol rereview, then refresh source/ledger again before
-  any separately authorized no-credit screening preparation. Preserve all
-  private values, fixtures, evaluator output and prior packets as historical;
-  do not allocate or credit cells from this checkpoint.
+  held: A07 active, W03 verified, R01/W02/F01 held. The protocol result is
+  metadata-only and no-credit. Next owner/action: refresh origin/master,
+  release/tag, PR/CI and topology state, rerun the ledger, freeze the then-
+  current candidate and run a fresh no-credit canary before any separately
+  authorized screening preparation. Preserve all private values, fixtures,
+  evaluator output and prior packets as historical; do not allocate or credit
+  cells from this checkpoint.
 
 ## Historical post-merge candidate rebind checkpoint — 2026-09-10 UTC (`origin/master=8be6103`, superseded by current `9df6ae6`; previously `b7043ab`)
 

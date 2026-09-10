@@ -62,11 +62,13 @@ three held: A07 active, W03 verified, and R01/W02/F01 held.
 The current A07 packet is frozen privately at 9df6ae6. Its login-shell identity
 controls and two source-only canaries pass the full public contract with seven
 dimensions and a meaningful negative control; these are no-credit preparation.
-The private binding/manifest/receipts/matrix are current-candidate metadata, and
-the isolated protocol rereview is the live gate. On resume, fetch again, rerun
-the ledger and topology audit, finish that rereview, and only after `PASS`
-prepare the separately authorized no-credit screening gate. Never allocate or
-credit cells from a process merge or a canary alone.
+The private binding/manifest/receipts/matrix are current-candidate metadata. The
+isolated protocol rereview returned `PASS` after the three bounded metadata
+findings were corrected; this remains metadata-only/no-credit. On resume, fetch
+again, rerun the ledger and topology audit, refresh release/tag and PR/CI facts,
+freeze the then-current candidate and run a fresh no-credit canary before the
+separately authorized screening gate. Never allocate or credit cells from a
+process merge, canary or protocol metadata alone.
 
 ## Historical 8be continuation checkpoint (superseded by current `9df6ae6`; previously `b7043ab`) — 2026-09-10 UTC (`8be6103`)
 
