@@ -4,8 +4,8 @@ Status: active. Owner: this thread's A07 acceptance coordinator. This plan
 does not embed a permanent routing baseline: fetch `origin/master` and rerun
 the revision-pinned ledger before every canary. The latest 2026-09-10
 post-merge refresh resolved
-`origin/master=69246d35a2a1939cad4965732e962eba2c9a2e35` after PR #271, which
-reconciled the corrected process-only continuation contract. Its merged tree
+`origin/master=ebedb3ea434eca6ddb05d2bd63d0693bbb7d948c` after PR #272, which
+reconciled the current candidate-preparation route. Its merged tree
 equals the reviewed candidate, and applicable Documentation/CI/Security/
 Evidence/GitGuardian checks passed. This checkpoint changes no A07 product or
 acceptance state and does not authorize screening.
@@ -17,26 +17,24 @@ manifest and condition rows were rebound to the supplied contract bytes; the
 finding is resolved for 9b410e9 but must not be treated as current evidence.
 The six valid unseen holdout layouts, exactly-two-condition manifest, supplied-
 input receipts, blinded mapping and complete 30-cell reserved matrix remain
-private. The 9df private packet includes an immutable six-handle holdout-binding
-record, per-handle creation evidence, exact toolchain comparison and a second
-read-only rebind confirmation; after the 692 source/contract advance those
-records are historical metadata and the disqualified raw-hook draft remains
-explicitly excluded. Do not infer conditions or holdout validity from
-historical run names or labels.
+private. The 9df and 692 packets are historical after the source advances; the
+current ebedb3e packet includes an immutable six-handle holdout-binding record,
+per-handle creation evidence, exact toolchain comparison and a second
+read-only rebind confirmation. Its isolated protocol rereview is pending and
+the disqualified raw-hook draft remains explicitly excluded. Do not infer
+conditions or holdout validity from historical run names or labels.
 
-A fresh detached checkout at 69246d3 is the current as-of candidate build, and
+A fresh detached checkout at ebedb3e is the current as-of candidate build, and
 its source/tree, version, fixed target and login-shell command identity are
 frozen privately. Two fresh source-only canaries used the composed
 `init --agent codex --activate` route and passed the full evaluator; they prove
 neither screening, holdout, follow-up-feature nor final-batch acceptance. The
-isolated protocol rereview returned `PASS` after the bounded metadata findings
-`A07-CONTRACT-HASH-001`, `A07-MAPPING-REF-002` and `A07-HOLDOUT-EVIDENCE-003`
-were corrected. That protocol result is historical metadata-only/no-credit after
-the 692 source/contract advance. The next ordered action is to refresh
-source/ledger, release/tag, PR/CI and topology state, rebind the current packet
-as needed, and run a fresh no-credit canary before the separately authorized
-screening gate. This plan does not change the A07 contract, scoring thresholds,
-fixture allocation, or product acceptance.
+current packet is rebound and its isolated protocol rereview is pending. The
+next ordered action is to complete that rereview, record PASS or concrete
+corrections, then refresh source/ledger, release/tag, PR/CI and topology state
+before the next fresh no-credit canary and separately authorized screening gate.
+This plan does not change the A07 contract, scoring thresholds, fixture
+allocation, or product acceptance.
 
 The canary's private event, evaluator, fixture, and identity provenance remains
 outside the repository. Public evidence retains only the candidate identity and
@@ -128,7 +126,7 @@ counts as a blinded run.
   evidence and complete matrix, and obtain an isolated protocol-review `PASS`;
   do not infer or rename conditions in public evidence. Then refresh the
   current `origin/master` source pointer and ledger (latest as-of checkpoint:
-  `69246d3`, refresh before use) and run a fresh candidate-bound canary
+  `ebedb3e`, refresh before use) and run a fresh candidate-bound canary
   against that frozen identity; all embedded checkpoints remain historical.
   launch one fresh source-only fixture and child under a sibling-free
   disposable parent per run. If identity, context, or contract checks fail,

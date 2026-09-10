@@ -1,12 +1,12 @@
 # Execution recovery plan
 
 Status: active continuation route, 2026-09-10 UTC. The latest post-merge
-reconciliation is `origin/master=69246d35a2a1939cad4965732e962eba2c9a2e35`
-after PR #271; this pointer is an as-of checkpoint and must be refreshed before
-use. PR #271 reconciled the corrected protocol-disposition documentation;
-its merged tree matches the reviewed candidate and changed no product or
-acceptance state. Earlier pointer and reconciliation checkpoints, including
-the 9df candidate packet, are historical no-credit evidence. The latest
+reconciliation is `origin/master=ebedb3ea434eca6ddb05d2bd63d0693bbb7d948c`
+after PR #272; this pointer is an as-of checkpoint and must be refreshed before
+use. PR #272 reconciled the current candidate-preparation route; its merged
+tree matches the reviewed candidate and changed no product or acceptance state.
+Earlier pointer and reconciliation checkpoints, including the 9df and 692
+candidate packets, are historical no-credit evidence. The latest
 diagnostic is the bounded R01 raw-log recovery recorded at candidate base
 `c1202af` and merged as process evidence; it does not close R01 or authorize a
 retry. This is a plan and audit, not evidence that product cards passed. The
@@ -34,26 +34,26 @@ proof and full evaluator dimensions remain mandatory. CI, generated files and
 partial checks cannot substitute. R06/publication/pilots retain their separate
 authority and observed-outcome requirements.
 
-## Current candidate checkpoint — 2026-09-10 UTC (`origin/master=69246d3`; refresh required)
+## Current candidate checkpoint — 2026-09-10 UTC (`origin/master=ebedb3e`; refresh required)
 
-- PR #271 is merged and the current source is `69246d3`; this process-only
+- PR #272 is merged and the current source is `ebedb3e`; this process-only
   reconciliation changes no product, evaluator, threshold, allocation or
   authority state. The reviewed branch/worktree closed cleanly.
-- A fresh 692 candidate freeze, exact login-shell identity controls and two
+- A fresh ebedb3e candidate freeze, exact login-shell identity controls and two
   source-only canaries passed the public contract with seven dimensions and a
-  meaningful negative control. They are no-credit preparation. The corrected
-  9df six-handle binding, manifest, receipts and 30 reserved cells remain
-  historical metadata after this source/contract advance; their isolated
-  protocol rereview `PASS` is also historical metadata-only/no-credit.
+  meaningful negative control. They are no-credit preparation. The private
+  six-handle packet, manifest, receipts and 30 reserved cells are rebound to
+  the current candidate; isolated protocol rereview is pending and allocation
+  remains false.
 - The ledger remains 32 items, `ready_pending=0`, five unfinished and three
-  held: A07 active, W03 verified, R01/W02/F01 held. Next owner/action: refresh
-  origin/master, release/tag, PR/CI and topology state, rerun the ledger,
-  rebind the current candidate/contract packet as needed and run a fresh
-  no-credit canary before any separately authorized screening preparation.
-  Preserve all private values, fixtures, evaluator output and prior packets as
+  held: A07 active, W03 verified, R01/W02/F01 held. Next owner/action: complete
+  the independent protocol rereview, record PASS or concrete corrections, then
+  refresh source, release/tag, PR/CI and topology state before the next fresh
+  no-credit canary and separately authorized screening preparation. Preserve
+  all private values, fixtures, evaluator output and prior packets as
   historical; do not allocate or credit cells from this checkpoint.
 
-## Historical post-merge candidate rebind checkpoint — 2026-09-10 UTC (`origin/master=8be6103`, superseded by current `69246d3`; previously `b7043ab`)
+## Historical post-merge candidate rebind checkpoint — 2026-09-10 UTC (`origin/master=8be6103`, superseded by current `ebedb3e`; previously `b7043ab`)
 
 - PR #268 is a process-only documentation merge; it changes no product,
   evaluator, threshold, allocation or authority state. The prior `9b410e9`
