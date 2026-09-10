@@ -15,9 +15,9 @@ phase transition, not completion of the runtime goal.
 
 As-of routing checkpoint (2026-09-10, refresh before use): the latest
 post-merge reset resolved `origin/master` to
-`bcd0386b4f864163e3f3a08e81d6106a790491c2` after PR #263. The reviewed
-process candidate `56b44fee457f355cf6dd22735afb17f3b9be84f4`, based on
-`040babbcfb7dbe744d89a1c13838c2111d3a3b10`, is merged with identical tree;
+`6fa806d05d4fab7245f35a1f57d21c237a72a809` after PR #264. The reviewed
+process candidate `4cfd9174d1c305a8d62c88dee9a3a49368a37885`, based on
+`bcd0386b4f864163e3f3a08e81d6106a790491c2`, is merged with identical tree;
 the applicable Documentation, CI, Evidence Gates, Security Scope and
 GitGuardian checks passed. Scope-skipped product/Rust/performance/release
 jobs remain non-applicable. The ledger at the merged revision has 32 items,

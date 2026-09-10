@@ -4,9 +4,10 @@ Date: 2026-09-10. Scope: process artifacts, agent instructions and validation
 routing only. Product acceptance is unchanged; no card is promoted by this file.
 The historical proof below is retained; the current continuation route and
 source reconciliation are recorded before the historical next-phase notes.
-Process iteration: 116 (current-master pointer reconciliation after PR #263;
-iteration 115 was the PR #262 post-merge reconciliation, iteration 114 was
-the preserved A07 route-history correction, and iteration 113 was the PR #259
+Process iteration: 117 (post-merge reconciliation for PR #264; iteration 116
+was the current-master pointer reconciliation after PR #263, iteration 115
+was the PR #262 post-merge reconciliation, iteration 114 was the preserved
+A07 route-history correction, and iteration 113 was the PR #259
 post-merge reconciliation; iteration 112
 was the PR #258 post-merge reconciliation and iteration 111 was the candidate identity freeze after the goal-contract
 correction; iteration 110 was the goal-contract correction after the R01
@@ -31,21 +32,22 @@ iteration 92).
 Context level: not exposed. The before/after phase record is this evidence
 file, linked from the full historical progress log.
 
-## Current as-of post-merge continuation checkpoint — 2026-09-10 UTC (`origin/master=bcd0386`)
+## Current as-of post-merge continuation checkpoint — 2026-09-10 UTC (`origin/master=6fa806d`)
 
 - Owner/phase: process coordinator / `post-merge-reconcile` / pointer refresh.
-  PR #263 merged reviewed process candidate `56b44fee` (based on
-  `040babbc`) as `bcd0386`; candidate/merge tree equality and reachability,
+  PR #264 merged reviewed process candidate `4cfd917` (based on
+  `bcd0386`) as `6fa806d`; candidate/merge tree equality and reachability,
   independent review, and applicable Documentation/CI/Security/Evidence/
   GitGuardian checks are verified. Scope-skipped product/Rust/performance/
   release/installer/website checks remain non-applicable.
 - The fresh current-master ledger is `items=32`, `ready_pending=0`,
   `unfinished=5`, `held=3`: A07 active, W03 verified, R01/W02/F01 held.
-  Context-routing audit is `42/42 PASS`; no product, evaluator, screening,
+  Context-routing audit is `43/43 PASS`; no product, evaluator, screening,
   holdout, publication, release, deployment or invitation credit changed.
-- The stale pre-PR-263 live-looking pointers in the A07 route, e2e prompt,
+- The stale pre-PR-264 live-looking pointers in the A07 route, e2e prompt,
   recovery plan, orchestration plan, executor prompt and A07 evidence are
-  being marked historical and replaced with this single as-of source pointer.
+  now marked historical and replaced with this single as-of source pointer;
+  the prior PR #263 pointer reconciliation remains preserved as history.
   Every continuation must fetch again and rerun the revision-pinned ledger.
 - A07's next action remains the private exactly-two-condition manifest,
   supplied-input receipt, blinded mapping, complete 30-cell matrix and
@@ -53,7 +55,7 @@ file, linked from the full historical progress log.
   candidate identity and no-credit canary run. R01/W02/W03/F01 holds remain
   authority/evidence-bound.
 
-## Historical post-merge continuation checkpoint — 2026-09-10 UTC (`origin/master=373fb01`, superseded by current as-of `bcd0386`)
+## Historical post-merge continuation checkpoint — 2026-09-10 UTC (`origin/master=373fb01`, superseded by current as-of `6fa806d`)
 
 - Owner/phase: process coordinator / `post-merge-reconcile`. PR #259 merged
   reviewed candidate `ccd3bd2dcfe8ba6177b59ffc16ecc09560558bf8` (based on

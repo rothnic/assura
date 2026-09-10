@@ -94,8 +94,8 @@ public evidence.
 
 ## Current train route
 
-At the latest verified refresh (`origin/master=bcd0386`, as-of; refresh before
-use, after reviewed process PR #263), the ledger had 32 items, no ready-pending
+At the latest verified refresh (`origin/master=6fa806d`, as-of; refresh before
+use, after reviewed process PR #264), the ledger had 32 items, no ready-pending
 card, five unfinished cards and three narrow holds. A07 is the active lane: its next action is the private
 exactly-two-condition manifest, supplied-input receipt, blinded mapping,
 complete 30-cell matrix and isolated protocol-review `PASS`; only then may a

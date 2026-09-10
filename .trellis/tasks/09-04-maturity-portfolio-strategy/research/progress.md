@@ -1,5 +1,20 @@
 # Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md), [progress-history-04.md], [progress-history-05.md](progress-history-05.md), [iterations 4-17](progress-history-06.md), [preserved history](progress-history-03.md), [A01 iterations 15–31](progress-history-08.md), [iterations 5–11](progress-history-09.md), [iteration 114](progress-history-10.md), [iteration 111](progress-history-11.md), [iterations 104 and earlier](progress-history-07.md))
 
+## Iteration 117 — 2026-09-10 — PR #264 post-merge reconciliation
+
+- Owner/phase: process coordinator / `post-merge-reconcile`; PR #264 merged
+  reviewed `4cfd917` (based on `bcd0386`) as `6fa806d`. Candidate/merge tree
+  equality, base ancestry and merge reachability passed; squash non-ancestry is
+  expected. Applicable hosted checks and independent review passed; skips stay
+  non-applicable. The exact owned branch/worktree and remote ref were removed
+  after clean-status and reachability proof.
+- Current ledger remains `items=32`, `ready_pending=0`, `unfinished=5`,
+  `held=3`; A07 is active, W03 verified, and R01/W02/F01 held. This process
+  reconciliation changes no product, evaluator, threshold, allocation,
+  publication, release, deployment or invitation state. Next: continue A07's
+  private manifest and isolated protocol-review `PASS` route; refresh source
+  and ledger before any candidate binding or canary.
+
 ## Iteration 116 — 2026-09-10 — current-master pointer and gate-triage correction
 
 - Owner/session: process coordinator `/root`; phase: `implement` /
