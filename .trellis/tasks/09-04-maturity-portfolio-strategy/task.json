@@ -80,7 +80,8 @@
       "docs/r01-post-merge-reconcile",
       "docs/a07-refresh-before-use",
       "docs/a07-current-checkpoint",
-      "docs/a07-postmerge-checkpoint"
+      "docs/a07-postmerge-checkpoint",
+      "docs/r01-trace-recovery"
     ]
   }
 }

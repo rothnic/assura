@@ -1,29 +1,31 @@
 # Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md), [progress-history-04.md], [progress-history-05.md], [iterations 4-17](progress-history-06.md), [preserved history](progress-history-03.md), [iterations 104 and earlier](progress-history-07.md))
 
-## Iteration 108 — 2026-09-10 — PR #254 current-master gate-order reconciliation
+## Iteration 109 — 2026-09-10 — R01 raw-log recovery at current master
 
-- Owner/phase: process coordinator / `reconcile-handoff`. PR #254 merged the
-  reviewed process-only A07 gate-order correction as `7a775371` from `6a6adca`,
-  based on `a14cb02`; candidate and merge trees match.
-- Required local/hosted process gates passed; scope-skipped product/Rust/
-  performance/release/installer jobs remain non-applicable, not passing proof.
-- Fresh closure at `7a775371` reran the ledger and gate-order assertion: 32
-  items, zero ready pending, five unfinished, three held; A07 active, W03
-  verified, R01/W02/F01 held. No product or authority state changed.
-- Next resume: fetch, rerun ledger, freeze identity, confirm six holdouts,
-  obtain private manifest/protocol `PASS`, then run the no-credit canary.
-  Owned branch/worktree/ref are removed; report 0, strict 1 preserves
-  external/user/history conditions.
+- Owner/phase: process coordinator / `investigate-recover`; at
+  `origin/master=c1202af`, the 2,225-line failed macOS log was retrieved and
+  confirmed sequence-2 `full_rescan_event`, but no raw callback paths/kinds, rescan flag or config-generation fields.
+- This negative evidence does not close R01: no retry, filter, threshold, loop
+  refactor, or product/hosted change was made. Next is the retained raw trace or a specific maintainer native-readiness decision.
+- Ledger remains 32 items, zero ready pending, five unfinished, three held; A07 active, W03 verified, R01/W02/F01 retain separate holds.
+
+## Iteration 108 — 2026-09-10 — PR #254 current-master gate-order reconciliation (superseded by Iteration 109)
+
+- PR #254 merged the reviewed process-only A07 gate-order correction as
+  `7a775371` from `6a6adca` based on `a14cb02`; trees match. Required process
+  gates passed; scope-skipped jobs remain non-applicable. Fresh closure found
+  32 items, zero ready pending, five unfinished, three held; next A07 route is
+  six holdouts → private manifest/protocol `PASS` → fresh no-credit canary.
 
 ## Iteration 107 — 2026-09-10 — current-master reset and A07 route after PR #253 (superseded by Iteration 108)
 
-- The process coordinator fetched `origin/master=a14cb02` and reran the
-  revision-pinned ledger: 32 items, zero ready pending, five unfinished and
-  three held; A07 active, W03 verified, R01/W02/F01 held.
+- The process coordinator fetched `origin/master=a14cb02` and reran the ledger:
+  32 items, zero ready pending, five unfinished, three held; A07 active, W03
+  verified, R01/W02/F01 held.
 - PR #253's refresh-before-use correction was merged; the private 204-line
-  manifest still lacked required fields, so its 17 run objects earned no
-  credit. No live A07 handle or product/authority state was changed.
-- Next was the six-holdout and private manifest/protocol `PASS`, then a fresh
+  manifest lacked required fields, so its 17 run objects earned no credit. No
+  live A07 handle or product/authority state changed.
+- Next was six holdouts and private manifest/protocol `PASS`, then a fresh
   no-credit canary; R01/W02/F01 remained separate held actions.
 
 ## Iteration 106 — 2026-09-10 — post-merge checkpoint for PR #251
