@@ -21,12 +21,12 @@ reject candidates that fail the prescribed comparison, and stop invalid
 diagnostics instead of repeating runs until green. Root owns review judgment
 and merge approval; method changes never imply relaxed acceptance thresholds.
 
-## Current as-of continuation checkpoint (refresh required) — 2026-09-10 UTC (`af73d8a`)
+## Current as-of continuation checkpoint (refresh required) — 2026-09-10 UTC (`9b410e9`)
 
 The latest read-only refresh resolved `origin/master` to
-`af73d8a5004ea8c0d2298202467d1635853434c9` after PR #266. The reviewed
-process candidate `c2d47aa2c8d6263f99d2968d187cf4d26d0a0581` was based on
-`afcbe967fd6f1fcc4fe0d7a606bfa288eb4c8df5`; merged-tree equality and
+`9b410e936e2afe85f0adc4cd83ef614e35c43d2c` after PR #267. The reviewed
+process candidate `0b5c8ce174b81cf1435b0a0ff5224243416393c0` was based on
+`af73d8a5004ea8c0d2298202467d1635853434c9`; merged-tree equality and
 reachability were verified, as were independent review and the applicable
 Documentation, CI, Security, Evidence and GitGuardian checks. Scope-skipped
 product/Rust/performance/release jobs remain non-applicable rather than proof.
@@ -35,16 +35,17 @@ state.
 
 The revision-pinned ledger remains 32 items, `ready_pending=0`, five
 unfinished and three held: A07 active, W03 verified, and R01/W02/F01 held.
-The six valid unseen holdouts remain frozen. The private A07 manifest now has
+The six valid unseen holdouts remain frozen. The private A07 manifest has
 exactly two explicit conditions, supplied-input receipts, a blinded mapping,
-and a complete 30-cell reserved matrix. An isolated protocol review found and
-resolved three concrete metadata gaps: receipts now bind source SHA/tree,
-summaries are value-neutral, and each condition row binds the stack set and
-toolchain. The scoped rereview returned a redacted `PASS` with no findings;
-this proves only the private protocol gate, so no screening, holdout or
-acceptance credit exists. The next owned action is a fresh source/identity
-refresh and candidate-bound no-credit canary; preserve residual fixture,
-launcher, child-isolation and evaluator limitations.
+and a complete 30-cell reserved matrix; its protocol `PASS` is bound to the
+prior candidate and remains metadata-only until a current-candidate rebind is
+rereviewed. Two fresh current-source, candidate-bound no-credit canaries—one
+per reviewed condition—passed the full evaluator through the composed Codex
+initialization route. Earlier invalid runner/fixture attempts remain retained
+as unfavorable evidence. No screening, holdout or acceptance credit exists.
+The next owned action is to rebind the private manifest and obtain scoped
+protocol rereview before allocating any screening cell; preserve residual
+fixture, launcher, child-isolation and evaluator limitations.
 
 The measured `vps` host remains optional (16 CPUs, about 42 GiB available,
 95% root-disk use with about 20 GiB free, nightly Rust 1.95 and no Bun); the

@@ -86,7 +86,8 @@
       "docs/context-routing-audit",
       "docs/a07-current-route",
       "docs/a07-postmerge-route",
-      "docs/a07-condition-manifest-review"
+      "docs/a07-condition-manifest-review",
+      "docs/a07-postmerge-canary-9b410e9"
     ]
   }
 }

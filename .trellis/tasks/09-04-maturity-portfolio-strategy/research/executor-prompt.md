@@ -15,24 +15,26 @@ phase transition, not completion of the runtime goal.
 
 As-of routing checkpoint (2026-09-10, refresh before use): the latest
 post-merge reset resolved `origin/master` to
-`af73d8a5004ea8c0d2298202467d1635853434c9` after PR #266. The reviewed
-process candidate `c2d47aa2c8d6263f99d2968d187cf4d26d0a0581`, based on
-`afcbe967fd6f1fcc4fe0d7a606bfa288eb4c8df5`, is merged with identical tree;
+`9b410e936e2afe85f0adc4cd83ef614e35c43d2c` after PR #267. The reviewed
+process candidate `0b5c8ce174b81cf1435b0a0ff5224243416393c0`, based on
+`af73d8a5004ea8c0d2298202467d1635853434c9`, is merged with identical tree;
 the applicable Documentation, CI, Evidence Gates, Security Scope and
 GitGuardian checks passed. Scope-skipped product/Rust/performance/release
 jobs remain non-applicable. The ledger at the merged revision has 32 items,
 zero ready pending, five unfinished and three held: A07 is active, W03
 verified, and R01/W02/F01 held. R01's merged raw-log recovery is bounded
-negative evidence. A07's private manifest now has exactly two conditions,
+negative evidence. A07's private manifest has exactly two conditions,
 supplied-input receipts, a separate mapping, six holdouts and 30 reserved
 cells; its isolated protocol rereview returned a redacted `PASS` with no
-findings after concrete metadata corrections. Receipts bind source SHA/tree,
-summaries are value-neutral, and each row binds stack set/toolchain. This is
-only the private protocol gate: no canary or screening allocation has occurred.
-Route next to a fresh source/identity freeze and candidate-bound no-credit
-canary, preserving residual fixture, launcher, child-isolation and evaluator
-limitations. Route from `recovery-plan.md`, not from this snapshot, after a
-fresh fetch and ledger.
+findings after concrete metadata corrections, but that metadata gate is tied
+to the prior candidate. Two fresh current-source candidate-bound no-credit
+canaries, one per reviewed condition, now pass the full evaluator through the
+composed Codex initialization route. Earlier invalid runner/fixture attempts
+remain unfavorable no-credit evidence. Route next to a current-candidate
+manifest rebind and scoped protocol rereview; no screening allocation is
+allowed until that gate and all identity/context checks pass. Preserve residual
+fixture, launcher, child-isolation and evaluator limitations. Route from
+`recovery-plan.md`, not from this snapshot, after a fresh fetch and ledger.
 
 The historical parent-`c34f917` candidate-freeze observation used a clean
 detached checkout and the exact Rust/Cargo `1.94.1` toolchain. Its non-symlink

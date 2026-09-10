@@ -1,5 +1,33 @@
 # Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md), [progress-history-04.md], [progress-history-05.md](progress-history-05.md), [iterations 4-17](progress-history-06.md), [preserved history](progress-history-03.md), [A01 iterations 15–31](progress-history-08.md), [iterations 5–11](progress-history-09.md), [iteration 114](progress-history-10.md), [iteration 111](progress-history-11.md), [iterations 106–108](progress-history-12.md), [iterations 104 and earlier](progress-history-07.md), [iterations 32–33 and 42](progress-history-13.md))
 
+## Iteration 122 — 2026-09-10 — merged process slice and current-candidate canary
+
+- Owner/phase: process coordinator `/root` / `candidate-bound-canary`; the
+  reviewed process slice `0b5c8ce174b81cf1435b0a0ff5224243416393c0` was merged
+  as `9b410e936e2afe85f0adc4cd83ef614e35c43d2c` after the exact-head hosted
+  scope checks and independent rereview passed. Candidate/merge tree equality,
+  post-merge fetch and clean owned branch/worktree/ref closure were verified;
+  the root's unknown dirty path and foreign topology remain untouched.
+- Fresh current-master candidate identity was built with Assura `0.4.0` and
+  Rust/Cargo `1.94.1`. The actual login-shell environment matched
+  `command -v assura`, version, fixed target and target SHA. Two fresh
+  source-only fixtures, one for each reviewed content-template condition, used
+  the composed Codex initialization route; both initializers and both full A01
+  evaluator runs exited `0`, with all seven dimensions passing and the seeded
+  negative control rejecting as expected. These are no-credit canaries only.
+- Earlier direct-onboarding/omitted-policy and restrictive-existing-config
+  attempts are retained privately as unfavorable no-credit evidence. They
+  exposed real runner/fixture mismatches and were not retried unchanged. No
+  product, threshold, screening, holdout, follow-up-feature, release,
+  deployment, publication or invitation state changed.
+- The revision-pinned ledger at `origin/master=9b410e9` remains 32 items,
+  `ready_pending=0`, `unfinished=5`, `held=3`: A07 active, W03 verified and
+  R01/W02/F01 held. The prior private protocol `PASS` is metadata-only for its
+  older candidate. Next owner/action: rebind the private manifest rows and
+  receipts to `9b410e9`, obtain scoped protocol rereview `PASS`, then launch
+  screening only if identity, context, fixture and full-contract gates remain
+  valid. Context level: not exposed.
+
 ## Iteration 121 — 2026-09-10 — accepted stale-route finding and delta review
 
 - Independent process review of committed checkpoint `64f87af` against

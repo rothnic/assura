@@ -94,23 +94,28 @@ public evidence.
 
 ## Current train route
 
-At the latest verified refresh (`origin/master=af73d8a`, as-of; refresh before
-use, after reviewed process PR #266), the ledger has 32 items, no ready-pending
+At the latest verified refresh (`origin/master=9b410e9`, as-of; refresh before
+use, after reviewed process PR #267), the ledger has 32 items, no ready-pending
 card, five unfinished cards and three narrow holds. A07 is the active lane: its
 private exactly-two-condition manifest, supplied-input receipts, blinded
 mapping, six holdout handles and complete 30-cell reserved matrix exist. The
 isolated protocol review returned a redacted `PASS` with no findings after
 correcting receipt source SHA/tree provenance, value-neutral public summaries,
-and explicit stack-set/toolchain invariants in each condition row. This PASS is
-only the private protocol gate; no canary or screening credit is allowed yet.
-Refresh the source/ledger, freeze a new identity and run the fresh no-credit
-candidate-bound canary next. R01 still needs the raw callback trace or a specific
-maintainer native-readiness decision. W02 needs explicit Cloudflare approval
-before any current push that could trigger builds. W03's technical change is
-verified but publication remains separately authorized. F01's pilot kit is
-prepared, while participant selection/invitations remain Nick-authorized.
-These holds do not end independent process, review, topology, or authorized
-integration work.
+and explicit stack-set/toolchain invariants in each condition row. That PASS is
+metadata-only for the earlier candidate; the current candidate must receive a
+manifest rebind and scoped rereview before screening credit. Two fresh
+candidate-bound no-credit canaries on the current merged source passed the full
+evaluator through the composed Codex initialization route; earlier invalid
+runner/fixture attempts remain unfavorable evidence. No screening, holdout or
+acceptance credit is allowed yet. The next action is to rebind and rereview the
+private manifest, then run only the authorized screening protocol if identity,
+context and contract gates remain valid. R01 still needs the raw callback trace
+or a specific maintainer native-readiness decision. W02 needs explicit
+Cloudflare approval before any current push that could trigger builds. W03's
+technical change is verified but publication remains separately authorized.
+F01's pilot kit is prepared, while participant selection/invitations remain
+Nick-authorized. These holds do not end independent process, review, topology,
+or authorized integration work.
 
 ## Checkpoint record
 
