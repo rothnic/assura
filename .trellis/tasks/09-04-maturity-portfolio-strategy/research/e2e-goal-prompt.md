@@ -20,7 +20,23 @@ reject candidates that fail the prescribed comparison, and stop invalid
 diagnostics instead of repeating runs until green. Root owns review judgment
 and merge approval; method changes never imply relaxed acceptance thresholds.
 
-## Current continuation checkpoint — 2026-09-10 UTC (`origin/master=2eda17e`)
+## Current continuation checkpoint — 2026-09-10 UTC (`origin/master=062f6c3`)
+
+PR #251 merged the reviewed process-only continuation correction as
+`062f6c39d15babc8b12299863576a29febda5dd5` from candidate `e777ee7`, based
+on `1bd78cc`; the merged tree matches the candidate. It changes only command
+identity and R01 route handling. Refresh this source before binding a canary;
+no A07 product, evaluator, threshold, allocation or authority state changed.
+
+At this source the revision-pinned ledger remains 32 items,
+`ready_pending=0`, five unfinished and three held: A07 active, W03 verified,
+R01/W02/F01 held. The private A07 manifest/protocol-review evidence is still
+missing, so screening, holdout and final-acceptance credit remain zero. Route
+the next action to the private exactly-two-condition manifest and isolated
+protocol-review `PASS`, then refresh and bind a 062-based no-credit canary
+before any allocation.
+
+## Historical continuation checkpoint — 2026-09-10 UTC (`origin/master=2eda17e`; superseded by PR #251)
 
 PR #249 merged the reviewed continuation-control/source-label correction as
 `2eda17e82d9dab12338805479a33a5774560451f` from candidate `5f17f7f`, based on
@@ -60,7 +76,8 @@ against the then-current master and run the no-credit canary; no screening,
 holdout, final-acceptance, release, deployment, publication or invitation
 credit is created by this reconciliation. The source-pointer lifecycle requires
 another fetch and ledger audit on every resume; PR #249 subsequently moved the
-current source to `2eda17e`. Later SHAs supersede this as-of checkpoint without
+current source to `2eda17e`. PR #251 later moved current source to `062f6c3`.
+Later SHAs supersede this as-of checkpoint without
 requiring evidence-only churn when labels cannot misroute work.
 
 ## Historical post-merge continuation checkpoint — 2026-09-10 UTC (`origin/master=6ed43c3`; superseded by PR #248)
@@ -76,7 +93,7 @@ The next real action remains private A07 manifest validation and isolated
 protocol-review `PASS`, followed by a fresh current-master candidate-bound
 canary; no screening, holdout or final-acceptance credit is authorized here.
 The d62 snapshot below is a historical candidate-base record, and this
-`6ed43c3` checkpoint is superseded by current `2eda17e`; neither is a live
+`6ed43c3` checkpoint is superseded by current `062f6c3`; neither is a live
 source.
 
 ## Historical candidate-base refresh — 2026-09-10 UTC (`origin/master=d62dd40`; superseded by PR #247)

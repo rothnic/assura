@@ -1,4 +1,4 @@
-# Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md), [progress-history-04.md], [progress-history-05.md], [iterations 4-17](progress-history-06.md), [preserved history](progress-history-03.md), [iterations 100 and earlier](progress-history-07.md))
+# Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md), [progress-history-04.md], [progress-history-05.md], [iterations 4-17](progress-history-06.md), [preserved history](progress-history-03.md), [iterations 104 and earlier](progress-history-07.md))
 
 ## Iteration 106 — 2026-09-10 — post-merge checkpoint for PR #251
 
