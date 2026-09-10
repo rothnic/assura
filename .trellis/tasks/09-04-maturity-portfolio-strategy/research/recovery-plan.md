@@ -1,11 +1,11 @@
 # Execution recovery plan
 
 Status: active continuation route, 2026-09-10 UTC. The latest post-merge
-refresh resolved `origin/master=af73d8a5004ea8c0d2298202467d1635853434c9`
-after PR #266; this pointer is an as-of checkpoint and must be refreshed before
-use. PR #266 merged the reviewed A07 private-readiness audit candidate
-`c2d47aa2c8d6263f99d2968d187cf4d26d0a0581`, based on
-`afcbe967fd6f1fcc4fe0d7a606bfa288eb4c8df5`; its merged tree matches and it
+refresh resolved `origin/master=9b410e936e2afe85f0adc4cd83ef614e35c43d2c`
+after PR #267; this pointer is an as-of checkpoint and must be refreshed before
+use. PR #267 merged the reviewed A07 process-route candidate
+`0b5c8ce174b81cf1435b0a0ff5224243416393c0`, based on
+`af73d8a5004ea8c0d2298202467d1635853434c9`; its merged tree matches and it
 changed no product or acceptance state. Earlier pointer and reconciliation
 checkpoints are historical. The latest diagnostic is the bounded R01 raw-log
 recovery recorded at candidate base `c1202af` and merged as process evidence;
@@ -34,7 +34,32 @@ proof and full evaluator dimensions remain mandatory. CI, generated files and
 partial checks cannot substitute. R06/publication/pilots retain their separate
 authority and observed-outcome requirements.
 
-## Current as-of A07 protocol-review checkpoint — 2026-09-10 UTC (`origin/master=af73d8a`)
+## Current as-of A07 candidate-bound canary checkpoint — 2026-09-10 UTC (`origin/master=9b410e9`)
+
+- Owner/phase: process coordinator `/root` / `candidate-bound-canary`; the
+  clean current-master checkout and candidate identity are recorded privately.
+  The merged source is `9b410e936e2afe85f0adc4cd83ef614e35c43d2c`; the release
+  binary is Assura `0.4.0` built with Rust/Cargo `1.94.1`.
+- The fresh identity check in the actual login-shell command environment
+  matched `command -v assura`, version, fixed target and target hash. Two fresh
+  source-only fixtures used the composed `init --agent codex --activate` route
+  followed by the reviewed `--content-template` input; both initializer runs
+  and both full A01 evaluator runs exited `0` with `acceptance_eligible: true`,
+  `acceptance_pass: true`, all seven dimensions passing and the seeded negative
+  control rejecting as expected. These are no-credit canaries, not screening,
+  holdout, follow-up-feature or final-batch acceptance.
+- Earlier generic/omitted-policy and restrictive-existing-config attempts are
+  retained privately as unfavorable no-credit evidence. They exposed a runner
+  and fixture contract mismatch and were not retried unchanged. The prior
+  private protocol `PASS` is metadata-only for its older candidate; current
+  manifest rows and receipts must be rebound and scoped-rereviewed before any
+  screening allocation.
+- Next owner/action: the A07 acceptance coordinator rebinding the private
+  manifest/receipt candidate identity, then obtain an isolated protocol
+  rereview `PASS`; only after that may the coordinator launch screening. R01,
+  W02, W03 and F01 retain their named authority/evidence holds.
+
+## Historical current as-of A07 protocol-review checkpoint — 2026-09-10 UTC (`origin/master=af73d8a`)
 
 - Owner/phase: process coordinator / `review`; clean owned checkout
   `/private/tmp/assura-a07-manifest-review` on

@@ -3,26 +3,34 @@
 Status: active. Owner: this thread's A07 acceptance coordinator. This plan
 does not embed a permanent routing baseline: fetch `origin/master` and rerun
 the revision-pinned ledger before every canary. The latest 2026-09-10
-post-merge refresh resolved `origin/master=af73d8a5004ea8c0d2298202467d1635853434c9`
-after PR #266, which merged reviewed process candidate
-`c2d47aa2c8d6263f99d2968d187cf4d26d0a0581` based on
-`afcbe967fd6f1fcc4fe0d7a606bfa288eb4c8df5`; merged-tree equality,
+post-merge refresh resolved `origin/master=9b410e936e2afe85f0adc4cd83ef614e35c43d2c`
+after PR #267, which merged reviewed process candidate
+`0b5c8ce174b81cf1435b0a0ff5224243416393c0` based on
+`af73d8a5004ea8c0d2298202467d1635853434c9`; merged-tree equality,
 reachability, independent review and applicable Documentation/CI/Security/
 Evidence/GitGuardian checks passed. This process-only checkpoint does not
-bind a new A07 binary. The six valid unseen holdout layouts remain frozen in
-the private owner-controlled store. The private manifest now has exactly two
-conditions, supplied-input receipts, a blinded mapping and a complete
-30-cell reserved matrix; its isolated protocol review returned a redacted
-`PASS` with no findings after corrections for source SHA/tree provenance,
-value-neutral summaries and row-level stack/toolchain invariants. This PASS is
-only the private protocol gate and earns no screening allocation. Do not infer
-conditions from historical run names or holdout labels. The next action is
-ordered: refresh source and ledger, freeze the new candidate identity, and run
-the fresh candidate-bound no-credit canary before any screening batch. The
-prior `2eda17e82d9dab12338805479a33a5774560451f` checkpoint is historical after
-PR #251; earlier candidate SHAs remain historical evidence/archive references,
-not the active baseline. This plan does not change the A07 contract, scoring
-thresholds, fixture allocation, or product acceptance.
+promote A07 or authorize screening. The six valid unseen holdout layouts remain
+frozen in the private owner-controlled store. The private manifest still has
+exactly two conditions, supplied-input receipts, a blinded mapping and a
+complete 30-cell reserved matrix; its isolated protocol review returned a
+redacted `PASS` with no findings after corrections for source SHA/tree
+provenance, value-neutral summaries and row-level stack/toolchain invariants.
+That PASS is metadata-only for the prior candidate and earns no screening
+allocation until the manifest is rebound and rereviewed for the current
+candidate. Do not infer conditions from historical run names or holdout labels.
+
+The current merged candidate was built as Assura `0.4.0` with Rust/Cargo
+`1.94.1` and was identity-checked inside a disposable login-shell launcher.
+Fresh no-credit canaries for the two reviewed content-template conditions used
+the composed `init --agent codex --activate` route followed by onboarding and
+the full evaluator; both passed. Earlier generic/omitted-policy and restrictive
+existing-config attempts remain retained as unfavorable no-credit evidence.
+The canary proves neither screening, holdout, follow-up-feature nor final-batch
+acceptance. The next ordered action is to rebind the private manifest rows and
+receipts to this current candidate, obtain a scoped protocol rereview, and only
+then begin screening if every identity/context/contract gate remains valid.
+This plan does not change the A07 contract, scoring thresholds, fixture
+allocation, or product acceptance.
 
 The canary's private event, evaluator, fixture, and identity provenance remains
 outside the repository. Public evidence retains only the candidate identity and
@@ -89,14 +97,14 @@ the binding inside the run before any product result is counted:
 
 The canary must also prove that the candidate exposes the expected merged
 `init --agent <host> --activate` surface. The historical `77b41fe` canary
-passed those identity, surface, context, and full-contract checks; a fresh
-candidate-bound canary against the freshly fetched then-current
-`origin/master` (the latest as-of post-merge checkpoint is `af73d8a`, subject
-to a fresh fetch) is still required before allocation. The historical
-`f1595fc` and `922d7f0` runs remain labeled below
-for provenance; none is a screening allocation. An explicit-route control may
-verify the composed implementation, but it is calibration evidence and never
-counts as a blinded run.
+passed those identity, surface, context, and full-contract checks; the fresh
+current-source canaries now pass the same full contract against
+`origin/master=9b410e9`. They remain no-credit controls until the private
+manifest is rebound and rereviewed for this candidate. The historical
+`f1595fc`, `922d7f0` and `af73d8a` runs remain labeled below for provenance;
+none is a screening allocation. An explicit-route control may verify the
+composed implementation, but it is calibration evidence and never counts as a
+blinded run.
 
 ## Smallest implementation and verification
 
@@ -115,7 +123,7 @@ counts as a blinded run.
   evidence and complete matrix, and obtain an isolated protocol-review `PASS`;
   do not infer or rename conditions in public evidence. Then refresh the
   current `origin/master` source pointer and ledger (latest as-of checkpoint:
-  `af73d8a`) and run a fresh candidate-bound canary
+  `9b410e9`) and run a fresh candidate-bound canary
   against that frozen identity; all embedded checkpoints remain historical.
   launch one fresh source-only fixture and child under a sibling-free
   disposable parent per run. If identity, context, or contract checks fail,

@@ -1,9 +1,12 @@
 # Recovery process verification
 
 Date: 2026-09-10. Scope: process artifacts, agent instructions and validation routing only. Product acceptance is unchanged; no card is promoted by this file.
-Older tail note: [recovery history](recovery-history-01.md).
+Older tail note: [recovery history 01](recovery-history-01.md) and
+[recovery history 02](recovery-history-02.md).
 The historical proof below is retained; the current continuation route and source reconciliation are recorded before historical notes.
-Process iteration: 120 (A07 protocol review PASS at current master; iteration 119
+Process iteration: 122 (merged A07 process route and current-candidate canary;
+iteration 121 was the accepted stale-route finding delta; iteration 120 was the
+A07 protocol review PASS at current master; iteration 119
 was the A07 private manifest review at current master; iteration 118
 was the A07 private-readiness audit at current master; iteration 117
 was the post-merge reconciliation for PR #264; iteration 116
@@ -34,7 +37,33 @@ iteration 92).
 Context level: not exposed. The before/after phase record is this evidence
 file, linked from the full historical progress log.
 
-## Current as-of private manifest review — 2026-09-10 UTC (`origin/master=af73d8a`)
+## Current as-of merged-candidate canary — 2026-09-10 UTC (`origin/master=9b410e9`)
+
+- Owner/phase: process coordinator `/root` / `candidate-bound-canary`; the
+  clean current-master checkout and exact candidate identity are retained in
+  the private harness. The merged source is
+  `9b410e936e2afe85f0adc4cd83ef614e35c43d2c`; the release binary is Assura
+  `0.4.0` built with Rust/Cargo `1.94.1`.
+- The actual login-shell command environment matched the fixed candidate for
+  `command -v assura`, version, target path and target SHA. Two fresh
+  source-only fixtures used the composed `init --agent codex --activate`
+  route followed by one reviewed `--content-template` value each. Both
+  initializer runs exited `0`; both full A01 evaluator runs exited `0` with
+  `acceptance_eligible: true`, `acceptance_pass: true`, all seven dimensions
+  passing and the seeded negative control rejecting as expected.
+- These are fresh candidate-bound no-credit canaries only. They do not count
+  toward the 30-cell screening matrix, 18-run untouched holdout, follow-up
+  feature check or final 10-per-stack threshold. Earlier generic/omitted-policy
+  and restrictive-existing-config attempts remain retained as unfavorable
+  no-credit evidence and were not retried unchanged.
+- The prior private protocol `PASS` remains metadata-only for its reviewed
+  older candidate. The next owner/action is to rebind the private manifest rows
+  and supplied-input receipts to `9b410e9`, obtain a scoped protocol rereview
+  `PASS`, and only then allocate screening cells. Private fixture contents,
+  mappings, evaluator output and child transcripts remain outside this record;
+  no product, release, deployment, publication or invitation authority changed.
+
+## Historical current as-of private manifest review — 2026-09-10 UTC (`origin/master=af73d8a`)
 
 - Owner/phase: process coordinator `/root` / `review`; clean checkout
   `/private/tmp/assura-a07-manifest-review` on
@@ -945,56 +974,3 @@ route is recorded below and in `recovery-plan.md`.
   frozen website dependency bootstrap and built 48 pages. These results cover
   the accepted correction tree; the final proof-record candidate must rerun
   the same affected gates before hosted submission and scoped rereview.
-
-## Topology-audit helper correction — 2026-09-10
-
-- During this continuation reset, the previous orchestration helper
-  `audit-topology.sh` emitted a raw Git exit `128` before its `SUMMARY` when a
-  prunable worktree directory still existed but its `.git` metadata was gone.
-  That failure was diagnostic-tool fragility, not evidence that the topology
-  was clean. The exact old script hash was
-  `654f0f826a632804f77d89977eb90a2c8306010e88b766c1739eb934a6eb1483`.
-- The owned process correction is installed in
-  `/Users/nroth/.codex/skills/assura-orchestration`: the helper now probes Git
-  metadata and status explicitly, emits `UNREADABLE_WORKTREE` on failure,
-  counts unreadable records in `SUMMARY`, and preserves a nonzero strict
-  result. The final script hash is
-  `67635d3f48143c5b3cf9196b192d138f50770f8d947cf2df2eb81722f4cb0ce5`; the
-  accompanying skill guidance hash is
-  `49544ac6b0d6493c49f962b2bfdd90ab674111a24754c6fd10b25c912f22332d`.
-  No repository product, evaluator, threshold, release, deployment,
-  publication, or invitation surface changed.
-- `bash -n` passed. A disposable repository with an external child worktree
-  whose `.git` file was removed produced `CLEAN_WORKTREE`,
-  `PRUNABLE_REGISTRATION`, `UNREADABLE_WORKTREE`, and a complete
-  `SUMMARY base=HEAD worktrees=2 dirty=0 prunable=1 unreadable=1
-  goal_branches=0 unmerged_goal=0`; report mode exited `0` and strict mode
-  exited `1`. This confirms the helper no longer aborts or misclassifies the
-  stale registration as clean.
-- The live Assura report now reaches
-  `SUMMARY base=origin/master worktrees=34 dirty=2 prunable=3 unreadable=1
-  goal_branches=13 unmerged_goal=9` with report exit `0`; strict exits `1` for
-  the preserved root/user dirt, dirty external worktree, stale registrations,
-  and unmerged goal branches. No prune, deletion, ownership reassignment, or
-  unknown-work mutation was performed. Independent process review returned
-  `PASS` with no findings for the exact script and skill hashes above.
-- This recovery slice is owned by the process coordinator in
-  `/private/tmp/assura-topology-audit-robustness` on branch
-  `docs/topology-audit-robustness`, based on live `origin/master=d099253`.
-  The next action remains the A07 acceptance coordinator's private
-  exactly-two-condition manifest and isolated protocol review; topology
-  inventory may continue independently, while R01/W02/F01 retain their named
-  external/diagnostic holds.
-- The committed evidence candidate `e834dbbf2780e304ca77560c1f2aa39c3c393041`
-  passed the process/docs tier: the workflow gate reported `Ready: yes`, the
-  source check returned `success: true` with the same six unchanged low
-  max-line advisories, and `cargo xtask evidence`, `cargo xtask target-state`,
-  `cargo fmt --all -- --check`, `git diff --check`, JSON parsing,
-  `assura check --format agent --agent codex`, and
-  `scripts/ci-scope.sh --base origin/master --head HEAD` all exited `0`.
-  CI scope classified `evidence=true`, `changed_count=2`, with all
-  product/Rust/release/performance/rustdoc/website/security surfaces false.
-  The first docs attempt exited `1` because `website/node_modules` was absent;
-  the frozen `pnpm --dir website install --frozen-lockfile` bootstrap exited
-  `0`, and the identical `cargo xtask docs` rerun exited `0` after building 48
-  pages. The failed precondition is retained and is not counted as a pass.

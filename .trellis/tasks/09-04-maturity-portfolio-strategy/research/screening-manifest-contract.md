@@ -87,8 +87,11 @@ but never replaces required macOS/Windows/hosted proof.
 
 On each resume, the A07 coordinator must first refresh `origin/master`, rerun
 the revision-pinned ledger, freeze the candidate identity and confirm the six
-holdouts. The coordinator then creates the private two-condition manifest,
-validates it against this contract, and obtains scoped independent review.
-Until that review passes, A07 remains active with zero screening/holdout/
-final-batch credit; the historical canary and process PR do not satisfy this
-manifest gate.
+holdouts. The private two-condition manifest and scoped protocol `PASS` now
+exist for an earlier candidate, while fresh current-source canaries pass the
+full evaluator with no credit. Rebind the manifest candidate/source/receipt
+fields to the refreshed identity, validate the unchanged two-condition and
+30-cell invariants, and obtain a scoped rereview before allocating any cell.
+Until that rereview passes, A07 remains active with zero screening/holdout/
+final-batch credit; prior canaries, process PRs and metadata-only reviews do
+not satisfy the current-candidate manifest gate.
