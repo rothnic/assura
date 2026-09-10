@@ -4,8 +4,9 @@ Date: 2026-09-10. Scope: process artifacts, agent instructions and validation
 routing only. Product acceptance is unchanged; no card is promoted by this file.
 The historical proof below is retained; the current reconciliation and continuation
 route are recorded before the historical next-phase note.
-Process iteration: 96 (ledger-routing helper pin/path correction; iteration 95
-was the deterministic ledger-routing helper; iteration 94 was the A07
+Process iteration: 97 (post-merge ledger-routing reconciliation; iteration 96
+was the ledger-routing helper pin/path correction; iteration 95 was the
+deterministic ledger-routing helper; iteration 94 was the A07
 private-manifest readiness audit; iteration 93 was the topology-audit
 helper correction; after the highest recorded historical iteration, 88; PR
 #236 closure was iteration 89, the pointer candidate review was iteration 90,
@@ -13,6 +14,43 @@ the proof-record delta was iteration 91, and post-merge reconciliation was
 iteration 92).
 Context level: not exposed. The before/after phase record is this evidence
 file, linked from the full historical progress log.
+
+## Ledger-routing helper integration reconciliation — 2026-09-10
+
+- The reviewed process slice from PR #242 is integrated: candidate
+  `9651b9ddcd6393472d7bd70a74128c0c24071619` was reviewed against
+  `2607709fd218685bb8882e278428bd798f6a6291`, passed the applicable hosted
+  gates, and merged as `e296076558418cd7492c0244138e23470a1dc272`.
+  Documentation Scope, CI Scope, Security Scope, Evidence Gates, and
+  GitGuardian passed. Product/Rust/release/performance/website jobs were
+  scope-skipped by the evidence-only classifier and are retained as
+  non-applicable, not passing evidence.
+- After merge, `origin/master` was refreshed to
+  `e296076558418cd7492c0244138e23470a1dc272`; the merged candidate is an
+  ancestor. Its owned worktree and local/remote `docs/ledger-routing-helper`
+  branch were cleanly removed, with compare-and-delete verification. The
+  helper's historical branch name remains in task provenance; no card state
+  was promoted by this process slice.
+- Running the merged helper from a fresh clean current-master checkout
+  reports `items=32`, `ready_pending=0`, `unfinished=5`, `held=3`: A07 is
+  still active, R01/W02/F01 retain their named holds, and W03 remains verified
+  with publication authority separate. No pending card is executable from
+  this revision, and this routing result is not owner-liveness, acceptance,
+  review, or merge authority.
+- The required final topology report exited `0` and strict exited `1` with
+  `base=origin/master`, `worktrees=34`, `dirty=2`, `prunable=3`,
+  `unreadable=1`, `goal_branches=13`, `unmerged_goal=9`. The two dirty
+  worktrees, unreadable/prunable registrations and historical unmerged goal
+  branches are outside this slice's ownership; `git worktree prune --dry-run
+  -v` listed the three stale registrations and no prune was performed.
+  The root unknown file remains untouched.
+- Owner/phase: process coordinator / reconcile-handoff. The only remaining
+  authorized continuation is the A07 coordinator's private exactly-two-
+  condition manifest and isolated protocol review, followed by a fresh
+  current-master canary if that review passes. R01's diagnostic/native-
+  readiness decision, W02's Cloudflare publication approval, F01's participant
+  authorization, and W03's publication remain separate authority boundaries;
+  no deployment, release, publication or invitation action was taken.
 
 ## Ledger-routing helper — 2026-09-10
 
