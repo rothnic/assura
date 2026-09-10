@@ -255,6 +255,19 @@ route is recorded below and in `recovery-plan.md`.
   exactly-two-condition manifest and isolated protocol review; topology
   inventory may continue independently, while R01/W02/F01 retain their named
   external/diagnostic holds.
+- The committed evidence candidate `e834dbbf2780e304ca77560c1f2aa39c3c393041`
+  passed the process/docs tier: the workflow gate reported `Ready: yes`, the
+  source check returned `success: true` with the same six unchanged low
+  max-line advisories, and `cargo xtask evidence`, `cargo xtask target-state`,
+  `cargo fmt --all -- --check`, `git diff --check`, JSON parsing,
+  `assura check --format agent --agent codex`, and
+  `scripts/ci-scope.sh --base origin/master --head HEAD` all exited `0`.
+  CI scope classified `evidence=true`, `changed_count=2`, with all
+  product/Rust/release/performance/rustdoc/website/security surfaces false.
+  The first docs attempt exited `1` because `website/node_modules` was absent;
+  the frozen `pnpm --dir website install --frozen-lockfile` bootstrap exited
+  `0`, and the identical `cargo xtask docs` rerun exited `0` after building 48
+  pages. The failed precondition is retained and is not counted as a pass.
 
 ## Historical next phase (superseded)
 
