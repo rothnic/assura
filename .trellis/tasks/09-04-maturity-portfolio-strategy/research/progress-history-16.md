@@ -1,0 +1,5 @@
+## Iteration 128 — 2026-09-10 — current candidate protocol disposition at `9df6ae6`
+
+- PR #270 reconciled the reviewed process contract at `origin/master=9df6ae6`; the merged tree and owned closure are verified. This preserves Iteration 127's process-only merge evidence and changes no product or acceptance state.
+- The fresh 9df candidate has exact login-shell identity controls and two source-only canaries passing all seven public dimensions with a meaningful negative control; these are no-credit preparation. Its private six-handle binding, creation records, exact toolchain, receipts, two conditions and 30 reserved cells are prepared. The isolated protocol rereview returned `PASS` after bounded metadata findings `A07-CONTRACT-HASH-001`, `A07-MAPPING-REF-002` and `A07-HOLDOUT-EVIDENCE-003` were corrected; this remains metadata-only/no-credit.
+- The ledger remains 32/0/5/3 with A07 active and R01/W02/F01 held. Next owner/action: refresh origin/master, release/tag, PR/CI and topology state, rerun the ledger, freeze the then-current candidate and run a fresh no-credit canary before any separately authorized screening preparation; context level: not exposed.
