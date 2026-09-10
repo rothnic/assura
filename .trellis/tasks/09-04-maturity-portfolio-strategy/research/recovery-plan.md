@@ -1,13 +1,13 @@
 # Execution recovery plan
 
 Status: active continuation route, 2026-09-10 UTC. The latest post-merge
-refresh resolved `origin/master=373fb01ac268285d9b21cd6948862050bd7d8c6e`
-after PR #259; this pointer is an as-of checkpoint and must be refreshed before
-use. PR #259 merged the reviewed A07 continuation correction from
-`ccd3bd2dcfe8ba6177b59ffc16ecc09560558bf8`, based on
-`8c198dcb4c94095e7db1b017908eaadb813cb9e7`; its merged tree matches and it
-changed no product or acceptance state. The earlier PR #258/`8c198dcb` and
-`c34f9178` candidate checkpoints are historical. The latest diagnostic is the bounded R01 raw-log recovery recorded at candidate base
+refresh resolved `origin/master=bcd0386b4f864163e3f3a08e81d6106a790491c2`
+after PR #263; this pointer is an as-of checkpoint and must be refreshed before
+use. PR #263 merged the reviewed process reconciliation candidate
+`56b44fee457f355cf6dd22735afb17f3b9be84f4`, based on
+`040babbcfb7dbe744d89a1c13838c2111d3a3b10`; its merged tree matches and it
+changed no product or acceptance state. The earlier PR #262/`040babb` and
+PR #259/`373fb01` candidate checkpoints are historical. The latest diagnostic is the bounded R01 raw-log recovery recorded at candidate base
 `c1202af` and merged as process evidence; it does not close R01 or authorize a
 retry. This is a plan and audit, not evidence that product cards passed. The
 supported runtime goal remains the coordinator; process corrections are
@@ -34,7 +34,30 @@ proof and full evaluator dimensions remain mandatory. CI, generated files and
 partial checks cannot substitute. R06/publication/pilots retain their separate
 authority and observed-outcome requirements.
 
-## Live post-merge continuation checkpoint — 2026-09-10 UTC (`origin/master=373fb01`)
+## Current as-of post-merge continuation checkpoint — 2026-09-10 UTC (`origin/master=bcd0386`)
+
+- Owner/phase: process coordinator / `post-merge-reconcile`. PR #263 merged
+  the independently reviewed process candidate `56b44fee` (based on
+  `040babbc`) as `bcd0386`; merged-tree equality and reachability passed.
+  Applicable Documentation, CI, Security, Evidence and GitGuardian checks
+  passed; product, Rust, performance, release, installer and website jobs
+  were scope-skipped and remain non-applicable, not acceptance proof.
+- The revision-pinned ledger at `origin/master=bcd0386` has 32 items, zero
+  ready pending, five unfinished and three held: A07 active, W03 verified,
+  and R01/W02/F01 separately held. The context-routing audit is `42/42 PASS`.
+- The owned pointer-refresh route is process-only. Its candidate/merge proof,
+  current-master reconciliation and exact branch/worktree cleanup must be
+  recorded before handoff; no product, screening, holdout, publication,
+  release, deployment or invitation credit changes.
+- A07's next real action remains private: exactly-two-condition manifest,
+  supplied-input receipt, blinded mapping, complete 30-cell matrix and
+  isolated protocol-review `PASS`; only then refresh source/identity for a
+  fresh candidate-bound no-credit canary. R01, W02, W03 and F01 retain their
+  named authority/evidence holds.
+- Refresh `origin/master` and rerun the ledger before use. This SHA is an
+  as-of routing checkpoint, not a permanent source pin.
+
+## Historical post-merge continuation checkpoint — 2026-09-10 UTC (`origin/master=373fb01`, superseded by current as-of `bcd0386`)
 
 - Owner/phase: process coordinator / `post-merge-reconcile`. PR #259 merged
   the independently reviewed process candidate `ccd3bd2` (based on

@@ -94,9 +94,9 @@ public evidence.
 
 ## Current train route
 
-At the last verified refresh (`origin/master=373fb01`, as-of; refresh before
-use), the ledger had 32 items, no ready-pending card, five unfinished cards and
-three narrow holds. A07 is the active lane: its next action is the private
+At the latest verified refresh (`origin/master=bcd0386`, as-of; refresh before
+use, after reviewed process PR #263), the ledger had 32 items, no ready-pending
+card, five unfinished cards and three narrow holds. A07 is the active lane: its next action is the private
 exactly-two-condition manifest, supplied-input receipt, blinded mapping,
 complete 30-cell matrix and isolated protocol-review `PASS`; only then may a
 fresh current-master identity canary run. R01 still needs the raw callback

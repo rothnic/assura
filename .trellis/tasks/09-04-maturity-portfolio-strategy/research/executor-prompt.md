@@ -13,11 +13,11 @@ After every merge, refresh `origin/master` and reconcile the task pointer,
 ledger and owned topology before selecting or handing off; a clean merge is a
 phase transition, not completion of the runtime goal.
 
-Live routing checkpoint (2026-09-10, refresh before use): the latest
+As-of routing checkpoint (2026-09-10, refresh before use): the latest
 post-merge reset resolved `origin/master` to
-`373fb01ac268285d9b21cd6948862050bd7d8c6e` after PR #259. The reviewed
-process candidate `ccd3bd2dcfe8ba6177b59ffc16ecc09560558bf8`, based on
-`8c198dcb4c94095e7db1b017908eaadb813cb9e7`, is merged with identical tree;
+`bcd0386b4f864163e3f3a08e81d6106a790491c2` after PR #263. The reviewed
+process candidate `56b44fee457f355cf6dd22735afb17f3b9be84f4`, based on
+`040babbcfb7dbe744d89a1c13838c2111d3a3b10`, is merged with identical tree;
 the applicable Documentation, CI, Evidence Gates, Security Scope and
 GitGuardian checks passed. Scope-skipped product/Rust/performance/release
 jobs remain non-applicable. The ledger at the merged revision has 32 items,

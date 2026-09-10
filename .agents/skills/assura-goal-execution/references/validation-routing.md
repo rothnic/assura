@@ -3,7 +3,9 @@
 Inspect `xtask/src/main.rs`, `scripts/ci-scope.sh` and current workflows for the
 changed surface. Record command elapsed time, queue time, exit, host, source,
 toolchain, test count and failed test/job name. Optimize measured repetition;
-never change required coverage to manufacture a green result.
+never change required coverage to manufacture a green result. For a queued,
+slow, failed or scope-ambiguous hosted check, use the focused
+[CI gate triage](ci-gate-triage.md) decision table before rerunning it.
 
 | Change/phase | Pre-PR work | Merge proof |
 | --- | --- | --- |
