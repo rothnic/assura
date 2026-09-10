@@ -40,6 +40,20 @@ file, linked from the full historical progress log.
   `docs/ledger-routing-helper`, based on the refreshed master. The exact
   candidate and final gates will be recorded before review; no private
   evaluator or fixture values are copied into repository evidence.
+- Candidate `f882d22613e21c3c987cd028f0f82366ee8a9c02` passed the final local
+  process/docs tier: workflow `Ready: yes`; source check success `true` with
+  six unchanged low max-line advisories; `cargo xtask evidence`,
+  `cargo xtask target-state`, `cargo fmt --all -- --check`, `git diff --check`,
+  JSON parsing, and `assura check --format agent --agent codex` all exited `0`.
+  The committed CI scope classifier reported `evidence=true`,
+  `changed_count=4`, with product/Rust/release/performance/rustdoc/website and
+  security surfaces `false`.
+- The first identical `cargo xtask docs` attempt exited `1` because the clean
+  checkout lacked `website/node_modules` and could not resolve `astro`. The
+  locked `pnpm --dir website install --frozen-lockfile` bootstrap exited `0`
+  with 355 cached packages; the identical docs gate then exited `0` and built
+  48 pages. The failed environment precondition remains recorded and is not a
+  pass.
 - The next authorized action remains the A07 coordinator's private
   exactly-two-condition manifest and isolated protocol review. The helper must
   be used at the next continuation before any pending-card selection; its
