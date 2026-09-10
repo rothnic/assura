@@ -1,9 +1,12 @@
 # A07 candidate-binding correction plan
 
-Status: active. Owner: this thread's A07 acceptance coordinator. The current
-routing baseline is freshly fetched `origin/master`
-`062f6c39d15babc8b12299863576a29febda5dd5`; no candidate-bound canary has yet
-been run against this revision. The candidate-bound, context-isolated canary
+Status: active. Owner: this thread's A07 acceptance coordinator. This plan
+does not embed a live routing baseline: fetch `origin/master` and rerun the
+revision-pinned ledger before every canary. The last recorded checkpoint was
+`origin/master=062f6c39d15babc8b12299863576a29febda5dd5`, integrated by PR #252
+as `a92b109c2158113a1f2316b8cdd5ef79f6668571`; no candidate-bound canary has
+yet been run against a freshly refreshed source after that checkpoint. The
+candidate-bound, context-isolated canary
 against the prior `77b41fe` baseline passed the full contract but receives no
 screening allocation. The next action is ordered: create and validate the exact
 two-condition screening manifest, obtain an isolated protocol-review `PASS`,

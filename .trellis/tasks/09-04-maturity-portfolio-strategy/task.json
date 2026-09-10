@@ -77,7 +77,8 @@
       "docs/train-continuation-finalize",
       "docs/continuation-control-route",
       "docs/r01-diagnostic-timeout-reconcile",
-      "docs/r01-post-merge-reconcile"
+      "docs/r01-post-merge-reconcile",
+      "docs/a07-refresh-before-use"
     ]
   }
 }
