@@ -55,7 +55,7 @@ authority and observed-outcome requirements.
   execution remains optional and must use the exact-toolchain bundle procedure
   only after fresh disk/headroom checks.
 
-## Live post-merge recovery checkpoint — 2026-09-10 UTC (`origin/master=a819c0c`)
+## Historical post-merge recovery checkpoint — 2026-09-10 UTC (`origin/master=a819c0c`, superseded by c34f9178)
 
 PR #256 merged the independently reviewed R01 raw-log recovery record as
 `a819c0cd2e8e9fdf14a3641cc76f0119ceb9d2bc` from candidate `c950fe4`, based on

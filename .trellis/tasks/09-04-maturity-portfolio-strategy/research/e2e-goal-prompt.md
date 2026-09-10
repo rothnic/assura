@@ -20,7 +20,7 @@ reject candidates that fail the prescribed comparison, and stop invalid
 diagnostics instead of repeating runs until green. Root owns review judgment
 and merge approval; method changes never imply relaxed acceptance thresholds.
 
-## Live continuation checkpoint (refresh required) — 2026-09-10 UTC
+## Historical continuation checkpoint (superseded by current c34f9178) — 2026-09-10 UTC
 
 The latest read-only refresh resolved `origin/master` to
 `c34f917866e45cc122ec07412fa0c630d460f663` after PR #257. The revision-pinned

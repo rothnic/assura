@@ -5,8 +5,8 @@ routing only. Product acceptance is unchanged; no card is promoted by this file.
 The historical proof below is retained; the current continuation route and
 source reconciliation are recorded before the historical next-phase notes.
 Process iteration: 111 (candidate identity freeze after the goal-contract
-correction; iteration 110 was the R01 raw-log
-recovery merge; iteration 109 is the current-master R01 recovery evidence;
+correction; iteration 110 was the goal-contract correction after the R01
+raw-log recovery; iteration 109 is the current-master R01 recovery evidence;
 iteration 106 was the post-merge checkpoint for PR #251; the R01
 diagnostic preparation is candidate-base evidence;
 iteration 104 was the continuation-control route on current master;
@@ -53,7 +53,7 @@ file, linked from the full historical progress log.
   exact-toolchain evidence and required hosted/platform gates remain
   authoritative.
 
-## Live goal-contract checkpoint — 2026-09-10 UTC (`origin/master=a819c0c`)
+## Historical goal-contract checkpoint — 2026-09-10 UTC (`origin/master=a819c0c`, superseded by c34f9178)
 
 - Owner/phase: process coordinator / `goal-contract-reconcile`. A clean
   worktree was created from freshly fetched `origin/master` at
