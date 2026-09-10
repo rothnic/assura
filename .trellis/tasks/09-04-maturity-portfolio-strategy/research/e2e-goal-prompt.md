@@ -20,7 +20,28 @@ reject candidates that fail the prescribed comparison, and stop invalid
 diagnostics instead of repeating runs until green. Root owns review judgment
 and merge approval; method changes never imply relaxed acceptance thresholds.
 
-## Post-merge continuation checkpoint — 2026-09-10 UTC (`origin/master=6ed43c3`)
+## Current source-pointer reconciliation — 2026-09-10 UTC (`origin/master=755c28d`)
+
+PR #248 merged the reviewed source-pointer lifecycle correction as
+`755c28ded66d1f2d82b38d27633be83a0233f30e` from candidate
+`89a0430ba9f4bbf141e717ed78de72b41c5ab3b6`, based on
+`6ed43c3c63fab7b60a86f1d587c067c9b04ded93`; the merged tree matches the
+reviewed candidate. The current ledger is 32 items with zero ready pending,
+five unfinished and three held: A07 active, W03 verified, and R01/W02/F01
+held. A metadata-only private audit still lacks the required exactly-two-
+condition manifest, supplied-input mapping, complete 30-cell matrix and
+isolated protocol-review `PASS`.
+
+The only executable continuation is the A07 coordinator's private manifest and
+protocol disposition. After a redacted `PASS`, refresh the candidate identity
+against the then-current master and run the no-credit canary; no screening,
+holdout, final-acceptance, release, deployment, publication or invitation
+credit is created by this reconciliation. The source-pointer lifecycle requires
+another fetch and ledger audit on every resume; later SHAs supersede this
+as-of checkpoint without requiring evidence-only churn when labels cannot
+misroute work.
+
+## Historical post-merge continuation checkpoint — 2026-09-10 UTC (`origin/master=6ed43c3`; superseded by PR #248)
 
 PR #247 merged the reviewed source-pointer correction as
 `6ed43c3c63fab7b60a86f1d587c067c9b04ded93` from candidate
@@ -32,7 +53,8 @@ verified, and R01/W02/F01 held. Fetch again before using this checkpoint.
 The next real action remains private A07 manifest validation and isolated
 protocol-review `PASS`, followed by a fresh current-master candidate-bound
 canary; no screening, holdout or final-acceptance credit is authorized here.
-The d62 snapshot below is a historical candidate-base record, not a live
+The d62 snapshot below is a historical candidate-base record, and this
+`6ed43c3` checkpoint is superseded by current `755c28d`; neither is a live
 source.
 
 ## Historical candidate-base refresh — 2026-09-10 UTC (`origin/master=d62dd40`; superseded by PR #247)

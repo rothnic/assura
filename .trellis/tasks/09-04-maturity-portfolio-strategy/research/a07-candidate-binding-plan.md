@@ -2,12 +2,12 @@
 
 Status: active. Owner: this thread's A07 acceptance coordinator. The current
 routing baseline is refreshed `origin/master`
-`6ed43c3c63fab7b60a86f1d587c067c9b04ded93`; no candidate-bound canary has yet
+`755c28ded66d1f2d82b38d27633be83a0233f30e`; no candidate-bound canary has yet
 been run against this revision. The candidate-bound, context-isolated canary
 against the prior `77b41fe` baseline passed the full contract but receives no
 screening allocation. The next action is ordered: create and validate the exact
 two-condition screening manifest, obtain an isolated protocol-review `PASS`,
-refresh the candidate identity canary against `6ed43c3`, then begin the
+refresh the candidate identity canary against `755c28d`, then begin the
 authorized 30-run batch from sibling-free disposable parents. Earlier
 candidate SHAs remain historical evidence/archive references, not the active
 baseline. This plan does not change the A07 contract, scoring thresholds,
@@ -30,11 +30,11 @@ receives no screening, holdout or acceptance credit. The fresh canary against
 context separation, and the full product contract, but that source is now
 historical after PR #235. The live baseline is
 `5329abd880fb26b0eeded5176e2d308b654d2cc9`; PR #237 is now merged, so it is
-historical. The current execution baseline is
-`8cabc53658530a239c00a0c55cbae9b050ad74ca`. The next authorized action is to
+historical. The `8cabc536` baseline is also historical after PR #248; the
+current execution baseline is the refreshed `755c28d` above. The next authorized action is to
 create and validate the exact two product-input conditions in the private
 screening manifest, obtain an isolated protocol-review `PASS`, and refresh the
-candidate-bound canary against `8cabc536` before any 30-cell screening
+candidate-bound canary against `755c28d` before any 30-cell screening
 batch; no prior canary result is allocated to it.
 
 ## Finding

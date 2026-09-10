@@ -4,7 +4,8 @@ Date: 2026-09-10. Scope: process artifacts, agent instructions and validation
 routing only. Product acceptance is unchanged; no card is promoted by this file.
 The historical proof below is retained; the current reconciliation and continuation
 route are recorded before the historical next-phase note.
-Process iteration: 102 (post-merge source-pointer lifecycle checkpoint;
+Process iteration: 103 (current source-pointer reconciliation;
+iteration 102 was the post-merge source-pointer lifecycle checkpoint;
 iteration 101 was the current-master/private-manifest readiness re-audit;
 iteration 100 was the post-merge closure for PR #245; iteration 99 was the
 post-merge continuation reconciliation; iteration 98 was the current-master
@@ -20,7 +21,35 @@ iteration 92).
 Context level: not exposed. The before/after phase record is this evidence
 file, linked from the full historical progress log.
 
-## Post-merge source-pointer lifecycle checkpoint — 2026-09-10 UTC (`origin/master=6ed43c3`)
+## Current source-pointer reconciliation — 2026-09-10 UTC (`origin/master=755c28d`)
+
+- Owner/phase: process coordinator / `reconcile-handoff`. A fresh fetch
+  resolved `origin/master` to the full PR #248 merge SHA
+  `755c28ded66d1f2d82b38d27633be83a0233f30e`. The reviewed candidate was
+  `89a0430ba9f4bbf141e717ed78de72b41c5ab3b6`, based on
+  `6ed43c3c63fab7b60a86f1d587c067c9b04ded93`; its tree matches the merge.
+  This documentation/skill process correction changes no product, evaluator,
+  threshold, allocation, release, deployment, publication or invitation state.
+- The revision-pinned ledger reports `items=32`, `ready_pending=0`,
+  `unfinished=5`, `held=3`: A07 active, W03 verified, and R01/W02/F01 held.
+  A metadata-only private audit still sees seven layout directories (six
+  frozen-layout entries and one disqualified raw-hook draft), a draft
+  `holdouts/manifest.md` with no discoverable condition/mapping/matrix fields,
+  and no isolated protocol-review artifact. No screening, holdout or
+  final-acceptance credit is awarded.
+- Independent impasse review accepted `IMPASSE-PTR-02` as a concrete stale
+  pointer finding: the `6ed43c3` checkpoint and older A07 pointers could be
+  mistaken for live source. This reconciliation labels those records
+  historical and makes the next action the private exactly-two-condition
+  manifest plus isolated protocol-review `PASS`; only after that disposition
+  may a fresh current-master candidate-bound canary run.
+- Topology remains `worktrees=34 dirty=2 prunable=3 unreadable=1
+  goal_branches=13 unmerged_goal=9`; report exits `0` and strict exits `1`
+  only for preserved root/external dirt and historical registrations/refs.
+  The owned reconciliation worktree is clean and will be removed only after
+  merged reachability and final scoped gates.
+
+## Historical post-merge source-pointer lifecycle checkpoint — 2026-09-10 UTC (`origin/master=6ed43c3`; superseded by PR #248)
 
 - Owner/phase: process coordinator / `reconcile-handoff` complete. PR #247
   merged the reviewed pointer correction as
@@ -41,8 +70,9 @@ file, linked from the full historical progress log.
   `worktrees=34 dirty=2 prunable=3 unreadable=1 goal_branches=13
   unmerged_goal=9`; report exited `0`, strict exited `1` only for preserved
   root/external dirt and stale registrations/history.
-- The d62 readiness audit below is now historical candidate-base evidence. At
-  the next resume, fetch `origin/master`, rerun the ledger and route A07 to
+- The d62 readiness audit below is historical candidate-base evidence, and this
+  `6ed43c3` checkpoint is superseded by the current `755c28d` reconciliation.
+  At the next resume, fetch `origin/master`, rerun the ledger and route A07 to
   its private manifest/protocol-review `PASS` before a fresh current-master
   canary. No historical run receives screening or acceptance credit.
 

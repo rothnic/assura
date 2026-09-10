@@ -1,14 +1,19 @@
 # Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md), [progress-history-04.md], [progress-history-05.md], [preserved history](progress-history-03.md))
 
-## Iteration 102 — 2026-09-10 — post-merge source-pointer lifecycle checkpoint
+## Iteration 103 — 2026-09-10 — current source-pointer reconciliation
+
+- PR #248 merged the reviewed source-pointer lifecycle correction as `755c28d` from candidate `89a0430` based on `6ed43c3`; dated checkpoints are now as-of/historical and every resume must fetch and rerun the ledger.
+- Current ledger: 32 items, zero ready pending, five unfinished and three held; A07 active, W03 verified, R01/W02/F01 held. Private metadata still lacks the exactly-two-condition manifest, supplied-input mapping, 30-cell matrix and isolated protocol-review artifact.
+- Independent review accepted `IMPASSE-PTR-02`; older `6ed43c3`, `8cabc536` and `e03278e` pointers are historical. Next: private manifest/protocol `PASS`, then a fresh no-credit canary against current master; no card/evaluation/release/authority state changed. Context not exposed; VPS remains optional after exact toolchain/disk checks.
+
+## Iteration 102 — 2026-09-10 — historical post-merge source-pointer lifecycle checkpoint (6ed43c3; superseded by PR #248)
 
 - PR #247 merged the independently reviewed process correction as `6ed43c3`
   from candidate `577b6d6` based on `d62dd40`; merged-tree comparison and
   clean owned-worktree closure passed. Applicable hosted scope/evidence,
   security and GitGuardian checks passed; scope-skipped product/Rust/
   performance/release/installer/website jobs remain non-applicable.
-- The current revision-pinned ledger remains 32 items with zero ready pending,
-  five unfinished and three held: A07 active, W03 verified, R01/W02/F01 held.
+- At that historical checkpoint, the revision-pinned ledger remained 32 items with zero ready pending, five unfinished and three held: A07 active, W03 verified, R01/W02/F01 held.
   The d62 readiness audit is now explicitly historical candidate-base evidence;
   future resumes must fetch and rerun the ledger before routing.
 - Context level: not exposed. The next real observation is A07's private
