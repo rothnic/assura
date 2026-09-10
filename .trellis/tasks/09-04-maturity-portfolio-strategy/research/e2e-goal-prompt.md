@@ -20,7 +20,7 @@ reject candidates that fail the prescribed comparison, and stop invalid
 diagnostics instead of repeating runs until green. Root owns review judgment
 and merge approval; method changes never imply relaxed acceptance thresholds.
 
-## Historical continuation checkpoint (superseded by current c34f9178) — 2026-09-10 UTC
+## Live continuation checkpoint (refresh required) — 2026-09-10 UTC
 
 The latest read-only refresh resolved `origin/master` to
 `c34f917866e45cc122ec07412fa0c630d460f663` after PR #257. The revision-pinned
@@ -45,7 +45,7 @@ available memory, 94% root-disk use (about 20 GiB free), nightly Rust 1.95 and
 no Bun; the documented `vps-dev` alias is unresolved. Remote execution cannot
 replace exact-toolchain local/hosted proof.
 
-## Live continuation checkpoint (refresh required) — 2026-09-10 UTC
+## Historical continuation checkpoint (superseded by current c34f9178) — 2026-09-10 UTC
 
 The latest refresh resolved `origin/master` to the full merge SHA
 `a819c0cd2e8e9fdf14a3641cc76f0119ceb9d2bc` (PR #256). Fetch again before
