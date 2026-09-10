@@ -67,7 +67,8 @@
       "docs/post-merge-reconciliation",
       "docs/topology-audit-robustness",
       "docs/a07-manifest-readiness",
-      "docs/ledger-routing-helper"
+      "docs/ledger-routing-helper",
+      "docs/ledger-routing-reconcile"
     ]
   }
 }
