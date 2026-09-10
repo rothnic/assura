@@ -4,9 +4,11 @@ Date: 2026-09-10. Scope: process artifacts, agent instructions and validation
 routing only. Product acceptance is unchanged; no card is promoted by this file.
 The historical proof below is retained; the current reconciliation and continuation
 route are recorded before the historical next-phase note.
-Process iteration: 99 (post-merge continuation reconciliation; iteration 98
-was the current-master continuation-control refresh; iteration 97
-was the ledger-routing helper pin/path correction; iteration 95 was the
+Process iteration: 100 (post-merge closure for PR #245; iteration 99 was the
+post-merge continuation reconciliation; iteration 98 was the current-master
+continuation-control refresh; iteration 97 was the post-merge ledger-routing
+reconciliation; iteration 96 was the ledger-routing helper pin/path correction;
+iteration 95 was the
 deterministic ledger-routing helper; iteration 94 was the A07
 private-manifest readiness audit; iteration 93 was the topology-audit
 helper correction; after the highest recorded historical iteration, 88; PR
@@ -16,7 +18,37 @@ iteration 92).
 Context level: not exposed. The before/after phase record is this evidence
 file, linked from the full historical progress log.
 
-## Post-merge continuation reconciliation — 2026-09-10 UTC (PR #244 / 2902a07)
+## Post-merge cleanup reconciliation — 2026-09-10 UTC (PR #245 / 27ef54d)
+
+- Owner/phase: process coordinator / `reconcile-handoff` complete. A fresh
+  fetch resolved `origin/master` to
+  `27ef54d489847e41e5907f7c74f870a2391a7dae`, the merge of PR #245 final
+  head `391178676931ba935ad0058fce0bc55e101b3641` from base
+  `2902a073f39f8e8a47a9658a6358791c3e7f4655`; exact ancestry exited `0`.
+- PR #245's applicable hosted checks were terminal and passing: Documentation
+  Scope, CI Scope, Security Scope, Evidence Gates and GitGuardian. Product,
+  Rust, performance, release, installer and website jobs were scope-skipped
+  and remain non-applicable, not passing outcome proof.
+- The owned `/private/tmp/assura-train-continuation-reconcile` worktree was
+  clean and removed; local and remote `docs/train-continuation-reconcile`
+  refs were deleted only after merged reachability. There is no uncommitted or
+  abandoned process work from this slice. Root/user-owned dirt, three prunable
+  registrations, one unreadable registration and historical unmerged goal
+  refs remain preserved and outside ownership.
+- The final post-cleanup topology audit reported
+  `base=origin/master worktrees=34 dirty=2 prunable=3 unreadable=1
+  goal_branches=13 unmerged_goal=9`; `--report` exited `0`, `--strict` exited
+  `1`, and `git worktree prune --dry-run -v` remained read-only. The strict
+  nonzero result is the preserved external/history set, not this slice.
+- A detached clean checkout at `27ef54d` ran the revision-pinned ledger helper:
+  `items=32`, `ready_pending=0`, `unfinished=5`, `held=3`; A07 remains active,
+  W03 verified, R01/W02/F01 held, and no pending card is executable. No card,
+  evaluator, threshold, release, deployment, publication or invitation state
+  changed. The next action is A07's private exactly-two-condition and
+  six-holdout manifest, isolated protocol-review `PASS`, then a fresh
+  candidate-bound canary after refreshing `origin/master`.
+
+## Historical continuation checkpoint — 2026-09-10 UTC (PR #244 / 2902a07; superseded)
 
 - Owner/phase: process coordinator / `reconcile-handoff`. A fresh fetch from
   the preserved root succeeded and resolved `origin/master` to

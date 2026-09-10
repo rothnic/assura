@@ -20,9 +20,30 @@ reject candidates that fail the prescribed comparison, and stop invalid
 diagnostics instead of repeating runs until green. Root owns review judgment
 and merge approval; method changes never imply relaxed acceptance thresholds.
 
-## Live continuation checkpoint — 2026-09-10 UTC (PR #244 / `2902a07`)
+## Last verified continuation checkpoint — 2026-09-10 UTC (after PR #245 / `27ef54d`; refresh before use)
 
-The latest refresh resolves `origin/master=2902a073f39f8e8a47a9658a6358791c3e7f4655`,
+The last verified integration point is `origin/master=27ef54d489847e41e5907f7c74f870a2391a7dae`,
+the merge of reviewed PR #245 final head
+`391178676931ba935ad0058fce0bc55e101b3641` from base
+`2902a073f39f8e8a47a9658a6358791c3e7f4655`; exact ancestry was verified.
+The immutable ledger at that point remains 32 items with `ready_pending=0`,
+five unfinished items and three named holds: A07 active, W03 verified, and
+R01/W02/F01 held. The applicable checks passed; product, Rust, performance,
+release, installer and website jobs were scope-skipped and are not outcome
+proof. The process worktree and refs were removed after clean merged
+reachability, and final topology exceptions are preserved outside ownership.
+
+Treat `27ef54d` as a historical last-verified checkpoint, not a permanent pin:
+refresh `origin/master`, reread the ledger and active/verified packets, and
+record any changed owner or hold before acting. The next authorized route is
+A07's private exactly-two-condition/six-holdout manifest, isolated
+protocol-review `PASS`, and a fresh candidate-bound canary against that
+refreshed master. Keep the existing runtime goal active; an empty pending
+queue is an intermediate route, not completion.
+
+## Historical checkpoint — 2026-09-10 UTC (PR #244 / `2902a07`; superseded)
+
+The historical refresh resolved `origin/master=2902a073f39f8e8a47a9658a6358791c3e7f4655`,
 the merge of reviewed PR #244 final head `03a9b01eb1a5742b0cc84373e53f3f9aed8d0f1e`
 from `80d2d9a7fea55c1413f7e50f0873306049a65a48`; exact ancestry was verified.
 The ledger at this immutable revision remains 32 items with `ready_pending=0`,

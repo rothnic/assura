@@ -1,6 +1,6 @@
 # Execution recovery plan
 
-Status: active continuation route, 2026-09-10 UTC (post-PR #244 reconciliation). This is a plan and audit, not
+Status: active continuation route, 2026-09-10 UTC (last verified after PR #245; refresh before use). This is a plan and audit, not
 evidence that product cards passed. The supported runtime goal remains the
 coordinator; process corrections are merged separately from product card
 slices. Product changes stay in their separately owned card slices.
@@ -20,9 +20,34 @@ proof and full evaluator dimensions remain mandatory. CI, generated files and
 partial checks cannot substitute. R06/publication/pilots retain their separate
 authority and observed-outcome requirements.
 
-## Post-merge live checkpoint — 2026-09-10 UTC (PR #244 / `2902a07`)
+## Last verified checkpoint — 2026-09-10 UTC (after PR #245 / `27ef54d`; refresh before use)
 
-The read-only reset refreshed `origin/master=2902a073f39f8e8a47a9658a6358791c3e7f4655`,
+The last verified integration point is `origin/master=27ef54d489847e41e5907f7c74f870a2391a7dae`,
+the merge of reviewed PR #245 final head
+`391178676931ba935ad0058fce0bc55e101b3641` from base
+`2902a073f39f8e8a47a9658a6358791c3e7f4655`; exact ancestry exited `0`.
+Documentation Scope, CI Scope, Security Scope, Evidence Gates and GitGuardian
+passed on the exact head. Product, Rust, performance, release, installer and
+website jobs were scope-skipped and remain non-applicable.
+
+The owned reconciliation worktree and branch were cleanly removed after merge;
+no uncommitted or abandoned process work remains from this slice. Final
+topology was `worktrees=34 dirty=2 prunable=3 unreadable=1 goal_branches=13
+unmerged_goal=9`, with report exit `0` and strict exit `1`; preserved root/
+external dirt and historical registrations remain outside ownership. The
+immutable ledger at `27ef54d` is 32 items with zero ready pending, five
+unfinished and three held: A07 active, W03 verified, R01/W02/F01 held.
+
+This is the last verified checkpoint, not a permanent pin. At every resume
+fetch `origin/master` and rerun the ledger before selecting work. The next
+authorized route is A07's private exactly-two-condition and six-holdout
+manifest, isolated protocol-review `PASS`, and a fresh candidate-bound canary
+against the refreshed master. No card, evaluator, threshold, release,
+deployment, publication or invitation state is changed by this process slice.
+
+## Historical checkpoint — 2026-09-10 UTC (PR #244 / `2902a07`; superseded)
+
+The historical reset refreshed `origin/master=2902a073f39f8e8a47a9658a6358791c3e7f4655`,
 the merge of reviewed PR #244 final head `03a9b01eb1a5742b0cc84373e53f3f9aed8d0f1e`
 from base `80d2d9a7fea55c1413f7e50f0873306049a65a48`; exact ancestry was
 verified with `git merge-base --is-ancestor` exit `0`. Documentation Scope,
@@ -40,8 +65,8 @@ revision the ledger still reports 32 items, zero ready pending, five
 unfinished and three held; A07 is active, W03 verified, and R01/W02/F01 retain
 their exact holds. This slice changes no card state or external authority.
 
-**Continuation decision.** Keep the supported runtime goal active and carry the
-process coordinator's next action into the new clean worktree: privately name
+**Continuation decision (historical).** Keep the supported runtime goal active and carry the
+process coordinator's next action into a clean worktree: privately name
 and validate A07's exactly two product-input conditions and six holdouts, obtain
 an isolated protocol-review `PASS`, then run a fresh candidate-bound canary
 against `2902a07`. Do not launch screening or infer release, deployment,
@@ -49,7 +74,7 @@ publication or invitation authority from this documentation slice.
 
 ## Historical checkpoint — 2026-09-10 UTC (after PR #243; superseded)
 
-This is the current read-only reset. The root checkout is an older strategy
+This was the historical read-only reset. The root checkout was an older strategy
 branch and has one unknown untracked file,
 `.trellis/tasks/09-04-maturity-portfolio-strategy/research/a04-host-status-doctor-permission-gap.md`.
 It is preserved untouched; all edits for this checkpoint use a clean external
@@ -264,6 +289,7 @@ Record actual reviewer decisions and limitations in `recovery-evidence.md`.
 
 Next action: keep the supported runtime goal active and follow the current
 checkpoint's identity/holdout → manifest validation → isolated protocol review
-`PASS` → fresh current-master canary against `2902a07` → screening sequence.
+`PASS` → fresh current-master canary against the refreshed `origin/master` →
+screening sequence.
 Do not replace or complete an unfinished goal to repair a status mismatch, and
 do not treat this process reconciliation as A07 acceptance.
