@@ -1,19 +1,22 @@
 # A07 candidate-binding correction plan
 
 Status: active. Owner: this thread's A07 acceptance coordinator. This plan
-does not embed a live routing baseline: fetch `origin/master` and rerun the
-revision-pinned ledger before every canary. The last recorded checkpoint was
-`origin/master=062f6c39d15babc8b12299863576a29febda5dd5`, integrated by PR #252
-as `a92b109c2158113a1f2316b8cdd5ef79f6668571`; no candidate-bound canary has
-yet been run against a freshly refreshed source after that checkpoint. The
-candidate-bound, context-isolated canary
-against the prior `77b41fe` baseline passed the full contract but receives no
-screening allocation. The next action is ordered: fetch `origin/master`, rerun
-the revision-pinned ledger and freeze the candidate identity; confirm the six
-unseen holdouts; create and validate the exact two-condition screening
-manifest; obtain an isolated protocol-review `PASS`; then run a fresh canary
-against that frozen identity before beginning the authorized 30-run batch from
-sibling-free disposable parents. The prior
+does not embed a permanent routing baseline: fetch `origin/master` and rerun
+the revision-pinned ledger before every canary. The 2026-09-10 continuation
+refresh resolved `origin/master=c34f917866e45cc122ec07412fa0c630d460f663`
+(PR #257). A clean detached checkout built the candidate with Rust/Cargo
+`1.94.1`; `assura 0.4.0` and binary SHA-256
+`95c93052bd1993566d9f8209bdba5625c2b39a19287ed6358d710015d2ac59ff` matched
+inside a `zsh -lic` initializer-like environment. This identity observation
+is preparation only and earns no screening allocation. The six valid unseen
+holdout layouts remain frozen in the private owner-controlled store; the
+versioned exactly-two-condition manifest, supplied-input receipt, blinded
+mapping, complete 30-cell matrix and isolated protocol-review `PASS` are still
+absent. Do not infer conditions from historical run names or holdout labels.
+The next action is ordered: create and validate the private condition manifest
+from an explicitly supported product input, obtain an isolated protocol-review
+`PASS`, then refresh the candidate identity again before any no-credit canary
+or screening batch. The prior
 `2eda17e82d9dab12338805479a33a5774560451f` checkpoint is historical after PR
 #251; earlier candidate SHAs remain historical evidence/archive references,
 not the active baseline. This plan does not change the A07 contract, scoring

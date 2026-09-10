@@ -22,6 +22,31 @@ and merge approval; method changes never imply relaxed acceptance thresholds.
 
 ## Live continuation checkpoint (refresh required) — 2026-09-10 UTC
 
+The latest read-only refresh resolved `origin/master` to
+`c34f917866e45cc122ec07412fa0c630d460f663` after PR #257. The revision-pinned
+ledger has 32 items, `ready_pending=0`, five unfinished and three held: A07 is
+active, W03 is verified, and R01/W02/F01 retain separate holds. A clean local
+candidate build with Rust/Cargo `1.94.1` reports `assura 0.4.0` and SHA-256
+`95c93052bd1993566d9f8209bdba5625c2b39a19287ed6358d710015d2ac59ff`; the
+same `command -v`, version and hash matched in a minimal `zsh -lic`
+environment. This is no-credit preparation, not a canary or acceptance result.
+
+The six valid unseen holdouts remain frozen, while the private exactly-two-
+condition manifest, supplied-input proof, blinded mapping, complete 30-cell
+matrix and isolated protocol-review `PASS` are absent. The product surface
+supports explicit `--recipe-file`, bundled `--recipe`, and onboarding
+`--content-template`, but the packet does not choose concrete condition values;
+do not infer them from historical runs. The next owned action is to select and
+evidence two values for one supported input, obtain the isolated protocol
+`PASS`, then refresh and run the fresh no-credit canary before screening.
+
+The configured `vps` host was measured but not selected: 16 CPUs, about 43 GiB
+available memory, 94% root-disk use (about 20 GiB free), nightly Rust 1.95 and
+no Bun; the documented `vps-dev` alias is unresolved. Remote execution cannot
+replace exact-toolchain local/hosted proof.
+
+## Historical continuation checkpoint (superseded by current c34f9178) — 2026-09-10 UTC
+
 The latest refresh resolved `origin/master` to the full merge SHA
 `a819c0cd2e8e9fdf14a3641cc76f0119ceb9d2bc` (PR #256). Fetch again before
 acting; this checkpoint is an as-of routing record, not a permanent source

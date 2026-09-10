@@ -1,8 +1,9 @@
 # Execution recovery plan
 
-Status: active continuation route, 2026-09-10 UTC. A fresh refresh resolved
-`origin/master=a819c0cd2e8e9fdf14a3641cc76f0119ceb9d2bc` after PR #256; this
-pointer is an as-of checkpoint and must be refreshed before use. The latest
+Status: active continuation route, 2026-09-10 UTC. The latest read-only
+refresh resolved `origin/master=c34f917866e45cc122ec07412fa0c630d460f663`
+after PR #257; this pointer is an as-of checkpoint and must be refreshed before
+use. The earlier `a819c0c` checkpoint is historical. The latest
 diagnostic is the bounded R01 raw-log recovery recorded at candidate base
 `c1202af` and merged as process evidence; it does not close R01 or authorize a
 retry. This is a plan and audit, not evidence that product cards passed. The
@@ -25,7 +26,36 @@ proof and full evaluator dimensions remain mandatory. CI, generated files and
 partial checks cannot substitute. R06/publication/pilots retain their separate
 authority and observed-outcome requirements.
 
-## Live post-merge recovery checkpoint — 2026-09-10 UTC (`origin/master=a819c0c`)
+## Live candidate-freeze continuation checkpoint — 2026-09-10 UTC (`c34f9178`)
+
+- Owner/phase: A07 acceptance coordinator / `candidate-freeze`. The clean
+  current-master checkout resolved the ledger to 32 items, zero ready pending,
+  five unfinished and three held: A07 active, W03 verified, and R01/W02/F01
+  separately held. No pending card supersedes the active A07 route.
+- The exact c34 candidate built locally with Rust/Cargo `1.94.1`; the release
+  binary reports `assura 0.4.0`, is not a symlink, and hashes to
+  `95c93052bd1993566d9f8209bdba5625c2b39a19287ed6358d710015d2ac59ff`.
+  A `zsh -lic` identity check matched `command -v`, version and SHA. This is
+  no-credit preparation, not a canary or product result.
+- The six valid private holdouts remain frozen and the disqualified raw-hook
+  draft remains excluded. The required private two-condition manifest,
+  supplied-input proof, blinded mapping, complete 30-cell matrix and isolated
+  protocol-review `PASS` do not yet exist. A07 therefore stays active with
+  zero screening/holdout/final-acceptance credit; historical run names are not
+  condition definitions.
+- The supported product-input surface was audited (`--recipe-file`, bundled
+  `--recipe`, and onboarding `--content-template`). The smallest next action
+  is to select and document two concrete values for one of those inputs, prove
+  receipt to the initializer, and obtain the scoped private protocol review;
+  no value is invented by this checkpoint. Then refresh source identity and
+  run the no-credit canary before any allocation.
+- The measured `vps` host is not selected for this build: it has 16 CPUs and
+  about 43 GiB available memory but 94% root-disk use (about 20 GiB free),
+  nightly Rust 1.95, and no Bun; the `vps-dev` alias is unresolved. Remote
+  execution remains optional and must use the exact-toolchain bundle procedure
+  only after fresh disk/headroom checks.
+
+## Historical post-merge recovery checkpoint — 2026-09-10 UTC (`origin/master=a819c0c`, superseded by c34f9178)
 
 PR #256 merged the independently reviewed R01 raw-log recovery record as
 `a819c0cd2e8e9fdf14a3641cc76f0119ceb9d2bc` from candidate `c950fe4`, based on
