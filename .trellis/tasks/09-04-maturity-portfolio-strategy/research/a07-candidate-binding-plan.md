@@ -2,12 +2,12 @@
 
 Status: active. Owner: this thread's A07 acceptance coordinator. The current
 routing baseline is refreshed `origin/master`
-`d62dd40f0d915e693db25cdea2fb29d1000e9b50`; no candidate-bound canary has yet
+`6ed43c3c63fab7b60a86f1d587c067c9b04ded93`; no candidate-bound canary has yet
 been run against this revision. The candidate-bound, context-isolated canary
 against the prior `77b41fe` baseline passed the full contract but receives no
 screening allocation. The next action is ordered: create and validate the exact
 two-condition screening manifest, obtain an isolated protocol-review `PASS`,
-refresh the candidate identity canary against `d62dd40`, then begin the
+refresh the candidate identity canary against `6ed43c3`, then begin the
 authorized 30-run batch from sibling-free disposable parents. Earlier
 candidate SHAs remain historical evidence/archive references, not the active
 baseline. This plan does not change the A07 contract, scoring thresholds,

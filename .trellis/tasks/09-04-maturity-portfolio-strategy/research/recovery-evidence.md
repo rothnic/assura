@@ -4,7 +4,8 @@ Date: 2026-09-10. Scope: process artifacts, agent instructions and validation
 routing only. Product acceptance is unchanged; no card is promoted by this file.
 The historical proof below is retained; the current reconciliation and continuation
 route are recorded before the historical next-phase note.
-Process iteration: 101 (current-master/private-manifest readiness re-audit;
+Process iteration: 102 (post-merge source-pointer lifecycle checkpoint;
+iteration 101 was the current-master/private-manifest readiness re-audit;
 iteration 100 was the post-merge closure for PR #245; iteration 99 was the
 post-merge continuation reconciliation; iteration 98 was the current-master
 continuation-control refresh; iteration 97 was the post-merge ledger-routing
@@ -19,7 +20,33 @@ iteration 92).
 Context level: not exposed. The before/after phase record is this evidence
 file, linked from the full historical progress log.
 
-## Current-master/private-manifest readiness re-audit — 2026-09-10 UTC
+## Post-merge source-pointer lifecycle checkpoint — 2026-09-10 UTC (`origin/master=6ed43c3`)
+
+- Owner/phase: process coordinator / `reconcile-handoff` complete. PR #247
+  merged the reviewed pointer correction as
+  `6ed43c3c63fab7b60a86f1d587c067c9b04ded93` from candidate
+  `577b6d63030aab338238088c85cfa7c7750baeb2`, based on
+  `d62dd40f0d915e693db25cdea2fb29d1000e9b50`; the merged tree matches the
+  reviewed candidate.
+- The post-merge revision-pinned ledger remains `items=32`,
+  `ready_pending=0`, `unfinished=5`, `held=3`: A07 active, W03 verified, and
+  R01/W02/F01 retain their named holds. No card, evaluator, threshold,
+  allocation, release, deployment, publication or invitation state changed.
+- Hosted Documentation Scope, CI Scope, Security Scope, Evidence Gates and
+  GitGuardian checks for PR #247 passed. Rust/product/performance/release/
+  installer/website jobs were scope-skipped for the documentation-only slice
+  and remain non-applicable, not outcome proof.
+- The owned process worktree and branch were cleanly removed after merged tree
+  comparison and exact cleanup. Post-cleanup topology remains
+  `worktrees=34 dirty=2 prunable=3 unreadable=1 goal_branches=13
+  unmerged_goal=9`; report exited `0`, strict exited `1` only for preserved
+  root/external dirt and stale registrations/history.
+- The d62 readiness audit below is now historical candidate-base evidence. At
+  the next resume, fetch `origin/master`, rerun the ledger and route A07 to
+  its private manifest/protocol-review `PASS` before a fresh current-master
+  canary. No historical run receives screening or acceptance credit.
+
+## Historical candidate-base/private-manifest readiness re-audit — 2026-09-10 UTC (`origin/master=d62dd40`; superseded by PR #247)
 
 - Owner/phase: process coordinator / `investigate-prepare`, with the A07
   acceptance coordinator as the named next-action owner. The read-only reset

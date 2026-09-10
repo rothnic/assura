@@ -20,7 +20,22 @@ reject candidates that fail the prescribed comparison, and stop invalid
 diagnostics instead of repeating runs until green. Root owns review judgment
 and merge approval; method changes never imply relaxed acceptance thresholds.
 
-## Current read-only continuation refresh — 2026-09-10 UTC (`origin/master=d62dd40`)
+## Post-merge continuation checkpoint — 2026-09-10 UTC (`origin/master=6ed43c3`)
+
+PR #247 merged the reviewed source-pointer correction as
+`6ed43c3c63fab7b60a86f1d587c067c9b04ded93` from candidate
+`577b6d63030aab338238088c85cfa7c7750baeb2`, whose base was
+`d62dd40f0d915e693db25cdea2fb29d1000e9b50`. The post-merge ledger still has
+32 items, zero ready pending, five unfinished and three held: A07 active, W03
+verified, and R01/W02/F01 held. Fetch again before using this checkpoint.
+
+The next real action remains private A07 manifest validation and isolated
+protocol-review `PASS`, followed by a fresh current-master candidate-bound
+canary; no screening, holdout or final-acceptance credit is authorized here.
+The d62 snapshot below is a historical candidate-base record, not a live
+source.
+
+## Historical candidate-base refresh — 2026-09-10 UTC (`origin/master=d62dd40`; superseded by PR #247)
 
 The live routing source is the freshly fetched
 `origin/master=d62dd40f0d915e693db25cdea2fb29d1000e9b50`. Its revision-pinned
