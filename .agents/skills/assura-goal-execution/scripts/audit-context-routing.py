@@ -14,6 +14,7 @@ import re
 import subprocess
 import sys
 from pathlib import Path
+from typing import Optional
 
 
 MAX_AGENTS_LINES = 140
@@ -46,7 +47,7 @@ def git_root(candidate: Path) -> Path:
     return Path(result.stdout.strip()).resolve()
 
 
-def link_target(markdown_file: Path, raw_link: str) -> Path | None:
+def link_target(markdown_file: Path, raw_link: str) -> Optional[Path]:
     link = raw_link.strip()
     if link.startswith(("http://", "https://", "mailto:", "#")):
         return None
