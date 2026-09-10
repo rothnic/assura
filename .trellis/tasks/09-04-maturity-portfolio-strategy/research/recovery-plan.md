@@ -1,11 +1,11 @@
 # Execution recovery plan
 
 Status: active continuation route, 2026-09-10 UTC. The latest post-merge
-refresh resolved `origin/master=9b410e936e2afe85f0adc4cd83ef614e35c43d2c`
-after PR #267; this pointer is an as-of checkpoint and must be refreshed before
-use. PR #267 merged the reviewed A07 process-route candidate
-`0b5c8ce174b81cf1435b0a0ff5224243416393c0`, based on
-`af73d8a5004ea8c0d2298202467d1635853434c9`; its merged tree matches and it
+refresh resolved `origin/master=8be61034e3f6f295753570ef2080e100d53efd4c`
+after PR #268; this pointer is an as-of checkpoint and must be refreshed before
+use. PR #268 merged the reviewed current-candidate canary-route documentation
+candidate `da6ce09f215e11e5de9023477bec9be1d7096ce4`, based on
+`9b410e936e2afe85f0adc4cd83ef614e35c43d2c`; its merged tree matches and it
 changed no product or acceptance state. Earlier pointer and reconciliation
 checkpoints are historical. The latest diagnostic is the bounded R01 raw-log
 recovery recorded at candidate base `c1202af` and merged as process evidence;
@@ -34,7 +34,37 @@ proof and full evaluator dimensions remain mandatory. CI, generated files and
 partial checks cannot substitute. R06/publication/pilots retain their separate
 authority and observed-outcome requirements.
 
-## Current as-of A07 candidate-bound canary checkpoint — 2026-09-10 UTC (`origin/master=9b410e9`)
+## Current as-of post-merge candidate rebind checkpoint — 2026-09-10 UTC (`origin/master=8be6103`)
+
+- PR #268 is a process-only documentation merge; it changes no product,
+  evaluator, threshold, allocation or authority state. The prior `9b410e9`
+  candidate-bound canaries remain valid no-credit preparation, but are
+  historical after this newer master revision.
+- The private packet was rebound to the prior candidate and its isolated
+  rereview found `A07-CONTRACT-HASH-001`: the manifest recorded contract bytes
+  different from the supplied current contract. The smallest correction bound
+  the manifest and both condition rows to the actual contract bytes; a scoped
+  rereview returned `PASS` for that 9b packet. This is historical metadata-only
+  evidence, not a current candidate gate.
+- The current candidate is rebuilt from `8be6103`, identity-checked in the
+  initializer login shell, and covered by two fresh source-only no-credit
+  canaries. The first isolated protocol review found three concrete gaps:
+  unbound holdout handles, historical candidate hashes in holdout metadata and
+  a stale 9b review reference. The private manifest now references a current
+  candidate freeze and immutable six-handle binding, with a second read-only
+  confirmation and explicit raw-hook exclusion. A follow-up correction now
+  canonicalizes the exact compiler/Cargo identity across the freeze, conditions,
+  receipts and six rows, and mirrors six immutable per-handle creation records
+  in the second-readonly check. Supplemental and primary isolated metadata
+  rereviews passed; the disposition is metadata-only. Screening, holdout and
+  final-acceptance credit remain zero until a fresh source/ledger refresh,
+  candidate freeze and separately authorized screening gate complete.
+- Next owner/action: the A07 acceptance coordinator owns post-review
+  reconciliation. Refresh source/ledger, freeze the new candidate, and prepare
+  only the separately authorized no-credit screening gate. R01, W02, W03 and
+  F01 retain their named authority/evidence holds.
+
+## Historical current as-of A07 candidate-bound canary checkpoint — 2026-09-10 UTC (`origin/master=9b410e9`)
 
 - Owner/phase: process coordinator `/root` / `candidate-bound-canary`; the
   clean current-master checkout and candidate identity are recorded privately.

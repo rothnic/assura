@@ -15,26 +15,33 @@ phase transition, not completion of the runtime goal.
 
 As-of routing checkpoint (2026-09-10, refresh before use): the latest
 post-merge reset resolved `origin/master` to
-`9b410e936e2afe85f0adc4cd83ef614e35c43d2c` after PR #267. The reviewed
-process candidate `0b5c8ce174b81cf1435b0a0ff5224243416393c0`, based on
-`af73d8a5004ea8c0d2298202467d1635853434c9`, is merged with identical tree;
+`8be61034e3f6f295753570ef2080e100d53efd4c` after PR #268. The reviewed
+process candidate `da6ce09f215e11e5de9023477bec9be1d7096ce4`, based on
+`9b410e936e2afe85f0adc4cd83ef614e35c43d2c`, is merged with identical tree;
 the applicable Documentation, CI, Evidence Gates, Security Scope and
 GitGuardian checks passed. Scope-skipped product/Rust/performance/release
-jobs remain non-applicable. The ledger at the merged revision has 32 items,
-zero ready pending, five unfinished and three held: A07 is active, W03
-verified, and R01/W02/F01 held. R01's merged raw-log recovery is bounded
-negative evidence. A07's private manifest has exactly two conditions,
-supplied-input receipts, a separate mapping, six holdouts and 30 reserved
-cells; its isolated protocol rereview returned a redacted `PASS` with no
-findings after concrete metadata corrections, but that metadata gate is tied
-to the prior candidate. Two fresh current-source candidate-bound no-credit
-canaries, one per reviewed condition, now pass the full evaluator through the
-composed Codex initialization route. Earlier invalid runner/fixture attempts
-remain unfavorable no-credit evidence. Route next to a current-candidate
-manifest rebind and scoped protocol rereview; no screening allocation is
-allowed until that gate and all identity/context checks pass. Preserve residual
-fixture, launcher, child-isolation and evaluator limitations. Route from
-`recovery-plan.md`, not from this snapshot, after a fresh fetch and ledger.
+jobs remain non-applicable. A02 is complete; its old plain-init finding is
+historical. The ledger at the merged revision has 32 items, zero ready
+pending, five unfinished and three held: A07 is active, W03 verified, and
+R01/W02/F01 held. R01's merged raw-log recovery is bounded negative evidence.
+A07's private manifest has exactly two conditions, supplied-input receipts, a
+separate mapping, six current-bound holdouts and 30 reserved cells. The
+corrected 9b contract-hash packet and protocol rereview `PASS` are historical
+metadata-only evidence, as are its two no-credit canaries. The 8be candidate
+identity and two no-credit canaries now pass preparation checks. The first 8be
+protocol review found unbound holdouts, historical candidate hashes and a stale
+9b review reference; the private holdout binding, current manifest references
+and second read-only confirmation are corrected. The corrected packet now uses
+one exact canonical compiler/Cargo identity in the freeze, both conditions,
+both supplied-input receipts and all six per-layout rows; each row has an
+immutable creation time/evidence reference mirrored by the second-readonly
+record. Both supplemental and primary isolated protocol rereviews passed. This
+is metadata-only; the next action is a fresh source/ledger refresh and
+candidate freeze before the separately authorized screening gate. No screening
+allocation is allowed until current identity, contract, holdout-binding and
+protocol rereview gates pass. Preserve residual fixture, launcher,
+child-isolation and evaluator limitations. Route from
+`recovery-plan.md`, not this snapshot, after a fresh fetch and ledger.
 
 The historical parent-`c34f917` candidate-freeze observation used a clean
 detached checkout and the exact Rust/Cargo `1.94.1` toolchain. Its non-symlink

@@ -87,7 +87,39 @@
       "docs/a07-current-route",
       "docs/a07-postmerge-route",
       "docs/a07-condition-manifest-review",
-      "docs/a07-postmerge-canary-9b410e9"
-    ]
+      "docs/a07-postmerge-canary-9b410e9",
+      "docs/a07-protocol-rebind-8be6103"
+    ],
+    "continuation_goal": {
+      "status": "active",
+      "owner": "/root",
+      "objective": "Drive this canonical maturity task through owned, evidence-bound slices with current-master provenance, independent review, full applicable gates, verified integration and terminal cleanup; never convert process, evaluator or skipped-check evidence into product success.",
+      "source_policy": "Fetch origin/master and rerun the revision-pinned ledger before every phase; embedded SHAs are dated checkpoints only.",
+      "current_checkpoint": {
+        "origin_master": "8be61034e3f6f295753570ef2080e100d53efd4c",
+        "ledger": "items=32; ready_pending=0; unfinished=5; held=3",
+        "active": "A07",
+        "verified": "W03",
+        "held": ["R01", "W02", "F01"],
+        "current_evidence": {
+          "candidate": "8be6103 identity frozen; two source-only full-evaluator canaries passed as no-credit preparation",
+          "holdout_binding": "current six-handle immutable binding with per-handle creation time/evidence, canonical toolchain identity, second read-only confirmation and explicit raw-hook exclusion",
+          "manifest": "current two-condition manifest, receipts, mapping and 30 reserved cells rebound to 8be6103",
+          "protocol_review": "supplemental and primary isolated rereview PASS against the corrected 8be packet; metadata-only, with fresh source/ledger and candidate freeze required before screening"
+        },
+        "corrections": [
+          "A02 is complete; the old plain-init handoff finding is historical.",
+          "PRs #267 and #268 are process-only and do not complete a product card.",
+          "The corrected 9b A07 contract-hash review is a historical metadata PASS with zero credit; it is superseded by the 8be source advance.",
+          "The first 8be protocol review correctly rejected an unbound holdout set, historical candidate hashes and a stale 9b review reference; a follow-up found shorthand toolchain and missing per-handle creation-record evidence, and all five findings are corrected privately with supplemental and primary metadata PASS, remaining zero-credit."
+        ]
+      },
+      "next_action": "Refresh origin/master and the revision-pinned ledger, freeze a new candidate identity, then prepare only the separately authorized no-credit screening gate; retain the current 8be protocol PASS as metadata-only evidence and do not allocate or credit cells without every later gate.",
+      "success_predicate": "Do not merge or mark a card complete without its observable contract, resolved review findings, applicable local/hosted proof, current-base reachability and clean owned closure. Preserve failures, thresholds, negative controls and no-credit dispositions.",
+      "authority_boundaries": [
+        "A07 evaluation is separate from implementation and remains zero-credit until its complete protocol, screening, holdout and final acceptance gates pass.",
+        "R01, W02, W03 publication, F01 outreach, release, deployment, invitation and protection changes retain their named authority holds."
+      ]
+    }
   }
 }

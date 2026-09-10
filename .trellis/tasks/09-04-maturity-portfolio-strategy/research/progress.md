@@ -1,4 +1,83 @@
-# Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md), [progress-history-04.md], [progress-history-05.md](progress-history-05.md), [iterations 4-17](progress-history-06.md), [preserved history](progress-history-03.md), [A01 iterations 15–31](progress-history-08.md), [iterations 5–11](progress-history-09.md), [iteration 114](progress-history-10.md), [iteration 111](progress-history-11.md), [iterations 106–108](progress-history-12.md), [iterations 104 and earlier](progress-history-07.md), [iterations 32–33 and 42](progress-history-13.md))
+# Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md), [progress-history-04.md], [progress-history-05.md](progress-history-05.md), [iterations 4-17](progress-history-06.md), [preserved history](progress-history-03.md), [A01 iterations 15–31](progress-history-08.md), [iterations 5–11](progress-history-09.md), [iteration 114](progress-history-10.md), [iteration 111](progress-history-11.md), [iterations 106–108](progress-history-12.md), [iterations 104 and earlier](progress-history-07.md), [iterations 32–33 and 42](progress-history-13.md), [iterations 44–47](progress-history-14.md))
+
+## Iteration 126 — 2026-09-10 — current protocol disposition recorded
+
+- The primary isolated protocol rereview returned `PASS` against the corrected
+  current 8be packet. It verified exact candidate/toolchain/contract identity,
+  the two-condition invariants and receipts, six unique holdout bindings with
+  immutable creation records, explicit raw-hook exclusion, 30 reserved cells,
+  privacy flags and no-credit boundaries. Supplemental metadata review also
+  passed; no raw evaluator or fixture material was exposed.
+- The disposition is metadata-only and does not grant screening, holdout,
+  evaluator, follow-up-feature, final-batch, product, release, deployment,
+  publication or invitation credit. The next owner/action is to refresh
+  `origin/master` and the revision-pinned ledger, freeze a new candidate
+  identity, and prepare only the separately authorized no-credit screening gate.
+  Context level: not exposed.
+
+## Iteration 125 — 2026-09-10 — protocol packet canonicalization and rereview
+
+- The scoped protocol rereview supplied two additional concrete contract
+  findings: shorthand toolchain strings differed from the candidate freeze and
+  receipts did not carry the exact identity; the six holdout rows did not make
+  their creation-time evidence explicit in the second read-only record.
+- The private packet now uses one exact compiler/Cargo identity in the freeze,
+  manifest, both condition rows, both supplied-input receipts and every
+  per-layout binding. Each of the six valid handles carries `created_at` and a
+  creation-evidence reference, and the second read-only confirmation repeats
+  all six records and checks the canonical identity. The raw-hook draft remains
+  explicitly excluded; all screening and credit flags remain false.
+- Independent metadata review passed the corrected packet; the primary
+  disposition is recorded in Iteration 126. The owner must refresh source/ledger
+  before any separately authorized no-credit screening preparation. No product,
+  threshold, evaluator or authority state changed. Context level: not exposed.
+
+## Iteration 124 — 2026-09-10 — protocol findings corrected, rereview required
+
+- The isolated 8be protocol review returned concrete changes needed rather
+  than a vague stop: the six holdout handles were not immutably bound to
+  frozen layouts, the holdout construction record used a historical candidate
+  binary, and the current manifest still referenced the superseded 9b review.
+  These findings are recorded as protocol evidence only; no screening or
+  product acceptance state changed.
+- The private packet now has a current candidate-freeze record, an immutable
+  six-handle binding with source/contract digests, current candidate
+  provenance, hand-verification records, creation time, second read-only
+  confirmation, and an explicit exclusion for the disqualified raw-hook
+  draft. The current manifest's holdout list and review reference are rebound
+  to those records; its 30 reserved cells and two-condition invariants remain
+  no-credit.
+- Next owner/action: obtain the scoped 8be protocol rereview against the
+  corrected binding and manifest. If it passes, re-fetch source/ledger and
+  prepare only the separately authorized no-credit screening gate; do not
+  allocate a cell from this correction alone. Context level: not exposed.
+
+## Iteration 123 — 2026-09-10 — corrected continuation goal and current-source rebind
+
+- Owner/phase: process coordinator `/root` / `candidate-bound-canary`. PR #268
+  is merged at `origin/master=8be6103`; it is a process-only documentation
+  slice. A02 is complete, so the older plain-init handoff incident is
+  historical and must not route new work.
+- A fresh detached 8be6103 checkout rebuilt Assura `0.4.0` with the pinned
+  Rust/Cargo `1.94.1` toolchain. The login-shell identity check resolved the
+  fixed candidate executable, version and target consistently. An initial
+  fresh fixture attempt exposed a preserve-hash mismatch and exited nonzero;
+  it remains retained as unfavorable no-credit evidence. Two corrected
+  source-only fixtures then completed the composed Codex initialization route
+  and full evaluator with exit `0`, all seven dimensions passing and the
+  seeded negative control rejecting as expected. These are no-credit canaries.
+- The private two-condition manifest, supplied-input receipts, blinded mapping,
+  six holdouts and 30 reserved cells now validate against 8be6103. The
+  corrected 9b contract-hash finding was fixed and rereviewed `PASS`, but that
+  packet is historical metadata-only evidence after the 8be advance. The
+  current 8be packet is with an isolated protocol reviewer; screening,
+  holdout and final-batch credit remain zero. The machine-readable
+  `task.json.meta.continuation_goal` and the corrected goal prompt now carry
+  the same objective, source policy, stale-state corrections and next action.
+- Next owner/action: finish the scoped 8be protocol review; if `PASS`, keep
+  the current candidate bound and prepare only the authorized screening gate.
+  Preserve private values, mappings, fixtures, raw evaluator output and child
+  transcripts outside this repository. Context level: not exposed.
 
 ## Iteration 122 — 2026-09-10 — merged process slice and current-candidate canary
 
@@ -910,77 +989,8 @@ recoverable. This reconciliation adds records rather than rewriting outcomes.
 - Next: R01 integration, A04 diagnostic review, current-master rebase and
   fresh hosted proof without waivers.
 
-## Iteration 47 — 2026-09-07 — R01 review correction
+## Preserved historical tail
 
-- R01 `0ccebea` reproduced stale diagnostic association before repair, then
-  passed 20 prescribed stop-on-failure runs, the 20-test watch suite and
-  library checks. Parent review added actual checked-path/violation proof.
-- Independent review found a 20 ms queued-test deadline could spuriously fail
-  and broad panic checks could accept the wrong rejection. `1852b61` uses
-  the standard deadline and specific reasons; source/docs re-review PASS.
-- Exact-head fast session 52386 exited 0. PR session 46503 passed Rust,
-  structure, evidence, target-state and Clippy, then failed because the docs
-  helper expected cwd/target while Cargo used the preserved explicit cache.
-  Approved real ignored artifact directories with hash-equal binaries;
-  unchanged-head PR rerun 82802 remains pending. The first failure is retained.
-
-## Iteration 45 — 2026-09-07 — Safe legacy upgrade and context health
-
-- Fresh-source tests confirmed the unsafe exact legacy wrapper, including a
-  real shell-substitution sentinel. Source fix `258282a` now distinguishes
-  ownership from current safe content and upgrades proven legacy pairs by
-  default through both direct and bulk APIs. It preserves custom/drifted pairs,
-  removal authority and transactional rollback. Focused, library, Clippy and
-  structure checks passed; final-head full gates and re-review remain required.
-- Context health: the budget is not exposed. Current base is merged A03
-  `3d9a255`; A04 owns the active repair; A05 remains preserved; R03 retains
-  fresh hosted and VPS passes without claiming an optimization/noise amendment;
-  47 worktrees remain after owned merged cleanup, with unrelated state intact.
-- Repeated issue reviewed: exact ownership was incorrectly conflated with safe
-  readiness. The distinction now lives in executable legacy-upgrade tests and
-  the existing harness hook spec. The existing hook skill already routes that
-  spec, so another operational skill would duplicate it rather than prevent
-  rediscovery. Final approval must explicitly review legacy as well as newly
-  generated wrappers.
-- Next: finish independent review and final committed-head fast/PR gates, then
-  a fully gated ownership PR. A04's effective hook path/manager integration and
-  host permission/runtime evidence remain subsequent current-master slices.
-
-## Iteration 44 — 2026-09-06 — A03 integration and legacy-path correction
-
-- PR #183 merged as `3d9a255f832733082c864edf703fc98c854e7f6e`. All 24
-  hosted checks passed on independently reviewed and locally PR-tier-tested
-  `9d4bf50643155e8cd14e37b1a601f5a7b2a7399f`; the parent also reran all three
-  focused tests and target-state successfully. Fetch and ancestry verification
-  exited 0. No release, tag or deployment was performed.
-- A04 was cleanly rebased onto that merge, resolving only the explicit task
-  branch binding to `goal/a04-hook-ownership-repair`; workflow gate is ready.
-- Linux negative controls on `783ff05` with `07599a9` tests failed both actual
-  raw-byte invocation and lossy legacy ownership assertions, session 17578 exit
-  101, two failures, zero ignored tests. Candidate suites are running separately;
-  this does not replace final rebased gates.
-- A parent-triggered legacy-path review superseded the previous clean A04
-  verdict: exact UTF-8 legacy wrappers at shell-metacharacter paths still report
-  ready/current while executing command substitution. The owning repair must
-  distinguish proven ownership from safe/current state and upgrade exact legacy
-  wrappers by default. A04 remains unapproved; no dangerous fixture content was
-  merged. This contract is now in the bounded repair plan.
-- Preserved A03 runtime evidence under this goal's runtime area, then removed
-  its clean merged worktree and exact-SHA-leased remote branch. The first local
-  `branch -d` was correctly refused from the older strategy checkout because
-  that checkout lacks the merge; deletion was retried only from the descendant
-  A04 checkout after verifying ancestry against both HEAD and `origin/master`.
-  No force deletion was used. Inventory is 47 worktrees; shared build cache,
-  unknown paths and both pre-existing prune-dry-run findings remain untouched.
-
-## Historical index
-
-- Initial B00/R01 iterations 1–4 remain in
-  [`progress-early-history.md`](progress-early-history.md); iterations 5–11
-  are preserved in [`progress-history-09.md`](progress-history-09.md).
-- Iteration 114 is preserved in
-  [`progress-history-10.md`](progress-history-10.md).
-- Iteration 111 is preserved in
-  [`progress-history-11.md`](progress-history-11.md).
-- Iterations 32–33 are preserved in
-  [`progress-history-13.md`](progress-history-13.md).
+Iterations 44–47 and the historical index are preserved in
+[`progress-history-14.md`](progress-history-14.md). Do not route live work
+from that file.

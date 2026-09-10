@@ -42,8 +42,14 @@ only improves its process. Do not substitute a process PR for product acceptance
    is not identity proof.
 6. For A07 screening, read the task's
    [screening manifest contract](../../../.trellis/tasks/09-04-maturity-portfolio-strategy/research/screening-manifest-contract.md)
-   before naming conditions or allocating runs. Do not invent missing product
-   inputs from historical run names.
+   before naming conditions or allocating runs. Require its immutable
+   six-handle holdout binding with current candidate provenance, hand/freeze
+   evidence, per-handle creation time/evidence, second read-only confirmation
+   and explicit exclusions; historical hashes or prose are not proof. Use one
+   exact canonical toolchain identity in the candidate freeze, both condition
+   rows, every supplied-input receipt, every per-layout binding, and the
+   second-readonly record, then compare those fields before review. Do not
+   invent missing product inputs from historical run names.
 7. Use [layered context routing](references/context-routing.md) after
    compaction and at phase transitions. Record the current phase and exact next
    action in the selected card's evidence before/after major phases. A task
@@ -64,7 +70,9 @@ only improves its process. Do not substitute a process PR for product acceptance
 - A07 or any agent-driven evaluation: runner isolation; keep the evaluator
   oracle and private fixture details outside the child context.
 - A07 screening condition or matrix: screening manifest contract; keep its
-  values and mappings private.
+  values and mappings private; do not allocate until the six-handle binding,
+  per-handle creation records, canonical toolchain comparison and
+  current-candidate protocol `PASS` exist.
 - Goal start, compaction or handoff: context-routing; load only the next
   phase/card layer and record a compact checkpoint.
 - Source refresh, merge or SHA mismatch: source-pointer-lifecycle; reconcile
