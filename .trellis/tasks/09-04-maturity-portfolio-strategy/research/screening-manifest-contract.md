@@ -106,11 +106,12 @@ but never replaces required macOS/Windows/hosted proof.
 On each resume, the A07 coordinator must first refresh `origin/master`, rerun
 the revision-pinned ledger, and freeze the candidate identity. The 9b
 manifest, canaries and protocol `PASS` are historical no-credit evidence after
-the 8be advance and must not route current work. The current 8be manifest
+the 8be advance and must not route current work. The historical 8be manifest
 references its candidate freeze and immutable six-handle binding record; its
 schema, mapping, receipts, 30-cell invariants, per-handle creation records and
 exact canonical toolchain comparison were independently reviewed `PASS`. This
-is still metadata-only preparation: on every resume, refresh source/ledger and
+packet is historical after the `b7043ab` process merge and remains metadata-only
+preparation: on every resume, refresh source/ledger and
 freeze the candidate again before any separately authorized screening
 allocation. Prior canaries, process PRs and metadata-only evidence do not
 satisfy screening or acceptance gates.

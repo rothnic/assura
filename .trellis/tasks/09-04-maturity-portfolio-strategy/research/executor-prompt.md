@@ -13,34 +13,21 @@ After every merge, refresh `origin/master` and reconcile the task pointer,
 ledger and owned topology before selecting or handing off; a clean merge is a
 phase transition, not completion of the runtime goal.
 
-As-of routing checkpoint (2026-09-10, refresh before use): the latest
-post-merge reset resolved `origin/master` to
-`8be61034e3f6f295753570ef2080e100d53efd4c` after PR #268. The reviewed
-process candidate `da6ce09f215e11e5de9023477bec9be1d7096ce4`, based on
-`9b410e936e2afe85f0adc4cd83ef614e35c43d2c`, is merged with identical tree;
-the applicable Documentation, CI, Evidence Gates, Security Scope and
-GitGuardian checks passed. Scope-skipped product/Rust/performance/release
-jobs remain non-applicable. A02 is complete; its old plain-init finding is
-historical. The ledger at the merged revision has 32 items, zero ready
-pending, five unfinished and three held: A07 is active, W03 verified, and
-R01/W02/F01 held. R01's merged raw-log recovery is bounded negative evidence.
-A07's private manifest has exactly two conditions, supplied-input receipts, a
-separate mapping, six current-bound holdouts and 30 reserved cells. The
-corrected 9b contract-hash packet and protocol rereview `PASS` are historical
-metadata-only evidence, as are its two no-credit canaries. The 8be candidate
-identity and two no-credit canaries now pass preparation checks. The first 8be
-protocol review found unbound holdouts, historical candidate hashes and a stale
-9b review reference; the private holdout binding, current manifest references
-and second read-only confirmation are corrected. The corrected packet now uses
-one exact canonical compiler/Cargo identity in the freeze, both conditions,
-both supplied-input receipts and all six per-layout rows; each row has an
-immutable creation time/evidence reference mirrored by the second-readonly
-record. Both supplemental and primary isolated protocol rereviews passed. This
-is metadata-only; the next action is a fresh source/ledger refresh and
-candidate freeze before the separately authorized screening gate. No screening
-allocation is allowed until current identity, contract, holdout-binding and
-protocol rereview gates pass. Preserve residual fixture, launcher,
-child-isolation and evaluator limitations. Route from
+As-of routing checkpoint (2026-09-10, refresh before use): PR #269 merged the
+reviewed process/documentation candidate as `b7043ab1b402a0dd103de6fe67e307442e67964a`
+from reviewed `0b3bdca`; merged-tree equality, independent review and the
+applicable Documentation, CI, Evidence Gates, Security Scope and GitGuardian
+checks passed. Scope-skipped product/Rust/performance/release jobs remain
+non-applicable. The 8be candidate freeze, canaries, six-handle binding and
+isolated protocol `PASS` are historical no-credit preparation after this
+source-tree advance. A02 is complete; its old plain-init finding is historical.
+The ledger at b7043ab has 32 items, zero ready pending, five unfinished and
+three held: A07 active, W03 verified, and R01/W02/F01 held. R01's merged
+raw-log recovery is bounded negative evidence. On every resume, refresh source,
+release/tag and topology state, rerun the ledger, freeze a new A07 candidate,
+run a fresh no-credit canary, and rebuild/review its private manifest before
+any separately authorized screening allocation. Preserve residual fixture,
+launcher, child-isolation and evaluator limitations. Route from
 `recovery-plan.md`, not this snapshot, after a fresh fetch and ledger.
 
 The historical parent-`c34f917` candidate-freeze observation used a clean

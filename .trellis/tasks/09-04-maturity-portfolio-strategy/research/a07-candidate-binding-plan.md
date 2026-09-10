@@ -3,10 +3,10 @@
 Status: active. Owner: this thread's A07 acceptance coordinator. This plan
 does not embed a permanent routing baseline: fetch `origin/master` and rerun
 the revision-pinned ledger before every canary. The latest 2026-09-10
-post-merge refresh resolved `origin/master=8be61034e3f6f295753570ef2080e100d53efd4c`
-after PR #268, which merged the reviewed process-only candidate-route
-documentation from `9b410e936e2afe85f0adc4cd83ef614e35c43d2c`. Merged-tree
-equality, reachability, independent review and applicable Documentation/CI/
+post-merge refresh resolved
+`origin/master=b7043ab1b402a0dd103de6fe67e307442e67964a` after PR #269, which
+merged the reviewed process-only continuation contract from `0b3bdca`. Its
+merged tree equals the reviewed candidate, and applicable Documentation/CI/
 Security/Evidence/GitGuardian checks passed. This checkpoint changes no A07
 product or acceptance state and does not authorize screening.
 
@@ -22,7 +22,7 @@ holdout-binding record and a second read-only rebind confirmation; the
 disqualified raw-hook draft is explicitly excluded. Do not infer conditions or
 holdout validity from historical run names or labels.
 
-A fresh detached checkout at 8be6103 is the current candidate build, and its
+A fresh detached checkout at 8be6103 was the prior candidate build, and its
 source/tree, version, fixed target and login-shell command identity are frozen
 privately. Two fresh source-only canaries used the composed
 `init --agent codex --activate` route and passed the full evaluator; they prove
