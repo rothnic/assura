@@ -1,4 +1,18 @@
-# Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md), [progress-history-04.md], [progress-history-05.md](progress-history-05.md), [iterations 4-17](progress-history-06.md), [preserved history](progress-history-03.md), [A01 iterations 15–31](progress-history-08.md), [iterations 5–11](progress-history-09.md), [iteration 114](progress-history-10.md), [iteration 111](progress-history-11.md), [iterations 106–108](progress-history-12.md), [iterations 104 and earlier](progress-history-07.md))
+# Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md), [progress-history-04.md], [progress-history-05.md](progress-history-05.md), [iterations 4-17](progress-history-06.md), [preserved history](progress-history-03.md), [A01 iterations 15–31](progress-history-08.md), [iterations 5–11](progress-history-09.md), [iteration 114](progress-history-10.md), [iteration 111](progress-history-11.md), [iterations 106–108](progress-history-12.md), [iterations 104 and earlier](progress-history-07.md), [iterations 32–33 and 42](progress-history-13.md))
+
+## Iteration 121 — 2026-09-10 — accepted stale-route finding and delta review
+
+- Independent process review of committed checkpoint `64f87af` against
+  `origin/master=af73d8a` found `A07-ROUTE-001`: the linked candidate-binding
+  plan still routed from superseded `6fa806d` and said the private manifest and
+  protocol review were absent. The finding was accepted because it could
+  misroute a resumed coordinator to duplicate completed work.
+- The candidate-binding plan now points to PR #266's merged `af73d8a` source,
+  records the bounded protocol `PASS` and its residual limitations, and names
+  the next refresh/source-identity/no-credit-canary action. No product,
+  threshold, allocation, release, deployment, publication or invitation state
+  changed. The delta is committed only after the prior slice's clean closure;
+  scoped rereview is required before integration.
 
 ## Iteration 120 — 2026-09-10 — A07 protocol review PASS at current master
 
