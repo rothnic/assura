@@ -1,6 +1,6 @@
 # Execution recovery plan
 
-Status: active continuation route, 2026-09-10 UTC (post-PR #244 reconciliation). This is a plan and audit, not
+Status: active continuation route, 2026-09-10 UTC (last verified after PR #245; refresh before use). This is a plan and audit, not
 evidence that product cards passed. The supported runtime goal remains the
 coordinator; process corrections are merged separately from product card
 slices. Product changes stay in their separately owned card slices.
@@ -74,7 +74,7 @@ publication or invitation authority from this documentation slice.
 
 ## Historical checkpoint — 2026-09-10 UTC (after PR #243; superseded)
 
-This is the current read-only reset. The root checkout is an older strategy
+This was the historical read-only reset. The root checkout was an older strategy
 branch and has one unknown untracked file,
 `.trellis/tasks/09-04-maturity-portfolio-strategy/research/a04-host-status-doctor-permission-gap.md`.
 It is preserved untouched; all edits for this checkpoint use a clean external
