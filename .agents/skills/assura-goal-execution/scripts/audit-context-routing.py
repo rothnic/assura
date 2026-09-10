@@ -29,6 +29,12 @@ REQUIRED_REFERENCES = (
     "references/validation-routing.md",
     "scripts/audit-ledger.sh",
 )
+REQUIRED_TASK_FILES = (
+    "orchestration-plan.md",
+    "recovery-plan.md",
+    "e2e-goal-prompt.md",
+    "executor-prompt.md",
+)
 MARKDOWN_LINK = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
 DESCRIPTION = re.compile(r"^description:\s*(.+?)\s*$", re.MULTILINE)
 
@@ -150,15 +156,15 @@ def main() -> int:
     if task_root.is_dir():
         emit("TASK", args.task_relative_path, "PASS")
         checks += 1
-        for task_name in (
-            "orchestration-plan.md",
-            "recovery-plan.md",
-            "e2e-goal-prompt.md",
-            "executor-prompt.md",
-        ):
+        for task_name in REQUIRED_TASK_FILES:
             task_file = task_root / "research" / task_name
             if not task_file.is_file():
+                emit("TASK_FILE", task_name, "FAIL")
+                failures += 1
+                checks += 1
                 continue
+            emit("TASK_FILE", task_name, "PASS")
+            checks += 1
             failures += check_markdown_links(task_file)
             checks += len(MARKDOWN_LINK.findall(task_file.read_text(encoding="utf-8")))
     else:
