@@ -68,7 +68,8 @@
       "docs/topology-audit-robustness",
       "docs/a07-manifest-readiness",
       "docs/ledger-routing-helper",
-      "docs/ledger-routing-reconcile"
+      "docs/ledger-routing-reconcile",
+      "docs/train-continuation-control"
     ]
   }
 }

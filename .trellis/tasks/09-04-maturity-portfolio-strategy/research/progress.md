@@ -1,4 +1,40 @@
-# Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md), [preserved history](progress-history-03.md))
+# Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md), [progress-history-04.md], [preserved history](progress-history-03.md))
+
+## Iteration 98 — 2026-09-10 — continuation-control plan refreshed on PR #243
+
+- Read-only reset refreshed `origin/master` to
+  `80d2d9a7fea55c1413f7e50f0873306049a65a48`. The canonical ledger at that
+  immutable revision contains 32 items: 21 `done`, one `active` (A07), one
+  `verified` (W03), three held actions (R01/W02/F01), and six pending items;
+  `ready_pending=0`. Active/verified candidates were inspected before any
+  pending selection. No product card was promoted.
+- The root strategy checkout remains stale and has exactly one unknown
+  untracked A04 research file; it remains untouched. The topology report
+  exited 0 and strict exited 1 with 34 worktrees, two dirty, three prunable,
+  one unreadable, 13 goal branches and nine unmerged historical goal refs.
+  No stash, reset, prune, deletion or ownership reassignment was performed.
+- The release ref refresh returned no `origin/release` branch; tags reach
+  `v0.3.0`, while source and `/usr/local/bin/assura` report `0.4.0`. This is
+  availability evidence only. Open PR #194 has a required Performance Report
+  failure after 6m53s; #195 targets its unmerged base; #187 is not current and
+  couples a Cloudflare build to production; #142 retains platform failures.
+  Scope-skipped checks remain non-applicable, not passing proof.
+- A serialized capacity probe could not resolve `vps-dev`; configured `vps`
+  reported 16 CPUs, 43,750 MiB available memory, low load, 23,217,420 KiB
+  free at 94% disk use, nightly Rust 1.95, Node 22.22.1 and pnpm 10.29.3.
+  No heavy job ran. The validation plan therefore keeps hosted platform and
+  performance jobs authoritative and permits remote work only through the
+  exact-commit bundle procedure after toolchain and disk-headroom checks.
+- Process coordinator / `investigate-prepare` owns this checkpoint. The next
+  action is the A07 coordinator's private exactly-two-condition manifest and
+  six-holdout validation, isolated protocol-review `PASS`, then a fresh
+  candidate-bound canary against `80d2d9a`; R01, W02, F01 and W03 retain their
+  separate owner/authority decisions. Context level: not exposed. The existing
+  concise AGENTS router and layered goal skill were audited; only the skill's
+  active-goal/no-ready routing and these current-state task artifacts changed.
+- Initial candidate `9a5d7a8` received independent process-review `PASS` and
+  PR #244's applicable hosted checks passed; the final evidence delta requires
+  scoped rereview before merge.
 
 ## Iteration 88 — 2026-09-09 — merged privacy correction and screening-manifest routing
 
@@ -961,40 +997,3 @@ recoverable. This reconciliation adds records rather than rewriting outcomes.
 - A02 is active in isolated current-master worktree `goal/a02-local-patterns`. Focused VPS integration proof covers `init --recipe-file` with a spaced path, SHA-256 provenance in `.assura/onboarding/profile-selection.json`, successful `agent onboard --recipe-file`, and a conflicting local rule with path/existing/incoming diagnostics.
 - A new red contract showed onboarding was materializing its baseline before detecting a local-policy conflict, changing project config despite the conflict. The implementation now preflights a local recipe against an existing config before baseline materialization; the four-test focused suite is green and the local Assura structure gate has zero violations. This is not card completion: invalid-result, idempotence, bundled fixture, documentation, broader-gate, and review evidence remain.
 - Context health: local disk recovered to 1.7 GiB; VPS remains the compile/test authority and has ample capacity. The only repeated operational friction is explicit source synchronization between the isolated local worktree and the VPS clone; existing evidence commands remain sufficient and no new reusable skill is warranted. Next: add the remaining A02 merge and idempotence contracts.
-
-## Iteration 39 — 2026-09-06 — A03 closure bookkeeping correction
-
-- Post-merge verification of PR #179 (`929fbff`) found its evidence text correctly closed A03, but its backlog edit had matched Q02's repeated status fields instead of A03. Q02 also has no referenced evidence file, so its accidental `done` status was not supportable.
-- Dedicated documentation-only PR #180 changes exactly those two records: A03 is `done` with its merged evidence, and Q02 is returned to unclaimed `pending`. JSON validation, the installed `assura check --format agent .`, and whitespace validation pass. No product behavior or CI scope changed.
-- Context health: not exposed. This is the first exact-ID bookkeeping mismatch in the train; the immediate correction and card-ID-anchored patch are sufficient, so no reusable skill is justified. Next ready cards after PR #180 merges: A04 and A05, each dependent on A03.
-
-## Iteration 40 — 2026-09-06 — A04 hook ownership and real-event proof
-
-- A04 is active in isolated current-master worktree `goal/a04-verified-hook-lifecycle`. Focused RED/green tests establish exact generated-content ownership for Git hook install, force refresh, status, direct removal, and bulk removal; custom hooks, legacy-marker collisions, and custom sidecars are preserved.
-- A disposable real Git repository at a path with spaces proved actual candidate
-  hook events against a seeded violation: advisory `git push` exited 0 and opt-in
-  `ASSURA_BLOCKING_PUSH=1 git push` exited 1. The feature-branch pre-commit
-  warning was also observed without claiming merge protection. Ten public hook
-  lifecycle tests, four private resolver tests, and thirteen host lifecycle
-  tests passed; independent final review is clean.
-- Context health: not exposed. Multiple reviewer findings all reduced to one reusable ownership rule and are now captured in the harness hook spec. The local `cargo xtask pr` runner did not yield a terminal result within the observation window, so it remains inconclusive; hosted performance/PR gates are mandatory before merge.
-
-## Iteration 43 — 2026-09-06 — A03 target-state contract repair
-
-- Post-merge verification exposed one verifier inconsistency rather than a
-  product regression: the accepted A03 public guide used the evidence-first
-  procedure, while `cargo xtask target-state` still required its three retired
-  questionnaire markers. The isolated baseline failed only for those markers;
-  no guide content was restored and no gate was disabled.
-- Implementation `932306e` extracts the production guide contract for focused
-  tests, requires the current procedure/action/path, and rejects the retired
-  heading/action/path. Focused RED failed three tests for the stale behavior;
-  GREEN and post-commit runs passed all three. The exact implementation passed
-  `cargo xtask target-state`, `cargo xtask fast`, and the complete local
-  `cargo xtask pr` gate, including Clippy, deterministic docs evidence, and the
-  48-page website build.
-- Independent review of `6d613f8..932306e` found no issues and marked spec and
-  quality PASS. Context health: the omitted target-state update is now captured
-  by positive, missing-current, retired-guidance, and contextual-exception
-  controls; no new reusable skill is warranted. Next: commit this evidence,
-  run the final exact-HEAD PR gate, then let the controller open the PR.

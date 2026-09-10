@@ -1,6 +1,6 @@
 # Execution recovery plan
 
-Status: active continuation route, 2026-09-10. This is a plan and audit, not
+Status: active continuation route, 2026-09-10 UTC (post-PR #243 reset). This is a plan and audit, not
 evidence that product cards passed. The supported runtime goal remains the
 coordinator; process corrections are merged separately from product card
 slices. Product changes stay in their separately owned card slices.
@@ -19,6 +19,59 @@ stack, zero destructive overwrites and zero critical misses. Follow-up feature
 proof and full evaluator dimensions remain mandatory. CI, generated files and
 partial checks cannot substitute. R06/publication/pilots retain their separate
 authority and observed-outcome requirements.
+
+## Live continuation checkpoint — 2026-09-10 UTC (after PR #243)
+
+This is the current read-only reset. The root checkout is an older strategy
+branch and has one unknown untracked file,
+`.trellis/tasks/09-04-maturity-portfolio-strategy/research/a04-host-status-doctor-permission-gap.md`.
+It is preserved untouched; all edits for this checkpoint use a clean external
+worktree. `git fetch origin master` succeeded and resolved
+`origin/master=80d2d9a7fea55c1413f7e50f0873306049a65a48`, the merge of PR #243.
+The revision-pinned ledger helper reports `items=32`, `ready_pending=0`,
+`unfinished=5`, `held=3`: A07 is `active`; R01, W02 and F01 retain named holds;
+W03 is `verified`; no pending card is executable at this revision. This is
+routing evidence only and does not prove owner liveness, card acceptance or
+merge authority.
+
+The release refresh found no `origin/release` branch (`git fetch origin release`
+reported that the remote ref does not exist). The remote tags currently reach
+`v0.3.0`, while the current source and `/usr/local/bin/assura` report `0.4.0`;
+neither a tag nor the installed binary is public-install or release proof. Open
+PR state was refreshed: #194 has a required `Performance Report` failure after
+6m53s despite other checks passing; #195 targets the unmerged #194 branch and
+has only GitGuardian evidence; #187 is not current and its Cloudflare build
+check is coupled to production; #142 retains Alpine/macOS/Windows failures.
+Skipped or scope-only checks are not counted as passes.
+
+The serialized host probe could not resolve `vps-dev`. The configured `vps`
+host is reachable with 16 CPUs, 43,750 MiB available memory, load below 1,
+and 23,217,420 KiB free at 94% disk use; it has nightly Rust 1.95,
+Node 22.22.1 and pnpm 10.29.3. No heavy job ran. This is capacity evidence,
+not a speedup claim: use the isolated bundle procedure only after confirming
+the exact CI toolchain and target-size headroom, one job at a time, and retain
+hosted platform/performance checks as final proof. Do not delete caches or
+other work to create disk space.
+
+The topology report exited 0 and strict exited 1 with
+`base=origin/master worktrees=34 dirty=2 prunable=3 unreadable=1
+goal_branches=13 unmerged_goal=9`. The dirty root and external worktree,
+unreadable registration, prunable registrations and historical unmerged goal
+branches are outside this slice's ownership. `git worktree prune --dry-run`
+was read-only; no prune, reset, stash, deletion or ownership reassignment was
+performed.
+
+**Continuation decision.** Keep the existing runtime goal active; do not create
+a replacement goal or stop at this status. The process coordinator owns this
+checkpoint (phase `investigate-prepare`). The next real action is for the A07
+acceptance coordinator to create and privately validate exactly two product
+conditions and six holdouts, obtain an isolated protocol-review `PASS`, and
+then run a fresh candidate-bound canary against `80d2d9a`. Until that private
+input and review exist, no screening cell or pending release card is
+executable. R01's missing raw macOS trace/native-readiness decision, W02's
+Cloudflare approval, F01's participant authorization, and W03's publication
+remain separate holds; independently prepared process/topology work may
+continue without changing any product threshold or authority boundary.
 
 ## Corrected baseline (historical snapshot; refresh before action)
 
@@ -78,7 +131,7 @@ as classified historical archives or user-owned work; do not delete them by
 pattern. This checkpoint is retained for provenance; it is not the current
 integration baseline.
 
-## Current checkpoint — 2026-09-10 (post-PR #237 refresh)
+## Historical checkpoint — 2026-09-10 (post-PR #237 refresh; superseded)
 
 A fresh read-only fetch identifies `origin/master=8cabc53658530a239c00a0c55cbae9b050ad74ca`,
 the merge of PR #237 from independently reviewed head
@@ -102,12 +155,12 @@ detached evidence archives remain preserved. The current pointer-reconciliation
 slice is the sole new owned worktree; all other branches and worktrees remain
 classified historical or user-owned and must not be deleted by pattern.
 
-## Ordered recovery slices
+## Ordered recovery slices at the live checkpoint
 
 | Priority / owner | Action | Exit proof / next action |
 | --- | --- | --- |
-| 1 / process coordinator | Reconcile the live current-master pointer across the recovery plan, A07 routing evidence, continuation prompt, and task metadata | Owned slice is based on `8cabc536`; record exact review/gate/merge/cleanup proof before advancing the train |
-| 2 / train coordinator | Apply the current A07 evidence and manifest contract before any allocation; keep private values outside public artifacts | Current checkpoint is recorded above; create/validate the private manifest, obtain protocol-review `PASS`, then refresh the canary against `8cabc536` |
+| 1 / process coordinator | Reconcile the live current-master pointer across the recovery plan, A07 routing evidence, continuation prompt, and task metadata | This checkpoint is based on `80d2d9a`; record exact review/gate/merge/cleanup proof before advancing the train |
+| 2 / train coordinator | Apply the current A07 evidence and manifest contract before any allocation; keep private values outside public artifacts | Create/validate the private manifest, obtain protocol-review `PASS`, then refresh the canary against `80d2d9a` |
 | 3 / A07 implementation owner | Test explicit composed init proposal against public semantics; plain init remains config-only; preserve conflicts and honest runtime permission reporting | Focused negative/positive controls, review, required final-source local/hosted gates; merge slice only if its own goals pass; rerun blinded protocol before A07 completion |
 | 4 / independent R01 investigator | Read latest R01 packet/evidence and rejected diagnostics; determine missing causal observable before spending another platform run | Concrete hypothesis, distinguishing observation and reviewed method amendment; do not repeat prior unchanged diagnostic or invent native readiness |
 | 5 / topology owner | Inventory existing goal branches, live owners and base reachability; repair audit parser as a separately tested slice if needed | Complete report; merged clean branches removed by exact identity or verified archive; unknown work preserved |
@@ -140,11 +193,12 @@ evidence; reusable rules live in skills. No second scheduler/ledger is added.
 
 ## Validation efficiency and VPS decision
 
-Read-only SSH audit: `vps-dev` did not resolve; configured `vps` reached a
-16-CPU Linux host, 62,787 MiB total / 43,688 MiB available memory, load below
-1 at observation. Disk: 94% used, 23 GiB free. Default Rust is nightly
-1.95; Node 22.22.1 and pnpm 10.29.3 were present. This shows available CPU/RAM,
-not measured speedup or validated build capacity. No heavy remote job ran.
+The latest serialized SSH audit still cannot resolve `vps-dev`; configured
+`vps` reached a 16-CPU Linux host with 62,787 MiB total / 43,750 MiB available
+memory, load below 1, and 23,217,420 KiB free at 94% disk use. Default Rust is
+nightly 1.95; Node 22.22.1 and pnpm 10.29.3 are present. This shows available
+CPU/RAM, not measured speedup or validated build capacity. No heavy remote job
+ran. The 94% disk condition is an explicit preflight hold for large builds.
 
 Use the goal skill's validation matrix and local-build VPS procedure. Start
 with one isolated job after checking target-size headroom and explicit matching
@@ -183,6 +237,6 @@ Record actual reviewer decisions and limitations in `recovery-evidence.md`.
 
 Next action: keep the supported runtime goal active and follow the current
 checkpoint's identity/holdout → manifest validation → isolated protocol review
-`PASS` → fresh current-master canary against `8cabc536` → screening sequence.
+`PASS` → fresh current-master canary against `80d2d9a` → screening sequence.
 Do not replace or complete an unfinished goal to repair a status mismatch, and
 do not treat this process reconciliation as A07 acceptance.

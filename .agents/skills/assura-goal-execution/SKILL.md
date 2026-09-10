@@ -20,6 +20,10 @@ only improves its process. Do not substitute a process PR for product acceptance
    Use [scripts/audit-ledger.sh](scripts/audit-ledger.sh) for a read-only
    revision-pinned card/dependency/branch routing summary; it does not prove
    owner liveness or card acceptance.
+   If the supported runtime goal is already active, reconcile it instead of
+   creating a duplicate or replacement. When no pending row is ready, retain a
+   coordinator-owned recovery/review/integration action with an exact next
+   observation; an empty ready set is not a stopping condition.
 3. Read [execution contract](references/execution-contract.md) for the phase,
    acceptance, continuation and merge rules. Use the installed personal
    `assura-orchestration` skill and its independent review brief when available;
