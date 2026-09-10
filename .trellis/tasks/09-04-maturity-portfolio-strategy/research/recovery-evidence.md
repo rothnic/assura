@@ -4,7 +4,9 @@ Date: 2026-09-10. Scope: process artifacts, agent instructions and validation ro
 Older tail note: [recovery history 01](recovery-history-01.md) and
 [recovery history 02](recovery-history-02.md).
 The historical proof below is retained; the current continuation route and source reconciliation are recorded before historical notes.
-Process iteration: 122 (merged A07 process route and current-candidate canary;
+Process iteration: 124 (protocol findings corrected and current rereview queued;
+iteration 123 was the corrected continuation goal and current-source rebind;
+iteration 122 was the merged A07 process route and current-candidate canary;
 iteration 121 was the accepted stale-route finding delta; iteration 120 was the
 A07 protocol review PASS at current master; iteration 119
 was the A07 private manifest review at current master; iteration 118
@@ -37,7 +39,32 @@ iteration 92).
 Context level: not exposed. The before/after phase record is this evidence
 file, linked from the full historical progress log.
 
-## Current as-of merged-candidate canary — 2026-09-10 UTC (`origin/master=9b410e9`)
+## Current as-of 8be candidate rebind and protocol correction — 2026-09-10 UTC (`origin/master=8be6103`)
+- Owner/phase: process coordinator `/root` / `candidate-bound-canary`. PR #268
+  is merged as a process-only documentation slice; A02 is complete and its
+  old plain-init handoff finding is historical. The fresh detached 8be6103
+  checkout built Assura `0.4.0` with Rust/Cargo `1.94.1` and the login-shell
+  identity check matched the fixed executable, version and target.
+- One initial source-only fixture attempt used a mismatched preservation
+  contract and exited nonzero; it is retained as unfavorable no-credit
+  evidence. After correcting the fixture to the contract's expected source,
+  two fresh composed Codex initialization runs and full evaluator runs exited
+  `0`, all seven dimensions passed and the seeded negative control rejected as
+  expected. These are no-credit canaries only.
+- The first isolated 8be protocol review found three concrete contract gaps:
+  no immutable handle-to-layout freeze record, historical candidate hashes in
+  holdout metadata, and a stale 9b review reference. The private packet now
+  contains a current candidate freeze, immutable six-handle binding with
+  source/contract digests and current provenance, a second read-only
+  confirmation, an explicit raw-hook exclusion, and a current manifest review
+  reference. The two-condition receipts and 30 reserved cells remain
+  no-credit; the findings are not screening or product results.
+- Next owner/action: complete the scoped 8be protocol rereview against the
+  corrected binding and manifest. If it passes, re-fetch source/ledger and
+  prepare only the separately authorized no-credit screening gate. Private
+  values, mappings, fixtures, raw evaluator output and child transcripts remain
+  outside this record; closure stays `active`.
+## Historical current as-of merged-candidate canary — 2026-09-10 UTC (`origin/master=9b410e9`)
 
 - Owner/phase: process coordinator `/root` / `candidate-bound-canary`; the
   clean current-master checkout and exact candidate identity are retained in
@@ -62,7 +89,6 @@ file, linked from the full historical progress log.
   `PASS`, and only then allocate screening cells. Private fixture contents,
   mappings, evaluator output and child transcripts remain outside this record;
   no product, release, deployment, publication or invitation authority changed.
-
 ## Historical current as-of private manifest review — 2026-09-10 UTC (`origin/master=af73d8a`)
 
 - Owner/phase: process coordinator `/root` / `review`; clean checkout
@@ -86,7 +112,6 @@ file, linked from the full historical progress log.
   identity and run a fresh candidate-bound no-credit canary. The PASS does not
   verify fixture contents, unseen holdouts, launcher identity, child isolation
   or evaluator outcomes. Closure remains active.
-
 ## Historical current as-of private-readiness audit — 2026-09-10 UTC (`origin/master=afcbe967`, superseded by `af73d8a`)
 
 - Owner/phase: process coordinator `/root` / `investigate-prepare`; clean
@@ -114,7 +139,6 @@ file, linked from the full historical progress log.
   only then refresh source/ledger and bind a fresh no-credit canary. R01/W02/
   W03/F01 holds remain separate. This slice changes no product/evaluator/
   threshold, allocation, release, deployment, publication or invitation state.
-
 ## Historical as-of post-merge continuation checkpoint — 2026-09-10 UTC (`origin/master=6fa806d`, superseded by `afcbe967`)
 
 - Owner/phase: process coordinator / `post-merge-reconcile` / pointer refresh.

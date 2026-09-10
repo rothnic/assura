@@ -54,11 +54,21 @@ initializer disposition, evaluator result, follow-up feature result, and any
 invalid/no-credit reason. No run is credited when identity, context, fixture,
 condition, or evaluator provenance is missing or mismatched.
 
+Before any cell is allocated, the private manifest must reference an immutable
+holdout-binding record. That record must map exactly six opaque handles (two
+valid unseen layouts for each stack) to their source-tree and full-contract
+digests, current candidate source/tree/binary/contract/prompt/toolchain
+identity, private hand-verification evidence, creation time, and a second
+read-only confirmation. It must list every disqualified or unfrozen layout
+outside the six-handle set. A historical binary hash, a prose claim that a
+layout is frozen, or an unbound handle is not current-candidate holdout proof.
+
 ## Gate order
 
 1. Refresh and freeze the current-master candidate identity; this observation
    is not screening credit.
-2. Confirm all six unseen holdout layouts are frozen privately.
+2. Confirm the immutable six-handle holdout-binding record is frozen privately;
+   exclude every disqualified or unfrozen construction draft.
 3. Validate the manifest schema, exactly-two condition rule, one-variable
    difference, private mapping, and complete 30-cell matrix in an isolated
    protocol review. Keep the separate product/code review boundary intact. This
@@ -86,12 +96,13 @@ but never replaces required macOS/Windows/hosted proof.
 ## Current next action
 
 On each resume, the A07 coordinator must first refresh `origin/master`, rerun
-the revision-pinned ledger, freeze the candidate identity and confirm the six
-holdouts. The private two-condition manifest and scoped protocol `PASS` now
-exist for an earlier candidate, while fresh current-source canaries pass the
-full evaluator with no credit. Rebind the manifest candidate/source/receipt
-fields to the refreshed identity, validate the unchanged two-condition and
-30-cell invariants, and obtain a scoped rereview before allocating any cell.
-Until that rereview passes, A07 remains active with zero screening/holdout/
-final-batch credit; prior canaries, process PRs and metadata-only reviews do
-not satisfy the current-candidate manifest gate.
+the revision-pinned ledger, and freeze the candidate identity. The private
+two-condition manifest and corrected scoped protocol `PASS` exist for the 9b
+candidate, while its canaries and review are now historical no-credit evidence
+after the 8be advance. The 8be manifest now references a current candidate
+freeze and immutable six-handle binding record; validate its schema, mapping,
+receipts, and 30-cell invariants, then obtain an isolated protocol rereview
+before allocating any cell. Until that current-candidate rereview passes, A07
+remains active with zero screening/holdout/final-batch credit; prior canaries,
+process PRs and metadata-only reviews do not satisfy the current-candidate
+manifest gate.

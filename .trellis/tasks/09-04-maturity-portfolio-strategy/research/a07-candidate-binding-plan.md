@@ -3,34 +3,36 @@
 Status: active. Owner: this thread's A07 acceptance coordinator. This plan
 does not embed a permanent routing baseline: fetch `origin/master` and rerun
 the revision-pinned ledger before every canary. The latest 2026-09-10
-post-merge refresh resolved `origin/master=9b410e936e2afe85f0adc4cd83ef614e35c43d2c`
-after PR #267, which merged reviewed process candidate
-`0b5c8ce174b81cf1435b0a0ff5224243416393c0` based on
-`af73d8a5004ea8c0d2298202467d1635853434c9`; merged-tree equality,
-reachability, independent review and applicable Documentation/CI/Security/
-Evidence/GitGuardian checks passed. This process-only checkpoint does not
-promote A07 or authorize screening. The six valid unseen holdout layouts remain
-frozen in the private owner-controlled store. The private manifest still has
-exactly two conditions, supplied-input receipts, a blinded mapping and a
-complete 30-cell reserved matrix; its isolated protocol review returned a
-redacted `PASS` with no findings after corrections for source SHA/tree
-provenance, value-neutral summaries and row-level stack/toolchain invariants.
-That PASS is metadata-only for the prior candidate and earns no screening
-allocation until the manifest is rebound and rereviewed for the current
-candidate. Do not infer conditions from historical run names or holdout labels.
+post-merge refresh resolved `origin/master=8be61034e3f6f295753570ef2080e100d53efd4c`
+after PR #268, which merged the reviewed process-only candidate-route
+documentation from `9b410e936e2afe85f0adc4cd83ef614e35c43d2c`. Merged-tree
+equality, reachability, independent review and applicable Documentation/CI/
+Security/Evidence/GitGuardian checks passed. This checkpoint changes no A07
+product or acceptance state and does not authorize screening.
 
-The current merged candidate was built as Assura `0.4.0` with Rust/Cargo
-`1.94.1` and was identity-checked inside a disposable login-shell launcher.
-Fresh no-credit canaries for the two reviewed content-template conditions used
-the composed `init --agent codex --activate` route followed by onboarding and
-the full evaluator; both passed. Earlier generic/omitted-policy and restrictive
-existing-config attempts remain retained as unfavorable no-credit evidence.
-The canary proves neither screening, holdout, follow-up-feature nor final-batch
-acceptance. The next ordered action is to rebind the private manifest rows and
-receipts to this current candidate, obtain a scoped protocol rereview, and only
-then begin screening if every identity/context/contract gate remains valid.
-This plan does not change the A07 contract, scoring thresholds, fixture
-allocation, or product acceptance.
+The two `9b410e9` candidate-bound composed-init canaries and their corrected
+private protocol `PASS` are historical, zero-credit metadata for that older
+candidate. The protocol rereview accepted `A07-CONTRACT-HASH-001` after the
+manifest and condition rows were rebound to the supplied contract bytes; the
+finding is resolved for 9b410e9 but must not be treated as current evidence.
+The six valid unseen holdout layouts, exactly-two-condition manifest, supplied-
+input receipts, blinded mapping and complete 30-cell reserved matrix remain
+private. The current private packet now includes an immutable six-handle
+holdout-binding record and a second read-only rebind confirmation; the
+disqualified raw-hook draft is explicitly excluded. Do not infer conditions or
+holdout validity from historical run names or labels.
+
+A fresh detached checkout at 8be6103 is the current candidate build, and its
+source/tree, version, fixed target and login-shell command identity are frozen
+privately. Two fresh source-only canaries used the composed
+`init --agent codex --activate` route and passed the full evaluator; they prove
+neither screening, holdout, follow-up-feature nor final-batch acceptance. The
+first isolated 8be protocol review found and named three metadata gaps; the
+holdout binding, candidate references and review reference are now corrected.
+The next ordered action is a scoped rereview of the corrected 8be packet, and
+only then preparation for screening if every identity/context/contract gate
+remains valid. This plan does not change the A07 contract, scoring thresholds,
+fixture allocation, or product acceptance.
 
 The canary's private event, evaluator, fixture, and identity provenance remains
 outside the repository. Public evidence retains only the candidate identity and
@@ -96,15 +98,14 @@ the binding inside the run before any product result is counted:
    separate.
 
 The canary must also prove that the candidate exposes the expected merged
-`init --agent <host> --activate` surface. The historical `77b41fe` canary
-passed those identity, surface, context, and full-contract checks; the fresh
-current-source canaries now pass the same full contract against
-`origin/master=9b410e9`. They remain no-credit controls until the private
-manifest is rebound and rereviewed for this candidate. The historical
-`f1595fc`, `922d7f0` and `af73d8a` runs remain labeled below for provenance;
-none is a screening allocation. An explicit-route control may verify the
-composed implementation, but it is calibration evidence and never counts as a
-blinded run.
+`init --agent <host> --activate` surface. The historical `77b41fe` and
+`9b410e9` canaries passed those identity, surface, context, and full-contract
+checks for their own snapshots; they remain no-credit controls. The fresh
+8be6103 canary must repeat the same checks against the current candidate. The
+historical `f1595fc`, `922d7f0` and `af73d8a` runs remain labeled below for
+provenance; none is a screening allocation. An explicit-route control may
+verify the composed implementation, but it is calibration evidence and never
+counts as a blinded run.
 
 ## Smallest implementation and verification
 
@@ -123,7 +124,7 @@ blinded run.
   evidence and complete matrix, and obtain an isolated protocol-review `PASS`;
   do not infer or rename conditions in public evidence. Then refresh the
   current `origin/master` source pointer and ledger (latest as-of checkpoint:
-  `9b410e9`) and run a fresh candidate-bound canary
+  `8be6103`, refresh before use) and run a fresh candidate-bound canary
   against that frozen identity; all embedded checkpoints remain historical.
   launch one fresh source-only fixture and child under a sibling-free
   disposable parent per run. If identity, context, or contract checks fail,

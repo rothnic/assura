@@ -21,31 +21,57 @@ reject candidates that fail the prescribed comparison, and stop invalid
 diagnostics instead of repeating runs until green. Root owns review judgment
 and merge approval; method changes never imply relaxed acceptance thresholds.
 
-## Current as-of continuation checkpoint (refresh required) — 2026-09-10 UTC (`9b410e9`)
+## Corrected active-goal contract — 2026-09-10
+
+Status: active. This is the canonical continuation goal for the task and the
+existing supported runtime goal; do not create a replacement at compaction,
+card boundaries or after a process-only merge.
+
+Objective: drive the canonical maturity task from a freshly verified
+`origin/master` through one owned, evidence-bound slice at a time. Inspect
+active, implemented, verified and merge-ready work before pending rows; carry a
+named owner and exact next action through investigation, implementation,
+validation, independent review, current-base integration, reconciliation and
+clean closure. Preserve unknown dirt, historical evidence and authority holds.
+
+Corrections that control routing: A02 is complete, so the old plain-init
+handoff incident is historical; PRs #267 and #268 are process-only and do not
+complete a product card; the corrected 9b A07 contract-hash review is a
+historical metadata `PASS`, not current candidate proof; and passing CI,
+evaluator, canary or process documentation never grants screening, release,
+deployment, publication or invitation credit.
+
+Current route: refresh the current source and revision-pinned ledger, then own
+the A07 8be6103 candidate identity, canary, immutable holdout binding and
+private manifest rereview. Keep R01, W02, W03 and F01's named holds separate.
+Do not finish the goal while a live review, repair, integration, cleanup or
+independently authorized preparation action remains.
+
+## Current as-of continuation checkpoint (refresh required) — 2026-09-10 UTC (`8be6103`)
 
 The latest read-only refresh resolved `origin/master` to
-`9b410e936e2afe85f0adc4cd83ef614e35c43d2c` after PR #267. The reviewed
-process candidate `0b5c8ce174b81cf1435b0a0ff5224243416393c0` was based on
-`af73d8a5004ea8c0d2298202467d1635853434c9`; merged-tree equality and
+`8be61034e3f6f295753570ef2080e100d53efd4c` after PR #268. The reviewed
+process candidate `da6ce09f215e11e5de9023477bec9be1d7096ce4` was based on
+`9b410e936e2afe85f0adc4cd83ef614e35c43d2c`; merged-tree equality and
 reachability were verified, as were independent review and the applicable
 Documentation, CI, Security, Evidence and GitGuardian checks. Scope-skipped
 product/Rust/performance/release jobs remain non-applicable rather than proof.
 This is a process-only checkpoint and changes no A07 product or acceptance
-state.
+state. A02 is complete; its prior plain-init finding is historical.
 
 The revision-pinned ledger remains 32 items, `ready_pending=0`, five
 unfinished and three held: A07 active, W03 verified, and R01/W02/F01 held.
-The six valid unseen holdouts remain frozen. The private A07 manifest has
-exactly two explicit conditions, supplied-input receipts, a blinded mapping,
-and a complete 30-cell reserved matrix; its protocol `PASS` is bound to the
-prior candidate and remains metadata-only until a current-candidate rebind is
-rereviewed. Two fresh current-source, candidate-bound no-credit canaries—one
-per reviewed condition—passed the full evaluator through the composed Codex
-initialization route. Earlier invalid runner/fixture attempts remain retained
-as unfavorable evidence. No screening, holdout or acceptance credit exists.
-The next owned action is to rebind the private manifest and obtain scoped
-protocol rereview before allocating any screening cell; preserve residual
-fixture, launcher, child-isolation and evaluator limitations.
+The private A07 manifest has exactly two explicit conditions, supplied-input
+receipts, a blinded mapping, a complete 30-cell reserved matrix, and now an
+immutable six-handle holdout binding tied to the current candidate. The
+disqualified raw-hook draft is excluded. The corrected 9b contract-hash
+finding and its rereview `PASS` are historical no-credit evidence after the 8be
+advance. The fresh 8be login-shell identity and two source-only canaries passed
+as no-credit preparation. The first current protocol review found the missing
+binding/provenance and stale-review-reference gaps; those records are corrected
+privately, and a scoped 8be rereview is required before any screening
+allocation. No screening, holdout or acceptance credit exists; preserve
+residual fixture, launcher, child-isolation and evaluator limitations.
 
 The measured `vps` host remains optional (16 CPUs, about 42 GiB available,
 95% root-disk use with about 20 GiB free, nightly Rust 1.95 and no Bun); the
@@ -318,9 +344,12 @@ Before allocating any screening run, also read
 [screening-manifest-contract.md](screening-manifest-contract.md). The packet's
 two product-input conditions must be named, differ in one specified variable,
 and be evidenced in a private manifest with a complete 30-cell matrix. The
-manifest must validate and receive an isolated protocol-review `PASS` before
-any screening cell is launched; do not infer conditions from historical run
-names.
+manifest must reference an immutable six-handle holdout-binding record carrying
+source/contract digests, current candidate identity, hand-verification, creation
+time, second read-only confirmation, and explicit disqualification records. It
+must validate and receive an isolated protocol-review `PASS` before any
+screening cell is launched; do not infer conditions or holdout validity from
+historical run names, hashes or prose.
 
 The product direction remains sound: specialize in executable repository conventions and agent-assisted initialization, with existing language tools supplying their own checks. The execution mechanism should be a **reviewed release train**, not a long-lived mega-branch or a blind attempt to close every checkbox. The queue remains the technical source of truth; this goal supplies cross-session control, integration discipline, and cleanup rules.
 
