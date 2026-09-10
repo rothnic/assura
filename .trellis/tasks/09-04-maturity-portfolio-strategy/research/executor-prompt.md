@@ -25,8 +25,9 @@ plain-init finding is historical. The ledger at 9ad926a has 32 items, zero
 ready pending, five unfinished and three held: A07 active, W03 verified, and
 R01/W02/F01 held. A fresh 9ad926a A07 freeze, exact identity controls and two
 full-contract canaries are current no-credit preparation. The scoped protocol
-rereview corrected one concrete evaluator/public-contract identity gap while
-preserving the separate private evaluator contract. The ebed six-handle and
+rereview returned `PASS` for the no-credit canary identity gate after correcting
+one concrete evaluator/public-contract identity gap while preserving the
+separate private evaluator contract. The ebed six-handle and
 manifest packet is historical after this source advance and must be rebound to
 the current candidate before allocation. R01's merged raw-log recovery remains
 bounded negative evidence. On every resume, refresh source, release/tag, PR/CI

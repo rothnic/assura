@@ -2,7 +2,7 @@
 
 ## Iteration 130 — 2026-09-10 — current 9ad926a canary and contract-binding correction
 - PR #273 merged the reviewed process/documentation reconciliation at `origin/master=9ad926a`; the merged tree and owned closure are verified. This is process-only and changes no product or acceptance state.
-- The fresh 9ad926a candidate identity and two source-only canaries pass all seven public dimensions with a meaningful negative control; they are no-credit preparation. A scoped protocol rereview corrected the evaluator/public-contract identity binding while preserving the separate private evaluator contract. The prior ebed packet is historical after this source advance and must be rebound before allocation.
+- The fresh 9ad926a candidate identity and two source-only canaries pass all seven public dimensions with a meaningful negative control; they are no-credit preparation. The scoped protocol rereview returned PASS for the no-credit canary identity gate after correcting the evaluator/public-contract identity binding while preserving the separate private evaluator contract. The prior ebed packet is historical after this source advance and must be rebound before allocation.
 - The ledger remains 32/0/5/3 with A07 active and R01/W02/F01 held. Next owner/action: refresh source, release/tag, PR/CI and topology state, rerun the ledger, re-freeze the current candidate, run a fresh no-credit canary, then rebind the private holdout/manifest and obtain isolated protocol PASS before separately authorized screening; context level: not exposed.
 ## Iteration 126 — 2026-09-10 — historical protocol disposition (superseded by current `9ad926a`; previously `b7043ab`)
 

@@ -106,8 +106,9 @@ A02 is complete and its plain-init handoff incident is historical.
 A07 is the active lane. A fresh 9ad926a candidate was built from a clean
 checkout; login-shell identity controls and two source-only canaries pass the
 full public contract, but they create no screening or acceptance credit. The
-scoped protocol rereview corrected one concrete evaluator/public-contract
-identity gap while retaining the separate private evaluator contract. The
+scoped protocol rereview returned `PASS` for the no-credit canary identity gate
+after correcting one concrete evaluator/public-contract identity gap while
+retaining the separate private evaluator contract. The
 prior ebed six-handle binding, supplied-input receipts, two-condition manifest
 and 30 reserved cells are historical after this source advance and must be
 rebound to 9ad926a before allocation. The exact next action is to refresh

@@ -31,8 +31,9 @@ its source/tree, version, fixed target and login-shell command identity are
 frozen privately. Two fresh source-only canaries used the composed
 `init --agent codex --activate` route and passed the full evaluator; they prove
 neither screening, holdout, follow-up-feature nor final-batch acceptance. The
-scoped protocol rereview corrected one concrete evaluator/public-contract
-identity gap while preserving the separate private evaluator contract. The
+scoped protocol rereview returned `PASS` for the no-credit canary identity
+gate after correcting one concrete evaluator/public-contract identity gap while
+preserving the separate private evaluator contract. The
 prior ebed packet is historical after this source advance. The next ordered
 action is to refresh source/ledger, release/tag, PR/CI and topology state,
 re-freeze the current candidate, run the next fresh no-credit canary, then

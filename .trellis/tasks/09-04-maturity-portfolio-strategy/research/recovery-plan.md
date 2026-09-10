@@ -42,8 +42,9 @@ authority and observed-outcome requirements.
 - A fresh 9ad926a candidate freeze, exact login-shell identity controls and two
   source-only canaries passed the public contract with seven dimensions and a
   meaningful negative control. They are no-credit preparation. The scoped
-  protocol rereview corrected one concrete evaluator/public-contract identity
-  gap while preserving the separate private evaluator contract. The prior ebed
+  protocol rereview returned `PASS` for the no-credit canary identity gate
+  after correcting one concrete evaluator/public-contract identity gap while
+  preserving the separate private evaluator contract. The prior ebed
   six-handle packet, manifest, receipts and 30 reserved cells are historical
   after this source advance and must be rebound before allocation; allocation
   and credit remain false.

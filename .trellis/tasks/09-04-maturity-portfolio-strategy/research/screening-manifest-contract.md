@@ -109,9 +109,10 @@ and 692 manifests, canaries and protocol `PASS` records are historical
 no-credit evidence after the later process merges and must not route current
 work. The current as-of 9ad926a candidate has fresh identity controls and two
 full-contract source-only canaries with a meaningful negative control; these are
-no-credit preparation. A scoped protocol rereview corrected the canary's
-dual-contract identity binding while keeping the private evaluator contract
-separate from the frozen public contract. The prior ebed six-handle binding,
+no-credit preparation. The scoped protocol rereview returned `PASS` for the
+no-credit canary identity gate after correcting the canary's dual-contract
+identity binding while keeping the private evaluator contract separate from the
+frozen public contract. The prior ebed six-handle binding,
 supplied-input receipts, two-condition manifest and 30 reserved cells are
 historical after this source advance and must be rebound to the current
 candidate before allocation. On each next resume, refresh source/ledger,

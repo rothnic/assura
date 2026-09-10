@@ -62,9 +62,10 @@ unfinished and three held: A07 active, W03 verified, and R01/W02/F01 held.
 The current A07 candidate is frozen privately at 9ad926a. Its login-shell
 identity controls and two fresh source-only canaries pass the full public
 contract with seven dimensions and a meaningful negative control; these are
-no-credit preparation. The scoped protocol rereview corrected one concrete
-identity-contract gap by binding each evaluator record to the frozen public
-contract while retaining the separate private evaluator-contract identity.
+no-credit preparation. The scoped protocol rereview returned `PASS` for the
+no-credit canary identity gate after correcting one concrete evaluator/public-
+contract identity gap while retaining the separate private evaluator-contract
+identity.
 The prior ebed six-handle/manifest packet is historical after this source
 advance and must be rebound to 9ad926a before allocation. On resume, fetch
 again, rerun the ledger and topology audit, refresh release/tag and PR/CI facts,
