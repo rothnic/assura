@@ -1,5 +1,44 @@
 # Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md), [progress-history-04.md], [progress-history-05.md](progress-history-05.md), [iterations 4-17](progress-history-06.md), [preserved history](progress-history-03.md), [A01 iterations 15–31](progress-history-08.md), [iterations 104 and earlier](progress-history-07.md))
 
+## Iteration 114 — 2026-09-10 — current-master route audit / post-merge reconciliation
+
+- Owner/session: A07 checkpoint writer / Trellis implementer
+  `/root/a07_checkpoint_writer`; phase: `post-merge-reconcile` /
+  `route-audit`; closure: `active`. The clean owned checkout is
+  `/private/tmp/assura-a07-current-route.vcLjcl` on
+  `docs/a07-current-route`.
+- Source/candidate anchor: a fresh fetch resolves `origin/master` to
+  `2d4607bf6213c55a919fd230a31a09d64004213d`; this route checkout is at the
+  same candidate/source SHA. It is a documentation-only checkpoint, not a new
+  A07 product candidate or evaluation run. The detached A07 checkout at
+  `77b41fe` is historical and must not be reused. The PR #261 process branch
+  and worktree were already removed after merged-tree and reachability proof.
+- The revision-pinned ledger has 32 items, `ready_pending=0`, five unfinished
+  and three held. A07 is active with no live worker, initializer, evaluator or
+  review handle; W03 is verified; R01, W02 and F01 retain their existing
+  smallest-resolution holds. The current context-routing audit is `42/42
+  PASS`. No product, acceptance, screening, publication, release, deployment,
+  or invitation credit changed.
+- Exact next action: in the private A07 store, produce and independently
+  review the exactly-two-condition manifest, supplied-input receipt, blinded
+  mapping, complete 30-cell matrix and isolated protocol-review `PASS`. Only
+  after that disposition may the coordinator refresh source and run a fresh
+  candidate-bound no-credit canary; no screening credit is implied.
+- Held-action resolution remains explicit: R01 requires the exact raw
+  paths/kinds/rescan/config-state trace for hosted run
+  `34090768850`/job `101643647551` sequence 2/count 3, or a specific
+  maintainer native-readiness decision; W02 requires explicit Cloudflare
+  approval for hosted integration with deployment kept separate; W03's
+  publication remains authority-held; F01's participant selection and
+  invitations remain Nick-authorized. No speculative retry, release,
+  deployment, publication or invitation action is authorized by this
+  checkpoint.
+- The detached-checkout `cargo xtask target-state` probe exits `1` because the
+  active multi-card task has `branch: null`; this is a caveat, not a passing
+  gate, and this slice does not alter the task branch policy. Context level is
+  not exposed. Continue while the private protocol action exists; closure
+  remains `active`.
+
 ## Iteration 113 — 2026-09-10 — post-merge reconciliation for PR #259
 
 - Owner/phase: process coordinator / `post-merge-reconcile`. PR [#259](https://github.com/rothnic/assura/pull/259) merged reviewed `ccd3bd2` (based on `8c198dcb`) as `373fb01`; tree equality, applicable Documentation/CI/Evidence/Security/GitGuardian checks and independent review passed with no product or acceptance-state change. The fresh ledger remains 32 items, zero ready pending, five unfinished and three held (A07 active, W03 verified, R01/W02/F01 held); validation case [`A07-CONTINUATION-CASE-09`](recovery-evidence.md#orchestration-validation-case-09) (scenario 9) rejected stopping the goal by routing A07 to its private manifest/protocol action, W03 to separate publication review, and R01/W02/F01 to their retained evidence/authority holds. PR #258 and PR #259 checkouts/branches/refs were removed after diff, tree and reachability proofs; report exited 0 and strict remains nonzero only for preserved external/user and historical topology exceptions. Context is not exposed; next is refresh source/ledger, validate A07's private exactly-two-condition manifest and isolated protocol `PASS`, then a fresh no-credit canary with no screening credit implied.
