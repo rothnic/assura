@@ -35,11 +35,14 @@ no A07 product, evaluator, threshold, allocation or authority state changed.
 
 At the recorded checkpoint the revision-pinned ledger remains 32 items,
 `ready_pending=0`, five unfinished and three held: A07 active, W03 verified,
-R01/W02/F01 held. The private A07 manifest/protocol-review evidence is still
-missing, so screening, holdout and final-acceptance credit remain zero. Route
-the next action to the private exactly-two-condition manifest and isolated
-protocol-review `PASS`, then refresh and bind a canary to the freshly fetched
-source before any allocation.
+R01/W02/F01 held. On every resume, first fetch `origin/master`, rerun the
+revision-pinned ledger and freeze the candidate identity, then confirm the six
+unseen holdouts. The private A07 manifest/protocol-review evidence is still
+missing, so screening, holdout and final-acceptance credit remain zero. Only
+after that refresh and holdout confirmation may the coordinator validate the
+private exactly-two-condition manifest and obtain an isolated protocol-review
+`PASS`; then run a fresh no-credit canary against the frozen identity before
+any allocation.
 
 ## Historical continuation checkpoint — 2026-09-10 UTC (`origin/master=2eda17e`; superseded by PR #251)
 

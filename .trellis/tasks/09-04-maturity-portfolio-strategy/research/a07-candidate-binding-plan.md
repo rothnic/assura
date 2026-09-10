@@ -8,14 +8,16 @@ as `a92b109c2158113a1f2316b8cdd5ef79f6668571`; no candidate-bound canary has
 yet been run against a freshly refreshed source after that checkpoint. The
 candidate-bound, context-isolated canary
 against the prior `77b41fe` baseline passed the full contract but receives no
-screening allocation. The next action is ordered: create and validate the exact
-two-condition screening manifest, obtain an isolated protocol-review `PASS`,
-refresh the candidate identity canary against the then-current master, then
-begin the authorized 30-run batch from sibling-free disposable parents. The
-prior `2eda17e82d9dab12338805479a33a5774560451f` checkpoint is historical
-after PR #251; earlier candidate SHAs remain historical evidence/archive
-references, not the active baseline. This plan does not change the A07
-contract, scoring thresholds, fixture allocation, or product acceptance.
+screening allocation. The next action is ordered: fetch `origin/master`, rerun
+the revision-pinned ledger and freeze the candidate identity; confirm the six
+unseen holdouts; create and validate the exact two-condition screening
+manifest; obtain an isolated protocol-review `PASS`; then run a fresh canary
+against that frozen identity before beginning the authorized 30-run batch from
+sibling-free disposable parents. The prior
+`2eda17e82d9dab12338805479a33a5774560451f` checkpoint is historical after PR
+#251; earlier candidate SHAs remain historical evidence/archive references,
+not the active baseline. This plan does not change the A07 contract, scoring
+thresholds, fixture allocation, or product acceptance.
 
 The canary's private event, evaluator, fixture, and identity provenance remains
 outside the repository. Public evidence retains only the candidate identity and
@@ -101,13 +103,14 @@ counts as a blinded run.
   successful exact-target binding. Keep private fixture and evaluator
   identities out of source, prompts, reviewer briefs, and public evidence.
 - The prior candidate-bound canary is complete for historical `77b41fe` only.
-  Before the first screening run, record the authoritative names and contract
-  references for both product-input conditions in a private screening manifest,
-  validate its supplied-input evidence and complete matrix, and obtain an
-  isolated protocol-review `PASS`; do not infer or rename conditions in public
-  evidence. Then refresh the candidate-bound canary against the freshly fetched
-  then-current `origin/master` (the historical checkpoint `2eda17e` was
-  superseded by current `062f6c3`) and
+  Before the first screening run, fetch `origin/master`, rerun the
+  revision-pinned ledger and freeze the candidate identity, then record the
+  authoritative names and contract references for both product-input
+  conditions in a private screening manifest. Validate its supplied-input
+  evidence and complete matrix, and obtain an isolated protocol-review `PASS`;
+  do not infer or rename conditions in public evidence. Then run a fresh
+  candidate-bound canary against the frozen identity (the historical
+  checkpoint `2eda17e` was superseded by current `062f6c3`) and
   launch one fresh source-only fixture and child under a sibling-free
   disposable parent per run. If identity, context, or contract checks fail,
   retain the result as invalid/no-credit evidence, repair the owning method, and
