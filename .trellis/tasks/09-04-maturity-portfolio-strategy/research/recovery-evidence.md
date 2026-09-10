@@ -4,8 +4,9 @@ Date: 2026-09-10. Scope: process artifacts, agent instructions and validation
 routing only. Product acceptance is unchanged; no card is promoted by this file.
 The historical proof below is retained; the current reconciliation and continuation
 route are recorded before the historical next-phase note.
-Process iteration: 95 (deterministic ledger-routing helper; iteration 94 was
-the A07 private-manifest readiness audit; iteration 93 was the topology-audit
+Process iteration: 96 (ledger-routing helper pin/path correction; iteration 95
+was the deterministic ledger-routing helper; iteration 94 was the A07
+private-manifest readiness audit; iteration 93 was the topology-audit
 helper correction; after the highest recorded historical iteration, 88; PR
 #236 closure was iteration 89, the pointer candidate review was iteration 90,
 the proof-record delta was iteration 91, and post-merge reconciliation was
@@ -59,6 +60,31 @@ file, linked from the full historical progress log.
   be used at the next continuation before any pending-card selection; its
   result cannot override that A07 protocol gate or the preserved topology
   ownership exceptions.
+
+## Ledger-routing helper correction — 2026-09-10
+
+- Independent review found two routing-integrity defects in the first helper
+  candidate: it resolved and printed a base SHA but loaded task blobs through
+  the mutable symbolic ref, and its `awk` parser truncated declared worktree
+  paths at spaces. Both findings were accepted as concrete process correctness
+  gaps; no product, evaluator, threshold, release, deployment, publication,
+  invitation or authority surface is involved.
+- The correction now loads `backlog.json` and `task.json` through the resolved
+  immutable object ID, and parses `git worktree list --porcelain -z` records by
+  complete `worktree ` suffix. This keeps the advertised revision and routing
+  records coherent if a ref advances during execution and preserves paths
+  exactly for ownership inspection.
+- Verification before final hosted review: `bash -n` passed; the live ledger
+  still reports `items=32`, `ready_pending=0`, `unfinished=5`, `held=3`; the
+  disposable positive/missing-dependency fixture still reports exactly one
+  ready pending card and excludes the unknown dependency; and a disposable
+  declared branch fixture with a space-containing worktree path reports the
+  complete path. These checks are routing controls only and do not establish
+  owner liveness, acceptance, review, or merge authority.
+- Owner/phase: process coordinator / correction-validate. The same clean
+  current-master checkout and one-card ownership are retained. The affected
+  process/docs gates and scoped independent rereview must pass before any PR
+  submission or merge.
 
 ## Current A07 readiness audit — 2026-09-10
 

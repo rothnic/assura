@@ -32,8 +32,11 @@ repo_root=$(git -C "$repo_root" rev-parse --show-toplevel)
 base_sha=$(git -C "$repo_root" rev-parse "$base_ref^{commit}")
 ledger_path="$task_rel/research/backlog.json"
 task_path="$task_rel/task.json"
-ledger_json=$(git -C "$repo_root" show "$base_ref:$ledger_path")
-task_json=$(git -C "$repo_root" show "$base_ref:$task_path")
+# Resolve the symbolic base once, then load every task blob by that immutable
+# object ID. This keeps the advertised BASE and all routing records coherent
+# even if the remote-tracking ref moves while the command is running.
+ledger_json=$(git -C "$repo_root" show "$base_sha:$ledger_path")
+task_json=$(git -C "$repo_root" show "$base_sha:$task_path")
 
 printf 'BASE\t%s\t%s\n' "$base_ref" "$base_sha"
 printf '%s\n' "$ledger_json" | jq -e '.items | type == "array"' >/dev/null
@@ -69,7 +72,23 @@ printf '%s\n' "$ledger_json" | jq -r '
   | @tsv
 '
 
-worktree_records=$(git -C "$repo_root" worktree list --porcelain)
+worktree_for_branch() {
+  local target_ref="refs/heads/$1"
+  local worktree_record=""
+  local candidate_dir=""
+  while IFS= read -r -d '' worktree_record; do
+    case "$worktree_record" in
+      "worktree "*) candidate_dir=${worktree_record#worktree } ;;
+      "branch "*)
+        if [[ "$worktree_record" == "branch $target_ref" ]]; then
+          printf '%s\n' "$candidate_dir"
+          return 0
+        fi
+        ;;
+    esac
+  done < <(git -C "$repo_root" worktree list --porcelain -z)
+}
+
 printf '%s\n' "$task_json" | jq -r '.meta.execution_branches // [] | .[]' | while IFS= read -r branch_name; do
   branch_sha="absent"
   ref_state="absent"
@@ -80,10 +99,7 @@ printf '%s\n' "$task_json" | jq -r '.meta.execution_branches // [] | .[]' | whil
     branch_sha=$(git -C "$repo_root" rev-parse "refs/remotes/origin/$branch_name")
     ref_state="remote"
   fi
-  worktree_dir=$(printf '%s\n' "$worktree_records" | awk -v target="refs/heads/$branch_name" '
-    $1 == "worktree" { candidate = $2 }
-    $1 == "branch" && $2 == target { print candidate }
-  ' | head -n 1)
+  worktree_dir=$(worktree_for_branch "$branch_name")
   if [[ -z "$worktree_dir" ]]; then
     worktree_dir="absent"
   fi
