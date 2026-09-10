@@ -1,13 +1,14 @@
 # Execution recovery plan
 
-Status: active continuation route, 2026-09-10 UTC. The latest diagnostic
-observation remains candidate-base evidence at `origin/master=1bd78cc`; the
-latest process correction is PR #254, merged at
-`origin/master=7a7753713319d01c9b3b9966cb4028e4929e8df1` after PRs #251–#253.
-Refresh before use. This is a plan and audit, not evidence that product cards
-passed. The supported runtime goal remains the coordinator; process
-corrections are merged separately from product card slices. Product changes
-stay in their separately owned card slices.
+Status: active continuation route, 2026-09-10 UTC. A fresh refresh resolved
+`origin/master=a819c0cd2e8e9fdf14a3641cc76f0119ceb9d2bc` after PR #256; this
+pointer is an as-of checkpoint and must be refreshed before use. The latest
+diagnostic is the bounded R01 raw-log recovery recorded at candidate base
+`c1202af` and merged as process evidence; it does not close R01 or authorize a
+retry. This is a plan and audit, not evidence that product cards passed. The
+supported runtime goal remains the coordinator; process corrections are
+merged separately from product card slices. Product changes stay in their
+separately owned card slices.
 
 ## Outcome and success gates
 
@@ -24,7 +25,36 @@ proof and full evaluator dimensions remain mandatory. CI, generated files and
 partial checks cannot substitute. R06/publication/pilots retain their separate
 authority and observed-outcome requirements.
 
-## Post-merge gate-order checkpoint — 2026-09-10 UTC (`origin/master=7a775371`)
+## Live post-merge recovery checkpoint — 2026-09-10 UTC (`origin/master=a819c0c`)
+
+PR #256 merged the independently reviewed R01 raw-log recovery record as
+`a819c0cd2e8e9fdf14a3641cc76f0119ceb9d2bc` from candidate `c950fe4`, based on
+`c1202af`. The public macOS job log was retrieved with
+`gh run view 34090768850 --job 101643647551 --log`, exited `0`, and contained
+2,225 lines. It confirms sequence-2 `full_rescan_event` but has no raw
+callback paths/kinds, rescan flag or config-generation fields. The missing
+causal fields remain the R01 contract gap; no retry, filter, threshold, loop
+or product change was made, and R01 remains held for retained raw trace or a
+specific maintainer native-readiness decision.
+
+The fresh revision-pinned ledger at this merge is 32 items with
+`ready_pending=0`, five unfinished and three held: A07 active, W03 verified,
+and R01/W02/F01 held. The private A07 metadata audit still lacks the
+exactly-two-condition manifest, supplied-input proof, blinded mapping,
+complete 30-cell matrix and isolated protocol-review `PASS`; no screening,
+holdout or final-acceptance credit exists. No A07 worker or review handle is
+live. The next real action is the A07 acceptance coordinator's private
+six-holdout/manifest validation and isolated protocol review; only after a
+redacted `PASS` may a fresh current-master candidate-bound canary run.
+
+The process slice's owned worktree and branch were removed after merged
+reachability. Its topology report passed; strict mode remains nonzero only
+for preserved root/user dirt, unrelated dirty work, stale registrations and
+historical goal branches. Keep those outside ownership. W03 publication, W02
+Cloudflare work and F01 participant outreach remain separate authority-held
+actions.
+
+## Historical post-merge gate-order checkpoint (superseded by PR #256) — 2026-09-10 UTC (`origin/master=7a775371`)
 
 PR #254 merged the independently reviewed process-only A07 gate-order
 correction as `7a7753713319d01c9b3b9966cb4028e4929e8df1` from candidate
@@ -422,7 +452,7 @@ classified historical or user-owned and must not be deleted by pattern.
 
 | Priority / owner | Action | Exit proof / next action |
 | --- | --- | --- |
-| 1 / process coordinator | Keep the current-master pointer and continuation route reconciled across the recovery plan, A07 routing evidence, continuation prompt, task metadata and goal-execution skill | PR #249 merged the continuation-control/source-label correction at `2eda17e`; fetch and rerun the ledger before the next phase |
+| 1 / process coordinator | Keep the current-master pointer and continuation route reconciled across the recovery plan, A07 routing evidence, continuation prompt, task metadata and goal-execution skill | PR #256 merged the bounded R01 raw-log recovery record at `a819c0c`; fetch and rerun the ledger before the next phase |
 | 2 / train coordinator | Apply the current A07 evidence and manifest contract before any allocation; keep private values outside public artifacts | Refresh `origin/master`, rerun the ledger and freeze candidate identity; confirm holdouts; create/validate the private manifest and obtain protocol-review `PASS`; then run the canary against that frozen identity |
 | 3 / A07 implementation owner | Test explicit composed init proposal against public semantics; plain init remains config-only; preserve conflicts and honest runtime permission reporting | Focused negative/positive controls, review, required final-source local/hosted gates; merge slice only if its own goals pass; rerun blinded protocol before A07 completion |
 | 4 / independent R01 investigator | Read latest R01 packet/evidence and rejected diagnostics; determine missing causal observable before spending another platform run | Concrete hypothesis, distinguishing observation and reviewed method amendment; do not repeat prior unchanged diagnostic or invent native readiness |
@@ -498,9 +528,11 @@ VPS nightly/low disk; clean branches with unknown dirt elsewhere; passing slice
 while A07 acceptance fails. Expected decisions follow the execution contract.
 Record actual reviewer decisions and limitations in `recovery-evidence.md`.
 
-Next action: keep the supported runtime goal active and follow the current
+Next action: keep the supported runtime goal active and follow the refreshed
 checkpoint's identity/holdout → manifest validation → isolated protocol review
 `PASS` → fresh current-master canary against the refreshed `origin/master` →
-screening sequence.
+screening sequence. R01's retained raw trace/maintainer decision, W02's
+approval, W03's publication and F01's participant authorization remain
+separate held actions.
 Do not replace or complete an unfinished goal to repair a status mismatch, and
 do not treat this process reconciliation as A07 acceptance.

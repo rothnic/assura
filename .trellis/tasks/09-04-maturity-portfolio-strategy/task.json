@@ -37,7 +37,7 @@
     "research/initialization-packet.md",
     "research/adoption-packet.md"
   ],
-  "notes": "Planning deliverable with 32 execution cards, standalone executor prompt, and a new-session E2E release-train goal. Start B00; use the machine-readable queue and per-card proof. Product code, skill installation, release and posting are not completed. Current task files are the only owned checkout changes. The source snapshot and original evaluated master describe the historical planning baseline, not current branch ancestry; current execution follows the reconciled queue and per-card evidence.",
+  "notes": "Planning deliverable with 32 execution cards, a standalone executor prompt, and the active continuation goal. Use the machine-readable queue and per-card proof; refresh origin/master and the revision-pinned ledger before every phase. Product code, release, deployment, publication and participant outreach remain separately authorized work. The source snapshot and original evaluated master describe the historical planning baseline, not current branch ancestry; current execution follows the reconciled queue, per-card evidence and recovery-plan checkpoint.",
   "meta": {
     "execution_branches": [
     "goal/a05-current-audit",
@@ -81,7 +81,8 @@
       "docs/a07-refresh-before-use",
       "docs/a07-current-checkpoint",
       "docs/a07-postmerge-checkpoint",
-      "docs/r01-trace-recovery"
+      "docs/r01-trace-recovery",
+      "docs/maturity-goal-continuation"
     ]
   }
 }

@@ -13,6 +13,15 @@ After every merge, refresh `origin/master` and reconcile the task pointer,
 ledger and owned topology before selecting or handing off; a clean merge is a
 phase transition, not completion of the runtime goal.
 
+Live routing checkpoint (2026-09-10, refresh before use): `origin/master` is
+`a819c0cd2e8e9fdf14a3641cc76f0119ceb9d2bc` after PR #256. The ledger at that
+revision has 32 items, zero ready pending, five unfinished and three held:
+A07 is active, W03 verified, and R01/W02/F01 held. R01's merged raw-log
+recovery is bounded negative evidence; A07 still requires the private
+six-holdout/two-condition manifest and isolated protocol-review `PASS` before
+any no-credit canary or screening allocation. Route from
+`recovery-plan.md`, not from this snapshot, after a fresh fetch and ledger.
+
 Copy the following prompt into a coding agent that can access the repository and planning task. It is designed for sequential execution with limited context. The queue and solution cards are the source of truth; no knowledge of the earlier conversation is required.
 
 ```text
@@ -33,8 +42,8 @@ and agent-assisted setup. The professional story supports technical product /
 AI systems leadership. Do not expand project intelligence, semantic search,
 agent orchestration, remote plugins or generic maturity scoring.
 
-First task is B00 unless its completion evidence already exists and is current.
-Use latest GitHub master as the source baseline. The original planning review
+Begin by validating B00's completion evidence; if it is current, do not rerun
+or reopen it. Use latest GitHub master as the source baseline. The original planning review
 used `ed093668`, but that SHA is historical and never a permanent pin. The
 original local checkout is older: do not implement on it. Refresh Git/PR,
 release/tag, worktree and owner state, preserve unrelated changes and work in
@@ -124,10 +133,12 @@ completed.
 
 Before a complex PR, request an independent review under project rules. Review
 findings critically and fix valid issues. Commit only your owned, verified changes
-when the repository workflow requires it. Prepare a PR-ready summary; creating a
-remote PR, pushing/merging, tagging, releasing, deploying, changing branch protection,
-sending invitations or publishing posts requires explicit authorization covering
-that action. Local implementation and draft preparation should be finished first.
+when the repository workflow requires it. The active supported runtime goal
+authorizes pushing and merging reviewed, fully gated code/documentation slices;
+without that goal authorization, prepare locally only. Tags/releases, deploys,
+branch-protection changes, invitations and publication still require their
+specific authority. Local implementation and draft preparation should be
+finished before any remote mutation.
 
 Update research/backlog.json and write research/evidence/<ID>.md with:
 state, actual source SHA/worktree, reproduction, changed behavior/files, exact
