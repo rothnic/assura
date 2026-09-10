@@ -57,7 +57,7 @@ file, linked from the full historical progress log.
   candidate identity, then validate the private manifest/protocol disposition;
   only after a redacted `PASS` may a fresh no-credit canary run.
 
-## Orchestration validation case 09 — `A07-CONTINUATION-CASE-09`
+## Orchestration validation case 09
 
 This read-only decision check maps to scenario 9 in
 `assura-orchestration/references/validation-cases.md#scenario-9`. The
