@@ -1,10 +1,10 @@
 # Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md), [progress-history-04.md], [progress-history-05.md](progress-history-05.md), [iterations 4-17](progress-history-06.md), [preserved history](progress-history-03.md), [A01 iterations 15–31](progress-history-08.md), [iterations 5–11](progress-history-09.md), [iteration 114](progress-history-10.md), [iteration 111](progress-history-11.md), [iterations 106–108](progress-history-12.md), [iterations 104 and earlier](progress-history-07.md), [iterations 32–33 and 42](progress-history-13.md), [iterations 44–47](progress-history-14.md))
 
-## Iteration 127 — 2026-09-10 — post-merge source reconciliation
-- PR #269 merged as `b7043ab`; reviewed `0b3bdca` has exact merged-tree equality, and the owned branch/worktree are closed.
-- The 8be candidate packet and protocol `PASS` are historical no-credit evidence after this source advance; the ledger remains 32/0/5/3 with A07 active and R01/W02/F01 held. Next owner/action: refresh b7043ab source, release/tag and topology state, freeze a new candidate, and run only the fresh no-credit canary/manifest rereview route.
-
-## Iteration 126 — 2026-09-10 — historical protocol disposition (superseded by b7043ab)
+## Iteration 128 — 2026-09-10 — current candidate preparation at `9df6ae6`
+- PR #270 reconciled the reviewed process contract at `origin/master=9df6ae6`; the merged tree and owned closure are verified. This preserves Iteration 127's process-only merge evidence and changes no product or acceptance state.
+- The fresh 9df candidate has exact login-shell identity controls and two source-only canaries passing all seven public dimensions with a meaningful negative control; these are no-credit preparation. Its private six-handle binding, creation records, exact toolchain, receipts, two conditions and 30 reserved cells are prepared.
+- The isolated protocol rereview is the live gate. The ledger remains 32/0/5/3 with A07 active and R01/W02/F01 held. Next owner/action: finish the rereview, then refresh source/ledger and freeze the then-current candidate before any separately authorized screening preparation; context level: not exposed.
+## Iteration 126 — 2026-09-10 — historical protocol disposition (superseded by current `9df6ae6`; previously `b7043ab`)
 
 - The primary isolated protocol rereview returned `PASS` against the corrected
   current 8be packet. It verified exact candidate/toolchain/contract identity,

@@ -92,25 +92,33 @@ public evidence.
   three measured comparable runs show queue/execution, retry and coverage
   effects.
 
-## Current train route — b7043ab (refresh required)
+## Current train route — 9df6ae6 (refresh required)
 
-At the post-merge refresh, `origin/master=b7043ab1b402a0dd103de6fe67e307442e67964a`
-is the only current source pointer. PR #269 is merged as a process-only
-documentation slice with exact tree equality to reviewed `0b3bdca`; its worktree
-and branch are closed. The earlier `8be6103` candidate, canaries and isolated
-protocol `PASS` are historical no-credit evidence because the merge advanced the
-source tree. The ledger remains 32 items, no ready-pending card, five unfinished
+At the latest post-merge refresh, `origin/master=9df6ae61e10f2667968866852a56bbcf51b5cb59`
+is the only current source pointer. PR #270 reconciled the reviewed process
+contract as a process-only documentation slice; its merged tree and owned
+closure are verified. The earlier 8be candidate, canaries and isolated
+protocol `PASS` are historical no-credit evidence because the source tree
+advanced. The ledger remains 32 items, no ready-pending card, five unfinished
 cards and three narrow holds. A02 is complete and its plain-init handoff
-incident is historical. A07 remains the active lane: the next owner/action is a
-fresh b7043ab source/ledger rebind, candidate freeze and no-credit canary before
-any separately authorized screening preparation. Do not reuse the 8be packet or
-allocate/credit cells from this process merge. R01 still needs the raw callback
-trace or a specific maintainer native-readiness decision. W02 needs explicit
-Cloudflare approval before any current push that could trigger builds. W03's
-technical change is verified but publication remains separately authorized.
-F01's pilot kit is prepared, while participant selection/invitations remain
-Nick-authorized. These holds do not end independent process, review, topology,
-or authorized integration work.
+incident is historical.
+
+A07 is the active lane. A fresh 9df candidate was built from a clean checkout;
+login-shell identity controls and two source-only canaries pass the full public
+contract, but they create no screening or acceptance credit. Its private
+six-handle binding, per-handle creation records, exact toolchain, supplied-input
+receipts, two-condition manifest and 30 reserved cells are prepared. The exact
+next action is to finish the isolated protocol rereview; on `PASS`, refresh the
+source and ledger again, freeze the then-current candidate, and route only the
+separately authorized no-credit screening preparation. Do not reuse an older
+packet or allocate/credit cells from this process checkpoint.
+
+R01 still needs the raw callback trace or a specific maintainer native-readiness
+decision. W02 needs explicit Cloudflare approval before any current push that
+could trigger builds. W03's technical change is verified but publication remains
+separately authorized. F01's pilot kit is prepared, while participant selection
+and invitations remain Nick-authorized. These holds do not end independent
+process, review, topology, or authorized integration work.
 
 ## Checkpoint record
 

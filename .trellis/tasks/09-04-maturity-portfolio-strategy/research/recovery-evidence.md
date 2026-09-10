@@ -6,7 +6,7 @@ Older tail note: [recovery history 01](recovery-history-01.md) and
 The historical proof below is retained; the current continuation route and
 post-merge source reconciliation are maintained in [recovery-plan.md](recovery-plan.md)
 and the newest progress entry before these historical notes.
-Process iteration: 127 (post-merge source reconciliation recorded; current protocol PASS is historical and refresh is queued;
+Process iteration: 128 (origin/master=9df6ae6 current candidate freeze, identity controls and two full-contract no-credit canaries pass; private binding/manifest prepared; isolated protocol rereview pending; iteration 127 recorded post-merge source reconciliation;
 iteration 123 was the corrected continuation goal and current-source rebind;
 iteration 122 was the merged A07 process route and current-candidate canary;
 iteration 121 was the accepted stale-route finding delta; iteration 120 was the
@@ -40,7 +40,7 @@ the proof-record delta was iteration 91, and post-merge reconciliation was
 iteration 92).
 Context level: not exposed. The before/after phase record is this evidence file, linked from the full historical progress log.
 
-## Historical 8be candidate rebind and protocol correction — 2026-09-10 UTC (`origin/master=8be6103`, superseded by `b7043ab`)
+## Historical 8be candidate rebind and protocol correction — 2026-09-10 UTC (`origin/master=8be6103`, superseded by current `9df6ae6`; previously `b7043ab`)
 
 - Owner/phase: process coordinator `/root` / `candidate-bound-canary`. PR #268
   is merged as a process-only documentation slice; A02 is complete and its
