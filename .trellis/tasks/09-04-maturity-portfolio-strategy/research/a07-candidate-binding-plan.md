@@ -105,7 +105,7 @@ The canary must also prove that the candidate exposes the expected merged
 `init --agent <host> --activate` surface. The historical `77b41fe` and
 `9b410e9` canaries passed those identity, surface, context, and full-contract
 checks for their own snapshots; they remain no-credit controls. The fresh
-9df6ae6 canaries repeat the same checks against the current candidate. The
+69246d3 canaries repeat the same checks against the current candidate. The
 historical `f1595fc`, `922d7f0` and `af73d8a` runs remain labeled below for
 provenance; none is a screening allocation. An explicit-route control may
 verify the composed implementation, but it is calibration evidence and never
@@ -128,7 +128,7 @@ counts as a blinded run.
   evidence and complete matrix, and obtain an isolated protocol-review `PASS`;
   do not infer or rename conditions in public evidence. Then refresh the
   current `origin/master` source pointer and ledger (latest as-of checkpoint:
-  `9df6ae6`, refresh before use) and run a fresh candidate-bound canary
+  `69246d3`, refresh before use) and run a fresh candidate-bound canary
   against that frozen identity; all embedded checkpoints remain historical.
   launch one fresh source-only fixture and child under a sibling-free
   disposable parent per run. If identity, context, or contract checks fail,
