@@ -51,6 +51,15 @@ file, linked from the full historical progress log.
   readiness decision, W02's Cloudflare publication approval, F01's participant
   authorization, and W03's publication remain separate authority boundaries;
   no deployment, release, publication or invitation action was taken.
+- Reconciliation candidate `708a6c30adb906a25767516d79980500e0b25c4f` passed
+  the workflow (`Ready: yes`), source JSON (`success=true`), evidence,
+  target-state, format, diff, JSON, Assura and CI-scope gates. CI scope was
+  `evidence=true`, `changed_count=2`, with product/Rust/release/performance/
+  rustdoc/website/security surfaces `false`. Its first docs attempt failed
+  only because the fresh checkout had no `website/node_modules` (`astro` was
+  unavailable); frozen installation added 355 cached packages and the
+  identical docs retry passed with 48 pages. The failed precondition is
+  retained and is not passing evidence.
 
 ## Ledger-routing helper — 2026-09-10
 
