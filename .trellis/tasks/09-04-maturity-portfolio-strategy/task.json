@@ -83,7 +83,8 @@
       "docs/a07-postmerge-checkpoint",
       "docs/r01-trace-recovery",
       "docs/maturity-goal-continuation",
-      "docs/context-routing-audit"
+      "docs/context-routing-audit",
+      "docs/a07-current-route"
     ]
   }
 }
