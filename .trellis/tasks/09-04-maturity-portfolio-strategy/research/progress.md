@@ -32,6 +32,9 @@
   separate owner/authority decisions. Context level: not exposed. The existing
   concise AGENTS router and layered goal skill were audited; only the skill's
   active-goal/no-ready routing and these current-state task artifacts changed.
+- Initial candidate `9a5d7a8` received independent process-review `PASS` and
+  PR #244's applicable hosted checks passed; the final evidence delta requires
+  scoped rereview before merge.
 
 ## Iteration 88 — 2026-09-09 — merged privacy correction and screening-manifest routing
 

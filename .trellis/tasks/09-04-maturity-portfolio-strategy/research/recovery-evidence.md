@@ -59,6 +59,14 @@ file, linked from the full historical progress log.
   unknown file, external dirty worktree, stale registrations and historical
   unmerged goal branches are outside this slice's ownership; no stash, reset,
   prune, deletion or ownership reassignment occurred.
+- Review and hosted proof for the initial committed candidate: independent
+  process review of `9a5d7a84b0cd7d93664782ef00f365e225b61d7f` against
+  `80d2d9a7fea55c1413f7e50f0873306049a65a48` returned `PASS` with no findings.
+  PR #244's exact head was `CLEAN/MERGEABLE`; Documentation Scope, CI Scope,
+  Security Scope, Evidence Gates and GitGuardian passed. Rust/product,
+  performance, release, install and website jobs were scope-skipped and not
+  counted as passes. The evidence update below is a documentation delta and
+  requires the same scoped rereview and exact-head gates before merge.
 - Decision/next action: keep the existing runtime goal active; do not create a
   duplicate or stop at the empty ready set. The A07 acceptance coordinator
   must privately name exactly two product-input conditions and six holdouts,
