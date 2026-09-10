@@ -4,7 +4,8 @@ Date: 2026-09-10. Scope: process artifacts, agent instructions and validation
 routing only. Product acceptance is unchanged; no card is promoted by this file.
 The historical proof below is retained; the current continuation route and
 source reconciliation are recorded before the historical next-phase notes.
-Process iteration: 111 (candidate identity freeze after the goal-contract
+Process iteration: 112 (post-merge reconciliation for PR #258; iteration 111
+was the candidate identity freeze after the goal-contract
 correction; iteration 110 was the goal-contract correction after the R01
 raw-log recovery; iteration 109 is the current-master R01 recovery evidence;
 iteration 106 was the post-merge checkpoint for PR #251; the R01
@@ -27,7 +28,32 @@ iteration 92).
 Context level: not exposed. The before/after phase record is this evidence
 file, linked from the full historical progress log.
 
-## Live candidate-freeze checkpoint — 2026-09-10 UTC (`origin/master=c34f9178`)
+## Live post-merge continuation checkpoint — 2026-09-10 UTC (`origin/master=8c198dcb`)
+
+- Owner/phase: process coordinator / `post-merge-reconcile`. PR #258 merged
+  reviewed candidate `dba4e33df4a3bbdb1d52a0846aa0c9808268cbfc` (based on
+  `c34f917866e45cc122ec07412fa0c630d460f663`) as
+  `8c198dcb4c94095e7db1b017908eaadb813cb9e7`; the merged tree equals the
+  reviewed candidate. Applicable Documentation, CI, Evidence Gates, Security
+  Scope and GitGuardian checks passed; scope-skipped product/Rust/performance/
+  release/installer/website jobs remain non-applicable.
+- The fresh revision-pinned ledger reports 32 items, `ready_pending=0`, five
+  unfinished and three held. A07 remains active, W03 verified, and R01/W02/F01
+  remain separate held actions. Independent process validation rejected a
+  whole-goal stop; the next action is A07's private exactly-two-condition
+  manifest and isolated protocol review `PASS`.
+- The owned `docs/a07-postmerge-checkpoint` checkout, branch and remote ref
+  were removed after clean status, `git diff --check`, merged-tree equality and
+  reachability proofs. Topology `--report` exited 0; `--strict` exited 1 only
+  for preserved root/user dirt, one unrelated dirty worktree, stale/prunable
+  registrations, one unreadable registration and historical unmerged goal
+  branches. No unrelated cleanup was performed.
+- This phase adds no screening, holdout or acceptance credit. The next
+  continuation must fetch and rerun the ledger before binding any source or
+  candidate identity, then validate the private manifest/protocol disposition;
+  only after a redacted `PASS` may a fresh no-credit canary run.
+
+## Historical candidate-freeze checkpoint — 2026-09-10 UTC (`origin/master=c34f9178`, superseded by `8c198dcb`)
 
 - Owner/phase: A07 acceptance coordinator / `candidate-freeze`. The refreshed
   source is `c34f917866e45cc122ec07412fa0c630d460f663`; the revision-pinned

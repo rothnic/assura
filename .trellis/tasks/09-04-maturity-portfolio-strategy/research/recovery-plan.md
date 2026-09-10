@@ -1,10 +1,13 @@
 # Execution recovery plan
 
-Status: active continuation route, 2026-09-10 UTC. The latest read-only
-refresh resolved `origin/master=c34f917866e45cc122ec07412fa0c630d460f663`
-after PR #257; this pointer is an as-of checkpoint and must be refreshed before
-use. The earlier `a819c0c` checkpoint is historical. The latest
-diagnostic is the bounded R01 raw-log recovery recorded at candidate base
+Status: active continuation route, 2026-09-10 UTC. The latest post-merge
+refresh resolved `origin/master=8c198dcb4c94095e7db1b017908eaadb813cb9e7`
+after PR #258; this pointer is an as-of checkpoint and must be refreshed before
+use. PR #258 merged the reviewed A07 candidate-freeze documentation/process
+correction from `dba4e33df4a3bbdb1d52a0846aa0c9808268cbfc`, based on
+`c34f917866e45cc122ec07412fa0c630d460f663`; its merged tree matches and it
+changed no product or acceptance state. The earlier `c34f9178` candidate
+checkpoint is historical. The latest diagnostic is the bounded R01 raw-log recovery recorded at candidate base
 `c1202af` and merged as process evidence; it does not close R01 or authorize a
 retry. This is a plan and audit, not evidence that product cards passed. The
 supported runtime goal remains the coordinator; process corrections are
@@ -26,7 +29,32 @@ proof and full evaluator dimensions remain mandatory. CI, generated files and
 partial checks cannot substitute. R06/publication/pilots retain their separate
 authority and observed-outcome requirements.
 
-## Live candidate-freeze continuation checkpoint — 2026-09-10 UTC (`c34f9178`)
+## Live post-merge continuation checkpoint — 2026-09-10 UTC (`8c198dcb`)
+
+- Owner/phase: process coordinator / `post-merge-reconcile`. PR #258 merged
+  the independently reviewed process candidate `dba4e33` (based on `c34f917`)
+  as `8c198dc`; merged-tree equality passed. The applicable Documentation,
+  CI, Evidence Gates, Security Scope and GitGuardian checks passed. Product,
+  Rust, performance, release, installer and website jobs were scope-skipped
+  and remain non-applicable, not acceptance proof.
+- The revision-pinned ledger at `origin/master=8c198dc` still has 32 items,
+  zero ready pending, five unfinished and three held: A07 active, W03
+  verified, and R01/W02/F01 separately held. The independent process review
+  rejected a whole-goal stop. A07's next owned action is the private
+  exactly-two-condition manifest, supplied-input receipt, blinded mapping,
+  complete 30-cell matrix and isolated protocol-review `PASS`.
+- The candidate-freeze checkout, branch and remote ref were removed after
+  clean-status, `git diff --check`, merged-tree and reachability proofs. The
+  topology report passed; strict mode remains nonzero only for preserved
+  root/user dirt, the unrelated dirty worktree, stale/prunable and unreadable
+  registrations, and historical unmerged goal branches. No broad prune or
+  unrelated cleanup was performed.
+- This reconciliation creates no screening, holdout or acceptance credit. On
+  the next continuation, refresh source and ledger again, then have the A07
+  acceptance coordinator validate the private protocol. Only after a redacted
+  `PASS` may a newly bound identity and no-credit canary run.
+
+## Historical candidate-freeze checkpoint — 2026-09-10 UTC (`c34f9178`, superseded by `8c198dcb`)
 
 - Owner/phase: A07 acceptance coordinator / `candidate-freeze`. The clean
   current-master checkout resolved the ledger to 32 items, zero ready pending,

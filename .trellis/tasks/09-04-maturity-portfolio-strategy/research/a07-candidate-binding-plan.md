@@ -2,9 +2,11 @@
 
 Status: active. Owner: this thread's A07 acceptance coordinator. This plan
 does not embed a permanent routing baseline: fetch `origin/master` and rerun
-the revision-pinned ledger before every canary. The 2026-09-10 continuation
-refresh resolved `origin/master=c34f917866e45cc122ec07412fa0c630d460f663`
-(PR #257). A clean detached checkout built the candidate with Rust/Cargo
+the revision-pinned ledger before every canary. The 2026-09-10 post-merge
+refresh resolved `origin/master=8c198dcb4c94095e7db1b017908eaadb813cb9e7`
+(PR #258), whose reviewed process candidate was based on
+`c34f917866e45cc122ec07412fa0c630d460f663`. A clean detached checkout built
+the parent candidate with Rust/Cargo
 `1.94.1`; `assura 0.4.0` and binary SHA-256
 `95c93052bd1993566d9f8209bdba5625c2b39a19287ed6358d710015d2ac59ff` matched
 inside a `zsh -lic` initializer-like environment. This identity observation

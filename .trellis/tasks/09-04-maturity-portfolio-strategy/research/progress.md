@@ -1,5 +1,8 @@
 # Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md), [progress-history-04.md], [progress-history-05.md](progress-history-05.md), [iterations 4-17](progress-history-06.md), [preserved history](progress-history-03.md), [A01 iterations 15–31](progress-history-08.md), [iterations 104 and earlier](progress-history-07.md))
 
+## Iteration 112 — 2026-09-10 — post-merge reconciliation for PR #258
+
+- Owner/phase: process coordinator / `post-merge-reconcile`. PR [#258](https://github.com/rothnic/assura/pull/258) merged reviewed `dba4e33` (based on `c34f917`) as `8c198dcb`; tree equality, applicable Documentation/CI/Evidence/Security/GitGuardian checks and independent review passed with no product or acceptance-state change. The fresh ledger remains 32 items, zero ready pending, five unfinished and three held (A07 active, W03 verified, R01/W02/F01 held); process validation rejected stopping the goal. The clean owned checkout/branch/ref was removed after diff, tree and reachability proofs; report exited 0 and strict exited 1 only for preserved external/user and historical topology exceptions. Context is not exposed; next is refresh source/ledger, validate A07's private exactly-two-condition manifest and isolated protocol `PASS`, then a fresh no-credit canary with no screening credit implied.
 ## Iteration 111 — 2026-09-10 — current-master candidate identity freeze
 
 - Owner/phase: A07 acceptance coordinator / `candidate-freeze`; a clean

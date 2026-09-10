@@ -20,16 +20,19 @@ reject candidates that fail the prescribed comparison, and stop invalid
 diagnostics instead of repeating runs until green. Root owns review judgment
 and merge approval; method changes never imply relaxed acceptance thresholds.
 
-## Live continuation checkpoint (refresh required) — 2026-09-10 UTC
+## Live continuation checkpoint (refresh required) — 2026-09-10 UTC (`8c198dcb`)
 
 The latest read-only refresh resolved `origin/master` to
-`c34f917866e45cc122ec07412fa0c630d460f663` after PR #257. The revision-pinned
-ledger has 32 items, `ready_pending=0`, five unfinished and three held: A07 is
-active, W03 is verified, and R01/W02/F01 retain separate holds. A clean local
-candidate build with Rust/Cargo `1.94.1` reports `assura 0.4.0` and SHA-256
-`95c93052bd1993566d9f8209bdba5625c2b39a19287ed6358d710015d2ac59ff`; the
-same `command -v`, version and hash matched in a minimal `zsh -lic`
-environment. This is no-credit preparation, not a canary or acceptance result.
+`8c198dcb4c94095e7db1b017908eaadb813cb9e7` after PR #258, which merged the
+reviewed process candidate `dba4e33df4a3bbdb1d52a0846aa0c9808268cbfc` based on
+`c34f917866e45cc122ec07412fa0c630d460f663`. The merged tree equals the
+reviewed candidate and changes no product or acceptance state. The
+revision-pinned ledger still has 32 items, `ready_pending=0`, five unfinished
+and three held: A07 is active, W03 is verified, and R01/W02/F01 retain separate
+holds. Applicable Documentation, CI, Evidence Gates, Security Scope and
+GitGuardian checks passed; scope-skipped product/Rust/performance/release jobs
+remain non-applicable rather than passing proof. The clean candidate build and
+identity below are historical no-credit preparation, not a current canary.
 
 The six valid unseen holdouts remain frozen, while the private exactly-two-
 condition manifest, supplied-input proof, blinded mapping, complete 30-cell
@@ -45,7 +48,7 @@ available memory, 94% root-disk use (about 20 GiB free), nightly Rust 1.95 and
 no Bun; the documented `vps-dev` alias is unresolved. Remote execution cannot
 replace exact-toolchain local/hosted proof.
 
-## Historical continuation checkpoint (superseded by current c34f9178) — 2026-09-10 UTC
+## Historical candidate-freeze checkpoint (superseded by current 8c198dcb) — 2026-09-10 UTC (`c34f9178`)
 
 The latest refresh resolved `origin/master` to the full merge SHA
 `a819c0cd2e8e9fdf14a3641cc76f0119ceb9d2bc` (PR #256). Fetch again before
