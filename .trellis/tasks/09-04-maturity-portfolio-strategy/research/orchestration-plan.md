@@ -92,28 +92,31 @@ public evidence.
   three measured comparable runs show queue/execution, retry and coverage
   effects.
 
-## Current train route — ebedb3e (refresh required)
+## Current train route — 9ad926a (refresh required)
 
-At the latest post-merge refresh, `origin/master=ebedb3ea434eca6ddb05d2bd63d0693bbb7d948c`
-is the only current source pointer. PR #272 reconciled the current candidate
+At the latest post-merge refresh, `origin/master=9ad926aeb6c85ebb19985a94813e96bebe519e7c`
+is the only current source pointer. PR #273 reconciled the current candidate
 preparation route as a process-only documentation slice; its merged tree and
-owned closure are verified. The earlier 9df and 692 candidates, canaries,
-bindings and isolated protocol `PASS` records are historical no-credit metadata
-because the source and public contract tree advanced. The ledger remains 32
+owned closure are verified. The earlier ebed, 9df and 692 candidates,
+canaries, bindings and isolated protocol `PASS` records are historical
+no-credit metadata because the source tree advanced. The ledger remains 32
 items, no ready-pending card, five unfinished cards and three narrow holds.
 A02 is complete and its plain-init handoff incident is historical.
 
-A07 is the active lane. A fresh ebedb3e candidate was built from a clean
+A07 is the active lane. A fresh 9ad926a candidate was built from a clean
 checkout; login-shell identity controls and two source-only canaries pass the
 full public contract, but they create no screening or acceptance credit. The
-private six-handle binding, per-handle creation records, exact toolchain,
-stable supplied-input receipts, two-condition manifest and 30 reserved cells
-passed isolated protocol rereview after six metadata-only provenance/linkage
-corrections. The exact next action is to refresh source, release/tag, PR/CI and
-topology state, rerun the ledger, re-freeze the current candidate and run the
-next fresh no-credit canary before separately authorized screening preparation.
-Do not reuse an older packet or allocate/credit cells from this process
-checkpoint.
+scoped protocol rereview returned `PASS` for the no-credit canary identity gate
+after correcting one concrete evaluator/public-contract identity gap while
+retaining the separate private evaluator contract. The
+prior ebed six-handle binding, supplied-input receipts, two-condition manifest
+and 30 reserved cells are historical after this source advance and must be
+rebound to 9ad926a before allocation. The exact next action is to refresh
+source, release/tag, PR/CI and topology state, rerun the ledger, re-freeze the
+current candidate, run a fresh no-credit canary, then rebind and independently
+review the private holdout/manifest before separately authorized screening
+preparation. Do not reuse an older packet or allocate/credit cells from this
+process checkpoint.
 
 R01 still needs the raw callback trace or a specific maintainer native-readiness
 decision. W02 needs explicit Cloudflare approval before any current push that

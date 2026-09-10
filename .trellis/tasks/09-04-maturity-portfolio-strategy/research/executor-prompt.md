@@ -13,24 +13,28 @@ After every merge, refresh `origin/master` and reconcile the task pointer,
 ledger and owned topology before selecting or handing off; a clean merge is a
 phase transition, not completion of the runtime goal.
 
-As-of routing checkpoint (2026-09-10, refresh before use): PR #272 reconciled
+As-of routing checkpoint (2026-09-10, refresh before use): PR #273 reconciled
 the current candidate-preparation route at
-`ebedb3ea434eca6ddb05d2bd63d0693bbb7d948c`; merged-tree equality, independent
+`9ad926aeb6c85ebb19985a94813e96bebe519e7c`; merged-tree equality, independent
 review and the applicable Documentation, CI, Evidence Gates, Security Scope and
 GitGuardian checks passed. Scope-skipped product/Rust/performance/release jobs
-remain non-applicable. The 9df and 692 candidate freezes, canaries,
+remain non-applicable. The ebed, 9df and 692 candidate freezes, canaries,
 six-handle bindings and isolated protocol `PASS` records are historical
-no-credit metadata after this source/contract advance. A02 is complete; its
-old plain-init finding is historical. The ledger at ebedb3e has 32 items, zero
+no-credit metadata after this source advance. A02 is complete; its old
+plain-init finding is historical. The ledger at 9ad926a has 32 items, zero
 ready pending, five unfinished and three held: A07 active, W03 verified, and
-R01/W02/F01 held. A fresh ebedb3e A07 freeze, exact identity controls and two
-full-contract canaries are current no-credit preparation; the corrected packet
-passed its isolated protocol rereview after six metadata-only provenance/linkage
-corrections. R01's merged raw-log recovery is bounded negative evidence. On
-every resume, refresh source, release/tag, PR/CI and topology state, rerun the
-ledger, re-freeze the current candidate, and run a fresh no-credit canary before
-any separately authorized screening allocation. Preserve residual fixture,
-launcher, child-isolation and evaluator limitations. Route from
+R01/W02/F01 held. A fresh 9ad926a A07 freeze, exact identity controls and two
+full-contract canaries are current no-credit preparation. The scoped protocol
+rereview returned `PASS` for the no-credit canary identity gate after correcting
+one concrete evaluator/public-contract identity gap while preserving the
+separate private evaluator contract. The ebed six-handle and
+manifest packet is historical after this source advance and must be rebound to
+the current candidate before allocation. R01's merged raw-log recovery remains
+bounded negative evidence. On every resume, refresh source, release/tag, PR/CI
+and topology state, rerun the ledger, re-freeze the current candidate, run a
+fresh no-credit canary, and rebind/re-review the private holdout and manifest
+before any separately authorized screening allocation. Preserve residual
+fixture, launcher, child-isolation and evaluator limitations. Route from
 `recovery-plan.md`, not this snapshot, after a fresh fetch and ledger.
 
 The historical parent-`c34f917` candidate-freeze observation used a clean

@@ -107,12 +107,17 @@ On each resume, the A07 coordinator must first refresh `origin/master`, rerun
 the revision-pinned ledger, and freeze the candidate identity. The 9b, 8be, 9df
 and 692 manifests, canaries and protocol `PASS` records are historical
 no-credit evidence after the later process merges and must not route current
-work. The current as-of ebedb3e candidate has fresh identity controls and two
+work. The current as-of 9ad926a candidate has fresh identity controls and two
 full-contract source-only canaries with a meaningful negative control; these are
-no-credit preparation. Its six-handle binding, supplied-input receipts,
-two-condition manifest and 30 reserved cells passed the isolated protocol
-rereview after six metadata-only provenance/linkage corrections. On each next
-resume, refresh source/ledger, release/tag, PR/CI and topology state, re-freeze
-the current candidate, then run a fresh no-credit canary before the separately
-authorized screening gate. Prior canaries, process PRs and metadata-only
-evidence never satisfy screening or acceptance gates.
+no-credit preparation. The scoped protocol rereview returned `PASS` for the
+no-credit canary identity gate after correcting the canary's dual-contract
+identity binding while keeping the private evaluator contract separate from the
+frozen public contract. The prior ebed six-handle binding,
+supplied-input receipts, two-condition manifest and 30 reserved cells are
+historical after this source advance and must be rebound to the current
+candidate before allocation. On each next resume, refresh source/ledger,
+release/tag, PR/CI and topology state, re-freeze the current candidate, run a
+fresh no-credit canary, then obtain isolated protocol `PASS` for the rebound
+holdout/manifest before the separately authorized screening gate. Prior
+canaries, process PRs and metadata-only evidence never satisfy screening or
+acceptance gates.
