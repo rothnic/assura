@@ -56,6 +56,11 @@ results separate; the evaluator is invoked only after the initializer exits.
 - Run the evaluator afterward with the same absolute candidate path. Store
   private raw results separately from redacted evidence; public records contain
   aggregates and method limitations, never hidden oracle contents.
+- Before invoking the evaluator, read its declared dimension set (`--help` or
+  the evaluator source) and pass exactly that set. The `policy` dimension owns
+  the trusted negative probe; an invented dimension token is an invocation
+  failure, must be retained as no-credit evidence, and must not be removed by
+  weakening the contract.
 - Any private-evaluator exposure, forbidden-path read, prompt contamination,
   sibling-artifact or out-of-scope parent discovery, global-binary fallback,
   identity mismatch or missing identity observation invalidates the run.

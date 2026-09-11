@@ -1,8 +1,8 @@
 # Execution recovery plan
 
-Status: active continuation route, 2026-09-11 UTC. The latest post-merge
-refresh resolves the current source to
-`origin/master=c5b2822a664e3f04924cd0096fc000a5d132777b`; this pointer is an
+Status: active continuation route, 2026-09-11 UTC. The latest refresh resolves
+the current source to
+`origin/master=5b03c7f41df1fe8ecf9ae5168eaa11f550b8721f`; this pointer is an
 as-of checkpoint and must be refreshed before use. PR #278 merged the reviewed
 R01 retained-artifact inventory as a process/evidence-only slice. Its missing
 raw watch/callback trace remains unresolved, so R01 is still held. The prior
@@ -17,6 +17,15 @@ retry. This is a plan and audit, not evidence that product cards passed. The
 supported runtime goal remains the coordinator; process corrections are merged
 separately from product card slices. Product changes stay in their separately
 owned card slices.
+
+The current A07 preparation owns the next action: refresh source/release/tag,
+PR/CI, topology and the revision-pinned ledger after the isolated protocol
+`PASS` for the private 5b03c7f candidate packet. If a fresh audit finds a
+concrete mismatch, it must name its contract, location, failure scenario and
+smallest verification before a private repair and scoped rereview. A protocol
+`PASS` only permits asking for the separately authorized screening decision;
+no cell allocation, acceptance, release, deployment, publication, invitation
+or protection change is implied.
 
 Use the compact [maturity train orchestration plan](orchestration-plan.md) for
 the reset, layered-context, gate-placement, review, integration and closure
@@ -38,7 +47,36 @@ proof and full evaluator dimensions remain mandatory. CI, generated files and
 partial checks cannot substitute. R06/publication/pilots retain their separate
 authority and observed-outcome requirements.
 
-## Current post-merge checkpoint — 2026-09-11 UTC (`origin/master=c5b2822`)
+## Current candidate-bound preparation — 2026-09-11 UTC (`origin/master=5b03c7f`)
+
+- The clean candidate worktree `/private/tmp/assura-a07-current-5b03c7f` was
+  built once from the refreshed current master with the exact Rust/Cargo
+  `1.94.1` toolchain. The private candidate freeze and login-shell identity
+  record match the source SHA, Git tree SHA, absolute binary, version and
+  shim. A wrong-path control returned exit `97` and is retained as negative
+  identity evidence.
+- Two fresh source-only fixtures under separate sibling-free parents completed
+  composed Codex initialization for the two private values of one input flag.
+  Both full evaluator runs passed all seven dimensions with zero critical
+  failures, expected negative policy rejection and a collected native test.
+  A malformed invocation with an unsupported dimension token was retained as
+  failed no-credit evidence; runner isolation now requires checking the
+  evaluator's declared dimensions before invocation.
+- The private six-handle construction, current binding and second-readonly
+  confirmation are rebound to this candidate; immutable creation records,
+  exact toolchain and raw-hook exclusion remain intact. The manifest has two
+  conditions and 30 reserved cells, all no-credit. Its isolated protocol
+  review returned `PASS` with no mandatory findings; screening authority
+  remains false.
+- Next owner/action: `/root` refreshes source/release/tag, PR/CI, topology and
+  the revision-pinned ledger, then proves the refreshed revision still matches
+  this packet. On mismatch, record contract/location/failure/smallest
+  verification, freeze a new candidate, rerun the no-credit canary, rebind the
+  holdout/manifest and obtain an isolated protocol `PASS` before screening.
+  Keep R01, W02, W03 publication, F01, release, deployment and invitation holds
+  unchanged.
+
+## Historical post-merge checkpoint — 2026-09-11 UTC (`origin/master=c5b2822`)
 
 - PR #278 merged reviewed head `983acecaeada566dfa904c821370fc4c93c3da6d`
   as `c5b2822a664e3f04924cd0096fc000a5d132777b`. Exact-head Documentation

@@ -92,7 +92,42 @@ public evidence.
   three measured comparable runs show queue/execution, retry and coverage
   effects.
 
-## Current post-merge route — c5b2822
+## Current candidate-bound route — 5b03c7f (protocol PASS; no-credit)
+
+The latest reset fetched `origin/master=5b03c7f41df1fe8ecf9ae5168eaa11f550b8721f`
+and the revision-pinned ledger remains 32 items, `ready_pending=0`, five
+unfinished and three held: A07 active, W03 verified, R01/W02/F01 held. The
+root's unknown user-owned dirty path and foreign/stale topology exceptions were
+preserved; all candidate work is isolated in
+`/private/tmp/assura-a07-current-5b03c7f` and the documentation owner branch
+`docs/a07-current-5b03c7f`.
+
+The current candidate was built once with the exact Rust/Cargo `1.94.1`
+toolchain. Its private freeze and login-shell identity control match the source
+SHA, Git tree SHA, absolute binary, version and shim. Two fresh source-only
+fixtures under sibling-free parents completed the composed Codex initialization
+route for the two private values of one product-input flag. Both full evaluator
+runs passed all seven dimensions with zero critical failures, the expected
+negative policy probe and a collected native test. A wrong-path control returned
+exit `97`; an unsupported evaluator-dimension attempt was retained as failed
+no-credit evidence and corrected by checking the evaluator's declared set.
+
+The six-handle holdout construction, current binding and second-readonly
+confirmation are rebound to this candidate with immutable creation records,
+exact toolchain comparison and explicit raw-hook exclusion. The manifest has
+exactly two conditions, one-variable difference, a private mapping and 30
+reserved cells; all allocation and credit flags are false. Independent
+protocol review returned `PASS` with no mandatory findings; its metadata-only
+scope and residual limit (no independent public-contract byte rehash) are
+recorded in the private review artifact. The coordinator's exact next action
+is to refresh source/release/tag/PR/CI/topology and the revision-pinned ledger
+again, then prove the refreshed revision still matches this packet. On
+mismatch, record contract/location/failure/smallest verification, freeze a new
+candidate, rerun the no-credit canary, rebind the holdout/manifest and obtain an
+isolated protocol `PASS` before separately authorized screening. Do not
+allocate cells or claim A07 acceptance from this preparation.
+
+## Historical post-merge route — c5b2822
 
 The refreshed source is `origin/master=c5b2822a664e3f04924cd0096fc000a5d132777b`,
 the merge of PR #278's reviewed R01 retained-artifact inventory. Its exact-head
