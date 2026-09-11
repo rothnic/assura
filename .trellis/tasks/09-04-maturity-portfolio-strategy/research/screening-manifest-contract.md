@@ -107,20 +107,13 @@ On each resume, the A07 coordinator must first refresh `origin/master`, rerun
 the revision-pinned ledger, and freeze the candidate identity. The 9b, 8be, 9df
 and 692 manifests, canaries and protocol `PASS` records are historical
 no-credit evidence after the later process merges and must not route current
-work. The current as-of 129a249 candidate has fresh identity controls and two
-full-contract source-only canaries with a meaningful negative control; these are
-no-credit preparation. The scoped protocol rereview returned `PASS` for the
-no-credit canary identity gate after correcting the canary's dual-contract
-identity binding while keeping the private evaluator contract separate from the
-frozen public contract. The prior ebed six-handle binding,
-supplied-input receipts, two-condition manifest and 30 reserved cells are
-historical after this source advance. The current binding and manifest passed
-isolated protocol rereview after correcting `A07-129-HOLDOUT-PROVENANCE-001`;
-all six handles now resolve to current-candidate construction metadata. On each
-next resume, refresh source/ledger, release/tag, PR/CI and topology state,
-rerun the ledger, re-freeze the current candidate, run a fresh no-credit
-canary, verify/rebind the current six-handle holdout and exactly-two-condition
-manifest, and obtain isolated protocol `PASS` before the separately
-authorized screening gate. Prior
+work. The current as-of af005a7 source has no candidate freeze yet. The 129a249
+candidate controls, canaries, six-handle binding and exactly-two-condition
+manifest passed no-credit protocol checks but are historical after PR #275 and
+must not route current work. On each next resume, refresh source/ledger,
+release/tag, PR/CI and topology state, rerun the ledger, re-freeze the current
+candidate, run a fresh no-credit canary, verify/rebind the current six-handle
+holdout and exactly-two-condition manifest, and obtain isolated protocol `PASS`
+before the separately authorized screening gate. Prior
 canaries, process PRs and metadata-only evidence never satisfy screening or
 acceptance gates.

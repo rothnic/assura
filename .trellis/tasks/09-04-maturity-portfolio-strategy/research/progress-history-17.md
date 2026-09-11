@@ -9,3 +9,9 @@
 - PR #273 merged the reviewed process/documentation reconciliation at `origin/master=9ad926a`; the merged tree and owned closure were verified. This was process-only and changed no product or acceptance state.
 - The fresh 9ad926a candidate identity and two source-only canaries passed all seven public dimensions with a meaningful negative control; they were no-credit preparation. A scoped protocol rereview corrected the evaluator/public-contract identity binding while preserving the separate private evaluator contract identity. This packet is historical after 129a249 advanced master.
 - The ledger remained 32/0/5/3 with A07 active and R01/W02/F01 held. The next action was refresh, re-freeze, run a fresh no-credit canary, then rebind and rereview the private holdout/manifest; context level: not exposed.
+
+## Iteration 131 — 2026-09-10 — 129a249 provenance correction and resume-route fixes
+
+- PR #274 merged the reviewed process/documentation reconciliation at `origin/master=129a249`; the merged tree and owned closure were verified. This was process-only and changed no product or acceptance state.
+- The fresh 129a249 candidate identity, two source-only canaries, six-handle binding and exactly-two-condition manifest passed no-credit protocol checks. Private finding `A07-129-HOLDOUT-PROVENANCE-001` was corrected; independent process review found and corrected `A07-RESUME-ROUTE-001`, `-002` and `-003`. This packet became historical after PR #275 advanced master.
+- The ledger remained 32/0/5/3 with A07 active and R01/W02/F01 held. The next action was a full refresh of source, release/tag, PR/CI and topology, then ledger, re-freeze, canary, current packet rebind and isolated protocol PASS before separately authorized screening; context level: not exposed.
