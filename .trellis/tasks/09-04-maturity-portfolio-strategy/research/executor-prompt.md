@@ -17,7 +17,27 @@ ledger and owned topology before selecting or handing off; a clean merge is a
 phase transition, not completion of the runtime goal.
 
 Current-source reconciliation (2026-09-11, current at this reset; refresh
-before use): `origin/master=0dff804421c7563b08773eb75d9327fd0194db56`; PR #300
+before use): `origin/master=24a1966a55eb3ec184190c565f2715ee5daa7801`; PR #301
+merged the reviewed current-source reconciliation from head
+`428c26aee89b449e5c57ed1589d6a9b8d083c3bc`. Its applicable Documentation, CI
+Scope, Security Scope, Evidence Gates and GitGuardian checks passed, the
+reviewed head tree equals the merge tree, and the configured push-triggered
+Documentation (`34642991331`), Rust CI (`34642991392`) and Security Audit
+(`34642991344`) workflows completed at merge SHA `24a1966` for applicable
+scope. Product/Rust/performance/release rows were explicitly skipped by scope
+and are not product proof. This is an as-of checkpoint, not a permanent
+baseline. The revision-pinned ledger remains `items=32; ready_pending=0;
+unfinished=5; held=3` (A07 active, W03 verified, R01/W02/F01 held). The 0dff804
+A07 identity preparation is now candidate-base/no-credit after this source
+advance and must not be reused. The next action is a fresh exact-toolchain
+identity freeze at 24a1966, then a sibling-free no-credit canary, packet rebind
+and isolated protocol `PASS` before separately authorized screening. Preserve
+the earlier macOS watch-SIGINT hosted failure as unfavorable diagnostic
+evidence: run `34615572565`, job `103316578631`, failed at
+`tests/watch_cli.rs:196` with `watch did not stop after SIGINT`.
+
+Historical current-source reconciliation (2026-09-11, superseded by
+`24a1966`; refresh before use): `origin/master=0dff804421c7563b08773eb75d9327fd0194db56`; PR #300
 merged the reviewed current-checkpoint reconciliation from head
 `f37c20e21ec94116c18dd591638fabf86163f947`. Its applicable Documentation, CI
 Scope, Security Scope, Evidence Gates and GitGuardian checks passed, the

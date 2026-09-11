@@ -19,7 +19,38 @@ reference only when that phase requires it.
 
 ## Direction review
 
-## Current source route — 2026-09-11 UTC (`origin/master=0dff804`, as-of)
+## Current source route — 2026-09-11 UTC (`origin/master=24a1966`, as-of)
+
+The latest reset fetched
+`origin/master=24a1966a55eb3ec184190c565f2715ee5daa7801` after PR #301 merged
+the reviewed current-source process reconciliation from head
+`428c26aee89b449e5c57ed1589d6a9b8d083c3bc`. Its applicable Documentation, CI
+Scope, Security Scope, Evidence Gates and GitGuardian checks passed, the
+reviewed head tree equals the merge tree, and the configured push-triggered
+Documentation (`34642991331`), Rust CI (`34642991392`) and Security Audit
+(`34642991344`) workflows completed at the merge SHA for their applicable
+scope. Product/Rust/performance/release rows were explicitly skipped by scope
+and are not product proof. Fetch again before every phase because this is an
+as-of checkpoint.
+
+The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;
+held=3`: A07 active, W03 verified and R01/W02/F01 held. The 0dff804 candidate
+identity preparation is candidate-base/no-credit after this source advance;
+its canary, holdout/manifest rebind and protocol review were not run and must
+not be reused. No screening, allocation, credit, release, deployment,
+publication or invitation authority exists. The next route is a fresh
+exact-toolchain identity freeze at 24a1966, then a sibling-free source-only
+no-credit canary, packet rebind and isolated protocol review; an empty pending
+queue is not a stop condition.
+
+The configured push-triggered workflow at a merge SHA remains a separate
+reconciliation observation. A failed, cancelled, unavailable, zero-test,
+scope-uncertain or absent result is unresolved and is never overridden by a
+pull-request rollup or local pass. PR #301's merge-SHA workflows passed for
+applicable scope; the retained R01 diagnostic from run `34615572565` still
+failed on macOS SIGINT and remains open.
+
+## Historical source route — 2026-09-11 UTC (`origin/master=0dff804`, superseded by `24a1966`)
 
 The latest reset fetched
 `origin/master=0dff804421c7563b08773eb75d9327fd0194db56` after PR #300 merged
@@ -53,8 +84,8 @@ workflows passed (`34638264948`, `34638264944`, `34638264978`) for applicable
 scope, while the retained R01 diagnostic from run `34615572565` still failed on
 macOS SIGINT and remains open.
 
-The prior 651ef31 route is retained below as historical process evidence; do
-not route a new phase from it without a fresh reset.
+Older route snapshots are retained below as historical process evidence; do not
+route a new phase from them without a fresh reset.
 
 ## Historical source route — 2026-09-11 UTC (`origin/master=329bce0`, superseded by `651ef31`)
 

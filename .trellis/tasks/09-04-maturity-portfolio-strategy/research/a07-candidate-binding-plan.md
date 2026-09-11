@@ -3,13 +3,27 @@
 Status: active. Owner: this thread's A07 acceptance coordinator. This plan
 does not embed a permanent routing baseline: fetch `origin/master` and rerun
 the revision-pinned ledger before every canary. The latest reset resolved
-`origin/master=0dff804421c7563b08773eb75d9327fd0194db56` after PR #300 merged
-the reviewed current-checkpoint reconciliation. A fresh 0dff804 candidate
-identity is prepared below; its canary, packet rebind and protocol review are
-not run. No screening, allocation or acceptance authority exists. Preserve the
-retained macOS watch-SIGINT diagnostic and all unfavorable evidence.
+`origin/master=24a1966a55eb3ec184190c565f2715ee5daa7801` after PR #301 merged
+the reviewed current-checkpoint reconciliation. The 0dff804 candidate identity
+is now candidate-base/no-credit after that source advance; rebuild before any
+canary or packet action. No screening, allocation or acceptance authority
+exists. Preserve the retained macOS watch-SIGINT diagnostic and all unfavorable
+evidence.
 
-## Current source reconciliation — 2026-09-11 UTC (`origin/master=0dff804`)
+## Current source reconciliation — 2026-09-11 UTC (`origin/master=24a1966`)
+
+PR #301 merged reviewed head `428c26aee89b449e5c57ed1589d6a9b8d083c3bc` as
+`24a1966`; its applicable exact-head checks and merge-SHA Documentation,
+Rust CI and Security Audit workflows passed for their applicable scope. The
+revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;
+held=3`: A07 active, W03 verified and R01/W02/F01 held. The next candidate
+must be freshly built and identity-frozen from 24a1966 with the pinned
+toolchain and login-shell/wrong-target/wrong-root controls before a fresh
+sibling-free no-credit canary. Rebind all six holdouts and the two-condition
+manifest and obtain isolated protocol `PASS` before separately authorized
+screening. Keep screening/allocation/credit false.
+
+## Historical source reconciliation — 2026-09-11 UTC (`origin/master=0dff804`, superseded by `24a1966`)
 
 PR #300 merged reviewed head `f37c20e21ec94116c18dd591638fabf86163f947` as
 `0dff804`; its applicable exact-head and merge-SHA checks passed, and the

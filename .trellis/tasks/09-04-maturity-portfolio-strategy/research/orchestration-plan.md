@@ -22,7 +22,30 @@ validation budget, VPS eligibility test and merge fence live in
 Load that reference only for an execution, review, integration or handoff
 decision; keep this plan as the task-level route.
 
-## Current route — `origin/master=0dff804` (2026-09-11 checkpoint)
+## Current route — `origin/master=24a1966` (2026-09-11 checkpoint)
+
+The latest reset fetched `origin/master=24a1966a55eb3ec184190c565f2715ee5daa7801`
+with tree `57cfe8e7f437fc15f4fc8fdeff807c0eb9214c00`; fetch again before the
+next phase. PR #301 merged reviewed head `428c26aee89b449e5c57ed1589d6a9b8d083c3bc`
+after independent `PASS`. Its applicable exact-head checks passed, and
+merge-SHA Documentation `34642991331`, Rust CI `34642991392` and Security Audit
+`34642991344` completed successfully for their applicable scope. Product/Rust/
+performance/release rows were explicitly skipped and remain non-proof.
+
+The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;
+held=3`: A07 active, W03 verified and R01/W02/F01 held. The 0dff804 candidate
+identity freeze is candidate-base/no-credit after this source advance; do not
+reuse its binary, packet or canary. The merged process branch was clean and
+removed; root/foreign/stale topology exceptions remain preserved.
+
+Next action: `/root` owns a fresh exact-toolchain candidate freeze at 24a1966
+in a clean checkout. Then run the sibling-free source-only no-credit canary,
+rebind the six holdouts and two-condition manifest, and obtain isolated
+protocol `PASS` before any separately authorized screening. Continue R01/W02/
+F01 held routes independently and observe the post-merge workflow fence for
+every future merge; an empty pending queue is not a stop condition.
+
+## Historical route — `origin/master=0dff804` (superseded by `24a1966`)
 
 The latest reset fetched `origin/master=0dff804421c7563b08773eb75d9327fd0194db56`
 with tree `4dcb61add201e72e6b61f3bd8392f508d008160c`; fetch again before the
