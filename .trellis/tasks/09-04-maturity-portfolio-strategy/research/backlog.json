@@ -244,7 +244,7 @@
       ],
       "executor": "agent",
       "state": "active",
-      "owner": "Codex goal: A07 acceptance coordinator; ac3 candidate/canaries and private two-condition packet have protocol PASS; refresh current source/ledger and prove packet match before separately authorized screening",
+      "owner": "Codex goal: A07 acceptance coordinator; ac3 candidate/canaries and private two-condition packet are historical no-credit after PR #286; refresh current source/ledger, build a fresh candidate and rebind before separately authorized screening",
       "evidence": "evidence/A07.md",
       "blocker": null
     },

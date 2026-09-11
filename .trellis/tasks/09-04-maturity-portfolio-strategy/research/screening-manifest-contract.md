@@ -106,19 +106,18 @@ but never replaces required macOS/Windows/hosted proof.
 
 On each resume, the A07 coordinator must first refresh `origin/master`,
 release/tag, PR/CI and topology, rerun the revision-pinned ledger, and bind all
-evidence to that revision. The latest recorded source is
-`ac3eb13be83f1551b8084a59c9868ff870fa8bf2`; PR #285 reconciled the c4f
-post-merge checkpoint and its applicable Documentation, CI Scope, Security
-Scope, Evidence Gates and GitGuardian checks passed. The 30b and c4f candidate
-packets, canaries and protocol results are historical no-credit after their
-source advances. The current ac3 candidate has two full-evaluator no-credit
-canaries, fresh exact/wrong-target/wrong-root identity controls, a rebound
-six-handle/two-condition packet and an isolated protocol `PASS`; no screening
-allocation exists. Refresh source, release/tag, PR/CI, topology and the ledger
-again, prove the packet still matches, and only then seek the separately
-authorized screening gate. If any later audit finds a mismatch, record
-contract/location/failure/smallest verification and repeat the new-candidate
-sequence before allocation.
+evidence to that revision. PR #286 now places the current source at
+`cd629d413491f0214fb16850bba629524a342be1`; its applicable Documentation, CI
+Scope, Security Scope, Evidence Gates and GitGuardian checks passed, as did
+post-merge Documentation, Security Audit and Rust CI. The 30b, c4f and ac3
+candidate packets, canaries and protocol results are historical no-credit after
+their source advances. No current candidate or screening allocation exists.
+Refresh the source and ledger again, build a fresh explicit-workdir candidate,
+freeze identity, run the bounded no-credit canary, rebind the six-handle/two-
+condition packet and obtain isolated protocol `PASS` before seeking the
+separately authorized screening gate. If any later audit finds a mismatch,
+record contract/location/failure/smallest verification and repeat the complete
+new-candidate sequence before allocation.
 All prior canaries, process PRs and metadata-only evidence remain no-credit and
 never satisfy screening or acceptance gates. The retained R01 artifacts still
 lack the raw watch/callback trace, so R01's hold is unchanged.

@@ -42,19 +42,16 @@ evaluator, canary or process documentation never grants screening, release,
 deployment, publication or invitation credit.
 
 Current route: refresh the current source and revision-pinned ledger, then
-continue one owned A07 preparation phase at that revision. PR #284 now makes
-`origin/master=c4f57d701d2ec37301f4677eae27b7275f89d2fb` the prior source;
-PR #285 now reconciles the current source at
-`origin/master=ac3eb13be83f1551b8084a59c9868ff870fa8bf2`. The 30b and c4f
-candidate packets are historical no-credit after their source advances. The
-ac3 candidate was built in an explicit clean worktree; two source-only
-canaries pass the full seven-dimension evaluator, fresh login-shell controls
-reject wrong target/root controls, and the isolated protocol reviewer returned
-`PASS`. These remain no-credit preparation. Refresh source/release/tag/PR/CI/
-topology and the ledger before each phase, prove the packet still matches ac3,
-then seek separately authorized screening only after that fresh checkpoint.
-Never allocate from a historical or unreviewed packet. Keep R01, W02, W03 and
-F01's named holds separate.
+continue one owned A07 preparation phase at that revision. PR #286 now makes
+`origin/master=cd629d413491f0214fb16850bba629524a342be1` the current source;
+the 30b, c4f and ac3 candidate packets are historical no-credit after their
+source advances. The ac3 candidate, canaries, identity controls and isolated
+protocol `PASS` remain metadata-only and do not establish a current candidate.
+Refresh source/release/tag/PR/CI/topology and the ledger before each phase,
+then build a fresh explicit-workdir candidate, run the no-credit canary, rebind
+the packet and obtain isolated protocol `PASS` before separately authorized
+screening. Never allocate from a historical or unreviewed packet. Keep R01,
+W02, W03 and F01's named holds separate.
 Do not finish the goal while a live review, repair, integration, cleanup or
 independently authorized preparation action remains.
 

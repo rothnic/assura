@@ -97,30 +97,36 @@ public evidence.
   three measured comparable runs show queue/execution, retry and coverage
   effects.
 
-## Current post-merge route — ac3eb13
+## Current post-merge route — cd629d4
 
-The latest reset fetched `origin/master=ac3eb13be83f1551b8084a59c9868ff870fa8bf2`
-after PR #285 reconciled the reviewed c4f checkpoint. Its applicable
+The latest reset fetched `origin/master=cd629d413491f0214fb16850bba629524a342be1`
+after PR #286 reconciled the reviewed ac3 checkpoint. Its applicable
 Documentation Scope, CI Scope, Security Scope, Evidence Gates and GitGuardian
-checks passed; product/Rust/performance/release jobs were scope-skipped and are
-not acceptance proof. The latest tag is `v0.3.0-448-gac3eb13`; no release
+checks passed, as did the post-merge Documentation, Security Audit and Rust CI
+workflows; product/Rust/performance/release jobs were scope-skipped and are not
+acceptance proof. The latest tag must be refreshed separately; no release
 branch exists.
 
 The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5; held=3`:
-A07 active, W03 verified, R01/W02/F01 held. A fresh ac3 candidate was built
-from an explicit clean worktree with exact Rust/Cargo `1.94.1` identity. Two
-corrected source-only canaries and full seven-dimension evaluators pass as
-no-credit preparation; an initial wrapper-sentinel failure is retained as
-unfavorable evidence. Fresh login-shell controls prove the candidate target and
-reject wrong-target and wrong-root controls.
+A07 active, W03 verified, R01/W02/F01 held. The ac3 candidate, canaries,
+identity controls, six-handle/two-condition packet, 30 reserved cells and
+isolated protocol `PASS` are historical no-credit metadata after this source
+advance; no candidate or screening allocation is current.
 
-The six-handle/two-condition packet and 30 reserved matrix cells are rebound to
-ac3. Its isolated protocol rereview returned `PASS` after two concrete metadata
-findings were repaired, so no screening allocation or acceptance credit exists.
-Refresh source, release/tag, PR/CI, topology and the ledger again before seeking
-separately authorized screening. Preserve the
-root unknown path, foreign dirty worktree, stale registrations and historical
-goal branches.
+Refresh source, release/tag, PR/CI, topology and the ledger, then build a fresh
+explicit-workdir cd629d4 candidate, freeze identity, run the bounded no-credit
+canary, rebind the packet and obtain isolated protocol `PASS` before seeking
+separately authorized screening. Preserve the root unknown path, foreign dirty
+worktree, stale registrations, historical failures and goal branches.
+
+## Historical candidate route — ac3eb13 (superseded by `cd629d4`)
+
+PR #285 reconciled the reviewed c4f checkpoint at `ac3eb13`; its applicable
+checks passed and the ac3 candidate/packet protocol rereview returned `PASS`.
+Those canaries, identity controls and packet are historical no-credit metadata
+after PR #286 advanced master. No screening allocation or acceptance credit
+exists; retain the unfavorable wrapper evidence and rerun the complete current
+candidate sequence before allocation.
 
 ## Historical post-merge route — c4f57d7 (superseded by `ac3eb13`)
 

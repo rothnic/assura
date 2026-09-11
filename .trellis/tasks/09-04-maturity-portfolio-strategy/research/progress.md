@@ -1,8 +1,29 @@
 # Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md), [progress-history-04.md], [progress-history-05.md](progress-history-05.md), [iterations 4-17](progress-history-06.md), [preserved history](progress-history-03.md), [A01 iterations 15–31](progress-history-08.md), [iterations 5–11](progress-history-09.md), [iteration 114](progress-history-10.md), [iteration 111](progress-history-11.md), [iterations 106–108](progress-history-12.md), [iterations 104 and earlier](progress-history-07.md), [iterations 32–33 and 42](progress-history-13.md), [iterations 44–47](progress-history-14.md), [iteration 127](progress-history-15.md), [iteration 128](progress-history-16.md), [iteration 129](progress-history-17.md), [iteration 132](progress-history-18.md), [iteration 133](progress-history-19.md), [iteration 138](progress-history-20.md))
 
-Iteration 143 (`origin/master=ac3eb13`, PR #285 reconciled): the `32/0/5/3` ledger still has A07 active, W03 verified and R01/W02/F01 held. The fresh ac3 candidate, two full-evaluator canaries, six-handle/two-condition packet and isolated protocol `PASS` are current no-credit preparation; screening remains unauthorized. See [recovery-evidence.md](recovery-evidence.md); the next owned phase is a refreshed source/ledger proof before any separately authorized screening.
+Iteration 144 (`origin/master=cd629d4`, PR #286 merged): the `32/0/5/3` ledger still has A07 active, W03 verified and R01/W02/F01 held. The ac3 candidate, canaries, packet and isolated protocol `PASS` are now historical no-credit preparation after the source advance; no candidate is current and screening remains unauthorized. See [recovery-evidence.md](recovery-evidence.md); the next owned phase is a fresh cd629d4 candidate/identity/canary/packet sequence.
 
-## Iteration 143 — 2026-09-11 — current ac3 candidate and protocol reconciliation
+## Iteration 144 — 2026-09-11 — post-merge source reconciliation
+
+- Owner/phase: process coordinator `/root` / post-merge-reconcile. PR #286
+  merged the reviewed process-only checkpoint at
+  `cd629d413491f0214fb16850bba629524a342be1`; its Documentation, CI Scope,
+  Security Scope, Evidence Gates and GitGuardian checks passed. Post-merge
+  Documentation, Security Audit and Rust CI workflows also passed. Product,
+  Rust, performance and release jobs were scope-skipped and are not acceptance
+  proof.
+- The refreshed ledger remains `items=32; ready_pending=0; unfinished=5;
+  held=3`: A07 active, W03 verified and R01/W02/F01 held. The ac3 candidate,
+  two canaries, identity controls, six-handle/two-condition packet and
+  isolated protocol `PASS` are historical no-credit metadata after this source
+  advance; no screening cell is allocated.
+- Next owner/action: refresh source, release/tag, PR/CI, topology and the
+  revision-pinned ledger; build and freeze a fresh exact-toolchain cd629d4
+  candidate, run the bounded no-credit canary, rebind the packet and obtain an
+  isolated protocol `PASS` before any separately authorized screening request.
+  Preserve the root unknown path, foreign dirty worktree, stale registrations,
+  historical failures and unmerged goal branches.
+
+## Historical iteration 143 — 2026-09-11 — ac3 candidate and protocol reconciliation (superseded by `cd629d4`)
 
 - Owner/phase: process coordinator `/root` / post-protocol refresh. PR #285 is
   merged at `ac3eb13be83f1551b8084a59c9868ff870fa8bf2`; applicable
@@ -36,8 +57,8 @@ Iteration 143 (`origin/master=ac3eb13`, PR #285 reconciled): the `32/0/5/3` ledg
 ## Preserved historical entries
 
 Iterations 139 and 136 remain available in
-[progress-history-21.md](progress-history-21.md). They are historical
-evidence and do not route the current ac3 checkpoint.
+[progress-history-21.md](progress-history-21.md); iteration 143 remains above.
+All are historical evidence and do not route the current cd629d4 checkpoint.
 
 ## Iteration 135 — 2026-09-11 — post-merge R01 artifact reconciliation
 

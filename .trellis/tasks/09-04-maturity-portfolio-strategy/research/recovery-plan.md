@@ -2,15 +2,15 @@
 
 Status: active continuation route, 2026-09-11 UTC. The latest refresh resolves
 the current source to
-`origin/master=ac3eb13be83f1551b8084a59c9868ff870fa8bf2`; this pointer is an
-as-of checkpoint and must be refreshed before use. PR #285 reconciled the
-reviewed c4f post-merge route; its applicable Documentation, CI Scope,
-Security Scope, Evidence Gates and GitGuardian checks passed, while product/
+`origin/master=cd629d413491f0214fb16850bba629524a342be1`; this pointer is an
+as-of checkpoint and must be refreshed before use. PR #286 reconciled the
+reviewed ac3 post-merge route; its applicable Documentation, CI Scope,
+Security Scope, Evidence Gates and GitGuardian checks passed, as did the
+post-merge Documentation, Security Audit and Rust CI workflows, while product/
 Rust/performance/release jobs were scope-skipped and not counted. R01's
 missing raw watch/callback trace remains unresolved, so R01 is still held. The
-30b and c4f candidate packets are historical no-credit after each source
-advance; the ac3 candidate is current preparation only and no product
-acceptance state is current.
+30b, c4f and ac3 candidate packets are historical no-credit after each source
+advance; no product acceptance state is current.
 Earlier pointer and
 reconciliation checkpoints, including the ebed, 9df, 692, 9ad and 129a249
 candidate packets, are historical no-credit evidence. The latest
@@ -22,11 +22,12 @@ separately from product card slices. Product changes stay in their separately
 owned card slices.
 
 The current A07 preparation owns the next action: refresh source, release/tag,
-PR/CI, topology and the revision-pinned ledger after the isolated protocol
-review `PASS`, then prove the `ac3eb13` packet still matches before seeking
-separately authorized screening. The candidate was built in a clean owned
+PR/CI, topology and the revision-pinned ledger, then build a fresh explicit-
+workdir candidate at `cd629d4`, freeze identity, run the bounded no-credit
+canary, rebind the packet and obtain isolated protocol `PASS` before seeking
+separately authorized screening. The ac3 candidate was built in a clean owned
 worktree with explicit-workdir/toolchain identity and two bounded no-credit
-canaries. The
+canaries, but is now historical metadata after PR #286. The
 961dced, f4368883, 30b and c4f packets are historical no-credit preparation
 after later process merges; only a packet proven consistent with the refreshed
 source may be presented for separately authorized screening. No cell allocation,

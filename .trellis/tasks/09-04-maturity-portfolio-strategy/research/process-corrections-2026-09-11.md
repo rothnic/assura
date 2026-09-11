@@ -1,34 +1,41 @@
 # Process corrections and continuation plan
 
-Status: active, current source `origin/master=ac3eb13be83f1551b8084a59c9868ff870fa8bf2`.
+Status: active, current source `origin/master=cd629d413491f0214fb16850bba629524a342be1`.
 This record is a process and evidence route; it does not close A07, grant
 screening credit, or authorize release, deployment, publication, invitation,
 protection changes or a CI-infrastructure change.
 
-## Current candidate and protocol reconciliation — 2026-09-11 UTC (`origin/master=ac3eb13`)
+## Current post-merge reconciliation — 2026-09-11 UTC (`origin/master=cd629d4`)
+
+- PR #286 merged the reviewed ac3 process checkpoint at
+  `cd629d413491f0214fb16850bba629524a342be1`; its applicable Documentation,
+  CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed, as
+  did the post-merge Documentation, Security Audit and Rust CI workflows.
+  Product/Rust/performance/release jobs were scope-skipped and are not
+  acceptance proof. Release/tag availability remains a separate fact.
+- The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;
+  held=3`: A07 active, W03 verified, R01/W02/F01 held. The ac3 candidate,
+  canaries, identity controls, six-handle/two-condition/30-cell packet and
+  isolated protocol `PASS` are historical no-credit metadata after this source
+  advance. No candidate, screening allocation, product acceptance or authority
+  state is current.
+- Owner/phase: `/root` / fresh current-source candidate preparation. Refresh
+  source, release/tag, PR/CI, topology and the revision-pinned ledger, then
+  build and freeze a fresh explicit-workdir cd629d4 candidate, run the bounded
+  no-credit canary, rebind the packet and obtain isolated protocol `PASS`
+  before any separately authorized screening request. Preserve unfavorable
+  evidence and all external holds.
+
+## Historical candidate and protocol reconciliation — 2026-09-11 UTC (`origin/master=ac3eb13`, superseded by `cd629d4`)
 
 - PR #285 reconciled the reviewed c4f post-merge route at `ac3eb13`; its
-  applicable Documentation Scope, CI Scope, Security Scope, Evidence Gates and
-  GitGuardian checks passed. Product/Rust/performance/release jobs were
-  scope-skipped and are not acceptance proof. The latest tag is
-  `v0.3.0-448-gac3eb13`; no release branch exists.
-- The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;
-  held=3`: A07 active, W03 verified, R01/W02/F01 held. A fresh exact-toolchain
-  candidate was built from an explicit clean worktree; two corrected
-  source-only canaries completed full seven-dimension evaluator runs with exit
-  `0`. The initial wrapper exit-sentinel defect is retained as unfavorable
-  no-credit evidence. Fresh login-shell controls pass the exact target and
-  reject wrong-target and wrong-root controls.
-- The six-handle/two-condition/30-cell packet is rebound to ac3. The isolated
-  protocol reviewer returned `PASS` after correcting freeze chronology and
-  adding the missing negative identity controls. No screening allocation or
-  acceptance credit exists; screening, holdout, follow-up-feature, release,
-  deployment, publication and invitation authority remain false.
-- Owner/phase: `/root` / post-protocol refresh. Refresh source, release/tag,
-  PR/CI, topology and the revision-pinned ledger again, prove the packet still
-  matches, and only then seek separately authorized screening. Preserve the
-  root unknown note, foreign dirty worktree, stale registrations and historical
-  branches.
+  applicable checks passed. The exact-toolchain candidate, two canaries,
+  identity controls and six-handle/two-condition/30-cell packet were no-credit
+  preparation; isolated protocol rereview returned `PASS` after two concrete
+  metadata findings were repaired. No screening or acceptance credit existed.
+- The source advance in PR #286 makes that packet historical. Retain the
+  unfavorable wrapper evidence and repeat the complete current-source
+  candidate sequence before allocation.
 
 ## Historical post-merge reconciliation — 2026-09-11 UTC (`origin/master=c4f57d7`, superseded by `ac3eb13`)
 
