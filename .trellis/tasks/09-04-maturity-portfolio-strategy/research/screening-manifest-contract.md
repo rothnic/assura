@@ -106,8 +106,9 @@ but never replaces required macOS/Windows/hosted proof.
 
 On each resume, the A07 coordinator must first refresh `origin/master`,
 release/tag, PR/CI and topology, rerun the revision-pinned ledger, and bind all
-evidence to that revision. PR #286 now places the current source at
-`cd629d413491f0214fb16850bba629524a342be1`; its applicable Documentation, CI
+evidence to that revision. PR #286 made cd629d4 the prior checkpoint and PR
+#287 now places the current source at
+`ca81689d47fac6876654a1a9cced4dce28135e15`; its applicable Documentation, CI
 Scope, Security Scope, Evidence Gates and GitGuardian checks passed, as did
 post-merge Documentation, Security Audit and Rust CI. The 30b, c4f and ac3
 candidate packets, canaries and protocol results are historical no-credit after

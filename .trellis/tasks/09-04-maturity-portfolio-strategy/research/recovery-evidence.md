@@ -8,12 +8,12 @@ Older tail note: [recovery history 01](recovery-history-01.md),
 The historical proof below is retained; the current continuation route and
 post-merge source reconciliation are maintained in [recovery-plan.md](recovery-plan.md)
 and the newest progress entry before these historical notes.
-Process iteration: 144 (`origin/master=cd629d413491f0214fb16850bba629524a342be1` after PR #286 reconciled the reviewed ac3 checkpoint; applicable Documentation Scope, CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed; post-merge Documentation, Security Audit and Rust CI workflows passed; product/Rust/performance/release jobs were scope-skipped and are not acceptance proof). Ledger: `items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03 verified, R01/W02/F01 held). The ac3 candidate canaries, packet and protocol PASS are historical no-credit metadata after this source advance; no candidate or screening allocation is current.)
+Process iteration: 145 (`origin/master=ca81689d47fac6876654a1a9cced4dce28135e15` after PR #287 reconciled the reviewed cd629 checkpoint; applicable Documentation Scope, CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed; post-merge Documentation, Security Audit and Rust CI workflows passed; product/Rust/performance/release jobs were scope-skipped and are not acceptance proof). Ledger: `items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03 verified, R01/W02/F01 held). The ac3 and cd629 candidate canaries, packets and protocol PASS records are historical no-credit metadata after this source advance; no candidate or screening allocation is current.)
 Context level: not exposed. The before/after phase record is this evidence file, linked from the full historical progress log.
-## Current post-merge source reconciliation — 2026-09-11 UTC (`origin/master=cd629d4`)
+## Current post-merge source reconciliation — 2026-09-11 UTC (`origin/master=ca81689`)
 
-- PR #286 reconciled the reviewed ac3 process checkpoint at
-  `cd629d413491f0214fb16850bba629524a342be1`. Its applicable Documentation,
+- PR #287 reconciled the reviewed cd629 process checkpoint at
+  `ca81689d47fac6876654a1a9cced4dce28135e15`. Its applicable Documentation,
   CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed, as
   did the post-merge Documentation, Security Audit and Rust CI workflows.
   Product/Rust/performance/release jobs were scope-skipped and are not
@@ -25,7 +25,7 @@ Context level: not exposed. The before/after phase record is this evidence file,
   product, threshold, allocation or authority state changed.
 - Owner/phase: `/root` / fresh candidate preparation. Refresh source,
   release/tag, PR/CI, topology and the ledger, then build a fresh explicit-
-  workdir cd629d4 candidate, freeze identity, run the bounded no-credit canary,
+  workdir ca81689 candidate, freeze identity, run the bounded no-credit canary,
   rebind the packet and obtain isolated protocol `PASS` before any separately
   authorized screening request. Preserve all unfavorable and topology evidence.
 

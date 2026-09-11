@@ -42,13 +42,14 @@ evaluator, canary or process documentation never grants screening, release,
 deployment, publication or invitation credit.
 
 Current route: refresh the current source and revision-pinned ledger, then
-continue one owned A07 preparation phase at that revision. PR #286 now makes
-`origin/master=cd629d413491f0214fb16850bba629524a342be1` the current source;
-the 30b, c4f and ac3 candidate packets are historical no-credit after their
+continue one owned A07 preparation phase at that revision. PR #286 made cd629d4
+the prior checkpoint and PR #287 now makes
+`origin/master=ca81689d47fac6876654a1a9cced4dce28135e15` the current source;
+the 30b, c4f, ac3 and cd629 candidate packets are historical no-credit after their
 source advances. The ac3 candidate, canaries, identity controls and isolated
 protocol `PASS` remain metadata-only and do not establish a current candidate.
 Refresh source/release/tag/PR/CI/topology and the ledger before each phase,
-then build a fresh explicit-workdir candidate, run the no-credit canary, rebind
+then build a fresh explicit-workdir ca81689 candidate, run the no-credit canary, rebind
 the packet and obtain isolated protocol `PASS` before separately authorized
 screening. Never allocate from a historical or unreviewed packet. Keep R01,
 W02, W03 and F01's named holds separate.
