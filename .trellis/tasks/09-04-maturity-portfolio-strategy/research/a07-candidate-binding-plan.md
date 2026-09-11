@@ -3,18 +3,28 @@
 Status: active. Owner: this thread's A07 acceptance coordinator. This plan
 does not embed a permanent routing baseline: fetch `origin/master` and rerun
 the revision-pinned ledger before every canary. The latest 2026-09-11
-refresh resolved `origin/master=4560c710967d59993b9ea4f9b86613d446443f79`
-after PR #292 merged the reviewed agent-content-preservation recovery slice.
-Its exact-head applicable checks passed, while the separate push-triggered
-Rust CI run failed in the macOS watch SIGINT test and cancelled the
-Ubuntu/Windows siblings; a focused local rerun passed once. This hosted
-failure remains retained diagnostic evidence and is not treated as green.
-The current candidate is exact-toolchain identity-frozen; two source-only
-full-evaluator canaries pass no-credit, and the six-handle/two-condition/
-30-cell packet is rebound with current provenance. Independent protocol review
-is pending; no screening, allocation or acceptance authority is granted.
+refresh resolved `origin/master=83c382a78a6b616c3c420fb117404333f78d4381`
+after PR #296 merged the reviewed post-merge reconciliation. The 4560c710
+candidate and packet below are candidate-base/no-credit metadata after this
+source advance; no current candidate, screening, allocation or acceptance
+authority exists. Preserve the retained macOS watch-SIGINT diagnostic and all
+unfavorable evidence.
 
-## Current candidate-binding checkpoint — 2026-09-11 UTC (`origin/master=4560c710`)
+## Current source reconciliation — 2026-09-11 UTC (`origin/master=83c382a`)
+
+PR #296 merged reviewed head `a7045dbc9786add7aedb33d9859fbda703926025` as
+`83c382a`. Its applicable exact-head checks passed, the reviewed tree equals
+the merge tree, and the configured push-triggered Rust CI (`34630104586`),
+Documentation (`34630104663`) and Security Audit (`34630104624`) workflows
+completed successfully at the merge SHA. Product/Rust/performance/release
+rows were explicitly skipped by scope and are not product proof. Refresh
+source, release/tag, PR/CI, topology and the revision-pinned ledger before
+any phase. If screening is separately authorized, rebuild a candidate at this
+source, rerun the no-credit canary, rebind all six holdouts and the two-
+condition manifest, and obtain isolated protocol `PASS`; otherwise keep
+screening/allocation/credit false and continue an authorized recovery slice.
+
+## Historical candidate-binding checkpoint — 2026-09-11 UTC (`origin/master=4560c710`, superseded by `83c382a`)
 
 The private candidate freeze records source `4560c710967d59993b9ea4f9b86613d446443f79`,
 Git tree `f7150a5fd0ef192a70573b948953f17bcef9456d`, Assura `0.4.0`, the

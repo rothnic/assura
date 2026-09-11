@@ -1,5 +1,30 @@
 # Current maturity train checkpoint
 
+## Iteration 155 — 2026-09-11 — PR #296 post-merge reconciliation
+
+- Owner/phase: `/root` / current-source reconciliation after the reviewed
+  process correction. A fresh reset fetched
+  `origin/master=83c382a78a6b616c3c420fb117404333f78d4381`. PR #296 merged
+  reviewed head `a7045dbc9786add7aedb33d9859fbda703926025`; its applicable
+  Documentation, CI Scope, Security Scope, Evidence Gates and GitGuardian
+  checks passed, and the reviewed head tree equals the merge tree.
+- Reconciliation result: configured push-triggered Rust CI run
+  `34630104586`, Documentation run `34630104663` and Security Audit run
+  `34630104624` completed successfully at the merge SHA. Product/Rust/
+  performance/release jobs were explicitly skipped by scope and are not
+  acceptance proof. This updates current process pointers only; the ledger is
+  still `items=32; ready_pending=0; unfinished=5; held=3`, with A07 active,
+  W03 verified and R01/W02/F01 held. The retained R01 macOS SIGINT failure
+  and the 4560c710 A07 candidate/packet remain unfavorable or candidate-base/
+  no-credit evidence respectively.
+- Next owner/action: refresh source/release/tag/PR/CI/topology and the
+  revision-pinned ledger before the next phase, inspect active/implemented/
+  verified/held records first, then continue one explicitly owned recovery or
+  preparation action. Close only the exact clean owned process branch after
+  current-head review and post-merge proof; do not infer product, screening,
+  allocation, release, deployment, publication, invitation or authority credit
+  from this process result.
+
 ## Iteration 154 — 2026-09-11 — PR #295 post-merge reconciliation
 
 - Owner/phase: `/root` / current-source reconciliation after the reviewed

@@ -1,7 +1,7 @@
 # Process corrections and continuation plan
 
 Status: active, current source as-of the latest refresh
-`origin/master=9047a3d07e704cde0809a97cbe75f2cb1ce4af33`.
+`origin/master=83c382a78a6b616c3c420fb117404333f78d4381`.
 This is an as-of checkpoint; fetch again before every phase. The reusable
 state machine, checkpoint schema, layered disclosure and validation-budget
 rules are in
@@ -10,7 +10,29 @@ This record is a process and evidence route; it does not close A07, grant
 screening credit, or authorize release, deployment, publication, invitation,
 protection changes or a CI-infrastructure change.
 
-## Post-merge reconciliation — PR #295 — 2026-09-11 UTC (`origin/master=9047a3d`)
+## Post-merge reconciliation — PR #296 — 2026-09-11 UTC (`origin/master=83c382a`)
+
+- PR #296 merged the reviewed post-merge reconciliation as
+  `83c382a78a6b616c3c420fb117404333f78d4381` from reviewed head
+  `a7045dbc9786add7aedb33d9859fbda703926025`. Its exact-head applicable
+  Documentation, CI Scope, Security Scope, Evidence Gates and GitGuardian
+  checks passed, and the reviewed head tree equals the fetched merge tree.
+  The configured push-triggered Rust CI (`34630104586`), Documentation
+  (`34630104663`) and Security Audit (`34630104624`) workflows completed at
+  the merge SHA. Product/Rust/performance/release rows were explicitly
+  skipped by scope and are not product proof.
+- Correction: this reconciliation advances the source pointers only; it does
+  not close a product card, repair the retained R01 macOS SIGINT failure,
+  authorize A07 screening/allocation, or change W03/R01/W02/F01 dispositions.
+  The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;
+  held=3`, and the 4560c710 candidate and packet remain candidate-base/no-
+  credit metadata.
+- Next action: refresh source/release/tag/PR/CI/topology and the ledger again,
+  inspect active/implemented/verified/held records, and keep one explicitly
+  owned recovery or preparation action live. Close only the exact clean owned
+  process branch after current-head review and post-merge proof.
+
+## Historical post-merge reconciliation — PR #295 — 2026-09-11 UTC (`origin/master=9047a3d`, superseded by `83c382a`)
 
 - PR #295 merged the reviewed workflow-fence and measured-capacity correction
   as `9047a3d07e704cde0809a97cbe75f2cb1ce4af33`. Its exact-head applicable
