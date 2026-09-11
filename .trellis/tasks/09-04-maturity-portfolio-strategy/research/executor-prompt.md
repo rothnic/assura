@@ -13,7 +13,15 @@ After every merge, refresh `origin/master` and reconcile the task pointer,
 ledger and owned topology before selecting or handing off; a clean merge is a
 phase transition, not completion of the runtime goal.
 
-Current correction checkpoint (2026-09-11, refresh before use):
+Current-source reconciliation (2026-09-11, refresh before use):
+`origin/master=40f1155c3d26dc40141d2464d7e2f027f7bb9770`; PR #289 merged the
+reviewed durable goal, layered-routing skill metadata and current-route
+corrections. The 851a6 candidate, canaries and packet are candidate-base/no-
+credit metadata after that merge. Rebuild A07 from the freshly fetched source
+with a new identity freeze, no-credit canary, packet rebind and isolated
+protocol review before any separately authorized screening.
+
+As-of correction checkpoint (2026-09-11, superseded by `40f1155c`; refresh before use):
 `origin/master=851a6b831ea841317b78d94fce658a6974ef401a`; the revision-pinned
 ledger is 32 items, zero ready-pending, five unfinished and three held, with
 A07 active, W03 verified and R01/W02/F01 held. PR #286 merged the reviewed

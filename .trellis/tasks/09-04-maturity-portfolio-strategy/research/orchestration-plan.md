@@ -102,33 +102,28 @@ public evidence.
   three measured comparable runs show queue/execution, retry and coverage
   effects.
 
-## Current post-merge route — 851a6b8
+## Current post-merge route — 40f1155c
 
-The latest reset fetched `origin/master=851a6b831ea841317b78d94fce658a6974ef401a`
-after PR #288 merged the reviewed durable-goal and continuation artifacts (PR
-#287 had reconciled the reviewed cd629 checkpoint as ca81689). Its applicable
-Documentation Scope, CI Scope, Security Scope, Evidence Gates and GitGuardian
-checks passed, as did the post-merge Documentation, Security Audit and Rust CI
-workflows; product/Rust/performance/release jobs were scope-skipped and are not
-acceptance proof. The latest tag must be refreshed separately; no release
-branch exists.
+The latest reset fetched `origin/master=40f1155c3d26dc40141d2464d7e2f027f7bb9770`
+after PR #289 merged the reviewed durable goal, layered-routing skill metadata
+and current-route corrections. Its applicable Documentation Scope, CI Scope,
+Security Scope, Evidence Gates and GitGuardian checks passed; product/Rust/
+performance/release jobs were scope-skipped and are not acceptance proof. The
+latest tag must be refreshed separately; no release branch exists.
 
 The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5; held=3`:
-A07 active, W03 verified, R01/W02/F01 held. The ac3 and ca816 candidate,
+A07 active, W03 verified, R01/W02/F01 held. The ac3, ca816 and 851a6 candidate,
 canaries, identity controls, six-handle/two-condition packet, 30 reserved cells
-and isolated protocol `PASS` are historical no-credit metadata after this source
-advance; the fresh 851a6 identity freeze is private preparation with canary,
-packet rebind and protocol review still pending. No candidate or screening
-allocation is current.
+and isolated protocol `PASS` records are candidate-base/no-credit metadata after this
+source advance. No candidate or screening allocation is current.
 
-Refresh source, release/tag, PR/CI, topology and the ledger, then complete the
-fresh explicit-workdir 851a6 candidate identity, bounded no-credit canary,
-packet rebind and isolated protocol `PASS` before seeking separately authorized
-screening. Do not merge another process-pointer update while that packet is in
-flight; if source advances or identity mismatches, retain the packet as
-historical and repeat the complete sequence. Preserve the root unknown path,
-foreign dirty worktree, stale registrations, historical failures and goal
-branches.
+Refresh source, release/tag, PR/CI, topology and the ledger, then build and
+freeze a fresh explicit-workdir candidate at the fetched source, run the
+bounded no-credit canary, rebind the packet and obtain isolated protocol `PASS`
+before seeking separately authorized screening. Do not reuse the 851a6 packet;
+if source advances or identity mismatches, retain it as candidate-base metadata
+and repeat the complete sequence. Preserve the root unknown path, foreign
+dirty worktree, stale registrations, historical failures and goal branches.
 
 ## Historical candidate route — ac3eb13 (superseded by `cd629d4`, then `ca81689`)
 

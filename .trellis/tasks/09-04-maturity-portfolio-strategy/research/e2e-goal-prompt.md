@@ -15,6 +15,16 @@ goal at each card boundary.
 
 ## Direction review
 
+## Current-source reconciliation — 2026-09-11 UTC (`origin/master=40f1155c`)
+
+PR #289 merged the reviewed durable goal, layered-routing skill metadata and
+current-route corrections at `40f1155c3d26dc40141d2464d7e2f027f7bb9770`.
+The 851a6 candidate, canaries and private packet are candidate-base/no-credit
+metadata after that source advance. Refresh source, release/tag, PR/CI,
+topology and the revision-pinned ledger, then rebuild A07 at the fetched
+source before any separately authorized screening; do not reuse the 851a6
+packet or treat scope-skipped checks as pass.
+
 Current-state routing: read `backlog.json`, `progress-current.md` and, when
 needed, the newest historical `progress.md` entry and
 the selected card's `evidence/<ID>.md` before using any status or SHA below.

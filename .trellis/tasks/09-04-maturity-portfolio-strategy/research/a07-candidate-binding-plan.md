@@ -4,26 +4,24 @@ Status: active. Owner: this thread's A07 acceptance coordinator. This plan
 does not embed a permanent routing baseline: fetch `origin/master` and rerun
 the revision-pinned ledger before every canary. The latest 2026-09-11
 process-only refresh resolved
-`origin/master=851a6b831ea841317b78d94fce658a6974ef401a` after PR #288, which
-merged the reviewed durable-goal and continuation artifacts after PR #287
-reconciled the cd629 route as ca81689. Its applicable Documentation/CI/
-Security/Evidence/GitGuardian checks passed, and the post-merge
-Documentation/Security/Rust CI workflows passed. This process-only checkpoint
-changes no A07 product or acceptance state and does not authorize screening.
+`origin/master=40f1155c3d26dc40141d2464d7e2f027f7bb9770` after PR #289 merged
+the reviewed durable goal, layered-routing skill metadata and current-route
+corrections. Its applicable Documentation/CI/Security/Evidence/GitGuardian
+checks passed; product/Rust/performance/release jobs were scope-skipped. This
+process-only checkpoint changes no A07 product or acceptance state and does not
+authorize screening.
 
-## Current post-merge checkpoint — 2026-09-11 UTC (`origin/master=851a6b8`)
+## Current post-merge checkpoint — 2026-09-11 UTC (`origin/master=40f1155c`)
 
-PR #288 merged the reviewed durable-goal and continuation artifacts at
-`851a6b831ea841317b78d94fce658a6974ef401a` after PR #287 reconciled the
-reviewed cd629 process checkpoint as ca81689; applicable hosted checks and
-post-merge workflows passed. The ac3 and ca816 candidates, canaries, identity
-controls, six-handle binding, manifest and isolated protocol `PASS` are
-historical no-credit metadata after those source advances. A fresh 851a6
-identity freeze is private preparation; its canary, packet rebind and protocol
-review remain pending. No current candidate or screening allocation exists.
-Refresh source/release/tag/PR/CI/topology and the ledger, then complete the
-fresh explicit-workdir candidate sequence before seeking separately authorized
-screening. Preserve failures and authority boundaries.
+PR #289 merged the reviewed durable goal, layered-routing skill metadata and
+current-route corrections at `40f1155c3d26dc40141d2464d7e2f027f7bb9770` after
+PR #288 merged the durable-goal artifacts. The ac3, ca816 and 851a6 candidates,
+canaries, identity controls, six-handle binding, manifest and isolated protocol
+`PASS` record are candidate-base/no-credit metadata after those source advances. No
+current candidate or screening allocation exists. Refresh
+source/release/tag/PR/CI/topology and the ledger, then build and freeze a fresh
+explicit-workdir candidate before seeking separately authorized screening.
+Preserve failures and authority boundaries; do not reuse the 851a6 packet.
 
 ## Historical candidate-bound checkpoint — 2026-09-11 UTC (`origin/master=ac3eb13`, superseded by `cd629d4` and `ca81689`)
 

@@ -7,18 +7,15 @@ not a replacement goal or a product-card acceptance record.
 
 Status: active continuation route, 2026-09-11 UTC. The latest refresh resolves
 the current source to
-`origin/master=851a6b831ea841317b78d94fce658a6974ef401a`; this pointer is an
-as-of checkpoint and must be refreshed before use. PR #288 merged the reviewed
-durable-goal and continuation artifacts after PR #287 reconciled the reviewed
-cd629 post-merge route; the applicable Documentation, CI Scope, Security Scope,
-Evidence Gates and GitGuardian checks passed, as did the post-merge
-Documentation, Security Audit and Rust CI workflows, while product/
-Rust/performance/release jobs were scope-skipped and not counted. R01's
-missing raw watch/callback trace remains unresolved, so R01 is still held. The
-30b, c4f, ac3 and ca816 candidate packets are historical no-credit after each
-source advance; the fresh 851a6 identity freeze is private preparation and its
-canary, packet rebind and protocol review remain pending. No product acceptance
-state is current.
+`origin/master=40f1155c3d26dc40141d2464d7e2f027f7bb9770`; this pointer is an
+as-of checkpoint and must be refreshed before use. PR #289 merged the reviewed
+durable goal, layered-routing skill metadata and current-route corrections;
+applicable Documentation, CI Scope, Security Scope, Evidence Gates and
+GitGuardian checks passed, while product/Rust/performance/release jobs were
+scope-skipped and not counted. R01's missing raw watch/callback trace remains
+unresolved, so R01 is still held. The 30b, c4f, ac3, ca816 and 851a6 candidate
+packets are candidate-base/no-credit after source advances; no current
+candidate or product acceptance state exists.
 Earlier pointer and
 reconciliation checkpoints, including the ebed, 9df, 692, 9ad and 129a249
 candidate packets, are historical no-credit evidence. The latest
@@ -30,17 +27,16 @@ separately from product card slices. Product changes stay in their separately
 owned card slices.
 
 The current A07 preparation owns the next action: refresh source, release/tag,
-PR/CI, topology and the revision-pinned ledger, then complete the fresh
-explicit-workdir `851a6` candidate identity, bounded no-credit canary, packet
-rebind and isolated protocol `PASS` before seeking
-separately authorized screening. The ac3 candidate was built in a clean owned
-worktree with explicit-workdir/toolchain identity and two bounded no-credit
-canaries, but is now historical metadata after PR #286. The
-961dced, f4368883, 30b, c4f and ca816 packets are historical no-credit preparation
-after later process merges; only a packet proven consistent with the refreshed
-source may be presented for separately authorized screening. No cell allocation,
-acceptance, release, deployment, publication, invitation or protection change
-is implied.
+PR/CI, topology and the revision-pinned ledger at the fetched base, then build
+and freeze a fresh explicit-workdir candidate, run the bounded no-credit
+canary, rebind the packet and obtain isolated protocol `PASS` before seeking
+separately authorized screening. The 851a6 candidate was built in a clean
+owned worktree with exact identity and two bounded no-credit canaries, but is
+now candidate-base metadata after PR #289. The 961dced, f4368883, 30b, c4f,
+ca816 and 851a6 packets are historical/candidate-base no-credit preparation;
+only a packet proven consistent with the refreshed source may be presented for
+separately authorized screening. No cell allocation, acceptance, release,
+deployment, publication, invitation or protection change is implied.
 
 Use the compact [maturity train orchestration plan](orchestration-plan.md) for
 the reset, layered-context, gate-placement, review, integration and closure
