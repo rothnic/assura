@@ -1,11 +1,26 @@
 # Process corrections and continuation plan
 
-Status: active, current source `origin/master=851a6b831ea841317b78d94fce658a6974ef401a`.
+Status: active, current source as-of the latest refresh
+`origin/master=40f1155c3d26dc40141d2464d7e2f027f7bb9770`.
 This record is a process and evidence route; it does not close A07, grant
 screening credit, or authorize release, deployment, publication, invitation,
 protection changes or a CI-infrastructure change.
 
-## Current post-merge reconciliation — 2026-09-11 UTC (`origin/master=851a6b8`)
+## Current post-merge reconciliation — 2026-09-11 UTC (`origin/master=40f1155c`)
+
+- PR #289 merged the reviewed durable goal, layered-routing skill metadata and
+  current-route corrections at `40f1155c3d26dc40141d2464d7e2f027f7bb9770`;
+  applicable Documentation, CI Scope, Security Scope, Evidence Gates and
+  GitGuardian checks passed. Product/Rust/performance/release jobs were
+  scope-skipped and remain non-applicable. The 851a6 candidate packet and its
+  isolated protocol `PASS` are now candidate-base/no-credit and must not be reused.
+- Refresh source, release/tag, PR/CI, topology and the revision-pinned ledger,
+  then rebuild A07 at the fetched source with a fresh identity freeze,
+  no-credit canary, packet rebind and isolated protocol review. No screening,
+  acceptance, release, deployment, publication or invitation authority is
+  implied.
+
+## Historical post-merge reconciliation — 2026-09-11 UTC (`origin/master=851a6b8`, superseded by `40f1155c`)
 
 - PR #288 merged the reviewed durable-goal and continuation artifacts at
   `851a6b831ea841317b78d94fce658a6974ef401a` after PR #287 reconciled the

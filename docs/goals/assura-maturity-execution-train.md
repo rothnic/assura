@@ -163,4 +163,5 @@ cannot be closed or archived with an explicit recovery record.
 
 | Date | Event | Evidence |
 | --- | --- | --- |
+| 2026-09-11 | PR #289 merged the reviewed durable goal, layered-routing skill metadata and current-route corrections as `40f1155c`; the 851a6 candidate packet is now candidate-base/no-credit and must be rebuilt after the next source refresh. | PR #289; `research/progress-current.md` Iteration 147; post-merge ledger/context/structure/evidence/docs gates. |
 | 2026-09-11 | Created the durable active execution goal from the corrected Trellis recovery contract. The current source is `851a6b8`; A07 is the only active lane while the ledger has no ready-pending card. | `.trellis/tasks/09-04-maturity-portfolio-strategy/task.json`; `research/orchestration-plan.md`; `research/process-corrections-2026-09-11.md`; `research/recovery-plan.md`; workflow gate, ledger and topology reset evidence. |

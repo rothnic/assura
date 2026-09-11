@@ -1,5 +1,29 @@
 # Current maturity train checkpoint
 
+## Iteration 147 — 2026-09-11 — post-merge source reconciliation
+
+- Owner/phase: `/root` / post-merge reconciliation. PR #289 merged the
+  reviewed durable goal, layered-routing skill metadata and current-route
+  corrections as `40f1155c3d26dc40141d2464d7e2f027f7bb9770`; its applicable
+  Documentation, CI Scope, Security Scope, Evidence Gates and GitGuardian
+  checks passed. Product/Rust/performance/release jobs were scope-skipped and
+  are not acceptance proof.
+- The revision-pinned ledger at `origin/master=40f1155c3d26dc40141d2464d7e2f027f7bb9770`
+  remains `items=32; ready_pending=0; unfinished=5; held=3`: A07 active, W03
+  verified and R01/W02/F01 held. The 851a6 identity, canaries, packet and
+  isolated protocol rereview `PASS` are candidate-base/no-credit metadata after
+  PR #289;
+  no current candidate or screening allocation exists.
+- Context and continuation routing now requires a fresh source refresh,
+  candidate identity freeze, no-credit canary, current packet rebind and
+  isolated protocol review before any separately authorized screening. The
+  root unknown path, foreign dirty worktree, stale registrations, historical
+  branches and unfavorable evidence remain preserved. Context level: not
+  exposed; current base, A07 route, last proof, held actions and next rebuild
+  are recorded here and in the durable goal.
+- Next owner/action: refresh release/tag, PR/CI, topology and the ledger at
+  `40f1155c`, then rebuild A07 from that source in a clean owned worktree.
+
 ## Iteration 146 — 2026-09-11 — durable goal and current-source route
 
 - Owner/phase: `/root` / current-source A07 preparation. The reset fetched
