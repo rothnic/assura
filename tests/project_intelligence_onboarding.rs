@@ -423,6 +423,14 @@ fn agent_onboard_content_template_activates_agent_project_models() {
     assert!(config.contains("class: Requirement"));
     assert!(!config.contains("SourceDocument"));
 
+    let agents = fs::read_to_string(project.path().join("AGENTS.md")).unwrap();
+    assert!(agents.contains(
+        "Preserve YAML frontmatter and required record fields when editing modeled Markdown"
+    ));
+    let workflow =
+        fs::read_to_string(project.path().join("docs/process/agent-workflow.md")).unwrap();
+    assert!(workflow.starts_with("---\n"));
+
     let check = json_from_success(run_assura(&[
         "check",
         project.path().to_str().unwrap(),

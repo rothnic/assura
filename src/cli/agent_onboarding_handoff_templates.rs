@@ -51,5 +51,9 @@ Read `.assura/onboarding/rules.md` before editing `.assura/config.yml`. Use
 `STRUCTURE_FIT_CHECK` from
 `.agents/skills/assura-structure-fit/references/structure-fit-check.md` before
 changing policy for a structural mismatch.
+
+When an active content collection matches a Markdown file, preserve its YAML
+frontmatter and required record fields. Update the body without replacing the
+record, then run `assura check .` and resolve failures before finalizing.
 "#
 }
