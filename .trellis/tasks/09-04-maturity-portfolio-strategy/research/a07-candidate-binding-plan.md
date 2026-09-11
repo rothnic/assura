@@ -49,27 +49,24 @@ A fresh detached checkout at 129a249 was the prior candidate build, and its
 source/tree, version, fixed target and login-shell command identity were frozen
 privately. The later 71adc2e and 5b03c7f canaries, rebinds and protocol `PASS`
 are also historical no-credit evidence after the 961dced source advance. The
-current 961dced candidate has passed the pre-review identity, receipt and
-full-contract canary assertions; its new packet remains pending isolated
-protocol review. The next step is scoped review and rereview, followed by a
-fresh source/ledger refresh before separately authorized screening.
+961dced candidate passed the pre-review identity, receipt and full-contract
+canary assertions; its packet and scoped protocol rereview are historical after
+the later c4f source advance. The next step is a fresh source/ledger refresh
+before creating another candidate or seeking separately authorized screening.
 
-## Current post-merge source checkpoint — 961dced
+## Historical post-merge source checkpoint — 961dced (superseded by `c4f57d7`)
 
 PR #280 merged the reviewed process-only route as `961dced` after applicable
 Documentation, CI Scope, Security Scope, Evidence Gates and GitGuardian checks
 passed; scope-skipped product/Rust/performance/release jobs are not acceptance
 proof. The 5b03c7f candidate and packet below are historical no-credit after
 this source advance. Rust CI run `34564937464` completed successfully for its
-applicable jobs. The current 961dced candidate is now frozen privately after
-an explicit-workdir rebuild; its identity, two full-contract canaries and
-six-handle/two-condition rebind pass the pre-review assertion. The isolated
-review found stale 5b refs and pending/pass prose; both are corrected, the
-cross-artifact assertion passes, and scoped rereview returned protocol `PASS`.
-A build that accidentally used the dirty root is retained as failed no-credit
-provenance. Refresh
-source/release/tag/PR/CI/topology and the ledger before seeking separately
-authorized screening.
+applicable jobs. The explicit-workdir candidate and packet were corrected and
+returned protocol `PASS`, but are historical no-credit after the later c4f
+source advance. A build that accidentally used the dirty root is retained as
+failed no-credit provenance. Refresh source/release/tag/PR/CI/topology and the
+ledger before creating a fresh candidate or seeking separately authorized
+screening.
 
 ## Historical source rebind — 5b03c7f (protocol PASS; no-credit; superseded by `961dced`)
 

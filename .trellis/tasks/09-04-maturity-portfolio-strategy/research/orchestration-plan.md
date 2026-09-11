@@ -97,7 +97,24 @@ public evidence.
   three measured comparable runs show queue/execution, retry and coverage
   effects.
 
-## Current candidate route — 30b4c663
+## Current post-merge route — c4f57d7
+
+The latest reset fetched `origin/master=c4f57d701d2ec37301f4677eae27b7275f89d2fb`
+after PR #284 merged the reviewed process/evidence route. Its applicable
+Documentation Scope, CI Scope, Security Scope, Evidence Gates and GitGuardian
+checks passed; product/Rust/performance/release jobs were scope-skipped and are
+not acceptance proof. The latest tag is `v0.3.0-447-gc4f57d7`; no release branch
+exists.
+
+The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5; held=3`:
+A07 active, W03 verified, R01/W02/F01 held. The 30b candidate, canaries and
+protocol `PASS` are historical no-credit metadata after this source advance;
+no current candidate or screening allocation exists. `/root` owns the next
+explicit-workdir c4f candidate freeze, bounded no-credit canary, packet rebind
+and isolated protocol review. Preserve the root unknown path and foreign,
+stale and historical topology exceptions.
+
+## Historical candidate route — 30b4c663 (superseded by `c4f57d7`)
 
 The latest reset fetched `origin/master=30b4c663b28bf1d15f12c99b6263411d3bfc8d45`
 after PR #283 reconciled the reviewed process route. Its applicable

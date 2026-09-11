@@ -14,17 +14,16 @@ ledger and owned topology before selecting or handing off; a clean merge is a
 phase transition, not completion of the runtime goal.
 
 Current correction checkpoint (2026-09-11, refresh before use):
-`origin/master=30b4c663b28bf1d15f12c99b6263411d3bfc8d45`; the revision-pinned
+`origin/master=c4f57d701d2ec37301f4677eae27b7275f89d2fb`; the revision-pinned
 ledger is 32 items, zero ready-pending, five unfinished and three held, with
-A07 active, W03 verified and R01/W02/F01 held. PR #283 reconciled the reviewed
+A07 active, W03 verified and R01/W02/F01 held. PR #284 merged the reviewed
 process route; its applicable Documentation Scope, CI Scope, Security Scope,
 Evidence Gates and GitGuardian checks passed, while product/Rust/performance/
-release jobs were scope-skipped and are not acceptance proof. A clean
-explicit-workdir candidate is identity-frozen with Rust/Cargo `1.94.1`; two
-fresh source-only canaries pass the seven-dimension evaluator, but remain
-no-credit. The rebound packet's isolated protocol rereview returned `PASS`
-after concrete metadata corrections; refresh source/ledger, prove the packet
-still matches, and seek separately authorized screening only afterward. See
+release jobs were scope-skipped and are not acceptance proof. The 30b candidate,
+canaries and protocol-passed packet are historical no-credit after this source
+advance. Create a clean owned explicit-workdir c4f candidate, prove identity,
+run a fresh bounded no-credit canary, rebind/review packet metadata and only
+then seek separately authorized screening. See
 [process-corrections-2026-09-11.md](process-corrections-2026-09-11.md) for the
 measured VPS decision and layered context route.
 

@@ -42,14 +42,14 @@ evaluator, canary or process documentation never grants screening, release,
 deployment, publication or invitation credit.
 
 Current route: refresh the current source and revision-pinned ledger, then
-continue one owned A07 preparation phase at that revision. PR #283 now makes
-`origin/master=30b4c663b28bf1d15f12c99b6263411d3bfc8d45` the current source;
-the fresh candidate is identity-frozen and its two source-only canaries pass
-the full seven-dimension evaluator, but all results remain no-credit. The
-current six-handle/two-condition packet is rebound and its isolated protocol
-rereview returned `PASS` after concrete metadata corrections. Refresh
-source/release/tag/PR/CI/topology and the ledger, prove the current packet
-still matches, and seek separately authorized screening only afterward. Never allocate
+continue one owned A07 preparation phase at that revision. PR #284 now makes
+`origin/master=c4f57d701d2ec37301f4677eae27b7275f89d2fb` the current source;
+the 30b candidate, two source-only canaries and protocol-passed packet are
+historical no-credit after that advance. No candidate is current at c4f; the
+next owned phase is an explicit-workdir c4f candidate freeze, bounded no-credit
+canary, current packet rebind and isolated protocol review. Refresh
+source/release/tag/PR/CI/topology and the ledger before each phase, then seek
+separately authorized screening only after a current packet still matches. Never allocate
 from a historical or unreviewed packet. Keep R01, W02, W03 and F01's named
 holds separate.
 Do not finish the goal while a live review, repair, integration, cleanup or
