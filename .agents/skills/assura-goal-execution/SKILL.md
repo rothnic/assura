@@ -60,14 +60,16 @@ only improves its process. Do not substitute a process PR for product acceptance
    invent missing product inputs from historical run names. Before dispatching
    the protocol reviewer, run
    [`scripts/validate-a07-packet.py`](scripts/validate-a07-packet.py) with the
-   expected source/tree/binary/contract/prompt/toolchain identities. This
+   expected source/tree/binary/shim/contract/prompt/toolchain identities. This
    metadata-only gate must resolve every current receipt, creation and
    second-readonly reference, prove exactly six handles and 30 reserved cells,
    and keep screening/allocation/credit false. A non-zero result blocks review;
    fix the packet and rerun it. Do not create a current packet by blind
    string-replacement of an older one: preserve historical references
    explicitly, write current aliases deliberately, and retain the validator
-   output with the review record.
+   output with the review record. Run the companion distinct-identity control
+   [`scripts/test-validate-a07-packet.py`](scripts/test-validate-a07-packet.py)
+   so a binary/shim hash mismatch has an explicit valid/invalid test.
 7. Use [layered context routing](references/context-routing.md) after
    compaction and at phase transitions. Record the current phase and exact next
    action in the selected card's evidence before/after major phases. A task

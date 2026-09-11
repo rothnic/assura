@@ -45,6 +45,12 @@ def require(errors: list[str], condition: bool, message: str) -> None:
         errors.append(message)
 
 
+def identity_matches(candidate: dict[str, Any], expected: dict[str, str]) -> bool:
+    """Return whether a packet identity contains every expected digest exactly."""
+
+    return all(candidate.get(key) == value for key, value in expected.items())
+
+
 def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -55,6 +61,7 @@ def main() -> int:
     parser.add_argument("--source-sha", required=True)
     parser.add_argument("--tree-sha", required=True)
     parser.add_argument("--binary-sha", required=True)
+    parser.add_argument("--shim-sha", required=True)
     parser.add_argument("--contract-sha", required=True)
     parser.add_argument("--evaluator-contract-sha", required=True)
     parser.add_argument("--prompt-sha", required=True)
@@ -94,7 +101,7 @@ def main() -> int:
         "source_sha": args.source_sha,
         "source_tree_sha256": args.tree_sha,
         "binary_sha256": args.binary_sha,
-        "shim_sha256": args.binary_sha,
+        "shim_sha256": args.shim_sha,
         "public_contract_sha256": args.contract_sha,
         "evaluator_contract_sha256": args.evaluator_contract_sha,
         "fixed_prompt_sha256": args.prompt_sha,
@@ -109,8 +116,8 @@ def main() -> int:
             ("candidate_source_tree_sha256", args.tree_sha),
             ("binary_sha256", args.binary_sha),
             ("candidate_binary_sha256", args.binary_sha),
-            ("shim_sha256", args.binary_sha),
-            ("candidate_shim_sha256", args.binary_sha),
+            ("shim_sha256", args.shim_sha),
+            ("candidate_shim_sha256", args.shim_sha),
         ):
             if key in artifact:
                 require(errors, artifact[key] == expected, f"{name}.{key} is stale")
@@ -157,7 +164,7 @@ def main() -> int:
         require(errors, receipt.get("source_sha") == args.source_sha, f"receipt {suffix} source mismatch")
         require(errors, receipt.get("source_tree") == args.tree_sha, f"receipt {suffix} tree mismatch")
         require(errors, receipt.get("target_sha256") == args.binary_sha, f"receipt {suffix} binary mismatch")
-        require(errors, receipt.get("shim_sha256") == args.binary_sha, f"receipt {suffix} shim mismatch")
+        require(errors, receipt.get("shim_sha256") == args.shim_sha, f"receipt {suffix} shim mismatch")
         require(errors, receipt.get("toolchain") == args.toolchain, f"receipt {suffix} toolchain mismatch")
         require(errors, receipt.get("prompt_sha256") == args.prompt_sha, f"receipt {suffix} prompt mismatch")
         require(errors, receipt.get("child_exit_code") == 0, f"receipt {suffix} child did not exit zero")
@@ -191,7 +198,7 @@ def main() -> int:
     require(errors, binding.get("candidate", {}).get("identity_evidence_ref") == "controls/dc031527-identity-final.json", "binding identity reference is stale")
     for layout in layouts:
         bound = layout.get("candidate_binding", {})
-        require(errors, all(bound.get(key) == value for key, value in identity.items()), f"{layout.get('handle')} candidate identity mismatch")
+        require(errors, identity_matches(bound, identity), f"{layout.get('handle')} candidate identity mismatch")
         handle = layout.get("handle")
         require(errors, layout.get("creation_evidence_ref") == f"holdouts/construction-current-dc031-r1.json#{handle}", f"{handle} creation reference is stale")
         require(errors, layout.get("second_readonly_confirmation", {}).get("evidence_ref") == f"holdouts/rebind-second-readonly-2026-09-11-current-dc031-r1.json#{handle}", f"{handle} second-readonly reference is stale")
@@ -245,6 +252,7 @@ def main() -> int:
         "source_sha": args.source_sha,
         "source_tree_sha256": args.tree_sha,
         "binary_sha256": args.binary_sha,
+        "shim_sha256": args.shim_sha,
         "protocol_status": args.protocol_status,
         "handles": len(handles),
         "matrix_cells": len(matrix),
