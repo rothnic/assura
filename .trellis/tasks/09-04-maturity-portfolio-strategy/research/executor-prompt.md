@@ -16,17 +16,25 @@ After every merge, refresh `origin/master` and reconcile the task pointer,
 ledger and owned topology before selecting or handing off; a clean merge is a
 phase transition, not completion of the runtime goal.
 
-Current-source reconciliation (2026-09-11, refresh before use):
-`origin/master=122fa0b3d976bb5196359aee48ad67bf272fb541`; PR #293 merged the
-reviewed process/goal reconciliation. Its applicable Documentation, CI Scope,
-Security Scope, Evidence Gates and GitGuardian checks passed, as did the
-applicable post-merge Rust CI, Documentation and Security workflows.
-Product/Rust/performance/release jobs were scope-skipped and are not product
-proof. This is an as-of checkpoint, not a permanent baseline. The revision-
-pinned ledger remains `items=32; ready_pending=0; unfinished=5; held=3` (A07
-active, W03 verified, R01/W02/F01 held). The 4560c710 candidate and packet are
-candidate-base/no-credit after this source advance. Preserve the earlier
-macOS watch-SIGINT hosted failure as unfavorable diagnostic evidence.
+Current-source reconciliation (2026-09-11, current at this reset; refresh
+before use): `origin/master=c9ac2a84a93dce752ec7b5216ad87639ba04dee8`; PR #294
+merged the reviewed execution-control-plane correction. Its applicable
+Documentation, CI Scope, Security Scope, Evidence Gates and GitGuardian checks
+passed, as did the configured post-merge Rust CI, Documentation and Security
+workflows. Product/Rust/performance/release jobs were scope-skipped and are
+not product proof. This is an as-of checkpoint, not a permanent baseline. The
+revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;
+held=3` (A07 active, W03 verified, R01/W02/F01 held). The 4560c710 candidate
+and packet are candidate-base/no-credit after this source advance. Preserve
+the earlier macOS watch-SIGINT hosted failure as unfavorable diagnostic
+evidence: run `34615572565`, job `103316578631`, failed at
+`tests/watch_cli.rs:196` with `watch did not stop after SIGINT`.
+
+The post-merge push workflow is a separate reconciliation gate: a PR pass or
+local rerun cannot close a slice when the merge-SHA workflow is failed,
+cancelled, unavailable, zero-test, scope-uncertain or absent. Retain the exact
+job/log handle and route the smallest recovery; do not retry an unchanged
+invocation or infer product credit.
 
 The next action is to refresh source/release/tag/PR/CI/topology and the ledger,
 inspect active/implemented/verified/held records before pending rows, and keep

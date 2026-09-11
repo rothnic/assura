@@ -18,7 +18,7 @@ transition by itself.
 | `OWN` | clean current-base checkout and one owner | branch/worktree, source/tree, scope and live handle | `PROVE` |
 | `PROVE` | cheap checks, focused red/green contract and smallest applicable tier | commands, host, toolchain, exits, counts, timings and limitations | `REVIEW` |
 | `REVIEW` | independent review of the frozen commit and public evidence | finding contract/location/failure/smallest verification and verdict | `INTEGRATE` or `PROVE` |
-| `INTEGRATE` | current-base candidate, resolved review, applicable local/hosted/performance gates and authority | merge SHA, check rollup and acceptance decision | `RECONCILE` |
+| `INTEGRATE` | current-base candidate, resolved review, applicable pre-merge local/hosted/performance gates, configured post-merge push workflow observation and authority | merge SHA, pre/post-merge check rollups and acceptance decision | `RECONCILE` |
 | `RECONCILE` | fetched post-merge base, reachability/tree equality, ledger and topology | card state, closure proof and next owner/action | `ROUTE` or `CONTINUE` |
 | `CONTINUE` | a live repair, review, integration, cleanup or independently authorized recovery action exists | handle/owner and next observation | the named state |
 
@@ -84,7 +84,9 @@ Use this order for every owned checkout:
 1. workflow, routing, structure, scope and target-state checks;
 2. focused red/green behavior and negative controls;
 3. one serialized heavy local or remote tier for the changed surface;
-4. one prepared push and exact-head hosted checks;
+4. one prepared push and exact-head hosted checks; after integration, observe
+   every configured push-triggered workflow at the merge SHA before claiming
+   reconciliation or closing the owned slice;
 5. post-merge reconciliation and topology closure.
 
 For each command or hosted job, record source/head, invocation fingerprint,
@@ -99,6 +101,15 @@ toolchain, environment and invocation are unchanged. `cargo xtask pr` already
 contains `fast`; do not run an unchanged `fast` immediately before it. Do not
 run parallel Cargo commands in one checkout; lock wait is contention, not
 progress. Install pinned website dependencies once per isolated checkout.
+
+A passing pull-request check rollup does not erase a later push-triggered
+workflow result. If a configured post-merge workflow fails, is cancelled,
+unavailable, zero-test or scope-uncertain, retain the exact merge SHA and job
+log as unresolved evidence, route the smallest recovery or diagnosis, and keep
+the card/goal open. Do not close the branch, call the slice fully gated, or
+retry the same invocation without a changed candidate, environment or
+documented platform condition. If the expected post-merge workflow is absent,
+record `unknown` rather than inferring success.
 
 ## Measured VPS use
 
@@ -139,10 +150,14 @@ contract | location | failure scenario | smallest verification | disposition
 Accept and fix concrete findings as a delta, rerun affected gates and obtain a
 scoped rereview of that delta. Reject or defer only with evidence and an exact
 authority/dependency reason. Merge only the reviewed current-base SHA with all
-applicable local, hosted and performance gates resolved; retain scope-skipped
-jobs as non-applicable. A process/documentation merge never promotes a product
-card or grants screening, release, deployment, publication, invitation or
-protection authority.
+applicable pre-merge local, hosted and performance gates resolved; retain
+scope-skipped jobs as non-applicable. After the merge, observe the configured
+push-triggered workflows at that exact merge SHA before recording a fully
+reconciled slice. A failed, cancelled, unavailable, zero-test or
+scope-uncertain post-merge job is an unresolved recovery route, not a green
+result. A process/documentation merge never promotes a product card or grants
+screening, release, deployment, publication, invitation or protection
+authority.
 
 ## Handoff and topology closure
 

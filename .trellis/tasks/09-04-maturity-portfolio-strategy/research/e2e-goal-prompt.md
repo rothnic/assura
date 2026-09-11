@@ -19,13 +19,13 @@ reference only when that phase requires it.
 
 ## Direction review
 
-## Current source route — 2026-09-11 UTC (`origin/master=122fa0b3`, as-of)
+## Current source route — 2026-09-11 UTC (`origin/master=c9ac2a8`, as-of)
 
 The latest reset fetched
-`origin/master=122fa0b3d976bb5196359aee48ad67bf272fb541` after PR #293 merged
-the reviewed process/goal reconciliation. Its applicable Documentation, CI
-Scope, Security Scope, Evidence Gates and GitGuardian checks passed, as did
-the applicable post-merge Rust CI, Documentation and Security workflows;
+`origin/master=c9ac2a84a93dce752ec7b5216ad87639ba04dee8` after PR #294 merged
+the reviewed execution-control-plane correction. Its applicable Documentation,
+CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed, as did
+the configured post-merge Rust CI, Documentation and Security workflows;
 product/Rust/performance/release jobs were scope-skipped and are not product
 proof. Fetch again before every phase because this is an as-of checkpoint.
 
@@ -36,6 +36,13 @@ screening, allocation, credit, release, deployment, publication or invitation
 authority exists. The next route is reset, active-first inspection and one
 explicitly owned recovery/preparation action; an empty pending queue is not a
 stop condition.
+
+The configured push-triggered workflow at a merge SHA is a separate
+reconciliation observation. A failed, cancelled, unavailable, zero-test,
+scope-uncertain or absent post-merge result remains unresolved; it is never
+overridden by the pull-request rollup or a local pass. PR #294's post-merge
+checks passed, while the retained R01 diagnostic from run `34615572565` still
+failed on macOS SIGINT and remains open.
 
 ## Historical candidate route — 2026-09-11 UTC (`origin/master=4560c710`)
 

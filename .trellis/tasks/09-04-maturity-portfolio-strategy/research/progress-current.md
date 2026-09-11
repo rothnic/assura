@@ -1,5 +1,65 @@
 # Current maturity train checkpoint
 
+## Iteration 152 — 2026-09-11 — post-merge workflow fence and R01 diagnosis
+
+- Owner/phase: `/root` / current-source process correction and held-lane
+  diagnosis. A fresh reset fetched `origin/master=c9ac2a84a93dce752ec7b5216ad87639ba04dee8`
+  after PR #294. The clean owned checkout is
+  `/private/tmp/assura-current-c9ac` on the process-correction branch; the
+  root's single unknown research file remains untouched. The revision-pinned
+  ledger at c9ac is `items=32; ready_pending=0; unfinished=5; held=3`: A07
+  active, W03 verified, and R01/W02/F01 held.
+- Read-only CI diagnosis of retained run `34615572565` identified the exact
+  first actionable failure: `Test Suite (macos-latest, stable)` job
+  `103316578631`, `tests/watch_cli.rs:196`,
+  `watch_stops_cleanly_without_runtime_artifacts` reports
+  `watch did not stop after SIGINT` after 15 passed and 1 failed
+  `watch_cli` test in 11.08s. The preceding exact-head PR checks for #292 and
+  the following #294 process checks are separate evidence; a focused local
+  Darwin rerun passed once and does not override the hosted failure. The
+  cancelled Ubuntu sibling and all skipped/unknown rows remain non-passing.
+- Correction: the execution-control-plane and CI-triage references now make a
+  configured post-merge push workflow an explicit reconciliation observation.
+  A PR rollup or local pass cannot close a slice when the merge-SHA workflow is
+  failed, cancelled, unavailable, zero-test, scope-uncertain or absent. The
+  exact merge SHA, job/log handle, first failure and next diagnosis must stay
+  in the checkpoint; no unchanged retry or threshold weakening is authorized.
+  This is process evidence only and grants no R01, A07, release, deployment,
+  publication, invitation or screening credit.
+- Next owner/action: refresh source/PR/CI/topology and the ledger before the
+  next phase; keep R01's macOS SIGINT diagnostic as the named held action and
+  independently review whether a contract-level correction is authorized.
+  If implementation is authorized, use a fresh current-base R01 worktree,
+  focused red/green proof, independent review and all platform gates. If it is
+  not authorized, retain the diagnostic and continue only another explicitly
+  authorized process/preparation slice. Do not allocate or credit the 4560c710
+  A07 candidate/packet, which remains candidate-base/no-credit.
+
+## Iteration 153 — 2026-09-11 — measured remote-capacity hold
+
+- Owner/phase: `/root` / read-only validation-placement and VPS-capacity
+  decision. The clean owned checkout remains
+  `/private/tmp/assura-current-c9ac` on `docs/post-merge-ci-fence` at
+  `97b7e613da14c2e23ad24871a5851d7c26392067`, based on
+  `origin/master=c9ac2a84a93dce752ec7b5216ad87639ba04dee8`. The configured
+  `vps-dev` alias is not resolvable; the configured `vps` alias reports 16
+  CPUs, 61 GiB RAM, 20 GiB free of a 339 GiB root volume (95% used), Rust and
+  Cargo `1.95.0-nightly`, Node `22.22.1`, pnpm `10.29.3`, and unrelated
+  long-running cargo-watch/PM2 jobs. No files, caches, jobs or worktrees were
+  changed.
+- Decision: the remote venue is held for heavy validation because disk
+  headroom, active-job isolation and the exact pinned Rust/Cargo toolchain are
+  not proven. A remote Linux result would supplement, never replace, local
+  platform, hosted, browser, release or Cloudflare proof. Do not retry the
+  unresolved `vps-dev` alias or delete unrelated data to manufacture capacity.
+- Next owner/action: submit the reviewed process-correction slice from the
+  clean current-base branch, then observe its merge-SHA push workflows. Keep
+  the R01 macOS SIGINT failure named and unresolved; if an implementation lane
+  is authorized, re-probe an explicitly configured host and use the isolated
+  clean-commit bundle only after exact-toolchain, free-disk and owned-job
+  checks pass. This capacity decision grants no card, product, screening,
+  release, deployment, publication or authority credit.
+
 ## Iteration 151 — 2026-09-11 — execution control plane and source reconciliation
 
 - Owner/phase: `/root` / process-only orchestration correction. The reset
